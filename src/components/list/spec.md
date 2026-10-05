@@ -27,6 +27,8 @@ This directory hosts three public components: [`igc-list`](#igc-list), [`igc-lis
   - [Test scenarios](#test-scenarios)
     - [List with items](#list-with-items)
     - [List with items and headers](#list-with-items-and-headers)
+    - [Headers](#headers-1)
+    - [Item structure](#item-structure-1)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -36,9 +38,11 @@ This directory hosts three public components: [`igc-list`](#igc-list), [`igc-lis
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                            |
+| ------: | ---------- | ------------------------------------------------ |
+|       1 | 2026-09-21 | Initial specification                            |
+|       2 | 2026-10-05 | A header has the `listitem` role                 |
+|       3 | 2026-10-05 | The title and subtitle container adds no role    |
 
 ## Overview
 
@@ -124,13 +128,16 @@ layout.
 
 ```html
 <igc-list>
-  <igc-list-header>Team</igc-list-header>
+  <igc-list-header><h3>Team</h3></igc-list-header>
   <igc-list-item>...</igc-list-item>
 
-  <igc-list-header>Guests</igc-list-header>
+  <igc-list-header><h3>Guests</h3></igc-list-header>
   <igc-list-item>...</igc-list-item>
 </igc-list>
 ```
+
+A heading in each header lets screen reader users move from group to group. See
+[ARIA roles and properties](#aria-roles-and-properties).
 
 #### Selection
 
@@ -206,11 +213,21 @@ The suite lives in [`list.spec.ts`](./list.spec.ts) and runs in a real browser t
 
 3. A list that mixes headers with nested content projects every child and passes the accessibility audit.
 
+### Headers
+
+4. A header has the `listitem` role, the only role that a list owns.
+
+### Item structure
+
+5. The title and subtitle container is a `div`, so it adds no role around the title and the subtitle.
+
 ### Not covered by the suite
 
 - The fixture of the third scenario nests `igc-list` elements between the headers instead of `igc-list-item`
-  elements, and asserts only the number of projected children. A header followed by its items, and the DOM order of
-  the two, are not covered.
+  elements, and asserts only the number of projected children. The DOM order of a header and its items is not
+  covered.
+- axe does not read roles from `ElementInternals`, so the accessibility audits do not check the roles of the list,
+  the items and the headers.
 - The `selected` property of the item has no dedicated case.
 
 ## Assumptions and limitations
@@ -226,8 +243,12 @@ The suite lives in [`list.spec.ts`](./list.spec.ts) and runs in a real browser t
 
 - The list exposes list semantics, and its items are exposed as list items, so assistive technology announces the
   size of the collection and the position within it.
-- A header exposes a `separator` role, so assistive technology announces the break between the groups of items.
-  The header labels the section that follows it.
+- A header exposes the `listitem` role, because a list can own only list items. Assistive technology reads the
+  content of the header, and counts the header with the items. A heading in the header gives users a way to move
+  from group to group. The header does not label the items that follow it.
+- The containers in the shadow root of an item add no roles. The `start`, `content` and `end` parts are `section`
+  elements without a name, and the `header` part is a `div`, so assistive technology finds only the list item and the
+  projected content.
 - Interactive content projected into an item keeps its own semantics and needs an accessible name.
 
 ### Keyboard support
