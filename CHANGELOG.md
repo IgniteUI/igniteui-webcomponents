@@ -83,6 +83,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `layoutComplete` now resolves after the rendered items are measured. Before, it could resolve first, so `scrollToIndex` stopped its correction early, and an item with a size other than the estimate landed up to tens of pixels from the requested edge.
   - A list larger than the maximum scroll size of the browser now shows its last items at the end of the scroll range, and `scrollToIndex` puts the item at the requested edge. The items also move evenly during a scroll. Before, the last items could not be reached, the item landed tens of pixels off, and the items jumped by some pixels each time the rendered window changed.
   - A new `data` array with new items at the rendered indices now measures those items again. Before, an item element that kept its index was not measured again, so the scroll size and the item positions used the estimate until the item left the rendered window.
+- #### Theming
+  - A theme change now replaces only the theme style sheets of a component. It keeps the style sheets that other code adopted into the shadow root, after the theme style sheets. Before, a theme change removed them.
 
 ## [7.4.1] - 2026-09-25
 ### Added

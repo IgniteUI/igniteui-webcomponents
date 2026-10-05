@@ -178,6 +178,26 @@ describe('VirtualScroll', () => {
       expect(el.querySelector('[part="virtualization-content"]')).to.not.be
         .null;
     });
+
+    it('adopts its style sheet again after other code replaces the root sheets', async () => {
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          .data=${createItems(100)}
+          .itemTemplate=${fixedTemplate}
+        ></igc-virtual-scroll>`
+      );
+      const sheets = Array.from(document.adoptedStyleSheets);
+
+      try {
+        document.adoptedStyleSheets = [];
+        el.requestUpdate();
+        await elementUpdated(el);
+
+        expect(getComputedStyle(el).overflowY).to.equal('auto');
+      } finally {
+        document.adoptedStyleSheets = sheets;
+      }
+    });
   });
 
   describe('Events', () => {
