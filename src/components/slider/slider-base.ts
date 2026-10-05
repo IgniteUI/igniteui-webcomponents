@@ -66,6 +66,32 @@ export const sliderDependencies = [
   IgcPopoverComponent,
 ];
 
+/**
+ * Moves `base` by `steps` steps. It rounds to the decimals of `base` and
+ * `step`, so a value on a step stays.
+ */
+function stepFrom(base: number, step: number, steps: number): number {
+  const decimals = Math.max(numberOfDecimals(base), numberOfDecimals(step));
+  return roundPrecise(base + steps * step, decimals);
+}
+
+/**
+ * Counts the steps from `base` to the step nearest to `value`. As a native
+ * range does, it compares the decimal distances, and a tie goes to the higher
+ * step. In binary, 0.35 / 0.1 gives 3.4999999999999996.
+ */
+function stepsTo(value: number, base: number, step: number): number {
+  const places = Math.max(
+    numberOfDecimals(value),
+    numberOfDecimals(base),
+    numberOfDecimals(step)
+  );
+  const below = Math.floor((value - base) / step);
+  const down = roundPrecise(value - stepFrom(base, step, below), places);
+
+  return roundPrecise(step - down, places) <= down ? below + 1 : below;
+}
+
 @blazorDeepImport
 export class IgcSliderBaseComponent extends LitElement {
   public static override styles = [styles, shared];
@@ -305,8 +331,9 @@ export class IgcSliderBaseComponent extends LitElement {
       this._numberFormat = undefined;
     }
 
-    // A thumb of the range slider keeps the focus when the slider is disabled.
-    if (changedProperties.has('disabled') && this.disabled) {
+    // No label waits to open again. A thumb of a disabled range slider keeps
+    // the focus.
+    if (this._thumbLabelsOff) {
       this._dismissThumbLabels();
     }
 
@@ -350,12 +377,8 @@ export class IgcSliderBaseComponent extends LitElement {
       .set(arrowRight, () => this.handleArrowKeys(isLTR(this) ? 1 : -1))
       .set(arrowUp, () => this.handleArrowKeys(1))
       .set(arrowDown, () => this.handleArrowKeys(-1))
-      .set(homeKey, () =>
-        this.handleKeyboardIncrement(this.lowerBound - this.activeValue)
-      )
-      .set(endKey, () =>
-        this.handleKeyboardIncrement(this.upperBound - this.activeValue)
-      )
+      .set(homeKey, () => this.handleKeyboardMove(this.lowerBound))
+      .set(endKey, () => this.handleKeyboardMove(this.upperBound))
       .set(pageUpKey, () => this.handlePageKeys(1))
       .set(pageDownKey, () => this.handlePageKeys(-1));
   }
@@ -367,25 +390,28 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   private handleArrowKeys(delta: -1 | 1) {
-    this.handleKeyboardIncrement((this.step || 1) * delta);
+    this.handleKeyboardMove(this.activeValue + (this.step || 1) * delta);
   }
 
   private handlePageKeys(delta: -1 | 1) {
     const step = this.step || 1;
-    this.handleKeyboardIncrement(
-      delta * Math.max((this.upperBound - this.lowerBound) / 10, step)
+    this.handleKeyboardMove(
+      this.activeValue +
+        delta * Math.max((this.upperBound - this.lowerBound) / 10, step)
     );
   }
 
-  private handleKeyboardIncrement(increment: number) {
-    if (increment) {
-      const updated = this.updateValue(increment);
-      this.showThumbLabels();
-      this.hideThumbLabels();
+  private handleKeyboardMove(target: number) {
+    if (target === this.activeValue) {
+      return;
+    }
 
-      if (updated) {
-        this.emitChangeEvent();
-      }
+    const updated = this.updateValue(target);
+    this.showThumbLabels();
+    this.hideThumbLabels();
+
+    if (updated) {
+      this.emitChangeEvent();
     }
   }
 
@@ -401,7 +427,7 @@ export class IgcSliderBaseComponent extends LitElement {
     this.activeThumb?.part.add('focused');
 
     // Escape hid the labels on its key press.
-    if (this.activeThumb && event.key !== escapeKey) {
+    if (this.activeThumb && !isKey(event, escapeKey)) {
       this.showThumbLabels();
     }
   }
@@ -460,9 +486,9 @@ export class IgcSliderBaseComponent extends LitElement {
     return {};
   }
 
-  /** Moves the active thumb by `increment`, and returns whether it moved. */
-  protected updateValue(increment: number): boolean {
-    const value = this.validateValue(this.activeValue + increment);
+  /** Moves the active thumb to `target`, and returns whether it moved. */
+  protected updateValue(target: number): boolean {
+    const value = this.validateValue(target);
 
     if (value === this.activeValue) {
       return false;
@@ -499,18 +525,8 @@ export class IgcSliderBaseComponent extends LitElement {
       return clamped;
     }
 
-    // Round to the decimals of `min` and `step`, so a value on a step stays.
-    const decimals = Math.max(numberOfDecimals(min), numberOfDecimals(step));
-    const toValue = (steps: number) =>
-      roundPrecise(min + steps * step, decimals);
-
-    // Compare the decimal distances to the two nearest steps, as a native
-    // range does. In binary, 0.35 / 0.1 gives 3.4999999999999996.
-    const places = Math.max(decimals, numberOfDecimals(clamped));
-    const below = Math.floor((clamped - min) / step);
-    const down = roundPrecise(clamped - toValue(below), places);
-    const up = roundPrecise(toValue(below + 1) - clamped, places);
-    const steps = up <= down ? below + 1 : below;
+    const toValue = (steps: number) => stepFrom(min, step, steps);
+    const steps = stepsTo(clamped, min, step);
 
     let snapped = toValue(steps);
 
@@ -567,8 +583,13 @@ export class IgcSliderBaseComponent extends LitElement {
     return this.primaryTicks > 0 && idx % (this.secondaryTicks + 1) === 0;
   }
 
+  /** No label shows while the slider is disabled or hides its tooltip. */
+  private get _thumbLabelsOff(): boolean {
+    return this.disabled || this.hideTooltip;
+  }
+
   protected showThumbLabels() {
-    if (this.disabled || this.hideTooltip) {
+    if (this._thumbLabelsOff) {
       return;
     }
 
@@ -620,12 +641,15 @@ export class IgcSliderBaseComponent extends LitElement {
       return;
     }
 
+    const { activeValue, step } = this;
     const fraction = pointToFraction(this.base, clientX, isLTR(this));
-    const change = this.min + fraction * this.distance - this.activeValue;
+    const target = this.min + fraction * this.distance;
 
     // Whole steps from the value, so a value off the steps moves as on a key.
     this.updateValue(
-      this.step ? Math.round(change / this.step) * this.step : change
+      step
+        ? stepFrom(activeValue, step, stepsTo(target, activeValue, step))
+        : target
     );
   }
 

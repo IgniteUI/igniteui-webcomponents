@@ -141,7 +141,8 @@ slot {
     transition: transform .1s ease-out, border-radius .1s ease-out;
 }
 
-// The popover places the label above the thumb, in the top layer.
+// The label is in the top layer, so it must not take the pointer from the thumb
+// or from the page below it.
 igc-popover::part(container) {
     pointer-events: none;
 }

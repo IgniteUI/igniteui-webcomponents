@@ -1391,6 +1391,42 @@ describe('Slider component', () => {
       expect(values).to.eql([1, 1, 4]);
     });
 
+    it('drags to the higher step at a fractional midpoint', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider max="1" step="0.1" style="width: 200px"></igc-slider>`
+      );
+      const { left, width } = slider
+        .shadowRoot!.querySelector('[part="base"]')!
+        .getBoundingClientRect();
+      // 70 of 200 px gives exactly 0.35, and 0.35 / 0.1 is 3.4999999999999996.
+      const at = (value: number) => ({ clientX: left + width * value });
+
+      simulatePointerDown(slider, at(0.35));
+      expect(slider.value).to.equal(0.4);
+
+      simulatePointerMove(slider, at(0.15));
+      expect(slider.value).to.equal(0.2);
+
+      simulateLostPointerCapture(slider);
+    });
+
+    it('moves a continuous slider exactly to a fractional bound', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider step="0" lower-bound="0.1" value="1.3"></igc-slider>`
+      );
+      const ranged = await fixture<IgcSliderComponent>(
+        html`<igc-slider step="0" upper-bound="0.9" value="0.2"></igc-slider>`
+      );
+
+      // In binary, 1.3 + (0.1 - 1.3) is above 0.1 and 0.2 + (0.9 - 0.2) is
+      // below 0.9, so the clamp keeps them.
+      simulateKeyboard(slider, homeKey);
+      simulateKeyboard(ranged, endKey);
+
+      expect(slider.value).to.equal(0.1);
+      expect(ranged.value).to.equal(0.9);
+    });
+
     it('emits no events when the snapped value does not change', async () => {
       const slider = await fixture<IgcSliderComponent>(
         html`<igc-slider step="30" value="90"></igc-slider>`
@@ -2131,6 +2167,32 @@ describe('Slider component', () => {
       );
 
       expect(getDOM(slider).thumbs.current).to.exist;
+    });
+
+    it('dismisses an open label when hideTooltip turns on', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider></igc-slider>`
+      );
+      const remove = spy(globalThis, 'removeEventListener');
+
+      try {
+        simulatePointerEnter(getDOM(slider).thumbs.current);
+        await elementUpdated(slider);
+        expect(labelShown(slider)).to.be.true;
+
+        slider.hideTooltip = true;
+        await elementUpdated(slider);
+        expect(
+          remove.getCalls().filter(({ args }) => args[0] === 'keydown')
+        ).to.have.lengthOf(1);
+
+        // The label waits for a new interaction.
+        slider.hideTooltip = false;
+        await elementUpdated(slider);
+        expect(labelShown(slider)).to.be.false;
+      } finally {
+        remove.restore();
+      }
     });
   });
 

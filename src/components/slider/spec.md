@@ -356,9 +356,11 @@ thumb and the tick labels.
 
 ### Value resolution
 
-26. A value snaps to the nearest step, as a native range input with the same attributes does.
+26. A value snaps to the nearest step, as a native range input with the same attributes does. A drag snaps the same
+    way, also at a fractional midpoint such as 0.35 with a step of 0.1.
 27. A value on a fractional step stays through later constraint changes (#2433), and the keyboard and `stepUp()`
-    reach the end of the scale with a fractional step.
+    reach the end of the scale with a fractional step. On a continuous slider, Home and End reach a fractional bound
+    exactly.
 28. The attributes, and the properties of one task, apply in any order (#2434). A `min` above the default `max`
     applies when `max` follows, and an update that ends with `min` above `max` keeps the previous scale. A value
     as set that changes nothing does not apply again in a later update.
@@ -391,7 +393,8 @@ thumb and the tick labels.
     the slider. It stays centered above its thumb after a move, with the native and the fallback position
     strategies, in LTR and RTL. It hides while its thumb is scrolled out of view, with both position strategies.
 41. The range slider renders a label for each thumb, and `hideTooltip` removes the popover and formats no value
-    for it.
+    for it. Turning `hideTooltip` on dismisses an open label and its Escape listener, and turning it off again does
+    not open the label.
 
 ### Tick labels
 
