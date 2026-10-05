@@ -53,13 +53,13 @@ const metadata: Meta<IgcSliderComponent> = {
     min: {
       type: 'number',
       description:
-        'The minimum value of the slider scale. Defaults to 0.\n\nIf `min` is greater than `max` the call is a no-op.\n\nIf `labels` are provided (projected), then `min` is always set to 0.\n\nIf `lowerBound` ends up being less than than the current `min` value,\nit is automatically assigned the new `min` value.',
+        'The minimum value of the slider scale. Defaults to 0.\n\nIf `min` is greater than `max` the call is a no-op.\n\nIf `labels` are provided (projected), then `min` is always set to 0.\n\nIf `lowerBound` ends up being less than the current `min` value,\nit is automatically assigned the new `min` value.',
       control: 'number',
     },
     max: {
       type: 'number',
       description:
-        'The maximum value of the slider scale. Defaults to 100.\n\nIf `max` is less than `min` the call is a no-op.\n\nIf `labels` are provided (projected), then `max` is always set to\nthe number of labels.\n\nIf `upperBound` ends up being greater than than the current `max` value,\nit is automatically assigned the new `max` value.',
+        'The maximum value of the slider scale. Defaults to 100.\n\nIf `max` is less than `min` the call is a no-op.\n\nIf `labels` are provided (projected), then `max` is always set to\nthe number of labels.\n\nIf `upperBound` ends up being greater than the current `max` value,\nit is automatically assigned the new `max` value.',
       control: 'number',
     },
     lowerBound: {
@@ -183,7 +183,7 @@ interface IgcSliderArgs {
    *
    * If `labels` are provided (projected), then `min` is always set to 0.
    *
-   * If `lowerBound` ends up being less than than the current `min` value,
+   * If `lowerBound` ends up being less than the current `min` value,
    * it is automatically assigned the new `min` value.
    */
   min: number;
@@ -195,7 +195,7 @@ interface IgcSliderArgs {
    * If `labels` are provided (projected), then `max` is always set to
    * the number of labels.
    *
-   * If `upperBound` ends up being greater than than the current `max` value,
+   * If `upperBound` ends up being greater than the current `max` value,
    * it is automatically assigned the new `max` value.
    */
   max: number;

@@ -481,10 +481,12 @@ export const ImportContacts: Story = {
     let status = '';
     let sample = '';
     let host: HTMLElement | undefined;
+    let reads = 0;
 
     const read = async (event: CustomEvent<FileList>) => {
       const input = event.currentTarget as IgcFileInputComponent;
       const [file] = event.detail;
+      const current = ++reads;
 
       contacts = [];
       skipped = 0;
@@ -497,7 +499,14 @@ export const ImportContacts: Story = {
         return;
       }
 
-      const { columns, rows } = parseCsv(await file.text());
+      const text = await file.text();
+
+      // The read of a large file can end after the read of a newer selection.
+      if (current !== reads) {
+        return;
+      }
+
+      const { columns, rows } = parseCsv(text);
       const missing = ['name', 'email'].find(
         (column) => !columns.includes(column)
       );

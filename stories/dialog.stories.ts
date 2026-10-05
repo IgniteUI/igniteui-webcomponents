@@ -305,7 +305,7 @@ export const DeleteProject: Story = {
     docs: {
       description: {
         story:
-          'A dialog that asks the user to confirm a destructive action. The dialog shows the name of the project in the `title` attribute, and the consequences in the `message` slot. The `footer` slot holds Cancel and Delete, and it replaces the default OK button. Cancel comes first, so the dialog gives the focus to the safer action when it opens. Each button calls `hide()`, which closes the dialog with the animation and gives the focus back to the button that opened it. `hide()` does not emit `igcClosing` and `igcClosed`, so the click handler of Delete does the action. After the delete, the story moves the focus to the next Delete button, because the button that opened the dialog is gone.',
+          'A dialog that asks the user to confirm a destructive action. The dialog shows the name of the project in the `title` attribute, and the consequences in the `message` slot. The `footer` slot holds Cancel and Delete, and it replaces the default OK button. Cancel comes first, so the dialog gives the focus to the safer action when it opens. Each button calls `hide()`, which closes the dialog with the animation and gives the focus back to the button that opened it. `hide()` does not emit `igcClosing` and `igcClosed`, so the click handler of Delete does the action. After the delete, the story moves the focus to the next Delete button, or to the Restore button after the last delete, because the button that opened the dialog is gone.',
       },
     },
   },
@@ -330,8 +330,15 @@ export const DeleteProject: Story = {
       items = items.filter((project) => project !== pending);
       story.update();
 
-      const buttons = story.host!.querySelectorAll<HTMLElement>('.dg-delete');
-      (buttons[index] ?? buttons[index - 1])?.focus();
+      const buttons =
+        story.host!.querySelectorAll<IgcIconButtonComponent>('.dg-delete');
+      const next =
+        buttons[index] ??
+        buttons[index - 1] ??
+        story.host!.querySelector<IgcButtonComponent>('.dg-restore')!;
+
+      await next.updateComplete;
+      next.focus();
     };
 
     const restore = async () => {
@@ -378,7 +385,11 @@ export const DeleteProject: Story = {
                 `
               : html`
                   <p class="muted">You have no projects.</p>
-                  <igc-button variant="outlined" @click=${restore}>
+                  <igc-button
+                    class="dg-restore"
+                    variant="outlined"
+                    @click=${restore}
+                  >
                     Restore the projects
                   </igc-button>
                 `

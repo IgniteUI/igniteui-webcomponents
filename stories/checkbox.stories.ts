@@ -459,7 +459,7 @@ export const SignUp: Story = {
     docs: {
       description: {
         story:
-          'A sign-up form. The terms checkbox is `required`: until it is checked, the form does not submit, and the `value-missing` slot shows the message. The label contains links, and a click on a link opens the link and does not toggle the checkbox, as for a native label. The newsletter checkbox starts unchecked, and Reset restores the default state of each checkbox. "Create a team account" enables the fieldset of the team, and the checkboxes in a disabled fieldset submit nothing. Submit shows the form data.',
+          'A sign-up form. The terms checkbox is `required`: until it is checked, the form does not submit, and the `value-missing` slot shows the message. The label contains links, and a click on a link does not toggle the checkbox, as for a native label. The links have no page to open, so the story shows which link you clicked. The newsletter checkbox starts unchecked, and Reset restores the default state of each checkbox. "Create a team account" enables the fieldset of the team, and the checkboxes in a disabled fieldset submit nothing. Submit shows the form data.',
       },
     },
   },
@@ -478,7 +478,7 @@ export const SignUp: Story = {
     const openLink = (event: Event) => {
       event.preventDefault();
       const link = event.currentTarget as HTMLAnchorElement;
-      status.value!.textContent = `You opened the ${link.textContent}.`;
+      status.value!.textContent = `You clicked the link to the ${link.textContent}.`;
     };
 
     return html`

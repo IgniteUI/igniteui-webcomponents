@@ -55,7 +55,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     disablePauseOnInteraction: {
       type: 'boolean',
       description:
-        'Whether the carousel should ignore use interactions and not pause on them.',
+        'Whether the carousel should ignore user interactions and not pause on them.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -95,7 +95,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     slidesLabelFormat: {
       type: 'string',
       description:
-        "The format used to set the aria-label on the carousel slides and the text displayed\nwhen the number of indicators is greater than tha maximum indicator count.\nInstances of '{0}' will be replaced with the index of the corresponding slide.\nInstances of '{1}' will be replaced with the total amount of slides.",
+        "The format used to set the aria-label on the carousel slides and the text displayed\nwhen the number of indicators is greater than the maximum indicator count.\nInstances of '{0}' will be replaced with the index of the corresponding slide.\nInstances of '{1}' will be replaced with the total amount of slides.",
       control: 'text',
     },
     interval: {
@@ -142,7 +142,7 @@ export default metadata;
 interface IgcCarouselArgs {
   /** Whether the carousel should skip rotating to the first slide after it reaches the last. */
   disableLoop: boolean;
-  /** Whether the carousel should ignore use interactions and not pause on them. */
+  /** Whether the carousel should ignore user interactions and not pause on them. */
   disablePauseOnInteraction: boolean;
   /** Whether the carousel should skip rendering of the default navigation buttons. */
   hideNavigation: boolean;
@@ -159,7 +159,7 @@ interface IgcCarouselArgs {
   indicatorsLabelFormat: string;
   /**
    * The format used to set the aria-label on the carousel slides and the text displayed
-   * when the number of indicators is greater than tha maximum indicator count.
+   * when the number of indicators is greater than the maximum indicator count.
    * Instances of '{0}' will be replaced with the index of the corresponding slide.
    * Instances of '{1}' will be replaced with the total amount of slides.
    */
