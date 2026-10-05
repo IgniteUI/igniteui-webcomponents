@@ -1,26 +1,43 @@
-import type { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
-import { range } from 'lit/directives/range.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 import {
-  type DateRangeDescriptor,
+  type CustomDateRange,
+  type DateRangeValue,
   DateRangeType,
   IgcButtonComponent,
   IgcDateRangePickerComponent,
+  IgcIconComponent,
+  IgcInputComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
-import type {
-  CustomDateRange,
-  DateRangeValue,
-} from '../src/components/date-range-picker/date-range-picker.js';
-import { CalendarDay } from '../src/internals/date/model.js';
+import {
+  addDays,
+  addWorkingDays,
+  dateArg,
+  daysBetween,
+  daysOf,
+  formatDate,
+  isWeekend,
+  nextWeekday,
+  today,
+} from './story-dates.js';
+import { registerMaterialIcons } from './story-icons.js';
 import {
   disableStoryControls,
-  formControls,
   formSubmitHandler,
+  renderInto,
+  scrollingPanel,
+  storyStyles,
 } from './story.js';
 
-defineComponents(IgcDateRangePickerComponent, IgcButtonComponent);
+defineComponents(
+  IgcButtonComponent,
+  IgcDateRangePickerComponent,
+  IgcIconComponent,
+  IgcInputComponent
+);
 
 // region default
 const metadata: Meta<IgcDateRangePickerComponent> = {
@@ -418,512 +435,515 @@ type Story = StoryObj<IgcDateRangePickerArgs>;
 
 // endregion
 
-const minDate = new Date(2025, 2, 1);
-const maxDate = new Date(2025, 2, 31);
-const disabledDates: DateRangeDescriptor[] = [
-  {
-    type: DateRangeType.Between,
-    dateRange: [minDate, maxDate],
-  },
-];
+const usd = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 0,
+});
 
-function selectToday(
-  pickerType: '#singleInput' | '#twoInputs' = '#singleInput'
-) {
-  const picker =
-    document.querySelector<IgcDateRangePickerComponent>(pickerType)!;
-  picker.select({ start: new Date(), end: new Date() });
-  picker.hide();
-}
+const styles = html`
+  ${storyStyles}
+  <style>
+    .drp-layout {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 1.5rem;
+    }
 
-const today = CalendarDay.from(new Date());
-const tomorrow = today.add('day', 1);
-const previousThreeMonthsStart = new Date(
-  today.native.getFullYear(),
-  today.native.getMonth() - 3,
-  1
-);
-const previousThreeMonthsEnd = new Date(
-  today.native.getFullYear(),
-  today.native.getMonth(),
-  0
-);
-const nextThreeMonthsStart = new Date(
-  today.native.getFullYear(),
-  today.native.getMonth() + 1,
-  1
-);
-const nextThreeMonthsEnd = new Date(
-  today.native.getFullYear(),
-  today.native.getMonth() + 4,
-  0
-);
+    .drp-panel {
+      display: grid;
+      gap: 0.75rem;
+      align-content: start;
+      width: min(100%, 22rem);
+      padding: 1rem;
+      border: 1px solid var(--ig-gray-300);
+      border-radius: 8px;
+    }
 
-const customRanges: CustomDateRange[] = [
-  {
-    label: 'Previous Three Months',
-    dateRange: {
-      start: previousThreeMonthsStart,
-      end: previousThreeMonthsEnd,
-    },
-  },
-  {
-    label: 'Next Three Months',
-    dateRange: {
-      start: nextThreeMonthsStart,
-      end: nextThreeMonthsEnd,
-    },
-  },
-];
+    .drp-panel :is(h3, p, ul, dl) {
+      margin: 0;
+    }
+
+    .drp-panel h3 {
+      font-size: 1.125rem;
+    }
+
+    .drp-lines {
+      display: grid;
+      gap: 0.25rem;
+      padding: 0;
+      list-style: none;
+    }
+
+    .drp-lines li {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .drp-lines .drp-total {
+      padding-block-start: 0.5rem;
+      border-block-start: 1px solid var(--ig-gray-300);
+      font-weight: 600;
+    }
+
+    .drp-facts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+
+    .drp-facts dt {
+      color: var(--ig-gray-700);
+      font-size: 0.875rem;
+    }
+
+    .drp-facts dd {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .drp-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+  </style>
+`;
+
+registerMaterialIcons('flight-takeoff', 'flight-land', 'arrow-forward');
 
 export const Default: Story = {
   parameters: {
     docs: {
       description: {
         story:
-          'A fully interactive date range picker in dropdown mode with a two-month calendar view. Supports single or dual inputs, predefined range chips, and extensive calendar configuration. Use the controls panel to explore all available properties.',
+          'The dates of a hotel stay. By default the picker shows the range in one read-only input, and the user selects the first and the last day in a calendar with two months. `use-two-inputs` shows a start input and an end input, and the user can type the dates in the `dropdown` mode. `label` names the single input, and `label-start` and `label-end` name the two inputs. `use-predefined-ranges` adds chips for usual periods. `visibleMonths` is 1 or 2. Use the controls panel to change the mode, the formats, the calendar and the validation. `hideHeader` and `headerOrientation` apply only in the `dialog` mode. The story binds the date properties with the `guard` directive, so a change of another control keeps the range that the user selected.',
       },
     },
   },
   args: {
-    open: false,
-    labelStart: 'Start',
-    labelEnd: 'End',
-    label: 'Date range',
-    visibleMonths: 2,
+    label: 'Stay',
+    labelStart: 'Check-in',
+    labelEnd: 'Check-out',
   },
   render: (args) => html`
     <igc-date-range-picker
-      id="picker"
-      .displayFormat=${args.displayFormat}
-      .inputFormat=${args.inputFormat}
+      label=${ifDefined(args.label)}
+      label-start=${args.labelStart}
+      label-end=${args.labelEnd}
+      name=${ifDefined(args.name)}
+      placeholder=${ifDefined(args.placeholder)}
+      placeholder-start=${args.placeholderStart}
+      placeholder-end=${args.placeholderEnd}
+      mode=${args.mode}
+      prompt=${args.prompt}
+      display-format=${ifDefined(args.displayFormat)}
+      input-format=${ifDefined(args.inputFormat)}
+      week-start=${ifDefined(args.weekStart)}
+      visible-months=${args.visibleMonths}
+      header-orientation=${args.headerOrientation}
+      orientation=${args.orientation}
       .locale=${args.locale}
-      .prompt=${args.prompt}
-      .weekStart=${args.weekStart}
-      .hideHeader=${args.hideHeader}
-      .headerOrientation=${args.headerOrientation}
-      .nonEditable=${args.nonEditable}
-      .orientation=${args.orientation}
-      .outlined=${args.outlined}
+      .scrollStrategy=${args.scrollStrategy}
+      .min=${dateArg(args.min)}
+      .max=${dateArg(args.max)}
+      .activeDate=${dateArg(args.activeDate, today)}
+      ?use-two-inputs=${args.useTwoInputs}
       ?use-predefined-ranges=${args.usePredefinedRanges}
-      .mode=${args.mode}
-      .min=${new Date(args.min)}
-      .max=${new Date(args.max)}
-      .activeDate=${args.activeDate}
-      .placeholderStart=${args.placeholderStart}
-      .placeholderEnd=${args.placeholderEnd}
-      .placeholder=${args.placeholder}
-      .labelStart=${args.labelStart}
-      .labelEnd=${args.labelEnd}
-      .label=${args.label}
-      .visibleMonths=${args.visibleMonths}
+      ?open=${args.open}
+      ?required=${args.required}
       ?disabled=${args.disabled}
-      .useTwoInputs=${args.useTwoInputs}
       ?invalid=${args.invalid}
       ?readonly=${args.readOnly}
-      ?required=${args.required}
-      ?open=${args.open}
-      ?show-week-numbers=${args.showWeekNumbers}
+      ?non-editable=${args.nonEditable}
+      ?outlined=${args.outlined}
+      ?hide-header=${args.hideHeader}
       ?hide-outside-days=${args.hideOutsideDays}
-      ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
+      ?show-week-numbers=${args.showWeekNumbers}
       ?keep-open-on-select=${args.keepOpenOnSelect}
-    >
-      <p slot="helper-text">Sample helper text.</p>
-    </igc-date-range-picker>
-  `,
-};
-
-export const CustomRanges: Story = {
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'The `customRanges` property accepts an array of `CustomDateRange` objects. Each entry is rendered as a selectable chip inside the picker panel; clicking a chip instantly populates both inputs with the predefined start and end dates.',
-      },
-    },
-  },
-  args: {
-    open: false,
-    labelStart: 'Start',
-    labelEnd: 'End',
-    label: 'Date range',
-    visibleMonths: 2,
-  },
-  render: (args) => html`
-    <igc-date-range-picker
-      id="picker"
-      .value=${{ start: today.native, end: tomorrow.native }}
-      .customRanges=${customRanges}
-      .displayFormat=${args.displayFormat}
-      .inputFormat=${args.inputFormat}
-      .locale=${args.locale}
-      .prompt=${args.prompt}
-      .weekStart=${args.weekStart}
-      .hideHeader=${args.hideHeader}
-      .headerOrientation=${args.headerOrientation}
-      .nonEditable=${args.nonEditable}
-      .orientation=${args.orientation}
-      .outlined=${args.outlined}
-      ?use-predefined-ranges=${args.usePredefinedRanges}
-      .mode=${args.mode}
-      .min=${new Date(args.min)}
-      .max=${new Date(args.max)}
-      .activeDate=${args.activeDate}
-      .placeholderStart=${args.placeholderStart}
-      .placeholderEnd=${args.placeholderEnd}
-      .placeholder=${args.placeholder}
-      .labelStart=${args.labelStart}
-      .labelEnd=${args.labelEnd}
-      .label=${args.label}
-      .visibleMonths=${args.visibleMonths}
-      ?disabled=${args.disabled}
-      .useTwoInputs=${args.useTwoInputs}
-      ?invalid=${args.invalid}
-      ?readonly=${args.readOnly}
-      ?required=${args.required}
-      ?open=${args.open}
-      ?show-week-numbers=${args.showWeekNumbers}
-      ?hide-outside-days=${args.hideOutsideDays}
       ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
-      ?keep-open-on-select=${args.keepOpenOnSelect}
     >
+      <span slot="helper-text">Check-in is from 15:00.</span>
     </igc-date-range-picker>
   `,
 };
 
-export const DialogMode: Story = {
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Setting `mode="dialog"` opens the calendar in a centered modal overlay instead of an inline dropdown. This mode is better suited to mobile viewports and constrained layouts where an overlay is preferable to an inline popover.',
-      },
-    },
-  },
-  args: {
-    label: 'Date range',
-    labelStart: 'Start',
-    labelEnd: 'End',
-    visibleMonths: 2,
-  },
-  render: (args) => html`
-    <igc-date-range-picker
-      mode="dialog"
-      .label=${args.label}
-      .labelStart=${args.labelStart}
-      .labelEnd=${args.labelEnd}
-      .visibleMonths=${args.visibleMonths}
-      .useTwoInputs=${args.useTwoInputs}
-      ?use-predefined-ranges=${args.usePredefinedRanges}
-      ?show-week-numbers=${args.showWeekNumbers}
-      ?hide-outside-days=${args.hideOutsideDays}
-      ?disabled=${args.disabled}
-      ?readonly=${args.readOnly}
-    >
-      <p slot="helper-text">Opens as a modal dialog.</p>
-    </igc-date-range-picker>
-  `,
-};
-
-export const Slots: Story = {
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'All named slots demonstrated side-by-side for both the **two-input** and **single-input** layouts. Available slots include `prefix`, `suffix`, `calendar-icon`, `calendar-icon-open`, `clear-icon`, `separator`, `helper-text`, `title`, and `actions`.',
-      },
-    },
-  },
-  args: {
-    label: 'Select Date Range',
-  },
-  render: (args) =>
-    html` <h5>Two inputs</h5>
-      <igc-date-range-picker
-        id="twoInputs"
-        .displayFormat=${args.displayFormat}
-        .inputFormat=${args.inputFormat}
-        .locale=${args.locale}
-        .prompt=${args.prompt}
-        .weekStart=${args.weekStart}
-        .hideHeader=${args.hideHeader}
-        .headerOrientation=${args.headerOrientation}
-        .nonEditable=${args.nonEditable}
-        .orientation=${args.orientation}
-        .outlined=${args.outlined}
-        .mode=${args.mode}
-        .min=${new Date(args.min)}
-        .max=${new Date(args.max)}
-        .visibleMonths=${args.visibleMonths}
-        ?use-two-inputs=${true}
-        ?use-predefined-ranges=${args.usePredefinedRanges}
-        ?disabled=${args.disabled}
-        ?invalid=${args.invalid}
-        ?readonly=${args.readOnly}
-        ?required=${args.required}
-        ?open=${args.open}
-        ?show-week-numbers=${args.showWeekNumbers}
-        ?hide-outside-days=${args.hideOutsideDays}
-        ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
-        ?keep-open-on-select=${args.keepOpenOnSelect}
-      >
-        <span slot="prefix-start">$</span>
-        <span slot="prefix-end">*</span>
-        <span slot="suffix-start">🦀</span>
-        <span slot="suffix-end">😂</span>
-
-        <span slot="calendar-icon-open-start">⬆️</span>
-        <span slot="calendar-icon-start">⬇️</span>
-        <span slot="calendar-icon-open-end">👩‍💻</span>
-        <span slot="calendar-icon-end">👩‍💻</span>
-
-        <span slot="clear-icon-start">🗑️</span>
-        <span slot="clear-icon-end">🚮</span>
-
-        <span slot="separator">TO</span>
-
-        <p slot="helper-text">
-          For example, select the dates of your future vacation
-        </p>
-        <p slot="title">🎉 Custom title 🎉</p>
-
-        <div slot="actions">
-          <igc-button variant="flat" @click=${() => selectToday('#twoInputs')}
-            >Select today</igc-button
-          >
-        </div>
-      </igc-date-range-picker>
-      <h5>Single input</h5>
-      <igc-date-range-picker
-        id="singleInput"
-        .label=${args.label}
-        .placeholder=${args.placeholder}
-        .displayFormat=${args.displayFormat}
-        .inputFormat=${args.inputFormat}
-        .locale=${args.locale}
-        .prompt=${args.prompt}
-        .weekStart=${args.weekStart}
-        .hideHeader=${args.hideHeader}
-        .headerOrientation=${args.headerOrientation}
-        .nonEditable=${args.nonEditable}
-        .orientation=${args.orientation}
-        .outlined=${args.outlined}
-        ?use-predefined-ranges=${args.usePredefinedRanges}
-        .mode=${args.mode}
-        .min=${new Date(args.min)}
-        .max=${new Date(args.max)}
-        .activeDate=${args.activeDate}
-        .visibleMonths=${args.visibleMonths}
-        ?disabled=${args.disabled}
-        ?invalid=${args.invalid}
-        ?readonly=${args.readOnly}
-        ?required=${args.required}
-        ?open=${args.open}
-        ?show-week-numbers=${args.showWeekNumbers}
-        ?hide-outside-days=${args.hideOutsideDays}
-        ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
-        ?keep-open-on-select=${args.keepOpenOnSelect}
-      >
-        <span slot="prefix">$</span>
-        <span slot="suffix">🦀</span>
-
-        <span slot="calendar-icon-open-start">👩‍💻</span>
-        <span slot="calendar-icon-start">👩‍💻</span>
-        <span slot="clear-icon-start">🗑️</span>
-
-        <p slot="helper-text">
-          For example, select the dates of your future vacation
-        </p>
-        <p slot="title">🎉 Custom title 🎉</p>
-
-        <div slot="actions">
-          <igc-button variant="flat" @click=${() => selectToday()}
-            >Select today</igc-button
-          >
-        </div>
-      </igc-date-range-picker>`,
-};
-
-export const FormTwoInputs: Story = {
+export const Flights: Story = {
   argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'Demonstrates the **two-input** layout inside an HTML `<form>`, covering default state, initial value, read-only, disabled fieldset, required validation, `min`/`max` date constraints, and disabled date ranges with custom validation messages.',
+          'A flight search. `use-two-inputs` shows the departure date and the return date in two inputs, and the user can type each date. `label-start` and `label-end` name the inputs. The `prefix-start` and `prefix-end` slots show a take-off icon and a landing icon, and the `separator` slot replaces the default "to" text with an arrow. `min` is today, and `max` is the last day of the schedule, 330 days from today. `specialDates` marks the days with low fares, from Tuesday to Thursday. The special state is only visual, so the descriptor has a `label`, and the accessible name of each such date ends with "Low fare". The `igcChange` handler gets the fare of each flight and the number of nights.',
       },
     },
   },
-  render: () => html`
-    <form action="" @submit=${formSubmitHandler}>
-      <fieldset>
-        <h5>Default</h5>
-        <igc-date-range-picker
-          name="picker-default"
-          .useTwoInputs=${true}
-        ></igc-date-range-picker>
+  render: () => {
+    const lastFlight = addDays(today, 330);
+    const isLowFare = (date: Date) => [2, 3, 4].includes(date.getDay());
+    const lowFareDays = daysOf(today, lastFlight).filter(isLowFare);
+    const fare = (date: Date) => (isLowFare(date) ? 119 : 189);
+    const departure = nextWeekday(addDays(today, 14), 2);
 
-        <h5>Initial value</h5>
-        <igc-date-range-picker
-          name="picker-initial"
-          value=${JSON.stringify({ start: today.native, end: tomorrow.native })}
-          .useTwoInputs=${true}
-        ></igc-date-range-picker>
+    let trip: DateRangeValue | null = {
+      start: departure,
+      end: addDays(departure, 7),
+    };
 
-        <h5>Readonly</h5>
-        <igc-date-range-picker
-          name="picker-readonly"
-          readonly
-          .useTwoInputs=${true}
-        ></igc-date-range-picker>
-      </fieldset>
+    const summary = renderInto(() => {
+      const { start, end } = trip ?? {};
 
-      <h5>Disabled</h5>
-      <fieldset disabled>
-        <igc-date-range-picker
-          name="picker-disabled"
-          .useTwoInputs=${true}
-        ></igc-date-range-picker>
-      </fieldset>
+      return html`
+        <h3>Your trip</h3>
+        ${
+          start && end
+            ? html`
+                <p>
+                  ${daysBetween(start, end)} nights, from ${formatDate(start)}
+                  to ${formatDate(end)}.
+                </p>
+                <ul class="drp-lines">
+                  <li>
+                    <span>
+                      Outbound${isLowFare(start) ? ' (low fare)' : ''}
+                    </span>
+                    <span>${usd.format(fare(start))}</span>
+                  </li>
+                  <li>
+                    <span>Return${isLowFare(end) ? ' (low fare)' : ''}</span>
+                    <span>${usd.format(fare(end))}</span>
+                  </li>
+                  <li class="drp-total">
+                    <span>Total for 1 adult</span>
+                    <span>${usd.format(fare(start) + fare(end))}</span>
+                  </li>
+                </ul>
+              `
+            : html`
+                <p class="muted">
+                  Choose the departure date and the return date.
+                </p>
+              `
+        }
+      `;
+    });
 
-      <fieldset>
-        <h5>Required</h5>
+    const change = ({ detail }: CustomEvent<DateRangeValue | null>) => {
+      trip = detail;
+      summary.update();
+    };
+
+    return html`
+      ${styles}
+      <div class="drp-layout">
         <igc-date-range-picker
-          name="picker-required"
-          .useTwoInputs=${true}
+          use-two-inputs
+          label-start="Depart"
+          label-end="Return"
+          .value=${trip}
+          .min=${today}
+          .max=${lastFlight}
+          .specialDates=${[
+            {
+              type: DateRangeType.Specific,
+              dateRange: lowFareDays,
+              label: 'Low fare',
+            },
+          ]}
+          @igcChange=${change}
+        >
+          <igc-icon slot="prefix-start" name="flight-takeoff"></igc-icon>
+          <igc-icon slot="prefix-end" name="flight-land"></igc-icon>
+          <igc-icon slot="separator" name="arrow-forward"></igc-icon>
+          <span slot="helper-text">
+            Fares are lowest from Tuesday to Thursday.
+          </span>
+          <span slot="range-underflow">The flight cannot be in the past.</span>
+          <span slot="range-overflow">
+            The schedule ends on ${formatDate(lastFlight)}.
+          </span>
+        </igc-date-range-picker>
+        <section
+          class="drp-panel"
+          aria-label="Trip summary"
+          ${summary.mount}
+        ></section>
+      </div>
+    `;
+  },
+};
+
+/** A made-up number of orders for a day, the same on each render. */
+function ordersOn(date: Date): number {
+  const seed = date.getFullYear() * 372 + date.getMonth() * 31 + date.getDate();
+  const weekend = isWeekend(date) ? 0.6 : 1;
+  return Math.round((40 + ((seed * 2_654_435_761) % 97) / 3) * weekend);
+}
+
+export const SalesReport: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The period of a sales report. In the single input mode the input is read-only, and the user selects the period in the calendar or with a chip. `use-predefined-ranges` adds the chips "Last 7 days", "Current month", "Last 30 days" and "Year to date". `customRanges` adds two more chips, "This quarter" and "Previous quarter". A chip sets the range and emits `igcChange` at once. The handler sums made-up orders for the days of the period. The "Current month" chip ends on the last day of the month, so the handler counts the orders only up to today.',
+      },
+    },
+  },
+  render: () => {
+    const quarter = Math.floor(today.getMonth() / 3) * 3;
+    const customRanges: CustomDateRange[] = [
+      {
+        label: 'This quarter',
+        dateRange: {
+          start: new Date(today.getFullYear(), quarter, 1),
+          end: today,
+        },
+      },
+      {
+        label: 'Previous quarter',
+        dateRange: {
+          start: new Date(today.getFullYear(), quarter - 3, 1),
+          end: new Date(today.getFullYear(), quarter, 0),
+        },
+      },
+    ];
+
+    let period: DateRangeValue | null = {
+      start: addDays(today, -6),
+      end: today,
+    };
+
+    const summary = renderInto(() => {
+      const { start, end } = period ?? {};
+      // There is no data after today, for example for the rest of the month.
+      const last = end && end > today ? today : end;
+      const days = start && last && start <= last ? daysOf(start, last) : [];
+      const orders = days.reduce((sum, date) => sum + ordersOn(date), 0);
+      const revenue = orders * 64;
+      const medium: Intl.DateTimeFormatOptions = { dateStyle: 'medium' };
+
+      return html`
+        <h3>Sales</h3>
+        <p class="muted">
+          ${
+            start && end
+              ? `${formatDate(start, medium)} to ${formatDate(end, medium)}. ${days.length} ${days.length === 1 ? 'day' : 'days'} of data${last === end ? '' : ', up to today'}.`
+              : 'Choose a period.'
+          }
+        </p>
+        <dl class="drp-facts">
+          <div>
+            <dt>Orders</dt>
+            <dd>${orders.toLocaleString('en-US')}</dd>
+          </div>
+          <div>
+            <dt>Revenue</dt>
+            <dd>${usd.format(revenue)}</dd>
+          </div>
+          <div>
+            <dt>Per day</dt>
+            <dd>${days.length ? usd.format(revenue / days.length) : '-'}</dd>
+          </div>
+        </dl>
+      `;
+    });
+
+    const change = ({ detail }: CustomEvent<DateRangeValue | null>) => {
+      period = detail;
+      summary.update();
+    };
+
+    return html`
+      ${styles}
+      <div class="drp-layout">
+        <igc-date-range-picker
+          style="width: min(100%, 20rem)"
+          label="Report period"
+          use-predefined-ranges
+          .customRanges=${customRanges}
+          .value=${period}
+          @igcChange=${change}
+        >
+          <span slot="helper-text">
+            Use a chip, or select the first and the last day.
+          </span>
+        </igc-date-range-picker>
+        <section
+          class="drp-panel"
+          aria-label="Sales in the period"
+          ${summary.mount}
+        ></section>
+      </div>
+    `;
+  },
+};
+
+export const CarRental: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A car rental on a phone. `mode="dialog"` opens the calendar in a modal dialog, which suits a narrow screen. In this mode the inputs are read-only, and a click on an input opens the dialog. The footer of the dialog has a Cancel button and a Done button. The picker emits `igcChange` only on Done, and Cancel restores the range from before the dialog opened. The header of the calendar shows only in the dialog mode, and the `title` slot replaces "Select dates". `visible-months="1"` shows one month, which fits a narrow dialog. The `igcChange` handler counts the rental days, and from 7 days the weekly rate applies.',
+      },
+    },
+  },
+  render: () => {
+    const dailyRate = 59;
+    const weeklyRate = 45;
+    const pickUp = addDays(today, 3);
+
+    let rental: DateRangeValue | null = {
+      start: pickUp,
+      end: addDays(pickUp, 4),
+    };
+
+    const summary = renderInto(() => {
+      const { start, end } = rental ?? {};
+      const days = start && end ? Math.max(daysBetween(start, end), 1) : 0;
+      const rate = days >= 7 ? weeklyRate : dailyRate;
+
+      return html`
+        <h3>Compact car</h3>
+        ${
+          days
+            ? html`
+                <ul class="drp-lines">
+                  <li>
+                    <span>${days} days at ${usd.format(rate)}</span>
+                    <span>${usd.format(days * rate)}</span>
+                  </li>
+                  <li class="drp-total">
+                    <span>Total</span>
+                    <span>${usd.format(days * rate)}</span>
+                  </li>
+                </ul>
+                <p class="muted">
+                  ${
+                    days >= 7
+                      ? 'The weekly rate applies.'
+                      : `Rent for ${7 - days} more days to get the weekly rate of ${usd.format(weeklyRate)} a day.`
+                  }
+                </p>
+              `
+            : html`<p class="muted">Choose the rental period.</p>`
+        }
+      `;
+    });
+
+    const change = ({ detail }: CustomEvent<DateRangeValue | null>) => {
+      rental = detail;
+      summary.update();
+    };
+
+    return html`
+      ${styles}
+      <div class="drp-layout">
+        <igc-date-range-picker
+          mode="dialog"
+          use-two-inputs
+          visible-months="1"
+          label-start="Pick-up"
+          label-end="Return"
+          .value=${rental}
+          .min=${today}
+          @igcChange=${change}
+        >
+          <span slot="title">Rental period</span>
+        </igc-date-range-picker>
+        <section
+          class="drp-panel"
+          aria-label="Rental price"
+          ${summary.mount}
+        ></section>
+      </div>
+    `;
+  },
+};
+
+export const Form: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The booking of a meeting hall. The event dates are `required`, from tomorrow to 6 months from today. `disabledDates` disables the days when the hall is booked. The calendar lets the user select a range across a booked day, but the range must not include one, so the picker then shows the `bad-input` slot. `defaultValue` is the range that Reset restores, and the picker shows it until the user changes the range. In HTML, the `value` attribute sets the default value: a JSON object with ISO dates, for example `{"start": "2026-11-02", "end": "2026-11-03"}`. The form data has two entries for the range, `dates-start` and `dates-end`, as ISO strings in UTC. Submit shows the form data.',
+      },
+    },
+  },
+  render: () => {
+    const first = addDays(today, 1);
+    const last = addDays(today, 182);
+    const booked = [
+      addWorkingDays(today, 5),
+      addWorkingDays(today, 6),
+      addWorkingDays(today, 12),
+    ];
+    const start = addWorkingDays(today, 8);
+
+    return html`
+      ${styles}
+      <form
+        class="drp-panel"
+        style="width: min(100%, 36rem)"
+        @submit=${formSubmitHandler}
+      >
+        <h3>Book the meeting hall</h3>
+        <igc-input name="event" label="Event name" required>
+          <span slot="value-missing">Enter the name of the event.</span>
+        </igc-input>
+        <igc-date-range-picker
+          name="dates"
+          use-two-inputs
           required
+          label-start="First day"
+          label-end="Last day"
+          .defaultValue=${{ start, end: addDays(start, 1) }}
+          .min=${first}
+          .max=${last}
+          .disabledDates=${[
+            {
+              type: DateRangeType.Specific,
+              dateRange: booked,
+              label: 'Booked',
+            },
+          ]}
         >
-          <p slot="value-missing">This field is required!</p>
+          <span slot="helper-text">
+            The hall is booked on
+            ${booked.map((date) => formatDate(date)).join(', ')}.
+          </span>
+          <span slot="value-missing">Choose the first and the last day.</span>
+          <span slot="bad-input">The hall is booked on one of these days.</span>
+          <span slot="range-underflow"
+            >The first day is tomorrow or later.</span
+          >
+          <span slot="range-overflow">
+            You can book up to ${formatDate(last)}.
+          </span>
         </igc-date-range-picker>
-      </fieldset>
-
-      <fieldset>
-        <h5>Minimum date</h5>
-        <igc-date-range-picker
-          name="picker-min"
-          .min=${minDate}
-          .useTwoInputs=${true}
+        <igc-input
+          name="guests"
+          type="number"
+          label="Guests"
+          min="1"
+          max="120"
+          value="40"
         >
-          <p slot="helper-text">
-            Choose a date after ${minDate.toLocaleDateString()}
-          </p>
-          <p slot="range-underflow">
-            Selected date is less that ${minDate.toLocaleDateString()}
-          </p>
-        </igc-date-range-picker>
-
-        <h5>Maximum date</h5>
-        <igc-date-range-picker
-          name="picker-max"
-          .max=${maxDate}
-          .useTwoInputs=${true}
-        >
-          <p slot="helper-text">
-            Choose a date before ${maxDate.toLocaleDateString()}
-          </p>
-          <p slot="range-overflow">
-            Selected date is greater than ${maxDate.toLocaleDateString()}
-          </p>
-        </igc-date-range-picker>
-      </fieldset>
-
-      <fieldset>
-        <h5>
-          Disabled dates range - between (${minDate.toLocaleDateString()} -
-          ${maxDate.toLocaleDateString()})
-        </h5>
-        <igc-date-range-picker
-          name="picker-disabled-ranges"
-          .disabledDates=${disabledDates}
-          .useTwoInputs=${true}
-        >
-          <p slot="bad-input">Selected date is in the disabled dates!</p>
-        </igc-date-range-picker>
-      </fieldset>
-      ${formControls()}
-    </form>
-  `,
-};
-
-export const FormSingleInput: Story = {
-  argTypes: disableStoryControls(metadata),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Demonstrates the **single-input** layout inside an HTML `<form>`, covering default state, initial value, read-only, disabled fieldset, required validation, `min`/`max` date constraints, and disabled date ranges with custom validation messages.',
-      },
-    },
+          <span slot="helper-text">The hall has seats for 120 people.</span>
+          <span slot="range-overflow">The hall has seats for 120 people.</span>
+        </igc-input>
+        <div class="drp-row">
+          <igc-button type="submit">Book the hall</igc-button>
+          <igc-button type="reset" variant="outlined">Reset</igc-button>
+        </div>
+      </form>
+    `;
   },
-  render: () => html`
-    <form action="" @submit=${formSubmitHandler}>
-      <fieldset>
-        <h5>Default</h5>
-        <igc-date-range-picker name="picker-default"></igc-date-range-picker>
-
-        <h5>Initial value</h5>
-        <!-- dfs -->
-        <igc-date-range-picker
-          name="picker-initial"
-          value=${JSON.stringify({ start: today.native, end: tomorrow.native })}
-        ></igc-date-range-picker>
-
-        <h5>Readonly</h5>
-        <igc-date-range-picker
-          name="picker-readonly"
-          readonly
-        ></igc-date-range-picker>
-      </fieldset>
-
-      <h5>Disabled</h5>
-      <fieldset disabled>
-        <igc-date-range-picker name="picker-disabled"></igc-date-range-picker>
-      </fieldset>
-
-      <fieldset>
-        <h5>Required</h5>
-        <igc-date-range-picker name="picker-required" required>
-          <p slot="value-missing">This field is required!</p>
-        </igc-date-range-picker>
-      </fieldset>
-
-      <fieldset>
-        <h5>Minimum date</h5>
-        <igc-date-range-picker name="picker-min" .min=${minDate}>
-          <p slot="helper-text">
-            Choose a date after ${minDate.toLocaleDateString()}
-          </p>
-          <p slot="range-underflow">
-            Selected date is less that ${minDate.toLocaleDateString()}
-          </p>
-        </igc-date-range-picker>
-
-        <h5>Maximum date</h5>
-        <igc-date-range-picker name="picker-max" .max=${maxDate}>
-          <p slot="helper-text">
-            Choose a date before ${maxDate.toLocaleDateString()}
-          </p>
-          <p slot="range-overflow">
-            Selected date is greater than ${maxDate.toLocaleDateString()}
-          </p>
-        </igc-date-range-picker>
-      </fieldset>
-
-      <fieldset>
-        <h5>
-          Disabled dates range - between (${minDate.toLocaleDateString()} -
-          ${maxDate.toLocaleDateString()})
-        </h5>
-        <igc-date-range-picker
-          name="picker-disabled-ranges"
-          .disabledDates=${disabledDates}
-        >
-          <p slot="bad-input">Selected date is in the disabled dates!</p>
-        </igc-date-range-picker>
-      </fieldset>
-      ${formControls()}
-    </form>
-  `,
 };
 
 export const InScrollingPanel: Story = {
@@ -939,37 +959,18 @@ export const InScrollingPanel: Story = {
       },
     },
   },
-  render: ({ label, mode, useTwoInputs, scrollStrategy }) => html`
-    <style>
-      .panel {
-        max-width: 46rem;
-        height: 16rem;
-        overflow: auto;
-        padding: 1rem;
-        border: 1px solid var(--ig-gray-200, #e0e0e0);
-        border-radius: 4px;
-      }
-    </style>
-
-    <div class="panel">
-      <h4>Booking details</h4>
-      <p>
-        Open the calendar and scroll this panel to compare the scroll
-        strategies.
-      </p>
-
-      <igc-date-range-picker
-        .label=${label}
-        .mode=${mode}
-        .useTwoInputs=${useTwoInputs}
-        .scrollStrategy=${scrollStrategy}
-      ></igc-date-range-picker>
-
-      <p>
-        ${Array.from(range(1, 24)).map(
-          () => html`Rates are calculated per night for the selected period. `
-        )}
-      </p>
-    </div>
-  `,
+  render: ({ label, mode, useTwoInputs, scrollStrategy }) =>
+    scrollingPanel(
+      'Booking details',
+      'calendar',
+      'Rates are calculated per night for the selected period.',
+      html`
+        <igc-date-range-picker
+          .label=${label}
+          .mode=${mode}
+          .useTwoInputs=${useTwoInputs}
+          .scrollStrategy=${scrollStrategy}
+        ></igc-date-range-picker>
+      `
+    ),
 };
