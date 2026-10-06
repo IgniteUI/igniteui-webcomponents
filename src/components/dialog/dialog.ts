@@ -16,7 +16,6 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import { isPointInsideElement } from '#internals/utils/dom.js';
-import { bindIf } from '#internals/utils/lit.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
@@ -207,7 +206,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   protected override updated(properties: PropertyValues<this>): void {
     if (properties.has('open')) {
-      this.open ? this._dialog?.showModal() : this._dialog?.close();
+      this._syncDialog();
     }
   }
 
@@ -237,14 +236,6 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     }
   }
 
-  private _handleClose(): void {
-    // An uncancelable close, e.g. from repeated Escape presses with
-    // `keepOpenOnEscape`, leaves the backdrop visible. Reopen the dialog.
-    if (this.open) {
-      this._dialog?.showModal();
-    }
-  }
-
   private _handleClick({ clientX, clientY, target }: PointerEvent): void {
     if (
       this.closeOnOutsideClick &&
@@ -261,6 +252,15 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   private _closeWithEvent(): void {
     this._toggleController.hide(true);
+  }
+
+  /**
+   * Opens or closes the dialog to match `open`. It also runs on the `close`
+   * event, so a close that the component cannot cancel, such as a second
+   * Escape, does not leave it open with a closed dialog.
+   */
+  private _syncDialog(): void {
+    this.open ? this._dialog?.showModal() : this._dialog?.close();
   }
 
   //#endregion
@@ -362,7 +362,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
         ${ariaBindings(hostAria(this, !this.ariaLabel && this._titleId))}
         @click=${this._handleClick}
         @cancel=${this._handleCancel}
-        @close=${bindIf(this.keepOpenOnEscape, this._handleClose)}
+        @close=${this._syncDialog}
       >
         ${this._renderHeader()} ${this._renderContent()} ${this._renderFooter()}
       </dialog>
