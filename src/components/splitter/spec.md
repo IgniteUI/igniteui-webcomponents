@@ -46,9 +46,10 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                           |
+| ------: | ---------- | --------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                           |
+|       2 | 2026-10-07 | Host ARIA names and describes the bar, no English state text    |
 
 ## Overview
 
@@ -155,8 +156,8 @@ The splitter component presents users with a clear, intuitive interface for mana
 **Accessibility experience**
 
 - **Focus indicators**: the splitter bar displays a clear focus ring when it is reached from the keyboard.
-- **Screen reader announcements**: the current state of the splitter, including the pane sizes and the collapse and
-  expand actions, is announced.
+- **Screen reader announcements**: the bar announces its name and the size of the start pane in percent. The value
+  0% tells that the start pane is collapsed, and 100% that the end pane is collapsed.
 - **Predictable navigation**: the tab order flows naturally and the keyboard shortcuts follow standard conventions.
 
 ### Developer experience
@@ -253,8 +254,8 @@ Nested splitters operate independently; a resize in one does not disturb the oth
 
 ### Localization
 
-The splitter contains no text content that requires localization. All visual elements are icon-based, and
-applications can provide localized labels for the collapse and expand buttons.
+The splitter has one text: "Resize panes", the English default name of the bar. Set `aria-labelledby` or `aria-label`
+on the splitter to give the bar a localized name. All visual elements are icon-based.
 
 ### Keyboard interactions
 
@@ -364,7 +365,8 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 ### Rendering
 
 1. The component renders with its default horizontal orientation, both panes, the splitter bar, the drag handle and
-   the collapse buttons.
+   the collapse buttons. It passes the accessibility audit, the bar is named "Resize panes" and has no description,
+   and its value text is 0% while the start pane is collapsed.
 2. Changing the orientation updates the layout, and clears the sizes and constraints along with their attributes.
 3. The correct parts are applied for each orientation and state.
 
@@ -429,6 +431,13 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 27. Rapid resize and collapse interactions settle in a consistent state.
 28. Conflicting constraints are resolved without breaking the layout.
 
+### Host ARIA
+
+29. The host `aria-label` names the bar, and a change and a removal are followed. Without a host name, the bar is
+    named "Resize panes". The accessibility audit passes with a host label.
+30. The host `aria-labelledby` names the bar by element reference, before the host `aria-label`, and the host
+    `aria-describedby` describes it. A removal of either is followed.
+
 ## Accessibility
 
 ### ARIA roles and properties
@@ -440,7 +449,13 @@ properties are present on the splitter bar:
 - it has **aria-orientation** equal to the **orientation** value of the splitter element.
 - if the splitter is interactive - resizable or collapsible - it has a **tabindex** of **0**, otherwise it is
   **-1**.
-- the **aria-valuenow**, **aria-valuemin** and **aria-valuemax** attributes report the current position.
+- the **aria-valuenow**, **aria-valuemin** and **aria-valuemax** attributes report the current position, the size of
+  the start pane in percent. **aria-valuetext** adds the percent sign. The value is 0 while the start pane is collapsed
+  and 100 while the end pane is collapsed.
+- the bar takes its name from the host `aria-labelledby`, then the host `aria-label`, and otherwise "Resize panes". As
+  the window splitter pattern suggests, point `aria-labelledby` at the label of the start pane, so that nested
+  splitters have different names. A host `aria-describedby` describes the bar. Both relations use element references,
+  and a change of the host attributes at runtime is picked up.
 
 ### Keyboard support
 

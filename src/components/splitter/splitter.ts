@@ -2,6 +2,10 @@ import { html, LitElement, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
+import {
+  ariaBindings,
+  hostAria,
+} from '#internals/controllers/aria-projection.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import {
   addKeybindings,
@@ -18,6 +22,7 @@ import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import { isLTR, resolveCssLength } from '#internals/utils/dom.js';
 import { preventDefault } from '#internals/utils/events.js';
@@ -30,7 +35,6 @@ import {
 } from '#internals/utils/math.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import type { SplitterOrientation } from '../types.js';
-import IgcVisuallyHiddenComponent from '../visually-hidden/visually-hidden.js';
 import { styles as shared } from './themes/shared/splitter.common.css.js';
 import { styles } from './themes/splitter.base.css.js';
 import { all } from './themes/themes.js';
@@ -150,13 +154,13 @@ const DEFAULT_RESIZE_STATE: SplitterResizeState = {
 export default class IgcSplitterComponent extends EventEmitterMixin<
   IgcSplitterComponentEventMap,
   Constructor<LitElement>
->(LitElement) {
+>(HostAriaMixin(LitElement)) {
   public static readonly tagName = 'igc-splitter';
   public static styles = [styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
-    registerComponent(IgcSplitterComponent, IgcVisuallyHiddenComponent);
+    registerComponent(IgcSplitterComponent);
   }
 
   //#region Private Properties
@@ -1068,35 +1072,17 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     `;
   }
 
-  private _renderAccessibleLabel() {
-    return html`
-      <igc-visually-hidden id="splitter-label"
-        >Resize panes</igc-visually-hidden
-      >
-      <igc-visually-hidden id="splitter-state">
-        ${
-          this._isCollapsed('start')
-            ? 'Start pane collapsed'
-            : 'Start pane expanded'
-        }
-        and
-        ${this._isCollapsed('end') ? 'End pane collapsed' : 'End pane expanded'}
-      </igc-visually-hidden>
-    `;
-  }
-
   private _renderSeparator() {
     const canResize = !this._resizeDisallowed;
 
     return html`
       <div
         ${ref(this._separatorRef)}
+        ${ariaBindings(hostAria(this, false, null, 'Resize panes'))}
         part="splitter-bar"
         role="separator"
         tabindex=${this.disableCollapse && this.disableResize ? -1 : 0}
         aria-controls="start-pane end-pane"
-        aria-labelledby="splitter-label"
-        aria-describedby="splitter-state"
         aria-orientation=${this.orientation}
         style=${styleMap({ '--cursor': this._separatorCursor })}
         @touchstart=${bindIf(canResize, preventDefault)}
@@ -1114,7 +1100,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   protected override render() {
     return html`
-      ${this._renderAccessibleLabel()}
       <div part="base">
         <div
           part="start-pane"
