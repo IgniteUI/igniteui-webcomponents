@@ -1513,8 +1513,8 @@ describe('Slider component', () => {
       await elementUpdated(slider);
       expect([slider.lowerBound, slider.upperBound]).to.eql([-10, 10]);
 
-      slider.lowerBound = undefined as unknown as number;
-      slider.upperBound = undefined as unknown as number;
+      slider.lowerBound = undefined;
+      slider.upperBound = undefined;
       await elementUpdated(slider);
       expect([slider.lowerBound, slider.upperBound]).to.eql([-50, 50]);
     });
@@ -2369,6 +2369,40 @@ describe('Slider component', () => {
       );
 
       expect(ticks).to.equal(plain);
+    });
+
+    it('renders no empty labels for the secondary ticks of projected labels', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <igc-slider></igc-slider>
+          <igc-slider
+            primary-ticks="2"
+            secondary-ticks="1"
+            hide-primary-labels
+            tick-orientation="mirror"
+          >
+            <igc-slider-label>Low</igc-slider-label>
+            <igc-slider-label>High</igc-slider-label>
+          </igc-slider>
+          <igc-slider secondary-ticks="3" tick-orientation="mirror">
+            <igc-slider-label>Low</igc-slider-label>
+            <igc-slider-label>High</igc-slider-label>
+          </igc-slider>
+        </div>
+      `);
+      const [plain, ...sliders] = Array.from(
+        root.querySelectorAll(IgcSliderComponent.tagName)
+      );
+      await waitUntil(() => sliders.every((slider) => slider.max === 1));
+      await Promise.all(sliders.map((slider) => elementUpdated(slider)));
+
+      for (const slider of sliders) {
+        expect(getDOM(slider).ticks.all).not.to.be.empty;
+        expect(getDOM(slider).ticks.labels).to.be.empty;
+        expect(slider.getBoundingClientRect().height).to.equal(
+          plain.getBoundingClientRect().height
+        );
+      }
     });
 
     it('keeps the width of its box when the ticks do not fit in it', async () => {

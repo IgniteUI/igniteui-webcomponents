@@ -196,6 +196,7 @@ and `valueFormatOptions`, or from projected `igc-slider-label` elements.
 
 Projected labels turn the slider into a discrete one over their indices: `min` becomes `0`, `max` becomes the
 number of labels minus one, and `step` is `1`. The values that the author set come back when the labels go.
+The labels name only the primary ticks, so the secondary ticks have no label.
 `hideTooltip` removes the thumb label entirely.
 
 #### Form integration
@@ -412,7 +413,8 @@ thumb and the tick labels.
     the projected labels renders the tick labels again.
 44. A tick label stays on one line, also at the end of the track.
 45. The box of the slider holds the tick labels for each `tickOrientation` and `tickLabelRotation`, ticks without
-    labels do not change the height of the slider, and ticks that do not fit do not make it wider.
+    labels do not change the height of the slider, and ticks that do not fit do not make it wider. The secondary
+    ticks of projected labels render no label.
 
 ### Form integration tests
 

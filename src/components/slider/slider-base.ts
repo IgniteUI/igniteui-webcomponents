@@ -186,7 +186,7 @@ export class IgcSliderBaseComponent extends LitElement {
    * @attr lower-bound
    */
   @property({ type: Number, attribute: 'lower-bound' })
-  public set lowerBound(value: number) {
+  public set lowerBound(value: number | null | undefined) {
     this._lowerBound =
       value == null ? undefined : Math.min(this._upperBound ?? value, value);
   }
@@ -203,7 +203,7 @@ export class IgcSliderBaseComponent extends LitElement {
    * @attr upper-bound
    */
   @property({ type: Number, attribute: 'upper-bound' })
-  public set upperBound(value: number) {
+  public set upperBound(value: number | null | undefined) {
     this._upperBound =
       value == null ? undefined : Math.max(this._lowerBound ?? value, value);
   }
@@ -716,14 +716,15 @@ export class IgcSliderBaseComponent extends LitElement {
 
     for (let i = 0; i < total; i++) {
       const primary = this.isPrimary(i);
-      const labelHidden = primary
-        ? this.hidePrimaryLabels
-        : this.hideSecondaryLabels;
       const labelInner = this.hasLabels
         ? primary
           ? this.labels[Math.round(i / secondaryTicks)]
           : nothing
         : this.formatValue(this.tickValue(i, total));
+      // The projected labels name only the primary ticks.
+      const labelHidden =
+        labelInner === nothing ||
+        (primary ? this.hidePrimaryLabels : this.hideSecondaryLabels);
 
       yield html`<div part="tick-group">
         <div part="tick" data-primary=${primary}></div>
