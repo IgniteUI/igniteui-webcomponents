@@ -7,12 +7,6 @@ $theme: $fluent;
     --header-min-height: #{rem(44px)};
 }
 
-igc-icon-button::part(base) {
-    igc-icon {
-        color: var-get($theme, 'button-color');
-    }
-}
-
 igc-icon-button[disabled]::part(base) {
     background: var(--disabled-background);
 }

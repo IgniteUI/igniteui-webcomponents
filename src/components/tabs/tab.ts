@@ -104,8 +104,7 @@ export default class IgcTabComponent extends HostAriaMixin(LitElement) {
 
   /**
    * @hidden @internal
-   * Set by `igc-tabs` when the tab set or the selection changes. `isTabStop`
-   * keeps the strip reachable when no tab is selected.
+   * `isTabStop` keeps the strip reachable when no tab is selected.
    */
   public _setTabState(
     posInSet: number,

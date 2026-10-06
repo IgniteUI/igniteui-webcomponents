@@ -9,7 +9,6 @@
 
     display: block;
     overflow: hidden;
-    position: relative;
     height: 100%;
     text-align: initial;
 }
@@ -21,9 +20,6 @@
     scroll-behavior: smooth;
     overflow: scroll hidden;
     scroll-snap-type: both proximity;
-
-    // Hide the scrollbar for mobile devices
-
     scrollbar-width: none;
 
     &::-webkit-scrollbar {
@@ -37,9 +33,7 @@
     align-items: center;
     position: relative;
 
-    // The header strip is a flex container; the inner grid has to take the
-    // full available width, otherwise the `1fr` filler columns added by the
-    // alignment selectors below collapse to zero and `alignment` has no effect.
+    // Without it, the `1fr` filler columns collapse and `alignment` has no effect.
     flex-grow: 1;
 
     ::slotted(igc-tab) {
@@ -65,9 +59,7 @@
     min-width: $tab-min-width;
 }
 
-// The filler tracks take the free space of a strip that does not overflow. The
-// placeholder pseudo-elements occupy them, so that the tab headers are placed in
-// the tab tracks and the rows below keep spanning the whole strip.
+// The pseudo-elements take the filler tracks, so the headers stay in the tab tracks.
 %filler-column {
     content: '';
     grid-row: 1;
@@ -124,8 +116,6 @@
             var(--scroll-btn-size);
     }
 
-    // `1fr` instead of `auto` so every tab gets an equal share of the strip,
-    // matching the scrollable template above and the Angular tabs.
     [part~='inner']:not([part~='scrollable']) {
         grid-template-columns: repeat(
             var(--_tabs-count),
@@ -134,13 +124,8 @@
     }
 }
 
-// The header strip, painted by the themes with `header-background`. It spans
-// the whole header row below the tab headers, which paint `item-background` on
-// top of it, so a translucent item color composites over the header color
-// instead of stacking on a copy of itself. Absolutely positioned with only its
-// row lines set, so it is bound to the header row vertically and to the grid
-// container horizontally, and stays out of the placement and sizing of the
-// tab headers.
+// Behind the tab headers, so a translucent `item-background` composites over
+// `header-background`. Out of flow, so it does not move or size the headers.
 [part~='header'] {
     position: absolute;
     inset: 0;
@@ -180,6 +165,8 @@ igc-icon-button::part(base) {
     position: relative;
     grid-row: 2;
     grid-column: 1 / -1;
+
+    // A page `text-align` on the host would move the static position of the span.
     text-align: initial;
 
     span {
