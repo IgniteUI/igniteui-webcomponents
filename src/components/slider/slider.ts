@@ -133,7 +133,7 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
 
   /** Focuses the thumb, as a native range input label does. */
   protected override _handleLabelActivation(): void {
-    this.thumb.focus();
+    this.focus();
   }
 
   protected override renderThumbs() {
