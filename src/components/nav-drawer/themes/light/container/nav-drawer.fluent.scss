@@ -5,5 +5,5 @@ $theme: $fluent;
 
 :host {
     @include css-vars-from-theme(diff($base, $theme));
-    @include css-vars-from-theme(diff($base, $overlay-fluent));
+    @include css-vars-from-theme(diff($base-overlay, $overlay-fluent));
 }
