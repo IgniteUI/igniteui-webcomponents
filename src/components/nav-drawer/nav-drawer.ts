@@ -17,6 +17,7 @@ import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import {
   getDeepActiveElement,
+  getRoot,
   isPointInsideElement,
 } from '#internals/utils/dom.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -102,7 +103,6 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
 
   private readonly _slots = addSlotController(this, {
     slots: setSlots('mini'),
-    onChange: this._handleMiniState,
   });
 
   private get _dialog(): HTMLDialogElement | undefined {
@@ -190,17 +190,15 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
     super.update(properties);
   }
 
-  protected override updated(properties: PropertyValues<this>): void {
-    if (properties.has('open') || properties.has('position')) {
-      // The opener can be in the mini variant, so hide the mini variant after the dialog opens,
-      // and show it before the dialog closes.
-      if (this.open) {
-        this._syncDialog();
-        this._handleMiniState();
-      } else {
-        this._handleMiniState();
-        this._syncDialog();
-      }
+  protected override updated(): void {
+    // The opener can be in the mini variant, so hide the mini variant after the dialog opens,
+    // and show it before the dialog closes. A slot change also requests an update.
+    if (this.open) {
+      this._syncDialog();
+      this._handleMiniState();
+    } else {
+      this._handleMiniState();
+      this._syncDialog();
     }
   }
 
@@ -209,11 +207,8 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   //#region Event handlers
 
   private _handleMiniState(): void {
-    const mini = this._miniRef.value;
-
-    // A slot change can come after a change of `position` but before the render.
-    if (mini?.popover) {
-      mini.togglePopover(this._hasMiniContent && !this.open);
+    if (!this._isRelative) {
+      this._miniRef.value?.togglePopover(this._hasMiniContent && !this.open);
     }
   }
 
@@ -258,7 +253,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
       }
       this._opener = null;
     } else if (dialog && !dialog.open) {
-      this._opener ??= getDeepActiveElement();
+      this._opener ??= getDeepActiveElement(getRoot(this));
       dialog.showModal();
     }
   }
