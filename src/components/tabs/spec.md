@@ -44,6 +44,7 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
 | ------: | ---------- | ----------------------------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                                                   |
 |       2 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
+|       3 | 2026-10-05 | `header` shadow part, painted with the `header-background` theme token; `alignment` applies in every theme, and `justify` gives every tab the same width; a tab selected through `selected` is scrolled into view, confined to the header strip; the scroll buttons are shown by the width of the tab headers |
 
 ## Overview
 
@@ -229,6 +230,7 @@ keys follow the writing direction.
 
 | Part                   | Description                                             |
 | ---------------------- | ------------------------------------------------------- |
+| `header`               | The header strip behind the tab headers.                |
 | `start-scroll-button`  | The start scroll button displayed when the tabs overflow. |
 | `end-scroll-button`    | The end scroll button displayed when the tabs overflow. |
 | `selected-indicator`   | The indicator that shows which tab is selected.         |
