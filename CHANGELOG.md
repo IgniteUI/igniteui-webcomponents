@@ -40,6 +40,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - An `aria-label` on the dialog is now its only accessible name. Before, the inner `<dialog>` also got `aria-labelledby` with the text of the label, which is not a valid ID reference.
   - A change of `aria-label` alone now updates the name of the dialog, and its removal gives the name back to the title. Before, the change applied only after the next change of a property, such as `open`.
   - A host `aria-labelledby` now names the dialog, before `aria-label` and the title, and a host `aria-describedby` describes it. Before, the dialog forwarded only `aria-label`.
+  - When the platform closes the dialog while `open` stays `true`, for example after a second Escape when an `igcClosing` handler cancels the close, the dialog now opens again. Before, only `keepOpenOnEscape` did this. Otherwise `open` stayed `true` with a closed dialog, the backdrop still covered the page, and `show()` did nothing.
 - #### Button group
   - A change of `aria-label` alone on a toggle button now updates the name of its native button. Before, the change applied only after the next change of a property.
   - A toggle button now forwards a host `aria-labelledby` and `aria-describedby` to its native button. Before, it forwarded only `aria-label`.
