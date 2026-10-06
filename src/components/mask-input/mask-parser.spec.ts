@@ -359,7 +359,6 @@ describe('Mask parser', () => {
     it('prompt character conflicts with mask flag', () => {
       parser.mask = 'CCCC';
       parser.prompt = 'C';
-      // Should be ignored silently
       expect(parser.prompt).to.equal('_');
       expect(parser.apply()).to.equal('____');
     });
@@ -367,7 +366,6 @@ describe('Mask parser', () => {
     it('prompt character set to mask flag 0', () => {
       parser.mask = '0000';
       parser.prompt = '0';
-      // Should be ignored
       expect(parser.prompt).to.equal('_');
     });
 
@@ -415,14 +413,13 @@ describe('Mask parser', () => {
 
     it('escape character at end of mask', () => {
       parser.mask = 'CCC\\';
-      // Trailing backslash with nothing after it is treated as a literal backslash
+      // A trailing backslash is a literal.
       expect(parser.apply('test')).to.equal('tes\\');
     });
 
     it('double backslash should produce single backslash literal', () => {
       parser.mask = 'C\\\\C';
-      // First C is flag, second \ escapes nothing (not a flag), so it's literal, third C is flag
-      // Actually, \\ is not a valid escape sequence (\ doesn't escape \), so both are literals
+      // The first `\` is a literal, as `\` is not a flag. The second one escapes the last `C`.
       expect(parser.apply('ab')).to.equal('a\\C');
     });
 
@@ -583,8 +580,7 @@ describe('Mask parser', () => {
     });
 
     it('constructor rejects a prompt conflicting with a mask flag', () => {
-      // Same rule the `prompt` accessor applies - a flag standing in for an unfilled
-      // position could not be told apart from one the user typed.
+      // The same rule as the `prompt` accessor.
       const customParser = new MaskParser({
         format: '0000',
         promptCharacter: '0',
@@ -611,14 +607,12 @@ describe('Mask parser', () => {
 
     it('& flag rejects separators', () => {
       parser.mask = '&&&&';
-      // The apply method doesn't skip invalid chars, it just doesn't place them
-      // So 'a b ' processes as: a(valid) -> a, space(invalid) -> skip but advance, b(valid) -> b
+      // `apply` uses one position for each invalid character.
       expect(parser.apply('a b ')).to.equal('a_b_');
     });
 
     it('A flag accepts letters and numbers but not spaces', () => {
       parser.mask = 'AAAA';
-      // apply() advances input index even for invalid chars, so space is skipped
       expect(parser.apply('A1 B')).to.equal('A1_B');
     });
 
@@ -634,7 +628,6 @@ describe('Mask parser', () => {
 
     it('0 flag accepts only numbers', () => {
       parser.mask = '0000';
-      // apply() method advances through input even when chars are invalid
       expect(parser.apply('1a2b')).to.equal('1_2_');
     });
 
@@ -642,14 +635,14 @@ describe('Mask parser', () => {
       parser.mask = '0000';
       parser.prompt = '_';
       const result = parser.replace('12__', '3_4', 2, 4);
-      // Prompt char should be skipped, only 3 and 4 are valid
+      // The prompt character is skipped.
       expect(result.value).to.equal('1234');
     });
 
     it('replace preserves literals when clearing range', () => {
       parser.mask = '(000)-000';
       const existing = '(123)-456';
-      // Clearing from position 1 to 8 clears non-literals but position 9 is outside the cleared range
+      // Clearing positions 1 to 5 keeps the literals.
       const result = parser.replace(existing, '', 1, 6);
       expect(result.value).to.equal('(___)-456');
     });
@@ -704,8 +697,7 @@ describe('Mask parser', () => {
 
     it('replace with selection in middle updates correctly', () => {
       parser.mask = '0000-0000';
-      // Replacing positions 2-4 with 'XX' (invalid) clears those positions
-      // But doesn't affect positions beyond the cleared range
+      // Invalid input clears positions 2 and 3 and keeps the rest.
       const result = parser.replace('1234-5678', 'XX', 2, 4);
       expect(result.value).to.equal('12__-5678');
     });

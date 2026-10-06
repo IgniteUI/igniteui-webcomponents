@@ -53,13 +53,13 @@ const metadata: Meta<IgcSliderComponent> = {
     min: {
       type: 'number',
       description:
-        'The minimum value of the slider scale. Defaults to 0.\n\nIf `min` is greater than `max` the call is a no-op.\n\nIf `labels` are provided (projected), then `min` is always set to 0.\n\nIf `lowerBound` ends up being less than than the current `min` value,\nit is automatically assigned the new `min` value.',
+        'The minimum value of the slider scale. Defaults to 0.\n\nIf `min` is greater than `max`, the update keeps the previous `min`. The\nupdate checks the values after all of them are set, so the order of the\nattributes has no effect.\n\nIf `labels` are provided (projected), then `min` is always 0.\n\nIf `lowerBound` is less than `min`, the slider uses `min` as the lower bound.',
       control: 'number',
     },
     max: {
       type: 'number',
       description:
-        'The maximum value of the slider scale. Defaults to 100.\n\nIf `max` is less than `min` the call is a no-op.\n\nIf `labels` are provided (projected), then `max` is always set to\nthe number of labels.\n\nIf `upperBound` ends up being greater than than the current `max` value,\nit is automatically assigned the new `max` value.',
+        'The maximum value of the slider scale. Defaults to 100.\n\nIf `max` is less than `min`, the update keeps the previous `max`. The\nupdate checks the values after all of them are set, so the order of the\nattributes has no effect.\n\nIf `labels` are provided (projected), then `max` is always the number of\nlabels minus one.\n\nIf `upperBound` is greater than `max`, the slider uses `max` as the upper bound.',
       control: 'number',
     },
     lowerBound: {
@@ -77,7 +77,7 @@ const metadata: Meta<IgcSliderComponent> = {
     discreteTrack: {
       type: 'boolean',
       description:
-        'Marks the slider track as discrete so it displays the steps.\nIf the `step` is 0, the slider will remain continuos even if `discreteTrack` is `true`.',
+        'Marks the slider track as discrete so it displays the steps.\nIf the `step` is 0, the slider will remain continuous even if `discreteTrack` is `true`.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -90,7 +90,7 @@ const metadata: Meta<IgcSliderComponent> = {
     step: {
       type: 'number',
       description:
-        'Specifies the granularity that the value must adhere to.\n\nIf set to 0 no stepping is implied and any value in the range is allowed.\nIf `labels` are provided (projected) then the step is always assumed to be 1 since it is a discrete slider.',
+        'Specifies the granularity that the value must adhere to.\n\nIf set to 0 no stepping is implied and any value in the range is allowed.\nA negative step is not valid, so the previous step stays.\nIf `labels` are provided (projected) then the step is always assumed to be 1 since it is a discrete slider.',
       control: 'number',
       table: { defaultValue: { summary: '1' } },
     },
@@ -179,24 +179,26 @@ interface IgcSliderArgs {
   /**
    * The minimum value of the slider scale. Defaults to 0.
    *
-   * If `min` is greater than `max` the call is a no-op.
+   * If `min` is greater than `max`, the update keeps the previous `min`. The
+   * update checks the values after all of them are set, so the order of the
+   * attributes has no effect.
    *
-   * If `labels` are provided (projected), then `min` is always set to 0.
+   * If `labels` are provided (projected), then `min` is always 0.
    *
-   * If `lowerBound` ends up being less than than the current `min` value,
-   * it is automatically assigned the new `min` value.
+   * If `lowerBound` is less than `min`, the slider uses `min` as the lower bound.
    */
   min: number;
   /**
    * The maximum value of the slider scale. Defaults to 100.
    *
-   * If `max` is less than `min` the call is a no-op.
+   * If `max` is less than `min`, the update keeps the previous `max`. The
+   * update checks the values after all of them are set, so the order of the
+   * attributes has no effect.
    *
-   * If `labels` are provided (projected), then `max` is always set to
-   * the number of labels.
+   * If `labels` are provided (projected), then `max` is always the number of
+   * labels minus one.
    *
-   * If `upperBound` ends up being greater than than the current `max` value,
-   * it is automatically assigned the new `max` value.
+   * If `upperBound` is greater than `max`, the slider uses `max` as the upper bound.
    */
   max: number;
   /** The lower bound of the slider value. If not set, the `min` value is applied. */
@@ -205,7 +207,7 @@ interface IgcSliderArgs {
   upperBound: number;
   /**
    * Marks the slider track as discrete so it displays the steps.
-   * If the `step` is 0, the slider will remain continuos even if `discreteTrack` is `true`.
+   * If the `step` is 0, the slider will remain continuous even if `discreteTrack` is `true`.
    */
   discreteTrack: boolean;
   /** Hides the thumb tooltip. */
@@ -214,6 +216,7 @@ interface IgcSliderArgs {
    * Specifies the granularity that the value must adhere to.
    *
    * If set to 0 no stepping is implied and any value in the range is allowed.
+   * A negative step is not valid, so the previous step stays.
    * If `labels` are provided (projected) then the step is always assumed to be 1 since it is a discrete slider.
    */
   step: number;

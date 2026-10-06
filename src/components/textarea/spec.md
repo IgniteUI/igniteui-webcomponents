@@ -36,6 +36,7 @@
     - [defaultValue](#defaultvalue)
     - [Validation message slots](#validation-message-slots)
     - [External label association](#external-label-association)
+    - [Host ARIA](#host-aria)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -48,6 +49,8 @@
 | ------: | ---------- | -------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                              |
 |       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
+|       3 | 2026-10-02 | Focus after form checks; `invalid` only on checks  |
+|       4 | 2026-10-02 | Forward the host `aria-describedby`                |
 
 ## Overview
 
@@ -229,6 +232,11 @@ and see the error message instead of being silently truncated. See the
 - A form reset restores the value to `defaultValue`, taken from the `value` attribute or the projected text.
 - An invalid control blocks submission and fires the native `invalid` event.
 
+As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
+the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
+`checkValidity()` do not move the focus. The `invalid` event comes only from these checks and from a failed submit,
+not while the user edits the control.
+
 #### Text selection and scrolling
 
 ```ts
@@ -287,15 +295,15 @@ The component delegates focus to the inner native textarea, so all native text-e
 
 ### Methods
 
-| Name              | Type signature                                                                              | Description                                                      |
-| ----------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| select            | `(): void`                                                                                  | Selects all text within the control.                             |
-| setSelectionRange | `(start: number, end: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range of the control.                    |
-| setRangeText      | `(replacement: string, start: number, end: number, selectMode?: RangeTextSelectMode): void` | Replaces the selected text in the control.                       |
-| scrollTo          | `(options?: ScrollToOptions): void` / `(x: number, y: number): void`                        | Scrolls the control to the given position.                       |
-| checkValidity     | `(): boolean`                                                                               | Checks validity and emits `invalid` when the control is invalid. |
-| reportValidity    | `(): boolean`                                                                               | Checks validity and shows the browser message when invalid.      |
-| setCustomValidity | `(message: string): void`                                                                   | Sets a custom message. Invalid while `message` is not empty.     |
+| Name              | Type signature                                                                              | Description                                                             |
+| ----------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| select            | `(): void`                                                                                  | Selects all text within the control.                                    |
+| setSelectionRange | `(start: number, end: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range of the control.                           |
+| setRangeText      | `(replacement: string, start: number, end: number, selectMode?: RangeTextSelectMode): void` | Replaces the selected text in the control.                              |
+| scrollTo          | `(options?: ScrollToOptions): void` / `(x: number, y: number): void`                        | Scrolls the control to the given position.                              |
+| checkValidity     | `(): boolean`                                                                               | Checks validity and emits `invalid` when the control is invalid.        |
+| reportValidity    | `(): boolean`                                                                               | Checks validity; when invalid, emits `invalid` and focuses the control. |
+| setCustomValidity | `(message: string): void`                                                                   | Sets a custom message. Invalid while `message` is not empty.            |
 
 ### Events
 
@@ -411,7 +419,15 @@ Generated by `runExternalLabelAssociationTests`.
     control from the first focus, an axe audit passes with only an external `label`, and the host `aria-labelledby` and
     `aria-label` follow the [naming order](../input/spec.md#naming-order).
 
+### Host ARIA
+
+32. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+    text, and follows a change and a removal.
+
 ### Not covered by the suite
+
+The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
+[input suite](../input/spec.md#form-validity-checks) covers them.
 
 The following documented behaviors have no dedicated case yet: the `validateOnly` mode, and the forwarding of
 `spellcheck`, `autocapitalize`, `autocomplete` and `inputmode`.
@@ -426,6 +442,7 @@ The following documented behaviors have no dedicated case yet: the `validateOnly
   the control.
 - The helper text and the validation messages are referenced through `aria-describedby`.
 - The required, disabled and read-only states come from the native attributes on the inner textarea.
+- A host `aria-describedby` describes the native control after the helper text, by element reference.
 
 ### Keyboard support
 

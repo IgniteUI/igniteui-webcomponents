@@ -83,6 +83,9 @@ export declare class BaseFormAssociatedElement {
     init?: CustomEventInit
   ): boolean;
 
+  /** Runs `callback` and restores the pristine flag. */
+  protected _withPristine(callback: () => void): void;
+
   /** Sets the default value from a change of the `value` attribute. */
   protected _setDefaultValue(current: string | null): void;
 
@@ -94,6 +97,9 @@ export declare class BaseFormAssociatedElement {
 
   /** Runs the validators and updates the internal validity state. */
   protected _validate(message?: string): void;
+
+  /** Reports the validity without moving the focus. */
+  protected _reportValidity(): boolean;
 
   /** Sets the submission value and the submission state. */
   protected _setFormValue(value: FormValueType, state?: FormValueType): void;
@@ -122,7 +128,11 @@ export declare class BaseFormAssociatedElement {
   /** Checks validity and emits `invalid` when the control is invalid. */
   public checkValidity(): boolean;
 
-  /** Checks validity and shows the browser message when invalid. */
+  /**
+   * Checks validity. As for a native control, an invalid control emits
+   * `invalid` and takes the focus. It shows its own validation messages, not
+   * the message of the browser.
+   */
   public reportValidity(): boolean;
 
   /** Sets a custom message. Invalid while `message` is not empty. */

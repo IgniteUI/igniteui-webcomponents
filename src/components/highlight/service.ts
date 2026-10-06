@@ -7,12 +7,9 @@ import type IgcHighlightComponent from './highlight.js';
 type Match = { node: Node; indices: [start: number, end: number] };
 
 /**
- * Resolves the tree scope that must own the `::highlight()` rules.
- *
- * Highlight pseudo-element rules are tree-scoped - they only style text nodes living in the
- * same tree scope as the stylesheet. Since the component highlights slotted content, the
- * relevant scope is the host's root node (the document or an outer shadow root), *not* the
- * component's own render root. Firefox enforces this, Chromium currently does not.
+ * Resolves the tree scope that must own the `::highlight()` rules. The rules are
+ * tree-scoped, so slotted content needs the host root node, not the render root.
+ * Firefox enforces this, Chromium currently does not.
  *
  * Returns `null` while the host is detached or inside a non-styleable fragment.
  */
@@ -155,10 +152,13 @@ class HighlightService implements ReactiveController {
   }
 
   private _createRegex(value: string): RegExp {
-    return new RegExp(
-      escapeRegex(value),
-      this._host.caseSensitive ? 'dg' : 'dgi'
-    );
+    // A run of whitespace in the search text matches any run of whitespace in
+    // the content, such as a line break in the HTML source.
+    const pattern = value
+      .split(/\s+/)
+      .map(escapeRegex)
+      .join(String.raw`\s+`);
+    return new RegExp(pattern, this._host.caseSensitive ? 'dg' : 'dgi');
   }
 
   private _updateActiveHighlight(): void {
@@ -192,10 +192,8 @@ class HighlightService implements ReactiveController {
   //#region Public methods
 
   /**
-   * Attaches the service's stylesheet to the tree scope of the host's slotted content.
-   * Necessary for the component to apply highlight styles to its content.
-   *
-   * Idempotent, and re-targets the stylesheet if the host has moved to another tree scope.
+   * Attaches the stylesheet to the tree scope of the slotted content. Idempotent, and
+   * re-targets the stylesheet when the host moves to another tree scope.
    */
   public attachStylesheet(): void {
     if (!this._styleSheet) {

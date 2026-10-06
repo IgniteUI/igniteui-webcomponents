@@ -14,9 +14,34 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `loadLayout` now copies only the serialized tile properties: the spans, the positions, the flags and `id`. A layout from storage or a server can no longer set `innerHTML` on a tile or replace its prototype through `__proto__`. A value that is not an array, and an entry that is not an object, are ignored.
 
 ### Fixed
+- #### Input, Mask input, Date time input, File input, Textarea, Select, Combo, Date picker, Date range picker, Color picker, Checkbox, Switch, Radio
+  - As for a native control, a failed form submit or `form.reportValidity()` now moves the focus to the first invalid control, also when an invalid native control comes after it. `reportValidity()` of an invalid control moves the focus to that control. Before, the focus stayed where it was, because the controls cancel the `invalid` event to hide the message of the browser, and only Select moved the focus on `reportValidity()`. `form.checkValidity()` does not move the focus. To tell a submit from `form.checkValidity()`, also when one runs inside the other, the library wraps `checkValidity()`, `reportValidity()` and `requestSubmit()` of `HTMLFormElement.prototype`.
+  - The controls no longer send an `invalid` event while the user edits an invalid field or leaves it. Before, each validation sent one, unlike a native control. Now the event comes only from `checkValidity()`, `reportValidity()`, the same methods of the form, and a failed submit.
+- #### Input, Mask input, Date time input, File input, Textarea, Select, Combo, Date picker, Date range picker, Color picker, Checkbox, Switch, Radio, Rating, Slider
+  - A host `aria-describedby` now describes the native control, after the helper text. In the two-input date range picker, the end editor gets only the host description. So an `igc-tooltip` on the control describes it too. Before, the description stayed on the host, where screen readers did not use it.
+- #### Mask input, Date time input, Date picker, Date range picker
+  - `required` now sets `aria-required` on the native input of each editor, also in the two-input mode of the date range picker. Before, screen readers did not announce these fields as required.
+- #### Chip, Tabs, Stepper, Expansion panel, Navigation drawer, Tree
+  - The host `aria-label`, `aria-labelledby` and `aria-describedby` now name and describe the element that has the focus or the role: the action button of a chip, the header of a tab or a step, the header of an expansion panel, and the drawer. A tree item that delegates its role to a link in its label copies them to that link, unless the link has its own. In the navigation drawer, `label` still wins over the host `aria-label`. Before, these attributes stayed on the host, where screen readers did not use them.
+- #### List
+  - `igc-list-header` now has the `listitem` role. Before, it had the `separator` role. A list cannot contain a separator, and a separator hides its content from assistive technologies, so a screen reader could skip the text of the header. Screen readers now read the header and count it with the items. Put a heading in the header, so that users can move from group to group.
+  - The title and subtitle container of `igc-list-item` is now a `div`, not a `header` element. Before, Chromium exposed it as a `sectionheader` in each item. The `header` part is unchanged.
+- #### Highlight
+  - A space in `searchText` now matches any run of whitespace in the content, such as a line break in the HTML source. Before, "cold brew" did not find the two words when a line break separated them.
+- #### Input
+  - `setRangeText()` without `start` and `end` now replaces the selected text, as the native method does. Before, it inserted the text at the start of the value.
+  - `pattern` now has to match the whole value, as for a native input. Before, a match in a part of the value was enough, so `[0-9]{3}` accepted `1234`. The pattern also compiles with the `v` flag, and an invalid pattern sets no constraint. Before, an invalid pattern threw an error in `checkValidity()`.
+- #### Icon
+  - The SVG of an icon is now hidden from assistive technologies, because the host carries the name. Before, the SVG of an icon without a title was still an unnamed image. A change of `aria-label` or `aria-labelledby` now updates the role of the icon.
 - #### Dialog
   - An `aria-label` on the dialog is now its only accessible name. Before, the inner `<dialog>` also got `aria-labelledby` with the text of the label, which is not a valid ID reference.
+  - A change of `aria-label` alone now updates the name of the dialog, and its removal gives the name back to the title. Before, the change applied only after the next change of a property, such as `open`.
+  - A host `aria-labelledby` now names the dialog, before `aria-label` and the title, and a host `aria-describedby` describes it. Before, the dialog forwarded only `aria-label`.
+- #### Button group
+  - A change of `aria-label` alone on a toggle button now updates the name of its native button. Before, the change applied only after the next change of a property.
+  - A toggle button now forwards a host `aria-labelledby` and `aria-describedby` to its native button. Before, it forwarded only `aria-label`.
 - #### Combo
+  - The native input no longer has `aria-disabled`. Its native `disabled` state is enough.
   - Arrow Down no longer closes the list, or moves the focus back to the search input, when a search finds one match or none.
   - A form reset now clears the invalid styles of a required single-selection combo that had the focus.
 - #### Input, Mask input, Date time input, File input, Textarea, Select, Combo, Date picker, Date range picker, Color picker
@@ -34,12 +59,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Button, Icon button
   - A button with `href` now keeps the link role of its anchor. Before, the anchor had `role="button"`, so screen readers announced a link as a button.
   - A disabled link now renders a disabled native `<button>` with `role="link"` in place of the anchor, so it leaves the tab order, cannot navigate, and dispatches no click. Before, the link stayed in the tab order, and `Enter` still followed it. The `base` part is the `<button>` while the link is disabled.
+  - A change of the host `aria-label` alone now updates the name of the native button or link. Before, the new label applied only after the next change of a property.
+  - A host `aria-labelledby` and `aria-describedby` now reach the native button or link, and a `<label>` for the button names it. A host `aria-label` still wins over a `<label>`, as for a native button. An `igc-tooltip` on a button now describes the native button. Before, the button forwarded only `aria-label`.
 - #### Accordion
   - The arrow keys, `Home` and `End` now skip a panel that does not render, such as a panel with the `hidden` attribute or `display: none`. Before, the focus stayed on the current panel.
 - #### QR code
   - Versions 30 to 40 at the `M` error correction level now use the data codeword counts of ISO/IEC 18004. Before, these codes had the wrong block structure.
   - Without `error-level`, a logo larger than the safe area of level `M` now raises the error correction level to the smallest one that holds the logo, as documented. Before, the default `M` always applied, so the logo shrank. An explicit `error-level`, `M` included, still caps the logo.
   - A new `aria-label` alone now updates the `<title>` of the code. Before, the title changed only on the next change of another property.
+  - A host `aria-labelledby` and `aria-describedby` now name and describe the SVG. The exported SVG leaves out both relations. Before, only `aria-label` reached the code.
   - The logo in an exported SVG now also has `xlink:href`, so SVG 1.1 consumers, such as Illustrator, the Office import, Batik and older librsvg, show it. Before, they dropped the logo and left a blank area in the code.
 - #### Mask input, Date time input, Date range picker
   - A mask position holds one UTF-16 code unit, so an astral character, such as an emoji, is now rejected as input and as a prompt. Before, it shifted the positions after it or split into two halves. A mask or input format with an astral literal now edits at the correct positions.
@@ -58,6 +86,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `layoutComplete` now resolves after the rendered items are measured. Before, it could resolve first, so `scrollToIndex` stopped its correction early, and an item with a size other than the estimate landed up to tens of pixels from the requested edge.
   - A list larger than the maximum scroll size of the browser now shows its last items at the end of the scroll range, and `scrollToIndex` puts the item at the requested edge. The items also move evenly during a scroll. Before, the last items could not be reached, the item landed tens of pixels off, and the items jumped by some pixels each time the rendered window changed.
   - A new `data` array with new items at the rendered indices now measures those items again. Before, an item element that kept its index was not measured again, so the scroll size and the item positions used the estimate until the item left the rendered window.
+- #### Theming
+  - A theme change now replaces only the theme style sheets of a component. It keeps the style sheets that other code adopted into the shadow root, after the theme style sheets. Before, a theme change removed them.
+- #### Slider, Range slider
+  - A value on a fractional step now stays where it is. Before, each change of a constraint moved it down by one step: 0.5 with `step="0.01"` became 0.47. With `step="0.1"` on a scale of 0 to 1, the arrow keys, Page Up and `stepUp()` stopped at 0.4. [#2433](https://github.com/IgniteUI/igniteui-webcomponents/issues/2433)
+  - A value now snaps to the nearest step, as for a native range input. A tie goes to the higher step, and the steps count from `min`. Before, a value went down to the step below it. The steps also counted from `lowerBound`, so the values did not match the discrete track and the ticks.
+  - The order of `value`, `lower`, `upper`, `min`, `max` and `step` no longer changes the result, as attributes or as properties set in one task. For example, `<igc-slider value="0.5" min="0" max="1" step="0.01">` gives 0.5, `<igc-slider value="150" max="200">` gives 150, and `<igc-slider min="150" max="200">` gives a `min` of 150. Before, the slider checked each value against the constraints of that moment. When an update ends with `min` above `max`, the slider keeps the previous `min` and `max`. [#2434](https://github.com/IgniteUI/igniteui-webcomponents/issues/2434)
+  - The keyboard no longer emits `igcInput` and `igcChange` when the value stays the same, for example End on the last step below `max`.
+  - A negative `step` now keeps the previous step. Before, the slider accepted it and reversed the arrow keys.
+  - When the projected `igc-slider-label` elements go, `min`, `max` and `step` return to the values that the author set.
+  - A right click no longer moves a thumb. A second pointer, such as a second finger, no longer takes over a drag, and a drag now sends one `igcChange`.
+  - The thumb label is now in the top layer. So a container that clips its overflow, such as a card or a dialog body, no longer cuts it off. The label also shows while a thumb has keyboard focus, and Escape hides it, also while the focus is elsewhere. A modifier key alone, such as Shift, no longer counts as keyboard focus.
+  - `upper` of the range slider now follows `upperBound` until it is set, and again after the attribute is removed. So `<igc-range-slider>` covers the whole scale. Before, `upper` was 0. A `lower` above `upper` from code or markup now swaps the two values, as a drag does. Before, the thumbs crossed and the fill had a negative width.
+  - Each thumb of the range slider now announces its own value: the label text, or the formatted value. Before, the focused thumb announced label indexes such as "0 - 2", and the other thumb announced English text such as "min 20". The host `aria-label` and `aria-labelledby` now name the group of the two thumbs, and the host `aria-describedby` describes both thumbs.
 
 ## [7.4.1] - 2026-09-25
 ### Added

@@ -40,6 +40,7 @@
     - [Validation message slots](#validation-message-slots)
     - [External label association](#external-label-association)
     - [Date part and parser unit suites](#date-part-and-parser-unit-suites)
+    - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -48,11 +49,13 @@
 
 ## Revision history
 
-| Version | Date       | Notes                                              |
-| ------: | ---------- | -------------------------------------------------- |
-|       1 | 2026-09-21 | Initial specification                              |
-|       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
-|       3 | 2026-09-28 | Describe the year parsing; add the property suite  |
+| Version | Date       | Notes                                                                     |
+| ------: | ---------- | ------------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                     |
+|       2 | 2026-09-24 | Describe the naming order and the host ARIA naming                        |
+|       3 | 2026-09-28 | Describe the year parsing; add the property suite                         |
+|       4 | 2026-10-02 | Focus after form checks; `invalid` only on checks                         |
+|       5 | 2026-10-02 | Forward the host `aria-describedby`; expose `required` as `aria-required` |
 
 ## Overview
 
@@ -476,6 +479,11 @@ name the control.
 - A form reset restores `defaultValue`, which is taken from the `value` attribute.
 - An invalid editor blocks submission, and pressing <kbd>Enter</kbd> submits the owning form only when it is valid.
 
+As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
+the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
+`checkValidity()` do not move the focus. The `invalid` event comes only from these checks and from a failed submit,
+not while the user edits the control.
+
 #### Composition inside other components
 
 The component is the text-entry surface of [`igc-date-picker`](../date-picker/spec.md) and of
@@ -554,21 +562,21 @@ example <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> - are ignored, so they stay availab
 
 ### Methods
 
-| Name              | Type signature                                                                               | Description                                                        |
-| ----------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| stepUp            | `(datePart?: DatePart, delta?: number): void`                                                  | Increments a date/time portion.                                    |
-| stepDown          | `(datePart?: DatePart, delta?: number): void`                                                  | Decrements a date/time portion.                                    |
-| clear             | `(): void`                                                                                     | Clears the input element of user input.                            |
-| hasDateParts      | `(): boolean`                                                                                  | Whether the current format holds a day, month or year part.        |
-| hasTimeParts      | `(): boolean`                                                                                  | Whether the current format holds an hours, minutes or seconds part. |
-| select            | `(): void`                                                                                     | Selects all the text inside the input.                             |
-| setSelectionRange | `(start?: number, end?: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range of the control.                      |
-| setRangeText      | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the selected text and re-applies the mask.                |
-| focus             | `(options?: FocusOptions): void`                                                               | Sets focus on the control.                                         |
-| blur              | `(): void`                                                                                     | Removes focus from the control.                                    |
-| checkValidity     | `(): boolean`                                                                                   | Checks validity and emits `invalid` when the control is invalid.   |
-| reportValidity    | `(): boolean`                                                                                   | Checks validity and shows the browser message when invalid.        |
-| setCustomValidity | `(message: string): void`                                                                       | Sets a custom message. Invalid while `message` is not empty.       |
+| Name              | Type signature                                                                                | Description                                                             |
+| ----------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| stepUp            | `(datePart?: DatePart, delta?: number): void`                                                 | Increments a date/time portion.                                         |
+| stepDown          | `(datePart?: DatePart, delta?: number): void`                                                 | Decrements a date/time portion.                                         |
+| clear             | `(): void`                                                                                    | Clears the input element of user input.                                 |
+| hasDateParts      | `(): boolean`                                                                                 | Whether the current format holds a day, month or year part.             |
+| hasTimeParts      | `(): boolean`                                                                                 | Whether the current format holds an hours, minutes or seconds part.     |
+| select            | `(): void`                                                                                    | Selects all the text inside the input.                                  |
+| setSelectionRange | `(start?: number, end?: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range of the control.                           |
+| setRangeText      | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the selected text and re-applies the mask.                     |
+| focus             | `(options?: FocusOptions): void`                                                              | Sets focus on the control.                                              |
+| blur              | `(): void`                                                                                    | Removes focus from the control.                                         |
+| checkValidity     | `(): boolean`                                                                                 | Checks validity and emits `invalid` when the control is invalid.        |
+| reportValidity    | `(): boolean`                                                                                 | Checks validity; when invalid, emits `invalid` and focuses the control. |
+| setCustomValidity | `(message: string): void`                                                                     | Sets a custom message. Invalid while `message` is not empty.            |
 
 ```typescript
 enum DatePart {
@@ -690,6 +698,9 @@ Driven by `createFormAssociatedTestBed`.
 37. Reflects the disabled state of an ancestor `fieldset`.
 38. Fulfils the required, min, max - both as dates and as string property bindings - and custom constraints.
 
+The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
+[input suite](../input/spec.md#form-validity-checks) covers them.
+
 ### defaultValue
 
 39. Form integration - correct initial state, correct submission and correct reset.
@@ -723,6 +734,11 @@ Generated by `runExternalLabelAssociationTests`.
     the `formatDate` / `parseDate` round-trip for dates from year 0 to 9999, the two-digit year range, no throw or
     invalid date for any string, and the parts that tile the mask and agree with the format-level part queries.
 
+### Host ARIA
+
+46. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+    text, and follows a change and a removal. `required` sets `aria-required`.
+
 ## Assumptions and limitations
 
 - The component does not expose a `type` attribute, since the underlying element is always an input of type `text`.
@@ -750,6 +766,9 @@ Generated by `runExternalLabelAssociationTests`.
 - The required, disabled and read-only states come from the native attributes on the inner input.
 - A composite host that wraps the editor projects its own role and ARIA state onto the native input, so assistive
   technology reports from the element that actually receives focus.
+- A host `aria-describedby` describes the native control after the helper text, by element reference.
+- `required` is exposed as `aria-required` on the native input, not as the native `required`, which would validate
+  the mask prompts.
 
 ### Keyboard support
 

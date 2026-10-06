@@ -39,7 +39,7 @@ export default class IgcComboItemComponent extends LitElement {
   public active = false;
 
   /**
-   * Determines whether the item is active.
+   * Determines whether the item hides its selection checkbox.
    * @attr hide-checkbox
    * @default false
    */

@@ -1,4 +1,11 @@
-import { aTimeout, elementUpdated, expect, waitUntil } from '@open-wc/testing';
+import {
+  aTimeout,
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  waitUntil,
+} from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { scrolledIntoView } from '#internals/testing/helpers.spec.js';
@@ -35,13 +42,11 @@ describe('Tree', () => {
     it('Should render tree with items', async () => {
       tree = await TreeTestFunctions.createTreeElement(simpleHierarchyTree);
 
-      //tree.items should return all tree items
       expect(tree.items.length).to.equal(14);
       expect(tree).to.contain('igc-tree-item');
       const topLevelItems = tree.items.filter((i) => i.level === 0);
       expect(tree.children.length).to.equal(topLevelItems.length);
 
-      // Verify tree item slots are rendered successfully and elements are correctly displayed.
       tree.items.forEach((item) => {
         const indentationPart = item.shadowRoot?.querySelector(
           PARTS.indentation
@@ -114,7 +119,6 @@ describe('Tree', () => {
       expect(item1Children[0].path.indexOf(topLevelItems[0])).to.equal(0);
       expect(item1Children[0].path.indexOf(item1Children[0])).to.equal(1);
 
-      // item.getChildren({flatten: false}) should return only the direct children of item
       const item2Children = topLevelItems[1].getChildren();
       expect(item2Children.length).to.equal(2);
       expect(item2Children[0].level).to.equal(1);
@@ -140,7 +144,6 @@ describe('Tree', () => {
         item2GrandChildren[0].path.indexOf(item2GrandChildren[0])
       ).to.equal(2);
 
-      // item.getChildren({flatten: true}) should return all item's children
       const item2AllChildren = topLevelItems[1].getChildren({ flatten: true });
       expect(item2AllChildren.length).to.equal(6);
     });
@@ -291,7 +294,6 @@ describe('Tree', () => {
       expect(els[0].textContent).to.equal('ind');
       expect(els[0]).to.have.attribute('slot', 'indicator');
 
-      // verify the default indicator is displayed for other top item
       const indSlot2 = TreeTestFunctions.getSlot(
         topLevelItems[1],
         SLOTS.indicator
@@ -325,7 +327,6 @@ describe('Tree', () => {
       expect(els[0].textContent).to.equal('-');
       expect(els[0]).to.have.attribute('slot', 'indentation');
 
-      // verify the default indentation div is displayed for other child item
       const indentationPart12 = topLevelItems[0]
         .getChildren()[1]
         .renderRoot.querySelector(PARTS.indentation);
@@ -348,7 +349,6 @@ describe('Tree', () => {
       expect(els[0].tagName).to.equal('SPAN');
       expect(els[0].textContent).to.equal('Label via slot');
       expect(els[0]).to.have.attribute('slot', 'label');
-      // verify default label span not being displayed
       expect(item11).dom.not.to.have.descendants('span[part="text"]');
     });
 
@@ -376,7 +376,6 @@ describe('Tree', () => {
       expect(els[0]).to.have.attribute('slot', 'loading');
       expect(item21).dom.not.to.have.descendants('igc-circular-progress');
 
-      //don't display indicator slot when item is loading
       indSlot21 = TreeTestFunctions.getSlot(item21, SLOTS.indicator);
       expect(indSlot21).to.be.null;
     });
@@ -462,7 +461,6 @@ describe('Tree', () => {
       topLevelItems[2].expand();
       await elementUpdated(tree);
 
-      // Expect that the last top item is initially out of view
       const targetItem = topLevelItems[3];
       expect(scrolledIntoView(targetItem, tree)).to.be.false;
 
@@ -509,14 +507,14 @@ describe('Tree', () => {
     it('Should not recognize a tree item as a child if it is wrapped within another element (e.g. a `<div>`)', async () => {
       tree = await TreeTestFunctions.createTreeElement(itemWrappedInDivTree);
 
-      // "Tree Item 1.1" (and its own child) are nested inside a <div> inside "Tree Item 1" -
-      // they are not direct light-DOM children of it, so they are not picked up as its items.
+      // "Tree Item 1.1" and its child are inside a <div>, so they are not
+      // direct children of "Tree Item 1".
       const item1 = tree.items[0];
       expect(item1.label).to.equal('Tree Item 1');
       expect(item1.getChildren()).to.have.lengthOf(0);
 
-      // The tree's own flattened `items` collection only walks direct `igc-tree-item`
-      // children, so the wrapped items are excluded entirely from the whole tree too.
+      // `tree.items` walks only direct `igc-tree-item` children, so it also
+      // excludes the wrapped items.
       expect(tree.items).to.have.lengthOf(2);
       expect(tree.items.map((i) => i.label)).to.eql([
         'Tree Item 1',
@@ -594,7 +592,6 @@ describe('Tree', () => {
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
 
-      // Should emit ing and ed events when item state is toggled through UI
       const collapsingArgs = {
         detail: topLevelItems[1],
         cancelable: true,
@@ -639,7 +636,6 @@ describe('Tree', () => {
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
 
-      // Should emit ing and ed events when item state is toggled through UI
       const expandingArgs = {
         detail: topLevelItems[0],
         cancelable: true,
@@ -673,7 +669,6 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
-      // Should not emit event when collapsed through API
       expect(eventSpy.called).to.be.false;
     });
 
@@ -684,7 +679,6 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
-      // Should not emit event when collapsed through API
       expect(eventSpy.called).to.be.false;
     });
 
@@ -695,10 +689,9 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
-      // Should not emit event when collapsed through API
       expect(eventSpy.called).to.be.false;
 
-      // Should not expand with event an already expanded item
+      // `expandWithEvent()` on an expanded item does nothing.
       topLevelItems[0].expandWithEvent();
       await elementUpdated(tree);
 
@@ -713,7 +706,6 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
-      // Should not emit event when collapsed through API
       expect(eventSpy.called).to.be.false;
     });
 
@@ -729,7 +721,6 @@ describe('Tree', () => {
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
       await waitUntil(() => eventSpy.calledWith('igcItemExpanded'));
 
-      // Should emit ing and ed events when item state is toggled through UI
       const expandingArgs = {
         detail: topLevelItems[0],
         cancelable: true,
@@ -748,7 +739,6 @@ describe('Tree', () => {
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
       await waitUntil(() => eventSpy.calledWith('igcItemCollapsed'));
 
-      // Should emit ing and ed events when item state is toggled through UI
       const collapsingArgs = {
         detail: topLevelItems[0],
         cancelable: true,
@@ -806,9 +796,8 @@ describe('Tree', () => {
     });
 
     it('Should toggle an item exactly once on indicator click after `toggleNodeOnClick` is enabled at runtime', async () => {
-      // Enabling `toggleNodeOnClick` on its own must not leave a stale
-      // indicator handler behind: the click would then be handled both by the
-      // indicator and by the bubbling item click, cancelling itself out.
+      // A stale indicator handler and the item click both handle the click
+      // and cancel each other out.
       tree.toggleNodeOnClick = true;
       await elementUpdated(tree);
 
@@ -836,9 +825,8 @@ describe('Tree', () => {
       tree.toggleNodeOnClick = true;
       await elementUpdated(tree);
 
-      // Any unrelated re-render while `toggleNodeOnClick` is enabled used to
-      // drop the indicator handler for good, since turning the flag back off
-      // does not re-render the item.
+      // An unrelated re-render must keep the indicator handler, because turning
+      // the flag off does not re-render the item.
       topLevelItems[0].requestUpdate();
       await elementUpdated(tree);
 
@@ -871,7 +859,6 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
-      // Should not emit event when collapsed through API
       expect(eventSpy.called).to.be.false;
 
       topLevelItems[1].toggle();
@@ -941,7 +928,6 @@ describe('Tree', () => {
         tree.singleBranchExpand = true;
         await elementUpdated(tree);
 
-        //Level 0
         const item1IndSlot = TreeTestFunctions.getSlot(
           topLevelItems[0],
           SLOTS.indicator
@@ -963,7 +949,6 @@ describe('Tree', () => {
         TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
         TreeTestFunctions.verifyExpansionState(topLevelItems[1], true);
 
-        // Level 1
         const item2Children = topLevelItems[1].getChildren();
         // topLevelItems[1] is currently expanded
         const item21IndSlot = TreeTestFunctions.getSlot(
@@ -995,7 +980,7 @@ describe('Tree', () => {
         tree.singleBranchExpand = true;
         await elementUpdated(tree);
 
-        //Should collapse all items when setting singleBranchExpand to true and there is no active tree item.
+        // With no active item, enabling singleBranchExpand collapses all items.
         tree.items.forEach((item) => {
           expect(item.expanded).to.be.false;
           expect(item.active).to.be.false;
@@ -1024,7 +1009,6 @@ describe('Tree', () => {
         tree.singleBranchExpand = true;
         await elementUpdated(tree);
 
-        //Level 0
         const item2IndSlot = TreeTestFunctions.getSlot(
           topLevelItems[1],
           SLOTS.indicator
@@ -1047,10 +1031,10 @@ describe('Tree', () => {
         TreeTestFunctions.verifyExpansionState(item2Children[0], true);
         TreeTestFunctions.verifyExpansionState(item2Children[1], false);
 
-        tree.expand([item2Children[1]]); // expand item22 through API
+        tree.expand([item2Children[1]]);
         await elementUpdated(tree);
 
-        TreeTestFunctions.verifyExpansionState(item2Children[0], true); // verify the other item on the same level is still expanded
+        TreeTestFunctions.verifyExpansionState(item2Children[0], true); // the sibling stays expanded
         TreeTestFunctions.verifyExpansionState(item2Children[1], true);
       });
 
@@ -1454,13 +1438,8 @@ describe('Tree', () => {
     });
 
     /**
-     * `aria-hidden-focus` is a known, pre-existing violation, not something
-     * these trees get wrong: the selection checkbox is deliberately hidden from
-     * assistive tech (selection is conveyed by `aria-selected` on the item), but
-     * `igc-checkbox` does not forward the host's `tabindex="-1"` to its inner
-     * `<input>`, so that input stays in the tab order inside an `aria-hidden`
-     * container. Fixing it means changing `igc-checkbox`. Only this one rule is
-     * suppressed, so every other check still runs against these states.
+     * `aria-hidden-focus` is a known violation: `igc-checkbox` does not forward
+     * `tabindex="-1"` to its inner `<input>`. The fix belongs in `igc-checkbox`.
      */
     const SELECTION_A11Y_OPTIONS = {
       ignoredRules: ['aria-hidden-focus'],
@@ -1485,6 +1464,90 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       await expect(tree).to.be.accessible(SELECTION_A11Y_OPTIONS);
+    });
+  });
+
+  describe('Host ARIA of a delegating item', () => {
+    let container: HTMLElement;
+    let item: IgcTreeItemComponent;
+    let anchor: HTMLAnchorElement;
+
+    beforeEach(async () => {
+      container = await fixture<HTMLElement>(html`
+        <div>
+          <span id="tree-name">Reports folder</span>
+          <igc-tree>
+            <igc-tree-item aria-label="Reports">
+              <a slot="label" href="#reports">Reports</a>
+            </igc-tree-item>
+            <igc-tree-item
+              label="Plain"
+              aria-label="Plain item"
+            ></igc-tree-item>
+          </igc-tree>
+        </div>
+      `);
+      item = container.querySelector('igc-tree-item')!;
+      anchor = item.querySelector('a')!;
+      await elementUpdated(item);
+    });
+
+    it('copies the host `aria-label` to the element with the role', () => {
+      expect(anchor).to.have.attribute('role', 'treeitem');
+      expect(anchor).to.have.attribute('aria-label', 'Reports');
+    });
+
+    it('copies the host `aria-labelledby` by reference', async () => {
+      item.setAttribute('aria-labelledby', 'tree-name');
+      await elementUpdated(item);
+
+      expect(anchor.ariaLabelledByElements).to.eql([
+        container.querySelector('#tree-name'),
+      ]);
+    });
+
+    it('copies the host `aria-describedby` by reference', async () => {
+      item.setAttribute('aria-describedby', 'tree-name');
+      await elementUpdated(item);
+
+      expect(anchor.ariaDescribedByElements).to.eql([
+        container.querySelector('#tree-name'),
+      ]);
+    });
+
+    it('keeps an own label of the element with the role', async () => {
+      anchor.setAttribute('aria-label', 'Own');
+      item.setAttribute('aria-label', 'Changed');
+      await elementUpdated(item);
+
+      expect(anchor).to.have.attribute('aria-label', 'Own');
+    });
+
+    it('removes the copy with the host label', async () => {
+      item.removeAttribute('aria-label');
+      await elementUpdated(item);
+
+      expect(anchor).not.to.have.attribute('aria-label');
+    });
+
+    it('moves the copy to a new element with the role', async () => {
+      const next = document.createElement('a');
+      next.slot = 'label';
+      next.href = '#next';
+      next.textContent = 'Next';
+      anchor.replaceWith(next);
+      await elementUpdated(item);
+      await aTimeout(0);
+
+      expect(next).to.have.attribute('aria-label', 'Reports');
+      expect(anchor).not.to.have.attribute('aria-label');
+    });
+
+    it('leaves the label of an item that does not delegate on the host', () => {
+      const plain = container.querySelectorAll('igc-tree-item')[1];
+
+      expect(plain).to.have.attribute('role', 'treeitem');
+      expect(plain).to.have.attribute('aria-label', 'Plain item');
     });
   });
 

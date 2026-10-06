@@ -83,10 +83,7 @@ describe('igc-datepicker form integration', () => {
     });
 
     it('should clear the invalid styles of the inner editor on form reset', async () => {
-      // Regression: the inner editor is not associated with the outer form
-      // and runs its own constraint validation against the forwarded
-      // `required`, so a focus + blur before a reset left it touched and
-      // permanently styled as invalid.
+      // Regression: a focus + blur before a reset left the inner editor invalid.
       spec.setProperties({ required: true });
 
       const inner = spec.element.renderRoot.querySelector(
@@ -149,57 +146,45 @@ describe('igc-datepicker form integration', () => {
     });
 
     it('should enforce min value constraint', () => {
-      // No value - submit passes
       spec.setProperties({ min: new Date(2026, 0, 1) });
       spec.assertSubmitPasses();
 
-      // Invalid min constraint
       spec.setProperties({ value: new Date(2022, 0, 1) });
       spec.assertSubmitFails();
 
-      // Valid value
       spec.setProperties({ value: new Date(2026, 0, 2) });
       spec.assertSubmitPasses();
     });
 
     it('should enforce max value constraint', () => {
-      // No value - submit passes
       spec.setProperties({ max: new Date(2020, 0, 1) });
       spec.assertSubmitPasses();
 
-      // Invalid max constraint
       spec.setProperties({ value: today.native });
       spec.assertSubmitFails();
 
-      // Valid value
       spec.setProperties({ value: new Date(2020, 0, 1) });
       spec.assertSubmitPasses();
     });
 
     it('should enforce min value constraint with string property', () => {
-      // No value - submit passes
       spec.setProperties({ min: new Date(2026, 0, 1).toISOString() });
       spec.assertSubmitPasses();
 
-      // Invalid min constraint
       spec.setProperties({ value: new Date(2022, 0, 1).toISOString() });
       spec.assertSubmitFails();
 
-      // Valid value
       spec.setProperties({ value: new Date(2026, 0, 2).toISOString() });
       spec.assertSubmitPasses();
     });
 
     it('should enforce max value constraint with string property', () => {
-      // No value - submit passes
       spec.setProperties({ max: new Date(2020, 0, 1).toISOString() });
       spec.assertSubmitPasses();
 
-      // Invalid max constraint
       spec.setProperties({ value: today.native });
       spec.assertSubmitFails();
 
-      // Valid value
       spec.setProperties({ value: new Date(2020, 0, 1).toISOString() });
       spec.assertSubmitPasses();
     });
@@ -386,14 +371,14 @@ describe('igc-datepicker form integration', () => {
 
       const testParameters: ValidationContainerTestsParams<IgcDatePickerComponent>[] =
         [
-          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          { slots: ['valueMissing'], props: { required: true } },
           {
             slots: ['rangeOverflow'],
-            props: { value: now.native, max: yesterday.native }, // range-overflow slot
+            props: { value: now.native, max: yesterday.native },
           },
           {
             slots: ['rangeUnderflow'],
-            props: { value: now.native, min: tomorrow.native }, // range-underflow slot
+            props: { value: now.native, min: tomorrow.native },
           },
           {
             slots: ['badInput'],
@@ -402,13 +387,13 @@ describe('igc-datepicker form integration', () => {
               disabledDates: [
                 {
                   type: DateRangeType.Between,
-                  dateRange: [yesterday.native, tomorrow.native], // bad-input slot
+                  dateRange: [yesterday.native, tomorrow.native],
                 },
               ],
             },
           },
-          { slots: ['customError'] }, // custom-error slot
-          { slots: ['invalid'], props: { required: true } }, // invalid slot
+          { slots: ['customError'] },
+          { slots: ['invalid'], props: { required: true } },
         ];
 
       await runValidationContainerTests(IgcDatePickerComponent, testParameters);
@@ -427,9 +412,7 @@ describe('igc-datepicker form integration', () => {
       form.requestSubmit();
       await elementUpdated(picker);
 
-      // Projecting the validation slots makes the picker's own slots pick up
-      // content, and the resulting slotchange schedules another update. The
-      // messages have to survive it.
+      // The slot projection schedules another update. The messages must survive it.
       await nextFrame();
 
       ValidityHelpers.hasInvalidStyles(picker).to.be.true;

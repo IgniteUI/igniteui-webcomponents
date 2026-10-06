@@ -277,11 +277,7 @@ describe('Draggable directive', () => {
 
       let args = getCallbackArgs(dragStart);
 
-      /**
-       * In this mode, the element is not shifted in order to position its topleft corner
-       * under the cursor. In practice this means, that `position.x/position.y` will be zeroed
-       * since `cursorCoordinate - element.edgeCoordinate + offsetFromEdgeCoordinate = 0`
-       */
+      // The element keeps its offset from the cursor, so the position is zero.
 
       expect(args.state.position).to.eql({
         x: clientX - x + args.state.offset.x,
@@ -298,10 +294,7 @@ describe('Draggable directive', () => {
 
       args = getCallbackArgs(dragStart);
 
-      /**
-       * In this mode the element, will shift by the amount of offset between the cursor click
-       * and the element edges.
-       */
+      // The element shifts by the offset between the cursor and its edges.
 
       expect(args.state.position).to.eql({
         x: clientX - x,
@@ -424,7 +417,6 @@ describe('Draggable directive', () => {
       // Not called on initial drag enter
       expect(over.called).is.false;
 
-      // 5 pointer moves over the matched element
       simulatePointerMove(instance, { clientX, clientY }, { x: 5, y: 5 }, 5);
       await elementUpdated(instance);
 
@@ -485,7 +477,7 @@ describe('Draggable directive', () => {
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      // Default internal styles are touch-action: none & user-select: none while in drag mode.
+      // Drag mode sets `touch-action: none` and `user-select: none`.
       expect(instance.attributeStyleMap.size).to.equal(2);
       expect(compareStyles(instance, styles)).is.true;
 
@@ -683,11 +675,7 @@ describe('Draggable directive', () => {
 
       let args = getCallbackArgs(dragStart);
 
-      /**
-       * In this mode, the element is not shifted in order to position its topleft corner
-       * under the cursor. In practice this means, that `position.x/position.y` will be zeroed
-       * since `cursorCoordinate - element.edgeCoordinate + offsetFromEdgeCoordinate = 0`
-       */
+      // The element keeps its offset from the cursor, so the position is zero.
 
       expect(args.state.position).to.eql({
         x: clientX - x + args.state.offset.x,
@@ -704,10 +692,7 @@ describe('Draggable directive', () => {
 
       args = getCallbackArgs(dragStart);
 
-      /**
-       * In this mode the element, will shift by the amount of offset between the cursor click
-       * and the element edges.
-       */
+      // The element shifts by the offset between the cursor and its edges.
 
       expect(args.state.position).to.eql({
         x: clientX - x,
@@ -830,7 +815,6 @@ describe('Draggable directive', () => {
       // Not called on initial drag enter
       expect(over.called).is.false;
 
-      // 5 pointer moves over the matched element
       simulatePointerMove(instance, { clientX, clientY }, { x: 5, y: 5 }, 5);
       await elementUpdated(instance);
 

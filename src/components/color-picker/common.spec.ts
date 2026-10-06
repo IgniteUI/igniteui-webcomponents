@@ -143,8 +143,7 @@ describe('parseColor', () => {
 
   describe('edge cases', () => {
     it('should handle invalid color strings gracefully', () => {
-      // Invalid colors are rejected before parsing, always returning the
-      // deterministic default result.
+      // Validation rejects the color, so the result is the default.
       const result = parseColor('not-a-color', ctx);
 
       expect(result.value).to.deep.equal([0, 0, 0]);
@@ -152,8 +151,7 @@ describe('parseColor', () => {
     });
 
     it('should handle malformed hex colors gracefully', () => {
-      // Malformed hex colors are rejected before parsing, always returning
-      // the deterministic default result.
+      // Validation rejects the color, so the result is the default.
       const result = parseColor('#zzz', ctx);
 
       expect(result.value).to.deep.equal([0, 0, 0]);

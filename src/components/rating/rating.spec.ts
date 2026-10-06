@@ -205,7 +205,6 @@ describe('Rating component', () => {
       expect(symbols.length).to.equal(10);
 
       symbols.forEach((symbol) => {
-        // in lieu of actual rendered check or more comprehensive symbol checks:
         expect(symbol.offsetParent).to.be.ok;
         expect(symbol.getClientRects()).to.not.be.empty;
       });
@@ -325,7 +324,7 @@ describe('Rating component', () => {
 
       const symbol = getRatingSymbols(el).item(0);
       const { x, width } = getBoundingRect(symbol);
-      simulateClick(symbol, { clientX: x + width * 0.55 }); // Click 55% across the width of the symbol
+      simulateClick(symbol, { clientX: x + width * 0.55 });
 
       expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 0.8 });
       expect(el.value).to.equal(0.8);
@@ -336,7 +335,6 @@ describe('Rating component', () => {
 
       const symbol = getRatingSymbols(el).item(2);
       const { x, width } = getBoundingRect(symbol);
-      // Simulate offset click when precision == 1
       simulateClick(symbol, { clientX: x + width / 4 });
 
       expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 3 });
@@ -541,8 +539,6 @@ describe('Rating component', () => {
     });
 
     it('should clamp an out-of-range default value on form reset', () => {
-      // Regression: reset used to restore the raw default, bypassing the
-      // value setter clamping and reporting aria-valuenow beyond max.
       spec.setAttributes({ value: 10 });
       spec.setProperties({ value: 1 });
       spec.reset();

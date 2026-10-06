@@ -42,6 +42,7 @@
     - [Form integration tests](#form-integration-tests)
     - [Validation message slots](#validation-message-slots)
     - [ARIA projection and external labels](#aria-projection-and-external-labels)
+    - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -50,11 +51,13 @@
 
 ## Revision history
 
-| Version | Date       | Notes                                                 |
-| ------: | ---------- | ----------------------------------------------------- |
-|       1 | 2026-09-21 | Initial specification                                 |
-|       2 | 2026-09-23 | Expose the `container` part and add its test scenario |
-|       3 | 2026-09-24 | Describe the naming order and the host ARIA naming    |
+| Version | Date       | Notes                                                                     |
+| ------: | ---------- | ------------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                     |
+|       2 | 2026-09-23 | Expose the `container` part and add its test scenario                     |
+|       3 | 2026-09-24 | Describe the naming order and the host ARIA naming                        |
+|       4 | 2026-10-02 | Focus after form checks; `invalid` only on checks                         |
+|       5 | 2026-10-02 | Forward the host `aria-describedby`; expose `required` as `aria-required` |
 
 ## Overview
 
@@ -416,6 +419,11 @@ name the control.
   editor.
 - An invalid picker blocks submission; pressing <kbd>Enter</kbd> submits the owning form only when it is valid.
 
+As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
+the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
+`checkValidity()` do not move the focus. The `invalid` event comes only from these checks and from a failed submit,
+not while the user edits the control.
+
 ### Localization
 
 Everything locale-dependent is derived from the active locale:
@@ -524,20 +532,20 @@ When focus is within the calendar, the keyboard navigation follows the
 
 ### Methods
 
-| Name              | Type signature                                                                              | Description                                                      |
-| ----------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`                                                                       | Shows the component.                                             |
-| hide              | `(): Promise<boolean>`                                                                       | Hides the component.                                             |
-| toggle            | `(): Promise<boolean>`                                                                       | Toggles the open state of the component.                         |
-| clear             | `(): void`                                                                                   | Clears the editor of the picker of any user input.               |
-| stepUp            | `(datePart?: DatePart, delta?: number): void`                                                | Increments the passed in date part.                              |
-| stepDown          | `(datePart?: DatePart, delta?: number): void`                                                | Decrements the passed in date part.                              |
-| select            | `(): void`                                                                                   | Selects the text in the input of the component.                  |
-| setSelectionRange | `(start: number, end: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range in the input of the component.     |
-| setRangeText      | `(replacement: string, start: number, end: number, mode?: RangeTextSelectMode): void`        | Replaces the selected text and re-applies the mask.              |
-| checkValidity     | `(): boolean`                                                                                 | Checks validity and emits `invalid` when the control is invalid. |
-| reportValidity    | `(): boolean`                                                                                 | Checks validity and shows the browser message when invalid.      |
-| setCustomValidity | `(message: string): void`                                                                     | Sets a custom message. Invalid while `message` is not empty.     |
+| Name              | Type signature                                                                        | Description                                                             |
+| ----------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| show              | `(): Promise<boolean>`                                                                | Shows the component.                                                    |
+| hide              | `(): Promise<boolean>`                                                                | Hides the component.                                                    |
+| toggle            | `(): Promise<boolean>`                                                                | Toggles the open state of the component.                                |
+| clear             | `(): void`                                                                            | Clears the editor of the picker of any user input.                      |
+| stepUp            | `(datePart?: DatePart, delta?: number): void`                                         | Increments the passed in date part.                                     |
+| stepDown          | `(datePart?: DatePart, delta?: number): void`                                         | Decrements the passed in date part.                                     |
+| select            | `(): void`                                                                            | Selects the text in the input of the component.                         |
+| setSelectionRange | `(start: number, end: number, direction?: SelectionRangeDirection): void`             | Sets the text selection range in the input of the component.            |
+| setRangeText      | `(replacement: string, start: number, end: number, mode?: RangeTextSelectMode): void` | Replaces the selected text and re-applies the mask.                     |
+| checkValidity     | `(): boolean`                                                                         | Checks validity and emits `invalid` when the control is invalid.        |
+| reportValidity    | `(): boolean`                                                                         | Checks validity; when invalid, emits `invalid` and focuses the control. |
+| setCustomValidity | `(message: string): void`                                                             | Sets a custom message. Invalid while `message` is not empty.            |
 
 ### Events
 
@@ -694,6 +702,9 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 51. `defaultValue` - correct initial state, submission and reset; and validation for required, min, max and the
     range constraints.
 
+The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
+[input suite](../input/spec.md#form-validity-checks) covers them.
+
 ### Validation message slots
 
 Generated by `runValidationContainerTests`.
@@ -709,6 +720,11 @@ Generated by `runExternalLabelAssociationTests` and `runAriaProjectionTests`.
     element references, and clicking it focuses the control.
 55. The host semantics - role, `aria-haspopup`, `aria-expanded` and the relations - land on the native input of the
     composed editor.
+
+### Host ARIA
+
+56. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+    text, and follows a change and a removal. `required` sets `aria-required` on the editor.
 
 ## Assumptions and limitations
 
@@ -739,6 +755,8 @@ Generated by `runExternalLabelAssociationTests` and `runAriaProjectionTests`.
 - Opening the picker does not, by itself, mark a required picker invalid.
 - Within the calendar, the ARIA of the [calendar specification](../calendar/spec.md#aria-roles-and-properties)
   applies.
+- A host `aria-describedby` describes the native control after the helper text, by element reference.
+- `required` is exposed as `aria-required` on the native input of the editor.
 
 ### Keyboard support
 

@@ -59,9 +59,8 @@ describe('Date Range Picker Single Input - Form integration', () => {
     });
 
     it('should report the required message for a partial out-of-bounds range', async () => {
-      // Regression: a partial range below `min` fails both the required and
-      // the min validators - the reported message must match the
-      // `valueMissing` flag instead of coming from the min validator.
+      // Regression: a partial range below `min` fails required and min.
+      // The message must match the `valueMissing` flag.
       spec.setProperties({
         required: true,
         min: today.native,
@@ -195,7 +194,6 @@ describe('Date Range Picker Single Input - Form integration', () => {
     });
 
     it('should enforce min value constraint', async () => {
-      // No value - submit passes
       spec.setProperties({ min: new Date(2026, 0, 1) });
       spec.assertSubmitPasses();
       await elementUpdated(spec.element);
@@ -228,7 +226,6 @@ describe('Date Range Picker Single Input - Form integration', () => {
       await elementUpdated(spec.element);
       expect(input.invalid).to.be.true;
 
-      // Valid value
       spec.setProperties({
         value: { start: new Date(2026, 0, 2), end: new Date(2026, 0, 3) },
       });
@@ -238,7 +235,6 @@ describe('Date Range Picker Single Input - Form integration', () => {
     });
 
     it('should enforce max value constraint', async () => {
-      // No value - submit passes
       spec.setProperties({ max: new Date(2020, 0, 1) });
       spec.assertSubmitPasses();
       await elementUpdated(spec.element);
@@ -269,7 +265,6 @@ describe('Date Range Picker Single Input - Form integration', () => {
       await elementUpdated(spec.element);
       expect(input.invalid).to.be.true;
 
-      // Valid value
       spec.setProperties({
         value: { start: new Date(2019, 0, 2), end: new Date(2019, 0, 3) },
       });
@@ -279,7 +274,6 @@ describe('Date Range Picker Single Input - Form integration', () => {
     });
 
     it('should enforce min value constraint with string property', async () => {
-      // No value - submit passes
       spec.setProperties({ min: new Date(2026, 0, 1).toISOString() });
       spec.assertSubmitPasses();
       await elementUpdated(spec.element);
@@ -288,7 +282,6 @@ describe('Date Range Picker Single Input - Form integration', () => {
       )!;
       expect(input.invalid).to.be.false;
 
-      // Invalid min constraint
       spec.setProperties({
         value: JSON.stringify({
           start: new Date(2022, 0, 1),
@@ -299,7 +292,6 @@ describe('Date Range Picker Single Input - Form integration', () => {
       await elementUpdated(spec.element);
       expect(input.invalid).to.be.true;
 
-      // Valid value
       spec.setProperties({
         value: JSON.stringify({
           start: new Date(2026, 0, 2),
@@ -312,7 +304,6 @@ describe('Date Range Picker Single Input - Form integration', () => {
     });
 
     it('should enforce max value constraint with string property', async () => {
-      // No value - submit passes
       spec.setProperties({ max: new Date(2020, 0, 1).toISOString() });
       spec.assertSubmitPasses();
       await elementUpdated(spec.element);
@@ -321,13 +312,11 @@ describe('Date Range Picker Single Input - Form integration', () => {
       )!;
       expect(input.invalid).to.be.false;
 
-      // Invalid min constraint
       spec.setProperties({ value: JSON.stringify(value) });
       spec.assertSubmitFails();
       await elementUpdated(spec.element);
       expect(input.invalid).to.be.true;
 
-      // Valid value
       spec.setProperties({
         value: JSON.stringify({
           start: new Date(2019, 0, 2),
@@ -519,20 +508,20 @@ describe('Date Range Picker Single Input - Form integration', () => {
 
       const testParameters: ValidationContainerTestsParams<IgcDateRangePickerComponent>[] =
         [
-          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          { slots: ['valueMissing'], props: { required: true } },
           {
             slots: ['rangeOverflow'],
             props: {
               value: { start: now.native, end: tomorrow.native },
               max: yesterday.native,
-            }, // range-overflow slot
+            },
           },
           {
             slots: ['rangeUnderflow'],
             props: {
               value: { start: yesterday.native, end: now.native },
               min: tomorrow.native,
-            }, // range-underflow slot
+            },
           },
           {
             slots: ['badInput'],
@@ -541,13 +530,13 @@ describe('Date Range Picker Single Input - Form integration', () => {
               disabledDates: [
                 {
                   type: DateRangeType.Between,
-                  dateRange: [yesterday.native, tomorrow.native], // bad-input slot
+                  dateRange: [yesterday.native, tomorrow.native],
                 },
               ],
             },
           },
-          { slots: ['customError'] }, // custom-error slot
-          { slots: ['invalid'], props: { required: true } }, // invalid slot
+          { slots: ['customError'] },
+          { slots: ['invalid'], props: { required: true } },
         ];
 
       await runValidationContainerTests(

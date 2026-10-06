@@ -559,7 +559,6 @@ describe('Calendar Rendering', () => {
         expect(dateDOM.part.contains('inactive')).to.be.true;
       }
 
-      // Move active date to August
       calendar.activeDate = today.set({ month: 7 }).native;
       await elementUpdated(calendar);
 

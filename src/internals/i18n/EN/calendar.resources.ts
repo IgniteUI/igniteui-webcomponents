@@ -23,9 +23,8 @@ export interface IgcCalendarResourceStrings {
   weekLabel?: string;
 }
 
-// The i18n formatter gives `weekLabel`, but an earlier version kept it in
-// the resources, so it stays in the default EN strings. A future change must
-// read the week start from the formatter, not from the locale.
+// The i18n formatter owns `weekLabel`; it stays here for older versions.
+// When it moves, read the week start from the formatter, not the locale.
 /**
  * @deprecated since 7.2.0. Use the newly provided resources from the
  * igniteui-i18n-resources package.

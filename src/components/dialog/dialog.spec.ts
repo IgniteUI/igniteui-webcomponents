@@ -61,6 +61,66 @@ describe('Dialog', () => {
     });
   });
 
+  describe('Host ARIA', () => {
+    let container: HTMLElement;
+
+    beforeEach(async () => {
+      container = await fixture<HTMLElement>(html`
+        <div>
+          <span id="dialog-name">Shortcuts</span>
+          <span id="dialog-hint">Press a key</span>
+          <igc-dialog open>
+            <h2 slot="title">Keyboard shortcuts</h2>
+          </igc-dialog>
+        </div>
+      `);
+      dialog = container.querySelector('igc-dialog')!;
+      nativeDialog = dialog.renderRoot.querySelector('dialog')!;
+    });
+
+    it('prefers `aria-labelledby` over `aria-label` and the title', async () => {
+      const titleId = dialog.renderRoot.querySelector('header')!.id;
+
+      dialog.setAttribute('aria-label', 'Custom');
+      dialog.setAttribute('aria-labelledby', 'dialog-name');
+      await elementUpdated(dialog);
+
+      expect(nativeDialog.ariaLabelledByElements).to.eql([
+        container.querySelector('#dialog-name'),
+      ]);
+      expect(nativeDialog).not.to.have.attribute('aria-label');
+
+      dialog.removeAttribute('aria-labelledby');
+      await elementUpdated(dialog);
+
+      expect(nativeDialog).attribute('aria-label').to.equal('Custom');
+      expect(nativeDialog).not.to.have.attribute('aria-labelledby');
+
+      dialog.removeAttribute('aria-label');
+      await elementUpdated(dialog);
+
+      expect(nativeDialog).attribute('aria-labelledby').to.equal(titleId);
+    });
+
+    it('keeps the title as the name with an empty `aria-label`', async () => {
+      dialog.setAttribute('aria-label', '');
+      await elementUpdated(dialog);
+
+      expect(nativeDialog)
+        .attribute('aria-labelledby')
+        .to.equal(dialog.renderRoot.querySelector('header')!.id);
+    });
+
+    it('is described by the host `aria-describedby`', async () => {
+      dialog.setAttribute('aria-describedby', 'dialog-hint');
+      await elementUpdated(dialog);
+
+      expect(nativeDialog.ariaDescribedByElements).to.eql([
+        container.querySelector('#dialog-hint'),
+      ]);
+    });
+  });
+
   describe('DOM', () => {
     const attributes = [
       'variant',

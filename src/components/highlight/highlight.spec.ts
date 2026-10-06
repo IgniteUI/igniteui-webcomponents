@@ -1,7 +1,18 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  defineCE,
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  unsafeStatic,
+} from '@open-wc/testing';
+import { LitElement, html as litHtml } from 'lit';
 
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { configureTheme } from '#theming/config.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcHighlightComponent from './highlight.js';
+import { all } from './themes/themes.js';
 
 describe('Highlight', () => {
   before(() => defineComponents(IgcHighlightComponent));
@@ -63,9 +74,7 @@ describe('Highlight', () => {
     it('is adopted by the tree scope of the slotted content, not the render root', async () => {
       highlight = await fixture(createHighlightWithInitialMatch());
 
-      // `::highlight()` rules are tree-scoped, so they must live in the scope owning the
-      // slotted text nodes. Attaching them to the component's own shadow root renders no
-      // highlight in browsers that enforce the scoping (Firefox).
+      // `::highlight()` rules are tree-scoped. In the render root they show nothing in Firefox.
       expect(hasHighlightSheet(document)).to.be.true;
       expect(hasHighlightSheet(highlight.renderRoot as ShadowRoot)).to.be.false;
     });
@@ -84,6 +93,32 @@ describe('Highlight', () => {
       expect(hasHighlightSheet(document)).to.be.false;
 
       host.remove();
+    });
+
+    it('keeps the stylesheet in a themed shadow root on a theme change', async () => {
+      const tag = defineCE(
+        class extends LitElement {
+          constructor() {
+            super();
+            addThemingController(this, all);
+          }
+
+          protected override render() {
+            return litHtml`<igc-highlight search-text="lorem">Lorem</igc-highlight>`;
+          }
+        }
+      );
+      const host = await fixture<LitElement>(
+        html`<${unsafeStatic(tag)}></${unsafeStatic(tag)}>`
+      );
+      expect(hasHighlightSheet(host.shadowRoot!)).to.be.true;
+
+      try {
+        configureTheme('material');
+        expect(hasHighlightSheet(host.shadowRoot!)).to.be.true;
+      } finally {
+        configureTheme('bootstrap');
+      }
     });
 
     it('removes the stylesheet from its tree scope on disconnect', async () => {
@@ -126,6 +161,24 @@ describe('Highlight', () => {
       await elementUpdated(highlight);
 
       expect(highlight.size).to.equal(1);
+    });
+
+    it('matches a space in the search text with any run of whitespace', async () => {
+      // A text node keeps the whitespace, which a formatter can change in a template.
+      highlight.replaceChildren(
+        document.createTextNode(
+          'cold\n      brew, cold  \t brew, cold brew, coldbrew'
+        )
+      );
+      highlight.searchText = 'cold brew';
+      await elementUpdated(highlight);
+
+      expect(highlight.size).to.equal(3);
+
+      highlight.searchText = 'cold \t brew';
+      await elementUpdated(highlight);
+
+      expect(highlight.size).to.equal(3);
     });
 
     it('moves to the next match when `next()` is invoked', async () => {

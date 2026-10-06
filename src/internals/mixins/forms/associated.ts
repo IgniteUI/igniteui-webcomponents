@@ -1,13 +1,13 @@
-import { isServer, type LitElement, type PropertyValues } from 'lit';
+import { isServer, type LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { NAMING_ATTRIBUTES } from '../../controllers/aria-projection.js';
+import { trackLabels } from '../../controllers/aria-projection.js';
 import { addInternalsController } from '../../controllers/internals.js';
 import { enterKey, isKey } from '../../controllers/keys.js';
-import { sameItems } from '../../utils/arrays.js';
-import { addSafeEventListener } from '../../utils/events.js';
+import { addSafeEventListener, preventDefault } from '../../utils/events.js';
 import { isFunction, isString } from '../../utils/types.js';
 import type { Validator } from '../../validators.js';
 import type { Constructor } from '../constructor.js';
+import { HostAriaMixin } from '../host-aria.js';
 import type { FormValue } from './form-value.js';
 import {
   type FormAssociatedCheckboxElementInterface,
@@ -37,36 +37,97 @@ function emitInternalFormEvent(host: LitElement, name: string): void {
   host.dispatchEvent(new CustomEvent(name, eventOptions));
 }
 
-function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
-  class BaseFormAssociatedElement extends base {
-    public static readonly formAssociated = true;
+let areFormChecksWrapped = false;
 
-    /**
-     * Adds the naming attributes. The mixin base type has no static
-     * `observedAttributes`, so `Reflect.get` calls the base getter with this
-     * class as `this`.
-     * @internal
-     */
-    public static get observedAttributes(): string[] {
-      const inherited = Reflect.get(base, 'observedAttributes', this);
-      return [...(inherited as string[]), ...NAMING_ATTRIBUTES];
+type FormCheck = 'silent' | 'report';
+
+/** The validity checks that run on each form, the innermost one last. */
+const formChecks = new WeakMap<HTMLFormElement, FormCheck[]>();
+
+/** Records each call of the form `method` as a check of the given kind. */
+function trackFormMethod(
+  method: 'checkValidity' | 'reportValidity' | 'requestSubmit',
+  check: FormCheck
+): void {
+  const prototype = HTMLFormElement.prototype as unknown as Record<
+    string,
+    (...args: unknown[]) => unknown
+  >;
+  const original = prototype[method];
+
+  prototype[method] = function (this: HTMLFormElement, ...args: unknown[]) {
+    const checks = formChecks.get(this) ?? [];
+    formChecks.set(this, checks);
+    checks.push(check);
+
+    try {
+      return original.apply(this, args);
+    } finally {
+      checks.pop();
     }
+  };
+}
+
+/**
+ * A failed submit and `form.checkValidity()` send the same `invalid` events,
+ * but only the submit moves the focus. The wrappers tell them apart, also for
+ * a check that runs inside another check of the same form.
+ */
+function wrapFormChecks(): void {
+  if (isServer || areFormChecksWrapped) {
+    return;
+  }
+
+  areFormChecksWrapped = true;
+  trackFormMethod('checkValidity', 'silent');
+  trackFormMethod('reportValidity', 'report');
+  trackFormMethod('requestSubmit', 'report');
+}
+
+/**
+ * The browser focuses the first invalid control whose `invalid` event is not
+ * canceled. Cancels the events of `controls` in the current validation pass,
+ * so that an earlier control keeps the focus.
+ */
+function cancelInvalidEvents(controls: Element[]): void {
+  const controller = new AbortController();
+  const options = { once: true, signal: controller.signal };
+
+  for (const control of controls) {
+    control.addEventListener('invalid', preventDefault, options);
+  }
+
+  // The pass is synchronous. The listeners must not reach a later pass.
+  setTimeout(() => controller.abort());
+}
+
+type ListedElement = Element &
+  Partial<Pick<HTMLInputElement, 'willValidate' | 'validity'>>;
+
+/** Whether the element takes part in constraint validation and fails it. */
+function isInvalidControl(element: ListedElement): boolean {
+  return !!element.willValidate && !element.validity?.valid;
+}
+
+/** `stateKey` names the state property, whose attribute sets the default. */
+function BaseFormAssociated<T extends Constructor<LitElement>>(
+  base: T,
+  stateKey: 'value' | 'checked' = 'value'
+) {
+  class BaseFormAssociatedElement extends HostAriaMixin(base) {
+    public static readonly formAssociated = true;
 
     //#region Internal state and properties
 
     protected readonly _internals = addInternalsController(this);
     protected readonly _formValue!: FormValue<unknown>;
 
-    /**
-     * Hides the invalid styling for a validation cycle started from code. Set
-     * immediately before the check and cleared immediately after, so that it
-     * does not reach a later cycle.
-     */
+    /** Set while `checkValidity()` of the control runs. */
     private _isInternalValidation = false;
+    /** Set while `reportValidity()` of the control runs. */
+    private _isReportingValidity = false;
     private _touched = false;
     private _isExternalInvalid = false;
-    /** The `<label>` elements at the last update. */
-    private _renderedLabels: ReadonlyArray<Element> | null = null;
 
     private get _shouldApplyStyles(): boolean {
       if (this._isExternalInvalid) {
@@ -74,12 +135,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       }
 
       // A disabled control cannot validate, so it never styles as invalid.
-      return (
-        !this._disabled &&
-        this._invalid &&
-        this._touched &&
-        !this._isInternalValidation
-      );
+      return !this._disabled && this._invalid && this._touched;
     }
 
     protected _disabled = false;
@@ -166,28 +222,10 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     constructor(...args: any[]) {
       super(...args);
+      wrapFormChecks();
       addSafeEventListener(this, 'invalid', this._handleInvalid);
       addSafeEventListener(this, 'click', this._handleHostClick);
-      addSafeEventListener(this, 'focusin', this._handleFocusEnter);
-    }
-
-    /** @internal */
-    public override attributeChangedCallback(
-      name: string,
-      prev: string | null,
-      current: string | null
-    ): void {
-      super.attributeChangedCallback(name, prev, current);
-
-      if (NAMING_ATTRIBUTES.includes(name)) {
-        this.requestUpdate();
-      }
-    }
-
-    /** @internal */
-    protected override update(properties: PropertyValues): void {
-      this._renderedLabels = this._internals.labels;
-      super.update(properties);
+      trackLabels(this);
     }
 
     /** @internal */
@@ -223,20 +261,6 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     }
 
     /**
-     * `ElementInternals.labels` sends no change event. When focus enters the
-     * host from outside, render again if the labels changed after the last
-     * update.
-     */
-    private _handleFocusEnter(event: FocusEvent): void {
-      if (
-        !this.contains(event.relatedTarget as Node | null) &&
-        !sameItems(this._internals.labels, this._renderedLabels)
-      ) {
-        this.requestUpdate();
-      }
-    }
-
-    /**
      * Runs when a `<label>` or a click on the host activates the component. A
      * component that delegates focus needs no override: the browser focuses it.
      */
@@ -262,9 +286,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       event.preventDefault();
       this._invalid = true;
 
-      if (this._isInternalValidation) {
-        this._isInternalValidation = false;
-      } else {
+      if (!this._isInternalValidation) {
         // A failed submission is a lasting interaction: touched keeps
         // `invalid` and the projected messages visible across re-renders.
         this._setTouchedState();
@@ -273,6 +295,25 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
       this._setInvalidStyles();
       this.requestUpdate();
+
+      const form = this.form;
+
+      // The canceled event also keeps the browser from focusing the first
+      // invalid control after a failed submit.
+      if (
+        form &&
+        !this._isInternalValidation &&
+        !this._isReportingValidity &&
+        formChecks.get(form)?.at(-1) !== 'silent'
+      ) {
+        const invalid = Iterator.from(form.elements).filter(isInvalidControl);
+
+        if (invalid.next().value === this) {
+          const later = invalid.toArray();
+          this.focus();
+          cancelInvalidEvents(later);
+        }
+      }
     }
 
     private _setInvalidStyles(): void {
@@ -319,18 +360,23 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
         validity.customError = true;
         message = this.validationMessage;
       } else if (hasCustomError && userMessage === '') {
-        // The caller passed an empty message to `setCustomValidity()`.
         validity.customError = false;
       } else if (userMessage && userMessage !== '') {
-        // The caller passed a message to `setCustomValidity()`.
         validity.customError = true;
         message = userMessage;
       }
 
       this._internals.setValidity(validity, message);
-      this._isInternalValidation = true;
-      this._invalid = !this._internals.checkValidity();
-      this._isInternalValidation = false;
+
+      // `checkValidity()` would send `invalid`, which a native control does
+      // not do while the user edits it.
+      this._invalid = isInvalidControl(this);
+
+      if (this._invalid) {
+        // The validation container and some inner editors render `invalid`.
+        this.requestUpdate();
+      }
+
       this._setInvalidStyles();
     }
 
@@ -351,14 +397,53 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       return (this as unknown as EventEmitterLike).emitEvent(eventName, init);
     }
 
+    /** Runs `callback` and restores the pristine flag. */
+    protected _withPristine(callback: () => void): void {
+      const pristine = this._pristine;
+
+      try {
+        callback();
+      } finally {
+        this._pristine = pristine;
+      }
+    }
+
+    /** @internal */
+    public override attributeChangedCallback(
+      name: string,
+      prev: string | null,
+      current: string | null
+    ): void {
+      super.attributeChangedCallback(name, prev, current);
+
+      if (name === stateKey) {
+        // A boolean attribute sets its default by presence.
+        this._setDefaultValue(
+          name === 'checked' && isString(current) ? 'true' : current
+        );
+      }
+    }
+
+    /** Sets the default, also as the state of a pristine control. @internal */
+    protected _applyDefault(value: unknown): void {
+      this._formValue.defaultValue = value;
+
+      if (this._pristine) {
+        (this as unknown as Record<string, unknown>)[stateKey] =
+          this._formValue.defaultValue;
+        this._pristine = true;
+        this._validate();
+      }
+    }
+
     protected _setDefaultValue(current: string | null): void {
       this._formValue.defaultValue = current;
     }
 
+    /** Restores the default through the public setter of the state. */
     protected _restoreDefaultValue(): void {
-      const value = this._formValue.value;
-      this._formValue.setValueAndFormState(this._formValue.defaultValue);
-      this.requestUpdate('value', value);
+      (this as unknown as Record<string, unknown>)[stateKey] =
+        this._formValue.defaultValue;
     }
 
     protected _setFormValue(value: FormValueType, state?: FormValueType): void {
@@ -397,9 +482,26 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     //#region Public API
 
-    /** Checks validity and shows the browser message when invalid. */
+    /**
+     * Checks validity. As for a native control, an invalid control emits
+     * `invalid` and takes the focus. It shows its own validation messages, not
+     * the message of the browser.
+     */
     public reportValidity(): boolean {
+      const state = this._reportValidity();
+
+      if (!state) {
+        this.focus();
+      }
+
+      return state;
+    }
+
+    /** Reports the validity without moving the focus. */
+    protected _reportValidity(): boolean {
+      this._isReportingValidity = true;
       const state = this._internals.reportValidity();
+      this._isReportingValidity = false;
       this._invalid = !state;
       return state;
     }
@@ -436,29 +538,11 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     /* blazorCSSuppress */
     @property({ attribute: false })
     public set defaultValue(value: unknown) {
-      this._formValue.defaultValue = value;
-
-      if (this._pristine && 'value' in this) {
-        this.value = this.defaultValue;
-        this._pristine = true;
-        this._validate();
-      }
+      this._applyDefault(value);
     }
 
     public get defaultValue(): unknown {
       return this._formValue.defaultValue;
-    }
-
-    /**
-     * Restores the default value through the public `value` setter, so that a
-     * form reset gets the same clamping, normalization and reactive state.
-     */
-    protected override _restoreDefaultValue(): void {
-      if ('value' in this) {
-        this.value = this.defaultValue;
-      } else {
-        super._restoreDefaultValue();
-      }
     }
 
     /** Sets touched first, so the `value` setter validation cycle sees it. */
@@ -467,23 +551,10 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
 
       if ('value' in this) {
         this.value = value;
-        return (this as unknown as EventEmitterLike).emitEvent(eventName, {
-          detail: this.value,
-        });
+        return this._emitTouchedEvent(eventName, { detail: this.value });
       }
 
       return false;
-    }
-
-    public override attributeChangedCallback(
-      name: string,
-      prev: string | null,
-      current: string | null
-    ): void {
-      super.attributeChangedCallback(name, prev, current);
-      if (name === 'value') {
-        this._setDefaultValue(current);
-      }
     }
   }
 
@@ -498,44 +569,18 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
 export function FormAssociatedCheckboxMixin<T extends Constructor<LitElement>>(
   base: T
 ) {
-  class FormAssociatedCheckboxElement extends BaseFormAssociated(base) {
+  class FormAssociatedCheckboxElement extends BaseFormAssociated(
+    base,
+    'checked'
+  ) {
     /* blazorCSSuppress */
     @property({ attribute: false })
     public set defaultChecked(value: boolean) {
-      this._formValue.defaultValue = value;
-
-      if (this._pristine && 'checked' in this) {
-        this.checked = this.defaultChecked;
-        this._pristine = true;
-        this._validate();
-      }
+      this._applyDefault(value);
     }
 
     public get defaultChecked(): boolean {
       return this._formValue.defaultValue as boolean;
-    }
-
-    /**
-     * Restores the default checked state through the public `checked` setter,
-     * which records the correct reactive property for the update cycle.
-     */
-    protected override _restoreDefaultValue(): void {
-      if ('checked' in this) {
-        this.checked = this.defaultChecked;
-      } else {
-        super._restoreDefaultValue();
-      }
-    }
-
-    public override attributeChangedCallback(
-      name: string,
-      prev: string | null,
-      current: string | null
-    ): void {
-      super.attributeChangedCallback(name, prev, current);
-      if (name === 'checked') {
-        this._setDefaultValue(isString(current) ? 'true' : null);
-      }
     }
   }
 

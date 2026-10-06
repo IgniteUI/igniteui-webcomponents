@@ -6,42 +6,6 @@ import {
   getFinderPatterns,
 } from './helpers.js';
 
-type QrCornerProperties = {
-  x: number;
-  y: number;
-  size: number;
-  dotStyle: QrCornerDotStyle;
-  squareStyle: QrCornerSquareStyle;
-};
-
-/** Renders a finder-pattern corner as a Lit SVG template, composing the outer square and inner dot paths. */
-export function renderQrCorner({
-  x,
-  y,
-  size,
-  dotStyle,
-  squareStyle,
-}: QrCornerProperties): TemplateResult {
-  const outerSize = 7 * size;
-  const innerSize = 3 * size;
-  const innerOffset = 2 * size;
-
-  const squarePath = cornerSquarePath(x, y, outerSize, squareStyle);
-  const dotPath = cornerDotPath(
-    x + innerOffset,
-    y + innerOffset,
-    innerSize,
-    dotStyle
-  );
-
-  return svg`
-      <g>
-        <path part="corner-square" d=${squarePath} fill-rule="evenodd"></path>
-        <path part="corner-dot" d=${dotPath}></path>
-      </g>
-    `;
-}
-
 type RenderFindersProperties = {
   size: number;
   moduleSize: number;
@@ -50,9 +14,7 @@ type RenderFindersProperties = {
   squareStyle: QrCornerSquareStyle;
 };
 
-/**
- * Renders all three finder-pattern corners as an array of Lit SVG templates, given the QR code size, module size, margin, and styles.
- */
+/** Renders the three finder-pattern corners. */
 export function renderQrFinders({
   size,
   moduleSize,
@@ -60,13 +22,20 @@ export function renderQrFinders({
   dotStyle,
   squareStyle,
 }: RenderFindersProperties): TemplateResult[] {
-  return getFinderPatterns(size, moduleSize, marginPx).map(({ x, y }) =>
-    renderQrCorner({
-      x,
-      y,
-      size: moduleSize,
-      dotStyle,
-      squareStyle,
-    })
-  );
+  return getFinderPatterns(size, moduleSize, marginPx).map(({ x, y }) => {
+    const squarePath = cornerSquarePath(x, y, 7 * moduleSize, squareStyle);
+    const dotPath = cornerDotPath(
+      x + 2 * moduleSize,
+      y + 2 * moduleSize,
+      3 * moduleSize,
+      dotStyle
+    );
+
+    return svg`
+      <g>
+        <path part="corner-square" d=${squarePath} fill-rule="evenodd"></path>
+        <path part="corner-dot" d=${dotPath}></path>
+      </g>
+    `;
+  });
 }

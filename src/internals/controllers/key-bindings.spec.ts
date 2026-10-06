@@ -198,11 +198,10 @@ describe('Key bindings controller', () => {
     });
 
     it('should clear pressed keys on window blur', () => {
-      // Hold 'x', then switch away without releasing it
       dispatch(multiInstance, 'keydown', 'x');
       window.dispatchEvent(new FocusEvent('blur'));
 
-      // 'x' should no longer be tracked; pressing 'z' alone should not fire
+      // The blur released 'x', so 'z' alone does not fire.
       dispatch(multiInstance, 'keydown', 'z');
       expect(multiInstance.callCount).to.equal(0);
     });
@@ -248,8 +247,6 @@ describe('Key bindings controller', () => {
     });
 
     it('should fire the correct binding when keys overlap (keyup not yet fired for previous key)', () => {
-      // Simulate pressing ArrowDown a couple of times, then pressing ArrowUp before
-      // ArrowDown's keyup fires — mimicking rapid navigation where keys overlap.
       let repeatInstance2: LitElement & {
         lastKey: string | undefined;
         downCount: number;
@@ -290,21 +287,19 @@ describe('Key bindings controller', () => {
       ).then((el) => {
         repeatInstance2 = el;
 
-        // Press ArrowDown twice (with repeat)
         dispatch(repeatInstance2, 'keydown', arrowDown);
         dispatch(repeatInstance2, 'keydown', arrowDown, true);
 
-        // Press ArrowUp while ArrowDown is still "held" (no keyup yet)
+        // ArrowDown is still down: it has no keyup yet.
         dispatch(repeatInstance2, 'keydown', arrowUp);
 
         expect(repeatInstance2.upCount).to.equal(1);
         expect(repeatInstance2.lastKey).to.equal(arrowUp);
 
-        // Release both keys
         dispatch(repeatInstance2, 'keyup', arrowDown);
         dispatch(repeatInstance2, 'keyup', arrowUp);
 
-        // Press ArrowDown again — should still work cleanly after the overlap
+        // ArrowDown still works after the overlap.
         dispatch(repeatInstance2, 'keydown', arrowDown);
         expect(repeatInstance2.downCount).to.equal(3);
       });

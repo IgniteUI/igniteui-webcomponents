@@ -135,8 +135,8 @@ const Slots = setSlots(
  * @fires igcOpened - Emitted after the calendar popover is shown.
  * @fires igcClosing - Emitted just before the calendar popover is hidden.
  * @fires igcClosed - Emitted after the calendar popover is hidden.
- * @fires igcChange - Emitted when the user modifies and commits the elements's value.
- * @fires igcInput - Emitted when when the user types in the element.
+ * @fires igcChange - Emitted when the user modifies and commits the element's value.
+ * @fires igcInput - Emitted when the user types in the element.
  *
  * @csspart separator - The separator element between the two inputs.
  * @csspart ranges - The wrapper that renders the custom and predefined ranges.
@@ -253,11 +253,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     return this.useTwoInputs ? Array.from(this._inputs) : [this._input];
   }
 
-  /** The editor of single editor operations - the start one when the range is split. */
-  private get _startEditor(): PickerEditor {
-    return firstOf(this._editors);
-  }
-
   private get _firstDefinedInRange(): Date | null {
     return this.value?.start ?? this.value?.end ?? null;
   }
@@ -308,7 +303,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   }
 
   protected override _focusInput(): void {
-    this._startEditor.focus();
+    firstOf(this._editors).focus();
   }
 
   protected override _focusAndSelectInput(): void {
@@ -325,8 +320,10 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     }
   }
 
+  /** Points the calendar at the current range, in the first rendered month. */
   protected override _syncCalendarOnToggle(): void {
-    this._setCalendarActiveDateAndViewIndex();
+    this._setCalendarActiveDate(this._firstDefinedInRange);
+    this._calendar['_activeDaysViewIndex'] = 0;
   }
 
   protected override _clearEditors(): void {
@@ -474,11 +471,15 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   constructor() {
     super();
 
-    // The base class projector covers the start editor. In two-input mode the
-    // end editor needs the picker popup semantics as well, labels excluded.
+    // The base projector covers the start editor. This one gives the end editor
+    // the popup semantics, without the labels.
     addAriaProjector(this, {
       target: () => this._inputs[1] ?? null,
-      state: () => ({ hasPopup: 'dialog' }),
+      naming: false,
+      state: () => ({
+        hasPopup: 'dialog',
+        required: this.required ? 'true' : undefined,
+      }),
     });
   }
 
@@ -489,8 +490,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
       this.keepOpenOnSelect = true;
     }
 
-    // The editors are swapped by the render below, so both the range and the
-    // delegated validity are re-applied once the new ones are in place.
+    // The render swaps the editors, so the range and validity are re-applied after it.
     if (changedProperties.has('useTwoInputs')) {
       this._syncEditors();
     } else if (changedProperties.has('mode')) {
@@ -610,20 +610,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     this.value = this._oldValue;
   }
 
-  /** Points the calendar at the current range, and puts it in the first of the
-   * rendered months. */
-  private _setCalendarActiveDateAndViewIndex() {
-    const activeDaysViewIndex = '_activeDaysViewIndex';
-
-    this._setCalendarActiveDate(this._firstDefinedInRange);
-    this._calendar[activeDaysViewIndex] = 0;
-  }
-
-  /**
-   * Builds the range from what the two editors hold. The other input is read
-   * through its draft, not through the committed `value`, because an edit there
-   * has not reached the picker.
-   */
+  /** Builds the range from both editors. The other editor is read through its uncommitted draft. */
   private _getUpdatedDateRange(
     input: IgcDateTimeInputComponent,
     newValue: Date | null
@@ -636,9 +623,8 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   }
 
   /**
-   * Delegates the validity methods of the editors to the range validation of the
-   * picker. The pristine check stops a form reset, which writes to the editors,
-   * from starting a validation.
+   * Delegates the editor validity methods to the picker range validation.
+   * The pristine check stops a form reset from starting a validation.
    */
   private _delegateInputsValidity() {
     for (const input of this._editors) {
@@ -649,10 +635,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     }
   }
 
-  /**
-   * Shows a range in the calendar. The default is the committed value. The
-   * input handlers give the draft, so that the calendar follows the typing.
-   */
+  /** Shows a range in the calendar. The input handlers pass the draft, so the calendar follows the typing. */
   private _setCalendarRangeValues(range: DateRangeValue | null = this.value) {
     if (isCompleteDateRange(range)) {
       this._calendarRange =
@@ -668,10 +651,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     this._calendarRange = first ? [first] : null;
   }
 
-  /**
-   * Commits a range from an editor, corrects a reversed one, and notifies. The
-   * value assignment shows the range in the calendar.
-   */
+  /** Commits a range from an editor, corrects a reversed one, and notifies. */
   private _commitRange(range: DateRangeValue | null): void {
     const { start, end } = (range && this._swapDates(range)) ?? {
       start: null,

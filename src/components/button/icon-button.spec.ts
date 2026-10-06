@@ -6,11 +6,18 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 
+import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import { defineComponents, IgcIconButtonComponent } from '../../index.js';
 
 describe('IconButton component', () => {
   before(() => {
     defineComponents(IgcIconButtonComponent);
+  });
+
+  runHostAriaTests({
+    tagName: 'igc-icon-button',
+    template: html`<igc-icon-button href="https://test.com"></igc-icon-button>`,
+    getTarget: (host) => host.renderRoot.querySelector('a')!,
   });
 
   const DIFF_OPTIONS = {

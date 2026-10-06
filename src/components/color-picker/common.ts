@@ -12,11 +12,8 @@ export interface ParsedColor {
 }
 
 /**
- * Trims a color string and restores the `#` of a hash-less hex, which the
- * canvas would otherwise reject.
- *
- * Anything that has to both validate and parse a color must normalize first -
- * validating the raw string rejects `ff0000` before parsing ever sees it.
+ * Trims a color string and adds the `#` that the canvas needs for a hash-less hex.
+ * Normalize before validation, which rejects a raw `ff0000`.
  */
 export function normalizeColor(colorString: string): string {
   const trimmed = colorString?.trim() ?? '';
@@ -24,12 +21,8 @@ export function normalizeColor(colorString: string): string {
 }
 
 /**
- * Parses a color string into RGB values and alpha channel.
- * Supports hex, rgb, rgba, hsl, hsla, and named color formats.
- *
- * @param colorString - The color string to parse
- * @param ctx - Optional canvas context for color parsing. If not provided, returns default black color.
- * @returns Object containing RGB values and alpha channel
+ * Parses a hex, rgb(a), hsl(a) or named color into RGB values and alpha.
+ * Without a canvas context it returns black.
  */
 export function parseColor(
   colorString: string,
@@ -50,7 +43,7 @@ export function parseColor(
     return result;
   }
 
-  // Trigger parsing through canvas context
+  // The canvas parses the color.
   ctx.fillStyle = normalized;
   const color = ctx.fillStyle;
 
@@ -61,7 +54,6 @@ export function parseColor(
     result.value = [r, g, b];
     result.alpha = a ?? 1;
   } else {
-    // Parse hex color
     const hexValue = color.replace('#', '');
     const matches = hexValue.match(HEX_RE);
 
@@ -72,7 +64,6 @@ export function parseColor(
     const [r, g, b, a] = matches.map((part) => Number.parseInt(part, 16));
     result.value = [r, g, b];
 
-    // Handle 8-digit hex with alpha channel
     if (matches.length === 4 && a !== undefined) {
       result.alpha = a / 255;
     }
@@ -82,16 +73,9 @@ export function parseColor(
 }
 
 /**
- * Determines whether a given string is a valid CSS color.
- *
- * Uses the canvas 2D context to attempt parsing the string against two
- * different baseline colors. A valid color resolves to the same computed value
- * regardless of the baseline, while an invalid color leaves each baseline
- * untouched and therefore produces two different results.
- *
- * @param colorString - The color string to validate
- * @param ctx - Canvas context used for parsing
- * @returns `true` if the string is a valid, non-empty CSS color
+ * Whether a string is a valid CSS color.
+ * An invalid color leaves the canvas fill unchanged, so two different
+ * baselines give two different results.
  */
 export function isValidColor(
   colorString: string,

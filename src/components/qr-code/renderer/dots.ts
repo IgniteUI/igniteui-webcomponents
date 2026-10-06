@@ -9,10 +9,7 @@ type RenderQrDotsProperties = {
   dotStyle: QrDotStyle;
 };
 
-/**
- * Renders the data modules of the QR code as a single SVG path, given the QR code matrix, module size, margin, and dot style.
- * Returns a Lit SVG template.
- */
+/** Renders the data modules as a single SVG path. */
 export function renderQrDots({
   matrix,
   moduleSize,

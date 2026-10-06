@@ -72,6 +72,30 @@ describe('IgcQrCodeComponent', () => {
         'QR code: https://example.com'
       );
     });
+
+    it('forwards the host `aria-labelledby` and `aria-describedby` to the SVG', async () => {
+      const container = await fixture<HTMLElement>(html`
+        <div>
+          <span id="qr-name">Event ticket</span>
+          <span id="qr-hint">Show it at the entrance</span>
+          <igc-qr-code
+            value="https://example.com"
+            aria-labelledby="qr-name"
+            aria-describedby="qr-hint"
+          ></igc-qr-code>
+        </div>
+      `);
+      const svg = container
+        .querySelector('igc-qr-code')!
+        .renderRoot.querySelector('svg')!;
+
+      expect(svg.ariaLabelledByElements).to.eql([
+        container.querySelector('#qr-name'),
+      ]);
+      expect(svg.ariaDescribedByElements).to.eql([
+        container.querySelector('#qr-hint'),
+      ]);
+    });
   });
 
   describe('Default property values', () => {
@@ -789,6 +813,23 @@ describe('IgcQrCodeComponent', () => {
         const svg = await parseSvg(await el.toBlob());
         expect(svg.querySelector('image')?.getAttribute('href')).to.equal(LOGO);
         expect(svg.querySelector('mask')).to.exist;
+      });
+
+      it('leaves no empty host relation in the exported SVG', async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <span id="qr-export-hint">Hint</span>
+            <igc-qr-code
+              value="https://example.com"
+              aria-describedby="qr-export-hint"
+            ></igc-qr-code>
+          </div>
+        `);
+        const el = container.querySelector('igc-qr-code')!;
+        const svg = await parseSvg(await el.toBlob());
+
+        expect(svg.hasAttribute('aria-describedby')).to.be.false;
+        expect(svg.hasAttribute('aria-labelledby')).to.be.false;
       });
 
       it('writes the logo as both href and xlink:href', async () => {

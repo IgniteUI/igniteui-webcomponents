@@ -35,6 +35,7 @@
     - [Validation message slots](#validation-message-slots)
     - [External label association](#external-label-association)
     - [Parser and history unit suites](#parser-and-history-unit-suites)
+    - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -43,12 +44,14 @@
 
 ## Revision history
 
-| Version | Date       | Notes                                              |
-| ------: | ---------- | -------------------------------------------------- |
-|       1 | 2026-09-21 | Initial specification                              |
-|       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
-|       3 | 2026-09-28 | Add the property-based parser suite                |
-|       4 | 2026-09-28 | An empty control is no bad input                   |
+| Version | Date       | Notes                                                                     |
+| ------: | ---------- | ------------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                     |
+|       2 | 2026-09-24 | Describe the naming order and the host ARIA naming                        |
+|       3 | 2026-09-28 | Add the property-based parser suite                                       |
+|       4 | 2026-09-28 | An empty control is no bad input                                          |
+|       5 | 2026-10-02 | Focus after form checks; `invalid` only on checks                         |
+|       6 | 2026-10-02 | Forward the host `aria-describedby`; expose `required` as `aria-required` |
 
 ## Overview
 
@@ -271,6 +274,11 @@ The component applies two validators:
 The value submitted with the form follows `valueMode`: the raw input in `raw` mode, the formatted string in
 `withFormatting` mode. A form reset restores the default value taken from the `value` attribute.
 
+As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
+the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
+`checkValidity()` do not move the focus. The `invalid` event comes only from these checks and from a failed submit,
+not while the user edits the control.
+
 ### Localization
 
 The component renders no built-in strings of its own. The mask validation message comes from the library validation
@@ -319,17 +327,17 @@ The standard `autofocus` global attribute is forwarded to the inner native input
 
 ### Methods
 
-| Name               | Type signature                                                                               | Description                                                             |
-| ------------------ | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Name               | Type signature                                                                                | Description                                                              |
+| ------------------ | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | isValidMaskPattern | `(): boolean`                                                                                 | Returns whether the current masked input is valid according to the mask. |
-| select             | `(): void`                                                                                    | Selects all the text inside the input.                                  |
-| setSelectionRange  | `(start?: number, end?: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range of the control.                           |
-| setRangeText       | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the selected text in the control and re-applies the mask.      |
-| focus              | `(options?: FocusOptions): void`                                                              | Sets focus on the control.                                              |
-| blur               | `(): void`                                                                                    | Removes focus from the control.                                         |
-| checkValidity      | `(): boolean`                                                                                  | Checks validity and emits `invalid` when the control is invalid.        |
-| reportValidity     | `(): boolean`                                                                                  | Checks validity and shows the browser message when invalid.             |
-| setCustomValidity  | `(message: string): void`                                                                      | Sets a custom message. Invalid while `message` is not empty.            |
+| select             | `(): void`                                                                                    | Selects all the text inside the input.                                   |
+| setSelectionRange  | `(start?: number, end?: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range of the control.                            |
+| setRangeText       | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the selected text in the control and re-applies the mask.       |
+| focus              | `(options?: FocusOptions): void`                                                              | Sets focus on the control.                                               |
+| blur               | `(): void`                                                                                    | Removes focus from the control.                                          |
+| checkValidity      | `(): boolean`                                                                                 | Checks validity and emits `invalid` when the control is invalid.         |
+| reportValidity     | `(): boolean`                                                                                 | Checks validity; when invalid, emits `invalid` and focuses the control.  |
+| setCustomValidity  | `(message: string): void`                                                                     | Sets a custom message. Invalid while `message` is not empty.             |
 
 ### Events
 
@@ -433,6 +441,9 @@ Driven by `createFormAssociatedTestBed`.
 34. An empty optional control is valid for any mask, and a value that fits no position of a letter mask is a bad
     input.
 
+The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
+[input suite](../input/spec.md#form-validity-checks) covers them.
+
 ### defaultValue
 
 35. Form integration - correct initial state, correct submission, correct reset, and dropping the undo history on
@@ -469,6 +480,11 @@ Generated by `runExternalLabelAssociationTests`.
     flag rules, and never split an astral character; the `apply` / `parse` round-trip; digit normalization; the
     non-literal position lookups; and prompt normalization.
 
+### Host ARIA
+
+45. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+    text, and follows a change and a removal. `required` sets `aria-required`.
+
 ## Assumptions and limitations
 
 - The mask input does not expose a `type` attribute, since it is always an input of type `text`.
@@ -486,6 +502,9 @@ Generated by `runExternalLabelAssociationTests`.
   control.
 - The helper text and the validation messages are referenced through `aria-describedby`.
 - The required, disabled and read-only states come from the native attributes on the inner input.
+- A host `aria-describedby` describes the native control after the helper text, by element reference.
+- `required` is exposed as `aria-required` on the native input, not as the native `required`, which would validate
+  the mask prompts.
 
 ### Keyboard support
 

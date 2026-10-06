@@ -1,4 +1,5 @@
 import { html, nothing, type TemplateResult } from 'lit';
+import { cache } from 'lit/directives/cache.js';
 import IgcValidationContainerComponent from '../../components/validation-container/validation-container.js';
 import type { SlotController } from '../controllers/slot.js';
 import type { IgcFormControl } from '../mixins/forms/types.js';
@@ -40,8 +41,6 @@ export interface InputShellOptions {
   renderInput: () => TemplateResult;
   /** Renders extra parts inside the container, as `igc-file-input` needs. */
   renderFileParts?: () => TemplateResult | typeof nothing;
-  /** Container part names that only the material notch layout adds. */
-  materialParts?: Record<string, boolean>;
   /**
    * Hides the prefix and suffix wrappers whose `containerParts` entry is
    * false. Off by default, so the wrappers always render.
@@ -50,14 +49,9 @@ export interface InputShellOptions {
 }
 
 /**
- * Renders the label of the input.
- *
- * @remarks
- * A label click reaches the host twice: the label click, then the synthetic
- * click that label activation sends to the input. That double-fires a
- * consumer click handler and breaks the toggles of `igc-combo` and
- * `igc-select`. The label therefore keeps its own click inside the shadow
- * root; activation is a default action, so focus still moves to the input.
+ * Renders the label of the input. The label stops its own click, because a label click
+ * otherwise reaches the host twice and breaks the `igc-combo` and `igc-select` toggles.
+ * Activation is a default action, so focus still moves.
  */
 function renderLabel(forId: string, label: string) {
   return label
@@ -81,7 +75,6 @@ export function renderInputShell(
   host: IgcFormControl,
   {
     containerParts,
-    materialParts,
     hideEmptyAffixes = false,
     renderFileParts,
     renderInput,
@@ -89,7 +82,7 @@ export function renderInputShell(
     label,
     labelId,
   }: InputShellOptions
-): TemplateResult {
+) {
   const validator = IgcValidationContainerComponent.create(host);
   const input = renderInput.call(host);
   const fileParts = renderFileParts?.call(host) ?? nothing;
@@ -103,14 +96,8 @@ export function renderInputShell(
   );
 
   if (theme === 'material') {
-    return html`
-      <div
-        part=${partMap({
-          ...containerParts,
-          ...materialParts,
-          labelled: !!label,
-        })}
-      >
+    return cache(html`
+      <div part=${partMap({ ...containerParts, labelled: !!label })}>
         <div part="start">${prefix}</div>
         ${input}${fileParts}
         <div part="notch">${renderLabel(labelId, label)}</div>
@@ -118,14 +105,14 @@ export function renderInputShell(
         <div part="end">${suffix}</div>
       </div>
       ${validator}
-    `;
+    `);
   }
 
-  return html`
+  return cache(html`
     ${renderLabel(labelId, label)}
     <div part=${partMap(containerParts)}>
       ${prefix}${fileParts}${input}${suffix}
     </div>
     ${validator}
-  `;
+  `);
 }

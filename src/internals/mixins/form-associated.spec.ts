@@ -171,13 +171,12 @@ describe('Form associated mixin tests', () => {
   });
 
   it('required + other constraints', async () => {
-    // `valueMissing` should override all other flags except for `customError`
+    // `valueMissing` overrides all other flags except `customError`.
     await createFixture({ minLength: 3, required: true });
 
     expect(instance.checkValidity()).to.be.false;
     expect(hasValidityFlags(instance, 'valueMissing')).to.be.true;
 
-    // Validate `valueMissing` bringing back `tooShort`
     instance.value = '1';
 
     expect(instance.checkValidity()).to.be.false;
@@ -203,10 +202,8 @@ describe('Form associated mixin tests', () => {
   });
 
   it('setCustomValidity("") does not swallow the next failed submission', async () => {
-    // Regression: clearing a custom message used to latch the internal
-    // validation flag, so the `invalid` event of the next form submission was
-    // misclassified as internal - no touched state, no internal invalid event,
-    // no invalid styles.
+    // Clearing a custom message must not latch the internal validation flag,
+    // or the next failed submit counts as internal.
     await createFormFixture({ required: true });
 
     instance.setCustomValidity('Custom');
@@ -234,8 +231,7 @@ describe('Form associated mixin tests', () => {
   it('moving the element in the DOM preserves touched state and invalid styles', async () => {
     await createFormFixture({ required: true });
 
-    // Simulate a failed submission - the control becomes touched and shows
-    // invalid styles.
+    // A failed submit makes the control touched and shows invalid styles.
     requestSubmit();
     expect(instance.matches(':state(ig-invalid)')).to.be.true;
 
@@ -269,8 +265,7 @@ describe('Form associated mixin tests', () => {
   });
 
   it('valueMissing reports the required validator message over later failing validators', async () => {
-    // Regression: the message of the last failing validator used to be kept
-    // even when the validity flags were collapsed to `valueMissing`.
+    // The message must follow the flags when they collapse to `valueMissing`.
     await createFixture();
     instance.alwaysFailingValidator = true;
     instance.required = true;
@@ -283,7 +278,6 @@ describe('Form associated mixin tests', () => {
   it('setCustomValidity() + other constraints', async () => {
     await createFixture();
 
-    // Set `customError` and `valueMissing`.
     instance.setCustomValidity(message);
     instance.required = true;
 
@@ -292,14 +286,12 @@ describe('Form associated mixin tests', () => {
       .true;
     expect(instance.validationMessage).to.equal(message);
 
-    // Validate `valueMissing` leaving `customError`
     instance.value = '123';
 
     expect(instance.checkValidity()).to.be.false;
     expect(hasValidityFlags(instance, 'customError')).to.be.true;
     expect(instance.validationMessage).to.equal(message);
 
-    // Bring back `valueMissing`; validation message should not change
     instance.value = '';
 
     expect(instance.checkValidity()).to.be.false;
@@ -307,7 +299,6 @@ describe('Form associated mixin tests', () => {
       .true;
     expect(instance.validationMessage).to.equal(message);
 
-    // Remove `customError`; validation message should change to the requiredValidator one
     instance.setCustomValidity('');
 
     expect(instance.checkValidity()).to.be.false;

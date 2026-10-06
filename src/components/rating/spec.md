@@ -34,6 +34,7 @@
     - [Default value](#default-value)
     - [Accessibility tests](#accessibility-tests)
     - [Hover](#hover)
+    - [Host ARIA](#host-aria)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -48,6 +49,8 @@
 |       1 | 2026-09-21 | Initial specification                                                                |
 |       2 | 2026-09-23 | Describe when the `--symbol-*-filter` properties apply                               |
 |       3 | 2026-09-24 | Label external `label` elements and host `aria-labelledby`, focus from a label click |
+|       4 | 2026-10-02 | Correct the `reportValidity` description                                             |
+|       5 | 2026-10-02 | Forward the host `aria-describedby`                                                  |
 
 ## Overview
 
@@ -207,13 +210,13 @@ value: `{0}` is replaced with the current value and `{1}` with the maximum.
 
 ### Methods
 
-| Method              | Signature                        | Description                                                   |
-| ------------------- | -------------------------------- | ------------------------------------------------------------- |
-| `stepUp`            | `(n?: number): void`             | Increases the value by `n` steps.                              |
-| `stepDown`          | `(n?: number): void`             | Decreases the value by `n` steps.                              |
-| `checkValidity`     | `(): boolean`                    | Checks the validity and emits `invalid` when it fails.         |
-| `reportValidity`    | `(): boolean`                    | Checks the validity and shows the browser message.             |
-| `setCustomValidity` | `(message: string): void`        | Sets a custom validation message.                              |
+| Method              | Signature                 | Description                                                       |
+| ------------------- | ------------------------- | ----------------------------------------------------------------- |
+| `stepUp`            | `(n?: number): void`      | Increases the value by `n` steps.                                 |
+| `stepDown`          | `(n?: number): void`      | Decreases the value by `n` steps.                                 |
+| `checkValidity`     | `(): boolean`             | Checks the validity and emits `invalid` when it fails.            |
+| `reportValidity`    | `(): boolean`             | Checks validity, and emits `invalid` when the control is invalid. |
+| `setCustomValidity` | `(message: string): void` | Sets a custom validation message.                                 |
 
 ### Events
 
@@ -319,6 +322,11 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 
 24. `igcHover` is emitted again when the pointer re-enters the same symbol.
 
+### Host ARIA
+
+25. The shared host description suite: the host `aria-describedby` describes the slider element, and follows a
+    change and a removal. The rating has no helper text, so the suite checks no description order.
+
 ### Not covered by the suite
 
 - The projected `value-label` slot is not covered.
@@ -344,6 +352,7 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 - A click on an external `label` focuses the slider.
 - `aria-disabled` and `aria-readonly` expose the two states.
 - The rendered symbols are hidden from assistive technology; the slider and its value text carry the semantics.
+- A host `aria-describedby` describes the slider element, by element reference.
 
 ### Keyboard support
 

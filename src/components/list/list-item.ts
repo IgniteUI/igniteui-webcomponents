@@ -61,10 +61,10 @@ export default class IgcListItemComponent extends LitElement {
         <slot name="start"></slot>
       </section>
       <section part="content">
-        <header part="header">
+        <div part="header">
           <slot part="title" name="title"></slot>
           <slot part="subtitle" name="subtitle"></slot>
-        </header>
+        </div>
         <slot></slot>
       </section>
       <section part="end">

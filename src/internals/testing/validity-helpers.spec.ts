@@ -12,9 +12,8 @@ export type ValidationContainerTestsParams<T> = {
 };
 
 /**
- * Helper object with utility methods to test form associated components for
- * validity state, both internal and external as well as their integration with
- * the validation container slots feature.
+ * Tests the validity state of form-associated components and their validation
+ * container slots.
  */
 export const ValidityHelpers = {
   /** Transitions the form associated component in **touched** state. */
@@ -22,45 +21,36 @@ export const ValidityHelpers = {
     host['_setTouchedState']();
   },
   /**
-   * Whether the form associated element is in invalid state.
+   * Asserts on the internal validity of the component.
    *
-   * @remark
-   * This is internal validity state. Unless the component is {@link ValidityHelpers.setTouchedState | touched}, there is an actual
-   * form submit request or the end-user has called `reportValidity` no invalid styles will be
-   * applied on the host component.
+   * @remarks
+   * Invalid styles apply only after the component is
+   * {@link ValidityHelpers.setTouchedState | touched}, after a form submit or
+   * after a `reportValidity` call.
    */
   isValid: (host: IgcFormControl): Chai.Assertion => {
     return expect(host.validity.valid);
   },
   /**
-   * Whether the invalid styles are applied on the form associated component.
-   *
-   * See {@link ValidityHelpers.isValid | isValid} documentation for when this is applied.
+   * Asserts on the invalid styles of the component. See
+   * {@link ValidityHelpers.isValid | isValid} for when they apply.
    */
   hasInvalidStyles: (host: IgcFormControl): Chai.Assertion => {
     return expect(host.matches(':state(ig-invalid)'));
   },
-  /**
-   * Whether the given slots exist inside the validation container of the
-   * form associated component.
-   */
+  /** Asserts that the validation container has the given slots. */
   hasSlots: (host: IgcFormControl, ...names: string[]): Chai.Assertion => {
     return expect(hasSlots(getValidationContainerRoot(host), ...names));
   },
-  /**
-   * Whether the given slot name of the validation container of the form associated
-   * component has any projected elements.
-   */
+  /** Asserts on the projected elements of a validation container slot. */
   hasSlottedContent: (host: IgcFormControl, name: string): Chai.Assertion => {
     return expect(hasSlotContent(getValidationContainerRoot(host), name));
   },
   /**
-   * Checks if the given configuration of a form associated component and validation
-   * container slots is in a correct state.
+   * Checks that the component is invalid and projects content into `slots`.
    *
    * @remarks
-   * Invoked by {@link runValidationContainerTests} so you don't really need to call
-   * this function directly.
+   * {@link runValidationContainerTests} calls it.
    */
   checkValidationSlots: async (
     host: IgcFormControl,
@@ -82,8 +72,8 @@ export const ValidityHelpers = {
 } as const;
 
 /**
- * Checks that a new `element` renders the validation slots of each case in `testParams`.
- * The cases run in sequence. Await the result. A failure names the slots of its case.
+ * Checks that a new `element` renders the validation slots of each case in
+ * `testParams`, in sequence. A failure names the slots of its case.
  */
 export async function runValidationContainerTests<T extends IgcFormControl>(
   element: Constructor<T> & IgniteComponent,
@@ -122,9 +112,7 @@ export async function runValidationContainerTests<T extends IgcFormControl>(
   }
 }
 
-/**
- * Returns whether all passed `names` exist as slots in the given `root`.
- */
+/** Returns whether `root` has a slot for each of `names`. */
 function hasSlots(
   root: HTMLElement | DocumentFragment,
   ...names: string[]
@@ -142,11 +130,8 @@ function hasSlots(
 }
 
 /**
- * Returns whether the given slot `name` has any slotted content for the given `root`.
- * Pass an empty string for the default slot.
- *
- * The function will flatten the target slot discarding any slot re-projection and
- * will match only elements being projected.
+ * Returns whether the slot `name` of `root` has flattened assigned elements.
+ * An empty `name` selects the default slot.
  */
 function hasSlotContent(
   root: HTMLElement | DocumentFragment,

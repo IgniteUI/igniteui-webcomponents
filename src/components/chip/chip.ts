@@ -5,6 +5,10 @@ import {
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
+import {
+  ariaBindings,
+  hostAria,
+} from '#internals/controllers/aria-projection.js';
 import { addKeybindings } from '#internals/controllers/key-bindings.js';
 import {
   addSlotController,
@@ -16,6 +20,7 @@ import { registerComponent } from '#internals/definitions/register.js';
 import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -62,7 +67,7 @@ const i18n: I18nControllerConfig<IChipResourceStrings> = {
 @shadowOptions({ delegatesFocus: true })
 export default class IgcChipComponent extends I18nMixin(
   EventEmitterMixin<IgcChipComponentEventMap, Constructor<LitElement>>(
-    LitElement
+    HostAriaMixin(LitElement)
   ),
   i18n
 ) {
@@ -217,6 +222,7 @@ export default class IgcChipComponent extends I18nMixin(
     return html`
       <div part="base">
         <button
+          ${ariaBindings(hostAria(this))}
           part="action"
           type="button"
           .ariaPressed=${ariaPressed}

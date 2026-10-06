@@ -44,6 +44,7 @@ This directory hosts four public components: [`igc-select`](#igc-select), [`igc-
     - [Scroll strategy tests](#scroll-strategy-tests)
     - [Form integration tests](#form-integration-tests)
     - [Validation message slots](#validation-message-slots)
+    - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -56,6 +57,8 @@ This directory hosts four public components: [`igc-select`](#igc-select), [`igc-
 | ------: | ---------- | -------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                              |
 |       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
+|       3 | 2026-10-02 | Focus after form checks; `invalid` only on checks  |
+|       4 | 2026-10-02 | Forward the host `aria-describedby`                |
 
 ## Overview
 
@@ -226,6 +229,11 @@ name the control.
 - A form reset restores `defaultValue`, taken from the `value` attribute.
 - An invalid control blocks submission.
 
+As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
+the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
+`checkValidity()` do not move the focus. The `invalid` event comes only from these checks and from a failed submit,
+not while the user edits the control.
+
 ### Localization
 
 The component renders no strings of its own. The label, the placeholder, the option content and the validation
@@ -293,19 +301,19 @@ matching option is activated instead.
 
 #### Methods
 
-| Name              | Type signature                                                 | Description                                                      |
-| ----------------- | -------------------------------------------------------------- | ---------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`                                         | Shows the component.                                             |
-| hide              | `(): Promise<boolean>`                                         | Hides the component.                                             |
-| toggle            | `(): Promise<boolean>`                                         | Toggles the open state of the component.                         |
-| select            | `(value: string \| number): IgcSelectItemComponent \| null`    | Selects the item with the given value or index.                  |
-| navigateTo        | `(value: string \| number): IgcSelectItemComponent \| null`    | Activates the item with the given value or index.                |
-| clearSelection    | `(): void`                                                     | Resets the current value and selection of the component.         |
-| focus             | `(options?: FocusOptions): void`                               | Sets focus on the component.                                     |
-| blur              | `(): void`                                                     | Removes focus from the component.                                |
-| checkValidity     | `(): boolean`                                                  | Checks validity and emits `invalid` when the control is invalid. |
-| reportValidity    | `(): boolean`                                                  | Checks the validity and moves focus to the control when invalid. |
-| setCustomValidity | `(message: string): void`                                      | Sets a custom message. Invalid while `message` is not empty.     |
+| Name              | Type signature                                              | Description                                                             |
+| ----------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------- |
+| show              | `(): Promise<boolean>`                                      | Shows the component.                                                    |
+| hide              | `(): Promise<boolean>`                                      | Hides the component.                                                    |
+| toggle            | `(): Promise<boolean>`                                      | Toggles the open state of the component.                                |
+| select            | `(value: string \| number): IgcSelectItemComponent \| null` | Selects the item with the given value or index.                         |
+| navigateTo        | `(value: string \| number): IgcSelectItemComponent \| null` | Activates the item with the given value or index.                       |
+| clearSelection    | `(): void`                                                  | Resets the current value and selection of the component.                |
+| focus             | `(options?: FocusOptions): void`                            | Sets focus on the component.                                            |
+| blur              | `(): void`                                                  | Removes focus from the component.                                       |
+| checkValidity     | `(): boolean`                                               | Checks validity and emits `invalid` when the control is invalid.        |
+| reportValidity    | `(): boolean`                                               | Checks validity; when invalid, emits `invalid` and focuses the control. |
+| setCustomValidity | `(message: string): void`                                   | Sets a custom message. Invalid while `message` is not empty.            |
 
 #### Events
 
@@ -437,7 +445,7 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 13. `show`, `hide` and `toggle` transition the open state.
 14. `select` and `navigateTo` work by value and by index and return the item or `null`.
 15. `clearSelection` resets the value and the selection.
-16. `focus` and `blur` move focus to and from the component.
+16. `focus` and `blur` move focus to and from the component, and `reportValidity()` focuses an invalid select.
 
 ### Groups
 
@@ -474,6 +482,11 @@ Generated by `runValidationContainerTests`.
 
 31. The `value-missing`, `custom-error` and `invalid` slots render for their matching state.
 
+### Host ARIA
+
+32. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+    text, and follows a change and a removal.
+
 ## Assumptions and limitations
 
 - Only single selection is supported. For multiple selection use [`igc-combo`](../combo/spec.md).
@@ -491,6 +504,7 @@ Generated by `runValidationContainerTests`.
 - The disabled state is exposed on the anchor, and disabled items and groups are announced as disabled.
 - The helper text and the validation messages are referenced through `aria-describedby`.
 - An external light DOM `label` is projected onto the native input of the anchor as an element reference.
+- A host `aria-describedby` describes the native control after the helper text, by element reference.
 
 ### Keyboard support
 

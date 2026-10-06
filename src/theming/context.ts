@@ -1,9 +1,6 @@
 import { createContext } from '@lit/context';
 import type { Theme, ThemeVariant } from './types.js';
 
-/**
- * The theme context value.
- */
 export interface ThemeContext {
   theme: Theme;
   variant: ThemeVariant;

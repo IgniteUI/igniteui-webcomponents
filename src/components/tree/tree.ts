@@ -10,27 +10,24 @@ import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
+import { setOrRemoveAttribute } from '#internals/utils/dom.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import type { TreeSelection } from '../types.js';
 import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
 import IgcTreeItemComponent from './tree-item.js';
 import {
+  collectTreeItems,
   getTreeItemChildren,
   type IgcTreeComponentEventMap,
-  setAriaState,
 } from './tree.common.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
 
 /**
  * Tree properties that items read while rendering. The tree is not a reactive
- * source for them, so changing one has to re-render the items by hand or they
- * keep rendering stale output.
- *
- * Prefer reading tree state at event time over extending this - a handler
- * always sees the current value and costs no re-render. Direction is handled in
- * CSS via `:dir()` for the same reason.
+ * source for them, so a change must re-render the items by hand. Prefer to read
+ * tree state at event time over extending this list.
  */
 const ITEM_RENDER_DEPENDENCIES = ['selection', 'resourceStrings'] as const;
 
@@ -97,7 +94,7 @@ export default class IgcTreeComponent extends I18nMixin(
 
   /**
    * @hidden @internal
-   * The tree's top-most items, i.e. its direct `igc-tree-item` light-DOM children.
+   * The direct `igc-tree-item` light-DOM children of the tree.
    */
   public get _rootItems(): IgcTreeItemComponent[] {
     return getTreeItemChildren(this);
@@ -108,16 +105,7 @@ export default class IgcTreeComponent extends I18nMixin(
    * Returns all of the tree's items.
    */
   public get items(): IgcTreeItemComponent[] {
-    // A shared accumulator, rather than spreading each root's flattened
-    // descendants, which would copy every subtree an extra time.
-    const result: IgcTreeItemComponent[] = [];
-
-    for (const item of this._rootItems) {
-      result.push(item);
-      item._collectDescendants(result);
-    }
-
-    return result;
+    return collectTreeItems(this);
   }
 
   constructor() {
@@ -134,13 +122,12 @@ export default class IgcTreeComponent extends I18nMixin(
     this._syncAria();
     const items = this.items;
 
-    // set init to true for all items which are rendered along with the tree
+    // Mark the items that render with the tree.
     for (const item of items) {
       item.init = true;
     }
 
-    // Seed the roving tabindex without moving DOM focus - connecting a tree must
-    // not pull focus away from wherever the user currently is.
+    // Seed the roving tabindex without moving DOM focus away from the user.
     const firstNotDisabledItem = items.find((i) => !i.disabled);
     if (firstNotDisabledItem) {
       firstNotDisabledItem.tabIndex = 0;
@@ -155,8 +142,9 @@ export default class IgcTreeComponent extends I18nMixin(
       this.selectionService.clearItemsSelection();
     }
 
-    if (changed.has('singleBranchExpand')) {
-      this._singleBranchExpandChange();
+    // The active item's branch stays open; everything else collapses.
+    if (changed.has('singleBranchExpand') && this.singleBranchExpand) {
+      this._collapseOtherBranches(this.navService.activeItem);
     }
 
     if (ITEM_RENDER_DEPENDENCIES.some((prop) => changed.has(prop))) {
@@ -175,25 +163,20 @@ export default class IgcTreeComponent extends I18nMixin(
     this.setAttribute('role', 'tree');
 
     // A tree that cannot be selected should not advertise itself as selectable.
-    setAriaState(
+    setOrRemoveAttribute(
       this,
       'aria-multiselectable',
       this.selection === 'none' ? null : 'true'
     );
   }
 
-  private _singleBranchExpandChange(): void {
-    if (!this.singleBranchExpand) {
-      return;
-    }
+  /** @hidden @internal Collapses every item except the ancestors of `item`. */
+  public _collapseOtherBranches(item: IgcTreeItemComponent | null): void {
+    const keepExpanded = new Set(item ? item.path.slice(0, -1) : []);
 
-    // The active item's branch stays open; everything else collapses.
-    const active = this.navService.activeItem;
-    const keepExpanded = new Set(active ? active.path.slice(0, -1) : []);
-
-    for (const item of this.items) {
-      if (!keepExpanded.has(item)) {
-        item.collapseWithEvent();
+    for (const other of this.items) {
+      if (!keepExpanded.has(other)) {
+        other.collapseWithEvent();
       }
     }
   }
@@ -217,8 +200,7 @@ export default class IgcTreeComponent extends I18nMixin(
       return;
     }
 
-    // Cascading down from the roots already covers every descendant, so there
-    // is no need to walk the whole tree to build the list.
+    // Cascading from the roots already covers every descendant.
     this.selectionService.selectItemsWithNoEvent(
       this.selection === 'cascade' ? this._rootItems : this.items
     );
