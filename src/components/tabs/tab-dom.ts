@@ -1,11 +1,13 @@
 import type { Ref } from 'lit/directives/ref.js';
 import { isLTR, setStyles } from '#internals/utils/dom.js';
 import { asNumber } from '#internals/utils/math.js';
+import { equal } from '#internals/utils/objects.js';
 import type IgcTabComponent from './tab.js';
 import type IgcTabsComponent from './tabs.js';
 
-/** Tolerance for treating a tab edge as aligned with the visible region. */
 const EDGE_TOLERANCE = 1;
+
+export const TAB_HEADER = '[part~="tab-header"]';
 
 type TabsStyleProperties = {
   '--_tabs-count': string;
@@ -17,7 +19,7 @@ type ScrollButtonsState = {
   end: boolean;
 };
 
-class TabsHelpers {
+export class TabsHelpers {
   private readonly _host: IgcTabsComponent;
   private readonly _container: Ref<HTMLElement>;
   private readonly _indicator: Ref<HTMLElement>;
@@ -35,21 +37,18 @@ class TabsHelpers {
 
   private _isLeftToRight = false;
 
-  /** The DOM container holding the tab headers. */
-  public get container(): HTMLElement | undefined {
+  private get container(): HTMLElement | undefined {
     return this._container.value;
   }
 
-  public get indicator(): HTMLElement | undefined {
+  private get indicator(): HTMLElement | undefined {
     return this._indicator.value;
   }
 
-  /** The internal CSS variables driving the layout of the tabs component. */
   public get styleProperties(): TabsStyleProperties {
     return this._styleProperties;
   }
 
-  /** Whether the header strip overflows and needs its scroll buttons. */
   public get hasScrollButtons(): boolean {
     return this._hasScrollButtons;
   }
@@ -68,26 +67,23 @@ class TabsHelpers {
     this._indicator = indicator;
   }
 
-  /** Sets the layout CSS variables and requests a host update when they change. */
-  public setStyleProperties(): void {
-    const count = String(this._host.tabs.length);
-    const width = this.container
-      ? `${this.container.getBoundingClientRect().width}px`
-      : '';
-    const current = this._styleProperties;
+  public updateLayout(): void {
+    this._setStyleProperties();
+    this._setScrollButtonState();
+  }
 
-    if (
-      current['--_tabs-count'] === count &&
-      current['--_ig-tabs-width'] === width
-    ) {
-      return;
-    }
-
-    this._styleProperties = {
-      '--_tabs-count': count,
-      '--_ig-tabs-width': width,
+  private _setStyleProperties(): void {
+    const next = {
+      '--_tabs-count': String(this._host.tabs.length),
+      '--_ig-tabs-width': this.container
+        ? `${this.container.getBoundingClientRect().width}px`
+        : '',
     };
-    this._host.requestUpdate();
+
+    if (!equal(this._styleProperties, next)) {
+      this._styleProperties = next;
+      this._host.requestUpdate();
+    }
   }
 
   public checkAndUpdateDirection(): boolean {
@@ -101,19 +97,13 @@ class TabsHelpers {
     return false;
   }
 
-  /**
-   * Sets the type of the `scroll-snap-align` CSS property for the tabs header strip.
-   */
   public setScrollSnap(type?: 'start' | 'end'): void {
     if (this.container) {
       this.container.style.setProperty('--_ig-tab-snap', type || 'unset');
     }
   }
 
-  /**
-   * The horizontal bounds of the strip outside the sticky scroll buttons. A tab
-   * inside these bounds is in view.
-   */
+  /** The bounds of the strip without the sticky scroll buttons. */
   private _getVisibleBounds(container: HTMLElement): {
     min: number;
     max: number;
@@ -130,10 +120,6 @@ class TabsHelpers {
       : { min: left + end, max: right - start };
   }
 
-  /**
-   * The distance needed to bring the closest tab that is not fully in view for the
-   * given direction inside the visible bounds, or `0` when every tab is in view.
-   */
   private _getScrollOffset(
     container: HTMLElement,
     direction: 'start' | 'end'
@@ -141,7 +127,6 @@ class TabsHelpers {
     const isEnd = direction === 'end';
     const { min, max } = this._getVisibleBounds(container);
 
-    // The overflow edge depends on the scroll direction and the text direction.
     const useRightEdge = isEnd === isLTR(this._host);
 
     const isOutOfView = (header: HTMLElement): boolean => {
@@ -155,7 +140,7 @@ class TabsHelpers {
       .map((tab) => getTabHeader(tab))
       .filter((header): header is HTMLElement => header !== null);
 
-    // Tabs are in document order, so these matches are closest to the visible region.
+    // The first match past the edge is the closest one.
     const target = isEnd
       ? headers.find(isOutOfView)
       : headers.findLast(isOutOfView);
@@ -168,10 +153,6 @@ class TabsHelpers {
     return useRightEdge ? right - max : left - min;
   }
 
-  /**
-   * Scrolls the tabs header strip to the closest tab that is out of view in the given
-   * direction, with `scroll-snap-align` set.
-   */
   public scrollTabs(direction: 'start' | 'end'): void {
     const container = this.container;
 
@@ -189,20 +170,12 @@ class TabsHelpers {
     container.scrollBy({ left: offset, behavior: 'smooth' });
   }
 
-  /**
-   * Scrolls the tabs header strip horizontally by the smallest distance that brings the
-   * header of the given tab inside the visible bounds. The strip is the only thing that
-   * moves, so unlike `Element.scrollIntoView()` this never scrolls the page.
-   */
+  /** Unlike `Element.scrollIntoView()`, it scrolls only the strip, never the page. */
   public async scrollTabIntoView(tab?: IgcTabComponent): Promise<void> {
-    // A selection change can come with a changed tab set, and the render that
-    // applies the new tab count is what can tip the strip into overflowing. The
-    // scroll buttons that overflow brings in shift every tab, so a second pass
-    // picks up that state and waits for its render too. Measuring any earlier
-    // would leave the tab hidden behind a scroll button.
+    // The render of a new tab count can bring in the scroll buttons, which move
+    // every tab, so a second pass measures after their render.
     for (let pass = 0; pass < 2; pass++) {
-      this.setStyleProperties();
-      this.setScrollButtonState();
+      this.updateLayout();
       await this._host.updateComplete;
     }
 
@@ -232,22 +205,14 @@ class TabsHelpers {
     container.scrollBy({ left: offset });
   }
 
-  /**
-   * Updates the visibility and disabled state of the scroll buttons. Requests a
-   * host update when they change. Meant for layout changes: a changed tab set, a
-   * resize or a selection, since it reads the width of every tab header. The scroll
-   * handler uses `setScrollPositionState()` instead.
-   */
-  public setScrollButtonState(): void {
+  /** Reads every tab header, so the scroll handler uses `setScrollPositionState()`. */
+  private _setScrollButtonState(): void {
     if (!this.container) {
       return;
     }
 
-    // Once the strip is scrollable its scroll width includes the two scroll button
-    // columns, so the overflow is judged by the tabs alone. Otherwise the buttons
-    // would keep themselves displayed after the tabs fit again, e.g. when tabs are
-    // removed, and the measurement would depend on whether they are rendered yet.
-    // Subpixel widths, so that the rounding of many headers does not add up.
+    // The tabs alone, because the scroll width includes the button columns. Subpixel
+    // widths, so that the rounding of many headers does not add up.
     const tabsWidth = this._host.tabs.reduce(
       (width, tab) =>
         width + (getTabHeader(tab)?.getBoundingClientRect().width ?? 0),
@@ -256,18 +221,12 @@ class TabsHelpers {
     const hasScrollButtons =
       tabsWidth > this.container.getBoundingClientRect().width + EDGE_TOLERANCE;
 
-    this._applyScrollButtonState(hasScrollButtons);
+    this.setScrollPositionState(hasScrollButtons);
   }
 
-  /**
-   * Updates only the active state of the scroll buttons from the scroll position of the
-   * strip. Cheap enough to run on every scroll event.
-   */
-  public setScrollPositionState(): void {
-    this._applyScrollButtonState(this._hasScrollButtons);
-  }
-
-  private _applyScrollButtonState(hasScrollButtons: boolean): void {
+  public setScrollPositionState(
+    hasScrollButtons = this._hasScrollButtons
+  ): void {
     if (!this.container) {
       return;
     }
@@ -275,8 +234,10 @@ class TabsHelpers {
     const { scrollLeft, scrollWidth, clientWidth } = this.container;
     const disabled = this._scrollButtonsDisabled;
 
-    const start = Math.abs(scrollLeft) <= 1;
-    const end = Math.abs(Math.abs(scrollLeft) + clientWidth - scrollWidth) <= 1;
+    const start = Math.abs(scrollLeft) <= EDGE_TOLERANCE;
+    const end =
+      Math.abs(Math.abs(scrollLeft) + clientWidth - scrollWidth) <=
+      EDGE_TOLERANCE;
 
     if (
       this._hasScrollButtons === hasScrollButtons &&
@@ -292,9 +253,6 @@ class TabsHelpers {
     this._host.requestUpdate();
   }
 
-  /**
-   * Updates the indicator DOM element styles based on the current "active" tab.
-   */
   public async setIndicator(active?: IgcTabComponent): Promise<void> {
     await this._host.updateComplete;
 
@@ -329,15 +287,6 @@ class TabsHelpers {
   }
 }
 
-export function createTabHelpers(
-  host: IgcTabsComponent,
-  container: Ref<HTMLElement>,
-  indicator: Ref<HTMLElement>
-): TabsHelpers {
-  return new TabsHelpers(host, container, indicator);
-}
-
-/** Returns the header element of the given tab, or `null` if it has not rendered yet. */
 export function getTabHeader(tab: IgcTabComponent): HTMLElement | null {
-  return tab.renderRoot.querySelector('[part~="tab-header"]');
+  return tab.renderRoot.querySelector(TAB_HEADER);
 }

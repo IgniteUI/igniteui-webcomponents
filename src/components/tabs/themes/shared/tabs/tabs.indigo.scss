@@ -1,7 +1,5 @@
 @use 'styles/utilities' as *;
 @use '../../light/themes' as *;
-@use '../../tabs.common' as *;
-@use 'sass:map';
 
 $theme: $indigo;
 
@@ -15,19 +13,10 @@ $theme: $indigo;
     $indicator-height: rem(1px);
 
     height: $indicator-height;
-    position: relative;
 
     span {
         background: var-get($theme, 'indicator-color');
         height: rem(3px);
-        inset-block-end: 100%;
-    }
-
-    &::before {
-        content: '';
-        position: absolute;
-        width: 100%;
-        height: $indicator-height;
         inset-block-end: 100%;
     }
 }
@@ -44,10 +33,8 @@ $theme: $indigo;
     }
 }
 
-// The scroll buttons are sticky and the tab items scroll underneath them.
-// Both the button and the tabs strip are transparent in Indigo, so an opaque
-// surface backdrop is painted below the themed background, otherwise the tabs
-// show through the buttons.
+// The tabs scroll under the sticky buttons, and both are transparent in Indigo, so
+// an opaque backdrop keeps the tabs from showing through.
 igc-icon-button::part(base) {
     overflow: hidden;
     background-color: color($color: 'surface');
@@ -71,8 +58,7 @@ igc-icon-button:hover::part(base) {
     }
 }
 
-igc-icon-button[disabled]::part(base), 
-igc-icon-button:disabled::part(base) {
+igc-icon-button[disabled]::part(base) {
     border-bottom: rem(1px) solid var(--nav-btn-border-color);
 }
 

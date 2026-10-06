@@ -29,31 +29,23 @@
     ::slotted(igc-icon) {
         transition: color $transition;
     }
-
-    &:focus-within {
-        outline-color: transparent;
-    }
 }
 
 [part='base'] {
     display: flex;
-    grid-row: var(--header-bottom, 1);
     align-items: center;
     justify-content: center;
     gap: rem(8px);
     user-select: none;
-    outline-style: none;
 }
 
 [part~='content'] {
-    @include line-clamp(2, true, true);
-
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
     text-align: center;
-    outline-style: none;
+    overflow: hidden;
     gap: rem(8px);
     flex: 1;
 
@@ -74,8 +66,6 @@
     height: 100%;
     grid-row: 3;
     grid-column: 1 / -1;
-
-    // The value of --_ig-tabs-width is calculated in TypeScript and represents the width of the ig-tabs component
     max-width: var(--_ig-tabs-width);
     transition: transform 250ms ease-in-out;
 }

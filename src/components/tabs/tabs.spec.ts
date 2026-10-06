@@ -3,6 +3,7 @@ import {
   expect,
   fixture,
   html,
+  nextFrame,
   waitUntil,
 } from '@open-wc/testing';
 import { range } from 'lit/directives/range.js';
@@ -21,6 +22,7 @@ import {
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
+import { configureTheme } from '#theming/config.js';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcTabComponent from './tab.js';
 import IgcTabsComponent from './tabs.js';
@@ -277,6 +279,27 @@ describe('Tabs component', () => {
       expect(indicator.style.width).to.eq(
         `${getTabDOM(firstOf(selected)).header.offsetWidth}px`
       );
+    });
+
+    it('places the selected indicator at the start when the page sets `text-align`', async () => {
+      // The Bootstrap theme shows no indicator.
+      configureTheme('material');
+
+      try {
+        const tabs = await fixture<IgcTabsComponent>(html`
+          <igc-tabs style="width: 600px; text-align: center">
+            <igc-tab label="One"></igc-tab>
+            <igc-tab label="Two" selected></igc-tab>
+          </igc-tabs>
+        `);
+        await elementUpdated(tabs);
+
+        // The transform moves the indicator to its tab from this position.
+        expect(getTabsDOM(tabs).indicator.offsetLeft).to.equal(0);
+      } finally {
+        configureTheme('bootstrap');
+        await nextFrame();
+      }
     });
 
     it('selected indicator align with the selected tab (RTL)', async () => {
@@ -592,6 +615,58 @@ describe('Tabs component', () => {
       const tab = document.createElement(IgcTabComponent.tagName);
       tab.label = 'New tab';
       element.append(tab);
+
+      await elementUpdated(tab);
+      await elementUpdated(element);
+
+      verifySelection(element, tab);
+    });
+
+    it('selects an added selected tab when the active tab is deselected at the same time', async () => {
+      const tab = document.createElement(IgcTabComponent.tagName);
+      tab.label = 'New tab';
+      tab.selected = true;
+
+      // A declarative render moves `selected` to the new tab in one task.
+      element.tabs[0].selected = false;
+      element.append(tab);
+
+      await elementUpdated(tab);
+      await elementUpdated(element);
+
+      verifySelection(element, tab);
+    });
+
+    it('selects the selected tab of new markup', async () => {
+      element.innerHTML = `
+        <igc-tab label="New 1">Content 1</igc-tab>
+        <igc-tab label="New 2" selected>Content 2</igc-tab>
+      `;
+      const [, selected] = element.tabs;
+
+      await elementUpdated(selected);
+      await elementUpdated(element);
+
+      verifySelection(element, selected);
+    });
+
+    it('keeps the selection when the selected tab moves', async () => {
+      const active = element.tabs[0];
+
+      element.append(active);
+      await elementUpdated(element);
+
+      verifySelection(element, active);
+    });
+
+    it('selects the last tab in document order when several tabs become selected at once', async () => {
+      const tab = document.createElement(IgcTabComponent.tagName);
+      element.append(tab);
+      await elementUpdated(tab);
+      await elementUpdated(element);
+
+      tab.selected = true;
+      element.tabs[1].selected = true;
 
       await elementUpdated(tab);
       await elementUpdated(element);
