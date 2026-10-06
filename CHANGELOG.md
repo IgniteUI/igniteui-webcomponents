@@ -65,6 +65,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A disabled link now renders a disabled native `<button>` with `role="link"` in place of the anchor, so it leaves the tab order, cannot navigate, and dispatches no click. Before, the link stayed in the tab order, and `Enter` still followed it. The `base` part is the `<button>` while the link is disabled.
   - A change of the host `aria-label` alone now updates the name of the native button or link. Before, the new label applied only after the next change of a property.
   - A host `aria-labelledby` and `aria-describedby` now reach the native button or link, and a `<label>` for the button names it. A host `aria-label` still wins over a `<label>`, as for a native button. An `igc-tooltip` on a button now describes the native button. Before, the button forwarded only `aria-label`.
+- #### Radio group
+  - In the horizontal alignment, the helper text and the validation messages of the radios now show under the radios, each in a row of its own. Before, the messages of two radios showed on top of each other, and with a `label` element in the group, the messages showed between the label and the radios.
 - #### Accordion
   - The arrow keys, `Home` and `End` now skip a panel that does not render, such as a panel with the `hidden` attribute or `display: none`. Before, the focus stayed on the current panel.
 - #### QR code
