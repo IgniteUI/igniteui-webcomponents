@@ -5,18 +5,14 @@ $theme: $material;
 $background: var-get($theme, 'background') !default;
 
 :host {
-    [part='base'] {
-        background: $background;
-        border-color: var-get($theme, 'border-color');
-
-        &::backdrop {
-            background: var-get($overlay-material, 'background-color');
-        }
-    }
-
+    [part='base'],
     [part='mini'] {
         background: $background;
         border-color: var-get($theme, 'border-color');
+    }
+
+    [part='base']::backdrop {
+        background: var-get($overlay-material, 'background-color');
     }
 }
 

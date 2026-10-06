@@ -16,6 +16,7 @@
       - [Initial checked state](#initial-checked-state)
       - [Child radio component with initial checked state](#child-radio-component-with-initial-checked-state)
       - [Alignment](#alignment)
+      - [Group label](#group-label)
       - [Form integration](#form-integration)
     - [Localization](#localization)
     - [Keyboard interactions](#keyboard-interactions)
@@ -41,9 +42,10 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                                                       |
+| ------: | ---------- | ------------------------------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                                       |
+|       2 | 2026-10-06 | Name the group with `aria-labelledby`; one row for each message in the horizontal alignment |
 
 ## Overview
 
@@ -121,8 +123,8 @@ visual chrome of its own. The keyboard and selection behavior belongs to the rad
 A radio group that sets the shared `name` attribute for its children:
 
 ```html
-<label for="contact-method">Please select your preferred contact method</label>
-<igc-radio-group id="contact-method" name="contact">
+<igc-radio-group name="contact" aria-labelledby="contact-label">
+  <label id="contact-label">Please select your preferred contact method</label>
   <igc-radio value="email">Email</igc-radio>
   <igc-radio value="phone">Phone</igc-radio>
   <igc-radio value="mail">Mail</igc-radio>
@@ -134,8 +136,8 @@ A radio group that sets the shared `name` attribute for its children:
 A vertically aligned group that sets the shared `name` and checks the radio with `email` as its value:
 
 ```html
-<label for="contact-method">Please select your preferred contact method</label>
-<igc-radio-group id="contact-method" alignment="vertical" name="contact" value="email">
+<igc-radio-group alignment="vertical" name="contact" value="email" aria-labelledby="contact-label">
+  <label id="contact-label">Please select your preferred contact method</label>
   <igc-radio value="email">Email</igc-radio>
   <igc-radio value="phone">Phone</igc-radio>
   <igc-radio value="mail">Mail</igc-radio>
@@ -147,8 +149,8 @@ A vertically aligned group that sets the shared `name` and checks the radio with
 If a child radio has an initial `checked` state, the group skips applying its own `value`:
 
 ```html
-<label for="contact-method">Please select your preferred contact method</label>
-<igc-radio-group id="contact-method" name="contact" value="email">
+<igc-radio-group name="contact" value="email" aria-labelledby="contact-label">
+  <label id="contact-label">Please select your preferred contact method</label>
   <igc-radio value="email">Email</igc-radio>
   <igc-radio value="phone" checked>Phone</igc-radio>
   <igc-radio value="mail">Mail</igc-radio>
@@ -165,6 +167,18 @@ Here `Phone` stays checked.
   <igc-radio value="phone">Phone</igc-radio>
 </igc-radio-group>
 ```
+
+In the horizontal alignment, the helper text and the validation messages of the radios show under the row of radios,
+each in a row of its own, in the order of the radios.
+
+#### Group label
+
+A `label` element in the default slot is the visible label of the group. The group does not count it as a radio. In
+the horizontal alignment, the label spans the full width above the radios.
+
+The `label` element does not name the group, because the group is not a form control. A `label` element with `for`
+does not name it either. Point the `aria-labelledby` of the group to the label, as in the examples above, or set
+`aria-label` on the group.
 
 #### Form integration
 
@@ -268,23 +282,25 @@ The groups below mirror the `describe` blocks of the suite.
 18. Does not report a group without radios as disabled.
 19. Reports the `label-before` state of its radios.
 20. Counts only the radios for the layout of the group.
+21. Puts the helper text of each radio under the radios, one per row, in a horizontal group, with and without a group
+    label.
 
 ### ARIA
 
-21. Exposes its role as a content attribute.
-22. Mirrors `alignment` in `aria-orientation`.
+22. Exposes its role as a content attribute.
+23. Mirrors `alignment` in `aria-orientation`.
 
 ### Clearing group state
 
-23. Clearing `name` clears the names of its radios.
-24. Clearing `defaultValue` clears the default state of its radios.
+24. Clearing `name` clears the names of its radios.
+25. Clearing `defaultValue` clears the default state of its radios.
 
 ### Form integration
 
-25. Initial checked state through the group, through a radio attribute, and with multiple checked radios.
-26. Form reset when bound through the group `value` attribute, with `defaultValue` set, and with multiple checked
+26. Initial checked state through the group, through a radio attribute, and with multiple checked radios.
+27. Form reset when bound through the group `value` attribute, with `defaultValue` set, and with multiple checked
     radios.
-27. The required validator applies its visual state across the group.
+28. The required validator applies its visual state across the group.
 ## Assumptions and limitations
 
 - It is recommended to avoid mutating state on both the group and its radio children. Either control the children
@@ -298,8 +314,9 @@ The groups below mirror the `describe` blocks of the suite.
 - The `igc-radio-group` has an intrinsic role of `radiogroup`, which is reflected to the host element.
 - The orientation of the group is exposed and follows the `alignment` property.
 - The group itself is not focusable; the keyboard behavior and the roving tab index belong to the radios.
-- Label the group from the application, for example with an external `label` element referenced by `id`, or with
-  `aria-label`.
+- Name the group with `aria-labelledby`, for example pointing to a `label` element in the group, or with
+  `aria-label`. A `label` element with `for` does not name the group, because the group is not a form control. See
+  [Group label](#group-label).
 
 ### Keyboard support
 

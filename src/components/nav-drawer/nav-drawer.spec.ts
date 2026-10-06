@@ -3,11 +3,13 @@ import {
   expect,
   fixture,
   html,
+  oneEvent,
   waitUntil,
 } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
 import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import { isPopoverOpen } from '#internals/utils/dom.js';
@@ -219,6 +221,16 @@ describe('Navigation Drawer', () => {
       expect(base().getAttribute('aria-label')).to.equal('Sections');
     });
 
+    it('follows an `aria-labelledby` target that is added to the drawer later', async () => {
+      navDrawer.setAttribute('aria-labelledby', 'drawer-title');
+      await elementUpdated(navDrawer);
+
+      const title = document.createElement('h2');
+      title.id = 'drawer-title';
+      navDrawer.append(title);
+      await waitUntil(() => base().ariaLabelledByElements?.[0] === title);
+    });
+
     it('describes only the main element by the host `aria-describedby`', async () => {
       navDrawer.setAttribute('aria-describedby', 'drawer-hint');
       await elementUpdated(navDrawer);
@@ -410,6 +422,39 @@ describe('Navigation Drawer', () => {
       expect(navDrawer.open).to.be.true;
     });
 
+    it('opens the dialog again when it closes while `open` stays true', async () => {
+      await navDrawer.show();
+
+      // As after a close request that the drawer cannot cancel.
+      nativeDialog.close();
+      await oneEvent(nativeDialog, 'close');
+
+      expect(navDrawer.open).to.be.true;
+      expect(nativeDialog.open).to.be.true;
+    });
+
+    it('keeps the focus that the dialog gives back inside a closed shadow root', async () => {
+      const container = await fixture<HTMLDivElement>(html`
+        <div>
+          <div tabindex="0"></div>
+          <igc-nav-drawer><a href="#home">Home</a></igc-nav-drawer>
+        </div>
+      `);
+      navDrawer = container.querySelector(IgcNavDrawerComponent.tagName)!;
+
+      const root = container
+        .querySelector('div')!
+        .attachShadow({ mode: 'closed' });
+      const button = document.createElement('button');
+      root.append(button);
+      button.focus();
+
+      await navDrawer.show();
+      await navDrawer.hide();
+
+      expect(root.activeElement).to.equal(button);
+    });
+
     it('programmatic hide does not emit events', async () => {
       const eventSpy = spy(navDrawer, 'emitEvent');
       await navDrawer.show();
@@ -475,6 +520,19 @@ describe('Navigation Drawer', () => {
       expect(isPopoverOpen(getMiniElement(navDrawer))).to.be.true;
     });
 
+    it('is shown when mini content is added in the same task as a change from relative', async () => {
+      navDrawer = await fixture<IgcNavDrawerComponent>(
+        html`<igc-nav-drawer position="relative"></igc-nav-drawer>`
+      );
+
+      const item = document.createElement('igc-nav-drawer-item');
+      item.slot = 'mini';
+      navDrawer.appendChild(item);
+      navDrawer.position = 'start';
+
+      await waitUntil(() => isPopoverOpen(getMiniElement(navDrawer)));
+    });
+
     it('is shown when mini content is dynamically added', async () => {
       navDrawer = await createNavDrawer();
       expect(isPopoverOpen(getMiniElement(navDrawer))).to.be.false;
@@ -487,6 +545,109 @@ describe('Navigation Drawer', () => {
         () => isPopoverOpen(getMiniElement(navDrawer)),
         'Expected mini popover to be shown after adding mini content'
       );
+    });
+
+    it('returns the focus to the mini variant when the drawer closes', async () => {
+      navDrawer = await createNavDrawer(html`
+        <igc-nav-drawer>
+          <a href="#home">Home</a>
+          <button slot="mini">Menu</button>
+        </igc-nav-drawer>
+      `);
+
+      const button = navDrawer.querySelector('button')!;
+      button.focus();
+
+      await navDrawer.show();
+      expect(isFocused(button)).to.be.false;
+
+      await navDrawer.hide();
+      expect(isFocused(button)).to.be.true;
+    });
+
+    it('returns the focus to the mini variant after the dialog opens again', async () => {
+      navDrawer = await createNavDrawer(html`
+        <igc-nav-drawer>
+          <a href="#home">Home</a>
+          <button slot="mini">Menu</button>
+        </igc-nav-drawer>
+      `);
+
+      const dialog = navDrawer.renderRoot.querySelector('dialog')!;
+      const button = navDrawer.querySelector('button')!;
+      button.focus();
+
+      await navDrawer.show();
+
+      // As after a close request that the drawer cannot cancel.
+      dialog.close();
+      await oneEvent(dialog, 'close');
+      expect(dialog.open).to.be.true;
+
+      await navDrawer.hide();
+      expect(isFocused(button)).to.be.true;
+    });
+
+    it('returns the focus to the mini variant in a closed shadow root after the dialog opens again', async () => {
+      const host = await fixture<HTMLDivElement>(html`<div></div>`);
+      const root = host.attachShadow({ mode: 'closed' });
+      const button = document.createElement('button');
+      button.slot = 'mini';
+      navDrawer = document.createElement(IgcNavDrawerComponent.tagName);
+      navDrawer.append(button);
+      root.append(navDrawer);
+
+      await waitUntil(() => isPopoverOpen(getMiniElement(navDrawer)));
+      button.focus();
+      await navDrawer.show();
+
+      const dialog = navDrawer.renderRoot.querySelector('dialog')!;
+      dialog.close();
+      await oneEvent(dialog, 'close');
+
+      await navDrawer.hide();
+      expect(root.activeElement).to.equal(button);
+    });
+
+    it('hides after the dialog opens when mini content changes in the same task', async () => {
+      navDrawer = await createNavDrawerWithMini();
+      const dialog = navDrawer.renderRoot.querySelector('dialog')!;
+      let dialogOpen: boolean | undefined;
+
+      getMiniElement(navDrawer).addEventListener(
+        'beforetoggle',
+        () => {
+          dialogOpen = dialog.open;
+        },
+        { once: true }
+      );
+
+      const item = document.createElement('igc-nav-drawer-item');
+      item.slot = 'mini';
+      navDrawer.append(item);
+      await navDrawer.show();
+
+      // The dialog records the focus when it opens, and the opener can be in the mini variant.
+      expect(dialogOpen).to.be.true;
+    });
+
+    it('does not return the focus to the dialog opener after a change to relative', async () => {
+      navDrawer = await createNavDrawer(html`
+        <igc-nav-drawer>
+          <a href="#home">Home</a>
+          <button slot="mini">Menu</button>
+        </igc-nav-drawer>
+      `);
+
+      const button = navDrawer.querySelector('button')!;
+      button.focus();
+
+      await navDrawer.show();
+      navDrawer.position = 'relative';
+      await elementUpdated(navDrawer);
+
+      await navDrawer.hide();
+      expect(isFocused(button)).to.be.false;
     });
 
     it('is hidden when all mini content is removed', async () => {

@@ -3,10 +3,12 @@ import {
   expect,
   fixture,
   html,
+  oneEvent,
   waitUntil,
 } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
 import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import IgcButtonComponent from '../button/button.js';
@@ -385,6 +387,24 @@ describe('Dialog', () => {
 
       expect(dialog.open).to.be.true;
       expect(nativeDialog.open).to.be.true;
+    });
+
+    it('opens the dialog again when it closes while `open` stays true', async () => {
+      const opener = await fixture<HTMLButtonElement>(
+        html`<button>Open</button>`
+      );
+      opener.focus();
+      await dialog.show();
+
+      // As after a close request that the dialog cannot cancel.
+      nativeDialog.close();
+      await oneEvent(nativeDialog, 'close');
+
+      expect(dialog.open).to.be.true;
+      expect(nativeDialog.open).to.be.true;
+
+      await dialog.hide();
+      expect(isFocused(opener)).to.be.true;
     });
   });
 

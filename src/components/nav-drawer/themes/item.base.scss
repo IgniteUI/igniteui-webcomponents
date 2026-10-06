@@ -27,7 +27,7 @@
     @include ellipsis();
 }
 
-[part='base mini'] {
+[part~='base'][part~='mini'] {
     display: block;
 
     [part='content'] {

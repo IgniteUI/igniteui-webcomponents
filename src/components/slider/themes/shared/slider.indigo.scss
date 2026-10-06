@@ -16,13 +16,12 @@ $thumb-label-height: rem(22px);
         top: rem(3px);
 
         [part='tick-label'] {
-            top: auto;
             bottom: rem(20px);
         }
     }
 }
 
-[part='thumb-label-inner'] {
+[part~='thumb-label-inner'] {
     @include type-style('subtitle-2');
     @include border-radius(rem(3px));
 
@@ -34,8 +33,7 @@ $thumb-label-height: rem(22px);
     }
 }
 
-[part='thumb-label'] {
-    top: calc((#{$thumb-label-height} + rem(18px)) * -1);
+[part~='thumb-label'] {
     height: $thumb-label-height;
 }
 
@@ -81,8 +79,8 @@ $thumb-label-height: rem(22px);
     border: rem(2px) solid var-get($theme, 'thumb-border-color');
     width: $thumb-size;
     height: $thumb-size;
-    top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
-    margin-inline-start: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
+    top: -$thumb-radius;
+    margin-inline-start: -$thumb-radius;
 
     &:hover, &:active {
         transform: scale($thumb-scale-hover);
@@ -108,7 +106,7 @@ $thumb-label-height: rem(22px);
         color: transparent;
     }
 
-    [part='thumb'] {
+    [part~='thumb'] {
         border-color: var-get($theme, 'thumb-disabled-border-color');
     }
 

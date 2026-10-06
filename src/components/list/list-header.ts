@@ -27,8 +27,9 @@ export default class IgcListHeaderComponent extends LitElement {
 
     addThemingController(this, all);
 
+    // A list owns only list items. A separator would also hide the content of the header.
     addInternalsController(this, {
-      initialARIA: { role: 'separator' },
+      initialARIA: { role: 'listitem' },
     });
   }
 

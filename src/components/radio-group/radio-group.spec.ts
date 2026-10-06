@@ -5,6 +5,7 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { nothing } from 'lit';
 import { spy } from 'sinon';
 
 import { internalsOf } from '#internals/controllers/internals.js';
@@ -390,6 +391,44 @@ describe('Radio Group Component', () => {
 
         expect(group.style.getPropertyValue('--layout-count')).to.equal('2');
       });
+
+      for (const label of [true, false]) {
+        it(`puts the messages under the radios, one per row, in a horizontal group ${label ? 'with' : 'without'} a label`, async () => {
+          group = await fixture(html`
+            <igc-radio-group name="fruit" alignment="horizontal">
+              ${label ? html`<label>Pick one</label>` : nothing}
+              <igc-radio value="apple">
+                Apple
+                <span slot="helper-text">Apples are in season.</span>
+              </igc-radio>
+              <igc-radio value="orange">
+                Orange
+                <span slot="helper-text">Oranges are on sale.</span>
+              </igc-radio>
+            </igc-radio-group>
+          `);
+
+          const rectOf = (element: Element) => element.getBoundingClientRect();
+          const radios = Array.from(
+            group.querySelectorAll(IgcRadioComponent.tagName)
+          );
+          const [first, second] = radios.map((radio) =>
+            rectOf(radio.querySelector('[slot="helper-text"]')!)
+          );
+          const base = rectOf(
+            radios[0].renderRoot.querySelector('[part~="base"]')!
+          );
+
+          expect(first.top).to.be.at.least(base.bottom);
+          expect(second.top).to.be.at.least(first.bottom);
+
+          if (label) {
+            expect(rectOf(group.querySelector('label')!).bottom).to.be.at.most(
+              base.top
+            );
+          }
+        });
+      }
     });
 
     describe('ARIA', () => {

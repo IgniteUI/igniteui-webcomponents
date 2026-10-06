@@ -4,8 +4,6 @@
 
 $thumb-size: rem(20px);
 $thumb-radius: math.div($thumb-size, 2);
-$ripple-size: rem(40px);
-$ripple-radius: math.div($ripple-size, 2);
 $thumb-label-width: rem(40px);
 $thumb-label-height: rem(30px);
 $tick-width: rem(2px);
@@ -143,15 +141,21 @@ slot {
     transition: transform .1s ease-out, border-radius .1s ease-out;
 }
 
-[part='thumb-label'] {
-    position: absolute;
-    top: calc((#{$thumb-label-height} + #{$thumb-size}) * -1);
+// The label is in the top layer, so it must not take the pointer from the thumb
+// or from the page below it.
+igc-popover::part(container) {
     pointer-events: none;
+}
+
+[part~='thumb-label'] {
+    // The containing block of the arrow.
+    position: relative;
     height: $thumb-label-height;
+    margin-block-end: rem(12px);
     display: flex;
 }
 
-[part='thumb-label-inner'] {
+[part~='thumb-label-inner'] {
     @include type-style('caption');
     @include border-radius(rem(2px));
 
@@ -160,8 +164,6 @@ slot {
     align-items: center;
     justify-content: center;
     white-space: nowrap;
-    margin-inline-start: -50%;
-    padding: 0 pad-inline(rem(2px));
 
     &::after {
         content: '';
@@ -199,8 +201,8 @@ slot {
     }
 
     [part='track'],
-    [part='thumb'],
-    [part='thumb-label-inner'] {
+    [part~='thumb'],
+    [part~='thumb-label-inner'] {
         border: rem(1px) solid CanvasText;
     }
 
@@ -208,7 +210,7 @@ slot {
         border-color: Highlight;
     }
 
-    [part~='thumbs'] [part='thumb-label-inner'] {
+    [part~='thumbs'] [part~='thumb-label-inner'] {
         &::after {
             border-top: none;
         }
@@ -216,7 +218,7 @@ slot {
 
     :host(:disabled) {
         [part='track'],
-        [part~='thumbs'] [part='thumb'] {
+        [part~='thumbs'] [part~='thumb'] {
             border-color: GrayText;
         }
     }

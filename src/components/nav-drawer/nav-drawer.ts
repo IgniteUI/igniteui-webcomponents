@@ -15,8 +15,11 @@ import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
-import { isPointInsideElement, isPopoverOpen } from '#internals/utils/dom.js';
-import { bindIf } from '#internals/utils/lit.js';
+import {
+  getDeepActiveElement,
+  getRoot,
+  isPointInsideElement,
+} from '#internals/utils/dom.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import type { NavDrawerPosition } from '../types.js';
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
@@ -40,14 +43,12 @@ function drawerAria(drawer: IgcNavDrawerComponent): ARIABindings {
  * A side navigation container that provides
  * quick access between views within an application.
  *
- * For non-relative positions (`start`, `end`, `top`, `bottom`) the drawer is
- * rendered as a native `<dialog>` element, providing modal semantics, automatic
- * focus trapping, and a backdrop. For the `relative` position it is rendered
- * inline as a `<nav>` landmark.
+ * The edge positions (`start`, `end`, `top`, `bottom`) render a modal `<dialog>`
+ * with a focus trap and a backdrop. The `relative` position renders an inline
+ * `<nav>` landmark.
  *
- * When content is provided in the `mini` slot, a compact icon-only variant is
- * always displayed alongside the main drawer (hidden only while the full drawer
- * is open).
+ * Content in the `mini` slot renders a compact variant, which shows while the
+ * drawer is closed.
  *
  * The component integrates with the
  * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):
@@ -57,9 +58,9 @@ function drawerAria(drawer: IgcNavDrawerComponent): ARIABindings {
  *
  * @element igc-nav-drawer
  *
- * @fires igcClosing - Emitted just before the drawer is closed by a user interaction. Cancelable -
+ * @fires igcClosing - Emitted before a user interaction closes the drawer. Cancelable -
  *   call `event.preventDefault()` to abort the closing sequence.
- * @fires igcClosed - Emitted just after the drawer is closed by a user interaction.
+ * @fires igcClosed - Emitted after a user interaction closes the drawer.
  *
  * @slot - Renders the main navigation content of the drawer.
  * @slot mini - Renders the compact mini variant of the drawer.
@@ -89,6 +90,9 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   private readonly _dialogRef = createRef<HTMLDialogElement>();
   private readonly _miniRef = createRef<HTMLElement>();
 
+  /** The focused element at the first open. It gets the focus back after the close. */
+  private _opener: HTMLElement | null = null;
+
   private readonly _toggleController = addToggleController(this, {
     transition: async (open) => {
       this.open = open;
@@ -99,15 +103,10 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
 
   private readonly _slots = addSlotController(this, {
     slots: setSlots('mini'),
-    onChange: this._handleMiniState,
   });
 
   private get _dialog(): HTMLDialogElement | undefined {
     return this._dialogRef.value;
-  }
-
-  private get _mini(): HTMLElement | undefined {
-    return this._miniRef.value;
   }
 
   private get _hasMiniContent(): boolean {
@@ -147,10 +146,8 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   public open = false;
 
   /**
-   * Determines whether the drawer should remain open when the Escape key is pressed.
-   *
-   * This is only applicable when the drawer is in a non-relative position,
-   * as the Escape key does not trigger the closing of relative drawers.
+   * Whether the drawer stays open when the user presses Escape. Applies only to the
+   * edge positions, because Escape does not close a relative drawer.
    *
    * @attr keep-open-on-escape
    * @default false
@@ -159,13 +156,8 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   public keepOpenOnEscape = false;
 
   /**
-   * Sets an accessible label for the drawer.
-   *
-   * In non-relative positions this label is applied to the modal `<dialog>` element.
-   * In `relative` position it labels the `<nav>` landmark.
-   *
-   * When multiple navigation landmarks exist on the page each should receive a
-   * distinct label so screen-reader users can differentiate between them.
+   * Sets an accessible label for the `<dialog>`, or the `<nav>` landmark in the `relative`
+   * position, and for the mini variant. Give each navigation landmark on a page a distinct label.
    *
    * @attr label
    */
@@ -187,20 +179,26 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   }
 
   protected override update(properties: PropertyValues<this>): void {
+    // `cache` keeps the dialog while the drawer is relative. A modal dialog that leaves the
+    // document comes back open but not modal, and `showModal()` then throws, so close it.
+    // A relative drawer does not return the focus, so drop the opener.
     if (properties.has('position') && this._isRelative) {
       this._dialog?.close();
-      if (isPopoverOpen(this._mini)) {
-        this._mini?.hidePopover();
-      }
+      this._opener = null;
     }
 
     super.update(properties);
   }
 
-  protected override updated(properties: PropertyValues<this>): void {
-    if (properties.has('open') || properties.has('position')) {
-      this._handleOpenState();
+  protected override updated(): void {
+    // The opener can be in the mini variant, so hide the mini variant after the dialog opens,
+    // and show it before the dialog closes. A slot change also requests an update.
+    if (this.open) {
+      this._syncDialog();
       this._handleMiniState();
+    } else {
+      this._handleMiniState();
+      this._syncDialog();
     }
   }
 
@@ -208,25 +206,9 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
 
   //#region Event handlers
 
-  private _handleOpenState(): void {
-    if (this._isRelative) {
-      return;
-    }
-
-    this.open ? this._dialog?.showModal() : this._dialog?.close();
-  }
-
   private _handleMiniState(): void {
-    const mini = this._mini;
-
-    if (this._isRelative || !mini) {
-      return;
-    }
-
-    const visible = this._hasMiniContent && !this.open;
-
-    if (visible !== isPopoverOpen(mini)) {
-      visible ? mini.showPopover() : mini.hidePopover();
+    if (!this._isRelative) {
+      this._miniRef.value?.togglePopover(this._hasMiniContent && !this.open);
     }
   }
 
@@ -235,12 +217,6 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
 
     if (!this.keepOpenOnEscape) {
       this._closeWithEvent();
-    }
-  }
-
-  private _handleClose(): void {
-    if (this.open) {
-      this._dialog?.showModal();
     }
   }
 
@@ -257,86 +233,102 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
 
   //#region Internal API
 
-  private async _closeWithEvent(): Promise<boolean> {
-    return this._toggleController.hide(true);
+  private _closeWithEvent(): void {
+    this._toggleController.hide(true);
+  }
+
+  /**
+   * Matches the dialog to `open`. It also runs on `close`, so it opens a dialog again that the
+   * platform closed while `open` stays true, as on a second Escape. A dialog that opens again
+   * records the focus at that time, so the drawer keeps the first opener.
+   */
+  private _syncDialog(): void {
+    const dialog = this._dialog;
+
+    if (!this.open) {
+      dialog?.close();
+      // Focus the opener only when the dialog did not.
+      if (this._opener?.matches(':focus-within') === false) {
+        this._opener.focus({ preventScroll: true });
+      }
+      this._opener = null;
+    } else if (dialog && !dialog.open) {
+      this._opener ??= getDeepActiveElement(getRoot(this));
+      dialog.showModal();
+    }
   }
 
   //#endregion
 
   //#region Public API
 
-  /** Opens the drawer. Returns `true` if the operation was successful, `false` if the drawer was already open. */
+  /** Opens the drawer. Returns `true` on success, or `false` when it is already open. */
   public async show(): Promise<boolean> {
     return this._toggleController.show();
   }
 
-  /** Closes the drawer. Returns `true` if the operation was successful, `false` if the drawer was already closed. */
+  /** Closes the drawer. Returns `true` on success, or `false` when it is already closed. */
   public async hide(): Promise<boolean> {
     return this._toggleController.hide();
   }
 
-  /** Toggles the open state of the drawer. Delegates to `show()` or `hide()` depending on the current state. */
+  /** Toggles the open state of the drawer. */
   public toggle(): Promise<boolean> {
     return this._toggleController.toggle();
   }
 
   //#endregion
 
-  private _renderMiniVariant() {
+  private _renderMiniVariant(aria: ARIABindings) {
+    const empty = !this._hasMiniContent;
+
     return html`
       <nav
         ${ref(this._miniRef)}
-        ${ariaBindings({ ...drawerAria(this), describedBy: null })}
-        part=${partMap({
-          mini: true,
-          hidden: !this._hasMiniContent,
-        })}
-        .inert=${this.open || !this._hasMiniContent}
-        .popover=${!this._isRelative ? 'manual' : null}
+        ${ariaBindings({ ...aria, describedBy: null })}
+        part=${partMap({ mini: true, hidden: empty })}
+        .inert=${this.open || empty}
+        .popover=${this._isRelative ? null : 'manual'}
       >
         <slot name="mini"></slot>
       </nav>
     `;
   }
 
-  private _renderContent() {
-    return html`
+  private _renderBase(aria: ARIABindings) {
+    const content = html`
       <div part="main">
         <slot></slot>
       </div>
     `;
-  }
 
-  private _renderDialog() {
-    return html`
-      <dialog
-        ${ref(this._dialogRef)}
-        part="base"
-        aria-modal="true"
-        ${ariaBindings(drawerAria(this))}
-        @click=${this._handleClick}
-        @cancel=${this._handleCancel}
-        @close=${bindIf(this.keepOpenOnEscape, this._handleClose)}
-      >
-        ${this._renderContent()}
-      </dialog>
-      ${this._renderMiniVariant()}
-    `;
-  }
-
-  private _renderRelative() {
-    return html`
-      <nav part="base" ${ariaBindings(drawerAria(this))} .inert=${!this.open}>
-        ${this._renderContent()}
-      </nav>
-      ${this._renderMiniVariant()}
-    `;
+    return this._isRelative
+      ? html`
+          <nav part="base" ${ariaBindings(aria)} .inert=${!this.open}>
+            ${content}
+          </nav>
+        `
+      : html`
+          <dialog
+            ${ref(this._dialogRef)}
+            part="base"
+            aria-modal="true"
+            ${ariaBindings(aria)}
+            @click=${this._handleClick}
+            @cancel=${this._handleCancel}
+            @close=${this._syncDialog}
+          >
+            ${content}
+          </dialog>
+        `;
   }
 
   protected override render() {
-    return html`${cache(
-      this._isRelative ? this._renderRelative() : this._renderDialog()
-    )}`;
+    const aria = drawerAria(this);
+
+    return html`
+      ${cache(this._renderBase(aria))} ${this._renderMiniVariant(aria)}
+    `;
   }
 }
 
