@@ -7,6 +7,9 @@ $thumb-radius: math.div($thumb-size, 2);
 $thumb-label-width: rem(40px);
 $thumb-label-height: rem(30px);
 $tick-width: rem(2px);
+$tick-height: rem(8px);
+$primary-tick-height: rem(16px);
+$tick-label-offset: rem(24px);
 
 :host {
     display: block;
@@ -16,12 +19,14 @@ slot {
     display: none;
 }
 
+// The rows hold the ticks at the start, the track and the ticks at the end, so the
+// box of the slider also holds the tick labels. The zero minimum of the column keeps
+// many ticks from making the slider wider.
 [part~='base'] {
-    display: flex;
-    position: relative;
-    flex-grow: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto rem(48px) auto;
     align-items: center;
-    height: rem(48px);
     transition: all .2s ease-out;
     font-family: var(--ig-font-family);
     touch-action: pan-y pinch-zoom;
@@ -30,8 +35,8 @@ slot {
 [part='track'] {
     @include border-radius(rem(32px));
 
+    grid-area: 2 / 1;
     position: relative;
-    width: 100%;
     overflow: hidden;
 }
 
@@ -69,26 +74,46 @@ slot {
     }
 }
 
+// The ticks reach into the row of the track by the height of the tallest tick, and
+// a theme moves them away from the edge of that row with `--_ticks-inset`.
 [part='ticks'] {
-    width: 100%;
+    --_ticks-overlap: calc(#{$primary-tick-height} + var(--_ticks-inset, 0px));
+
+    grid-row: 3;
+    align-self: start;
     display: flex;
-    position: absolute;
-    bottom: 0;
     justify-content: space-between;
+    margin-block-start: calc(-1 * var(--_ticks-overlap));
+
+    &:not(:has([data-primary='true'])) {
+        --_ticks-overlap: calc(#{$tick-height} + var(--_ticks-inset, 0px));
+    }
 
     &:first-child {
-        bottom: auto;
-        top: 0;
-        align-items: flex-end;
+        grid-row: 1;
+        align-self: end;
+        margin-block: 0 calc(-1 * var(--_ticks-overlap));
+
+        [part='tick-group'] {
+            align-items: end;
+        }
 
         [part='tick-label'] {
-            top: auto;
-            bottom: rem(24px);
+            padding-block: 0 var(--_tick-label-offset, #{$tick-label-offset});
         }
     }
 }
 
+// The tick and its label share one cell, so every label starts at the same distance
+// from the edge of the ticks, whatever the height of its tick.
 [part='tick-group'] {
+    display: grid;
+    align-items: start;
+
+    > * {
+        grid-area: 1 / 1;
+    }
+
     &:first-of-type {
         margin-inline-start: rem(-1px);
     }
@@ -99,34 +124,36 @@ slot {
 }
 
 [part='tick'] {
-    height: rem(8px);
+    height: $tick-height;
     width: $tick-width;
 }
 
 [part='tick'][data-primary='true'] {
-    height: rem(16px);
+    height: $primary-tick-height;
 }
 
+// The label takes no width, so it does not move the ticks, and its text centers on
+// the tick.
 [part='tick-label'] {
-    position: absolute;
-    top: rem(24px);
-    line-height: .7;
+    display: flex;
+    justify-content: center;
+    width: 0;
+    white-space: nowrap;
     opacity: 1;
     transition: opacity .2s ease-in-out;
+
+    // Padding, because the type styles of the themes set the margins.
+    padding-block: var(--_tick-label-offset, #{$tick-label-offset}) 0;
 
     @include type-style('caption');
 }
 
-[part='tick-label-inner'] {
-    margin-inline-start: -50%;
-}
-
+// The thumbs share the cell of the track, and their zero height centers them on it.
 [part='thumbs'] {
-    position: absolute;
-    width: 100%;
+    grid-area: 2 / 1;
+    position: relative;
     height: 0;
     cursor: default;
-    inset-inline-start: 0;
 }
 
 [part~='thumb'] {
@@ -177,8 +204,6 @@ igc-popover::part(container) {
 :host(:not([tick-label-rotation='0'])) {
     [part='tick-label-inner'] {
         writing-mode: vertical-rl;
-        margin-inline-start: 0;
-        margin-block: -50%;
     }
 }
 
