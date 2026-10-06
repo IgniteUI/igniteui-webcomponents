@@ -190,10 +190,84 @@ class TabsHelpers {
   }
 
   /**
+   * Scrolls the tabs header strip horizontally by the smallest distance that brings the
+   * header of the given tab inside the visible bounds. The strip is the only thing that
+   * moves, so unlike `Element.scrollIntoView()` this never scrolls the page.
+   */
+  public async scrollTabIntoView(tab?: IgcTabComponent): Promise<void> {
+    // A selection change can come with a changed tab set, and the render that
+    // applies the new tab count is what can tip the strip into overflowing. The
+    // scroll buttons that overflow brings in shift every tab, so a second pass
+    // picks up that state and waits for its render too. Measuring any earlier
+    // would leave the tab hidden behind a scroll button.
+    for (let pass = 0; pass < 2; pass++) {
+      this.setStyleProperties();
+      this.setScrollButtonState();
+      await this._host.updateComplete;
+    }
+
+    const container = this.container;
+    const header = tab ? getTabHeader(tab) : null;
+
+    if (!(container && header)) {
+      return;
+    }
+
+    const { min, max } = this._getVisibleBounds(container);
+    const { left, right } = header.getBoundingClientRect();
+
+    let offset = 0;
+
+    if (right > max + EDGE_TOLERANCE) {
+      offset = right - max;
+    } else if (left < min - EDGE_TOLERANCE) {
+      offset = left - min;
+    }
+
+    if (!offset) {
+      return;
+    }
+
+    this.setScrollSnap();
+    container.scrollBy({ left: offset });
+  }
+
+  /**
    * Updates the visibility and disabled state of the scroll buttons. Requests a
-   * host update when they change.
+   * host update when they change. Meant for layout changes: a changed tab set, a
+   * resize or a selection, since it reads the width of every tab header. The scroll
+   * handler uses `setScrollPositionState()` instead.
    */
   public setScrollButtonState(): void {
+    if (!this.container) {
+      return;
+    }
+
+    // Once the strip is scrollable its scroll width includes the two scroll button
+    // columns, so the overflow is judged by the tabs alone. Otherwise the buttons
+    // would keep themselves displayed after the tabs fit again, e.g. when tabs are
+    // removed, and the measurement would depend on whether they are rendered yet.
+    // Subpixel widths, so that the rounding of many headers does not add up.
+    const tabsWidth = this._host.tabs.reduce(
+      (width, tab) =>
+        width + (getTabHeader(tab)?.getBoundingClientRect().width ?? 0),
+      0
+    );
+    const hasScrollButtons =
+      tabsWidth > this.container.getBoundingClientRect().width + EDGE_TOLERANCE;
+
+    this._applyScrollButtonState(hasScrollButtons);
+  }
+
+  /**
+   * Updates only the active state of the scroll buttons from the scroll position of the
+   * strip. Cheap enough to run on every scroll event.
+   */
+  public setScrollPositionState(): void {
+    this._applyScrollButtonState(this._hasScrollButtons);
+  }
+
+  private _applyScrollButtonState(hasScrollButtons: boolean): void {
     if (!this.container) {
       return;
     }
@@ -201,7 +275,6 @@ class TabsHelpers {
     const { scrollLeft, scrollWidth, clientWidth } = this.container;
     const disabled = this._scrollButtonsDisabled;
 
-    const hasScrollButtons = scrollWidth > clientWidth;
     const start = Math.abs(scrollLeft) <= 1;
     const end = Math.abs(Math.abs(scrollLeft) + clientWidth - scrollWidth) <= 1;
 

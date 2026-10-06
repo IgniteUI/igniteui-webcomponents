@@ -14,13 +14,6 @@
     text-align: initial;
 }
 
-%fake-column {
-    content: '';
-    width: 100%;
-    height: 100%;
-    grid-row: 1;
-}
-
 [part~='tabs'] {
     display: flex;
     height: 100%;
@@ -43,6 +36,11 @@
     grid-template-rows: minmax(var(--header-min-height), auto) auto 1fr;
     align-items: center;
     position: relative;
+
+    // The header strip is a flex container; the inner grid has to take the
+    // full available width, otherwise the `1fr` filler columns added by the
+    // alignment selectors below collapse to zero and `alignment` has no effect.
+    flex-grow: 1;
 
     ::slotted(igc-tab) {
         display: contents;
@@ -67,6 +65,14 @@
     min-width: $tab-min-width;
 }
 
+// The filler tracks take the free space of a strip that does not overflow. The
+// placeholder pseudo-elements occupy them, so that the tab headers are placed in
+// the tab tracks and the rows below keep spanning the whole strip.
+%filler-column {
+    content: '';
+    grid-row: 1;
+}
+
 :host([alignment='start']) {
     [part~='inner']:not([part~='scrollable']) {
         grid-template-columns:
@@ -74,7 +80,7 @@
             1fr;
 
         &::after {
-            @extend %fake-column;
+            @extend %filler-column;
         }
     }
 }
@@ -87,7 +93,7 @@
 
         &::before,
         &::after {
-            @extend %fake-column;
+            @extend %filler-column;
         }
     }
 }
@@ -100,7 +106,7 @@
             );
 
         &::before {
-            @extend %fake-column;
+            @extend %filler-column;
         }
     }
 }
@@ -118,12 +124,27 @@
             var(--scroll-btn-size);
     }
 
+    // `1fr` instead of `auto` so every tab gets an equal share of the strip,
+    // matching the scrollable template above and the Angular tabs.
     [part~='inner']:not([part~='scrollable']) {
         grid-template-columns: repeat(
             var(--_tabs-count),
-            minmax($tab-min-width, auto)
+            minmax($tab-min-width, 1fr)
         );
     }
+}
+
+// The header strip, painted by the themes with `header-background`. It spans
+// the whole header row below the tab headers, which paint `item-background` on
+// top of it, so a translucent item color composites over the header color
+// instead of stacking on a copy of itself. Absolutely positioned with only its
+// row lines set, so it is bound to the header row vertically and to the grid
+// container horizontally, and stays out of the placement and sizing of the
+// tab headers.
+[part~='header'] {
+    position: absolute;
+    inset: 0;
+    grid-row: 1 / 2;
 }
 
 [part~='start-scroll-button'],
