@@ -52,6 +52,7 @@
 |       3 | 2026-10-02 | Correct the `reportValidity` description                                             |
 |       4 | 2026-10-02 | Forward the host `aria-describedby`                                                  |
 |       5 | 2026-10-05 | Values in any order, nearest step, range defaults and value text, label in top layer |
+|       6 | 2026-10-06 | Tick labels inside the box and on one line, unset bounds                             |
 
 ## Overview
 
@@ -153,7 +154,9 @@ Dragging the lower thumb past the upper one moves the focus to the upper thumb a
 `min` and `max` define the scale. When an update ends with `min` above `max`, the slider keeps the previous `min`
 and `max`. `lowerBound` and `upperBound` restrict the reachable part of the scale and default to `min` and `max`;
 each is itself restricted by the scale and by the other bound. A value outside the resulting interval is normalized
-into it.
+into it. The removal of
+the `lower-bound` or `upper-bound` attribute, or a `null` or `undefined` value, unsets the bound, so it follows
+`min` or `max` again.
 
 Attributes and properties apply one at a time. Each update resolves the values as set against the final
 constraints, so the order of `value`, `lower`, `upper`, `min`, `max` and `step`, as attributes or as properties set
@@ -173,6 +176,10 @@ accepts any value of the track, while the keyboard falls back to a step of `1`.
 places them at the `start`, at the `end` or `mirror`ed on both sides, and `tickLabelRotation` rotates the labels by
 `0`, `90` or `-90` degrees. `hidePrimaryLabels` and `hideSecondaryLabels` hide the labels of each kind.
 `discreteTrack` draws the steps on the track, and has no effect while `step` is `0`.
+
+The box of the slider holds the ticks and their labels, so a slider with tick labels is taller than one without
+them, by the size of the labels, also rotated ones. A tick label stays on one line. The labels at the two ends of the
+track are centered on their ticks, so they reach past the box of the slider by half their width.
 
 #### Value labels
 
@@ -370,59 +377,65 @@ thumb and the tick labels.
 31. A negative step keeps the previous step.
 32. Projected labels override `min`, `max` and `step`, and the values of the author come back when the labels go.
 33. A scale where `min` equals `max` renders, and a click keeps the value.
-34. On the range slider, `lower`, `upper` and `max` apply in any order, a crossed pair swaps, a value as set that
+34. The removal of the `lower-bound` or `upper-bound` attribute, or an `undefined` bound, makes the bound follow
+    `min` or `max` again, and keeps the value.
+35. On the range slider, `lower`, `upper` and `max` apply in any order, a crossed pair swaps, a value as set that
     changes nothing does not apply again, and `upper` follows `upperBound` until it is set and after the removal of
-    its attribute. A key press on the lower thumb keeps an unset `upper`.
+    its attribute. A key press on the lower thumb keeps an unset `upper`. The removal of a bound attribute makes the
+    bound follow `min` or `max` again, and keeps the values.
 
 ### Range ARIA
 
-35. Each thumb gives the text of its own value from the labels, and no value text without labels or a format.
-36. The host `aria-label` and `aria-labelledby` name the group of the thumbs, also after a change and a removal.
-37. The host `aria-describedby` describes both thumbs, and an axe audit passes with a host label.
+36. Each thumb gives the text of its own value from the labels, and no value text without labels or a format.
+37. The host `aria-label` and `aria-labelledby` name the group of the thumbs, also after a change and a removal.
+38. The host `aria-describedby` describes both thumbs, and an axe audit passes with a host label.
 
 ### Thumb label
 
-38. A right click does not move a thumb, and a second pointer does not take over a drag (real mouse input).
-39. Keyboard focus shows the label until the blur. After a pointer focus, also on a thumb with keyboard focus, the
+39. A right click does not move a thumb, and a second pointer does not take over a drag (real mouse input).
+40. Keyboard focus shows the label until the blur. After a pointer focus, also on a thumb with keyboard focus, the
     label hides when the interaction ends, and a modifier key alone does not count as keyboard focus. A blur keeps
     the label of a thumb under the pointer (real mouse input). A disabled range slider hides the label of its focused
     thumb, and Escape hides the label without cancelling the key. Escape also hides a hovered label while the focus
     is elsewhere, past a parent that stops the key. The page listens for Escape only while a label shows, and a
     removed slider hides its label.
-40. The label shows in the top layer, past a parent that clips its overflow and above a modal dialog that holds
+41. The label shows in the top layer, past a parent that clips its overflow and above a modal dialog that holds
     the slider. It stays centered above its thumb after a move, with the native and the fallback position
     strategies, in LTR and RTL. It hides while its thumb is scrolled out of view, with both position strategies.
-41. The range slider renders a label for each thumb, and `hideTooltip` removes the popover and formats no value
+42. The range slider renders a label for each thumb, and `hideTooltip` removes the popover and formats no value
     for it. Turning `hideTooltip` on dismisses an open label and its Escape listener, and turning it off again does
     not open the label.
 
 ### Tick labels
 
-42. A change of `min`, `max`, `secondaryTicks`, the format string, the locale, the format options (also in place) or
+43. A change of `min`, `max`, `secondaryTicks`, the format string, the locale, the format options (also in place) or
     the projected labels renders the tick labels again.
+44. A tick label stays on one line, also at the end of the track.
+45. The box of the slider holds the tick labels for each `tickOrientation` and `tickLabelRotation`, ticks without
+    labels do not change the height of the slider, and ticks that do not fit do not make it wider.
 
 ### Form integration tests
 
-43. The single-value slider is form associated and takes part in submission.
-44. A form reset restores the default value, including one set through `setAttribute()`, and clamps an
+46. The single-value slider is form associated and takes part in submission.
+47. A form reset restores the default value, including one set through `setAttribute()`, and clamps an
     out-of-range default.
-45. The control follows the disabled state of an ancestor, and fulfils custom constraints.
+48. The control follows the disabled state of an ancestor, and fulfils custom constraints.
 
 ### Default value
 
-46. The initial state, the submitted value and the reset behavior of `defaultValue` are correct.
+49. The initial state, the submitted value and the reset behavior of `defaultValue` are correct.
 
 ### External label association
 
 Generated by `runExternalLabelAssociationTests` for the single-value slider.
 
-47. An external `label` bound through `for` or by nesting names the thumb, and a click on it focuses the thumb. A
+50. An external `label` bound through `for` or by nesting names the thumb, and a click on it focuses the thumb. A
     `label` added after the first render names the thumb from the first focus, an axe audit passes with only an external
     `label`, and the host `aria-labelledby` and `aria-label` follow the naming order.
 
 ### Host ARIA
 
-48. The shared host description suite: the host `aria-describedby` describes the thumb, and follows a change and a
+51. The shared host description suite: the host `aria-describedby` describes the thumb, and follows a change and a
     removal. The slider has no helper text, so the suite checks no description order.
 
 ### Not covered by the suite
@@ -437,6 +450,7 @@ Generated by `runExternalLabelAssociationTests` for the single-value slider.
 - Projected `igc-slider-label` elements take over `min`, `max` and `step`, which cannot be set independently while
   they are present.
 - `discreteTrack` has no effect while `step` is `0`.
+- The tick labels at the two ends of the track reach past the box of the slider by half their width.
 - An update that ends with `min` above `max` keeps the previous scale silently, rather than report it.
 - The two thumbs of a range slider cannot cross; the drag moves to the other thumb instead, and a crossed pair from
   code swaps.

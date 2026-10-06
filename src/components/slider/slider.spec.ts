@@ -448,10 +448,10 @@ describe('Slider component', () => {
       expect(ticks.labels).lengthOf(11);
       expect(slider.tickOrientation).to.eq('end');
 
-      const { y: trackTop } = track.element.getBoundingClientRect();
+      const trackTop = () => track.element.getBoundingClientRect().y;
 
       for (const tick of ticks.all) {
-        expect(tick.getBoundingClientRect().y).greaterThan(trackTop);
+        expect(tick.getBoundingClientRect().y).greaterThan(trackTop());
       }
 
       slider.tickOrientation = 'start';
@@ -461,7 +461,7 @@ describe('Slider component', () => {
       expect(ticks.labels).lengthOf(11);
 
       for (const tick of ticks.all) {
-        expect(tick.getBoundingClientRect().y).lessThan(trackTop);
+        expect(tick.getBoundingClientRect().y).lessThan(trackTop());
       }
 
       slider.tickOrientation = 'mirror';
@@ -472,8 +472,8 @@ describe('Slider component', () => {
 
       for (const [i, tick] of ticks.all.entries()) {
         i < 11
-          ? expect(tick.getBoundingClientRect().y).lessThan(trackTop)
-          : expect(tick.getBoundingClientRect().y).greaterThan(trackTop);
+          ? expect(tick.getBoundingClientRect().y).lessThan(trackTop())
+          : expect(tick.getBoundingClientRect().y).greaterThan(trackTop());
       }
     });
 
@@ -487,43 +487,31 @@ describe('Slider component', () => {
       expect(ticks.labelsInner).lengthOf(11);
       expect(slider.tickLabelRotation).to.eq(0);
 
-      for (const {
-        marginInlineStart,
-        marginBlock,
-        writingMode,
-        transform,
-      } of ticks.labelsInner.map((tick) => getComputedStyle(tick))) {
-        expect([marginInlineStart, marginBlock, writingMode, transform]).to.eql(
-          ['-50%', '0px', 'horizontal-tb', 'none']
-        );
+      for (const { writingMode, transform } of ticks.labelsInner.map((tick) =>
+        getComputedStyle(tick)
+      )) {
+        expect([writingMode, transform]).to.eql(['horizontal-tb', 'none']);
       }
 
       slider.tickLabelRotation = 90;
       await elementUpdated(slider);
 
-      for (const {
-        marginInlineStart,
-        marginBlock,
-        writingMode,
-        transform,
-      } of ticks.labelsInner.map((tick) => getComputedStyle(tick))) {
-        expect([marginInlineStart, marginBlock, writingMode, transform]).to.eql(
-          ['0px', '-9px', 'vertical-rl', 'none']
-        );
+      for (const { writingMode, transform } of ticks.labelsInner.map((tick) =>
+        getComputedStyle(tick)
+      )) {
+        expect([writingMode, transform]).to.eql(['vertical-rl', 'none']);
       }
 
       slider.tickLabelRotation = -90;
       await elementUpdated(slider);
 
-      for (const {
-        marginInlineStart,
-        marginBlock,
-        writingMode,
-        transform,
-      } of ticks.labelsInner.map((tick) => getComputedStyle(tick))) {
-        expect([marginInlineStart, marginBlock, writingMode, transform]).to.eql(
-          ['0px', '-9px', 'vertical-rl', 'matrix(-1, 0, 0, -1, 0, 0)']
-        );
+      for (const { writingMode, transform } of ticks.labelsInner.map((tick) =>
+        getComputedStyle(tick)
+      )) {
+        expect([writingMode, transform]).to.eql([
+          'vertical-rl',
+          'matrix(-1, 0, 0, -1, 0, 0)',
+        ]);
       }
     });
 
@@ -1503,6 +1491,34 @@ describe('Slider component', () => {
       expect(slider.value).to.equal(0);
     });
 
+    it('falls back to min and max when a bound is unset', async () => {
+      const slider = await createSlider({
+        min: -50,
+        max: 50,
+        'lower-bound': -40,
+        'upper-bound': 40,
+        value: -20,
+      });
+
+      // The removal of an attribute sets `null`.
+      slider.removeAttribute('lower-bound');
+      slider.removeAttribute('upper-bound');
+      await elementUpdated(slider);
+
+      expect([slider.lowerBound, slider.upperBound]).to.eql([-50, 50]);
+      expect(slider.value).to.equal(-20);
+
+      slider.lowerBound = -10;
+      slider.upperBound = 10;
+      await elementUpdated(slider);
+      expect([slider.lowerBound, slider.upperBound]).to.eql([-10, 10]);
+
+      slider.lowerBound = undefined as unknown as number;
+      slider.upperBound = undefined as unknown as number;
+      await elementUpdated(slider);
+      expect([slider.lowerBound, slider.upperBound]).to.eql([-50, 50]);
+    });
+
     describe('Range', () => {
       it('applies lower, upper and max in any order', async () => {
         const slider = await fixture<IgcRangeSliderComponent>(
@@ -1594,6 +1610,26 @@ describe('Slider component', () => {
         slider.max = 80;
         await elementUpdated(slider);
         expect(slider.upper).to.equal(30);
+      });
+
+      it('falls back to min and max when a bound attribute is removed', async () => {
+        const slider = await fixture<IgcRangeSliderComponent>(
+          html`<igc-range-slider
+            min="-50"
+            max="50"
+            lower-bound="-40"
+            upper-bound="40"
+            lower="-20"
+            upper="20"
+          ></igc-range-slider>`
+        );
+
+        slider.removeAttribute('lower-bound');
+        slider.removeAttribute('upper-bound');
+        await elementUpdated(slider);
+
+        expect([slider.lowerBound, slider.upperBound]).to.eql([-50, 50]);
+        expect([slider.lower, slider.upper]).to.eql([-20, 20]);
       });
     });
   });
@@ -2260,6 +2296,93 @@ describe('Slider component', () => {
       await elementUpdated(slider);
 
       expect(tickTexts(slider)).to.eql(['Low', 'Top']);
+    });
+
+    /** The box of the text, which the glyphs fill, also past a small line height. */
+    function textRect(element: Element) {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      return range.getBoundingClientRect();
+    }
+
+    it('keeps each tick label on one line', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div style="width: 400px">
+          <igc-slider
+            primary-ticks="3"
+            value-format="{0} long text"
+          ></igc-slider>
+          <igc-slider primary-ticks="3"></igc-slider>
+        </div>
+      `);
+      const [long, short] = Array.from(
+        root.querySelectorAll(IgcSliderComponent.tagName),
+        (slider) =>
+          getDOM(slider).ticks.labelsInner.map(
+            (label) => textRect(label).height
+          )
+      );
+
+      expect(long).to.eql(short);
+    });
+
+    for (const orientation of ['end', 'start', 'mirror'] as const) {
+      for (const rotation of [0, 90, -90] as const) {
+        it(`contains the tick labels in its box (${orientation}, ${rotation} degrees)`, async () => {
+          const slider = await fixture<IgcSliderComponent>(
+            html`<igc-slider
+              primary-ticks="3"
+              secondary-ticks="1"
+              tick-orientation=${orientation}
+              tick-label-rotation=${rotation}
+              value-format="{0} units"
+            ></igc-slider>`
+          );
+          const host = slider.getBoundingClientRect();
+
+          for (const label of getDOM(slider).ticks.labels) {
+            const { top, bottom } = label.getBoundingClientRect();
+
+            expect(top).to.be.at.least(host.top);
+            expect(bottom).to.be.at.most(host.bottom);
+          }
+        });
+      }
+    }
+
+    it('keeps the height of a slider without tick labels', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <igc-slider></igc-slider>
+          <igc-slider
+            primary-ticks="3"
+            secondary-ticks="1"
+            hide-primary-labels
+            hide-secondary-labels
+            tick-orientation="mirror"
+          ></igc-slider>
+        </div>
+      `);
+      const [plain, ticks] = Array.from(
+        root.querySelectorAll(IgcSliderComponent.tagName),
+        (slider) => slider.getBoundingClientRect().height
+      );
+
+      expect(ticks).to.equal(plain);
+    });
+
+    it('keeps the width of its box when the ticks do not fit in it', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider
+          style="width: 200px"
+          primary-ticks="200"
+          hide-primary-labels
+        ></igc-slider>`
+      );
+
+      expect(
+        getDOM(slider).track.element.getBoundingClientRect().width
+      ).to.equal(200);
     });
   });
 

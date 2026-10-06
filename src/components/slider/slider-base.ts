@@ -187,8 +187,8 @@ export class IgcSliderBaseComponent extends LitElement {
    */
   @property({ type: Number, attribute: 'lower-bound' })
   public set lowerBound(value: number) {
-    if (!isDefined(value)) return;
-    this._lowerBound = Math.min(this._upperBound ?? value, value);
+    this._lowerBound =
+      value == null ? undefined : Math.min(this._upperBound ?? value, value);
   }
 
   public get lowerBound(): number {
@@ -204,8 +204,8 @@ export class IgcSliderBaseComponent extends LitElement {
    */
   @property({ type: Number, attribute: 'upper-bound' })
   public set upperBound(value: number) {
-    if (!isDefined(value)) return;
-    this._upperBound = Math.max(this._lowerBound ?? value, value);
+    this._upperBound =
+      value == null ? undefined : Math.max(this._lowerBound ?? value, value);
   }
 
   public get upperBound(): number {
@@ -726,17 +726,16 @@ export class IgcSliderBaseComponent extends LitElement {
         : this.formatValue(this.tickValue(i, total));
 
       yield html`<div part="tick-group">
-        <div part="tick" data-primary=${primary}>
-          ${
-            labelHidden
-              ? nothing
-              : html`
-                  <div part="tick-label">
-                    <span part="tick-label-inner">${labelInner}</span>
-                  </div>
-                `
-          }
-        </div>
+        <div part="tick" data-primary=${primary}></div>
+        ${
+          labelHidden
+            ? nothing
+            : html`
+                <div part="tick-label">
+                  <span part="tick-label-inner">${labelInner}</span>
+                </div>
+              `
+        }
       </div>`;
     }
   }

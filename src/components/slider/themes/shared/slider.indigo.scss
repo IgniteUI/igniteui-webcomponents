@@ -10,15 +10,8 @@ $thumb-label-width: rem(36px);
 $thumb-label-height: rem(22px);
 
 [part='ticks'] {
-    bottom: rem(3px);
-
-    &:first-child {
-        top: rem(3px);
-
-        [part='tick-label'] {
-            bottom: rem(20px);
-        }
-    }
+    --_ticks-inset: #{rem(3px)};
+    --_tick-label-offset: #{rem(20px)};
 }
 
 [part~='thumb-label-inner'] {
@@ -70,9 +63,7 @@ $thumb-label-height: rem(22px);
 [part='tick-label'] {
     @include type-style('body-2');
 
-    top: rem(20px);
     color: var-get($theme, 'tick-label-color');
-    
 }
 
 [part~='thumb'] {
