@@ -48,6 +48,7 @@ This directory hosts three public components: [`igc-nav-drawer`](#igc-nav-drawer
 |       1 | 2026-09-21 | Initial specification                                                   |
 |       2 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
 |       3 | 2026-10-05 | Return the focus to the mini variant; reopen a dialog closed early      |
+|       4 | 2026-10-06 | Keep the first opener when the dialog opens again                       |
 
 ## Overview
 
@@ -316,7 +317,9 @@ The suite lives in [`nav-drawer.spec.ts`](./nav-drawer.spec.ts) and runs in a re
 
 12. The mini rail shows while the drawer is closed and hides while it is open. It follows a change of the position
     and the mini content that is added or removed, and it does not show without content.
-13. When the drawer closes, the focus goes back to the control in the mini rail that had it before the drawer opened.
+13. When the drawer closes, the focus goes back to the control in the mini rail that had it before the drawer opened,
+    also after the dialog opens again. A drawer that becomes relative while open does not move the focus there, and
+    the drawer does not move a focus that the dialog already gave back, such as one inside a closed shadow root.
 
 ### Invoker commands
 

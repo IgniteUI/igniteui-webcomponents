@@ -243,6 +243,17 @@ export function scrollIntoView(
 const TABBABLE_SELECTOR =
   'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
 
+/** Returns the focused element of the document, also inside open shadow roots. */
+export function getDeepActiveElement(): HTMLElement | null {
+  let element = document.activeElement;
+
+  while (element?.shadowRoot?.activeElement) {
+    element = element.shadowRoot.activeElement;
+  }
+
+  return element as HTMLElement | null;
+}
+
 /** Returns `root` itself, when tabbable, followed by its tabbable descendants. */
 export function getTabbables(root: HTMLElement): HTMLElement[] {
   const descendants = root.querySelectorAll<HTMLElement>(TABBABLE_SELECTOR);
