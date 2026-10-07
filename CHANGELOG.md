@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `header-background` theme token. It paints the whole tabs header strip, behind the tab items, and follows `item-background` unless set. Thus a translucent `item-background` composites over the header color instead of stacking on a copy of itself, and the header can be made transparent on its own. The matching `$header-background` parameter is available in the `tabs-theme` function of `igniteui-theming`.
 - #### Calendar, Date picker, Date range picker
   - `DateRangeDescriptor` has an optional `label`. The calendar adds the labels of the matching `specialDates` and `disabledDates` descriptors to the accessible name of a date, for example "Thursday, October 8, 2026, Free delivery". Before, the special state was only visual, and assistive technologies did not announce it.
+- #### Textarea
+  - Read-only `selectionStart` and `selectionEnd` properties report the text selection. Before, an application could set the selection with `setSelectionRange()`, but it could not read it.
 
 ### Changed
 - #### Toast, Snackbar
@@ -54,6 +56,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Input
   - `setRangeText()` without `start` and `end` now replaces the selected text, as the native method does. Before, it inserted the text at the start of the value.
   - `pattern` now has to match the whole value, as for a native input. Before, a match in a part of the value was enough, so `[0-9]{3}` accepted `1234`. The pattern also compiles with the `v` flag, and an invalid pattern sets no constraint. Before, an invalid pattern threw an error in `checkValidity()`.
+- #### Textarea
+  - Whitespace in the default slot, such as the indentation around a slotted helper text, no longer clears the value. Before, it replaced the value from the `value` attribute or the property with an empty string, and whitespace added later cleared the text that the user typed. Projected text still sets the value, and removing it still clears the value.
+  - `setRangeText()` without `start` and `end` now replaces the selected text, as the native method does. Before, it inserted the text at the start of the value.
+  - The `spellcheck` attribute now reads as the native attribute: only `false` turns the spell check off. Before, an empty attribute, such as `<igc-textarea spellcheck>`, and a removed attribute turned it off.
 - #### Icon
   - The SVG of an icon is now hidden from assistive technologies, because the host carries the name. Before, the SVG of an icon without a title was still an unnamed image. A change of `aria-label` or `aria-labelledby` now updates the role of the icon.
 - #### Dialog
