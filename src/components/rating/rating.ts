@@ -363,7 +363,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   /** Focuses the slider, as a native range input label does. */
   protected override _handleLabelActivation(): void {
-    this._slider.focus();
+    this.focus();
   }
 
   private _handleHoverEnabled(): void {
@@ -470,6 +470,20 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    */
   public stepDown(n = 1): void {
     this.value = this._normalize(this.value - n * this.step);
+  }
+
+  /* alternateName: focusComponent */
+  /** Sets focus on the rating. A disabled rating does not take the focus. */
+  public override focus(options?: FocusOptions): void {
+    if (!this.disabled) {
+      this._slider?.focus(options);
+    }
+  }
+
+  /* alternateName: blurComponent */
+  /** Removes focus from the rating. */
+  public override blur(): void {
+    this._slider?.blur();
   }
 
   //#endregion

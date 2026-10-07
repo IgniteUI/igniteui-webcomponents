@@ -28,6 +28,7 @@ import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
@@ -768,6 +769,109 @@ describe('Slider component', () => {
         (host as IgcSliderComponent).renderRoot.querySelector<HTMLElement>(
           '[part="thumb"]'
         )!,
+    });
+  });
+
+  describe('Focus', () => {
+    const getThumb = (slider: IgcSliderComponent) =>
+      slider.renderRoot.querySelector<HTMLElement>('[part~="thumb"]')!;
+
+    before(() => {
+      defineComponents(IgcSliderComponent);
+    });
+
+    it('moves the focus to the thumb on `focus()` and removes it on `blur()`', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider aria-label="Volume"></igc-slider>`
+      );
+      const thumb = getThumb(slider);
+
+      slider.focus();
+      expect(document.activeElement).to.equal(slider);
+      expect(isFocused(thumb)).to.be.true;
+
+      slider.blur();
+      expect(isFocused(thumb)).to.be.false;
+    });
+
+    it('does not take the focus when disabled', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider aria-label="Volume" disabled></igc-slider>`
+      );
+
+      slider.focus();
+      expect(isFocused(getThumb(slider))).to.be.false;
+    });
+
+    it('takes the focus when invalid on a failed submit and on `reportValidity()`', async () => {
+      const form = await fixture<HTMLFormElement>(
+        html`<form @submit=${(event: Event) => event.preventDefault()}>
+          <igc-slider name="volume" aria-label="Volume"></igc-slider>
+          <button>Submit</button>
+        </form>`
+      );
+      const slider = form.querySelector(IgcSliderComponent.tagName)!;
+      const thumb = getThumb(slider);
+
+      slider.setCustomValidity('Set a volume');
+      form.requestSubmit();
+      expect(isFocused(thumb)).to.be.true;
+
+      slider.blur();
+      slider.reportValidity();
+      expect(isFocused(thumb)).to.be.true;
+    });
+
+    describe('Range', () => {
+      const getRangeThumbs = (slider: IgcRangeSliderComponent) => {
+        const [lower, upper] =
+          slider.renderRoot.querySelectorAll<HTMLElement>('[part~="thumb"]');
+        return { lower, upper };
+      };
+
+      before(() => {
+        defineComponents(IgcRangeSliderComponent);
+      });
+
+      it('moves the focus to the lower thumb on `focus()` and removes it on `blur()`', async () => {
+        const slider = await fixture<IgcRangeSliderComponent>(
+          html`<igc-range-slider aria-label="Price"></igc-range-slider>`
+        );
+        const { lower } = getRangeThumbs(slider);
+
+        slider.focus();
+        expect(document.activeElement).to.equal(slider);
+        expect(isFocused(lower)).to.be.true;
+
+        slider.blur();
+        expect(isFocused(lower)).to.be.false;
+      });
+
+      it('keeps the focus on the upper thumb on `focus()`', async () => {
+        const slider = await fixture<IgcRangeSliderComponent>(
+          html`<igc-range-slider aria-label="Price"></igc-range-slider>`
+        );
+        const { upper } = getRangeThumbs(slider);
+
+        upper.focus();
+        slider.focus();
+        expect(isFocused(upper)).to.be.true;
+
+        slider.blur();
+        expect(isFocused(upper)).to.be.false;
+      });
+
+      it('does not take the focus when disabled', async () => {
+        const slider = await fixture<IgcRangeSliderComponent>(
+          html`<igc-range-slider
+            aria-label="Price"
+            disabled
+          ></igc-range-slider>`
+        );
+
+        slider.focus();
+        expect(slider.renderRoot.querySelector(':focus')).to.be.null;
+      });
     });
   });
 

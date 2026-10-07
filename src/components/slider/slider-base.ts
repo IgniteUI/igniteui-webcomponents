@@ -389,6 +389,23 @@ export class IgcSliderBaseComponent extends LitElement {
     this._listenForEscape(false);
   }
 
+  /* alternateName: focusComponent */
+  /**
+   * Sets focus on the thumb, or on the lower thumb of a range slider. A thumb
+   * that has the focus keeps it. A disabled slider does not take the focus.
+   */
+  public override focus(options?: FocusOptions): void {
+    if (!(this.disabled || this.activeThumb)) {
+      this.thumb?.focus(options);
+    }
+  }
+
+  /* alternateName: blurComponent */
+  /** Removes focus from the thumb. */
+  public override blur(): void {
+    this.activeThumb?.blur();
+  }
+
   private handleArrowKeys(delta: -1 | 1) {
     this.handleKeyboardMove(this.activeValue + (this.step || 1) * delta);
   }
