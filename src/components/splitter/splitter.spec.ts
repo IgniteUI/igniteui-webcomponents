@@ -65,25 +65,18 @@ describe('Splitter', () => {
 
       const bar = getSplitterPart(splitter, BAR_PART);
       expect(bar.getAttribute('role')).to.equal('separator');
-
-      // The collapsed state is in the description, so the name stays the same.
-      const label = splitter.shadowRoot!.querySelector('#splitter-label')!;
-      const state = splitter.shadowRoot!.querySelector('#splitter-state')!;
-
-      expect(bar.getAttribute('aria-labelledby')).to.equal('splitter-label');
-      expect(bar.getAttribute('aria-describedby')).to.equal('splitter-state');
-      expect(label.textContent?.trim()).to.equal('Resize panes');
-      expect(state.textContent).to.contain('Start pane expanded');
-
+      expect(bar.getAttribute('aria-label')).to.equal('Resize panes');
+      expect(bar.hasAttribute('aria-describedby')).to.be.false;
       expect(bar.getAttribute('aria-valuetext')).to.equal(
         `${bar.getAttribute('aria-valuenow')}%`
       );
 
+      // The value tells a collapsed pane.
       splitter.toggle('start');
       await elementUpdated(splitter);
 
-      expect(label.textContent?.trim()).to.equal('Resize panes');
-      expect(state.textContent).to.contain('Start pane collapsed');
+      expect(bar.getAttribute('aria-label')).to.equal('Resize panes');
+      expect(bar.getAttribute('aria-valuetext')).to.equal('0%');
     });
 
     it('should render both panes with equal sizes if no explicit sizes set', async () => {
@@ -335,6 +328,75 @@ describe('Splitter', () => {
 
       expect(splitter.startSize).to.equal('auto');
       expect(splitter.endSize).to.equal('auto');
+    });
+  });
+
+  describe('Host ARIA', () => {
+    it('names the bar through the host `aria-label`, and follows a change and a removal', async () => {
+      const bar = getSplitterPart(splitter, BAR_PART);
+
+      splitter.setAttribute('aria-label', 'Resize the file list');
+      await elementUpdated(splitter);
+      expect(bar.getAttribute('aria-label')).to.equal('Resize the file list');
+      await expect(splitter).to.be.accessible();
+
+      splitter.setAttribute('aria-label', 'Resize the terminal');
+      await elementUpdated(splitter);
+      expect(bar.getAttribute('aria-label')).to.equal('Resize the terminal');
+
+      splitter.removeAttribute('aria-label');
+      await elementUpdated(splitter);
+      expect(bar.getAttribute('aria-label')).to.equal('Resize panes');
+    });
+
+    it('names the bar through the host `aria-labelledby` before `aria-label`', async () => {
+      const container = await fixture<HTMLElement>(html`
+        <div>
+          <span id="files-label">Resize the file list</span>
+          <igc-splitter aria-labelledby="files-label" aria-label="Ignored">
+            <div slot="start">Files</div>
+            <div slot="end">Editor</div>
+          </igc-splitter>
+        </div>
+      `);
+      const host = container.querySelector(IgcSplitterComponent.tagName)!;
+      await elementUpdated(host);
+      const bar = getSplitterPart(host, BAR_PART);
+
+      expect(bar.ariaLabelledByElements).to.eql([
+        container.querySelector('#files-label'),
+      ]);
+      expect(bar.hasAttribute('aria-label')).to.be.false;
+      await expect(container).to.be.accessible();
+
+      host.removeAttribute('aria-labelledby');
+      await elementUpdated(host);
+      expect(bar.ariaLabelledByElements ?? []).to.be.empty;
+      expect(bar.getAttribute('aria-label')).to.equal('Ignored');
+    });
+
+    it('describes the bar through the host `aria-describedby`', async () => {
+      const container = await fixture<HTMLElement>(html`
+        <div>
+          <p id="layout-hint">Ctrl and an arrow key collapse a pane.</p>
+          <igc-splitter aria-describedby="layout-hint">
+            <div slot="start">Files</div>
+            <div slot="end">Editor</div>
+          </igc-splitter>
+        </div>
+      `);
+      const host = container.querySelector(IgcSplitterComponent.tagName)!;
+      await elementUpdated(host);
+      const bar = getSplitterPart(host, BAR_PART);
+
+      expect(bar.ariaDescribedByElements).to.eql([
+        container.querySelector('#layout-hint'),
+      ]);
+
+      host.removeAttribute('aria-describedby');
+      await elementUpdated(host);
+      expect(bar.ariaDescribedByElements ?? []).to.be.empty;
+      expect(bar.hasAttribute('aria-describedby')).to.be.false;
     });
   });
 
