@@ -46,7 +46,12 @@ function addAnchorName(container: HTMLElement, name: string): boolean {
 }
 
 function removeAnchorName(container: HTMLElement, name: string): void {
-  const names = containerAnchors.get(container)!;
+  const names = containerAnchors.get(container);
+  // The container has anchor names of its own now.
+  if (!names) {
+    return;
+  }
+
   names.delete(name);
 
   if (!names.size) {
@@ -155,7 +160,13 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
     });
 
     addHostListeners(this, {
-      events: ['pointerenter', 'pointerleave', 'focusin', 'focusout'],
+      events: [
+        'pointerenter',
+        'pointerleave',
+        'pointerdown',
+        'focusin',
+        'focusout',
+      ],
       listener: this._handleHold,
     });
   }
@@ -216,6 +227,8 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
         }
         break;
       default:
+        // A `pointerdown` also ends the focus hold. A click on the element
+        // with the keyboard focus fires no `focusin`, and it stays focus-visible.
         this._holds.delete('focus');
     }
 
@@ -268,11 +281,25 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   }
 
   private _applyAnchor(): void {
-    if (this._anchor) {
-      applyAnchorNames(this._anchor, containerAnchors.get(this._anchor)!);
-      if (this.style.getPropertyValue('position-anchor') !== this._anchorName) {
-        this.style.setProperty('position-anchor', this._anchorName);
-      }
+    const container = this._anchor;
+    if (!container) {
+      return;
+    }
+
+    const names = containerAnchors.get(container);
+    const value = container.style.getPropertyValue('anchor-name');
+
+    // The container got anchor names of its own, so it becomes the source.
+    if (!names || (value && value !== [...names].join(', '))) {
+      containerAnchors.delete(container);
+      this._hidePopover();
+      this._showPopover();
+      return;
+    }
+
+    applyAnchorNames(container, names);
+    if (this.style.getPropertyValue('position-anchor') !== this._anchorName) {
+      this.style.setProperty('position-anchor', this._anchorName);
     }
   }
 

@@ -252,6 +252,38 @@ export function runAlertTests(tagName: string): void {
         expect(isAtBottomOf(alert, container)).to.be.true;
       });
 
+      it('uses a container that gets anchor names of its own as the source', async () => {
+        const { container, alerts } = await createAlerts(
+          tagName,
+          'margin: 100px; height: 300px',
+          2
+        );
+        for (const alert of alerts) {
+          alert.positioning = 'container';
+        }
+        await Promise.all(alerts.map((alert) => alert.show()));
+
+        container.setAttribute(
+          'style',
+          'anchor-name: --page; margin: 100px; height: 300px'
+        );
+        await nextFrame();
+
+        expect(container.style.getPropertyValue('anchor-name')).to.equal(
+          '--page'
+        );
+        for (const alert of alerts) {
+          expect(anchorOf(alert)).to.be.empty;
+          expect(isPopoverOpen(alert)).to.be.true;
+          expect(isAtBottomOf(alert, container)).to.be.true;
+        }
+
+        await Promise.all(alerts.map((alert) => alert.hide()));
+        expect(container.style.getPropertyValue('anchor-name')).to.equal(
+          '--page'
+        );
+      });
+
       it('applies the anchor again after a new `style` attribute', async () => {
         const {
           container,

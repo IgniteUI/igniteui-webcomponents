@@ -5,7 +5,7 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
-import { resetMouse, sendMouse } from '@web/test-runner-commands';
+import { resetMouse, sendKeys, sendMouse } from '@web/test-runner-commands';
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
 import { tabKey } from '#internals/controllers/keys.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
@@ -254,6 +254,33 @@ describe('Snackbar', () => {
         expect(hide).calledOnce;
         await resetMouse();
       });
+
+      it('does not wait after a pointer click on the action with the keyboard focus', async () => {
+        const hide = spy(snackbar, 'hide');
+        snackbar.actionText = defaultActionText;
+        snackbar.displayTime = 400;
+        await snackbar.show();
+
+        const action = snackbar.renderRoot.querySelector(
+          IgcButtonComponent.tagName
+        )!;
+        await sendKeys({ press: tabKey });
+        expect(action.matches(':focus')).to.be.true;
+        await clock.tickAsync(800);
+        expect(hide).not.called;
+
+        const { x, y, width, height } = action.getBoundingClientRect();
+        await sendMouse({
+          type: 'click',
+          position: [Math.round(x + width / 2), Math.round(y + height / 2)],
+        });
+        await sendMouse({ type: 'move', position: [0, 0] });
+        expect(action.matches(':focus')).to.be.true;
+
+        await clock.tickAsync(400);
+        expect(hide).calledOnce;
+        await resetMouse();
+      });
     });
 
     describe('positioning', () => {
@@ -291,6 +318,36 @@ describe('Snackbar', () => {
         await elementUpdated(snackbar);
 
         expect(isPopoverOpen(snackbar)).to.be.true;
+      });
+
+      it('`container` positioning keeps the DOM place of the action in the tab order', async () => {
+        const root = await fixture<HTMLElement>(html`
+          <div>
+            <button id="before">Before</button>
+            <div>
+              <button id="content">Content</button>
+              <igc-snackbar
+                positioning="container"
+                action-text=${defaultActionText}
+              >
+                ${defaultContent}
+              </igc-snackbar>
+            </div>
+          </div>
+        `);
+        snackbar = root.querySelector(IgcSnackbarComponent.tagName)!;
+        await snackbar.show();
+
+        root.querySelector<HTMLElement>('#before')!.focus();
+        await sendKeys({ press: tabKey });
+        expect(document.activeElement?.id).to.equal('content');
+
+        await sendKeys({ press: tabKey });
+        expect(
+          snackbar.renderRoot
+            .querySelector(IgcButtonComponent.tagName)!
+            .matches(':focus')
+        ).to.be.true;
       });
 
       it('`position` changes in `viewport` mode do not set inline styles', async () => {

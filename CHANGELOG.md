@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - #### Toast, Snackbar
-  - The display time now waits while the pointer is on the component or the keyboard focus is in it, and starts again in full when both leave. Before, the component closed under the pointer, and a keyboard user could lose the snackbar action before reaching it. A pointer click on the action does not hold the component open.
+  - The display time now waits while the pointer is on the component or the keyboard focus is in it, and starts again in full when both leave. Before, the component closed under the pointer, and a keyboard user could lose the snackbar action before reaching it. A pointer click on the action does not hold the component open, also when the action has the keyboard focus.
   - `show()` on an open component now starts the display time again. It still resolves `false`. Before, a new message in an open component closed with the time that was left from the earlier one.
 
 ### Security
@@ -108,7 +108,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A list larger than the maximum scroll size of the browser now shows its last items at the end of the scroll range, and `scrollToIndex` puts the item at the requested edge. The items also move evenly during a scroll. Before, the last items could not be reached, the item landed tens of pixels off, and the items jumped by some pixels each time the rendered window changed.
   - A new `data` array with new items at the rendered indices now measures those items again. Before, an item element that kept its index was not measured again, so the scroll size and the item positions used the estimate until the item left the rendered window.
 - #### Toast, Snackbar
-  - `container` positioning now anchors the component with a name that it adds to the inline `anchor-name` of the container while it is open. It adds the name again when a new `style` attribute removes it. Before, the container was the `source` of the popover, so the browser moved the snackbar to the start of the container in the tab order, and Tab reached the action before the content of the container. A container that has anchor names of its own, or that is in another tree, such as the host of the shadow root that holds the component, is still the `source`.
+  - `container` positioning now anchors the component with a name that it adds to the inline `anchor-name` of the container while it is open. It adds the name again when a new `style` attribute removes it. Before, the container was the `source` of the popover, so the browser moved the snackbar to the start of the container in the tab order, and Tab reached the action before the content of the container. A container that has anchor names of its own, also one that gets them while the component is open, or that is in another tree, such as the host of the shadow root that holds the component, is still the `source`, and keeps its anchor names.
   - A component that moves while it is open now shows again in its new place, with a full display time. Before, it stayed hidden with `open` set.
   - `show()` and `toggle()` during the fade-out of `hide()` now keep the component open, and `hide()` during the fade-out resolves `false`. Before, `show()` resolved `false` and the component closed, and `toggle()` or a second `hide()` closed the component at once, without the rest of its fade-out.
 - #### Snackbar

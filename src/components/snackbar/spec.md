@@ -140,9 +140,9 @@ snackbar.addEventListener('igcAction', () => restoreItem());
 ```
 
 The display time stops while the pointer or the keyboard focus is in the component, and starts again in full when both
-leave. A pointer click on the action does not hold the component open. `show()` on an open component starts the display
-time again and resolves `false`. A component that moves while it is open shows again in its new place, with a full
-display time.
+leave. A pointer click on the action does not hold the component open, also when the action has the keyboard focus.
+`show()` on an open component starts the display time again and resolves `false`. A component that moves while it is
+open shows again in its new place, with a full display time.
 
 #### Positioning
 
@@ -161,10 +161,10 @@ With `container` positioning, `show()` resolves `false` when no visible ancestor
 While it is open in `container` positioning, the component adds a generated name to the inline `anchor-name` of the
 container and sets `position-anchor` on itself. It adds them again when a new `style` attribute, for example from a
 template binding, removes them, and it removes them when it closes or moves. A container that has anchor names of its
-own, or that is in another tree, such as the host of the shadow root that holds the component, becomes the `source` of
-`showPopover()` instead, and the browser then moves the action right after the container start in the tab order. An anchor name cannot reach another tree, and the component does not take over the anchor
-names of a container.
-Thus, in the other cases, the snackbar keeps its DOM place in the tab order.
+own, also one that gets them while the component is open, or that is in another tree, such as the host of the shadow
+root that holds the component, becomes the `source` of `showPopover()` instead, and the browser then moves the action
+right after the container start in the tab order. An anchor name cannot reach another tree, and the component does not
+take over the anchor names of a container. Thus, in the other cases, the snackbar keeps its DOM place in the tab order.
 
 #### Invoker commands
 
@@ -249,7 +249,7 @@ suites from [`src/internals/testing`](../../internals/testing). The groups below
 ### Display time tests
 
 8. The display time waits while the focus is on the default action, also after the pointer leaves, and starts again
-   when the focus leaves. A pointer click on the action does not hold it.
+   when the focus leaves. A pointer click on the action does not hold it, also when the action has the keyboard focus.
 
 ### Positioning tests
 
@@ -257,21 +257,23 @@ suites from [`src/internals/testing`](../../internals/testing). The groups below
 10. `positioning="container"` shows the component when there is a visible ancestor.
 11. Switching `positioning` between `container` and `viewport` while the component is open keeps it open, in both
     directions.
-12. Changing `position` while in `viewport` mode sets no inline styles.
+12. `container` positioning keeps the DOM place of the action in the tab order: Tab reaches the content of the
+    container first.
+13. Changing `position` while in `viewport` mode sets no inline styles.
 
 ### Styles tests
 
-13. A global `--ig-flat-button-background` does not reach the default action.
-14. In each theme, the default action has the keyboard focus style of a flat button. The test loads the global
+14. A global `--ig-flat-button-background` does not reach the default action.
+15. In each theme, the default action has the keyboard focus style of a flat button. The test loads the global
     stylesheet of the theme, because the focus colors come from its palette.
 
 ### Events tests
 
-15. `igcAction` is emitted when the action button is clicked, both for the default action and for slotted content.
+16. `igcAction` is emitted when the action button is clicked, both for the default action and for slotted content.
 
 ### Alert behavior tests
 
-16. The shared `runAlertTests` suite tests the display time, the fade-out and the `container` positioning, which the
+17. The shared `runAlertTests` suite tests the display time, the fade-out and the `container` positioning, which the
     snackbar shares with the toast. The [toast specification](../toast/spec.md#alert-behavior-tests) lists its cases.
 
 ### Not covered by the suite

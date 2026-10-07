@@ -143,9 +143,9 @@ With `container` positioning, `show()` resolves `false` when no visible ancestor
 While it is open in `container` positioning, the component adds a generated name to the inline `anchor-name` of the
 container and sets `position-anchor` on itself. It adds them again when a new `style` attribute, for example from a
 template binding, removes them, and it removes them when it closes or moves. A container that has anchor names of its
-own, or that is in another tree, such as the host of the shadow root that holds the component, becomes the `source` of
-`showPopover()` instead. An anchor name cannot reach another tree, and the component does not take over the anchor
-names of a container.
+own, also one that gets them while the component is open, or that is in another tree, such as the host of the shadow
+root that holds the component, becomes the `source` of `showPopover()` instead. An anchor name cannot reach another
+tree, and the component does not take over the anchor names of a container.
 
 #### Invoker commands
 
@@ -242,9 +242,11 @@ The shared `runAlertTests` suite, which the snackbar also runs:
     both on close.
 20. Two components in one container add their names to the same `anchor-name`, and each close removes only its own.
 21. A container with anchor names of its own keeps them and becomes the `source`.
-22. A new `style` attribute on the container or the component does not remove the anchor.
-23. `container` positioning places the component inside the container, at the bottom.
-24. In a shadow root without a wrapper, `container` positioning uses the host as the `source`, sets no anchor names,
+22. A container that gets anchor names of its own while two components are open keeps them, and both components
+    show again with it as the `source`.
+23. A new `style` attribute on the container or the component does not remove the anchor.
+24. `container` positioning places the component inside the container, at the bottom.
+25. In a shadow root without a wrapper, `container` positioning uses the host as the `source`, sets no anchor names,
     and places the component inside the host.
 
 ### Not covered by the suite
