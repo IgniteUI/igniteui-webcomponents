@@ -122,6 +122,9 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   @query('textarea')
   private readonly _input?: HTMLTextAreaElement;
 
+  /** The text of the default slot that was applied last. */
+  private _projectedValue = '';
+
   protected override get __validators() {
     return textAreaValidators;
   }
@@ -254,7 +257,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   @property({
     type: Boolean,
     converter: {
-      fromAttribute: (value) => !(!value || value === 'false'),
+      // As the native attribute: only "false" turns the check off.
+      fromAttribute: (value) => value?.toLowerCase() !== 'false',
       toAttribute: (value) => (value ? 'true' : 'false'),
     },
   })
@@ -278,6 +282,19 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
    */
   @property({ type: Boolean, reflect: true, attribute: 'validate-only' })
   public validateOnly = false;
+
+  /**
+   * The offset of the start of the text selection, in UTF-16 code units.
+   * Equals `selectionEnd` when no text is selected.
+   */
+  public get selectionStart(): number {
+    return this._input?.selectionStart ?? 0;
+  }
+
+  /** The offset of the end of the text selection, in UTF-16 code units. */
+  public get selectionEnd(): number {
+    return this._input?.selectionEnd ?? 0;
+  }
 
   //#endregion
 
@@ -343,6 +360,14 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
       .filter(Boolean)
       .join('\r\n');
 
+    // Whitespace around slotted elements is not projected text, so it keeps
+    // the value from the attribute, the property or the user.
+    if (value === this._projectedValue) {
+      return;
+    }
+
+    this._projectedValue = value;
+
     if (value === this.value) {
       return;
     }
@@ -382,14 +407,22 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   /* blazorSuppress */
-  /** Replaces the selected text in the control. */
+  /**
+   * Replaces the text from `start` to `end` in the control. Without `start` and
+   * `end`, replaces the selected text.
+   */
   public setRangeText(
     replacement: string,
-    start: number,
-    end: number,
+    start?: number,
+    end?: number,
     selectMode: RangeTextSelectMode = 'preserve'
   ): void {
-    this._input?.setRangeText(replacement, start, end, selectMode);
+    this._input?.setRangeText(
+      replacement,
+      start ?? this._input.selectionStart,
+      end ?? this._input.selectionEnd,
+      selectMode
+    );
     this.value = this._input?.value ?? '';
   }
 

@@ -32,6 +32,7 @@
     - [Setting value through attribute and projection](#setting-value-through-attribute-and-projection)
     - [Events](#events-1)
     - [Methods API](#methods-api)
+    - [spellcheck](#spellcheck)
     - [Form integration](#form-integration-1)
     - [defaultValue](#defaultvalue)
     - [Validation message slots](#validation-message-slots)
@@ -51,6 +52,7 @@
 |       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
 |       3 | 2026-10-02 | Focus after form checks; `invalid` only on checks  |
 |       4 | 2026-10-02 | Forward the host `aria-describedby`                |
+|       5 | 2026-10-07 | Whitespace in the slot, selection, `spellcheck`    |
 
 ## Overview
 
@@ -155,6 +157,10 @@ Projected text is joined with line breaks and applied as the value. While the co
 projected text also becomes the `defaultValue`, so it is restored on a form reset. After the end-user has changed the
 value, later slot changes update the value directly.
 
+Only a change of the projected text changes the value. Whitespace-only text, such as the indentation around a slotted
+helper text, is not projected text, so it keeps the value from the `value` attribute, the property or the end-user.
+Removing the projected text clears the value.
+
 #### Sizing and resizing
 
 ```html
@@ -245,8 +251,13 @@ const area = document.querySelector('igc-textarea')!;
 area.select();
 area.setSelectionRange(0, 5);
 area.setRangeText('Hi', 0, 5, 'select');
+area.setRangeText('Hello'); // replaces the selected text
 area.scrollTo({ top: 0, behavior: 'smooth' });
+
+const { selectionStart, selectionEnd } = area;
 ```
+
+`selectionStart` and `selectionEnd` are read-only. Set the selection with `setSelectionRange()`.
 
 ### Localization
 
@@ -283,7 +294,7 @@ The component delegates focus to the inner native textarea, so all native text-e
 | minLength         | minlength      | No        | `number`                    | -          | The minimum number of characters required that the user should enter.       |
 | maxLength         | maxlength      | No        | `number`                    | -          | The maximum number of characters that the user can enter.                   |
 | validateOnly      | validate-only  | Yes       | `boolean`                   | false      | Evaluates `maxLength` without restricting user input.                       |
-| spellcheck        | spellcheck     | No        | `boolean`                   | true       | Controls whether the element may be checked for spelling errors.            |
+| spellcheck        | spellcheck     | No        | `boolean`                   | true       | Controls spell checking. As for the native attribute, only `false` is off.  |
 | autocapitalize    | autocapitalize | No        | `string`                    | -          | Controls whether and how text input is automatically capitalized.           |
 | autocomplete      | autocomplete   | No        | `string`                    | -          | A hint for the browser on how to autofill the control.                      |
 | inputMode         | inputmode      | No        | `string`                    | -          | Hints at the type of data to be entered, for the virtual keyboard.          |
@@ -292,18 +303,20 @@ The component delegates focus to the inner native textarea, so all native text-e
 | validity          | -              | No        | `ValidityState`             | -          | Read-only. The validity state of the element.                               |
 | validationMessage | -              | No        | `string`                    | -          | Read-only. The validation message of the element.                           |
 | willValidate      | -              | No        | `boolean`                   | -          | Read-only. Whether the element is a candidate for constraint validation.    |
+| selectionStart    | -              | No        | `number`                    | 0          | Read-only. The offset of the start of the text selection.                   |
+| selectionEnd      | -              | No        | `number`                    | 0          | Read-only. The offset of the end of the text selection.                     |
 
 ### Methods
 
-| Name              | Type signature                                                                              | Description                                                             |
-| ----------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| select            | `(): void`                                                                                  | Selects all text within the control.                                    |
-| setSelectionRange | `(start: number, end: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range of the control.                           |
-| setRangeText      | `(replacement: string, start: number, end: number, selectMode?: RangeTextSelectMode): void` | Replaces the selected text in the control.                              |
-| scrollTo          | `(options?: ScrollToOptions): void` / `(x: number, y: number): void`                        | Scrolls the control to the given position.                              |
-| checkValidity     | `(): boolean`                                                                               | Checks validity and emits `invalid` when the control is invalid.        |
-| reportValidity    | `(): boolean`                                                                               | Checks validity; when invalid, emits `invalid` and focuses the control. |
-| setCustomValidity | `(message: string): void`                                                                   | Sets a custom message. Invalid while `message` is not empty.            |
+| Name              | Type signature                                                                                | Description                                                                 |
+| ----------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| select            | `(): void`                                                                                    | Selects all text within the control.                                        |
+| setSelectionRange | `(start: number, end: number, direction?: SelectionRangeDirection): void`                     | Sets the text selection range of the control.                               |
+| setRangeText      | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the text from `start` to `end`, or the selected text without them. |
+| scrollTo          | `(options?: ScrollToOptions): void` / `(x: number, y: number): void`                          | Scrolls the control to the given position.                                  |
+| checkValidity     | `(): boolean`                                                                                 | Checks validity and emits `invalid` when the control is invalid.            |
+| reportValidity    | `(): boolean`                                                                                 | Checks validity; when invalid, emits `invalid` and focuses the control.     |
+| setCustomValidity | `(message: string): void`                                                                     | Sets a custom message. Invalid while `message` is not empty.                |
 
 ### Events
 
@@ -367,61 +380,73 @@ The groups below mirror the `describe` blocks of the suite.
 6. Through default slot projection.
 7. Projection takes priority over the attribute binding.
 8. The value reflects later slot changes.
-9. Issue #1206 - passing `undefined` sets the underlying textarea value to `undefined`.
-10. Issue #1686 - dynamic prefix and suffix slot manipulation.
-11. The internal input query is correctly recreated after re-renders.
+9. Whitespace in the default slot around a helper text keeps the `value` attribute and a value set before the first
+   render.
+10. Whitespace and a helper text added later keep the typed value.
+11. Removing the projected text clears the value.
+12. Issue #1206 - passing `undefined` sets the underlying textarea value to `undefined`.
+13. Issue #1686 - dynamic prefix and suffix slot manipulation.
+14. The internal input query is correctly recreated after re-renders.
 
 ### Events
 
-12. Emits `igcInput`.
-13. Emits `igcChange`.
+15. Emits `igcInput`.
+16. Emits `igcChange`.
 
 ### Methods API
 
-14. `select`.
-15. `setSelectionRange`.
-16. `setRangeText`.
-17. `focus` and `blur`.
-18. `scrollTo`.
+17. `select`.
+18. `setSelectionRange`.
+19. `setRangeText`.
+20. `selectionStart` and `selectionEnd` report the selection.
+21. `setRangeText` without a range replaces the selection.
+22. `focus` and `blur`.
+23. `scrollTo`.
+
+### spellcheck
+
+24. The attribute reads as the native attribute: empty and `true` turn the check on, `false` turns it off, and no
+    attribute is the default, on.
+25. The property is forwarded to the native textarea.
 
 ### Form integration
 
 Driven by `createFormAssociatedTestBed`.
 
-19. Is form associated, and is not associated on submit without a value.
-20. Is associated on submit.
-21. Is correctly reset on form reset, including after a `setAttribute` call.
-22. Reflects the disabled state of an ancestor `fieldset`.
-23. Fulfils the required, minimum length, maximum length and custom constraints.
+26. Is form associated, and is not associated on submit without a value.
+27. Is associated on submit.
+28. Is correctly reset on form reset, including after a `setAttribute` call.
+29. Reflects the disabled state of an ancestor `fieldset`.
+30. Fulfils the required, minimum length, maximum length and custom constraints.
 
 ### defaultValue
 
-24. Form integration - correct initial state, correct submission and correct reset.
-25. Projected content is treated as the default value, is restored on a form reset, and does not shadow a later
+31. Form integration - correct initial state, correct submission and correct reset.
+32. Projected content is treated as the default value, is restored on a form reset, and does not shadow a later
     `defaultValue` assignment.
-26. Validation - fails and passes required validation, and fails and passes the minlength and maxlength validation.
+33. Validation - fails and passes required validation, and fails and passes the minlength and maxlength validation.
 
 ### Validation message slots
 
 Generated by `runValidationContainerTests`.
 
-27. `value-missing` with `required`.
-28. `too-long` with `maxLength`, and `too-short` with `minLength`.
-29. `custom-error` after `setCustomValidity`.
-30. `invalid` with `required`.
+34. `value-missing` with `required`.
+35. `too-long` with `maxLength`, and `too-short` with `minLength`.
+36. `custom-error` after `setCustomValidity`.
+37. `invalid` with `required`.
 
 ### External label association
 
 Generated by `runExternalLabelAssociationTests`.
 
-31. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native textarea as
+38. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native textarea as
     `ariaLabelledByElements`, and clicking it focuses the control. A `label` added after the first render names the
     control from the first focus, an axe audit passes with only an external `label`, and the host `aria-labelledby` and
     `aria-label` follow the [naming order](../input/spec.md#naming-order).
 
 ### Host ARIA
 
-32. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+39. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal.
 
 ### Not covered by the suite
@@ -430,7 +455,7 @@ The focus after the form checks and the `invalid` event rules come from the form
 [input suite](../input/spec.md#form-validity-checks) covers them.
 
 The following documented behaviors have no dedicated case yet: the `validateOnly` mode, and the forwarding of
-`spellcheck`, `autocapitalize`, `autocomplete` and `inputmode`.
+`autocapitalize`, `autocomplete` and `inputmode`.
 ## Accessibility
 
 ### ARIA roles and properties
