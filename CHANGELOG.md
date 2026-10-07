@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Calendar, Date picker, Date range picker
   - `DateRangeDescriptor` has an optional `label`. The calendar adds the labels of the matching `specialDates` and `disabledDates` descriptors to the accessible name of a date, for example "Thursday, October 8, 2026, Free delivery". Before, the special state was only visual, and assistive technologies did not announce it.
 
+### Changed
+- #### Toast, Snackbar
+  - The display time now waits while the pointer is on the component or the keyboard focus is in it, and starts again in full when both leave. Before, the component closed under the pointer, and a keyboard user could lose the snackbar action before reaching it. A pointer click on the action does not hold the component open, also when the action has the keyboard focus.
+  - `show()` on an open component now starts the display time again. It still resolves `false`. Before, a new message in an open component closed with the time that was left from the earlier one.
+
 ### Security
 - #### Tile manager
   - `loadLayout` now copies only the serialized tile properties: the spans, the positions, the flags and `id`. A layout from storage or a server can no longer set `innerHTML` on a tile or replace its prototype through `__proto__`. A value that is not an array, and an entry that is not an object, are ignored.
@@ -102,6 +107,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `layoutComplete` now resolves after the rendered items are measured. Before, it could resolve first, so `scrollToIndex` stopped its correction early, and an item with a size other than the estimate landed up to tens of pixels from the requested edge.
   - A list larger than the maximum scroll size of the browser now shows its last items at the end of the scroll range, and `scrollToIndex` puts the item at the requested edge. The items also move evenly during a scroll. Before, the last items could not be reached, the item landed tens of pixels off, and the items jumped by some pixels each time the rendered window changed.
   - A new `data` array with new items at the rendered indices now measures those items again. Before, an item element that kept its index was not measured again, so the scroll size and the item positions used the estimate until the item left the rendered window.
+- #### Toast, Snackbar
+  - `container` positioning now anchors the component with a name that it adds to the inline `anchor-name` of the container while it is open. It adds the name again when a new `style` attribute removes it. Before, the container was the `source` of the popover, so the browser moved the snackbar to the start of the container in the tab order, and Tab reached the action before the content of the container. A container that has anchor names of its own, also one that gets them while the component is open, or that is in another tree, such as the host of the shadow root that holds the component, is still the `source`, and keeps its anchor names.
+  - A component that moves while it is open now shows again in its new place, with a full display time. Before, it stayed hidden with `open` set.
+  - `show()` and `toggle()` during the fade-out of `hide()` now keep the component open, and `hide()` during the fade-out resolves `false`. Before, `show()` resolved `false` and the component closed, and `toggle()` or a second `hide()` closed the component at once, without the rest of its fade-out.
+- #### Snackbar
+  - The default action now shows the keyboard focus style of a flat button in every theme, also on hover. Before, it showed none in the Material and Fluent themes, and none in any theme when the `action-text` attribute was set.
 - #### Theming
   - A theme change now replaces only the theme style sheets of a component. It keeps the style sheets that other code adopted into the shadow root, after the theme style sheets. Before, a theme change removed them.
 - #### Slider, Range slider
