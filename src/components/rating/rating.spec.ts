@@ -21,6 +21,7 @@ import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -769,6 +770,50 @@ describe('Rating component', () => {
       expect(slider.getAttribute('tabindex')).to.equal('-1');
       await expect(rating).to.be.accessible();
       await expect(rating).shadowDom.to.be.accessible();
+    });
+  });
+
+  describe('Focus', () => {
+    it('moves the focus to the slider on `focus()` and removes it on `blur()`', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating label="Rate"></igc-rating>`
+      );
+      const slider = getRatingWrapper(rating);
+
+      rating.focus();
+      expect(document.activeElement).to.equal(rating);
+      expect(isFocused(slider)).to.be.true;
+
+      rating.blur();
+      expect(isFocused(slider)).to.be.false;
+    });
+
+    it('does not take the focus when disabled', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating label="Rate" disabled></igc-rating>`
+      );
+
+      rating.focus();
+      expect(isFocused(getRatingWrapper(rating))).to.be.false;
+    });
+
+    it('takes the focus when invalid on a failed submit and on `reportValidity()`', async () => {
+      const form = await fixture<HTMLFormElement>(
+        html`<form @submit=${(event: Event) => event.preventDefault()}>
+          <igc-rating name="rating" label="Rate"></igc-rating>
+          <button>Submit</button>
+        </form>`
+      );
+      const rating = form.querySelector(IgcRatingComponent.tagName)!;
+      const slider = getRatingWrapper(rating);
+
+      rating.setCustomValidity('Select a rating');
+      form.requestSubmit();
+      expect(isFocused(slider)).to.be.true;
+
+      rating.blur();
+      rating.reportValidity();
+      expect(isFocused(slider)).to.be.true;
     });
   });
 

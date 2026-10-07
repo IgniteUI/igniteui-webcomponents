@@ -5,11 +5,24 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { resetMouse, sendKeys, sendMouse } from '@web/test-runner-commands';
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
+import { tabKey } from '#internals/controllers/keys.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runAlertTests } from '#internals/testing/alert.spec.js';
 import { finishAnimationsFor } from '#internals/testing/helpers.spec.js';
 import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
+import {
+  simulateKeyboard,
+  simulatePointerEnter,
+  simulatePointerLeave,
+} from '#internals/testing/simulate.spec.js';
 import { isPopoverOpen } from '#internals/utils/dom.js';
+import { configureTheme } from '#theming/config.js';
+import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
+import { styles as fluent } from '../../styles/themes/light/fluent.css.js';
+import { styles as indigo } from '../../styles/themes/light/indigo.css.js';
+import { styles as material } from '../../styles/themes/light/material.css.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcSnackbarComponent from './snackbar.js';
 
@@ -113,7 +126,7 @@ describe('Snackbar', () => {
     };
 
     beforeEach(async () => {
-      clock = useFakeTimers({ toFake: ['setTimeout'] });
+      clock = useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       snackbar = await fixture<IgcSnackbarComponent>(
         html`<igc-snackbar>${defaultContent}</igc-snackbar>`
       );
@@ -144,11 +157,9 @@ describe('Snackbar', () => {
       checkOpenState(true);
       expect(snackbar.open).to.be.true;
 
-      // hide timer triggers after this tick
       await clock.tickAsync(1);
 
-      // Stop running animations and repaint
-      finishAnimationsFor(snackbar.shadowRoot!);
+      finishAnimationsFor(snackbar);
       await nextFrame();
 
       expect(snackbar.open).to.be.false;
@@ -186,15 +197,90 @@ describe('Snackbar', () => {
     });
 
     it('`toggle()`', async () => {
-      // close -> open
       await snackbar.toggle();
       expect(snackbar.open).to.be.true;
       checkOpenState(true);
 
-      // open -> close
       await snackbar.toggle();
       expect(snackbar.open).to.be.false;
       checkOpenState(false);
+    });
+
+    describe('display time', () => {
+      it('waits while the focus is in the snackbar', async () => {
+        const hide = spy(snackbar, 'hide');
+        snackbar.actionText = defaultActionText;
+        snackbar.displayTime = 400;
+        await snackbar.show();
+
+        const action = snackbar.renderRoot.querySelector(
+          IgcButtonComponent.tagName
+        )!;
+        action.focus();
+        await clock.tickAsync(800);
+        expect(hide).not.called;
+
+        simulatePointerEnter(snackbar);
+        simulatePointerLeave(snackbar);
+        await clock.tickAsync(800);
+        expect(hide).not.called;
+
+        action.blur();
+        await clock.tickAsync(399);
+        expect(hide).not.called;
+
+        await clock.tickAsync(1);
+        expect(hide).calledOnce;
+      });
+
+      it('does not wait after a pointer click on the action', async () => {
+        const hide = spy(snackbar, 'hide');
+        snackbar.actionText = defaultActionText;
+        snackbar.displayTime = 400;
+        await snackbar.show();
+
+        const action = snackbar.renderRoot.querySelector(
+          IgcButtonComponent.tagName
+        )!;
+        const { x, y, width, height } = action.getBoundingClientRect();
+        await sendMouse({
+          type: 'click',
+          position: [Math.round(x + width / 2), Math.round(y + height / 2)],
+        });
+        await sendMouse({ type: 'move', position: [0, 0] });
+        expect(action.matches(':focus')).to.be.true;
+
+        await clock.tickAsync(400);
+        expect(hide).calledOnce;
+        await resetMouse();
+      });
+
+      it('does not wait after a pointer click on the action with the keyboard focus', async () => {
+        const hide = spy(snackbar, 'hide');
+        snackbar.actionText = defaultActionText;
+        snackbar.displayTime = 400;
+        await snackbar.show();
+
+        const action = snackbar.renderRoot.querySelector(
+          IgcButtonComponent.tagName
+        )!;
+        await sendKeys({ press: tabKey });
+        expect(action.matches(':focus')).to.be.true;
+        await clock.tickAsync(800);
+        expect(hide).not.called;
+
+        const { x, y, width, height } = action.getBoundingClientRect();
+        await sendMouse({
+          type: 'click',
+          position: [Math.round(x + width / 2), Math.round(y + height / 2)],
+        });
+        await sendMouse({ type: 'move', position: [0, 0] });
+        expect(action.matches(':focus')).to.be.true;
+
+        await clock.tickAsync(400);
+        expect(hide).calledOnce;
+        await resetMouse();
+      });
     });
 
     describe('positioning', () => {
@@ -234,6 +320,36 @@ describe('Snackbar', () => {
         expect(isPopoverOpen(snackbar)).to.be.true;
       });
 
+      it('`container` positioning keeps the DOM place of the action in the tab order', async () => {
+        const root = await fixture<HTMLElement>(html`
+          <div>
+            <button id="before">Before</button>
+            <div>
+              <button id="content">Content</button>
+              <igc-snackbar
+                positioning="container"
+                action-text=${defaultActionText}
+              >
+                ${defaultContent}
+              </igc-snackbar>
+            </div>
+          </div>
+        `);
+        snackbar = root.querySelector(IgcSnackbarComponent.tagName)!;
+        await snackbar.show();
+
+        root.querySelector<HTMLElement>('#before')!.focus();
+        await sendKeys({ press: tabKey });
+        expect(document.activeElement?.id).to.equal('content');
+
+        await sendKeys({ press: tabKey });
+        expect(
+          snackbar.renderRoot
+            .querySelector(IgcButtonComponent.tagName)!
+            .matches(':focus')
+        ).to.be.true;
+      });
+
       it('`position` changes in `viewport` mode do not set inline styles', async () => {
         await snackbar.show();
 
@@ -245,6 +361,98 @@ describe('Snackbar', () => {
         expect(snackbar.style.left).to.equal('');
       });
     });
+  });
+
+  describe('Styles', () => {
+    const globalThemes = [
+      ['bootstrap', bootstrap],
+      ['material', material],
+      ['fluent', fluent],
+      ['indigo', indigo],
+    ] as const;
+    let adopted: CSSStyleSheet[];
+
+    beforeEach(() => {
+      adopted = [...document.adoptedStyleSheets];
+    });
+
+    afterEach(() => {
+      document.adoptedStyleSheets = adopted;
+      configureTheme('bootstrap');
+    });
+
+    async function focusStyle(button: IgcButtonComponent) {
+      button.focus();
+      simulateKeyboard(button, tabKey);
+      await elementUpdated(button);
+
+      const base = button.renderRoot.querySelector('[part~="base"]')!;
+      finishAnimationsFor(base, { subtree: true });
+
+      const { boxShadow, backgroundColor } = getComputedStyle(base);
+      const after = getComputedStyle(base, '::after');
+      return {
+        boxShadow,
+        backgroundColor,
+        after: `${after.display} ${after.boxShadow}`,
+      };
+    }
+
+    it('the default action ignores a global flat button background', async () => {
+      document.documentElement.style.setProperty(
+        '--ig-flat-button-background',
+        'rgb(255, 0, 0)'
+      );
+
+      try {
+        snackbar = await fixture<IgcSnackbarComponent>(
+          html`<igc-snackbar action-text="Undo" open
+            >Item deleted</igc-snackbar
+          >`
+        );
+        const base = snackbar.renderRoot
+          .querySelector(IgcButtonComponent.tagName)!
+          .renderRoot.querySelector('[part~="base"]')!;
+
+        expect(getComputedStyle(base).backgroundColor).to.equal(
+          'rgba(0, 0, 0, 0)'
+        );
+      } finally {
+        document.documentElement.style.removeProperty(
+          '--ig-flat-button-background'
+        );
+      }
+    });
+
+    for (const [theme, { styleSheet }] of globalThemes) {
+      it(`the default action keeps the keyboard focus style of a flat button (${theme})`, async () => {
+        document.adoptedStyleSheets = [...adopted, styleSheet!];
+        configureTheme(theme);
+
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <igc-button variant="flat">Flat</igc-button>
+            <igc-snackbar action-text="Undo" keep-open open>
+              Item deleted
+            </igc-snackbar>
+          </div>
+        `);
+        const flat = container.querySelector(IgcButtonComponent.tagName)!;
+        snackbar = container.querySelector(IgcSnackbarComponent.tagName)!;
+        await elementUpdated(snackbar);
+        const action = snackbar.renderRoot.querySelector(
+          IgcButtonComponent.tagName
+        )!;
+
+        const flatStyle = await focusStyle(flat);
+        expect(flatStyle).not.to.eql({
+          boxShadow: 'none',
+          backgroundColor: 'rgba(0, 0, 0, 0)',
+          after: 'block none',
+        });
+        expect(await focusStyle(action)).to.eql(flatStyle);
+      });
+    }
   });
 
   describe('Events', () => {
@@ -282,6 +490,8 @@ describe('Snackbar', () => {
       expect(eventSpy).calledOnceWithExactly('igcAction');
     });
   });
+
+  runAlertTests(IgcSnackbarComponent.tagName);
 
   runInvokerCommandsTests({
     tagName: IgcSnackbarComponent.tagName,
