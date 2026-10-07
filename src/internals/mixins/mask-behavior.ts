@@ -92,6 +92,15 @@ export declare class MaskBehaviorElementInterface {
   public get prompt(): string;
   public set prompt(value: string);
 
+  /**
+   * The offset of the start of the text selection, in UTF-16 code units.
+   * Equals `selectionEnd` when no text is selected.
+   */
+  public get selectionStart(): number;
+
+  /** The offset of the end of the text selection, in UTF-16 code units. */
+  public get selectionEnd(): number;
+
   //#endregion
 
   //#region Event handlers
@@ -265,6 +274,19 @@ export function MaskBehaviorMixin<
 
     public get prompt(): string {
       return this._parser.prompt;
+    }
+
+    /**
+     * The offset of the start of the text selection, in UTF-16 code units.
+     * Equals `selectionEnd` when no text is selected.
+     */
+    public get selectionStart(): number {
+      return this._input?.selectionStart ?? 0;
+    }
+
+    /** The offset of the end of the text selection, in UTF-16 code units. */
+    public get selectionEnd(): number {
+      return this._input?.selectionEnd ?? 0;
     }
 
     //#endregion

@@ -286,6 +286,37 @@ describe('Input component', () => {
         expect([input.selectionStart, input.selectionEnd]).to.eql([4, 4]);
       });
 
+      it('selectionStart and selectionEnd report the selection', async () => {
+        await createFixture(
+          html`<igc-input value="the quick brown fox"></igc-input>`
+        );
+
+        element.setSelectionRange(4, 9);
+        expect([element.selectionStart, element.selectionEnd]).to.eql([4, 9]);
+
+        input.setSelectionRange(2, 2);
+        expect([element.selectionStart, element.selectionEnd]).to.eql([2, 2]);
+      });
+
+      it('selectionStart and selectionEnd are null without a text selection', async () => {
+        await createFixture(html`<igc-input type="email"></igc-input>`);
+        expect([element.selectionStart, element.selectionEnd]).to.eql([
+          null,
+          null,
+        ]);
+
+        element.type = 'number';
+        await elementUpdated(element);
+        expect([element.selectionStart, element.selectionEnd]).to.eql([
+          null,
+          null,
+        ]);
+
+        element.type = 'text';
+        await elementUpdated(element);
+        expect([element.selectionStart, element.selectionEnd]).to.eql([0, 0]);
+      });
+
       it('focus() and blur()', async () => {
         await createFixture(html`<igc-input></igc-input>`);
 

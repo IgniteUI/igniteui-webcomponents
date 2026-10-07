@@ -214,6 +214,23 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @property({ type: Boolean, reflect: true, attribute: 'validate-only' })
   public validateOnly = false;
 
+  /**
+   * The offset of the start of the text selection, in UTF-16 code units.
+   * Equals `selectionEnd` when no text is selected. `null` before the first
+   * render and for the `email` and `number` types, which have no selection.
+   */
+  public get selectionStart(): number | null {
+    return this._input?.selectionStart ?? null;
+  }
+
+  /**
+   * The offset of the end of the text selection, in UTF-16 code units.
+   * `null` before the first render and for the `email` and `number` types.
+   */
+  public get selectionEnd(): number | null {
+    return this._input?.selectionEnd ?? null;
+  }
+
   /* blazorSuppress */
   /**
    * Replaces the text from `start` to `end` in the input. Without `start` and

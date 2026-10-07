@@ -325,6 +325,22 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
     return this._i18nController.resourceStrings;
   }
 
+  /**
+   * The offset of the start of the text selection in the input, in UTF-16
+   * code units. Equals `selectionEnd` when no text is selected.
+   */
+  public get selectionStart(): number {
+    return this._input?.selectionStart ?? 0;
+  }
+
+  /**
+   * The offset of the end of the text selection in the input, in UTF-16 code
+   * units.
+   */
+  public get selectionEnd(): number {
+    return this._input?.selectionEnd ?? 0;
+  }
+
   //#endregion
 
   //#region Event handlers
@@ -396,11 +412,14 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
   }
 
   /* blazorSuppress */
-  /* Replaces the selected text in the input and re-applies the mask */
+  /**
+   * Replaces the text from `start` to `end` in the input and re-applies the
+   * mask. Without `start` and `end`, replaces the selected text.
+   */
   public setRangeText(
     replacement: string,
-    start: number,
-    end: number,
+    start?: number,
+    end?: number,
     mode?: RangeTextSelectMode
   ): void {
     this._input.setRangeText(replacement, start, end, mode);

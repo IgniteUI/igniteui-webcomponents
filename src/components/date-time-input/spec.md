@@ -56,6 +56,7 @@
 |       3 | 2026-09-28 | Describe the year parsing; add the property suite                         |
 |       4 | 2026-10-02 | Focus after form checks; `invalid` only on checks                         |
 |       5 | 2026-10-02 | Forward the host `aria-describedby`; expose `required` as `aria-required` |
+|       6 | 2026-10-07 | Read-only `selectionStart` and `selectionEnd`                             |
 
 ## Overview
 
@@ -440,10 +441,16 @@ input.clear();                        // empty the mask and the value
 input.select();
 input.setSelectionRange(0, 2);
 input.setRangeText('12', 0, 2, 'select');
+
+const { selectionStart, selectionEnd } = input;
 ```
 
 Calling `stepUp` or `stepDown` on an empty editor initializes the value first. With no part argument, the part under
 the caret is spun.
+
+`selectionStart` and `selectionEnd` are read-only. They count in the text that the input shows: the input format
+while the input has focus, and the display format when it does not. After `setRangeText()`, they report the new
+selection when `updateComplete` resolves.
 
 #### Labeling from the light DOM
 
@@ -559,6 +566,8 @@ example <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> - are ignored, so they stay availab
 | validity          | -              | No        | `ValidityState`             | -                 | Read-only. The validity state of the element.                               |
 | validationMessage | -              | No        | `string`                    | -                 | Read-only. The validation message of the element.                           |
 | willValidate      | -              | No        | `boolean`                   | -                 | Read-only. Whether the element is a candidate for constraint validation.    |
+| selectionStart    | -              | No        | `number`                    | 0                 | Read-only. The offset of the start of the text selection.                   |
+| selectionEnd      | -              | No        | `number`                    | 0                 | Read-only. The offset of the end of the text selection.                     |
 
 ### Methods
 
@@ -673,70 +682,71 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 21. `stepUp` and `stepDown` initialize a new date when the value is empty, and spin correctly otherwise.
 22. Respects `spinDelta` and `spinLoop`.
 23. `setRangeText` replaces the range and re-applies the mask.
-24. Non-filled parts get their default value on blur; an invalid date sets a `null` value on blur; a complete input
+24. `selectionStart` and `selectionEnd` report the selection.
+25. Non-filled parts get their default value on blur; an invalid date sets a `null` value on blur; a complete input
     commits its value.
 
 ### Keyboard, wheel and pointer
 
-25. <kbd>Arrow Up</kbd> and <kbd>Arrow Down</kbd> spin the focused part, and are a no-op while read-only.
-26. <kbd>Alt</kbd> + arrow presses are a no-op.
-27. The caret does not move away from the focused part when `stepUp` or `stepDown` are invoked.
-28. <kbd>Arrow Left</kbd> and <kbd>Arrow Right</kbd> navigate to the beginning and the end of a date section.
-29. <kbd>Ctrl</kbd> + <kbd>;</kbd> sets the current date.
-30. The mouse wheel spins the part under the caret, and is a no-op without focus and while read-only.
-31. No change event is emitted while read-only.
-32. Drag enter, drag leave with and without focus, and drop behavior.
+26. <kbd>Arrow Up</kbd> and <kbd>Arrow Down</kbd> spin the focused part, and are a no-op while read-only.
+27. <kbd>Alt</kbd> + arrow presses are a no-op.
+28. The caret does not move away from the focused part when `stepUp` or `stepDown` are invoked.
+29. <kbd>Arrow Left</kbd> and <kbd>Arrow Right</kbd> navigate to the beginning and the end of a date section.
+30. <kbd>Ctrl</kbd> + <kbd>;</kbd> sets the current date.
+31. The mouse wheel spins the part under the caret, and is a no-op without focus and while read-only.
+32. No change event is emitted while read-only.
+33. Drag enter, drag leave with and without focus, and drop behavior.
 
 ### Form integration
 
 Driven by `createFormAssociatedTestBed`.
 
-33. Is form associated, and is not associated on submit without a value.
-34. Is associated on submit.
-35. Is correctly reset on form reset, and resets to the new default after a `setAttribute` call.
-36. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid.
-37. Reflects the disabled state of an ancestor `fieldset`.
-38. Fulfils the required, min, max - both as dates and as string property bindings - and custom constraints.
+34. Is form associated, and is not associated on submit without a value.
+35. Is associated on submit.
+36. Is correctly reset on form reset, and resets to the new default after a `setAttribute` call.
+37. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid.
+38. Reflects the disabled state of an ancestor `fieldset`.
+39. Fulfils the required, min, max - both as dates and as string property bindings - and custom constraints.
 
 The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
 [input suite](../input/spec.md#form-validity-checks) covers them.
 
 ### defaultValue
 
-39. Form integration - correct initial state, correct submission and correct reset.
-40. Validation - fails and passes required validation, and fails and passes the min and max validation.
+40. Form integration - correct initial state, correct submission and correct reset.
+41. Validation - fails and passes required validation, and fails and passes the min and max validation.
 
 ### Validation message slots
 
 Generated by `runValidationContainerTests`.
 
-41. `value-missing`, `range-underflow`, `range-overflow`, `custom-error` and `invalid` render for their matching
+42. `value-missing`, `range-underflow`, `range-overflow`, `custom-error` and `invalid` render for their matching
     constraint.
 
 ### External label association
 
 Generated by `runExternalLabelAssociationTests`.
 
-42. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
+43. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
     `ariaLabelledByElements`, and clicking it focuses the control. A `label` added after the first render names the
     control from the first focus, an axe audit passes with only an external `label`, and the host `aria-labelledby` and
     `aria-label` follow the [naming order](../input/spec.md#naming-order).
 
 ### Date part and parser unit suites
 
-43. [`date-part.spec.ts`](./date-part.spec.ts) covers the part classes: the factory for every part type, `getValue`
+44. [`date-part.spec.ts`](./date-part.spec.ts) covers the part classes: the factory for every part type, `getValue`
     formatting per token, `validate` ranges - including the day validated against its month and year context - and
     `spin` for every part, with leap year adjustment, looping and clamping.
-44. [`datetime-mask-parser.spec.ts`](./datetime-mask-parser.spec.ts) covers the parser that turns a format into a
+45. [`datetime-mask-parser.spec.ts`](./datetime-mask-parser.spec.ts) covers the parser that turns a format into a
     mask and back, including the year format normalization with its case kept, a literal that is a mask flag, the
     century threshold, the calendar of years below 100, and UTF-16 part positions after an astral literal.
-45. [`datetime-mask-parser.property.spec.ts`](./datetime-mask-parser.property.spec.ts) checks, for generated formats:
+46. [`datetime-mask-parser.property.spec.ts`](./datetime-mask-parser.property.spec.ts) checks, for generated formats:
     the `formatDate` / `parseDate` round-trip for dates from year 0 to 9999, the two-digit year range, no throw or
     invalid date for any string, and the parts that tile the mask and agree with the format-level part queries.
 
 ### Host ARIA
 
-46. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+47. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal. `required` sets `aria-required`.
 
 ## Assumptions and limitations

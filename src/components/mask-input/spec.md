@@ -52,6 +52,7 @@
 |       4 | 2026-09-28 | An empty control is no bad input                                          |
 |       5 | 2026-10-02 | Focus after form checks; `invalid` only on checks                         |
 |       6 | 2026-10-02 | Forward the host `aria-describedby`; expose `required` as `aria-required` |
+|       7 | 2026-10-07 | Read-only `selectionStart` and `selectionEnd`                             |
 
 ## Overview
 
@@ -322,8 +323,13 @@ All other native text-editing keys apply, as the component delegates focus to th
 | validity          | -           | No        | `ValidityState`           | -              | Read-only. The validity state of the element.                               |
 | validationMessage | -           | No        | `string`                  | -              | Read-only. The validation message of the element.                           |
 | willValidate      | -           | No        | `boolean`                 | -              | Read-only. Whether the element is a candidate for constraint validation.    |
+| selectionStart    | -           | No        | `number`                  | 0              | Read-only. The offset of the start of the text selection.                   |
+| selectionEnd      | -           | No        | `number`                  | 0              | Read-only. The offset of the end of the text selection.                     |
 
 The standard `autofocus` global attribute is forwarded to the inner native input.
+
+`selectionStart` and `selectionEnd` are read-only. Set the selection with `setSelectionRange()`. After
+`setRangeText()`, they report the new selection when `updateComplete` resolves.
 
 ### Methods
 
@@ -403,42 +409,44 @@ The groups below mirror the `describe` blocks of the suite.
 9. `setCustomValidity`.
 10. `setRangeText`, including clearing a focused input - which keeps the mask visible - and clearing an unfocused
     one, which empties it.
-11. `igcChange` and `igcInput`, with and without literals, and at the end of the pattern.
-12. Is accessible (axe audit).
-13. Focus and blur update the underlying input mask, for an empty and a non-empty value.
-14. Drag enter and drag leave, with and without focus.
-15. <kbd>Delete</kbd> and <kbd>Backspace</kbd> behavior, including skipping literals and a composing backspace.
-16. Default input behavior, composition, cut, paste, drop and browser auto-fill for a mask with literals.
+11. `selectionStart` and `selectionEnd` report the selection, and the selection that `setRangeText` sets once the
+    update completes.
+12. `igcChange` and `igcInput`, with and without literals, and at the end of the pattern.
+13. Is accessible (axe audit).
+14. Focus and blur update the underlying input mask, for an empty and a non-empty value.
+15. Drag enter and drag leave, with and without focus.
+16. <kbd>Delete</kbd> and <kbd>Backspace</kbd> behavior, including skipping literals and a composing backspace.
+17. Default input behavior, composition, cut, paste, drop and browser auto-fill for a mask with literals.
 
 ### Undo and redo
 
 Grouped as `Undo / redo` in the suite.
 
-17. Collapses a run of typed characters into a single step, and redoes the restored run.
-18. Supports the alternate shortcuts.
-19. Preserves interior holes in the mask.
-20. Starts a new step when the caret moves.
-21. Collapses a run of backspaces into a single step, and keeps typing and deleting as separate steps.
-22. Records a paste as its own step.
-23. Does not record an edit that the mask rejects.
-24. Emits `igcInput` when a step is restored, and places the caret where the undone edit began.
-25. Is a no-op with nothing to undo, and does nothing while read-only.
-26. Drops the history on a programmatic value assignment, on a mask change and on a prompt change.
-27. Survives a blur and a refocus.
+18. Collapses a run of typed characters into a single step, and redoes the restored run.
+19. Supports the alternate shortcuts.
+20. Preserves interior holes in the mask.
+21. Starts a new step when the caret moves.
+22. Collapses a run of backspaces into a single step, and keeps typing and deleting as separate steps.
+23. Records a paste as its own step.
+24. Does not record an edit that the mask rejects.
+25. Emits `igcInput` when a step is restored, and places the caret where the undone edit began.
+26. Is a no-op with nothing to undo, and does nothing while read-only.
+27. Drops the history on a programmatic value assignment, on a mask change and on a prompt change.
+28. Survives a blur and a refocus.
 
 ### Form integration
 
 Driven by `createFormAssociatedTestBed`.
 
-28. Is form associated, and is not associated on submit without a value.
-29. Is associated on submit, including with value formatting enabled.
-30. Is correctly reset on form reset, with and without value formatting, after a `setAttribute` call, and refreshes
+29. Is form associated, and is not associated on submit without a value.
+30. Is associated on submit, including with value formatting enabled.
+31. Is correctly reset on form reset, with and without value formatting, after a `setAttribute` call, and refreshes
     the rendered masked value and placeholder afterwards.
-31. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid.
-32. Reflects the disabled state of an ancestor `fieldset`.
-33. Fulfils the required constraint, including with value formatting, the mask pattern constraint and a custom
+32. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid.
+33. Reflects the disabled state of an ancestor `fieldset`.
+34. Fulfils the required constraint, including with value formatting, the mask pattern constraint and a custom
     constraint.
-34. An empty optional control is valid for any mask, and a value that fits no position of a letter mask is a bad
+35. An empty optional control is valid for any mask, and a value that fits no position of a letter mask is a bad
     input.
 
 The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
@@ -446,43 +454,43 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 ### defaultValue
 
-35. Form integration - correct initial state, correct submission, correct reset, and dropping the undo history on
+36. Form integration - correct initial state, correct submission, correct reset, and dropping the undo history on
     reset.
-36. Validation - fails the initial validation, and passes once `defaultValue` is updated.
+37. Validation - fails the initial validation, and passes once `defaultValue` is updated.
 
 ### Validation message slots
 
 Generated by `runValidationContainerTests`.
 
-37. `value-missing` with `required`.
-38. `bad-input` with an unsatisfied mask pattern.
-39. `custom-error` after `setCustomValidity`.
-40. `invalid` with `required`.
+38. `value-missing` with `required`.
+39. `bad-input` with an unsatisfied mask pattern.
+40. `custom-error` after `setCustomValidity`.
+41. `invalid` with `required`.
 
 ### External label association
 
 Generated by `runExternalLabelAssociationTests`.
 
-41. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
+42. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
     `ariaLabelledByElements`, and clicking it focuses the control. A `label` added after the first render names the
     control from the first focus, an axe audit passes with only an external `label`, and the host `aria-labelledby` and
     `aria-label` follow the [naming order](../input/spec.md#naming-order).
 
 ### Parser and history unit suites
 
-42. [`mask-parser.spec.ts`](./mask-parser.spec.ts) covers the parser on its own: every flag, literals and escaping,
+43. [`mask-parser.spec.ts`](./mask-parser.spec.ts) covers the parser on its own: every flag, literals and escaping,
     applying and parsing values, Unicode digit normalization, and edge and boundary conditions, including UTF-16
     positions after an astral literal, and astral input and prompts rejected whole.
-43. [`mask-history.spec.ts`](./mask-history.spec.ts) covers the history on its own: recording, coalescing, traversal
+44. [`mask-history.spec.ts`](./mask-history.spec.ts) covers the history on its own: recording, coalescing, traversal
     and invalidation of the steps.
-44. [`mask-parser.property.spec.ts`](./mask-parser.property.spec.ts) checks, for generated masks, prompts and input:
+45. [`mask-parser.property.spec.ts`](./mask-parser.property.spec.ts) checks, for generated masks, prompts and input:
     the escaped mask and literal positions; `apply` and `replace` never throw, keep the mask length, literals and
     flag rules, and never split an astral character; the `apply` / `parse` round-trip; digit normalization; the
     non-literal position lookups; and prompt normalization.
 
 ### Host ARIA
 
-45. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+46. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal. `required` sets `aria-required`.
 
 ## Assumptions and limitations

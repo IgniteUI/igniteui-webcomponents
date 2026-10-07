@@ -319,6 +319,23 @@ describe('Masked input', () => {
       expect(input.value).to.be.empty;
     });
 
+    it('selectionStart and selectionEnd report the selection', async () => {
+      element.mask = '(CC) (CC)';
+      element.value = '1111';
+      await elementUpdated(element);
+
+      element.setSelectionRange(1, 3);
+      expect([element.selectionStart, element.selectionEnd]).to.eql([1, 3]);
+
+      input.setSelectionRange(6, 6);
+      expect([element.selectionStart, element.selectionEnd]).to.eql([6, 6]);
+
+      // `setRangeText()` moves the selection when the update completes.
+      element.setRangeText('22', 1, 3, 'end');
+      await elementUpdated(element);
+      expect([element.selectionStart, element.selectionEnd]).to.eql([3, 3]);
+    });
+
     it('igcChange event', async () => {
       syncParser();
 
