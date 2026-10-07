@@ -380,6 +380,7 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
           part="header"
           id=${this._headerId}
           aria-selected=${this.active}
+          aria-disabled=${!this._isAccessible}
           aria-controls=${this._contentId}
           aria-posinset=${index}
           aria-setsize=${size}
@@ -399,6 +400,7 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
         part="body"
         role="tabpanel"
         aria-labelledby=${this._headerId}
+        .inert=${!this.active}
       >
         <div ${ref(this._contentRef)} part="content">
           <slot></slot>
