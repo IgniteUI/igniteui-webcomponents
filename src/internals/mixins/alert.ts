@@ -9,6 +9,7 @@ import type {
 import { addCommandController } from '../controllers/command.js';
 import { addHostListeners } from '../controllers/host-listeners.js';
 import { addInternalsController } from '../controllers/internals.js';
+import { createMutationController } from '../controllers/mutation-observer.js';
 import { createTimer } from '../timing.js';
 import { getRoot, getVisibleAncestor, isPopoverOpen } from '../utils/dom.js';
 import { nanoid } from '../utils/strings.js';
@@ -69,9 +70,11 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   private readonly _anchorName = `--igc-alert-${nanoid(10)}`;
 
   // A new `style` attribute, such as from a template binding, drops the anchor.
-  private readonly _anchorObserver = new MutationObserver(() =>
-    this._applyAnchor()
-  );
+  private readonly _anchorObserver = createMutationController(this, {
+    callback: this._applyAnchor,
+    config: { attributeFilter: ['style'] },
+    target: (): Element[] => (this._anchor ? [this._anchor, this] : []),
+  });
 
   /** The container that anchors the component in `container` positioning. */
   private _anchor?: HTMLElement;
@@ -253,9 +256,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
       ) {
         this._anchor = container;
         this._applyAnchor();
-        for (const target of [container, this]) {
-          this._anchorObserver.observe(target, { attributeFilter: ['style'] });
-        }
+        this._anchorObserver.observe();
         this.showPopover();
       } else {
         this.showPopover({ source: container });
