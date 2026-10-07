@@ -772,6 +772,18 @@ describe('Date Time Input component', () => {
       checkSelectionRange(10, 10);
     });
 
+    it('selectionStart and selectionEnd report the selection', async () => {
+      element.value = new Date(2024, 1, 15);
+      element.inputFormat = 'MM/dd/yyyy';
+      await elementUpdated(element);
+
+      element.setSelectionRange(3, 5);
+      expect([element.selectionStart, element.selectionEnd]).to.eql([3, 5]);
+
+      input.setSelectionRange(0, 2);
+      expect([element.selectionStart, element.selectionEnd]).to.eql([0, 2]);
+    });
+
     it('should respect spinDelta', async () => {
       const value = new Date(2020, 2, 3);
 

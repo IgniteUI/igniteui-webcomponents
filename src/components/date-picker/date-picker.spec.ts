@@ -845,6 +845,34 @@ describe('Date picker', () => {
       checkDatesEqual(picker.value!, expectedValue);
       checkDatesEqual(dateTimeInput.value!, expectedValue);
     });
+
+    it('setRangeText() replaces the selection without a range', async () => {
+      picker.value = new Date(2024, 2, 21);
+      const expectedValue = new Date(2023, 2, 21);
+      await elementUpdated(picker);
+
+      dateTimeInput.focus();
+      await elementUpdated(picker);
+      picker.setSelectionRange(6, 10);
+      picker.setRangeText('2023');
+      await elementUpdated(picker);
+
+      checkDatesEqual(picker.value!, expectedValue);
+      checkDatesEqual(dateTimeInput.value!, expectedValue);
+    });
+
+    it('selectionStart and selectionEnd report the selection in the input', async () => {
+      picker.value = new Date(2024, 2, 21);
+      await elementUpdated(picker);
+
+      dateTimeInput.focus();
+      await elementUpdated(picker);
+      picker.setSelectionRange(3, 5);
+      expect([picker.selectionStart, picker.selectionEnd]).to.eql([3, 5]);
+
+      input.setSelectionRange(6, 10);
+      expect([picker.selectionStart, picker.selectionEnd]).to.eql([6, 10]);
+    });
   });
 
   describe('Uncommitted edits - issue #1346', () => {

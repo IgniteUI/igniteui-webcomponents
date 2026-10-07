@@ -57,6 +57,7 @@
 |       5 | 2026-10-02 | Send `invalid` only on checks and submits                                                  |
 |       6 | 2026-10-02 | `setRangeText()` without a range replaces the selection; `pattern` matches the whole value |
 |       7 | 2026-10-02 | Forward the host `aria-describedby`                                                        |
+|       8 | 2026-10-07 | Read-only `selectionStart` and `selectionEnd`                                              |
 
 ## Overview
 
@@ -300,10 +301,15 @@ input.setRangeText('new', 0, 4, 'select');
 // Replaces the selection, and puts the cursor after the new text.
 input.setRangeText('{first_name}', undefined, undefined, 'end');
 
+const { selectionStart, selectionEnd } = input;
+
 // type="number"
 input.stepUp();
 input.stepDown(5);
 ```
+
+`selectionStart` and `selectionEnd` are read-only. Set the selection with `setSelectionRange()`. As on the native
+input, they are `null` for the `email` and `number` types, which have no text selection.
 
 ### Localization
 
@@ -352,6 +358,8 @@ The component delegates focus to the inner native input, so all native text-edit
 | validity          | -               | No        | `ValidityState`         | -       | Read-only. The validity state of the element.                               |
 | validationMessage | -               | No        | `string`                | -       | Read-only. The validation message of the element.                           |
 | willValidate      | -               | No        | `boolean`               | -       | Read-only. Whether the element is a candidate for constraint validation.    |
+| selectionStart    | -               | No        | `number \| null`        | -       | Read-only. The offset of the start of the text selection.                   |
+| selectionEnd      | -               | No        | `number \| null`        | -       | Read-only. The offset of the end of the text selection.                     |
 
 `invalid` is not reflected as an attribute. Reading it returns the effective state, so a control that has been
 interacted with and fails validation reads `true` even if it was never set explicitly.
@@ -452,47 +460,49 @@ The groups below mirror the `describe` blocks of the suite.
 
 15. `stepUp` and `stepDown` increment and decrement the value.
 16. `setRangeText` replaces the given range, and the selection when it gets no range.
-17. `focus` and `blur` move focus to and from the inner input.
+17. `setSelectionRange` sets the selection, and `selectionStart` and `selectionEnd` report it.
+18. `selectionStart` and `selectionEnd` are `null` for the `email` and `number` types.
+19. `focus` and `blur` move focus to and from the inner input.
 
 ### Events
 
-18. Emits `igcInput`.
-19. Emits `igcChange`.
-20. A click on the label lets a single click escape the shadow root - it must not be duplicated.
+20. Emits `igcInput`.
+21. Emits `igcChange`.
+22. A click on the label lets a single click escape the shadow root - it must not be duplicated.
 
 ### Regressions
 
-21. Issue #1066 - the component validates synchronously.
-22. Issue #1521.
-23. Issue #1632 - the control does not enter the `invalid` state while pristine when validator properties change
+23. Issue #1066 - the component validates synchronously.
+24. Issue #1521.
+25. Issue #1632 - the control does not enter the `invalid` state while pristine when validator properties change
     dynamically.
 
 ### Form integration
 
 Driven by `createFormAssociatedTestBed`.
 
-24. Is form associated.
-25. Is not associated on submit when it has no value.
-26. Is associated on submit.
-27. Is correctly reset on form reset, including after a `setAttribute` call.
-28. Reflects the disabled state of an ancestor `fieldset`.
-29. Fulfils the required, min, max, step, minimum length, maximum length, pattern and custom constraints.
-30. Validates the `email` and `url` schema types.
+26. Is form associated.
+27. Is not associated on submit when it has no value.
+28. Is associated on submit.
+29. Is correctly reset on form reset, including after a `setAttribute` call.
+30. Reflects the disabled state of an ancestor `fieldset`.
+31. Fulfils the required, min, max, step, minimum length, maximum length, pattern and custom constraints.
+32. Validates the `email` and `url` schema types.
 
 ### Form validity checks
 
-31. A failed submit and `form.reportValidity()` focus the first invalid control, past the `fieldset` of the test bed,
+33. A failed submit and `form.reportValidity()` focus the first invalid control, past the `fieldset` of the test bed,
     also before an invalid native control. `reportValidity()` focuses its control. `form.checkValidity()` keeps the
     focus, and a report or a submit inside it, of the same form or of another form, still moves the focus. A native
     control that is invalid first takes the focus.
-32. Editing an invalid field sends no `invalid` event, keeps the focus and still applies the invalid styles.
+34. Editing an invalid field sends no `invalid` event, keeps the focus and still applies the invalid styles.
     `checkValidity()`, `reportValidity()`, `form.checkValidity()` and a failed submit each send one.
 
 ### defaultValue
 
-33. Form integration - correct initial state, correct submission, correct reset, submission on <kbd>Enter</kbd>, and
+35. Form integration - correct initial state, correct submission, correct reset, submission on <kbd>Enter</kbd>, and
     no submission on <kbd>Enter</kbd> while the value is invalid.
-34. Validation - a passing and a failing case for each of required, minlength, maxlength, pattern, email schema, url
+36. Validation - a passing and a failing case for each of required, minlength, maxlength, pattern, email schema, url
     schema, min, max and step. A pattern that matches only a part of the value fails, a pattern compiles with the `v`
     flag, and an invalid pattern sets no constraint.
 
@@ -501,34 +511,34 @@ Driven by `createFormAssociatedTestBed`.
 Generated by `runValidationContainerTests`. Each case renders the control with the slot projected, forces the
 constraint to fail, and asserts the slot is present and has content:
 
-35. `value-missing` with `required`.
-36. `type-mismatch` with `type="email"`.
-37. `pattern-mismatch` with a `pattern`.
-38. `too-long` with `maxLength`, and `too-short` with `minLength`.
-39. `range-overflow` with `max`, `range-underflow` with `min`, and `step-mismatch` with `step`, for `type="number"`.
-40. `custom-error` after `setCustomValidity`.
-41. `invalid` with `required`.
-42. Two slots at once - `type-mismatch` and `too-short` on an email input with `minLength`.
+37. `value-missing` with `required`.
+38. `type-mismatch` with `type="email"`.
+39. `pattern-mismatch` with a `pattern`.
+40. `too-long` with `maxLength`, and `too-short` with `minLength`.
+41. `range-overflow` with `max`, `range-underflow` with `min`, and `step-mismatch` with `step`, for `type="number"`.
+42. `custom-error` after `setCustomValidity`.
+43. `invalid` with `required`.
+44. Two slots at once - `type-mismatch` and `too-short` on an email input with `minLength`.
 
 ### External label association
 
 Generated by `runExternalLabelAssociationTests`.
 
-43. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
+45. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
     `ariaLabelledByElements`.
-44. Clicking that label focuses the host and the native input. A `label` added after the first render names the control
+46. Clicking that label focuses the host and the native input. A `label` added after the first render names the control
     from the first focus, an axe audit passes with only an external `label`, and the host `aria-labelledby` and
     `aria-label` follow the [naming order](#naming-order).
 
 ### Host ARIA
 
-45. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+47. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal.
 
 ### Not covered by the suite
 
-The following documented behaviors have no dedicated case yet: `select`, `setSelectionRange`, the `validateOnly`
-mode, the `outlined` property, and the forwarding of `inputmode` and `autocomplete`.
+The following documented behaviors have no dedicated case yet: `select`, the `validateOnly` mode, the `outlined`
+property, and the forwarding of `inputmode` and `autocomplete`.
 ## Accessibility
 
 ### ARIA roles and properties
