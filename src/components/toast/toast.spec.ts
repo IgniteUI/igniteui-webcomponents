@@ -7,6 +7,7 @@ import {
 } from '@open-wc/testing';
 import { type SinonFakeTimers, useFakeTimers } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runAlertTests } from '#internals/testing/alert.spec.js';
 import { finishAnimationsFor } from '#internals/testing/helpers.spec.js';
 import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
 import { isPopoverOpen } from '#internals/utils/dom.js';
@@ -34,7 +35,7 @@ describe('Toast', () => {
 
   describe('API', () => {
     beforeEach(async () => {
-      clock = useFakeTimers({ toFake: ['setTimeout'] });
+      clock = useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       toast = await fixture<IgcToastComponent>(
         html`<igc-toast>Hello world</igc-toast>`
       );
@@ -116,12 +117,10 @@ describe('Toast', () => {
     });
 
     it('`toggle()`', async () => {
-      // close -> open
       await toast.toggle();
       expect(toast.open).to.be.true;
       checkOpenState(true);
 
-      // open -> close
       await toast.toggle();
       expect(toast.open).to.be.false;
       checkOpenState(false);
@@ -176,6 +175,8 @@ describe('Toast', () => {
       });
     });
   });
+
+  runAlertTests(IgcToastComponent.tagName);
 
   runInvokerCommandsTests({
     tagName: IgcToastComponent.tagName,

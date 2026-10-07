@@ -27,8 +27,11 @@
   - [Test scenarios](#test-scenarios)
     - [DOM](#dom)
     - [Public API](#public-api)
+    - [Display time tests](#display-time-tests)
     - [Positioning tests](#positioning-tests)
+    - [Styles tests](#styles-tests)
     - [Events tests](#events-tests)
+    - [Alert behavior tests](#alert-behavior-tests)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -41,6 +44,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-10-07 | The display time waits for the pointer and the keyboard focus and starts again on `show()`; `container` positioning keeps the tab order; the default action keeps its keyboard focus style; `show()` during the fade-out keeps the component open |
 
 ## Overview
 
@@ -53,7 +57,8 @@ It closes itself after a display time, unless it is configured to stay open.
 ### Key features
 
 - **A message and an action**: the action is rendered from a text property, or replaced with projected content.
-- **Auto-dismiss** after a configurable display time, which can be turned off.
+- **Auto-dismiss** after a configurable display time, which can be turned off and waits while the pointer or the
+  keyboard focus is in the snackbar.
 - **Two positioning strategies**: against the viewport, or inside the closest visible ancestor.
 - **Three positions**: top, middle and bottom.
 - **Declarative invocation** through the Invoker Commands API, with no JavaScript.
@@ -93,8 +98,9 @@ As a developer, I expect to be able to:
 
 ### End-user experience
 
-The snackbar slides into the configured position, showing its message and the action button. After the display time
-it disappears on its own, unless `keep-open` is set. Activating the action emits an event; the application decides
+The snackbar fades in at the configured position, showing its message and the action button. After the display time
+it disappears on its own, unless `keep-open` is set. While the pointer or the keyboard focus is in the snackbar, it
+stays, and the display time starts again when both leave. Activating the action emits an event; the application decides
 whether that also closes the snackbar.
 
 ### Developer experience
@@ -133,6 +139,11 @@ snackbar.addEventListener('igcAction', () => restoreItem());
 <igc-snackbar keep-open>Stays until closed</igc-snackbar>
 ```
 
+The display time stops while the pointer or the keyboard focus is in the component, and starts again in full when both
+leave. A pointer click on the action does not hold the component open, also when the action has the keyboard focus.
+`show()` on an open component starts the display time again and resolves `false`. A component that moves while it is
+open shows again in its new place, with a full display time.
+
 #### Positioning
 
 ```html
@@ -146,6 +157,14 @@ snackbar.addEventListener('igcAction', () => restoreItem());
 | `container`          | Positions inside the bounding box of the closest visible ancestor, at `position`.  |
 
 With `container` positioning, `show()` resolves `false` when no visible ancestor is found.
+
+While it is open in `container` positioning, the component adds a generated name to the inline `anchor-name` of the
+container and sets `position-anchor` on itself. It adds them again when a new `style` attribute, for example from a
+template binding, removes them, and it removes them when it closes or moves. A container that has anchor names of its
+own, also one that gets them while the component is open, or that is in another tree, such as the host of the shadow
+root that holds the component, becomes the `source` of `showPopover()` instead, and the browser then moves the action
+right after the container start in the tab order. An anchor name cannot reach another tree, and the component does not
+take over the anchor names of a container. Thus, in the other cases, the snackbar keeps its DOM place in the tab order.
 
 #### Invoker commands
 
@@ -163,7 +182,7 @@ The component renders no built-in strings. The message and the action text come 
 ### Keyboard interactions
 
 None of its own. The action, whether the default button or projected content, is reachable and activated with the
-standard button keys.
+standard button keys. While the focus is on the action, the snackbar stays open.
 
 ## API
 
@@ -182,8 +201,8 @@ standard button keys.
 
 | Name   | Type signature         | Description                                                                         |
 | ------ | ---------------------- | ------------------------------------------------------------------------------------- |
-| show   | `(): Promise<boolean>` | Opens the component. Resolves `false` when it is already open, or when `container` positioning finds no visible ancestor. |
-| hide   | `(): Promise<boolean>` | Closes the component. Resolves `false` when it is already closed.                    |
+| show   | `(): Promise<boolean>` | Opens the component, also during the fade-out of `hide()`. When it is already open, the display time starts again, and it resolves `false`. It also resolves `false` when `container` positioning finds no visible ancestor. |
+| hide   | `(): Promise<boolean>` | Closes the component. Resolves `false` when it is already closed or fades out.       |
 | toggle | `(): Promise<boolean>` | Toggles the component. Resolves `true` when the state changed.                       |
 
 ### Events
@@ -211,8 +230,8 @@ standard button keys.
 ## Test scenarios
 
 The suite lives in [`snackbar.spec.ts`](./snackbar.spec.ts) and runs in a real browser through `@web/test-runner`
-with `@open-wc/testing` fixtures and assertions. It also runs the shared `runInvokerCommandsTests` suite from
-[`src/internals/testing`](../../internals/testing). The groups below mirror the `describe` blocks.
+with `@open-wc/testing` fixtures and assertions. It also runs the shared `runAlertTests` and `runInvokerCommandsTests`
+suites from [`src/internals/testing`](../../internals/testing). The groups below mirror the `describe` blocks.
 
 ### DOM
 
@@ -227,17 +246,35 @@ with `@open-wc/testing` fixtures and assertions. It also runs the shared `runInv
 6. `keepOpen` keeps the component open after the display time.
 7. The Invoker Commands integration calls `show`, `hide` and `toggle`.
 
+### Display time tests
+
+8. The display time waits while the focus is on the default action, also after the pointer leaves, and starts again
+   when the focus leaves. A pointer click on the action does not hold it, also when the action has the keyboard focus.
+
 ### Positioning tests
 
-8. `positioning` defaults to `viewport`, and showing the component sets no inline anchor styles.
-9. `positioning="container"` shows the component when there is a visible ancestor.
-10. Switching `positioning` between `container` and `viewport` while the component is open keeps it open, in both
+9. `positioning` defaults to `viewport`, and showing the component sets no inline anchor styles.
+10. `positioning="container"` shows the component when there is a visible ancestor.
+11. Switching `positioning` between `container` and `viewport` while the component is open keeps it open, in both
     directions.
-11. Changing `position` while in `viewport` mode sets no inline styles.
+12. `container` positioning keeps the DOM place of the action in the tab order: Tab reaches the content of the
+    container first.
+13. Changing `position` while in `viewport` mode sets no inline styles.
+
+### Styles tests
+
+14. A global `--ig-flat-button-background` does not reach the default action.
+15. In each theme, the default action has the keyboard focus style of a flat button. The test loads the global
+    stylesheet of the theme, because the focus colors come from its palette.
 
 ### Events tests
 
-12. `igcAction` is emitted when the action button is clicked, both for the default action and for slotted content.
+16. `igcAction` is emitted when the action button is clicked, both for the default action and for slotted content.
+
+### Alert behavior tests
+
+17. The shared `runAlertTests` suite tests the display time, the fade-out and the `container` positioning, which the
+    snackbar shares with the toast. The [toast specification](../toast/spec.md#alert-behavior-tests) lists its cases.
 
 ### Not covered by the suite
 
@@ -250,14 +287,21 @@ with `@open-wc/testing` fixtures and assertions. It also runs the shared `runInv
 - Only one action is supported.
 - Activating the action does not close the snackbar on its own; the application decides.
 - The component does not stack or queue several snackbars; that is up to the application.
+- The keyboard focus in slotted content with a closed shadow root does not hold the display time. The component sees
+  only the closed host, which does not match `:focus-visible`, so it cannot tell that focus from a pointer click.
 
 ## Accessibility
 
 ### ARIA roles and properties
 
 - The message region is announced politely, so the feedback reaches assistive technology without stealing focus.
-- The action is a button and is reachable with the keyboard while the snackbar is open.
+- The action is a button and is reachable with the keyboard while the snackbar is open. It keeps its DOM place in the
+  tab order, except with `container` positioning in a container that is the `source` of the popover.
+- The default action shows the keyboard focus style of a flat button in every theme. A pointer focus shows none.
 - The component does not move focus when it appears.
+- The display time waits while the pointer or the keyboard focus is in the snackbar, so that the user has time to read the
+  message and to reach the action
+  ([WCAG 2.2.1 Timing Adjustable](https://www.w3.org/WAI/WCAG22/Understanding/timing-adjustable)).
 
 ### Keyboard support
 
