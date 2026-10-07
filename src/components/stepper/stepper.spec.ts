@@ -81,6 +81,52 @@ describe('Stepper', () => {
       }
     });
 
+    it('should set `aria-disabled` on the header of a disabled step', async () => {
+      const step = stepper.steps[1];
+      const { header } = getStepDOM(step).parts;
+      expect(header.getAttribute('aria-disabled')).to.equal('false');
+
+      step.disabled = true;
+      await elementUpdated(step);
+      expect(header.getAttribute('aria-disabled')).to.equal('true');
+
+      step.disabled = false;
+      await elementUpdated(step);
+      expect(header.getAttribute('aria-disabled')).to.equal('false');
+    });
+
+    it('should set `aria-disabled` on the headers of the steps that linear mode locks', async () => {
+      stepper = await fixture(createLinearStepper());
+      const [, blocking, locked] = stepper.steps;
+      const headers = stepper.steps.map(
+        (step) => getStepDOM(step).parts.header
+      );
+
+      expect(headers.map((header) => header.ariaDisabled)).to.eql([
+        'false',
+        'false',
+        'true',
+      ]);
+
+      blocking.invalid = false;
+      await elementUpdated(blocking);
+      await elementUpdated(locked);
+      expect(headers[2].getAttribute('aria-disabled')).to.equal('false');
+    });
+
+    it('should make the content of the inactive steps inert', async () => {
+      const bodies = () =>
+        stepper.steps.map((step) => getStepDOM(step).parts.body.inert);
+
+      expect(bodies()).to.eql([false, true, true, true, true]);
+
+      stepper.navigateTo(2);
+      await elementUpdated(stepper);
+      await Promise.all(stepper.steps.map((step) => elementUpdated(step)));
+
+      expect(bodies()).to.eql([true, true, false, true, true]);
+    });
+
     it('should have proper tabindex values based on active state', async () => {
       for (const step of stepper.steps) {
         const header = getStepDOM(step).parts.header;
@@ -181,6 +227,35 @@ describe('Stepper', () => {
 
       expect(stepper.steps[0].active).to.be.true;
       expect(stepper.steps[1].active).to.be.false;
+    });
+
+    it('should keep a step change that a click in the content of a step makes', async () => {
+      const button = document.createElement('button');
+      button.addEventListener('click', () => stepper.next());
+      stepper.steps[0].append(button);
+      await elementUpdated(stepper.steps[0]);
+      const eventSpy = spy(stepper, 'emitEvent');
+
+      simulateClick(button);
+      await elementUpdated(stepper);
+
+      expect(stepper.steps[1].active).to.be.true;
+      expect(stepper.steps[0].active).to.be.false;
+      expect(eventSpy).not.called;
+    });
+
+    it('should ignore a click on a header of a nested stepper', async () => {
+      const inner = await fixture<IgcStepperComponent>(createStepper());
+      stepper.steps[0].append(inner);
+      await elementUpdated(stepper.steps[0]);
+      const eventSpy = spy(stepper, 'emitEvent');
+
+      simulateClick(getStepDOM(inner.steps[1]).parts.header);
+      await elementUpdated(stepper);
+
+      expect(inner.steps[1].active).to.be.true;
+      expect(stepper.steps[0].active).to.be.true;
+      expect(eventSpy).not.called;
     });
   });
 

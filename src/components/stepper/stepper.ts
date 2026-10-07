@@ -271,7 +271,12 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   //#region Event handlers
 
   private _handleInteraction(event: Event): void {
-    const step = getElementFromPath(IgcStepComponent.tagName, event);
+    // Only a header opens its step. A click in the content leaves the active
+    // step alone, so a button there can change it.
+    const header = getElementFromPath('[data-step-header]', event);
+    const step = this._state.steps.find(
+      ({ renderRoot }) => renderRoot === header?.getRootNode()
+    );
 
     if (step && this._state.isAccessible(step)) {
       this._activateStep(step);

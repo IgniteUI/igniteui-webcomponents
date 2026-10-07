@@ -62,6 +62,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The `spellcheck` attribute now reads as the native attribute: only `false` turns the spell check off. Before, an empty attribute, such as `<igc-textarea spellcheck>`, and a removed attribute turned it off.
 - #### Date picker
   - The `start` and `end` parameters of `setRangeText()` are now optional, as in the date time input. Without them, the method replaces the selected text. Before, the TypeScript signature required them, although the method worked without them.
+- #### Stepper
+  - A click in the content of a step no longer activates that step. Before, a button in the content that called `next()`, `prev()`, `navigateTo()` or `reset()` had its change undone by the same click, with an `igcActiveStepChanging` and `igcActiveStepChanged` pair. A click on a header of a nested stepper no longer changes the outer stepper.
+  - The content of the inactive steps is now `inert`. Before, it was only transparent, so Tab moved into the fields of hidden steps, and screen readers read every panel.
+  - The header of a disabled step, and of a step that linear mode locks, now has `aria-disabled`. Before, screen readers did not announce these steps as unavailable.
 - #### Icon
   - The SVG of an icon is now hidden from assistive technologies, because the host carries the name. Before, the SVG of an icon without a title was still an unnamed image. A change of `aria-label` or `aria-labelledby` now updates the role of the icon.
 - #### Dialog

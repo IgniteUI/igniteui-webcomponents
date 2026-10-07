@@ -48,6 +48,7 @@ This directory hosts two public components: [`igc-stepper`](#igc-stepper) and [`
 | ------: | ---------- | ----------------------------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                                                   |
 |       2 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
+|       3 | 2026-10-07 | Only a header click opens a step; inert inactive panels; `aria-disabled` |
 
 ## Overview
 
@@ -112,7 +113,8 @@ As a developer, I expect to be able to:
 
 The stepper renders its step headers in a row or a column, connected by separators. Each header shows an indicator -
 the step number by default - and the title and subtitle. The content of the active step is shown next to or below
-the headers, and moving to another step animates the transition.
+the headers, and moving to another step animates the transition. A click on a header opens its step. Only the
+content of the active step can take the focus or reach assistive technologies.
 
 ### Developer experience
 
@@ -181,6 +183,9 @@ stepper.reset();        // back to the first step
 
 stepper.steps;          // all steps
 ```
+
+A click in the content of a step does not change the active step, so a button in the content can call `next()`,
+`prev()`, `navigateTo()` or `reset()`.
 
 ```typescript
 stepper.addEventListener('igcActiveStepChanging', (event) => {
@@ -307,56 +312,60 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 1. The component is initialized with its defaults, renders its steps and passes the accessibility audit.
 2. The default indicator renders the step index plus one, and the `indicator` slot replaces it.
 3. The header parts are applied for each step state.
+4. The header of a disabled step, and of a step that linear mode locks, has `aria-disabled`.
+5. The content of the inactive steps is `inert`.
 
 ### Activation
 
-4. The first enabled step is active by default, and only the content of the active step is visible.
-5. Activating a step through the pointer moves the active state.
-6. Disabled steps cannot be activated.
+6. The first enabled step is active by default, and only the content of the active step is visible.
+7. Activating a step through the pointer moves the active state.
+8. Disabled steps cannot be activated.
+9. A click in the content of a step does not change the active step, so a step change from a button there stays.
+10. A click on a header of a nested stepper does not change the outer stepper.
 
 ### Events tests
 
-7. `igcActiveStepChanging` is emitted before the change and can be canceled.
-8. `igcActiveStepChanged` is emitted after the change.
+11. `igcActiveStepChanging` is emitted before the change and can be canceled.
+12. `igcActiveStepChanged` is emitted after the change.
 
 ### Navigation API tests
 
-9. `navigateTo` activates by index, and ignores an index that matches no step.
-10. `next` and `prev` move to the neighbouring enabled steps.
-11. `reset` returns the stepper to its first step.
+13. `navigateTo` activates by index, and ignores an index that matches no step.
+14. `next` and `prev` move to the neighbouring enabled steps.
+15. `reset` returns the stepper to its first step.
 
 ### Dynamic steps
 
-12. Steps added or removed at run time are picked up, and the active step is recalculated when it is removed.
+16. Steps added or removed at run time are picked up, and the active step is recalculated when it is removed.
 
 ### Linear mode tests
 
-13. An invalid step blocks the steps after it.
-14. An optional invalid step does not block the navigation.
-15. Completing a step unblocks the next one.
+17. An invalid step blocks the steps after it.
+18. An optional invalid step does not block the navigation.
+19. Completing a step unblocks the next one.
 
 ### Appearance
 
-16. `orientation`, `stepType`, `titlePosition` and `contentTop` are reflected and change the layout.
+20. `orientation`, `stepType`, `titlePosition` and `contentTop` are reflected and change the layout.
 
 ### Animation duration
 
-17. The animation duration is applied through the corresponding CSS custom property, and `0` disables the animation.
+21. The animation duration is applied through the corresponding CSS custom property, and `0` disables the animation.
 
 ### Keyboard navigation
 
-18. The arrow keys move focus between the enabled step headers, in both orientations.
-19. <kbd>Home</kbd> and <kbd>End</kbd> jump to the first and the last enabled step.
-20. <kbd>Enter</kbd> and <kbd>Space</kbd> activate the focused step.
+22. The arrow keys move focus between the enabled step headers, in both orientations.
+23. <kbd>Home</kbd> and <kbd>End</kbd> jump to the first and the last enabled step.
+24. <kbd>Enter</kbd> and <kbd>Space</kbd> activate the focused step.
 
 ### Context binding
 
-21. The steps receive their configuration - orientation, step type, title position and linear mode - from the
+25. The steps receive their configuration - orientation, step type, title position and linear mode - from the
     stepper through context, including for steps added later.
 
 ### Host ARIA
 
-22. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
+26. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
     target and follow a change, and an axe audit passes with a host label.
 
 ## Assumptions and limitations
@@ -365,6 +374,10 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 - The stepper does not validate anything itself: `invalid` and `complete` are set by the application, typically from
   the `igcActiveStepChanging` handler.
 - Linear mode restricts navigation but does not prevent a programmatic `navigateTo` from the application.
+- The stepper sets its `tablist` role through ElementInternals. axe does not read that role, so it reports
+  `aria-required-parent` on the step headers. The axe audit of the host ARIA suite skips that rule.
+- Each step renders its panel next to its header, so the panel of the active step is inside the `tablist`, where ARIA
+  expects only tabs.
 
 ## Accessibility
 
@@ -373,7 +386,11 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 - The step headers form a single tab stop: the active header carries the tab index and the arrow keys move within
   the strip.
 - Each header exposes its selected state and controls the content region of its step.
-- The disabled, invalid and optional states are exposed, and disabled steps are skipped by the navigation.
+- A disabled step, and a step that linear mode locks, set `aria-disabled` on their headers, and the arrow keys skip
+  them.
+- The panels of the inactive steps are `inert`, so they leave the tab order and the accessibility tree.
+- A tab has no ARIA state for complete, invalid or optional, and the components render no strings. Name these states
+  in the title or the subtitle, for example "Card ending 4242" or "Optional".
 - The host `aria-label`, `aria-labelledby` and `aria-describedby` of a step name and describe its `role="tab"`
   header.
 
