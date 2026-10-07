@@ -1,0 +1,25 @@
+/// The popover host of the toast and the snackbar, at `position` in the
+/// viewport or in the container. Include it after the `:host` rule of the
+/// component, so that it overrides the font and the margins of a type style.
+@mixin alert-host {
+    :host {
+        position: absolute;
+        font-family: var(--ig-font-family);
+        margin-block: var(--margin-block);
+        border: none;
+        background: none;
+        position-area: center;
+    }
+
+    :host([position='top']) {
+        align-self: start;
+    }
+
+    :host([position='middle']) {
+        align-self: anchor-center;
+    }
+
+    :host([position='bottom']) {
+        align-self: end;
+    }
+}

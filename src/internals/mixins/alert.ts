@@ -7,15 +7,86 @@ import type {
   NotificationPositioning,
 } from '../../components/types.js';
 import { addCommandController } from '../controllers/command.js';
+import { addHostListeners } from '../controllers/host-listeners.js';
 import { addInternalsController } from '../controllers/internals.js';
 import { createTimer } from '../timing.js';
-import { getVisibleAncestor, isPopoverOpen } from '../utils/dom.js';
+import { getRoot, getVisibleAncestor, isPopoverOpen } from '../utils/dom.js';
+import { nanoid } from '../utils/strings.js';
+
+/** The names that open components add to the `anchor-name` of a container. */
+const containerAnchors = new WeakMap<HTMLElement, Set<string>>();
+
+function applyAnchorNames(container: HTMLElement, names: Set<string>): void {
+  const value = [...names].join(', ');
+  if (container.style.getPropertyValue('anchor-name') !== value) {
+    container.style.setProperty('anchor-name', value);
+  }
+}
+
+/**
+ * Adds `name` to the `anchor-name` of `container`. Adds nothing and returns
+ * `false` when the container has anchor names of its own.
+ */
+function addAnchorName(container: HTMLElement, name: string): boolean {
+  let names = containerAnchors.get(container);
+
+  if (!names) {
+    const own = getComputedStyle(container).getPropertyValue('anchor-name');
+    if (own !== 'none') {
+      return false;
+    }
+
+    names = new Set();
+    containerAnchors.set(container, names);
+  }
+
+  names.add(name);
+  applyAnchorNames(container, names);
+  return true;
+}
+
+function removeAnchorName(container: HTMLElement, name: string): void {
+  const names = containerAnchors.get(container)!;
+  names.delete(name);
+
+  if (!names.size) {
+    containerAnchors.delete(container);
+  }
+
+  applyAnchorNames(container, names);
+}
 
 /* omitModule */
 export abstract class IgcBaseAlertLikeComponent extends LitElement {
   protected readonly _player = addAnimationController(this);
 
   private readonly _autoHideTimer = createTimer(() => this.hide());
+  private readonly _anchorName = `--igc-alert-${nanoid(10)}`;
+
+  // A new `style` attribute, such as from a template binding, drops the anchor.
+  private readonly _anchorObserver = new MutationObserver(() =>
+    this._applyAnchor()
+  );
+
+  /** The container that anchors the component in `container` positioning. */
+  private _anchor?: HTMLElement;
+
+  /** The positioning of the shown popover. */
+  private _shownAs?: NotificationPositioning;
+
+  /** Whether the pointer or the keyboard focus is in the component. */
+  private readonly _holds = new Set<'pointer' | 'focus'>();
+
+  /** Whether `hide()` fades the component out. */
+  private _closing = false;
+
+  /** Counts the open state changes, so that only the last fade-out closes. */
+  private _transitions = 0;
+
+  /** Whether the component is open and does not fade out. */
+  private get _isShown(): boolean {
+    return this.open && !this._closing;
+  }
 
   /**
    * Sets the open state of the component.
@@ -28,6 +99,8 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
 
   /**
    * Sets the time in milliseconds that the component stays visible.
+   * The time stops while the pointer or the keyboard focus is in the
+   * component, and starts again when both leave.
    *
    * @attr display-time
    * @default 4000
@@ -45,7 +118,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   public keepOpen = false;
 
   /**
-   * Sets the position of the component in the viewport.
+   * Sets the position of the component in the viewport or in the container.
    *
    * @attr position
    * @default 'bottom'
@@ -80,28 +153,44 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
         ariaLive: 'polite',
       },
     });
+
+    addHostListeners(this, {
+      events: ['pointerenter', 'pointerleave', 'focusin', 'focusout'],
+      listener: this._handleHold,
+    });
   }
 
   public override connectedCallback(): void {
     super.connectedCallback();
     this.popover = 'manual';
+
+    // After a move, the update shows the popover again.
+    if (this.open) {
+      this.requestUpdate();
+    }
+  }
+
+  public override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._holds.clear();
+    this._autoHideTimer.stop();
+    this._hidePopover();
   }
 
   protected override update(props: PropertyValues<this>): void {
-    if (props.has('open')) {
-      if (this.open && !isPopoverOpen(this)) {
-        this._showPopover();
-      } else if (!this.open && isPopoverOpen(this)) {
-        this.hidePopover();
-      }
-    }
+    const reshow =
+      this.open && this.isConnected && this._shownAs !== this.positioning;
 
-    if (this.open && (props.has('positioning') || props.has('position'))) {
-      this.hidePopover();
+    if (reshow) {
+      this._hidePopover();
       this._showPopover();
+    } else if (!this.open && props.has('open')) {
+      this._holds.clear();
+      this._hidePopover();
     }
 
     if (
+      reshow ||
       props.has('open') ||
       props.has('displayTime') ||
       props.has('keepOpen')
@@ -112,30 +201,92 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
     super.update(props);
   }
 
+  private readonly _handleHold = (event: Event): void => {
+    switch (event.type) {
+      case 'pointerenter':
+        this._holds.add('pointer');
+        break;
+      case 'pointerleave':
+        this._holds.delete('pointer');
+        break;
+      case 'focusin':
+        // A pointer click on the action does not hold the component open.
+        if ((event.composedPath()[0] as Element).matches(':focus-visible')) {
+          this._holds.add('focus');
+        }
+        break;
+      default:
+        this._holds.delete('focus');
+    }
+
+    this._setAutoHideTimer();
+  };
+
   private _showPopover(): boolean {
     if (this.positioning !== 'container') {
       this.showPopover();
-      return true;
-    }
-
-    const visibleAncestor = getVisibleAncestor(this);
-    if (!visibleAncestor) {
-      return false;
-    }
-
-    this.showPopover({ source: visibleAncestor });
-    return true;
-  }
-
-  private async _setOpenState(open: boolean): Promise<boolean> {
-    if (open) {
-      this.open = true;
-
-      if (!this._showPopover()) {
-        this.open = false;
+    } else {
+      const container = getVisibleAncestor(this);
+      if (!container) {
         return false;
       }
 
+      // An anchor name reaches only its own tree, and the container may have
+      // anchor names of its own. Otherwise the container is the source of the
+      // popover, and the browser moves the popover after it in the tab order.
+      if (
+        getRoot(container) === getRoot(this) &&
+        addAnchorName(container, this._anchorName)
+      ) {
+        this._anchor = container;
+        this._applyAnchor();
+        for (const target of [container, this]) {
+          this._anchorObserver.observe(target, { attributeFilter: ['style'] });
+        }
+        this.showPopover();
+      } else {
+        this.showPopover({ source: container });
+      }
+    }
+
+    this._shownAs = this.positioning;
+    return true;
+  }
+
+  private _hidePopover(): void {
+    if (isPopoverOpen(this)) {
+      this.hidePopover();
+    }
+
+    this._shownAs = undefined;
+    if (this._anchor) {
+      this._anchorObserver.disconnect();
+      removeAnchorName(this._anchor, this._anchorName);
+      this.style.removeProperty('position-anchor');
+      this._anchor = undefined;
+    }
+  }
+
+  private _applyAnchor(): void {
+    if (this._anchor) {
+      applyAnchorNames(this._anchor, containerAnchors.get(this._anchor)!);
+      if (this.style.getPropertyValue('position-anchor') !== this._anchorName) {
+        this.style.setProperty('position-anchor', this._anchorName);
+      }
+    }
+  }
+
+  private async _setOpenState(open: boolean): Promise<boolean> {
+    const transition = ++this._transitions;
+    this._closing = !open;
+
+    if (open) {
+      // During the fade-out, the popover is still open.
+      if (!this.open && !this._showPopover()) {
+        return false;
+      }
+
+      this.open = true;
       const state = await this._player.playExclusive(fadeIn());
       this._setAutoHideTimer();
       return state;
@@ -143,33 +294,55 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
 
     this._autoHideTimer.stop();
     const state = await this._player.playExclusive(fadeOut());
-    this.hidePopover();
-    this.open = false;
+
+    // A `show()` during the fade-out keeps the component open.
+    if (transition === this._transitions) {
+      this._closing = false;
+      this._hidePopover();
+      this.open = false;
+    }
+
     return state;
   }
 
   private _setAutoHideTimer(): void {
     this._autoHideTimer.stop();
-    if (this.open && this.displayTime > 0 && !this.keepOpen) {
+    if (
+      this.isConnected &&
+      this._isShown &&
+      this.displayTime > 0 &&
+      !this.keepOpen &&
+      !this._holds.size
+    ) {
       this._autoHideTimer.start(this.displayTime);
     }
   }
 
   /**
-   * Opens the component. Resolves to `false` when it is already open, or
-   * when `container` positioning finds no visible ancestor.
+   * Opens the component, also during the fade-out of `hide()`. When it is
+   * already open, the display time starts again, and the promise resolves to
+   * `false`. It also resolves to `false` when `container` positioning finds no
+   * visible ancestor.
    */
   public async show(): Promise<boolean> {
-    return this.open ? false : this._setOpenState(true);
+    if (this._isShown) {
+      this._setAutoHideTimer();
+      return false;
+    }
+
+    return this._setOpenState(true);
   }
 
-  /** Closes the component. Resolves to `false` when it is already closed. */
+  /**
+   * Closes the component. Resolves to `false` when it is already closed or
+   * fades out.
+   */
   public async hide(): Promise<boolean> {
-    return this.open ? this._setOpenState(false) : false;
+    return this._isShown ? this._setOpenState(false) : false;
   }
 
   /** Toggles the component. Resolves to `true` when the state changed. */
   public async toggle(): Promise<boolean> {
-    return this.open ? this.hide() : this.show();
+    return this._isShown ? this.hide() : this.show();
   }
 }

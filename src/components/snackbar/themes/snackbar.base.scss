@@ -1,36 +1,19 @@
 @use 'styles/common/component';
+@use 'styles/common/alert' as *;
 @use 'styles/utilities' as *;
 
 :host {
     --margin-block: #{rem(8px)};
-
-    position: absolute;
-    font-family: var(--ig-font-family);
-    margin-block: var(--margin-block);
-    border: none;
-    background: none;
-    position-area: center;
 
     igc-button {
         --ig-size: 2;
     }
 }
 
-:host([position='top']) {
-    align-self: start;
-}
-
-:host([position='middle']) {
-    align-self: anchor-center;
-}
-
-:host([position='bottom']) {
-    align-self: end;
-}
+@include alert-host();
 
 [part~='base'] {
     display: flex;
-    flex-wrap: row nowrap;
     align-items: center;
     justify-content: space-between;
     min-height: rem(48px);
@@ -45,16 +28,6 @@
     @include type-style('body-2');
 
     flex: 1 1 50%;
-}
-
-:host([action-text]) {
-    igc-button::part(base):hover {
-        background: transparent;
-    }
-
-    igc-button::part(base):focus {
-        box-shadow: none;
-    }
 }
 
 :host(:not([open])) {
