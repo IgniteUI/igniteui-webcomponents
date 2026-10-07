@@ -770,25 +770,27 @@ export const TimeOff: Story = {
           periods.length
             ? html`<ul class="cal-lines">
                 ${periods.map(
-                  (period) => html`<li>
-                    <span>
-                      ${
-                        period.length > 1
-                          ? `${formatDate(period[0])} - ${formatDate(period.at(-1)!)}`
-                          : formatDate(period[0])
-                      }
-                    </span>
-                    <span>${count(period.length, 'day')}</span>
-                  </li>`
+                  (period) =>
+                    html`<li>
+                      <span>
+                        ${
+                          period.length > 1
+                            ? `${formatDate(period[0])} - ${formatDate(period.at(-1)!)}`
+                            : formatDate(period[0])
+                        }
+                      </span>
+                      <span>${count(period.length, 'day')}</span>
+                    </li>`
                 )}
               </ul>`
             : html`<p class="muted">Select the days that you want off.</p>`
         }
         ${overlaps.map(
-          ({ name, dates }) => html`<p class="muted">
-            ${name} is also off on
-            ${dates.map((date) => formatDate(date)).join(', ')}.
-          </p>`
+          ({ name, dates }) =>
+            html`<p class="muted">
+              ${name} is also off on
+              ${dates.map((date) => formatDate(date)).join(', ')}.
+            </p>`
         )}
         <div class="cal-actions">
           <igc-button
@@ -893,10 +895,11 @@ export const Agenda: Story = {
           items.length
             ? html`<ul class="cal-lines">
                 ${items.map(
-                  ({ time, title }) => html`<li>
-                    <span>${title}</span>
-                    <span class="muted">${time}</span>
-                  </li>`
+                  ({ time, title }) =>
+                    html`<li>
+                      <span>${title}</span>
+                      <span class="muted">${time}</span>
+                    </li>`
                 )}
               </ul>`
             : html`<p class="muted">No events.</p>`
