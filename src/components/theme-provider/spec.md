@@ -12,6 +12,7 @@
     - [End-user experience](#end-user-experience)
     - [Developer experience](#developer-experience)
       - [Basic initialization](#basic-initialization)
+      - [Colors, typography and sizes](#colors-typography-and-sizes)
       - [Registration order](#registration-order)
       - [Nesting](#nesting)
       - [Interaction with the icon registry](#interaction-with-the-icon-registry)
@@ -36,9 +37,10 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                      |
+| ------: | ---------- | ---------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                      |
+|       2 | 2026-10-07 | Describe the theme variables that the provider keeps as-is |
 
 ## Overview
 
@@ -107,6 +109,43 @@ The provider itself renders nothing: it wraps content that takes the look of the
   <igc-button>Fluent light</igc-button>
 </igc-theme-provider>
 ```
+
+#### Colors, typography and sizes
+
+The provider changes the styles of the components. The colors, the typography, the elevations and the sizes are CSS
+custom properties that the theme file sets on `:root`, and the provider does not change them. So a provider with
+another theme or variant than the page needs these properties too, on an element inside the provider. The host
+renders as `display: contents`, so set them on a wrapper. Without them, a dark provider on a light page gives the dark
+styles of the components with the light colors.
+
+With Sass, include the mixins of `igniteui-theming` in a selector. In a selector, `palette()` and `typography()` set
+the properties on that selector instead of `:root`.
+
+```scss
+@use 'igniteui-theming' as *;
+@use 'igniteui-theming/sass/color/presets/dark/material' as *;
+@use 'igniteui-theming/sass/typography/presets/material' as type;
+
+.dark-panel {
+  @include palette($palette);
+  @include typography($font-family: type.$typeface, $type-scale: type.$type-scale);
+
+  background: var(--ig-surface-500);
+  color: var(--ig-surface-500-contrast);
+  font-family: var(--ig-font-family);
+}
+```
+
+```html
+<igc-theme-provider theme="material" variant="dark">
+  <div class="dark-panel">
+    <igc-button>Material dark</igc-button>
+  </div>
+</igc-theme-provider>
+```
+
+Without Sass, copy the `:root` rule of the theme file into a rule for the wrapper, or into an `@scope` block with
+`:scope` in place of `:root`.
 
 #### Registration order
 
@@ -190,11 +229,15 @@ None applicable.
 ### Not covered by the suite
 
 - The visual result of a theme is not asserted here; the provider is covered for the context it supplies.
+- The scoped theme variables of [Colors, typography and sizes](#colors-typography-and-sizes) are application CSS, not
+  behavior of the provider.
 
 ## Assumptions and limitations
 
 - The provider has to be registered before the components that consume its context.
 - Only components of the library react to it; plain HTML inside it is unaffected.
+- It does not change the colors, the typography or the sizes. See
+  [Colors, typography and sizes](#colors-typography-and-sizes).
 - The theme is supplied through the Lit context, so a component that is not a DOM descendant of the provider — for
   example one portalled elsewhere — does not receive it.
 - The host renders as `display: contents`, so it cannot be styled or positioned as a box itself.
