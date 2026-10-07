@@ -30,10 +30,11 @@ import type { Theme, ThemeVariant } from '#theming/types.js';
  * ```
  *
  * The provider changes the styles of the components only. The colors, the
- * typography and the sizes are CSS custom properties that the theme file sets
- * on `:root`. To change them for the content of the provider too, set them on
- * an element inside it, for example with the `palette()` mixin of
- * `igniteui-theming` in a selector.
+ * typography and the elevations are CSS custom properties that the theme file
+ * sets on `:root`. To change them for the content of the provider too, set
+ * them on the provider, for example with the `palette()`, `typography()` and
+ * `elevations()` mixins of `igniteui-theming` in a selector. The host renders
+ * as `display: contents`, but its content still inherits them.
  *
  * @example
  * ```html
