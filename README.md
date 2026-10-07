@@ -17,10 +17,16 @@
 
 ## Table of contents
 
+- [Table of contents](#table-of-contents)
 - [Components](#components)
+  - [Grids, Grid Lite and Dock Manager](#grids-grid-lite-and-dock-manager)
+    - [The Lightweight Web Components Data Grid and Data Table](#the-lightweight-web-components-data-grid-and-data-table)
+    - [Dock Manager - EXCLUSIVE FEATURE](#dock-manager---exclusive-feature)
 - [Quick start](#quick-start)
 - [Browser support](#browser-support)
 - [Tooling](#tooling)
+  - [Editor metadata](#editor-metadata)
+  - [AI agent skills](#ai-agent-skills)
 - [Accessibility](#accessibility)
 - [Security and supply chain](#security-and-supply-chain)
 - [Privacy](#privacy)
@@ -37,56 +43,56 @@ All components in this package are released under the MIT License. The table lis
 
 | Components              | Status |         Documentation          | Released Version |    License     |
 | :---------------------- | :----: | :----------------------------: | :--------------: | :------------: |
-| Virtual Scroll          |   ✅   |       [Storybook][Storybook]   |     [7.3.0]      | [MIT](LICENSE) |
-| QR Code                 |   ✅   |       [Storybook][Storybook]   |     [7.3.0]      | [MIT](LICENSE) |
-| Color Picker            |   ✅   |       [Storybook][Storybook]   |     [7.3.0]      | [MIT](LICENSE) |
-| Splitter                |   ✅   |     [Docs][Splitter Docs]      |     [7.1.0]      | [MIT](LICENSE) |
-| Chat                    |   ✅   |       [Docs][Chat Docs]        |     [6.3.0]      | [MIT](LICENSE) |
-| Date Range Picker       |   ✅   | [Docs][Date Range Picker Docs] |     [6.1.0]      | [MIT](LICENSE) |
-| Tooltip                 |   ✅   |      [Docs][Tooltip Docs]      |     [5.4.0]      | [MIT](LICENSE) |
-| File Input              |   ✅   |    [Docs][File Input Docs]     |     [5.4.0]      | [MIT](LICENSE) |
-| Tile Manager            |   ✅   |   [Docs][Tile Manager Docs]    |     [5.3.0]      | [MIT](LICENSE) |
-| Carousel                |   ✅   |     [Docs][Carousel Docs]      |     [5.1.0]      | [MIT](LICENSE) |
-| Date picker             |   ✅   |    [Docs][Date Picker Docs]    |     [4.10.0]     | [MIT](LICENSE) |
-| Divider                 |   ✅   |      [Docs][Divider Docs]      |     [4.10.0]     | [MIT](LICENSE) |
-| Banner                  |   ✅   |      [Docs][Banner Docs]       |     [4.10.0]     | [MIT](LICENSE) |
-| Button group            |   ✅   |   [Docs][Button Group Docs]    |     [4.5.0]      | [MIT](LICENSE) |
-| Textarea                |   ✅   |     [Docs][Textarea Docs]      |     [4.5.0]      | [MIT](LICENSE) |
-| Combo                   |   ✅   |       [Docs][Combo Docs]       |     [4.1.0]      | [MIT](LICENSE) |
-| Stepper                 |   ✅   |      [Docs][Stepper Docs]      |     [4.1.0]      | [MIT](LICENSE) |
-| Select                  |   ✅   |      [Docs][Select Docs]       |     [3.4.0]      | [MIT](LICENSE) |
-| Dialog                  |   ✅   |      [Docs][Dialog Docs]       |     [3.4.0]      | [MIT](LICENSE) |
-| Date Time Input         |   ✅   |  [Docs][Date Time Input Docs]  |     [3.3.0]      | [MIT](LICENSE) |
-| Tabs                    |   ✅   |       [Docs][Tabs Docs]        |     [3.3.0]      | [MIT](LICENSE) |
-| Accordion               |   ✅   |     [Docs][Accordion Docs]     |     [3.3.0]      | [MIT](LICENSE) |
-| Mask Input              |   ✅   |   [Docs][Masked Input Docs]    |     [3.2.0]      | [MIT](LICENSE) |
-| Expansion Panel         |   ✅   |  [Docs][Expansion Panel Docs]  |     [3.2.0]      | [MIT](LICENSE) |
-| Tree                    |   ✅   |       [Docs][Tree Docs]        |     [3.2.0]      | [MIT](LICENSE) |
-| Drop Down               |   ✅   |     [Docs][Dropdown Docs]      |     [2.2.0]      | [MIT](LICENSE) |
-| Linear Progress         |   ✅   |  [Docs][Linear Progress Docs]  |     [2.1.0]      | [MIT](LICENSE) |
-| Circular Progress       |   ✅   | [Docs][Circular Progress Docs] |     [2.1.0]      | [MIT](LICENSE) |
-| Chip                    |   ✅   |       [Docs][Chip Docs]        |     [2.1.0]      | [MIT](LICENSE) |
-| Snackbar                |   ✅   |     [Docs][Snackbar Docs]      |     [2.1.0]      | [MIT](LICENSE) |
-| Toast                   |   ✅   |       [Docs][Toast Docs]       |     [2.1.0]      | [MIT](LICENSE) |
-| Rating                  |   ✅   |      [Docs][Rating Docs]       |     [2.1.0]      | [MIT](LICENSE) |
-| Slider                  |   ✅   |      [Docs][Slider Docs]       |     [2.0.0]      | [MIT](LICENSE) |
-| Range Slider            |   ✅   |      [Docs][Slider Docs]       |     [2.0.0]      | [MIT](LICENSE) |
-| Avatar                  |   ✅   |      [Docs][Avatar Docs]       |     [1.0.0]      | [MIT](LICENSE) |
-| Badge                   |   ✅   |       [Docs][Badge Docs]       |     [1.0.0]      | [MIT](LICENSE) |
-| Button                  |   ✅   |      [Docs][Button Docs]       |     [1.0.0]      | [MIT](LICENSE) |
-| Calendar                |   ✅   |     [Docs][Calendar Docs]      |     [1.0.0]      | [MIT](LICENSE) |
-| Card                    |   ✅   |       [Docs][Card Docs]        |     [1.0.0]      | [MIT](LICENSE) |
-| Checkbox                |   ✅   |     [Docs][Checkbox Docs]      |     [1.0.0]      | [MIT](LICENSE) |
-| Icon                    |   ✅   |       [Docs][Icon Docs]        |     [1.0.0]      | [MIT](LICENSE) |
-| Icon Button             |   ✅   |    [Docs][Icon Button Docs]    |     [1.0.0]      | [MIT](LICENSE) |
-| Input                   |   ✅   |       [Docs][Input Docs]       |     [1.0.0]      | [MIT](LICENSE) |
-| List                    |   ✅   |       [Docs][List Docs]        |     [1.0.0]      | [MIT](LICENSE) |
-| Navigation Bar (Navbar) |   ✅   |  [Docs][Navigation Bar Docs]   |     [1.0.0]      | [MIT](LICENSE) |
-| Navigation Drawer       |   ✅   | [Docs][Navigation Drawer Docs] |     [1.0.0]      | [MIT](LICENSE) |
-| Radio                   |   ✅   |       [Docs][Radio Docs]       |     [1.0.0]      | [MIT](LICENSE) |
-| Radio Group             |   ✅   |       [Docs][Radio Docs]       |     [1.0.0]      | [MIT](LICENSE) |
-| Ripple                  |   ✅   |      [Docs][Ripple Docs]       |     [1.0.0]      | [MIT](LICENSE) |
-| Switch                  |   ✅   |      [Docs][Switch Docs]       |     [1.0.0]      | [MIT](LICENSE) |
+| Virtual Scroll          |   ✅    |  [Docs][Virtual scroll Docs]   |     [7.3.0]      | [MIT](LICENSE) |
+| QR Code                 |   ✅    |      [Docs][QR Code Docs]      |     [7.3.0]      | [MIT](LICENSE) |
+| Color Picker            |   ✅    |   [Docs][Color Picker Docs]    |     [7.3.0]      | [MIT](LICENSE) |
+| Splitter                |   ✅    |     [Docs][Splitter Docs]      |     [7.1.0]      | [MIT](LICENSE) |
+| Chat                    |   ✅    |       [Docs][Chat Docs]        |     [6.3.0]      | [MIT](LICENSE) |
+| Date Range Picker       |   ✅    | [Docs][Date Range Picker Docs] |     [6.1.0]      | [MIT](LICENSE) |
+| Tooltip                 |   ✅    |      [Docs][Tooltip Docs]      |     [5.4.0]      | [MIT](LICENSE) |
+| File Input              |   ✅    |    [Docs][File Input Docs]     |     [5.4.0]      | [MIT](LICENSE) |
+| Tile Manager            |   ✅    |   [Docs][Tile Manager Docs]    |     [5.3.0]      | [MIT](LICENSE) |
+| Carousel                |   ✅    |     [Docs][Carousel Docs]      |     [5.1.0]      | [MIT](LICENSE) |
+| Date picker             |   ✅    |    [Docs][Date Picker Docs]    |     [4.10.0]     | [MIT](LICENSE) |
+| Divider                 |   ✅    |      [Docs][Divider Docs]      |     [4.10.0]     | [MIT](LICENSE) |
+| Banner                  |   ✅    |      [Docs][Banner Docs]       |     [4.10.0]     | [MIT](LICENSE) |
+| Button group            |   ✅    |   [Docs][Button Group Docs]    |     [4.5.0]      | [MIT](LICENSE) |
+| Textarea                |   ✅    |     [Docs][Textarea Docs]      |     [4.5.0]      | [MIT](LICENSE) |
+| Combo                   |   ✅    |       [Docs][Combo Docs]       |     [4.1.0]      | [MIT](LICENSE) |
+| Stepper                 |   ✅    |      [Docs][Stepper Docs]      |     [4.1.0]      | [MIT](LICENSE) |
+| Select                  |   ✅    |      [Docs][Select Docs]       |     [3.4.0]      | [MIT](LICENSE) |
+| Dialog                  |   ✅    |      [Docs][Dialog Docs]       |     [3.4.0]      | [MIT](LICENSE) |
+| Date Time Input         |   ✅    |  [Docs][Date Time Input Docs]  |     [3.3.0]      | [MIT](LICENSE) |
+| Tabs                    |   ✅    |       [Docs][Tabs Docs]        |     [3.3.0]      | [MIT](LICENSE) |
+| Accordion               |   ✅    |     [Docs][Accordion Docs]     |     [3.3.0]      | [MIT](LICENSE) |
+| Mask Input              |   ✅    |   [Docs][Masked Input Docs]    |     [3.2.0]      | [MIT](LICENSE) |
+| Expansion Panel         |   ✅    |  [Docs][Expansion Panel Docs]  |     [3.2.0]      | [MIT](LICENSE) |
+| Tree                    |   ✅    |       [Docs][Tree Docs]        |     [3.2.0]      | [MIT](LICENSE) |
+| Drop Down               |   ✅    |     [Docs][Dropdown Docs]      |     [2.2.0]      | [MIT](LICENSE) |
+| Linear Progress         |   ✅    |  [Docs][Linear Progress Docs]  |     [2.1.0]      | [MIT](LICENSE) |
+| Circular Progress       |   ✅    | [Docs][Circular Progress Docs] |     [2.1.0]      | [MIT](LICENSE) |
+| Chip                    |   ✅    |       [Docs][Chip Docs]        |     [2.1.0]      | [MIT](LICENSE) |
+| Snackbar                |   ✅    |     [Docs][Snackbar Docs]      |     [2.1.0]      | [MIT](LICENSE) |
+| Toast                   |   ✅    |       [Docs][Toast Docs]       |     [2.1.0]      | [MIT](LICENSE) |
+| Rating                  |   ✅    |      [Docs][Rating Docs]       |     [2.1.0]      | [MIT](LICENSE) |
+| Slider                  |   ✅    |      [Docs][Slider Docs]       |     [2.0.0]      | [MIT](LICENSE) |
+| Range Slider            |   ✅    |      [Docs][Slider Docs]       |     [2.0.0]      | [MIT](LICENSE) |
+| Avatar                  |   ✅    |      [Docs][Avatar Docs]       |     [1.0.0]      | [MIT](LICENSE) |
+| Badge                   |   ✅    |       [Docs][Badge Docs]       |     [1.0.0]      | [MIT](LICENSE) |
+| Button                  |   ✅    |      [Docs][Button Docs]       |     [1.0.0]      | [MIT](LICENSE) |
+| Calendar                |   ✅    |     [Docs][Calendar Docs]      |     [1.0.0]      | [MIT](LICENSE) |
+| Card                    |   ✅    |       [Docs][Card Docs]        |     [1.0.0]      | [MIT](LICENSE) |
+| Checkbox                |   ✅    |     [Docs][Checkbox Docs]      |     [1.0.0]      | [MIT](LICENSE) |
+| Icon                    |   ✅    |       [Docs][Icon Docs]        |     [1.0.0]      | [MIT](LICENSE) |
+| Icon Button             |   ✅    |    [Docs][Icon Button Docs]    |     [1.0.0]      | [MIT](LICENSE) |
+| Input                   |   ✅    |       [Docs][Input Docs]       |     [1.0.0]      | [MIT](LICENSE) |
+| List                    |   ✅    |       [Docs][List Docs]        |     [1.0.0]      | [MIT](LICENSE) |
+| Navigation Bar (Navbar) |   ✅    |  [Docs][Navigation Bar Docs]   |     [1.0.0]      | [MIT](LICENSE) |
+| Navigation Drawer       |   ✅    | [Docs][Navigation Drawer Docs] |     [1.0.0]      | [MIT](LICENSE) |
+| Radio                   |   ✅    |       [Docs][Radio Docs]       |     [1.0.0]      | [MIT](LICENSE) |
+| Radio Group             |   ✅    |       [Docs][Radio Docs]       |     [1.0.0]      | [MIT](LICENSE) |
+| Ripple                  |   ✅    |      [Docs][Ripple Docs]       |     [1.0.0]      | [MIT](LICENSE) |
+| Switch                  |   ✅    |      [Docs][Switch Docs]       |     [1.0.0]      | [MIT](LICENSE) |
 
 </details>
 
@@ -96,11 +102,11 @@ The grids and the Dock Manager ship in separate packages. Grid Lite is MIT licen
 
 | Components        | Status |         Documentation          |             License              |                                 Package                                  |
 | :---------------- | :----: | :----------------------------: | :------------------------------: | :----------------------------------------------------------------------: |
-| Pivot Grid        |   ✅   |    [Docs][Pivot Grid Docs]     | [Commercial][Commercial License] |   [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids]    |
-| Data Grid         |   ✅   |     [Docs][Data Grid Docs]     | [Commercial][Commercial License] |   [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids]    |
-| Tree Grid         |   ✅   |     [Docs][Tree Grid Docs]     | [Commercial][Commercial License] |   [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids]    |
-| Hierarchical Grid |   ✅   | [Docs][Hierarchical Grid Docs] | [Commercial][Commercial License] |   [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids]    |
-| Grid Lite         |   ✅   |       [Docs][Grid Lite]        |          [MIT](LICENSE)          | [Ignite UI Web Components Grid Lite][Ignite UI Web Components Grid Lite] |
+| Pivot Grid        |   ✅    |    [Docs][Pivot Grid Docs]     | [Commercial][Commercial License] |   [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids]    |
+| Data Grid         |   ✅    |     [Docs][Data Grid Docs]     | [Commercial][Commercial License] |   [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids]    |
+| Tree Grid         |   ✅    |     [Docs][Tree Grid Docs]     | [Commercial][Commercial License] |   [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids]    |
+| Hierarchical Grid |   ✅    | [Docs][Hierarchical Grid Docs] | [Commercial][Commercial License] |   [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids]    |
+| Grid Lite         |   ✅    |       [Docs][Grid Lite]        |          [MIT](LICENSE)          | [Ignite UI Web Components Grid Lite][Ignite UI Web Components Grid Lite] |
 
 #### The Lightweight Web Components Data Grid and Data Table
 
@@ -158,7 +164,7 @@ See the [documentation][Ignite UI for Web Components] for guides on each compone
 
 | ![chrome_48x48] | ![firefox_48x48] | ![edge_48x48] | ![opera_48x48] | ![safari_48x48] |
 | --------------- | ---------------- | ------------- | -------------- | --------------- |
-| Latest ✔️       | Latest ✔️        | Latest ✔️     | Latest ✔️      | Latest ✔️       |
+| Latest ✔️        | Latest ✔️         | Latest ✔️      | Latest ✔️       | Latest ✔️        |
 
 ## Tooling
 
@@ -301,6 +307,9 @@ The Grids, Dock Manager and other packages marked *Commercial* above are license
 [Grid Lite]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grid-lite/overview
 [Ignite UI Web Components Grid Lite]: https://www.npmjs.com/package/igniteui-grid-lite
 [Splitter Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/splitter
+[Color Picker Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/color-picker
+[QR Code Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/qr-code
+[Virtual scroll Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/virtual-scroll
 [1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0
 [2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.0.0
 [2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0
