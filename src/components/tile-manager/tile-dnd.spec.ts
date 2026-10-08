@@ -1,9 +1,13 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { range } from 'lit/directives/range.js';
 import { restore, spy, stub } from 'sinon';
+import { getActiveViewTransition } from '#animations/view-transition.js';
 import { escapeKey } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { viewTransitionComplete } from '#internals/testing/helpers.spec.js';
+import {
+  expectCloseTo,
+  viewTransitionComplete,
+} from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -12,14 +16,16 @@ import {
   simulatePointerMove,
 } from '#internals/testing/simulate.spec.js';
 import { getCenterPoint } from '#internals/utils/dom.js';
+import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
+import IgcDialogComponent from '../dialog/dialog.js';
 import type { TileManagerDragMode } from '../types.js';
 import IgcTileManagerComponent from './tile-manager.js';
 import IgcTileComponent from './tile.js';
 
 describe('Tile drag and drop', () => {
   before(() => {
-    defineComponents(IgcTileManagerComponent);
+    defineComponents(IgcTileManagerComponent, IgcDialogComponent);
   });
 
   let tileManager: IgcTileManagerComponent;
@@ -209,6 +215,550 @@ describe('Tile drag and drop', () => {
 
       expect(draggedTile.position).to.equal(0);
       expect(dropTarget.position).to.equal(4);
+    });
+
+    it('restores the start positions after a drag that swaps back and forth', async () => {
+      const [dragged, target] = [getTile(0), getTile(1)];
+      const { x, y } = getCenterPoint(target);
+
+      simulatePointerDown(dragged);
+      simulateTileDragOver(dragged, { x, y });
+      await viewTransitionComplete();
+      // The transition overlay takes the hit tests until it finishes.
+      await getActiveViewTransition()?.finished;
+      expect([dragged.position, target.position]).to.eql([1, 0]);
+
+      // Back over the target, which now holds the first place: to its center,
+      // which swaps nothing, then into its left quarter, which swaps once. A
+      // swap applies in a view transition, so a third move would swap again.
+      const { left, width } = target.getBoundingClientRect();
+      simulatePointerMove(dragged, { clientX: left + width / 2, clientY: y });
+      simulatePointerMove(dragged, { clientX: left + width * 0.1, clientY: y });
+      await viewTransitionComplete();
+      expect([dragged.position, target.position]).to.eql([0, 1]);
+
+      simulateKeyboard(tileManager, escapeKey);
+      await viewTransitionComplete();
+
+      expect(tileManager.tiles.map(({ position }) => position)).to.eql([
+        0, 1, 2, 3, 4,
+      ]);
+      expect([dragged.position, target.position]).to.eql([0, 1]);
+    });
+
+    it('keeps the positions whole when the dragged tile leaves after a swap', async () => {
+      const [dragged, target] = [getTile(0), getTile(1)];
+      const { x, y } = getCenterPoint(target);
+
+      simulatePointerDown(dragged);
+      simulateTileDragOver(dragged, { x, y });
+      await viewTransitionComplete();
+      expect([dragged.position, target.position]).to.eql([1, 0]);
+
+      dragged.remove();
+      await getActiveViewTransition()?.finished;
+
+      expect(tileManager.tiles.map(({ position }) => position)).to.eql([
+        0, 1, 2, 3,
+      ]);
+    });
+
+    it('keeps the positions whole when another tile leaves during a drag', async () => {
+      const [dragged, target] = [getTile(0), getTile(3)];
+      const { x, y } = getCenterPoint(target);
+
+      simulatePointerDown(dragged);
+      simulateTileDragOver(dragged, { x, y });
+      await viewTransitionComplete();
+      await getActiveViewTransition()?.finished;
+      expect([dragged.position, target.position]).to.eql([3, 0]);
+
+      getTile(1).remove();
+      await elementUpdated(tileManager);
+      simulateKeyboard(tileManager, escapeKey);
+      await getActiveViewTransition()?.finished;
+
+      expect(
+        tileManager.tiles.map(({ id, position }) => [id, position])
+      ).to.eql([
+        ['tile0', 0],
+        ['tile2', 1],
+        ['tile3', 2],
+        ['tile4', 3],
+      ]);
+    });
+
+    it('keeps the positions whole when the dragged tile moves to another manager', async () => {
+      const [dragged, target] = [getTile(0), getTile(1)];
+      const other = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager>
+          <igc-tile id="other0"></igc-tile>
+          <igc-tile id="other1"></igc-tile>
+        </igc-tile-manager>
+      `);
+      const { x, y } = getCenterPoint(target);
+
+      simulatePointerDown(dragged);
+      simulateTileDragOver(dragged, { x, y });
+      await viewTransitionComplete();
+      expect([dragged.position, target.position]).to.eql([1, 0]);
+
+      other.append(dragged);
+      await viewTransitionComplete();
+      await getActiveViewTransition()?.finished;
+
+      expect(other.tiles.map(({ id, position }) => [id, position])).to.eql([
+        ['other0', 0],
+        ['tile0', 1],
+        ['other1', 2],
+      ]);
+      expect(tileManager.tiles.map(({ position }) => position)).to.eql([
+        0, 1, 2, 3,
+      ]);
+    });
+
+    it('fires `igcTileDragCancel` after the start positions are back', async () => {
+      const [dragged, target] = [getTile(0), getTile(4)];
+      const { x, y } = getCenterPoint(target);
+      const positions = new Promise<number[]>((resolve) => {
+        dragged.addEventListener('igcTileDragCancel', () =>
+          resolve([dragged.position, target.position])
+        );
+      });
+
+      simulatePointerDown(dragged);
+      simulateTileDragOver(dragged, { x, y });
+      await viewTransitionComplete();
+      expect([dragged.position, target.position]).to.eql([4, 0]);
+
+      simulateKeyboard(tileManager, escapeKey);
+
+      expect(await positions).to.eql([0, 4]);
+      await getActiveViewTransition()?.finished;
+    });
+
+    it('fires `igcTileDragEnd` after the last swap applies', async () => {
+      const [dragged, target] = [getTile(0), getTile(4)];
+      const { x, y } = getCenterPoint(target);
+      const positions = new Promise<number[]>((resolve) => {
+        dragged.addEventListener('igcTileDragEnd', () =>
+          resolve([dragged.position, target.position])
+        );
+      });
+
+      // The drop comes before the view transition of the swap applies it.
+      simulatePointerDown(dragged);
+      simulateTileDragOver(dragged, { x, y });
+      simulateLostPointerCapture(dragged);
+
+      expect(await positions).to.eql([4, 0]);
+      await getActiveViewTransition()?.finished;
+    });
+
+    it('restores a drag that starts before the restore of the last cancel applies', async () => {
+      const [dragged, target] = [getTile(0), getTile(1)];
+
+      simulatePointerDown(dragged);
+      simulateTileDragOver(dragged, getCenterPoint(target));
+      await viewTransitionComplete();
+      await getActiveViewTransition()?.finished;
+      expect([dragged.position, target.position]).to.eql([1, 0]);
+
+      // The second drag swaps and cancels before the first restore applies.
+      simulateKeyboard(tileManager, escapeKey);
+      simulatePointerDown(dragged);
+      simulateTileDragOver(dragged, getCenterPoint(target));
+      simulateKeyboard(tileManager, escapeKey);
+      await viewTransitionComplete();
+      await getActiveViewTransition()?.finished;
+
+      expect(tileManager.tiles.map(({ position }) => position)).to.eql([
+        0, 1, 2, 3, 4,
+      ]);
+      expect([dragged.position, target.position]).to.eql([0, 1]);
+    });
+
+    it('sends the outcome of a drag before the start of the next drag', async () => {
+      const [first, second] = [getTile(0), getTile(1)];
+      const events: string[] = [];
+
+      for (const tile of [first, second]) {
+        for (const name of [
+          'igcTileDragStart',
+          'igcTileDragEnd',
+          'igcTileDragCancel',
+        ] as const) {
+          tile.addEventListener(name, () => events.push(`${name} ${tile.id}`));
+        }
+      }
+
+      // The second drag starts before the view transition of the cancel.
+      simulatePointerDown(first);
+      simulateKeyboard(tileManager, escapeKey);
+      simulatePointerDown(second);
+      simulateLostPointerCapture(second);
+      await viewTransitionComplete();
+      await getActiveViewTransition()?.finished;
+
+      expect(events).to.eql([
+        'igcTileDragStart tile0',
+        'igcTileDragCancel tile0',
+        'igcTileDragStart tile1',
+        'igcTileDragEnd tile1',
+      ]);
+    });
+
+    it('keeps the start column that a smaller column count removes during a drag', async () => {
+      const [dragged, target] = [getTile(0), getTile(1)];
+
+      tileManager.columnCount = 4;
+      dragged.colStart = 3;
+      await elementUpdated(tileManager);
+
+      simulatePointerDown(dragged);
+      simulateTileDragOver(dragged, getCenterPoint(target));
+      await viewTransitionComplete();
+      await getActiveViewTransition()?.finished;
+      expect([dragged.position, target.colStart]).to.eql([1, 3]);
+
+      tileManager.columnCount = 2;
+      await elementUpdated(tileManager);
+      simulateKeyboard(tileManager, escapeKey);
+      await viewTransitionComplete();
+      await getActiveViewTransition()?.finished;
+
+      expect([dragged.position, target.position]).to.eql([0, 1]);
+      expect([dragged.colStart, target.colStart]).to.eql([null, null]);
+      expect(dragged.getBoundingClientRect().width).to.be.greaterThan(0);
+    });
+
+    it('keeps a layout that `loadLayout` gives during a drag', async () => {
+      const [dragged, target] = [getTile(0), getTile(1)];
+      const reversed = JSON.parse(tileManager.saveLayout()).map(
+        (tile: { position: number }) => ({
+          ...tile,
+          position: 4 - tile.position,
+        })
+      );
+
+      simulatePointerDown(dragged);
+      simulateTileDragOver(dragged, getCenterPoint(target));
+      await viewTransitionComplete();
+      await getActiveViewTransition()?.finished;
+      expect([dragged.position, target.position]).to.eql([1, 0]);
+
+      tileManager.loadLayout(JSON.stringify(reversed));
+      simulateKeyboard(tileManager, escapeKey);
+      await viewTransitionComplete();
+      await getActiveViewTransition()?.finished;
+
+      expect(
+        tileManager.tiles.map(({ id, position }) => [id, position])
+      ).to.eql([
+        ['tile4', 0],
+        ['tile3', 1],
+        ['tile2', 2],
+        ['tile1', 3],
+        ['tile0', 4],
+      ]);
+    });
+
+    it('keeps the drag ghost on the pointer in a swap with a theme style sheet', async () => {
+      const [dragged, target] = [getTile(0), getTile(1)];
+      const adopted = [...document.adoptedStyleSheets];
+
+      // The theme style sheets style the view transitions of the tiles.
+      document.adoptedStyleSheets = [...adopted, bootstrap.styleSheet!];
+
+      try {
+        simulatePointerDown(dragged);
+        simulateTileDragOver(dragged, getCenterPoint(target));
+
+        const transition = getActiveViewTransition()!;
+        await transition.ready;
+
+        const ghostAnimations = document
+          .getAnimations()
+          .filter((animation) =>
+            (animation.effect as KeyframeEffect).pseudoElement?.includes(
+              '(dragged-tile-ghost)'
+            )
+          );
+
+        simulateLostPointerCapture(dragged);
+        await transition.finished;
+
+        expect(ghostAnimations).to.be.empty;
+      } finally {
+        document.adoptedStyleSheets = adopted;
+      }
+    });
+
+    it('cancels the drag when an `igcTileDragStart` listener moves the tile', async () => {
+      const tile = getTile(0);
+      const other = await fixture<IgcTileManagerComponent>(
+        html`<igc-tile-manager></igc-tile-manager>`
+      );
+      const eventSpy = spy(tile, 'emitEvent');
+
+      tile.addEventListener('igcTileDragStart', () => other.append(tile));
+
+      simulatePointerDown(tile);
+      await viewTransitionComplete();
+
+      expect(eventSpy).calledWith('igcTileDragCancel');
+      expect(tile.part.contains('dragging')).to.be.false;
+      expect(tile.style.pointerEvents).to.equal('');
+      expect(document.querySelector('[data-drag-ghost]')).to.be.null;
+    });
+
+    it('cancels the drag when the tile leaves the page during it', async () => {
+      const tile = getTile(0);
+      const eventSpy = spy(tile, 'emitEvent');
+
+      simulatePointerDown(tile);
+      await elementUpdated(tile);
+
+      tileManager.append(tile);
+      await viewTransitionComplete();
+
+      expect(eventSpy).calledWith('igcTileDragCancel');
+      expect(tile.part.contains('dragging')).to.be.false;
+      expect(tile.style.pointerEvents).to.equal('');
+    });
+
+    it('drags only the innermost tile of nested tile managers', async () => {
+      const outer = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager drag-mode="tile">
+          <igc-tile id="outer">
+            <igc-tile-manager drag-mode="tile">
+              <igc-tile id="inner"><p>Inner</p></igc-tile>
+            </igc-tile-manager>
+          </igc-tile>
+        </igc-tile-manager>
+      `);
+      const outerTile = outer.querySelector<IgcTileComponent>('#outer')!;
+      const innerTile = outer.querySelector<IgcTileComponent>('#inner')!;
+      await elementUpdated(innerTile);
+
+      const outerSpy = spy(outerTile, 'emitEvent');
+      const innerSpy = spy(innerTile, 'emitEvent');
+
+      simulatePointerDown(innerTile);
+      await elementUpdated(innerTile);
+      simulateLostPointerCapture(innerTile);
+      await elementUpdated(innerTile);
+
+      expect(innerSpy).calledWith('igcTileDragStart');
+      expect(outerSpy).not.called;
+    });
+
+    it('puts the drag ghost over the tile in the page body', async () => {
+      const tile = getTile(1);
+      const tileRect = tile.getBoundingClientRect();
+
+      simulatePointerDown(tile);
+      await elementUpdated(tile);
+
+      const ghost = document.querySelector('[data-drag-ghost]')!;
+      const layer = ghost.parentElement;
+      const ghostRect = ghost.getBoundingClientRect();
+
+      simulateLostPointerCapture(tile);
+
+      expect(layer).to.equal(document.body);
+      expectCloseTo([ghostRect.x, ghostRect.y], [tileRect.x, tileRect.y], 1);
+    });
+
+    it('puts the drag ghost over the tile in an open modal dialog', async () => {
+      // The border and the scroll of the dialog do not move the ghost.
+      const dialog = await fixture<HTMLDialogElement>(html`
+        <dialog style="border: 10px solid; max-height: 300px">
+          <div style="height: 150px"></div>
+          ${createTileManager('tile')}
+        </dialog>
+      `);
+      dialog.showModal();
+      dialog.scrollTop = 100;
+      tileManager = dialog.querySelector('igc-tile-manager')!;
+      await elementUpdated(tileManager);
+
+      const tile = getTile(0);
+      const tileRect = tile.getBoundingClientRect();
+      simulatePointerDown(tile);
+      await elementUpdated(tile);
+
+      const ghost = document.querySelector('[data-drag-ghost]')!;
+      const layer = ghost.parentElement;
+      const ghostRect = ghost.getBoundingClientRect();
+
+      simulateLostPointerCapture(tile);
+      dialog.close();
+
+      expect(layer).to.equal(dialog);
+      expectCloseTo([ghostRect.x, ghostRect.y], [tileRect.x, tileRect.y], 1);
+    });
+
+    it('puts the drag ghost into the dialog of an open igc-dialog', async () => {
+      const dialog = await fixture<IgcDialogComponent>(
+        html`<igc-dialog>${createTileManager('tile')}</igc-dialog>`
+      );
+      await dialog.show();
+      tileManager = dialog.querySelector('igc-tile-manager')!;
+
+      const tile = getTile(0);
+      simulatePointerDown(tile);
+      await elementUpdated(tile);
+
+      const layer =
+        dialog.renderRoot.querySelector('[data-drag-ghost]')?.parentElement;
+
+      simulateLostPointerCapture(tile);
+      await dialog.hide();
+
+      expect(layer).to.equal(dialog.renderRoot.querySelector('dialog'));
+    });
+
+    it('keeps the drag ghost of an inner tile out of an outer manager in the top layer', async () => {
+      const outer = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager drag-mode="tile" popover="manual">
+          <igc-tile>
+            <igc-tile-manager drag-mode="tile">
+              <igc-tile id="inner"><p>Inner</p></igc-tile>
+            </igc-tile-manager>
+          </igc-tile>
+        </igc-tile-manager>
+      `);
+      outer.showPopover();
+      const inner = outer.querySelector<IgcTileComponent>('#inner')!;
+      await elementUpdated(inner);
+
+      simulatePointerDown(inner);
+      await elementUpdated(outer);
+
+      const ghost = outer.renderRoot.querySelector('[data-drag-ghost]');
+      expect(outer.tiles.length).to.equal(1);
+      expect(ghost?.checkVisibility()).to.be.true;
+
+      simulateLostPointerCapture(inner);
+    });
+
+    // The fixture cleanup removes the manager, which closes the popover.
+    describe('In a top-layer manager', () => {
+      beforeEach(() => {
+        tileManager.popover = 'manual';
+        tileManager.showPopover();
+      });
+
+      it('keeps the drag ghost out of the tiles', async () => {
+        const tile = getTile(0);
+        simulatePointerDown(tile);
+        await elementUpdated(tileManager);
+
+        const ghost = tileManager.renderRoot.querySelector('[data-drag-ghost]');
+        expect(tileManager.tiles.length).to.equal(5);
+        expect(ghost?.checkVisibility()).to.be.true;
+
+        simulateLostPointerCapture(tile);
+      });
+
+      it('puts the drag ghost over a tile with grid starts', async () => {
+        const tile = getTile(1);
+        Object.assign(tile, { colStart: 2, rowStart: 2 });
+        await elementUpdated(tile);
+
+        const tileRect = tile.getBoundingClientRect();
+        simulatePointerDown(tile);
+        await elementUpdated(tile);
+
+        const ghost =
+          tileManager.renderRoot.querySelector('[data-drag-ghost]')!;
+        const ghostRect = ghost.getBoundingClientRect();
+        expectCloseTo([ghostRect.x, ghostRect.y], [tileRect.x, tileRect.y], 1);
+
+        simulateLostPointerCapture(tile);
+      });
+
+      it('keeps the size of the dragged tile with a theme style sheet', async () => {
+        const tile = getTile(0);
+        const grid = tileManager.renderRoot.querySelector('[part~="base"]')!;
+        const adopted = [...document.adoptedStyleSheets];
+        const sizes = () => [
+          grid.scrollWidth,
+          grid.scrollHeight,
+          tile.offsetWidth,
+          tile.offsetHeight,
+        ];
+
+        // The theme palette gives the placeholder outline its color.
+        document.adoptedStyleSheets = [...adopted, bootstrap.styleSheet!];
+
+        try {
+          const before = sizes();
+
+          simulatePointerDown(tile);
+          await elementUpdated(tile);
+
+          const during = sizes();
+          simulateLostPointerCapture(tile);
+
+          expect(during).to.eql(before);
+        } finally {
+          document.adoptedStyleSheets = adopted;
+        }
+      });
+
+      it('does not scroll the grid with the drag ghost', async () => {
+        const tile = getTile(0);
+        const grid = tileManager.renderRoot.querySelector('[part~="base"]')!;
+        const before = [grid.scrollWidth, grid.scrollHeight];
+
+        simulatePointerDown(tile);
+        simulatePointerMove(tile, {
+          clientX: window.innerWidth - 5,
+          clientY: window.innerHeight - 5,
+        });
+        await elementUpdated(tile);
+
+        expect([grid.scrollWidth, grid.scrollHeight]).to.eql(before);
+
+        simulateLostPointerCapture(tile);
+      });
+    });
+
+    it('does not swap an inner tile with the outer tile that holds it', async () => {
+      const outer = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager drag-mode="tile">
+          <igc-tile>
+            <igc-tile-manager drag-mode="tile">
+              <igc-tile><p>First</p></igc-tile>
+              <igc-tile id="inner"><p>Inner</p></igc-tile>
+            </igc-tile-manager>
+          </igc-tile>
+          <igc-tile></igc-tile>
+        </igc-tile-manager>
+      `);
+      const innerManager = outer.querySelector('igc-tile-manager')!;
+      const inner = innerManager.querySelector<IgcTileComponent>('#inner')!;
+      await elementUpdated(inner);
+
+      const positions = () =>
+        [...outer.tiles, ...innerManager.tiles].map(({ position }) => position);
+      const before = positions();
+
+      // The padding of the inner grid is over the outer tile only.
+      const { left, top } = innerManager.getBoundingClientRect();
+      simulatePointerDown(inner);
+      simulatePointerMove(
+        inner,
+        { clientX: left + 5, clientY: top + 5 },
+        { x: 1, y: 1 },
+        3
+      );
+      await viewTransitionComplete();
+      simulateLostPointerCapture(inner);
+
+      expect(positions()).to.eql(before);
     });
 
     it('should adjust reflected tiles positions', async () => {
@@ -462,6 +1012,25 @@ describe('Tile drag and drop', () => {
       expect(eventSpy).not.called;
       expect(draggedTile.position).to.equal(0);
       expect(dropTarget.position).to.equal(1);
+    });
+
+    it('lets a maximized tile scroll by touch', async () => {
+      const tile = getTile(0);
+      const touchStart = () => {
+        const event = new Event('touchstart', {
+          bubbles: true,
+          cancelable: true,
+        });
+        tile.dispatchEvent(event);
+        return event.defaultPrevented;
+      };
+
+      expect(touchStart()).to.be.true;
+
+      tile.maximized = true;
+      await elementUpdated(tile);
+
+      expect(touchStart()).to.be.false;
     });
 
     it('should disable drag and drop when tile is in fullscreen mode', async () => {

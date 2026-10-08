@@ -1,5 +1,6 @@
 @use 'sass:map';
 @use 'igniteui-theming' as *;
+@use 'view-transitions';
 
 @mixin theme($palette, $elevations, $typeface, $type-scale, $variant) {
     /* Two counters for integer and fractional parts */
@@ -33,5 +34,6 @@
     );
     @include sizing();
     @include spacing();
+    @include view-transitions.tile-manager();
 }
 

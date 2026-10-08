@@ -37,6 +37,7 @@ import IgcTileComponent from './tile.js';
  * @slot - Default slot for the tile manager. Only tile elements will be projected inside the CSS grid container.
  *
  * @csspart base - The tile manager CSS Grid container.
+ * @csspart maximized-tile - Indicates that a tile is maximized. Applies to `base`.
  *
  * @cssproperty --column-count - The number of columns for the tile manager. The `column-count` attribute sets this variable.
  * @cssproperty --min-col-width - The minimum size of the columns in the tile-manager. The `min-column-width` attribute sets this variable.
@@ -195,6 +196,11 @@ export default class IgcTileManagerComponent extends LitElement {
     this._tilesState.assignTiles();
     this._updateMaximizedTile();
     this._context.publish();
+
+    // Tiles that connected before the browser defined the manager missed it.
+    for (const tile of this.tiles) {
+      tile._requestContext();
+    }
   }
 
   private _updateMaximizedTile(): void {
@@ -204,43 +210,35 @@ export default class IgcTileManagerComponent extends LitElement {
   private _observerCallback({
     changes: { added, removed },
   }: MutationControllerParams<IgcTileComponent>) {
-    const isOwn = ({ target }: { target: Element }) =>
-      target.closest(this.tagName) === this;
-
-    for (const { node } of removed.filter(isOwn)) {
-      this._tilesState.remove(node);
+    if (!(added.length || removed.length)) {
+      return;
     }
 
-    for (const { node } of added.filter(isOwn)) {
-      this._tilesState.add(node);
-    }
+    // A tile in both lists moved inside the manager, and keeps its place.
+    const removedTiles = new Set(removed.map(({ node }) => node));
+    const addedTiles = new Set(
+      added.map(({ node }) => node).filter((node) => !removedTiles.has(node))
+    );
 
+    this._tilesState.normalize(addedTiles);
     this._tilesState.assignTiles();
     this._tilesState.adjustTileGridPosition();
-    this._updateMaximizedTile();
+    this._setMaximizedState();
   }
 
   /**
-   * Locks the grid height while a tile is maximized.
-   *
-   * @remarks
-   * A maximized tile is absolutely positioned and adds no height to the grid.
-   * If it is the tallest tile, the grid collapses and cuts off its content.
-   * Capture the height before the layout changes, and release it when no tile
-   * is maximized.
+   * Locks the grid height while a tile is maximized. The maximized tile is
+   * absolutely positioned, so without the lock the grid can collapse and cut
+   * off its content.
    */
   private _setMaximizedState(): void {
     const grid = this._grid.value;
     this._updateMaximizedTile();
 
     if (grid) {
-      if (this._hasMaximizedTile) {
-        if (!grid.style.minHeight) {
-          grid.style.minHeight = `${grid.offsetHeight}px`;
-        }
-      } else {
-        grid.style.minHeight = '';
-      }
+      grid.style.minHeight = this._hasMaximizedTile
+        ? grid.style.minHeight || `${grid.offsetHeight}px`
+        : '';
     }
   }
 
@@ -264,6 +262,8 @@ export default class IgcTileManagerComponent extends LitElement {
    */
   public loadLayout(data: string): void {
     this._serializer.loadFromJSON(data);
+    this._tilesState.normalize();
+    this._tilesState.replaceLayout();
   }
 
   // #endregion

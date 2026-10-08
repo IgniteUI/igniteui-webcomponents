@@ -21,7 +21,10 @@ function hasScopedViewTransition(
   return 'startViewTransition' in node && isFunction(node.startViewTransition);
 }
 
-function skipOnReducedMotion(transition: ViewTransition): ViewTransition {
+/** Handles the `ready` rejection of a skipped transition, and skips it on reduced motion. */
+function prepareTransition(transition: ViewTransition): ViewTransition {
+  transition.ready.catch(() => {});
+
   if (getPrefersReducedMotion()) {
     transition.skipTransition();
   }
@@ -49,7 +52,7 @@ export function startViewTransition(
     } as ViewTransition;
   }
 
-  return skipOnReducedMotion(init.call(globalThis.document, callback));
+  return prepareTransition(init.call(globalThis.document, callback));
 }
 
 /**
@@ -61,7 +64,7 @@ export function startScopedViewTransition(
   callback: ViewTransitionUpdateCallback
 ): ViewTransition | null {
   return hasScopedViewTransition(target)
-    ? skipOnReducedMotion(target.startViewTransition(callback))
+    ? prepareTransition(target.startViewTransition(callback))
     : null;
 }
 

@@ -31,6 +31,11 @@ export class AsyncContextConsumer<
     return this._consumer?.value;
   }
 
+  /** Requests the context again, for a provider that connected after the host. */
+  public request(): void {
+    this._consumer?.hostConnected();
+  }
+
   // The consumer survives a disconnect, and a reconnect can land during the
   // await, so the guard runs on both sides of it.
   public async hostConnected(): Promise<void> {

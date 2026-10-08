@@ -37,27 +37,21 @@ class TileManagerSerializer {
     this._tileManager = tileManager;
   }
 
-  public save(): SerializedTile[] {
-    return this._tileManager.tiles.map((tile) => {
-      const saved = {} as Record<keyof SerializedTile, unknown>;
-
-      for (const key of SERIALIZED_KEYS) {
-        saved[key] = tile[key];
-      }
-
-      return saved as SerializedTile;
-    });
-  }
-
   public saveAsJSON(): string {
-    return JSON.stringify(this.save());
+    return JSON.stringify(
+      this._tileManager.tiles.map((tile) =>
+        Object.fromEntries(SERIALIZED_KEYS.map((key) => [key, tile[key]]))
+      )
+    );
   }
 
   /**
    * Applies a layout to the tiles with the same `id`. The layout is not trusted. Copies
    * only the serialized properties, and ignores values that are not tile objects.
    */
-  public load(tiles: SerializedTile[]): void {
+  public loadFromJSON(data: string): void {
+    const tiles: unknown = data ? JSON.parse(data) : null;
+
     if (!Array.isArray(tiles)) {
       return;
     }
@@ -76,12 +70,6 @@ class TileManagerSerializer {
           }
         }
       }
-    }
-  }
-
-  public loadFromJSON(data: string): void {
-    if (data) {
-      this.load(JSON.parse(data));
     }
   }
 }

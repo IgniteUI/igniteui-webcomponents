@@ -1,21 +1,26 @@
-import { lastOf, partition } from '#internals/utils/arrays.js';
+import { startViewTransition } from '#animations/view-transition.js';
+import { partition } from '#internals/utils/arrays.js';
 import type IgcTileManagerComponent from './tile-manager.js';
 import type IgcTileComponent from './tile.js';
+
+type Positioned = Pick<IgcTileComponent, 'position'>;
+
+function byPosition(a: Positioned, b: Positioned): number {
+  return a.position - b.position;
+}
 
 class TilesState {
   private readonly _manager: IgcTileManagerComponent;
 
   private get _tiles(): IgcTileComponent[] {
-    return Array.from(
-      this._manager.querySelectorAll<IgcTileComponent>(':scope > igc-tile')
+    return Array.from(this._manager.children).filter(
+      (element): element is IgcTileComponent => element.localName === 'igc-tile'
     );
   }
 
-  /**
-   * Returns the current tiles of the tile manager sorted by their position.
-   */
+  /** The tiles sorted by their position. */
   public get tiles(): IgcTileComponent[] {
-    return this._tiles.toSorted((a, b) => a.position - b.position);
+    return this._tiles.toSorted(byPosition);
   }
 
   constructor(manager: IgcTileManagerComponent) {
@@ -26,10 +31,10 @@ class TilesState {
     let nextPosition = 0;
     const [positionedTiles, nonPositionedTiles] = partition(
       this._tiles,
-      (tile) => tile.position !== -1
+      (tile) => tile.position >= 0
     );
 
-    positionedTiles.sort((a, b) => a.position - b.position);
+    positionedTiles.sort(byPosition);
 
     for (const tile of positionedTiles) {
       // Fill any unassigned slots before the next assigned tile's position
@@ -38,8 +43,7 @@ class TilesState {
         nonPositionedTile.position = nextPosition++;
       }
 
-      tile.position = nextPosition;
-      nextPosition = tile.position + 1;
+      tile.position = nextPosition++;
     }
 
     for (const tile of nonPositionedTiles) {
@@ -47,31 +51,44 @@ class TilesState {
     }
   }
 
+  /** Starts a new layout. The restore of a drag from before it changes no tiles. */
+  public replaceLayout(): void {
+    layoutVersions.set(this._manager, getLayoutVersion(this._manager) + 1);
+  }
+
   /** Updates the default (manual) slot of the tile manager with the current tiles. */
   public assignTiles(): void {
     this._manager.renderRoot.querySelector('slot')!.assign(...this._tiles);
   }
 
-  public add(tile: IgcTileComponent): void {
-    if (tile.position > -1) {
-      for (const each of this.tiles) {
-        if (each !== tile && each.position >= tile.position) {
-          each.position++;
-        }
-      }
-      return;
+  /**
+   * Renumbers the tiles 0 to n - 1 by position. An `added` tile with a position
+   * goes to that place. Tiles without one go last, in DOM order.
+   */
+  public normalize(added: ReadonlySet<IgcTileComponent> = new Set()): void {
+    const [newTiles, ordered] = partition(
+      this._tiles,
+      (tile) => added.has(tile) || tile.position < 0
+    );
+    const [placed, appended] = partition(
+      newTiles,
+      (tile) => tile.position >= 0
+    );
+
+    ordered.sort(byPosition);
+
+    for (const tile of placed.sort(byPosition)) {
+      ordered.splice(tile.position, 0, tile);
     }
 
-    const positionedTiles = this._tiles.filter((tile) => tile.position > -1);
-
-    tile.position = positionedTiles.length
-      ? Math.max(...positionedTiles.map((tile) => tile.position)) + 1
-      : 0;
+    for (const [index, tile] of [...ordered, ...appended].entries()) {
+      if (tile.position !== index) {
+        tile.position = index;
+      }
+    }
   }
 
-  /**
-   * Checks and adjusts tile spans based on the column count of the tile manager.
-   */
+  /** Fits the column start and span of each tile into a fixed column count. */
   public adjustTileGridPosition(): void {
     const { columnCount } = this._manager;
 
@@ -79,60 +96,103 @@ class TilesState {
       return;
     }
 
-    for (const tile of this.tiles) {
-      let colStart = tile.colStart ?? 0;
-
-      if (colStart > columnCount) {
-        colStart = 0;
+    for (const tile of this._tiles) {
+      if ((tile.colStart ?? 0) > columnCount) {
         tile.colStart = null;
       }
 
-      if (colStart + tile.colSpan > columnCount) {
-        tile.colSpan = columnCount - colStart + (colStart > 0 ? 1 : 0);
-      }
-    }
-  }
+      const maxSpan = columnCount - (tile.colStart ?? 1) + 1;
 
-  public remove(tile: IgcTileComponent): void {
-    for (const each of this.tiles) {
-      if (each.position >= tile.position) {
-        each.position--;
+      if (tile.colSpan > maxSpan) {
+        tile.colSpan = maxSpan;
       }
     }
   }
 }
 
-type TileDragStackEntry = {
-  tile: IgcTileComponent;
-  position: number;
-  colStart: number | null;
-  rowStart: number | null;
-};
+/** A recorded tile: its first position, and its parent and layout version then. */
+type TileRecord = { position: number; parent: Element | null; version: number };
 
-class TileDragStack {
-  private _stack: TileDragStackEntry[] = [];
+/** Counts the layouts that `loadLayout` gave each manager. */
+const layoutVersions = new WeakMap<Element, number>();
 
-  public peek(): IgcTileComponent {
-    return lastOf(this._stack).tile;
+function getLayoutVersion(manager: Element | null): number {
+  return (manager && layoutVersions.get(manager)) ?? 0;
+}
+
+function swapTiles(a: IgcTileComponent, b: IgcTileComponent): void {
+  [a.colStart, b.colStart] = [b.colStart, a.colStart];
+  [a.rowStart, b.rowStart] = [b.rowStart, a.rowStart];
+  [a.position, b.position] = [b.position, a.position];
+}
+
+/** The tiles that a drag swapped, and the placement of each before its first swap. */
+class TileDragRecord {
+  /** The tile of the last swap. */
+  public last?: IgcTileComponent;
+  /** Settles when the last swap applies. */
+  public swapped?: Promise<void>;
+  private readonly _initial = new Map<IgcTileComponent, TileRecord>();
+
+  /**
+   * Swaps the tiles in a view transition. The placements are recorded there,
+   * after the updates that are still in the queue, such as the restore of the
+   * last drag.
+   */
+  public swap(dragged: IgcTileComponent, match: IgcTileComponent): void {
+    this.last = match;
+    this.swapped = startViewTransition(() => {
+      this._record(dragged);
+      this._record(match);
+      swapTiles(dragged, match);
+    }).updateCallbackDone;
   }
 
-  public pop(): void {
-    this._stack.pop();
+  /**
+   * Restores the order before the drag in a view transition, and resolves
+   * when it applies. A drag without swaps restores nothing.
+   */
+  public restore(): Promise<void> | undefined {
+    return this.swapped
+      ? startViewTransition(() => this._restore()).updateCallbackDone
+      : undefined;
   }
 
-  public push(tile: IgcTileComponent): void {
-    const { position, colStart, rowStart } = tile;
-    this._stack.push({ tile, position, colStart, rowStart });
-  }
+  /**
+   * Gives the recorded tiles the placements that they hold now, in their order
+   * before the drag, since a swap moves whole placements. Skips the tiles that
+   * moved to another parent, and the managers that loaded a layout since.
+   */
+  private _restore(): void {
+    const tiles = [...this._initial]
+      .filter(
+        ([tile, { parent, version }]) =>
+          tile.parentElement === parent && getLayoutVersion(parent) === version
+      )
+      .sort(([, a], [, b]) => byPosition(a, b))
+      .map(([tile]) => tile);
+    const placements = tiles
+      .map(({ position, colStart, rowStart }) => ({
+        position,
+        colStart,
+        rowStart,
+      }))
+      .sort(byPosition);
 
-  public restore(): void {
-    for (const { tile, ...placement } of this._stack.toReversed()) {
-      Object.assign(tile, placement);
+    for (const [index, tile] of tiles.entries()) {
+      Object.assign(tile, placements[index]);
     }
   }
 
-  public reset(): void {
-    this._stack = [];
+  private _record(tile: IgcTileComponent): void {
+    if (!this._initial.has(tile)) {
+      const { position, parentElement: parent } = tile;
+      this._initial.set(tile, {
+        position,
+        parent,
+        version: getLayoutVersion(parent),
+      });
+    }
   }
 }
 
@@ -140,12 +200,8 @@ export function createTilesState(manager: IgcTileManagerComponent) {
   return new TilesState(manager);
 }
 
-export function createTileDragStack(): TileDragStack {
-  return new TileDragStack();
+export function createTileDragRecord(): TileDragRecord {
+  return new TileDragRecord();
 }
 
-export function swapTiles(a: IgcTileComponent, b: IgcTileComponent): void {
-  [a.colStart, b.colStart] = [b.colStart, a.colStart];
-  [a.rowStart, b.rowStart] = [b.rowStart, a.rowStart];
-  [a.position, b.position] = [b.position, a.position];
-}
+export type { TileDragRecord };

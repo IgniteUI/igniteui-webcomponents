@@ -2,6 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { render } from 'lit';
 import { type SinonSpy, spy } from 'sinon';
 import { escapeKey } from '../controllers/key-bindings.js';
+import { catchListenerErrors } from '../testing/helpers.spec.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
@@ -487,6 +488,84 @@ describe('Resizable directive', () => {
       expect(getGhost()!.parentElement).to.eql(instance.parentElement);
     });
 
+    it('should place the ghost over the target in a layer with a border and a scroll', async () => {
+      Object.assign(section.style, {
+        border: '10px solid',
+        height: '300px',
+        overflow: 'auto',
+      });
+      section.scrollTop = 100;
+      renderResizable({ layer: () => section });
+
+      simulatePointerDown(instance);
+      await elementUpdated(instance);
+
+      const ghost = getGhost()!;
+
+      expect(ghost.parentElement).to.equal(section);
+      expect(ghost.style.position).to.equal('fixed');
+      expect(ghost.getBoundingClientRect()).to.eql(
+        instance.getBoundingClientRect()
+      );
+    });
+
+    it('should place the ghost over the target in a transformed layer', async () => {
+      section.style.transform = 'translate(30px, 40px)';
+      renderResizable({ layer: () => section });
+
+      simulatePointerDown(instance);
+      await elementUpdated(instance);
+
+      expect(getGhost()!.getBoundingClientRect()).to.eql(
+        instance.getBoundingClientRect()
+      );
+    });
+
+    it('should place the ghost over the target in a positioned body with a margin', async () => {
+      Object.assign(document.body.style, {
+        position: 'relative',
+        margin: '40px',
+      });
+
+      try {
+        simulatePointerDown(instance);
+        await elementUpdated(instance);
+
+        expect(getGhost()!.getBoundingClientRect()).to.eql(
+          instance.getBoundingClientRect()
+        );
+      } finally {
+        Object.assign(document.body.style, { position: '', margin: '' });
+      }
+    });
+
+    it('should keep the ghost on the target when the page scrolls during the operation', async () => {
+      renderResizable({});
+
+      const initial = instance.getBoundingClientRect();
+      const pointer = { clientX: initial.right + 100, clientY: initial.bottom };
+
+      try {
+        simulatePointerDown(instance);
+        window.scrollTo(0, 80);
+        simulatePointerMove(instance, pointer);
+        await elementUpdated(instance);
+
+        const scrollY = window.scrollY;
+        const ghostRect = getGhost()!.getBoundingClientRect();
+        const { x, y } = instance.getBoundingClientRect();
+
+        expect(scrollY).to.equal(80);
+        expect([ghostRect.x, ghostRect.y]).to.eql([x, y]);
+        expect([ghostRect.right, ghostRect.bottom]).to.eql([
+          pointer.clientX,
+          pointer.clientY,
+        ]);
+      } finally {
+        window.scrollTo(0, 0);
+      }
+    });
+
     it('should correctly fallback to the document body as a container if the layer callbacks return falsy', async () => {
       const layer = spy((): HTMLElement => null as unknown as HTMLElement);
       renderResizable({ layer });
@@ -657,6 +736,146 @@ describe('Resizable directive', () => {
         targetRect.height + 50,
       ]);
       expect(instance.getBoundingClientRect()).to.eql(hostRect);
+    });
+  });
+
+  describe('Right-to-left', () => {
+    beforeEach(async () => {
+      await createFixture({ mode: 'immediate' });
+      section.dir = 'rtl';
+    });
+
+    it('measures the width from the inline-start edge', async () => {
+      const resize = spy();
+      renderResizable({ resize });
+
+      const initial = instance.getBoundingClientRect();
+
+      simulatePointerDown(instance);
+      simulatePointerMove(instance, {
+        clientX: initial.left - 50,
+        clientY: initial.bottom,
+      });
+      await elementUpdated(instance);
+
+      const { state } = getCallbackParams(resize);
+      const rect = instance.getBoundingClientRect();
+
+      expect(state.deltaX).to.equal(50);
+      expect(rect.width).to.equal(initial.width + 50);
+      expect(rect.right).to.equal(initial.right);
+    });
+
+    it('keeps the inline-start edge of the ghost in place', async () => {
+      renderResizable({ mode: 'deferred' });
+
+      const initial = instance.getBoundingClientRect();
+
+      simulatePointerDown(instance);
+      simulatePointerMove(instance, {
+        clientX: initial.left - 50,
+        clientY: initial.bottom,
+      });
+      await elementUpdated(instance);
+
+      const ghostRect = getGhost()!.getBoundingClientRect();
+
+      expect(ghostRect.width).to.equal(initial.width + 50);
+      expect(ghostRect.right).to.be.approximately(initial.right, 0.5);
+    });
+  });
+
+  it('follows a CSS direction without a `dir` attribute', async () => {
+    await createFixture({ mode: 'immediate' });
+    section.style.direction = 'rtl';
+
+    const resize = spy();
+    renderResizable({ resize });
+
+    const initial = instance.getBoundingClientRect();
+
+    simulatePointerDown(instance);
+    simulatePointerMove(instance, {
+      clientX: initial.left - 50,
+      clientY: initial.bottom,
+    });
+    await elementUpdated(instance);
+
+    expect(getCallbackParams(resize).state.deltaX).to.equal(50);
+  });
+
+  describe('Interrupted operations', () => {
+    beforeEach(async () => {
+      await createFixture({ mode: 'deferred' });
+    });
+
+    it('cancels the operation on pointercancel', async () => {
+      const cancel = spy();
+      const end = spy();
+      renderResizable({ cancel, end });
+
+      simulatePointerDown(instance);
+      instance.dispatchEvent(
+        new PointerEvent('pointercancel', { bubbles: true, pointerId: 1 })
+      );
+      simulateLostPointerCapture(instance);
+      await elementUpdated(instance);
+
+      expect(cancel.calledOnce).is.true;
+      expect(end.called).is.false;
+      expect(getGhost()).is.null;
+    });
+
+    it('ignores the events of another pointer', async () => {
+      const end = spy();
+      const move = spy();
+      renderResizable({ end, resize: move });
+
+      const { right, bottom } = instance.getBoundingClientRect();
+
+      simulatePointerDown(instance);
+      simulatePointerMove(instance, {
+        pointerId: 2,
+        clientX: right + 50,
+        clientY: bottom + 50,
+      });
+      simulateLostPointerCapture(instance, { pointerId: 2 });
+      await elementUpdated(instance);
+
+      expect(move.called).is.false;
+      expect(end.called).is.false;
+      expect(getGhost()).is.not.null;
+    });
+
+    it('disposes the operation when `start` throws', async () => {
+      // Throws on the first call only.
+      const start = spy(() => {
+        if (start.callCount === 1) {
+          throw new Error('start');
+        }
+      });
+      renderResizable({ start });
+
+      const errors = catchListenerErrors(() => simulatePointerDown(instance));
+
+      expect(errors).to.have.length(1);
+      expect((errors[0] as Error).message).to.equal('start');
+      expect(getGhost()).is.null;
+
+      simulatePointerDown(instance);
+      expect(start.calledTwice).is.true;
+    });
+
+    it('cancels the operation when the element disconnects', async () => {
+      const cancel = spy();
+      renderResizable({ cancel });
+
+      simulatePointerDown(instance);
+      render(html``, section);
+      await elementUpdated(section);
+
+      expect(cancel.calledOnce).is.true;
+      expect(getGhost()).is.null;
     });
   });
 });

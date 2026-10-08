@@ -117,9 +117,13 @@ export function* iterNodes<T extends Node>(
 
 /**
  * Iterates over `node` and its element ancestors, and crosses each shadow
- * root through its host.
+ * root through its host. With `flat`, a slotted node goes to its slot, as in
+ * the flat tree.
  */
-export function* iterAncestors(node?: Node | null): Generator<Element> {
+export function* iterAncestors(
+  node?: Node | null,
+  flat = false
+): Generator<Element> {
   let current: Node | null | undefined = node;
 
   while (current) {
@@ -127,7 +131,9 @@ export function* iterAncestors(node?: Node | null): Generator<Element> {
       yield current;
     }
 
-    current = current instanceof ShadowRoot ? current.host : current.parentNode;
+    current =
+      (flat && (current as Element).assignedSlot) ||
+      (current instanceof ShadowRoot ? current.host : current.parentNode);
   }
 }
 
@@ -312,6 +318,21 @@ export function hasFiles(input: { files: FileList | null }): boolean {
  */
 export function isPopoverOpen(element?: Element): boolean {
   return element?.matches(':popover-open') ?? false;
+}
+
+/**
+ * Returns `element` or its closest ancestor in the top layer (a fullscreen
+ * element, a modal dialog or an open popover). The walk follows the flat tree,
+ * so it finds a top-layer element in the shadow root of a slotted element.
+ */
+export function getTopLayerAncestor(element: Element): HTMLElement | null {
+  for (const ancestor of iterAncestors(element, true)) {
+    if (ancestor.matches(':fullscreen, :modal, :popover-open')) {
+      return ancestor as HTMLElement;
+    }
+  }
+
+  return null;
 }
 
 /**

@@ -1,5 +1,4 @@
 import type { ResizeState } from '#internals/directives/resize.js';
-import { firstOf } from '#internals/utils/arrays.js';
 import { asNumber } from '#internals/utils/math.js';
 import {
   calculatePosition,
@@ -7,9 +6,13 @@ import {
   calculateSnappedDimension,
 } from './resize-util.js';
 import type IgcTileComponent from './tile.js';
-import type { TileGridDimension, TileGridPosition } from './types.js';
+import type {
+  TileGridDimension,
+  TileGridPosition,
+  TilePosition,
+} from './types.js';
 
-const CssValues = /(?<start>\d+)?\s*\/?\s*span\s*(?<span>\d+)?/gi;
+const CssValues = /(?<start>\d+)?\s*\/?\s*span\s*(?<span>\d+)?/i;
 
 type ResizeAxis = 'column' | 'row';
 
@@ -25,21 +28,25 @@ function createAxisState(
   return { dimension, prevDelta: 0, prevSnapped: 0 };
 }
 
-function parseTileGridRect(tile: IgcTileComponent): TileGridPosition {
-  const computed = getComputedStyle(tile);
-  const { gridColumn, gridRow } = computed;
-
-  const [column, row] = [
-    firstOf(Array.from(gridColumn.matchAll(CssValues))).groups!,
-    firstOf(Array.from(gridRow.matchAll(CssValues))).groups!,
-  ];
+/**
+ * Parses a computed `[start /] span n`. Another form, as from author CSS, gives
+ * start -1, which the layout resolves later, and the span of the tile property.
+ */
+function parseGridTrack(value: string, span: number): TilePosition {
+  const groups = value.match(CssValues)?.groups;
 
   return {
-    column: {
-      start: asNumber(column.start, -1),
-      span: asNumber(column.span, -1),
-    },
-    row: { start: asNumber(row.start, -1), span: asNumber(row.span, -1) },
+    start: asNumber(groups?.start, -1),
+    span: asNumber(groups?.span, span),
+  };
+}
+
+function parseTileGridRect(tile: IgcTileComponent): TileGridPosition {
+  const { gridColumn, gridRow } = getComputedStyle(tile);
+
+  return {
+    column: parseGridTrack(gridColumn, tile.colSpan),
+    row: parseGridTrack(gridRow, tile.rowSpan),
   };
 }
 
@@ -98,31 +105,22 @@ class TileResizeState {
     this._calculateTileStartPosition(grid, tileRect);
   }
 
-  /**
-   * Calculates and returns the CSS column and row properties of a tile after resizing,
-   * based on its new dimensions and starting position.
-   */
-  public calculateResizedGridPosition(rect: DOMRect) {
-    const { column, row } = this._position;
+  /** The column and row spans of the tile for the resized rectangle. */
+  public calculateResizedGridPosition({ width, height }: DOMRect) {
+    return {
+      colSpan: this._calculateResizedSpan('column', width),
+      rowSpan: this._calculateResizedSpan('row', height),
+    };
+  }
 
-    // REVIEW pass col minSize and allowOverflow?
-    column.span = calculateResizedSpan({
-      targetSize: rect.width,
-      tilePosition: column,
-      tileGridDimension: this._axes.column.dimension,
+  private _calculateResizedSpan(axis: ResizeAxis, targetSize: number): number {
+    return calculateResizedSpan({
+      targetSize,
+      tilePosition: this._position[axis],
+      tileGridDimension: this._axes[axis].dimension,
       gap: this._gap,
-      isRow: false,
+      isRow: axis === 'row',
     });
-
-    row.span = calculateResizedSpan({
-      targetSize: rect.height,
-      tilePosition: row,
-      tileGridDimension: this._axes.row.dimension,
-      gap: this._gap,
-      isRow: true,
-    });
-
-    return { colSpan: column.span, rowSpan: row.span };
   }
 
   private _calculateSnappedSize(
@@ -132,7 +130,7 @@ class TileResizeState {
   ): number {
     const axisState = this._axes[axis];
 
-    const { snappedSize, newDelta } = calculateSnappedDimension({
+    const snappedSize = calculateSnappedDimension({
       currentDelta,
       currentSize,
       prevDelta: axisState.prevDelta,
@@ -142,7 +140,7 @@ class TileResizeState {
       gap: this._gap,
     });
 
-    axisState.prevDelta = newDelta;
+    axisState.prevDelta = currentDelta;
     axisState.prevSnapped = snappedSize;
     return snappedSize;
   }
@@ -159,8 +157,8 @@ class TileResizeState {
   }
 
   /**
-   * Resolves the tile's implicit grid start lines from its offset inside the
-   * grid container when the tile has no explicit `colStart`/`rowStart`.
+   * Resolves a start that the computed placement does not give, for auto
+   * placement or author CSS, from the offset of the tile in the grid.
    */
   private _calculateTileStartPosition(
     grid: HTMLElement,
@@ -176,8 +174,14 @@ class TileResizeState {
     const computed = getComputedStyle(grid);
 
     if (column.start < 0) {
+      // Columns count from the inline-start edge, which is the right one in RTL.
+      const offset =
+        computed.direction === 'rtl'
+          ? gridRect.right - tileRect.right
+          : tileRect.left - gridRect.left;
+
       column.start = calculatePosition(
-        tileRect.left - gridRect.left - Number.parseFloat(computed.paddingLeft),
+        offset - asNumber(computed.paddingInlineStart),
         this._axes.column.dimension.entries,
         this._gap
       );
@@ -185,7 +189,7 @@ class TileResizeState {
 
     if (row.start < 0) {
       row.start = calculatePosition(
-        tileRect.top - gridRect.top - Number.parseFloat(computed.paddingTop),
+        tileRect.top - gridRect.top - asNumber(computed.paddingTop),
         this._axes.row.dimension.entries,
         this._gap
       );

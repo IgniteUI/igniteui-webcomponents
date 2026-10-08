@@ -1,7 +1,8 @@
 import { directive, type PartInfo } from 'lit/async-directive.js';
-import { getRoot, isLTR, roundByDPR, setStyles } from '../utils/dom.js';
+import { getRoot, isLTR, setStyles } from '../utils/dom.js';
 import { getElementFromPath } from '../utils/events.js';
 import {
+  type Point,
   PointerOperationDirective,
   type PointerOperationOptions,
   type PointerOperationState,
@@ -11,15 +12,14 @@ export type DragPointerDirection = 'start' | 'end' | 'top' | 'bottom';
 export type DragCallback = (params: DragCallbackParams) => unknown;
 export type DragCancelCallback = (state: DragState) => unknown;
 
-type Point = { x: number; y: number };
-
 export type DragState = {
   /** The bounding rectangle of the target at the start of the operation. */
   initial: DOMRect;
   current: DOMRect;
   /**
-   * The position of the moved element: relative to the layer in deferred
-   * mode, and to the initial rectangle of the target in immediate mode.
+   * The position of the moved element: from the ghost origin (the ghost at
+   * left 0 and top 0) in deferred mode, and from the initial rectangle of
+   * the target in immediate mode.
    */
   position: Point;
   /** The distance from the target origin to the pointer at the start. */
@@ -88,11 +88,7 @@ type DragOperation = PointerOperationState & {
 function createDefaultGhost({ width, height }: DOMRect): HTMLElement {
   const element = document.createElement('div');
 
-  // The element sits at the layer origin and moves with `translate3d`.
   setStyles(element, {
-    position: 'absolute',
-    left: '0',
-    top: '0',
     width: `${width}px`,
     height: `${height}px`,
     zIndex: '1000',
@@ -120,9 +116,10 @@ class DraggableDirective extends PointerOperationDirective<
   protected override _cancelOperation(): void {
     this._options.cancel?.(this._createState());
 
-    if (!this._isDeferred) {
-      this._operation!.target.style.transform =
-        this._operation!.targetTransform;
+    const { ghost, target, targetTransform } = this._operation!;
+
+    if (!ghost) {
+      target.style.transform = targetTransform;
     }
   }
 
@@ -138,11 +135,6 @@ class DraggableDirective extends PointerOperationDirective<
   protected override disconnected(): void {
     super.disconnected();
     this._target = null;
-  }
-
-  /** The ghost element in deferred mode, the drag target in immediate mode. */
-  private get _dragItem(): HTMLElement {
-    return this._isDeferred ? this._operation!.ghost! : this._operation!.target;
   }
 
   // #region Event handlers
@@ -173,19 +165,20 @@ class DraggableDirective extends PointerOperationDirective<
         current: { x: clientX, y: clientY },
         direction: 'end',
       },
-      ghost: this._isDeferred ? this._createGhost(initial) : null,
+      ghost: this._isDeferred ? this._createGhost(target, initial) : null,
       matchedElement: null,
       targetTransform: target.style.transform,
     };
 
     this._updatePosition(event);
 
-    if (this._options.start?.(this._createParams(event)) === false) {
-      this._dispose();
+    if (
+      !this._runStart(() => this._options.start?.(this._createParams(event)))
+    ) {
       return;
     }
 
-    this._assignPosition(this._dragItem);
+    this._assignPosition();
     this._startOperation(event);
   };
 
@@ -200,7 +193,7 @@ class DraggableDirective extends PointerOperationDirective<
 
     this._options.move?.(this._createParams(event));
 
-    this._assignPosition(this._dragItem);
+    this._assignPosition();
   };
 
   private readonly _handlePointerEnd = (event: PointerEvent): void => {
@@ -289,16 +282,16 @@ class DraggableDirective extends PointerOperationDirective<
 
   private _updatePosition({ clientX, clientY }: PointerEvent): void {
     const operation = this._operation!;
-    const { x: layerX, y: layerY } = this._isDeferred
-      ? this._resolveLayer().getBoundingClientRect()
+    const { x: originX, y: originY } = operation.ghost
+      ? this._getGhostOrigin(operation.ghost)
       : operation.initial;
     const { x, y } = this._options.snapToCursor
       ? { x: 0, y: 0 }
       : operation.offset;
 
     operation.position = {
-      x: clientX - layerX + x,
-      y: clientY - layerY + y,
+      x: clientX - originX + x,
+      y: clientY - originY + y,
     };
   }
 
@@ -347,9 +340,10 @@ class DraggableDirective extends PointerOperationDirective<
     }
   }
 
-  private _assignPosition(element: HTMLElement): void {
-    const { x, y } = this._operation!.position;
-    element.style.transform = `translate3d(${roundByDPR(x)}px,${roundByDPR(y)}px,0)`;
+  /** Moves the ghost in deferred mode, and the target in immediate mode. */
+  private _assignPosition(): void {
+    const { ghost, target, position } = this._operation!;
+    this._translate(ghost ?? target, position);
   }
 
   /**

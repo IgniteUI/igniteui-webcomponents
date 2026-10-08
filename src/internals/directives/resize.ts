@@ -64,18 +64,16 @@ type ResizeOperation = PointerOperationState & {
   target: HTMLElement;
   initial: DOMRect;
   current: DOMRect;
+  /** Whether the target is right-to-left. Its width then grows to the left. */
+  rtl: boolean;
   /** The inline size styles of the target, restored on an immediate cancel. */
   targetStyles: { width: string; height: string };
 };
 
-function createDefaultGhost({ x, y, width, height }: DOMRect): HTMLElement {
+function createDefaultGhost({ width, height }: DOMRect): HTMLElement {
   const element = document.createElement('div');
-  const { scrollX, scrollY } = window;
 
   setStyles(element, {
-    position: 'absolute',
-    top: `${y + scrollY}px`,
-    left: `${x + scrollX}px`,
     zIndex: '1000',
     background: 'pink',
     opacity: '0.85',
@@ -102,8 +100,10 @@ class ResizableDirective extends PointerOperationDirective<
   protected override _cancelOperation(): void {
     this._options.cancel?.(this._createState());
 
-    if (!this._isDeferred) {
-      setStyles(this._operation!.target, this._operation!.targetStyles);
+    const { ghost, target, targetStyles } = this._operation!;
+
+    if (!ghost) {
+      setStyles(target, targetStyles);
     }
   }
 
@@ -126,12 +126,19 @@ class ResizableDirective extends PointerOperationDirective<
       target,
       initial,
       current: DOMRect.fromRect(initial),
-      ghost: this._isDeferred ? this._createGhost(initial) : null,
+      // Not `isLTR`: `:dir()` misses a CSS `direction`.
+      rtl: getComputedStyle(target).direction === 'rtl',
+      ghost: this._isDeferred ? this._createGhost(target, initial) : null,
       targetStyles: { width: target.style.width, height: target.style.height },
     };
 
-    if (this._options.start?.(this._createParams(event)) === false) {
-      this._dispose();
+    if (this._operation.ghost) {
+      this._placeGhost(this._operation.ghost, initial);
+    }
+
+    if (
+      !this._runStart(() => this._options.start?.(this._createParams(event)))
+    ) {
       return;
     }
 
@@ -148,15 +155,23 @@ class ResizableDirective extends PointerOperationDirective<
       return;
     }
 
-    this._updateDimensions(event);
+    const { ghost, target } = this._operation;
+    // The page can scroll during the operation, so measure the target again.
+    // The reads come before the writes below, which would force a layout.
+    const edges = target.getBoundingClientRect();
+    const origin = ghost ? this._getGhostOrigin(ghost) : null;
+
+    this._updateDimensions(event, edges);
 
     const params = this._createParams(event);
     this._options.resize?.(params);
     this._operation.current = params.state.current;
 
-    this._applyDimensions(
-      this._isDeferred ? this._operation.ghost : this._operation.target
-    );
+    this._applyDimensions(ghost ?? target);
+
+    if (ghost && origin) {
+      this._placeGhost(ghost, edges, origin);
+    }
   };
 
   private readonly _handlePointerEnd = (event: PointerEvent): void => {
@@ -214,8 +229,26 @@ class ResizableDirective extends PointerOperationDirective<
     return { event, state: this._createState() };
   }
 
-  private _updateDimensions({ clientX, clientY }: PointerEvent): void {
-    const { initial, current } = this._operation!;
+  /** Puts the ghost at the start edge of the target, which is the right edge in RTL. */
+  private _placeGhost(
+    ghost: HTMLElement,
+    edges: DOMRect,
+    origin = this._getGhostOrigin(ghost)
+  ): void {
+    const { current, rtl } = this._operation!;
+
+    this._translate(ghost, {
+      x: (rtl ? edges.right - current.width : edges.x) - origin.x,
+      y: edges.y - origin.y,
+    });
+  }
+
+  /** Sizes `current` from the pointer and the current `edges` of the target. */
+  private _updateDimensions(
+    { clientX, clientY }: PointerEvent,
+    edges: DOMRect
+  ): void {
+    const { initial, current, rtl } = this._operation!;
     const {
       direction = 'both',
       maintainAspectRatio,
@@ -228,8 +261,9 @@ class ResizableDirective extends PointerOperationDirective<
     const horizontal = direction !== 'vertical';
     const vertical = direction !== 'horizontal';
 
-    let width = horizontal ? clientX - initial.x : initial.width;
-    let height = vertical ? clientY - initial.y : initial.height;
+    const inlineSize = rtl ? edges.right - clientX : clientX - edges.x;
+    let width = horizontal ? inlineSize : initial.width;
+    let height = vertical ? clientY - edges.y : initial.height;
 
     if (maintainAspectRatio) {
       const ratio = initial.width / initial.height;
@@ -251,14 +285,12 @@ class ResizableDirective extends PointerOperationDirective<
   }
 
   /** Applies the current dimensions to `element` as inline styles. */
-  private _applyDimensions(element: HTMLElement | null): void {
-    if (element) {
-      const { current } = this._operation!;
-      setStyles(element, {
-        width: `${current.width}px`,
-        height: `${current.height}px`,
-      });
-    }
+  private _applyDimensions(element: HTMLElement): void {
+    const { current } = this._operation!;
+    setStyles(element, {
+      width: `${current.width}px`,
+      height: `${current.height}px`,
+    });
   }
 
   // #endregion

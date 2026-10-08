@@ -30,22 +30,21 @@ $theme: $material;
     }
 }
 
-[part~='base']:not([part~='resizable']) {
-    &:hover {
-        &::after {
-            border: rem(1px) solid var-get($theme, 'hover-border-color');
-        }
-    }
+[part~='base']:not([part~='resizable']):hover::after {
+    border-color: var-get($theme, 'hover-border-color');
 }
 
-:host([part='resizing']),
-:host([part='dragging']) {
-    border-radius: var-get($theme, 'border-radius');
+:host([part~='resizing']),
+:host([part~='dragging']) {
+    border-radius: var(--_border-radius);
 }
 
-:host([part='dragging']) {
+:host([part~='dragging']) {
     background: var-get($theme, 'placeholder-background');
-    border: rem(1px) solid var-get($theme, 'ghost-border');
+
+    // An outline, not a border, so that the dragged tile keeps its size.
+    outline: rem(1px) solid var-get($theme, 'ghost-border');
+    outline-offset: rem(-1px);
 }
 
 [part~='base'][part~='resizing'] {
@@ -55,22 +54,6 @@ $theme: $material;
 [part='content-container'] {
     background: var-get($theme, 'content-background');
     color: var-get($theme, 'content-color');
-}
-
-[part='ghost'] {
-    border-radius: var-get($theme, 'border-radius');
-    border: rem(1px) solid var-get($theme, 'ghost-border');
-    background: var-get($theme, 'overlay-background');
-}
-
-[part~='drag-over'] {
-    &::after {
-        @extend %after-element;
-
-        z-index: 1000;
-        border: rem(1px) solid var-get($theme, 'ghost-border');
-        background: var-get($theme, 'overlay-background');
-    }
 }
 
 [part='header'] {
@@ -114,7 +97,7 @@ igc-divider {
 
 [part~='trigger-side'][part~='custom'],
 [part~='trigger'][part~='custom'] {
-    right: 0;
+    inset-inline-end: 0;
 }
 
 [part~='trigger'][part~='custom'],
