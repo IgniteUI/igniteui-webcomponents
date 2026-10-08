@@ -5,10 +5,17 @@
     --pad-block: #{sizable(rem(8px), rem(13px), rem(13px))};
     --pad-inline: #{sizable(rem(12px), rem(16px), rem(20px))};
 
+    // The defaults stop a tile of a nested manager from inheriting the
+    // placement of the tile that holds it. The properties set them inline.
+    --ig-col-start: auto;
+    --ig-col-span: 1;
+    --ig-row-start: auto;
+    --ig-row-span: 1;
+
     display: block;
     position: relative;
-    grid-column: var(--ig-col-start, auto) / span var(--ig-col-span, 1);
-    grid-row: var(--ig-row-start, auto) / span var(--ig-row-span, 1);
+    grid-column: var(--ig-col-start) / span var(--ig-col-span);
+    grid-row: var(--ig-row-start) / span var(--ig-row-span);
 }
 
 :host([part~='resizing']),
