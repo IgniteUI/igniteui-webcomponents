@@ -367,6 +367,24 @@ describe('Tile Manager component', () => {
         '5 / 7 / span 5 / span 5'
       );
     });
+
+    it('keeps the placement of a tile away from the tiles of a nested manager', async () => {
+      const outer = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager column-count="4">
+          <igc-tile col-start="2" row-start="1" col-span="2" row-span="2">
+            <igc-tile-manager>
+              <igc-tile id="inner"><p>Inner</p></igc-tile>
+            </igc-tile-manager>
+          </igc-tile>
+        </igc-tile-manager>
+      `);
+      const inner = outer.querySelector<IgcTileComponent>('#inner')!;
+      await elementUpdated(inner);
+
+      expect(getComputedStyle(inner).gridArea).to.equal(
+        'auto / auto / span 1 / span 1'
+      );
+    });
   });
 
   describe('Maximize', () => {

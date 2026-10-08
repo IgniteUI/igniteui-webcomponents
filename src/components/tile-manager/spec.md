@@ -54,6 +54,7 @@ This directory hosts two public components: [`igc-tile-manager`](#igc-tile-manag
 |       1 | 2026-09-21 | Initial specification                                        |
 |       2 | 2026-09-28 | `loadLayout` copies only the tile properties; property suite |
 |       3 | 2026-10-07 | Tile region, action names, reading order, fullscreen sync, RTL resize, cancelable events |
+|       4 | 2026-10-08 | Nested managers: own placement of the inner tiles, swap transitions of an outer tile |
 
 ## Overview
 
@@ -166,7 +167,8 @@ of these properties is also exposed as a CSS custom property, so the grid can be
 <igc-tile col-span="2" row-span="2" col-start="1" row-start="1">...</igc-tile>
 ```
 
-`position` sets the visual order of a tile in the layout, corresponding to the CSS `order` property.
+`position` sets the visual order of a tile in the layout, corresponding to the CSS `order` property. The tiles of a
+nested manager do not take the spans or the starts of the tile that holds the manager.
 
 #### Drag and drop
 
@@ -180,7 +182,7 @@ the view transition applies the new or the restored positions, so a handler can 
 before the `igcTileDragStart` of the next drag. Escape, a
 `pointercancel` from the browser and a tile that leaves the page cancel the drag. Only the pointer that started it
 moves it. In nested tile managers, only the innermost tile under the pointer drags, and it swaps only with the tiles
-of its own manager.
+of its own manager. The swaps of a tile that holds a nested manager also animate.
 
 Only the direct `igc-tile` children of a manager are its tiles. A tile outside a manager has no drag and no resize.
 When tiles move in the DOM, for example when a framework reorders a list, they keep their positions.
@@ -404,7 +406,8 @@ The groups below mirror the `describe` blocks.
 
 ### Column spans
 
-4. `colSpan` and `rowSpan` size the tiles in the grid.
+4. `colSpan` and `rowSpan` size the tiles in the grid. A tile of a nested manager does not take the placement of the
+   tile that holds the manager.
 5. A fixed `columnCount` and a responsive layout derived from `minColumnWidth` both lay the tiles out correctly.
 
 ### Maximize
@@ -496,7 +499,7 @@ The groups below mirror the `describe` blocks.
     negative or a named line comes from the place of the tile. A minimum row height in `rem` makes the same new rows as
     the same height in pixels.
 38. In nested tile managers, only the innermost tile drags, and it does not swap with an outer tile. A drag swaps with
-    a tile that the pointer reaches straight from another tile.
+    a tile that the pointer reaches straight from another tile. A swap of tiles that hold nested managers animates.
 39. The drag and resize ghosts render over the tile in the closest top-layer element, such as a modal dialog, also
     through slots. A ghost there is fixed, so the border, scroll and overflow of that element do not move or clip it.
     A translate or a scale on that element does not move the ghost off the tile. A rotation is not supported.

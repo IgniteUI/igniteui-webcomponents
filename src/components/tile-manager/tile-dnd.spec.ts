@@ -583,6 +583,46 @@ describe('Tile drag and drop', () => {
       expect(outerSpy).not.called;
     });
 
+    it('animates a swap of tiles that hold nested tile managers', async () => {
+      // The drag ghost copies the nested tiles of the dragged tile.
+      tileManager = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager drag-mode="tile">
+          ${['a', 'b'].map(
+            (id) => html`
+              <igc-tile id=${id}>
+                <igc-tile-manager>
+                  <igc-tile id="${id}-inner"><p>Inner</p></igc-tile>
+                </igc-tile-manager>
+              </igc-tile>
+            `
+          )}
+        </igc-tile-manager>
+      `);
+      const [dragged, target] = [getTile(0), getTile(1)];
+      await elementUpdated(target.querySelector('igc-tile')!);
+
+      simulatePointerDown(dragged);
+      // The copy of the nested manager in the ghost renders its tile.
+      await elementUpdated(
+        document.querySelector<IgcTileManagerComponent>(
+          '[data-drag-ghost] igc-tile-manager'
+        )!
+      );
+      simulateTileDragOver(dragged, getCenterPoint(target));
+
+      const transition = getActiveViewTransition()!;
+      const ready = await transition.ready.then(
+        () => true,
+        () => false
+      );
+
+      simulateLostPointerCapture(dragged);
+      await transition.finished;
+
+      expect(ready).to.be.true;
+      expect(tileManager.tiles.map(({ id }) => id)).to.eql(['b', 'a']);
+    });
+
     it('puts the drag ghost over the tile in the page body', async () => {
       const tile = getTile(1);
       const tileRect = tile.getBoundingClientRect();
