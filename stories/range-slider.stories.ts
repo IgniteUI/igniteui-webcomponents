@@ -2,13 +2,27 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 
 import {
+  IgcButtonComponent,
   IgcRangeSliderComponent,
+  type IgcRangeSliderValueEventArgs,
   IgcSliderLabelComponent,
+  IgcSwitchComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
-import { disableStoryControls } from './story.js';
+import {
+  disableStoryControls,
+  formSubmitHandler,
+  renderInto,
+  storyStyles,
+  wholeDollars,
+} from './story.js';
 
-defineComponents(IgcRangeSliderComponent, IgcSliderLabelComponent);
+defineComponents(
+  IgcButtonComponent,
+  IgcRangeSliderComponent,
+  IgcSliderLabelComponent,
+  IgcSwitchComponent
+);
 
 // region default
 const metadata: Meta<IgcRangeSliderComponent> = {
@@ -246,224 +260,498 @@ type Story = StoryObj<IgcRangeSliderArgs>;
 
 // endregion
 
+// A drag sends `igcInput` on each move, and the actions panel slows the page down.
+metadata.parameters = { ...metadata.parameters, actions: { disable: true } };
+
+const styles = html`
+  ${storyStyles}
+  <style>
+    .rs-stack {
+      display: grid;
+      gap: 1.5rem;
+      max-width: 44rem;
+    }
+
+    .rs-stack :is(h3, p, ul, table) {
+      margin: 0;
+    }
+
+    .rs-panel {
+      padding: 1rem 1.5rem 1.5rem;
+      border: 1px solid var(--ig-gray-300);
+      border-radius: 8px;
+    }
+
+    .rs-field {
+      display: grid;
+      gap: 0.25rem;
+    }
+
+    .rs-label {
+      font-weight: 600;
+    }
+
+    /* The labels at the ends of the track reach past the box of the slider. */
+    .rs-panel igc-range-slider[primary-ticks] {
+      margin-inline: 1.5rem;
+    }
+
+    .rs-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  </style>
+`;
+
+const usd: Intl.NumberFormatOptions = {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 0,
+};
+
 export const Default: Story = {
   args: {
-    thumbLabelLower: 'Default slider lower thumb',
-    thumbLabelUpper: 'Default slider upper thumb',
-    lower: 0,
-    upper: 25,
+    thumbLabelLower: 'Minimum price',
+    thumbLabelUpper: 'Maximum price',
+    lower: 50,
+    upper: 300,
+    max: 500,
+    step: 10,
   },
   parameters: {
     docs: {
       description: {
         story:
-          'A fully interactive range slider. Use the **Controls** panel to adjust `lower`/`upper` values, set `min`/`max`/`step`, toggle `discreteTrack`, configure ticks, and explore all available properties.',
+          'The price filter of an online shop. `thumb-label-lower` and `thumb-label-upper` name the two thumbs, and the `aria-labelledby` of the host names the group of the thumbs. The thumbs cannot cross: when you drag one thumb past the other, the drag moves to the other thumb. Use the controls panel to change the values, the scale, the step, the bounds, the ticks and the format.',
       },
     },
   },
   render: (args) => html`
     <style>
-      igc-range-slider {
-        padding: 60px;
+      .rs-default {
+        display: grid;
+        gap: 0.5rem;
+        max-width: 30rem;
+        padding-block-start: 3rem;
       }
     </style>
-    <igc-range-slider
-      .thumbLabelLower=${args.thumbLabelLower}
-      .thumbLabelUpper=${args.thumbLabelUpper}
-      .lower=${args.lower}
-      .upper=${args.upper}
-      ?disabled=${args.disabled}
-      ?discrete-track=${args.discreteTrack}
-      ?hide-tooltip=${args.hideTooltip}
-      ?hide-primary-labels=${args.hidePrimaryLabels}
-      ?hide-secondary-labels=${args.hideSecondaryLabels}
-      .step=${args.step}
-      .min=${args.min}
-      .max=${args.max}
-      .locale=${args.locale}
-      .lowerBound=${args.lowerBound}
-      .upperBound=${args.upperBound}
-      .primaryTicks=${args.primaryTicks}
-      .secondaryTicks=${args.secondaryTicks}
-      .tickOrientation=${args.tickOrientation}
-      .tickLabelRotation=${args.tickLabelRotation}
-      .valueFormat=${args.valueFormat}
-    ></igc-range-slider>
-  `,
-};
-
-const currencyFormat: Intl.NumberFormatOptions = {
-  style: 'currency',
-  currency: 'USD',
-  minimumFractionDigits: 2,
-};
-
-const distanceFormat: Intl.NumberFormatOptions = {
-  style: 'unit',
-  unit: 'kilometer',
-  minimumFractionDigits: 2,
-};
-
-const temperatureFormat: Intl.NumberFormatOptions = {
-  style: 'unit',
-  unit: 'celsius',
-  maximumFractionDigits: 2,
-};
-
-export const ValueFormat: Story = {
-  argTypes: disableStoryControls(metadata),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Demonstrates formatting thumb tooltip and tick label values using `valueFormat` (template string with `{0}` placeholder) and `valueFormatOptions` (`Intl.NumberFormatOptions`). Shows currency, distance, and temperature formats.',
-      },
-    },
-    actions: { handles: ['igcInput', 'igcChange'] },
-  },
-  render: () => html`
-    <style>
-      igc-range-slider {
-        padding: 60px;
-      }
-    </style>
-
-    <igc-range-slider
-      thumb-label-lower="Currency low"
-      thumb-label-upper="Currency high"
-      lower="10"
-      upper="50"
-      primary-ticks="3"
-      secondary-ticks="4"
-      .valueFormatOptions=${currencyFormat}
-    ></igc-range-slider>
-
-    <igc-range-slider
-      thumb-label-lower="Distance low"
-      thumb-label-upper="Distance high"
-      value-format="Distance: {0}"
-      .valueFormatOptions=${distanceFormat}
-    ></igc-range-slider>
-
-    <igc-range-slider
-      thumb-label-lower="Temperature low"
-      thumb-label-upper="Temperature high"
-      step="1"
-      lower="0"
-      upper="37"
-      value-format="{0}"
-      primary-ticks="15"
-      .valueFormatOptions=${temperatureFormat}
-      min="-273"
-      max="273"
-    ></igc-range-slider>
-  `,
-};
-
-export const Ticks: Story = {
-  argTypes: disableStoryControls(metadata),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Demonstrates tick configuration: primary and secondary tick counts, `tickOrientation` (`start`, `end`, `mirror`), tick label rotation, and `discreteTrack` for snapping the thumb to step positions.',
-      },
-    },
-  },
-  render: () => html`
-    <style>
-      .ticks-demo {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        padding: 1rem;
-      }
-
-      .ticks-demo igc-range-slider {
-        padding-inline: 1.5rem;
-        padding-block: 3.5rem;
-      }
-
-      .ticks-demo label {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--ig-gray-700);
-      }
-    </style>
-    <div class="ticks-demo">
-      <label>Primary ticks (end)</label>
+    <div class="rs-default">
+      <span id="rs-price-label">Price</span>
       <igc-range-slider
-        lower="20"
-        upper="70"
-        primary-ticks="5"
-        thumb-label-lower="Lower"
-        thumb-label-upper="Upper"
-      ></igc-range-slider>
-
-      <label>Primary + secondary ticks (mirror)</label>
-      <igc-range-slider
-        lower="20"
-        upper="70"
-        primary-ticks="5"
-        secondary-ticks="4"
-        tick-orientation="mirror"
-        thumb-label-lower="Lower"
-        thumb-label-upper="Upper"
-      ></igc-range-slider>
-
-      <label>Discrete track with ticks (start)</label>
-      <igc-range-slider
-        lower="20"
-        upper="60"
-        step="10"
-        discrete-track
-        primary-ticks="2"
-        secondary-ticks="4"
-        tick-orientation="start"
-        thumb-label-lower="Lower"
-        thumb-label-upper="Upper"
-      ></igc-range-slider>
-
-      <label>Rotated tick labels</label>
-      <igc-range-slider
-        lower="25"
-        upper="75"
-        primary-ticks="5"
-        secondary-ticks="4"
-        tick-label-rotation="90"
-        thumb-label-lower="Lower"
-        thumb-label-upper="Upper"
+        aria-labelledby="rs-price-label"
+        .thumbLabelLower=${args.thumbLabelLower}
+        .thumbLabelUpper=${args.thumbLabelUpper}
+        .lower=${args.lower}
+        .upper=${args.upper}
+        .valueFormatOptions=${usd}
+        ?disabled=${args.disabled}
+        ?discrete-track=${args.discreteTrack}
+        ?hide-tooltip=${args.hideTooltip}
+        ?hide-primary-labels=${args.hidePrimaryLabels}
+        ?hide-secondary-labels=${args.hideSecondaryLabels}
+        .step=${args.step}
+        .min=${args.min}
+        .max=${args.max}
+        .locale=${args.locale}
+        .lowerBound=${args.lowerBound}
+        .upperBound=${args.upperBound}
+        .primaryTicks=${args.primaryTicks}
+        .secondaryTicks=${args.secondaryTicks}
+        .tickOrientation=${args.tickOrientation}
+        .tickLabelRotation=${args.tickLabelRotation}
+        .valueFormat=${args.valueFormat}
       ></igc-range-slider>
     </div>
   `,
 };
 
-export const Labels: Story = {
+const headphones = [
+  { name: 'Classic Wired', kind: 'On-ear, wired', price: 25 },
+  { name: 'Kids Volume Safe', kind: 'On-ear, volume limit', price: 35 },
+  { name: 'Sport Buds', kind: 'In-ear, water resistant', price: 59 },
+  { name: 'Wireless Lite', kind: 'On-ear, Bluetooth', price: 79 },
+  { name: 'Travel Foldable', kind: 'Over-ear, foldable', price: 89 },
+  { name: 'Gaming Headset X', kind: 'Over-ear, microphone', price: 129 },
+  { name: 'Studio Monitor 50', kind: 'Over-ear, wired', price: 149 },
+  { name: 'Commuter ANC', kind: 'Over-ear, noise cancelling', price: 279 },
+  { name: 'Open Back Pro', kind: 'Over-ear, open back', price: 399 },
+  { name: 'Reference Planar', kind: 'Over-ear, planar magnetic', price: 499 },
+];
+
+export const ProductFilters: Story = {
   argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'Demonstrates the discrete label mode using projected `igc-slider-label` elements. When labels are provided the slider snaps to each label position, `min`/`max` are derived from the label count, and `step` is always 1.',
+          'The headphones of an online shop with a price filter. The slider formats its values as US dollars with `valueFormatOptions`. The `igcInput` event comes on each move of a drag, and it updates the price range above the slider. The `igcChange` event comes when you release the thumb and on each key press, and it filters the list, so the list does not change on each move. The status line tells a screen reader how many products match.',
       },
     },
   },
-  render: () => html`
-    <igc-range-slider
-      style="padding: 60px"
-      thumb-label-lower="Severity level low"
-      thumb-label-upper="Severity level high"
-      discrete-track
-      primary-ticks="1"
-    >
-      <igc-slider-label>Debugging</igc-slider-label>
-      <igc-slider-label>Informational</igc-slider-label>
-      <igc-slider-label>Notification</igc-slider-label>
-      <igc-slider-label>Warning</igc-slider-label>
-      <igc-slider-label>Error</igc-slider-label>
-      <igc-slider-label>Critical</igc-slider-label>
-      <igc-slider-label>Alert</igc-slider-label>
-      <igc-slider-label>Emergency</igc-slider-label>
-    </igc-range-slider>
-  `,
+  render: () => {
+    let range = { lower: 50, upper: 300 };
+    let shown = { ...range };
+
+    const preview = ({ detail }: CustomEvent<IgcRangeSliderValueEventArgs>) => {
+      shown = detail;
+      update();
+    };
+
+    const filter = ({ detail }: CustomEvent<IgcRangeSliderValueEventArgs>) => {
+      range = detail;
+      shown = detail;
+      update();
+    };
+
+    const priceRange = ({ lower, upper }: typeof range) =>
+      `${wholeDollars.format(lower)} to ${wholeDollars.format(upper)}`;
+
+    const { mount, update } = renderInto(() => {
+      const matches = headphones.filter(
+        ({ price }) => price >= range.lower && price <= range.upper
+      );
+
+      return html`
+        <aside class="rs-field rs-filter">
+          <span id="rs-filter-label" class="rs-label">Price</span>
+          <span class="muted">${priceRange(shown)}</span>
+          <igc-range-slider
+            aria-labelledby="rs-filter-label"
+            thumb-label-lower="Minimum price"
+            thumb-label-upper="Maximum price"
+            max="500"
+            step="10"
+            lower="50"
+            upper="300"
+            primary-ticks="3"
+            .valueFormatOptions=${usd}
+            @igcInput=${preview}
+            @igcChange=${filter}
+          ></igc-range-slider>
+        </aside>
+        <div class="rs-stack">
+          <p role="status">
+            ${matches.length} of ${headphones.length} headphones cost
+            ${priceRange(range)}.
+          </p>
+          <ul class="rs-products">
+            ${matches.map(
+              ({ name, kind, price }) => html`
+                <li>
+                  <strong>${name}</strong>
+                  <span class="muted">${kind}</span>
+                  <span>${wholeDollars.format(price)}</span>
+                </li>
+              `
+            )}
+          </ul>
+        </div>
+      `;
+    });
+
+    return html`
+      ${styles}
+      <style>
+        .rs-shop {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+          align-items: start;
+          gap: 2rem;
+          max-width: 56rem;
+        }
+
+        .rs-filter {
+          padding-block-start: 0.5rem;
+        }
+
+        .rs-products {
+          display: grid;
+          gap: 0.5rem;
+          padding: 0;
+          list-style: none;
+        }
+
+        .rs-products li {
+          display: grid;
+          grid-template-columns: 1fr auto;
+          padding: 0.5rem 0.75rem;
+          border: 1px solid var(--ig-gray-300);
+          border-radius: 8px;
+        }
+
+        .rs-products li span:last-child {
+          grid-row: 1 / 3;
+          grid-column: 2;
+          align-self: center;
+          font-weight: 600;
+        }
+      </style>
+      <section
+        class="rs-shop rs-panel"
+        aria-label="Headphones"
+        ${mount}
+      ></section>
+    `;
+  },
+};
+
+const days = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+];
+
+const twoDigits: Intl.NumberFormatOptions = { minimumIntegerDigits: 2 };
+const time = (hour: number) => `${String(hour).padStart(2, '0')}:00`;
+
+export const OpeningHours: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The opening hours of a store in its settings form. Each day has a range slider from 0 to 24 with a step of one hour. `value-format="{0}:00"` and `valueFormatOptions` with `minimumIntegerDigits: 2` show the values as times, such as 09:00. The `aria-labelledby` of each slider points to the day, so the day names the group of the two thumbs. A closed day disables its slider. The range slider is not form associated, so a hidden input of each day holds the hours, and the `igcChange` event updates it. "Use the Monday hours" sets `lower` and `upper` from code. Save shows the form data.',
+      },
+    },
+  },
+  render: () => {
+    const hours = days.map((day, index) => ({
+      day,
+      open: index < 6,
+      from: index < 5 ? 9 : 10,
+      to: index < 5 ? 18 : 14,
+    }));
+
+    const setHours =
+      (index: number) =>
+      ({ detail }: CustomEvent<IgcRangeSliderValueEventArgs>) => {
+        hours[index].from = detail.lower;
+        hours[index].to = detail.upper;
+        update();
+      };
+
+    const toggle = (index: number) => (event: CustomEvent) => {
+      hours[index].open = (event.target as IgcSwitchComponent).checked;
+      update();
+    };
+
+    const useMonday = () => {
+      const [monday, ...others] = hours;
+
+      for (const day of others.filter(({ open }) => open)) {
+        day.from = monday.from;
+        day.to = monday.to;
+      }
+      update();
+    };
+
+    const { mount, update } = renderInto(() =>
+      hours.map(
+        ({ day, open, from, to }, index) => html`
+          <div class="rs-day">
+            <span id="rs-day-${index}" class="rs-label">${day}</span>
+            <igc-switch .checked=${open} @igcChange=${toggle(index)}>
+              Open<span class="sr-only">on ${day}</span>
+            </igc-switch>
+            <igc-range-slider
+              aria-labelledby="rs-day-${index}"
+              thumb-label-lower="Opens"
+              thumb-label-upper="Closes"
+              max="24"
+              .lower=${from}
+              .upper=${to}
+              ?disabled=${!open}
+              primary-ticks="5"
+              secondary-ticks="5"
+              hide-secondary-labels
+              value-format="{0}:00"
+              .valueFormatOptions=${twoDigits}
+              @igcChange=${setHours(index)}
+            ></igc-range-slider>
+            <span class="muted">
+              ${open ? `${time(from)} to ${time(to)}` : 'Closed'}
+            </span>
+            <input
+              type="hidden"
+              name=${day.toLowerCase()}
+              .value=${open ? `${time(from)}-${time(to)}` : 'closed'}
+            />
+          </div>
+        `
+      )
+    );
+
+    return html`
+      ${styles}
+      <style>
+        .rs-days {
+          display: grid;
+          gap: 1rem;
+        }
+
+        .rs-day {
+          display: grid;
+          grid-template-columns: 6rem auto 1fr 7rem;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        @media (max-width: 40rem) {
+          .rs-day {
+            grid-template-columns: 1fr auto;
+          }
+
+          .rs-day igc-range-slider {
+            grid-column: 1 / -1;
+          }
+        }
+      </style>
+      <form
+        class="rs-stack rs-panel"
+        aria-labelledby="rs-hours-title"
+        @submit=${formSubmitHandler}
+      >
+        <h3 id="rs-hours-title">Opening hours</h3>
+        <div class="rs-days" ${mount}></div>
+        <div class="rs-row">
+          <igc-button type="submit">Save</igc-button>
+          <igc-button variant="outlined" @click=${useMonday}>
+            Use the Monday hours for all open days
+          </igc-button>
+        </div>
+      </form>
+    `;
+  },
+};
+
+const levels = [
+  'Debug',
+  'Info',
+  'Notice',
+  'Warning',
+  'Error',
+  'Critical',
+  'Alert',
+  'Emergency',
+];
+
+const logEntries = [
+  { time: '09:14:02', level: 1, message: 'Server started on port 8080' },
+  { time: '09:14:05', level: 0, message: 'Loaded 42 routes' },
+  { time: '09:15:11', level: 3, message: 'Slow query: 1.8 s on /api/orders' },
+  { time: '09:16:40', level: 2, message: 'New device sign-in for maya.patel' },
+  { time: '09:18:03', level: 4, message: 'Payment provider returned 502' },
+  { time: '09:18:04', level: 1, message: 'Retry 1 of 3 for the payment' },
+  { time: '09:18:09', level: 4, message: 'The payment retry failed' },
+  { time: '09:20:30', level: 5, message: 'Disk usage on db-1 is 95%' },
+  { time: '09:21:00', level: 3, message: 'Cache hit rate fell to 61%' },
+  { time: '09:22:15', level: 6, message: 'Replication lag on db-2 is 120 s' },
+  {
+    time: '09:23:47',
+    level: 7,
+    message: 'db-1 is read-only: the disk is full',
+  },
+  { time: '09:24:10', level: 1, message: 'Maintenance mode is on' },
+];
+
+export const LogViewer: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A server log with a severity filter. The slider has an `igc-slider-label` for each severity level, so the values are the indexes of the labels, and the thumb labels, the tick labels and `aria-valuetext` show the names of the levels. With labels, `primary-ticks="1"` draws a tick with a label for each level. The table follows the `igcChange` event.',
+      },
+    },
+  },
+  render: () => {
+    let range = { lower: 3, upper: 7 };
+
+    const filter = ({ detail }: CustomEvent<IgcRangeSliderValueEventArgs>) => {
+      range = detail;
+      update();
+    };
+
+    const { mount, update } = renderInto(() => {
+      const entries = logEntries.filter(
+        ({ level }) => level >= range.lower && level <= range.upper
+      );
+
+      return html`
+        <p class="muted" role="status">
+          ${entries.length} of ${logEntries.length} entries, from
+          ${levels[range.lower]} to ${levels[range.upper]}.
+        </p>
+        <table class="rs-log">
+          <thead>
+            <tr>
+              <th scope="col">Time</th>
+              <th scope="col">Level</th>
+              <th scope="col">Message</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${entries.map(
+              ({ time, level, message }) => html`
+                <tr>
+                  <td>${time}</td>
+                  <td>${levels[level]}</td>
+                  <td>${message}</td>
+                </tr>
+              `
+            )}
+          </tbody>
+        </table>
+      `;
+    });
+
+    return html`
+      ${styles}
+      <style>
+        .rs-panel igc-range-slider.rs-severity {
+          margin-inline: 2rem;
+        }
+
+        .rs-log {
+          width: 100%;
+          border-collapse: collapse;
+          font-variant-numeric: tabular-nums;
+        }
+
+        .rs-log :is(th, td) {
+          padding: 0.375rem 0.5rem;
+          border-block-end: 1px solid var(--ig-gray-300);
+          text-align: start;
+        }
+      </style>
+      <section class="rs-stack rs-panel" aria-labelledby="rs-log-title">
+        <h3 id="rs-log-title">Server log</h3>
+        <div class="rs-field">
+          <span id="rs-severity" class="rs-label">Severity</span>
+          <igc-range-slider
+            class="rs-severity"
+            aria-labelledby="rs-severity"
+            thumb-label-lower="Lowest severity"
+            thumb-label-upper="Highest severity"
+            lower="3"
+            upper="7"
+            primary-ticks="1"
+            discrete-track
+            @igcChange=${filter}
+          >
+            ${levels.map(
+              (level) => html`<igc-slider-label>${level}</igc-slider-label>`
+            )}
+          </igc-range-slider>
+        </div>
+        <div class="rs-stack" ${mount}></div>
+      </section>
+    `;
+  },
 };

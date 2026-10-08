@@ -12,7 +12,14 @@ import {
   defineComponents,
 } from 'igniteui-webcomponents';
 import { registerMaterialIcons } from './story-icons.js';
-import { disableStoryControls, renderInto, storyStyles } from './story.js';
+import {
+  disableStoryControls,
+  dollars,
+  readStored,
+  renderInto,
+  storyStyles,
+  writeStored,
+} from './story.js';
 
 defineComponents(
   IgcButtonComponent,
@@ -188,11 +195,6 @@ const styles = html`
   </style>
 `;
 
-const usd = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-});
-
 const items = [
   { name: 'Wireless headphones', quantity: 1, price: 129 },
   { name: 'USB-C cable', quantity: 2, price: 12 },
@@ -223,14 +225,14 @@ export const Default: Story = {
       >
         <span slot="title">Order summary</span>
         <span slot="subtitle">
-          ${items.length} items, ${usd.format(subtotal + vat)}
+          ${items.length} items, ${dollars.format(subtotal + vat)}
         </span>
         <dl class="ep-lines">
           ${items.map(
             ({ name, quantity, price }) => html`
               <div>
                 <dt>${name}, ${quantity} ×</dt>
-                <dd>${usd.format(quantity * price)}</dd>
+                <dd>${dollars.format(quantity * price)}</dd>
               </div>
             `
           )}
@@ -240,11 +242,11 @@ export const Default: Story = {
           </div>
           <div>
             <dt class="muted">VAT (20%)</dt>
-            <dd>${usd.format(vat)}</dd>
+            <dd>${dollars.format(vat)}</dd>
           </div>
           <div class="ep-total">
             <dt>Total</dt>
-            <dd>${usd.format(subtotal + vat)}</dd>
+            <dd>${dollars.format(subtotal + vat)}</dd>
           </div>
         </dl>
       </igc-expansion-panel>
@@ -383,7 +385,7 @@ const sidebarKey = 'igc-story-expansion-panel-sidebar';
 
 function loadSidebar(): Record<string, boolean> {
   try {
-    return JSON.parse(localStorage.getItem(sidebarKey) ?? '{}');
+    return JSON.parse(readStored(sidebarKey) ?? '{}');
   } catch {
     return {};
   }
@@ -405,12 +407,7 @@ export const Sidebar: Story = {
 
     const remember = ({ detail }: CustomEvent<IgcExpansionPanelComponent>) => {
       open[detail.dataset.section!] = detail.open;
-
-      try {
-        localStorage.setItem(sidebarKey, JSON.stringify(open));
-      } catch {
-        // The state is not saved, for example in a private window.
-      }
+      writeStored(sidebarKey, JSON.stringify(open));
     };
 
     const select = (event: Event, page: string) => {

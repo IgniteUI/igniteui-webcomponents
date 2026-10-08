@@ -9,7 +9,12 @@ import {
 import { type TemplateResult, html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerMaterialIcons } from './story-icons.js';
-import { disableStoryControls, renderInto, storyStyles } from './story.js';
+import {
+  disableStoryControls,
+  dollars,
+  renderInto,
+  storyStyles,
+} from './story.js';
 
 defineComponents(
   IgcButtonComponent,
@@ -540,11 +545,6 @@ const cartItems: CartItem[] = [
   },
 ];
 
-const money = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-});
-
 /** The quantity of the item, or `null` when the input value is not valid. */
 function quantityOf({ quantity, stock }: CartItem): number | null {
   const value = Number(quantity);
@@ -591,7 +591,7 @@ export const Cart: Story = {
     const story = renderInto(() => {
       const quantities = items.map(quantityOf);
       const subtotal = quantities.every((quantity) => quantity !== null)
-        ? money.format(
+        ? dollars.format(
             items.reduce(
               (sum, item, index) => sum + item.price * quantities[index]!,
               0
@@ -612,7 +612,7 @@ export const Cart: Story = {
                     <strong>${item.name}</strong>
                     <span class="muted">${item.detail}</span>
                     <span class="muted">
-                      ${money.format(item.price)} each
+                      ${dollars.format(item.price)} each
                     </span>
                   </div>
                   <igc-input
@@ -655,7 +655,7 @@ export const Cart: Story = {
                     ${
                       quantity === null
                         ? '—'
-                        : money.format(quantity * item.price)
+                        : dollars.format(quantity * item.price)
                     }
                   </span>
                 </li>

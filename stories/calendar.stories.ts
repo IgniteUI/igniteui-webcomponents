@@ -23,7 +23,13 @@ import {
   longDate,
   today,
 } from './story-dates.js';
-import { disableStoryControls, renderInto, storyStyles } from './story.js';
+import {
+  disableStoryControls,
+  plural,
+  renderInto,
+  storyStyles,
+  wholeDollars,
+} from './story.js';
 
 defineComponents(IgcButtonComponent, IgcCalendarComponent, IgcSelectComponent);
 
@@ -257,11 +263,6 @@ function parseDates(text = ''): Date[] {
     .filter((date) => !Number.isNaN(date.getTime()));
 }
 
-/** `count(2, 'night')` is "2 nights". */
-function count(n: number, word: string): string {
-  return `${n} ${word}${n === 1 ? '' : 's'}`;
-}
-
 const styles = html`
   ${storyStyles}
   <style>
@@ -417,18 +418,11 @@ export const Booking: Story = {
     let header: HTMLElement | undefined;
     let summary: HTMLElement | undefined;
 
-    const currency = (amount: number) =>
-      amount.toLocaleString('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        maximumFractionDigits: 0,
-      });
-
     const nightLine = (nights: number, word: string, rate: number) =>
       nights
         ? html`<li>
-            <span>${count(nights, word)} × ${currency(rate)}</span>
-            <span>${currency(nights * rate)}</span>
+            <span>${plural(nights, word)} × ${wholeDollars.format(rate)}</span>
+            <span>${wholeDollars.format(nights * rate)}</span>
           </li>`
         : nothing;
 
@@ -474,15 +468,15 @@ export const Booking: Story = {
               nights.length
                 ? html`<li>
                       <span>Cleaning fee</span>
-                      <span>${currency(rates.cleaning)}</span>
+                      <span>${wholeDollars.format(rates.cleaning)}</span>
                     </li>
                     <li class="cal-total">
-                      <span>Total for ${count(nights.length, 'night')}</span>
-                      <span>${currency(total)}</span>
+                      <span>Total for ${plural(nights.length, 'night')}</span>
+                      <span>${wholeDollars.format(total)}</span>
                     </li>`
                 : html`<li class="muted">
-                    ${currency(rates.weeknight)} a weeknight,
-                    ${currency(rates.weekend)} on Friday and Saturday
+                    ${wholeDollars.format(rates.weeknight)} a weeknight,
+                    ${wholeDollars.format(rates.weekend)} on Friday and Saturday
                   </li>`
             }
           </ul>
@@ -757,7 +751,7 @@ export const TimeOff: Story = {
         <dl class="cal-facts">
           <div>
             <dt>Requested</dt>
-            <dd>${count(days.length, 'day')}</dd>
+            <dd>${plural(days.length, 'day')}</dd>
           </div>
           <div>
             <dt>Remaining</dt>
@@ -779,7 +773,7 @@ export const TimeOff: Story = {
                             : formatDate(period[0])
                         }
                       </span>
-                      <span>${count(period.length, 'day')}</span>
+                      <span>${plural(period.length, 'day')}</span>
                     </li>`
                 )}
               </ul>`
@@ -806,7 +800,7 @@ export const TimeOff: Story = {
         <p role="status" class=${remaining < 0 ? 'cal-error' : 'muted'}>
           ${
             remaining < 0
-              ? `You have ${allowance} days. Remove ${count(-remaining, 'day')}.`
+              ? `You have ${allowance} days. Remove ${plural(-remaining, 'day')}.`
               : sent
                 ? 'We sent the request to your manager.'
                 : ''
@@ -879,7 +873,7 @@ export const Agenda: Story = {
         return {
           type: DateRangeType.Specific,
           dateRange: [date],
-          label: count(events.get(dateKey(date))!.length, 'event'),
+          label: plural(events.get(dateKey(date))!.length, 'event'),
         };
       }
     );

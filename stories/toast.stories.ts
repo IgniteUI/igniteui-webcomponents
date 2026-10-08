@@ -1,14 +1,28 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
+import { createRef, ref } from 'lit/directives/ref.js';
 
 import {
   IgcButtonComponent,
+  IgcIconButtonComponent,
+  IgcIconComponent,
+  IgcInputComponent,
+  IgcTextareaComponent,
   IgcToastComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
-import { disableStoryControls } from './story.js';
+import { registerMaterialIcons } from './story-icons.js';
+import { disableStoryControls, renderInto, storyStyles } from './story.js';
 
-defineComponents(IgcToastComponent, IgcButtonComponent);
+defineComponents(
+  IgcButtonComponent,
+  IgcIconButtonComponent,
+  IgcIconComponent,
+  IgcInputComponent,
+  IgcTextareaComponent,
+  IgcToastComponent
+);
+registerMaterialIcons('check-circle', 'copy', 'warning');
 
 // region default
 const metadata: Meta<IgcToastComponent> = {
@@ -32,7 +46,7 @@ const metadata: Meta<IgcToastComponent> = {
     displayTime: {
       type: 'number',
       description:
-        'Sets the time in milliseconds that the component stays visible.',
+        'Sets the time in milliseconds that the component stays visible.\nThe time stops while the pointer or the keyboard focus is in the\ncomponent, and starts again when both leave.',
       control: 'number',
       table: { defaultValue: { summary: '4000' } },
     },
@@ -44,7 +58,8 @@ const metadata: Meta<IgcToastComponent> = {
     },
     position: {
       type: { name: 'enum', value: ['bottom', 'middle', 'top'] },
-      description: 'Sets the position of the component in the viewport.',
+      description:
+        'Sets the position of the component in the viewport or in the container.',
       options: ['bottom', 'middle', 'top'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'bottom' } },
@@ -72,11 +87,15 @@ export default metadata;
 interface IgcToastArgs {
   /** Sets the open state of the component. */
   open: boolean;
-  /** Sets the time in milliseconds that the component stays visible. */
+  /**
+   * Sets the time in milliseconds that the component stays visible.
+   * The time stops while the pointer or the keyboard focus is in the
+   * component, and starts again when both leave.
+   */
   displayTime: number;
   /** Keeps the component open after the `displayTime` is over. */
   keepOpen: boolean;
-  /** Sets the position of the component in the viewport. */
+  /** Sets the position of the component in the viewport or in the container. */
   position: 'bottom' | 'middle' | 'top';
   /**
    * Sets the positioning strategy of the component.
@@ -91,185 +110,336 @@ type Story = StoryObj<IgcToastArgs>;
 
 // endregion
 
-export const Basic: Story = {
-  args: {
-    position: 'middle',
-  },
+const styles = html`
+  ${storyStyles}
+  <style>
+    .ts-panel {
+      display: grid;
+      gap: 1rem;
+      max-width: 32rem;
+      padding: 1rem 1.5rem 1.5rem;
+      border: 1px solid var(--ig-gray-300);
+      border-radius: 8px;
+    }
+
+    .ts-panel :is(h3, p) {
+      margin: 0;
+    }
+
+    /* The icon and the text of a toast are flex items of the toast. */
+    igc-toast {
+      gap: 0.5rem;
+    }
+  </style>
+`;
+
+export const Default: Story = {
   parameters: {
     docs: {
       description: {
         story:
-          'Use the **Controls** panel to adjust `position`, `displayTime`, and `keepOpen`. Click the buttons to show, hide, or toggle the toast.',
+          'A confirmation after a save. "Save changes" opens the toast with the invoker command `--show` and `commandfor`, without JavaScript. The toast closes itself after `displayTime`, unless `keepOpen` is set. It has the `status` role and is polite, so a screen reader reads the message, and the focus stays on the button. Use the controls panel to change the time, the position and the positioning strategy.',
       },
     },
   },
-  render: ({ open, displayTime, keepOpen, position }) => html`
+  render: (args) => html`
     <igc-toast
-      id="toast-basic"
-      ?open=${open}
-      ?keep-open=${keepOpen}
-      .displayTime=${displayTime}
-      .position=${position}
+      id="ts-saved"
+      ?open=${args.open}
+      ?keep-open=${args.keepOpen}
+      .displayTime=${args.displayTime}
+      .position=${args.position}
+      .positioning=${args.positioning}
     >
-      Notification displayed
+      Changes saved
     </igc-toast>
-
-    <div style="display: flex; gap: .5rem; flex-wrap: wrap;">
-      <igc-button command="--show" commandfor="toast-basic">Show</igc-button>
-      <igc-button command="--hide" commandfor="toast-basic">Hide</igc-button>
-      <igc-button command="--toggle" commandfor="toast-basic"
-        >Toggle</igc-button
-      >
-    </div>
+    <igc-button command="--show" commandfor="ts-saved">Save changes</igc-button>
   `,
 };
 
-export const Positions: Story = {
+const meetingDetails = [
+  {
+    label: 'Meeting link',
+    name: 'meeting link',
+    value: 'https://meet.example.com/kdv-qpzm-tra',
+  },
+  { label: 'Meeting ID', name: 'meeting ID', value: '843 2210 9187' },
+  { label: 'Passcode', name: 'passcode', value: '572913' },
+];
+
+export const ShareMeeting: Story = {
   argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'Demonstrates all three supported positions — `bottom`, `middle`, and `top` — each triggered independently.',
+          'The join details of a meeting, each with a copy button. A toast confirms the copy, or tells the user to copy the text by hand when the browser blocks the clipboard. A second copy replaces the text of the open toast, and `show()` on an open toast starts its display time again. The toast is a polite live region, so a screen reader reads the new text. The icon in the toast has no name, so assistive technologies ignore it.',
       },
     },
   },
-  render: () => html`
-    <igc-toast id="toast-bottom" position="bottom" keep-open>
-      Bottom toast
-    </igc-toast>
-    <igc-toast id="toast-middle" position="middle" keep-open>
-      Middle toast
-    </igc-toast>
-    <igc-toast id="toast-top" position="top" keep-open> Top toast </igc-toast>
+  render: () => {
+    const state = { message: '', failed: false };
+    const toast = createRef<IgcToastComponent>();
 
-    <div style="display: flex; gap: .5rem; flex-wrap: wrap;">
-      <igc-button command="--toggle" commandfor="toast-bottom"
-        >Toggle Bottom</igc-button
-      >
-      <igc-button command="--toggle" commandfor="toast-middle"
-        >Toggle Middle</igc-button
-      >
-      <igc-button command="--toggle" commandfor="toast-top"
-        >Toggle Top</igc-button
-      >
-    </div>
-  `,
+    const copy = async (label: string, name: string, value: string) => {
+      let failed = false;
+      try {
+        await navigator.clipboard.writeText(value);
+      } catch {
+        failed = true;
+      }
+
+      state.failed = failed;
+      state.message = failed
+        ? `Could not copy the ${name}. Select it and copy it.`
+        : `${label} copied`;
+      story.update();
+      toast.value?.show();
+    };
+
+    const story = renderInto(
+      () => html`
+        <section class="ts-panel" aria-labelledby="ts-share-title">
+          <div>
+            <h3 id="ts-share-title">Design review</h3>
+            <p class="muted">Thursday, 10:00 to 10:45</p>
+          </div>
+          <dl class="ts-details">
+            ${meetingDetails.map(
+              ({ label, name, value }) => html`
+                <div>
+                  <dt>${label}</dt>
+                  <dd>
+                    <span>${value}</span>
+                    <igc-icon-button
+                      variant="flat"
+                      name="copy"
+                      aria-label="Copy the ${name}"
+                      @click=${() => copy(label, name, value)}
+                    ></igc-icon-button>
+                  </dd>
+                </div>
+              `
+            )}
+          </dl>
+          <igc-toast ${ref(toast)} display-time="2500">
+            <igc-icon
+              name=${state.failed ? 'warning' : 'check-circle'}
+            ></igc-icon>
+            ${state.message}
+          </igc-toast>
+        </section>
+      `
+    );
+
+    return html`
+      ${styles}
+      <style>
+        .ts-details {
+          display: grid;
+          gap: 0.75rem;
+          margin: 0;
+        }
+
+        .ts-details dt {
+          font-weight: 600;
+        }
+
+        .ts-details dd {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.5rem;
+          margin: 0;
+          overflow-wrap: anywhere;
+        }
+      </style>
+      <div ${story.mount}></div>
+    `;
+  },
 };
 
-export const KeepOpen: Story = {
+const noteText =
+  'Venue: the lake house, two nights.\nBudget: 180 per person, travel included.\nTo do: book the bus, ask about dietary needs, plan one workshop.';
+
+export const Autosave: Story = {
   argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'When `keep-open` is set the toast stays visible indefinitely and must be dismissed manually. Useful for errors or action-required messages.',
+          'A note editor that saves a draft one second after the user stops typing. The toast confirms each save inside the editor, because `positioning="container"` positions it in the closest visible ancestor, here the editor panel, and not in the viewport. The short `display-time` keeps it out of the way of the text.',
       },
     },
   },
-  render: () => html`
-    <igc-toast id="toast-keep" position="bottom" keep-open>
-      Action required — please review the changes before continuing.
-    </igc-toast>
+  render: () => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let toast: IgcToastComponent | undefined;
+    const toastRef = ref((element) => {
+      toast = element as IgcToastComponent | undefined;
+      if (!toast) {
+        clearTimeout(timer);
+      }
+    });
 
-    <div style="display: flex; gap: .5rem;">
-      <igc-button command="--show" commandfor="toast-keep">Show</igc-button>
-      <igc-button command="--hide" commandfor="toast-keep">Dismiss</igc-button>
-    </div>
-  `,
+    const scheduleSave = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => toast?.show(), 1000);
+    };
+
+    return html`
+      ${styles}
+      <section class="ts-panel" aria-labelledby="ts-editor-title">
+        <h3 id="ts-editor-title">Edit note</h3>
+        <igc-input
+          label="Title"
+          value="Team offsite"
+          @igcInput=${scheduleSave}
+        ></igc-input>
+        <igc-textarea
+          label="Note"
+          rows="6"
+          value=${noteText}
+          @igcInput=${scheduleSave}
+        ></igc-textarea>
+        <igc-toast ${toastRef} positioning="container" display-time="1500">
+          <igc-icon name="check-circle"></igc-icon>
+          Draft saved
+        </igc-toast>
+      </section>
+    `;
+  },
 };
 
-export const ContainerPositioning: Story = {
+const article = {
+  title: 'The night train is back',
+  byline: 'By Lena Brandt, 4 min read',
+  paragraphs: [
+    'Ten years ago the last sleeper left the main station at midnight. This spring a new operator brings it back, with three routes to the coast and to the mountains.',
+    'The cars are new, but the idea is old: you board after dinner, sleep in a bed, and wake up in another country. A seat costs about the same as a budget flight, and a private cabin about the same as a hotel room.',
+    'The operator expects most travelers on weekends. On weekdays it sells the empty cabins to companies, as a quiet place to work on the way to a meeting.',
+  ],
+  related: [
+    'Ten stations worth the stop',
+    'What to pack for a sleeper',
+    'The new timetable at a glance',
+  ],
+};
+
+export const ReadingMode: Story = {
   argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'When `positioning` is set to `"container"`, the toast is anchored to its nearest visible ancestor instead of the viewport. Toggle each position independently to see how the toast is constrained within the boundary.',
+          'An article with a reading mode that hides the sidebar and enlarges the text. When the mode starts, a toast at the top of the viewport (`position="top"`) tells the user that the Escape key leaves it. The hint is brief and does not take the focus, so the user can start to read at once. Leaving the mode calls `hide()`, so the hint does not stay after the mode ends.',
       },
     },
   },
-  render: () => html`
-    <style>
-      .toast-container-demo {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        min-height: 420px;
-        padding: 1.25rem;
-        border: 2px dashed #888;
-        border-radius: 8px;
+  render: () => {
+    const state = { reading: false };
+    let toast: IgcToastComponent | undefined;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (state.reading && event.key === 'Escape') {
+        setReading(false);
       }
+    };
 
-      .toast-container-demo__label {
-        margin: 0;
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        opacity: 0.5;
+    // The listener lives as long as the story is connected.
+    const toastRef = ref((element) => {
+      toast = element as IgcToastComponent | undefined;
+      if (toast) {
+        document.addEventListener('keydown', onKeyDown);
+      } else {
+        document.removeEventListener('keydown', onKeyDown);
       }
+    });
 
-      .toast-container-demo__actions {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
+    const setReading = (reading: boolean) => {
+      state.reading = reading;
+      story.update();
+
+      if (reading) {
+        toast?.show();
+      } else {
+        toast?.hide();
       }
+    };
 
-      .toast-container-demo__content {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0.35;
-        font-size: 0.875rem;
-        font-style: italic;
-      }
-    </style>
+    const story = renderInto(
+      () => html`
+        <div class="ts-reader ${state.reading ? 'ts-reading' : ''}">
+          <div class="ts-toolbar">
+            <igc-button
+              variant="outlined"
+              @click=${() => setReading(!state.reading)}
+            >
+              ${state.reading ? 'Leave reading mode' : 'Reading mode'}
+            </igc-button>
+          </div>
+          <article aria-labelledby="ts-article-title">
+            <h3 id="ts-article-title">${article.title}</h3>
+            <p class="muted">${article.byline}</p>
+            ${article.paragraphs.map((text) => html`<p>${text}</p>`)}
+          </article>
+          <aside ?hidden=${state.reading} aria-labelledby="ts-related-title">
+            <h4 id="ts-related-title">Related</h4>
+            <ul>
+              ${article.related.map((title) => html`<li>${title}</li>`)}
+            </ul>
+          </aside>
+        </div>
+      `
+    );
 
-    <div class="toast-container-demo">
-      <p class="toast-container-demo__label">Container boundary</p>
+    return html`
+      ${styles}
+      <style>
+        .ts-reader {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 14rem;
+          gap: 1rem 2rem;
+          max-width: 56rem;
+        }
 
-      <div class="toast-container-demo__actions">
-        <igc-button command="--toggle" commandfor="ct-toast-top"
-          >Toggle Top</igc-button
-        >
-        <igc-button command="--toggle" commandfor="ct-toast-middle"
-          >Toggle Middle</igc-button
-        >
-        <igc-button command="--toggle" commandfor="ct-toast-bottom"
-          >Toggle Bottom</igc-button
-        >
-      </div>
+        .ts-toolbar {
+          grid-column: 1 / -1;
+        }
 
-      <p class="toast-container-demo__content">
-        Toasts are anchored within this container
-      </p>
+        .ts-reader :is(h3, h4, p, ul) {
+          margin-block: 0 0.75rem;
+        }
 
-      <igc-toast
-        id="ct-toast-top"
-        positioning="container"
-        position="top"
-        keep-open
-      >
-        Top — container-positioned
+        .ts-reader article {
+          line-height: 1.6;
+        }
+
+        .ts-reader aside {
+          padding-inline-start: 1rem;
+          border-inline-start: 1px solid var(--ig-gray-300);
+        }
+
+        .ts-reader.ts-reading {
+          grid-template-columns: minmax(0, 38rem);
+          justify-content: center;
+        }
+
+        .ts-reading article {
+          font-size: 1.25rem;
+          line-height: 1.7;
+        }
+
+        @media (max-width: 40rem) {
+          .ts-reader {
+            grid-template-columns: minmax(0, 1fr);
+          }
+        }
+      </style>
+      <div ${story.mount}></div>
+      <igc-toast ${toastRef} position="top" display-time="3000">
+        Press Escape to leave reading mode
       </igc-toast>
-      <igc-toast
-        id="ct-toast-middle"
-        positioning="container"
-        position="middle"
-        keep-open
-      >
-        Middle — container-positioned
-      </igc-toast>
-      <igc-toast
-        id="ct-toast-bottom"
-        positioning="container"
-        position="bottom"
-        keep-open
-      >
-        Bottom — container-positioned
-      </igc-toast>
-    </div>
-  `,
+    `;
+  },
 };

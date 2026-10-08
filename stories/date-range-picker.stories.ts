@@ -30,6 +30,7 @@ import {
   renderInto,
   scrollingPanel,
   storyStyles,
+  wholeDollars,
 } from './story.js';
 
 defineComponents(
@@ -435,12 +436,6 @@ type Story = StoryObj<IgcDateRangePickerArgs>;
 
 // endregion
 
-const usd = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0,
-});
-
 const styles = html`
   ${storyStyles}
   <style>
@@ -610,15 +605,15 @@ export const Flights: Story = {
                     <span>
                       Outbound${isLowFare(start) ? ' (low fare)' : ''}
                     </span>
-                    <span>${usd.format(fare(start))}</span>
+                    <span>${wholeDollars.format(fare(start))}</span>
                   </li>
                   <li>
                     <span>Return${isLowFare(end) ? ' (low fare)' : ''}</span>
-                    <span>${usd.format(fare(end))}</span>
+                    <span>${wholeDollars.format(fare(end))}</span>
                   </li>
                   <li class="drp-total">
                     <span>Total for 1 adult</span>
-                    <span>${usd.format(fare(start) + fare(end))}</span>
+                    <span>${wholeDollars.format(fare(start) + fare(end))}</span>
                   </li>
                 </ul>
               `
@@ -742,11 +737,13 @@ export const SalesReport: Story = {
           </div>
           <div>
             <dt>Revenue</dt>
-            <dd>${usd.format(revenue)}</dd>
+            <dd>${wholeDollars.format(revenue)}</dd>
           </div>
           <div>
             <dt>Per day</dt>
-            <dd>${days.length ? usd.format(revenue / days.length) : '-'}</dd>
+            <dd>
+              ${days.length ? wholeDollars.format(revenue / days.length) : '-'}
+            </dd>
           </div>
         </dl>
       `;
@@ -814,19 +811,19 @@ export const CarRental: Story = {
             ? html`
                 <ul class="drp-lines">
                   <li>
-                    <span>${days} days at ${usd.format(rate)}</span>
-                    <span>${usd.format(days * rate)}</span>
+                    <span>${days} days at ${wholeDollars.format(rate)}</span>
+                    <span>${wholeDollars.format(days * rate)}</span>
                   </li>
                   <li class="drp-total">
                     <span>Total</span>
-                    <span>${usd.format(days * rate)}</span>
+                    <span>${wholeDollars.format(days * rate)}</span>
                   </li>
                 </ul>
                 <p class="muted">
                   ${
                     days >= 7
                       ? 'The weekly rate applies.'
-                      : `Rent for ${7 - days} more days to get the weekly rate of ${usd.format(weeklyRate)} a day.`
+                      : `Rent for ${7 - days} more days to get the weekly rate of ${wholeDollars.format(weeklyRate)} a day.`
                   }
                 </p>
               `
