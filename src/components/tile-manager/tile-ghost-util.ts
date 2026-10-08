@@ -26,11 +26,8 @@ export function createTileDragGhost(
   const clone = tile.cloneNode(true) as IgcTileComponent;
   const computed = getComputedStyle(tile);
 
-  Object.assign(clone, {
-    id: null,
-    inert: true,
-    position: -1,
-  });
+  // An empty id gives the clone a new one when it connects.
+  Object.assign(clone, { id: '', inert: true });
 
   setStyles(clone, {
     ...getBaseGhostStyles(

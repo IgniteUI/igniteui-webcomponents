@@ -15,6 +15,7 @@ import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   isFocused,
   viewTransitionComplete,
+  withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import { firstOf } from '#internals/utils/arrays.js';
@@ -521,12 +522,9 @@ describe('Tile Manager component', () => {
 
     it('fades the new content of a maximizing tile in with a theme style sheet', async () => {
       const tile = tileManager.tiles[0];
-      const adopted = [...document.adoptedStyleSheets];
 
       // The theme style sheets style the view transitions of the tiles.
-      document.adoptedStyleSheets = [...adopted, bootstrap.styleSheet!];
-
-      try {
+      await withDocumentSheets([bootstrap.styleSheet!], async () => {
         simulateClick(getActionButtons(tile)[0]);
 
         const transition = getActiveViewTransition()!;
@@ -544,9 +542,7 @@ describe('Tile Manager component', () => {
 
         expect(fadeIn).to.exist;
         await transition.finished;
-      } finally {
-        document.adoptedStyleSheets = adopted;
-      }
+      });
     });
 
     it('aligns the transition of a right-to-left tile to its right edge', async () => {
@@ -575,6 +571,39 @@ describe('Tile Manager component', () => {
       await getActiveViewTransition()?.finished;
 
       expect(tile.style.viewTransitionClass).to.equal('');
+    });
+
+    it('keeps an inline view transition class of the author', async () => {
+      const tile = tileManager.tiles[0];
+      const [maximize] = getActionButtons(tile);
+
+      tile.style.viewTransitionClass = 'chart';
+      simulateClick(maximize);
+      simulateClick(maximize);
+      await viewTransitionComplete();
+
+      expect(tile.style.viewTransitionClass).to.equal('chart igc-tile-resize');
+
+      await getActiveViewTransition()?.finished;
+
+      expect(tile.style.viewTransitionClass).to.equal('chart');
+    });
+
+    it('keeps a view transition class from a style sheet while the tile maximizes', async () => {
+      const tile = tileManager.tiles[0];
+      const sheet = new CSSStyleSheet();
+
+      sheet.replaceSync('igc-tile { view-transition-class: card; }');
+
+      await withDocumentSheets([sheet], async () => {
+        simulateClick(getActionButtons(tile)[0]);
+
+        expect(tile.style.viewTransitionClass).to.equal('card igc-tile-resize');
+
+        await getActiveViewTransition()?.finished;
+
+        expect(tile.style.viewTransitionClass).to.equal('');
+      });
     });
 
     it('takes the transition names of the covered tiles while a tile is maximized', async () => {
@@ -1609,6 +1638,22 @@ describe('Tile Manager component', () => {
         ['tile1', 1],
         ['tile2', 2],
       ]);
+    });
+
+    it('changes no positions for a value that is not a layout', async () => {
+      const [first, second] = getTiles();
+
+      first.position = 1;
+      second.position = 1;
+      await elementUpdated(tileManager);
+      const before = layout();
+
+      for (const data of ['{}', '[]', '[null, 1, "x"]', '[{"id":"other"}]']) {
+        tileManager.loadLayout(data);
+      }
+      await elementUpdated(tileManager);
+
+      expect(layout()).to.eql(before);
     });
 
     it('uses a whole number for a fractional position', async () => {

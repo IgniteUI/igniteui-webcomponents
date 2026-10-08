@@ -21,20 +21,17 @@
     grid-auto-flow: dense;
     overflow: auto hidden;
 
-    // `position` (CSS `order`) and the dense packing move the tiles away from
-    // their DOM order. Tab and assistive technology then follow the rows of the
-    // layout, where the browser supports it.
+    // `position` (CSS `order`) and dense packing move tiles away from DOM order.
+    // Tab and assistive technology follow the layout rows where supported.
     reading-flow: grid-rows;
 }
 
 [part~='maximized-tile'] {
     overflow: clip;
 
-    // The maximized tile covers the other tiles. Hide them and skip their
-    // content, so that Tab and assistive technology do not reach it. Unlike
-    // `visibility`, a descendant cannot undo `content-visibility`.
-    // Without a name, a view transition fades them in place. With one, they
-    // would move between their places with and without the maximized tile.
+    // Hide the covered tiles from Tab and assistive technology. A descendant can
+    // undo `visibility`, but not `content-visibility`. Without a transition name,
+    // they fade in place and do not move between the two layouts.
     ::slotted(igc-tile:not([maximized], :fullscreen)) {
         visibility: hidden;
         content-visibility: hidden;

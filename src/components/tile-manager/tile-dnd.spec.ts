@@ -7,6 +7,7 @@ import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   expectCloseTo,
   viewTransitionComplete,
+  withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
@@ -192,6 +193,23 @@ describe('Tile drag and drop', () => {
       });
     });
 
+    it('swaps with a tile that the pointer reaches straight from another tile', async () => {
+      const [dragged, passed, target] = [getTile(0), getTile(2), getTile(3)];
+      const { x, y } = getCenterPoint(passed);
+
+      simulatePointerDown(dragged);
+      // One move enters a tile, and the next moves over it swap.
+      simulatePointerMove(dragged, { clientX: x, clientY: y });
+      simulateTileDragOver(dragged, getCenterPoint(target));
+      await viewTransitionComplete();
+      simulateLostPointerCapture(dragged);
+      await getActiveViewTransition()?.finished;
+
+      expect([dragged.position, passed.position, target.position]).to.eql([
+        3, 2, 0,
+      ]);
+    });
+
     it('should cancel dragging with Escape', async () => {
       const draggedTile = getTile(0);
       const dropTarget = getTile(4);
@@ -228,9 +246,9 @@ describe('Tile drag and drop', () => {
       await getActiveViewTransition()?.finished;
       expect([dragged.position, target.position]).to.eql([1, 0]);
 
-      // Back over the target, which now holds the first place: to its center,
-      // which swaps nothing, then into its left quarter, which swaps once. A
-      // swap applies in a view transition, so a third move would swap again.
+      // Back over the target, now first: its center swaps nothing, its left
+      // quarter swaps once. A swap applies in a view transition, so a third
+      // move would swap again.
       const { left, width } = target.getBoundingClientRect();
       simulatePointerMove(dragged, { clientX: left + width / 2, clientY: y });
       simulatePointerMove(dragged, { clientX: left + width * 0.1, clientY: y });
@@ -465,12 +483,9 @@ describe('Tile drag and drop', () => {
 
     it('keeps the drag ghost on the pointer in a swap with a theme style sheet', async () => {
       const [dragged, target] = [getTile(0), getTile(1)];
-      const adopted = [...document.adoptedStyleSheets];
 
       // The theme style sheets style the view transitions of the tiles.
-      document.adoptedStyleSheets = [...adopted, bootstrap.styleSheet!];
-
-      try {
+      await withDocumentSheets([bootstrap.styleSheet!], async () => {
         simulatePointerDown(dragged);
         simulateTileDragOver(dragged, getCenterPoint(target));
 
@@ -489,9 +504,7 @@ describe('Tile drag and drop', () => {
         await transition.finished;
 
         expect(ghostAnimations).to.be.empty;
-      } finally {
-        document.adoptedStyleSheets = adopted;
-      }
+      });
     });
 
     it('cancels the drag when an `igcTileDragStart` listener moves the tile', async () => {
@@ -682,7 +695,6 @@ describe('Tile drag and drop', () => {
       it('keeps the size of the dragged tile with a theme style sheet', async () => {
         const tile = getTile(0);
         const grid = tileManager.renderRoot.querySelector('[part~="base"]')!;
-        const adopted = [...document.adoptedStyleSheets];
         const sizes = () => [
           grid.scrollWidth,
           grid.scrollHeight,
@@ -691,9 +703,7 @@ describe('Tile drag and drop', () => {
         ];
 
         // The theme palette gives the placeholder outline its color.
-        document.adoptedStyleSheets = [...adopted, bootstrap.styleSheet!];
-
-        try {
+        await withDocumentSheets([bootstrap.styleSheet!], async () => {
           const before = sizes();
 
           simulatePointerDown(tile);
@@ -703,9 +713,7 @@ describe('Tile drag and drop', () => {
           simulateLostPointerCapture(tile);
 
           expect(during).to.eql(before);
-        } finally {
-          document.adoptedStyleSheets = adopted;
-        }
+        });
       });
 
       it('does not scroll the grid with the drag ghost', async () => {
@@ -957,6 +965,21 @@ describe('Tile drag and drop', () => {
       });
       expect(draggedTile.position).to.equal(1);
       expect(dropTarget.position).to.equal(3);
+    });
+
+    it('cancels a touch only on the header, so the content scrolls by touch', async () => {
+      const tile = getTile(0);
+      const touchStart = (element: Element) => {
+        const event = new Event('touchstart', {
+          bubbles: true,
+          cancelable: true,
+        });
+        element.dispatchEvent(event);
+        return event.defaultPrevented;
+      };
+
+      expect(touchStart(tile.querySelector('[slot="title"]')!)).to.be.true;
+      expect(touchStart(tile.querySelector('p')!)).to.be.false;
     });
 
     it('should not start dragging if pointer is not over the header', async () => {

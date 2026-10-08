@@ -33,6 +33,8 @@ export type DragState = {
   ghost: HTMLElement | null;
   /** The element that the `matchTarget` callback matches, or `null`. */
   element: Element | null;
+  /** Aborts when the operation ends, also in a `start` listener. */
+  signal: AbortSignal;
 };
 
 export type DragCallbackParams = {
@@ -50,8 +52,11 @@ export interface DraggableOptions extends PointerOperationOptions {
   snapToCursor?: boolean;
   /** Returns the element whose presence in the event path starts a drag. */
   trigger?: () => HTMLElement | null | undefined;
-  /** Runs with the initiating pointer event. A `true` return skips the drag. */
-  skip?: (event: PointerEvent) => boolean;
+  /**
+   * Runs with the `pointerdown`, `touchstart` or `dragstart` event that would
+   * start a drag. A `true` return skips the drag and the native action stays.
+   */
+  skip?(event: Event): boolean;
   /**
    * A predicate for the elements under the pointer. The first match becomes
    * `state.element`, and drives `enter`, `leave` and `over`.
@@ -69,21 +74,16 @@ export interface DraggableOptions extends PointerOperationOptions {
   over?: DragCallback;
   /** Runs when a drag operation completes. */
   end?: DragCallback;
-  /** Runs when the Escape key cancels a drag operation. */
+  /** Runs when Escape, `pointercancel` or a disconnect cancels a drag operation. */
   cancel?: DragCancelCallback;
 }
 
-type DragOperation = PointerOperationState & {
-  target: HTMLElement;
-  initial: DOMRect;
-  current: DOMRect;
-  position: Point;
-  offset: Point;
-  pointerState: DragState['pointerState'];
-  matchedElement: Element | null;
-  /** The inline transform of the target, restored on an immediate cancel. */
-  targetTransform: string;
-};
+type DragOperation = PointerOperationState &
+  Omit<DragState, 'ghost' | 'signal'> & {
+    target: HTMLElement;
+    /** The inline transform of the target, restored on an immediate cancel. */
+    targetTransform: string;
+  };
 
 function createDefaultGhost({ width, height }: DOMRect): HTMLElement {
   const element = document.createElement('div');
@@ -166,7 +166,7 @@ class DraggableDirective extends PointerOperationDirective<
         direction: 'end',
       },
       ghost: this._isDeferred ? this._createGhost(target, initial) : null,
-      matchedElement: null,
+      element: null,
       targetTransform: target.style.transform,
     };
 
@@ -179,7 +179,13 @@ class DraggableDirective extends PointerOperationDirective<
     }
 
     this._assignPosition();
-    this._startOperation(event);
+    this._setDragStyles(true);
+    this._startOperationListeners(
+      target,
+      pointerId,
+      this._handlePointerMove,
+      this._handlePointerEnd
+    );
   };
 
   private readonly _handlePointerMove = (event: PointerEvent): void => {
@@ -205,6 +211,13 @@ class DraggableDirective extends PointerOperationDirective<
     this._dispose();
   };
 
+  /** Cancels a touch scroll or a native drag only where a drag can start. */
+  private readonly _preventNativeDrag = (event: Event): void => {
+    if (!this._shouldSkip(event)) {
+      this._preventNativeBehavior(event);
+    }
+  };
+
   // #endregion
 
   // #region Internal API
@@ -225,27 +238,16 @@ class DraggableDirective extends PointerOperationDirective<
     target.addEventListener('pointerdown', this._handlePointerDown, {
       signal,
     });
-    target.addEventListener('dragstart', this._preventNativeBehavior, {
+    target.addEventListener('dragstart', this._preventNativeDrag, {
       signal,
     });
-    target.addEventListener('touchstart', this._preventNativeBehavior, {
+    target.addEventListener('touchstart', this._preventNativeDrag, {
       passive: false,
       signal,
     });
   }
 
-  private _startOperation({ pointerId }: PointerEvent): void {
-    this._setDragStyles(true);
-
-    this._startOperationListeners(
-      this._operation!.target,
-      pointerId,
-      this._handlePointerMove,
-      this._handlePointerEnd
-    );
-  }
-
-  private _shouldSkip(event: PointerEvent): boolean {
+  private _shouldSkip(event: Event): boolean {
     if (this._options.skip?.(event)) {
       return true;
     }
@@ -255,15 +257,8 @@ class DraggableDirective extends PointerOperationDirective<
   }
 
   private _createState(): DragState {
-    const {
-      initial,
-      current,
-      position,
-      offset,
-      pointerState,
-      ghost,
-      matchedElement,
-    } = this._operation!;
+    const { initial, current, position, offset, pointerState, ghost, element } =
+      this._operation!;
 
     return {
       initial,
@@ -272,7 +267,8 @@ class DraggableDirective extends PointerOperationDirective<
       offset,
       pointerState,
       ghost,
-      element: matchedElement,
+      element,
+      signal: this._operationAbort.signal,
     };
   }
 
@@ -319,24 +315,27 @@ class DraggableDirective extends PointerOperationDirective<
     }
 
     const operation = this._operation!;
-    const match = getRoot(operation.target)
-      .elementsFromPoint(event.clientX, event.clientY)
-      .find((element) => matchTarget(element));
+    const match =
+      getRoot(operation.target)
+        .elementsFromPoint(event.clientX, event.clientY)
+        .find((element) => matchTarget(element)) ?? null;
 
-    if (match && !operation.matchedElement) {
-      operation.matchedElement = match;
-      this._options.enter?.(this._createParams(event));
+    if (match === operation.element) {
+      if (match) {
+        this._options.over?.(this._createParams(event));
+      }
       return;
     }
 
-    if (!match && operation.matchedElement) {
+    // A fast move can go from one match straight to the next.
+    if (operation.element) {
       this._options.leave?.(this._createParams(event));
-      operation.matchedElement = null;
-      return;
     }
 
-    if (match && match === operation.matchedElement) {
-      this._options.over?.(this._createParams(event));
+    operation.element = match;
+
+    if (match) {
+      this._options.enter?.(this._createParams(event));
     }
   }
 

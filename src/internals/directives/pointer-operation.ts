@@ -27,6 +27,23 @@ export type GhostFactory = (initial: DOMRect) => HTMLElement;
 
 export type Point = { x: number; y: number };
 
+/**
+ * The scale that the transforms of its ancestors give to `ghost`, from the
+ * ghost moved by 100 pixels. A rotation or a skew is not supported.
+ */
+function measureScale(ghost: HTMLElement): Point {
+  ghost.style.transform = 'none';
+  const start = ghost.getBoundingClientRect();
+
+  ghost.style.transform = 'translate(100px,100px)';
+  const moved = ghost.getBoundingClientRect();
+
+  return {
+    x: (moved.left - start.left) / 100 || 1,
+    y: (moved.top - start.top) / 100 || 1,
+  };
+}
+
 /** The options that the pointer directives have in common. */
 export interface PointerOperationOptions {
   /** Whether the directive starts operations. Defaults to `true`. */
@@ -61,11 +78,9 @@ export type PointerOperationState = {
 };
 
 /**
- * The parts that the drag and the resize directives share.
- *
- * @remarks
- * The base class keeps the abort handles, the ghost, the pointer capture and
- * the life-cycle. A subclass adds its own geometry and start events.
+ * The base of the drag and resize directives. It owns the abort handles, the
+ * ghost, the pointer capture and the life-cycle. A subclass adds its geometry
+ * and its callbacks.
  */
 export abstract class PointerOperationDirective<
   TOptions extends PointerOperationOptions,
@@ -86,6 +101,8 @@ export abstract class PointerOperationDirective<
   private _captureElement?: HTMLElement;
   /** The last offset of `_translate`: the ghost's, or the target's in immediate mode. */
   private _translation: Point = { x: 0, y: 0 };
+  /** The scale of the ghost layer, which `_translate` undoes on the ghost. */
+  private _layerScale: Point = { x: 1, y: 1 };
 
   constructor(partInfo: PartInfo, config: PointerOperationConfig) {
     super(partInfo);
@@ -180,27 +197,40 @@ export abstract class PointerOperationDirective<
       initial
     );
 
-    setStyles(ghost, { position: 'fixed', left: '0px', top: '0px' });
-    this._translate(ghost, { x: 0, y: 0 });
+    setStyles(ghost, {
+      position: 'fixed',
+      left: '0px',
+      top: '0px',
+      transformOrigin: '0 0',
+    });
     ghost.setAttribute(this._config.ghostAttribute, '');
     layer.append(ghost);
+    this._layerScale = measureScale(ghost);
+    this._translate(ghost, { x: 0, y: 0 });
     return ghost;
   }
 
   /**
-   * The viewport position of the ghost at left 0 and top 0, without its
-   * translate. A transform or a filter on an ancestor moves it away from the
-   * viewport corner, also when that ancestor scrolls, so it is measured.
+   * The viewport position of the ghost without its translate. A transform or a
+   * filter on an ancestor moves it from the viewport corner, also on scroll, so
+   * it is measured.
    */
   protected _getGhostOrigin(ghost: HTMLElement): Point {
     const { left, top } = ghost.getBoundingClientRect();
     return { x: left - this._translation.x, y: top - this._translation.y };
   }
 
-  /** Moves `element` with a `translate3d`, rounded to device pixels. */
+  /**
+   * Moves `element` with a `translate3d`, rounded to device pixels. A scale of
+   * the ghost layer is undone, so the ghost moves and sizes in viewport pixels.
+   */
   protected _translate(element: HTMLElement, { x, y }: Point): void {
+    const { x: scaleX, y: scaleY } = this._layerScale;
+    const scale =
+      scaleX === 1 && scaleY === 1 ? '' : ` scale(${1 / scaleX},${1 / scaleY})`;
+
     this._translation = { x: roundByDPR(x), y: roundByDPR(y) };
-    element.style.transform = `translate3d(${this._translation.x}px,${this._translation.y}px,0)`;
+    element.style.transform = `translate3d(${this._translation.x / scaleX}px,${this._translation.y / scaleY}px,0)${scale}`;
   }
 
   /**
@@ -248,6 +278,7 @@ export abstract class PointerOperationDirective<
 
     ghost?.remove();
     this._captureElement = undefined;
+    this._layerScale = { x: 1, y: 1 };
     this._operation = null;
   }
 

@@ -586,6 +586,26 @@ describe('Draggable directive', () => {
       expect([ghostRect.x, ghostRect.y]).to.eql([x, y]);
     });
 
+    it('should keep the ghost under the pointer in a scaled layer', async () => {
+      section.style.transform = 'scale(0.5)';
+      renderDraggable({ layer: () => section });
+
+      const { x, y, width, height } = instance.getBoundingClientRect();
+
+      simulatePointerDown(instance, { clientX: x, clientY: y });
+      simulatePointerMove(instance, { clientX: x + 40, clientY: y + 20 });
+      await elementUpdated(instance);
+
+      const ghostRect = getGhost()!.getBoundingClientRect();
+
+      expect([
+        ghostRect.x,
+        ghostRect.y,
+        ghostRect.width,
+        ghostRect.height,
+      ]).to.eql([x + 40, y + 20, width, height]);
+    });
+
     it('should place the ghost over the target in a positioned body with a margin', async () => {
       Object.assign(document.body.style, {
         position: 'relative',
@@ -906,6 +926,49 @@ describe('Draggable directive', () => {
       expect(getCallbackArgs(leave).state.element).to.eql(target);
     });
 
+    it('should leave and enter when the pointer moves straight to another matched element', async () => {
+      const target = document.querySelector<HTMLElement>('.target')!;
+      const matchTarget = (element: Element) =>
+        element === instance || element === target;
+      const [enter, leave, over] = [spy(), spy(), spy()];
+
+      renderDraggable({ matchTarget, enter, leave, over });
+
+      const from = getCenterPoint(instance);
+      const to = getCenterPoint(target);
+
+      simulatePointerDown(instance, { clientX: from.x, clientY: from.y });
+      simulatePointerMove(instance, { clientX: from.x, clientY: from.y });
+      simulatePointerMove(instance, { clientX: to.x, clientY: to.y });
+      simulatePointerMove(instance, { clientX: to.x + 1, clientY: to.y });
+      await elementUpdated(instance);
+
+      expect(getCallbackArgs(leave).state.element).to.equal(instance);
+      expect(enter.args.map(([{ state }]) => state.element)).to.eql([
+        instance,
+        target,
+      ]);
+      expect(getCallbackArgs(over).state.element).to.equal(target);
+    });
+
+    it('should cancel a touch and a native drag only where a drag can start', async () => {
+      renderDraggable({
+        skip: (event) => (event.target as Element).matches('.no-trigger'),
+      });
+
+      const cancels = (type: string, element: Element) => {
+        const event = new Event(type, { bubbles: true, cancelable: true });
+        element.dispatchEvent(event);
+        return event.defaultPrevented;
+      };
+      const button = instance.querySelector('.no-trigger')!;
+
+      expect(cancels('touchstart', instance)).to.be.true;
+      expect(cancels('dragstart', instance)).to.be.true;
+      expect(cancels('touchstart', button)).to.be.false;
+      expect(cancels('dragstart', button)).to.be.false;
+    });
+
     it('should invoke the `over` callback while dragging over a matched element', async () => {
       const target = document.querySelector<HTMLElement>('.target')!;
       const matchTarget = spy((element: Element) => target === element);
@@ -974,7 +1037,6 @@ describe('Draggable directive', () => {
     });
 
     it('disposes the operation when `start` throws', async () => {
-      // Throws on the first call only.
       const start = spy(() => {
         if (start.callCount === 1) {
           throw new Error('start');

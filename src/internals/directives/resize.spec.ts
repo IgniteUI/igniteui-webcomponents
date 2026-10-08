@@ -521,6 +521,29 @@ describe('Resizable directive', () => {
       );
     });
 
+    it('should size the ghost from the pointer in a scaled layer', async () => {
+      section.style.transform = 'scale(0.5)';
+      renderResizable({ layer: () => section });
+
+      const { x, y, right, bottom } = instance.getBoundingClientRect();
+
+      simulatePointerDown(instance, { clientX: right, clientY: bottom });
+      simulatePointerMove(instance, {
+        clientX: right + 40,
+        clientY: bottom + 20,
+      });
+      await elementUpdated(instance);
+
+      const ghostRect = getGhost()!.getBoundingClientRect();
+
+      expect([
+        ghostRect.x,
+        ghostRect.y,
+        ghostRect.right,
+        ghostRect.bottom,
+      ]).to.eql([x, y, right + 40, bottom + 20]);
+    });
+
     it('should place the ghost over the target in a positioned body with a margin', async () => {
       Object.assign(document.body.style, {
         position: 'relative',
@@ -848,7 +871,6 @@ describe('Resizable directive', () => {
     });
 
     it('disposes the operation when `start` throws', async () => {
-      // Throws on the first call only.
       const start = spy(() => {
         if (start.callCount === 1) {
           throw new Error('start');

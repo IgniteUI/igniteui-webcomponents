@@ -108,14 +108,14 @@ const Slots = setSlots(
  *
  * @element igc-tile
  *
- * @fires igcTileFullscreen - Fired before the default fullscreen action changes the fullscreen state, with the new state in `detail.state`. Cancelable. Also fired after the browser changes the state, for example on Escape. That event is not cancelable.
+ * @fires igcTileFullscreen - Fired when the fullscreen state changes, with the new state in `detail.state`. Cancelable before the default action changes it. Not cancelable after a change by the browser, for example on Escape.
  * @fires igcTileMaximize - Fired before the default maximize action changes the maximized state, with the new state in `detail.state`. Cancelable.
  * @fires igcTileDragStart - Fired when a drag operation on a tile is about to begin. Cancelable.
- * @fires igcTileDragEnd - Fired when a drag operation with a tile is successfully completed.
- * @fires igcTileDragCancel - Fired when a tile drag operation is canceled by the user.
+ * @fires igcTileDragEnd - Fired when a drag completes, after its last swap applies.
+ * @fires igcTileDragCancel - Fired when a drag is canceled, for example on Escape, after the start positions are back.
  * @fires igcTileResizeStart - Fired when a resize operation on a tile is about to begin. Cancelable.
  * @fires igcTileResizeEnd - Fired when a resize operation on a tile is successfully completed.
- * @fires igcTileResizeCancel - Fired when a resize operation on a tile is canceled by the user.
+ * @fires igcTileResizeCancel - Fired when a resize is canceled, for example on Escape.
  *
  * @slot - Default slot for the tile's content.
  * @slot title - Renders the title of the tile header.
@@ -163,19 +163,17 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private readonly _slots = addSlotController(this, { slots: Slots });
 
   private readonly _fullscreenController = addFullscreenController(this, {
-    onChange: this._emitFullScreenEvent,
+    onChange: (state, cancelable) =>
+      this._emitStateEvent('igcTileFullscreen', state, cancelable),
   });
 
   private readonly _resizeState = createTileResizeState();
-  /** The record of the running drag. */
   private _dragRecord?: TileDragRecord;
-  /** Counts the canceled drags and resizes, for `_emitStartEvent`. */
-  private _cancelCount = 0;
 
   /** The parent at the last update. */
   private _renderedParent: Element | null = null;
 
-  /** Shared config for the grid placement properties, projected into a CSS variable on the host. */
+  /** Config for a grid placement property, which sets a CSS variable on the host. */
   private static _gridVariable<T extends number | null>(
     name: string,
     transform: (value: T) => T
@@ -188,7 +186,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     };
   }
 
-  /** Part name and resize direction for each of the tile resize adorners. */
+  /** The part and the resize direction of each adorner. */
   private static readonly _adorners: Record<
     AdornerType,
     { part: string; direction: ResizeDirection }
@@ -225,7 +223,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._tileManagerCtx?.instance;
   }
 
-  /** Returns the tile manager internal CSS grid container. */
+  /** The CSS grid container of the manager. */
   private get _cssContainer(): HTMLElement | undefined {
     return this._tileManagerCtx?.grid.value;
   }
@@ -240,7 +238,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   protected readonly _headerRef = createRef<HTMLElement>();
 
-  /** The DOM container measured and used as a resize target by the resizable directive. */
+  /** The resize target of the resizable directive. */
   protected readonly _containerRef = createRef<HTMLElement>();
 
   @query('[part~="base"]', true)
@@ -256,11 +254,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   @state()
   private _isResizeActive = false;
 
-  /** Whether the resize adorners and the active resize outline are shown. */
-  private get _resizeAdornersVisible(): boolean {
-    return this._isResizeActive || this._resizeMode === 'always';
-  }
-
   /** Whether the tile or the tile manager state disables resize. */
   private get _resizeDisabled(): boolean {
     return (
@@ -272,11 +265,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   /**
-   * The number of columns the tile will span.
-   *
-   * @remarks
-   * When setting a value that is less than 1, it will be
-   * coerced to 1.
+   * The number of columns the tile spans. A value is truncated to a whole
+   * number, at least 1.
    *
    * @attr col-span
    * @default 1
@@ -286,11 +276,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public colSpan = 1;
 
   /**
-   * The number of rows the tile will span.
-   *
-   * @remarks
-   * When setting a value that is less than 1, it will be
-   * coerced to 1.
+   * The number of rows the tile spans. A value is truncated to a whole
+   * number, at least 1.
    *
    * @attr row-span
    * @default 1
@@ -300,7 +287,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public rowSpan = 1;
 
   /**
-   * The starting column for the tile.
+   * The start column of the tile. A value below 1 removes the explicit start.
    *
    * @attr col-start
    */
@@ -309,7 +296,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public colStart: number | null = null;
 
   /**
-   * The starting row for the tile.
+   * The start row of the tile. A value below 1 removes the explicit start.
    *
    * @attr row-start
    */
@@ -343,8 +330,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public maximized = false;
 
   /**
-   * Indicates whether to disable tile resize behavior regardless
-   * of its tile manager parent settings.
+   * Whether to disable resizing of the tile, whatever the resize mode of the
+   * manager.
    *
    * @attr disable-resize
    * @default false
@@ -353,8 +340,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public disableResize = false;
 
   /**
-   * Whether to disable the rendering of the tile `fullscreen-action` slot and its
-   * default fullscreen action button.
+   * Whether to hide the `fullscreen-action` slot and the default fullscreen
+   * action.
    *
    * @attr disable-fullscreen
    * @default false
@@ -363,8 +350,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public disableFullscreen = false;
 
   /**
-   * Whether to disable the rendering of the tile `maximize-action` slot and its
-   * default maximize action button.
+   * Whether to hide the `maximize-action` slot and the default maximize action.
    *
    * @attr disable-maximize
    * @default false
@@ -373,8 +359,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public disableMaximize = false;
 
   /**
-   * Gets/sets the tile's visual position in the layout.
-   * Corresponds to the CSS `order` property.
+   * The visual position of the tile in the layout, as the CSS `order`. A value
+   * is truncated to a whole number.
    *
    * @attr position
    */
@@ -391,8 +377,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     super();
     addThemingController(this, all);
 
-    // A region that its title names. An `aria-label` on the host replaces the
-    // title, and an `aria-labelledby` on the host wins over both.
+    // An `aria-label` on the host replaces the title, and an
+    // `aria-labelledby` wins over both.
     addInternalsController(this, {
       initialARIA: { role: 'region' },
       aria: () => {
@@ -437,12 +423,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this.part.toggle('dragging', state);
   }
 
-  private _handleDragStart = () => {
+  private _handleDragStart = ({ state }: DragCallbackParams) => {
     for (const emit of pendingDragEvents) {
       emit();
     }
 
-    if (!this._emitStartEvent('igcTileDragStart')) {
+    if (!this._emitStartEvent('igcTileDragStart', state.signal)) {
       return false;
     }
 
@@ -467,7 +453,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   };
 
   private _handleDragCancel = () => {
-    this._cancelCount++;
     this._emitDragEvent('igcTileDragCancel', this._endDrag()?.restore());
   };
 
@@ -475,7 +460,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._emitDragEvent('igcTileDragEnd', this._endDrag()?.swapped);
   };
 
-  /** Clears the drag state, and returns the record of the drag. */
   private _endDrag(): TileDragRecord | undefined {
     const record = this._dragRecord;
 
@@ -522,11 +506,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     }
   }
 
-  /**
-   * Skips a press on the resize handles or the actions, and in nested managers
-   * a press that an inner tile gets first.
-   */
-  private _skipDrag = (event: PointerEvent): boolean =>
+  /** Skips a press on a resize handle, on the actions, or on an inner tile of a nested manager. */
+  private _skipDrag = (event: Event): boolean =>
     getElementFromPath(
       (e) =>
         e instanceof IgcTileComponent ||
@@ -534,7 +515,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
       event
     ) !== this;
 
-  /** Matches the other tiles of the same manager, not the tiles of an outer one. */
+  /** Matches the other tiles of the same manager. */
   private _match = (element: Element): element is IgcTileComponent => {
     return (
       element !== this &&
@@ -550,7 +531,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private _handleResizeStart = ({ event, state }: ResizeCallbackParams) => {
-    if (!this._emitStartEvent('igcTileResizeStart')) {
+    if (!this._emitStartEvent('igcTileResizeStart', state.signal)) {
       return false;
     }
 
@@ -590,7 +571,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   };
 
   private _handleResizeCancel = () => {
-    this._cancelCount++;
     this._setResizeState(false);
     this.emitEvent('igcTileResizeCancel', { detail: this });
   };
@@ -603,7 +583,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     // Read once: a second click can come before the transition applies the first.
     const maximized = !this.maximized;
 
-    if (!this._emitMaximizedEvent(maximized)) {
+    if (!this._emitStateEvent('igcTileMaximize', maximized)) {
       return;
     }
 
@@ -616,26 +596,22 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this.style.zIndex = '';
   }
 
-  private _emitFullScreenEvent(state: boolean, cancelable: boolean) {
-    return this.emitEvent('igcTileFullscreen', {
-      detail: { tile: this, state },
-      cancelable,
-    });
+  private _emitStateEvent(
+    name: 'igcTileFullscreen' | 'igcTileMaximize',
+    state: boolean,
+    cancelable = true
+  ) {
+    return this.emitEvent(name, { detail: { tile: this, state }, cancelable });
   }
 
-  private _emitMaximizedEvent(state: boolean) {
-    return this.emitEvent('igcTileMaximize', {
-      detail: { tile: this, state },
-      cancelable: true,
-    });
-  }
-
-  /** Returns `false` when a listener prevents the event, or cancels the operation, for example by moving the tile. */
-  private _emitStartEvent(name: 'igcTileDragStart' | 'igcTileResizeStart') {
-    const cancels = this._cancelCount;
+  /** Returns `false` when a listener prevents the event or ends the operation, for example by moving the tile. */
+  private _emitStartEvent(
+    name: 'igcTileDragStart' | 'igcTileResizeStart',
+    signal: AbortSignal
+  ) {
     return (
       this.emitEvent(name, { detail: this, cancelable: true }) &&
-      this._cancelCount === cancels
+      !signal.aborted
     );
   }
 
@@ -771,16 +747,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
     `;
   }
 
-  /**
-   * The wrapper renders in every resize state. A change of the state, for
-   * example on maximize, then keeps the header actions and their focus.
-   */
+  /** The wrapper renders in every resize state, so a maximize keeps the header actions and their focus. */
   protected override render() {
     const resizable = !this._resizeDisabled;
     const isHoverMode = resizable && this._resizeMode === 'hover';
     const parts = {
       'tile-container': resizable,
-      active: resizable && this._resizeAdornersVisible,
+      active:
+        resizable && (this._isResizeActive || this._resizeMode === 'always'),
     };
 
     return html`

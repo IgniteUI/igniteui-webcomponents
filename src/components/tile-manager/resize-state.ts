@@ -1,4 +1,5 @@
 import type { ResizeState } from '#internals/directives/resize.js';
+import { resolveCssLength } from '#internals/utils/dom.js';
 import { asNumber } from '#internals/utils/math.js';
 import {
   calculatePosition,
@@ -12,7 +13,8 @@ import type {
   TilePosition,
 } from './types.js';
 
-const CssValues = /(?<start>\d+)?\s*\/?\s*span\s*(?<span>\d+)?/i;
+const CssValues =
+  /^\s*(?:(?:(?<start>[1-9]\d*)|auto)\s*\/\s*)?span\s+(?<span>[1-9]\d*)\s*$/i;
 
 type ResizeAxis = 'column' | 'row';
 
@@ -29,10 +31,11 @@ function createAxisState(
 }
 
 /**
- * Parses a computed `[start /] span n`. Another form, as from author CSS, gives
- * start -1, which the layout resolves later, and the span of the tile property.
+ * Parses a computed `[start /] span n`. A start of `auto`, or no start, gives
+ * -1, which the layout resolves later. Another form, as from author CSS, gives
+ * start -1 and the span of the tile property.
  */
-function parseGridTrack(value: string, span: number): TilePosition {
+export function parseGridTrack(value: string, span: number): TilePosition {
   const groups = value.match(CssValues)?.groups;
 
   return {
@@ -50,19 +53,21 @@ function parseTileGridRect(tile: IgcTileComponent): TileGridPosition {
   };
 }
 
-function parseTileParentGrid(gridContainer: HTMLElement) {
-  const computed = getComputedStyle(gridContainer);
+/** Reads the grid. The minimum sizes compute to their authored text, such as `10rem`. */
+function parseTileParentGrid(grid: HTMLElement, computed: CSSStyleDeclaration) {
   const { gap, gridTemplateColumns, gridTemplateRows } = computed;
+  const minColumnWidth = computed.getPropertyValue('--min-col-width');
+  const minRowHeight = computed.getPropertyValue('--min-row-height');
 
   return {
     gap: asNumber(gap),
     columns: {
       entries: gridTemplateColumns.split(' ').map(asNumber),
-      minSize: asNumber(computed.getPropertyValue('--min-col-width')),
+      minSize: resolveCssLength(grid, minColumnWidth),
     },
     rows: {
       entries: gridTemplateRows.split(' ').map(asNumber),
-      minSize: asNumber(computed.getPropertyValue('--min-row-height')),
+      minSize: resolveCssLength(grid, minRowHeight),
     },
   };
 }
@@ -101,8 +106,16 @@ class TileResizeState {
     tile: IgcTileComponent,
     grid: HTMLElement
   ): void {
-    this._initState(grid, tile);
-    this._calculateTileStartPosition(grid, tileRect);
+    const computed = getComputedStyle(grid);
+    const { gap, columns, rows } = parseTileParentGrid(grid, computed);
+
+    this._gap = gap;
+    this._position = parseTileGridRect(tile);
+    this._axes = {
+      column: createAxisState(columns),
+      row: createAxisState(rows),
+    };
+    this._calculateTileStartPosition(grid, tileRect, computed);
   }
 
   /** The column and row spans of the tile for the resized rectangle. */
@@ -145,24 +158,14 @@ class TileResizeState {
     return snappedSize;
   }
 
-  private _initState(grid: HTMLElement, tile: IgcTileComponent): void {
-    const { gap, columns, rows } = parseTileParentGrid(grid);
-
-    this._gap = gap;
-    this._position = parseTileGridRect(tile);
-    this._axes = {
-      column: createAxisState(columns),
-      row: createAxisState(rows),
-    };
-  }
-
   /**
    * Resolves a start that the computed placement does not give, for auto
    * placement or author CSS, from the offset of the tile in the grid.
    */
   private _calculateTileStartPosition(
     grid: HTMLElement,
-    tileRect: DOMRect
+    tileRect: DOMRect,
+    computed: CSSStyleDeclaration
   ): void {
     const { column, row } = this._position;
 
@@ -171,7 +174,6 @@ class TileResizeState {
     }
 
     const gridRect = grid.getBoundingClientRect();
-    const computed = getComputedStyle(grid);
 
     if (column.start < 0) {
       // Columns count from the inline-start edge, which is the right one in RTL.

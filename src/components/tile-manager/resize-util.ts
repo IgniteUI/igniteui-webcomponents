@@ -19,7 +19,6 @@ export function calculateSnappedDimension(props: ResizeProps): number {
     return gridEntries[startIndex - 1];
   }
 
-  // Reuse the snapped value when the delta does not change.
   if (effectiveDelta === 0 && prevSnapped) {
     return prevSnapped;
   }

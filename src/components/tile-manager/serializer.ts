@@ -48,13 +48,16 @@ class TileManagerSerializer {
   /**
    * Applies a layout to the tiles with the same `id`. The layout is not trusted. Copies
    * only the serialized properties, and ignores values that are not tile objects.
+   * Returns `true` when the layout applied to a tile.
    */
-  public loadFromJSON(data: string): void {
+  public loadFromJSON(data: string): boolean {
     const tiles: unknown = data ? JSON.parse(data) : null;
 
     if (!Array.isArray(tiles)) {
-      return;
+      return false;
     }
+
+    let applied = false;
 
     const mapped = new Map(
       tiles.filter(isPlainObject).map((tile) => [tile.id, tile])
@@ -64,6 +67,8 @@ class TileManagerSerializer {
       const serialized = mapped.get(tile.id);
 
       if (serialized) {
+        applied = true;
+
         for (const key of SERIALIZED_KEYS) {
           if (Object.hasOwn(serialized, key)) {
             Reflect.set(tile, key, serialized[key]);
@@ -71,6 +76,8 @@ class TileManagerSerializer {
         }
       }
     }
+
+    return applied;
   }
 }
 

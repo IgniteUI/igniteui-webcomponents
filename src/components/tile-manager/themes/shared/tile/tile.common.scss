@@ -8,8 +8,6 @@ $theme: $material;
     position: absolute;
     pointer-events: none;
     inset: 0;
-    width: 100%;
-    height: 100%;
     border-radius: inherit;
 }
 
@@ -89,8 +87,7 @@ igc-divider {
     background-color: var-get($theme, 'ghost-border');
 }
 
-// Custom user-provided adorners replace the default indicator visuals
-// and are aligned flush with the tile edges.
+// Custom adorners have no indicator look and sit flush with the tile edges.
 [part~='custom'] {
     background-color: transparent;
 }

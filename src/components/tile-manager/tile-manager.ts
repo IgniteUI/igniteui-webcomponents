@@ -59,11 +59,10 @@ export default class IgcTileManagerComponent extends LitElement {
 
   private _internalStyles: StyleInfo = {};
 
-  /** Whether any of the tiles is currently in a maximized state. */
   @state()
   private _hasMaximizedTile = false;
 
-  /** Shared config for the properties that project into a grid CSS variable. */
+  /** Config for a property that sets a grid CSS variable. */
   private static _styleVariable<T = string | undefined>(
     name: string,
     transform: (value: T) => T = (value) => (value ?? undefined) as T
@@ -102,7 +101,7 @@ export default class IgcTileManagerComponent extends LitElement {
   // #region Properties and Attributes
 
   /**
-   * Whether resize operations are enabled.
+   * The resize mode of the tiles. `none` turns resizing off.
    *
    * @attr resize-mode
    * @default none
@@ -111,7 +110,7 @@ export default class IgcTileManagerComponent extends LitElement {
   public resizeMode: TileManagerResizeMode = 'none';
 
   /**
-   * Whether drag and drop operations are enabled.
+   * The drag mode of the tiles. `none` turns drag and drop off.
    *
    * @attr drag-mode
    * @default none
@@ -120,8 +119,7 @@ export default class IgcTileManagerComponent extends LitElement {
   public dragMode: TileManagerDragMode = 'none';
 
   /**
-   * Sets the number of columns for the tile manager.
-   * Setting value <= than zero will trigger a responsive layout.
+   * The number of columns. A value of 0 or less gives a responsive layout.
    *
    * @attr column-count
    * @default 0
@@ -135,7 +133,7 @@ export default class IgcTileManagerComponent extends LitElement {
   public columnCount = 0;
 
   /**
-   * Sets the minimum width for a column unit in the tile manager.
+   * The minimum width of a column.
    * @attr min-column-width
    */
   @property({ attribute: 'min-column-width' })
@@ -143,7 +141,7 @@ export default class IgcTileManagerComponent extends LitElement {
   public minColumnWidth?: string = undefined;
 
   /**
-   * Sets the minimum height for a row unit in the tile manager.
+   * The minimum height of a row.
    * @attr min-row-height
    */
   @property({ attribute: 'min-row-height' })
@@ -151,7 +149,7 @@ export default class IgcTileManagerComponent extends LitElement {
   public minRowHeight?: string = undefined;
 
   /**
-   * Sets the gap size between tiles in the tile manager.
+   * The gap between the tiles.
    *
    * @attr gap
    */
@@ -197,7 +195,7 @@ export default class IgcTileManagerComponent extends LitElement {
     this._updateMaximizedTile();
     this._context.publish();
 
-    // Tiles that connected before the browser defined the manager missed it.
+    // Tiles that connected before the manager was defined missed its context.
     for (const tile of this.tiles) {
       tile._requestContext();
     }
@@ -246,24 +244,17 @@ export default class IgcTileManagerComponent extends LitElement {
 
   // #region Public API
 
-  /**
-   * Returns the properties of the current tile collections as a JSON payload.
-   *
-   * @remarks
-   * The content of the tiles is not serialized or saved. Only tile properties
-   * are serialized.
-   */
+  /** Returns the tile properties as a JSON string. The content of the tiles is not saved. */
   public saveLayout(): string {
     return this._serializer.saveAsJSON();
   }
 
-  /**
-   * Restores a previously serialized state produced by `saveLayout`.
-   */
+  /** Applies a layout from `saveLayout` to the tiles with the same `id`. */
   public loadLayout(data: string): void {
-    this._serializer.loadFromJSON(data);
-    this._tilesState.normalize();
-    this._tilesState.replaceLayout();
+    if (this._serializer.loadFromJSON(data)) {
+      this._tilesState.normalize();
+      this._tilesState.replaceLayout();
+    }
   }
 
   // #endregion

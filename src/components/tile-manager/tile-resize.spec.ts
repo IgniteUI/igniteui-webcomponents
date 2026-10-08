@@ -134,6 +134,27 @@ describe('Tile resize', () => {
       expect(getComputedStyle(lastTile).gridRow).to.eql('auto / span 4');
     });
 
+    it('creates new rows from a minimum row height in rem', async () => {
+      // 200px with the default root font size.
+      tileManager.minRowHeight = '12.5rem';
+      await elementUpdated(tileManager);
+
+      const lastTile = lastOf(getTiles());
+      const DOM = getTileDOM(lastTile);
+
+      simulatePointerDown(DOM.adorners.bottom);
+      await elementUpdated(lastTile);
+
+      simulatePointerMove(DOM.adorners.bottom, { clientY: rowSize * 4 });
+      await elementUpdated(lastTile);
+
+      simulateLostPointerCapture(DOM.adorners.bottom);
+      await elementUpdated(lastTile);
+      await nextFrame();
+
+      expect(getComputedStyle(lastTile).gridRow).to.eql('auto / span 4');
+    });
+
     it('should create a ghost element on resize start', async () => {
       const DOM = getTileDOM(firstTile);
       const eventSpy = spy(firstTile, 'emitEvent');

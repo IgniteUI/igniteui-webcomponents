@@ -85,6 +85,21 @@ export function suppressResizeObserverLoopError(): void {
   };
 }
 
+/** Runs `fn` with `sheets` added to the document, then restores its style sheets. */
+export async function withDocumentSheets(
+  sheets: CSSStyleSheet[],
+  fn: () => unknown
+): Promise<void> {
+  const adopted = [...document.adoptedStyleSheets];
+  document.adoptedStyleSheets = [...adopted, ...sheets];
+
+  try {
+    await fn();
+  } finally {
+    document.adoptedStyleSheets = adopted;
+  }
+}
+
 /**
  * Runs `fn` and returns the errors that event listeners threw during it. Such
  * an error goes to the page, not to the dispatcher: mocha fails the test from

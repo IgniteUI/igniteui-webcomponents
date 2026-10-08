@@ -35,17 +35,13 @@
     height: 100%;
 }
 
-%indicator {
+[part~='trigger-side'],
+[part~='trigger'],
+[part~='trigger-bottom'] {
     --_size: #{rem(11px)};
 
     display: inline-flex;
     position: absolute;
-}
-
-[part~='trigger-side'],
-[part~='trigger'],
-[part~='trigger-bottom'] {
-    @extend %indicator;
 }
 
 // A tile grows toward the inline end, so the handles sit on that edge.
@@ -96,8 +92,6 @@
 :host([maximized]) {
     position: absolute;
     inset: 0;
-    width: 100%;
-    height: 100%;
     z-index: 10;
 
     // An absolutely positioned grid item with a placement uses its grid area

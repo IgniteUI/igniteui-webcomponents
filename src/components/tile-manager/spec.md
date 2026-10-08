@@ -481,20 +481,24 @@ The groups below mirror the `describe` blocks.
 
 31. A tile that moves in the DOM keeps its position, and so do the other tiles.
 32. In a manager that is narrower than `minColumnWidth`, a responsive column fits the manager.
-33. A maximized tile does not cancel `touchstart`, so its content scrolls by touch.
+33. A maximized tile does not cancel `touchstart`, so its content scrolls by touch. In `tile-header` mode, only the
+    header cancels `touchstart` and `dragstart`.
 34. Several tiles that move in one task keep their positions. `loadLayout` gives every tile a unique position, and a
-    fractional position becomes a whole number.
+    fractional position becomes a whole number. A value that applies to no tile changes no position.
 35. Escape after a drag that swaps a tile back and forth restores every tile. The positions stay whole when tiles
     leave or move to another manager during the drag, and when the next drag starts before the restore applies. A start
     column that a smaller column count removed, and a layout from `loadLayout()`, stay.
 36. A tile that leaves the page during a drag or a resize cancels the operation, and so does `pointercancel`. The
     events of another pointer are ignored, and an error in the start callback ends the operation. A start listener that
     moves the tile cancels the operation.
-37. Resizing works with a grid placement from author CSS, and the spans and starts are whole numbers.
-38. In nested tile managers, only the innermost tile drags, and it does not swap with an outer tile.
+37. Resizing works with a grid placement from author CSS, and the spans and starts are whole numbers. A start from a
+    negative or a named line comes from the place of the tile. A minimum row height in `rem` makes the same new rows as
+    the same height in pixels.
+38. In nested tile managers, only the innermost tile drags, and it does not swap with an outer tile. A drag swaps with
+    a tile that the pointer reaches straight from another tile.
 39. The drag and resize ghosts render over the tile in the closest top-layer element, such as a modal dialog, also
     through slots. A ghost there is fixed, so the border, scroll and overflow of that element do not move or clip it.
-    A transform on that element does not move the ghost off the tile.
+    A translate or a scale on that element does not move the ghost off the tile. A rotation is not supported.
 40. A fullscreen tile that leaves the page is not fullscreen when it returns.
 41. A tile outside a manager has no drag and no resize. The tiles of a manager that the browser defines later connect
     to it.
@@ -503,10 +507,10 @@ The groups below mirror the `describe` blocks.
     body and a page scroll during the operation.
 44. `igcTileDragEnd` and `igcTileDragCancel` fire after the view transition applies the positions, and before the
     start event of the next drag.
-45. A maximize, a restore or a resize marks the tile with `igc-tile-resize` (and `igc-tile-rtl` in RTL) until its
-    view transition ends, also after two quick clicks. While a tile is maximized, the covered tiles have no view
-    transition name. With a theme style sheet, the new content of a maximizing tile fades in, and the drag ghost
-    has no animation in a swap.
+45. A maximize, a restore or a resize marks the tile with `igc-tile-resize` (and `igc-tile-rtl` in RTL) until its view
+    transition ends, also after two quick clicks. The view transition classes of the author stay, and an inline one
+    returns when the transition ends. While a tile is maximized, the covered tiles have no view transition name. With a
+    theme style sheet, the new content of a maximizing tile fades in, and the drag ghost has no animation in a swap.
 
 ## Assumptions and limitations
 

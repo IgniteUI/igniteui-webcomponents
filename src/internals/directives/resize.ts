@@ -23,6 +23,8 @@ export type ResizeState = {
   ghost: HTMLElement | null;
   /** The element that carries the directive. */
   trigger: HTMLElement | null;
+  /** Aborts when the operation ends, also in a `start` listener. */
+  signal: AbortSignal;
   /**
    * An optional commit function that the `end` callback sets. It runs in
    * place of the default, which applies the final dimensions to the target.
@@ -56,7 +58,7 @@ export interface ResizableOptions extends PointerOperationOptions {
   resize?: ResizeCallback;
   /** Runs when a resize completes. The callback can set `state.commit`. */
   end?: ResizeCallback;
-  /** Runs when the Escape key cancels a resize operation. */
+  /** Runs when Escape, `pointercancel` or a disconnect cancels a resize operation. */
   cancel?: ResizeCancelCallback;
 }
 
@@ -120,6 +122,7 @@ class ResizableDirective extends PointerOperationDirective<
     }
 
     const initial = target.getBoundingClientRect();
+    const ghost = this._isDeferred ? this._createGhost(target, initial) : null;
 
     this._operation = {
       pointerId: event.pointerId,
@@ -128,12 +131,12 @@ class ResizableDirective extends PointerOperationDirective<
       current: DOMRect.fromRect(initial),
       // Not `isLTR`: `:dir()` misses a CSS `direction`.
       rtl: getComputedStyle(target).direction === 'rtl',
-      ghost: this._isDeferred ? this._createGhost(target, initial) : null,
+      ghost,
       targetStyles: { width: target.style.width, height: target.style.height },
     };
 
-    if (this._operation.ghost) {
-      this._placeGhost(this._operation.ghost, initial);
+    if (ghost) {
+      this._placeGhost(ghost, initial);
     }
 
     if (
@@ -222,6 +225,7 @@ class ResizableDirective extends PointerOperationDirective<
       deltaY: current.height - initial.height,
       ghost,
       trigger: this._host ?? null,
+      signal: this._operationAbort.signal,
     };
   }
 

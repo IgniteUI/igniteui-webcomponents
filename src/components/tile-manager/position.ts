@@ -37,7 +37,7 @@ class TilesState {
     positionedTiles.sort(byPosition);
 
     for (const tile of positionedTiles) {
-      // Fill any unassigned slots before the next assigned tile's position
+      // Give the free positions before this tile to the tiles without one.
       while (nextPosition < tile.position && nonPositionedTiles.length > 0) {
         const nonPositionedTile = nonPositionedTiles.shift()!;
         nonPositionedTile.position = nextPosition++;
@@ -56,7 +56,7 @@ class TilesState {
     layoutVersions.set(this._manager, getLayoutVersion(this._manager) + 1);
   }
 
-  /** Updates the default (manual) slot of the tile manager with the current tiles. */
+  /** Assigns the tiles to the manual default slot of the manager. */
   public assignTiles(): void {
     this._manager.renderRoot.querySelector('slot')!.assign(...this._tiles);
   }
@@ -126,7 +126,7 @@ function swapTiles(a: IgcTileComponent, b: IgcTileComponent): void {
   [a.position, b.position] = [b.position, a.position];
 }
 
-/** The tiles that a drag swapped, and the placement of each before its first swap. */
+/** The tiles that a drag swapped, and the position of each before its first swap. */
 class TileDragRecord {
   /** The tile of the last swap. */
   public last?: IgcTileComponent;
