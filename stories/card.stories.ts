@@ -14,7 +14,12 @@ import {
   defineComponents,
 } from 'igniteui-webcomponents';
 import { registerMaterialIcons } from './story-icons.js';
-import { disableStoryControls, renderInto, storyStyles } from './story.js';
+import {
+  disableStoryControls,
+  renderInto,
+  storyStyles,
+  wholeDollars,
+} from './story.js';
 
 defineComponents(
   IgcAvatarComponent,
@@ -82,13 +87,6 @@ const images = 'https://www.infragistics.com/angular-demos-lob/assets/images';
 const people = 'https://www.infragistics.com/angular-demos/assets/images';
 
 const preventDefault = (event: Event) => event.preventDefault();
-
-const currency = (amount: number) =>
-  amount.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  });
 
 const styles = html`
   ${storyStyles}
@@ -317,7 +315,7 @@ export const Tours: Story = {
                     <span class="muted">· ${tour.reviews} reviews</span>
                   </p>
                   <p>
-                    From <strong>${currency(tour.price)}</strong>
+                    From <strong>${wholeDollars.format(tour.price)}</strong>
                     <span class="muted">per person</span>
                   </p>
                 </igc-card-content>
@@ -448,7 +446,9 @@ export const Pricing: Story = {
               </igc-card-header>
               <igc-card-content>
                 <p class="cd-price">
-                  <strong>${price ? currency(price) : 'Free'}</strong>
+                  <strong
+                    >${price ? wholeDollars.format(price) : 'Free'}</strong
+                  >
                   ${
                     price
                       ? html`<span class="muted">

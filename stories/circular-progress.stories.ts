@@ -13,6 +13,7 @@ import {
   randomIntBetween,
   renderInto,
   storyStyles,
+  wholeDollars,
 } from './story.js';
 
 defineComponents(IgcButtonComponent, IgcCircularProgressComponent);
@@ -339,7 +340,7 @@ export const Refresh: Story = {
           <dl>
             <div>
               <dt>Revenue</dt>
-              <dd>$${sales.toLocaleString('en-US')}</dd>
+              <dd>${wholeDollars.format(sales)}</dd>
             </div>
             <div>
               <dt>Orders</dt>

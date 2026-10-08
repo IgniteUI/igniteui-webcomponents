@@ -58,9 +58,65 @@ export function randomIntBetween(min: number, max: number): number {
   return Math.floor(randomBetween(Math.ceil(min), Math.floor(max) + 1));
 }
 
+/** Formats US dollars with cents, for example "$1,234.50". */
+export const dollars = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+});
+
+/** Formats US dollars rounded to whole dollars, for example "$1,235". */
+export const wholeDollars = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 0,
+});
+
+/**
+ * `plural(2, 'night')` is "2 nights", and
+ * `plural(1, 'file is', 'files are')` is "1 file is".
+ */
+export function plural(count: number, one: string, other = `${one}s`): string {
+  return `${count} ${count === 1 ? one : other}`;
+}
+
 /** Resolves after `ms` milliseconds, for example to simulate a request. */
 export function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function prefersReducedMotion(): boolean {
+  return matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
+ * Focuses a component after its update. A component that has not rendered
+ * yet has nothing in its shadow root to focus, so `focus()` does nothing.
+ */
+export async function focusAfterUpdate(
+  element?: (HTMLElement & { updateComplete: Promise<unknown> }) | null
+): Promise<void> {
+  await element?.updateComplete;
+  element?.focus();
+}
+
+/** Reads `key` from `localStorage`, or `null` when the browser blocks it. */
+export function readStored(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+/** Writes `value` to `localStorage`, or removes `key` when `value` is `null`. */
+export function writeStored(key: string, value: string | null): void {
+  try {
+    value === null
+      ? localStorage.removeItem(key)
+      : localStorage.setItem(key, value);
+  } catch {
+    // The value then lasts only until the page reloads.
+  }
 }
 
 /**
