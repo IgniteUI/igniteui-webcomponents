@@ -2,7 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { render } from 'lit';
 import { type SinonSpy, spy } from 'sinon';
 import { escapeKey } from '../controllers/key-bindings.js';
-import { compareStyles } from '../testing/helpers.spec.js';
+import { catchListenerErrors, compareStyles } from '../testing/helpers.spec.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
@@ -495,16 +495,14 @@ describe('Draggable directive', () => {
 
       expect(defaultGhost).to.exist;
 
-      // The ghost matches the dimensions of the dragged element and is
-      // positioned at the element's position relative to the layer container.
-      const layerRect = document.body.getBoundingClientRect();
+      // The ghost matches the dimensions of the dragged element and covers it.
       const instanceRect = instance.getBoundingClientRect();
       const ghostRect = defaultGhost.getBoundingClientRect();
 
       expect(ghostRect.width).to.equal(instanceRect.width);
       expect(ghostRect.height).to.equal(instanceRect.height);
-      expect(ghostRect.x).to.equal(instanceRect.x - layerRect.x);
-      expect(ghostRect.y).to.equal(instanceRect.y - layerRect.y);
+      expect(ghostRect.x).to.equal(instanceRect.x);
+      expect(ghostRect.y).to.equal(instanceRect.y);
     });
 
     it('should create a custom ghost element in "deferred" mode when a configuration is passed', async () => {
@@ -537,6 +535,138 @@ describe('Draggable directive', () => {
       await elementUpdated(instance);
 
       expect(getGhost()!.parentElement).to.eql(instance.parentElement);
+    });
+
+    it('should place the ghost over the target in a scrolled page', async () => {
+      window.scrollTo(0, 100);
+
+      simulatePointerDown(instance);
+      await elementUpdated(instance);
+
+      const scrollY = window.scrollY;
+      const ghostRect = getGhost()!.getBoundingClientRect();
+      const { x, y } = instance.getBoundingClientRect();
+      window.scrollTo(0, 0);
+
+      expect(scrollY).to.equal(100);
+      expect([ghostRect.x, ghostRect.y]).to.eql([x, y]);
+    });
+
+    it('should place the ghost over the target in a layer with a border and a scroll', async () => {
+      Object.assign(section.style, {
+        border: '10px solid',
+        height: '300px',
+        overflow: 'auto',
+      });
+      section.scrollTop = 100;
+      renderDraggable({ layer: () => section });
+
+      simulatePointerDown(instance);
+      await elementUpdated(instance);
+
+      const ghost = getGhost()!;
+      const ghostRect = ghost.getBoundingClientRect();
+      const { x, y } = instance.getBoundingClientRect();
+
+      expect(ghost.parentElement).to.equal(section);
+      expect(ghost.style.position).to.equal('fixed');
+      expect([ghostRect.x, ghostRect.y]).to.eql([x, y]);
+    });
+
+    it('should place the ghost over the target in a transformed layer', async () => {
+      section.style.transform = 'translate(30px, 40px)';
+      renderDraggable({ layer: () => section });
+
+      simulatePointerDown(instance);
+      await elementUpdated(instance);
+
+      const ghostRect = getGhost()!.getBoundingClientRect();
+      const { x, y } = instance.getBoundingClientRect();
+
+      expect([ghostRect.x, ghostRect.y]).to.eql([x, y]);
+    });
+
+    it('should keep the ghost under the pointer in a scaled layer', async () => {
+      section.style.transform = 'scale(0.5)';
+      renderDraggable({ layer: () => section });
+
+      const { x, y, width, height } = instance.getBoundingClientRect();
+
+      simulatePointerDown(instance, { clientX: x, clientY: y });
+      simulatePointerMove(instance, { clientX: x + 40, clientY: y + 20 });
+      await elementUpdated(instance);
+
+      const ghostRect = getGhost()!.getBoundingClientRect();
+
+      expect([
+        ghostRect.x,
+        ghostRect.y,
+        ghostRect.width,
+        ghostRect.height,
+      ]).to.eql([x + 40, y + 20, width, height]);
+    });
+
+    it('should place the ghost over the target in a positioned body with a margin', async () => {
+      Object.assign(document.body.style, {
+        position: 'relative',
+        margin: '40px',
+      });
+
+      try {
+        simulatePointerDown(instance);
+        await elementUpdated(instance);
+
+        const ghostRect = getGhost()!.getBoundingClientRect();
+        const { x, y } = instance.getBoundingClientRect();
+
+        expect([ghostRect.x, ghostRect.y]).to.eql([x, y]);
+      } finally {
+        Object.assign(document.body.style, { position: '', margin: '' });
+      }
+    });
+
+    it('should keep the ghost under the pointer when a filtered body scrolls', async () => {
+      document.body.style.filter = 'opacity(1)';
+
+      try {
+        const { x, y } = instance.getBoundingClientRect();
+
+        simulatePointerDown(instance, { clientX: x, clientY: y });
+        window.scrollTo(0, 100);
+        simulatePointerMove(instance, { clientX: x, clientY: y });
+        await elementUpdated(instance);
+
+        const scrollY = window.scrollY;
+        const ghostRect = getGhost()!.getBoundingClientRect();
+
+        expect(scrollY).to.equal(100);
+        expect([ghostRect.x, ghostRect.y]).to.eql([x, y]);
+      } finally {
+        document.body.style.filter = '';
+        window.scrollTo(0, 0);
+      }
+    });
+
+    it('should place a ghost that its factory transforms over the target', async () => {
+      renderDraggable({
+        ghostFactory: ({ width, height }) => {
+          const ghost = document.createElement('div');
+          Object.assign(ghost.style, {
+            width: `${width}px`,
+            height: `${height}px`,
+            transform: 'scale(0.5)',
+          });
+          return ghost;
+        },
+      });
+
+      simulatePointerDown(instance);
+      await elementUpdated(instance);
+
+      const ghostRect = getGhost()!.getBoundingClientRect();
+      const { x, y } = instance.getBoundingClientRect();
+
+      expect([ghostRect.x, ghostRect.y]).to.eql([x, y]);
     });
 
     it('should invoke start callback on drag operation', async () => {
@@ -675,12 +805,10 @@ describe('Draggable directive', () => {
 
       let args = getCallbackArgs(dragStart);
 
-      // The element keeps its offset from the cursor, so the position is zero.
+      // The ghost keeps its offset from the cursor, so it covers the element.
+      // The position is from the document origin.
 
-      expect(args.state.position).to.eql({
-        x: clientX - x + args.state.offset.x,
-        y: clientY - y + args.state.offset.y,
-      }); // { x: 0, y: 0 }
+      expect(args.state.position).to.eql({ x, y });
 
       // snapToCursor = true
 
@@ -692,12 +820,9 @@ describe('Draggable directive', () => {
 
       args = getCallbackArgs(dragStart);
 
-      // The element shifts by the offset between the cursor and its edges.
+      // The top left corner of the ghost moves to the cursor.
 
-      expect(args.state.position).to.eql({
-        x: clientX - x,
-        y: clientY - y,
-      }); // { x: 100, y: 100 }
+      expect(args.state.position).to.eql({ x: clientX, y: clientY });
     });
 
     it('should pass correct parameter state in the move callback', async () => {
@@ -705,18 +830,19 @@ describe('Draggable directive', () => {
       renderDraggable({ start: dragStart, move });
 
       const { x: clientX, y: clientY } = getCenterPoint(instance);
+      const { x, y } = instance.getBoundingClientRect();
 
       simulatePointerDown(instance, { clientX, clientY });
       await elementUpdated(instance);
 
-      expect(getCallbackArgs(dragStart).state.position).to.eql({ x: 0, y: 0 });
+      expect(getCallbackArgs(dragStart).state.position).to.eql({ x, y });
 
       simulatePointerMove(instance, { clientX, clientY }, { x: 50, y: 50 }, 3);
       await elementUpdated(instance);
 
       expect(getCallbackArgs(move).state.position).to.eql({
-        x: 150,
-        y: 150,
+        x: x + 150,
+        y: y + 150,
       });
     });
 
@@ -725,6 +851,7 @@ describe('Draggable directive', () => {
       renderDraggable({ end });
 
       const { x: clientX, y: clientY } = getCenterPoint(instance);
+      const { x, y } = instance.getBoundingClientRect();
 
       simulatePointerDown(instance, { clientX, clientY });
       simulatePointerMove(instance, { clientX, clientY }, { x: 25, y: 33 }, 10);
@@ -732,8 +859,8 @@ describe('Draggable directive', () => {
       await elementUpdated(instance);
 
       expect(getCallbackArgs(end).state.position).to.eql({
-        x: 250,
-        y: 330,
+        x: x + 250,
+        y: y + 330,
       });
     });
 
@@ -799,6 +926,49 @@ describe('Draggable directive', () => {
       expect(getCallbackArgs(leave).state.element).to.eql(target);
     });
 
+    it('should leave and enter when the pointer moves straight to another matched element', async () => {
+      const target = document.querySelector<HTMLElement>('.target')!;
+      const matchTarget = (element: Element) =>
+        element === instance || element === target;
+      const [enter, leave, over] = [spy(), spy(), spy()];
+
+      renderDraggable({ matchTarget, enter, leave, over });
+
+      const from = getCenterPoint(instance);
+      const to = getCenterPoint(target);
+
+      simulatePointerDown(instance, { clientX: from.x, clientY: from.y });
+      simulatePointerMove(instance, { clientX: from.x, clientY: from.y });
+      simulatePointerMove(instance, { clientX: to.x, clientY: to.y });
+      simulatePointerMove(instance, { clientX: to.x + 1, clientY: to.y });
+      await elementUpdated(instance);
+
+      expect(getCallbackArgs(leave).state.element).to.equal(instance);
+      expect(enter.args.map(([{ state }]) => state.element)).to.eql([
+        instance,
+        target,
+      ]);
+      expect(getCallbackArgs(over).state.element).to.equal(target);
+    });
+
+    it('should cancel a touch and a native drag only where a drag can start', async () => {
+      renderDraggable({
+        skip: (event) => (event.target as Element).matches('.no-trigger'),
+      });
+
+      const cancels = (type: string, element: Element) => {
+        const event = new Event(type, { bubbles: true, cancelable: true });
+        element.dispatchEvent(event);
+        return event.defaultPrevented;
+      };
+      const button = instance.querySelector('.no-trigger')!;
+
+      expect(cancels('touchstart', instance)).to.be.true;
+      expect(cancels('dragstart', instance)).to.be.true;
+      expect(cancels('touchstart', button)).to.be.false;
+      expect(cancels('dragstart', button)).to.be.false;
+    });
+
     it('should invoke the `over` callback while dragging over a matched element', async () => {
       const target = document.querySelector<HTMLElement>('.target')!;
       const matchTarget = spy((element: Element) => target === element);
@@ -820,6 +990,80 @@ describe('Draggable directive', () => {
 
       expect(over.callCount).to.equal(5);
       expect(getCallbackArgs(over).state.element).to.eql(target);
+    });
+  });
+
+  describe('Interrupted operations', () => {
+    beforeEach(async () => {
+      await createFixture({ mode: 'deferred' });
+    });
+
+    it('cancels the operation on pointercancel', async () => {
+      const cancel = spy();
+      const end = spy();
+      renderDraggable({ cancel, end });
+
+      simulatePointerDown(instance);
+      instance.dispatchEvent(
+        new PointerEvent('pointercancel', { bubbles: true, pointerId: 1 })
+      );
+      simulateLostPointerCapture(instance);
+      await elementUpdated(instance);
+
+      expect(cancel.calledOnce).is.true;
+      expect(end.called).is.false;
+      expect(getGhost()).is.null;
+    });
+
+    it('ignores the events of another pointer', async () => {
+      const end = spy();
+      const move = spy();
+      renderDraggable({ end, move });
+
+      const { right, bottom } = instance.getBoundingClientRect();
+
+      simulatePointerDown(instance);
+      simulatePointerMove(instance, {
+        pointerId: 2,
+        clientX: right + 50,
+        clientY: bottom + 50,
+      });
+      simulateLostPointerCapture(instance, { pointerId: 2 });
+      await elementUpdated(instance);
+
+      expect(move.called).is.false;
+      expect(end.called).is.false;
+      expect(getGhost()).is.not.null;
+    });
+
+    it('disposes the operation when `start` throws', async () => {
+      const start = spy(() => {
+        if (start.callCount === 1) {
+          throw new Error('start');
+        }
+      });
+      renderDraggable({ start });
+
+      const errors = catchListenerErrors(() => simulatePointerDown(instance));
+
+      expect(errors).to.have.length(1);
+      expect((errors[0] as Error).message).to.equal('start');
+      expect(getGhost()).is.null;
+
+      simulatePointerDown(instance);
+      expect(start.calledTwice).is.true;
+    });
+
+    it('cancels the operation when the element disconnects', async () => {
+      const cancel = spy();
+      renderDraggable({ cancel });
+
+      simulatePointerDown(instance);
+      render(html``, section);
+      await elementUpdated(section);
+
+      expect(cancel.calledOnce).is.true;
+      expect(getGhost()).is.null;
     });
   });
 });

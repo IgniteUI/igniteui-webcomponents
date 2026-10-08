@@ -1,0 +1,53 @@
+/// The view transitions of the tile manager. The view transition
+/// pseudo-elements belong to the document, so a shadow root cannot style them.
+@mixin tile-manager() {
+    // A tile that changes its size, from `startSizeTransition`. The box clips
+    // the snapshots at their real size, so the content stays sharp, and the
+    // tile stays above the tiles that move, come or go.
+    ::view-transition-group(*.igc-tile-resize) {
+        z-index: 1;
+    }
+
+    ::view-transition-old(*.igc-tile-resize),
+    ::view-transition-new(*.igc-tile-resize) {
+        block-size: 100%;
+        object-fit: none;
+        object-position: left top;
+        overflow: clip;
+        mix-blend-mode: normal;
+    }
+
+    ::view-transition-old(*.igc-tile-resize.igc-tile-rtl),
+    ::view-transition-new(*.igc-tile-resize.igc-tile-rtl) {
+        object-position: right top;
+    }
+
+    ::view-transition-new(*.igc-tile-resize) {
+        animation-name: igc-tile-fade-in;
+    }
+
+    @keyframes igc-tile-fade-in {
+        0% {
+            opacity: 0;
+        }
+
+        40%,
+        100% {
+            opacity: 1;
+        }
+    }
+
+    // The drag ghost stays on the pointer and above the tiles during a swap.
+    ::view-transition-group(dragged-tile-ghost) {
+        z-index: 2;
+    }
+
+    ::view-transition-group(dragged-tile-ghost),
+    ::view-transition-new(dragged-tile-ghost) {
+        animation: none;
+    }
+
+    ::view-transition-old(dragged-tile-ghost) {
+        display: none;
+    }
+}

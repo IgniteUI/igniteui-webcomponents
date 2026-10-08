@@ -1,4 +1,5 @@
 import { expect, nextFrame } from '@open-wc/testing';
+import { stub } from 'sinon';
 import { type CalendarDay, toCalendarDay } from '../date/model.js';
 import { toKebabCase } from '../utils/strings.js';
 
@@ -82,6 +83,47 @@ export function suppressResizeObserverLoopError(): void {
     }
     return errorHandler ? errorHandler(message, ...args) : false;
   };
+}
+
+/** Runs `fn` with `sheets` added to the document, then restores its style sheets. */
+export async function withDocumentSheets(
+  sheets: CSSStyleSheet[],
+  fn: () => unknown
+): Promise<void> {
+  const adopted = [...document.adoptedStyleSheets];
+  document.adoptedStyleSheets = [...adopted, ...sheets];
+
+  try {
+    await fn();
+  } finally {
+    document.adoptedStyleSheets = adopted;
+  }
+}
+
+/**
+ * Runs `fn` and returns the errors that event listeners threw during it. Such
+ * an error goes to the page, not to the dispatcher: mocha fails the test from
+ * `window.onerror`, and the test runner logs it with `console.error`. Both are
+ * replaced while `fn` runs.
+ */
+export function catchListenerErrors(fn: () => void): unknown[] {
+  const errors: unknown[] = [];
+  const { onerror } = window;
+  const consoleError = stub(console, 'error');
+
+  window.onerror = (_message, _source, _line, _column, error) => {
+    errors.push(error);
+    return true;
+  };
+
+  try {
+    fn();
+  } finally {
+    window.onerror = onerror;
+    consoleError.restore();
+  }
+
+  return errors;
 }
 
 /**

@@ -3,6 +3,7 @@ import type {
   ReactiveController,
   ReactiveControllerHost,
 } from 'lit';
+import { sameItems } from '../utils/arrays.js';
 import { setOrRemoveAttribute } from '../utils/dom.js';
 
 /** The value types that `ElementInternals.setFormValue` accepts. */
@@ -42,6 +43,11 @@ const reflectable = {
 } as const;
 
 type ReflectableARIA = keyof typeof reflectable;
+
+/** Whether two ARIA values are equal. Element lists compare by their items. */
+function sameValue(a: unknown, b: unknown): boolean {
+  return Array.isArray(a) && Array.isArray(b) ? sameItems(a, b) : a === b;
+}
 
 /**
  * Resolves a host element to its internals controller. `attachInternals()`
@@ -170,7 +176,10 @@ class ElementInternalsController implements ReactiveController {
       const name = key as keyof ARIAMixin;
       const value = state[name];
 
-      if (!this._ariaState.has(name) || this._ariaState.get(name) !== value) {
+      if (
+        !this._ariaState.has(name) ||
+        !sameValue(this._ariaState.get(name), value)
+      ) {
         this._ariaState.set(name, value);
         internals[name] = value;
       }

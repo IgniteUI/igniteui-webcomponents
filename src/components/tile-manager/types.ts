@@ -3,8 +3,6 @@ export type TileGridDimension = {
   minSize: number;
 };
 
-export type SnappedDimension = { snappedSize: number; newDelta: number };
-
 export type TilePosition = { start: number; span: number };
 
 export type TileGridPosition = { column: TilePosition; row: TilePosition };

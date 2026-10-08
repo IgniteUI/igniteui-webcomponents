@@ -1,10 +1,26 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  aTimeout,
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  oneEvent,
+} from '@open-wc/testing';
+import { resetMouse, sendKeys, sendMouse } from '@web/test-runner-commands';
 import { range } from 'lit/directives/range.js';
 import { match, restore, spy, stub } from 'sinon';
+import { getActiveViewTransition } from '#animations/view-transition.js';
+import { internalsOf } from '#internals/controllers/internals.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { viewTransitionComplete } from '#internals/testing/helpers.spec.js';
+import {
+  isFocused,
+  viewTransitionComplete,
+  withDocumentSheets,
+} from '#internals/testing/helpers.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import { firstOf } from '#internals/utils/arrays.js';
+import { getCenterPoint } from '#internals/utils/dom.js';
+import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcTileManagerComponent from './tile-manager.js';
 import IgcTileComponent from './tile.js';
@@ -35,6 +51,18 @@ describe('Tile Manager component', () => {
         ?.querySelectorAll(IgcIconButtonComponent.tagName) ?? []
     );
   }
+
+  /** Clicks `element` with a real pointer, which gives the page user activation. */
+  async function clickCenter(element: Element) {
+    const { x, y } = getCenterPoint(element);
+    await sendMouse({
+      type: 'click',
+      position: [Math.round(x), Math.round(y)],
+    });
+  }
+
+  // A suite below replaces `document.exitFullscreen` with a stub.
+  const exitFullscreen = () => Document.prototype.exitFullscreen.call(document);
 
   function getSlot(tile: IgcTileComponent, slotName: string): HTMLSlotElement {
     return tile.shadowRoot?.querySelector(
@@ -156,25 +184,27 @@ describe('Tile Manager component', () => {
 
       expect(tiles[0]).shadowDom.to.equal(
         `
-        <div part="base">
-          <section part="header">
-            <header part="title">
-              <slot name="title"></slot>
-            </header>
-            <section id="tile-actions" part="actions">
-              <slot name="maximize-action">
-                <igc-icon-button variant="flat" collection="default" exportparts="icon" name="expand_content" aria-label="expand_content" type="button"></igc-icon-button>
-              </slot>
-              <slot name="fullscreen-action">
-                <igc-icon-button variant="flat" collection="default" exportparts="icon" name="fullscreen" aria-label="fullscreen" type="button"></igc-icon-button>
-              </slot>
-              <slot name="actions"></slot>
+        <div id="tile-container" part="">
+          <div part="base">
+            <section part="header">
+              <header part="title">
+                <slot name="title"></slot>
+              </header>
+              <section id="tile-actions" part="actions">
+                <slot name="maximize-action">
+                  <igc-icon-button variant="flat" collection="default" exportparts="icon" name="expand_content" aria-label="Maximize" type="button"></igc-icon-button>
+                </slot>
+                <slot name="fullscreen-action">
+                  <igc-icon-button variant="flat" collection="default" exportparts="icon" name="fullscreen" aria-label="Enter full screen" type="button"></igc-icon-button>
+                </slot>
+                <slot name="actions"></slot>
+              </section>
             </section>
-          </section>
-          <igc-divider type="solid"></igc-divider>
+            <igc-divider aria-hidden="true" type="solid"></igc-divider>
 
-          <div part="content-container">
-              <slot></slot>
+            <div part="content-container">
+                <slot></slot>
+            </div>
           </div>
         </div>
         `
@@ -191,6 +221,78 @@ describe('Tile Manager component', () => {
       const header =
         tile.renderRoot.querySelector<HTMLElement>('[part="header"]');
       expect(header?.hidden).to.be.false;
+    });
+  });
+
+  describe('Accessibility', () => {
+    let tile: IgcTileComponent;
+
+    const labelledBy = (tile: IgcTileComponent) =>
+      internalsOf(tile)?.getARIA('ariaLabelledByElements');
+
+    beforeEach(async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager>
+          <igc-tile>
+            <h3 slot="title">Revenue</h3>
+            <p>Content</p>
+          </igc-tile>
+        </igc-tile-manager>
+      `);
+      tile = firstOf(tileManager.tiles);
+    });
+
+    it('is a region that its title names', () => {
+      expect(internalsOf(tile)?.getARIA('role')).to.equal('region');
+      expect(labelledBy(tile)).to.eql([tile.querySelector('h3')]);
+    });
+
+    it('follows a change of the title element', async () => {
+      const title = document.createElement('span');
+      title.slot = 'title';
+      title.textContent = 'Orders';
+
+      tile.querySelector('h3')!.replaceWith(title);
+      await elementUpdated(tile);
+
+      expect(labelledBy(tile)).to.eql([title]);
+
+      title.remove();
+      await elementUpdated(tile);
+
+      expect(labelledBy(tile)).to.be.null;
+    });
+
+    it('lets an `aria-label` on the host name the region', async () => {
+      tile.setAttribute('aria-label', 'Monthly revenue');
+      await elementUpdated(tile);
+
+      expect(labelledBy(tile)).to.be.null;
+
+      tile.removeAttribute('aria-label');
+      await elementUpdated(tile);
+
+      expect(labelledBy(tile)).to.eql([tile.querySelector('h3')]);
+    });
+
+    it('names the default actions by what they do', async () => {
+      expect(getActionButtons(tile).map(({ ariaLabel }) => ariaLabel)).to.eql([
+        'Maximize',
+        'Enter full screen',
+      ]);
+
+      tile.maximized = true;
+      await elementUpdated(tile);
+
+      expect(getActionButtons(tile).map(({ ariaLabel }) => ariaLabel)).to.eql([
+        'Restore',
+        'Enter full screen',
+      ]);
+    });
+
+    it('hides the header divider from assistive technology', () => {
+      const divider = tile.renderRoot.querySelector('igc-divider')!;
+      expect(divider.getAttribute('aria-hidden')).to.equal('true');
     });
   });
 
@@ -225,6 +327,22 @@ describe('Tile Manager component', () => {
       expect(style.gridTemplateColumns).to.equal(
         '200px 200px 200px 200px 200px 200px 200px 200px 200px 200px 200px 200px 200px 200px 200px'
       );
+    });
+
+    it('fits a responsive column into a manager that is narrower than the minimum column width', async () => {
+      const container = await fixture<HTMLElement>(html`
+        <div style="width: 150px">
+          <igc-tile-manager min-column-width="300px">
+            <igc-tile><p>Content</p></igc-tile>
+          </igc-tile-manager>
+        </div>
+      `);
+      const manager = container.querySelector('igc-tile-manager')!;
+      await elementUpdated(manager);
+
+      const grid =
+        manager.renderRoot.querySelector<HTMLElement>('[part~="base"]')!;
+      expect(grid.scrollWidth).to.equal(grid.clientWidth);
     });
 
     it('Should correctly set gap', async () => {
@@ -314,6 +432,199 @@ describe('Tile Manager component', () => {
       secondTile.maximized = false;
       await elementUpdated(tileManager);
       expect(grid.style.minHeight).to.equal('');
+    });
+
+    it('releases the locked grid height when the maximized tile is removed', async () => {
+      const grid = getTileManagerBase();
+      const tile = tileManager.tiles[0];
+
+      tile.rowSpan = 30;
+      await elementUpdated(tileManager);
+
+      tile.maximized = true;
+      await elementUpdated(tileManager);
+      expect(grid.style.minHeight).to.not.equal('');
+
+      tile.remove();
+      await elementUpdated(tileManager);
+
+      expect(grid.style.minHeight).to.equal('');
+    });
+
+    it('hides the tiles under a maximized tile', async () => {
+      const [first, ...others] = tileManager.tiles;
+      const isShown = (tile: IgcTileComponent) =>
+        tile.checkVisibility({ visibilityProperty: true });
+
+      first.maximized = true;
+      await elementUpdated(tileManager);
+
+      expect(isShown(first)).to.be.true;
+      expect(others.some(isShown)).to.be.false;
+
+      first.maximized = false;
+      await elementUpdated(tileManager);
+
+      expect(others.every(isShown)).to.be.true;
+    });
+
+    it('keeps content under a maximized tile out of reach, also with `visibility: visible`', async () => {
+      const [first, second] = tileManager.tiles;
+      const button = document.createElement('button');
+      button.style.visibility = 'visible';
+      second.append(button);
+
+      first.maximized = true;
+      await elementUpdated(tileManager);
+
+      button.focus();
+      expect(isFocused(button)).to.be.false;
+      expect(button.checkVisibility({ visibilityProperty: true })).to.be.false;
+    });
+
+    it('shows a covered tile that goes fullscreen', async () => {
+      const [first, second] = tileManager.tiles;
+      const button = document.createElement('button');
+      button.textContent = 'Full screen';
+      button.addEventListener('click', () => second.requestFullscreen());
+      tileManager.before(button);
+
+      first.maximized = true;
+      await elementUpdated(tileManager);
+
+      const changed = oneEvent(second, 'fullscreenchange');
+
+      try {
+        await clickCenter(button);
+        await changed;
+
+        expect(second.checkVisibility({ visibilityProperty: true })).to.be.true;
+      } finally {
+        await resetMouse();
+        if (second.matches(':fullscreen')) {
+          await exitFullscreen();
+        }
+      }
+    });
+
+    it('marks the tile for a sharp transition while it maximizes', async () => {
+      const tile = tileManager.tiles[0];
+
+      simulateClick(getActionButtons(tile)[0]);
+
+      expect(tile.style.viewTransitionClass).to.equal('igc-tile-resize');
+
+      await getActiveViewTransition()?.finished;
+
+      expect(tile.maximized).to.be.true;
+      expect(tile.style.viewTransitionClass).to.equal('');
+    });
+
+    it('fades the new content of a maximizing tile in with a theme style sheet', async () => {
+      const tile = tileManager.tiles[0];
+
+      // The theme style sheets style the view transitions of the tiles.
+      await withDocumentSheets([bootstrap.styleSheet!], async () => {
+        simulateClick(getActionButtons(tile)[0]);
+
+        const transition = getActiveViewTransition()!;
+        await transition.ready;
+
+        const fadeIn = document
+          .getAnimations()
+          .find(
+            (animation) =>
+              animation instanceof CSSAnimation &&
+              animation.animationName === 'igc-tile-fade-in' &&
+              (animation.effect as KeyframeEffect).pseudoElement ===
+                `::view-transition-new(${tile.style.viewTransitionName})`
+          );
+
+        expect(fadeIn).to.exist;
+        await transition.finished;
+      });
+    });
+
+    it('aligns the transition of a right-to-left tile to its right edge', async () => {
+      const tile = tileManager.tiles[0];
+      tileManager.dir = 'rtl';
+
+      simulateClick(getActionButtons(tile)[0]);
+
+      expect(tile.style.viewTransitionClass).to.equal(
+        'igc-tile-resize igc-tile-rtl'
+      );
+      await getActiveViewTransition()?.finished;
+    });
+
+    it('keeps the transition class until the last of two quick maximize clicks applies', async () => {
+      const tile = tileManager.tiles[0];
+      const [maximize] = getActionButtons(tile);
+
+      simulateClick(maximize);
+      simulateClick(maximize);
+      // The second transition skips the first, which then finishes.
+      await viewTransitionComplete();
+
+      expect(tile.style.viewTransitionClass).to.equal('igc-tile-resize');
+
+      await getActiveViewTransition()?.finished;
+
+      expect(tile.style.viewTransitionClass).to.equal('');
+    });
+
+    it('keeps an inline view transition class of the author', async () => {
+      const tile = tileManager.tiles[0];
+      const [maximize] = getActionButtons(tile);
+
+      tile.style.viewTransitionClass = 'chart';
+      simulateClick(maximize);
+      simulateClick(maximize);
+      await viewTransitionComplete();
+
+      expect(tile.style.viewTransitionClass).to.equal('chart igc-tile-resize');
+
+      await getActiveViewTransition()?.finished;
+
+      expect(tile.style.viewTransitionClass).to.equal('chart');
+    });
+
+    it('keeps a view transition class from a style sheet while the tile maximizes', async () => {
+      const tile = tileManager.tiles[0];
+      const sheet = new CSSStyleSheet();
+
+      sheet.replaceSync('igc-tile { view-transition-class: card; }');
+
+      await withDocumentSheets([sheet], async () => {
+        simulateClick(getActionButtons(tile)[0]);
+
+        expect(tile.style.viewTransitionClass).to.equal('card igc-tile-resize');
+
+        await getActiveViewTransition()?.finished;
+
+        expect(tile.style.viewTransitionClass).to.equal('');
+      });
+    });
+
+    it('takes the transition names of the covered tiles while a tile is maximized', async () => {
+      const [first, ...others] = tileManager.tiles;
+      const names = () =>
+        others.map((tile) => getComputedStyle(tile).viewTransitionName);
+
+      first.maximized = true;
+      await elementUpdated(tileManager);
+
+      expect(names().every((name) => name === 'none')).to.be.true;
+      expect(getComputedStyle(first).viewTransitionName).to.equal(
+        first.style.viewTransitionName
+      );
+
+      first.maximized = false;
+      await elementUpdated(tileManager);
+
+      expect(names()).to.eql(
+        others.map((tile) => tile.style.viewTransitionName)
+      );
     });
   });
 
@@ -570,6 +881,227 @@ describe('Tile Manager component', () => {
     });
   });
 
+  describe('Tile manager context', () => {
+    const managerFeatures = (tile: IgcTileComponent) => ({
+      draggable: !!tile.renderRoot.querySelector('[part~="draggable"]'),
+      resizable: !!tile.renderRoot.querySelector('[part~="trigger"]'),
+    });
+
+    it('drops the manager features when a tile leaves its manager', async () => {
+      const container = await fixture<HTMLElement>(html`
+        <div>
+          <igc-tile-manager drag-mode="tile" resize-mode="always">
+            <igc-tile><p>Content</p></igc-tile>
+          </igc-tile-manager>
+          <div id="outside"></div>
+        </div>
+      `);
+      const tile = container.querySelector('igc-tile')!;
+      await elementUpdated(tile);
+      expect(managerFeatures(tile)).to.eql({
+        draggable: true,
+        resizable: true,
+      });
+
+      container.querySelector('#outside')!.append(tile);
+      await elementUpdated(tile);
+
+      expect(managerFeatures(tile)).to.eql({
+        draggable: false,
+        resizable: false,
+      });
+    });
+
+    it('takes the features of the manager that a tile moves to', async () => {
+      const container = await fixture<HTMLElement>(html`
+        <div>
+          <igc-tile-manager>
+            <igc-tile><p>Content</p></igc-tile>
+          </igc-tile-manager>
+          <igc-tile-manager drag-mode="tile"></igc-tile-manager>
+        </div>
+      `);
+      const [first, second] = container.querySelectorAll('igc-tile-manager');
+      const tile = first.querySelector('igc-tile')!;
+      await elementUpdated(tile);
+      expect(managerFeatures(tile).draggable).to.be.false;
+
+      second.append(tile);
+      await elementUpdated(tile);
+
+      expect(managerFeatures(tile).draggable).to.be.true;
+    });
+
+    it('connects the tiles of a manager that the browser defines later', async () => {
+      const tag = 'igc-late-tile-manager';
+      const container = await fixture<HTMLElement>(html`<div></div>`);
+
+      container.innerHTML = `<${tag} drag-mode="tile"><igc-tile><p>Content</p></igc-tile></${tag}>`;
+      const tile = container.querySelector('igc-tile')!;
+      await elementUpdated(tile);
+
+      customElements.define(tag, class extends IgcTileManagerComponent {});
+      const manager = container.querySelector<IgcTileManagerComponent>(tag)!;
+      await elementUpdated(manager);
+      await elementUpdated(tile);
+
+      expect(managerFeatures(tile).draggable).to.be.true;
+    });
+  });
+
+  describe('Native fullscreen', () => {
+    let tile: IgcTileComponent;
+    let plainTile: IgcTileComponent;
+
+    function requestFullscreen({ currentTarget }: Event) {
+      (currentTarget as Element).closest('igc-tile')!.requestFullscreen();
+    }
+
+    function requestChartFullscreen() {
+      tile.querySelector('#chart')!.requestFullscreen();
+    }
+
+    beforeEach(async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager>
+          <igc-tile>
+            <span slot="title">Report</span>
+            <button slot="fullscreen-action" @click=${requestFullscreen}>
+              Full screen
+            </button>
+            <div id="chart">
+              <button @click=${requestChartFullscreen}>Chart</button>
+            </div>
+          </igc-tile>
+          <igc-tile>
+            <span slot="title">Notes</span>
+          </igc-tile>
+        </igc-tile-manager>
+      `);
+      [tile, plainTile] = tileManager.tiles;
+    });
+
+    afterEach(async () => {
+      await resetMouse();
+
+      for (const each of [tile, plainTile]) {
+        while (each.matches(':fullscreen')) {
+          await exitFullscreen();
+        }
+      }
+    });
+
+    it('follows a fullscreen request from a custom action', async () => {
+      const eventSpy = spy(tile, 'emitEvent');
+      const changed = oneEvent(tile, 'fullscreenchange');
+
+      await clickCenter(tile.querySelector('button')!);
+      await changed;
+      await elementUpdated(tile);
+
+      expect(tile.fullscreen).to.be.true;
+      expect(getSlot(tile, 'maximize-action')).to.be.null;
+      expect(eventSpy).calledOnceWithExactly('igcTileFullscreen', {
+        detail: { tile, state: true },
+        cancelable: false,
+      });
+    });
+
+    it('follows the browser when it leaves fullscreen, also when a listener cancels the event', async () => {
+      const [, btnFullscreen] = getActionButtons(plainTile);
+
+      let changed = oneEvent(plainTile, 'fullscreenchange');
+      await clickCenter(btnFullscreen);
+      await changed;
+      expect(plainTile.fullscreen).to.be.true;
+
+      plainTile.addEventListener('igcTileFullscreen', (event) =>
+        event.preventDefault()
+      );
+      const eventSpy = spy(plainTile, 'emitEvent');
+
+      changed = oneEvent(plainTile, 'fullscreenchange');
+      await exitFullscreen();
+      await changed;
+      await elementUpdated(plainTile);
+
+      expect(plainTile.fullscreen).to.be.false;
+      expect(eventSpy).calledOnceWithExactly('igcTileFullscreen', {
+        detail: { tile: plainTile, state: false },
+        cancelable: false,
+      });
+      expect(getActionButtons(plainTile).map(({ name }) => name)).to.eql([
+        'expand_content',
+        'fullscreen',
+      ]);
+    });
+
+    it('leaves fullscreen when the tile is removed from the page', async () => {
+      const changed = oneEvent(tile, 'fullscreenchange');
+      await clickCenter(tile.querySelector('button')!);
+      await changed;
+      expect(tile.fullscreen).to.be.true;
+
+      const exited = oneEvent(document, 'fullscreenchange');
+      tile.remove();
+      await exited;
+
+      tileManager.append(tile);
+      await elementUpdated(tile);
+
+      expect(tile.fullscreen).to.be.false;
+      expect(getSlot(tile, 'maximize-action')).to.exist;
+    });
+
+    it('stays fullscreen when the browser rejects the exit', async () => {
+      const changed = oneEvent(plainTile, 'fullscreenchange');
+      await clickCenter(getActionButtons(plainTile)[1]);
+      await changed;
+
+      const exit = stub(document, 'exitFullscreen').rejects(new TypeError());
+      const eventSpy = spy(plainTile, 'emitEvent');
+
+      try {
+        simulateClick(getActionButtons(plainTile).at(-1)!);
+        await exit.firstCall.returnValue.catch(() => {});
+        await elementUpdated(plainTile);
+      } finally {
+        exit.restore();
+      }
+
+      expect(plainTile.fullscreen).to.be.true;
+      expect(eventSpy.lastCall).calledWithExactly('igcTileFullscreen', {
+        detail: { tile: plainTile, state: true },
+        cancelable: false,
+      });
+    });
+
+    it('stays fullscreen while an element inside it is fullscreen', async () => {
+      let changed = oneEvent(tile, 'fullscreenchange');
+      await clickCenter(tile.querySelector('button')!);
+      await changed;
+
+      const eventSpy = spy(tile, 'emitEvent');
+      const chart = tile.querySelector('#chart')!;
+
+      changed = oneEvent(chart, 'fullscreenchange');
+      await clickCenter(chart.querySelector('button')!);
+      await changed;
+      await elementUpdated(tile);
+
+      expect(chart.matches(':fullscreen')).to.be.true;
+      expect(tile.fullscreen).to.be.true;
+
+      changed = oneEvent(chart, 'fullscreenchange');
+      await exitFullscreen();
+      await changed;
+      await elementUpdated(tile);
+
+      expect(tile.fullscreen).to.be.true;
+      expect(eventSpy).not.called;
+    });
+  });
+
   describe('Tile state change behavior', () => {
     let tile: any;
 
@@ -687,6 +1219,65 @@ describe('Tile Manager component', () => {
       expect(tile.fullscreen).to.be.false;
     });
 
+    it('reports the rollback when the browser rejects the fullscreen request', async () => {
+      tile.requestFullscreen = stub().rejects(new TypeError('Denied'));
+      const eventSpy = spy(tile, 'emitEvent');
+
+      simulateClick(getActionButtons(tile)[1]);
+      await aTimeout(0);
+      await elementUpdated(tile);
+
+      expect(tile.fullscreen).to.be.false;
+      expect(eventSpy.args).to.eql([
+        [
+          'igcTileFullscreen',
+          { detail: { tile, state: true }, cancelable: true },
+        ],
+        [
+          'igcTileFullscreen',
+          { detail: { tile, state: false }, cancelable: false },
+        ],
+      ]);
+      expect(getActionButtons(tile).map(({ name }) => name)).to.eql([
+        'expand_content',
+        'fullscreen',
+      ]);
+    });
+
+    it('keeps the focus on the actions of a resizable tile', async () => {
+      tileManager.resizeMode = 'always';
+      await elementUpdated(tileManager);
+      await elementUpdated(tile);
+
+      const [btnMaximize, btnFullscreen] = getActionButtons(tile);
+
+      btnMaximize.focus();
+      simulateClick(btnMaximize);
+      await viewTransitionComplete();
+
+      expect(tile.maximized).to.be.true;
+      expect(isFocused(btnMaximize)).to.be.true;
+
+      simulateClick(btnMaximize);
+      await viewTransitionComplete();
+
+      btnFullscreen.focus();
+      simulateClick(btnFullscreen);
+      await elementUpdated(tile);
+
+      expect(tile.fullscreen).to.be.true;
+      expect(isFocused(btnFullscreen)).to.be.true;
+    });
+
+    it('names the fullscreen action after the next state', async () => {
+      const btnFullscreen = getActionButtons(tile)[1];
+
+      simulateClick(btnFullscreen);
+      await elementUpdated(tile);
+
+      expect(btnFullscreen.ariaLabel).to.equal('Exit full screen');
+    });
+
     it('should properly switch the icons on fullscreen state change.', async () => {
       const btnFullscreen = getActionButtons(tile)[1];
 
@@ -759,6 +1350,20 @@ describe('Tile Manager component', () => {
         cancelable: true,
       });
       expect(tile.maximized).to.be.false;
+    });
+
+    it('sets the state that its events report when maximize is clicked twice quickly', async () => {
+      const eventSpy = spy(tile, 'emitEvent');
+      const [btnMaximize] = getActionButtons(tile);
+
+      simulateClick(btnMaximize);
+      simulateClick(btnMaximize);
+      await viewTransitionComplete();
+      await viewTransitionComplete();
+
+      const states = eventSpy.args.map(([, { detail }]) => detail.state);
+      expect(states).to.eql([true, true]);
+      expect(tile.maximized).to.be.true;
     });
 
     it('should properly switch the icons on maximized state change.', async () => {
@@ -1031,10 +1636,77 @@ describe('Tile Manager component', () => {
   });
 
   describe('Positioning', () => {
+    const layout = () =>
+      tileManager.tiles.map(({ id, position }) => [id, position]);
+
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(
         createTileManagerWithPositions()
       );
+    });
+
+    it('keeps the positions when a tile moves in the DOM', async () => {
+      const before = layout();
+
+      tileManager.prepend(tileManager.tiles.at(-1)!);
+      await elementUpdated(tileManager);
+
+      expect(layout()).to.eql(before);
+    });
+
+    it('keeps the positions when several tiles move in one task', async () => {
+      const before = layout();
+      const [first, second] = getTiles();
+
+      // A framework that reorders a list moves the nodes one by one.
+      tileManager.append(first);
+      tileManager.append(second);
+      await elementUpdated(tileManager);
+
+      expect(layout()).to.eql(before);
+    });
+
+    it('gives the tiles unique positions after a layout with duplicate positions', async () => {
+      tileManager.loadLayout(
+        JSON.stringify([
+          { id: 'tile1', position: 5 },
+          { id: 'tile2', position: 5 },
+          { id: 'tile3', position: 0 },
+        ])
+      );
+      await elementUpdated(tileManager);
+
+      expect(layout()).to.eql([
+        ['tile3', 0],
+        ['tile1', 1],
+        ['tile2', 2],
+      ]);
+    });
+
+    it('changes no positions for a value that is not a layout', async () => {
+      const [first, second] = getTiles();
+
+      first.position = 1;
+      second.position = 1;
+      await elementUpdated(tileManager);
+      const before = layout();
+
+      for (const data of ['{}', '[]', '[null, 1, "x"]', '[{"id":"other"}]']) {
+        tileManager.loadLayout(data);
+      }
+      await elementUpdated(tileManager);
+
+      expect(layout()).to.eql(before);
+    });
+
+    it('uses a whole number for a fractional position', async () => {
+      const tile = firstOf(getTiles());
+
+      tile.position = 1.5;
+      await elementUpdated(tile);
+
+      expect(tile.position).to.equal(1);
+      expect(tile.style.order).to.equal('1');
     });
 
     it('should preserve pre-set positions', async () => {
@@ -1103,6 +1775,70 @@ describe('Tile Manager component', () => {
       tiles.forEach((tile, index) => {
         expect(tile.position).to.equal(index);
       });
+    });
+  });
+
+  describe('Reading order', () => {
+    async function tabOrder(tiles: ReturnType<typeof html>[]) {
+      const container = await fixture<HTMLElement>(html`
+        <div>
+          <button>Start</button>
+          <igc-tile-manager column-count="4">${tiles}</igc-tile-manager>
+        </div>
+      `);
+      const manager = container.querySelector('igc-tile-manager')!;
+      await elementUpdated(manager);
+
+      container.querySelector('button')!.focus();
+      const order: string[] = [];
+
+      for (const _ of manager.tiles) {
+        await sendKeys({ press: 'Tab' });
+        order.push(document.activeElement!.textContent!.trim());
+      }
+
+      return order;
+    }
+
+    const tile = (name: string, attributes: Record<string, number>) => html`
+      <igc-tile
+        disable-maximize
+        disable-fullscreen
+        position=${attributes.position ?? -1}
+        col-span=${attributes.colSpan ?? 1}
+      >
+        <button>${name}</button>
+      </igc-tile>
+    `;
+
+    beforeEach(function () {
+      // Only Chromium supports `reading-flow`. Elsewhere the DOM order stays.
+      if (!CSS.supports('reading-flow', 'grid-rows')) {
+        this.skip();
+      }
+    });
+
+    it('moves the focus in the order of `position`', async () => {
+      const order = await tabOrder([
+        tile('A', { position: 3 }),
+        tile('B', { position: 2 }),
+        tile('C', { position: 1 }),
+        tile('D', { position: 0 }),
+      ]);
+
+      expect(order).to.eql(['D', 'C', 'B', 'A']);
+    });
+
+    it('moves the focus in the order of a dense layout', async () => {
+      // B does not fit in the first row, so C fills the gap before it.
+      const order = await tabOrder([
+        tile('A', { colSpan: 3 }),
+        tile('B', { colSpan: 2 }),
+        tile('C', { colSpan: 1 }),
+        tile('D', { colSpan: 1 }),
+      ]);
+
+      expect(order).to.eql(['A', 'C', 'B', 'D']);
     });
   });
 });

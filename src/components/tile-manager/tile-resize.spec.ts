@@ -7,6 +7,7 @@ import {
 } from '@open-wc/testing';
 import { range } from 'lit/directives/range.js';
 import { spy } from 'sinon';
+import { getActiveViewTransition } from '#animations/view-transition.js';
 import { escapeKey } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { viewTransitionComplete } from '#internals/testing/helpers.spec.js';
@@ -130,6 +131,27 @@ describe('Tile resize', () => {
       await nextFrame();
 
       expect(getRows().length).to.eql(4);
+      expect(getComputedStyle(lastTile).gridRow).to.eql('auto / span 4');
+    });
+
+    it('creates new rows from a minimum row height in rem', async () => {
+      // 200px with the default root font size.
+      tileManager.minRowHeight = '12.5rem';
+      await elementUpdated(tileManager);
+
+      const lastTile = lastOf(getTiles());
+      const DOM = getTileDOM(lastTile);
+
+      simulatePointerDown(DOM.adorners.bottom);
+      await elementUpdated(lastTile);
+
+      simulatePointerMove(DOM.adorners.bottom, { clientY: rowSize * 4 });
+      await elementUpdated(lastTile);
+
+      simulateLostPointerCapture(DOM.adorners.bottom);
+      await elementUpdated(lastTile);
+      await nextFrame();
+
       expect(getComputedStyle(lastTile).gridRow).to.eql('auto / span 4');
     });
 
@@ -515,6 +537,116 @@ describe('Tile resize', () => {
       expect(DOM.adorners.corner).is.null;
     });
 
+    it('cancels the resize when the tile leaves the page during it', async () => {
+      const DOM = getTileDOM(firstTile);
+      const eventSpy = spy(firstTile, 'emitEvent');
+
+      simulatePointerDown(DOM.adorners.corner);
+      await elementUpdated(firstTile);
+
+      tileManager.append(firstTile);
+      await elementUpdated(firstTile);
+
+      expect(eventSpy).calledWith('igcTileResizeCancel');
+      expect(firstTile.part.contains('resizing')).to.be.false;
+      expect(DOM.ghostElement).to.be.null;
+    });
+
+    it('marks the tile for a sharp transition while its spans change', async () => {
+      const DOM = getTileDOM(firstTile);
+
+      simulatePointerDown(DOM.adorners.bottom);
+      simulatePointerMove(DOM.adorners.bottom, { clientY: rowSize * 2 });
+      simulateLostPointerCapture(DOM.adorners.bottom);
+
+      expect(firstTile.style.viewTransitionClass).to.equal('igc-tile-resize');
+
+      await getActiveViewTransition()?.finished;
+
+      expect(firstTile.style.viewTransitionClass).to.equal('');
+    });
+
+    it('cancels the resize when an `igcTileResizeStart` listener moves the tile', async () => {
+      const DOM = getTileDOM(firstTile);
+      const other = await fixture<IgcTileManagerComponent>(
+        html`<igc-tile-manager></igc-tile-manager>`
+      );
+      const eventSpy = spy(firstTile, 'emitEvent');
+
+      firstTile.addEventListener('igcTileResizeStart', () =>
+        other.append(firstTile)
+      );
+
+      simulatePointerDown(DOM.adorners.corner);
+      await elementUpdated(firstTile);
+
+      expect(eventSpy).calledWith('igcTileResizeCancel');
+      expect(firstTile.part.contains('resizing')).to.be.false;
+      expect(DOM.ghostElement).to.be.null;
+    });
+
+    it('resizes a tile whose grid placement comes from author CSS', async () => {
+      firstTile.style.gridColumn = '1 / 3';
+      await elementUpdated(firstTile);
+
+      const DOM = getTileDOM(firstTile);
+      const eventSpy = spy(firstTile, 'emitEvent');
+
+      for (const _ of range(2)) {
+        simulatePointerDown(DOM.adorners.bottom);
+        simulatePointerMove(DOM.adorners.bottom, { clientY: rowSize * 2 });
+        simulateLostPointerCapture(DOM.adorners.bottom);
+        await viewTransitionComplete();
+      }
+
+      expect(eventSpy.args.map(([name]) => name)).to.eql([
+        'igcTileResizeStart',
+        'igcTileResizeEnd',
+        'igcTileResizeStart',
+        'igcTileResizeEnd',
+      ]);
+      expect(DOM.ghostElement).to.be.null;
+    });
+
+    it('uses whole numbers for the spans and the starts', () => {
+      Object.assign(firstTile, { colSpan: 2.7, rowSpan: 1.5, colStart: 2.5 });
+
+      expect([firstTile.colSpan, firstTile.rowSpan, firstTile.colStart]).to.eql(
+        [2, 1, 2]
+      );
+    });
+
+    it('puts the resize ghost over the tile in an open modal dialog', async () => {
+      // The border and the scroll of the dialog do not move the ghost.
+      const dialog = await fixture<HTMLDialogElement>(html`
+        <dialog style="border: 10px solid; max-height: 300px">
+          <div style="height: 150px"></div>
+          ${createTileManager()}
+        </dialog>
+      `);
+      dialog.showModal();
+      dialog.scrollTop = 100;
+      tileManager = dialog.querySelector('igc-tile-manager')!;
+      await elementUpdated(tileManager);
+
+      const tile = firstOf(getTiles());
+      const tileRect = tile.getBoundingClientRect();
+      const DOM = getTileDOM(tile);
+
+      simulatePointerDown(DOM.adorners.corner);
+      await elementUpdated(tile);
+
+      const layer = DOM.ghostElement.parentElement;
+      const ghostRect = DOM.ghostElement.getBoundingClientRect();
+
+      simulateLostPointerCapture(DOM.adorners.corner);
+      await viewTransitionComplete();
+      dialog.close();
+
+      expect(layer).to.equal(dialog);
+      assertRectsAreEqual(ghostRect, tileRect, 1);
+    });
+
     it('should update tile parts on resizing', async () => {
       const DOM = getTileDOM(firstTile);
       const eventSpy = spy(firstTile, 'emitEvent');
@@ -529,6 +661,65 @@ describe('Tile resize', () => {
       expect(firstTile.part.contains('resizing')).to.be.true;
     });
   });
+
+  // A `dir` attribute and a CSS `direction` both make the layout right-to-left.
+  for (const [label, rtl] of [
+    ['dir', (content: unknown) => html`<div dir="rtl">${content}</div>`],
+    [
+      'CSS direction',
+      (content: unknown) => html`<div style="direction: rtl">${content}</div>`,
+    ],
+  ] as const) {
+    describe(`Right-to-left (${label})`, () => {
+      beforeEach(async () => {
+        const container = await fixture<HTMLElement>(rtl(createTileManager()));
+        tileManager = container.querySelector('igc-tile-manager')!;
+        firstTile = firstOf(getTiles());
+        tileManagerStyles = getComputedStyle(
+          tileManager.shadowRoot!.querySelector('[part~="base"]')!
+        );
+        columnSize =
+          Number.parseFloat(firstOf(getColumns())) +
+          Number.parseFloat(tileManagerStyles.gap);
+      });
+
+      it('places the side and corner handles on the inline-end edge', () => {
+        const DOM = getTileDOM(firstTile);
+        const { left } = firstTile.getBoundingClientRect();
+
+        for (const adorner of [DOM.adorners.side, DOM.adorners.corner]) {
+          const rect = adorner.getBoundingClientRect();
+          expect(rect.left).to.be.lessThan(left);
+          expect(rect.right).to.be.greaterThan(left);
+        }
+      });
+
+      it('grows the tile toward the inline end', async () => {
+        const DOM = getTileDOM(firstTile);
+        const tileRect = firstTile.getBoundingClientRect();
+
+        simulatePointerDown(DOM.adorners.side);
+        await elementUpdated(firstTile);
+
+        simulatePointerMove(DOM.adorners.side, {
+          clientX: tileRect.right - columnSize * 1.75,
+        });
+        await elementUpdated(firstTile);
+
+        const ghostRect = DOM.ghostElement.getBoundingClientRect();
+        expect(ghostRect.width).to.be.greaterThan(tileRect.width);
+        expect(ghostRect.right).to.be.approximately(tileRect.right, 1);
+
+        simulateLostPointerCapture(DOM.adorners.side);
+        await viewTransitionComplete();
+
+        const resized = firstTile.getBoundingClientRect();
+        expect(firstTile.colSpan).to.equal(2);
+        expect(resized.right).to.be.approximately(tileRect.right, 1);
+        expect(resized.left).to.be.lessThan(tileRect.left);
+      });
+    });
+  }
 });
 
 function getTileDOM(tile: IgcTileComponent) {

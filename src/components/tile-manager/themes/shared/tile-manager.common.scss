@@ -3,6 +3,6 @@
 
 $theme: $material;
 
-[part='base'] {
+[part~='base'] {
     background: var-get($theme, 'background');
 }

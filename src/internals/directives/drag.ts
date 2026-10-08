@@ -1,7 +1,8 @@
 import { directive, type PartInfo } from 'lit/async-directive.js';
-import { getRoot, isLTR, roundByDPR, setStyles } from '../utils/dom.js';
+import { getRoot, isLTR, setStyles } from '../utils/dom.js';
 import { getElementFromPath } from '../utils/events.js';
 import {
+  type Point,
   PointerOperationDirective,
   type PointerOperationOptions,
   type PointerOperationState,
@@ -11,15 +12,14 @@ export type DragPointerDirection = 'start' | 'end' | 'top' | 'bottom';
 export type DragCallback = (params: DragCallbackParams) => unknown;
 export type DragCancelCallback = (state: DragState) => unknown;
 
-type Point = { x: number; y: number };
-
 export type DragState = {
   /** The bounding rectangle of the target at the start of the operation. */
   initial: DOMRect;
   current: DOMRect;
   /**
-   * The position of the moved element: relative to the layer in deferred
-   * mode, and to the initial rectangle of the target in immediate mode.
+   * The position of the moved element: from the ghost origin (the ghost at
+   * left 0 and top 0) in deferred mode, and from the initial rectangle of
+   * the target in immediate mode.
    */
   position: Point;
   /** The distance from the target origin to the pointer at the start. */
@@ -33,6 +33,8 @@ export type DragState = {
   ghost: HTMLElement | null;
   /** The element that the `matchTarget` callback matches, or `null`. */
   element: Element | null;
+  /** Aborts when the operation ends, also in a `start` listener. */
+  signal: AbortSignal;
 };
 
 export type DragCallbackParams = {
@@ -50,8 +52,11 @@ export interface DraggableOptions extends PointerOperationOptions {
   snapToCursor?: boolean;
   /** Returns the element whose presence in the event path starts a drag. */
   trigger?: () => HTMLElement | null | undefined;
-  /** Runs with the initiating pointer event. A `true` return skips the drag. */
-  skip?: (event: PointerEvent) => boolean;
+  /**
+   * Runs with the `pointerdown`, `touchstart` or `dragstart` event that would
+   * start a drag. A `true` return skips the drag and the native action stays.
+   */
+  skip?(event: Event): boolean;
   /**
    * A predicate for the elements under the pointer. The first match becomes
    * `state.element`, and drives `enter`, `leave` and `over`.
@@ -69,30 +74,21 @@ export interface DraggableOptions extends PointerOperationOptions {
   over?: DragCallback;
   /** Runs when a drag operation completes. */
   end?: DragCallback;
-  /** Runs when the Escape key cancels a drag operation. */
+  /** Runs when Escape, `pointercancel` or a disconnect cancels a drag operation. */
   cancel?: DragCancelCallback;
 }
 
-type DragOperation = PointerOperationState & {
-  target: HTMLElement;
-  initial: DOMRect;
-  current: DOMRect;
-  position: Point;
-  offset: Point;
-  pointerState: DragState['pointerState'];
-  matchedElement: Element | null;
-  /** The inline transform of the target, restored on an immediate cancel. */
-  targetTransform: string;
-};
+type DragOperation = PointerOperationState &
+  Omit<DragState, 'ghost' | 'signal'> & {
+    target: HTMLElement;
+    /** The inline transform of the target, restored on an immediate cancel. */
+    targetTransform: string;
+  };
 
 function createDefaultGhost({ width, height }: DOMRect): HTMLElement {
   const element = document.createElement('div');
 
-  // The element sits at the layer origin and moves with `translate3d`.
   setStyles(element, {
-    position: 'absolute',
-    left: '0',
-    top: '0',
     width: `${width}px`,
     height: `${height}px`,
     zIndex: '1000',
@@ -120,9 +116,10 @@ class DraggableDirective extends PointerOperationDirective<
   protected override _cancelOperation(): void {
     this._options.cancel?.(this._createState());
 
-    if (!this._isDeferred) {
-      this._operation!.target.style.transform =
-        this._operation!.targetTransform;
+    const { ghost, target, targetTransform } = this._operation!;
+
+    if (!ghost) {
+      target.style.transform = targetTransform;
     }
   }
 
@@ -138,11 +135,6 @@ class DraggableDirective extends PointerOperationDirective<
   protected override disconnected(): void {
     super.disconnected();
     this._target = null;
-  }
-
-  /** The ghost element in deferred mode, the drag target in immediate mode. */
-  private get _dragItem(): HTMLElement {
-    return this._isDeferred ? this._operation!.ghost! : this._operation!.target;
   }
 
   // #region Event handlers
@@ -173,20 +165,27 @@ class DraggableDirective extends PointerOperationDirective<
         current: { x: clientX, y: clientY },
         direction: 'end',
       },
-      ghost: this._isDeferred ? this._createGhost(initial) : null,
-      matchedElement: null,
+      ghost: this._isDeferred ? this._createGhost(target, initial) : null,
+      element: null,
       targetTransform: target.style.transform,
     };
 
     this._updatePosition(event);
 
-    if (this._options.start?.(this._createParams(event)) === false) {
-      this._dispose();
+    if (
+      !this._runStart(() => this._options.start?.(this._createParams(event)))
+    ) {
       return;
     }
 
-    this._assignPosition(this._dragItem);
-    this._startOperation(event);
+    this._assignPosition();
+    this._setDragStyles(true);
+    this._startOperationListeners(
+      target,
+      pointerId,
+      this._handlePointerMove,
+      this._handlePointerEnd
+    );
   };
 
   private readonly _handlePointerMove = (event: PointerEvent): void => {
@@ -200,7 +199,7 @@ class DraggableDirective extends PointerOperationDirective<
 
     this._options.move?.(this._createParams(event));
 
-    this._assignPosition(this._dragItem);
+    this._assignPosition();
   };
 
   private readonly _handlePointerEnd = (event: PointerEvent): void => {
@@ -210,6 +209,13 @@ class DraggableDirective extends PointerOperationDirective<
 
     this._options.end?.(this._createParams(event));
     this._dispose();
+  };
+
+  /** Cancels a touch scroll or a native drag only where a drag can start. */
+  private readonly _preventNativeDrag = (event: Event): void => {
+    if (!this._shouldSkip(event)) {
+      this._preventNativeBehavior(event);
+    }
   };
 
   // #endregion
@@ -232,27 +238,16 @@ class DraggableDirective extends PointerOperationDirective<
     target.addEventListener('pointerdown', this._handlePointerDown, {
       signal,
     });
-    target.addEventListener('dragstart', this._preventNativeBehavior, {
+    target.addEventListener('dragstart', this._preventNativeDrag, {
       signal,
     });
-    target.addEventListener('touchstart', this._preventNativeBehavior, {
+    target.addEventListener('touchstart', this._preventNativeDrag, {
       passive: false,
       signal,
     });
   }
 
-  private _startOperation({ pointerId }: PointerEvent): void {
-    this._setDragStyles(true);
-
-    this._startOperationListeners(
-      this._operation!.target,
-      pointerId,
-      this._handlePointerMove,
-      this._handlePointerEnd
-    );
-  }
-
-  private _shouldSkip(event: PointerEvent): boolean {
+  private _shouldSkip(event: Event): boolean {
     if (this._options.skip?.(event)) {
       return true;
     }
@@ -262,15 +257,8 @@ class DraggableDirective extends PointerOperationDirective<
   }
 
   private _createState(): DragState {
-    const {
-      initial,
-      current,
-      position,
-      offset,
-      pointerState,
-      ghost,
-      matchedElement,
-    } = this._operation!;
+    const { initial, current, position, offset, pointerState, ghost, element } =
+      this._operation!;
 
     return {
       initial,
@@ -279,7 +267,8 @@ class DraggableDirective extends PointerOperationDirective<
       offset,
       pointerState,
       ghost,
-      element: matchedElement,
+      element,
+      signal: this._operationAbort.signal,
     };
   }
 
@@ -289,16 +278,16 @@ class DraggableDirective extends PointerOperationDirective<
 
   private _updatePosition({ clientX, clientY }: PointerEvent): void {
     const operation = this._operation!;
-    const { x: layerX, y: layerY } = this._isDeferred
-      ? this._resolveLayer().getBoundingClientRect()
+    const { x: originX, y: originY } = operation.ghost
+      ? this._getGhostOrigin(operation.ghost)
       : operation.initial;
     const { x, y } = this._options.snapToCursor
       ? { x: 0, y: 0 }
       : operation.offset;
 
     operation.position = {
-      x: clientX - layerX + x,
-      y: clientY - layerY + y,
+      x: clientX - originX + x,
+      y: clientY - originY + y,
     };
   }
 
@@ -326,30 +315,34 @@ class DraggableDirective extends PointerOperationDirective<
     }
 
     const operation = this._operation!;
-    const match = getRoot(operation.target)
-      .elementsFromPoint(event.clientX, event.clientY)
-      .find((element) => matchTarget(element));
+    const match =
+      getRoot(operation.target)
+        .elementsFromPoint(event.clientX, event.clientY)
+        .find((element) => matchTarget(element)) ?? null;
 
-    if (match && !operation.matchedElement) {
-      operation.matchedElement = match;
-      this._options.enter?.(this._createParams(event));
+    if (match === operation.element) {
+      if (match) {
+        this._options.over?.(this._createParams(event));
+      }
       return;
     }
 
-    if (!match && operation.matchedElement) {
+    // A fast move can go from one match straight to the next.
+    if (operation.element) {
       this._options.leave?.(this._createParams(event));
-      operation.matchedElement = null;
-      return;
     }
 
-    if (match && match === operation.matchedElement) {
-      this._options.over?.(this._createParams(event));
+    operation.element = match;
+
+    if (match) {
+      this._options.enter?.(this._createParams(event));
     }
   }
 
-  private _assignPosition(element: HTMLElement): void {
-    const { x, y } = this._operation!.position;
-    element.style.transform = `translate3d(${roundByDPR(x)}px,${roundByDPR(y)}px,0)`;
+  /** Moves the ghost in deferred mode, and the target in immediate mode. */
+  private _assignPosition(): void {
+    const { ghost, target, position } = this._operation!;
+    this._translate(ghost ?? target, position);
   }
 
   /**

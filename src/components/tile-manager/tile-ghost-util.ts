@@ -1,19 +1,16 @@
-import { isLTR } from '#internals/utils/dom.js';
+import { setStyles } from '#internals/utils/dom.js';
 import type IgcTileComponent from './tile.js';
 
 /** Ghost styling shared between the drag and resize ghosts, themed from the tile's CSS variables. */
 function getBaseGhostStyles(
-  tile: IgcTileComponent,
+  { width, height }: DOMRect,
   computed: CSSStyleDeclaration,
   background: string,
   borderColor: string
-) {
-  const { width, height } = tile.getBoundingClientRect();
-
+): Partial<CSSStyleDeclaration> {
   return {
-    position: 'absolute',
     contain: 'strict',
-    zIndex: 1000,
+    zIndex: '1000',
     width: `${width}px`,
     height: `${height}px`,
     background: computed.getPropertyValue(background),
@@ -22,57 +19,47 @@ function getBaseGhostStyles(
   };
 }
 
-export function createTileDragGhost(tile: IgcTileComponent): IgcTileComponent {
+export function createTileDragGhost(
+  tile: IgcTileComponent,
+  rect: DOMRect
+): IgcTileComponent {
   const clone = tile.cloneNode(true) as IgcTileComponent;
   const computed = getComputedStyle(tile);
 
-  Object.assign(clone, {
-    id: null,
-    inert: true,
-    position: -1,
-  });
+  // An empty id gives the clone a new one when it connects.
+  Object.assign(clone, { id: '', inert: true });
 
-  Object.assign(
-    clone.style,
-    getBaseGhostStyles(
-      tile,
+  setStyles(clone, {
+    ...getBaseGhostStyles(
+      rect,
       computed,
       '--tile-background',
       '--hover-border-color'
     ),
-    {
-      direction: isLTR(tile) ? 'ltr' : 'rtl',
-      top: 0,
-      left: 0,
-      opacity: 0.6,
-      boxShadow: computed.getPropertyValue('--drag-elevation'),
-      viewTransitionName: 'dragged-tile-ghost',
-    }
-  );
+    direction: computed.direction,
+    opacity: '0.6',
+    boxShadow: computed.getPropertyValue('--drag-elevation'),
+    viewTransitionName: 'dragged-tile-ghost',
+  });
 
   return clone;
 }
 
-export function createTileGhost(tile: IgcTileComponent): HTMLElement {
+export function createTileGhost(
+  tile: IgcTileComponent,
+  rect: DOMRect
+): HTMLElement {
   const element = document.createElement('div');
-  const computed = getComputedStyle(tile);
-  const { x, y } = tile.getBoundingClientRect();
-  const { scrollX, scrollY } = window;
 
-  Object.assign(
-    element.style,
-    getBaseGhostStyles(
-      tile,
-      computed,
+  setStyles(element, {
+    ...getBaseGhostStyles(
+      rect,
+      getComputedStyle(tile),
       '--placeholder-background',
       '--ghost-border'
     ),
-    {
-      boxSizing: 'border-box',
-      top: `${y + scrollY}px`,
-      left: `${x + scrollX}px`,
-    }
-  );
+    boxSizing: 'border-box',
+  });
 
   return element;
 }

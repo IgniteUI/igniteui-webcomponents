@@ -11,8 +11,8 @@
     grid-row: var(--ig-row-start, auto) / span var(--ig-row-span, 1);
 }
 
-:host([part='resizing']),
-:host([part='dragging']) {
+:host([part~='resizing']),
+:host([part~='dragging']) {
     [part~='trigger-side'],
     [part~='trigger'],
     [part~='trigger-bottom'] {
@@ -24,46 +24,53 @@
     }
 }
 
+// Without resizing, the wrapper of the content and the adorners has no box.
+#tile-container:not([part~='tile-container']) {
+    display: contents;
+}
+
 [part~='tile-container'] {
     position: relative;
     width: 100%;
     height: 100%;
 }
 
-%indicator {
+[part~='trigger-side'],
+[part~='trigger'],
+[part~='trigger-bottom'] {
     --_size: #{rem(11px)};
 
     display: inline-flex;
     position: absolute;
-    z-index: 1;
 }
 
-[part~='trigger-side'],
-[part~='trigger'],
-[part~='trigger-bottom'] {
-    @extend %indicator;
-}
-
+// A tile grows toward the inline end, so the handles sit on that edge.
 [part~='trigger-side'] {
     top: calc(50% - var(--_size));
-    right: calc(var(--_size) / 2 * -1);
+    inset-inline-end: calc(var(--_size) / 2 * -1);
     cursor: e-resize;
 }
 
 [part~='trigger'] {
     bottom: calc(var(--_size) / 2 * -1);
-    right: calc(var(--_size) / 2 * -1);
+    inset-inline-end: calc(var(--_size) / 2 * -1);
     cursor: se-resize;
 }
 
 [part~='trigger-bottom'] {
-    left: calc(50% - var(--_size));
+    inset-inline-start: calc(50% - var(--_size));
     bottom: calc(var(--_size) / 2 * -1);
     cursor: s-resize;
 }
 
-[part~='trigger']:focus {
-    outline: none;
+:host(:dir(rtl)) {
+    [part~='trigger-side'] {
+        cursor: w-resize;
+    }
+
+    [part~='trigger'] {
+        cursor: sw-resize;
+    }
 }
 
 [part~='base'] {
@@ -73,7 +80,6 @@
 }
 
 [part='content-container'] {
-    display: block;
     border-radius: inherit;
 
     ::slotted(*) {
@@ -86,28 +92,12 @@
 :host([maximized]) {
     position: absolute;
     inset: 0;
-    width: 100%;
-    height: 100%;
     z-index: 10;
 
-    // Fix for Firefox
+    // An absolutely positioned grid item with a placement uses its grid area
+    // as the containing block. Without the placement it covers the grid.
     grid-column: unset;
     grid-row: unset;
-
-    [part~='base'] {
-        width: 100%;
-        height: 100%;
-    }
-}
-
-[part='ghost'] {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    transform: scale(0);
-    z-index: 10;
 }
 
 [part='header'] {

@@ -4,6 +4,7 @@ import type {
   ReactiveController,
   ReactiveControllerHost,
 } from 'lit';
+import { createAbortHandle } from '../abort-handler.js';
 
 type AsyncContextOptions<T extends Context<unknown, unknown>> = {
   context: T;
@@ -19,6 +20,9 @@ export class AsyncContextConsumer<
   protected _host: Host;
   protected _options: AsyncContextOptions<T>;
   protected _consumer?: ContextConsumer<T, Host>;
+  /** Whether a provider answered the request of the current connection. */
+  private _answered = false;
+  private readonly _abort = createAbortHandle();
 
   constructor(host: Host, options: AsyncContextOptions<T>) {
     this._host = host;
@@ -31,9 +35,28 @@ export class AsyncContextConsumer<
     return this._consumer?.value;
   }
 
+  /**
+   * A provider that connects after the host, such as one that the browser
+   * defines later, announces itself. An unanswered request then goes again.
+   */
+  private readonly _handleProvider = (event: Event): void => {
+    const { context } = event as Event & { context?: unknown };
+
+    if (!this._answered && context === this._options.context) {
+      this._consumer?.hostConnected();
+    }
+  };
+
   // The consumer survives a disconnect, and a reconnect can land during the
   // await, so the guard runs on both sides of it.
   public async hostConnected(): Promise<void> {
+    this._answered = false;
+    this._host.ownerDocument.addEventListener(
+      'context-provider',
+      this._handleProvider,
+      { signal: this._abort.signal }
+    );
+
     if (this._consumer) {
       return;
     }
@@ -42,9 +65,16 @@ export class AsyncContextConsumer<
 
     this._consumer ??= new ContextConsumer(this._host, {
       context: this._options.context,
-      callback: this._options.callback,
+      callback: (value, dispose) => {
+        this._answered = true;
+        this._options.callback?.(value, dispose);
+      },
       subscribe: this._options.subscribe,
     });
+  }
+
+  public hostDisconnected(): void {
+    this._abort.abort();
   }
 }
 

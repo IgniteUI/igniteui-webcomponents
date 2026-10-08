@@ -37,6 +37,7 @@ import IgcTileComponent from './tile.js';
  * @slot - Default slot for the tile manager. Only tile elements will be projected inside the CSS grid container.
  *
  * @csspart base - The tile manager CSS Grid container.
+ * @csspart maximized-tile - Indicates that a tile is maximized. Applies to `base`.
  *
  * @cssproperty --column-count - The number of columns for the tile manager. The `column-count` attribute sets this variable.
  * @cssproperty --min-col-width - The minimum size of the columns in the tile-manager. The `min-column-width` attribute sets this variable.
@@ -58,11 +59,10 @@ export default class IgcTileManagerComponent extends LitElement {
 
   private _internalStyles: StyleInfo = {};
 
-  /** Whether any of the tiles is currently in a maximized state. */
   @state()
   private _hasMaximizedTile = false;
 
-  /** Shared config for the properties that project into a grid CSS variable. */
+  /** Config for a property that sets a grid CSS variable. */
   private static _styleVariable<T = string | undefined>(
     name: string,
     transform: (value: T) => T = (value) => (value ?? undefined) as T
@@ -101,7 +101,7 @@ export default class IgcTileManagerComponent extends LitElement {
   // #region Properties and Attributes
 
   /**
-   * Whether resize operations are enabled.
+   * The resize mode of the tiles. `none` turns resizing off.
    *
    * @attr resize-mode
    * @default none
@@ -110,7 +110,7 @@ export default class IgcTileManagerComponent extends LitElement {
   public resizeMode: TileManagerResizeMode = 'none';
 
   /**
-   * Whether drag and drop operations are enabled.
+   * The drag mode of the tiles. `none` turns drag and drop off.
    *
    * @attr drag-mode
    * @default none
@@ -119,8 +119,7 @@ export default class IgcTileManagerComponent extends LitElement {
   public dragMode: TileManagerDragMode = 'none';
 
   /**
-   * Sets the number of columns for the tile manager.
-   * Setting value <= than zero will trigger a responsive layout.
+   * The number of columns. A value of 0 or less gives a responsive layout.
    *
    * @attr column-count
    * @default 0
@@ -134,7 +133,7 @@ export default class IgcTileManagerComponent extends LitElement {
   public columnCount = 0;
 
   /**
-   * Sets the minimum width for a column unit in the tile manager.
+   * The minimum width of a column.
    * @attr min-column-width
    */
   @property({ attribute: 'min-column-width' })
@@ -142,7 +141,7 @@ export default class IgcTileManagerComponent extends LitElement {
   public minColumnWidth?: string = undefined;
 
   /**
-   * Sets the minimum height for a row unit in the tile manager.
+   * The minimum height of a row.
    * @attr min-row-height
    */
   @property({ attribute: 'min-row-height' })
@@ -150,7 +149,7 @@ export default class IgcTileManagerComponent extends LitElement {
   public minRowHeight?: string = undefined;
 
   /**
-   * Sets the gap size between tiles in the tile manager.
+   * The gap between the tiles.
    *
    * @attr gap
    */
@@ -204,43 +203,35 @@ export default class IgcTileManagerComponent extends LitElement {
   private _observerCallback({
     changes: { added, removed },
   }: MutationControllerParams<IgcTileComponent>) {
-    const isOwn = ({ target }: { target: Element }) =>
-      target.closest(this.tagName) === this;
-
-    for (const { node } of removed.filter(isOwn)) {
-      this._tilesState.remove(node);
+    if (!(added.length || removed.length)) {
+      return;
     }
 
-    for (const { node } of added.filter(isOwn)) {
-      this._tilesState.add(node);
-    }
+    // A tile in both lists moved inside the manager, and keeps its place.
+    const removedTiles = new Set(removed.map(({ node }) => node));
+    const addedTiles = new Set(
+      added.map(({ node }) => node).filter((node) => !removedTiles.has(node))
+    );
 
+    this._tilesState.normalize(addedTiles);
     this._tilesState.assignTiles();
     this._tilesState.adjustTileGridPosition();
-    this._updateMaximizedTile();
+    this._setMaximizedState();
   }
 
   /**
-   * Locks the grid height while a tile is maximized.
-   *
-   * @remarks
-   * A maximized tile is absolutely positioned and adds no height to the grid.
-   * If it is the tallest tile, the grid collapses and cuts off its content.
-   * Capture the height before the layout changes, and release it when no tile
-   * is maximized.
+   * Locks the grid height while a tile is maximized. The maximized tile is
+   * absolutely positioned, so without the lock the grid can collapse and cut
+   * off its content.
    */
   private _setMaximizedState(): void {
     const grid = this._grid.value;
     this._updateMaximizedTile();
 
     if (grid) {
-      if (this._hasMaximizedTile) {
-        if (!grid.style.minHeight) {
-          grid.style.minHeight = `${grid.offsetHeight}px`;
-        }
-      } else {
-        grid.style.minHeight = '';
-      }
+      grid.style.minHeight = this._hasMaximizedTile
+        ? grid.style.minHeight || `${grid.offsetHeight}px`
+        : '';
     }
   }
 
@@ -248,22 +239,17 @@ export default class IgcTileManagerComponent extends LitElement {
 
   // #region Public API
 
-  /**
-   * Returns the properties of the current tile collections as a JSON payload.
-   *
-   * @remarks
-   * The content of the tiles is not serialized or saved. Only tile properties
-   * are serialized.
-   */
+  /** Returns the tile properties as a JSON string. The content of the tiles is not saved. */
   public saveLayout(): string {
     return this._serializer.saveAsJSON();
   }
 
-  /**
-   * Restores a previously serialized state produced by `saveLayout`.
-   */
+  /** Applies a layout from `saveLayout` to the tiles with the same `id`. */
   public loadLayout(data: string): void {
-    this._serializer.loadFromJSON(data);
+    if (this._serializer.loadFromJSON(data)) {
+      this._tilesState.normalize();
+      this._tilesState.replaceLayout();
+    }
   }
 
   // #endregion

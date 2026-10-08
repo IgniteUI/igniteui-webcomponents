@@ -1,12 +1,6 @@
-import type {
-  ResizeProps,
-  ResizeSpanProps,
-  SnappedDimension,
-} from './types.js';
+import type { ResizeProps, ResizeSpanProps } from './types.js';
 
-export function calculateSnappedDimension(
-  props: ResizeProps
-): SnappedDimension {
+export function calculateSnappedDimension(props: ResizeProps): number {
   const {
     currentDelta,
     prevDelta,
@@ -22,15 +16,11 @@ export function calculateSnappedDimension(
 
   // If current size is below minimum, force to the size of the starting cell.
   if (Math.trunc(currentSize) < gridEntries[startIndex - 1]) {
-    return {
-      snappedSize: gridEntries[startIndex - 1],
-      newDelta: currentDelta,
-    };
+    return gridEntries[startIndex - 1];
   }
 
-  // Reuse the snapped value when the delta does not change.
   if (effectiveDelta === 0 && prevSnapped) {
-    return { snappedSize: prevSnapped, newDelta: currentDelta };
+    return prevSnapped;
   }
 
   let accumulated = 0;
@@ -59,7 +49,7 @@ export function calculateSnappedDimension(
     accumulated += currentEntry + gap;
   }
 
-  return { snappedSize, newDelta: currentDelta };
+  return snappedSize;
 }
 
 export function calculateResizedSpan(props: ResizeSpanProps): number {

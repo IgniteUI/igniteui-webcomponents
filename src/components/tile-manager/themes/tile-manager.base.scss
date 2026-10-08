@@ -14,14 +14,27 @@
     padding: rem(20px);
     width: 100%;
     height: 100%;
-    grid-template-columns: repeat(var(--column-count, auto-fit), minmax(min(var(--min-col-width, 100%)), 1fr));
+    grid-template-columns: repeat(var(--column-count, auto-fit), minmax(min(var(--min-col-width), 100%), 1fr));
     grid-auto-rows: var(--auto-rows, minmax(var(--min-row-height), var(--min-row-height)));
     grid-auto-columns: var(--auto-columns, 0);
     gap: var(--grid-gap, rem(10px));
     grid-auto-flow: dense;
     overflow: auto hidden;
+
+    // `position` (CSS `order`) and dense packing move tiles away from DOM order.
+    // Tab and assistive technology follow the layout rows where supported.
+    reading-flow: grid-rows;
 }
 
 [part~='maximized-tile'] {
     overflow: clip;
+
+    // Hide the covered tiles from Tab and assistive technology. A descendant can
+    // undo `visibility`, but not `content-visibility`. Without a transition name,
+    // they fade in place and do not move between the two layouts.
+    ::slotted(igc-tile:not([maximized], :fullscreen)) {
+        visibility: hidden;
+        content-visibility: hidden;
+        view-transition-name: none !important;
+    }
 }
