@@ -409,13 +409,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._renderedParent = this.parentElement;
   }
 
-  /** @hidden @internal Requests the context of a manager that the browser defined after the tile. */
-  public _requestContext(): void {
-    if (!this._tileManagerCtx) {
-      this._context.request();
-    }
-  }
-
   private _setDragState(state = true) {
     this._isDragging = state;
     this._tileContent.style.opacity = state ? '0' : '';

@@ -52,12 +52,12 @@ class FullscreenController {
     this._fullscreen = fullscreen;
     this._host.requestUpdate();
 
+    // A change rejects, for example a request without user activation. The
+    // state of the browser then comes back.
     if (fullscreen) {
-      // The request rejects without user activation, or for an element that
-      // cannot go fullscreen. The state then rolls back.
       this._host.requestFullscreen().catch(() => this._sync());
     } else if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
+      document.exitFullscreen().catch(() => this._sync());
     }
   }
 

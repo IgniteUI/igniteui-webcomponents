@@ -137,11 +137,17 @@ class TileDragRecord {
   /**
    * Swaps the tiles in a view transition. The placements are recorded there,
    * after the updates that are still in the queue, such as the restore of the
-   * last drag.
+   * last drag. A tile that leaves the parent before then swaps nothing.
    */
   public swap(dragged: IgcTileComponent, match: IgcTileComponent): void {
+    const parent = dragged.parentElement;
+
     this.last = match;
     this.swapped = startViewTransition(() => {
+      if (dragged.parentElement !== parent || match.parentElement !== parent) {
+        return;
+      }
+
       this._record(dragged);
       this._record(match);
       swapTiles(dragged, match);

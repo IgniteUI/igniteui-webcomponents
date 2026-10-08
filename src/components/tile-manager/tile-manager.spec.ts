@@ -912,6 +912,26 @@ describe('Tile Manager component', () => {
       });
     });
 
+    it('takes the features of the manager that a tile moves to', async () => {
+      const container = await fixture<HTMLElement>(html`
+        <div>
+          <igc-tile-manager>
+            <igc-tile><p>Content</p></igc-tile>
+          </igc-tile-manager>
+          <igc-tile-manager drag-mode="tile"></igc-tile-manager>
+        </div>
+      `);
+      const [first, second] = container.querySelectorAll('igc-tile-manager');
+      const tile = first.querySelector('igc-tile')!;
+      await elementUpdated(tile);
+      expect(managerFeatures(tile).draggable).to.be.false;
+
+      second.append(tile);
+      await elementUpdated(tile);
+
+      expect(managerFeatures(tile).draggable).to.be.true;
+    });
+
     it('connects the tiles of a manager that the browser defines later', async () => {
       const tag = 'igc-late-tile-manager';
       const container = await fixture<HTMLElement>(html`<div></div>`);
@@ -1031,6 +1051,29 @@ describe('Tile Manager component', () => {
 
       expect(tile.fullscreen).to.be.false;
       expect(getSlot(tile, 'maximize-action')).to.exist;
+    });
+
+    it('stays fullscreen when the browser rejects the exit', async () => {
+      const changed = oneEvent(plainTile, 'fullscreenchange');
+      await clickCenter(getActionButtons(plainTile)[1]);
+      await changed;
+
+      const exit = stub(document, 'exitFullscreen').rejects(new TypeError());
+      const eventSpy = spy(plainTile, 'emitEvent');
+
+      try {
+        simulateClick(getActionButtons(plainTile).at(-1)!);
+        await exit.firstCall.returnValue.catch(() => {});
+        await elementUpdated(plainTile);
+      } finally {
+        exit.restore();
+      }
+
+      expect(plainTile.fullscreen).to.be.true;
+      expect(eventSpy.lastCall).calledWithExactly('igcTileFullscreen', {
+        detail: { tile: plainTile, state: true },
+        cancelable: false,
+      });
     });
 
     it('stays fullscreen while an element inside it is fullscreen', async () => {

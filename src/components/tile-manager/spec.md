@@ -209,7 +209,7 @@ Both actions are rendered in the tile header. Before the default action changes 
 `igcTileMaximize` or `igcTileFullscreen` with the new state in `detail.state`. Both events are cancelable. While a
 tile is maximized, the other tiles are hidden, so that Tab does not move the focus under it.
 
-The browser can also change the fullscreen state, for example on Escape, or reject a request. The tile follows the
+The browser can also change the fullscreen state, for example on Escape, or reject a request or an exit. The tile follows the
 change and emits `igcTileFullscreen`, which is then not cancelable. While an element inside the tile is fullscreen,
 the tile stays fullscreen. A custom `fullscreen-action` uses the browser API, and the tile follows it the same way:
 
@@ -469,7 +469,7 @@ The groups below mirror the `describe` blocks.
 ### Fullscreen sync
 
 29. The tile follows the browser after Escape, also when a listener cancels the exit event, after a custom action
-    calls `requestFullscreen()`, and after the browser rejects a request. The event after such a change is not
+    calls `requestFullscreen()`, and after the browser rejects a request or an exit. The event after such a change is not
     cancelable. While an element inside the tile is fullscreen, the tile stays fullscreen.
 
 ### Right-to-left resize
@@ -487,7 +487,8 @@ The groups below mirror the `describe` blocks.
     fractional position becomes a whole number. A value that applies to no tile changes no position.
 35. Escape after a drag that swaps a tile back and forth restores every tile. The positions stay whole when tiles
     leave or move to another manager during the drag, and when the next drag starts before the restore applies. A start
-    column that a smaller column count removed, and a layout from `loadLayout()`, stay.
+    column that a smaller column count removed, and a layout from `loadLayout()`, stay. A swap with a tile that leaves
+    before the swap applies does not happen.
 36. A tile that leaves the page during a drag or a resize cancels the operation, and so does `pointercancel`. The
     events of another pointer are ignored, and an error in the start callback ends the operation. A start listener that
     moves the tile cancels the operation.
@@ -501,7 +502,7 @@ The groups below mirror the `describe` blocks.
     A translate or a scale on that element does not move the ghost off the tile. A rotation is not supported.
 40. A fullscreen tile that leaves the page is not fullscreen when it returns.
 41. A tile outside a manager has no drag and no resize. The tiles of a manager that the browser defines later connect
-    to it.
+    to it, and a tile that moves to another manager takes its features.
 42. Two quick maximize clicks set the state that their events report.
 43. In the page body, the drag and resize ghosts cover the tile, also with a body margin, a positioned or filtered
     body and a page scroll during the operation.

@@ -194,11 +194,6 @@ export default class IgcTileManagerComponent extends LitElement {
     this._tilesState.assignTiles();
     this._updateMaximizedTile();
     this._context.publish();
-
-    // Tiles that connected before the manager was defined missed its context.
-    for (const tile of this.tiles) {
-      tile._requestContext();
-    }
   }
 
   private _updateMaximizedTile(): void {

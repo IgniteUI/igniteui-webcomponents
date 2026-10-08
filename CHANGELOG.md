@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The tile manager keeps its background while a tile is maximized. Before, the background went away.
   - A maximized or fullscreen tile now scrolls by touch while dragging is on. Before, the tile canceled each `touchstart`, although it cannot be dragged in that state.
   - With `drag-mode="tile-header"`, the tile content now scrolls by touch, and an image or a link in it can be dragged natively. The actions and the resize handles also no longer cancel a touch. Before, the tile canceled every `touchstart` and `dragstart`, also where a drag cannot start.
+  - A drag no longer swaps with a tile that leaves the manager before the swap applies. Before, the dragged tile could take the position of the removed tile, so two tiles had the same position.
   - A drag now swaps with a tile that the pointer reaches straight from another tile, as in a fast move. Before, the drag swapped only after the pointer passed through a gap between the tiles.
   - The drag and resize styles of a tile now apply also when the tile has a `part` attribute of its own.
   - A dragged tile keeps its size. Before, the line around its placeholder was a border, which made the tile 2 px larger in a grid that sizes to its content.
@@ -53,7 +54,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A fullscreen tile that is removed from the page and added again is no longer `fullscreen`. Before, the tile kept the state, and drag and resize stayed off.
   - A tile that moves out of its manager no longer drags or resizes, and the tiles of a manager that the browser defines after them now connect to it.
   - Two quick clicks on the maximize action now set the state that both `igcTileMaximize` events report. Before, the tile toggled twice, and a skipped view transition sent an unhandled error.
-  - When the browser rejects a fullscreen request, the tile now emits `igcTileFullscreen` with `state: false`, which is not cancelable. Before, the state rolled back without an event, after the event that announced `state: true`.
+  - When the browser rejects a fullscreen request, the tile now emits `igcTileFullscreen` with `state: false`, which is not cancelable. Before, the state rolled back without an event, after the event that announced `state: true`. A rejected exit from full screen works the same way, with `state: true`. Before, the tile showed the state that is not fullscreen while it stayed fullscreen.
   - Removing a maximized tile now releases the grid height that the manager kept while the tile was maximized. Before, the grid kept that height.
   - In a manager that is narrower than `minColumnWidth`, a responsive column now takes the width of the manager. Before, the column kept the minimum width, and the manager scrolled horizontally.
 - #### Tabs

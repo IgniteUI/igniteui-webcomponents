@@ -210,6 +210,23 @@ describe('Tile drag and drop', () => {
       ]);
     });
 
+    it('skips a swap with a tile that leaves before the swap applies', async () => {
+      const [dragged, target] = [getTile(0), getTile(1)];
+
+      simulatePointerDown(dragged);
+      simulateTileDragOver(dragged, getCenterPoint(target));
+      // The swap waits for its view transition.
+      target.remove();
+      await viewTransitionComplete();
+      simulateLostPointerCapture(dragged);
+      await getActiveViewTransition()?.finished;
+
+      expect(tileManager.tiles.map(({ position }) => position)).to.eql([
+        0, 1, 2, 3,
+      ]);
+      expect(dragged.position).to.equal(0);
+    });
+
     it('should cancel dragging with Escape', async () => {
       const draggedTile = getTile(0);
       const dropTarget = getTile(4);
