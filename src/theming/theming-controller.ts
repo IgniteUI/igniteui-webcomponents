@@ -6,6 +6,7 @@ import {
   type ReactiveElement,
 } from 'lit';
 
+import { getOrInsertComputed } from '#internals/utils/objects.js';
 import { _themeChangedEmitter, getTheme } from './config.js';
 import { type ThemeContext, themeContext } from './context.js';
 import { CHANGED_THEME_EVENT } from './theming-event.js';
@@ -37,37 +38,24 @@ function resolveSheets(
   theme: Theme,
   variant: ThemeVariant
 ): ReadonlySet<CSSStyleSheet> {
-  let perClass = resolvedSheets.get(themes);
+  const perClass = getOrInsertComputed(
+    resolvedSheets,
+    themes,
+    () => new WeakMap()
+  );
+  const perTheme = getOrInsertComputed(perClass, ctor, () => new Map());
 
-  if (!perClass) {
-    perClass = new WeakMap();
-    resolvedSheets.set(themes, perClass);
-  }
-
-  let perTheme = perClass.get(ctor);
-
-  if (!perTheme) {
-    perTheme = new Map();
-    perClass.set(ctor, perTheme);
-  }
-
-  const key = `${variant}:${theme}`;
-  let sheets = perTheme.get(key);
-
-  if (!sheets) {
+  return getOrInsertComputed(perTheme, `${variant}:${theme}`, () => {
     const { shared, [theme]: themed } = themes[variant];
 
-    sheets = new Set(
+    return new Set(
       [...ctor.elementStyles, ...[shared, themed].flat()]
         .filter((style) => style !== undefined)
         .map((style) =>
           style instanceof CSSStyleSheet ? style : style.styleSheet!
         )
     );
-    perTheme.set(key, sheets);
-  }
-
-  return sheets;
+  });
 }
 
 /**

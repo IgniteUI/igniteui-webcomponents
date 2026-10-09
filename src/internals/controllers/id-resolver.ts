@@ -1,16 +1,16 @@
 import { isServer, type LitElement, type ReactiveController } from 'lit';
 import { isDocument, isElement } from '../utils/dom.js';
+import { getOrInsertComputed } from '../utils/objects.js';
 
 const ID_REF_EMITTERS = new WeakMap<Node, IdRefChangeEmitter>();
 const ID_REF_EVENT = 'id-refs-change';
 
 function getEmitter(root: Node): IdRefChangeEmitter {
-  let emitter = ID_REF_EMITTERS.get(root);
-  if (!emitter) {
-    emitter = new IdRefChangeEmitter(root);
-    ID_REF_EMITTERS.set(root, emitter);
-  }
-  return emitter;
+  return getOrInsertComputed(
+    ID_REF_EMITTERS,
+    root,
+    () => new IdRefChangeEmitter(root)
+  );
 }
 
 /** Adds the ids of `nodes` and of any of their descendants to `affected`. */

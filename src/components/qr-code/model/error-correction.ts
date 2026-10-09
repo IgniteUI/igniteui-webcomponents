@@ -1,3 +1,5 @@
+import { getOrInsertComputed } from '#internals/utils/objects.js';
+
 const EXP_TABLE: number[] = new Array(512);
 const LOG_TABLE: number[] = new Array(256);
 const POLYNOMIALS = new Map<number, number[]>();
@@ -43,12 +45,7 @@ function generatePolynomial(degree: number): number[] {
 }
 
 function getPolynomial(degree: number): number[] {
-  let poly = POLYNOMIALS.get(degree);
-  if (!poly) {
-    poly = generatePolynomial(degree);
-    POLYNOMIALS.set(degree, poly);
-  }
-  return poly;
+  return getOrInsertComputed(POLYNOMIALS, degree, generatePolynomial);
 }
 
 /** Computes Reed-Solomon error correction codewords for a data block of the given EC degree. */
