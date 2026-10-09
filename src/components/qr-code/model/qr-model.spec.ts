@@ -12,7 +12,10 @@ import {
   type MaskPattern,
   selectBestMask,
 } from './mask.js';
-import { generateQRCodeMatrix } from './matrix.js';
+import {
+  generateQRCodeMatrix,
+  getAlignmentPatternPositions,
+} from './matrix.js';
 
 function makeMatrix(size: number, fill = false): boolean[][] {
   return Array.from({ length: size }, () => new Array(size).fill(fill));
@@ -448,6 +451,101 @@ describe('QR model - matrix generation', () => {
         expect(result.matrix[4 * version + 9][8]).to.equal(true);
       }
     });
+  });
+
+  describe('Alignment patterns', () => {
+    // Rows of ISO/IEC 18004 Annex E, table E.1.
+    const ISO_ROWS: Record<number, number[]> = {
+      2: [6, 18],
+      7: [6, 22, 38],
+      14: [6, 26, 46, 66],
+      30: [6, 26, 52, 78, 104, 130],
+      31: [6, 30, 56, 82, 108, 134],
+      32: [6, 34, 60, 86, 112, 138],
+      33: [6, 30, 58, 86, 114, 142],
+      36: [6, 24, 50, 76, 102, 128, 154],
+      40: [6, 30, 58, 86, 114, 142, 170],
+    };
+
+    const ALIGNMENT_PATTERN = [
+      [true, true, true, true, true],
+      [true, false, false, false, true],
+      [true, false, true, false, true],
+      [true, false, false, false, true],
+      [true, true, true, true, true],
+    ];
+
+    function extractAlignment(
+      matrix: boolean[][],
+      row: number,
+      col: number
+    ): boolean[][] {
+      return Array.from({ length: 5 }, (_, r) =>
+        Array.from({ length: 5 }, (_, c) => matrix[row - 2 + r][col - 2 + c])
+      );
+    }
+
+    it('has no alignment patterns in version 1', () => {
+      expect(getAlignmentPatternPositions(1)).to.deep.equal([]);
+    });
+
+    it('matches the ISO table rows', () => {
+      for (const [version, row] of Object.entries(ISO_ROWS)) {
+        expect(getAlignmentPatternPositions(Number(version))).to.deep.equal(
+          row,
+          `V${version}`
+        );
+      }
+    });
+
+    it('starts at 6, ends at 4v + 10 and spaces the inner centers evenly for versions 2-40', () => {
+      for (let version = 2; version <= 40; version++) {
+        const positions = getAlignmentPatternPositions(version);
+        const steps = positions.slice(1).map((p, i) => p - positions[i]);
+        const step = steps.at(-1)!;
+
+        expect(positions.length).to.equal(
+          Math.floor(version / 7) + 2,
+          `V${version} count`
+        );
+        expect(positions[0]).to.equal(6, `V${version} first`);
+        expect(positions.at(-1)).to.equal(4 * version + 10, `V${version} last`);
+        expect(steps.every((s) => s > 0)).to.equal(
+          true,
+          `V${version} increasing`
+        );
+        expect(steps.slice(1).every((s) => s === step)).to.equal(
+          true,
+          `V${version} even spacing`
+        );
+        expect(step % 2).to.equal(0, `V${version} even step`);
+      }
+    });
+
+    for (const version of [2, 7, 31, 32, 40]) {
+      it(`places every alignment pattern of V${version} on its center`, () => {
+        const { matrix, size } = generateQRCodeMatrix('A', 'M', version);
+        const positions = getAlignmentPatternPositions(version);
+
+        expect(size).to.equal(4 * version + 17);
+
+        for (const r of positions) {
+          for (const c of positions) {
+            const overlapsFinder =
+              (r <= 8 && c <= 8) ||
+              (r <= 8 && c >= size - 8) ||
+              (r >= size - 8 && c <= 8);
+
+            if (!overlapsFinder) {
+              expect(extractAlignment(matrix, r, c)).to.deep.equal(
+                ALIGNMENT_PATTERN,
+                `V${version} center (${r}, ${c})`
+              );
+            }
+          }
+        }
+      });
+    }
   });
 
   describe('Version information (V7+)', () => {

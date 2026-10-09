@@ -2,49 +2,29 @@ import type { QrErrorCorrectionLevel } from '../types.js';
 import { encodeQR } from './encode.js';
 import { applyMask, selectBestMask } from './mask.js';
 
-// Alignment pattern positions for each version (1-40).
-const ALIGNMENT_PATTERN_TABLE: number[][] = [
-  [], // V1
-  [6, 18], // V2
-  [6, 22], // V3
-  [6, 26], // V4
-  [6, 30], // V5
-  [6, 34], // V6
-  [6, 22, 38], // V7
-  [6, 24, 42], // V8
-  [6, 26, 46], // V9
-  [6, 28, 50], // V10
-  [6, 30, 54], // V11
-  [6, 32, 58], // V12
-  [6, 34, 62], // V13
-  [6, 26, 46, 66], // V14
-  [6, 26, 48, 70], // V15
-  [6, 26, 50, 74], // V16
-  [6, 30, 54, 78], // V17
-  [6, 30, 56, 82], // V18
-  [6, 30, 58, 86], // V19
-  [6, 34, 62, 90], // V20
-  [6, 28, 50, 72, 94], // V21
-  [6, 26, 50, 74, 98], // V22
-  [6, 30, 54, 78, 102], // V23
-  [6, 28, 54, 80, 106], // V24
-  [6, 32, 58, 84, 110], // V25
-  [6, 30, 58, 86, 114], // V26
-  [6, 34, 62, 90, 118], // V27
-  [6, 26, 50, 74, 98, 122], // V28
-  [6, 30, 54, 78, 102, 126], // V29
-  [6, 26, 52, 78, 104, 130], // V30
-  [6, 30, 56, 82, 108, 132], // V31
-  [6, 34, 60, 86, 112, 136], // V32
-  [6, 30, 58, 86, 114, 142], // V33
-  [6, 34, 62, 90, 118, 146], // V34
-  [6, 30, 54, 78, 102, 126, 150], // V35
-  [6, 24, 50, 76, 102, 128, 154], // V36
-  [6, 28, 54, 80, 106, 132, 158], // V37
-  [6, 32, 58, 84, 110, 136, 162], // V38
-  [6, 26, 54, 82, 110, 138, 166], // V39
-  [6, 30, 58, 86, 114, 142, 170], // V40
-];
+/**
+ * Returns the alignment pattern center coordinates of a version (ISO/IEC 18004, Annex E).
+ *
+ * The first center is always 6 and the last is `4 * version + 10`; the centers between are
+ * spaced evenly by an even step, counted back from the last one.
+ */
+export function getAlignmentPatternPositions(version: number): number[] {
+  if (version === 1) {
+    return [];
+  }
+
+  const count = Math.floor(version / 7) + 2;
+  const last = 4 * version + 10;
+  // Version 32 is the one exception to the step formula.
+  const step =
+    version === 32 ? 26 : Math.ceil((4 * version + 4) / (2 * count - 2)) * 2;
+
+  const positions = [6];
+  for (let i = count - 2; i >= 0; i--) {
+    positions.push(last - i * step);
+  }
+  return positions;
+}
 
 // Format information for each error correction level and mask pattern.
 const FORMAT_INFO_TABLE: number[] = [
@@ -287,7 +267,7 @@ export function generateQRCodeMatrix(
   matrix[darkRow][8] = true;
   functionModules[darkRow][8] = true;
 
-  const alignmentPositions = ALIGNMENT_PATTERN_TABLE[version - 1];
+  const alignmentPositions = getAlignmentPatternPositions(version);
   for (const r of alignmentPositions) {
     for (const c of alignmentPositions) {
       // Skip if this position overlaps with a finder pattern
