@@ -17,7 +17,7 @@ import {
   endKey,
   homeKey,
 } from '#internals/controllers/key-bindings.js';
-import { createResizeObserverController } from '#internals/controllers/resize-observer.js';
+import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
@@ -58,6 +58,27 @@ const CSS_LENGTH =
   /^[+-]?(\d+\.?\d*|\.\d+)(%|px|em|rem|ch|ex|cap|ic|lh|rlh|vw|vh|vi|vb|vmin|vmax|cm|mm|q|in|pt|pc)$/i;
 
 const UNITLESS_NUMBER = /^[+-]?(\d+\.?\d*|\.\d+)$/;
+
+/** A valid CSS length or percentage of `value`, else `fallback`. */
+function normalizeValue(
+  value: string | undefined,
+  fallback?: 'auto'
+): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed || trimmed === 'auto') {
+    return fallback;
+  }
+
+  const numericValue = asNumber(trimmed, -1);
+  if (numericValue < 0) return fallback;
+  if (trimmed.includes('%') && numericValue > 100) return fallback;
+
+  // Only zero needs no unit. Another bare number is invalid CSS and drops
+  // the whole `flex` shorthand.
+  const isUnitlessZero = numericValue === 0 && UNITLESS_NUMBER.test(trimmed);
+
+  return isUnitlessZero || CSS_LENGTH.test(trimmed) ? trimmed : fallback;
+}
 
 const DEFAULT_RESIZE_STATE: SplitterResizeState = {
   startPane: null,
@@ -169,13 +190,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   private readonly _separatorRef = createRef<HTMLElement>();
 
-  private readonly _startPaneState: SplitterPaneState = {
-    size: 'auto',
-    styles: {},
-  };
-  private readonly _endPaneState: SplitterPaneState = {
-    size: 'auto',
-    styles: {},
+  private readonly _panes: Record<PanePosition, SplitterPaneState> = {
+    start: { size: 'auto', styles: {} },
+    end: { size: 'auto', styles: {} },
   };
 
   @state()
@@ -294,11 +311,11 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'start-min-size' })
   public set startMinSize(value: string | undefined) {
-    this._startPaneState.minSize = this._normalizeValue(value);
+    this._panes.start.minSize = normalizeValue(value);
   }
 
   public get startMinSize(): string | undefined {
-    return this._startPaneState.minSize;
+    return this._panes.start.minSize;
   }
 
   /**
@@ -311,11 +328,11 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'end-min-size' })
   public set endMinSize(value: string | undefined) {
-    this._endPaneState.minSize = this._normalizeValue(value);
+    this._panes.end.minSize = normalizeValue(value);
   }
 
   public get endMinSize(): string | undefined {
-    return this._endPaneState.minSize;
+    return this._panes.end.minSize;
   }
 
   /**
@@ -328,11 +345,11 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'start-max-size' })
   public set startMaxSize(value: string | undefined) {
-    this._startPaneState.maxSize = this._normalizeValue(value);
+    this._panes.start.maxSize = normalizeValue(value);
   }
 
   public get startMaxSize(): string | undefined {
-    return this._startPaneState.maxSize;
+    return this._panes.start.maxSize;
   }
 
   /**
@@ -345,11 +362,11 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'end-max-size' })
   public set endMaxSize(value: string | undefined) {
-    this._endPaneState.maxSize = this._normalizeValue(value);
+    this._panes.end.maxSize = normalizeValue(value);
   }
 
   public get endMaxSize(): string | undefined {
-    return this._endPaneState.maxSize;
+    return this._panes.end.maxSize;
   }
 
   /**
@@ -366,7 +383,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   public get startSize(): string | undefined {
-    return this._startPaneState.size;
+    return this._panes.start.size;
   }
 
   /**
@@ -383,7 +400,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   public get endSize(): string | undefined {
-    return this._endPaneState.size;
+    return this._panes.end.size;
   }
 
   /**
@@ -427,7 +444,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
     addSlotController(this, { slots: setSlots('start', 'end') });
 
-    createResizeObserverController(this, {
+    addResizeObserverController(this, {
       callback: () => this._handleContainerResize(),
     });
 
@@ -569,7 +586,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     // This path skips the decorated accessors and can change both flags,
     // so request an update for both.
     for (const pane of PANES) {
-      const state = this._getPaneState(pane);
+      const state = this._panes[pane];
 
       this.requestUpdate(`${pane}Collapsed`, previous === pane);
       this._internals.setState(`${pane}-collapsed`, target === pane);
@@ -578,13 +595,13 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _setPaneSize(pane: PanePosition, value: string | undefined): void {
-    this._getPaneState(pane).size = this._normalizeValue(value, 'auto');
+    this._panes[pane].size = normalizeValue(value, 'auto');
 
     // A size set while collapsed wins over the saved sizes. Drop both, or the
     // saved share of the other pane over-subscribes the container.
     if (this._collapsedPane !== null) {
       for (const target of PANES) {
-        this._getPaneState(target).savedSize = undefined;
+        this._panes[target].savedSize = undefined;
       }
     }
   }
@@ -592,7 +609,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   /** Drops the authored sizes and their attributes, which would otherwise diverge. */
   private _resetPaneSizes(): void {
     for (const pane of PANES) {
-      const state = this._getPaneState(pane);
+      const state = this._panes[pane];
       state.size = 'auto';
       state.minSize = undefined;
       state.maxSize = undefined;
@@ -614,14 +631,14 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _savePaneSizes(): void {
     // Not measurable before the first render, so keep the authored sizes.
     if (this._getTotalSize() === 0) {
-      this._startPaneState.savedSize = this._startPaneState.size;
-      this._endPaneState.savedSize = this._endPaneState.size;
+      this._panes.start.savedSize = this._panes.start.size;
+      this._panes.end.savedSize = this._panes.end.size;
       return;
     }
     // Higher precision than the ARIA percent so restored layouts don't drift.
     const [start, end] = this._rectSize();
-    this._startPaneState.savedSize = `${this._asPercentOfContainer(start, 2)}%`;
-    this._endPaneState.savedSize = `${this._asPercentOfContainer(end, 2)}%`;
+    this._panes.start.savedSize = `${this._asPercentOfContainer(start, 2)}%`;
+    this._panes.end.savedSize = `${this._asPercentOfContainer(end, 2)}%`;
   }
 
   /**
@@ -691,30 +708,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     }
   }
 
-  private _getPaneState(which: PanePosition): SplitterPaneState {
-    return which === 'start' ? this._startPaneState : this._endPaneState;
-  }
-
-  private _normalizeValue(
-    value: string | undefined,
-    fallback?: 'auto'
-  ): string | undefined {
-    const trimmed = value?.trim();
-    if (!trimmed || trimmed === 'auto') {
-      return fallback;
-    }
-
-    const numericValue = asNumber(trimmed, -1);
-    if (numericValue < 0) return fallback;
-    if (trimmed.includes('%') && numericValue > 100) return fallback;
-
-    // Only zero needs no unit. Another bare number is invalid CSS and drops
-    // the whole `flex` shorthand.
-    const isUnitlessZero = numericValue === 0 && UNITLESS_NUMBER.test(trimmed);
-
-    return isUnitlessZero || CSS_LENGTH.test(trimmed) ? trimmed : fallback;
-  }
-
   private _handleResizePanes(
     direction: -1 | 1,
     validOrientation: SplitterOrientation
@@ -766,7 +759,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   // While collapsed, both sizes render as 'auto', so report the saved sizes.
   private _reportedSize(pane: PanePosition): string {
-    const state = this._getPaneState(pane);
+    const state = this._panes[pane];
     return (
       (this._collapsedPane !== null ? state.savedSize : state.size) ?? 'auto'
     );
@@ -810,7 +803,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     pane: PanePosition,
     size: number
   ): PaneResizeSnapshot {
-    const authored = this._getPaneState(pane).size;
+    const authored = this._panes[pane].size;
 
     return {
       initialSize: size,
@@ -839,18 +832,24 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     pane: PanePosition,
     type: 'min' | 'max'
   ): number | undefined {
-    const { minSize, maxSize } = this._getPaneState(pane);
+    const { minSize, maxSize } = this._panes[pane];
     const value = type === 'max' ? maxSize : minSize;
 
     return value ? this._toPixels(value) : undefined;
   }
 
   private _resizing(delta: number): void {
-    if (!this._resizeState.startPane || !this._resizeState.endPane) {
+    const { startPane, endPane } = this._resizeState;
+
+    if (!startPane || !endPane) {
       return;
     }
 
-    const [startPaneSize, endPaneSize] = this._calcNewSizes(delta);
+    const [startPaneSize, endPaneSize] = this._calcNewSizes(
+      delta,
+      startPane,
+      endPane
+    );
 
     this._resizeState.draggedStartSize = startPaneSize;
     this.startSize = `${startPaneSize}px`;
@@ -886,7 +885,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     const [startPaneSize, endPaneSize] =
       delta === 0
         ? [startPane.initialSize, endPane.initialSize]
-        : this._calcNewSizes(delta);
+        : this._calcNewSizes(delta, startPane, endPane);
     const containerSize = this._getContainerSize();
 
     this.startSize = this._computeSize(startPane, startPaneSize, containerSize);
@@ -910,12 +909,11 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return [startPaneRect[axis], endPaneRect[axis]];
   }
 
-  private _calcNewSizes(delta: number): [number, number] {
-    if (!this._resizeState.startPane || !this._resizeState.endPane)
-      return [0, 0];
-
-    const start = this._resizeState.startPane;
-    const end = this._resizeState.endPane;
+  private _calcNewSizes(
+    delta: number,
+    start: PaneResizeSnapshot,
+    end: PaneResizeSnapshot
+  ): [number, number] {
     const minStart = start.minSizePx || 0;
     const minEnd = end.minSizePx || 0;
     const maxStart =
@@ -993,7 +991,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       : ['minHeight', 'maxHeight', 'minWidth', 'maxWidth'];
 
     for (const pane of PANES) {
-      const { size, minSize, maxSize, styles } = this._getPaneState(pane);
+      const { size, minSize, maxSize, styles } = this._panes[pane];
       const auto = collapsed || size === 'auto';
 
       Object.assign(styles, {
@@ -1011,7 +1009,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    * prevent overflow, until the container grows.
    */
   private _minSizesOverflow(): boolean {
-    if (!(this._startPaneState.minSize || this._endPaneState.minSize)) {
+    if (!(this._panes.start.minSize || this._panes.end.minSize)) {
       return false;
     }
 
@@ -1071,7 +1069,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return html`
       <div
         ${ref(this._separatorRef)}
-        ${ariaBindings(hostAria(this, false, null, 'Resize panes'))}
+        ${ariaBindings(hostAria(this, { fallback: 'Resize panes' }))}
         part="splitter-bar"
         role="separator"
         tabindex=${this.disableCollapse && this.disableResize ? -1 : 0}
@@ -1097,7 +1095,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
         <div
           part="start-pane"
           id="start-pane"
-          style=${styleMap(this._startPaneState.styles)}
+          style=${styleMap(this._panes.start.styles)}
         >
           <slot name="start"></slot>
         </div>
@@ -1105,7 +1103,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
         <div
           part="end-pane"
           id="end-pane"
-          style=${styleMap(this._endPaneState.styles)}
+          style=${styleMap(this._panes.end.styles)}
         >
           <slot name="end"></slot>
         </div>

@@ -1,7 +1,7 @@
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { breadcrumbsContext } from '#internals/context.js';
-import { createAsyncContext } from '#internals/controllers/async-consumer.js';
+import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { addSlotController, DefaultSlot } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
@@ -56,7 +56,7 @@ export default class IgcBreadcrumbComponent extends LitElement {
     initialARIA: { role: 'listitem' },
   });
 
-  private readonly _separatorConsumer = createAsyncContext(
+  private readonly _separatorConsumer = addAsyncContextConsumer(
     this,
     breadcrumbsContext
   );

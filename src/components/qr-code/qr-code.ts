@@ -14,13 +14,6 @@ import { addThemingController } from '#theming/theming-controller.js';
 import type { QRCodeMatrixResult } from './model/matrix.js';
 import { generateQRCodeMatrix } from './model/matrix.js';
 import {
-  DEFAULT_SIZE_RATIO,
-  MAX_SAFE_AREA,
-  SAFE_AREAS,
-} from './renderer/constants.js';
-import { renderQrFinders } from './renderer/corner.js';
-import { renderQrDots } from './renderer/dots.js';
-import {
   createSvgSnapshot,
   downloadFile,
   ensureExtension,
@@ -30,7 +23,14 @@ import {
   rasterizeSvg,
   serializeSvg,
 } from './renderer/export.js';
-import { renderQrMaskAndImage } from './renderer/image.js';
+import {
+  DEFAULT_SIZE_RATIO,
+  MAX_SAFE_AREA,
+  renderQrDots,
+  renderQrFinders,
+  renderQrMaskAndImage,
+  SAFE_AREAS,
+} from './renderer/templates.js';
 import { styles } from './themes/qr-code.base.css.js';
 import { styles as shared } from './themes/shared/qr-code.common.css.js';
 import { all } from './themes/themes.js';
@@ -428,7 +428,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
 
     return html`
       <svg
-        ${ariaBindings(hostAria(this, true))}
+        ${ariaBindings(hostAria(this, { ownLabel: true }))}
         xmlns="http://www.w3.org/2000/svg"
         role="img"
         width=${this.size}

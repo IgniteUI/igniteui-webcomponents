@@ -77,7 +77,7 @@ class AsyncContextConsumer<
   }
 }
 
-export function createAsyncContext<
+export function addAsyncContextConsumer<
   T extends Context<unknown, unknown>,
   Host extends ReactiveControllerHost & LitElement,
 >(

@@ -3,7 +3,7 @@ import { property } from 'lit/decorators.js';
 import { EaseInOut } from '#animations/easings.js';
 import { addAnimationController } from '#animations/player.js';
 import { carouselContext } from '#internals/context.js';
-import { createAsyncContext } from '#internals/controllers/async-consumer.js';
+import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { createIdGenerator, formatString } from '#internals/utils/strings.js';
@@ -74,7 +74,7 @@ export default class IgcCarouselSlideComponent extends LitElement {
     });
 
     // Read the carousel when the provider is ready (Blazor timing).
-    createAsyncContext(this, carouselContext, (carousel) => {
+    addAsyncContextConsumer(this, carouselContext, (carousel) => {
       this._carousel = carousel;
     });
   }
@@ -87,7 +87,7 @@ export default class IgcCarouselSlideComponent extends LitElement {
     type: 'in' | 'out',
     direction: 'normal' | 'reverse' = 'normal'
   ): Promise<boolean> {
-    const animation = animations.get(this._animation)!.get(type)!;
+    const animation = animations[this._animation][type];
 
     return await this._player.playExclusive(
       animation({

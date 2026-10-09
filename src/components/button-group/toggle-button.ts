@@ -11,7 +11,7 @@ import {
   ariaBindings,
   hostAria,
 } from '#internals/controllers/aria-projection.js';
-import { createAsyncContext } from '#internals/controllers/async-consumer.js';
+import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
@@ -47,7 +47,7 @@ export default class IgcToggleButtonComponent extends HostAriaMixin(
   }
 
   private readonly _focusRingManager = addKeyboardFocusRing(this);
-  private readonly _context = createAsyncContext(this, buttonGroupContext);
+  private readonly _context = addAsyncContextConsumer(this, buttonGroupContext);
 
   private _ownTabIndex?: string | null;
 

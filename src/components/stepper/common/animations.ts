@@ -1,4 +1,9 @@
-import { EaseOut } from '#animations/easings.js';
+import { fadeIn, fadeOut } from '#animations/presets/fade/index.js';
+import {
+  noop,
+  slideInHor,
+  slideOutHor,
+} from '#animations/presets/slide/index.js';
 import {
   type AnimationReferenceMetadata,
   animation,
@@ -8,126 +13,45 @@ import type {
   StepperVerticalAnimation,
 } from '../../types.js';
 
-const baseOptions: KeyframeAnimationOptions = {
-  duration: 320,
-  easing: EaseOut.Quad,
-};
+/** Plays a step transition. `height` is the collapsed height of a vertical body. */
+type StepAnimation = (
+  options: KeyframeAnimationOptions,
+  height: string
+) => AnimationReferenceMetadata;
 
-export type Animation =
-  | StepperVerticalAnimation
-  | HorizontalTransitionAnimation;
+type StepAnimations = Record<
+  StepperVerticalAnimation | HorizontalTransitionAnimation,
+  Record<'in' | 'out', StepAnimation>
+>;
 
-export type AnimationOptions = {
-  keyframe: KeyframeAnimationOptions;
-  step?: object;
-};
-
-const fadeIn = (options: AnimationOptions = { keyframe: baseOptions }) =>
-  animation([{ opacity: 0 }, { opacity: 1 }], options.keyframe);
-
-const fadeOut = (options: AnimationOptions = { keyframe: baseOptions }) =>
-  animation([{ opacity: 1 }, { opacity: 0 }], options.keyframe);
-
-const slideInHor = (
-  options: AnimationOptions = {
-    keyframe: baseOptions,
-  }
-) =>
-  animation(
-    [{ transform: 'translateX(100%)' }, { transform: 'translateX(0)' }],
-    options.keyframe
-  );
-
-const slideOutHor = (
-  options: AnimationOptions = {
-    keyframe: baseOptions,
-  }
-) =>
-  animation(
-    [{ transform: 'translateX(0)' }, { transform: 'translateX(-100%)' }],
-    options.keyframe
-  );
-
-const growVerIn = (
-  options: AnimationOptions = {
-    keyframe: baseOptions,
-    step: {},
-  }
-) =>
+const growVerIn: StepAnimation = (options, height) =>
   animation(
     [
-      { opacity: 1, ...options.step },
+      { opacity: 1, height },
       { opacity: 1, height: 'auto' },
     ],
-    options.keyframe
+    options
   );
 
-const growVerOut = (
-  options: AnimationOptions = {
-    keyframe: baseOptions,
-    step: {},
-  }
-) =>
+const growVerOut: StepAnimation = (options, height) =>
   animation(
     [
       { opacity: 1, height: 'auto' },
-      { opacity: 1, ...options.step },
+      { opacity: 1, height },
     ],
-    options.keyframe
+    options
   );
 
-const noopAnimation = () => animation([], {});
-
-const animationPair = (animations: {
-  in: (options: AnimationOptions) => AnimationReferenceMetadata;
-  out: (options: AnimationOptions) => AnimationReferenceMetadata;
-}) => {
-  return new Map(
-    Object.entries({
-      in: animations.in,
-      out: animations.out,
-    })
-  );
+export const bodyAnimations: StepAnimations = {
+  grow: { in: growVerIn, out: growVerOut },
+  fade: { in: noop, out: noop },
+  slide: { in: slideInHor, out: slideOutHor },
+  none: { in: noop, out: noop },
 };
 
-export const bodyAnimations = new Map(
-  Object.entries({
-    grow: animationPair({
-      in: growVerIn,
-      out: growVerOut,
-    }),
-    fade: animationPair({
-      in: noopAnimation,
-      out: noopAnimation,
-    }),
-    slide: animationPair({
-      in: slideInHor,
-      out: slideOutHor,
-    }),
-    none: animationPair({
-      in: noopAnimation,
-      out: noopAnimation,
-    }),
-  })
-);
-
-export const contentAnimations = new Map(
-  Object.entries({
-    grow: animationPair({
-      in: fadeIn,
-      out: fadeOut,
-    }),
-    fade: animationPair({
-      in: fadeIn,
-      out: fadeOut,
-    }),
-    slide: animationPair({
-      in: fadeIn,
-      out: fadeOut,
-    }),
-    none: animationPair({
-      in: noopAnimation,
-      out: noopAnimation,
-    }),
-  })
-);
+export const contentAnimations: StepAnimations = {
+  grow: { in: fadeIn, out: fadeOut },
+  fade: { in: fadeIn, out: fadeOut },
+  slide: { in: fadeIn, out: fadeOut },
+  none: { in: noop, out: noop },
+};

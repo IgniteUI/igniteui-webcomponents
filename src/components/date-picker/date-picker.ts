@@ -431,14 +431,12 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
   //#region Render methods
 
   private _renderLabel(id: string) {
-    const isDisabled = this._isDropDown || this.readOnly;
-
     return this.label
       ? html`
           <label
             part="label"
             for=${id}
-            @click=${bindIf(!isDisabled, this._handleAnchorClick)}
+            @click=${bindIf(this._opensOnClick, this._handleAnchorClick)}
           >
             ${this.label}
           </label>
@@ -448,7 +446,6 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
 
   protected _renderInput(id: string) {
     const format = getDateTimeFormat(this._displayFormat);
-    const hasClickHandler = !(this._isDropDown || this.readOnly);
 
     return html`
       <igc-date-time-input
@@ -470,7 +467,7 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
         @igcChange=${this._handleInputChangeEvent}
         @igcInput=${this._handleInputEvent}
         @keydown=${this._handleEnterKeydown}
-        @click=${bindIf(hasClickHandler, this._handleInputClick)}
+        @click=${bindIf(this._opensOnClick, this._handleInputClick)}
         exportparts="container, input, label, prefix, suffix"
       >
         ${this._renderEditorSlots()}

@@ -8,12 +8,13 @@ import {
   ariaBindings,
   helperText,
 } from '#internals/controllers/aria-projection.js';
-import { createResizeObserverController } from '#internals/controllers/resize-observer.js';
+import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
 import {
   addSlotController,
+  DefaultSlot,
   type InferSlotNames,
-  type SlotChangeCallbackParameters,
   setSlots,
+  type SlotChangeCallbackParameters,
 } from '#internals/controllers/slot.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
@@ -23,7 +24,7 @@ import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import {
   renderInputShell,
-  resolveInputPartNames,
+  resolveInputPartFlags,
 } from '#internals/templates/input-shell.js';
 import { addSafeEventListener } from '#internals/utils/events.js';
 import { asNumber } from '#internals/utils/math.js';
@@ -319,7 +320,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   constructor() {
     super();
 
-    createResizeObserverController(this, {
+    addResizeObserverController(this, {
       callback: this._setAreaHeight,
     });
 
@@ -371,7 +372,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     }
 
     const value = this._slots
-      .getAssignedNodes('[default]', true)
+      .getAssignedNodes(DefaultSlot, true)
       .map((node) => node.textContent?.trim())
       .filter(Boolean)
       .join('\r\n');
@@ -491,7 +492,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
       label: this.label,
       labelId: this._inputId,
       containerParts: {
-        ...resolveInputPartNames(this._slots, 'container', !!this.value),
+        container: true,
+        ...resolveInputPartFlags(this._slots, !!this.value),
         placeholder: this._themes.theme === 'material' && !!this.placeholder,
       },
       hideEmptyAffixes: true,

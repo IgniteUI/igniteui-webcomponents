@@ -1,6 +1,6 @@
 import type { ReactiveControllerHost } from 'lit';
 import { firstOf, isEmpty, lastOf } from '../utils/arrays.js';
-import { isLTR } from '../utils/dom.js';
+import { getRoot, isLTR } from '../utils/dom.js';
 import { wrap } from '../utils/math.js';
 import { isFunction } from '../utils/types.js';
 import {
@@ -25,8 +25,11 @@ type RovingFocusAxis = boolean | (() => boolean);
 type RovingFocusControllerOptions<T extends Element> = {
   /** The keyboard-navigable items, in order, without the inert ones. */
   items: () => T[];
-  /** The item that navigation moves from, as the host resolves it. */
-  current: () => T | null | undefined;
+  /**
+   * The item that navigation moves from. Defaults to the item that has the
+   * focus or holds the focused element.
+   */
+  current?: () => T | null | undefined;
   /** Moves the focus to `item`. The host owns any side effects. */
   focusItem: (item: T) => void;
   /** Runs with the current item on Enter and on Space. */
@@ -108,7 +111,7 @@ class RovingFocusController<T extends Element> {
     }
 
     const items = this._options.items();
-    const current = this._options.current();
+    const current = this._current(items);
 
     if (
       isEmpty(items) ||
@@ -126,11 +129,23 @@ class RovingFocusController<T extends Element> {
   }
 
   private _activate(): void {
-    const current = this._options.current();
+    const items = this._options.items();
+    const current = this._current(items);
 
-    if (current && this._options.items().includes(current)) {
+    if (current && items.includes(current)) {
       this._options.activateItem!.call(this._host, current);
     }
+  }
+
+  private _current(items: T[]): T | null | undefined {
+    if (this._options.current) {
+      return this._options.current();
+    }
+
+    const active = getRoot(this._host).activeElement;
+    return active
+      ? items.find((item) => item === active || item.contains(active))
+      : undefined;
   }
 }
 

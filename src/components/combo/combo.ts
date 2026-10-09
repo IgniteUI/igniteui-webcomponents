@@ -7,7 +7,6 @@ import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { addAriaProjector } from '#internals/controllers/aria-projection.js';
-import { addRootClickController } from '#internals/controllers/root-click.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
@@ -166,13 +165,6 @@ export default class IgcComboComponent<
   }
 
   private readonly _slots = addSlotController(this, { slots: SLOTS });
-
-  protected override readonly _rootClickController = addRootClickController(
-    this,
-    {
-      onHide: this._handleClosing,
-    }
-  );
 
   protected override readonly _formValue = createFormValueState<
     ComboValue<T>[]
@@ -566,9 +558,7 @@ export default class IgcComboComponent<
   }
 
   protected override willUpdate(props: PropertyValues<this>): void {
-    if (props.has('open')) {
-      this._rootClickController.update();
-    }
+    super.willUpdate(props);
 
     if (
       props.has('groupKey') ||
@@ -743,33 +733,22 @@ export default class IgcComboComponent<
       ? asArray(items).slice(0, 1)
       : asArray(items);
 
-    if (isEmpty(collection)) {
-      if (selecting) {
-        this._selected = singleSelect ? new Set() : new Set(this.data);
+    if (isEmpty(collection) && selecting) {
+      // Selects all items without an event, or clears a single selection.
+      this._selected = singleSelect ? new Set() : new Set(this.data);
 
-        if (singleSelect) {
-          this._searchTerm = '';
-        }
-      } else {
-        if (
-          emit &&
-          !this._emitSelectionChange({
-            newValue: [],
-            items: this.selection,
-            type,
-          })
-        ) {
-          return false;
-        }
-
-        this._selected.clear();
+      if (singleSelect) {
+        this._searchTerm = '';
       }
 
       this.requestUpdate();
       return true;
     }
 
-    const resolved = this._resolveItems(collection);
+    // An empty deselection deselects every selected item.
+    const resolved = isEmpty(collection)
+      ? this.selection
+      : this._resolveItems(collection);
 
     if (
       emit &&

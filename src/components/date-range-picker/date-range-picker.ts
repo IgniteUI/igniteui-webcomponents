@@ -755,7 +755,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     const label = isStart ? this.labelStart : this.labelEnd;
     const format = getDateTimeFormat(this._displayFormat);
     const value = isStart ? this.value?.start : this.value?.end;
-    const hasClickHandler = !(this._isDropDown || this.readOnly);
 
     return html`
       <igc-date-time-input
@@ -776,7 +775,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
         @igcChange=${this._handleInputChange}
         @igcInput=${this._handleInput}
         @keydown=${this._handleEnterKeydown}
-        @click=${bindIf(hasClickHandler, this._handleInputClick)}
+        @click=${bindIf(this._opensOnClick, this._handleInputClick)}
         exportparts="input, label, prefix, suffix"
       >
         ${this._renderEditorSlots(`-${picker}`)}
@@ -795,8 +794,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
         </div>
         ${this._renderInput(idEnd, DateRangePosition.End)}
       </div>
-      ${this._renderPicker(idStart)}
-      ${IgcValidationContainerComponent.create(this)}
     `;
   }
 
@@ -804,7 +801,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     const format =
       getDateTimeFormat(this.displayFormat) ??
       this._i18nController.localeDisplayFormat;
-    const hasClickHandler = !(this._isDropDown || this.readOnly);
 
     return html`
       <igc-date-range-input
@@ -824,23 +820,27 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
         @igcInput=${this._handleDateRangeInput}
         @igcChange=${this._handleDateRangeInputChange}
         @keydown=${this._handleEnterKeydown}
-        @click=${bindIf(hasClickHandler, this._handleInputClick)}
+        @click=${bindIf(this._opensOnClick, this._handleInputClick)}
         exportparts="input, label, prefix, suffix"
       >
         ${this._renderEditorSlots()}
       </igc-date-range-input>
-      ${IgcValidationContainerComponent.create(this)} ${this._renderPicker(id)}
     `;
   }
 
   protected override render(): TemplateResult {
     const id = this.id || this._inputId;
+    const anchor = this.useTwoInputs ? `${id}-start` : id;
 
-    return html`${cache(
-      !this.useTwoInputs
-        ? this._renderSingleInput(id)
-        : this._renderInputs(`${id}-start`, `${id}-end`)
-    )}`;
+    return html`
+      ${cache(
+        this.useTwoInputs
+          ? this._renderInputs(anchor, `${id}-end`)
+          : this._renderSingleInput(id)
+      )}
+      ${this._renderPicker(anchor)}
+      ${IgcValidationContainerComponent.create(this)}
+    `;
   }
 
   // #endregion

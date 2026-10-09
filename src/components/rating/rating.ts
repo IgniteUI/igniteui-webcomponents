@@ -138,10 +138,10 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   private _symbols: IgcRatingSymbolComponent[] = [];
 
   @query('[part="symbols"]', true)
-  private _container?: HTMLElement;
+  private _symbolsContainer?: HTMLElement;
 
   @query('[part="base"]', true)
-  private readonly _slider!: HTMLElement;
+  private readonly _base!: HTMLElement;
 
   @state()
   private _hoverValue = -1;
@@ -390,8 +390,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   }
 
   private _calcNewValue(x: number): number {
-    const fraction = this._container
-      ? pointToFraction(this._container, x, isLTR(this))
+    const fraction = this._symbolsContainer
+      ? pointToFraction(this._symbolsContainer, x, isLTR(this))
       : 0;
 
     return clamp(this._ceilToStep(this.max * fraction), this.step, this.max);
@@ -476,14 +476,14 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   /** Sets focus on the rating. A disabled rating does not take the focus. */
   public override focus(options?: FocusOptions): void {
     if (!this.disabled) {
-      this._slider?.focus(options);
+      this._base?.focus(options);
     }
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the rating. */
   public override blur(): void {
-    this._slider?.blur();
+    this._base?.blur();
   }
 
   //#endregion
@@ -521,7 +521,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
         >${this.label}</label
       >
       <div
-        ${ariaBindings(hostAria(this, Boolean(this.label) && 'rating-label'))}
+        ${ariaBindings(
+          hostAria(this, {
+            ownLabel: Boolean(this.label) && 'rating-label',
+          })
+        )}
         part="base"
         role="slider"
         tabindex=${this.disabled ? -1 : 0}

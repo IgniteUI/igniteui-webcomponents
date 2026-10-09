@@ -8,7 +8,7 @@ import {
   ariaBindings,
   hostAria,
 } from '#internals/controllers/aria-projection.js';
-import { createAsyncContext } from '#internals/controllers/async-consumer.js';
+import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
@@ -258,7 +258,7 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
     super();
 
     addThemingController(this, all);
-    createAsyncContext(this, STEPPER_CONTEXT, (context) => {
+    addAsyncContextConsumer(this, STEPPER_CONTEXT, (context) => {
       this._stepperContext = context;
     });
   }
@@ -283,8 +283,8 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
     type: 'in' | 'out',
     direction: 'normal' | 'reverse' = 'normal'
   ) {
-    const bodyAnimation = bodyAnimations.get(this._animation)!.get(type)!;
-    const contentAnimation = contentAnimations.get(this._animation)!.get(type)!;
+    const bodyAnimation = bodyAnimations[this._animation][type];
+    const contentAnimation = contentAnimations[this._animation][type];
     const bodyHeight = getComputedStyle(this).getPropertyValue(
       '--vertical-body-height'
     );
@@ -295,17 +295,9 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
       direction,
     };
 
-    const step = {
-      height: bodyHeight,
-    };
-
     const result = await Promise.all([
-      this._bodyPlayer.playExclusive(
-        bodyAnimation({ keyframe: options, step })
-      ),
-      this._contentPlayer.playExclusive(
-        contentAnimation({ keyframe: options, step })
-      ),
+      this._bodyPlayer.playExclusive(bodyAnimation(options, bodyHeight)),
+      this._contentPlayer.playExclusive(contentAnimation(options, bodyHeight)),
     ]);
 
     return result.every(Boolean);

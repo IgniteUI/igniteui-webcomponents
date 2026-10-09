@@ -19,14 +19,13 @@ import {
   createMutationController,
   type MutationControllerParams,
 } from '#internals/controllers/mutation-observer.js';
-import { createResizeObserverController } from '#internals/controllers/resize-observer.js';
+import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
 import { addRovingFocusController } from '#internals/controllers/roving-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { firstOf, isEmpty } from '#internals/utils/arrays.js';
-import { getRoot } from '#internals/utils/dom.js';
 import { getElementFromPath } from '#internals/utils/events.js';
 import { isString } from '#internals/utils/types.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -78,7 +77,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   //#region Private state & properties
 
-  private readonly _resizeController = createResizeObserverController(this, {
+  private readonly _resizeController = addResizeObserverController(this, {
     callback: this._refreshLayout,
     options: { box: 'border-box' },
     target: null,
@@ -164,7 +163,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     addRovingFocusController(this, {
       keybindings: { ref: this._headerRef, skip: this._skipKeyboard },
       items: () => this._enabledTabs,
-      current: () => this._getClosestActiveTab(),
       focusItem: (tab) => this._keyboardActivateTab(tab),
       activateItem: (tab) => this._keyboardActivateTab(tab, true),
       missingCurrent: 'wrap',
@@ -258,12 +256,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   //#endregion
 
   //#region Private API
-
-  private _getClosestActiveTab(): IgcTabComponent | null {
-    return (
-      getRoot(this).activeElement?.closest(IgcTabComponent.tagName) ?? null
-    );
-  }
 
   private _isSelectable(tab?: IgcTabComponent): tab is IgcTabComponent {
     return tab != null && !tab.disabled && this._tabs.includes(tab);

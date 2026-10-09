@@ -21,7 +21,6 @@ import {
   escapeKey,
   isKey,
 } from '#internals/controllers/key-bindings.js';
-import { addRootClickController } from '#internals/controllers/root-click.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
@@ -182,13 +181,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
   protected readonly _slots = addSlotController(this, { slots: Slots });
 
-  protected override readonly _rootClickController = addRootClickController(
-    this,
-    {
-      onHide: this._handleClosing,
-    }
-  );
-
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: '',
   });
@@ -334,10 +326,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   protected override update(props: PropertyValues<this>): void {
-    if (props.has('open')) {
-      this._rootClickController.update();
-    }
-
     if (props.has('format')) {
       this._serializeInFormat();
     }
@@ -899,7 +887,10 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
       <button
         ${ref(this._anchorRef)}
         ${ariaBindings({
-          ...hostAria(this, Boolean(this.label), this._helperText),
+          ...hostAria(this, {
+            ownLabel: Boolean(this.label),
+            description: this._helperText,
+          }),
           describedByRef: HELPER_TEXT_ID,
         })}
         id="trigger"

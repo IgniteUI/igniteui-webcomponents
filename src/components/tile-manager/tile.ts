@@ -6,7 +6,7 @@ import {
   type TileManagerContext,
   tileManagerContext,
 } from '#internals/context.js';
-import { createAsyncContext } from '#internals/controllers/async-consumer.js';
+import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
 import { addFullscreenController } from '#internals/controllers/fullscreen.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
@@ -211,7 +211,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     );
   }
 
-  private readonly _context = createAsyncContext(this, tileManagerContext);
+  private readonly _context = addAsyncContextConsumer(this, tileManagerContext);
 
   /** The context of the manager that lays the tile out: its parent, if any. */
   private get _tileManagerCtx(): TileManagerContext | undefined {

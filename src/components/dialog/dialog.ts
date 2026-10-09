@@ -359,7 +359,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
         ${ref(this._dialogRef)}
         part=${partMap({ base: true, titled: hasTitle, footed: hasFooter })}
         role="dialog"
-        ${ariaBindings(hostAria(this, !this.ariaLabel && this._titleId))}
+        ${ariaBindings(hostAria(this, { ownLabel: !this.ariaLabel && this._titleId }))}
         @click=${this._handleClick}
         @cancel=${this._handleCancel}
         @close=${this._syncDialog}

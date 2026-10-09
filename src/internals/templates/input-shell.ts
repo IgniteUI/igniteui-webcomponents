@@ -30,15 +30,6 @@ export function resolveInputPartFlags(
   };
 }
 
-/** Returns the shared container part names of an input-like component. */
-export function resolveInputPartNames(
-  slots: PartSlots,
-  base: string,
-  filled: boolean
-): Record<string, boolean> {
-  return { [base]: true, ...resolveInputPartFlags(slots, filled) };
-}
-
 export interface InputShellOptions {
   /** Active theme name. The `material` theme uses the notch layout. */
   theme: string;

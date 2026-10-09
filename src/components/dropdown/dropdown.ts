@@ -1,4 +1,4 @@
-import { html, type PropertyValues } from 'lit';
+import { html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ariaBindings } from '#internals/controllers/aria-projection.js';
 import {
@@ -19,7 +19,6 @@ import {
   createMutationController,
   type MutationControllerParams,
 } from '#internals/controllers/mutation-observer.js';
-import { addRootClickController } from '#internals/controllers/root-click.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import {
@@ -103,13 +102,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   //#region Internal state
 
   private readonly _keyBindings: KeyBindingController;
-
-  protected override readonly _rootClickController = addRootClickController(
-    this,
-    {
-      onHide: this._handleClosing,
-    }
-  );
 
   private _selectedItem: IgcDropdownItemComponent | null = null;
 
@@ -241,16 +233,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   public override disconnectedCallback(): void {
     this._releaseTarget();
     super.disconnectedCallback();
-  }
-
-  protected override willUpdate(properties: PropertyValues<this>): void {
-    if (!this.hasUpdated) {
-      return;
-    }
-
-    if (properties.has('open') || properties.has('keepOpenOnOutsideClick')) {
-      this._rootClickController.update();
-    }
   }
 
   protected override async firstUpdated(): Promise<void> {
