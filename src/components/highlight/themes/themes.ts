@@ -1,6 +1,4 @@
-import { css } from 'lit';
-
-import type { Themes } from '#theming/types.js';
+import type { ComponentThemes } from '#theming/types.js';
 
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/highlight.bootstrap.css.js';
@@ -16,39 +14,19 @@ import { styles as materialLight } from './light/highlight.material.css.js';
 import { styles as sharedLight } from './light/highlight.shared.css.js';
 
 const light = {
-  shared: css`
-    ${sharedLight}
-  `,
-  bootstrap: css`
-    ${bootstrapLight}
-  `,
-  material: css`
-    ${materialLight}
-  `,
-  indigo: css`
-    ${indigoLight}
-  `,
-  fluent: css`
-    ${fluentLight}
-  `,
+  shared: sharedLight,
+  bootstrap: bootstrapLight,
+  material: materialLight,
+  indigo: indigoLight,
+  fluent: fluentLight,
 };
 
 const dark = {
-  shared: css`
-    ${sharedDark}
-  `,
-  bootstrap: css`
-    ${bootstrapDark}
-  `,
-  material: css`
-    ${materialDark}
-  `,
-  indigo: css`
-    ${indigoDark}
-  `,
-  fluent: css`
-    ${fluentDark}
-  `,
+  shared: sharedDark,
+  bootstrap: bootstrapDark,
+  material: materialDark,
+  indigo: indigoDark,
+  fluent: fluentDark,
 };
 
-export const all: Themes = { light, dark };
+export const all: ComponentThemes = { light, dark };

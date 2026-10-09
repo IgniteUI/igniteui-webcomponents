@@ -1,6 +1,4 @@
-import { css } from 'lit';
-
-import type { Themes } from '#theming/types.js';
+import type { ComponentThemes } from '#theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/tab.bootstrap.css.js';
 import { styles as fluentDark } from './dark/tab.fluent.css.js';
@@ -20,39 +18,19 @@ import { styles as indigo } from './shared/tabs/tabs.indigo.css.js';
 import { styles as material } from './shared/tabs/tabs.material.css.js';
 
 const light = {
-  shared: css`
-    ${sharedLight}
-  `,
-  bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
-  `,
-  material: css`
-    ${material} ${materialLight}
-  `,
-  fluent: css`
-    ${fluent} ${fluentLight}
-  `,
-  indigo: css`
-    ${indigo} ${indigoLight}
-  `,
+  shared: sharedLight,
+  bootstrap: [bootstrap, bootstrapLight],
+  material: [material, materialLight],
+  fluent: [fluent, fluentLight],
+  indigo: [indigo, indigoLight],
 };
 
 const dark = {
-  shared: css`
-    ${sharedDark}
-  `,
-  bootstrap: css`
-    ${bootstrap} ${bootstrapDark}
-  `,
-  material: css`
-    ${material} ${materialDark}
-  `,
-  fluent: css`
-    ${fluent} ${fluentDark}
-  `,
-  indigo: css`
-    ${indigo} ${indigoDark}
-  `,
+  shared: sharedDark,
+  bootstrap: [bootstrap, bootstrapDark],
+  material: [material, materialDark],
+  fluent: [fluent, fluentDark],
+  indigo: [indigo, indigoDark],
 };
 
-export const all: Themes = { light, dark };
+export const all: ComponentThemes = { light, dark };

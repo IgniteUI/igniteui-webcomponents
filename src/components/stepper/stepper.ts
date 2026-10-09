@@ -13,6 +13,7 @@ import {
   getElementFromPath,
 } from '#internals/utils/events.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import type { ComponentThemes } from '#theming/types.js';
 import type {
   HorizontalTransitionAnimation,
   StepperOrientation,
@@ -28,6 +29,11 @@ import { styles } from './themes/stepper/stepper.base.css.js';
 import { styles as bootstrap } from './themes/stepper/stepper.bootstrap.css.js';
 import { styles as fluent } from './themes/stepper/stepper.fluent.css.js';
 import { styles as indigo } from './themes/stepper/stepper.indigo.css.js';
+
+const themes: ComponentThemes = {
+  light: { bootstrap, fluent, indigo },
+  dark: { bootstrap, fluent, indigo },
+};
 
 /** Property changes that the stepper republishes its context for. */
 const STEPPER_SYNC_PROPERTIES: (keyof IgcStepperComponent)[] = [
@@ -223,10 +229,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
       value: () => context,
     });
 
-    addThemingController(this, {
-      light: { bootstrap, fluent, indigo },
-      dark: { bootstrap, fluent, indigo },
-    });
+    addThemingController(this, themes);
 
     addRovingFocusController(this, {
       keybindings: { skip: this._skipKeyboard },
