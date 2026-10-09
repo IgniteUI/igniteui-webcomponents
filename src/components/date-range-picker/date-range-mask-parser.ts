@@ -32,7 +32,6 @@ export interface DateRangePart {
 export enum DateRangePosition {
   Start = 'start',
   End = 'end',
-  Separator = 'separator',
 }
 
 /**

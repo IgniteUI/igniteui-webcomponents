@@ -815,6 +815,22 @@ describe('Icon component', () => {
     verifySvg(icon, bugSvgContent);
   });
 
+  it('hides the SVG that it renders after it hydrates', async () => {
+    const container = await fixture<HTMLDivElement>(html`<div></div>`);
+    container.setHTMLUnsafe(
+      '<igc-icon name="bug"><template shadowrootmode="open"></template></igc-icon>'
+    );
+    const icon = container.querySelector(IgcIconComponent.tagName)!;
+
+    await icon.updateComplete;
+    await elementUpdated(icon);
+
+    expect(icon.shadowRoot!.querySelector('svg')).to.have.attribute(
+      'aria-hidden',
+      'true'
+    );
+  });
+
   it('renders nothing after it hydrates an icon that is not registered', async () => {
     const container = await fixture<HTMLDivElement>(html`<div></div>`);
     container.setHTMLUnsafe(

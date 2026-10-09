@@ -64,7 +64,7 @@ export interface IgcPickerBaseEventMap<T> {
 }
 
 /** The parts of the calendar which the pickers re-export to their own consumers. */
-export const calendarExportParts =
+const calendarExportParts =
   `header, header-title, header-date, content: calendar-content, navigation, months-navigation,
   years-navigation, years-range, navigation-buttons, navigation-button, days-view-container,
   days-view, months-view, years-view, days-row, months-row, years-row, label: calendar-label,

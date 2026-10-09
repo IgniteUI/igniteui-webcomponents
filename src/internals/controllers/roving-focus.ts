@@ -12,7 +12,6 @@ import {
   endKey,
   homeKey,
   type KeyBindingControllerOptions,
-  type KeyBindingOptions,
 } from './key-bindings.js';
 
 type RovingFocusHost = ReactiveControllerHost & HTMLElement;
@@ -32,8 +31,6 @@ type RovingFocusControllerOptions<T extends Element> = {
   focusItem: (item: T) => void;
   /** Runs with the current item on Enter and on Space. */
   activateItem?: (item: T) => void;
-  /** Binding options for the activation keys. */
-  activateOptions?: KeyBindingOptions;
   /** Whether ArrowLeft and ArrowRight navigate. Defaults to `true`. */
   horizontal?: RovingFocusAxis;
   /** Whether ArrowUp and ArrowDown navigate. Defaults to `false`. */
@@ -71,7 +68,6 @@ class RovingFocusController<T extends Element> {
       vertical = false,
       homeEnd = true,
       activateItem,
-      activateOptions,
       keybindings,
     } = options;
 
@@ -96,7 +92,7 @@ class RovingFocusController<T extends Element> {
     }
 
     if (activateItem) {
-      bindings.setActivateHandler(() => this._activate(), activateOptions);
+      bindings.setActivateHandler(() => this._activate());
     }
   }
 

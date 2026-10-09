@@ -313,7 +313,7 @@ export function MaskBehaviorMixin<
         return;
       }
 
-      const kind = MaskEditKinds.get(inputType ?? '');
+      const kind = MaskEditKinds.get(inputType);
 
       if (kind === undefined) {
         // An unmodeled mutation already changed the DOM value; a re-render

@@ -242,7 +242,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   protected readonly _containerRef = createRef<HTMLElement>();
 
   @query('[part~="base"]', true)
-  public _tileContent!: HTMLElement;
+  private readonly _tileContent!: HTMLElement;
 
   @state()
   private _isDragging = false;

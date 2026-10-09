@@ -19,10 +19,7 @@ import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { addI18nController } from '#internals/i18n/i18n-controller.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import type { FormValue } from '#internals/mixins/forms/form-value.js';
-import {
-  MaskBehaviorMixin,
-  type MaskSelection,
-} from '#internals/mixins/mask-behavior.js';
+import { MaskBehaviorMixin } from '#internals/mixins/mask-behavior.js';
 import {
   nextInputId,
   renderInputShell,
@@ -40,8 +37,6 @@ import {
 } from './date-part.js';
 import type { DateFormatMaskParser } from './datetime-mask-parser.js';
 import { dateTimeInputValidators } from './validators.js';
-
-export type { MaskSelection };
 
 const Slots = setSlots(
   'prefix',
@@ -421,7 +416,6 @@ export abstract class IgcDateTimeInputBaseComponent<
 
     this._isEditing = true;
     this._maskedValue = next;
-    this.requestUpdate();
   }
 
   /**

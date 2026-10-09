@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
@@ -65,7 +65,7 @@ export default class IgcDividerComponent extends LitElement {
   }
 
   protected override render() {
-    return html``;
+    return nothing;
   }
 }
 

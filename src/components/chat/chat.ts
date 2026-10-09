@@ -277,10 +277,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
    */
   @property({ attribute: false })
   public set draftMessage(value: IgcChatDraftMessage) {
-    if (this._state && value) {
+    if (value) {
       this._state.inputValue = value.text;
       this._state.inputAttachments = value.attachments || [];
-      this.requestUpdate();
     }
   }
 

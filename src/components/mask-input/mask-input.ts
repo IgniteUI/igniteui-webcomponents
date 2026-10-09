@@ -2,10 +2,7 @@ import { property } from 'lit/decorators.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
-import {
-  MaskBehaviorMixin,
-  type MaskSelection,
-} from '#internals/mixins/mask-behavior.js';
+import { MaskBehaviorMixin } from '#internals/mixins/mask-behavior.js';
 import { renderMaskedNativeInput } from '#internals/templates/masked-input.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
@@ -16,8 +13,6 @@ import type { MaskInputValueMode } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { MaskParser } from './mask-parser.js';
 import { maskValidators } from './validators.js';
-
-export type { MaskSelection };
 
 const Slots = setSlots(
   'prefix',

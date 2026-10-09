@@ -5,7 +5,6 @@ import type {
 } from '../../controllers/internals.js';
 import type { Validator } from '../../validators.js';
 
-export type FormRestoreMode = 'autocomplete' | 'restore';
 export type { FormValueType };
 export type IgcFormControl = LitElement &
   (FormAssociatedElementInterface | FormAssociatedCheckboxElementInterface);
@@ -118,12 +117,6 @@ export declare class BaseFormAssociatedElement {
    * `_restoreDefaultValue`, not this callback.
    */
   protected formResetCallback(): void;
-
-  /** Runs on browser auto-fill. Not implemented. */
-  protected formStateRestoreCallback(
-    state: FormValueType,
-    mode: FormRestoreMode
-  ): void;
 
   /** Checks validity and emits `invalid` when the control is invalid. */
   public checkValidity(): boolean;

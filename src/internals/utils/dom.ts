@@ -120,10 +120,7 @@ export function* iterNodes<T extends Node>(
  * root through its host. With `flat`, a slotted node goes to its slot, as in
  * the flat tree.
  */
-export function* iterAncestors(
-  node?: Node | null,
-  flat = false
-): Generator<Element> {
+function* iterAncestors(node?: Node | null, flat = false): Generator<Element> {
   let current: Node | null | undefined = node;
 
   while (current) {

@@ -147,14 +147,17 @@ export default class IgcIconComponent extends HostAriaMixin(LitElement) {
     return super.createRenderRoot();
   }
 
-  protected override update(props: PropertyValues<this>): void {
+  protected override update(props: PropertyValues): void {
     if (props.has('name') || props.has('collection')) {
       this._getIcon();
     }
 
     super.update(props);
-    // The host carries any name, so the SVG is decorative.
-    this.renderRoot.querySelector('svg')?.setAttribute('aria-hidden', 'true');
+
+    if (props.has('_svg')) {
+      // The host carries any name, so the SVG is decorative.
+      this.renderRoot.querySelector('svg')?.setAttribute('aria-hidden', 'true');
+    }
   }
 
   protected override firstUpdated(): void {
@@ -162,8 +165,9 @@ export default class IgcIconComponent extends HostAriaMixin(LitElement) {
       this._hydrating = false;
 
       // Off the current update cycle - avoids Lit's change-in-update warning.
+      // Named, so the update treats the withheld SVG as a change.
       if (this._svg) {
-        queueMicrotask(() => this.requestUpdate());
+        queueMicrotask(() => this.requestUpdate('_svg'));
       }
     }
   }

@@ -286,7 +286,6 @@ export default class IgcChatInputComponent extends LitElement {
     const validFiles = getChatAcceptedFiles(event, this._acceptedTypes);
     this._state.emitEvent('igcAttachmentDrop');
     this._state.attachFilesWithEvent(validFiles);
-    this.requestUpdate();
   }
 
   private _handleInput({ detail }: CustomEvent<string>): void {
