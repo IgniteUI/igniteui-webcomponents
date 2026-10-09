@@ -29,6 +29,7 @@ import { renderMaskedNativeInput } from '#internals/templates/masked-input.js';
 import { equal } from '#internals/utils/objects.js';
 import type { ThemingController } from '#theming/theming-controller.js';
 import type { RangeTextSelectMode } from '../types.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import {
   type DatePartDeltas,
   DatePartType,
@@ -606,6 +607,7 @@ export abstract class IgcDateTimeInputBaseComponent<
       labelId: this._inputId,
       containerParts: this._resolvePartNames('container'),
       renderInput: this._renderInput,
+      helperText: IgcValidationContainerComponent.create(this),
     });
   }
 

@@ -1,11 +1,5 @@
 import type { LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import {
-  createMaskHistory,
-  type MaskEditKind,
-  type MaskHistory,
-  type MaskHistoryState,
-} from '../../components/mask-input/mask-history.js';
 import type { MaskParser } from '../../components/mask-input/mask-parser.js';
 import type {
   RangeTextSelectMode,
@@ -17,6 +11,12 @@ import {
   metaKey,
   shiftKey,
 } from '../controllers/key-bindings.js';
+import {
+  createMaskHistory,
+  type MaskEditKind,
+  type MaskHistory,
+  type MaskHistoryState,
+} from '../mask-history.js';
 import type { MaskedInputOptions } from '../templates/masked-input.js';
 import type { AbstractConstructor } from './constructor.js';
 import type { BaseFormAssociatedElement } from './forms/types.js';

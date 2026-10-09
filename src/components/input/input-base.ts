@@ -16,6 +16,7 @@ import {
   resolveInputPartFlags,
 } from '#internals/templates/input-shell.js';
 import type { ThemingController } from '#theming/theming-controller.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 
 export interface IgcInputComponentEventMap {
   /* alternateName: inputOcurred */
@@ -121,6 +122,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
       labelId: this._inputId,
       containerParts: this._resolvePartNames('container'),
       renderInput: this._renderInput,
+      helperText: IgcValidationContainerComponent.create(this),
       renderFileParts: this._renderFileParts,
     });
   }

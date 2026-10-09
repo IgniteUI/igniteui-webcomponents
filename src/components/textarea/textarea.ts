@@ -499,6 +499,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
       },
       hideEmptyAffixes: true,
       renderInput: this._renderInput,
+      helperText: IgcValidationContainerComponent.create(this),
     });
   }
 

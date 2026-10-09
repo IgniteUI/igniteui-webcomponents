@@ -18,6 +18,26 @@ module.exports = {
         dependencyTypesNot: ['type-only'],
       },
     },
+    {
+      name: 'no-runtime-internals-to-components',
+      severity: 'error',
+      comment:
+        'src/internals sits below src/components: it may import component types, but not ' +
+        'component modules at run time. defineAllComponents() lists every component by ' +
+        'design, and slotted-icon imports the icon module so that lit-analyzer resolves ' +
+        '<igc-icon> (a type-only import fails its no-missing-import rule).',
+      from: {
+        path: '^src/internals/',
+        pathNot: [
+          '^src/internals/definitions/defineAllComponents\\.ts$',
+          '^src/internals/templates/slotted-icon\\.ts$',
+        ],
+      },
+      to: {
+        path: '^src/components/',
+        dependencyTypesNot: ['type-only'],
+      },
+    },
     ...ALIASED_DIRS.map((dir) => ({
       name: `no-relative-${dir}-imports`,
       severity: 'error',
