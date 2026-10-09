@@ -9,15 +9,21 @@ import { ColorModel, getContext } from './model.js';
 
 const EPSILON = 1e-6;
 
-const channel = fc.double({ min: 0, max: 255, noNaN: true });
+/** Tenths: `max` is the largest value times 10. */
+const tenths = (max: number) =>
+  fc.integer({ min: 0, max }).map((value) => value / 10);
+
+/*
+ * Colors on a 0.1 grid, with the hue below 360. Most `fc.double` samples are
+ * near 0, which gives blacks and grays where the channels and the hue do not
+ * show.
+ */
+const channel = tenths(2550);
 const byte = fc.integer({ min: 0, max: 255 });
 const alpha = fc.double({ min: 0, max: 1, noNaN: true });
 const rgb = fc.tuple(channel, channel, channel);
-const hsl = fc.tuple(
-  fc.double({ min: 0, max: 360, maxExcluded: true, noNaN: true }),
-  fc.double({ min: 0, max: 100, noNaN: true }),
-  fc.double({ min: 0, max: 100, noNaN: true })
-);
+const hsl = fc.tuple(tenths(3599), tenths(1000), tenths(1000));
+const hsv = hsl;
 
 const number = fc.double({ min: -1000, max: 1000, noNaN: true });
 
@@ -91,6 +97,22 @@ describe('Color properties', () => {
             EPSILON
           );
         })
+      );
+    });
+
+    it('converts an HSV hue the same after any number of full turns', () => {
+      fc.assert(
+        fc.property(
+          hsv,
+          fc.integer({ min: -5, max: 5 }),
+          ([h, s, v], turns) => {
+            expectCloseTo(
+              converter.hsv.rgb([h + 360 * turns, s, v]),
+              converter.hsv.rgb([h, s, v]),
+              EPSILON
+            );
+          }
+        )
       );
     });
 
