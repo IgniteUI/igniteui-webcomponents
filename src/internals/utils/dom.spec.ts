@@ -1,9 +1,15 @@
 import { expect, fixture, html } from '@open-wc/testing';
+import sinon from 'sinon';
 import {
+  getDeepActiveElement,
+  getScaleFactor,
+  getVisibleAncestor,
   hasNegativeTabIndex,
+  iterNodes,
   normalizedTextContent,
   pointToFraction,
   resolveCssLength,
+  roundByDPR,
   setOrRemoveAttribute,
 } from './dom.js';
 
@@ -178,6 +184,141 @@ describe('DOM utilities', () => {
       expect(
         element.style.getPropertyPriority('--igc-resolved-length')
       ).to.equal('important');
+    });
+  });
+
+  describe('resolveCssLength in another bundle instance', () => {
+    // Runs at suite collection, before the first `resolveCssLength` call of
+    // this page, as a second bundle instance that registered the property
+    // earlier would.
+    CSS.registerProperty({
+      name: '--igc-resolved-length',
+      syntax: '<length>',
+      inherits: false,
+      initialValue: '0px',
+    });
+
+    it('resolves lengths when another instance registered the property first', async () => {
+      const element = await fixture<HTMLElement>(
+        html`<div style="font-size: 10px"></div>`
+      );
+
+      expect(resolveCssLength(element, '2em')).to.equal(20);
+    });
+  });
+
+  describe('iterNodes', () => {
+    it('yields every node of the subtree without options', () => {
+      const root = document.createElement('div');
+      const child = document.createElement('span');
+      const text = document.createTextNode('text');
+      child.append(text);
+      root.append(child, document.createComment('note'));
+
+      expect(Array.from(iterNodes(root)).map((node) => node.nodeType)).to.eql([
+        Node.ELEMENT_NODE,
+        Node.TEXT_NODE,
+        Node.COMMENT_NODE,
+      ]);
+    });
+  });
+
+  describe('normalizedTextContent with nodes without text', () => {
+    it('treats a node with null text content as empty', () => {
+      const text = document.createTextNode(' a ');
+
+      expect(normalizedTextContent([document, text])).to.equal('a');
+    });
+  });
+
+  describe('getScaleFactor', () => {
+    it('returns the scale of a transformed element', async () => {
+      const root = await fixture<HTMLElement>(
+        html`<div style="transform: scale(2); transform-origin: 0 0">
+          <div style="width: 100px; height: 50px"></div>
+        </div>`
+      );
+
+      expect(getScaleFactor(root.firstElementChild as HTMLElement)).to.eql({
+        x: 0.5,
+        y: 0.5,
+      });
+    });
+
+    it('returns 1 for an element without layout', () => {
+      expect(getScaleFactor(document.createElement('div'))).to.eql({
+        x: 1,
+        y: 1,
+      });
+    });
+  });
+
+  describe('roundByDPR', () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it('rounds to device pixels', () => {
+      sinon.stub(window, 'devicePixelRatio').value(2);
+      expect(roundByDPR(1.3)).to.equal(1.5);
+    });
+
+    it('rounds to CSS pixels without a device pixel ratio', () => {
+      sinon.stub(window, 'devicePixelRatio').value(0);
+      expect(roundByDPR(1.3)).to.equal(1);
+    });
+  });
+
+  describe('getDeepActiveElement', () => {
+    it('follows the focus into nested shadow roots', async () => {
+      const outer = await fixture<HTMLElement>(html`<div></div>`);
+      const outerRoot = outer.attachShadow({ mode: 'open' });
+      const inner = document.createElement('div');
+      outerRoot.append(inner);
+      const innerRoot = inner.attachShadow({ mode: 'open' });
+      const button = document.createElement('button');
+      innerRoot.append(button);
+
+      button.focus();
+
+      expect(getDeepActiveElement()).to.equal(button);
+      expect(getDeepActiveElement(outerRoot)).to.equal(button);
+    });
+
+    it('starts in the document when the focus is outside the root', async () => {
+      const host = await fixture<HTMLElement>(
+        html`<div><button>Outside</button></div>`
+      );
+      const root = host.attachShadow({ mode: 'open' });
+      const outside = document.createElement('button');
+      document.body.append(outside);
+
+      try {
+        outside.focus();
+        expect(getDeepActiveElement(root)).to.equal(outside);
+      } finally {
+        outside.remove();
+      }
+    });
+  });
+
+  describe('getVisibleAncestor', () => {
+    it('returns the closest visible ancestor', async () => {
+      const root = await fixture<HTMLElement>(
+        html`<div>
+          <div style="display: contents"><span></span></div>
+        </div>`
+      );
+
+      expect(getVisibleAncestor(root.querySelector('span')!)).to.equal(root);
+    });
+
+    it('returns null without a visible ancestor', () => {
+      const parent = document.createElement('div');
+      const child = document.createElement('span');
+      parent.append(child);
+
+      expect(getVisibleAncestor(child)).to.be.null;
     });
   });
 });

@@ -1,4 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { resetMouse, sendMouse } from '@web/test-runner-commands';
 import { render } from 'lit';
 import { type SinonSpy, spy } from 'sinon';
 import { escapeKey } from '../controllers/key-bindings.js';
@@ -1064,6 +1065,123 @@ describe('Draggable directive', () => {
 
       expect(cancel.calledOnce).is.true;
       expect(getGhost()).is.null;
+    });
+  });
+
+  describe('Directive life-cycle', () => {
+    beforeEach(async () => {
+      await createFixture({ mode: 'deferred' });
+    });
+
+    it('throws outside an element expression', () => {
+      expect(() =>
+        render(html`<div class=${draggable({})}></div>`, section)
+      ).to.throw('The `draggable` directive can only be used on elements.');
+    });
+
+    it('starts operations after a reconnect with no new render', async () => {
+      const start = spy();
+      const container = document.createElement('div');
+      section.append(container);
+
+      const part = render(
+        html`<div id="drag-host" ${draggable({ start })}></div>`,
+        container,
+        { isConnected: false }
+      );
+      const element = container.querySelector<HTMLElement>('#drag-host')!;
+
+      part.setConnected(true);
+
+      simulatePointerDown(element);
+      expect(start.calledOnce).is.true;
+      simulateLostPointerCapture(element);
+    });
+
+    it('starts operations only after a connected render', async () => {
+      const start = spy();
+      const template = () =>
+        html`<div id="drag-host" ${draggable({ start })}></div>`;
+
+      const container = document.createElement('div');
+      section.append(container);
+
+      const part = render(template(), container, { isConnected: false });
+      const element = container.querySelector<HTMLElement>('#drag-host')!;
+
+      simulatePointerDown(element);
+      expect(start.called).is.false;
+      simulateLostPointerCapture(element);
+
+      part.setConnected(true);
+      render(template(), container);
+
+      simulatePointerDown(element);
+      expect(start.calledOnce).is.true;
+      simulateLostPointerCapture(element);
+    });
+
+    it('drags with the default options when it gets none', async () => {
+      const container = document.createElement('div');
+      section.append(container);
+      render(html`<div id="no-options" ${draggable()}></div>`, container);
+
+      const element = container.querySelector<HTMLElement>('#no-options')!;
+      simulatePointerDown(element);
+
+      expect(getGhost()).is.not.null;
+      simulateLostPointerCapture(element);
+      expect(getGhost()).is.null;
+    });
+
+    it('falls back to the element when the `target` option resolves to nothing', async () => {
+      const start = spy();
+      renderDraggable({ target: () => null, start });
+
+      simulatePointerDown(instance);
+      expect(start.calledOnce).is.true;
+      expect(getCallbackArgs(start).state.initial).to.eql(
+        instance.getBoundingClientRect()
+      );
+    });
+
+    it('keeps a finite ghost transform in a layer without layout', async () => {
+      const layer = document.createElement('div');
+      layer.style.display = 'none';
+      section.append(layer);
+      renderDraggable({ layer: () => layer });
+
+      simulatePointerDown(instance);
+      simulatePointerMove(instance, { clientX: 300, clientY: 300 });
+
+      const transform = getGhost()!.style.transform;
+      expect(transform).to.match(/^translate3d\(/);
+      expect(transform).to.not.match(/Infinity|NaN|scale/);
+      simulateLostPointerCapture(instance);
+    });
+
+    it('releases a held pointer capture when an operation is cancelled', async () => {
+      const cancel = spy();
+      renderDraggable({ cancel });
+
+      const { x, y } = getCenterPoint(instance);
+
+      try {
+        await sendMouse({
+          type: 'move',
+          position: [Math.round(x), Math.round(y)],
+        });
+        await sendMouse({ type: 'down' });
+
+        expect(instance.hasPointerCapture(1)).is.true;
+
+        simulateKeyboard(instance, escapeKey);
+
+        expect(cancel.calledOnce).is.true;
+        expect(instance.hasPointerCapture(1)).is.false;
+      } finally {
+        await resetMouse();
+      }
     });
   });
 });

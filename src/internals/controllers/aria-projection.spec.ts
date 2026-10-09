@@ -1,7 +1,18 @@
-import { expect, fixture, html } from '@open-wc/testing';
-import { render } from 'lit';
+import {
+  defineCE,
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+  unsafeStatic,
+} from '@open-wc/testing';
+import { LitElement, render } from 'lit';
+import sinon from 'sinon';
 import {
   type ARIABindings,
+  addAriaProjector,
+  addAriaTarget,
   ariaBindings,
   resolveNaming,
 } from './aria-projection.js';
@@ -95,6 +106,96 @@ describe('ARIA projection', () => {
 
       host.removeAttribute('aria-label');
       expect(resolveNaming(host, false, 'Fallback').label).to.equal('Fallback');
+    });
+  });
+
+  describe('ariaBindings part type', () => {
+    it('throws outside an element expression', async () => {
+      const container = await fixture<HTMLElement>(html`<div></div>`);
+
+      expect(() =>
+        render(html`<input aria-label=${ariaBindings({})} />`, container)
+      ).to.throw('`ariaBindings()` can only be used as an element expression.');
+    });
+  });
+
+  describe('Projector with a late target definition', () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it('projects once the definition of the target resolves', async () => {
+      const targetTag = `late-aria-target-${Math.random().toString(36).slice(2)}`;
+      const target = unsafeStatic(targetTag);
+      const whenDefined = sinon.spy(customElements, 'whenDefined');
+      let hasPopup: string | undefined = 'listbox';
+
+      const hostTag = unsafeStatic(
+        defineCE(
+          class extends LitElement {
+            constructor() {
+              super();
+              addAriaProjector(this, {
+                target: () => this.renderRoot.querySelector(targetTag),
+                state: () => ({
+                  role: 'combobox',
+                  hasPopup,
+                  expanded: 'false',
+                }),
+                naming: false,
+              });
+            }
+
+            protected override render() {
+              return html`<${target}></${target}>`;
+            }
+          }
+        )
+      );
+
+      const host = await fixture<LitElement>(html`<${hostTag}></${hostTag}>`);
+
+      // A second update before the definition schedules no second retry.
+      host.requestUpdate();
+      await elementUpdated(host);
+
+      expect(whenDefined.withArgs(targetTag).callCount).to.equal(1);
+
+      customElements.define(
+        targetTag,
+        class extends LitElement {
+          private readonly _aria = addAriaTarget(this, () => null);
+
+          protected override render() {
+            return html`<input
+              ${ariaBindings(this._aria.resolveBindings())}
+            />`;
+          }
+        }
+      );
+
+      await customElements.whenDefined(targetTag);
+      await elementUpdated(host);
+      const element = host.renderRoot.querySelector(targetTag) as LitElement;
+      await elementUpdated(element);
+      await nextFrame();
+
+      const input = element.renderRoot.querySelector('input')!;
+
+      expect(input.getAttribute('role')).to.equal('combobox');
+      expect(input.getAttribute('aria-haspopup')).to.equal('listbox');
+      expect(input.getAttribute('aria-expanded')).to.equal('false');
+      expect(element.dataset.role).to.equal('combobox');
+      expect(element.dataset.haspopup).to.equal('listbox');
+
+      hasPopup = undefined;
+      host.requestUpdate();
+      await elementUpdated(host);
+      await elementUpdated(element);
+
+      expect(input.hasAttribute('aria-haspopup')).to.be.false;
+      expect(element.hasAttribute('data-haspopup')).to.be.false;
+      expect(element.dataset.role).to.equal('combobox');
     });
   });
 });

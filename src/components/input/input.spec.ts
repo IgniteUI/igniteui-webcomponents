@@ -317,6 +317,30 @@ describe('Input component', () => {
         expect([element.selectionStart, element.selectionEnd]).to.eql([0, 0]);
       });
 
+      it('setSelectionRange() without arguments collapses the selection to the start', async () => {
+        await createFixture(
+          html`<igc-input value="the quick brown fox"></igc-input>`
+        );
+
+        element.setSelectionRange(4, 9);
+        element.setSelectionRange();
+        expect([input.selectionStart, input.selectionEnd]).to.eql([0, 0]);
+      });
+
+      it('the editing methods do nothing before the input renders', () => {
+        const detached = document.createElement('igc-input');
+
+        detached.setSelectionRange(1, 2);
+        detached.setRangeText('text', 0, 0);
+        expect(detached.value).to.equal('');
+
+        detached.stepUp();
+        expect(detached.value).to.equal('');
+
+        detached.stepDown();
+        expect(detached.value).to.equal('');
+      });
+
       it('focus() and blur()', async () => {
         await createFixture(html`<igc-input></igc-input>`);
 

@@ -218,5 +218,54 @@ describe('View Transitions helpers and directive', () => {
         fakeTransition
       );
     });
+
+    it('renders the new template inside the transition callback', async () => {
+      let update: (() => unknown) | undefined;
+      const fakeTransition = {
+        skipTransition: sinon.spy(),
+        ready: Promise.resolve(),
+      };
+
+      const tagName = unsafeStatic(
+        defineCE(
+          class extends LitElement {
+            public startViewTransition(callback: () => unknown) {
+              update = callback;
+              return fakeTransition;
+            }
+          }
+        )
+      );
+
+      function renderTemplate(text: string) {
+        return html`<${tagName}>${scopedViewTransition(html`<span id="content">${text}</span>`)}</${tagName}>`;
+      }
+
+      const container = await fixture<LitElement>(renderTemplate('First'));
+      render(renderTemplate('Second'), container.parentNode as HTMLElement);
+
+      // The transition owns the DOM update, so the old content stays until it runs.
+      expect(container.querySelector('#content')?.textContent).to.equal(
+        'First'
+      );
+
+      const settled = update!();
+      expect(container.querySelector('#content')?.textContent).to.equal(
+        'Second'
+      );
+      expect(settled).to.be.instanceOf(Promise);
+      await settled;
+    });
+
+    it('renders a changed template directly when the parent has no scoped transitions', () => {
+      const parent = document.createDocumentFragment();
+      const renderTemplate = (text: string) =>
+        scopedViewTransition(html`<span id="content">${text}</span>`);
+
+      render(renderTemplate('First'), parent);
+      render(renderTemplate('Second'), parent);
+
+      expect(parent.querySelector('#content')?.textContent).to.equal('Second');
+    });
   });
 });

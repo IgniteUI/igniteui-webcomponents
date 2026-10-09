@@ -95,6 +95,19 @@ describe('QR model - encodeQR', () => {
       }
     });
 
+    it('widens the numeric character count field from version 10 and 27 on', () => {
+      // The first codeword holds the 4-bit mode indicator (0001) and the
+      // top 4 bits of the character count.
+      // 512 in a 12-bit field (V10-V26): 0010 0000 0000.
+      expect(encodeQR('1'.repeat(512), 'M', 10).codewords[0]).to.equal(
+        0b0001_0010
+      );
+      // 1024 in a 14-bit field (V27-V40): 00 0100 0000 0000.
+      expect(encodeQR('1'.repeat(1024), 'M', 27).codewords[0]).to.equal(
+        0b0001_0001
+      );
+    });
+
     it('uses requested version when explicitly provided', () => {
       const result = encodeQR('Hi', 'M', 3);
       expect(result.version).to.equal(3);

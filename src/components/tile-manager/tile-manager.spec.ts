@@ -674,6 +674,21 @@ describe('Tile Manager component', () => {
       expect(slot.assignedElements()[2].id).to.equal('tile3');
     });
 
+    it('keeps the tiles and their positions when a non-tile child is added', async () => {
+      const slot = getTileManagerSlot();
+      const positions = tileManager.tiles.map((tile) => tile.position);
+
+      tileManager.appendChild(document.createElement('span'));
+      await tileManager.updateComplete;
+
+      expect(slot.assignedElements()).eql(tileManager.tiles);
+      expect(tileManager.tiles.map((tile) => tile.id)).to.eql([
+        'tile1',
+        'tile2',
+      ]);
+      expect(tileManager.tiles.map((tile) => tile.position)).to.eql(positions);
+    });
+
     it('should update the slot when a tile is removed', async () => {
       const slot = getTileManagerSlot();
       const tiles = getTiles();

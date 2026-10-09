@@ -126,12 +126,17 @@ function isDateInRange(
   value: CalendarDay,
   range: DateRangeDescriptor
 ): boolean {
+  // `Weekdays` and `Weekends` ignore `dateRange`.
+  if (range.type === DateRangeType.Weekdays) {
+    return !value.weekend;
+  }
+
+  if (range.type === DateRangeType.Weekends) {
+    return value.weekend;
+  }
+
   if (!range.dateRange?.length) {
-    return range.type === DateRangeType.Weekdays
-      ? !value.weekend
-      : range.type === DateRangeType.Weekends
-        ? value.weekend
-        : false;
+    return false;
   }
 
   const first = firstOf(range.dateRange);

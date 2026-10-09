@@ -5,6 +5,7 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { resetMouse, sendMouse } from '@web/test-runner-commands';
 import { spy } from 'sinon';
 import {
   arrowDown,
@@ -3282,6 +3283,137 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
 
       expect(getPanesSizes(splitter, 'width')).to.deep.equal(sizes);
+    });
+  });
+
+  describe('Interaction guards', () => {
+    afterEach(async () => {
+      await resetMouse();
+    });
+
+    it('should ignore a pointerdown with a non-primary button', async () => {
+      const previousSizes = getPanesSizes(splitter, 'width');
+      const eventSpy = spy(splitter, 'emitEvent');
+      const bar = getSplitterPart(splitter, BAR_PART);
+      const barRect = bar.getBoundingClientRect();
+
+      simulatePointerDown(bar, {
+        button: 2,
+        clientX: barRect.left,
+        clientY: barRect.top,
+      });
+      simulatePointerMove(
+        bar,
+        { clientX: barRect.left, clientY: barRect.top },
+        { x: 100, y: 0 }
+      );
+      await elementUpdated(splitter);
+
+      expect(eventSpy.calledWith('igcResizeStart')).to.be.false;
+      expect(eventSpy.calledWith('igcResizing')).to.be.false;
+      expect(getPanesSizes(splitter, 'width')).to.deep.equal(previousSizes);
+    });
+
+    it('should ignore a second pointer while a drag is in progress', async () => {
+      const previousSizes = getPanesSizes(splitter, 'width');
+      const eventSpy = spy(splitter, 'emitEvent');
+      const bar = getSplitterPart(splitter, BAR_PART);
+      const barRect = bar.getBoundingClientRect();
+      const origin = { clientX: barRect.left, clientY: barRect.top };
+
+      simulatePointerDown(bar, { ...origin, pointerId: 1 });
+      simulatePointerDown(bar, { ...origin, pointerId: 2 });
+      await elementUpdated(splitter);
+
+      expect(getResizeDetails(eventSpy, 'igcResizeStart')).to.have.lengthOf(1);
+
+      // The second pointer does not drive the drag.
+      simulatePointerMove(bar, { ...origin, pointerId: 2 }, { x: 50, y: 0 });
+      await elementUpdated(splitter);
+
+      expect(getPanesSizes(splitter, 'width')).to.deep.equal(previousSizes);
+
+      simulatePointerMove(bar, { ...origin, pointerId: 1 }, { x: 50, y: 0 });
+      simulatePointerUp(bar, {
+        clientX: origin.clientX + 50,
+        clientY: origin.clientY,
+        pointerId: 1,
+      });
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      expect(getPanesSizes(splitter, 'width').startSize).to.be.closeTo(
+        previousSizes.startSize + 50,
+        1
+      );
+      expect(getResizeDetails(eventSpy, 'igcResizeEnd')).to.have.lengthOf(1);
+    });
+
+    it('should capture the pointer for a real drag and release it at the end', async () => {
+      const previousSizes = getPanesSizes(splitter, 'width');
+      const eventSpy = spy(splitter, 'emitEvent');
+      const bar = getSplitterPart(splitter, BAR_PART);
+      const barRect = bar.getBoundingClientRect();
+      const x = Math.round(barRect.left + barRect.width / 2);
+      const y = Math.round(barRect.top + barRect.height / 2);
+
+      let pointerId = -1;
+      bar.addEventListener('pointerdown', (e) => (pointerId = e.pointerId), {
+        once: true,
+      });
+
+      await sendMouse({ type: 'move', position: [x, y] });
+      await sendMouse({ type: 'down' });
+      await elementUpdated(splitter);
+
+      expect(bar.hasPointerCapture(pointerId)).to.be.true;
+
+      await sendMouse({ type: 'move', position: [x + 60, y] });
+      await sendMouse({ type: 'up' });
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      expect(bar.hasPointerCapture(pointerId)).to.be.false;
+      expect(getResizeDetails(eventSpy, 'igcResizeEnd')).to.have.lengthOf(1);
+      expect(getPanesSizes(splitter, 'width').startSize).to.be.closeTo(
+        previousSizes.startSize + 60,
+        1
+      );
+    });
+
+    it('should ignore Home/End while resizing is disabled', async () => {
+      splitter.disableResize = true;
+      await elementUpdated(splitter);
+
+      const previousSizes = getPanesSizes(splitter, 'width');
+      const eventSpy = spy(splitter, 'emitEvent');
+      const bar = getSplitterPart(splitter, BAR_PART);
+      bar.focus();
+
+      simulateKeyboard(bar, homeKey);
+      simulateKeyboard(bar, endKey);
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      expect(eventSpy.calledWith('igcResizeStart')).to.be.false;
+      expect(getPanesSizes(splitter, 'width')).to.deep.equal(previousSizes);
+    });
+
+    it('should report a zero ARIA value for a container without size', async () => {
+      const empty = await fixture<IgcSplitterComponent>(html`
+        <igc-splitter style="width: 0; height: 0; overflow: hidden">
+          <div slot="start">Pane 1</div>
+          <div slot="end">Pane 2</div>
+        </igc-splitter>
+      `);
+      empty.startMinSize = '10%';
+      await elementUpdated(empty);
+
+      const bar = getSplitterPart(empty, BAR_PART);
+
+      expect(bar.ariaValueNow).to.equal('0');
+      expect(bar.ariaValueText).to.equal('0%');
+      expect(bar.ariaValueMin).to.equal('0');
     });
   });
 

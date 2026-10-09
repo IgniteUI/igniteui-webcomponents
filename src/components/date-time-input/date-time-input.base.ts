@@ -337,8 +337,9 @@ export abstract class IgcDateTimeInputBaseComponent<
     event.stopPropagation();
 
     const { start, end } = this._inputSelection;
-    event.deltaY > 0 ? this.stepDown() : this.stepUp();
-    this._emitInputEvent();
+    if (this._performStep(undefined, undefined, event.deltaY > 0)) {
+      this._emitInputEvent();
+    }
 
     await this.updateComplete;
     this.setSelectionRange(start, end);
@@ -357,8 +358,9 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   protected async _keyboardSpin(direction: 'up' | 'down'): Promise<void> {
-    direction === 'up' ? this.stepUp() : this.stepDown();
-    this._emitInputEvent();
+    if (this._performStep(undefined, undefined, direction === 'down')) {
+      this._emitInputEvent();
+    }
     await this.updateComplete;
     this.setSelectionRange(this._maskSelection.start, this._maskSelection.end);
   }
@@ -368,17 +370,19 @@ export abstract class IgcDateTimeInputBaseComponent<
   //#region Internal API
 
   /** @internal */
+  /** Spins the given or targeted date part. Returns false when no part is targeted, for example in a literal. */
   protected _performStep(
     datePart: unknown,
     delta: number | undefined,
     isDecrement: boolean
-  ): void {
+  ): boolean {
     const part = datePart || this._targetDatePart;
-    if (!part) return;
+    if (!part) return false;
 
     const { start, end } = this._inputSelection;
     this._setDraftValue(this._calculateSpunValue(part, delta, isDecrement));
     this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
+    return true;
   }
 
   /** Shows the editable mask when focused, else the display format. */
@@ -493,7 +497,9 @@ export abstract class IgcDateTimeInputBaseComponent<
    * Marks the masked text as an uncommitted edit. The parsed result reaches `value`
    * at commit. See {@link _isEditing}.
    */
-  protected override _syncValueFromMask(): void {
+  protected override _commitMaskedValue(value: string): void {
+    this._maskedValue = value;
+
     if (this._focused) {
       this._isEditing = true;
       return;

@@ -15,6 +15,8 @@ import {
   simulateKeyboard,
   simulateLostPointerCapture,
   simulatePointerDown,
+  simulatePointerEnter,
+  simulatePointerLeave,
   simulatePointerMove,
 } from '#internals/testing/simulate.spec.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
@@ -409,6 +411,93 @@ describe('Tile resize', () => {
       await nextFrame();
 
       expect(getComputedStyle(firstTile).gridRow).to.eql('2 / span 2');
+    });
+
+    it('keeps both starts on a corner resize when colStart and rowStart are set', async () => {
+      const DOM = getTileDOM(firstTile);
+
+      tileManager.columnCount = 5;
+      firstTile.colStart = 2;
+      firstTile.rowStart = 1;
+      await elementUpdated(tileManager);
+      await elementUpdated(firstTile);
+
+      const { right, bottom } = firstTile.getBoundingClientRect();
+
+      simulatePointerDown(DOM.adorners.corner, {
+        clientX: right,
+        clientY: bottom,
+      });
+      await elementUpdated(firstTile);
+
+      simulatePointerMove(DOM.adorners.corner, {
+        clientX: right + columnSize,
+        clientY: bottom + rowSize,
+      });
+      await elementUpdated(firstTile);
+
+      simulateLostPointerCapture(DOM.adorners.corner);
+      await elementUpdated(firstTile);
+      await nextFrame();
+
+      // The spans grow from the authored starts.
+      expect(firstTile.colSpan).to.be.greaterThan(1);
+      expect(firstTile.rowSpan).to.be.greaterThan(1);
+      expect(getComputedStyle(firstTile).gridColumn).to.eql(
+        `2 / span ${firstTile.colSpan}`
+      );
+      expect(getComputedStyle(firstTile).gridRow).to.eql(
+        `1 / span ${firstTile.rowSpan}`
+      );
+    });
+
+    it('keeps the snapped ghost size when the pointer moves without a delta', async () => {
+      const DOM = getTileDOM(firstTile);
+      const { right } = firstTile.getBoundingClientRect();
+      // Past the halfway point of the next column, so the ghost snaps to it.
+      const clientX = right + columnSize * 0.75;
+
+      simulatePointerDown(DOM.adorners.side, { clientX: right });
+      await elementUpdated(firstTile);
+
+      simulatePointerMove(DOM.adorners.side, { clientX });
+      await elementUpdated(firstTile);
+      const snapped = DOM.ghostElement.getBoundingClientRect().width;
+
+      simulatePointerMove(DOM.adorners.side, { clientX });
+      await elementUpdated(firstTile);
+
+      expect(DOM.ghostElement.getBoundingClientRect().width).to.equal(snapped);
+      expect(snapped).to.be.closeTo(
+        firstTile.getBoundingClientRect().width + columnSize,
+        1
+      );
+
+      simulateKeyboard(DOM.adorners.side, escapeKey);
+      await viewTransitionComplete();
+    });
+
+    it('shows the resize handles only while the pointer is over the tile in hover mode', async () => {
+      tileManager.resizeMode = 'hover';
+      await elementUpdated(tileManager);
+      await elementUpdated(firstTile);
+
+      const DOM = getTileDOM(firstTile);
+      expect(DOM.adorners.side).to.be.null;
+
+      simulatePointerEnter(DOM.container);
+      await elementUpdated(firstTile);
+
+      expect(DOM.container.part.contains('active')).to.be.true;
+      expect(DOM.adorners.side).to.not.be.null;
+      expect(DOM.adorners.corner).to.not.be.null;
+      expect(DOM.adorners.bottom).to.not.be.null;
+
+      simulatePointerLeave(DOM.container);
+      await elementUpdated(firstTile);
+
+      expect(DOM.container.part.contains('active')).to.be.false;
+      expect(DOM.adorners.side).to.be.null;
     });
 
     it('should cancel resize by pressing ESC key', async () => {

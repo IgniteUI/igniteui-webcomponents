@@ -612,6 +612,23 @@ function definePositioningSuites(mode: PositionMode) {
       expect(end.floater.left).to.be.closeTo(end.anchor.left, 1);
     });
 
+    it('falls back to `bottom-start` when the placement attribute is removed', async () => {
+      const root = await fixture<HTMLElement>(createPlacedPopover('top-end'));
+      const popover = queryPopover(root);
+      await waitForPaint(popover);
+
+      popover.removeAttribute('placement');
+      await waitForPaint(popover);
+
+      const floater = getFloater(popover);
+      const floaterRect = floater.getBoundingClientRect();
+      const anchorRect = root.querySelector('#btn')!.getBoundingClientRect();
+
+      expect(floater.dataset.placement).to.equal('bottom-start');
+      expect(floaterRect.top).to.be.closeTo(anchorRect.bottom, 1);
+      expect(floaterRect.left).to.be.closeTo(anchorRect.left, 1);
+    });
+
     it('keeps `left`/`right` placements physical in RTL', async () => {
       const { floater, anchor } = await placementRects('right-start', 'rtl');
 
@@ -893,6 +910,99 @@ describe('Popover', () => {
       definePositioningSuites(mode);
     });
   }
+
+  describe('Position strategy switching', () => {
+    let root: HTMLElement;
+    let popover: IgcPopoverComponent;
+    let button: HTMLButtonElement;
+    let svgAnchor: SVGElement;
+
+    beforeEach(async function () {
+      // The switch needs both strategies.
+      if (!canUseNative) {
+        this.skip();
+      }
+
+      root = await fixture<HTMLElement>(html`
+        <div>
+          <button id="btn" type="button">Show message</button>
+          <svg width="40" height="40">
+            <rect id="svg-anchor" width="40" height="40"></rect>
+          </svg>
+          <igc-popover open anchor="btn">
+            <p>Message</p>
+          </igc-popover>
+        </div>
+      `);
+
+      popover = queryPopover(root);
+      button = root.querySelector('#btn')!;
+      svgAnchor = root.querySelector('#svg-anchor')!;
+      await waitForPaint(popover);
+    });
+
+    it('clears the native anchoring when an SVG anchor needs the fallback', async () => {
+      const floater = getFloater(popover);
+      expect(floater.hasAttribute('data-anchored')).to.be.true;
+
+      popover.anchor = svgAnchor;
+      await waitForPaint(popover);
+
+      expect(isFloaterOpen(popover)).to.be.true;
+      expect(floater.hasAttribute('data-anchored')).to.be.false;
+      expect(floater.style.getPropertyValue('--_igc-popover-offset')).to.equal(
+        ''
+      );
+      expect(floater.style.transform).to.not.equal('');
+      expect(floater.getBoundingClientRect().top).to.be.closeTo(
+        svgAnchor.getBoundingClientRect().bottom,
+        1
+      );
+    });
+
+    it('clears the fallback styles when the anchor can use native anchoring again', async () => {
+      const floater = getFloater(popover);
+
+      popover.anchor = svgAnchor;
+      await waitForPaint(popover);
+      expect(floater.style.transform).to.not.equal('');
+
+      popover.anchor = button;
+      await waitForPaint(popover);
+
+      expect(isFloaterOpen(popover)).to.be.true;
+      expect(floater.hasAttribute('data-anchored')).to.be.true;
+      expect(floater.style.transform).to.equal('');
+      expect(floater.style.position).to.equal('');
+      expect(floater.style.left).to.equal('');
+      expect(floater.style.top).to.equal('');
+      expect(floater.getBoundingClientRect().top).to.be.closeTo(
+        button.getBoundingClientRect().bottom,
+        1
+      );
+    });
+  });
+
+  describe('Detached before the first render', () => {
+    it('opens after a removal that happened before the first render', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div><button id="btn" type="button">Show message</button></div>
+      `);
+      const popover = document.createElement(IgcPopoverComponent.tagName);
+      popover.anchor = 'btn';
+      popover.open = true;
+
+      // The removal runs the close path before the shadow root has a container.
+      root.append(popover);
+      popover.remove();
+      expect(popover.hasUpdated).to.be.false;
+
+      root.append(popover);
+      await waitForPaint(popover);
+
+      expect(isFloaterOpen(popover)).to.be.true;
+    });
+  });
 
   // Strategy-agnostic: the popover only notifies, and the owner of `open` closes it.
   describe('Scroll strategy', () => {

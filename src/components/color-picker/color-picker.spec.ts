@@ -496,6 +496,27 @@ describe('Color picker', () => {
       expect(eventSpy).not.calledWith('igcChange');
     });
 
+    it('does not emit when focus moves to slotted content', async () => {
+      const link = document.createElement('a');
+      link.href = '#';
+      link.slot = 'helper-text';
+      link.textContent = 'Help';
+      picker.append(link);
+      await elementUpdated(picker);
+
+      const eventSpy = spy(picker, 'emitEvent');
+
+      picker.dispatchEvent(new FocusEvent('focusin', { relatedTarget: null }));
+      picker.value = '#00ff00';
+      await elementUpdated(picker);
+
+      picker.dispatchEvent(
+        new FocusEvent('focusout', { bubbles: true, relatedTarget: link })
+      );
+
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
     it('does not emit when only the format changed', async () => {
       const eventSpy = spy(picker, 'emitEvent');
 
@@ -556,6 +577,22 @@ describe('Color picker', () => {
       await elementUpdated(picker);
 
       expect(picker.value).to.equal('rgb(255 0 0 / 0.5)');
+    });
+
+    it('does not emit igcInput when the alpha slider keeps the alpha', async () => {
+      picker.showAlpha = true;
+      picker.format = 'rgb';
+      picker.value = 'rgb(255 0 0 / 0.5)';
+      await elementUpdated(picker);
+
+      const eventSpy = spy(picker, 'emitEvent');
+      const alpha = getAlphaSlider(picker);
+      alpha.value = '50';
+      alpha.dispatchEvent(new Event('input', { bubbles: true }));
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('rgb(255 0 0 / 0.5)');
+      expect(eventSpy).not.calledWith('igcInput');
     });
 
     describe('Alpha input', () => {
@@ -1205,6 +1242,27 @@ describe('Color picker', () => {
 
       spec.reset();
       expect(spec.element.value).to.equal('');
+    });
+
+    it('resets the anchor input on form reset in input mode', async () => {
+      spec.setProperties({ mode: 'input' });
+      await elementUpdated(spec.element);
+
+      const input = spec.element.renderRoot.querySelector<IgcInputComponent>(
+        'igc-input[slot="anchor"]'
+      )!;
+      const resetSpy = spy(input as any, 'formResetCallback');
+
+      commitColorInput(input, '#bada55');
+      await elementUpdated(spec.element);
+      expect(spec.element.value).to.equal('#bada55');
+
+      spec.reset();
+      await elementUpdated(spec.element);
+
+      expect(resetSpy).calledOnce;
+      expect(spec.element.value).to.equal('');
+      expect(input.value).to.equal('');
     });
 
     it('reflects disabled ancestor state', () => {

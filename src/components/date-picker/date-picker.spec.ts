@@ -1,4 +1,10 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  waitUntil,
+} from '@open-wc/testing';
 import { spy } from 'sinon';
 import {
   altKey,
@@ -648,6 +654,28 @@ describe('Date picker', () => {
         }
       });
 
+      it('uses the resource strings that are set for the calendar icon title', async () => {
+        const icon = () =>
+          picker.renderRoot.querySelector('[part="calendar-icon"] igc-icon')!;
+
+        picker.resourceStrings = {
+          ...picker.resourceStrings,
+          date_picker_choose_date: 'Pick a day',
+          date_picker_change_date: 'Pick another day',
+        };
+        await elementUpdated(picker);
+
+        expect(picker.resourceStrings.date_picker_choose_date).to.equal(
+          'Pick a day'
+        );
+        expect(icon().getAttribute('title')).to.equal('Pick a day');
+
+        picker.value = new Date(2024, 2, 21);
+        await elementUpdated(picker);
+
+        expect(icon().getAttribute('title')).to.equal('Pick another day');
+      });
+
       it('should default inputFormat to whatever Intl.DateTimeFormat returns for the current locale', async () => {
         const defaultFormat = 'MM/dd/yyyy';
         expect(picker.locale).to.equal('en-US');
@@ -681,6 +709,18 @@ describe('Date picker', () => {
         expect(picker.inputFormat).to.equal('dd-MM-yyyy');
         expect(picker.displayFormat).to.equal(picker.inputFormat);
       });
+    });
+
+    it('uses its own id for the input and the label', async () => {
+      picker = await fixture<IgcDatePickerComponent>(
+        html`<igc-date-picker id="birthday" label="Birthday"></igc-date-picker>`
+      );
+      const input = picker.renderRoot.querySelector(
+        IgcDateTimeInputComponent.tagName
+      )!;
+
+      expect(input.id).to.equal('birthday');
+      expect(getLabel().htmlFor).to.equal('birthday');
     });
 
     it('should set the underlying igc-input into readonly mode when dialog mode is enabled', async () => {
@@ -861,6 +901,12 @@ describe('Date picker', () => {
       checkDatesEqual(dateTimeInput.value!, expectedValue);
     });
 
+    it('selectionStart and selectionEnd are 0 before the input renders', () => {
+      const detached = document.createElement(IgcDatePickerComponent.tagName);
+
+      expect([detached.selectionStart, detached.selectionEnd]).to.eql([0, 0]);
+    });
+
     it('selectionStart and selectionEnd report the selection in the input', async () => {
       picker.value = new Date(2024, 2, 21);
       await elementUpdated(picker);
@@ -1002,6 +1048,25 @@ describe('Date picker', () => {
       expect(picker.open).to.be.false;
       expect(eventSpy).calledWith('igcClosing');
       expect(eventSpy).calledWith('igcClosed');
+    });
+
+    it('closes the picker when its dialog is closed by an outside click', async () => {
+      picker.mode = 'dialog';
+      picker.value = new Date(2024, 2, 21);
+      await picker.show();
+
+      const eventSpy = spy(picker, 'emitEvent');
+      const dialog = picker.renderRoot.querySelector('igc-dialog')!;
+      const nativeDialog = dialog.renderRoot.querySelector('dialog')!;
+      const { x, y } = dialog.getBoundingClientRect();
+
+      simulateClick(nativeDialog, { clientX: x + 1, clientY: y - 1 });
+      await waitUntil(() => eventSpy.calledWith('igcClosed'));
+
+      expect(picker.open).to.be.false;
+      expect(dialog.open).to.be.false;
+      expect(eventSpy.firstCall).calledWith('igcClosing');
+      expect(eventSpy).not.calledWith('igcChange');
     });
 
     it('should emit or not igcInput according to nonEditable property', async () => {

@@ -49,8 +49,11 @@ export declare class MaskBehaviorElementInterface {
   protected readonly _input?: HTMLInputElement;
   protected readonly _parser: MaskParser;
 
-  /** Writes the parser state into the public value of the host. */
-  protected _syncValueFromMask(): void;
+  /**
+   * Writes a complete masked text into the value pipeline: `igc-mask-input`
+   * commits to its form value, the date editors keep a draft until blur.
+   */
+  protected _commitMaskedValue(value: string): void;
 
   //#endregion
 
@@ -108,7 +111,6 @@ export declare class MaskBehaviorElementInterface {
   protected _handleInput(event: InputEvent): Promise<void>;
   protected _handleBeforeInput(event: InputEvent): void;
   protected _updateInput(text: string, range: MaskSelection): Promise<void>;
-  protected _commitMaskedValue(value: string): void;
   protected _emitInputEvent(): void;
   protected _setMaskSelection(event: Event): void;
   protected _handleCompositionStart(): void;
@@ -164,7 +166,7 @@ export function MaskBehaviorMixin<
     protected abstract readonly _input?: HTMLInputElement;
     protected abstract readonly _parser: MaskParser;
     public abstract select(): void;
-    protected abstract _syncValueFromMask(): void;
+    protected abstract _commitMaskedValue(value: string): void;
 
     //#endregion
 
@@ -427,16 +429,6 @@ export function MaskBehaviorMixin<
 
       await this.updateComplete;
       this._input?.setSelectionRange(end, end);
-    }
-
-    /**
-     * Writes a complete masked text into the value pipeline. The one leaf
-     * override: `igc-mask-input` commits to its form value, the date editors
-     * keep a draft until blur.
-     */
-    protected _commitMaskedValue(value: string): void {
-      this._maskedValue = value;
-      this._syncValueFromMask();
     }
 
     /** Emits `igcInput` with the masked value. Override for another payload. */

@@ -364,6 +364,39 @@ describe('Date range picker - two inputs', () => {
     });
   });
 
+  describe('Validity of the editors', () => {
+    it('reports valid editors while the picker is pristine', async () => {
+      picker.required = true;
+      await elementUpdated(picker);
+
+      expect(picker.checkValidity()).to.be.false;
+
+      for (const editor of dateTimeInputs) {
+        expect(editor.checkValidity()).to.be.true;
+        expect(editor.reportValidity()).to.be.true;
+      }
+    });
+
+    it('delegates the editor validity to the picker once it is not pristine', async () => {
+      picker.required = true;
+      picker.value = { start: null, end: null };
+      await elementUpdated(picker);
+
+      for (const editor of dateTimeInputs) {
+        expect(editor.checkValidity()).to.be.false;
+        expect(editor.reportValidity()).to.be.false;
+      }
+
+      picker.value = { start: today.native, end: tomorrow.native };
+      await elementUpdated(picker);
+
+      for (const editor of dateTimeInputs) {
+        expect(editor.checkValidity()).to.be.true;
+        expect(editor.reportValidity()).to.be.true;
+      }
+    });
+  });
+
   describe('Interactions', () => {
     describe('Selection via the calendar', () => {
       it('should select a single date in dropdown mode and emit igcChange', async () => {

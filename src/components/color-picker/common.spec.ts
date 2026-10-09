@@ -33,6 +33,32 @@ describe('parseColor', () => {
     });
   });
 
+  describe('other context serializations', () => {
+    /** A context that serializes every valid fill style as `serialized`. */
+    function serializingContext(serialized: string) {
+      return {
+        get fillStyle() {
+          return serialized;
+        },
+        set fillStyle(_: string) {},
+      } as unknown as OffscreenCanvasRenderingContext2D;
+    }
+
+    it('reads the alpha of an 8-digit hex serialization', () => {
+      const result = parseColor('#ff804080', serializingContext('#ff804080'));
+
+      expect(result.value).to.deep.equal([255, 128, 64]);
+      expect(result.alpha).to.be.closeTo(0.5, 0.01);
+    });
+
+    it('returns black for a serialization without hex digits', () => {
+      const result = parseColor('red', serializingContext('#'));
+
+      expect(result.value).to.deep.equal([0, 0, 0]);
+      expect(result.alpha).to.equal(1);
+    });
+  });
+
   describe('hex color parsing', () => {
     it('should parse 6-digit hex colors', () => {
       const result = parseColor('#ff8040', ctx);

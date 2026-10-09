@@ -15,6 +15,7 @@ import {
   simulateClick,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
+import { configureTheme } from '#theming/config.js';
 import type IgcButtonComponent from '../button/button.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { DateRangeType } from '../calendar/types.js';
@@ -164,6 +165,32 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         ).to.equal('exposed');
       } finally {
         style.remove();
+      }
+    });
+
+    it('renders outlined and contained dialog buttons in the indigo theme', async () => {
+      const variants = () =>
+        Array.from(
+          picker.renderRoot.querySelectorAll<IgcButtonComponent>(
+            'igc-button[slot="footer"]'
+          ),
+          (button) => button.variant
+        );
+
+      picker.mode = 'dialog';
+      await elementUpdated(picker);
+
+      expect(variants()).to.eql(['flat', 'flat']);
+
+      try {
+        configureTheme('indigo');
+        await elementUpdated(picker);
+        picker.requestUpdate();
+        await elementUpdated(picker);
+
+        expect(variants()).to.eql(['outlined', 'contained']);
+      } finally {
+        configureTheme('bootstrap');
       }
     });
   });
@@ -569,6 +596,25 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           doneBtn?.click();
           await elementUpdated(picker);
           expect(eventSpy).not.calledWith('igcChange');
+        });
+
+        it('clears the value when the range start is activated again in the calendar', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          await picker.show();
+
+          await selectDates(today, null, calendar);
+          expect(eventSpy).calledWith('igcChange', {
+            detail: { start: today.native, end: today.native },
+          });
+
+          await selectDates(today, null, calendar);
+          await elementUpdated(picker);
+
+          expect(eventSpy.lastCall).calledWith('igcChange', {
+            detail: { start: null, end: null },
+          });
+          expect(picker.value).to.deep.equal({ start: null, end: null });
+          expect(picker.open).to.be.true;
         });
       });
       describe('Keyboard navigation', () => {

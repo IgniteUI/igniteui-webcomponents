@@ -896,6 +896,66 @@ describe('Tile drag and drop', () => {
       await elementUpdated(draggedTile);
     });
 
+    /**
+     * Drags `dragged` into `target`, which swaps them, and then moves the
+     * pointer vertically over `target` to `fraction` of its new height.
+     */
+    async function swapThenMoveVertically(
+      dragged: IgcTileComponent,
+      target: IgcTileComponent,
+      fraction: number
+    ) {
+      const start = getCenterPoint(dragged);
+      const enter = getCenterPoint(target);
+
+      simulatePointerDown(dragged, { clientX: start.x, clientY: start.y });
+      // One move enters the target, and the next one over it swaps.
+      simulatePointerMove(dragged, { clientX: enter.x, clientY: enter.y });
+      simulatePointerMove(dragged, { clientX: enter.x, clientY: enter.y + 1 });
+      await viewTransitionComplete();
+      await getActiveViewTransition()?.finished;
+
+      const { top, height } = target.getBoundingClientRect();
+      const y = top + height * fraction;
+
+      // A single move: a second one before the swap applies swaps again.
+      simulatePointerMove(dragged, { clientX: enter.x, clientY: y });
+      await getActiveViewTransition()?.finished;
+
+      simulateLostPointerCapture(dragged);
+      await getActiveViewTransition()?.finished;
+    }
+
+    it('swaps back when the pointer moves up into the top quarter of the swapped tile', async () => {
+      tileManager.columnCount = 1;
+      await elementUpdated(tileManager);
+
+      const [dragged, target] = [getTile(0), getTile(1)];
+      await swapThenMoveVertically(dragged, target, 0.2);
+
+      expect([dragged.position, target.position]).to.eql([0, 1]);
+    });
+
+    it('swaps back when the pointer moves down into the bottom quarter of the swapped tile', async () => {
+      tileManager.columnCount = 1;
+      await elementUpdated(tileManager);
+
+      const [target, dragged] = [getTile(0), getTile(1)];
+      await swapThenMoveVertically(dragged, target, 0.8);
+
+      expect([target.position, dragged.position]).to.eql([0, 1]);
+    });
+
+    it('does not swap back while the pointer moves in the middle of the swapped tile', async () => {
+      tileManager.columnCount = 1;
+      await elementUpdated(tileManager);
+
+      const [dragged, target] = [getTile(0), getTile(1)];
+      await swapThenMoveVertically(dragged, target, 0.5);
+
+      expect([dragged.position, target.position]).to.eql([1, 0]);
+    });
+
     it('should swap positions properly in RTL mode', async () => {
       tileManager.dir = 'rtl';
       const draggedTile = getTile(0);

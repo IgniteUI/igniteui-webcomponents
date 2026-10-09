@@ -295,6 +295,44 @@ describe('Tooltip', () => {
       expect(popover.arrow).to.be.null;
     });
 
+    it('should offset the arrow of an aligned placement toward its alignment', async () => {
+      const popover = tooltip.renderRoot.querySelector('igc-popover')!;
+      const cases: Array<[IgcTooltipComponent['placement'], number]> = [
+        ['bottom', 0],
+        ['bottom-start', -8],
+        ['bottom-end', 8],
+        ['left-start', -8],
+        ['right-end', 8],
+      ];
+
+      tooltip.withArrow = true;
+
+      for (const [placement, offset] of cases) {
+        tooltip.placement = placement;
+        await elementUpdated(tooltip);
+
+        expect(popover.arrowOffset, placement).to.equal(offset);
+      }
+    });
+
+    it('should mirror the arrow offset of vertical placements only in RTL', async () => {
+      const popover = tooltip.renderRoot.querySelector('igc-popover')!;
+      tooltip.dir = 'rtl';
+      tooltip.withArrow = true;
+
+      tooltip.placement = 'top-start';
+      await elementUpdated(tooltip);
+      expect(popover.arrowOffset).to.equal(8);
+
+      tooltip.placement = 'top-end';
+      await elementUpdated(tooltip);
+      expect(popover.arrowOffset).to.equal(-8);
+
+      tooltip.placement = 'left-start';
+      await elementUpdated(tooltip);
+      expect(popover.arrowOffset).to.equal(-8);
+    });
+
     it('should provide content via the `message` property', async () => {
       const template = html`
         <div>
@@ -898,6 +936,47 @@ describe('Tooltip', () => {
       expect(tooltip.open).to.be.false;
     });
 
+    it('toggles on a trigger that both shows and hides', async () => {
+      // `click` is also one of the default hide triggers.
+      tooltip.showTriggers = 'click';
+
+      simulateClick(anchor);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      await showComplete();
+      expect(tooltip.open).to.be.true;
+
+      simulateClick(anchor);
+      await clock.tickAsync(DEFAULT_HIDE_DELAY);
+      await hideComplete();
+      expect(tooltip.open).to.be.false;
+    });
+
+    it('drops the anchor when `anchor` changes to an ID that does not resolve', async () => {
+      expect(anchor.hasAttribute('aria-describedby')).to.be.true;
+
+      tooltip.anchor = 'missing-anchor';
+      await elementUpdated(tooltip);
+
+      expect(anchor.hasAttribute('aria-describedby')).to.be.false;
+
+      simulatePointerEnter(anchor);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      await showComplete();
+      expect(tooltip.open).to.be.false;
+    });
+
+    it('has no show triggers once the `show-triggers` attribute is removed', async () => {
+      tooltip.setAttribute('show-triggers', 'focusin');
+      tooltip.removeAttribute('show-triggers');
+      await elementUpdated(tooltip);
+
+      simulatePointerEnter(anchor);
+      simulateFocus(anchor);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      await showComplete();
+      expect(tooltip.open).to.be.false;
+    });
+
     it('prevents tooltip from showing when clicking the target - #1828', async () => {
       const eventSpy = spy(tooltip, 'emitEvent');
 
@@ -1182,6 +1261,27 @@ describe('Tooltip', () => {
       await hideComplete(tooltip);
 
       expect(tooltip.open).to.be.false;
+    });
+
+    it('ignores keys other than Escape while a tooltip is shown', async () => {
+      const container = await fixture(createTooltips());
+      const [tooltip] = container.querySelectorAll(IgcTooltipComponent.tagName);
+      const hideSpy = spy(tooltip, 'hide');
+
+      await tooltip.show();
+      await showComplete(tooltip);
+
+      document.documentElement.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Enter',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await clock.tickAsync(DEFAULT_HIDE_DELAY);
+
+      expect(hideSpy).not.called;
+      expect(tooltip.open).to.be.true;
     });
 
     it('pressing Escape in an active page with multiple opened tooltips hides the last shown', async () => {

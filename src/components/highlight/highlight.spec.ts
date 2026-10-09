@@ -7,6 +7,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import { LitElement, html as litHtml } from 'lit';
+import { spy } from 'sinon';
 
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { configureTheme } from '#theming/config.js';
@@ -121,6 +122,26 @@ describe('Highlight', () => {
       }
     });
 
+    it('adopts the stylesheet only once when attached again', async () => {
+      highlight = await fixture(createHighlightWithInitialMatch());
+
+      const countSheets = () =>
+        document.adoptedStyleSheets.filter((sheet) =>
+          Array.from(sheet.cssRules).some((rule) =>
+            rule.cssText.includes('::highlight(igc-highlight-')
+          )
+        ).length;
+
+      expect(countSheets()).to.equal(1);
+
+      // No public route re-runs the attach step without a disconnect.
+      (
+        highlight as unknown as { _service: { attachStylesheet(): void } }
+      )._service.attachStylesheet();
+
+      expect(countSheets()).to.equal(1);
+    });
+
     it('removes the stylesheet from its tree scope on disconnect', async () => {
       highlight = await fixture(createHighlightWithInitialMatch());
 
@@ -210,6 +231,37 @@ describe('Highlight', () => {
 
       highlight.setActive(15);
       expect(highlight.current).to.equal(15);
+    });
+
+    it('does nothing on navigation without matches', async () => {
+      const scrollSpy = spy(highlight, 'scrollIntoView');
+
+      highlight.next();
+      highlight.previous();
+      highlight.setActive(3);
+
+      expect(highlight.size).to.equal(0);
+      expect(highlight.current).to.equal(0);
+      expect(scrollSpy).not.called;
+    });
+
+    it('scrolls the active match into view unless `preventScroll` is set', async () => {
+      highlight.searchText = 'e';
+      await elementUpdated(highlight);
+
+      const scrollSpy = spy(highlight, 'scrollIntoView');
+
+      highlight.next({ preventScroll: true });
+      expect(highlight.current).to.equal(1);
+      expect(scrollSpy).not.called;
+
+      highlight.next();
+      expect(highlight.current).to.equal(2);
+      expect(scrollSpy).calledOnceWith({
+        behavior: 'auto',
+        block: 'center',
+        inline: 'center',
+      });
     });
 
     it('refresh called', async () => {

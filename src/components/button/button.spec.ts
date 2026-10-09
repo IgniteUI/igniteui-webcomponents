@@ -410,6 +410,34 @@ describe('Button tests', () => {
 
         target.remove();
       });
+
+      it('clears commandForElement and stops resolving when commandfor is removed', async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <igc-button commandfor="cleared-target">Click</igc-button>
+            <div id="cleared-target" popover></div>
+          </div>
+        `);
+
+        button = container.querySelector<IgcButtonComponent>('igc-button')!;
+        const target = container.querySelector<HTMLElement>('#cleared-target')!;
+        expect(button.commandForElement).to.equal(target);
+
+        button.commandfor = null;
+        await elementUpdated(button);
+
+        expect(button.commandfor).to.be.null;
+        expect(button.commandForElement).to.be.null;
+
+        // The resolver no longer observes, so a matching ID added later is ignored.
+        target.remove();
+        const late = document.createElement('div');
+        late.id = 'cleared-target';
+        container.appendChild(late);
+        await elementUpdated(button);
+
+        expect(button.commandForElement).to.be.null;
+      });
     });
 
     describe('Popover control', () => {

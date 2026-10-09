@@ -76,6 +76,18 @@ describe('Date Time Input component', () => {
       expect(input.placeholder).to.equal(DEFAULT_FORMAT);
     });
 
+    it('shows the empty mask as the placeholder when the placeholder is cleared', async () => {
+      element.placeholder = '';
+      await elementUpdated(element);
+
+      expect(input.placeholder).to.equal(parser.emptyMask);
+
+      element.placeholder = 'Pick a date';
+      await elementUpdated(element);
+
+      expect(input.placeholder).to.equal('Pick a date');
+    });
+
     it('should update inputFormat with no value according to locale', async () => {
       element.locale = 'no';
       await elementUpdated(element);
@@ -1009,6 +1021,51 @@ describe('Date Time Input component', () => {
 
       expect(input.selectionStart).to.equal(10);
       expect(input.selectionEnd).to.equal(10);
+    });
+
+    it('Ctrl + ArrowLeft/Right move to the edges of the input outside the literals', async () => {
+      element.value = new Date(2020, 2, 3);
+      element.focus();
+      await elementUpdated(element);
+
+      // No literal before the month part
+      input.setSelectionRange(1, 1);
+      simulateKeyboard(input, [ctrlKey, arrowLeft]);
+      await elementUpdated(element);
+
+      expect([input.selectionStart, input.selectionEnd]).to.eql([0, 0]);
+
+      // No literal after the year part
+      input.setSelectionRange(8, 8);
+      simulateKeyboard(input, [ctrlKey, arrowRight]);
+      await elementUpdated(element);
+
+      expect([input.selectionStart, input.selectionEnd]).to.eql([10, 10]);
+
+      // The next literal after the month part
+      input.setSelectionRange(1, 1);
+      simulateKeyboard(input, [ctrlKey, arrowRight]);
+      await elementUpdated(element);
+
+      expect([input.selectionStart, input.selectionEnd]).to.eql([2, 2]);
+    });
+
+    it('does not spin while the cursor is inside a literal', async () => {
+      const value = new Date(2020, 2, 3);
+      element.inputFormat = 'MM / dd / yyyy';
+      element.value = value;
+      element.focus();
+      await elementUpdated(element);
+
+      const masked = input.value;
+      const eventSpy = spy(element, 'emitEvent');
+      input.setSelectionRange(3, 3);
+      simulateKeyboard(input, arrowUp);
+      await elementUpdated(element);
+
+      expect(input.value).to.equal(masked);
+      expect(element.value).to.eql(value);
+      expect(eventSpy).not.calledWith('igcInput');
     });
 
     it('non filled parts have default value set on blur', async () => {

@@ -20,7 +20,11 @@ import { ResourceStringsBG } from 'igniteui-i18n-resources';
 import { LitElement } from 'lit';
 import type { DateRangePickerResourceStringsType } from '../../components/date-range-picker/date-range-picker.js';
 import type { IgcDateRangePickerResourceStrings } from './EN/date-range-picker.resources.js';
-import { addI18nController, type I18nController } from './i18n-controller.js';
+import {
+  addI18nController,
+  formatDisplayDate,
+  type I18nController,
+} from './i18n-controller.js';
 import { dateRangePickerResourcesMap } from './utils.js';
 
 class TestLocalizedClass<T extends object> extends LitElement {
@@ -277,6 +281,34 @@ describe('Localization', () => {
       setCurrentI18n('en');
 
       expect(text).to.equal('Списъкът е празен');
+    });
+
+    it('should fall back to the default resource strings when the custom ones are cleared', async () => {
+      instance.resourceStrings = {
+        combo_empty_message: 'Custom empty message',
+      };
+      instance.requestUpdate();
+      await elementUpdated(instance);
+
+      instance.resourceStrings = undefined as unknown as object;
+      await elementUpdated(instance);
+
+      expect(instance.shadowRoot?.getElementById('start')?.innerText).to.equal(
+        'The list is empty'
+      );
+      expect(
+        (instance.resourceStrings as IComboResourceStrings).combo_empty_message
+      ).to.equal(ComboResourceStringsEN.combo_empty_message);
+    });
+  });
+
+  describe('formatDisplayDate', () => {
+    it('should use the default date format of the locale without a display format', () => {
+      const value = new Date(2024, 0, 15, 13, 45);
+
+      expect(formatDisplayDate(value, 'en-US')).to.equal(
+        new Intl.DateTimeFormat('en-US').format(value)
+      );
     });
   });
 });

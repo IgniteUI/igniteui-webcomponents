@@ -517,6 +517,11 @@ describe('ColorModel', () => {
       expect(color.v).to.equal(100);
     });
 
+    it('should wrap a negative or out-of-range HSV hue', () => {
+      expect(ColorModel.fromHSV(-60, 100, 100).h).to.be.closeTo(300, 0.001);
+      expect(ColorModel.fromHSV(420, 100, 100).h).to.be.closeTo(60, 0.001);
+    });
+
     it('should create color from HSV with alpha', () => {
       const color = ColorModel.fromHSV(60, 50, 75, 0.3);
 

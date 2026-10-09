@@ -689,6 +689,38 @@ describe('Select', () => {
       expect(select.value).to.equal('a');
     });
 
+    it('drops the active item when it is removed', async () => {
+      select = await fixture<IgcSelectComponent>(createBasicSelect());
+      await openSelect();
+
+      simulateKeyboard(select, arrowDown, 2);
+      await elementUpdated(select);
+
+      const active = getActiveItem()!;
+      expect(active).to.exist;
+      expect(select.selectedItem).to.be.null;
+
+      active.remove();
+      await elementUpdated(select);
+
+      expect(getActiveItem()).to.be.undefined;
+      expect(select.selectedItem).to.be.null;
+    });
+
+    it('ignores mutations that add or remove no items', async () => {
+      select = await fixture<IgcSelectComponent>(createBasicSelect());
+      select.value = 'implementation';
+      await elementUpdated(select);
+
+      const selected = select.selectedItem;
+      select.append(document.createElement('span'));
+      await elementUpdated(select);
+
+      expect(select.selectedItem).to.equal(selected);
+      expect(getActiveItem()).to.equal(selected);
+      expect(select.value).to.equal('implementation');
+    });
+
     it('drops the selection when the selected item is removed', async () => {
       select = await fixture<IgcSelectComponent>(createBasicSelect());
       select.value = 'implementation';
@@ -1276,6 +1308,21 @@ describe('Select', () => {
       expect(select.selectedItem).to.equal(item);
       expect(select.value).to.equal(item.value);
       expect(select.open).to.be.false;
+    });
+
+    it('pressing Tab without an active or a selected item closes the dropdown and selects nothing', async () => {
+      const eventSpy = spy(select, 'emitEvent');
+      await openSelect();
+
+      expect(getActiveItem()).to.be.undefined;
+
+      simulateKeyboard(select, tabKey);
+      await elementUpdated(select);
+
+      expect(select.open).to.be.false;
+      expect(select.selectedItem).to.be.null;
+      expect(select.value).to.be.undefined;
+      expect(eventSpy).not.calledWith('igcChange');
     });
 
     it('pressing Tab while the active item is the current selected item moves focus back to the component', async () => {

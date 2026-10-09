@@ -1,6 +1,6 @@
 import { elementUpdated, expect, fixture, nextFrame } from '@open-wc/testing';
 import { html, nothing } from 'lit';
-import { spy, stub, useFakeTimers } from 'sinon';
+import { restore, spy, stub, useFakeTimers } from 'sinon';
 import { enterKey, tabKey } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
@@ -14,6 +14,7 @@ import {
   simulateFocus,
   simulateInput,
   simulateKeyboard,
+  simulatePointerEnter,
 } from '#internals/testing/simulate.spec.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import { configureTheme } from '#theming/config.js';
@@ -23,6 +24,8 @@ import IgcChipComponent from '../chip/chip.js';
 import IgcInputComponent from '../input/input.js';
 import IgcListItemComponent from '../list/list-item.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
+import IgcToastComponent from '../toast/toast.js';
+import IgcTooltipComponent from '../tooltip/tooltip.js';
 import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageComponent from './chat-message.js';
 import IgcChatComponent from './chat.js';
@@ -1060,6 +1063,560 @@ describe('Chat', () => {
       await elementUpdated(chat);
 
       expect(inputArea?.chips.length).to.equal(0);
+    });
+  });
+
+  describe('Additional behavior', () => {
+    const createDragEvent = (
+      type: string,
+      init: DragEventInit = {},
+      dataTransfer?: DataTransfer
+    ) => {
+      const event = new DragEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        ...init,
+      });
+      if (dataTransfer) {
+        Object.defineProperty(event, 'dataTransfer', { value: dataTransfer });
+      }
+      return event;
+    };
+
+    const getDropZone = () =>
+      getChatDOM(chat).input.self.renderRoot.querySelector<HTMLElement>(
+        '[part~="input-container"]'
+      )!;
+
+    beforeEach(() => {
+      // An earlier copy test leaves its clipboard stub in place.
+      restore();
+    });
+
+    afterEach(() => {
+      restore();
+    });
+
+    const getActionButton = (message: IgcChatMessageComponent, name: string) =>
+      message.renderRoot.querySelector<IgcIconButtonComponent>(
+        `igc-icon-button[name="${name}"]`
+      )!;
+
+    it('sets a `draftMessage` without attachments', async () => {
+      chat.draftMessage = { text: 'Only text' };
+      await elementUpdated(chat);
+
+      expect(chat.draftMessage).to.deep.equal({
+        text: 'Only text',
+        attachments: [],
+      });
+      expect(getChatDOM(chat).input.textarea.value).to.equal('Only text');
+    });
+
+    it('applies custom `resourceStrings`', async () => {
+      chat.options = { suggestions: ['Suggestion 1'] };
+      chat.resourceStrings = { chat_suggestions_header: 'Try these' };
+      await elementUpdated(chat);
+
+      expect(chat.resourceStrings.chat_suggestions_header).to.equal(
+        'Try these'
+      );
+      const header = getChatDOM(chat).suggestionsContainer.querySelector(
+        '[part="suggestions-header"] span'
+      )!;
+      expect(header.textContent?.trim()).to.equal('Try these');
+    });
+
+    it('renders a custom `suggestionPrefix` renderer', async () => {
+      chat.options = {
+        suggestions: ['Suggestion 1'],
+        renderers: {
+          suggestionPrefix: () => html`<span class="custom-prefix">*</span>`,
+        },
+      };
+      await elementUpdated(chat);
+
+      const container = getChatDOM(chat).suggestionsContainer;
+      expect(container.querySelector('.custom-prefix')).to.exist;
+      expect(container.querySelector('igc-icon[name="auto_suggest"]')).to.be
+        .null;
+    });
+
+    it('renders the default suggestion prefix when `renderers` does not override it', async () => {
+      chat.options = {
+        suggestions: ['Suggestion 1'],
+        renderers: { messageHeader: () => html`...` },
+      };
+      await elementUpdated(chat);
+
+      expect(
+        getChatDOM(chat).suggestionsContainer.querySelector(
+          'igc-icon[name="auto_suggest"]'
+        )
+      ).to.exist;
+    });
+
+    it('`scrollToMessage` scrolls the message into view', async () => {
+      chat.style.height = '300px';
+      chat.options = { disableAutoScroll: true };
+      chat.messages = Array.from({ length: 30 }, (_, i) => ({
+        id: `${i}`,
+        text: `Message ${i}`,
+        sender: 'bot',
+      }));
+      await elementUpdated(chat);
+      await nextFrame();
+
+      const list = chat.renderRoot.querySelector<HTMLElement>(
+        '[part="message-area-container"]'
+      )!;
+      list.scrollTop = 0;
+      await nextFrame();
+      expect(list.scrollTop).to.equal(0);
+
+      chat.scrollToMessage('29');
+      await nextFrame();
+
+      expect(list.scrollTop).to.be.greaterThan(0);
+    });
+
+    it('`scrollToMessage` does nothing without messages', () => {
+      expect(() => chat.scrollToMessage('1')).not.to.throw();
+      expect(getChatDOM(chat).messageList).to.be.null;
+    });
+
+    it('does not send a message on `Enter` when the input is empty', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      const textArea = getChatDOM(chat).input.textarea;
+
+      simulateKeyboard(textArea, enterKey);
+      await elementUpdated(chat);
+
+      expect(eventSpy).not.calledWith('igcMessageCreated');
+      expect(chat.messages).to.be.empty;
+    });
+
+    it('opens the file picker on attach button click', async () => {
+      const { self, fileInput } = getChatDOM(chat).input;
+      const showPicker = stub(fileInput, 'showPicker');
+      const attachButton = self.renderRoot.querySelector<HTMLElement>(
+        'igc-icon-button[name="attach_file"]'
+      )!;
+
+      simulateClick(attachButton);
+      expect(showPicker).calledOnce;
+    });
+
+    it('skips files already attached by name', async () => {
+      const fileInput = getChatDOM(chat).input.fileInput;
+
+      simulateFileUpload(fileInput, [files[0]]);
+      await elementUpdated(chat);
+      simulateFileUpload(fileInput, files);
+      await elementUpdated(chat);
+
+      expect(chat.draftMessage.attachments?.map(({ name }) => name)).to.eql([
+        'test.txt',
+        'image.png',
+      ]);
+      expect(getChatDOM(chat).input.chips).lengthOf(2);
+    });
+
+    it('accepts any dropped file when `acceptedFiles` is not set', async () => {
+      const dataTransfer = new DataTransfer();
+      for (const file of files) {
+        dataTransfer.items.add(file);
+      }
+
+      getDropZone().dispatchEvent(createDragEvent('drop', {}, dataTransfer));
+      await elementUpdated(chat);
+
+      expect(getChatDOM(chat).input.chips).lengthOf(2);
+    });
+
+    it('does not mark the drop zone as dragging without data transfer', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      const dropZone = getDropZone();
+
+      dropZone.dispatchEvent(createDragEvent('dragenter'));
+      await elementUpdated(getChatDOM(chat).input.self);
+
+      expect(eventSpy).calledWith('igcAttachmentDrag');
+      expect(dropZone.part.contains('dragging')).to.be.false;
+    });
+
+    it('keeps the dragging state until the pointer leaves the drop zone', async () => {
+      const input = getChatDOM(chat).input.self;
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(files[0]);
+
+      getDropZone().dispatchEvent(
+        createDragEvent('dragenter', {}, dataTransfer)
+      );
+      await elementUpdated(input);
+      expect(getDropZone().part.contains('dragging')).to.be.true;
+
+      const dragOver = createDragEvent('dragover');
+      getDropZone().dispatchEvent(dragOver);
+      expect(dragOver.defaultPrevented).to.be.true;
+
+      const { left, top, width, height } =
+        getDropZone().getBoundingClientRect();
+
+      getDropZone().dispatchEvent(
+        createDragEvent('dragleave', {
+          clientX: left + width / 2,
+          clientY: top + height / 2,
+        })
+      );
+      await elementUpdated(input);
+      expect(getDropZone().part.contains('dragging')).to.be.true;
+
+      getDropZone().dispatchEvent(
+        createDragEvent('dragleave', {
+          clientX: left + width + 50,
+          clientY: top + height + 50,
+        })
+      );
+      await elementUpdated(input);
+      expect(getDropZone().part.contains('dragging')).to.be.false;
+    });
+
+    it('stops typing after the default `stopTypingDelay`', async () => {
+      const clock = useFakeTimers({
+        now: 0,
+        toFake: ['Date', 'setTimeout', 'clearTimeout'],
+      });
+      const eventSpy = spy(chat, 'emitEvent');
+      const typingCalls = () =>
+        eventSpy
+          .getCalls()
+          .filter((call) => call.args[0] === 'igcTypingChange');
+
+      try {
+        simulateKeyboard(getChatDOM(chat).input.textarea, 'a');
+        await elementUpdated(chat);
+        expect(typingCalls()).lengthOf(1);
+
+        await clock.tickAsync(2900);
+        expect(typingCalls()).lengthOf(1);
+
+        await clock.tickAsync(200);
+        expect(typingCalls()).lengthOf(2);
+        expect(typingCalls()[1].args[1]?.detail).to.be.false;
+      } finally {
+        clock.restore();
+      }
+    });
+
+    it('shows the actions tooltip on action button hover and focus', async () => {
+      chat.messages = [{ ...messages[0], reactions: [] }];
+      await elementUpdated(chat);
+
+      const message = getChatDOM(chat).messages[0];
+      const { chat_reaction_copy, chat_reaction_like } = chat.resourceStrings;
+
+      simulatePointerEnter(getActionButton(message, 'copy_content'));
+      await elementUpdated(chat);
+
+      const tooltips = chat.renderRoot.querySelectorAll(
+        IgcTooltipComponent.tagName
+      );
+      expect(tooltips).lengthOf(1);
+      expect(tooltips[0].message).to.equal(chat_reaction_copy);
+      expect(tooltips[0].open).to.be.true;
+
+      simulateFocus(getActionButton(message, 'thumb_up_inactive'));
+      await elementUpdated(chat);
+
+      expect(
+        chat.renderRoot.querySelectorAll(IgcTooltipComponent.tagName)
+      ).lengthOf(1);
+      expect(tooltips[0].message).to.equal(chat_reaction_like);
+    });
+
+    it('toggles an active dislike back to inactive', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      chat.messages = [{ ...messages[0], reactions: [] }];
+      await elementUpdated(chat);
+
+      const message = getChatDOM(chat).messages[0];
+      simulateClick(getActionButton(message, 'thumb_down_inactive'));
+      await elementUpdated(message);
+      simulateClick(getActionButton(message, 'thumb_down_active'));
+      await elementUpdated(message);
+
+      expect(eventSpy.lastCall).calledWith('igcMessageReact', {
+        detail: {
+          message: chat.messages[0],
+          reaction: 'thumb_down_inactive',
+        },
+      });
+      expect(getActionButton(message, 'thumb_down_inactive')).to.exist;
+    });
+
+    it('emits a `regenerate` reaction', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      chat.messages = [{ ...messages[0], reactions: [] }];
+      await elementUpdated(chat);
+
+      const message = getChatDOM(chat).messages[0];
+      simulateClick(getActionButton(message, 'regenerate'));
+
+      expect(eventSpy).calledWith('igcMessageReact', {
+        detail: { message: chat.messages[0], reaction: 'regenerate' },
+      });
+      expect(chat.messages[0].reactions).to.eql(['regenerate']);
+    });
+
+    it('emits an empty reaction for an unknown action button', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      chat.options = {
+        renderers: {
+          messageActions: () =>
+            html`<igc-icon-button name="share"></igc-icon-button>`,
+        },
+      };
+      chat.messages = [{ ...messages[0], reactions: ['thumb_up_active'] }];
+      await elementUpdated(chat);
+
+      const message = getChatDOM(chat).messages[0];
+      simulateClick(getActionButton(message, 'share'));
+
+      expect(eventSpy).calledWith('igcMessageReact', {
+        detail: { message: chat.messages[0], reaction: '' },
+      });
+      expect(chat.messages[0].reactions).to.be.empty;
+    });
+
+    it('ignores clicks in the actions area outside of a button', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      chat.messages = [messages[0]];
+      await elementUpdated(chat);
+
+      const message = getChatDOM(chat).messages[0];
+      simulateClick(getChatMessageDOM(message).actions);
+
+      expect(eventSpy).not.calledWith('igcMessageReact');
+    });
+
+    it('copies the message text with its attachments', async () => {
+      const clipboardWriteText = stub(
+        navigator.clipboard,
+        'writeText'
+      ).resolves();
+      const {
+        chat_attachment_label,
+        chat_attachments_list_label,
+        chat_message_copied,
+      } = chat.resourceStrings;
+
+      try {
+        chat.messages = [
+          {
+            id: 'copy',
+            text: 'See files',
+            sender: 'bot',
+            attachments: [
+              { id: 'a', name: 'a.txt', url: 'http://some-link-to/a.txt' },
+              { id: 'b', name: 'b.txt' },
+              { id: 'c' } as IgcChatMessageAttachment,
+            ],
+          },
+        ];
+        await elementUpdated(chat);
+
+        simulateClick(
+          getActionButton(getChatDOM(chat).messages[0], 'copy_content')
+        );
+        await nextFrame();
+
+        expect(clipboardWriteText).calledOnceWith(
+          `See files\n\n${chat_attachments_list_label}:\na.txt: http://some-link-to/a.txt\nb.txt: \n${chat_attachment_label}: `
+        );
+
+        const toast = chat.renderRoot.querySelector(IgcToastComponent.tagName)!;
+        expect(toast.textContent).to.equal(chat_message_copied);
+        expect(toast.open).to.be.true;
+      } finally {
+        clipboardWriteText.restore();
+      }
+    });
+
+    it('copies only the attachments of a message without text', async () => {
+      const clipboardWriteText = stub(
+        navigator.clipboard,
+        'writeText'
+      ).resolves();
+      const { chat_attachments_list_label } = chat.resourceStrings;
+
+      try {
+        chat.messages = [
+          {
+            id: 'copy',
+            text: '',
+            sender: 'bot',
+            attachments: [
+              { id: 'a', name: 'a.txt', url: 'http://some-link-to/a.txt' },
+            ],
+          },
+        ];
+        await elementUpdated(chat);
+
+        simulateClick(
+          getActionButton(getChatDOM(chat).messages[0], 'copy_content')
+        );
+        await nextFrame();
+
+        expect(clipboardWriteText).calledOnceWith(
+          `${chat_attachments_list_label}:\na.txt: http://some-link-to/a.txt`
+        );
+      } finally {
+        clipboardWriteText.restore();
+      }
+    });
+
+    it('shows no toast and leaves no rejection when copying fails', async () => {
+      const clipboardWriteText = stub(navigator.clipboard, 'writeText').rejects(
+        new Error('denied')
+      );
+      const reasons: unknown[] = [];
+      const onRejection = (event: PromiseRejectionEvent) => {
+        event.preventDefault();
+        reasons.push(event.reason);
+      };
+      window.addEventListener('unhandledrejection', onRejection);
+
+      try {
+        chat.messages = [messages[0]];
+        await elementUpdated(chat);
+
+        simulateClick(
+          getActionButton(getChatDOM(chat).messages[0], 'copy_content')
+        );
+        await nextFrame();
+        await nextFrame();
+
+        expect(clipboardWriteText).calledOnce;
+        expect(reasons).to.be.empty;
+        expect(chat.renderRoot.querySelector(IgcToastComponent.tagName)).to.be
+          .null;
+      } finally {
+        window.removeEventListener('unhandledrejection', onRejection);
+        clipboardWriteText.restore();
+      }
+    });
+
+    it('renders an image attachment from its file', async () => {
+      const file = new File(['image data'], 'photo.png', { type: 'image/png' });
+      chat.messages = [
+        {
+          id: 'file',
+          text: 'Photo',
+          sender: 'bot',
+          attachments: [{ id: 'photo', name: 'photo.png', file }],
+        },
+      ];
+      await elementUpdated(chat);
+
+      const attachment = getChatMessageDOM(getChatDOM(chat).messages[0])
+        .attachments[0];
+      await elementUpdated(attachment);
+
+      const image = attachment.renderRoot.querySelector('img')!;
+      expect(image.src).to.match(/^blob:/);
+    });
+
+    it('renders an image attachment without a source', async () => {
+      chat.messages = [
+        {
+          id: 'no-url',
+          text: 'Photo',
+          sender: 'bot',
+          attachments: [{ id: 'photo', name: 'photo.png', type: 'image' }],
+        },
+      ];
+      await elementUpdated(chat);
+
+      const attachment = getChatMessageDOM(getChatDOM(chat).messages[0])
+        .attachments[0];
+      await elementUpdated(attachment);
+
+      expect(
+        attachment.renderRoot.querySelector('img')!.getAttribute('src')
+      ).to.equal('');
+    });
+
+    it('renders the generic file icon for a name without an extension', async () => {
+      chat.messages = [
+        {
+          id: 'readme',
+          text: 'Readme',
+          sender: 'bot',
+          attachments: [{ id: 'readme', name: 'README', type: 'file' }],
+        },
+      ];
+      await elementUpdated(chat);
+
+      const attachment = getChatMessageDOM(getChatDOM(chat).messages[0])
+        .attachments[0];
+      await elementUpdated(attachment);
+
+      const icon = attachment.renderRoot.querySelector(
+        '[part="file-attachment-icon"]'
+      )!;
+      expect(icon.getAttribute('name')).to.equal('file_generic');
+    });
+
+    it('renders the generic file icon for an attachment without a name', async () => {
+      chat.messages = [
+        {
+          id: 'nameless',
+          text: 'File',
+          sender: 'bot',
+          attachments: [
+            { id: 'nameless', type: 'file' } as IgcChatMessageAttachment,
+          ],
+        },
+      ];
+      await elementUpdated(chat);
+
+      const attachment = getChatMessageDOM(getChatDOM(chat).messages[0])
+        .attachments[0];
+      await elementUpdated(attachment);
+
+      const icon = attachment.renderRoot.querySelector(
+        '[part="file-attachment-icon"]'
+      )!;
+      expect(icon.getAttribute('name')).to.equal('file_generic');
+    });
+
+    it('renders no message container without a message', async () => {
+      chat.messages = [messages[0]];
+      await elementUpdated(chat);
+
+      const message = getChatDOM(chat).messages[0];
+      expect(getChatMessageDOM(message).container).to.exist;
+
+      message.message = undefined as unknown as IgcChatMessage;
+      await elementUpdated(message);
+
+      expect(getChatMessageDOM(message).container).to.be.null;
+    });
+
+    it('renders no attachments without a message', async () => {
+      chat.messages = [messages[1]];
+      await elementUpdated(chat);
+
+      const attachment = getChatMessageDOM(getChatDOM(chat).messages[0])
+        .attachments[0];
+      await elementUpdated(attachment);
+      expect(getChatAttachmentDOM(attachment).container).to.exist;
+
+      attachment.message = undefined;
+      await elementUpdated(attachment);
+
+      expect(getChatAttachmentDOM(attachment).container).to.be.null;
     });
   });
 

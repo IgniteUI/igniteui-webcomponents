@@ -147,8 +147,9 @@ export default class IgcChatMessageComponent extends LitElement {
     try {
       await navigator.clipboard.writeText(payload);
       this._state.showActionToast(chat_message_copied!);
-    } catch (err) {
-      throw new Error(`Failed to copy message: ${err}`);
+    } catch {
+      // The clipboard rejects without permission or document focus. Skip the
+      // confirmation toast; nothing was copied.
     }
   }
 

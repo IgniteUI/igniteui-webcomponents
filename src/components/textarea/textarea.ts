@@ -259,7 +259,6 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     converter: {
       // As the native attribute: only "false" turns the check off.
       fromAttribute: (value) => value?.toLowerCase() !== 'false',
-      toAttribute: (value) => (value ? 'true' : 'false'),
     },
   })
   public override spellcheck = true;

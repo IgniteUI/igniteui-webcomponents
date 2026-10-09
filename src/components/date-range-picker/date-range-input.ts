@@ -147,7 +147,7 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     datePart: unknown,
     delta: number | undefined,
     isDecrement: boolean
-  ): void {
+  ): boolean {
     // With no value, start from today.
     const current = this._uncommittedValue;
 
@@ -158,10 +158,10 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
       this.updateComplete.then(() =>
         this._input?.setSelectionRange(start, end)
       );
-      return;
+      return true;
     }
 
-    super._performStep(datePart, delta, isDecrement);
+    return super._performStep(datePart, delta, isDecrement);
   }
 
   protected override _buildDisplayValue(): string {

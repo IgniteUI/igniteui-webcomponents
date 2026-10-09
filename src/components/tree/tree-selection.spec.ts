@@ -421,6 +421,25 @@ describe('Tree Selection', () => {
       });
     });
 
+    it('Changing the selection mode should clear the indeterminate state of the parents', async () => {
+      const parent = topLevelItems[1].getChildren()[0];
+      const child = parent.getChildren()[0];
+
+      child.selected = true;
+      await elementUpdated(tree);
+
+      expect(parent.indeterminate).to.be.true;
+      expect(topLevelItems[1].indeterminate).to.be.true;
+
+      tree.selection = 'multiple';
+      await elementUpdated(tree);
+
+      expect(child.selected).to.be.false;
+      expect(parent.indeterminate).to.be.false;
+      expect(topLevelItems[1].indeterminate).to.be.false;
+      expect(treeSelectionService.isItemIndeterminate(parent)).to.be.false;
+    });
+
     it('Selecting all children of a parent should mark the parent as selected. All direct and non-direct parents should be affected correctly', async () => {
       const item2Children = topLevelItems[1].getChildren();
       const item211 = item2Children[0].getChildren()[0];
