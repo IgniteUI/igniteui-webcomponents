@@ -17,7 +17,10 @@ import {
   type DatePartDeltas,
   DatePartType,
 } from './date-part.js';
-import { IgcDateTimeInputBaseComponent } from './date-time-input.base.js';
+import {
+  IgcDateTimeInputBaseComponent,
+  type PartDirection,
+} from './date-time-input.base.js';
 import { DateTimeMaskParser } from './datetime-mask-parser.js';
 
 export interface IgcDateTimeInputComponentEventMap {
@@ -60,7 +63,7 @@ export interface IgcDateTimeInputComponentEventMap {
  */
 export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   IgcDateTimeInputComponentEventMap,
-  AbstractConstructor<IgcDateTimeInputBaseComponent<Date>>
+  AbstractConstructor<IgcDateTimeInputBaseComponent<Date, DatePart>>
 >(IgcDateTimeInputBaseComponent) {
   public static readonly tagName = 'igc-date-time-input';
   public static styles = [styles, shared];
@@ -110,15 +113,15 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   //#region Navigation
 
-  /** The cursor position for part navigation. `direction` 0 moves back, 1 moves forward. */
+  /** The cursor position for part navigation. */
   protected override _calculatePartNavigationPosition(
     inputValue: string,
-    direction: number
+    direction: PartDirection
   ): number {
     const cursorPos = this._maskSelection.start;
     const dateParts = this._parser.parts;
 
-    if (direction === 0) {
+    if (direction === 'back') {
       const part = dateParts.findLast(
         (part) => part.type === DatePartType.Literal && part.end < cursorPos
       );
@@ -186,16 +189,12 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   protected override _calculateSpunValue(
     datePart: DatePart,
     delta: number | undefined,
-    isDecrement: boolean
+    sign: 1 | -1
   ): Date {
     const effectiveDelta =
       delta || this._datePartDeltas[datePart as keyof DatePartDeltas] || 1;
 
-    const spinAmount = isDecrement
-      ? -Math.abs(effectiveDelta)
-      : Math.abs(effectiveDelta);
-
-    return this._spinDatePart(datePart, spinAmount);
+    return this._spinDatePart(datePart, sign * Math.abs(effectiveDelta));
   }
 
   protected _spinDatePart(datePart: DatePart, delta: number): Date {

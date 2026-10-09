@@ -17,6 +17,7 @@ import {
   metaKey,
   shiftKey,
 } from '../controllers/key-bindings.js';
+import type { MaskedInputOptions } from '../templates/masked-input.js';
 import type { AbstractConstructor } from './constructor.js';
 import type { BaseFormAssociatedElement } from './forms/types.js';
 
@@ -24,6 +25,20 @@ export type MaskSelection = {
   start: number;
   end: number;
 };
+
+/** The `renderMaskedNativeInput` handlers that {@link MaskBehaviorMixin} owns. */
+type MaskInputBindings = Pick<
+  MaskedInputOptions,
+  | 'onInput'
+  | 'onBeforeInput'
+  | 'onFocus'
+  | 'onBlur'
+  | 'onClick'
+  | 'onSetMaskSelection'
+  | 'onCompositionStart'
+  | 'onCompositionEnd'
+  | 'onDragLeave'
+>;
 
 /**
  * Maps an `inputType` to its undo granularity. An absent value is a native
@@ -54,6 +69,12 @@ export declare class MaskBehaviorElementInterface {
    * commits to its form value, the date editors keep a draft until blur.
    */
   protected _commitMaskedValue(value: string): void;
+
+  /** Whether the committed value is empty. Focus then starts from the empty mask. */
+  protected _isValueEmpty(): boolean;
+
+  /** Shows the mask that fits the focus state, such as a display format while unfocused. */
+  protected _updateMaskDisplay(): void;
 
   //#endregion
 
@@ -116,6 +137,10 @@ export declare class MaskBehaviorElementInterface {
   protected _handleCompositionStart(): void;
   protected _handleCompositionEnd(event: CompositionEvent): void;
   protected _handleClick(): void;
+  protected _handleFocus(): Promise<void>;
+  protected _handleDragLeave(): void;
+  protected _showEditMask(): void;
+  protected get _maskInputBindings(): MaskInputBindings;
 
   //#endregion
 
@@ -167,6 +192,8 @@ export function MaskBehaviorMixin<
     protected abstract readonly _parser: MaskParser;
     public abstract select(): void;
     protected abstract _commitMaskedValue(value: string): void;
+    protected abstract _isValueEmpty(): boolean;
+    protected abstract _updateMaskDisplay(): void;
 
     //#endregion
 
@@ -467,6 +494,50 @@ export function MaskBehaviorMixin<
       if (start === end && start === this._maskedValue.length) {
         this.select();
       }
+    }
+
+    /** Starts an edit. An empty value starts from the empty mask, all selected. */
+    protected async _handleFocus(): Promise<void> {
+      this._focused = true;
+
+      if (this.readOnly) {
+        return;
+      }
+
+      if (this._isValueEmpty()) {
+        this._maskedValue = this._parser.emptyMask;
+        this._historyResync();
+        await this.updateComplete;
+        this.select();
+        return;
+      }
+
+      this._showEditMask();
+      this._historyResync();
+    }
+
+    /** Replaces the display text with the editable mask on a focus with a value. */
+    protected _showEditMask(): void {}
+
+    protected _handleDragLeave(): void {
+      if (!this._focused) {
+        this._updateMaskDisplay();
+      }
+    }
+
+    /** The bindings of the mask editing, for `renderMaskedNativeInput`. */
+    protected get _maskInputBindings(): MaskInputBindings {
+      return {
+        onInput: this._handleInput,
+        onBeforeInput: this._handleBeforeInput,
+        onFocus: this._handleFocus,
+        onBlur: this._handleBlur,
+        onClick: this._handleClick,
+        onSetMaskSelection: this._setMaskSelection,
+        onCompositionStart: this._handleCompositionStart,
+        onCompositionEnd: this._handleCompositionEnd,
+        onDragLeave: this._handleDragLeave,
+      };
     }
 
     /**

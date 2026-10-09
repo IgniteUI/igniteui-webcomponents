@@ -23,7 +23,7 @@ import { MaskBehaviorMixin } from '#internals/mixins/mask-behavior.js';
 import {
   nextInputId,
   renderInputShell,
-  resolveInputPartNames,
+  resolveInputPartFlags,
 } from '#internals/templates/input-shell.js';
 import { renderMaskedNativeInput } from '#internals/templates/masked-input.js';
 import { equal } from '#internals/utils/objects.js';
@@ -37,6 +37,9 @@ import {
 } from './date-part.js';
 import type { DateFormatMaskParser } from './datetime-mask-parser.js';
 import { dateTimeInputValidators } from './validators.js';
+
+/** The direction of a part navigation: `Ctrl + ArrowLeft` or `Ctrl + ArrowRight`. */
+export type PartDirection = 'back' | 'forward';
 
 const Slots = setSlots(
   'prefix',
@@ -56,6 +59,7 @@ const Slots = setSlots(
 @shadowOptions({ delegatesFocus: true })
 export abstract class IgcDateTimeInputBaseComponent<
   T,
+  P,
 > extends MaskBehaviorMixin(FormAssociatedRequiredMixin(LitElement)) {
   // #region Internal state and properties
 
@@ -66,6 +70,9 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected readonly _slots = addSlotController(this, { slots: Slots });
 
   protected readonly _inputId = nextInputId();
+
+  /** Part flags of the current render, shared by the container and the input. */
+  private _partFlags: Record<string, boolean> = {};
 
   @query('input')
   protected override readonly _input?: HTMLInputElement;
@@ -121,7 +128,7 @@ export abstract class IgcDateTimeInputBaseComponent<
     return { ...DEFAULT_DATE_PARTS_SPIN_DELTAS, ...this.spinDelta };
   }
 
-  protected get _targetDatePart(): unknown {
+  protected get _targetDatePart(): P | undefined {
     return this._focused
       ? this._getDatePartAtCursor()
       : this._getDefaultDatePart();
@@ -255,10 +262,10 @@ export abstract class IgcDateTimeInputBaseComponent<
       bindingDefaults: { repeat: true },
     })
       .set([ctrlKey, ';'], this._setCurrentDateTime)
-      .set(arrowUp, this._keyboardSpin.bind(this, 'up'))
-      .set(arrowDown, this._keyboardSpin.bind(this, 'down'))
-      .set([ctrlKey, arrowLeft], this._navigateParts.bind(this, 0))
-      .set([ctrlKey, arrowRight], this._navigateParts.bind(this, 1));
+      .set(arrowUp, this._keyboardSpin.bind(this, 1))
+      .set(arrowDown, this._keyboardSpin.bind(this, -1))
+      .set([ctrlKey, arrowLeft], this._navigateParts.bind(this, 'back'))
+      .set([ctrlKey, arrowRight], this._navigateParts.bind(this, 'forward'));
   }
 
   protected override update(props: PropertyValues<this>): void {
@@ -282,40 +289,24 @@ export abstract class IgcDateTimeInputBaseComponent<
     this._updateMaskDisplay();
   }
 
-  protected _handleDragLeave(): void {
-    if (!this._focused) {
-      this._updateMaskDisplay();
-    }
-  }
-
   protected _handleDragEnter(): void {
     if (!this._focused) {
       this._maskedValue = this._buildMaskedValue();
     }
   }
 
-  protected async _handleFocus(): Promise<void> {
-    this._focused = true;
-
-    if (this.readOnly) {
-      return;
+  protected override _handleFocus(): Promise<void> {
+    if (!this.readOnly) {
+      this._oldValue = this.value;
     }
 
-    this._oldValue = this.value;
+    return super._handleFocus();
+  }
 
-    if (this._isValueEmpty()) {
-      this._maskedValue = this._parser.emptyMask;
-      this._historyResync();
-      await this.updateComplete;
-      this.select();
-      return;
-    }
-
+  protected override _showEditMask(): void {
     if (this.displayFormat !== this.inputFormat) {
       this._updateMaskDisplay();
     }
-
-    this._historyResync();
   }
 
   protected override _handleBlur(): void {
@@ -332,7 +323,7 @@ export abstract class IgcDateTimeInputBaseComponent<
     event.stopPropagation();
 
     const { start, end } = this._inputSelection;
-    if (this._performStep(undefined, undefined, event.deltaY > 0)) {
+    if (this._performStep(undefined, undefined, event.deltaY > 0 ? -1 : 1)) {
       this._emitInputEvent();
     }
 
@@ -344,7 +335,7 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   //#region Keybindings
 
-  protected _navigateParts(direction: number): void {
+  protected _navigateParts(direction: PartDirection): void {
     const position = this._calculatePartNavigationPosition(
       this._input?.value ?? '',
       direction
@@ -352,8 +343,8 @@ export abstract class IgcDateTimeInputBaseComponent<
     this.setSelectionRange(position, position);
   }
 
-  protected async _keyboardSpin(direction: 'up' | 'down'): Promise<void> {
-    if (this._performStep(undefined, undefined, direction === 'down')) {
+  protected async _keyboardSpin(sign: 1 | -1): Promise<void> {
+    if (this._performStep(undefined, undefined, sign)) {
       this._emitInputEvent();
     }
     await this.updateComplete;
@@ -367,21 +358,21 @@ export abstract class IgcDateTimeInputBaseComponent<
   /** @internal */
   /** Spins the given or targeted date part. Returns false when no part is targeted, for example in a literal. */
   protected _performStep(
-    datePart: unknown,
+    datePart: P | undefined,
     delta: number | undefined,
-    isDecrement: boolean
+    sign: 1 | -1
   ): boolean {
     const part = datePart || this._targetDatePart;
     if (!part) return false;
 
     const { start, end } = this._inputSelection;
-    this._setDraftValue(this._calculateSpunValue(part, delta, isDecrement));
+    this._setDraftValue(this._calculateSpunValue(part, delta, sign));
     this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
     return true;
   }
 
   /** Shows the editable mask when focused, else the display format. */
-  protected _updateMaskDisplay(): void {
+  protected override _updateMaskDisplay(): void {
     if (!this._focused) {
       this._maskedValue = this._buildDisplayValue();
     } else if (!this._isEditing) {
@@ -422,7 +413,7 @@ export abstract class IgcDateTimeInputBaseComponent<
    * Whether the committed value is empty. Focus then starts the edit from the
    * empty mask, not from the formatted value.
    */
-  protected _isValueEmpty(): boolean {
+  protected override _isValueEmpty(): boolean {
     return !this.value;
   }
 
@@ -533,7 +524,7 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   protected _resolvePartNames(base: string): Record<string, boolean> {
-    return resolveInputPartNames(this._slots, base, !this._isEmptyMask);
+    return { [base]: true, ...this._partFlags };
   }
 
   // #endregion
@@ -559,14 +550,14 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   /* blazorSuppress */
   /** Increments a date/time portion. */
-  public stepUp(datePart?: unknown, delta?: number): void {
-    this._performStep(datePart, delta, false);
+  public stepUp(datePart?: P, delta?: number): void {
+    this._performStep(datePart, delta, 1);
   }
 
   /* blazorSuppress */
   /** Decrements a date/time portion. */
-  public stepDown(datePart?: unknown, delta?: number): void {
-    this._performStep(datePart, delta, true);
+  public stepDown(datePart?: P, delta?: number): void {
+    this._performStep(datePart, delta, -1);
   }
 
   /* blazorSuppress */
@@ -600,21 +591,15 @@ export abstract class IgcDateTimeInputBaseComponent<
       value: this._maskedValue,
       placeholder: this.placeholder || this._parser.emptyMask,
       aria: this._ariaTarget.resolveBindings(),
-      onInput: this._handleInput,
-      onBeforeInput: this._handleBeforeInput,
-      onFocus: this._handleFocus,
-      onBlur: this._handleBlur,
-      onClick: this._handleClick,
-      onSetMaskSelection: this._setMaskSelection,
-      onCompositionStart: this._handleCompositionStart,
-      onCompositionEnd: this._handleCompositionEnd,
+      ...this._maskInputBindings,
       onWheel: this._handleWheel,
       onDragEnter: this._handleDragEnter,
-      onDragLeave: this._handleDragLeave,
     });
   }
 
   protected override render() {
+    this._partFlags = resolveInputPartFlags(this._slots, !this._isEmptyMask);
+
     return renderInputShell(this, {
       theme: this._themes.theme,
       label: this.label,
@@ -650,16 +635,16 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected abstract _buildDisplayValue(): string;
   protected abstract _calculatePartNavigationPosition(
     value: string,
-    direction: number
+    direction: PartDirection
   ): number;
   protected abstract _calculateSpunValue(
-    part: unknown,
+    part: P,
     delta: number | undefined,
-    isDecrement: boolean
+    sign: 1 | -1
   ): T;
   protected abstract _setCurrentDateTime(): void;
-  protected abstract _getDatePartAtCursor(): unknown;
-  protected abstract _getDefaultDatePart(): unknown;
+  protected abstract _getDatePartAtCursor(): P | undefined;
+  protected abstract _getDefaultDatePart(): P | undefined;
 
   /* blazorSuppress */
   /** Whether the current format holds a date part: day, month or year. */
