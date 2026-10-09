@@ -38,23 +38,25 @@ src/
 
 `src/internals` holds the code that components share. None of it is public API:
 
-| Path                | Contents                                                                                           |
-| ------------------- | -------------------------------------------------------------------------------------------------- |
-| `controllers/`      | Reactive controllers. See [Controllers](#controllers).                                             |
-| `date/`             | The `CalendarDay` model, date comparison and conversion helpers                                    |
-| `decorators/`       | `coercedProperty`, `shadowOptions`, the Blazor markers                                             |
-| `definitions/`      | `registerComponent`, `defineComponents`, `defineAllComponents`                                     |
-| `directives/`       | The `resizable()` and `draggable()` pointer directives                                             |
-| `i18n/`             | The localization controller and the deprecated EN resource shapes                                  |
-| `mixins/`           | `EventEmitterMixin`, `I18nMixin`, `HostAriaMixin`, the form-associated mixins, mask behavior, combo box, group, option, alert |
-| `templates/`        | Shared render fragments: `input-shell`, `masked-input`, `toggle-shell`, `slotted-icon`             |
-| `testing/`          | Test helpers and shared suites. They are `*.spec.ts` files, and production code never imports them. |
-| `utils/`            | Helpers split by domain: `arrays`, `dom`, `events`, `lit`, `math`, `objects`, `strings`, `types`   |
-| `abort-handler.ts`  | `createAbortHandle`, a resettable `AbortController`                                                |
-| `context.ts`        | The Lit context keys that components share                                                        |
-| `part-map.ts`       | The `partMap` directive                                                                            |
-| `timing.ts`         | `createTimer`, a restartable timeout                                                               |
-| `validators.ts`     | The shared constraint validators                                                                   |
+| Path               | Contents                                                                                            |
+| ------------------ | --------------------------------------------------------------------------------------------------- |
+| `bases/`           | Abstract base classes: alert, combo box, group, option                                              |
+| `controllers/`     | Reactive controllers. See [Controllers](#controllers).                                              |
+| `date/`            | The `CalendarDay` model, date comparison and conversion helpers                                     |
+| `decorators/`      | `coercedProperty`, `shadowOptions`, the Blazor markers                                              |
+| `definitions/`     | `registerComponent`, `defineComponents`, `defineAllComponents`                                      |
+| `directives/`      | The `resizable()` and `draggable()` pointer directives                                              |
+| `i18n/`            | The localization controller and the deprecated EN resource shapes                                   |
+| `mixins/`          | `EventEmitterMixin`, `I18nMixin`, `HostAriaMixin`, the form-associated mixins, mask behavior        |
+| `templates/`       | Shared render fragments: `input-shell`, `masked-input`, `toggle-shell`, `slotted-icon`              |
+| `testing/`         | Test helpers and shared suites. They are `*.spec.ts` files, and production code never imports them. |
+| `utils/`           | Helpers split by domain: `arrays`, `dom`, `events`, `lit`, `math`, `objects`, `strings`, `types`    |
+| `abort-handler.ts` | `createAbortHandle`, a resettable `AbortController`                                                 |
+| `context.ts`       | The Lit context keys that components share                                                          |
+| `mask-history.ts`  | `createMaskHistory`, the undo and redo history of the mask editors                                  |
+| `part-map.ts`      | The `partMap` directive                                                                             |
+| `timing.ts`        | `createTimer`, a restartable timeout                                                                |
+| `validators.ts`    | The shared constraint validators                                                                    |
 
 `src/index.ts` re-exports only a few approved symbols from `src/internals`:
 `defineComponents`, `defineAllComponents`, the deprecated EN resource shapes, and the
@@ -191,9 +193,22 @@ declare global {
   export { default as IgcFooBarComponent } from './components/foo-bar/foo-bar.js';
   ```
 
+  Also add it to the list in `defineAllComponents.ts`.
+- `register()` lists every component that the templates of the component render, directly.
+  Do not rely on a dependency that registers it. `npm run check` verifies both rules.
+
 - A mixin takes the base class as its first argument. If a leading config argument comes
-  first, the manifest analyzer drops every inherited member. After you change a base class
-  or a mixin, compare `custom-elements.json` before and after the change.
+  first, the manifest analyzer drops every inherited member. `npm run check` compares the
+  public API with the committed `public-api.json` and fails on a removal or a type change.
+  After you change a base class or a mixin, also compare `custom-elements.json` before and
+  after the change: the snapshot does not cover protected members or `inheritedFrom`.
+- Mixins and bases follow these contracts:
+
+  | Contract                                                                           | Reason                                                                                   |
+  | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+  | `I18nMixin(base, config)` takes the base first, like every mixin                   | With a leading config argument, the manifest analyzer drops every inherited member       |
+  | The form-associated mixins already apply `HostAriaMixin`                           | A form component gets the host ARIA forwarding from them; do not apply it again          |
+  | A base that emits before the leaf applies `EventEmitterMixin` declares `emitEvent` | `declare public emitEvent` types its calls; the leaf applies the mixin with the full map |
 
 ## Imports
 
@@ -673,6 +688,9 @@ A parser, converter or serializer that takes user or stored input also gets prop
   >(LitElement) {}
   ```
 
+- Declare the event map in the module of the class that emits the events. When `src/index.ts`
+  exports the class, export the map too, as `export type { IgcFooBarEventMap } from …`. The
+  public API snapshot then records it.
 - Event names are camelCase with an `igc` prefix. Cancelable events usually end in `-ing`.
 - By default, `emitEvent` sends an event that bubbles, is composed and is not cancelable. For a
   cancelable event, check the return value:
@@ -1096,16 +1114,19 @@ export const Basic: Story = {
 
 ## Verifying Your Work
 
-| Command                | What it does                                                            |
-| ---------------------- | ----------------------------------------------------------------------- |
-| `npm run build:styles` | Compiles SCSS into the generated `.css.ts` files                        |
-| `npm run check`        | Import aliases, dependency-cruiser rules and TypeScript                 |
-| `npm run lint`         | oxlint, lit-analyzer, oxfmt and Stylelint                               |
-| `npm run format`       | Applies the oxlint and oxfmt fixes                                      |
-| `npm run test`         | Builds the styles and runs the Web Test Runner suite with coverage      |
-| `npm run cem`          | Regenerates `custom-elements.json`                                      |
-| `npm run build:meta`   | Regenerates the story metadata regions                                  |
-| `npm run storybook`    | Dev server with style, manifest and story watchers                      |
+| Command                         | What it does                                                                               |
+| ------------------------------- | ------------------------------------------------------------------------------------------ |
+| `npm run build:styles`          | Compiles SCSS into the generated `.css.ts` files                                           |
+| `npm run check`                 | Import aliases, dependency-cruiser rules, TypeScript, registration and the public API      |
+| `npm run lint`                  | oxlint, lit-analyzer, oxfmt and Stylelint                                                  |
+| `npm run format`                | Applies the oxlint and oxfmt fixes                                                         |
+| `npm run test`                  | Builds the styles and runs the Web Test Runner suite with coverage                         |
+| `npm run test:ssr`              | Builds the package and renders every tag through Lit SSR; fails when a render throws       |
+| `npm run cem`                   | Regenerates `custom-elements.json`                                                         |
+| `npm run public-api:update`     | Rewrites `public-api.json` after an intended public API change                             |
+| `npm run report:spec-scenarios` | Lists `spec.md` test scenarios out of step with the specs, and specs without an a11y audit |
+| `npm run build:meta`            | Regenerates the story metadata regions                                                     |
+| `npm run storybook`             | Dev server with style, manifest and story watchers                                         |
 
 Before you open a PR, run `npm run check`, `npm run lint` and `npm run test`.
 
