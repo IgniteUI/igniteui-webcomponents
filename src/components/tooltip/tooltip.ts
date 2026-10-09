@@ -6,7 +6,11 @@ import { addAnimationController } from '#animations/player.js';
 import { fadeOut } from '#animations/presets/fade/index.js';
 import { scaleInCenter } from '#animations/presets/scale/index.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
-import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  addSlotController,
+  DefaultSlot,
+  setSlots,
+} from '#internals/controllers/slot.js';
 import {
   coercedProperty,
   type CoercedPropertyConfig,
@@ -153,7 +157,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    */
   private get _hasProjectedContent(): boolean {
     return this._slots
-      .getAssignedNodes('[default]')
+      .getAssignedNodes(DefaultSlot)
       .some(
         (node) =>
           isElement(node) ||
@@ -384,6 +388,41 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     this._settleState(state, this._abortTransition());
   }
 
+  /** Animates to `show`. Gives `false` when a newer transition supersedes it. */
+  private async _commitTransition(
+    show: boolean,
+    withEvents: boolean,
+    id: number
+  ): Promise<boolean> {
+    if (show) {
+      this.open = true;
+    }
+
+    // Ignore interactions during the animation. This stops a show/hide loop
+    // when the popover overlaps its anchor.
+    this.inert = true;
+    this._animating = true;
+
+    const animationComplete = await this._player.playExclusive(
+      show ? this._showAnimation : this._hideAnimation
+    );
+
+    // Superseded while animating - the newer transition owns the state now.
+    if (id !== this._transitionId) {
+      return false;
+    }
+
+    this._animating = false;
+    this.inert = false;
+    this.open = show;
+
+    if (animationComplete && withEvents) {
+      this._emitEvent(show ? 'igcOpened' : 'igcClosed');
+    }
+
+    return animationComplete;
+  }
+
   private async _applyTooltipState({
     show,
     withDelay = false,
@@ -410,45 +449,15 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
     const id = this._transitionId;
 
-    const commitStateChange = async () => {
-      if (show) {
-        this.open = true;
-      }
-
-      // Ignore interactions during the animation. This stops a show/hide loop
-      // when the popover overlaps its anchor.
-      this.inert = true;
-      this._animating = true;
-
-      const animationComplete = await this._player.playExclusive(
-        show ? this._showAnimation : this._hideAnimation
-      );
-
-      // Superseded while animating - the newer transition owns the state now.
-      if (id !== this._transitionId) {
-        return false;
-      }
-
-      this._animating = false;
-      this.inert = false;
-      this.open = show;
-
-      if (animationComplete && withEvents) {
-        this._emitEvent(show ? 'igcOpened' : 'igcClosed');
-      }
-
-      return animationComplete;
-    };
-
     if (!withDelay) {
-      return commitStateChange();
+      return this._commitTransition(show, withEvents, id);
     }
 
     return new Promise<boolean>((resolve) => {
       const timer = setTimeout(
         () => {
           this._pending = undefined;
-          commitStateChange().then(resolve);
+          this._commitTransition(show, withEvents, id).then(resolve);
         },
         show ? this.showDelay : this.hideDelay
       );

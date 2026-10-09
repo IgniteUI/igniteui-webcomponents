@@ -240,13 +240,16 @@ class TooltipController implements ReactiveController {
     this._syncAnchorARIA();
   }
 
+  /** The element of an anchor id, or the anchor itself. */
+  private _resolve(value: TooltipAnchor | string): TooltipAnchor | null {
+    return isString(value) ? getElementByIdFromRoot(this._host, value) : value;
+  }
+
   //#region Public API
 
   /** Moves the triggers from the previous anchor to the new one, if any. */
   public setAnchor(value: TooltipAnchor | string, transient = false): void {
-    const newAnchor = isString(value)
-      ? getElementByIdFromRoot(this._host, value)
-      : value;
+    const newAnchor = this._resolve(value);
 
     if (this._anchor?.deref() === newAnchor) {
       return;
@@ -269,9 +272,7 @@ class TooltipController implements ReactiveController {
   }
 
   public resolveAnchor(value: TooltipAnchor | string): void {
-    const resolvedElement = isString(value)
-      ? getElementByIdFromRoot(this._host, value)
-      : value;
+    const resolvedElement = this._resolve(value);
 
     this._initialAnchor = resolvedElement ? new WeakRef(resolvedElement) : null;
     this.setAnchor(resolvedElement);
