@@ -559,6 +559,85 @@ describe('Theming Controller', () => {
     });
   });
 
+  describe('Update Gating', () => {
+    type CountingElement = LitElement & { updateCount: number };
+
+    function defineCounting(readsTheme: boolean): string {
+      return defineCE(
+        class extends LitElement {
+          public updateCount = 0;
+
+          private readonly _theming = addThemingController(this, mockThemes);
+
+          protected override updated(): void {
+            this.updateCount++;
+          }
+
+          protected override render() {
+            return readsTheme
+              ? litHtml`<span>${this._theming.theme}</span>`
+              : litHtml`<span>static</span>`;
+          }
+        }
+      );
+    }
+
+    let readingTag: string;
+    let staticTag: string;
+
+    before(() => {
+      readingTag = defineCounting(true);
+      staticTag = defineCounting(false);
+    });
+
+    beforeEach(() => {
+      configureTheme('bootstrap', 'light');
+    });
+
+    it('updates a host that reads the theme on a theme change', async () => {
+      const tag = unsafeStatic(readingTag);
+      const el = await fixture<CountingElement>(html`<${tag}></${tag}>`);
+      const count = el.updateCount;
+
+      configureTheme('material', 'dark');
+      await elementUpdated(el);
+
+      expect(el.updateCount).to.equal(count + 1);
+      expect(el.shadowRoot!.textContent).to.equal('material');
+    });
+
+    it('does not update a host that never reads the theme, but swaps its theme sheets', async () => {
+      const tag = unsafeStatic(staticTag);
+      const el = await fixture<CountingElement>(html`<${tag}></${tag}>`);
+      const count = el.updateCount;
+
+      configureTheme('material', 'dark');
+      await elementUpdated(el);
+
+      expect(el.updateCount).to.equal(count);
+      expect(Array.from(el.shadowRoot!.adoptedStyleSheets)).to.include.members([
+        mockThemes.dark.shared!.styleSheet,
+        mockThemes.dark.material!.styleSheet,
+      ]);
+    });
+
+    it('does not update the host when the active theme is set again', async () => {
+      const tag = unsafeStatic(readingTag);
+      const el = await fixture<CountingElement>(html`<${tag}></${tag}>`);
+      const count = el.updateCount;
+
+      setTimeout(() => configureTheme('bootstrap', 'light'));
+      const { detail } = await oneEvent(window, CHANGE_THEME_EVENT);
+      await elementUpdated(el);
+
+      expect(detail).to.deep.equal({
+        theme: 'bootstrap',
+        themeVariant: 'light',
+      });
+      expect(el.updateCount).to.equal(count);
+    });
+  });
+
   describe('All Theme Combinations', () => {
     const themes = ['material', 'bootstrap', 'indigo', 'fluent'] as const;
     const variants = ['light', 'dark'] as const;

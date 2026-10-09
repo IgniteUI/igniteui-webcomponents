@@ -47,6 +47,9 @@ class ThemingController implements ReactiveController {
   private _variant: ThemeVariant = 'light';
   private _themeSource: ThemeProviderSource = 'uninitialized';
 
+  /** Whether the host has read the theme, so a theme change must update it. */
+  private _observed = false;
+
   /** The element and theme sheets that this controller adopted last. */
   private _sheets: ReadonlySet<CSSStyleSheet> = new Set();
 
@@ -56,11 +59,13 @@ class ThemingController implements ReactiveController {
 
   /** Gets the current theme. */
   public get theme(): Theme {
+    this._observed = true;
     return this._theme;
   }
 
   /** Gets the current theme variant. */
   public get variant(): ThemeVariant {
+    this._observed = true;
     return this._variant;
   }
 
@@ -142,7 +147,11 @@ class ThemingController implements ReactiveController {
 
     this._adoptStyles();
     this._options?.themeChange?.call(this._host, this._theme);
-    this._host.requestUpdate();
+
+    // A host that never reads the theme renders the same output for every theme.
+    if (this._observed || this._options?.themeChange) {
+      this._host.requestUpdate();
+    }
   }
 
   private _adoptStyles(): void {

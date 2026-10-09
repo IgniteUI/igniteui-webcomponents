@@ -44,6 +44,11 @@ class ThemeChangedEmitter extends EventTarget {
       isOfTypeTheme(detail?.theme) &&
       isOfTypeThemeVariant(detail?.themeVariant)
     ) {
+      // A repeated call or another copy of the library may send the active theme again.
+      if (detail.theme === theme && detail.themeVariant === themeVariant) {
+        return;
+      }
+
       setTheme(detail.theme, detail.themeVariant);
       this.dispatchEvent(new CustomEvent(CHANGED_THEME_EVENT));
     }
@@ -81,13 +86,13 @@ export function getTheme(): ChangeThemeEventDetail {
  */
 export function configureTheme(t: Theme, v: ThemeVariant = 'light'): void {
   if (isOfTypeTheme(t) && isOfTypeThemeVariant(v)) {
-    // Also set by the emitter's window listener, but that listener does not exist on the server.
-    setTheme(t, v);
-
-    if (!isServer) {
+    if (isServer) {
+      // On the client, the emitter's window listener sets the state.
+      setTheme(t, v);
+    } else {
       globalThis.dispatchEvent(
         new CustomEvent(CHANGE_THEME_EVENT, {
-          detail: { theme, themeVariant },
+          detail: { theme: t, themeVariant: v },
         })
       );
     }
