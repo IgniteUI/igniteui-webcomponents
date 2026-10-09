@@ -1,5 +1,13 @@
 import { html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
+import {
+  getActiveItems,
+  getItems,
+  getNextActiveItem,
+  getPreviousActiveItem,
+  IgcComboBoxBaseLikeComponent,
+  setInitialSelectionState,
+} from '#internals/bases/combo-box.js';
 import { ariaBindings } from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
@@ -21,14 +29,6 @@ import {
 } from '#internals/controllers/mutation-observer.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import {
-  getActiveItems,
-  getItems,
-  getNextActiveItem,
-  getPreviousActiveItem,
-  IgcComboBoxBaseLikeComponent,
-  setInitialSelectionState,
-} from '#internals/mixins/combo-box.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { isEmpty } from '#internals/utils/arrays.js';

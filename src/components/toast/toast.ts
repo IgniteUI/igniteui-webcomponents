@@ -1,6 +1,6 @@
 import { html } from 'lit';
+import { IgcBaseAlertLikeComponent } from '#internals/bases/alert.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { IgcBaseAlertLikeComponent } from '#internals/mixins/alert.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles as shared } from './themes/shared/toast.common.css.js';

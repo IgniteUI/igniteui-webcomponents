@@ -1,12 +1,12 @@
 import type { PropertyValues } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
+import { IgcGroupBaseComponent } from '#internals/bases/group.js';
 import type { ARIAState } from '#internals/controllers/internals.js';
 import {
   createMutationController,
   type MutationControllerParams,
 } from '#internals/controllers/mutation-observer.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { IgcGroupBaseComponent } from '#internals/mixins/group.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from '../dropdown/themes/dropdown-group.base.css.js';

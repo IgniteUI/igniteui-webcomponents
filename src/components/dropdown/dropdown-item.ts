@@ -1,5 +1,5 @@
+import { IgcBaseOptionLikeComponent } from '#internals/bases/option.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { IgcBaseOptionLikeComponent } from '#internals/mixins/option.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/dropdown-item.base.css.js';

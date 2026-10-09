@@ -1,6 +1,6 @@
 import { queryAssignedElements } from 'lit/decorators.js';
+import { IgcGroupBaseComponent } from '#internals/bases/group.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { IgcGroupBaseComponent } from '#internals/mixins/group.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcDropdownItemComponent from './dropdown-item.js';

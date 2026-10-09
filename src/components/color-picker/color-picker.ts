@@ -5,6 +5,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { IgcBaseComboBoxComponent } from '#internals/bases/combo-box.js';
 import {
   addAriaProjector,
   ariaBindings,
@@ -24,7 +25,6 @@ import {
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { IgcBaseComboBoxComponent } from '#internals/mixins/combo-box.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
@@ -47,7 +47,7 @@ import IgcDividerComponent from '../divider/divider.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
-import type IgcSelectItemComponent from '../select/select-item.js';
+import IgcSelectItemComponent from '../select/select-item.js';
 import IgcSelectComponent from '../select/select.js';
 import type { ColorFormat, ColorPickerMode } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
@@ -165,6 +165,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
       IgcPopoverComponent,
       IgcFocusTrapComponent,
       IgcSelectComponent,
+      IgcSelectItemComponent,
       IgcPickerCanvasComponent,
       IgcDividerComponent,
       IgcButtonComponent,

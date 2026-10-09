@@ -10,8 +10,8 @@ import {
   type ToggleEventMap,
 } from '../controllers/toggle.js';
 
+import type { UnpackCustomEvent } from '../mixins/event-emitter.js';
 import { iterNodes } from '../utils/dom.js';
-import type { UnpackCustomEvent } from './event-emitter.js';
 
 /* blazorIndirectRender */
 /* omitModule */

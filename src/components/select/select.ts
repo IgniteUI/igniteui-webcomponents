@@ -1,6 +1,14 @@
 import { html, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import {
+  getActiveItems,
+  getItems,
+  getNextActiveItem,
+  getPreviousActiveItem,
+  IgcComboBoxBaseLikeComponent,
+  setInitialSelectionState,
+} from '#internals/bases/combo-box.js';
 import { addAriaProjector } from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
@@ -24,14 +32,6 @@ import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import {
-  getActiveItems,
-  getItems,
-  getNextActiveItem,
-  getPreviousActiveItem,
-  IgcComboBoxBaseLikeComponent,
-  setInitialSelectionState,
-} from '#internals/mixins/combo-box.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
