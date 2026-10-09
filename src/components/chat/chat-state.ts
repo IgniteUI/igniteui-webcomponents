@@ -11,14 +11,47 @@ import type {
   ChatSuggestionsPosition,
   IgcChatMessage,
   IgcChatMessageAttachment,
-  IgcChatMessageReaction,
   IgcChatOptions,
 } from './types.js';
 import {
   type ChatAcceptedFileTypes,
+  getFileURL,
   isImageAttachment,
   parseAcceptedFileTypes,
+  revokeFileURL,
 } from './utils.js';
+
+/** The context that republishes on an option change. A new option fails to compile until listed. */
+const OPTION_READERS: Record<
+  keyof IgcChatOptions,
+  'messages' | 'input' | 'both' | 'host'
+> = {
+  currentUserId: 'messages',
+  isTyping: 'messages',
+  // The input reads it through the message context.
+  adoptRootStyles: 'messages',
+  renderers: 'both',
+  acceptedFiles: 'input',
+  inputPlaceholder: 'input',
+  disableInputAttachments: 'input',
+  stopTypingDelay: 'host',
+  suggestions: 'host',
+  suggestionsPosition: 'host',
+  headerText: 'host',
+  disableAutoScroll: 'host',
+};
+
+function optionsChanged(
+  previous: IgcChatOptions | undefined,
+  next: IgcChatOptions | undefined,
+  context: 'messages' | 'input'
+): boolean {
+  return (Object.keys(OPTION_READERS) as (keyof IgcChatOptions)[]).some(
+    (key) =>
+      (OPTION_READERS[key] === context || OPTION_READERS[key] === 'both') &&
+      previous?.[key] !== next?.[key]
+  );
+}
 
 /** Internal state manager for `<igc-chat>`. */
 export class ChatState {
@@ -52,20 +85,28 @@ export class ChatState {
     return this._acceptedTypesCache;
   }
 
-  public get disableAutoScroll(): boolean {
-    return this._options?.disableAutoScroll ?? false;
-  }
-
   public get options(): IgcChatOptions | undefined {
     return this._options;
   }
 
   public set options(value: IgcChatOptions) {
+    const previous = this._options;
+
     this._options = value;
-    this._acceptedTypesCache = value?.acceptedFiles
-      ? parseAcceptedFileTypes(value.acceptedFiles)
-      : null;
-    this._contextUpdateFn.call(this._host);
+
+    if (value?.acceptedFiles !== previous?.acceptedFiles) {
+      this._acceptedTypesCache = value?.acceptedFiles
+        ? parseAcceptedFileTypes(value.acceptedFiles)
+        : null;
+    }
+
+    // Streaming sets options per chunk; republish only a context whose fields changed.
+    if (optionsChanged(previous, value, 'messages')) {
+      this._contextUpdateFn();
+    }
+    if (optionsChanged(previous, value, 'input')) {
+      this._userInputContextUpdateFn();
+    }
   }
 
   public get currentUserId(): string {
@@ -86,7 +127,7 @@ export class ChatState {
 
   public set inputAttachments(value: IgcChatMessageAttachment[]) {
     this._inputAttachments = value;
-    this._userInputContextUpdateFn.call(this._host);
+    this._userInputContextUpdateFn();
   }
 
   public get inputValue(): string {
@@ -95,7 +136,7 @@ export class ChatState {
 
   public set inputValue(value: string) {
     this._inputValue = value;
-    this._userInputContextUpdateFn.call(this._host);
+    this._userInputContextUpdateFn();
   }
 
   /**
@@ -141,42 +182,6 @@ export class ChatState {
     D extends UnpackCustomEvent<IgcChatComponentEventMap[K]>,
   >(event: K, eventInitDict?: CustomEventInit<D>): boolean {
     return this._host.emitEvent(event, eventInitDict);
-  }
-
-  /** @internal */
-  public emitMessageCreated(message: IgcChatMessage): boolean {
-    return this._host.emitEvent('igcMessageCreated', {
-      detail: message,
-      cancelable: true,
-    });
-  }
-
-  /** @internal */
-  public emitAttachmentsAdded(
-    attachments: IgcChatMessageAttachment[]
-  ): boolean {
-    return this._host.emitEvent('igcAttachmentAdded', {
-      detail: attachments,
-      cancelable: true,
-    });
-  }
-
-  /** @internal */
-  public emitAttachmentRemoved(attachment: IgcChatMessageAttachment): boolean {
-    return this._host.emitEvent('igcAttachmentRemoved', {
-      detail: attachment,
-      cancelable: true,
-    });
-  }
-
-  /** @internal */
-  public emitMessageReaction(reaction: IgcChatMessageReaction): boolean {
-    return this._host.emitEvent('igcMessageReact', { detail: reaction });
-  }
-
-  /** @internal */
-  public emitUserTypingState(state: boolean): boolean {
-    return this._host.emitEvent('igcTypingChange', { detail: state });
   }
 
   /** @internal */
@@ -226,7 +231,12 @@ export class ChatState {
   public addMessageWithEvent(message: Partial<IgcChatMessage>): void {
     const newMessage = this._createMessage(message);
 
-    if (this.emitMessageCreated(newMessage)) {
+    if (
+      this.emitEvent('igcMessageCreated', {
+        detail: newMessage,
+        cancelable: true,
+      })
+    ) {
       this.messages.push(this._createMessage(newMessage));
       this._host.requestUpdate('messages');
       this.inputValue = '';
@@ -250,7 +260,7 @@ export class ChatState {
         continue;
       }
 
-      const url = URL.createObjectURL(file);
+      const url = getFileURL(file);
       const attachment: IgcChatMessageAttachment = {
         id: nanoid(),
         url,
@@ -264,8 +274,46 @@ export class ChatState {
       newAttachments.push(attachment);
     }
 
-    if (this.emitAttachmentsAdded(newAttachments)) {
+    if (
+      this.emitEvent('igcAttachmentAdded', {
+        detail: newAttachments,
+        cancelable: true,
+      })
+    ) {
       this.inputAttachments = [...this.inputAttachments, ...newAttachments];
+    }
+  }
+
+  /**
+   * Emits the cancelable `igcAttachmentRemoved` event.
+   * On success, removes the attachment and revokes the URL of a file that no
+   * sent message shows.
+   * @internal
+   */
+  public removeAttachmentWithEvent(attachment: IgcChatMessageAttachment): void {
+    const current = this.inputAttachments;
+
+    if (
+      !this.emitEvent('igcAttachmentRemoved', {
+        detail: attachment,
+        cancelable: true,
+      })
+    ) {
+      return;
+    }
+
+    this.inputAttachments = current.toSpliced(current.indexOf(attachment), 1);
+
+    const { file } = attachment;
+
+    // A sent message still shows the file.
+    if (
+      file &&
+      !this.messages.some((message) =>
+        message.attachments?.some((each) => each.file === file)
+      )
+    ) {
+      revokeFileURL(file);
     }
   }
 

@@ -1,4 +1,5 @@
 import { lastOf } from '#internals/utils/arrays.js';
+import { getOrInsertComputed } from '#internals/utils/objects.js';
 import type { IgcChatMessageAttachment } from './types.js';
 
 export type ChatAcceptedFileTypes = {
@@ -69,23 +70,39 @@ export function getChatAcceptedFiles(
   event: DragEvent,
   accepted: ChatAcceptedFileTypes | null
 ): File[] {
+  // `getAsFile()` is null during `dragenter`, and such a file counts as accepted.
   return Array.from(event.dataTransfer?.items ?? [])
-    .filter(
-      (item) =>
-        item.kind === 'file' && isAcceptedFileType(item.getAsFile()!, accepted)
-    )
-    .map((item) => item.getAsFile()!);
+    .filter((item) => item.kind === 'file')
+    .map((item) => item.getAsFile()!)
+    .filter((file) => isAcceptedFileType(file, accepted));
 }
 
 export function getIconName(fileType?: string) {
   return fileType?.startsWith('image') ? 'attach_image' : 'attach_document';
 }
 
+const fileURLs = new WeakMap<File, string>();
+
+/** The object URL of `file`, created once. */
+export function getFileURL(file: File): string {
+  return getOrInsertComputed(fileURLs, file, URL.createObjectURL);
+}
+
+/** Revokes the object URL of `file`, if {@link getFileURL} created one. */
+export function revokeFileURL(file: File): void {
+  const url = fileURLs.get(file);
+
+  if (url) {
+    URL.revokeObjectURL(url);
+    fileURLs.delete(file);
+  }
+}
+
 export function createAttachmentURL(
   attachment: IgcChatMessageAttachment
 ): string {
   if (attachment.file) {
-    return URL.createObjectURL(attachment.file);
+    return getFileURL(attachment.file);
   }
 
   return attachment.url || '';

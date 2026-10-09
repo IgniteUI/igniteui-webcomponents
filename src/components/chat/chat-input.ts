@@ -28,11 +28,7 @@ import type {
   ChatTemplateRenderer,
   IgcChatMessageAttachment,
 } from './types.js';
-import {
-  type ChatAcceptedFileTypes,
-  getChatAcceptedFiles,
-  getIconName,
-} from './utils.js';
+import { getChatAcceptedFiles, getIconName } from './utils.js';
 
 type DefaultInputRenderers = {
   input: ChatTemplateRenderer<ChatInputRenderContext>;
@@ -139,17 +135,13 @@ export default class IgcChatInputComponent extends LitElement {
   protected readonly _fileInput?: HTMLInputElement;
 
   @state()
-  private _parts = { 'input-container': true, dragging: false };
+  private _dragging = false;
 
   @state()
   private _shouldAdoptRootStyles = false;
 
   private get _state(): ChatState {
     return this._stateConsumer.value!;
-  }
-
-  private get _acceptedTypes(): ChatAcceptedFileTypes | null {
-    return this._state.acceptedFileTypes;
   }
 
   constructor() {
@@ -202,18 +194,7 @@ export default class IgcChatInputComponent extends LitElement {
 
   private _setTypingStateAndEmit(state: boolean): void {
     this._userIsTyping = state;
-    this._userInputState.emitUserTypingState(state);
-  }
-
-  private _handleAttachmentRemoved(attachment: IgcChatMessageAttachment): void {
-    const current = this._userInputState.inputAttachments;
-
-    if (this._state.emitAttachmentRemoved(attachment)) {
-      this._state.inputAttachments = current.toSpliced(
-        current.indexOf(attachment),
-        1
-      );
-    }
+    this._userInputState.emitEvent('igcTypingChange', { detail: state });
   }
 
   private _handleKeydown(event: KeyboardEvent): void {
@@ -252,40 +233,34 @@ export default class IgcChatInputComponent extends LitElement {
     );
   }
 
-  private _handleDragEnter(event: DragEvent): void {
+  private _handleDrag(event: DragEvent): void {
     event.preventDefault();
     event.stopPropagation();
 
-    const validFiles = getChatAcceptedFiles(event, this._acceptedTypes);
-    this._parts = { 'input-container': true, dragging: !isEmpty(validFiles) };
-    this._state.emitEvent('igcAttachmentDrag');
-  }
+    const accepted = this._state.acceptedFileTypes;
 
-  private _handleDragOver(event: DragEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
-  }
+    switch (event.type) {
+      case 'dragenter':
+        this._dragging = !isEmpty(getChatAcceptedFiles(event, accepted));
+        this._state.emitEvent('igcAttachmentDrag');
+        break;
+      case 'dragleave': {
+        // Reset only when the pointer leaves the container.
+        const container = event.currentTarget as HTMLElement;
 
-  private _handleDragLeave(event: DragEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
-
-    // Reset only when the pointer leaves the container.
-    const container = event.currentTarget as HTMLElement;
-
-    if (!isPointInsideElement(container, event.clientX, event.clientY)) {
-      this._parts = { 'input-container': true, dragging: false };
+        if (!isPointInsideElement(container, event.clientX, event.clientY)) {
+          this._dragging = false;
+        }
+        break;
+      }
+      case 'drop': {
+        const files = getChatAcceptedFiles(event, accepted);
+        this._dragging = false;
+        this._state.emitEvent('igcAttachmentDrop');
+        this._state.attachFilesWithEvent(files);
+        break;
+      }
     }
-  }
-
-  private _handleDrop(event: DragEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
-    this._parts = { 'input-container': true, dragging: false };
-
-    const validFiles = getChatAcceptedFiles(event, this._acceptedTypes);
-    this._state.emitEvent('igcAttachmentDrop');
-    this._state.attachFilesWithEvent(validFiles);
   }
 
   private _handleInput({ detail }: CustomEvent<string>): void {
@@ -307,7 +282,8 @@ export default class IgcChatInputComponent extends LitElement {
         <div part="attachment-wrapper" role="listitem">
           <igc-chip
             removable
-            @igcRemove=${() => this._handleAttachmentRemoved(attachment)}
+            @igcRemove=${() =>
+              this._state.removeAttachmentWithEvent(attachment)}
           >
             <igc-icon
               part="attachment-icon"
@@ -412,11 +388,11 @@ export default class IgcChatInputComponent extends LitElement {
 
     return html`
       <div
-        part=${partMap(this._parts)}
-        @dragenter=${this._handleDragEnter}
-        @dragover=${this._handleDragOver}
-        @dragleave=${this._handleDragLeave}
-        @drop=${this._handleDrop}
+        part=${partMap({ 'input-container': true, dragging: this._dragging })}
+        @dragenter=${this._handleDrag}
+        @dragover=${this._handleDrag}
+        @dragleave=${this._handleDrag}
+        @drop=${this._handleDrag}
       >
         ${
           this._state.hasInputAttachments

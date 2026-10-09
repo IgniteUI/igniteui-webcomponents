@@ -188,7 +188,9 @@ export default class IgcChatMessageComponent extends LitElement {
     }
 
     this.message.reactions = reaction ? [reaction] : [];
-    this._state.emitMessageReaction({ message: this.message, reaction });
+    this._state.emitEvent('igcMessageReact', {
+      detail: { message: this.message, reaction },
+    });
     this.requestUpdate();
   }
 

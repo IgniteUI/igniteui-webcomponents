@@ -1620,6 +1620,107 @@ describe('Chat', () => {
     });
   });
 
+  describe('Rendering cost', () => {
+    // A new file per test, because the attachment URLs are memoized per file.
+    const createImage = () =>
+      new File(['image data'], 'photo.png', { type: 'image/png' });
+
+    it('renders the messages again only when an option they read changes', async () => {
+      chat.messages = messages;
+      await elementUpdated(chat);
+
+      const [message] = getChatDOM(chat).messages;
+      const update = spy(message as unknown as { update(): void }, 'update');
+
+      chat.options = { headerText: 'Header', inputPlaceholder: 'Ask' };
+      await elementUpdated(chat);
+      await elementUpdated(message);
+
+      expect(update.callCount).to.equal(0);
+      expect(getChatDOM(chat).input.textarea.placeholder).to.equal('Ask');
+
+      chat.options = { ...chat.options, isTyping: true };
+      await elementUpdated(chat);
+      await elementUpdated(message);
+
+      expect(update.callCount).to.equal(1);
+    });
+
+    it('creates one object URL per attached file and revokes it on removal', async () => {
+      const create = spy(URL, 'createObjectURL');
+      const revoke = spy(URL, 'revokeObjectURL');
+
+      try {
+        simulateFileUpload(getChatDOM(chat).input.fileInput, [createImage()]);
+        await elementUpdated(chat);
+
+        const [attachment] = chat.draftMessage.attachments!;
+
+        expect(create.callCount).to.equal(1);
+        expect(attachment.url).to.equal(create.firstCall.returnValue);
+
+        const [chip] = getChatDOM(chat).input.chips;
+        simulateClick(chip.renderRoot.querySelector('igc-icon')!);
+        await elementUpdated(chat);
+
+        expect(chat.draftMessage.attachments).to.be.empty;
+        expect(revoke.calledOnceWith(attachment.url)).to.be.true;
+      } finally {
+        create.restore();
+        revoke.restore();
+      }
+    });
+
+    it('renders a sent image with the URL of its attachment', async () => {
+      const create = spy(URL, 'createObjectURL');
+
+      try {
+        simulateFileUpload(getChatDOM(chat).input.fileInput, [createImage()]);
+        await elementUpdated(chat);
+        simulateClick(getChatDOM(chat).input.sendButton);
+        await elementUpdated(chat);
+
+        const [attachments] = getChatMessageDOM(
+          getChatDOM(chat).messages[0]
+        ).attachments;
+        await elementUpdated(attachments);
+        attachments.requestUpdate();
+        await elementUpdated(attachments);
+
+        const img = attachments.renderRoot.querySelector('img')!;
+
+        expect(create.callCount).to.equal(1);
+        expect(img.src).to.equal(chat.messages[0].attachments![0].url);
+      } finally {
+        create.restore();
+      }
+    });
+
+    it('scrolls to the bottom only when content is added', async () => {
+      chat.messages = messages;
+      chat.options = { suggestions: ['First'] };
+      await elementUpdated(chat);
+      await nextFrame();
+
+      const container = chat.renderRoot.querySelector<HTMLElement>(
+        '[part="message-area-container"]'
+      )!;
+      const scrollBy = spy(container, 'scrollBy');
+
+      chat.options = { ...chat.options, headerText: 'Header' };
+      await elementUpdated(chat);
+      await nextFrame();
+
+      expect(scrollBy.callCount).to.equal(0);
+
+      chat.options = { ...chat.options, isTyping: true };
+      await elementUpdated(chat);
+      await nextFrame();
+
+      expect(scrollBy.callCount).to.equal(1);
+    });
+  });
+
   describe('adoptRootStyles behavior', () => {
     let chat: IgcChatComponent;
 
