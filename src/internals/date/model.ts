@@ -20,6 +20,15 @@ const MILLISECONDS_PER_DAY = 86400000;
 const WEEKDAY_MIN = 1; // Monday
 const WEEKDAY_MAX = 5; // Friday
 
+/** The months and days that one `unit` of {@link CalendarDay.add} moves. */
+const UNIT_STEPS: Record<DayInterval, [months: number, days: number]> = {
+  year: [12, 0],
+  quarter: [3, 0],
+  month: [1, 0],
+  week: [0, 7],
+  day: [0, 1],
+};
+
 /**
  * Returns a local date. Unlike the `Date` constructor, it keeps the years 0 to 99.
  */
@@ -46,24 +55,6 @@ export function toCalendarDay(date: DayParameter): CalendarDay {
   return date instanceof Date ? CalendarDay.from(date) : date;
 }
 
-/**
- * Returns the timestamp of the date portion of `value`, at midnight local
- * time.
- *
- * @remarks
- * Avoids the `CalendarDay` instance that {@link toCalendarDay} creates for a
- * `Date`. A month view runs hundreds of these comparisons per render.
- */
-function timestampOf(value: DayParameter): number {
-  return value instanceof Date
-    ? createDate(
-        value.getFullYear(),
-        value.getMonth(),
-        value.getDate()
-      ).getTime()
-    : value.timestamp;
-}
-
 /** Returns the {@link toCalendarDay} result of `date`, or `null` if empty. */
 export function toCalendarDayOrNull(
   date?: DayParameter | null
@@ -87,9 +78,7 @@ export function* calendarRange(
 
   let currentDate = toCalendarDay(start);
   const endDate =
-    typeof end === 'number'
-      ? toCalendarDay(start).add(unit, end)
-      : toCalendarDay(end);
+    typeof end === 'number' ? currentDate.add(unit, end) : toCalendarDay(end);
 
   const isReversed = endDate.lessThan(currentDate);
   const step = isReversed ? -1 : 1;
@@ -144,13 +133,21 @@ export class CalendarDay {
    * ```
    */
   public static compare(first: DayParameter, second: DayParameter): number {
-    const a = timestampOf(first);
-    const b = timestampOf(second);
+    const diff = CalendarDay._key(first) - CalendarDay._key(second);
 
-    if (a === b) {
+    if (diff === 0) {
       return 0;
     }
-    return a > b ? 1 : -1;
+    return diff > 0 ? 1 : -1;
+  }
+
+  /**
+   * Orders days by their date fields. A month view runs hundreds of comparisons
+   * per render, and a timestamp of a `Date` argument would need a new `Date`.
+   */
+  private static _key(value: DayParameter): number {
+    const date = value instanceof Date ? value : value._date;
+    return (date.getFullYear() * 16 + date.getMonth()) * 32 + date.getDate();
   }
 
   constructor(args: CalendarDayParams) {
@@ -179,27 +176,20 @@ export class CalendarDay {
   }
 
   public add(unit: DayInterval, value: number): CalendarDay {
+    if (!Object.hasOwn(UNIT_STEPS, unit)) {
+      throw new Error(`Invalid interval: ${unit}`);
+    }
+
+    const [months, days] = UNIT_STEPS[unit];
     const result = this.clone();
 
-    switch (unit) {
-      case 'year':
-        result._date.setFullYear(result.year + value);
-        return checkRollover(this, result);
-      case 'quarter':
-        result._date.setMonth(result.month + 3 * value);
-        return checkRollover(this, result);
-      case 'month':
-        result._date.setMonth(result.month + value);
-        return checkRollover(this, result);
-      case 'week':
-        result._date.setDate(result.date + 7 * value);
-        return result;
-      case 'day':
-        result._date.setDate(result.date + value);
-        return result;
-      default:
-        throw new Error(`Invalid interval: ${unit}`);
+    if (months) {
+      result._date.setMonth(result.month + months * value);
+      return checkRollover(this, result);
     }
+
+    result._date.setDate(result.date + days * value);
+    return result;
   }
 
   /** Returns the day of the week (Sunday = 0). */
@@ -262,23 +252,28 @@ export class CalendarDay {
   }
 
   public equalTo(value: DayParameter): boolean {
-    return this.timestamp === timestampOf(value);
+    return this._diff(value) === 0;
   }
 
   public greaterThan(value: DayParameter): boolean {
-    return this.timestamp > timestampOf(value);
+    return this._diff(value) > 0;
   }
 
   public greaterThanOrEqual(value: DayParameter): boolean {
-    return this.timestamp >= timestampOf(value);
+    return this._diff(value) >= 0;
   }
 
   public lessThan(value: DayParameter): boolean {
-    return this.timestamp < timestampOf(value);
+    return this._diff(value) < 0;
   }
 
   public lessThanOrEqual(value: DayParameter): boolean {
-    return this.timestamp <= timestampOf(value);
+    return this._diff(value) <= 0;
+  }
+
+  /** Positive after `value`, negative before it, `NaN` for an invalid date. */
+  private _diff(value: DayParameter): number {
+    return CalendarDay._key(this) - CalendarDay._key(value);
   }
 
   public toString(): string {

@@ -13,7 +13,13 @@ import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import { calendarResourcesMap } from '#internals/i18n/utils.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { firstOf } from '#internals/utils/arrays.js';
-import { getLocaleWeekStart, getWeekDayNumber } from './helpers.js';
+import {
+  dateChanged,
+  datesChanged,
+  getLocaleWeekStart,
+  getWeekDayNumber,
+  rangesChanged,
+} from './helpers.js';
 import { selectDate } from './selection.js';
 import type {
   CalendarSelection,
@@ -62,22 +68,23 @@ export class IgcCalendarBaseComponent extends I18nMixin<
     return this.selection === 'range';
   }
 
-  @state()
+  // An equal day is no change, so a new `Date` of the same day skips the update.
+  @state({ hasChanged: dateChanged })
   protected _rangePreviewDate?: CalendarDay;
 
-  @state()
+  @state({ hasChanged: dateChanged })
   protected _activeDate = CalendarDay.today;
 
-  @state()
+  @state({ hasChanged: dateChanged })
   protected _value: CalendarDay | null = null;
 
-  @state()
+  @state({ hasChanged: datesChanged })
   protected _values: CalendarDay[] = [];
 
-  @state()
+  @state({ hasChanged: rangesChanged })
   protected _specialDates: DateRangeDescriptor[] = [];
 
-  @state()
+  @state({ hasChanged: rangesChanged })
   protected _disabledDates: DateRangeDescriptor[] = [];
 
   /* blazorSuppress */
@@ -87,7 +94,7 @@ export class IgcCalendarBaseComponent extends I18nMixin<
    *
    * @attr value
    */
-  @property({ converter: convertToDate })
+  @property({ converter: convertToDate, hasChanged: dateChanged })
   public set value(value: Date | string | null | undefined) {
     this._value = toCalendarDayOrNull(convertToDate(value));
   }
@@ -103,7 +110,7 @@ export class IgcCalendarBaseComponent extends I18nMixin<
    *
    * @attr values
    */
-  @property({ converter: convertToDates })
+  @property({ converter: convertToDates, hasChanged: datesChanged })
   public set values(values: (Date | string)[] | string | null | undefined) {
     const converted = convertToDates(values);
     this._values = converted ? converted.map((v) => CalendarDay.from(v)) : [];
@@ -115,7 +122,11 @@ export class IgcCalendarBaseComponent extends I18nMixin<
 
   /* blazorSuppress */
   /** Get/Set the date which is shown in view and is highlighted. By default it is the current date. */
-  @property({ attribute: 'active-date', converter: convertToDate })
+  @property({
+    attribute: 'active-date',
+    converter: convertToDate,
+    hasChanged: dateChanged,
+  })
   public set activeDate(value: Date | string | null | undefined) {
     this._initialActiveDateSet = true;
     this._activeDate =

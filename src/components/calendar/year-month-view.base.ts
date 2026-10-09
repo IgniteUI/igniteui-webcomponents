@@ -1,16 +1,12 @@
 import { html, LitElement, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { addInternalsController } from '#internals/controllers/internals.js';
-import { addKeybindings } from '#internals/controllers/key-bindings.js';
 import { CalendarDay } from '#internals/date/model.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { chunk } from '#internals/utils/arrays.js';
-import { addSafeEventListener } from '#internals/utils/events.js';
-import { addThemingController } from '#theming/theming-controller.js';
-import { getViewElement } from './helpers.js';
+import { dateChanged, getViewElement, setupCalendarView } from './helpers.js';
 import { styles } from './themes/year-month-view.base.css.js';
 import { all } from './themes/year-month.js';
 import type { IgcCalendarViewComponentEventMap } from './types.js';
@@ -41,7 +37,7 @@ export abstract class IgcYearMonthViewBaseComponent extends EventEmitterMixin<
 
   //#region Internal state
 
-  @state()
+  @state({ hasChanged: dateChanged })
   protected _value = CalendarDay.today;
 
   @query('[tabindex="0"]')
@@ -57,7 +53,7 @@ export abstract class IgcYearMonthViewBaseComponent extends EventEmitterMixin<
   //#region Public attributes and properties
 
   /** The current value of the calendar. */
-  @property({ attribute: false })
+  @property({ attribute: false, hasChanged: dateChanged })
   public set value(value: Date) {
     this._value = CalendarDay.from(value);
   }
@@ -73,13 +69,7 @@ export abstract class IgcYearMonthViewBaseComponent extends EventEmitterMixin<
   constructor() {
     super();
 
-    addInternalsController(this, {
-      initialARIA: { role: 'grid' },
-      reflectRole: true,
-    });
-    addThemingController(this, all);
-    addKeybindings(this).setActivateHandler(this._handleInteraction);
-    addSafeEventListener(this, 'click', this._handleInteraction);
+    setupCalendarView(this, all, this._handleInteraction);
   }
 
   //#endregion
