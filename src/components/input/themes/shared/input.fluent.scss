@@ -6,7 +6,6 @@ $theme: $fluent;
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --input-size: var(--component-size);
-    --helper-text-top-spacer: rem(5px);
     --input-border-size: #{rem(1px)};
     --affix-padding: #{pad-inline(rem(8px), rem(10px), rem(14px))};
 

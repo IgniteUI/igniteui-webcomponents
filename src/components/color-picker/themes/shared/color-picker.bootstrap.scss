@@ -5,7 +5,6 @@ $theme: $bootstrap;
 
 :host {
     --_outline-size: #{rem(4px)};
-    --_input-row-gap: #{sizable(rem(8px), rem(12px), rem(16px))};
     --_picker-column-gap: #{sizable(rem(12px), rem(12px), rem(16px))};
     --_picker-buttons-gap: #{sizable(rem(8px), rem(4px), rem(4px))};
     --_swatches-spacing: #{sizable(rem(16px), rem(16px), rem(24px))} #{rem(16px)} #{rem(16px)} #{rem(16px)};
