@@ -540,6 +540,25 @@ describe('Textarea component', () => {
       spec.assertSubmitPasses();
     });
 
+    it('revalidates when the length constraints change without a value change', () => {
+      spec.setProperties({ value: 'abcd' });
+      spec.assertSubmitPasses();
+
+      spec.setProperties({ maxLength: 3 });
+      expect(spec.element.validity.tooLong).to.be.true;
+      spec.assertSubmitFails();
+
+      spec.setProperties({ maxLength: 4 });
+      spec.assertSubmitPasses();
+
+      spec.setProperties({ minLength: 5 });
+      expect(spec.element.validity.tooShort).to.be.true;
+      spec.assertSubmitFails();
+
+      spec.setProperties({ minLength: 4 });
+      spec.assertSubmitPasses();
+    });
+
     it('fulfils custom constraint', () => {
       spec.element.setCustomValidity('invalid');
       spec.assertSubmitFails();

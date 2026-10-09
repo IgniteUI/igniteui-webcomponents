@@ -125,6 +125,9 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   /** The text of the default slot that was applied last. */
   private _projectedValue = '';
 
+  private _maxLength!: number;
+  private _minLength!: number;
+
   protected override get __validators() {
     return textAreaValidators;
   }
@@ -183,7 +186,14 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
    * @attr maxlength
    */
   @property({ type: Number, attribute: 'maxlength' })
-  public maxLength!: number;
+  public set maxLength(value: number) {
+    this._maxLength = value;
+    this._validate();
+  }
+
+  public get maxLength(): number {
+    return this._maxLength;
+  }
 
   /**
    * The minimum number of characters (UTF-16 code units) required that the user should enter.
@@ -191,7 +201,14 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
    * @attr minlength
    */
   @property({ type: Number, attribute: 'minlength' })
-  public minLength!: number;
+  public set minLength(value: number) {
+    this._minLength = value;
+    this._validate();
+  }
+
+  public get minLength(): number {
+    return this._minLength;
+  }
 
   /**
    * Whether the control will have outlined appearance.
