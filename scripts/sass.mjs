@@ -34,6 +34,12 @@ const exists = (relative) =>
 /** The global theme entries. */
 const THEME_ENTRY_GLOB = 'src/styles/themes/{light,dark}/*.scss';
 
+/**
+ * The base styles shared by most components, compiled once and prepended to
+ * their `static styles` instead of being emitted into every component entry.
+ */
+const COMMON_ENTRY_GLOB = 'src/styles/common/component.scss';
+
 /** The global light theme entries. Their stems are the theme names. */
 const THEME_NAMES_GLOB = 'src/styles/themes/light/*.scss';
 
@@ -85,6 +91,7 @@ async function resolveEntryGlobs() {
 
   return {
     theme: THEME_ENTRY_GLOB,
+    common: COMMON_ENTRY_GLOB,
     component: `src/components/**/*.{${[...suffixes].join(',')}}.scss`,
   };
 }
@@ -92,7 +99,13 @@ async function resolveEntryGlobs() {
 const CACHE_FILE = 'node_modules/.cache/igniteui-webcomponents/styles.json';
 
 /** Bump to invalidate every cached entry after a change to the build itself. */
-const CACHE_VERSION = 2;
+const CACHE_VERSION = 3;
+
+/**
+ * The resolved autoprefixer targets. They shape every output without being a
+ * file Sass loads, so a change to them invalidates the whole cache.
+ */
+const TARGETS = autoprefixer().info().split('\n\n', 1)[0];
 
 /** @type {import('postcss').Plugin} */
 const stripComments = {
@@ -107,7 +120,7 @@ const stripComments = {
 const postProcessor = postcss([autoprefixer, stripComments]);
 
 /**
- * @typedef {{ path: string, kind: 'theme' | 'component' }} Entry
+ * @typedef {{ path: string, kind: 'theme' | 'common' | 'component' }} Entry
  *
  * @typedef {{ output: string, deps: string[], digest: string }} CacheRecord
  *   `deps` is every file the entry loaded, itself included; `digest` fingerprints
@@ -115,6 +128,7 @@ const postProcessor = postcss([autoprefixer, stripComments]);
  *
  * @typedef {{
  *   version: number,
+ *   targets: string,
  *   files: string[],
  *   entries: Record<string, { output: string, deps: number[], digest: string }>,
  * }} SerializedCache
@@ -365,7 +379,7 @@ class StyleBuilder {
       /** @type {SerializedCache} */
       const cache = JSON.parse(await readFile(toAbsolute(CACHE_FILE), 'utf8'));
 
-      if (cache.version !== CACHE_VERSION) {
+      if (cache.version !== CACHE_VERSION || cache.targets !== TARGETS) {
         return;
       }
 
@@ -416,6 +430,7 @@ class StyleBuilder {
       target,
       JSON.stringify({
         version: CACHE_VERSION,
+        targets: TARGETS,
         files: Array.from(ids.keys()),
         entries,
       }),
