@@ -39,7 +39,7 @@ const i18n: I18nControllerConfig<
 export class IgcCalendarBaseComponent extends I18nMixin<
   IgcCalendarResourceStrings | ICalendarResourceStrings,
   typeof LitElement,
-  IgcCalendarResourceStrings & ICalendarResourceStrings
+  IgcCalendarResourceStrings & Required<ICalendarResourceStrings>
 >(LitElement, i18n) {
   private _initialActiveDateSet = false;
   private _weekStart?: WeekDays;

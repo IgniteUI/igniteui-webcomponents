@@ -149,22 +149,18 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
 
     switch (this.activeView) {
       case 'days':
-        return (
-          isPrevious
-            ? strings.calendar_previous_month
-            : strings.calendar_next_month
-        )!;
+        return isPrevious
+          ? strings.calendar_previous_month
+          : strings.calendar_next_month;
       case 'months':
-        return (
-          isPrevious
-            ? strings.calendar_previous_year
-            : strings.calendar_next_year
-        )!;
+        return isPrevious
+          ? strings.calendar_previous_year
+          : strings.calendar_next_year;
       case 'years':
         return formatString(
-          (isPrevious
+          isPrevious
             ? strings.calendar_previous_years
-            : strings.calendar_next_years)!,
+            : strings.calendar_next_years,
           YEARS_PER_PAGE
         );
     }
@@ -367,9 +363,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   ): void {
     event.stopPropagation();
     this.activeDate = event.detail;
-    this.activeView = view;
-
-    this[focusActiveDate]();
+    this._openView(view);
   }
 
   private _handleValueChange(event: CustomEvent<Date>): void {
@@ -422,19 +416,13 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     this._activeDate = this._pageDate(delta);
   }
 
-  private _navigateToMonthView(viewIndex: number): void {
-    this._setActiveDaysView(viewIndex);
-    this.activeView = 'months';
-
-    this[focusActiveDate]();
-  }
-
-  private _navigateToYearView(viewIndex: number): void {
-    if (this._isDayView) {
+  /** Opens `view`. From the days view, the month at `viewIndex` becomes the active one. */
+  private _openView(view: CalendarActiveView, viewIndex?: number): void {
+    if (viewIndex !== undefined && this._isDayView) {
       this._setActiveDaysView(viewIndex);
     }
-    this.activeView = 'years';
 
+    this.activeView = view;
     this[focusActiveDate]();
   }
 
@@ -547,7 +535,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       <button
         part="months-navigation"
         aria-label=${ariaLabel}
-        @click=${() => this._navigateToMonthView(viewIndex)}
+        @click=${() => this._openView('months', viewIndex)}
       >
         ${value}
       </button>
@@ -572,7 +560,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       <button
         part="years-navigation"
         aria-label=${ariaLabel}
-        @click=${() => this._navigateToYearView(viewIndex)}
+        @click=${() => this._openView('years', viewIndex)}
       >
         ${year}
       </button>
@@ -740,8 +728,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     const activeDates = this._getActiveDates();
     const horizontal = this.orientation === 'horizontal';
     const length = activeDates.length - 1;
-    const format = this.formatOptions
-      .weekday as Intl.DateTimeFormatOptions['weekday'];
+    const format = this.formatOptions.weekday;
     const weekStart = this.weekStart;
     const { value, values } = this;
 
@@ -780,8 +767,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   protected _renderMonthView(): TemplateResult {
-    const format = this.formatOptions
-      .month as Intl.DateTimeFormatOptions['month'];
+    const format = this.formatOptions.month;
 
     return html`
       ${this._renderNavigation()}
