@@ -120,14 +120,8 @@ class I18nController<T extends object> implements ReactiveController {
       this._rawResourceStrings = value;
 
       if (value) {
-        this._customResourceStrings = this._resourceMap
-          ? this.getMixedResourceStrings(value)
-          : value;
-        this._resourceStrings = Object.assign(
-          {},
-          this._defaultResourceStrings,
-          this._customResourceStrings
-        );
+        this._customResourceStrings = this._getMixedResourceStrings(value);
+        this._mergeResourceStrings();
       } else {
         this._customResourceStrings = value;
         this._resourceStrings = value;
@@ -208,12 +202,17 @@ class I18nController<T extends object> implements ReactiveController {
     this._host.requestUpdate();
 
     if (this._customResourceStrings) {
-      this._resourceStrings = Object.assign(
-        {},
-        this._defaultResourceStrings,
-        this._customResourceStrings
-      );
+      this._mergeResourceStrings();
     }
+  }
+
+  /** Applies the custom strings over the defaults of the current locale. */
+  private _mergeResourceStrings(): void {
+    this._resourceStrings = Object.assign(
+      {},
+      this._defaultResourceStrings,
+      this._customResourceStrings
+    );
   }
 
   /**
@@ -250,7 +249,7 @@ class I18nController<T extends object> implements ReactiveController {
               : this._defaultEN[key];
         }
 
-        return this.getMixedResourceStrings(normalized);
+        return this._getMixedResourceStrings(normalized);
       }
     ) as T;
 
@@ -282,7 +281,7 @@ class I18nController<T extends object> implements ReactiveController {
     return this._dateTimeFormats;
   }
 
-  private getMixedResourceStrings(value: T): T {
+  private _getMixedResourceStrings(value: T): T {
     const map = this._resourceMap;
 
     if (map) {

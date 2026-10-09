@@ -322,9 +322,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
   private _getRenderer<U extends keyof DefaultChatRenderers>(
     name: U
   ): DefaultChatRenderers[U] {
-    return this._state.options?.renderers
-      ? (this._state.options.renderers[name] ?? this._defaults[name])
-      : this._defaults[name];
+    return this._state.options?.renderers?.[name] ?? this._defaults[name];
   }
 
   private _handleSuggestionClick(text: string): void {

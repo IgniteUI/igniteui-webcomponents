@@ -90,9 +90,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   }
 
   private _getRenderer(name: keyof DefaultAttachmentRenderers) {
-    return this._state.options?.renderers
-      ? (this._state.options.renderers[name] ?? this._defaults[name])
-      : this._defaults[name];
+    return this._state.options?.renderers?.[name] ?? this._defaults[name];
   }
 
   private _handleHeaderClick = (attachment: IgcChatMessageAttachment) => {

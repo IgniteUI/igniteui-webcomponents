@@ -1,7 +1,7 @@
-import { ContextProvider } from '@lit/context';
-import { html, LitElement, type PropertyValues } from 'lit';
+import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { breadcrumbsContext } from '#internals/context.js';
+import { addContextProvider } from '#internals/controllers/context-provider.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -55,15 +55,6 @@ export default class IgcBreadcrumbsComponent extends LitElement {
     registerComponent(IgcBreadcrumbsComponent, IgcBreadcrumbComponent);
   }
 
-  //#region Internal state
-
-  private readonly _separatorContext = new ContextProvider(this, {
-    context: breadcrumbsContext,
-    initialValue: 'tree_expand',
-  });
-
-  //#endregion
-
   //#region Public properties
 
   /**
@@ -84,18 +75,16 @@ export default class IgcBreadcrumbsComponent extends LitElement {
     super();
 
     addThemingController(this, all);
+    addContextProvider(this, {
+      context: breadcrumbsContext,
+      watch: ['separator'],
+      value: () => this.separator,
+    });
     addInternalsController(this, {
       initialARIA: {
         role: 'list',
       },
     });
-  }
-
-  protected override update(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has('separator')) {
-      this._separatorContext.setValue(this.separator, true);
-    }
-    super.update(changedProperties);
   }
 
   protected override render() {

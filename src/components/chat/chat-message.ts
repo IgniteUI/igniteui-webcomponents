@@ -117,9 +117,7 @@ export default class IgcChatMessageComponent extends LitElement {
   }
 
   private _getRenderer(name: keyof DefaultMessageRenderers) {
-    return this._state.options?.renderers
-      ? (this._state.options.renderers[name] ?? this._defaults[name])
-      : this._defaults[name];
+    return this._state.options?.renderers?.[name] ?? this._defaults[name];
   }
 
   private async _handleCopy(): Promise<void> {
