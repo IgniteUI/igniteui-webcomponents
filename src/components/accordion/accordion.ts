@@ -9,7 +9,11 @@ import {
   homeKey,
   shiftKey,
 } from '#internals/controllers/key-bindings.js';
-import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  addSlotController,
+  DefaultSlot,
+  setSlots,
+} from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import { addSafeEventListener } from '#internals/utils/events.js';
@@ -91,7 +95,7 @@ export default class IgcAccordionComponent extends LitElement {
   //#region Event handlers
 
   private _handleSlotChange(): void {
-    this._panels = this._slots.getAssignedElements('[default]', {
+    this._panels = this._slots.getAssignedElements(DefaultSlot, {
       selector: IgcExpansionPanelComponent.tagName,
     });
   }

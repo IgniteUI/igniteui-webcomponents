@@ -2,7 +2,11 @@ import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { createMutationController } from '#internals/controllers/mutation-observer.js';
-import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  addSlotController,
+  DefaultSlot,
+  setSlots,
+} from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { isDefined } from '#internals/utils/types.js';
@@ -47,7 +51,7 @@ export default class IgcRadioGroupComponent extends LitElement {
   private _pendingValue = '';
 
   private get _radios(): IgcRadioComponent[] {
-    return this._slots.getAssignedElements<IgcRadioComponent>('[default]', {
+    return this._slots.getAssignedElements<IgcRadioComponent>(DefaultSlot, {
       selector: IgcRadioComponent.tagName,
       flatten: true,
     });

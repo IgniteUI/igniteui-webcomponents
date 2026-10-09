@@ -3,7 +3,11 @@ import { property, query, state } from 'lit/decorators.js';
 import { helperText } from '#internals/controllers/aria-projection.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import { addRovingFocusController } from '#internals/controllers/roving-focus.js';
-import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  addSlotController,
+  DefaultSlot,
+  setSlots,
+} from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -234,7 +238,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   protected _handleSlotChange(): void {
-    this._hideLabel = !this._slots.hasAssignedNodes('[default]', true);
+    this._hideLabel = !this._slots.hasAssignedNodes(DefaultSlot, true);
   }
 
   /** Focuses and checks the radio, as a native radio label does. */
@@ -345,18 +349,17 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
     this.checked = true;
     this._input.focus();
-    this.emitEvent('igcChange', {
-      detail: {
-        checked: this.checked,
-        value: this.value,
-      },
-    });
+    this._emitChange(this);
   }
 
   protected _navigate(radio: IgcRadioComponent): void {
     this._setTouchedState();
     radio.focus();
     radio.checked = true;
+    this._emitChange(radio);
+  }
+
+  private _emitChange(radio: IgcRadioComponent): void {
     radio.emitEvent('igcChange', {
       detail: { checked: radio.checked, value: radio.value },
     });

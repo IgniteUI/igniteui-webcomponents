@@ -3,7 +3,11 @@ import { property } from 'lit/decorators.js';
 import { addContextProvider } from '#internals/controllers/context-provider.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { addRovingFocusController } from '#internals/controllers/roving-focus.js';
-import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  addSlotController,
+  DefaultSlot,
+  setSlots,
+} from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -288,7 +292,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
   private _handleSlotChange(): void {
     this._state.setSteps(
-      this._slots.getAssignedElements('[default]', {
+      this._slots.getAssignedElements(DefaultSlot, {
         selector: IgcStepComponent.tagName,
       })
     );

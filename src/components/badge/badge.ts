@@ -1,7 +1,11 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
-import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  addSlotController,
+  DefaultSlot,
+  setSlots,
+} from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
 import { isEmpty } from '#internals/utils/arrays.js';
@@ -99,7 +103,7 @@ export default class IgcBadgeComponent extends LitElement {
    */
   protected _handleSlotChange(): void {
     const [content, ...rest] = this._slots
-      .getAssignedNodes('[default]')
+      .getAssignedNodes(DefaultSlot)
       .filter((node) => isElement(node) || node.textContent?.trim());
 
     this._hasIcon =
