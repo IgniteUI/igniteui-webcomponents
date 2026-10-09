@@ -21,6 +21,8 @@ import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcIconComponent from '../icon/icon.js';
+import IgcListHeaderComponent from '../list/list-header.js';
+import IgcListItemComponent from '../list/list-item.js';
 import IgcListComponent from '../list/list.js';
 import IgcToastComponent from '../toast/toast.js';
 import IgcTooltipComponent from '../tooltip/tooltip.js';
@@ -212,6 +214,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
       IgcButtonComponent,
       IgcIconComponent,
       IgcListComponent,
+      IgcListHeaderComponent,
+      IgcListItemComponent,
       IgcTooltipComponent,
       IgcToastComponent
     );

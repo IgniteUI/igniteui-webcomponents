@@ -24,6 +24,7 @@ import { asNumber, clamp } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
+import IgcButtonComponent from '../button/button.js';
 import type { CalendarSelection } from '../calendar/types.js';
 import {
   IgcDatePickerBaseComponent,
@@ -211,6 +212,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
       IgcDateRangeInputComponent,
       IgcDateTimeInputComponent,
       IgcPredefinedRangesAreaComponent,
+      IgcButtonComponent,
       ...pickerDependencies
     );
   }
