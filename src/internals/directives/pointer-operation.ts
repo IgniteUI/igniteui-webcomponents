@@ -85,6 +85,7 @@ export type PointerOperationState = {
 export abstract class PointerOperationDirective<
   TOptions extends PointerOperationOptions,
   TState extends PointerOperationState,
+  TCallbackState,
 > extends AsyncDirective {
   /** Aborts the listeners that wait for an operation to start. */
   protected readonly _triggerAbort = createAbortHandle();
@@ -131,7 +132,18 @@ export abstract class PointerOperationDirective<
   /** Reports the cancellation and restores the target element. */
   protected abstract _cancelOperation(): void;
 
+  /** The operation state that the callbacks receive. */
+  protected abstract _createState(): TCallbackState;
+
   //#endregion
+
+  /** The parameters of a callback for `event`. */
+  protected _createParams(event: PointerEvent): {
+    event: PointerEvent;
+    state: TCallbackState;
+  } {
+    return { event, state: this._createState() };
+  }
 
   //#region Shared internals
 

@@ -100,7 +100,8 @@ function createDefaultGhost({ width, height }: DOMRect): HTMLElement {
 
 class DraggableDirective extends PointerOperationDirective<
   DraggableOptions,
-  DragOperation
+  DragOperation,
+  DragState
 > {
   private _target: HTMLElement | null = null;
 
@@ -256,7 +257,7 @@ class DraggableDirective extends PointerOperationDirective<
     return trigger ? !getElementFromPath((e) => e === trigger, event) : false;
   }
 
-  private _createState(): DragState {
+  protected override _createState(): DragState {
     const { initial, current, position, offset, pointerState, ghost, element } =
       this._operation!;
 
@@ -270,10 +271,6 @@ class DraggableDirective extends PointerOperationDirective<
       element,
       signal: this._operationAbort.signal,
     };
-  }
-
-  private _createParams(event: PointerEvent): DragCallbackParams {
-    return { event, state: this._createState() };
   }
 
   private _updatePosition({ clientX, clientY }: PointerEvent): void {
