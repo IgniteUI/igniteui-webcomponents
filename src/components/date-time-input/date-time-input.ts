@@ -6,11 +6,11 @@ import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateTimeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { all } from '#themes/input/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
-import { all } from '../input/themes/themes.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import {
   createDatePart,

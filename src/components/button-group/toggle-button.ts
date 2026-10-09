@@ -18,10 +18,10 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import { setOrRemoveAttribute } from '#internals/utils/dom.js';
+import { all } from '#themes/button-group/themes/button.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/button.base.css.js';
-import { all } from './themes/button.js';
 import { styles as shared } from './themes/shared/button/button.common.css.js';
 
 /**

@@ -5,6 +5,7 @@ import { addInternalsController } from '#internals/controllers/internals.js';
 import { blazorInclude } from '#internals/decorators/blazorInclude.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
+import { all } from '#themes/icon/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import {
@@ -16,7 +17,6 @@ import {
 import type { IconMeta } from './registry/types.js';
 import { styles } from './themes/icon.base.css.js';
 import { styles as shared } from './themes/shared/icon.common.css.js';
-import { all } from './themes/themes.js';
 
 /**
  * The icon component allows visualizing collections of pre-registered SVG icons.

@@ -4,12 +4,12 @@ import { IgcBaseAlertLikeComponent } from '#internals/bases/alert.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { all } from '#themes/snackbar/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
 import { styles as shared } from './themes/shared/snackbar.common.css.js';
 import { styles } from './themes/snackbar.base.css.js';
-import { all } from './themes/themes.js';
 
 export interface IgcSnackbarComponentEventMap {
   igcAction: CustomEvent<void>;

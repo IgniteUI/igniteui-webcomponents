@@ -7,10 +7,10 @@ import {
   type MutationControllerParams,
 } from '#internals/controllers/mutation-observer.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/dropdown/themes/group.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from '../dropdown/themes/dropdown-group.base.css.js';
-import { all } from '../dropdown/themes/group.js';
 import { styles as shared } from '../dropdown/themes/shared/group/dropdown-group.common.css.js';
 import IgcSelectItemComponent from './select-item.js';
 

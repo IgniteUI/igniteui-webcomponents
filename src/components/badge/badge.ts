@@ -10,12 +10,12 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { isElement } from '#internals/utils/dom.js';
+import { all } from '#themes/badge/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { BadgeShape, StyleVariant } from '../types.js';
 import { styles } from './themes/badge.base.css.js';
 import { styles as shared } from './themes/shared/badge.common.css.js';
-import { all } from './themes/themes.js';
 
 /**
  * The badge is a component indicating a status on a related item or an area

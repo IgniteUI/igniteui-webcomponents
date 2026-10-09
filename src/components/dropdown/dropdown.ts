@@ -40,6 +40,7 @@ import { getElementFromPath } from '#internals/utils/events.js';
 import { moveFlag } from '#internals/utils/objects.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { isString } from '#internals/utils/types.js';
+import { all } from '#themes/dropdown/themes/container.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcPopoverComponent, {
@@ -48,7 +49,6 @@ import IgcPopoverComponent, {
 import IgcDropdownGroupComponent from './dropdown-group.js';
 import IgcDropdownHeaderComponent from './dropdown-header.js';
 import IgcDropdownItemComponent from './dropdown-item.js';
-import { all } from './themes/container.js';
 import { styles } from './themes/dropdown.base.css.js';
 import { styles as shared } from './themes/shared/dropdown.common.css.js';
 

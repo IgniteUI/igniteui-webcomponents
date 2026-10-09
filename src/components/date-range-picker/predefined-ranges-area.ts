@@ -3,6 +3,7 @@ import { property, state } from 'lit/decorators.js';
 import { CalendarDay } from '#internals/date/model.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import { all } from '#themes/date-range-picker/themes/ranges-themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcChipComponent from '../chip/chip.js';
@@ -14,7 +15,6 @@ import {
   type IgcDateRangePickerResourceStrings,
 } from './i18n.js';
 import { styles } from './predefined-ranges-area.base.css.js';
-import { all } from './themes/ranges-themes.js';
 import { styles as shared } from './themes/shared/predefined-ranges-area.common.css.js';
 
 /* blazorSuppress */

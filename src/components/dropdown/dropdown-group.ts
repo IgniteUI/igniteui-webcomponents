@@ -1,11 +1,11 @@
 import { queryAssignedElements } from 'lit/decorators.js';
 import { IgcGroupBaseComponent } from '#internals/bases/group.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/dropdown/themes/group.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcDropdownItemComponent from './dropdown-item.js';
 import { styles } from './themes/dropdown-group.base.css.js';
-import { all } from './themes/group.js';
 import { styles as shared } from './themes/shared/group/dropdown-group.common.css.js';
 
 /**

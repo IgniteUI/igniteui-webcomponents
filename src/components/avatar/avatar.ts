@@ -2,12 +2,12 @@ import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/avatar/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { AvatarShape } from '../types.js';
 import { styles } from './themes/avatar.base.css.js';
 import { styles as shared } from './themes/shared/avatar.common.css.js';
-import { all } from './themes/themes.js';
 
 /**
  * An avatar component is used as a representation of a user identity

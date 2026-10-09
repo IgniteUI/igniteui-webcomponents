@@ -1,12 +1,12 @@
 import { html, LitElement } from 'lit';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/list/themes/container.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcListHeaderComponent from './list-header.js';
 import IgcListItemComponent from './list-item.js';
 import { styles } from './themes/container.base.css.js';
-import { all } from './themes/container.js';
 import { styles as shared } from './themes/shared/container/list.common.css.js';
 
 /**

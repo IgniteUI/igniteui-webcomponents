@@ -1,10 +1,10 @@
 import { html } from 'lit';
 import { IgcBaseAlertLikeComponent } from '#internals/bases/alert.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/toast/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles as shared } from './themes/shared/toast.common.css.js';
-import { all } from './themes/themes.js';
 import { styles } from './themes/toast.base.css.js';
 
 /**

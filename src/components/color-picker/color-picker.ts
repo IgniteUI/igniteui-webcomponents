@@ -39,6 +39,7 @@ import {
 } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { asNumber, clamp } from '#internals/utils/math.js';
+import { all } from '#themes/color-picker/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
@@ -58,7 +59,6 @@ import IgcPickerCanvasComponent, {
 } from './picker-canvas.js';
 import { styles } from './themes/color-picker.base.css.js';
 import { styles as shared } from './themes/shared/color-picker.common.css.js';
-import { all } from './themes/themes.js';
 import { colorPickerValidators } from './validators.js';
 
 export interface IgcColorPickerComponentEventMap {

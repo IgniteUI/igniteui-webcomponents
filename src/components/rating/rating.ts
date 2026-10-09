@@ -38,13 +38,13 @@ import {
   roundPrecise,
 } from '#internals/utils/math.js';
 import { formatString } from '#internals/utils/strings.js';
+import { all } from '#themes/rating/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
 import { styles } from './themes/rating.base.css.js';
 import { styles as shared } from './themes/shared/rating.common.css.js';
-import { all } from './themes/themes.js';
 
 export interface IgcRatingComponentEventMap {
   igcChange: CustomEvent<number>;

@@ -21,12 +21,12 @@ import {
   addSafeEventListener,
   getElementFromPath,
 } from '#internals/utils/events.js';
+import { all } from '#themes/tree/themes/item.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcCircularProgressComponent from '../progress/circular-progress.js';
 import { styles } from './themes/item.base.css.js';
-import { all } from './themes/item.js';
 import { styles as shared } from './themes/shared/item.common.css.js';
 import {
   clearTreeItemAria,

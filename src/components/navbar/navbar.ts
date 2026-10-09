@@ -1,10 +1,10 @@
 import { html, LitElement } from 'lit';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/navbar/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/navbar.base.css.js';
 import { styles as shared } from './themes/shared/navbar.common.css.js';
-import { all } from './themes/themes.js';
 
 /**
  * A navigation bar component is used to facilitate navigation through

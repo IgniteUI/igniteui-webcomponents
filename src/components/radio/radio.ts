@@ -18,6 +18,7 @@ import { partMap } from '#internals/part-map.js';
 import { renderToggleShell } from '#internals/templates/toggle-shell.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { isString } from '#internals/utils/types.js';
+import { all } from '#themes/radio/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { ToggleLabelPosition } from '../types.js';
@@ -25,7 +26,6 @@ import IgcValidationContainerComponent from '../validation-container/validation-
 import { addRadioGroupController, getGroupMembers } from './controller.js';
 import { styles } from './themes/radio.base.css.js';
 import { styles as shared } from './themes/shared/radio.common.css.js';
-import { all } from './themes/themes.js';
 import { radioValidators } from './validators.js';
 
 export interface IgcRadioChangeEventArgs {

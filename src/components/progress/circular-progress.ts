@@ -4,13 +4,13 @@ import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/progress/themes/circular/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import { IgcProgressBaseComponent } from './base.js';
 import IgcCircularGradientComponent from './circular-gradient.js';
 import { styles } from './themes/circular/circular.progress.base.css.js';
 import { styles as shared } from './themes/circular/shared/circular.progress.common.css.js';
-import { all } from './themes/circular/themes.js';
 
 const nextId = createIdGenerator('circular-progress');
 

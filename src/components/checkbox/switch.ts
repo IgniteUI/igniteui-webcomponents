@@ -3,11 +3,11 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
 import { renderToggleShell } from '#internals/templates/toggle-shell.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/checkbox/themes/switch-themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { styles as shared } from './themes/shared/switch/switch.common.css.js';
-import { all } from './themes/switch-themes.js';
 import { styles } from './themes/switch.base.css.js';
 
 const nextId = createIdGenerator('switch');

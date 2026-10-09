@@ -4,11 +4,11 @@ import { breadcrumbsContext } from '#internals/context.js';
 import { addContextProvider } from '#internals/controllers/context-provider.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/breadcrumb/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcBreadcrumbComponent from './breadcrumb.js';
 import { styles } from './themes/breadcrumbs.base.css.js';
-import { all } from './themes/themes.js';
 
 /**
  * A breadcrumb navigation component that renders an ordered list of breadcrumb items.

@@ -2,12 +2,12 @@ import { LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/divider/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { DividerType } from '../types.js';
 import { styles } from './themes/divider.base.css.js';
 import { styles as shared } from './themes/shared/divider.common.css.js';
-import { all } from './themes/themes.js';
 
 /**
  * The divider allows the content author to easily create a horizontal/vertical

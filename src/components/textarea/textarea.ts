@@ -29,6 +29,7 @@ import {
 import { addSafeEventListener } from '#internals/utils/events.js';
 import { asNumber } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/textarea/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import type {
@@ -39,7 +40,6 @@ import type {
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles as shared } from './themes/shared/textarea.common.css.js';
 import { styles } from './themes/textarea.base.css.js';
-import { all } from './themes/themes.js';
 import { textAreaValidators } from './validators.js';
 
 export interface IgcTextareaComponentEventMap {

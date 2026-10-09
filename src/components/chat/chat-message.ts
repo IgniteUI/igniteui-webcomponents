@@ -9,13 +9,13 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { trimmedHtml } from '#internals/utils/lit.js';
+import { all } from '#themes/chat/themes/message.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import type { ChatState } from './chat-state.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
-import { all } from './themes/message.js';
 import { styles as shared } from './themes/shared/chat-message/chat-message.common.css.js';
 import type {
   ChatMessageRenderContext,

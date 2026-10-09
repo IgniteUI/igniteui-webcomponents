@@ -5,11 +5,11 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
 import { renderToggleShell } from '#internals/templates/toggle-shell.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/checkbox/themes/checkbox-themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
-import { all } from './themes/checkbox-themes.js';
 import { styles } from './themes/checkbox.base.css.js';
 import { styles as shared } from './themes/shared/checkbox/checkbox.common.css.js';
 

@@ -28,6 +28,7 @@ import { partMap } from '#internals/part-map.js';
 import { firstOf, isEmpty } from '#internals/utils/arrays.js';
 import { getElementFromPath } from '#internals/utils/events.js';
 import { isString } from '#internals/utils/types.js';
+import { all } from '#themes/tabs/themes/tabs-themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
@@ -35,7 +36,6 @@ import type { TabsActivation, TabsAlignment } from '../types.js';
 import { getTabHeader, TAB_HEADER, TabsHelpers } from './tab-dom.js';
 import IgcTabComponent from './tab.js';
 import { styles as shared } from './themes/shared/tabs/tabs.common.css.js';
-import { all } from './themes/tabs-themes.js';
 import { styles } from './themes/tabs.base.css.js';
 
 export interface IgcTabsComponentEventMap {

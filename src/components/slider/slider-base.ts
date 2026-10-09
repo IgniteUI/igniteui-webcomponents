@@ -49,6 +49,7 @@ import {
 import { equal } from '#internals/utils/objects.js';
 import { formatString } from '#internals/utils/strings.js';
 import { isDefined } from '#internals/utils/types.js';
+import { all } from '#themes/slider/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcPopoverComponent from '../popover/popover.js';
@@ -59,7 +60,6 @@ import type {
 import IgcSliderLabelComponent from './slider-label.js';
 import { styles as shared } from './themes/shared/slider.common.css.js';
 import { styles } from './themes/slider.base.css.js';
-import { all } from './themes/themes.js';
 
 /** The components that both sliders render. */
 export const sliderDependencies = [

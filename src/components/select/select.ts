@@ -49,6 +49,7 @@ import {
 import { bindIf } from '#internals/utils/lit.js';
 import { moveFlag } from '#internals/utils/objects.js';
 import { isString } from '#internals/utils/types.js';
+import { all } from '#themes/select/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -62,7 +63,6 @@ import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
 import { styles } from './themes/select.base.css.js';
 import { styles as shared } from './themes/shared/select.common.css.js';
-import { all } from './themes/themes.js';
 import { selectValidators } from './validators.js';
 
 export interface IgcSelectComponentEventMap {

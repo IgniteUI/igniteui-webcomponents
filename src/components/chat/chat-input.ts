@@ -13,6 +13,7 @@ import { createTimer } from '#internals/timing.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { hasFiles, isPointInsideElement } from '#internals/utils/dom.js';
 import { bindIf, trimmedHtml } from '#internals/utils/lit.js';
+import { all } from '#themes/chat/themes/input.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
@@ -21,7 +22,6 @@ import IgcIconComponent from '../icon/icon.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
 import type { ChatState } from './chat-state.js';
 import { styles } from './themes/input.base.css.js';
-import { all } from './themes/input.js';
 import { styles as shared } from './themes/shared/input/input.common.css.js';
 import type {
   ChatInputRenderContext,

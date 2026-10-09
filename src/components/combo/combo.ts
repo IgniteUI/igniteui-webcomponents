@@ -30,6 +30,7 @@ import {
 } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
 import type { Validator } from '#internals/validators.js';
+import { all } from '#themes/combo/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -44,7 +45,6 @@ import { DataState } from './controllers/data.js';
 import { ComboNavigationController } from './controllers/navigation.js';
 import { styles } from './themes/combo.base.css.js';
 import { styles as shared } from './themes/shared/combo.common.css.js';
-import { all } from './themes/themes.js';
 import type {
   ComboItemTemplate,
   ComboRecord,

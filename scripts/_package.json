@@ -19,6 +19,13 @@
   "imports": {
     "#internals/*": "./internals/*",
     "#theming/*": "./theming/*",
+    "#themes/*.js": {
+      "igc-theme-material": "./components/*.material.js",
+      "igc-theme-bootstrap": "./components/*.bootstrap.js",
+      "igc-theme-indigo": "./components/*.indigo.js",
+      "igc-theme-fluent": "./components/*.fluent.js",
+      "default": "./components/*.js"
+    },
     "#animations/*": "./animations/*"
   },
   "type": "module",

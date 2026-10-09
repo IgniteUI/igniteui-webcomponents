@@ -26,11 +26,11 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { asArray, firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
 import { getElementFromPath } from '#internals/utils/events.js';
 import { isDefined } from '#internals/utils/types.js';
+import { all } from '#themes/button-group/themes/group.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { ButtonGroupSelection, ContentOrientation } from '../types.js';
 import { styles } from './themes/group.base.css.js';
-import { all } from './themes/group.js';
 import { styles as shared } from './themes/shared/group/group.common.css.js';
 import IgcToggleButtonComponent from './toggle-button.js';
 

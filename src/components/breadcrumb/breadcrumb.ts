@@ -6,12 +6,12 @@ import { addInternalsController } from '#internals/controllers/internals.js';
 import { addSlotController, DefaultSlot } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { getTabbables, setOrRemoveAttribute } from '#internals/utils/dom.js';
+import { all } from '#themes/breadcrumb/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import { styles } from './themes/breadcrumb.base.css.js';
 import { styles as shared } from './themes/shared/breadcrumb.common.css.js';
-import { all } from './themes/themes.js';
 
 /**
  * A single item within a breadcrumb navigation trail.

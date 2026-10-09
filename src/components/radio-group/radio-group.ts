@@ -10,13 +10,13 @@ import {
 import { registerComponent } from '#internals/definitions/register.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { isDefined } from '#internals/utils/types.js';
+import { all } from '#themes/radio-group/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcRadioComponent from '../radio/radio.js';
 import type { ContentOrientation } from '../types.js';
 import { styles } from './themes/radio-group.base.css.js';
 import { styles as shared } from './themes/shared/radio-group.common.css.js';
-import { all } from './themes/themes.js';
 
 /**
  * Unifies one or more radio components into a single group.

@@ -1,5 +1,5 @@
+import { all as inputThemes } from '#themes/input/themes/themes.js';
 import type { ComponentThemes } from '#theming/types.js';
-import { all as inputThemes } from '../../input/themes/themes.js';
 
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/file-input.bootstrap.css.js';

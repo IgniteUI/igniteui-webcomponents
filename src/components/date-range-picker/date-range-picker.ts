@@ -22,6 +22,7 @@ import { firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { asNumber, clamp } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/date-range-picker/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
@@ -49,7 +50,6 @@ import {
 } from './i18n.js';
 import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
 import { styles as shared } from './themes/shared/date-range-picker.common.css.js';
-import { all } from './themes/themes.js';
 import { dateRangeValidators, isCompleteDateRange } from './validators.js';
 
 export type { DateRangeValue } from '../types.js';

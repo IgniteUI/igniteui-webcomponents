@@ -6,9 +6,9 @@ import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { chunk } from '#internals/utils/arrays.js';
+import { all } from '#themes/calendar/themes/year-month.js';
 import { dateChanged, getViewElement, setupCalendarView } from './helpers.js';
 import { styles } from './themes/year-month-view.base.css.js';
-import { all } from './themes/year-month.js';
 import type { IgcCalendarViewComponentEventMap } from './types.js';
 
 /** A single cell of a year/month view. */

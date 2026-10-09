@@ -17,12 +17,12 @@ import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import { isPointInsideElement } from '#internals/utils/dom.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/dialog/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
 import { styles } from './themes/dialog.base.css.js';
 import { styles as shared } from './themes/shared/dialog.common.css.js';
-import { all } from './themes/themes.js';
 
 export interface IgcDialogComponentEventMap {
   igcClosing: CustomEvent<void>;

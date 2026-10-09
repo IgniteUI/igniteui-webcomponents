@@ -25,6 +25,7 @@ import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { firstOf } from '#internals/utils/arrays.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/date-picker/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { CalendarSelection } from '../calendar/types.js';
@@ -39,7 +40,6 @@ import {
 } from './date-picker.base.js';
 import { styles } from './themes/date-picker.base.css.js';
 import { styles as shared } from './themes/shared/date-picker.common.css.js';
-import { all } from './themes/themes.js';
 import { datePickerValidators } from './validators.js';
 
 export type IgcDatePickerComponentEventMap = IgcPickerBaseEventMap<Date>;

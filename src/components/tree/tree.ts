@@ -11,11 +11,11 @@ import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { setOrRemoveAttribute } from '#internals/utils/dom.js';
+import { all } from '#themes/tree/themes/container.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { TreeSelection } from '../types.js';
 import { styles } from './themes/container.base.css.js';
-import { all } from './themes/container.js';
 import IgcTreeItemComponent from './tree-item.js';
 import {
   collectTreeItems,

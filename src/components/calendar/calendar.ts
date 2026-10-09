@@ -23,6 +23,7 @@ import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import { getElementFromPath } from '#internals/utils/events.js';
 import { clamp } from '#internals/utils/math.js';
 import { formatString } from '#internals/utils/strings.js';
+import { all } from '#themes/calendar/themes/calendar.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -40,7 +41,6 @@ import {
 } from './helpers.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
 import { styles } from './themes/calendar.base.css.js';
-import { all } from './themes/calendar.js';
 import type {
   CalendarActiveView,
   CalendarHeaderOrientation,

@@ -8,12 +8,12 @@ import { chatContext } from '#internals/context.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
 import { trimmedHtml } from '#internals/utils/lit.js';
+import { all } from '#themes/chat/themes/attachments.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { ChatState } from './chat-state.js';
-import { all } from './themes/attachments.js';
 import { styles } from './themes/message-attachments.base.css.js';
 import { styles as shared } from './themes/shared/message-attachments/message-attachments.common.css.js';
 import type {

@@ -49,6 +49,7 @@ import {
 } from '#internals/utils/events.js';
 import { asNumber, wrap } from '#internals/utils/math.js';
 import { createIdGenerator, formatString } from '#internals/utils/strings.js';
+import { all } from '#themes/carousel/themes/container.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
@@ -61,7 +62,6 @@ import IgcCarouselIndicatorContainerComponent from './carousel-indicator-contain
 import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
 import { styles } from './themes/carousel.base.css.js';
-import { all } from './themes/container.js';
 import { styles as shared } from './themes/shared/carousel.common.css.js';
 
 export interface IgcCarouselComponentEventMap {

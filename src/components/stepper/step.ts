@@ -14,6 +14,7 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/stepper/themes/step/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import type {
@@ -29,7 +30,6 @@ import type { StepperState } from './common/state.js';
 import type IgcStepperComponent from './stepper.js';
 import { styles as shared } from './themes/step/shared/step.common.css.js';
 import { styles } from './themes/step/step.base.css.js';
-import { all } from './themes/step/themes.js';
 
 const nextId = createIdGenerator('igc-step');
 

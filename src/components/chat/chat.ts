@@ -17,6 +17,7 @@ import { chatResourcesMap } from '#internals/i18n/utils.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { isEmpty } from '#internals/utils/arrays.js';
+import { all } from '#themes/chat/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
@@ -31,7 +32,6 @@ import IgcChatMessageComponent from './chat-message.js';
 import { ChatState } from './chat-state.js';
 import { styles } from './themes/chat.base.css.js';
 import { styles as shared } from './themes/shared/chat.common.css.js';
-import { all } from './themes/themes.js';
 import type {
   ChatRenderContext,
   ChatTemplateRenderer,

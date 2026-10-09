@@ -21,6 +21,7 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { isElement, isLTR } from '#internals/utils/dom.js';
 import { asNumber } from '#internals/utils/math.js';
+import { all } from '#themes/tooltip/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -30,7 +31,6 @@ import IgcPopoverComponent, {
 import type { PopoverScrollStrategy } from '../types.js';
 import { addTooltipController } from './controller.js';
 import { styles as shared } from './themes/shared/tooltip.common.css.js';
-import { all } from './themes/themes.js';
 import { styles } from './themes/tooltip.base.css.js';
 
 export interface IgcTooltipComponentEventMap {

@@ -10,6 +10,7 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { chunk, firstOf, lastOf } from '#internals/utils/arrays.js';
 import { bindIf } from '#internals/utils/lit.js';
+import { all } from '#themes/calendar/themes/days.js';
 import { IgcCalendarBaseComponent } from '../base.js';
 import {
   dateChanged,
@@ -21,7 +22,6 @@ import {
   setupCalendarView,
 } from '../helpers.js';
 import { styles } from '../themes/days-view.base.css.js';
-import { all } from '../themes/days.js';
 import type { IgcCalendarViewComponentEventMap } from '../types.js';
 
 export interface IgcDaysViewEventMap extends IgcCalendarViewComponentEventMap {

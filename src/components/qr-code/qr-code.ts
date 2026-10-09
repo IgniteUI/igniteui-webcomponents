@@ -10,6 +10,7 @@ import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { clamp, numberInRangeInclusive } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/qr-code/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { QRCodeMatrixResult } from './model/matrix.js';
@@ -34,7 +35,6 @@ import {
 } from './renderer/templates.js';
 import { styles } from './themes/qr-code.base.css.js';
 import { styles as shared } from './themes/shared/qr-code.common.css.js';
-import { all } from './themes/themes.js';
 import type {
   QrCodeExportOptions,
   QrCornerSquareStyle,

@@ -33,12 +33,12 @@ import {
   clamp,
   roundPrecise,
 } from '#internals/utils/math.js';
+import { all } from '#themes/splitter/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { SplitterOrientation } from '../types.js';
 import { styles as shared } from './themes/shared/splitter.common.css.js';
 import { styles } from './themes/splitter.base.css.js';
-import { all } from './themes/themes.js';
 import type {
   IgcSplitterComponentEventMap,
   IgcSplitterLayoutChangedEventArgs,
