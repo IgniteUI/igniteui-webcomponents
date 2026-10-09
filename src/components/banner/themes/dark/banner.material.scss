@@ -1,8 +1,9 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
+@use '../light/themes' as light;
 
 $theme: $material;
 
 :host {
-    @include css-vars-from-theme($theme);
+    @include css-vars-from-theme(dark-overrides(light.$material, $theme));
 }

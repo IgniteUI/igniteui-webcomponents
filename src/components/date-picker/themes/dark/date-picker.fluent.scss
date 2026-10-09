@@ -3,10 +3,10 @@
 @use '../light/themes' as light;
 
 :host {
-    @include css-vars-from-theme($fluent);
-    @include css-vars-from-theme($fluent-input);
+    @include css-vars-from-theme(dark-overrides(light.$fluent, $fluent));
+    @include css-vars-from-theme(dark-overrides(light.$fluent-input, $fluent-input));
 
     igc-dialog {
-        @include css-vars-from-theme($fluent-dialog);
+        @include css-vars-from-theme(dark-overrides(light.$fluent-dialog, $fluent-dialog));
     }
 }

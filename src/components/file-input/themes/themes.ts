@@ -28,10 +28,20 @@ const light = {
 
 const dark = {
   shared: [shared, inputThemes.dark.shared!].flat(),
-  bootstrap: [bootstrap, bootstrapDark, inputThemes.dark.bootstrap!].flat(),
-  material: [material, materialDark, inputThemes.dark.material!].flat(),
-  indigo: [indigo, indigoDark, inputThemes.dark.indigo!].flat(),
-  fluent: [fluent, fluentDark, inputThemes.dark.fluent!].flat(),
+  bootstrap: [
+    bootstrap,
+    bootstrapLight,
+    bootstrapDark,
+    inputThemes.dark.bootstrap!,
+  ].flat(),
+  material: [
+    material,
+    materialLight,
+    materialDark,
+    inputThemes.dark.material!,
+  ].flat(),
+  indigo: [indigo, indigoLight, indigoDark, inputThemes.dark.indigo!].flat(),
+  fluent: [fluent, fluentLight, fluentDark, inputThemes.dark.fluent!].flat(),
 };
 
 export const all: ComponentThemes = { light, dark };

@@ -1,18 +1,19 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
+@use '../light/themes' as light;
 
 $flat-theme: $material-flat;
 $contained-theme: $material-contained;
 $outlined-theme: $material-outlined;
 
 :host([variant='flat']) {
-    @include css-vars-from-theme($flat-theme, 'ig-icon-button');
+    @include css-vars-from-theme(dark-overrides(light.$material-flat, $flat-theme), 'ig-icon-button');
 }
 
 :host([variant='outlined']) {
-    @include css-vars-from-theme($outlined-theme, 'ig-icon-button');
+    @include css-vars-from-theme(dark-overrides(light.$material-outlined, $outlined-theme), 'ig-icon-button');
 }
 
 :host([variant='contained']) {
-    @include css-vars-from-theme($contained-theme, 'ig-icon-button');
+    @include css-vars-from-theme(dark-overrides(light.$material-contained, $contained-theme), 'ig-icon-button');
 }

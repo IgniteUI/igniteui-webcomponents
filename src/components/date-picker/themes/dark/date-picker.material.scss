@@ -3,9 +3,9 @@
 @use '../light/themes' as light;
 
 :host {
-    @include css-vars-from-theme($material);
+    @include css-vars-from-theme(dark-overrides(light.$material, $material));
 
     igc-dialog {
-        @include css-vars-from-theme($material-dialog);
+        @include css-vars-from-theme(dark-overrides(light.$material-dialog, $material-dialog));
     }
 }

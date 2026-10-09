@@ -26,10 +26,10 @@ const light = {
 
 const dark = {
   shared: sharedDark,
-  bootstrap: [bootstrap, bootstrapDark],
-  material: [material, materialDark],
-  fluent: fluentDark,
-  indigo: [indigo, indigoDark],
+  bootstrap: [bootstrap, bootstrapLight, bootstrapDark],
+  material: [material, materialLight, materialDark],
+  fluent: [fluentLight, fluentDark],
+  indigo: [indigo, indigoLight, indigoDark],
 };
 
 export const all: ComponentThemes = { light, dark };

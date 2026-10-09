@@ -4,10 +4,10 @@
 @use '../light/themes' as light;
 
 :host {
-    @include css-vars-from-theme($indigo);
-    @include css-vars-from-theme($indigo-input);
+    @include css-vars-from-theme(dark-overrides(light.$indigo, $indigo));
+    @include css-vars-from-theme(dark-overrides(light.$indigo-input, $indigo-input));
 
     igc-dialog {
-        @include css-vars-from-theme($indigo-dialog);
+        @include css-vars-from-theme(dark-overrides(light.$indigo-dialog, $indigo-dialog));
     }
 }

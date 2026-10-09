@@ -1,6 +1,7 @@
 @use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'components/dropdown/themes/dark/themes' as dropdown;
+@use 'components/dropdown/themes/light/themes' as light-dropdown;
 @use 'themes' as *;
 @use '../light/themes' as light;
 
@@ -8,9 +9,9 @@ $theme: $bootstrap;
 $dropdown: map.remove(dropdown.$bootstrap, 'default-size');
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $theme));
+    @include css-vars-from-theme(dark-overrides(light.$bootstrap, $theme));
 
     igc-popover {
-        @include css-vars-from-theme($dropdown);
+        @include css-vars-from-theme(dark-overrides(light-dropdown.$bootstrap, $dropdown));
     }
 }
