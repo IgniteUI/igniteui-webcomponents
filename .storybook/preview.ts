@@ -12,6 +12,7 @@ import {
 import { type CSSResult, html } from 'lit';
 import { withActions } from 'storybook/actions/decorator';
 import { configureTheme } from '../src/theming/config.js';
+import { THEME_VARIANTS, THEMES } from '../src/theming/types.js';
 
 const LocalizationResources = new Map(
   Object.entries({
@@ -35,6 +36,8 @@ const themes = import.meta.glob<ThemeImport>(
 
 const getTheme = ({ theme, variant }: { theme: string; variant: string }) =>
   themes[`../src/styles/themes/${variant}/${theme}.css.ts`];
+
+const capitalize = (value: string) => value[0].toUpperCase() + value.slice(1);
 
 const getSize = (size: 'small' | 'medium' | 'large' | 'default') => {
   if (size === 'default') {
@@ -84,12 +87,9 @@ export default {
       description: 'Global theme for components',
       toolbar: {
         icon: 'cog',
-        items: [
-          { value: 'bootstrap', title: 'Bootstrap' },
-          { value: 'fluent', title: 'Fluent' },
-          { value: 'indigo', title: 'Indigo' },
-          { value: 'material', title: 'Material' },
-        ],
+        items: [...THEMES]
+          .sort()
+          .map((value) => ({ value, title: capitalize(value) })),
       },
     },
     variant: {
@@ -97,13 +97,10 @@ export default {
       description: 'Theme variant',
       toolbar: {
         icon: 'mirror',
-        items: [
-          {
-            value: 'light',
-            title: 'Light theme',
-          },
-          { value: 'dark', title: 'Dark theme' },
-        ],
+        items: THEME_VARIANTS.map((value) => ({
+          value,
+          title: `${capitalize(value)} theme`,
+        })),
       },
     },
     direction: {

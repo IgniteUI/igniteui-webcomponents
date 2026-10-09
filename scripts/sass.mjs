@@ -31,23 +31,68 @@ const exists = (relative) =>
     () => false
   );
 
+/** The global theme entries. */
+const THEME_ENTRY_GLOB = 'src/styles/themes/{light,dark}/*.scss';
+
+/** The global light theme entries. Their stems are the theme names. */
+const THEME_NAMES_GLOB = 'src/styles/themes/light/*.scss';
+
+/** The component entry suffixes that name no theme. */
+const COMPONENT_SUFFIXES = ['base', 'common', 'shared'];
+
+/** Component theme files of a variant, which must end in a known suffix. */
+const VARIANT_FILES_GLOB = 'src/components/**/themes/**/{light,dark}/**/*.scss';
+
 /**
+ * Returns the entry globs, with the theme names read from the global theme
+ * entries.
+ *
  * A file matched by one of these globs is an *entry*: it compiles to an output
  * artifact of its own. Every other `.scss` under `src` is a partial that only
  * reaches the output through an entry importing it, and must never be compiled
  * on its own — doing so yields a stray, mostly empty artifact while leaving the
  * entries that actually depend on it untouched.
+ *
+ * @throws When a variant file of a component ends in an unknown theme name,
+ *   which the component glob would skip without a warning.
+ * @returns {Promise<Record<Entry['kind'], string>>}
  */
-const ENTRY_GLOBS = /** @type {const} */ ({
-  theme: 'src/styles/themes/{light,dark}/*.scss',
-  component:
-    'src/components/**/*.{base,common,shared,material,bootstrap,indigo,fluent}.scss',
-});
+async function resolveEntryGlobs() {
+  /** @type {string[]} */
+  const themes = [];
+
+  for await (const match of glob(THEME_NAMES_GLOB, { cwd: ROOT })) {
+    themes.push(path.basename(match, '.scss'));
+  }
+
+  const suffixes = new Set([...COMPONENT_SUFFIXES, ...themes.sort()]);
+  /** @type {string[]} */
+  const unknown = [];
+
+  for await (const match of glob(VARIANT_FILES_GLOB, { cwd: ROOT })) {
+    const name = path.basename(match, '.scss');
+
+    if (!(name.startsWith('_') || suffixes.has(name.split('.').at(-1) ?? ''))) {
+      unknown.push(toPosix(match));
+    }
+  }
+
+  if (unknown.length) {
+    throw new Error(
+      `Unknown theme name in ${unknown.join(', ')}. The themes are: ${themes.join(', ')}.`
+    );
+  }
+
+  return {
+    theme: THEME_ENTRY_GLOB,
+    component: `src/components/**/*.{${[...suffixes].join(',')}}.scss`,
+  };
+}
 
 const CACHE_FILE = 'node_modules/.cache/igniteui-webcomponents/styles.json';
 
 /** Bump to invalidate every cached entry after a change to the build itself. */
-const CACHE_VERSION = 1;
+const CACHE_VERSION = 2;
 
 /** @type {import('postcss').Plugin} */
 const stripComments = {
@@ -62,7 +107,7 @@ const stripComments = {
 const postProcessor = postcss([autoprefixer, stripComments]);
 
 /**
- * @typedef {{ path: string, kind: keyof typeof ENTRY_GLOBS }} Entry
+ * @typedef {{ path: string, kind: 'theme' | 'component' }} Entry
  *
  * @typedef {{ output: string, deps: string[], digest: string }} CacheRecord
  *   `deps` is every file the entry loaded, itself included; `digest` fingerprints
@@ -160,12 +205,12 @@ class StyleBuilder {
     const entries = new Map();
 
     await Promise.all(
-      Object.entries(ENTRY_GLOBS).map(async ([kind, pattern]) => {
+      Object.entries(await resolveEntryGlobs()).map(async ([kind, pattern]) => {
         for await (const match of glob(pattern, { cwd: ROOT })) {
           const file = toPosix(match);
           entries.set(file, {
             path: file,
-            kind: /** @type {keyof typeof ENTRY_GLOBS} */ (kind),
+            kind: /** @type {Entry['kind']} */ (kind),
           });
         }
       })
