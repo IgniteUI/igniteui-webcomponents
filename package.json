@@ -120,7 +120,11 @@
     "shiki": "^4.5.0"
   },
   "browserslist": [
-    "defaults"
+    "defaults",
+    "not kaios > 0",
+    "not op_mini all",
+    "not and_uc > 0",
+    "not and_qq > 0"
   ],
   "lint-staged": {
     "*.{js,ts,cjs,mjs,jsx,tsx}": [
