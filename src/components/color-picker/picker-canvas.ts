@@ -17,6 +17,7 @@ import {
   preventDefault,
 } from '#internals/utils/events.js';
 import { asPercent, clamp } from '#internals/utils/math.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/picker-canvas.base.css.js';
 
 export interface IgcPickerCanvasEventMap {
@@ -55,7 +56,7 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
   AbstractConstructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-picker-canvas';
-  public static styles = styles;
+  public static styles = [componentBase, styles];
 
   public static register(): void {
     registerComponent(IgcPickerCanvasComponent);

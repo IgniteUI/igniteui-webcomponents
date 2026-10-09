@@ -8,17 +8,17 @@ $fab-theme: $bootstrap-fab;
 $outlined-theme: $bootstrap-outlined;
 
 :host([variant='flat']) {
-    @include css-vars-from-theme(diff(light.$base-flat, $flat-theme));
+    @include css-vars-from-theme(dark-overrides(light.$bootstrap-flat, $flat-theme));
 }
 
 :host([variant='outlined']) {
-    @include css-vars-from-theme(diff(light.$base-outlined, $outlined-theme));
+    @include css-vars-from-theme(dark-overrides(light.$bootstrap-outlined, $outlined-theme));
 }
 
 :host([variant='contained']) {
-    @include css-vars-from-theme(diff(light.$base-contained, $contained-theme));
+    @include css-vars-from-theme(dark-overrides(light.$bootstrap-contained, $contained-theme));
 }
 
 :host([variant='fab']) {
-    @include css-vars-from-theme(diff(light.$base-fab, $fab-theme));
+    @include css-vars-from-theme(dark-overrides(light.$bootstrap-fab, $fab-theme));
 }

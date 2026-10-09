@@ -1,12 +1,13 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/button/themes/button/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { ButtonVariant } from '../types.js';
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './themes/button/button.base.css.js';
 import { styles as shared } from './themes/button/shared/button.common.css.js';
-import { all } from './themes/button/themes.js';
 
 /**
  * Represents a clickable button, used to submit forms or anywhere in a
@@ -26,7 +27,7 @@ import { all } from './themes/button/themes.js';
  */
 export default class IgcButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-button';
-  protected static styles = [styles, shared];
+  protected static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

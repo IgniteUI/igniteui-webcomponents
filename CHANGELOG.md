@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `DateRangeDescriptor` has an optional `label`. The calendar adds the labels of the matching `specialDates` and `disabledDates` descriptors to the accessible name of a date, for example "Thursday, October 8, 2026, Free delivery". Before, the special state was only visual, and assistive technologies did not announce it. [#2423](https://github.com/IgniteUI/igniteui-webcomponents/pull/2423)
 - #### Library
   - The repository has new `SECURITY.md`, `PRIVACY.md`, `ACCESSIBILITY.md`, `THREAT-MODEL.md` and `.github/SUPPORT.md` documents. `SECURITY.md` gives the supported versions: 7.x gets all security fixes, and 6.5.x gets fixes for critical vulnerabilities only. Report a vulnerability through GitHub private vulnerability reporting, not in a public issue. [#2383](https://github.com/IgniteUI/igniteui-webcomponents/pull/2383)
+  - The package has four export conditions that keep only one theme in your bundle: `igc-theme-material`, `igc-theme-bootstrap`, `igc-theme-indigo` and `igc-theme-fluent`. Set one condition in your bundler, or with `node --conditions`. The bundle then contains only the component styles of that theme, light and dark, and is approximately 15–17% smaller after gzip. Without a condition, the bundle contains all four themes, as before. If you call `configureTheme()` with a theme that is not in the bundle, the components show only their structural styles. For the bundler settings, see "Bundling a single theme" in the README.
+  - When another class already defines the tag of a component, the component now writes one warning to the console. An example is a second copy or another version of the library on the same page. The component does not define the tag, so the page keeps the first class. Before, the component skipped the definition and gave no warning.
 - #### Tabs
   - `header-background` theme token. It paints the full header strip behind the tab items, and it follows `item-background` until you set it. So a translucent `item-background` shows over the header color and does not stack on a copy of itself. You can also make only the header transparent. The `tabs-theme` function of `igniteui-theming` 29.1.0 has the matching `$header-background` parameter. [#2431](https://github.com/IgniteUI/igniteui-webcomponents/pull/2431)
 - #### Text selection
@@ -17,6 +19,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - #### Library
+  - The package has a new runtime dependency, `tslib`. The components import the TypeScript helpers from it, so a bundle contains one copy of each helper.
+  - The bundle of all components is approximately 6% smaller after gzip. The components share one copy of their common styles, and the dark theme styles contain only the values that are different from the light theme.
+  - A theme change now updates only the components that render differently for each theme. A `configureTheme()` call with the active theme and variant does not update the components.
+  - The component styles no longer have vendor prefixes for KaiOS, Opera Mini, UC Browser and QQ Browser. The library does not support these browsers.
   - The minimum versions of the optional peer dependencies are now `dompurify` 3.4.16, `marked` 18.1.0 and `shiki` 4.5.0. [#2450](https://github.com/IgniteUI/igniteui-webcomponents/pull/2450)
 - #### Snackbar, Toast
   - The display time now stops while the pointer is on the component or the keyboard focus is in it. It starts again in full when both leave. Before, the component closed under the pointer, and a keyboard user could lose the snackbar action before they got to it. A pointer click on the action does not keep the component open, also when the action has the keyboard focus. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
@@ -26,6 +32,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A tile is now a region, and the content of its `title` slot gives its name. So screen reader users can move from tile to tile. An `aria-label` or `aria-labelledby` on the tile replaces the title as the name. Before, a tile had no role. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
   - In Chromium, the Tab order and the reading order of screen readers now follow the layout: the `position` of the tiles and the gaps that later tiles fill. Other browsers do not support `reading-flow` yet and keep the DOM order. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
   - `igcTileDragEnd` and `igcTileDragCancel` now fire after the tiles have their new or restored positions, as `igcTileResizeEnd` does. So a handler can call `saveLayout()` and `loadLayout()`. The end or cancel event of a drag still comes before the `igcTileDragStart` of the next drag. Before, the events fired before the view transition applied the positions. So `saveLayout()` returned the old layout, and the transition overwrote the layout from `loadLayout()`. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
+- #### Theming
+  - The component styles no longer declare `--ig-theme` and `--ig-theme-variant`. The library reads the two variables from the document root only. Thus `getComputedStyle()` on a component gives the inherited values, usually the values of the document root.
 
 ### Fixed
 - #### Accordion
@@ -42,6 +50,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A toggle button now forwards a host `aria-labelledby` and `aria-describedby` to its native button. Before, it forwarded only `aria-label`. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
 - #### Calendar
   - A calendar without `activeDate` now gets the active date from its value before the first render, so it renders once. Before, it rendered a second time, and Lit in development mode warned that an update was scheduled after an update completed. [#2423](https://github.com/IgniteUI/igniteui-webcomponents/pull/2423)
+- #### Chat
+  - The chat now creates one object URL for each attached file, and revokes it when you remove the attachment. Before, each render created a new object URL and did not revoke the old one, so the memory use increased.
+  - While the typing indicator or the suggestions show, the message area now scrolls to the bottom only when content is added. Before, each update of the chat scrolled it to the bottom, for example a change of `headerText`, also while the user read earlier messages.
 - #### Checkbox
   - The indicator icon is now hidden from assistive technologies. Before, each checkbox had an unnamed image next to it in the accessibility tree. [#2425](https://github.com/IgniteUI/igniteui-webcomponents/pull/2425)
 - #### Chip
@@ -96,6 +107,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - When the platform closes the dialog of a drawer that stays open, the drawer now opens the dialog again. An example is a second Escape when an `igcClosing` handler cancels the close. When the drawer then closes, the focus goes back to the element that had it when the drawer first opened. Before, `open` stayed `true` with a closed dialog, and `show()` did nothing. [#2440](https://github.com/IgniteUI/igniteui-webcomponents/pull/2440)
   - The host `aria-label`, `aria-labelledby` and `aria-describedby` now name and describe the drawer. `label` still has priority over the host `aria-label`. Before, these attributes stayed on the host, where screen readers did not use them. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
 - #### QR code
+  - Codes of versions 31 and 32 now have their alignment patterns at the positions of ISO/IEC 18004. Before, the last alignment pattern of each row and column was two modules out of position, so a scanner could fail to read these codes.
   - Without `error-level`, a logo larger than the safe area of level `M` now raises the error correction level to the smallest level that holds the logo, as documented. Before, the default `M` always applied, so the logo became smaller. An explicit `error-level`, `M` included, still limits the size of the logo. [#2414](https://github.com/IgniteUI/igniteui-webcomponents/pull/2414)
   - Versions 30 to 40 at the `M` error correction level now use the data codeword counts of ISO/IEC 18004. Before, these codes had the wrong block structure. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
   - A new `aria-label` alone now updates the `<title>` of the code. Before, the title changed only on the next change of a different property. [#2414](https://github.com/IgniteUI/igniteui-webcomponents/pull/2414)
@@ -143,6 +155,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - In the input and the textarea, `setRangeText()` without `start` and `end` now replaces the selected text, as the native method does. Before, it inserted the text at the start of the value. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432) [#2451](https://github.com/IgniteUI/igniteui-webcomponents/pull/2451)
   - In the date picker, the `start` and `end` parameters of `setRangeText()` are now optional, as in the date time input. Without them, the method replaces the selected text. Before, the TypeScript signature required them, although the method worked without them. [#2452](https://github.com/IgniteUI/igniteui-webcomponents/pull/2452)
 - #### Textarea
+  - A change of `minLength` or `maxLength` now updates the validity immediately. Before, the validity changed only at the next change of the value.
   - Whitespace in the default slot, such as the indentation around a slotted helper text, no longer clears the value. Before, it replaced the value from the `value` attribute or the property with an empty string. Whitespace added later cleared the text that the user typed. Projected text still sets the value, and its removal still clears the value. [#2451](https://github.com/IgniteUI/igniteui-webcomponents/pull/2451)
   - The `spellcheck` attribute now works as the native attribute: only `false` turns the spell check off. Before, an empty attribute, such as `<igc-textarea spellcheck>`, and a removed attribute turned it off. [#2451](https://github.com/IgniteUI/igniteui-webcomponents/pull/2451)
 - #### Theming

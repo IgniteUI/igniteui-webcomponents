@@ -10,7 +10,7 @@ import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { addHostListeners } from '#internals/controllers/host-listeners.js';
-import { createResizeObserverController } from '#internals/controllers/resize-observer.js';
+import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -162,14 +162,11 @@ export default class IgcVirtualScrollComponent<
 
   protected readonly _engine = new VirtualScrollEngine();
   private readonly _contentRef = createRef<HTMLDivElement>();
-  private readonly _itemResizeController = createResizeObserverController(
-    this,
-    {
-      callback: this._handleItemResize,
-      target: null,
-      requestUpdate: false,
-    }
-  );
+  private readonly _itemResizeController = addResizeObserverController(this, {
+    callback: this._handleItemResize,
+    target: null,
+    requestUpdate: false,
+  });
 
   private _currentRange: VisibleRange = EMPTY_RANGE;
 
@@ -314,7 +311,7 @@ export default class IgcVirtualScrollComponent<
       options: { passive: true },
     });
 
-    createResizeObserverController(this, {
+    addResizeObserverController(this, {
       callback: this._measureViewport,
     });
   }

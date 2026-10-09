@@ -1,8 +1,11 @@
+@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/light/tree' as *;
 
-$base: digest-schema($light-tree);
-$material: digest-schema($material-tree);
-$bootstrap: digest-schema($bootstrap-tree);
-$fluent: digest-schema($fluent-tree);
-$indigo: digest-schema($indigo-tree);
+// Schema keys the component styles never read.
+$_unused: ('drop-area-color',);
+$base: map.remove(digest-schema($light-tree), $_unused...);
+$material: map.remove(digest-schema($material-tree), $_unused...);
+$bootstrap: map.remove(digest-schema($bootstrap-tree), $_unused...);
+$fluent: map.remove(digest-schema($fluent-tree), $_unused...);
+$indigo: map.remove(digest-schema($indigo-tree), $_unused...);

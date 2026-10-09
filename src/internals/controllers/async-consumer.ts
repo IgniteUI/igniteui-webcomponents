@@ -9,11 +9,10 @@ import { createAbortHandle } from '../abort-handler.js';
 type AsyncContextOptions<T extends Context<unknown, unknown>> = {
   context: T;
   callback?: (value: ContextType<T>, dispose?: () => void) => void;
-  subscribe?: boolean;
 };
 
 /* blazorSuppress */
-export class AsyncContextConsumer<
+class AsyncContextConsumer<
   T extends Context<unknown, unknown>,
   Host extends ReactiveControllerHost & HTMLElement,
 > implements ReactiveController {
@@ -69,7 +68,7 @@ export class AsyncContextConsumer<
         this._answered = true;
         this._options.callback?.(value, dispose);
       },
-      subscribe: this._options.subscribe,
+      subscribe: true,
     });
   }
 
@@ -78,7 +77,7 @@ export class AsyncContextConsumer<
   }
 }
 
-export function createAsyncContext<
+export function addAsyncContextConsumer<
   T extends Context<unknown, unknown>,
   Host extends ReactiveControllerHost & LitElement,
 >(
@@ -86,9 +85,7 @@ export function createAsyncContext<
   context: T,
   callback?: (value: ContextType<T>, dispose?: () => void) => void
 ): AsyncContextConsumer<T, Host> {
-  return new AsyncContextConsumer(host, {
-    context,
-    callback,
-    subscribe: true,
-  });
+  return new AsyncContextConsumer(host, { context, callback });
 }
+
+export type { AsyncContextConsumer };

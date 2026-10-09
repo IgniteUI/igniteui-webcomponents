@@ -21,12 +21,12 @@ import {
   addSafeEventListener,
   getElementFromPath,
 } from '#internals/utils/events.js';
+import { all } from '#themes/tree/themes/item.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcCircularProgressComponent from '../progress/circular-progress.js';
 import { styles } from './themes/item.base.css.js';
-import { all } from './themes/item.js';
 import { styles as shared } from './themes/shared/item.common.css.js';
 import {
   clearTreeItemAria,
@@ -266,7 +266,7 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
     }
     this.tabIndex = 0;
     if (this.tree?.toggleNodeOnClick && event.button === 0) {
-      this.expanded ? this.collapseWithEvent() : this.expandWithEvent();
+      this._toggleWithEvent(!this.expanded);
     }
     this._navService?.setFocusedAndActiveItem(this, true, true);
   }
@@ -275,7 +275,7 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
     if (this.disabled || this.tree?.toggleNodeOnClick) {
       return;
     }
-    this.expanded ? this.collapseWithEvent() : this.expandWithEvent();
+    this._toggleWithEvent(!this.expanded);
   }
 
   private _selectorClick(event: MouseEvent): void {
@@ -283,13 +283,7 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
     if (this.tree?.toggleNodeOnClick) {
       event.stopPropagation();
     }
-    if (event.shiftKey) {
-      this._selectionService?.selectMultipleItems(this);
-      return;
-    }
-    this.selected
-      ? this._selectionService?.deselectItem(this)
-      : this._selectionService?.selectItem(this);
+    this._selectionService?.toggleItem(this, event.shiftKey);
   }
 
   private _onFocus(): void {
@@ -453,35 +447,23 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
    * @hidden @internal
    * Expands the tree item.
    */
-  public async expandWithEvent() {
-    if (
-      this.expanded ||
-      !this.tree?.emitEvent('igcItemExpanding', {
-        detail: this,
-        cancelable: true,
-      })
-    ) {
-      return;
-    }
-
-    if (this.tree?.singleBranchExpand) {
-      this.tree._collapseOtherBranches(this);
-    }
-
-    this.expanded = true;
-    if (await this._toggleAnimation('open')) {
-      this.tree?.emitEvent('igcItemExpanded', { detail: this });
-    }
+  public expandWithEvent(): Promise<void> {
+    return this._toggleWithEvent(true);
   }
 
   /**
    * @hidden @internal
    * Collapses the tree item.
    */
-  public async collapseWithEvent() {
+  public collapseWithEvent(): Promise<void> {
+    return this._toggleWithEvent(false);
+  }
+
+  /** Expands or collapses the item, with the cancelable start event and the end event. */
+  private async _toggleWithEvent(expand: boolean): Promise<void> {
     if (
-      !this.expanded ||
-      !this.tree?.emitEvent('igcItemCollapsing', {
+      this.expanded === expand ||
+      !this.tree?.emitEvent(expand ? 'igcItemExpanding' : 'igcItemCollapsing', {
         detail: this,
         cancelable: true,
       })
@@ -489,9 +471,15 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
       return;
     }
 
-    this.expanded = false;
-    if (await this._toggleAnimation('close')) {
-      this.tree?.emitEvent('igcItemCollapsed', { detail: this });
+    if (expand && this.tree?.singleBranchExpand) {
+      this.tree._collapseOtherBranches(this);
+    }
+
+    this.expanded = expand;
+    if (await this._toggleAnimation(expand ? 'open' : 'close')) {
+      this.tree?.emitEvent(expand ? 'igcItemExpanded' : 'igcItemCollapsed', {
+        detail: this,
+      });
     }
   }
 

@@ -178,8 +178,12 @@ function* getFocusableElements<T extends HTMLElement>(
     if (node.tagName === 'SLOT') {
       const { elements, parent } = getSlottedElements(node);
 
+      // The slotted elements share a parent, so walk it once.
+      if (parent) {
+        yield* getFocusableElements(parent, cache);
+      }
+
       for (const element of elements) {
-        yield* getFocusableElements(parent!, cache);
         cache.add(element);
       }
       continue;

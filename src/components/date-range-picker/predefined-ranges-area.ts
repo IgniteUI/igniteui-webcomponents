@@ -3,7 +3,9 @@ import { property, state } from 'lit/decorators.js';
 import { CalendarDay } from '#internals/date/model.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import { all } from '#themes/date-range-picker/themes/ranges-themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcChipComponent from '../chip/chip.js';
 import type { CustomDateRange, DateRangeValue } from './date-range-picker.js';
 import {
@@ -13,7 +15,6 @@ import {
   type IgcDateRangePickerResourceStrings,
 } from './i18n.js';
 import { styles } from './predefined-ranges-area.base.css.js';
-import { all } from './themes/ranges-themes.js';
 import { styles as shared } from './themes/shared/predefined-ranges-area.common.css.js';
 
 /* blazorSuppress */
@@ -26,7 +27,7 @@ import { styles as shared } from './themes/shared/predefined-ranges-area.common.
  */
 export default class IgcPredefinedRangesAreaComponent extends LitElement {
   public static readonly tagName = 'igc-predefined-ranges-area';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   private readonly _i18nController =
     addI18nController<DateRangeResourceStrings>(this, dateRangeI18nConfig);
@@ -107,24 +108,16 @@ declare global {
   }
 }
 
-type PredefinedRangeKey =
-  | 'last7Days'
-  | 'currentMonth'
-  | 'last30Days'
-  | 'yearToDate';
-
 function getPredefinedRanges(
   resourceStrings: DateRangePickerResourceStringsType
 ): CustomDateRange[] {
   const today = CalendarDay.today;
 
   const ranges: {
-    key: PredefinedRangeKey;
     resourceKey: keyof DateRangePickerResourceStringsType;
     getDateRange: () => { start: Date; end: Date };
   }[] = [
     {
-      key: 'last7Days',
       resourceKey: 'date_range_picker_last7Days',
       getDateRange: () => ({
         start: today.add('day', -7).native,
@@ -132,7 +125,6 @@ function getPredefinedRanges(
       }),
     },
     {
-      key: 'currentMonth',
       resourceKey: 'date_range_picker_currentMonth',
       getDateRange: () => ({
         start: today.set({ date: 1 }).native,
@@ -140,7 +132,6 @@ function getPredefinedRanges(
       }),
     },
     {
-      key: 'last30Days',
       resourceKey: 'date_range_picker_last30Days',
       getDateRange: () => ({
         start: today.add('day', -29).native,
@@ -148,10 +139,9 @@ function getPredefinedRanges(
       }),
     },
     {
-      key: 'yearToDate',
       resourceKey: 'date_range_picker_yearToDate',
       getDateRange: () => ({
-        start: today.set({ year: today.year, month: 0, date: 1 }).native,
+        start: today.set({ month: 0, date: 1 }).native,
         end: today.native,
       }),
     },

@@ -8,12 +8,13 @@ import {
   ariaBindings,
   helperText,
 } from '#internals/controllers/aria-projection.js';
-import { createResizeObserverController } from '#internals/controllers/resize-observer.js';
+import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
 import {
   addSlotController,
+  DefaultSlot,
   type InferSlotNames,
-  type SlotChangeCallbackParameters,
   setSlots,
+  type SlotChangeCallbackParameters,
 } from '#internals/controllers/slot.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
@@ -23,12 +24,14 @@ import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import {
   renderInputShell,
-  resolveInputPartNames,
+  resolveInputPartFlags,
 } from '#internals/templates/input-shell.js';
 import { addSafeEventListener } from '#internals/utils/events.js';
 import { asNumber } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/textarea/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type {
   RangeTextSelectMode,
   SelectionRangeDirection,
@@ -37,7 +40,6 @@ import type {
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles as shared } from './themes/shared/textarea.common.css.js';
 import { styles } from './themes/textarea.base.css.js';
-import { all } from './themes/themes.js';
 import { textAreaValidators } from './validators.js';
 
 export interface IgcTextareaComponentEventMap {
@@ -96,7 +98,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   )
 ) {
   public static readonly tagName = 'igc-textarea';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -124,6 +126,9 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   /** The text of the default slot that was applied last. */
   private _projectedValue = '';
+
+  private _maxLength!: number;
+  private _minLength!: number;
 
   protected override get __validators() {
     return textAreaValidators;
@@ -183,7 +188,14 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
    * @attr maxlength
    */
   @property({ type: Number, attribute: 'maxlength' })
-  public maxLength!: number;
+  public set maxLength(value: number) {
+    this._maxLength = value;
+    this._validate();
+  }
+
+  public get maxLength(): number {
+    return this._maxLength;
+  }
 
   /**
    * The minimum number of characters (UTF-16 code units) required that the user should enter.
@@ -191,7 +203,14 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
    * @attr minlength
    */
   @property({ type: Number, attribute: 'minlength' })
-  public minLength!: number;
+  public set minLength(value: number) {
+    this._minLength = value;
+    this._validate();
+  }
+
+  public get minLength(): number {
+    return this._minLength;
+  }
 
   /**
    * Whether the control will have outlined appearance.
@@ -302,7 +321,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   constructor() {
     super();
 
-    createResizeObserverController(this, {
+    addResizeObserverController(this, {
       callback: this._setAreaHeight,
     });
 
@@ -354,7 +373,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     }
 
     const value = this._slots
-      .getAssignedNodes('[default]', true)
+      .getAssignedNodes(DefaultSlot, true)
       .map((node) => node.textContent?.trim())
       .filter(Boolean)
       .join('\r\n');
@@ -474,11 +493,13 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
       label: this.label,
       labelId: this._inputId,
       containerParts: {
-        ...resolveInputPartNames(this._slots, 'container', !!this.value),
+        container: true,
+        ...resolveInputPartFlags(this._slots, !!this.value),
         placeholder: this._themes.theme === 'material' && !!this.placeholder,
       },
       hideEmptyAffixes: true,
       renderInput: this._renderInput,
+      helperText: IgcValidationContainerComponent.create(this),
     });
   }
 

@@ -6,7 +6,7 @@ import {
   type TileManagerContext,
   tileManagerContext,
 } from '#internals/context.js';
-import { createAsyncContext } from '#internals/controllers/async-consumer.js';
+import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
 import { addFullscreenController } from '#internals/controllers/fullscreen.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
@@ -36,7 +36,9 @@ import { getElementFromPath } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { asNumber } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/tile-manager/themes/tile.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcDividerComponent from '../divider/divider.js';
 import type { TileManagerDragMode, TileManagerResizeMode } from '../types.js';
@@ -44,7 +46,6 @@ import { createTileDragRecord, type TileDragRecord } from './position.js';
 import { createTileResizeState } from './resize-state.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
-import { all } from './themes/tile.js';
 import { createTileDragGhost, createTileGhost } from './tile-ghost-util.js';
 import type IgcTileManagerComponent from './tile-manager.js';
 import { startSizeTransition } from './transitions.js';
@@ -149,7 +150,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(HostAriaMixin(LitElement)) {
   public static readonly tagName = 'igc-tile';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -211,7 +212,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     );
   }
 
-  private readonly _context = createAsyncContext(this, tileManagerContext);
+  private readonly _context = addAsyncContextConsumer(this, tileManagerContext);
 
   /** The context of the manager that lays the tile out: its parent, if any. */
   private get _tileManagerCtx(): TileManagerContext | undefined {
@@ -242,7 +243,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   protected readonly _containerRef = createRef<HTMLElement>();
 
   @query('[part~="base"]', true)
-  public _tileContent!: HTMLElement;
+  private readonly _tileContent!: HTMLElement;
 
   @state()
   private _isDragging = false;

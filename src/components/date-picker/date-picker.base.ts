@@ -1,6 +1,7 @@
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { IgcComboBoxBaseLikeComponent } from '#internals/bases/combo-box.js';
 import { addAriaProjector } from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
@@ -9,12 +10,9 @@ import {
   arrowUp,
   escapeKey,
 } from '#internals/controllers/key-bindings.js';
-import { addRootClickController } from '#internals/controllers/root-click.js';
 import { convertToDate } from '#internals/date/converters.js';
 import { coercedProperty } from '#internals/decorators/coerced-property.js';
-import { IgcComboBoxBaseLikeComponent } from '#internals/mixins/combo-box.js';
-import type { AbstractConstructor } from '#internals/mixins/constructor.js';
-import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import type { UnpackCustomEvent } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
 import { asArray } from '#internals/utils/arrays.js';
@@ -64,7 +62,7 @@ export interface IgcPickerBaseEventMap<T> {
 }
 
 /** The parts of the calendar which the pickers re-export to their own consumers. */
-export const calendarExportParts =
+const calendarExportParts =
   `header, header-title, header-date, content: calendar-content, navigation, months-navigation,
   years-navigation, years-range, navigation-buttons, navigation-button, days-view-container,
   days-view, months-view, years-view, days-row, months-row, years-row, label: calendar-label,
@@ -102,12 +100,19 @@ type PickerSlots = {
  */
 export abstract class IgcDatePickerBaseComponent<
   T extends Date | DateRangeValue,
-> extends FormAssociatedRequiredMixin(
-  EventEmitterMixin<
-    IgcPickerBaseEventMap<Date | DateRangeValue>,
-    AbstractConstructor<IgcComboBoxBaseLikeComponent>
-  >(IgcComboBoxBaseLikeComponent)
-) {
+> extends FormAssociatedRequiredMixin(IgcComboBoxBaseLikeComponent) {
+  /* blazorSuppress */
+  // Typing only: each picker applies `EventEmitterMixin` with its own event map.
+  declare public emitEvent: <
+    K extends keyof IgcPickerBaseEventMap<Date | DateRangeValue>,
+    D extends UnpackCustomEvent<
+      IgcPickerBaseEventMap<Date | DateRangeValue>[K]
+    >,
+  >(
+    event: K,
+    eventInitDict?: CustomEventInit<D>
+  ) => boolean;
+
   //#region Internal state and properties
 
   protected _oldValue: T | null = null;
@@ -121,11 +126,6 @@ export abstract class IgcDatePickerBaseComponent<
   protected _visibleMonths = 1;
   private _weekStart?: WeekDays;
 
-  protected override readonly _rootClickController = addRootClickController(
-    this,
-    { onHide: this._handleClosing }
-  );
-
   @query(IgcCalendarComponent.tagName)
   protected readonly _calendar!: IgcCalendarComponent;
 
@@ -135,6 +135,16 @@ export abstract class IgcDatePickerBaseComponent<
 
   protected get _isMaterial(): boolean {
     return this._themes.theme === 'material';
+  }
+
+  /** Whether a click on the editor or the label opens the dialog. */
+  protected get _opensOnClick(): boolean {
+    return !(this._isDropDown || this.readOnly);
+  }
+
+  /** Whether the calendar ignores input, while the picker is closed or disabled. */
+  protected get _isCalendarInert(): boolean {
+    return !this.open || this.disabled;
   }
 
   /** Dialog mode is always read-only, the rest depends on the configuration. */
@@ -489,12 +499,8 @@ export abstract class IgcDatePickerBaseComponent<
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     super.willUpdate(changedProperties);
 
-    if (changedProperties.has('open')) {
-      this._rootClickController.update();
-
-      if (this.open) {
-        this._oldValue = this._value;
-      }
+    if (changedProperties.has('open') && this.open) {
+      this._oldValue = this._value;
     }
   }
 
@@ -690,14 +696,13 @@ export abstract class IgcDatePickerBaseComponent<
 
   protected _renderCalendar(id: string) {
     const hideHeader = this._isDropDown || this.hideHeader;
-    const isInert = !this.open || this.disabled;
 
     return html`
       <igc-calendar
         aria-labelledby=${id}
         role="dialog"
         selection=${this._calendarSelection}
-        .inert=${isInert}
+        .inert=${this._isCalendarInert}
         ?show-week-numbers=${this.showWeekNumbers}
         ?hide-outside-days=${this.hideOutsideDays}
         ?hide-header=${hideHeader}
@@ -744,8 +749,6 @@ export abstract class IgcDatePickerBaseComponent<
   }
 
   protected _renderPicker(id: string) {
-    const isDisabled = !this.open || this.disabled;
-
     return this._isDropDown
       ? html`
           <igc-popover
@@ -755,7 +758,7 @@ export abstract class IgcDatePickerBaseComponent<
             .scrollStrategy=${this.scrollStrategy}
             @igcPopoverScrollClose=${this._handleClosing}
           >
-            <igc-focus-trap ?disabled=${isDisabled}>
+            <igc-focus-trap ?disabled=${this._isCalendarInert}>
               ${this._renderPickerContent(id)}
             </igc-focus-trap>
           </igc-popover>

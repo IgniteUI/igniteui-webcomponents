@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 
 import { registerComponent } from '#internals/definitions/register.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/card.media.base.css.js';
 
 /**
@@ -22,7 +23,7 @@ import { styles } from './themes/card.media.base.css.js';
  */
 export default class IgcCardMediaComponent extends LitElement {
   public static readonly tagName = 'igc-card-media';
-  public static override styles = styles;
+  public static override styles = [componentBase, styles];
 
   /* blazorSuppress */
   public static register(): void {

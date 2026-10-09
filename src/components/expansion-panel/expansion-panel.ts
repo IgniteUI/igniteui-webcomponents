@@ -21,12 +21,13 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/expansion-panel/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { ExpansionPanelIndicatorPosition } from '../types.js';
 import { styles } from './themes/expansion-panel.base.css.js';
 import { styles as shared } from './themes/shared/expansion-panel.common.css.js';
-import { all } from './themes/themes.js';
 
 export interface IgcExpansionPanelComponentEventMap {
   igcOpening: CustomEvent<IgcExpansionPanelComponent>;
@@ -66,7 +67,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(HostAriaMixin(LitElement)) {
   public static readonly tagName = 'igc-expansion-panel';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

@@ -490,6 +490,42 @@ describe('Stepper', () => {
     });
   });
 
+  describe('Step updates', () => {
+    const indicatorNumbers = () =>
+      stepper.steps.map(
+        (step) =>
+          getStepDOM(step).parts.indicator.querySelector('span')?.textContent
+      );
+
+    beforeEach(async () => {
+      stepper = await fixture(createStepper());
+    });
+
+    it('renumbers every step when a step is inserted first', async () => {
+      const step = document.createElement(IgcStepComponent.tagName);
+      step.innerHTML = '<span slot="title">Step 0</span>';
+
+      stepper.prepend(step);
+      await elementUpdated(stepper);
+      await Promise.all(stepper.steps.map((step) => step.updateComplete));
+
+      expect(indicatorNumbers()).to.eql(['1', '2', '3', '4', '5', '6']);
+    });
+
+    it('updates only the steps whose state changes', async () => {
+      const updates = stepper.steps.map((step) =>
+        spy(step as unknown as { update(): void }, 'update')
+      );
+
+      stepper.steps[1].complete = true;
+      await elementUpdated(stepper);
+      await Promise.all(stepper.steps.map((step) => step.updateComplete));
+
+      // The step itself, and the next one for its `previousCompleted` state.
+      expect(updates.map((update) => update.callCount)).to.eql([0, 1, 1, 0, 0]);
+    });
+  });
+
   describe('Linear mode', () => {
     beforeEach(async () => {
       stepper = await fixture(createLinearStepper());

@@ -6,8 +6,8 @@ import { html, type PropertyValues, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
+import { IgcBaseComboBoxComponent } from '#internals/bases/combo-box.js';
 import { addAriaProjector } from '#internals/controllers/aria-projection.js';
-import { addRootClickController } from '#internals/controllers/root-click.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
@@ -15,7 +15,6 @@ import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
-import { IgcBaseComboBoxComponent } from '#internals/mixins/combo-box.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
@@ -31,7 +30,9 @@ import {
 } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
 import type { Validator } from '#internals/validators.js';
+import { all } from '#themes/combo/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
@@ -44,7 +45,6 @@ import { DataState } from './controllers/data.js';
 import { ComboNavigationController } from './controllers/navigation.js';
 import { styles } from './themes/combo.base.css.js';
 import { styles as shared } from './themes/shared/combo.common.css.js';
-import { all } from './themes/themes.js';
 import type {
   ComboItemTemplate,
   ComboRecord,
@@ -143,7 +143,7 @@ export default class IgcComboComponent<
   i18n
 ) {
   public static readonly tagName = 'igc-combo';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -166,13 +166,6 @@ export default class IgcComboComponent<
   }
 
   private readonly _slots = addSlotController(this, { slots: SLOTS });
-
-  protected override readonly _rootClickController = addRootClickController(
-    this,
-    {
-      onHide: this._handleClosing,
-    }
-  );
 
   protected override readonly _formValue = createFormValueState<
     ComboValue<T>[]
@@ -566,9 +559,7 @@ export default class IgcComboComponent<
   }
 
   protected override willUpdate(props: PropertyValues<this>): void {
-    if (props.has('open')) {
-      this._rootClickController.update();
-    }
+    super.willUpdate(props);
 
     if (
       props.has('groupKey') ||
@@ -743,33 +734,22 @@ export default class IgcComboComponent<
       ? asArray(items).slice(0, 1)
       : asArray(items);
 
-    if (isEmpty(collection)) {
-      if (selecting) {
-        this._selected = singleSelect ? new Set() : new Set(this.data);
+    if (isEmpty(collection) && selecting) {
+      // Selects all items without an event, or clears a single selection.
+      this._selected = singleSelect ? new Set() : new Set(this.data);
 
-        if (singleSelect) {
-          this._searchTerm = '';
-        }
-      } else {
-        if (
-          emit &&
-          !this._emitSelectionChange({
-            newValue: [],
-            items: this.selection,
-            type,
-          })
-        ) {
-          return false;
-        }
-
-        this._selected.clear();
+      if (singleSelect) {
+        this._searchTerm = '';
       }
 
       this.requestUpdate();
       return true;
     }
 
-    const resolved = this._resolveItems(collection);
+    // An empty deselection deselects every selected item.
+    const resolved = isEmpty(collection)
+      ? this.selection
+      : this._resolveItems(collection);
 
     if (
       emit &&

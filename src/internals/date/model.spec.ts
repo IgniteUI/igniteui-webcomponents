@@ -1,7 +1,9 @@
 import { expect } from '@open-wc/testing';
+import { fourDigitYearDate } from '../testing/date-arbitraries.spec.js';
+import { fc } from '../testing/fast-check-setup.spec.js';
 
 import { firstOf, lastOf } from '../utils/arrays.js';
-import { CalendarDay, calendarRange } from './model.js';
+import { CalendarDay, calendarRange, createDate } from './model.js';
 
 describe('Calendar day model', () => {
   describe('Basic API', () => {
@@ -132,6 +134,39 @@ describe('Calendar day model', () => {
 
       // April does not have 31 days so clamp to the last day of April
       expect([year, month, date]).to.eql([2024, 3, 30]);
+    });
+  });
+
+  describe('equalTo', () => {
+    it('compares a `Date` by its calendar day, ignoring the time', () => {
+      const day = new CalendarDay({ year: 2024, month: 2, date: 31 });
+
+      expect(day.equalTo(new Date(2024, 2, 31, 23, 59, 59, 999))).to.be.true;
+      expect(day.equalTo(new Date(2024, 2, 31))).to.be.true;
+      expect(day.equalTo(new Date(2024, 3, 1))).to.be.false;
+      expect(day.equalTo(new Date(2023, 2, 31))).to.be.false;
+    });
+
+    it('compares a `Date` of a year below 100', () => {
+      const early = createDate(42, 5, 15);
+
+      expect(new CalendarDay({ year: 42, month: 5, date: 15 }).equalTo(early))
+        .to.be.true;
+      expect(new CalendarDay({ year: 1942, month: 5, date: 15 }).equalTo(early))
+        .to.be.false;
+    });
+
+    it('agrees with the timestamp comparison for any two dates', () => {
+      fc.assert(
+        fc.property(fourDigitYearDate, fourDigitYearDate, (a, b) => {
+          const day = CalendarDay.from(a);
+
+          expect(day.equalTo(b)).to.equal(
+            day.timestamp === CalendarDay.from(b).timestamp
+          );
+          expect(day.equalTo(a)).to.be.true;
+        })
+      );
     });
   });
 

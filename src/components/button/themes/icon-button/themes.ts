@@ -1,6 +1,4 @@
-import { css } from 'lit';
-
-import type { Themes } from '#theming/types.js';
+import type { ComponentThemes } from '#theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/icon-button.bootstrap.css.js';
 import { styles as fluentDark } from './dark/icon-button.fluent.css.js';
@@ -18,33 +16,17 @@ import { styles as indigo } from './shared/icon-button.indigo.css.js';
 import { styles as material } from './shared/icon-button.material.css.js';
 
 const light = {
-  bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
-  `,
-  material: css`
-    ${material} ${materialLight}
-  `,
-  fluent: css`
-    ${fluent} ${fluentLight}
-  `,
-  indigo: css`
-    ${indigo} ${indigoLight}
-  `,
+  bootstrap: [bootstrap, bootstrapLight],
+  material: [material, materialLight],
+  fluent: [fluent, fluentLight],
+  indigo: [indigo, indigoLight],
 };
 
 const dark = {
-  bootstrap: css`
-    ${bootstrap} ${bootstrapDark}
-  `,
-  material: css`
-    ${material} ${materialDark}
-  `,
-  fluent: css`
-    ${fluent} ${fluentDark}
-  `,
-  indigo: css`
-    ${indigo} ${indigoDark}
-  `,
+  bootstrap: [bootstrap, bootstrapLight, bootstrapDark],
+  material: [material, materialLight, materialDark],
+  fluent: [fluent, fluentLight, fluentDark],
+  indigo: [indigo, indigoLight, indigoDark],
 };
 
-export const all: Themes = { light, dark };
+export const all: ComponentThemes = { light, dark };

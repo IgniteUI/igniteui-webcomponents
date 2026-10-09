@@ -6,7 +6,11 @@ import { addAnimationController } from '#animations/player.js';
 import { fadeOut } from '#animations/presets/fade/index.js';
 import { scaleInCenter } from '#animations/presets/scale/index.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
-import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  addSlotController,
+  DefaultSlot,
+  setSlots,
+} from '#internals/controllers/slot.js';
 import {
   coercedProperty,
   type CoercedPropertyConfig,
@@ -17,7 +21,9 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { isElement, isLTR } from '#internals/utils/dom.js';
 import { asNumber } from '#internals/utils/math.js';
+import { all } from '#themes/tooltip/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
@@ -25,7 +31,6 @@ import IgcPopoverComponent, {
 import type { PopoverScrollStrategy } from '../types.js';
 import { addTooltipController } from './controller.js';
 import { styles as shared } from './themes/shared/tooltip.common.css.js';
-import { all } from './themes/themes.js';
 import { styles } from './themes/tooltip.base.css.js';
 
 export interface IgcTooltipComponentEventMap {
@@ -67,7 +72,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-tooltip';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /** Shared config for the delay properties - a negative delay is no delay. */
   private static readonly _delay: CoercedPropertyConfig<
@@ -153,7 +158,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    */
   private get _hasProjectedContent(): boolean {
     return this._slots
-      .getAssignedNodes('[default]')
+      .getAssignedNodes(DefaultSlot)
       .some(
         (node) =>
           isElement(node) ||
@@ -384,6 +389,41 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     this._settleState(state, this._abortTransition());
   }
 
+  /** Animates to `show`. Gives `false` when a newer transition supersedes it. */
+  private async _commitTransition(
+    show: boolean,
+    withEvents: boolean,
+    id: number
+  ): Promise<boolean> {
+    if (show) {
+      this.open = true;
+    }
+
+    // Ignore interactions during the animation. This stops a show/hide loop
+    // when the popover overlaps its anchor.
+    this.inert = true;
+    this._animating = true;
+
+    const animationComplete = await this._player.playExclusive(
+      show ? this._showAnimation : this._hideAnimation
+    );
+
+    // Superseded while animating - the newer transition owns the state now.
+    if (id !== this._transitionId) {
+      return false;
+    }
+
+    this._animating = false;
+    this.inert = false;
+    this.open = show;
+
+    if (animationComplete && withEvents) {
+      this._emitEvent(show ? 'igcOpened' : 'igcClosed');
+    }
+
+    return animationComplete;
+  }
+
   private async _applyTooltipState({
     show,
     withDelay = false,
@@ -410,45 +450,15 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
     const id = this._transitionId;
 
-    const commitStateChange = async () => {
-      if (show) {
-        this.open = true;
-      }
-
-      // Ignore interactions during the animation. This stops a show/hide loop
-      // when the popover overlaps its anchor.
-      this.inert = true;
-      this._animating = true;
-
-      const animationComplete = await this._player.playExclusive(
-        show ? this._showAnimation : this._hideAnimation
-      );
-
-      // Superseded while animating - the newer transition owns the state now.
-      if (id !== this._transitionId) {
-        return false;
-      }
-
-      this._animating = false;
-      this.inert = false;
-      this.open = show;
-
-      if (animationComplete && withEvents) {
-        this._emitEvent(show ? 'igcOpened' : 'igcClosed');
-      }
-
-      return animationComplete;
-    };
-
     if (!withDelay) {
-      return commitStateChange();
+      return this._commitTransition(show, withEvents, id);
     }
 
     return new Promise<boolean>((resolve) => {
       const timer = setTimeout(
         () => {
           this._pending = undefined;
-          commitStateChange().then(resolve);
+          this._commitTransition(show, withEvents, id).then(resolve);
         },
         show ? this.showDelay : this.hideDelay
       );

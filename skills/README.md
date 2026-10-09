@@ -1,27 +1,27 @@
 # LLM Agent Skills for End Users
 
-This directory contains skills for GitHub Copilot and other LLM agents to help developers use Ignite UI Web Components effectively in their applications.
+This directory contains skills for GitHub Copilot and other LLM agents. The skills help developers use Ignite UI Web Components in their applications.
 
 ## What are Skills?
 
-Skills are structured instructions that help AI agents understand and execute common tasks consistently. Each skill is a self-contained guide that provides step-by-step instructions, code examples, and best practices.
+Skills are structured instructions that help AI agents understand and do common tasks consistently. Each skill is a self-contained guide that gives step-by-step instructions, code examples, and best practices.
 
 ## Available Skills
 
 | Skill                                                       | Description                                                                        | Use When                              |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------- |
-| [igniteui-wc-choose-components](./igniteui-wc-choose-components/SKILL.md)                   | Identify the right components for a UI pattern and navigate to official docs/demos | Deciding which components to use      |
-| [igniteui-wc-integrate-with-framework](./igniteui-wc-integrate-with-framework/SKILL.md)     | Integrate components into React, Angular, Vue, or vanilla JS applications          | Setting up components in your project |
-| [igniteui-wc-customize-component-theme](./igniteui-wc-customize-component-theme/SKILL.md)   | Customize styling using CSS custom properties, parts, and theming system           | Applying custom brand colors/styles   |
-| [igniteui-wc-generate-from-image-design](./igniteui-wc-generate-from-image-design/SKILL.md) | Implement a view from a screenshot or mockup using Ignite UI Web Components        | Converting a design image into UI     |
-| [igniteui-wc-figma-to-app](./igniteui-wc-figma-to-app/SKILL.md)                             | Translate Figma screens from any UI kit (Indigo.Design, third-party, or plain frames) into a working app | Implementing a design from a Figma file |
-| [igniteui-wc-optimize-bundle-size](./igniteui-wc-optimize-bundle-size/SKILL.md)             | Reduce bundle size by importing only needed components and lazy loading            | Optimizing production performance     |
-| [igniteui-wc-migrate-grid-lite-to-premium](./igniteui-wc-migrate-grid-lite-to-premium/SKILL.md) | Migrate from Grid Lite to the premium Data Grid                                 | Adopting enterprise grid features     |
-| [igniteui-wc-grids](./igniteui-wc-grids/SKILL.md)                               | Set up a grid: package choice, theming, Shadow DOM, layout, sorting/filtering       | Adding or debugging a grid in an app   |
+| [igniteui-wc-choose-components](./igniteui-wc-choose-components/SKILL.md)                   | Identify the correct components for a UI pattern and find the official docs/demos  | Deciding which components to use      |
+| [igniteui-wc-integrate-with-framework](./igniteui-wc-integrate-with-framework/SKILL.md)     | Integrate components into React, Angular, Vue, or vanilla JS applications          | Adding components to your project     |
+| [igniteui-wc-customize-component-theme](./igniteui-wc-customize-component-theme/SKILL.md)   | Customize styles with CSS custom properties, parts, and the theming system         | Applying custom brand colors/styles   |
+| [igniteui-wc-generate-from-image-design](./igniteui-wc-generate-from-image-design/SKILL.md) | Implement a view from a screenshot or mockup with Ignite UI Web Components         | Converting a design image into UI     |
+| [igniteui-wc-figma-to-app](./igniteui-wc-figma-to-app/SKILL.md)                             | Convert Figma screens from any UI kit (Indigo.Design, third-party, or plain frames) into a working app | Implementing a design from a Figma file |
+| [igniteui-wc-optimize-bundle-size](./igniteui-wc-optimize-bundle-size/SKILL.md)             | Import only the necessary components and use lazy loading to reduce bundle size    | Optimizing production performance     |
+| [igniteui-wc-migrate-grid-lite-to-premium](./igniteui-wc-migrate-grid-lite-to-premium/SKILL.md) | Migrate from Grid Lite to the premium Data Grid                                 | Using enterprise grid features        |
+| [igniteui-wc-grids](./igniteui-wc-grids/SKILL.md)                               | Configure a grid: package choice, theming, Shadow DOM, layout, sorting/filtering    | Adding or debugging a grid in an app   |
 
 ## How to Use
 
-When working with an AI agent like GitHub Copilot, reference skills by name or ask questions naturally:
+With an AI agent such as GitHub Copilot, ask questions in plain language or refer to skills by name:
 
 ### Natural Questions
 - "How do I integrate igniteui-webcomponents with React?"
@@ -44,7 +44,7 @@ Each skill contains:
 
 - **Example Usage**: Common questions or scenarios
 - **When to Use**: Situations where the skill applies
-- **Related Skills**: Other relevant skills to explore
+- **Related Skills**: Other relevant skills
 - **Step-by-Step Instructions**: Detailed guidance with code examples
 - **Framework-Specific Examples**: React, Angular, Vue, and vanilla JS patterns
 - **Common Issues & Solutions**: Troubleshooting guidance
@@ -53,9 +53,9 @@ Each skill contains:
 
 ## Contributing
 
-If you identify gaps in the skills or have suggestions for improvements:
+If you find gaps in the skills or have suggestions for improvements:
 
-1. [Open an issue](https://github.com/IgniteUI/igniteui-webcomponents/issues) describing the improvement
+1. [Open an issue](https://github.com/IgniteUI/igniteui-webcomponents/issues) that describes the improvement
 2. Submit a pull request with the proposed changes
 
 ## Additional Resources
@@ -67,4 +67,4 @@ If you identify gaps in the skills or have suggestions for improvements:
 
 ## License
 
-These skills are provided under the same license as the Ignite UI Web Components library. See [LICENSE](../LICENSE) for details.
+These skills use the same license as the Ignite UI Web Components library. See [LICENSE](../LICENSE) for details.

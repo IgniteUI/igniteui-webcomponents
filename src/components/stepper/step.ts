@@ -8,13 +8,15 @@ import {
   ariaBindings,
   hostAria,
 } from '#internals/controllers/aria-projection.js';
-import { createAsyncContext } from '#internals/controllers/async-consumer.js';
+import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/stepper/themes/step/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type {
   HorizontalTransitionAnimation,
   StepperOrientation,
@@ -28,7 +30,6 @@ import type { StepperState } from './common/state.js';
 import type IgcStepperComponent from './stepper.js';
 import { styles as shared } from './themes/step/shared/step.common.css.js';
 import { styles } from './themes/step/step.base.css.js';
-import { all } from './themes/step/themes.js';
 
 const nextId = createIdGenerator('igc-step');
 
@@ -99,7 +100,7 @@ const nextId = createIdGenerator('igc-step');
  */
 export default class IgcStepComponent extends HostAriaMixin(LitElement) {
   public static readonly tagName = 'igc-step';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -258,7 +259,7 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
     super();
 
     addThemingController(this, all);
-    createAsyncContext(this, STEPPER_CONTEXT, (context) => {
+    addAsyncContextConsumer(this, STEPPER_CONTEXT, (context) => {
       this._stepperContext = context;
     });
   }
@@ -283,8 +284,8 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
     type: 'in' | 'out',
     direction: 'normal' | 'reverse' = 'normal'
   ) {
-    const bodyAnimation = bodyAnimations.get(this._animation)!.get(type)!;
-    const contentAnimation = contentAnimations.get(this._animation)!.get(type)!;
+    const bodyAnimation = bodyAnimations[this._animation][type];
+    const contentAnimation = contentAnimations[this._animation][type];
     const bodyHeight = getComputedStyle(this).getPropertyValue(
       '--vertical-body-height'
     );
@@ -295,17 +296,9 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
       direction,
     };
 
-    const step = {
-      height: bodyHeight,
-    };
-
     const result = await Promise.all([
-      this._bodyPlayer.playExclusive(
-        bodyAnimation({ keyframe: options, step })
-      ),
-      this._contentPlayer.playExclusive(
-        contentAnimation({ keyframe: options, step })
-      ),
+      this._bodyPlayer.playExclusive(bodyAnimation(options, bodyHeight)),
+      this._contentPlayer.playExclusive(contentAnimation(options, bodyHeight)),
     ]);
 
     return result.every(Boolean);

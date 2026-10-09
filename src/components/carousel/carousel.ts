@@ -27,9 +27,10 @@ import {
 } from '#internals/controllers/mutation-observer.js';
 import {
   addSlotController,
+  DefaultSlot,
   type InferSlotNames,
-  type SlotChangeCallbackParameters,
   setSlots,
+  type SlotChangeCallbackParameters,
 } from '#internals/controllers/slot.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
@@ -48,7 +49,9 @@ import {
 } from '#internals/utils/events.js';
 import { asNumber, wrap } from '#internals/utils/math.js';
 import { createIdGenerator, formatString } from '#internals/utils/strings.js';
+import { all } from '#themes/carousel/themes/container.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcIconComponent from '../icon/icon.js';
 import type {
@@ -59,7 +62,6 @@ import IgcCarouselIndicatorContainerComponent from './carousel-indicator-contain
 import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
 import { styles } from './themes/carousel.base.css.js';
-import { all } from './themes/container.js';
 import { styles as shared } from './themes/shared/carousel.common.css.js';
 
 export interface IgcCarouselComponentEventMap {
@@ -104,7 +106,7 @@ export default class IgcCarouselComponent extends I18nMixin(
   ),
   i18n
 ) {
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
   public static readonly tagName = 'igc-carousel';
 
   /* blazorSuppress */
@@ -370,10 +372,26 @@ export default class IgcCarouselComponent extends I18nMixin(
     addKeybindings(this, {
       ref: this._indicatorsContainerRef,
     })
-      .set(arrowLeft, this._handleArrowLeft)
-      .set(arrowRight, this._handleArrowRight)
-      .set(homeKey, this._handleHomeKey)
-      .set(endKey, this._handleEndKey);
+      .set(arrowLeft, () =>
+        this._handleIndicatorKey(isLTR(this) ? this.prev : this.next)
+      )
+      .set(arrowRight, () =>
+        this._handleIndicatorKey(isLTR(this) ? this.next : this.prev)
+      )
+      .set(homeKey, () =>
+        this._handleIndicatorKey(() =>
+          this.select(
+            isLTR(this) ? firstOf(this._slides) : lastOf(this._slides)
+          )
+        )
+      )
+      .set(endKey, () =>
+        this._handleIndicatorKey(() =>
+          this.select(
+            isLTR(this) ? lastOf(this._slides) : firstOf(this._slides)
+          )
+        )
+      );
 
     addKeybindings(this, {
       ref: this._prevButtonRef,
@@ -471,7 +489,7 @@ export default class IgcCarouselComponent extends I18nMixin(
       const previousSlide = this._activeSlide;
       const previousIndex = this.current;
 
-      this._slides = this._slots.getAssignedElements('[default]', {
+      this._slides = this._slots.getAssignedElements(DefaultSlot, {
         selector: IgcCarouselSlideComponent.tagName,
       });
 
@@ -522,28 +540,9 @@ export default class IgcCarouselComponent extends I18nMixin(
 
   //#region Keyboard event listeners
 
-  private _handleArrowLeft(): void {
+  private _handleIndicatorKey(navigate: () => Promise<boolean>): void {
     this._hasKeyboardInteractionOnIndicators = true;
-    this._handleInteraction(isLTR(this) ? this.prev : this.next);
-  }
-
-  private _handleArrowRight(): void {
-    this._hasKeyboardInteractionOnIndicators = true;
-    this._handleInteraction(isLTR(this) ? this.next : this.prev);
-  }
-
-  private _handleHomeKey(): void {
-    this._hasKeyboardInteractionOnIndicators = true;
-    this._handleInteraction(() =>
-      this.select(isLTR(this) ? firstOf(this._slides) : lastOf(this._slides))
-    );
-  }
-
-  private _handleEndKey(): void {
-    this._hasKeyboardInteractionOnIndicators = true;
-    this._handleInteraction(() =>
-      this.select(isLTR(this) ? lastOf(this._slides) : firstOf(this._slides))
-    );
+    this._handleInteraction(navigate);
   }
 
   //#endregion

@@ -846,4 +846,72 @@ describe('Tree Selection', () => {
       expect(treeSelectionService.isItemSelected(newParent)).to.be.true;
     });
   });
+
+  describe('Cascade - items added after the first render', () => {
+    const byLabel = (label: string) =>
+      tree.items.find((item) => item.label === label)!;
+
+    function createItem(label: string, selected = false): IgcTreeItemComponent {
+      const item = tree.ownerDocument.createElement(
+        IgcTreeItemComponent.tagName
+      );
+      item.label = label;
+      item.selected = selected;
+      return item;
+    }
+
+    beforeEach(async () => {
+      tree = await TreeTestFunctions.createTreeElement(cascadeSelectionTree);
+      treeSelectionService = tree.selectionService;
+    });
+
+    it('selects the unselected children of a selected subtree added at once', async () => {
+      const parent = createItem('Added', true);
+      const child = createItem('Added child');
+      parent.append(child);
+
+      byLabel('Tree Item 2.2').append(parent);
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyItemSelection(parent, true);
+      TreeTestFunctions.verifyItemSelection(child, true);
+      expect(byLabel('Tree Item 2.2').indeterminate).to.be.false;
+      TreeTestFunctions.verifyItemSelection(byLabel('Tree Item 2.2'), true);
+      expect(byLabel('Tree Item 2').indeterminate).to.be.true;
+    });
+
+    it('reconciles the ancestors once for many children added at once', async () => {
+      const parent = byLabel('Tree Item 1.2');
+      const children = Array.from({ length: 50 }, (_, i) =>
+        createItem(`Added ${i}`)
+      );
+
+      parent.append(...children);
+
+      // A read resolves the pending ancestors first.
+      expect(treeSelectionService.isItemSelected(parent)).to.be.false;
+      expect(treeSelectionService.isItemIndeterminate(parent)).to.be.false;
+      expect(treeSelectionService.isItemIndeterminate(byLabel('Tree Item 1')))
+        .to.be.true;
+
+      await elementUpdated(tree);
+
+      expect(parent.selected).to.be.false;
+      expect(byLabel('Tree Item 1').indeterminate).to.be.true;
+      expect(children.every((child) => !child.selected)).to.be.true;
+    });
+
+    it('keeps a selection made right after items were added', async () => {
+      const parent = byLabel('Tree Item 2.3');
+      const added = createItem('Added');
+
+      parent.append(added);
+      tree.select([added]);
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyItemSelection(added, true);
+      TreeTestFunctions.verifyItemSelection(parent, true);
+      expect(byLabel('Tree Item 2').indeterminate).to.be.true;
+    });
+  });
 });

@@ -2,16 +2,21 @@ import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { createMutationController } from '#internals/controllers/mutation-observer.js';
-import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  addSlotController,
+  DefaultSlot,
+  setSlots,
+} from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { isDefined } from '#internals/utils/types.js';
+import { all } from '#themes/radio-group/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcRadioComponent from '../radio/radio.js';
 import type { ContentOrientation } from '../types.js';
 import { styles } from './themes/radio-group.base.css.js';
 import { styles as shared } from './themes/shared/radio-group.common.css.js';
-import { all } from './themes/themes.js';
 
 /**
  * Unifies one or more radio components into a single group.
@@ -23,7 +28,7 @@ import { all } from './themes/themes.js';
  */
 export default class IgcRadioGroupComponent extends LitElement {
   public static readonly tagName = 'igc-radio-group';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -47,7 +52,7 @@ export default class IgcRadioGroupComponent extends LitElement {
   private _pendingValue = '';
 
   private get _radios(): IgcRadioComponent[] {
-    return this._slots.getAssignedElements<IgcRadioComponent>('[default]', {
+    return this._slots.getAssignedElements<IgcRadioComponent>(DefaultSlot, {
       selector: IgcRadioComponent.tagName,
       flatten: true,
     });

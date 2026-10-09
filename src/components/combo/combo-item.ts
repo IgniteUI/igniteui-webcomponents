@@ -3,16 +3,17 @@ import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/dropdown/themes/item.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
-import { all } from '../dropdown/themes/item.js';
 import { styles as shared } from '../dropdown/themes/shared/item/dropdown-item.common.css.js';
 import { styles } from './themes/combo-item.base.css.js';
 
 /* blazorSuppress */
 export default class IgcComboItemComponent extends LitElement {
   public static readonly tagName = 'igc-combo-item';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

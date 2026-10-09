@@ -4,6 +4,7 @@ import { trackLabels } from '../../controllers/aria-projection.js';
 import { addInternalsController } from '../../controllers/internals.js';
 import { enterKey, isKey } from '../../controllers/keys.js';
 import { addSafeEventListener, preventDefault } from '../../utils/events.js';
+import { getOrInsertComputed } from '../../utils/objects.js';
 import { isFunction, isString } from '../../utils/types.js';
 import type { Validator } from '../../validators.js';
 import type { Constructor } from '../constructor.js';
@@ -56,8 +57,7 @@ function trackFormMethod(
   const original = prototype[method];
 
   prototype[method] = function (this: HTMLFormElement, ...args: unknown[]) {
-    const checks = formChecks.get(this) ?? [];
-    formChecks.set(this, checks);
+    const checks = getOrInsertComputed(formChecks, this, () => []);
     checks.push(check);
 
     try {

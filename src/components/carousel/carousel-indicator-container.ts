@@ -2,10 +2,11 @@ import { html, LitElement } from 'lit';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
+import { all } from '#themes/carousel/themes/indicator-container.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import { styles } from './themes/carousel-indicator-container.base.css.js';
-import { all } from './themes/indicator-container.js';
 import { styles as shared } from './themes/shared/indicator-container/indicator-container.common.css.js';
 
 /* blazorSuppress */
@@ -18,7 +19,7 @@ import { styles as shared } from './themes/shared/indicator-container/indicator-
  */
 export default class IgcCarouselIndicatorContainerComponent extends LitElement {
   public static readonly tagName = 'igc-carousel-indicator-container';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

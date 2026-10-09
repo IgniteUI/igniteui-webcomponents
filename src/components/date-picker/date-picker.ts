@@ -25,7 +25,9 @@ import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { firstOf } from '#internals/utils/arrays.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/date-picker/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { CalendarSelection } from '../calendar/types.js';
 import type { DatePart } from '../date-time-input/date-part.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
@@ -38,7 +40,6 @@ import {
 } from './date-picker.base.js';
 import { styles } from './themes/date-picker.base.css.js';
 import { styles as shared } from './themes/shared/date-picker.common.css.js';
-import { all } from './themes/themes.js';
 import { datePickerValidators } from './validators.js';
 
 export type IgcDatePickerComponentEventMap = IgcPickerBaseEventMap<Date>;
@@ -151,7 +152,7 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
   AbstractConstructor<IgcDatePickerBaseComponent<Date>>
 >(IgcDatePickerBaseComponent) {
   public static readonly tagName = 'igc-date-picker';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -431,14 +432,12 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
   //#region Render methods
 
   private _renderLabel(id: string) {
-    const isDisabled = this._isDropDown || this.readOnly;
-
     return this.label
       ? html`
           <label
             part="label"
             for=${id}
-            @click=${bindIf(!isDisabled, this._handleAnchorClick)}
+            @click=${bindIf(this._opensOnClick, this._handleAnchorClick)}
           >
             ${this.label}
           </label>
@@ -448,7 +447,6 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
 
   protected _renderInput(id: string) {
     const format = getDateTimeFormat(this._displayFormat);
-    const hasClickHandler = !(this._isDropDown || this.readOnly);
 
     return html`
       <igc-date-time-input
@@ -470,7 +468,7 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
         @igcChange=${this._handleInputChangeEvent}
         @igcInput=${this._handleInputEvent}
         @keydown=${this._handleEnterKeydown}
-        @click=${bindIf(hasClickHandler, this._handleInputClick)}
+        @click=${bindIf(this._opensOnClick, this._handleInputClick)}
         exportparts="container, input, label, prefix, suffix"
       >
         ${this._renderEditorSlots()}

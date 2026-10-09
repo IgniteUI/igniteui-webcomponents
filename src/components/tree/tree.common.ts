@@ -1,5 +1,6 @@
 import { HOST_ARIA_ATTRIBUTES } from '#internals/mixins/host-aria.js';
 import { setOrRemoveAttribute } from '#internals/utils/dom.js';
+import { getOrInsertComputed } from '#internals/utils/objects.js';
 import type { RequiredProps } from '#internals/utils/types.js';
 import type IgcTreeItemComponent from './tree-item.js';
 
@@ -67,8 +68,7 @@ export function clearTreeItemAria(element: Element): void {
 
 /** Copies the host ARIA to the element with the role, but keeps its own. @internal */
 export function copyHostAria(host: Element, delegate: Element): void {
-  const copied = copiedAria.get(delegate) ?? new Map<string, string>();
-  copiedAria.set(delegate, copied);
+  const copied = getOrInsertComputed(copiedAria, delegate, () => new Map());
 
   for (const name of HOST_ARIA_ATTRIBUTES) {
     const current = delegate.getAttribute(name);

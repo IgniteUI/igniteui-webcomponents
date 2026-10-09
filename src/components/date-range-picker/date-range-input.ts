@@ -6,16 +6,20 @@ import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateRangeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { all } from '#themes/input/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import {
   type DatePart,
   type DatePartDeltas,
   DatePartType,
 } from '../date-time-input/date-part.js';
-import { IgcDateTimeInputBaseComponent } from '../date-time-input/date-time-input.base.js';
+import {
+  IgcDateTimeInputBaseComponent,
+  type PartDirection,
+} from '../date-time-input/date-time-input.base.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
-import { all } from '../input/themes/themes.js';
 import type { DateRangeValue } from '../types.js';
 import {
   DateRangeMaskParser,
@@ -38,10 +42,12 @@ export interface IgcDateRangeInputComponentEventMap {
 /* blazorSuppress */
 export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   IgcDateRangeInputComponentEventMap,
-  AbstractConstructor<IgcDateTimeInputBaseComponent<DateRangeValue>>
+  AbstractConstructor<
+    IgcDateTimeInputBaseComponent<DateRangeValue, DateRangePart>
+  >
 >(IgcDateTimeInputBaseComponent) {
   public static readonly tagName = 'igc-date-range-input';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -111,15 +117,14 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
 
   protected override _calculatePartNavigationPosition(
     inputValue: string,
-    direction: number
+    direction: PartDirection
   ): number {
     const cursorPos = this._maskSelection.start;
     const rangeParts = this._parser.parts;
 
     const currentPart = this._parser.getPartForCursor(cursorPos);
 
-    if (direction === 0) {
-      // Backward.
+    if (direction === 'back') {
       if (currentPart && cursorPos !== currentPart.start) {
         return currentPart.start;
       }
@@ -129,7 +134,6 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
       return prevPart?.start ?? 0;
     }
 
-    // Forward.
     if (currentPart && cursorPos !== currentPart.end) {
       return currentPart.end;
     }
@@ -144,9 +148,9 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   // #region Internal API Overrides
 
   protected override _performStep(
-    datePart: unknown,
+    datePart: DateRangePart | undefined,
     delta: number | undefined,
-    isDecrement: boolean
+    sign: 1 | -1
   ): boolean {
     // With no value, start from today.
     const current = this._uncommittedValue;
@@ -161,7 +165,7 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
       return true;
     }
 
-    return super._performStep(datePart, delta, isDecrement);
+    return super._performStep(datePart, delta, sign);
   }
 
   protected override _buildDisplayValue(): string {
@@ -174,11 +178,10 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   }
 
   protected override _calculateSpunValue(
-    datePart: unknown,
+    range: DateRangePart,
     delta: number | undefined,
-    isDecrement: boolean
+    sign: 1 | -1
   ): DateRangeValue {
-    const range = datePart as DateRangePart;
     const part = this._parser.getPartByTypeAndPosition(
       range.part as DatePartType,
       range.position
@@ -193,7 +196,7 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
 
     const effectiveDelta =
       delta ?? this._datePartDeltas[range.part as keyof DatePartDeltas] ?? 1;
-    const spinAmount = effectiveDelta * (isDecrement ? -1 : 1);
+    const spinAmount = effectiveDelta * sign;
 
     const amPmValue = this._readAmPmFromMask(part);
 

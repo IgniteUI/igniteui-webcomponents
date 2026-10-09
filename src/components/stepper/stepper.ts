@@ -3,7 +3,11 @@ import { property } from 'lit/decorators.js';
 import { addContextProvider } from '#internals/controllers/context-provider.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { addRovingFocusController } from '#internals/controllers/roving-focus.js';
-import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  addSlotController,
+  DefaultSlot,
+  setSlots,
+} from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -12,7 +16,9 @@ import {
   addSafeEventListener,
   getElementFromPath,
 } from '#internals/utils/events.js';
+import { all } from '#themes/stepper/themes/stepper/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type {
   HorizontalTransitionAnimation,
   StepperOrientation,
@@ -25,9 +31,6 @@ import { createStepperState } from './common/state.js';
 import type { IgcStepperComponentEventMap } from './common/types.js';
 import IgcStepComponent from './step.js';
 import { styles } from './themes/stepper/stepper.base.css.js';
-import { styles as bootstrap } from './themes/stepper/stepper.bootstrap.css.js';
-import { styles as fluent } from './themes/stepper/stepper.fluent.css.js';
-import { styles as indigo } from './themes/stepper/stepper.indigo.css.js';
 
 /** Property changes that the stepper republishes its context for. */
 const STEPPER_SYNC_PROPERTIES: (keyof IgcStepperComponent)[] = [
@@ -95,7 +98,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-stepper';
-  public static styles = styles;
+  public static styles = [componentBase, styles];
 
   /* blazorSuppress */
   public static register(): void {
@@ -223,10 +226,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
       value: () => context,
     });
 
-    addThemingController(this, {
-      light: { bootstrap, fluent, indigo },
-      dark: { bootstrap, fluent, indigo },
-    });
+    addThemingController(this, all);
 
     addRovingFocusController(this, {
       keybindings: { skip: this._skipKeyboard },
@@ -285,7 +285,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
   private _handleSlotChange(): void {
     this._state.setSteps(
-      this._slots.getAssignedElements('[default]', {
+      this._slots.getAssignedElements(DefaultSlot, {
         selector: IgcStepComponent.tagName,
       })
     );

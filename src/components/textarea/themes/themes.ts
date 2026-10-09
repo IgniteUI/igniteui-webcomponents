@@ -1,16 +1,14 @@
-import { css } from 'lit';
-
-import type { Themes } from '#theming/types.js';
-// Dark Overrides
-import { styles as bootstrapDark } from './dark/textarea.bootstrap.css.js';
-import { styles as fluentDark } from './dark/textarea.fluent.css.js';
-import { styles as indigoDark } from './dark/textarea.indigo.css.js';
-import { styles as materialDark } from './dark/textarea.material.css.js';
-// Light Overrides
-import { styles as bootstrapLight } from './light/textarea.bootstrap.css.js';
-import { styles as fluentLight } from './light/textarea.fluent.css.js';
-import { styles as indigoLight } from './light/textarea.indigo.css.js';
-import { styles as materialLight } from './light/textarea.material.css.js';
+import type { ComponentThemes } from '#theming/types.js';
+// Dark Overrides (the input's, from the same schema)
+import { styles as bootstrapDark } from '../../input/themes/dark/input.bootstrap.css.js';
+import { styles as fluentDark } from '../../input/themes/dark/input.fluent.css.js';
+import { styles as indigoDark } from '../../input/themes/dark/input.indigo.css.js';
+import { styles as materialDark } from '../../input/themes/dark/input.material.css.js';
+// Light Overrides (the input's, from the same schema)
+import { styles as bootstrapLight } from '../../input/themes/light/input.bootstrap.css.js';
+import { styles as fluentLight } from '../../input/themes/light/input.fluent.css.js';
+import { styles as indigoLight } from '../../input/themes/light/input.indigo.css.js';
+import { styles as materialLight } from '../../input/themes/light/input.material.css.js';
 import { styles as shared } from './light/textarea.shared.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/textarea.bootstrap.css.js';
@@ -19,39 +17,19 @@ import { styles as indigo } from './shared/textarea.indigo.css.js';
 import { styles as material } from './shared/textarea.material.css.js';
 
 const light = {
-  shared: css`
-    ${shared}
-  `,
-  bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
-  `,
-  material: css`
-    ${material} ${materialLight}
-  `,
-  fluent: css`
-    ${fluent} ${fluentLight}
-  `,
-  indigo: css`
-    ${indigo} ${indigoLight}
-  `,
+  shared,
+  bootstrap: [bootstrap, bootstrapLight],
+  material: [material, materialLight],
+  fluent: [fluent, fluentLight],
+  indigo: [indigo, indigoLight],
 };
 
 const dark = {
-  shared: css`
-    ${shared}
-  `,
-  bootstrap: css`
-    ${bootstrap} ${bootstrapDark}
-  `,
-  material: css`
-    ${material} ${materialDark}
-  `,
-  fluent: css`
-    ${fluent} ${fluentDark}
-  `,
-  indigo: css`
-    ${indigo} ${indigoDark}
-  `,
+  shared,
+  bootstrap: [bootstrap, bootstrapLight, bootstrapDark],
+  material: [material, materialLight, materialDark],
+  fluent: [fluent, fluentLight, fluentDark],
+  indigo: [indigo, indigoLight, indigoDark],
 };
 
-export const all: Themes = { light, dark };
+export const all: ComponentThemes = { light, dark };

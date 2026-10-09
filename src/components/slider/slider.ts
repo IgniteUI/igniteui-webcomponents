@@ -72,7 +72,7 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
   @property({ type: Number })
   public set value(value: number) {
     const requested = asNumber(value, this._formValue.value);
-    const resolved = this.validateValue(requested);
+    const resolved = this._validateValue(requested);
 
     this._requestedValue = this._keepRequest(requested, resolved);
     this._formValue.setValueAndFormState(resolved);
@@ -82,13 +82,13 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
     return this._formValue.value;
   }
 
-  protected override get activeValue(): number {
+  protected override get _activeValue(): number {
     return this.value;
   }
 
-  protected override normalizeValue(constraintsChanged: boolean): void {
+  protected override _normalizeValue(constraintsChanged: boolean): void {
     if (constraintsChanged) {
-      const value = this.validateValue(this._requestedValue ?? this.value);
+      const value = this._validateValue(this._requestedValue ?? this.value);
 
       if (value !== this.value) {
         // A clamp is not a user edit, so the pristine state stays.
@@ -99,7 +99,7 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
     this._requestedValue = undefined;
   }
 
-  protected override getTrackStyle() {
+  protected override _getTrackStyle() {
     return { width: `${this._percentOf(this.value)}%` };
   }
 
@@ -107,11 +107,11 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
     this.value = value;
   }
 
-  protected override emitInputEvent() {
+  protected override _emitInputEvent() {
     this._emitTouchedEvent('igcInput', { detail: this.value });
   }
 
-  protected override emitChangeEvent() {
+  protected override _emitChangeEvent() {
     this._emitTouchedEvent('igcChange', { detail: this.value });
   }
 
@@ -136,8 +136,8 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
     this.focus();
   }
 
-  protected override renderThumbs() {
-    return this.renderThumb(this.value, hostAria(this));
+  protected override _renderThumbs() {
+    return this._renderThumb(this.value, hostAria(this));
   }
 }
 

@@ -118,7 +118,7 @@ export async function setupMarkdownRenderer(
     const colorReplacements = options?.colorReplacements ?? {
       '#6f42c1': 'var(--shiki-purple)',
       '#032f62': 'var(--shiki-dark-blue)',
-      '#24292e': 'var(--shiki-navy)',
+      // Both themes map '#24292e' to their own variable below.
       '#d73a49': 'var(--shiki-red)',
       '#005cc5': 'var(--shiki-blue)',
       '#22863a': 'var(--shiki-green)',

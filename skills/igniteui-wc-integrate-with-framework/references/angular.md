@@ -1,6 +1,6 @@
 # Integrating Ignite UI Web Components — Angular
 
-> Package note: This page shows the default setup for `igniteui-webcomponents`. If the routing step selected `igniteui-webcomponents-charts`, `igniteui-webcomponents-grids`, `igniteui-grid-lite`, or `igniteui-dockmanager`, replace the package-specific install, import, and registration steps below with that package's setup instead of the default one.
+> Package note: This page shows the default setup for `igniteui-webcomponents`. If the routing step selected `igniteui-webcomponents-charts`, `igniteui-webcomponents-grids`, `igniteui-grid-lite`, or `igniteui-dockmanager`, use the setup of that package for the package-specific steps below. These are the install, import, and registration steps.
 
 ## Installation
 
@@ -12,7 +12,7 @@ npm install igniteui-webcomponents
 
 ### Step 1 — Register the theme and components
 
-In `src/main.ts`, import a theme and register the components before bootstrapping:
+In `src/main.ts`, import a theme and register the components before you bootstrap the application:
 
 ```typescript
 import { bootstrapApplication } from '@angular/platform-browser';
@@ -29,7 +29,7 @@ bootstrapApplication(AppComponent, appConfig)
 
 ### Step 2 — Add `CUSTOM_ELEMENTS_SCHEMA`
 
-Angular requires `CUSTOM_ELEMENTS_SCHEMA` to accept custom element tags in templates.
+Angular accepts custom element tags in templates only with `CUSTOM_ELEMENTS_SCHEMA`.
 
 **Standalone components** — add the schema to each component that uses Ignite UI elements:
 
@@ -47,7 +47,7 @@ import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 export class MyComponent {}
 ```
 
-**NgModule-based apps** — add the schema once to `AppModule` (or the relevant module):
+**NgModule-based apps** — add the schema once to `AppModule` (or the applicable module):
 
 ```typescript
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -145,7 +145,7 @@ export class MyComponent {
 | **CUSTOM_ELEMENTS_SCHEMA** | Required in every module or standalone component that uses `igc-*` tags |
 | **Event binding** | Use Angular syntax: `(igcChange)="handler($event)"` |
 | **Property binding** | Use `[property]="value"` for reactive data and complex types |
-| **Form integration** | Web components work with Angular Forms via `ngModel` or reactive form controls |
+| **Form integration** | Web components work with Angular Forms through `ngModel` or reactive form controls |
 
 ## TypeScript Support
 
@@ -168,20 +168,20 @@ Add `CUSTOM_ELEMENTS_SCHEMA` to the component's `schemas` array (standalone) or 
 
 ### Events not firing
 
-Use Angular's event binding syntax `(igcChange)="handler($event)"` — not `(change)`. Ignite UI components emit prefixed custom events (e.g., `igcInput`, `igcChange`).
+Use the Angular event binding syntax `(igcChange)="handler($event)"`, not `(change)`. Ignite UI components emit custom events with a prefix (for example, `igcInput`, `igcChange`).
 
 ### No styles applied
 
-Ensure you import a theme CSS file in `main.ts` before bootstrapping.
+Make sure that you import a theme CSS file in `main.ts` before you bootstrap the application.
 
 ### Properties not updating
 
-Use `[property]="value"` binding for complex or reactive data. Attribute strings (e.g. `label="Name"`) work for primitive values only.
+Use `[property]="value"` binding for complex or reactive data. Attribute strings (for example, `label="Name"`) work only for primitive values.
 
 ---
 
 ## Next Steps
 
-- [Optimize bundle size](../../igniteui-wc-optimize-bundle-size/) — import only the components you use
+- [Optimize bundle size](../../igniteui-wc-optimize-bundle-size/) — import only the components that you use
 - [Customize themes](../../igniteui-wc-customize-component-theme/) — apply your brand colors
-- [Component documentation](https://igniteui.github.io/igniteui-webcomponents) — full API reference
+- [Component documentation](https://igniteui.github.io/igniteui-webcomponents) — the full API reference

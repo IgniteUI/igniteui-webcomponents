@@ -1,57 +1,23 @@
 import { fadeIn, fadeOut } from '#animations/presets/fade/index.js';
-import { animation } from '#animations/types.js';
+import {
+  noop,
+  slideInHor,
+  slideInVer,
+  slideOutHor,
+  slideOutVer,
+} from '#animations/presets/slide/index.js';
+import type { AnimationReferenceMetadata } from '#animations/types.js';
 
-const noopAnimation = () => animation([], {});
+type SlideAnimation = (
+  options: KeyframeAnimationOptions
+) => AnimationReferenceMetadata;
 
-const slideInHor = (options: KeyframeAnimationOptions) =>
-  animation(
-    [{ transform: 'translateX(100%)' }, { transform: 'translateX(0)' }],
-    options
-  );
-
-const slideOutHor = (options: KeyframeAnimationOptions) =>
-  animation(
-    [{ transform: 'translateX(0)' }, { transform: 'translateX(-100%)' }],
-    options
-  );
-
-const slideInVer = (options: KeyframeAnimationOptions) =>
-  animation(
-    [{ transform: 'translateY(100%)' }, { transform: 'translateY(0)' }],
-    options
-  );
-
-const slideOutVer = (options: KeyframeAnimationOptions) =>
-  animation(
-    [{ transform: 'translateY(0)' }, { transform: 'translateY(-100%)' }],
-    options
-  );
-
-export const animations = new Map(
-  Object.entries({
-    fade: new Map(
-      Object.entries({
-        in: fadeIn,
-        out: fadeOut,
-      })
-    ),
-    slideHor: new Map(
-      Object.entries({
-        in: slideInHor,
-        out: slideOutHor,
-      })
-    ),
-    slideVer: new Map(
-      Object.entries({
-        in: slideInVer,
-        out: slideOutVer,
-      })
-    ),
-    none: new Map(
-      Object.entries({
-        in: noopAnimation,
-        out: noopAnimation,
-      })
-    ),
-  })
-);
+export const animations: Record<
+  'fade' | 'slideHor' | 'slideVer' | 'none',
+  Record<'in' | 'out', SlideAnimation>
+> = {
+  fade: { in: fadeIn, out: fadeOut },
+  slideHor: { in: slideInHor, out: slideOutHor },
+  slideVer: { in: slideInVer, out: slideOutVer },
+  none: { in: noop, out: noop },
+};

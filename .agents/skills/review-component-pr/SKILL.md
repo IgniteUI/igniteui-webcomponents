@@ -20,13 +20,17 @@ Review in this order. The public API is hard to change after release, so review 
 - [ ] Exported from `src/index.ts` in alphabetical order. No new exports from
       `src/internals` beyond the approved list in
       [Project Structure](../../../.github/CODING_GUIDELINES.md#project-structure).
-- [ ] `#internals` / `#theming` / `#animations` aliases for cross-cutting imports. Relative
-      imports between components. `.js` specifiers.
+- [ ] `#internals` / `#theming` / `#animations` aliases for cross-cutting imports. The theme
+      aggregator through `#themes`. Relative imports between components. `.js` specifiers.
 - [ ] A new alias is in `package.json` **and** in `scripts/_package.json`
 
 ## 2. Public API and Documentation
 
-- [ ] `tagName`, `styles`, `register()` (with all rendered dependencies), `HTMLElementTagNameMap`
+- [ ] `tagName`, `styles` (`componentBase` first), `register()` (with all rendered
+      dependencies, directly), `HTMLElementTagNameMap`. A new component is also in
+      `defineAllComponents.ts`.
+- [ ] An intended public API change comes with the updated `public-api.json`
+      (`npm run public-api:update`). A removal or a type change has a deprecation plan.
 - [ ] Only primitives are attributes. Complex types use `attribute: false` and do not reflect.
 - [ ] Booleans default to `false`. Multi-word attributes are kebab-case and explicit.
 - [ ] Events use `EventEmitterMixin` with a typed map. Names are `igc` + camelCase, cancelable
@@ -99,7 +103,8 @@ Map each change to a spec section with
 
 - [ ] No generated `.css.ts` in the diff
 - [ ] Load-path specifiers. Values come from `var-get()` and the theming functions.
-- [ ] `[part~='…']` selectors. Dark files emit only the `diff()`.
+- [ ] `[part~='…']` selectors. Dark files emit only `dark-overrides()`. No per-theme sheet is
+      imported outside `themes.ts`.
 - [ ] All four themes work in light and dark mode. `:host` has a `display` value. Specificity
       is low.
 
@@ -128,6 +133,8 @@ Map each change to a spec section with
 | Missing `addThemingController`            | The component ignores theme changes                              |
 | Relative import into `internals`          | `npm run check` fails                                            |
 | Alias only in `package.json`              | Breaks only for consumers of the published package               |
+| Relative import of a theme aggregator     | The publish build fails; single-theme bundles get every theme    |
+| `public-api.json` not updated             | `npm run check` lists the additions; the snapshot goes stale     |
 | `igc-` in a description                   | Goes into the API docs of every framework wrapper                |
 | Hand-edited story region or `.css.ts`     | Overwritten on the next build                                    |
 | `[part='base']` with `partMap`            | Stops matching when a second part name is added                  |

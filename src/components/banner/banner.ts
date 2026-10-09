@@ -10,10 +10,10 @@ import { addToggleController } from '#internals/controllers/toggle.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { all } from '#themes/banner/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { styles } from './themes/banner.base.css.js';
-import { all } from './themes/themes.js';
 
 export interface IgcBannerComponentEventMap {
   igcClosing: CustomEvent<void>;

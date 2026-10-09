@@ -1,9 +1,9 @@
 import { html, LitElement } from 'lit';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/list/themes/header.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from './themes/header.base.css.js';
-import { all } from './themes/header.js';
 import { styles as shared } from './themes/shared/header/list-header.common.css.js';
 
 /**

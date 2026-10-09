@@ -11,16 +11,17 @@ import {
   ariaBindings,
   hostAria,
 } from '#internals/controllers/aria-projection.js';
-import { createAsyncContext } from '#internals/controllers/async-consumer.js';
+import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import { setOrRemoveAttribute } from '#internals/utils/dom.js';
+import { all } from '#themes/button-group/themes/button.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/button.base.css.js';
-import { all } from './themes/button.js';
 import { styles as shared } from './themes/shared/button/button.common.css.js';
 
 /**
@@ -38,7 +39,7 @@ import { styles as shared } from './themes/shared/button/button.common.css.js';
 export default class IgcToggleButtonComponent extends HostAriaMixin(
   LitElement
 ) {
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
   public static readonly tagName = 'igc-toggle-button';
 
   /* blazorSuppress */
@@ -47,7 +48,7 @@ export default class IgcToggleButtonComponent extends HostAriaMixin(
   }
 
   private readonly _focusRingManager = addKeyboardFocusRing(this);
-  private readonly _context = createAsyncContext(this, buttonGroupContext);
+  private readonly _context = addAsyncContextConsumer(this, buttonGroupContext);
 
   private _ownTabIndex?: string | null;
 

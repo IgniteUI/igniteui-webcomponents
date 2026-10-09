@@ -1,7 +1,7 @@
 ---
 license: MIT
 name: igniteui-wc-customize-component-theme
-description: "Theme and style Ignite UI Web Components (and igniteui-react) apps using CSS custom properties, optional Sass, and the igniteui-theming MCP server. WHEN TO USE: the user wants to apply or switch a pre-built theme (Material, Fluent, Bootstrap, Indigo, light/dark), create a custom palette or global theme, restyle a specific component via design tokens or ::part, scope a theme to a container, adjust sizing/spacing/roundness, or toggle light/dark mode. WHEN NOT TO USE: choosing which component to use (use choose-components), building a full view from a design image or Figma file (use generate-from-image-design or figma-to-app, which include theming), installing packages or framework setup (use integrate-with-framework), or styling non-Ignite UI elements or libraries."
+description: "Theme and style Ignite UI Web Components (and igniteui-react) apps with CSS custom properties, optional Sass, and the igniteui-theming MCP server. WHEN TO USE: the user wants to apply or switch a pre-built theme (Material, Fluent, Bootstrap, Indigo, light/dark), create a custom palette or global theme, restyle a specific component with design tokens or ::part, scope a theme to a container, adjust sizing/spacing/roundness, or toggle light/dark mode. WHEN NOT TO USE: choosing which component to use (use choose-components), building a full view from a design image or Figma file (use generate-from-image-design or figma-to-app, which include theming), installing packages or framework setup (use integrate-with-framework), or styling non-Ignite UI elements or libraries."
 user-invocable: true
 ---
 
@@ -9,10 +9,10 @@ user-invocable: true
 
 ## Description
 
-This skill teaches AI agents how to theme Ignite UI Web Components (and React via `igniteui-react`) applications. Two approaches are supported:
+This skill shows AI agents how to theme Ignite UI Web Components (and React through `igniteui-react`) applications. It supports two approaches:
 
 - **CSS custom properties** — works in any project without additional build tooling
-- **Sass** — available when the project has Sass configured; provides the full palette/typography/elevation API
+- **Sass** — available when the project has Sass configured. It gives the full palette/typography/elevation API
 
 The skill also covers component-level theming, layout controls (spacing, sizing, roundness), and how to use the **Ignite UI Theming MCP server** for AI-assisted code generation.
 
@@ -24,24 +24,24 @@ The skill also covers component-level theming, layout controls (spacing, sizing,
 
 > **AGENT INSTRUCTION — MCP Server Setup (REQUIRED)**
 >
-> Before using any theming tools, you MUST verify the MCP server is available
-> by calling `detect_platform`. If the tool is not available or the call fails,
-> you MUST automatically configure it by following the setup process steps described below.
+> Before you use any theming tools, you MUST make sure that the MCP server is available.
+> To do this, call `detect_platform`. If the tool is not available or the call fails,
+> you MUST configure the server automatically. Follow the setup steps below.
 >
-> After writing the file, inform the user that the MCP server has been
-> configured and they may need to reload the editor for the tools to activate.
-> Start the MCP server and wait for that MCP server to start before continuing the theming related work.
-> Do NOT skip this step or ask the user to do it manually.
+> After you write the file, tell the user that the MCP server is configured.
+> Also tell the user that it can be necessary to reload the editor to activate the tools.
+> Start the MCP server. Wait until the MCP server starts, then continue the theming work.
+> Do NOT skip this step. Do NOT ask the user to do it manually.
 
 ## Setting Up the Theming MCP Server
 
 See [references/mcp-setup.md](references/mcp-setup.md) for VS Code, Cursor, Claude Desktop, and WebStorm configuration instructions.
 
-Verify the server is running by calling `detect_platform` — it reads your `package.json` and returns the detected platform (e.g., `webcomponents`).
+To make sure that the server is running, call `detect_platform`. It reads your `package.json` and returns the detected platform (for example, `webcomponents`).
 
 ## Theming Architecture
 
-The theming system is built on four pillars:
+The theming system has four pillars:
 
 | Pillar | Description |
 |---|---|
@@ -50,7 +50,7 @@ The theming system is built on four pillars:
 | **Elevations** | Box-shadow levels (0–24) |
 | **Schema** | Per-component recipes that map palette tokens to component-level CSS custom properties |
 
-Four built-in design systems are available — each with light and dark variants:
+Four built-in design systems are available. Each has light and dark variants:
 
 | Design System | Variants |
 |---|---|
@@ -59,19 +59,19 @@ Four built-in design systems are available — each with light and dark variants
 | **Fluent** | `light/fluent.css`, `dark/fluent.css` |
 | **Indigo** | `light/indigo.css`, `dark/indigo.css` |
 
-For the full live reference (palette families, design system schemas, variant constraints, and preset palettes) call:
+For the full live reference (palette families, design system schemas, variant constraints, and preset palettes), call:
 
 ```
 read_resource({ uri: "theming://platforms/webcomponents" })
 ```
 
 Additional guidance resources:
-- `read_resource({ uri: "theming://guidance/colors/roles" })` — which components use primary vs secondary vs surface, and which shade (50/500/900) to use where
+- `read_resource({ uri: "theming://guidance/colors/roles" })` — which components use primary vs secondary vs surface, and where to use each shade (50/500/900)
 - `read_resource({ uri: "theming://guidance/colors/rules" })` — surface and gray luminance rules for light/dark variants (why gray is inverted from surface, WCAG contrast thresholds)
 
 ## Pre-built Themes
 
-The quickest way to theme an app is to import a pre-built CSS file in your entry point:
+To theme an app quickly, import a pre-built CSS file in your entry point:
 
 ```typescript
 import 'igniteui-webcomponents/themes/light/bootstrap.css';
@@ -90,11 +90,13 @@ Available pre-built CSS files:
 | `igniteui-webcomponents/themes/light/indigo.css` | Indigo Light |
 | `igniteui-webcomponents/themes/dark/indigo.css` | Indigo Dark |
 
+The components contain the styles of all four themes. If the app uses only one theme, an `igc-theme-<name>` bundler condition removes the other three from the bundle. See [igniteui-wc-optimize-bundle-size](../igniteui-wc-optimize-bundle-size/SKILL.md).
+
 ## Custom Theme via CSS Custom Properties
 
-> No Sass required. Works in any project after importing a pre-built theme.
+> Sass is not necessary. This approach works in any project after you import a pre-built theme.
 
-After importing a pre-built theme, override the `*-500` base shade to change a color family. All other shades (50–900) derive from the 500 value automatically via CSS relative color syntax:
+After you import a pre-built theme, override the `*-500` base shade to change a color family. CSS relative color syntax calculates all other shades (50–900) from the 500 value automatically:
 
 ```css
 :root {
@@ -130,11 +132,11 @@ For dark mode, either import a dark theme CSS file directly or toggle overrides 
 
 ## Custom Theme via Sass
 
-> Requires Sass configured in the project. First check whether the project has a Sass setup (e.g., a `styles.scss` entry file, `sass` in `devDependencies`, or a Vite/webpack Sass plugin).
+> This approach requires Sass configured in the project. First, check whether the project has a Sass setup (for example, a `styles.scss` entry file, `sass` in `devDependencies`, or a Vite/webpack Sass plugin).
 
-The Sass API for `igniteui-webcomponents` uses `@use 'igniteui-theming'` with individual mixins — **not** the Angular-specific `core()` / `theme()` combined mixins.
+The Sass API for `igniteui-webcomponents` uses `@use 'igniteui-theming'` with individual mixins. It does **not** use the Angular-specific `core()` / `theme()` combined mixins.
 
-Call `create_theme` to generate production-ready Sass for palette + typography + elevations in a single step:
+Call `create_theme` to generate production-ready Sass for palette + typography + elevations in one step:
 
 ```
 create_theme({
@@ -150,23 +152,23 @@ create_theme({
 })
 ```
 
-For a dark theme pass a dark `surfaceColor` (e.g. `"#121212"`) and `variant: "dark"` — `create_theme` selects the correct dark schema automatically.
+For a dark theme, pass a dark `surfaceColor` (for example, `"#121212"`) and `variant: "dark"`. `create_theme` selects the correct dark schema automatically.
 
-For palette-only generation (when typography/elevations are already set) use `create_palette`. For scoping a theme to a container, pass the generated `@include palette(...)` block inside the target selector.
+To generate only a palette (when typography/elevations are already set), use `create_palette`. To scope a theme to a container, put the generated `@include palette(...)` block inside the target selector.
 
 ## Component-Level Theming
 
-Override individual component appearance using component theme functions and the `tokens` mixin.
+To override the appearance of individual components, use component theme functions and the `tokens` mixin.
 
 > **AGENT INSTRUCTION — No Hardcoded Colors (CRITICAL)**
 >
-> Once a palette has been generated (via `palette()` in Sass or `create_palette` / `create_theme` via MCP),
-> **every color reference MUST come from the generated palette tokens** — never hardcode hex/RGB/HSL values.
+> After palette generation (`palette()` in Sass, or `create_palette` / `create_theme` through MCP),
+> **every color reference MUST come from the generated palette tokens**. Do not hardcode hex/RGB/HSL values.
 >
-> Use `var(--ig-primary-500)`, `var(--ig-secondary-300)`, `var(--ig-surface-500)`, etc. in CSS,
-> or the `get_color` MCP tool to obtain the correct token reference.
+> In CSS, use `var(--ig-primary-500)`, `var(--ig-secondary-300)`, `var(--ig-surface-500)`, etc.
+> Or, use the `get_color` MCP tool to get the correct token reference.
 >
-> **WRONG** (hardcoded hex — breaks theme switching, ignores the palette):
+> **WRONG** (hardcoded hex — this breaks theme switching and ignores the palette):
 > ```css
 > igc-avatar {
 >   --ig-avatar-background: #E91E63;  /* ✗ hardcoded */
@@ -174,7 +176,7 @@ Override individual component appearance using component theme functions and the
 > }
 > ```
 >
-> **RIGHT — CSS** (palette token — stays in sync with the theme):
+> **RIGHT — CSS** (palette token — this stays synchronized with the theme):
 > ```css
 > igc-avatar {
 >   --ig-avatar-background: var(--ig-primary-500);
@@ -191,9 +193,9 @@ Override individual component appearance using component theme functions and the
 > );
 > ```
 >
-> This applies to **all** style code: component themes, custom CSS rules, and inline styles.
-> The only place raw hex values belong is the **initial `palette()` call** that seeds the color system.
-> Everything downstream must reference the palette.
+> This rule applies to **all** style code: component themes, custom CSS rules, and inline styles.
+> Use raw hex values only in the **initial `palette()` call** that seeds the color system.
+> All other style code must reference the palette.
 
 ```css
 igc-avatar {
@@ -216,16 +218,16 @@ Pass `output: "css"` if you want CSS custom properties instead of Sass.
 
 ### Discovering Available Tokens
 
-Each component has its own set of design tokens (themeable CSS custom properties). Before theming a component, you must know which tokens exist. Use the **MCP tool** `get_component_design_tokens` to discover them.
+Each component has its own set of design tokens (themeable CSS custom properties). Before you theme a component, you must know which tokens exist. To find them, use the **MCP tool** `get_component_design_tokens`.
 
 ### Compound Components
 
-Some components (e.g., `combo`, `grid`, `date-picker`, `select`) are **compound** — they contain internal child components, each requiring their own theme. For example, `date-picker` uses `calendar`, `flat-button`, and `input-group` internally.
+Some components (for example, `combo`, `grid`, `date-picker`, `select`) are **compound**. They contain internal child components, and each child component requires its own theme. For example, `date-picker` uses `calendar`, `flat-button`, and `input-group` internally.
 
 Workflow for compound components:
-1. Call `get_component_design_tokens` for the parent (e.g., `date-picker`)
-2. The response lists related themes and scope selectors
-3. Call `create_component_theme` for each child, using the parent's selector as the wrapper
+1. Call `get_component_design_tokens` for the parent (for example, `date-picker`)
+2. Find the related themes and scope selectors in the response
+3. For each child, call `create_component_theme` with the parent's selector as the wrapper
 
 ## Layout Controls
 
@@ -243,25 +245,25 @@ set_roundness({ radiusFactor: 0.5 })                      // global
 set_roundness({ radiusFactor: 0.0 })                      // square
 ```
 
-All three tools default to CSS output. Add `output: "sass"` when the project has Sass configured.
+By default, all three tools give CSS output. Add `output: "sass"` when the project has Sass configured.
 
-The underlying CSS custom properties are `--ig-size`, `--ig-spacing`, and `--ig-radius-factor`. You can also set them directly on `:root` or a scoped selector if a one-off override is simpler than a tool call.
+The underlying CSS custom properties are `--ig-size`, `--ig-spacing`, and `--ig-radius-factor`. You can also set them directly on `:root` or on a scoped selector. Do this when a one-off override is simpler than a tool call.
 
 ## Using the Theming MCP Server
 
-The Ignite UI Theming MCP server provides tools for AI-assisted theme code generation.
+The Ignite UI Theming MCP server has tools for AI-assisted theme code generation.
 
-> **IMPORTANT — File Safety Rule**: When generating or updating theme code, **never overwrite existing style files directly**. Instead, always **propose the changes as an update** and let the user review and approve before writing to disk. If a `styles.scss` (or any target file) already exists, show the generated code as a diff or suggestion rather than replacing the file contents. This prevents accidental loss of custom styles the user has already written.
+> **IMPORTANT — File Safety Rule**: When you generate or update theme code, **never overwrite existing style files directly**. Always **propose the changes as an update**. Let the user review and approve the changes before you write to disk. If a `styles.scss` (or any target file) already exists, show the generated code as a diff or suggestion. Do not replace the file contents. This prevents accidental loss of custom styles that the user already wrote.
 
-Quick tool sequence — for full parameter details, see earlier sections:
+Quick tool sequence. For full parameter details, see the earlier sections:
 
 | Step | Tool | Purpose |
 |---|---|---|
-| 1 | `detect_platform` | Always first — auto-detects platform from `package.json` |
+| 1 | `detect_platform` | Always first — detects the platform from `package.json` automatically |
 | 2 | `create_theme` | Full Sass theme: palette + typography + elevations in one call |
-| 3 | `get_component_design_tokens` | Discover valid token names before calling `create_component_theme` |
+| 3 | `get_component_design_tokens` | Find valid token names before you call `create_component_theme` |
 | 4 | `create_component_theme` | Scoped component override — all token values must use `var(--ig-*)` |
-| 5 | `create_palette` | Palette only, when a full Sass theme is not needed |
+| 5 | `create_palette` | Palette only, when a full Sass theme is not necessary |
 | 6 | `set_size` / `set_spacing` / `set_roundness` | Layout controls — add `output: "sass"` for Sass output |
 | 7 | `get_color` | Resolve color intent to `var(--ig-<family>-<shade>)` token reference |
 
@@ -282,7 +284,7 @@ Use `read_resource` with these URIs for preset values and documentation:
 
 ## Referencing Colors in Custom Styles
 
-After a theme is applied, the palette is available as CSS custom properties on `:root`. Use these tokens in all custom CSS — never introduce standalone hex/RGB variables for colors that the palette already provides.
+After you apply a theme, the palette is available as CSS custom properties on `:root`. Use these tokens in all custom CSS. Do not add standalone hex/RGB variables for colors that the palette already has.
 
 ### Correct: Palette Tokens
 
@@ -320,16 +322,16 @@ After a theme is applied, the palette is available as CSS custom properties on `
 Raw hex values are acceptable **only** in these contexts:
 
 1. **`palette()` call** — the initial seed colors that generate the full palette
-2. **`create_palette` / `create_theme` MCP tool inputs** — the base colors passed to the tool
-3. **Non-palette decorative values** — e.g., a one-off SVG illustration color that intentionally stays fixed regardless of theme
+2. **`create_palette` / `create_theme` MCP tool inputs** — the base colors that you pass to the tool
+3. **Non-palette decorative values** — for example, a one-off SVG illustration color that intentionally does not change with the theme
 
-Everything else must use `var(--ig-<family>-<shade>)` tokens.
+All other colors must use `var(--ig-<family>-<shade>)` tokens.
 
 ## Common Patterns
 
 ### Switching Between Light and Dark Themes — CSS approach
 
-Import the appropriate theme CSS and toggle with a class or media query:
+Import the applicable theme CSS. Then toggle with a class or a media query:
 
 ```typescript
 // In your entry point — choose one variant as the default
@@ -350,7 +352,7 @@ import 'igniteui-webcomponents/themes/light/bootstrap.css';
 }
 ```
 
-Or dynamically swap the stylesheet at runtime:
+Or, change the stylesheet dynamically at runtime:
 
 ```typescript
 function setTheme(variant: 'light' | 'dark', design = 'bootstrap') {
@@ -361,7 +363,7 @@ function setTheme(variant: 'light' | 'dark', design = 'bootstrap') {
 
 ### Switching Between Light and Dark Themes — Sass approach
 
-When Sass is configured, generate both theme blocks with `create_theme` — once with `variant: "light"` and once with `variant: "dark"`. Use the generated `@include palette(...)` call inside `.dark-theme { }` for the dark variant. The tool selects the correct schema automatically for each variant.
+When Sass is configured, generate both theme blocks with `create_theme`. Call it once with `variant: "light"` and once with `variant: "dark"`. For the dark variant, put the generated `@include palette(...)` call inside `.dark-theme { }`. The tool selects the correct schema automatically for each variant.
 
 ### Scoping a Theme to a Container — CSS approach
 
@@ -373,16 +375,16 @@ When Sass is configured, generate both theme blocks with `create_theme` — once
 
 ### Scoping a Theme to a Container — Sass approach
 
-Generate the palette block with `create_palette` and wrap it in the target container selector manually, or pass a custom `selector` when using `create_component_theme` for component-scoped overrides.
+Generate the palette block with `create_palette` and put it in the target container selector manually. For component-scoped overrides, you can also pass a custom `selector` to `create_component_theme`.
 
 ## Key Rules
 
-1. **Never overwrite existing files directly** — always propose theme code as an update for user review; do not replace existing style files without confirmation
-2. **Always call `detect_platform` first** when using MCP tools
+1. **Never overwrite existing files directly**. Always propose theme code as an update for user review. Do not replace existing style files without confirmation
+2. **Always call `detect_platform` first** when you use MCP tools
 3. **Always call `get_component_design_tokens` before `create_component_theme`** to discover valid token names
-4. **Palette shades 50 = lightest, 900 = darkest** for all chromatic colors — never invert for dark themes (only gray inverts)
+4. **Palette shades 50 = lightest, 900 = darkest** for all chromatic colors. Do not invert them for dark themes (only gray inverts)
 5. **Surface color must match the variant** — light color for `light`, dark color for `dark`
-6. **Sass only**: Use `create_theme` (or `create_palette` / `create_typography` / `create_elevations` individually) to generate correct Sass — the theming module for Web Components is `igniteui-theming`, not `igniteui-angular/theming`; Angular-specific `core()` / `theme()` combined mixins do **not** apply here
+6. **Sass only**: Use `create_theme` (or `create_palette` / `create_typography` / `create_elevations` individually) to generate correct Sass. The theming module for Web Components is `igniteui-theming`, not `igniteui-angular/theming`. The Angular-specific `core()` / `theme()` combined mixins do **not** apply here
 7. **Sass only**: Component themes use `create_component_theme` to generate `@include tokens($theme)` inside the correct selector
-8. **For compound components**, follow the full checklist returned by `get_component_design_tokens` — theme each child component with its scoped selector
-9. **Never hardcode colors after palette generation** — once a palette is created, every color in component themes, custom CSS, and Sass variables must use `var(--ig-<family>-<shade>)` palette tokens (e.g., `var(--ig-primary-500)`, `var(--ig-gray-200)`). Raw hex/RGB/HSL values are only acceptable in the initial `palette()` seed call. This ensures themes remain consistent, switchable (light/dark), and maintainable
+8. **For compound components**, follow the full checklist that `get_component_design_tokens` returns. Theme each child component with its scoped selector
+9. **Never hardcode colors after palette generation**. After you create a palette, every color in component themes, custom CSS, and Sass variables must use `var(--ig-<family>-<shade>)` palette tokens (for example, `var(--ig-primary-500)`, `var(--ig-gray-200)`). Raw hex/RGB/HSL values are acceptable only in the initial `palette()` seed call. This keeps themes consistent, switchable (light/dark), and maintainable

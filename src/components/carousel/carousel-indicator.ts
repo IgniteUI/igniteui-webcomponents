@@ -6,6 +6,7 @@ import { carouselContext } from '#internals/context.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { formatString } from '#internals/utils/strings.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type IgcCarouselComponent from './carousel.js';
 import { styles } from './themes/carousel-indicator.base.css.js';
 
@@ -23,7 +24,7 @@ import { styles } from './themes/carousel-indicator.base.css.js';
  */
 export default class IgcCarouselIndicatorComponent extends LitElement {
   public static readonly tagName = 'igc-carousel-indicator';
-  public static override styles = styles;
+  public static override styles = [componentBase, styles];
 
   /* blazorSuppress */
   public static register(): void {

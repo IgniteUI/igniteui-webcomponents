@@ -1,10 +1,10 @@
 # Security Policy
 
-Ignite UI for Web Components is a client-side UI library published to npm as [`igniteui-webcomponents`](https://www.npmjs.com/package/igniteui-webcomponents). This document explains which versions receive security fixes, how to report a vulnerability, what happens after a report, and how consumers can verify what they install.
+Ignite UI for Web Components is a client-side UI library published to npm as [`igniteui-webcomponents`](https://www.npmjs.com/package/igniteui-webcomponents). This document explains which versions receive security fixes, how to report a vulnerability, what happens after a report, and how to verify what you install.
 
 ## Supported versions
 
-Security fixes are released for the **latest major version**. The **previous major version** receives fixes for **critical** vulnerabilities only, published as a patch on its last minor release. Older major versions receive no security updates.
+We release security fixes for the **latest major version**. The **previous major version** receives fixes for **critical** vulnerabilities only. We publish these fixes as a patch on the last minor release of that version. Older major versions receive no security updates.
 
 | Version | Support                                  |
 | ------- | ---------------------------------------- |
@@ -12,7 +12,7 @@ Security fixes are released for the **latest major version**. The **previous maj
 | 6.5.x   | Critical vulnerabilities only            |
 | < 6.0   | None; upgrade to a supported version     |
 
-This table is updated with each major release. All released versions are listed on the [npm package page](https://www.npmjs.com/package/igniteui-webcomponents?activeTab=versions) and in the [CHANGELOG](CHANGELOG.md).
+We update this table with each major release. The [npm package page](https://www.npmjs.com/package/igniteui-webcomponents?activeTab=versions) and the [CHANGELOG](CHANGELOG.md) list all released versions.
 
 ## Scope
 
@@ -34,7 +34,7 @@ Report vulnerabilities privately through [GitHub private vulnerability reporting
 A useful report includes:
 
 - The affected component or module and the package version.
-- Steps or a minimal reproduction that demonstrates the problem.
+- Steps or a minimal reproduction that shows the problem.
 - The impact you believe it has, for example script execution in the host page or exposure of data the host page passed to a component.
 
 ## What to expect
@@ -46,21 +46,21 @@ A useful report includes:
 | Fix and release     | Within 90 days for confirmed vulnerabilities, sooner for critical ones |
 | Disclosure          | Coordinated with the reporter, at release or after the fix has had time to propagate |
 
-Severity follows the [CVSS](https://www.first.org/cvss/) rating GitHub attaches to the advisory. We credit reporters in the advisory unless they ask not to be named.
+Severity follows the [CVSS](https://www.first.org/cvss/) rating that GitHub attaches to the advisory. We credit reporters in the advisory unless they ask not to be named.
 
 ## Disclosure
 
-Fixed vulnerabilities are published as a [GitHub security advisory](https://github.com/IgniteUI/igniteui-webcomponents/security/advisories) with a CVE identifier where applicable, and recorded under a `Security` heading in the [CHANGELOG](CHANGELOG.md) entry of the release that carries the fix.
+We publish each fixed vulnerability as a [GitHub security advisory](https://github.com/IgniteUI/igniteui-webcomponents/security/advisories), with a CVE identifier where applicable. We also record it under a `Security` heading in the [CHANGELOG](CHANGELOG.md) entry of the release that contains the fix.
 
 ## Verifying a release
 
-Every release published from this repository ships with supply-chain evidence attached to the [GitHub release](https://github.com/IgniteUI/igniteui-webcomponents/releases):
+Every release that this repository publishes has this supply-chain evidence attached to the [GitHub release](https://github.com/IgniteUI/igniteui-webcomponents/releases):
 
 - The exact tarball that was published to npm, with SHA-256 and SHA-512 digests.
-- A CycloneDX 1.6 SBOM describing the delivered dependency closure, and a supplementary SBOM of the build environment.
+- A CycloneDX 1.6 SBOM that describes the delivered dependency closure, and a supplementary SBOM of the build environment.
 - Signed build-provenance and SBOM attestations produced with GitHub artifact attestations.
 
-The package is published with an OIDC token, so npm records provenance for it. To verify the tarball you install matches the one that was built and attested, run:
+The release workflow publishes the package with an OIDC token. Thus, npm records provenance for the package. To verify that the tarball you install matches the built and attested tarball, run:
 
 ```bash
 npm pack igniteui-webcomponents@<version>
@@ -72,8 +72,10 @@ The SBOM README attached to each release describes how the SBOM was generated an
 
 ## Threat model
 
-The components run inside the host page, so the host application remains responsible for the data it passes in. [THREAT-MODEL.md](THREAT-MODEL.md) describes the trust boundaries, the threats the library addresses and what the host must do, including the handling of chat markdown, icons, host-supplied URLs and Content Security Policy.
+The components run inside the host page, so the host application remains responsible for the data it passes in. [THREAT-MODEL.md](THREAT-MODEL.md) describes the trust boundaries, the threats that the library addresses and what the host must do. This includes the handling of chat markdown, icons, host-supplied URLs and Content Security Policy.
 
 ## Dependencies
 
-Runtime dependencies are kept to a minimum and are listed in the SBOM attached to each release (see [Verifying a release](#verifying-a-release)). Dependabot raises security updates for npm dependencies daily and version updates for GitHub Actions weekly. GitHub's CodeQL default setup analyzes every push and pull request, and the OpenSSF Scorecard runs weekly; results are visible in the repository's Security tab. The release workflow pins every action to a commit SHA and grants each job only the permissions it needs.
+We keep runtime dependencies to a minimum. The SBOM attached to each release lists them (see [Verifying a release](#verifying-a-release)). Dependabot raises security updates for npm dependencies daily and version updates for GitHub Actions weekly.
+
+GitHub's CodeQL default setup analyzes every push and pull request. The OpenSSF Scorecard runs weekly. The results are visible in the repository's Security tab. The release workflow pins every action to a commit SHA and grants each job only the permissions it needs.

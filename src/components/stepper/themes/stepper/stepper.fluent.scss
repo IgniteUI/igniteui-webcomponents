@@ -1,6 +1,5 @@
 @use 'styles/utilities' as *;
 
 :host {
-    --indicator-roundness: #{rem(2px)};
     --indicator-box-shadow-size: #{rem(1px)};
 }

@@ -1,6 +1,6 @@
 import { expect, fixture, html, nextFrame } from '@open-wc/testing';
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
-import type { IgcBaseAlertLikeComponent } from '../mixins/alert.js';
+import type { IgcBaseAlertLikeComponent } from '../bases/alert.js';
 import { isPopoverOpen } from '../utils/dom.js';
 import { simulatePointerEnter, simulatePointerLeave } from './simulate.spec.js';
 

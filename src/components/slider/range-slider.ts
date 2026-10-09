@@ -67,10 +67,10 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   }
 
   @query('#thumbFrom')
-  private thumbFrom!: HTMLElement;
+  private _thumbFrom!: HTMLElement;
 
   @query('#thumbTo')
-  private thumbTo!: HTMLElement;
+  private _thumbTo!: HTMLElement;
 
   private _lower = 0;
   /** `undefined` until a value is set, so `upper` follows `upperBound`. */
@@ -88,7 +88,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   public set lower(val: number) {
     const requested = asNumber(val, this._lower);
 
-    this._lower = this.validateValue(requested);
+    this._lower = this._validateValue(requested);
     this._requestedLower = this._keepRequest(requested, this._lower);
   }
 
@@ -112,12 +112,12 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
 
     const requested = asNumber(val, this.upper);
 
-    this._upper = this.validateValue(requested);
+    this._upper = this._validateValue(requested);
     this._requestedUpper = this._keepRequest(requested, this._upper);
   }
 
   public get upper(): number {
-    return this._upper ?? this.validateValue(this.upperBound);
+    return this._upper ?? this._validateValue(this.upperBound);
   }
 
   /**
@@ -134,16 +134,16 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   @property({ attribute: 'thumb-label-upper' })
   public thumbLabelUpper!: string;
 
-  protected override get activeValue(): number {
-    return this.activeThumb === this.thumbFrom ? this.lower : this.upper;
+  protected override get _activeValue(): number {
+    return this._activeThumb === this._thumbFrom ? this.lower : this.upper;
   }
 
-  protected override normalizeValue(constraintsChanged: boolean): void {
+  protected override _normalizeValue(constraintsChanged: boolean): void {
     if (constraintsChanged) {
       const upper = this._requestedUpper ?? this._upper;
 
-      this._lower = this.validateValue(this._requestedLower ?? this._lower);
-      this._upper = isDefined(upper) ? this.validateValue(upper) : undefined;
+      this._lower = this._validateValue(this._requestedLower ?? this._lower);
+      this._upper = isDefined(upper) ? this._validateValue(upper) : undefined;
     }
 
     this._requestedLower = undefined;
@@ -155,7 +155,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     }
   }
 
-  protected override getTrackStyle() {
+  protected override _getTrackStyle() {
     const start = this._percentOf(this.lower);
     return {
       insetInlineStart: `${start}%`,
@@ -163,22 +163,22 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     };
   }
 
-  protected override closestHandle(event: PointerEvent): HTMLElement {
-    const fromX = getCenterPoint(this.thumbFrom).x;
-    const toX = getCenterPoint(this.thumbTo).x;
+  protected override _closestHandle(event: PointerEvent): HTMLElement {
+    const fromX = getCenterPoint(this._thumbFrom).x;
+    const toX = getCenterPoint(this._thumbTo).x;
     const pointerX = event.clientX;
     const closerToEnd =
       fromX === toX
         ? toX < pointerX
         : Math.abs(pointerX - toX) < Math.abs(pointerX - fromX);
 
-    return closerToEnd ? this.thumbTo : this.thumbFrom;
+    return closerToEnd ? this._thumbTo : this._thumbFrom;
   }
 
   protected override _setActiveValue(value: number): void {
     // Only the moved thumb gets a value, so an unset `upper` still follows
     // `upperBound`.
-    if (this.activeThumb === this.thumbFrom) {
+    if (this._activeThumb === this._thumbFrom) {
       this.lower = value;
     } else {
       this.upper = value;
@@ -187,25 +187,25 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     // A thumb that reaches the other one swaps with it, and the focus follows.
     if (this.lower >= this.upper) {
       [this.lower, this.upper] = [this.upper, this.lower];
-      this.toggleActiveThumb();
+      this._toggleActiveThumb();
     }
   }
 
-  protected override emitInputEvent() {
+  protected override _emitInputEvent() {
     this.emitEvent('igcInput', {
       detail: { lower: this.lower, upper: this.upper },
     });
   }
 
-  protected override emitChangeEvent() {
+  protected override _emitChangeEvent() {
     this.emitEvent('igcChange', {
       detail: { lower: this.lower, upper: this.upper },
     });
   }
 
-  private toggleActiveThumb() {
+  private _toggleActiveThumb() {
     const thumb =
-      this.activeThumb === this.thumbFrom ? this.thumbTo : this.thumbFrom;
+      this._activeThumb === this._thumbFrom ? this._thumbTo : this._thumbFrom;
     thumb.focus();
   }
 
@@ -221,16 +221,16 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
       : {};
   }
 
-  protected override renderThumbs() {
+  protected override _renderThumbs() {
     const { describedBy } = hostAria(this);
 
     return html`
-      ${this.renderThumb(
+      ${this._renderThumb(
         this.lower,
         { label: this.thumbLabelLower, describedBy },
         'thumbFrom'
       )}
-      ${this.renderThumb(
+      ${this._renderThumb(
         this.upper,
         { label: this.thumbLabelUpper, describedBy },
         'thumbTo'

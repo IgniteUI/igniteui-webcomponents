@@ -676,6 +676,58 @@ describe('Calendar Rendering', () => {
     });
   });
 
+  describe('Change detection', () => {
+    const day = (date: number) =>
+      new CalendarDay({ year: 2025, month: 3, date }).native;
+
+    beforeEach(async () => {
+      calendar = await createCalendarElement(
+        html`<igc-calendar
+          selection="range"
+          visible-months="2"
+          .activeDate=${day(1)}
+          .values=${[day(3), day(6)]}
+          .disabledDates=${[
+            { type: DateRangeType.Specific, dateRange: [day(20)] },
+          ]}
+        ></igc-calendar>`
+      );
+    });
+
+    it('does not update for a value equal to the current one', () => {
+      calendar.activeDate = day(1);
+      calendar.values = [day(3), day(6)];
+      calendar.specialDates = undefined;
+
+      expect(calendar.isUpdatePending).to.be.false;
+    });
+
+    function spyOnViews() {
+      return Array.from(
+        calendar.renderRoot.querySelectorAll('igc-days-view'),
+        (view) => spy(view as unknown as { update(): void }, 'update')
+      );
+    }
+
+    it('does not update the views when it renders with the same state', async () => {
+      const updates = spyOnViews();
+
+      calendar.requestUpdate();
+      await elementUpdated(calendar);
+
+      expect(updates.map((update) => update.callCount)).to.eql([0, 0]);
+    });
+
+    it('still updates the views for a changed value', async () => {
+      const updates = spyOnViews();
+
+      calendar.values = [day(3), day(8)];
+      await elementUpdated(calendar);
+
+      expect(updates.map((update) => update.callCount)).to.eql([1, 1]);
+    });
+  });
+
   describe('Locale', () => {
     // July 2025 starts on a Tuesday
     const july = new CalendarDay({ year: 2025, month: 6, date: 15 });

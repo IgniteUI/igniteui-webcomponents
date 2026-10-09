@@ -19,23 +19,23 @@ import {
   createMutationController,
   type MutationControllerParams,
 } from '#internals/controllers/mutation-observer.js';
-import { createResizeObserverController } from '#internals/controllers/resize-observer.js';
+import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
 import { addRovingFocusController } from '#internals/controllers/roving-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { firstOf, isEmpty } from '#internals/utils/arrays.js';
-import { getRoot } from '#internals/utils/dom.js';
 import { getElementFromPath } from '#internals/utils/events.js';
 import { isString } from '#internals/utils/types.js';
+import { all } from '#themes/tabs/themes/tabs-themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import type { TabsActivation, TabsAlignment } from '../types.js';
 import { getTabHeader, TAB_HEADER, TabsHelpers } from './tab-dom.js';
 import IgcTabComponent from './tab.js';
 import { styles as shared } from './themes/shared/tabs/tabs.common.css.js';
-import { all } from './themes/tabs-themes.js';
 import { styles } from './themes/tabs.base.css.js';
 
 export interface IgcTabsComponentEventMap {
@@ -65,7 +65,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-tabs';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -78,7 +78,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   //#region Private state & properties
 
-  private readonly _resizeController = createResizeObserverController(this, {
+  private readonly _resizeController = addResizeObserverController(this, {
     callback: this._refreshLayout,
     options: { box: 'border-box' },
     target: null,
@@ -164,7 +164,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     addRovingFocusController(this, {
       keybindings: { ref: this._headerRef, skip: this._skipKeyboard },
       items: () => this._enabledTabs,
-      current: () => this._getClosestActiveTab(),
       focusItem: (tab) => this._keyboardActivateTab(tab),
       activateItem: (tab) => this._keyboardActivateTab(tab, true),
       missingCurrent: 'wrap',
@@ -258,12 +257,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   //#endregion
 
   //#region Private API
-
-  private _getClosestActiveTab(): IgcTabComponent | null {
-    return (
-      getRoot(this).activeElement?.closest(IgcTabComponent.tagName) ?? null
-    );
-  }
 
   private _isSelectable(tab?: IgcTabComponent): tab is IgcTabComponent {
     return tab != null && !tab.disabled && this._tabs.includes(tab);

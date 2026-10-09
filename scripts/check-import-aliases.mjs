@@ -32,6 +32,12 @@ const aliasOf = (key) => key.split('/', 1)[0];
 /** `./src/theming/*.ts` -> `src/theming` */
 const targetDirOf = (target) => path.posix.dirname(target.replace(/^\.\//, ''));
 
+/** The paths of an entry: the target itself, or each target of a conditional entry. */
+const pathsOf = (target) =>
+  typeof target === 'string'
+    ? [target]
+    : Object.values(target).flatMap(pathsOf);
+
 const isDirectory = (dir) =>
   stat(path.join(ROOT, dir)).then(
     (entry) => entry.isDirectory(),
@@ -91,12 +97,14 @@ for (const [key, target] of Object.entries(dev)) {
       continue;
     }
 
-    const actual = targetDirOf(distTarget);
+    for (const distPath of pathsOf(distTarget)) {
+      const actual = targetDirOf(distPath);
 
-    if (actual !== expected) {
-      fail(
-        `${DIST_MANIFEST}: "${distKey}" -> "${distTarget}" resolves to "${actual}", expected "${expected}" to mirror ${DEV_MANIFEST}`
-      );
+      if (actual !== expected) {
+        fail(
+          `${DIST_MANIFEST}: "${distKey}" -> "${distPath}" resolves to "${actual}", expected "${expected}" to mirror ${DEV_MANIFEST}`
+        );
+      }
     }
   }
 }

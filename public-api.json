@@ -1,0 +1,4106 @@
+{
+  "exports": [
+    "AbsolutePosition",
+    "AvatarShape",
+    "BadgeShape",
+    "ButtonGroupSelection",
+    "ButtonVariant",
+    "CalendarActiveView",
+    "CalendarHeaderOrientation",
+    "CalendarResourceStringsEN",
+    "CalendarSelection",
+    "CarouselIndicatorsOrientation",
+    "CarouselResourceStringsEN",
+    "ChatAttachmentRenderContext",
+    "ChatInputRenderContext",
+    "ChatMessageRenderContext",
+    "ChatRenderContext",
+    "ChatRenderers",
+    "ChatResourceStringsEN",
+    "ChatSuggestionsPosition",
+    "ChatTemplateRenderer",
+    "ChipResourceStringsEN",
+    "ColorFormat",
+    "ColorPickerMode",
+    "ComboItemTemplate",
+    "ComboResourceStringsEN",
+    "ComboTemplateProps",
+    "ContentOrientation",
+    "CustomDateRange",
+    "DatePart",
+    "DatePartDeltas",
+    "DatePickerResourceStringsEN",
+    "DateRangeDescriptor",
+    "DateRangePickerResourceStringsEN",
+    "DateRangeType",
+    "DateRangeValue",
+    "DividerType",
+    "ExpansionPanelIndicatorPosition",
+    "FileInputResourceStringsEN",
+    "FilteringOptions",
+    "GroupingDirection",
+    "HorizontalTransitionAnimation",
+    "ICalendarResourceStrings",
+    "ICarouselResourceStrings",
+    "IChatResourceStrings",
+    "IChipResourceStrings",
+    "IComboResourceStrings",
+    "IDatePickerResourceStrings",
+    "IDateRangePickerResourceStrings",
+    "IFileInputResourceStrings",
+    "ITreeResourceStrings",
+    "IconButtonVariant",
+    "IconMeta",
+    "IgcAccordionComponent",
+    "IgcActiveStepChangedEventArgs",
+    "IgcActiveStepChangingEventArgs",
+    "IgcAvatarComponent",
+    "IgcBadgeComponent",
+    "IgcBannerComponent",
+    "IgcBannerComponentEventMap",
+    "IgcBreadcrumbComponent",
+    "IgcBreadcrumbsComponent",
+    "IgcButtonComponent",
+    "IgcButtonGroupComponent",
+    "IgcButtonGroupComponentEventMap",
+    "IgcCalendarComponent",
+    "IgcCalendarComponentEventMap",
+    "IgcCalendarResourceStringEN",
+    "IgcCalendarResourceStrings",
+    "IgcCardActionsComponent",
+    "IgcCardComponent",
+    "IgcCardContentComponent",
+    "IgcCardHeaderComponent",
+    "IgcCardMediaComponent",
+    "IgcCarouselComponent",
+    "IgcCarouselComponentEventMap",
+    "IgcCarouselIndicatorComponent",
+    "IgcCarouselSlideComponent",
+    "IgcChatComponent",
+    "IgcChatComponentEventMap",
+    "IgcChatDraftMessage",
+    "IgcChatMessage",
+    "IgcChatMessageAttachment",
+    "IgcChatMessageReaction",
+    "IgcChatOptions",
+    "IgcChatResourceStringEN",
+    "IgcChatResourceStrings",
+    "IgcCheckboxChangeEventArgs",
+    "IgcCheckboxComponent",
+    "IgcCheckboxComponentEventMap",
+    "IgcChipComponent",
+    "IgcChipComponentEventMap",
+    "IgcCircularGradientComponent",
+    "IgcCircularProgressComponent",
+    "IgcColorPickerComponent",
+    "IgcColorPickerComponentEventMap",
+    "IgcComboChangeEventArgs",
+    "IgcComboComponent",
+    "IgcComboComponentEventMap",
+    "IgcDatePickerComponent",
+    "IgcDatePickerComponentEventMap",
+    "IgcDateRangePickerComponent",
+    "IgcDateRangePickerComponentEventMap",
+    "IgcDateRangePickerResourceStrings",
+    "IgcDateRangePickerResourceStringsEN",
+    "IgcDateTimeInputComponent",
+    "IgcDateTimeInputComponentEventMap",
+    "IgcDialogComponent",
+    "IgcDialogComponentEventMap",
+    "IgcDividerComponent",
+    "IgcDropdownComponent",
+    "IgcDropdownComponentEventMap",
+    "IgcDropdownGroupComponent",
+    "IgcDropdownHeaderComponent",
+    "IgcDropdownItemComponent",
+    "IgcExpansionPanelComponent",
+    "IgcExpansionPanelComponentEventMap",
+    "IgcFileInputComponent",
+    "IgcFileInputComponentEventMap",
+    "IgcHighlightComponent",
+    "IgcIconButtonComponent",
+    "IgcIconComponent",
+    "IgcInputComponent",
+    "IgcInputComponentEventMap",
+    "IgcLinearProgressComponent",
+    "IgcListComponent",
+    "IgcListHeaderComponent",
+    "IgcListItemComponent",
+    "IgcMaskInputComponent",
+    "IgcMaskInputComponentEventMap",
+    "IgcNavDrawerComponent",
+    "IgcNavDrawerComponentEventMap",
+    "IgcNavDrawerHeaderItemComponent",
+    "IgcNavDrawerItemComponent",
+    "IgcNavbarComponent",
+    "IgcQrCodeComponent",
+    "IgcRadioChangeEventArgs",
+    "IgcRadioComponent",
+    "IgcRadioComponentEventMap",
+    "IgcRadioGroupComponent",
+    "IgcRangeSliderComponent",
+    "IgcRangeSliderComponentEventMap",
+    "IgcRangeSliderValueEventArgs",
+    "IgcRatingComponent",
+    "IgcRatingComponentEventMap",
+    "IgcRatingSymbolComponent",
+    "IgcRippleComponent",
+    "IgcSelectComponent",
+    "IgcSelectComponentEventMap",
+    "IgcSelectGroupComponent",
+    "IgcSelectHeaderComponent",
+    "IgcSelectItemComponent",
+    "IgcSliderComponent",
+    "IgcSliderComponentEventMap",
+    "IgcSliderLabelComponent",
+    "IgcSnackbarComponent",
+    "IgcSnackbarComponentEventMap",
+    "IgcSplitterComponent",
+    "IgcSplitterComponentEventMap",
+    "IgcSplitterLayoutChangedEventArgs",
+    "IgcSplitterResizeEventArgs",
+    "IgcSplitterResizeEventDetail",
+    "IgcStepComponent",
+    "IgcStepperComponent",
+    "IgcStepperComponentEventMap",
+    "IgcSwitchComponent",
+    "IgcSwitchComponentEventMap",
+    "IgcTabComponent",
+    "IgcTabsComponent",
+    "IgcTabsComponentEventMap",
+    "IgcTextareaComponent",
+    "IgcTextareaComponentEventMap",
+    "IgcThemeProviderComponent",
+    "IgcTileChangeStateEventArgs",
+    "IgcTileComponent",
+    "IgcTileComponentEventMap",
+    "IgcTileManagerComponent",
+    "IgcToastComponent",
+    "IgcToggleButtonComponent",
+    "IgcTooltipComponent",
+    "IgcTooltipComponentEventMap",
+    "IgcTreeComponent",
+    "IgcTreeComponentEventMap",
+    "IgcTreeItemComponent",
+    "IgcTreeSelectionEventArgs",
+    "IgcVirtualScrollComponent",
+    "IgcVirtualScrollComponentEventMap",
+    "InputType",
+    "LinearProgressLabelAlign",
+    "MaskInputValueMode",
+    "NavDrawerPosition",
+    "NotificationPositioning",
+    "PickerMode",
+    "PopoverPlacement",
+    "PopoverScrollStrategy",
+    "QrCodeExportFormat",
+    "QrCodeExportOptions",
+    "QrCornerSquareStyle",
+    "QrDotStyle",
+    "QrErrorCorrectionLevel",
+    "RangeTextSelectMode",
+    "RegisterIconOptions",
+    "SelectionRangeDirection",
+    "SliderTickLabelRotation",
+    "SliderTickOrientation",
+    "SplitterOrientation",
+    "StepperOrientation",
+    "StepperStepType",
+    "StepperTitlePosition",
+    "StepperVerticalAnimation",
+    "StyleVariant",
+    "TabsActivation",
+    "TabsAlignment",
+    "TextareaResize",
+    "Theme",
+    "ThemeVariant",
+    "TileManagerDragMode",
+    "TileManagerResizeMode",
+    "ToggleLabelPosition",
+    "TreeResourceStringsEN",
+    "TreeSelection",
+    "VirtualScrollDataRequest",
+    "VirtualScrollItemContext",
+    "VirtualScrollItemTemplate",
+    "VirtualScrollKeyFunction",
+    "VirtualScrollState",
+    "WeekDays",
+    "configureTheme",
+    "defineAllComponents",
+    "defineComponents",
+    "registerI18n",
+    "registerIcon",
+    "registerIconFromText",
+    "setCurrentI18n",
+    "setIconRef",
+    "θaddAdoptedStylesController",
+    "θaddThemingController",
+    "θcreateAbortHandle"
+  ],
+  "elements": {
+    "igc-accordion": {
+      "class": "IgcAccordionComponent",
+      "attributes": {
+        "single-expand": "boolean"
+      },
+      "properties": {
+        "panels": "readonly IgcExpansionPanelComponent[]",
+        "singleExpand": "boolean",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "hideAll": "() => Promise<void>",
+        "showAll": "() => Promise<void>",
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-avatar": {
+      "class": "IgcAvatarComponent",
+      "attributes": {
+        "alt": "string | undefined",
+        "initials": "string | undefined",
+        "shape": "AvatarShape ('circle' | 'rounded' | 'square')",
+        "src": "string | undefined"
+      },
+      "properties": {
+        "alt": "string | undefined",
+        "initials": "string | undefined",
+        "shape": "AvatarShape ('circle' | 'rounded' | 'square')",
+        "src": "string | undefined",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [
+        "base",
+        "image",
+        "initials"
+      ],
+      "cssProperties": []
+    },
+    "igc-badge": {
+      "class": "IgcBadgeComponent",
+      "attributes": {
+        "dot": "boolean",
+        "outlined": "boolean",
+        "shape": "BadgeShape ('rounded' | 'square')",
+        "variant": "StyleVariant ('danger' | 'info' | 'primary' | 'success' | 'warning')"
+      },
+      "properties": {
+        "dot": "boolean",
+        "outlined": "boolean",
+        "shape": "BadgeShape ('rounded' | 'square')",
+        "static tagName": "readonly string",
+        "variant": "StyleVariant ('danger' | 'info' | 'primary' | 'success' | 'warning')"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [
+        "base",
+        "icon"
+      ],
+      "cssProperties": []
+    },
+    "igc-banner": {
+      "class": "IgcBannerComponent",
+      "attributes": {
+        "open": "boolean"
+      },
+      "properties": {
+        "open": "boolean",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "hide": "() => Promise<boolean>",
+        "show": "() => Promise<boolean>",
+        "static register": "() => void",
+        "toggle": "() => Promise<boolean>"
+      },
+      "events": {
+        "igcClosed": "unknown",
+        "igcClosing": "unknown"
+      },
+      "slots": [
+        "",
+        "actions",
+        "prefix"
+      ],
+      "cssParts": [
+        "actions",
+        "base",
+        "content",
+        "illustration",
+        "message",
+        "spacer"
+      ],
+      "cssProperties": []
+    },
+    "igc-breadcrumb": {
+      "class": "IgcBreadcrumbComponent",
+      "attributes": {
+        "current": "boolean",
+        "disabled": "boolean"
+      },
+      "properties": {
+        "current": "boolean",
+        "disabled": "boolean",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        "",
+        "prefix",
+        "separator",
+        "suffix"
+      ],
+      "cssParts": [
+        "label",
+        "separator"
+      ],
+      "cssProperties": []
+    },
+    "igc-breadcrumbs": {
+      "class": "IgcBreadcrumbsComponent",
+      "attributes": {
+        "separator": "string"
+      },
+      "properties": {
+        "separator": "string",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-button": {
+      "class": "IgcButtonComponent",
+      "attributes": {
+        "command": "string | undefined",
+        "commandfor": "string | null",
+        "disabled": "boolean",
+        "download": "string | undefined",
+        "href": "string | undefined",
+        "rel": "string | undefined",
+        "target": "'_blank' | '_parent' | '_self' | '_top' | undefined",
+        "type": "'button' | 'reset' | 'submit'",
+        "variant": "ButtonVariant ('contained' | 'fab' | 'flat' | 'outlined')"
+      },
+      "properties": {
+        "command": "string | undefined",
+        "commandfor": "string | null",
+        "commandForElement": "Element | null",
+        "disabled": "boolean",
+        "download": "string | undefined",
+        "form": "readonly HTMLFormElement | null",
+        "href": "string | undefined",
+        "rel": "string | undefined",
+        "static formAssociated": "readonly boolean",
+        "static tagName": "readonly string",
+        "target": "'_blank' | '_parent' | '_self' | '_top' | undefined",
+        "type": "'button' | 'reset' | 'submit'",
+        "variant": "ButtonVariant ('contained' | 'fab' | 'flat' | 'outlined')"
+      },
+      "methods": {
+        "click": "() => void",
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        "",
+        "prefix",
+        "suffix"
+      ],
+      "cssParts": [
+        "base"
+      ],
+      "cssProperties": []
+    },
+    "igc-button-group": {
+      "class": "IgcButtonGroupComponent",
+      "attributes": {
+        "alignment": "ContentOrientation ('horizontal' | 'vertical')",
+        "disabled": "boolean",
+        "selected-items": "string[]",
+        "selectedItems": "string[]",
+        "selection": "ButtonGroupSelection ('multiple' | 'single' | 'single-required')"
+      },
+      "properties": {
+        "alignment": "ContentOrientation ('horizontal' | 'vertical')",
+        "disabled": "boolean",
+        "selectedItems": "string[]",
+        "selection": "ButtonGroupSelection ('multiple' | 'single' | 'single-required')",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {
+        "igcDeselect": "unknown",
+        "igcSelect": "unknown"
+      },
+      "slots": [
+        ""
+      ],
+      "cssParts": [
+        "group"
+      ],
+      "cssProperties": []
+    },
+    "igc-calendar": {
+      "class": "IgcCalendarComponent",
+      "attributes": {
+        "active-date": "Date",
+        "active-view": "CalendarActiveView ('days' | 'months' | 'years')",
+        "header-orientation": "CalendarHeaderOrientation ('horizontal' | 'vertical')",
+        "hide-header": "boolean",
+        "hide-outside-days": "boolean",
+        "locale": "string",
+        "orientation": "ContentOrientation ('horizontal' | 'vertical')",
+        "selection": "CalendarSelection ('multiple' | 'range' | 'single')",
+        "show-week-numbers": "boolean",
+        "value": "Date | null",
+        "values": "Date[]",
+        "visible-months": "number",
+        "week-start": "WeekDays ('friday' | 'monday' | 'saturday' | 'sunday' | 'thursday' | 'tuesday' | 'wednesday')"
+      },
+      "properties": {
+        "activeDate": "Date",
+        "activeView": "CalendarActiveView ('days' | 'months' | 'years')",
+        "disabledDates": "DateRangeDescriptor[] | undefined",
+        "formatOptions": "Pick<Intl.DateTimeFormatOptions, 'month' | 'weekday'>",
+        "headerOrientation": "CalendarHeaderOrientation ('horizontal' | 'vertical')",
+        "hideHeader": "boolean",
+        "hideOutsideDays": "boolean",
+        "locale": "string",
+        "orientation": "ContentOrientation ('horizontal' | 'vertical')",
+        "resourceStrings": "TGet",
+        "selection": "CalendarSelection ('multiple' | 'range' | 'single')",
+        "showWeekNumbers": "boolean",
+        "specialDates": "DateRangeDescriptor[] | undefined",
+        "static tagName": "readonly string",
+        "value": "Date | null",
+        "values": "Date[]",
+        "visibleMonths": "number",
+        "weekStart": "WeekDays ('friday' | 'monday' | 'saturday' | 'sunday' | 'thursday' | 'tuesday' | 'wednesday')"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {
+        "igcChange": "unknown"
+      },
+      "slots": [
+        "header-date",
+        "title"
+      ],
+      "cssParts": [
+        "content",
+        "content-vertical",
+        "current",
+        "date",
+        "date-inner",
+        "days-row",
+        "days-view",
+        "days-view-container",
+        "disabled",
+        "first",
+        "header",
+        "header-date",
+        "header-title",
+        "hidden",
+        "inactive",
+        "label",
+        "label-inner",
+        "last",
+        "month",
+        "month-inner",
+        "months-navigation",
+        "months-row",
+        "months-view",
+        "navigation",
+        "navigation-button",
+        "navigation-buttons",
+        "preview",
+        "range",
+        "selected",
+        "single",
+        "special",
+        "week-number",
+        "week-number-inner",
+        "weekend",
+        "year",
+        "year-inner",
+        "years-navigation",
+        "years-range",
+        "years-row",
+        "years-view"
+      ],
+      "cssProperties": []
+    },
+    "igc-card": {
+      "class": "IgcCardComponent",
+      "attributes": {
+        "elevated": "boolean"
+      },
+      "properties": {
+        "elevated": "boolean",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-card-actions": {
+      "class": "IgcCardActionsComponent",
+      "attributes": {
+        "orientation": "ContentOrientation ('horizontal' | 'vertical')"
+      },
+      "properties": {
+        "orientation": "ContentOrientation ('horizontal' | 'vertical')",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        "",
+        "end",
+        "start"
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-card-content": {
+      "class": "IgcCardContentComponent",
+      "attributes": {},
+      "properties": {
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-card-header": {
+      "class": "IgcCardHeaderComponent",
+      "attributes": {},
+      "properties": {
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        "",
+        "subtitle",
+        "thumbnail",
+        "title"
+      ],
+      "cssParts": [
+        "header",
+        "subtitle",
+        "title"
+      ],
+      "cssProperties": []
+    },
+    "igc-card-media": {
+      "class": "IgcCardMediaComponent",
+      "attributes": {},
+      "properties": {
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-carousel": {
+      "class": "IgcCarouselComponent",
+      "attributes": {
+        "animation-type": "HorizontalTransitionAnimation ('fade' | 'none' | 'slide')",
+        "disable-loop": "boolean",
+        "disable-pause-on-interaction": "boolean",
+        "hide-indicators": "boolean",
+        "hide-navigation": "boolean",
+        "indicators-label-format": "unknown",
+        "indicators-orientation": "CarouselIndicatorsOrientation ('end' | 'start')",
+        "interval": "number | undefined",
+        "locale": "string",
+        "maximum-indicators-count": "number",
+        "slides-label-format": "unknown",
+        "vertical": "boolean"
+      },
+      "properties": {
+        "animationType": "HorizontalTransitionAnimation ('fade' | 'none' | 'slide')",
+        "current": "readonly number",
+        "disableLoop": "boolean",
+        "disablePauseOnInteraction": "boolean",
+        "hideIndicators": "boolean",
+        "hideNavigation": "boolean",
+        "indicatorsLabelFormat": "unknown",
+        "indicatorsOrientation": "CarouselIndicatorsOrientation ('end' | 'start')",
+        "interval": "number | undefined",
+        "isPaused": "readonly boolean",
+        "isPlaying": "readonly boolean",
+        "locale": "string",
+        "maximumIndicatorsCount": "number",
+        "resourceStrings": "TGet",
+        "slides": "readonly IgcCarouselSlideComponent[]",
+        "slidesLabelFormat": "unknown",
+        "static tagName": "readonly string",
+        "total": "readonly number",
+        "vertical": "boolean"
+      },
+      "methods": {
+        "next": "() => Promise<boolean>",
+        "pause": "() => void",
+        "play": "() => void",
+        "prev": "() => Promise<boolean>",
+        "select": "(slideOrIndex: IgcCarouselSlideComponent | number, animationDirection?: 'next' | 'prev') => Promise<boolean>",
+        "static register": "() => void"
+      },
+      "events": {
+        "igcPaused": "unknown",
+        "igcPlaying": "unknown",
+        "igcSlideChanged": "unknown"
+      },
+      "slots": [
+        "",
+        "indicator",
+        "next-button",
+        "previous-button"
+      ],
+      "cssParts": [
+        "active",
+        "dot",
+        "label",
+        "navigation",
+        "next",
+        "previous",
+        "start"
+      ],
+      "cssProperties": []
+    },
+    "igc-carousel-indicator": {
+      "class": "IgcCarouselIndicatorComponent",
+      "attributes": {},
+      "properties": {
+        "active": "boolean",
+        "index": "number",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        "",
+        "active"
+      ],
+      "cssParts": [
+        "active",
+        "inactive",
+        "indicator"
+      ],
+      "cssProperties": []
+    },
+    "igc-carousel-indicator-container": {
+      "class": "IgcCarouselIndicatorContainerComponent",
+      "attributes": {},
+      "properties": {
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [
+        "base"
+      ],
+      "cssProperties": []
+    },
+    "igc-carousel-slide": {
+      "class": "IgcCarouselSlideComponent",
+      "attributes": {
+        "active": "boolean",
+        "previous": "boolean"
+      },
+      "properties": {
+        "active": "boolean",
+        "previous": "boolean",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-chat": {
+      "class": "IgcChatComponent",
+      "attributes": {},
+      "properties": {
+        "draftMessage": "IgcChatDraftMessage",
+        "messages": "IgcChatMessage[]",
+        "options": "IgcChatOptions | undefined",
+        "resourceStrings": "IgcChatResourceStrings & IChatResourceStrings",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "scrollToMessage": "(messageId: string) => void",
+        "static register": "() => void"
+      },
+      "events": {
+        "igcAttachmentAdded": "unknown",
+        "igcAttachmentClick": "unknown",
+        "igcAttachmentDrag": "unknown",
+        "igcAttachmentDrop": "unknown",
+        "igcAttachmentRemoved": "unknown",
+        "igcInputBlur": "unknown",
+        "igcInputChange": "unknown",
+        "igcInputFocus": "unknown",
+        "igcMessageCreated": "unknown",
+        "igcMessageReact": "unknown",
+        "igcTypingChange": "unknown"
+      },
+      "slots": [
+        "actions",
+        "empty-state",
+        "prefix",
+        "suggestion",
+        "suggestions",
+        "suggestions-actions",
+        "suggestions-header",
+        "title",
+        "typing-indicator"
+      ],
+      "cssParts": [
+        "attachment-content",
+        "attachment-header",
+        "attachment-icon",
+        "chat-container",
+        "empty-state",
+        "file-name",
+        "file-upload",
+        "file-upload-container",
+        "header",
+        "input-actions-container",
+        "input-actions-end",
+        "input-actions-start",
+        "input-area",
+        "input-area-container",
+        "input-attachment-container",
+        "input-attachment-icon",
+        "input-attachment-name",
+        "input-attachments-container",
+        "input-container",
+        "message-actions-container",
+        "message-area-container",
+        "message-attachment",
+        "message-attachments-container",
+        "message-container",
+        "message-content",
+        "message-header",
+        "message-item",
+        "message-list",
+        "message-sent",
+        "send-button",
+        "send-button-container",
+        "suggestion",
+        "suggestion-prefix",
+        "suggestion-title",
+        "suggestions-container",
+        "suggestions-header",
+        "text-input",
+        "typing-dot",
+        "typing-indicator"
+      ],
+      "cssProperties": []
+    },
+    "igc-chat-input": {
+      "class": "IgcChatInputComponent",
+      "attributes": {},
+      "properties": {
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {
+        "igcAttachmentDrag": "unknown",
+        "igcAttachmentDrop": "unknown",
+        "igcInputBlur": "unknown",
+        "igcInputChange": "unknown",
+        "igcInputFocus": "unknown",
+        "igcTypingChange": "unknown"
+      },
+      "slots": [],
+      "cssParts": [
+        "actions-container",
+        "attachment-name",
+        "attachment-wrapper",
+        "attachments",
+        "input-container",
+        "input-wrapper",
+        "send-button",
+        "text-input"
+      ],
+      "cssProperties": []
+    },
+    "igc-chat-message": {
+      "class": "IgcChatMessageComponent",
+      "attributes": {},
+      "properties": {
+        "message": "IgcChatMessage",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-checkbox": {
+      "class": "IgcCheckboxComponent",
+      "attributes": {
+        "checked": "boolean",
+        "disabled": "boolean",
+        "indeterminate": "boolean",
+        "invalid": "boolean",
+        "label-position": "ToggleLabelPosition ('after' | 'before')",
+        "name": "string",
+        "required": "boolean",
+        "value": "string"
+      },
+      "properties": {
+        "checked": "boolean",
+        "defaultChecked": "boolean",
+        "disabled": "boolean",
+        "form": "readonly HTMLFormElement | null",
+        "indeterminate": "boolean",
+        "invalid": "boolean",
+        "labelPosition": "ToggleLabelPosition ('after' | 'before')",
+        "name": "string",
+        "required": "boolean",
+        "static formAssociated": "readonly boolean",
+        "static tagName": "readonly string",
+        "validationMessage": "readonly string",
+        "validity": "readonly ValidityState",
+        "value": "string",
+        "willValidate": "readonly boolean"
+      },
+      "methods": {
+        "blur": "() => void",
+        "checkValidity": "() => boolean",
+        "click": "() => void",
+        "focus": "(options?: FocusOptions) => void",
+        "reportValidity": "() => boolean",
+        "setCustomValidity": "(message: string) => void",
+        "static register": "() => void"
+      },
+      "events": {
+        "igcChange": "unknown"
+      },
+      "slots": [
+        "",
+        "custom-error",
+        "helper-text",
+        "invalid",
+        "value-missing"
+      ],
+      "cssParts": [
+        "base",
+        "control",
+        "indicator",
+        "label"
+      ],
+      "cssProperties": []
+    },
+    "igc-chip": {
+      "class": "IgcChipComponent",
+      "attributes": {
+        "disabled": "boolean",
+        "locale": "string",
+        "outlined": "boolean",
+        "removable": "boolean",
+        "selectable": "boolean",
+        "selected": "boolean",
+        "variant": "StyleVariant | undefined ('danger' | 'info' | 'primary' | 'success' | 'warning' | undefined)"
+      },
+      "properties": {
+        "disabled": "boolean",
+        "locale": "string",
+        "outlined": "boolean",
+        "removable": "boolean",
+        "resourceStrings": "TGet",
+        "selectable": "boolean",
+        "selected": "boolean",
+        "static tagName": "readonly string",
+        "variant": "StyleVariant | undefined ('danger' | 'info' | 'primary' | 'success' | 'warning' | undefined)"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {
+        "igcRemove": "unknown",
+        "igcSelect": "unknown"
+      },
+      "slots": [
+        "",
+        "end",
+        "prefix",
+        "remove",
+        "select",
+        "start",
+        "suffix"
+      ],
+      "cssParts": [
+        "action",
+        "base",
+        "content",
+        "prefix",
+        "remove",
+        "suffix"
+      ],
+      "cssProperties": []
+    },
+    "igc-circular-gradient": {
+      "class": "IgcCircularGradientComponent",
+      "attributes": {
+        "color": "string",
+        "offset": "string",
+        "opacity": "number"
+      },
+      "properties": {
+        "color": "string",
+        "offset": "string",
+        "opacity": "number",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-circular-progress": {
+      "class": "IgcCircularProgressComponent",
+      "attributes": {
+        "animation-duration": "number",
+        "hide-label": "boolean",
+        "indeterminate": "boolean",
+        "label-format": "string",
+        "max": "number",
+        "value": "number",
+        "variant": "StyleVariant ('danger' | 'info' | 'primary' | 'success' | 'warning')"
+      },
+      "properties": {
+        "animationDuration": "number",
+        "hideLabel": "boolean",
+        "indeterminate": "boolean",
+        "labelFormat": "string",
+        "max": "number",
+        "static tagName": "readonly string",
+        "value": "number",
+        "variant": "StyleVariant ('danger' | 'info' | 'primary' | 'success' | 'warning')"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        "",
+        "gradient"
+      ],
+      "cssParts": [
+        "fill",
+        "gradient_end",
+        "gradient_start",
+        "indeterminate",
+        "label",
+        "svg",
+        "track",
+        "value"
+      ],
+      "cssProperties": []
+    },
+    "igc-color-picker": {
+      "class": "IgcColorPickerComponent",
+      "attributes": {
+        "disabled": "boolean",
+        "format": "ColorFormat ('hex' | 'hsl' | 'rgb')",
+        "hide-formats": "boolean",
+        "invalid": "boolean",
+        "label": "string | undefined",
+        "mode": "ColorPickerMode ('default' | 'input')",
+        "name": "string",
+        "open": "boolean",
+        "required": "boolean",
+        "scroll-strategy": "PopoverScrollStrategy ('close' | 'hide' | 'scroll')",
+        "show-alpha": "boolean",
+        "value": "string"
+      },
+      "properties": {
+        "defaultValue": "unknown",
+        "disabled": "boolean",
+        "emitEvent": "<\n    K extends keyof ToggleEventMap,\n    D extends UnpackCustomEvent<ToggleEventMap[K]>,\n  >(\n    event: K,\n    eventInitDict?: CustomEventInit<D>\n  ) => boolean",
+        "form": "readonly HTMLFormElement | null",
+        "format": "ColorFormat ('hex' | 'hsl' | 'rgb')",
+        "hideFormats": "boolean",
+        "invalid": "boolean",
+        "label": "string | undefined",
+        "mode": "ColorPickerMode ('default' | 'input')",
+        "name": "string",
+        "open": "boolean",
+        "required": "boolean",
+        "scrollStrategy": "PopoverScrollStrategy ('close' | 'hide' | 'scroll')",
+        "showAlpha": "boolean",
+        "static formAssociated": "readonly boolean",
+        "static tagName": "readonly string",
+        "swatches": "string[]",
+        "validationMessage": "readonly string",
+        "validity": "readonly ValidityState",
+        "value": "string",
+        "willValidate": "readonly boolean"
+      },
+      "methods": {
+        "checkValidity": "() => boolean",
+        "hide": "() => Promise<boolean>",
+        "reportValidity": "() => boolean",
+        "setCustomValidity": "(message: string) => void",
+        "show": "() => Promise<boolean>",
+        "static register": "() => void",
+        "toggle": "() => Promise<boolean>"
+      },
+      "events": {
+        "igcChange": "unknown",
+        "igcClosed": "unknown",
+        "igcClosing": "unknown",
+        "igcInput": "unknown",
+        "igcOpened": "unknown",
+        "igcOpening": "unknown"
+      },
+      "slots": [
+        "custom-error",
+        "helper-text",
+        "invalid",
+        "value-missing"
+      ],
+      "cssParts": [
+        "alpha",
+        "alpha-row",
+        "anchor",
+        "buttons",
+        "copy",
+        "empty",
+        "eye-dropper",
+        "format-select",
+        "hue",
+        "inputs-row",
+        "label",
+        "main-row",
+        "picker",
+        "swatch",
+        "swatches"
+      ],
+      "cssProperties": []
+    },
+    "igc-combo": {
+      "class": "IgcComboComponent",
+      "attributes": {
+        "autofocus": "boolean",
+        "autofocus-list": "boolean",
+        "case-sensitive-icon": "boolean",
+        "disable-clear": "boolean",
+        "disable-filtering": "boolean",
+        "disabled": "boolean",
+        "display-key": "unknown",
+        "filtering-options": "FilteringOptions<T>",
+        "group-key": "Keys<T> | string | undefined",
+        "group-sorting": "\"asc\" | \"desc\" | \"none\" ('asc' | 'desc' | 'none')",
+        "invalid": "boolean",
+        "label": "string | undefined",
+        "locale": "string",
+        "name": "string",
+        "open": "boolean",
+        "outlined": "boolean",
+        "placeholder": "string | undefined",
+        "placeholder-search": "string",
+        "required": "boolean",
+        "scroll-strategy": "PopoverScrollStrategy ('close' | 'hide' | 'scroll')",
+        "single-select": "boolean",
+        "value": "ComboValue<T>[]",
+        "value-key": "Keys<T> | undefined"
+      },
+      "properties": {
+        "autofocus": "boolean",
+        "autofocusList": "boolean",
+        "caseSensitiveIcon": "boolean",
+        "data": "T[]",
+        "defaultValue": "unknown",
+        "disableClear": "boolean",
+        "disabled": "boolean",
+        "disableFiltering": "boolean",
+        "displayKey": "unknown",
+        "emitEvent": "<\n    K extends keyof ToggleEventMap,\n    D extends UnpackCustomEvent<ToggleEventMap[K]>,\n  >(\n    event: K,\n    eventInitDict?: CustomEventInit<D>\n  ) => boolean",
+        "filteringOptions": "FilteringOptions<T>",
+        "form": "readonly HTMLFormElement | null",
+        "groupHeaderTemplate": "ComboItemTemplate<T>",
+        "groupKey": "Keys<T> | string | undefined",
+        "groupSorting": "\"asc\" | \"desc\" | \"none\" ('asc' | 'desc' | 'none')",
+        "invalid": "boolean",
+        "itemTemplate": "ComboItemTemplate<T>",
+        "label": "string | undefined",
+        "locale": "string",
+        "name": "string",
+        "open": "boolean",
+        "outlined": "boolean",
+        "placeholder": "string | undefined",
+        "placeholderSearch": "string",
+        "required": "boolean",
+        "resourceStrings": "TGet",
+        "scrollStrategy": "PopoverScrollStrategy ('close' | 'hide' | 'scroll')",
+        "selection": "readonly T[]",
+        "singleSelect": "boolean",
+        "static formAssociated": "readonly boolean",
+        "static tagName": "readonly string",
+        "validationMessage": "readonly string",
+        "validity": "readonly ValidityState",
+        "value": "ComboValue<T>[]",
+        "valueKey": "Keys<T> | undefined",
+        "willValidate": "readonly boolean"
+      },
+      "methods": {
+        "blur": "() => void",
+        "checkValidity": "() => boolean",
+        "deselect": "(items?: Item<T> | Item<T>[]) => void",
+        "focus": "(options?: FocusOptions) => void",
+        "hide": "() => Promise<boolean>",
+        "reportValidity": "() => boolean",
+        "select": "(items?: Item<T> | Item<T>[]) => void",
+        "setCustomValidity": "(message: string) => void",
+        "show": "() => Promise<boolean>",
+        "static register": "() => void",
+        "toggle": "() => Promise<boolean>"
+      },
+      "events": {
+        "igcChange": "unknown",
+        "igcClosed": "unknown",
+        "igcClosing": "unknown",
+        "igcOpened": "unknown",
+        "igcOpening": "unknown"
+      },
+      "slots": [
+        "clear-icon",
+        "custom-error",
+        "empty",
+        "footer",
+        "header",
+        "helper-text",
+        "invalid",
+        "prefix",
+        "suffix",
+        "toggle-icon",
+        "value-missing"
+      ],
+      "cssParts": [
+        "active",
+        "case-icon",
+        "checkbox",
+        "checkbox-indicator",
+        "checked",
+        "clear-icon",
+        "empty",
+        "footer",
+        "group-header",
+        "header",
+        "helper-text",
+        "input",
+        "item",
+        "label",
+        "list",
+        "list-wrapper",
+        "native-input",
+        "prefix",
+        "search-input",
+        "selected",
+        "suffix",
+        "toggle-icon"
+      ],
+      "cssProperties": []
+    },
+    "igc-date-picker": {
+      "class": "IgcDatePickerComponent",
+      "attributes": {
+        "active-date": "Date",
+        "disabled": "boolean",
+        "display-format": "string",
+        "header-orientation": "CalendarHeaderOrientation ('horizontal' | 'vertical')",
+        "hide-header": "boolean",
+        "hide-outside-days": "boolean",
+        "input-format": "string",
+        "invalid": "boolean",
+        "keep-open-on-outside-click": "boolean",
+        "keep-open-on-select": "boolean",
+        "label": "string",
+        "locale": "string",
+        "max": "Date | null",
+        "min": "Date | null",
+        "mode": "PickerMode ('dialog' | 'dropdown')",
+        "name": "string",
+        "non-editable": "boolean",
+        "open": "boolean",
+        "orientation": "ContentOrientation ('horizontal' | 'vertical')",
+        "outlined": "boolean",
+        "placeholder": "string",
+        "prompt": "string",
+        "readonly": "boolean",
+        "required": "boolean",
+        "scroll-strategy": "PopoverScrollStrategy ('close' | 'hide' | 'scroll')",
+        "show-week-numbers": "boolean",
+        "value": "Date | null",
+        "visible-months": "number",
+        "week-start": "WeekDays ('friday' | 'monday' | 'saturday' | 'sunday' | 'thursday' | 'tuesday' | 'wednesday')"
+      },
+      "properties": {
+        "activeDate": "Date",
+        "defaultValue": "unknown",
+        "disabled": "boolean",
+        "disabledDates": "DateRangeDescriptor[]",
+        "displayFormat": "string",
+        "emitEvent": "<\n    K extends keyof ToggleEventMap,\n    D extends UnpackCustomEvent<ToggleEventMap[K]>,\n  >(\n    event: K,\n    eventInitDict?: CustomEventInit<D>\n  ) => boolean",
+        "form": "readonly HTMLFormElement | null",
+        "headerOrientation": "CalendarHeaderOrientation ('horizontal' | 'vertical')",
+        "hideHeader": "boolean",
+        "hideOutsideDays": "boolean",
+        "inputFormat": "string",
+        "invalid": "boolean",
+        "keepOpenOnOutsideClick": "boolean",
+        "keepOpenOnSelect": "boolean",
+        "label": "string",
+        "locale": "string",
+        "max": "Date | null",
+        "min": "Date | null",
+        "mode": "PickerMode ('dialog' | 'dropdown')",
+        "name": "string",
+        "nonEditable": "boolean",
+        "open": "boolean",
+        "orientation": "ContentOrientation ('horizontal' | 'vertical')",
+        "outlined": "boolean",
+        "placeholder": "string",
+        "prompt": "string",
+        "readOnly": "boolean",
+        "required": "boolean",
+        "resourceStrings": "IgcCalendarResourceStrings &\n    DatePickerResourceStringsType",
+        "scrollStrategy": "PopoverScrollStrategy ('close' | 'hide' | 'scroll')",
+        "selectionEnd": "readonly number",
+        "selectionStart": "readonly number",
+        "showWeekNumbers": "boolean",
+        "specialDates": "DateRangeDescriptor[]",
+        "static formAssociated": "readonly boolean",
+        "static tagName": "readonly string",
+        "validationMessage": "readonly string",
+        "validity": "readonly ValidityState",
+        "value": "Date | null",
+        "visibleMonths": "number",
+        "weekStart": "WeekDays ('friday' | 'monday' | 'saturday' | 'sunday' | 'thursday' | 'tuesday' | 'wednesday')",
+        "willValidate": "readonly boolean"
+      },
+      "methods": {
+        "checkValidity": "() => boolean",
+        "clear": "() => void",
+        "hide": "() => Promise<boolean>",
+        "reportValidity": "() => boolean",
+        "select": "() => void",
+        "setCustomValidity": "(message: string) => void",
+        "setRangeText": "(replacement: string, start?: number, end?: number, mode?: RangeTextSelectMode) => void",
+        "setSelectionRange": "(start: number, end: number, direction?: SelectionRangeDirection) => void",
+        "show": "() => Promise<boolean>",
+        "static register": "() => void",
+        "stepDown": "(datePart?: DatePart, delta?: number) => void",
+        "stepUp": "(datePart?: DatePart, delta?: number) => void",
+        "toggle": "() => Promise<boolean>"
+      },
+      "events": {
+        "igcChange": "unknown",
+        "igcClosed": "unknown",
+        "igcClosing": "unknown",
+        "igcInput": "unknown",
+        "igcOpened": "unknown",
+        "igcOpening": "unknown"
+      },
+      "slots": [
+        "actions",
+        "bad-input",
+        "calendar-icon",
+        "calendar-icon-open",
+        "clear-icon",
+        "custom-error",
+        "header-date",
+        "helper-text",
+        "invalid",
+        "prefix",
+        "range-overflow",
+        "range-underflow",
+        "suffix",
+        "title",
+        "value-missing"
+      ],
+      "cssParts": [
+        "actions",
+        "calendar-content",
+        "calendar-icon",
+        "calendar-icon-open",
+        "calendar-label",
+        "clear-icon",
+        "container",
+        "current",
+        "date",
+        "date-inner",
+        "days-row",
+        "days-view",
+        "days-view-container",
+        "disabled",
+        "first",
+        "header",
+        "header-date",
+        "header-title",
+        "helper-text",
+        "hidden",
+        "inactive",
+        "input",
+        "label",
+        "last",
+        "month",
+        "month-inner",
+        "months-navigation",
+        "months-view",
+        "navigation",
+        "navigation-button",
+        "navigation-buttons",
+        "prefix",
+        "preview",
+        "range",
+        "selected",
+        "single",
+        "special",
+        "suffix",
+        "week-number",
+        "week-number-inner",
+        "weekend",
+        "year",
+        "year-inner",
+        "years-navigation",
+        "years-range",
+        "years-view"
+      ],
+      "cssProperties": []
+    },
+    "igc-date-range-picker": {
+      "class": "IgcDateRangePickerComponent",
+      "attributes": {
+        "active-date": "Date",
+        "disabled": "boolean",
+        "display-format": "string",
+        "header-orientation": "CalendarHeaderOrientation ('horizontal' | 'vertical')",
+        "hide-header": "boolean",
+        "hide-outside-days": "boolean",
+        "input-format": "string",
+        "invalid": "boolean",
+        "keep-open-on-outside-click": "boolean",
+        "keep-open-on-select": "boolean",
+        "label": "string",
+        "label-end": "string",
+        "label-start": "string",
+        "locale": "string",
+        "max": "Date | null",
+        "min": "Date | null",
+        "mode": "PickerMode ('dialog' | 'dropdown')",
+        "name": "string",
+        "non-editable": "boolean",
+        "open": "boolean",
+        "orientation": "ContentOrientation ('horizontal' | 'vertical')",
+        "outlined": "boolean",
+        "placeholder": "string",
+        "placeholder-end": "string",
+        "placeholder-start": "string",
+        "prompt": "string",
+        "readonly": "boolean",
+        "required": "boolean",
+        "scroll-strategy": "PopoverScrollStrategy ('close' | 'hide' | 'scroll')",
+        "show-week-numbers": "boolean",
+        "use-predefined-ranges": "boolean",
+        "use-two-inputs": "boolean",
+        "usePredefinedRanges": "boolean",
+        "value": "DateRangeValue | null",
+        "visible-months": "number",
+        "week-start": "WeekDays ('friday' | 'monday' | 'saturday' | 'sunday' | 'thursday' | 'tuesday' | 'wednesday')"
+      },
+      "properties": {
+        "activeDate": "Date",
+        "customRanges": "CustomDateRange[]",
+        "defaultValue": "unknown",
+        "disabled": "boolean",
+        "disabledDates": "DateRangeDescriptor[]",
+        "displayFormat": "string",
+        "emitEvent": "<\n    K extends keyof ToggleEventMap,\n    D extends UnpackCustomEvent<ToggleEventMap[K]>,\n  >(\n    event: K,\n    eventInitDict?: CustomEventInit<D>\n  ) => boolean",
+        "form": "readonly HTMLFormElement | null",
+        "headerOrientation": "CalendarHeaderOrientation ('horizontal' | 'vertical')",
+        "hideHeader": "boolean",
+        "hideOutsideDays": "boolean",
+        "inputFormat": "string",
+        "invalid": "boolean",
+        "keepOpenOnOutsideClick": "boolean",
+        "keepOpenOnSelect": "boolean",
+        "label": "string",
+        "labelEnd": "string",
+        "labelStart": "string",
+        "locale": "string",
+        "max": "Date | null",
+        "min": "Date | null",
+        "mode": "PickerMode ('dialog' | 'dropdown')",
+        "name": "string",
+        "nonEditable": "boolean",
+        "open": "boolean",
+        "orientation": "ContentOrientation ('horizontal' | 'vertical')",
+        "outlined": "boolean",
+        "placeholder": "string",
+        "placeholderEnd": "string",
+        "placeholderStart": "string",
+        "prompt": "string",
+        "readOnly": "boolean",
+        "required": "boolean",
+        "resourceStrings": "IgcDateRangePickerResourceStrings &\n    DateRangePickerResourceStringsType",
+        "scrollStrategy": "PopoverScrollStrategy ('close' | 'hide' | 'scroll')",
+        "showWeekNumbers": "boolean",
+        "specialDates": "DateRangeDescriptor[]",
+        "static formAssociated": "readonly boolean",
+        "static tagName": "readonly string",
+        "usePredefinedRanges": "boolean",
+        "useTwoInputs": "boolean",
+        "validationMessage": "readonly string",
+        "validity": "readonly ValidityState",
+        "value": "DateRangeValue | null",
+        "visibleMonths": "number",
+        "weekStart": "WeekDays ('friday' | 'monday' | 'saturday' | 'sunday' | 'thursday' | 'tuesday' | 'wednesday')",
+        "willValidate": "readonly boolean"
+      },
+      "methods": {
+        "checkValidity": "() => boolean",
+        "clear": "() => void",
+        "hide": "() => Promise<boolean>",
+        "reportValidity": "() => boolean",
+        "select": "(value: DateRangeValue | null) => void",
+        "setCustomValidity": "(message: string) => void",
+        "show": "() => Promise<boolean>",
+        "static register": "() => void",
+        "toggle": "() => Promise<boolean>"
+      },
+      "events": {
+        "igcChange": "unknown",
+        "igcClosed": "unknown",
+        "igcClosing": "unknown",
+        "igcInput": "unknown",
+        "igcOpened": "unknown",
+        "igcOpening": "unknown"
+      },
+      "slots": [
+        "actions",
+        "bad-input",
+        "calendar-icon",
+        "calendar-icon-end",
+        "calendar-icon-open",
+        "calendar-icon-open-end",
+        "calendar-icon-open-start",
+        "calendar-icon-start",
+        "clear-icon",
+        "clear-icon-end",
+        "clear-icon-start",
+        "custom-error",
+        "header-date",
+        "helper-text",
+        "invalid",
+        "prefix",
+        "prefix-end",
+        "prefix-start",
+        "range-overflow",
+        "range-underflow",
+        "separator",
+        "suffix",
+        "suffix-end",
+        "suffix-start",
+        "title",
+        "value-missing"
+      ],
+      "cssParts": [
+        "actions",
+        "calendar-content",
+        "calendar-icon",
+        "calendar-icon-end",
+        "calendar-icon-open",
+        "calendar-icon-open-end",
+        "calendar-icon-open-start",
+        "calendar-icon-start",
+        "calendar-label",
+        "clear-icon",
+        "clear-icon-end",
+        "clear-icon-start",
+        "current",
+        "date",
+        "date-inner",
+        "days-row",
+        "days-view",
+        "days-view-container",
+        "disabled",
+        "first",
+        "header",
+        "header-date",
+        "header-title",
+        "helper-text",
+        "hidden",
+        "inactive",
+        "input",
+        "label",
+        "last",
+        "month",
+        "month-inner",
+        "months-navigation",
+        "months-view",
+        "navigation",
+        "navigation-button",
+        "navigation-buttons",
+        "prefix",
+        "preview",
+        "range",
+        "ranges",
+        "selected",
+        "separator",
+        "single",
+        "special",
+        "suffix",
+        "week-number",
+        "week-number-inner",
+        "weekend",
+        "year",
+        "year-inner",
+        "years-navigation",
+        "years-range",
+        "years-view"
+      ],
+      "cssProperties": []
+    },
+    "igc-date-time-input": {
+      "class": "IgcDateTimeInputComponent",
+      "attributes": {
+        "disabled": "boolean",
+        "display-format": "string",
+        "input-format": "string",
+        "invalid": "boolean",
+        "label": "string",
+        "locale": "string",
+        "mask": "string",
+        "max": "Date | null",
+        "min": "Date | null",
+        "name": "string",
+        "outlined": "boolean",
+        "placeholder": "string",
+        "prompt": "string",
+        "readonly": "boolean",
+        "readOnly": "boolean",
+        "required": "boolean",
+        "spin-loop": "boolean",
+        "value": "Date | null"
+      },
+      "properties": {
+        "defaultValue": "unknown",
+        "disabled": "boolean",
+        "displayFormat": "string",
+        "form": "readonly HTMLFormElement | null",
+        "inputFormat": "string",
+        "invalid": "boolean",
+        "label": "string",
+        "locale": "string",
+        "mask": "string",
+        "max": "Date | null",
+        "min": "Date | null",
+        "name": "string",
+        "outlined": "boolean",
+        "placeholder": "string",
+        "prompt": "string",
+        "readOnly": "boolean",
+        "required": "boolean",
+        "selectionEnd": "readonly number",
+        "selectionStart": "readonly number",
+        "spinDelta": "DatePartDeltas | undefined",
+        "spinLoop": "boolean",
+        "static formAssociated": "readonly boolean",
+        "static tagName": "readonly string",
+        "validationMessage": "readonly string",
+        "validity": "readonly ValidityState",
+        "value": "T | null",
+        "willValidate": "readonly boolean"
+      },
+      "methods": {
+        "blur": "() => void",
+        "checkValidity": "() => boolean",
+        "clear": "() => void",
+        "emitEvent": "(name: string, init?: CustomEventInit) => boolean",
+        "focus": "(options?: FocusOptions) => void",
+        "hasDateParts": "() => boolean",
+        "hasTimeParts": "() => boolean",
+        "reportValidity": "() => boolean",
+        "select": "() => void",
+        "setCustomValidity": "(message: string) => void",
+        "setRangeText": "(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode) => void",
+        "setSelectionRange": "(start?: number, end?: number, direction: SelectionRangeDirection) => void",
+        "static register": "() => void",
+        "stepDown": "(datePart?: DatePart, delta?: number) => void",
+        "stepUp": "(datePart?: DatePart, delta?: number) => void"
+      },
+      "events": {
+        "igcChange": "unknown",
+        "igcInput": "unknown"
+      },
+      "slots": [
+        "custom-error",
+        "helper-text",
+        "invalid",
+        "prefix",
+        "range-overflow",
+        "range-underflow",
+        "suffix",
+        "value-missing"
+      ],
+      "cssParts": [
+        "container",
+        "helper-text",
+        "input",
+        "label",
+        "prefix",
+        "suffix"
+      ],
+      "cssProperties": []
+    },
+    "igc-days-view": {
+      "class": "IgcDaysViewComponent",
+      "attributes": {
+        "active": "boolean",
+        "active-date": "Date",
+        "hide-leading-days": "boolean",
+        "hide-trailing-days": "boolean",
+        "locale": "string",
+        "selection": "CalendarSelection ('multiple' | 'range' | 'single')",
+        "show-week-numbers": "boolean",
+        "value": "Date | null",
+        "values": "Date[]",
+        "week-day-format": "'long' | 'short' | 'narrow' ('long' | 'narrow' | 'short')",
+        "week-start": "WeekDays ('friday' | 'monday' | 'saturday' | 'sunday' | 'thursday' | 'tuesday' | 'wednesday')"
+      },
+      "properties": {
+        "active": "boolean",
+        "activeDate": "Date",
+        "disabledDates": "DateRangeDescriptor[] | undefined",
+        "hideLeadingDays": "boolean",
+        "hideTrailingDays": "boolean",
+        "locale": "string",
+        "rangePreviewDate": "Date | undefined",
+        "resourceStrings": "TGet",
+        "selection": "CalendarSelection ('multiple' | 'range' | 'single')",
+        "showWeekNumbers": "boolean",
+        "specialDates": "DateRangeDescriptor[] | undefined",
+        "static tagName": "readonly string",
+        "value": "Date | null",
+        "values": "Date[]",
+        "weekDayFormat": "'long' | 'short' | 'narrow' ('long' | 'narrow' | 'short')",
+        "weekStart": "WeekDays ('friday' | 'monday' | 'saturday' | 'sunday' | 'thursday' | 'tuesday' | 'wednesday')"
+      },
+      "methods": {
+        "focusActiveDate": "(options?: FocusOptions) => void",
+        "static register": "() => void"
+      },
+      "events": {
+        "igcActiveDateChange": "unknown",
+        "igcRangePreviewDateChange": "unknown"
+      },
+      "slots": [],
+      "cssParts": [
+        "days-row",
+        "label",
+        "label-inner",
+        "week-number",
+        "week-number-inner"
+      ],
+      "cssProperties": []
+    },
+    "igc-dialog": {
+      "class": "IgcDialogComponent",
+      "attributes": {
+        "close-on-outside-click": "boolean",
+        "hide-default-action": "boolean",
+        "keep-open-on-escape": "boolean",
+        "open": "boolean",
+        "title": "string"
+      },
+      "properties": {
+        "closeOnOutsideClick": "boolean",
+        "hideDefaultAction": "boolean",
+        "keepOpenOnEscape": "boolean",
+        "open": "boolean",
+        "returnValue": "string | undefined",
+        "static tagName": "readonly string",
+        "title": "string"
+      },
+      "methods": {
+        "hide": "() => Promise<boolean>",
+        "show": "() => Promise<boolean>",
+        "static register": "() => void",
+        "toggle": "() => Promise<boolean>"
+      },
+      "events": {
+        "igcClosed": "unknown",
+        "igcClosing": "unknown"
+      },
+      "slots": [
+        "",
+        "footer",
+        "message",
+        "title"
+      ],
+      "cssParts": [
+        "animating",
+        "backdrop",
+        "base",
+        "content",
+        "footer",
+        "title"
+      ],
+      "cssProperties": []
+    },
+    "igc-divider": {
+      "class": "IgcDividerComponent",
+      "attributes": {
+        "middle": "boolean",
+        "type": "DividerType ('dashed' | 'solid')",
+        "vertical": "boolean"
+      },
+      "properties": {
+        "middle": "boolean",
+        "static tagName": "readonly string",
+        "type": "DividerType ('dashed' | 'solid')",
+        "vertical": "boolean"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [],
+      "cssParts": [],
+      "cssProperties": [
+        "--color",
+        "--inset"
+      ]
+    },
+    "igc-dropdown": {
+      "class": "IgcDropdownComponent",
+      "attributes": {
+        "distance": "number",
+        "flip": "boolean",
+        "keep-open-on-outside-click": "boolean",
+        "keep-open-on-select": "boolean",
+        "open": "boolean",
+        "placement": "PopoverPlacement ('bottom' | 'bottom-end' | 'bottom-start' | 'left' | 'left-end' | 'left-start' | 'right' | 'right-end' | 'right-start' | 'top' | 'top-end' | 'top-start')",
+        "same-width": "boolean",
+        "scroll-strategy": "PopoverScrollStrategy ('close' | 'hide' | 'scroll')"
+      },
+      "properties": {
+        "distance": "number",
+        "emitEvent": "<\n    K extends keyof ToggleEventMap,\n    D extends UnpackCustomEvent<ToggleEventMap[K]>,\n  >(\n    event: K,\n    eventInitDict?: CustomEventInit<D>\n  ) => boolean",
+        "flip": "boolean",
+        "groups": "readonly IgcDropdownGroupComponent[]",
+        "items": "readonly IgcDropdownItemComponent[]",
+        "keepOpenOnOutsideClick": "boolean",
+        "keepOpenOnSelect": "boolean",
+        "open": "boolean",
+        "placement": "PopoverPlacement ('bottom' | 'bottom-end' | 'bottom-start' | 'left' | 'left-end' | 'left-start' | 'right' | 'right-end' | 'right-start' | 'top' | 'top-end' | 'top-start')",
+        "sameWidth": "boolean",
+        "scrollStrategy": "PopoverScrollStrategy ('close' | 'hide' | 'scroll')",
+        "selectedItem": "readonly IgcDropdownItemComponent | null",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "clearSelection": "() => void",
+        "hide": "() => Promise<boolean>",
+        "navigateTo": "(value: string | number) => IgcDropdownItemComponent | null",
+        "select": "(value: string | number) => IgcDropdownItemComponent | null",
+        "show": "(target?: HTMLElement | string) => Promise<boolean>",
+        "static register": "() => void",
+        "toggle": "(target?: HTMLElement | string) => Promise<boolean>"
+      },
+      "events": {
+        "igcChange": "unknown",
+        "igcClosed": "unknown",
+        "igcClosing": "unknown",
+        "igcOpened": "unknown",
+        "igcOpening": "unknown"
+      },
+      "slots": [
+        "",
+        "target"
+      ],
+      "cssParts": [
+        "base",
+        "list"
+      ],
+      "cssProperties": []
+    },
+    "igc-dropdown-group": {
+      "class": "IgcDropdownGroupComponent",
+      "attributes": {},
+      "properties": {
+        "items": "Array<IgcDropdownItemComponent>",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        "",
+        "label"
+      ],
+      "cssParts": [
+        "label"
+      ],
+      "cssProperties": []
+    },
+    "igc-dropdown-header": {
+      "class": "IgcDropdownHeaderComponent",
+      "attributes": {},
+      "properties": {
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-dropdown-item": {
+      "class": "IgcDropdownItemComponent",
+      "attributes": {
+        "active": "boolean",
+        "disabled": "boolean",
+        "selected": "boolean",
+        "value": "string"
+      },
+      "properties": {
+        "active": "boolean",
+        "disabled": "boolean",
+        "selected": "boolean",
+        "static tagName": "readonly string",
+        "value": "string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        "",
+        "prefix",
+        "suffix"
+      ],
+      "cssParts": [
+        "content",
+        "prefix",
+        "suffix"
+      ],
+      "cssProperties": []
+    },
+    "igc-expansion-panel": {
+      "class": "IgcExpansionPanelComponent",
+      "attributes": {
+        "disabled": "boolean",
+        "indicator-position": "ExpansionPanelIndicatorPosition ('end' | 'none' | 'start')",
+        "open": "boolean"
+      },
+      "properties": {
+        "disabled": "boolean",
+        "indicatorPosition": "ExpansionPanelIndicatorPosition ('end' | 'none' | 'start')",
+        "open": "boolean",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "hide": "() => ",
+        "show": "() => ",
+        "static register": "() => void",
+        "toggle": "() => "
+      },
+      "events": {
+        "igcClosed": "unknown",
+        "igcClosing": "unknown",
+        "igcOpened": "unknown",
+        "igcOpening": "unknown"
+      },
+      "slots": [
+        "",
+        "indicator",
+        "indicator-expanded",
+        "subtitle",
+        "title"
+      ],
+      "cssParts": [
+        "content",
+        "header",
+        "indicator",
+        "subtitle",
+        "title"
+      ],
+      "cssProperties": []
+    },
+    "igc-file-input": {
+      "class": "IgcFileInputComponent",
+      "attributes": {
+        "accept": "string",
+        "autofocus": "boolean",
+        "disabled": "boolean",
+        "invalid": "boolean",
+        "label": "string",
+        "locale": "string",
+        "multiple": "boolean",
+        "name": "string",
+        "outlined": "boolean",
+        "placeholder": "string",
+        "required": "boolean",
+        "value": "string"
+      },
+      "properties": {
+        "accept": "string",
+        "autofocus": "boolean",
+        "defaultValue": "unknown",
+        "disabled": "boolean",
+        "files": "readonly FileList",
+        "form": "readonly HTMLFormElement | null",
+        "invalid": "boolean",
+        "label": "string",
+        "locale": "string",
+        "multiple": "boolean",
+        "name": "string",
+        "outlined": "boolean",
+        "placeholder": "string",
+        "required": "boolean",
+        "resourceStrings": "TGet",
+        "static formAssociated": "readonly boolean",
+        "static tagName": "readonly string",
+        "validationMessage": "readonly string",
+        "validity": "readonly ValidityState",
+        "value": "string",
+        "willValidate": "readonly boolean"
+      },
+      "methods": {
+        "blur": "() => void",
+        "checkValidity": "() => boolean",
+        "focus": "(options?: FocusOptions) => void",
+        "reportValidity": "() => boolean",
+        "select": "() => void",
+        "setCustomValidity": "(message: string) => void",
+        "static register": "() => void"
+      },
+      "events": {
+        "igcCancel": "unknown",
+        "igcChange": "unknown"
+      },
+      "slots": [
+        "custom-error",
+        "file-missing-text",
+        "file-selector-text",
+        "helper-text",
+        "invalid",
+        "prefix",
+        "suffix",
+        "value-missing"
+      ],
+      "cssParts": [
+        "container",
+        "file-names",
+        "file-selector-button",
+        "helper-text",
+        "input",
+        "label",
+        "prefix",
+        "suffix"
+      ],
+      "cssProperties": []
+    },
+    "igc-focus-trap": {
+      "class": "IgcFocusTrapComponent",
+      "attributes": {
+        "disabled": "boolean"
+      },
+      "properties": {
+        "disabled": "boolean",
+        "focusableElements": "readonly unknown",
+        "focused": "readonly unknown",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "focusFirstElement": "() => void",
+        "focusLastElement": "() => void",
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-highlight": {
+      "class": "IgcHighlightComponent",
+      "attributes": {
+        "case-sensitive": "boolean",
+        "search-text": "string"
+      },
+      "properties": {
+        "caseSensitive": "boolean",
+        "current": "readonly number",
+        "searchText": "string",
+        "size": "readonly number",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "next": "(options?: HighlightNavigation) => void",
+        "previous": "(options?: HighlightNavigation) => void",
+        "search": "() => void",
+        "setActive": "(index: number, options?: HighlightNavigation) => void",
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": [
+        "--background",
+        "--background-active",
+        "--foreground",
+        "--foreground-active"
+      ]
+    },
+    "igc-icon": {
+      "class": "IgcIconComponent",
+      "attributes": {
+        "collection": "string",
+        "mirrored": "boolean",
+        "name": "string"
+      },
+      "properties": {
+        "collection": "string",
+        "mirrored": "boolean",
+        "name": "string",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-icon-button": {
+      "class": "IgcIconButtonComponent",
+      "attributes": {
+        "collection": "string | undefined",
+        "command": "string | undefined",
+        "commandfor": "string | null",
+        "disabled": "boolean",
+        "download": "string | undefined",
+        "href": "string | undefined",
+        "mirrored": "boolean",
+        "name": "string | undefined",
+        "rel": "string | undefined",
+        "target": "'_blank' | '_parent' | '_self' | '_top' | undefined",
+        "type": "'button' | 'reset' | 'submit'",
+        "variant": "IconButtonVariant ('contained' | 'flat' | 'outlined')"
+      },
+      "properties": {
+        "collection": "string | undefined",
+        "command": "string | undefined",
+        "commandfor": "string | null",
+        "commandForElement": "Element | null",
+        "disabled": "boolean",
+        "download": "string | undefined",
+        "form": "readonly HTMLFormElement | null",
+        "href": "string | undefined",
+        "mirrored": "boolean",
+        "name": "string | undefined",
+        "rel": "string | undefined",
+        "static formAssociated": "readonly boolean",
+        "static tagName": "readonly string",
+        "target": "'_blank' | '_parent' | '_self' | '_top' | undefined",
+        "type": "'button' | 'reset' | 'submit'",
+        "variant": "IconButtonVariant ('contained' | 'flat' | 'outlined')"
+      },
+      "methods": {
+        "click": "() => void",
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [
+        "base",
+        "icon"
+      ],
+      "cssProperties": []
+    },
+    "igc-input": {
+      "class": "IgcInputComponent",
+      "attributes": {
+        "autocomplete": "string",
+        "autofocus": "boolean",
+        "disabled": "boolean",
+        "inputmode": "string",
+        "invalid": "boolean",
+        "label": "string",
+        "max": "number | undefined",
+        "maxlength": "number | undefined",
+        "min": "number | undefined",
+        "minlength": "number | undefined",
+        "name": "string",
+        "outlined": "boolean",
+        "pattern": "string | undefined",
+        "placeholder": "string",
+        "readonly": "boolean",
+        "readOnly": "boolean",
+        "required": "boolean",
+        "step": "number | undefined",
+        "type": "InputType ('email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url')",
+        "validate-only": "boolean",
+        "value": "string"
+      },
+      "properties": {
+        "autocomplete": "string",
+        "autofocus": "boolean",
+        "defaultValue": "unknown",
+        "disabled": "boolean",
+        "form": "readonly HTMLFormElement | null",
+        "inputMode": "string",
+        "invalid": "boolean",
+        "label": "string",
+        "max": "number | undefined",
+        "maxLength": "number | undefined",
+        "min": "number | undefined",
+        "minLength": "number | undefined",
+        "name": "string",
+        "outlined": "boolean",
+        "pattern": "string | undefined",
+        "placeholder": "string",
+        "readOnly": "boolean",
+        "required": "boolean",
+        "selectionEnd": "readonly number | null",
+        "selectionStart": "readonly number | null",
+        "static formAssociated": "readonly boolean",
+        "static tagName": "readonly string",
+        "step": "number | undefined",
+        "type": "InputType ('email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url')",
+        "validateOnly": "boolean",
+        "validationMessage": "readonly string",
+        "validity": "readonly ValidityState",
+        "value": "string",
+        "willValidate": "readonly boolean"
+      },
+      "methods": {
+        "blur": "() => void",
+        "checkValidity": "() => boolean",
+        "focus": "(options?: FocusOptions) => void",
+        "reportValidity": "() => boolean",
+        "select": "() => void",
+        "setCustomValidity": "(message: string) => void",
+        "setRangeText": "(replacement: string, start?: number, end?: number, selectMode: RangeTextSelectMode) => void",
+        "setSelectionRange": "(start?: number, end?: number, direction: SelectionRangeDirection) => void",
+        "static register": "() => void",
+        "stepDown": "(n?: number) => void",
+        "stepUp": "(n?: number) => void"
+      },
+      "events": {
+        "igcChange": "unknown",
+        "igcInput": "unknown"
+      },
+      "slots": [
+        "custom-error",
+        "helper-text",
+        "invalid",
+        "pattern-mismatch",
+        "prefix",
+        "range-overflow",
+        "range-underflow",
+        "step-mismatch",
+        "suffix",
+        "too-long",
+        "too-short",
+        "type-mismatch",
+        "value-missing"
+      ],
+      "cssParts": [
+        "container",
+        "helper-text",
+        "input",
+        "label",
+        "prefix",
+        "suffix"
+      ],
+      "cssProperties": []
+    },
+    "igc-linear-progress": {
+      "class": "IgcLinearProgressComponent",
+      "attributes": {
+        "animation-duration": "number",
+        "hide-label": "boolean",
+        "indeterminate": "boolean",
+        "label-align": "LinearProgressLabelAlign ('bottom' | 'bottom-end' | 'bottom-start' | 'top' | 'top-end' | 'top-start')",
+        "label-format": "string",
+        "max": "number",
+        "striped": "boolean",
+        "value": "number",
+        "variant": "StyleVariant ('danger' | 'info' | 'primary' | 'success' | 'warning')"
+      },
+      "properties": {
+        "animationDuration": "number",
+        "hideLabel": "boolean",
+        "indeterminate": "boolean",
+        "labelAlign": "LinearProgressLabelAlign ('bottom' | 'bottom-end' | 'bottom-start' | 'top' | 'top-end' | 'top-start')",
+        "labelFormat": "string",
+        "max": "number",
+        "static tagName": "readonly string",
+        "striped": "boolean",
+        "value": "number",
+        "variant": "StyleVariant ('danger' | 'info' | 'primary' | 'success' | 'warning')"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [
+        "danger",
+        "fill",
+        "indeterminate",
+        "info",
+        "label",
+        "primary",
+        "striped",
+        "success",
+        "track",
+        "value",
+        "warning"
+      ],
+      "cssProperties": []
+    },
+    "igc-list": {
+      "class": "IgcListComponent",
+      "attributes": {},
+      "properties": {
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-list-header": {
+      "class": "IgcListHeaderComponent",
+      "attributes": {},
+      "properties": {
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-list-item": {
+      "class": "IgcListItemComponent",
+      "attributes": {
+        "selected": "boolean"
+      },
+      "properties": {
+        "selected": "boolean",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        "",
+        "end",
+        "start",
+        "subtitle",
+        "title"
+      ],
+      "cssParts": [
+        "content",
+        "end",
+        "header",
+        "start",
+        "subtitle",
+        "title"
+      ],
+      "cssProperties": []
+    },
+    "igc-mask-input": {
+      "class": "IgcMaskInputComponent",
+      "attributes": {
+        "disabled": "boolean",
+        "invalid": "boolean",
+        "label": "string",
+        "mask": "string",
+        "name": "string",
+        "outlined": "boolean",
+        "placeholder": "string",
+        "prompt": "string",
+        "readonly": "boolean",
+        "readOnly": "boolean",
+        "required": "boolean",
+        "value": "string",
+        "value-mode": "MaskInputValueMode ('raw' | 'withFormatting')"
+      },
+      "properties": {
+        "defaultValue": "unknown",
+        "disabled": "boolean",
+        "form": "readonly HTMLFormElement | null",
+        "invalid": "boolean",
+        "label": "string",
+        "mask": "string",
+        "name": "string",
+        "outlined": "boolean",
+        "placeholder": "string",
+        "prompt": "string",
+        "readOnly": "boolean",
+        "required": "boolean",
+        "selectionEnd": "readonly number",
+        "selectionStart": "readonly number",
+        "static formAssociated": "readonly boolean",
+        "static tagName": "readonly string",
+        "validationMessage": "readonly string",
+        "validity": "readonly ValidityState",
+        "value": "string",
+        "valueMode": "MaskInputValueMode ('raw' | 'withFormatting')",
+        "willValidate": "readonly boolean"
+      },
+      "methods": {
+        "blur": "() => void",
+        "checkValidity": "() => boolean",
+        "focus": "(options?: FocusOptions) => void",
+        "isValidMaskPattern": "() => boolean",
+        "reportValidity": "() => boolean",
+        "select": "() => void",
+        "setCustomValidity": "(message: string) => void",
+        "setRangeText": "(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode) => void",
+        "setSelectionRange": "(start?: number, end?: number, direction: SelectionRangeDirection) => void",
+        "static register": "() => void"
+      },
+      "events": {
+        "igcChange": "unknown",
+        "igcInput": "unknown"
+      },
+      "slots": [
+        "bad-input",
+        "custom-error",
+        "helper-text",
+        "invalid",
+        "prefix",
+        "suffix",
+        "value-missing"
+      ],
+      "cssParts": [
+        "container",
+        "helper-text",
+        "input",
+        "label",
+        "prefix",
+        "suffix"
+      ],
+      "cssProperties": []
+    },
+    "igc-months-view": {
+      "class": "IgcMonthsViewComponent",
+      "attributes": {
+        "locale": "string",
+        "month-format": "'numeric' | '2-digit' | 'long' | 'short' | 'narrow' ('2-digit' | 'long' | 'narrow' | 'numeric' | 'short')"
+      },
+      "properties": {
+        "locale": "string",
+        "monthFormat": "'numeric' | '2-digit' | 'long' | 'short' | 'narrow' ('2-digit' | 'long' | 'narrow' | 'numeric' | 'short')",
+        "static tagName": "readonly string",
+        "value": "Date"
+      },
+      "methods": {
+        "focusActiveDate": "(options?: FocusOptions) => void",
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [],
+      "cssParts": [
+        "month",
+        "month-inner",
+        "months-row"
+      ],
+      "cssProperties": []
+    },
+    "igc-nav-drawer": {
+      "class": "IgcNavDrawerComponent",
+      "attributes": {
+        "keep-open-on-escape": "boolean",
+        "label": "string | undefined",
+        "open": "boolean",
+        "position": "NavDrawerPosition ('bottom' | 'end' | 'relative' | 'start' | 'top')"
+      },
+      "properties": {
+        "keepOpenOnEscape": "boolean",
+        "label": "string | undefined",
+        "open": "boolean",
+        "position": "NavDrawerPosition ('bottom' | 'end' | 'relative' | 'start' | 'top')",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "hide": "() => Promise<boolean>",
+        "show": "() => Promise<boolean>",
+        "static register": "() => void",
+        "toggle": "() => Promise<boolean>"
+      },
+      "events": {
+        "igcClosed": "unknown",
+        "igcClosing": "unknown"
+      },
+      "slots": [
+        "",
+        "mini"
+      ],
+      "cssParts": [
+        "base",
+        "main",
+        "mini"
+      ],
+      "cssProperties": []
+    },
+    "igc-nav-drawer-header-item": {
+      "class": "IgcNavDrawerHeaderItemComponent",
+      "attributes": {},
+      "properties": {
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-nav-drawer-item": {
+      "class": "IgcNavDrawerItemComponent",
+      "attributes": {
+        "active": "boolean",
+        "disabled": "boolean"
+      },
+      "properties": {
+        "active": "boolean",
+        "disabled": "boolean",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        "content",
+        "icon"
+      ],
+      "cssParts": [
+        "base",
+        "content",
+        "icon"
+      ],
+      "cssProperties": []
+    },
+    "igc-navbar": {
+      "class": "IgcNavbarComponent",
+      "attributes": {},
+      "properties": {
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        "",
+        "end",
+        "start"
+      ],
+      "cssParts": [
+        "base",
+        "end",
+        "middle",
+        "start"
+      ],
+      "cssProperties": []
+    },
+    "igc-picker-canvas": {
+      "class": "IgcPickerCanvasComponent",
+      "attributes": {
+        "currentColor": "string",
+        "markerColor": "string",
+        "markerLabel": "string"
+      },
+      "properties": {
+        "brightness": "number",
+        "currentColor": "string",
+        "markerColor": "string",
+        "markerLabel": "string",
+        "saturation": "number",
+        "static tagName": "readonly string",
+        "x": "number",
+        "y": "number"
+      },
+      "methods": {
+        "getMarkerDimensions": "() => { width: number; height: number }",
+        "static register": "() => void"
+      },
+      "events": {
+        "igcColorPicked": "unknown"
+      },
+      "slots": [],
+      "cssParts": [
+        "dragging",
+        "marker"
+      ],
+      "cssProperties": []
+    },
+    "igc-popover": {
+      "class": "IgcPopoverComponent",
+      "attributes": {
+        "anchor": "Element | string | undefined",
+        "arrow-offset": "number",
+        "flip": "boolean",
+        "offset": "number",
+        "open": "boolean",
+        "placement": "PopoverPlacement ('bottom' | 'bottom-end' | 'bottom-start' | 'left' | 'left-end' | 'left-start' | 'right' | 'right-end' | 'right-start' | 'top' | 'top-end' | 'top-start')",
+        "same-width": "boolean",
+        "scroll-strategy": "PopoverScrollStrategy ('close' | 'hide' | 'scroll')"
+      },
+      "properties": {
+        "anchor": "Element | string | undefined",
+        "arrow": "HTMLElement | null",
+        "arrowOffset": "number",
+        "flip": "boolean",
+        "offset": "number",
+        "open": "boolean",
+        "placement": "PopoverPlacement ('bottom' | 'bottom-end' | 'bottom-start' | 'left' | 'left-end' | 'left-start' | 'right' | 'right-end' | 'right-start' | 'top' | 'top-end' | 'top-start')",
+        "sameWidth": "boolean",
+        "scrollStrategy": "PopoverScrollStrategy ('close' | 'hide' | 'scroll')",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {
+        "igcPopoverScrollClose": "unknown"
+      },
+      "slots": [
+        "",
+        "anchor"
+      ],
+      "cssParts": [
+        "container"
+      ],
+      "cssProperties": []
+    },
+    "igc-predefined-ranges-area": {
+      "class": "IgcPredefinedRangesAreaComponent",
+      "attributes": {
+        "use-predefined-ranges": "boolean"
+      },
+      "properties": {
+        "customRanges": "CustomDateRange[]",
+        "resourceStrings": "IgcDateRangePickerResourceStrings &\n    DateRangePickerResourceStringsType",
+        "static tagName": "readonly string",
+        "usePredefinedRanges": "boolean"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {
+        "igcRangeSelect": "CustomEvent"
+      },
+      "slots": [],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-qr-code": {
+      "class": "IgcQrCodeComponent",
+      "attributes": {
+        "dot-style": "QrDotStyle ('circle' | 'rounded' | 'square')",
+        "error-level": "QrErrorCorrectionLevel ('H' | 'L' | 'M' | 'Q')",
+        "logo-margin": "number | undefined",
+        "logo-size": "number",
+        "logo-src": "string | undefined",
+        "margin": "number",
+        "size": "number",
+        "square-style": "QrCornerSquareStyle ('circle' | 'rounded' | 'square')",
+        "value": "string | undefined",
+        "version": "number | undefined"
+      },
+      "properties": {
+        "dotStyle": "QrDotStyle ('circle' | 'rounded' | 'square')",
+        "errorLevel": "QrErrorCorrectionLevel ('H' | 'L' | 'M' | 'Q')",
+        "logoMargin": "number | undefined",
+        "logoSize": "number",
+        "logoSrc": "string | undefined",
+        "margin": "number",
+        "size": "number",
+        "squareStyle": "QrCornerSquareStyle ('circle' | 'rounded' | 'square')",
+        "static tagName": "readonly string",
+        "value": "string | undefined",
+        "version": "number | undefined"
+      },
+      "methods": {
+        "static register": "() => void",
+        "toBlob": "() => Promise<Blob>",
+        "toImage": "(options?: QrCodeExportOptions) => Promise<File>"
+      },
+      "events": {},
+      "slots": [],
+      "cssParts": [
+        "background",
+        "corner-dot",
+        "corner-square",
+        "dots"
+      ],
+      "cssProperties": [
+        "--ig-qr-code-background",
+        "--ig-qr-code-corner-dot-color",
+        "--ig-qr-code-corner-square-color",
+        "--ig-qr-code-dark-color"
+      ]
+    },
+    "igc-radio": {
+      "class": "IgcRadioComponent",
+      "attributes": {
+        "checked": "boolean",
+        "disabled": "boolean",
+        "invalid": "boolean",
+        "label-position": "ToggleLabelPosition ('after' | 'before')",
+        "name": "string",
+        "required": "boolean",
+        "value": "string"
+      },
+      "properties": {
+        "checked": "boolean",
+        "defaultChecked": "boolean",
+        "disabled": "boolean",
+        "form": "readonly HTMLFormElement | null",
+        "invalid": "boolean",
+        "labelPosition": "ToggleLabelPosition ('after' | 'before')",
+        "name": "string",
+        "required": "boolean",
+        "static formAssociated": "readonly boolean",
+        "static tagName": "readonly string",
+        "validationMessage": "readonly string",
+        "validity": "readonly ValidityState",
+        "value": "string",
+        "willValidate": "readonly boolean"
+      },
+      "methods": {
+        "blur": "() => void",
+        "checkValidity": "() => boolean",
+        "click": "() => void",
+        "focus": "(options?: FocusOptions) => void",
+        "reportValidity": "() => boolean",
+        "setCustomValidity": "(message: string) => void",
+        "static register": "() => void"
+      },
+      "events": {
+        "igcChange": "unknown"
+      },
+      "slots": [
+        "",
+        "custom-error",
+        "helper-text",
+        "invalid",
+        "value-missing"
+      ],
+      "cssParts": [
+        "base",
+        "control",
+        "label"
+      ],
+      "cssProperties": []
+    },
+    "igc-radio-group": {
+      "class": "IgcRadioGroupComponent",
+      "attributes": {
+        "alignment": "ContentOrientation ('horizontal' | 'vertical')",
+        "name": "string",
+        "value": "string"
+      },
+      "properties": {
+        "alignment": "ContentOrientation ('horizontal' | 'vertical')",
+        "defaultValue": "string",
+        "name": "string",
+        "static tagName": "readonly string",
+        "value": "string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-range-slider": {
+      "class": "IgcRangeSliderComponent",
+      "attributes": {
+        "disabled": "boolean",
+        "discrete-track": "boolean",
+        "hide-primary-labels": "boolean",
+        "hide-secondary-labels": "boolean",
+        "hide-tooltip": "boolean",
+        "locale": "string",
+        "lower": "number",
+        "lower-bound": "number",
+        "max": "number",
+        "min": "number",
+        "primary-ticks": "number",
+        "secondary-ticks": "number",
+        "step": "number",
+        "thumb-label-lower": "string",
+        "thumb-label-upper": "string",
+        "tick-label-rotation": "SliderTickLabelRotation (-90 | 0 | 90)",
+        "tick-orientation": "SliderTickOrientation ('end' | 'mirror' | 'start')",
+        "upper": "number",
+        "upper-bound": "number",
+        "value-format": "string | undefined"
+      },
+      "properties": {
+        "disabled": "boolean",
+        "discreteTrack": "boolean",
+        "hidePrimaryLabels": "boolean",
+        "hideSecondaryLabels": "boolean",
+        "hideTooltip": "boolean",
+        "locale": "string",
+        "lower": "number",
+        "lowerBound": "number",
+        "max": "number",
+        "min": "number",
+        "primaryTicks": "number",
+        "secondaryTicks": "number",
+        "static tagName": "readonly string",
+        "step": "number",
+        "thumbLabelLower": "string",
+        "thumbLabelUpper": "string",
+        "tickLabelRotation": "SliderTickLabelRotation (-90 | 0 | 90)",
+        "tickOrientation": "SliderTickOrientation ('end' | 'mirror' | 'start')",
+        "upper": "number",
+        "upperBound": "number",
+        "valueFormat": "string | undefined",
+        "valueFormatOptions": "Intl.NumberFormatOptions | undefined"
+      },
+      "methods": {
+        "blur": "() => void",
+        "focus": "(options?: FocusOptions) => void",
+        "static register": "() => void"
+      },
+      "events": {
+        "igcChange": "unknown",
+        "igcInput": "unknown"
+      },
+      "slots": [],
+      "cssParts": [
+        "base",
+        "fill",
+        "inactive",
+        "steps",
+        "thumb",
+        "thumb-label",
+        "thumb-label-inner",
+        "thumbs",
+        "tick",
+        "tick-group",
+        "tick-label",
+        "tick-label-inner",
+        "ticks",
+        "track"
+      ],
+      "cssProperties": []
+    },
+    "igc-rating": {
+      "class": "IgcRatingComponent",
+      "attributes": {
+        "allow-reset": "boolean",
+        "disabled": "boolean",
+        "hover-preview": "boolean",
+        "invalid": "boolean",
+        "label": "string | undefined",
+        "max": "number",
+        "name": "string",
+        "readonly": "boolean",
+        "single": "boolean",
+        "step": "number",
+        "value": "number",
+        "value-format": "string | undefined"
+      },
+      "properties": {
+        "allowReset": "boolean",
+        "defaultValue": "unknown",
+        "disabled": "boolean",
+        "form": "readonly HTMLFormElement | null",
+        "hoverPreview": "boolean",
+        "invalid": "boolean",
+        "label": "string | undefined",
+        "max": "number",
+        "name": "string",
+        "readOnly": "boolean",
+        "single": "boolean",
+        "static formAssociated": "readonly boolean",
+        "static tagName": "readonly string",
+        "step": "number",
+        "validationMessage": "readonly string",
+        "validity": "readonly ValidityState",
+        "value": "number",
+        "valueFormat": "string | undefined",
+        "willValidate": "readonly boolean"
+      },
+      "methods": {
+        "blur": "() => void",
+        "checkValidity": "() => boolean",
+        "focus": "(options?: FocusOptions) => void",
+        "reportValidity": "() => boolean",
+        "setCustomValidity": "(message: string) => void",
+        "static register": "() => void",
+        "stepDown": "(n: unknown) => void",
+        "stepUp": "(n: unknown) => void"
+      },
+      "events": {
+        "igcChange": "unknown",
+        "igcHover": "unknown"
+      },
+      "slots": [
+        "symbol",
+        "value-label"
+      ],
+      "cssParts": [
+        "base",
+        "empty",
+        "full",
+        "label",
+        "symbol",
+        "symbols",
+        "value-label"
+      ],
+      "cssProperties": [
+        "--symbol-empty-color",
+        "--symbol-empty-filter",
+        "--symbol-full-color",
+        "--symbol-full-filter",
+        "--symbol-size"
+      ]
+    },
+    "igc-rating-symbol": {
+      "class": "IgcRatingSymbolComponent",
+      "attributes": {},
+      "properties": {
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        "",
+        "empty"
+      ],
+      "cssParts": [
+        "empty",
+        "full",
+        "symbol"
+      ],
+      "cssProperties": []
+    },
+    "igc-ripple": {
+      "class": "IgcRippleComponent",
+      "attributes": {},
+      "properties": {
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-select": {
+      "class": "IgcSelectComponent",
+      "attributes": {
+        "autofocus": "boolean",
+        "disabled": "boolean",
+        "distance": "number",
+        "invalid": "boolean",
+        "keep-open-on-outside-click": "boolean",
+        "keep-open-on-select": "boolean",
+        "label": "string",
+        "name": "string",
+        "open": "boolean",
+        "outlined": "boolean",
+        "placeholder": "string",
+        "placement": "PopoverPlacement ('bottom' | 'bottom-end' | 'bottom-start' | 'left' | 'left-end' | 'left-start' | 'right' | 'right-end' | 'right-start' | 'top' | 'top-end' | 'top-start')",
+        "required": "boolean",
+        "scroll-strategy": "PopoverScrollStrategy ('close' | 'hide' | 'scroll')",
+        "value": "string | undefined"
+      },
+      "properties": {
+        "autofocus": "boolean",
+        "defaultValue": "unknown",
+        "disabled": "boolean",
+        "distance": "number",
+        "emitEvent": "<\n    K extends keyof ToggleEventMap,\n    D extends UnpackCustomEvent<ToggleEventMap[K]>,\n  >(\n    event: K,\n    eventInitDict?: CustomEventInit<D>\n  ) => boolean",
+        "form": "readonly HTMLFormElement | null",
+        "groups": "readonly IgcSelectGroupComponent[]",
+        "invalid": "boolean",
+        "items": "readonly IgcSelectItemComponent[]",
+        "keepOpenOnOutsideClick": "boolean",
+        "keepOpenOnSelect": "boolean",
+        "label": "string",
+        "name": "string",
+        "open": "boolean",
+        "outlined": "boolean",
+        "placeholder": "string",
+        "placement": "PopoverPlacement ('bottom' | 'bottom-end' | 'bottom-start' | 'left' | 'left-end' | 'left-start' | 'right' | 'right-end' | 'right-start' | 'top' | 'top-end' | 'top-start')",
+        "required": "boolean",
+        "scrollStrategy": "PopoverScrollStrategy ('close' | 'hide' | 'scroll')",
+        "selectedItem": "readonly IgcSelectItemComponent | null",
+        "static formAssociated": "readonly boolean",
+        "static tagName": "readonly string",
+        "validationMessage": "readonly string",
+        "validity": "readonly ValidityState",
+        "value": "string | undefined",
+        "willValidate": "readonly boolean"
+      },
+      "methods": {
+        "blur": "() => void",
+        "checkValidity": "() => boolean",
+        "clearSelection": "() => void",
+        "focus": "(options?: FocusOptions) => void",
+        "hide": "() => Promise<boolean>",
+        "navigateTo": "(value: string | number) => IgcSelectItemComponent | null",
+        "reportValidity": "() => boolean",
+        "select": "(value: string | number) => IgcSelectItemComponent | null",
+        "setCustomValidity": "(message: string) => void",
+        "show": "() => Promise<boolean>",
+        "static register": "() => void",
+        "toggle": "() => Promise<boolean>"
+      },
+      "events": {
+        "igcChange": "unknown",
+        "igcClosed": "unknown",
+        "igcClosing": "unknown",
+        "igcOpened": "unknown",
+        "igcOpening": "unknown"
+      },
+      "slots": [
+        "",
+        "custom-error",
+        "footer",
+        "header",
+        "helper-text",
+        "invalid",
+        "prefix",
+        "suffix",
+        "toggle-icon",
+        "toggle-icon-expanded",
+        "value-missing"
+      ],
+      "cssParts": [
+        "helper-text",
+        "input",
+        "label",
+        "list",
+        "prefix",
+        "suffix",
+        "toggle-icon"
+      ],
+      "cssProperties": []
+    },
+    "igc-select-group": {
+      "class": "IgcSelectGroupComponent",
+      "attributes": {
+        "disabled": "boolean"
+      },
+      "properties": {
+        "disabled": "boolean",
+        "items": "Array<IgcSelectItemComponent>",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        "",
+        "label"
+      ],
+      "cssParts": [
+        "label"
+      ],
+      "cssProperties": []
+    },
+    "igc-select-header": {
+      "class": "IgcSelectHeaderComponent",
+      "attributes": {},
+      "properties": {
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-select-item": {
+      "class": "IgcSelectItemComponent",
+      "attributes": {
+        "active": "boolean",
+        "disabled": "boolean",
+        "selected": "boolean",
+        "value": "string"
+      },
+      "properties": {
+        "active": "boolean",
+        "disabled": "boolean",
+        "selected": "boolean",
+        "static tagName": "readonly string",
+        "value": "string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        "",
+        "prefix",
+        "suffix"
+      ],
+      "cssParts": [
+        "content",
+        "prefix",
+        "suffix"
+      ],
+      "cssProperties": []
+    },
+    "igc-slider": {
+      "class": "IgcSliderComponent",
+      "attributes": {
+        "disabled": "boolean",
+        "discrete-track": "boolean",
+        "hide-primary-labels": "boolean",
+        "hide-secondary-labels": "boolean",
+        "hide-tooltip": "boolean",
+        "invalid": "boolean",
+        "locale": "string",
+        "lower-bound": "number",
+        "max": "number",
+        "min": "number",
+        "name": "string",
+        "primary-ticks": "number",
+        "secondary-ticks": "number",
+        "step": "number",
+        "tick-label-rotation": "SliderTickLabelRotation (-90 | 0 | 90)",
+        "tick-orientation": "SliderTickOrientation ('end' | 'mirror' | 'start')",
+        "upper-bound": "number",
+        "value": "number",
+        "value-format": "string | undefined"
+      },
+      "properties": {
+        "defaultValue": "unknown",
+        "disabled": "boolean",
+        "discreteTrack": "boolean",
+        "form": "readonly HTMLFormElement | null",
+        "hidePrimaryLabels": "boolean",
+        "hideSecondaryLabels": "boolean",
+        "hideTooltip": "boolean",
+        "invalid": "boolean",
+        "locale": "string",
+        "lowerBound": "number",
+        "max": "number",
+        "min": "number",
+        "name": "string",
+        "primaryTicks": "number",
+        "secondaryTicks": "number",
+        "static formAssociated": "readonly boolean",
+        "static tagName": "readonly string",
+        "step": "number",
+        "tickLabelRotation": "SliderTickLabelRotation (-90 | 0 | 90)",
+        "tickOrientation": "SliderTickOrientation ('end' | 'mirror' | 'start')",
+        "upperBound": "number",
+        "validationMessage": "readonly string",
+        "validity": "readonly ValidityState",
+        "value": "number",
+        "valueFormat": "string | undefined",
+        "valueFormatOptions": "Intl.NumberFormatOptions | undefined",
+        "willValidate": "readonly boolean"
+      },
+      "methods": {
+        "blur": "() => void",
+        "checkValidity": "() => boolean",
+        "focus": "(options?: FocusOptions) => void",
+        "reportValidity": "() => boolean",
+        "setCustomValidity": "(message: string) => void",
+        "static register": "() => void",
+        "stepDown": "(stepDecrement: unknown) => void",
+        "stepUp": "(stepIncrement: unknown) => void"
+      },
+      "events": {
+        "igcChange": "unknown",
+        "igcInput": "unknown"
+      },
+      "slots": [],
+      "cssParts": [
+        "base",
+        "fill",
+        "inactive",
+        "steps",
+        "thumb",
+        "thumb-label",
+        "thumb-label-inner",
+        "thumbs",
+        "tick",
+        "tick-group",
+        "tick-label",
+        "tick-label-inner",
+        "ticks",
+        "track"
+      ],
+      "cssProperties": []
+    },
+    "igc-slider-label": {
+      "class": "IgcSliderLabelComponent",
+      "attributes": {},
+      "properties": {
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-snackbar": {
+      "class": "IgcSnackbarComponent",
+      "attributes": {
+        "action-text": "string | undefined",
+        "display-time": "number",
+        "keep-open": "boolean",
+        "open": "boolean",
+        "position": "AbsolutePosition ('bottom' | 'middle' | 'top')",
+        "positioning": "NotificationPositioning ('container' | 'viewport')"
+      },
+      "properties": {
+        "actionText": "string | undefined",
+        "displayTime": "number",
+        "keepOpen": "boolean",
+        "open": "boolean",
+        "position": "AbsolutePosition ('bottom' | 'middle' | 'top')",
+        "positioning": "NotificationPositioning ('container' | 'viewport')",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "hide": "() => Promise<boolean>",
+        "show": "() => Promise<boolean>",
+        "static register": "() => void",
+        "toggle": "() => Promise<boolean>"
+      },
+      "events": {
+        "igcAction": "unknown"
+      },
+      "slots": [
+        "",
+        "action"
+      ],
+      "cssParts": [
+        "action",
+        "action-container",
+        "base",
+        "message"
+      ],
+      "cssProperties": []
+    },
+    "igc-splitter": {
+      "class": "IgcSplitterComponent",
+      "attributes": {
+        "disable-collapse": "boolean",
+        "disable-resize": "boolean",
+        "end-collapsed": "boolean",
+        "end-max-size": "string | undefined",
+        "end-min-size": "string | undefined",
+        "end-size": "string | undefined",
+        "hide-collapse-buttons": "boolean",
+        "hide-drag-handle": "boolean",
+        "orientation": "SplitterOrientation ('horizontal' | 'vertical')",
+        "start-collapsed": "boolean",
+        "start-max-size": "string | undefined",
+        "start-min-size": "string | undefined",
+        "start-size": "string | undefined"
+      },
+      "properties": {
+        "disableCollapse": "boolean",
+        "disableResize": "boolean",
+        "endCollapsed": "boolean",
+        "endMaxSize": "string | undefined",
+        "endMinSize": "string | undefined",
+        "endSize": "string | undefined",
+        "hideCollapseButtons": "boolean",
+        "hideDragHandle": "boolean",
+        "orientation": "SplitterOrientation ('horizontal' | 'vertical')",
+        "startCollapsed": "boolean",
+        "startMaxSize": "string | undefined",
+        "startMinSize": "string | undefined",
+        "startSize": "string | undefined",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void",
+        "toggle": "(position: PanePosition) => void"
+      },
+      "events": {
+        "igcLayoutChanged": "unknown",
+        "igcResizeEnd": "unknown",
+        "igcResizeStart": "unknown",
+        "igcResizing": "unknown"
+      },
+      "slots": [
+        "end",
+        "start"
+      ],
+      "cssParts": [
+        "drag-handle",
+        "end-collapse-btn",
+        "end-expand-btn",
+        "end-pane",
+        "splitter-bar",
+        "start-collapse-btn",
+        "start-expand-btn",
+        "start-pane"
+      ],
+      "cssProperties": []
+    },
+    "igc-step": {
+      "class": "IgcStepComponent",
+      "attributes": {
+        "active": "boolean",
+        "complete": "boolean",
+        "disabled": "boolean",
+        "invalid": "boolean",
+        "optional": "boolean"
+      },
+      "properties": {
+        "active": "boolean",
+        "complete": "boolean",
+        "disabled": "boolean",
+        "invalid": "boolean",
+        "optional": "boolean",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        "",
+        "indicator",
+        "subtitle",
+        "title"
+      ],
+      "cssParts": [
+        "body",
+        "bottom",
+        "complete-end",
+        "complete-start",
+        "content",
+        "disabled",
+        "empty",
+        "end",
+        "header",
+        "header-container",
+        "indicator",
+        "invalid",
+        "optional",
+        "start",
+        "subtitle",
+        "text",
+        "title",
+        "top"
+      ],
+      "cssProperties": []
+    },
+    "igc-stepper": {
+      "class": "IgcStepperComponent",
+      "attributes": {
+        "animation-duration": "number",
+        "content-top": "boolean",
+        "horizontal-animation": "HorizontalTransitionAnimation ('fade' | 'none' | 'slide')",
+        "linear": "boolean",
+        "orientation": "StepperOrientation ('horizontal' | 'vertical')",
+        "step-type": "StepperStepType ('full' | 'indicator' | 'title')",
+        "title-position": "StepperTitlePosition ('auto' | 'bottom' | 'end' | 'start' | 'top')",
+        "vertical-animation": "StepperVerticalAnimation ('fade' | 'grow' | 'none')"
+      },
+      "properties": {
+        "animationDuration": "number",
+        "contentTop": "boolean",
+        "horizontalAnimation": "HorizontalTransitionAnimation ('fade' | 'none' | 'slide')",
+        "linear": "boolean",
+        "orientation": "StepperOrientation ('horizontal' | 'vertical')",
+        "static tagName": "readonly string",
+        "steps": "readonly readonly IgcStepComponent[]",
+        "stepType": "StepperStepType ('full' | 'indicator' | 'title')",
+        "titlePosition": "StepperTitlePosition ('auto' | 'bottom' | 'end' | 'start' | 'top')",
+        "verticalAnimation": "StepperVerticalAnimation ('fade' | 'grow' | 'none')"
+      },
+      "methods": {
+        "navigateTo": "(index: number) => void",
+        "next": "() => void",
+        "prev": "() => void",
+        "reset": "() => void",
+        "static register": "() => void"
+      },
+      "events": {
+        "igcActiveStepChanged": "unknown",
+        "igcActiveStepChanging": "unknown"
+      },
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-switch": {
+      "class": "IgcSwitchComponent",
+      "attributes": {
+        "checked": "boolean",
+        "disabled": "boolean",
+        "invalid": "boolean",
+        "label-position": "ToggleLabelPosition ('after' | 'before')",
+        "name": "string",
+        "required": "boolean",
+        "value": "string"
+      },
+      "properties": {
+        "checked": "boolean",
+        "defaultChecked": "boolean",
+        "disabled": "boolean",
+        "form": "readonly HTMLFormElement | null",
+        "invalid": "boolean",
+        "labelPosition": "ToggleLabelPosition ('after' | 'before')",
+        "name": "string",
+        "required": "boolean",
+        "static formAssociated": "readonly boolean",
+        "static tagName": "readonly string",
+        "validationMessage": "readonly string",
+        "validity": "readonly ValidityState",
+        "value": "string",
+        "willValidate": "readonly boolean"
+      },
+      "methods": {
+        "blur": "() => void",
+        "checkValidity": "() => boolean",
+        "click": "() => void",
+        "focus": "(options?: FocusOptions) => void",
+        "reportValidity": "() => boolean",
+        "setCustomValidity": "(message: string) => void",
+        "static register": "() => void"
+      },
+      "events": {
+        "igcChange": "unknown"
+      },
+      "slots": [
+        ""
+      ],
+      "cssParts": [
+        "base",
+        "control",
+        "label",
+        "thumb"
+      ],
+      "cssProperties": []
+    },
+    "igc-tab": {
+      "class": "IgcTabComponent",
+      "attributes": {
+        "disabled": "boolean",
+        "label": "string",
+        "selected": "boolean"
+      },
+      "properties": {
+        "disabled": "boolean",
+        "label": "string",
+        "selected": "boolean",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        "",
+        "label",
+        "prefix",
+        "suffix"
+      ],
+      "cssParts": [
+        "content",
+        "prefix",
+        "suffix",
+        "tab-body",
+        "tab-header"
+      ],
+      "cssProperties": []
+    },
+    "igc-tabs": {
+      "class": "IgcTabsComponent",
+      "attributes": {
+        "activation": "TabsActivation ('auto' | 'manual')",
+        "alignment": "TabsAlignment ('center' | 'end' | 'justify' | 'start')"
+      },
+      "properties": {
+        "activation": "TabsActivation ('auto' | 'manual')",
+        "alignment": "TabsAlignment ('center' | 'end' | 'justify' | 'start')",
+        "selected": "readonly string",
+        "selectedTab": "readonly IgcTabComponent | null",
+        "static tagName": "readonly string",
+        "tabs": "readonly IgcTabComponent[]"
+      },
+      "methods": {
+        "select": "(ref: IgcTabComponent | string) => void",
+        "static register": "() => void"
+      },
+      "events": {
+        "igcChange": "unknown"
+      },
+      "slots": [
+        ""
+      ],
+      "cssParts": [
+        "end-scroll-button",
+        "header",
+        "selected-indicator",
+        "start-scroll-button"
+      ],
+      "cssProperties": []
+    },
+    "igc-textarea": {
+      "class": "IgcTextareaComponent",
+      "attributes": {
+        "autocapitalize": "string",
+        "autocomplete": "string",
+        "disabled": "boolean",
+        "inputmode": "string",
+        "invalid": "boolean",
+        "label": "string",
+        "maxlength": "number",
+        "minlength": "number",
+        "name": "string",
+        "outlined": "boolean",
+        "placeholder": "string",
+        "readonly": "boolean",
+        "required": "boolean",
+        "resize": "TextareaResize ('auto' | 'none' | 'vertical')",
+        "rows": "number",
+        "spellcheck": "boolean",
+        "validate-only": "boolean",
+        "value": "string",
+        "wrap": "'hard' | 'soft' | 'off'"
+      },
+      "properties": {
+        "autocapitalize": "string",
+        "autocomplete": "string",
+        "defaultValue": "unknown",
+        "disabled": "boolean",
+        "form": "readonly HTMLFormElement | null",
+        "inputMode": "string",
+        "invalid": "boolean",
+        "label": "string",
+        "maxLength": "number",
+        "minLength": "number",
+        "name": "string",
+        "outlined": "boolean",
+        "placeholder": "string",
+        "readOnly": "boolean",
+        "required": "boolean",
+        "resize": "TextareaResize ('auto' | 'none' | 'vertical')",
+        "rows": "number",
+        "selectionEnd": "readonly number",
+        "selectionStart": "readonly number",
+        "spellcheck": "boolean",
+        "static formAssociated": "readonly boolean",
+        "static tagName": "readonly string",
+        "validateOnly": "boolean",
+        "validationMessage": "readonly string",
+        "validity": "readonly ValidityState",
+        "value": "string",
+        "willValidate": "readonly boolean",
+        "wrap": "'hard' | 'soft' | 'off'"
+      },
+      "methods": {
+        "checkValidity": "() => boolean",
+        "reportValidity": "() => boolean",
+        "scrollTo": "(x?: unknown, y?: unknown) => void",
+        "select": "() => void",
+        "setCustomValidity": "(message: string) => void",
+        "setRangeText": "(replacement: string, start?: number, end?: number, selectMode: RangeTextSelectMode) => void",
+        "setSelectionRange": "(start: number, end: number, direction: SelectionRangeDirection) => void",
+        "static register": "() => void"
+      },
+      "events": {
+        "igcChange": "unknown",
+        "igcInput": "unknown"
+      },
+      "slots": [
+        "",
+        "custom-error",
+        "helper-text",
+        "invalid",
+        "prefix",
+        "suffix",
+        "too-long",
+        "too-short",
+        "value-missing"
+      ],
+      "cssParts": [
+        "container",
+        "helper-text",
+        "input",
+        "label",
+        "prefix",
+        "suffix"
+      ],
+      "cssProperties": []
+    },
+    "igc-theme-provider": {
+      "class": "IgcThemeProviderComponent",
+      "attributes": {
+        "theme": "Theme ('bootstrap' | 'fluent' | 'indigo' | 'material')",
+        "variant": "ThemeVariant ('dark' | 'light')"
+      },
+      "properties": {
+        "static tagName": "readonly string",
+        "theme": "Theme ('bootstrap' | 'fluent' | 'indigo' | 'material')",
+        "variant": "ThemeVariant ('dark' | 'light')"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-tile": {
+      "class": "IgcTileComponent",
+      "attributes": {
+        "col-span": "number",
+        "col-start": "number | null",
+        "disable-fullscreen": "boolean",
+        "disable-maximize": "boolean",
+        "disable-resize": "boolean",
+        "maximized": "boolean",
+        "position": "number",
+        "row-span": "number",
+        "row-start": "number | null"
+      },
+      "properties": {
+        "colSpan": "number",
+        "colStart": "number | null",
+        "disableFullscreen": "boolean",
+        "disableMaximize": "boolean",
+        "disableResize": "boolean",
+        "fullscreen": "readonly boolean",
+        "maximized": "boolean",
+        "position": "number",
+        "rowSpan": "number",
+        "rowStart": "number | null",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {
+        "igcTileDragCancel": "unknown",
+        "igcTileDragEnd": "unknown",
+        "igcTileDragStart": "unknown",
+        "igcTileFullscreen": "unknown",
+        "igcTileMaximize": "unknown",
+        "igcTileResizeCancel": "unknown",
+        "igcTileResizeEnd": "unknown",
+        "igcTileResizeStart": "unknown"
+      },
+      "slots": [
+        "",
+        "actions",
+        "bottom-adorner",
+        "corner-adorner",
+        "fullscreen-action",
+        "maximize-action",
+        "side-adorner",
+        "title"
+      ],
+      "cssParts": [
+        "actions",
+        "active",
+        "base",
+        "content-container",
+        "custom",
+        "draggable",
+        "dragging",
+        "fullscreen",
+        "header",
+        "maximized",
+        "resizable",
+        "resizing",
+        "tile-container",
+        "title",
+        "trigger",
+        "trigger-bottom",
+        "trigger-side"
+      ],
+      "cssProperties": []
+    },
+    "igc-tile-manager": {
+      "class": "IgcTileManagerComponent",
+      "attributes": {
+        "column-count": "number",
+        "drag-mode": "TileManagerDragMode ('none' | 'tile' | 'tile-header')",
+        "gap": "string | undefined",
+        "min-column-width": "string | undefined",
+        "min-row-height": "string | undefined",
+        "resize-mode": "TileManagerResizeMode ('always' | 'hover' | 'none')"
+      },
+      "properties": {
+        "columnCount": "number",
+        "dragMode": "TileManagerDragMode ('none' | 'tile' | 'tile-header')",
+        "gap": "string | undefined",
+        "minColumnWidth": "string | undefined",
+        "minRowHeight": "string | undefined",
+        "resizeMode": "TileManagerResizeMode ('always' | 'hover' | 'none')",
+        "static tagName": "readonly string",
+        "tiles": "readonly unknown"
+      },
+      "methods": {
+        "loadLayout": "(data: string) => void",
+        "saveLayout": "() => string",
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [
+        "base",
+        "maximized-tile"
+      ],
+      "cssProperties": [
+        "--column-count",
+        "--grid-gap",
+        "--min-col-width",
+        "--min-row-height"
+      ]
+    },
+    "igc-toast": {
+      "class": "IgcToastComponent",
+      "attributes": {
+        "display-time": "number",
+        "keep-open": "boolean",
+        "open": "boolean",
+        "position": "AbsolutePosition ('bottom' | 'middle' | 'top')",
+        "positioning": "NotificationPositioning ('container' | 'viewport')"
+      },
+      "properties": {
+        "displayTime": "number",
+        "keepOpen": "boolean",
+        "open": "boolean",
+        "position": "AbsolutePosition ('bottom' | 'middle' | 'top')",
+        "positioning": "NotificationPositioning ('container' | 'viewport')",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "hide": "() => Promise<boolean>",
+        "show": "() => Promise<boolean>",
+        "static register": "() => void",
+        "toggle": "() => Promise<boolean>"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-toggle-button": {
+      "class": "IgcToggleButtonComponent",
+      "attributes": {
+        "disabled": "boolean",
+        "selected": "boolean",
+        "value": "string"
+      },
+      "properties": {
+        "disabled": "boolean",
+        "selected": "boolean",
+        "static tagName": "readonly string",
+        "value": "string"
+      },
+      "methods": {
+        "blur": "() => void",
+        "click": "() => void",
+        "focus": "(options?: FocusOptions) => void",
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [
+        "focused",
+        "toggle"
+      ],
+      "cssProperties": []
+    },
+    "igc-tooltip": {
+      "class": "IgcTooltipComponent",
+      "attributes": {
+        "anchor": "Element | string | undefined",
+        "hide-delay": "number",
+        "hide-triggers": "string",
+        "message": "string",
+        "offset": "number",
+        "open": "boolean",
+        "placement": "PopoverPlacement ('bottom' | 'bottom-end' | 'bottom-start' | 'left' | 'left-end' | 'left-start' | 'right' | 'right-end' | 'right-start' | 'top' | 'top-end' | 'top-start')",
+        "scroll-strategy": "PopoverScrollStrategy ('close' | 'hide' | 'scroll')",
+        "show-delay": "number",
+        "show-triggers": "string",
+        "sticky": "boolean",
+        "with-arrow": "boolean"
+      },
+      "properties": {
+        "anchor": "Element | string | undefined",
+        "hideDelay": "number",
+        "hideTriggers": "string",
+        "message": "string",
+        "offset": "number",
+        "open": "boolean",
+        "placement": "PopoverPlacement ('bottom' | 'bottom-end' | 'bottom-start' | 'left' | 'left-end' | 'left-start' | 'right' | 'right-end' | 'right-start' | 'top' | 'top-end' | 'top-start')",
+        "scrollStrategy": "PopoverScrollStrategy ('close' | 'hide' | 'scroll')",
+        "showDelay": "number",
+        "showTriggers": "string",
+        "static tagName": "readonly string",
+        "sticky": "boolean",
+        "withArrow": "boolean"
+      },
+      "methods": {
+        "hide": "() => Promise<boolean>",
+        "show": "(target?: Element | string) => Promise<boolean>",
+        "static register": "() => void",
+        "toggle": "() => Promise<boolean>"
+      },
+      "events": {
+        "igcClosed": "unknown",
+        "igcClosing": "unknown",
+        "igcOpened": "unknown",
+        "igcOpening": "unknown"
+      },
+      "slots": [
+        "",
+        "close-button"
+      ],
+      "cssParts": [
+        "base",
+        "close-button",
+        "simple-text"
+      ],
+      "cssProperties": []
+    },
+    "igc-tree": {
+      "class": "IgcTreeComponent",
+      "attributes": {
+        "locale": "string",
+        "selection": "TreeSelection ('cascade' | 'multiple' | 'none')",
+        "single-branch-expand": "boolean",
+        "toggle-node-on-click": "boolean"
+      },
+      "properties": {
+        "items": "readonly IgcTreeItemComponent[]",
+        "locale": "string",
+        "navService": "unknown",
+        "resourceStrings": "TGet",
+        "selection": "TreeSelection ('cascade' | 'multiple' | 'none')",
+        "selectionService": "unknown",
+        "singleBranchExpand": "boolean",
+        "static tagName": "readonly string",
+        "toggleNodeOnClick": "boolean"
+      },
+      "methods": {
+        "collapse": "(items?: IgcTreeItemComponent[]) => void",
+        "deselect": "(items?: IgcTreeItemComponent[]) => void",
+        "expand": "(items?: IgcTreeItemComponent[]) => void",
+        "select": "(items?: IgcTreeItemComponent[]) => void",
+        "static register": "() => void"
+      },
+      "events": {
+        "igcActiveItem": "unknown",
+        "igcItemCollapsed": "unknown",
+        "igcItemCollapsing": "unknown",
+        "igcItemExpanded": "unknown",
+        "igcItemExpanding": "unknown",
+        "igcSelection": "unknown"
+      },
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-tree-item": {
+      "class": "IgcTreeItemComponent",
+      "attributes": {
+        "active": "boolean",
+        "disabled": "boolean",
+        "expanded": "boolean",
+        "label": "string",
+        "loading": "boolean",
+        "selected": "boolean",
+        "value": "any"
+      },
+      "properties": {
+        "active": "boolean",
+        "disabled": "boolean",
+        "expanded": "boolean",
+        "label": "string",
+        "level": "number",
+        "loading": "boolean",
+        "parent": "IgcTreeItemComponent | null",
+        "path": "readonly IgcTreeItemComponent[]",
+        "selected": "boolean",
+        "static tagName": "readonly unknown",
+        "tree": "readonly IgcTreeComponent | undefined",
+        "value": "any"
+      },
+      "methods": {
+        "collapse": "() => void",
+        "expand": "() => void",
+        "getChildren": "(options: { flatten: boolean }) => IgcTreeItemComponent[]",
+        "static register": "() => void",
+        "toggle": "() => void"
+      },
+      "events": {},
+      "slots": [
+        "",
+        "indentation",
+        "indicator",
+        "label",
+        "loading"
+      ],
+      "cssParts": [
+        "active",
+        "focused",
+        "indicator",
+        "label",
+        "select",
+        "selected",
+        "text",
+        "wrapper"
+      ],
+      "cssProperties": []
+    },
+    "igc-validator": {
+      "class": "IgcValidationContainerComponent",
+      "attributes": {
+        "invalid": "boolean"
+      },
+      "properties": {
+        "invalid": "boolean",
+        "static tagName": "readonly string",
+        "target": "IgcFormControl"
+      },
+      "methods": {
+        "static create": "(host: IgcFormControl, config: ValidationContainerConfig) => TemplateResult",
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [],
+      "cssParts": [
+        "helper-text",
+        "validation-icon",
+        "validation-message"
+      ],
+      "cssProperties": []
+    },
+    "igc-virtual-scroll": {
+      "class": "IgcVirtualScrollComponent",
+      "attributes": {
+        "estimated-item-size": "unknown",
+        "orientation": "'vertical' | 'horizontal' ('horizontal' | 'vertical')",
+        "over-scan": "number"
+      },
+      "properties": {
+        "data": "T[]",
+        "estimatedItemSize": "number",
+        "itemTemplate": "VirtualScrollItemTemplate<T> | null",
+        "keyFunction": "VirtualScrollKeyFunction<T> | null",
+        "layoutComplete": "readonly Promise<void>",
+        "onSizeChange": "unknown",
+        "orientation": "'vertical' | 'horizontal' ('horizontal' | 'vertical')",
+        "overScan": "number",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "scrollToIndex": "(index: number, options?: ScrollIntoViewOptions) => Promise<void>",
+        "static register": "() => void"
+      },
+      "events": {
+        "igcDataRequest": "unknown",
+        "igcStateChange": "unknown"
+      },
+      "slots": [],
+      "cssParts": [
+        "virtualization-content",
+        "virtualization-track"
+      ],
+      "cssProperties": []
+    },
+    "igc-visually-hidden": {
+      "class": "IgcVisuallyHiddenComponent",
+      "attributes": {},
+      "properties": {
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [],
+      "cssProperties": []
+    },
+    "igc-years-view": {
+      "class": "IgcYearsViewComponent",
+      "attributes": {
+        "years-per-page": "number"
+      },
+      "properties": {
+        "static tagName": "readonly string",
+        "value": "Date",
+        "yearsPerPage": "number"
+      },
+      "methods": {
+        "focusActiveDate": "(options?: FocusOptions) => void",
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [],
+      "cssParts": [
+        "year",
+        "year-inner",
+        "years-row"
+      ],
+      "cssProperties": []
+    }
+  }
+}

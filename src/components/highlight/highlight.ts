@@ -5,13 +5,13 @@ import {
   type CoercedPropertyConfig,
 } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/highlight/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import {
   createHighlightController,
   type HighlightNavigation,
 } from './service.js';
 import { styles as shared } from './themes/shared/highlight.common.css.js';
-import { all } from './themes/themes.js';
 
 /**
  * The highlight component provides efficient searching and highlighting of text

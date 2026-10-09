@@ -1,33 +1,19 @@
-import { css } from 'lit';
-
-import type { Themes } from '#theming/types.js';
+import type { ComponentThemes } from '#theming/types.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/item/dropdown-item.bootstrap.css.js';
 import { styles as fluent } from './shared/item/dropdown-item.fluent.css.js';
 import { styles as indigo } from './shared/item/dropdown-item.indigo.css.js';
 
 const light = {
-  bootstrap: css`
-    ${bootstrap}
-  `,
-  indigo: css`
-    ${indigo}
-  `,
-  fluent: css`
-    ${fluent}
-  `,
+  bootstrap,
+  indigo,
+  fluent,
 };
 
 const dark = {
-  bootstrap: css`
-    ${bootstrap}
-  `,
-  indigo: css`
-    ${indigo}
-  `,
-  fluent: css`
-    ${fluent}
-  `,
+  bootstrap,
+  indigo,
+  fluent,
 };
 
-export const all: Themes = { light, dark };
+export const all: ComponentThemes = { light, dark };

@@ -9,6 +9,8 @@ import {
 } from '@open-wc/testing';
 import { LitElement, render } from 'lit';
 import sinon from 'sinon';
+import IgcCheckboxComponent from '../../components/checkbox/checkbox.js';
+import { defineComponents } from '../definitions/defineComponents.js';
 import {
   type ARIABindings,
   addAriaProjector,
@@ -106,6 +108,31 @@ describe('ARIA projection', () => {
 
       host.removeAttribute('aria-label');
       expect(resolveNaming(host, false, 'Fallback').label).to.equal('Fallback');
+    });
+  });
+
+  describe('trackLabels', () => {
+    before(() => defineComponents(IgcCheckboxComponent));
+
+    it('reads the labels of a control once per update', async () => {
+      const root = await fixture<HTMLElement>(
+        html`<div>
+          <label for="control">External</label>
+          <igc-checkbox id="control"></igc-checkbox>
+        </div>`
+      );
+      const checkbox = root.querySelector(IgcCheckboxComponent.tagName)!;
+      const labels = sinon.spy(ElementInternals.prototype, 'labels', ['get']);
+
+      checkbox.checked = true;
+      await elementUpdated(checkbox);
+
+      expect(labels.get.callCount).to.equal(1);
+      expect(
+        checkbox.renderRoot.querySelector('input')!.ariaLabelledByElements
+      ).to.eql([root.querySelector('label')]);
+
+      labels.get.restore();
     });
   });
 
