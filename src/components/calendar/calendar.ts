@@ -793,7 +793,6 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
             .hideTrailingDays=${this.hideOutsideDays || idx !== length}
             .locale=${this.locale}
             .rangePreviewDate=${this._rangePreviewDate?.native}
-            .resourceStrings=${this.resourceStrings}
             .selection=${this.selection}
             .showWeekNumbers=${this.showWeekNumbers}
             .specialDates=${this._specialDates}

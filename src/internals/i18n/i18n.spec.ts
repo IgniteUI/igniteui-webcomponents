@@ -165,6 +165,19 @@ describe('Localization', () => {
       ).to.equal('Предходни {0} години');
     });
 
+    it('should keep the merged strings when the same object is set again', async () => {
+      const custom = { selectDate: 'Избор на дата' };
+
+      instance.resourceStrings = custom;
+      await elementUpdated(instance);
+      const merged = instance.resourceStrings;
+
+      instance.resourceStrings = custom;
+
+      expect(instance.isUpdatePending).to.be.false;
+      expect(instance.resourceStrings).to.equal(merged);
+    });
+
     it('should set custom locale and stay that even when locale is changed globally', async () => {
       setCurrentI18n('de');
 
@@ -223,6 +236,19 @@ describe('Localization', () => {
       expect(instance.shadowRoot?.getElementById('start')?.innerText).to.equal(
         'Списъкът e празен'
       );
+    });
+
+    it('should keep the merged strings when the same object is set again', async () => {
+      const custom = { combo_empty_message: 'Списъкът e празен' };
+
+      instance.resourceStrings = custom;
+      await elementUpdated(instance);
+      const merged = instance.resourceStrings;
+
+      instance.resourceStrings = custom;
+
+      expect(instance.isUpdatePending).to.be.false;
+      expect(instance.resourceStrings).to.equal(merged);
     });
 
     it('should set custom locale and stay that even when locale is changed globally', async () => {

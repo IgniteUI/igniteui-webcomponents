@@ -78,6 +78,8 @@ class I18nController<T extends object> implements ReactiveController {
   private _dateTimeFormats?: LocaleDateTimeFormats;
   /** Cache of the default resource strings from the i18n manager. */
   private _defaultResourceStrings: T;
+  /** The last value set to `resourceStrings`, as given. */
+  private _rawResourceStrings?: T;
   /** Only the custom strings, which override a part of the defaults. */
   private _customResourceStrings?: T;
   /** The custom resource strings merged over the default ones. */
@@ -109,7 +111,10 @@ class I18nController<T extends object> implements ReactiveController {
 
   /** Sets the custom resource strings of the component. */
   public set resourceStrings(value: T | undefined) {
-    if (this._resourceStrings !== value) {
+    // Compared with the value as given, because the merged copy is never equal to it.
+    if (this._rawResourceStrings !== value) {
+      this._rawResourceStrings = value;
+
       if (value) {
         this._customResourceStrings = this._resourceMap
           ? this.getMixedResourceStrings(value)
