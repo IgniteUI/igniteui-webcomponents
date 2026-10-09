@@ -1,7 +1,7 @@
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import {
   ariaBindings,
   hostAria,
@@ -455,7 +455,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   protected override update(changed: PropertyValues<this>): void {
-    this._measurement = null;
+    this._clearMeasurement();
 
     if (changed.get('orientation') != null) {
       this._resetPaneSizes();
@@ -470,7 +470,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   protected override updated(): void {
     // Layout has just been committed; the `update()` measurements are stale.
-    this._measurement = null;
+    this._clearMeasurement();
     this._updateBarAria();
   }
 
@@ -558,24 +558,23 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   //#region Internal API
 
   private _applyCollapse(target: PanePosition | null): void {
-    if (this._collapsedPane === null && target !== null) {
+    const previous = this._collapsedPane;
+
+    if (previous === null && target !== null) {
       this._savePaneSizes();
     }
-
-    const wasStartCollapsed = this._isCollapsed('start');
-    const wasEndCollapsed = this._isCollapsed('end');
 
     this._collapsedPane = target;
 
     // This path skips the decorated accessors and can change both flags,
     // so request an update for both.
-    this.requestUpdate('startCollapsed', wasStartCollapsed);
-    this.requestUpdate('endCollapsed', wasEndCollapsed);
+    for (const pane of PANES) {
+      const state = this._getPaneState(pane);
 
-    this._internals.setState('start-collapsed', this._isCollapsed('start'));
-    this._internals.setState('end-collapsed', this._isCollapsed('end'));
-
-    this._restoreSizesOnExpandCollapse();
+      this.requestUpdate(`${pane}Collapsed`, previous === pane);
+      this._internals.setState(`${pane}-collapsed`, target === pane);
+      state.size = target !== null ? 'auto' : (state.savedSize ?? state.size);
+    }
   }
 
   private _setPaneSize(pane: PanePosition, value: string | undefined): void {
@@ -625,14 +624,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     this._endPaneState.savedSize = `${this._asPercentOfContainer(end, 2)}%`;
   }
 
-  private _restoreSizesOnExpandCollapse(): void {
-    for (const pane of PANES) {
-      const state = this._getPaneState(pane);
-      state.size =
-        this._collapsedPane !== null ? 'auto' : (state.savedSize ?? state.size);
-    }
-  }
-
   /**
    * The container is what the browser resolves a percentage `flex-basis`
    * against, so a value measured this way survives a round trip through CSS.
@@ -662,17 +653,21 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       return 100;
     }
 
-    return this._asPercentOfContainer(this._rectSize()[0]);
+    const dragged = this._isDragging
+      ? this._resizeState.draggedStartSize
+      : undefined;
+
+    return this._asPercentOfContainer(dragged ?? this._rectSize()[0]);
   }
 
   private _getMinMaxAsPercent(type: 'min' | 'max'): number {
-    const value = type === 'min' ? this.startMinSize : this.startMaxSize;
+    const size = this._getConstraintInPx('start', type);
 
-    if (!value) {
+    if (size === undefined) {
       return type === 'min' ? 0 : 100;
     }
 
-    return this._asPercentOfContainer(this._toPixels(value));
+    return this._asPercentOfContainer(size);
   }
 
   private _isCollapsed(which: PanePosition): boolean {
@@ -700,15 +695,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return which === 'start' ? this._startPaneState : this._endPaneState;
   }
 
-  private _isPercentageSize(which: PanePosition): boolean {
-    const { size } = this._getPaneState(which);
-    return !!size && size.includes('%');
-  }
-
-  private _isAutoSize(which: PanePosition): boolean {
-    return this._getPaneState(which).size === 'auto';
-  }
-
   private _normalizeValue(
     value: string | undefined,
     fallback?: 'auto'
@@ -727,12 +713,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     const isUnitlessZero = numericValue === 0 && UNITLESS_NUMBER.test(trimmed);
 
     return isUnitlessZero || CSS_LENGTH.test(trimmed) ? trimmed : fallback;
-  }
-
-  private _getFlex(which: PanePosition, forceAuto = false): string {
-    const isAuto = forceAuto || this._isAutoSize(which);
-    const size = isAuto ? '0px' : this._getPaneState(which).size;
-    return `${isAuto ? 1 : 0} 1 ${size}`;
   }
 
   private _handleResizePanes(
@@ -816,6 +796,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _resizeStart(): void {
     const [startSize, endSize] = this._rectSize();
 
+    this._resizeState.draggedStartSize = undefined;
+
     this._resizeState.startPane = this._createPaneState('start', startSize);
     this._resizeState.endPane = this._createPaneState('end', endSize);
 
@@ -828,15 +810,32 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     pane: PanePosition,
     size: number
   ): PaneResizeSnapshot {
+    const authored = this._getPaneState(pane).size;
+
     return {
       initialSize: size,
-      isPercentageBased: this._isPercentageSize(pane) || this._isAutoSize(pane),
-      minSizePx: this._getConstraintInPx(pane, 'min'),
-      maxSizePx: this._getConstraintInPx(pane, 'max'),
+      isPercentageBased: authored === 'auto' || !!authored?.includes('%'),
+      minSizePx: this._resolveConstraint(pane, 'min'),
+      maxSizePx: this._resolveConstraint(pane, 'max'),
     };
   }
 
+  /** The constraint in pixels, from the drag snapshot while dragging. */
   private _getConstraintInPx(
+    pane: PanePosition,
+    type: 'min' | 'max'
+  ): number | undefined {
+    const { startPane, endPane } = this._resizeState;
+    const snapshot = pane === 'start' ? startPane : endPane;
+
+    if (this._isDragging && snapshot) {
+      return type === 'max' ? snapshot.maxSizePx : snapshot.minSizePx;
+    }
+
+    return this._resolveConstraint(pane, type);
+  }
+
+  private _resolveConstraint(
     pane: PanePosition,
     type: 'min' | 'max'
   ): number | undefined {
@@ -853,6 +852,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
     const [startPaneSize, endPaneSize] = this._calcNewSizes(delta);
 
+    this._resizeState.draggedStartSize = startPaneSize;
     this.startSize = `${startPaneSize}px`;
     this.endSize = `${endPaneSize}px`;
 
@@ -964,6 +964,13 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return container === 0 ? 0 : container - bar;
   }
 
+  /** A drag move resizes only the panes, so it keeps the measurements. */
+  private _clearMeasurement(): void {
+    if (!this._isDragging) {
+      this._measurement = null;
+    }
+  }
+
   private _handleContainerResize(): void {
     this._measurement = null;
     const size = this._getContainerSize();
@@ -974,60 +981,48 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     }
   }
 
+  /**
+   * Writes the flex and size constraints of both panes. A collapsed pane
+   * renders as `auto` without constraints; the authored values stay for the expand.
+   */
   private _updatePanes(): void {
-    const isCollapsed = this._collapsedPane !== null;
+    const collapsed = this._collapsedPane !== null;
+    const overflow = !collapsed && this._minSizesOverflow();
+    const [min, max, crossMin, crossMax] = this._isHorizontal
+      ? ['minWidth', 'maxWidth', 'minHeight', 'maxHeight']
+      : ['minHeight', 'maxHeight', 'minWidth', 'maxWidth'];
 
-    // A collapsed pane renders as `auto` without constraints. The authored
-    // values stay for the expand.
     for (const pane of PANES) {
-      const { minSize, maxSize } = this._getPaneState(pane);
+      const { size, minSize, maxSize, styles } = this._getPaneState(pane);
+      const auto = collapsed || size === 'auto';
 
-      this._setPaneMinMaxSizes(
-        pane,
-        isCollapsed ? '0' : minSize,
-        isCollapsed ? '100%' : maxSize
-      );
-      this._updatePaneStyles(pane, { flex: this._getFlex(pane, isCollapsed) });
+      Object.assign(styles, {
+        flex: auto ? '1 1 0px' : `0 1 ${size}`,
+        [min]: (!collapsed && !overflow && minSize) || 0,
+        [max]: (!collapsed && maxSize) || '100%',
+        [crossMin]: 0,
+        [crossMax]: '100%',
+      });
     }
   }
 
-  private _updatePaneStyles(pane: PanePosition, styles: StyleInfo): void {
-    Object.assign(this._getPaneState(pane).styles, styles);
-  }
+  /**
+   * Whether both minimums do not fit the container. Then neither applies, to
+   * prevent overflow, until the container grows.
+   */
+  private _minSizesOverflow(): boolean {
+    if (!(this._startPaneState.minSize || this._endPaneState.minSize)) {
+      return false;
+    }
 
-  private _setPaneMinMaxSizes(
-    pane: PanePosition,
-    minSize?: string,
-    maxSize?: string
-  ): void {
-    const min = this._ensureMinConstraintIsWithinBounds(pane, minSize) ?? 0;
-    const max = maxSize ?? '100%';
-
-    this._updatePaneStyles(
-      pane,
-      this._isHorizontal
-        ? { minWidth: min, maxWidth: max, minHeight: 0, maxHeight: '100%' }
-        : { minWidth: 0, maxWidth: '100%', minHeight: min, maxHeight: max }
-    );
-  }
-
-  private _ensureMinConstraintIsWithinBounds(
-    pane: PanePosition,
-    minSize?: string
-  ): string | undefined {
     const total = this._getTotalSize();
 
-    if (!minSize || total <= 0) {
-      return minSize;
-    }
-
-    const minPx = this._getConstraintInPx(pane, 'min') ?? 0;
-    const otherMinPx =
-      this._getConstraintInPx(this._otherPane(pane), 'min') ?? 0;
-
-    // Drop a constraint that both panes cannot satisfy, to prevent overflow.
-    // It applies again when the container grows.
-    return minPx + otherMinPx > total ? undefined : minSize;
+    return (
+      total > 0 &&
+      (this._getConstraintInPx('start', 'min') ?? 0) +
+        (this._getConstraintInPx('end', 'min') ?? 0) >
+        total
+    );
   }
 
   private _handleExpanderClick(pane: PanePosition, event: PointerEvent): void {
@@ -1040,35 +1035,33 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   //#region Rendering
 
-  private _resolvePartNames(expander: PanePosition): Record<string, boolean> {
-    const other = this._otherPane(expander);
-    const otherIsCollapsed = this._isCollapsed(other);
-
-    return {
-      [`${other}-expand-btn`]: otherIsCollapsed,
-      [`${expander}-collapse-btn`]: !otherIsCollapsed,
-    };
-  }
-
   private _renderBarControls() {
-    const dragHandleHidden = this.hideDragHandle || this.disableResize;
     const hidden = this.disableCollapse || this.hideCollapseButtons;
-    const prevButtonHidden = hidden || this._isCollapsed('start');
-    const nextButtonHidden = hidden || this._isCollapsed('end');
+    const expander = (pane: PanePosition) => {
+      const other = this._otherPane(pane);
+      const otherCollapsed = this._isCollapsed(other);
+      const part = partMap({
+        [`${other}-expand-btn`]: otherCollapsed,
+        [`${pane}-collapse-btn`]: !otherCollapsed,
+      });
+
+      return html`
+        <div
+          part=${part}
+          ?hidden=${hidden || this._isCollapsed(pane)}
+          @pointerdown=${(e: PointerEvent) =>
+            this._handleExpanderClick(pane, e)}
+        ></div>
+      `;
+    };
 
     return html`
+      ${expander('start')}
       <div
-        part="${partMap(this._resolvePartNames('start'))}"
-        ?hidden=${prevButtonHidden}
-        @pointerdown=${(e: PointerEvent) =>
-          this._handleExpanderClick('start', e)}
+        part="drag-handle"
+        ?hidden=${this.hideDragHandle || this.disableResize}
       ></div>
-      <div part="drag-handle" ?hidden=${dragHandleHidden}></div>
-      <div
-        part="${partMap(this._resolvePartNames('end'))}"
-        ?hidden=${nextButtonHidden}
-        @pointerdown=${(e: PointerEvent) => this._handleExpanderClick('end', e)}
-      ></div>
+      ${expander('end')}
     `;
   }
 

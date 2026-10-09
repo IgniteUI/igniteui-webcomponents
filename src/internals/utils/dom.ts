@@ -9,6 +9,9 @@ export function isLTR(element: HTMLElement) {
 
 const LENGTH_PROPERTY = '--igc-resolved-length';
 
+/** A plain pixel length, which needs no style resolution. */
+const PIXEL_LENGTH = /^\d*\.?\d+px$/;
+
 const SUPPORTS_REGISTERED_PROPERTIES =
   !isServer && typeof CSS !== 'undefined' && 'registerProperty' in CSS;
 
@@ -49,6 +52,10 @@ function canResolveLengths(): boolean {
 export function resolveCssLength(element: HTMLElement, value: string): number {
   if (!canResolveLengths()) {
     return 0;
+  }
+
+  if (PIXEL_LENGTH.test(value)) {
+    return asNumber(value);
   }
 
   const { style } = element;

@@ -23,6 +23,8 @@ interface SplitterResizeState {
   dragStartPosition: { x: number; y: number };
   /** The active pointer id, or `-1` when no drag is in progress. */
   dragPointerId: number;
+  /** The start pane size of the last drag move, for the bar ARIA. */
+  draggedStartSize?: number;
 }
 
 /* jsonAPIPlainObject */
