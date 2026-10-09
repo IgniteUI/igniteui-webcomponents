@@ -529,6 +529,34 @@ describe('Theming Controller', () => {
         foreign,
       ]);
     });
+    it('adopts a constructed style sheet of the element styles as is', async () => {
+      configureTheme('bootstrap', 'light');
+
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(':host { display: block; }');
+
+      const tag = unsafeStatic(
+        defineCE(
+          class extends LitElement {
+            public static override styles = sheet;
+
+            constructor() {
+              super();
+              addThemingController(this, mockThemes);
+            }
+          }
+        )
+      );
+      const el = await fixture<LitElement>(html`<${tag}></${tag}>`);
+
+      expect(
+        Array.from(el.shadowRoot!.adoptedStyleSheets)
+      ).to.have.ordered.members([
+        sheet,
+        mockThemes.light.shared!.styleSheet,
+        mockThemes.light.bootstrap!.styleSheet,
+      ]);
+    });
   });
 
   describe('All Theme Combinations', () => {

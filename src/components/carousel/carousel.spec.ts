@@ -17,7 +17,10 @@ import {
   spaceBar,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { finishAnimationsFor } from '#internals/testing/helpers.spec.js';
+import {
+  finishAnimationsFor,
+  getAnimationsFor,
+} from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -1489,6 +1492,206 @@ describe('Carousel', () => {
 
       document.body.appendChild(el);
       expect(await el.select(1)).to.be.false;
+      el.remove();
+    });
+  });
+
+  describe('Animations, labels and projected indicators', () => {
+    /** The keyframes of the animations the slide plays on its host. */
+    function keyframesOf(slide: IgcCarouselSlideComponent) {
+      return getAnimationsFor(slide).flatMap((animation) =>
+        (animation.effect as KeyframeEffect).getKeyframes()
+      );
+    }
+
+    it('should apply a custom `indicatorsLabelFormat` to the indicators', async () => {
+      carousel.indicatorsLabelFormat = 'Go to slide {0}';
+      await elementUpdated(carousel);
+      await elementUpdated(defaultIndicators[1]);
+
+      expect(carousel.indicatorsLabelFormat).to.equal('Go to slide {0}');
+      expect(defaultIndicators[1].getAttribute('aria-label')).to.equal(
+        'Go to slide 2'
+      );
+    });
+
+    it('should play a fade animation when `animationType` is fade', async () => {
+      carousel.animationType = 'fade';
+      await elementUpdated(carousel);
+
+      const selected = carousel.select(1);
+      const frames = keyframesOf(slides[1]);
+      finishAnimationsFor(slides[0]);
+      finishAnimationsFor(slides[1]);
+      await selected;
+
+      expect(frames).to.not.be.empty;
+      expect(frames.every((frame) => 'opacity' in frame)).to.be.true;
+      expect(frames.some((frame) => 'transform' in frame)).to.be.false;
+      expect(carousel.current).to.equal(1);
+    });
+
+    it('should play a vertical slide animation when `vertical` is set', async () => {
+      carousel.vertical = true;
+      await elementUpdated(carousel);
+
+      const selected = carousel.select(1);
+      const frames = keyframesOf(slides[1]);
+      finishAnimationsFor(slides[0]);
+      finishAnimationsFor(slides[1]);
+      await selected;
+
+      expect(frames.map((frame) => frame.transform)).to.eql([
+        'translateY(100%)',
+        'translateY(0px)',
+      ]);
+    });
+
+    it('should switch slides without keyframes when `animationType` is none', async () => {
+      carousel.animationType = 'none';
+      await elementUpdated(carousel);
+
+      const selected = carousel.select(2);
+      const frames = keyframesOf(slides[2]);
+
+      expect(await selected).to.be.true;
+      expect(frames).to.be.empty;
+      expect(carousel.current).to.equal(2);
+      expect(slides[2].active).to.be.true;
+      expect(slides[0].active).to.be.false;
+    });
+
+    it('should slide horizontally for a slide outside of a carousel', async () => {
+      const slide = await fixture<IgcCarouselSlideComponent>(
+        html`<igc-carousel-slide><span>1</span></igc-carousel-slide>`
+      );
+
+      const played = slide.toggleAnimation('in');
+      const frames = keyframesOf(slide);
+      finishAnimationsFor(slide);
+
+      expect(await played).to.be.true;
+      expect(frames.map((frame) => frame.transform)).to.eql([
+        'translateX(100%)',
+        'translateX(0px)',
+      ]);
+    });
+
+    it('should select the slide of a clicked projected indicator', async () => {
+      const el = await fixture<IgcCarouselComponent>(
+        createCarousel({ indicators: 3, slides: 3 })
+      );
+      await nextFrame();
+
+      const indicators = Array.from(
+        el.querySelectorAll(IgcCarouselIndicatorComponent.tagName)
+      );
+      const eventSpy = spy(el, 'emitEvent');
+
+      simulateClick(indicators[2]);
+      await waitUntil(() =>
+        eventSpy.calledWith('igcSlideChanged', { detail: 2 })
+      );
+      await elementUpdated(el);
+
+      expect(el.current).to.equal(2);
+      expect(eventSpy).calledWith('igcSlideChanged', { detail: 2 });
+      expect(indicators[2].active).to.be.true;
+      expect(indicators[0].active).to.be.false;
+    });
+
+    it('should keep a slide that is activated and moved as the only active one', async () => {
+      // The move adds a known slide while two slides are active.
+      slides[1].active = true;
+      carousel.append(slides[1]);
+      await elementUpdated(carousel);
+      await nextFrame();
+
+      expect(carousel.slides).to.eql([slides[0], slides[2], slides[1]]);
+      expect(carousel.current).to.equal(2);
+      expect(carousel.slides.map((slide) => slide.active)).to.eql([
+        false,
+        false,
+        true,
+      ]);
+    });
+
+    it('should keep the last active slide when one is activated while another is removed', async () => {
+      // The removal is observed before the `active` attribute is reflected.
+      slides[1].remove();
+      slides[2].active = true;
+      await elementUpdated(carousel);
+      await nextFrame();
+
+      expect(carousel.total).to.equal(2);
+      expect(carousel.current).to.equal(1);
+      expect(carousel.slides.map((slide) => slide.active)).to.eql([
+        false,
+        true,
+      ]);
+    });
+
+    it('should stay paused while the focus moves between slotted elements', async () => {
+      const el = await fixture<IgcCarouselComponent>(html`
+        <igc-carousel interval="10000">
+          <igc-carousel-slide>
+            <button id="first">First</button>
+            <button id="second">Second</button>
+          </igc-carousel-slide>
+        </igc-carousel>
+      `);
+      const [first, second] = el.querySelectorAll('button');
+      const eventSpy = spy(el, 'emitEvent');
+
+      first.focus();
+      await elementUpdated(el);
+
+      expect(el.isPaused).to.be.true;
+      expect(eventSpy).calledOnceWith('igcPaused');
+
+      // Without the guard the focusout would resume and the focusin pause again.
+      second.focus();
+      await elementUpdated(el);
+
+      expect(el.isPaused).to.be.true;
+      expect(el.isPlaying).to.be.false;
+      expect(eventSpy).calledOnce;
+    });
+
+    it('should activate the selected slide when no slide is active yet', async () => {
+      const el = document.createElement(IgcCarouselComponent.tagName);
+
+      for (const _ of [0, 1, 2]) {
+        el.appendChild(
+          document.createElement(IgcCarouselSlideComponent.tagName)
+        );
+      }
+
+      // `select` runs right after the first render, before the carousel
+      // activates its initial slide.
+      let hadActiveSlide = true;
+      let selected: Promise<boolean> | undefined;
+
+      el.addController({
+        hostUpdated() {
+          if (!selected) {
+            hadActiveSlide = el.slides.some((slide) => slide.active);
+            selected = el.select(1);
+          }
+        },
+      });
+
+      document.body.appendChild(el);
+      await el.updateComplete;
+
+      expect(hadActiveSlide).to.be.false;
+      expect(await selected).to.be.true;
+      expect(el.current).to.equal(1);
+      expect(el.slides.map((slide) => slide.active)).to.eql([
+        false,
+        true,
+        false,
+      ]);
       el.remove();
     });
   });

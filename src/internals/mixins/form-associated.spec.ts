@@ -15,6 +15,7 @@ import {
   type Validator,
 } from '../validators.js';
 import { FormAssociatedRequiredMixin } from './forms/associated-required.js';
+import { FormAssociatedMixin } from './forms/associated.js';
 import { createFormValueState } from './forms/form-value.js';
 import {
   type FormAssociatedElementInterface,
@@ -304,6 +305,33 @@ describe('Form associated mixin tests', () => {
     expect(instance.checkValidity()).to.be.false;
     expect(hasValidityFlags(instance, 'valueMissing')).to.be.true;
     expect(instance.validationMessage).to.equal('This field is required');
+  });
+});
+
+describe('Form associated mixin without a value property', () => {
+  it('does not commit a value or emit an event', async () => {
+    const tag = unsafeStatic(
+      defineCE(
+        class extends FormAssociatedMixin(LitElement) {
+          protected override _formValue = createFormValueState(this, {
+            initialValue: '',
+          });
+        }
+      )
+    );
+    const element = await fixture<LitElement>(html`<${tag}></${tag}>`);
+    const events: Event[] = [];
+    element.addEventListener('igcChange', (event) => events.push(event));
+
+    const committed = (
+      element as unknown as {
+        _commitValue(value: unknown, eventName: string): boolean;
+      }
+    )._commitValue('next', 'igcChange');
+
+    expect(committed).to.be.false;
+    expect(events).to.be.empty;
+    expect('value' in element).to.be.false;
   });
 });
 

@@ -91,8 +91,9 @@ export function createAttachmentURL(
   return attachment.url || '';
 }
 
-export function getFileExtension(name: string): string {
-  const parts = name.split('.');
+/** The extension of a file name, or an empty string. Accepts a missing name from untyped data. */
+export function getFileExtension(name?: string): string {
+  const parts = name?.split('.') ?? [];
   return parts.length > 1 ? lastOf(parts) : '';
 }
 

@@ -189,6 +189,33 @@ describe('Textarea component', () => {
       expect(textArea.value).to.be.empty;
     });
 
+    it('replaces an edited value when the projected text changes', async () => {
+      await createFixture(html`<igc-textarea>${value}</igc-textarea>`);
+
+      simulateInput(textArea, { value: 'Typed' });
+      await elementUpdated(element);
+
+      element.replaceChildren(document.createTextNode('Projected'));
+      await elementUpdated(element);
+
+      expect(element.value).to.equal('Projected');
+      expect(textArea.value).to.equal('Projected');
+      expect(element.defaultValue).to.equal(value);
+    });
+
+    it('keeps the default value when the projected text matches the current value', async () => {
+      await createFixture(html`<igc-textarea></igc-textarea>`);
+
+      simulateInput(textArea, { value });
+      await elementUpdated(element);
+
+      element.append(document.createTextNode(value));
+      await elementUpdated(element);
+
+      expect(element.value).to.equal(value);
+      expect(element.defaultValue).to.be.empty;
+    });
+
     it('issue #1206 - passing undefined sets the underlying textarea value to undefined', async () => {
       element = await fixture<IgcTextareaComponent>(
         html`<igc-textarea></igc-textarea>`
@@ -284,6 +311,28 @@ describe('Textarea component', () => {
 
     beforeEach(async () => {
       await createFixture(html`<igc-textarea>${projected}</igc-textarea>`);
+    });
+
+    it('selection and editing are inert before the textarea renders', () => {
+      const detached = document.createElement(IgcTextareaComponent.tagName);
+
+      expect([detached.selectionStart, detached.selectionEnd]).to.eql([0, 0]);
+
+      detached.setRangeText('text', 0, 0);
+      expect(detached.value).to.equal('');
+    });
+
+    it('does not restrict the native textarea length with validate-only', async () => {
+      await createFixture(
+        html`<igc-textarea maxlength="3" validate-only></igc-textarea>`
+      );
+
+      expect(textArea.hasAttribute('maxlength')).to.be.false;
+
+      element.validateOnly = false;
+      await elementUpdated(element);
+
+      expect(textArea.getAttribute('maxlength')).to.equal('3');
     });
 
     it('select()', async () => {

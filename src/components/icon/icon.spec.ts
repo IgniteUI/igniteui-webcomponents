@@ -5,7 +5,7 @@ import {
   fixture,
   html,
 } from '@open-wc/testing';
-import { stub } from 'sinon';
+import { type SinonStub, stub } from 'sinon';
 
 import { internalsOf } from '#internals/controllers/internals.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
@@ -88,6 +88,24 @@ describe('Icon registry', () => {
 
   it('is registered', async () => {
     expect(getIconRegistry()).to.not.be.undefined;
+  });
+
+  it('rejects and registers nothing when the icon request fails', async () => {
+    (globalThis.fetch as SinonStub)
+      .onCall(0)
+      .resolves(new globalThis.Response('', { status: 404 }));
+
+    let error: unknown;
+    try {
+      await registerIcon('missing', '/missing.svg', collection);
+    } catch (e) {
+      error = e;
+    }
+
+    expect((error as Error)?.message).to.equal(
+      'Icon request failed. Status: 404.'
+    );
+    expect(getIconRegistry().get('missing', collection)).to.be.undefined;
   });
 
   it('has the default internal collection', async () => {
@@ -222,6 +240,28 @@ describe('Icon registry', () => {
       expect(icon.svg).not.to.include('<desc');
       expect(icon.svg).not.to.include('aria-labelledby');
       expect(icon.title).to.equal('Nested Icon');
+    });
+
+    it('keeps ARIA references when the stripped elements have no IDs', () => {
+      const svgWithoutIds = [
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"',
+        ' aria-labelledby="external-label">',
+        '<title>Plain Icon</title>',
+        '<desc>No IDs here.</desc>',
+        '<path d="M0 0h24v24H0z"/>',
+        '</svg>',
+      ].join('');
+
+      registerIconFromText(name, svgWithoutIds, {
+        collection,
+        stripMeta: true,
+      });
+      const icon = getIconRegistry().get(name, collection)!;
+
+      expect(icon.svg).not.to.include('<title');
+      expect(icon.svg).not.to.include('<desc');
+      expect(icon.svg).to.include('aria-labelledby="external-label"');
+      expect(icon.title).to.equal('Plain Icon');
     });
 
     it('old string-collection API still works without stripping', () => {
@@ -760,6 +800,32 @@ describe('Icon component', () => {
 
     expect(icon.shadowRoot!.querySelector('svg')).to.not.be.null;
     icon.remove();
+  });
+
+  it('renders the SVG after it hydrates a declarative shadow root', async () => {
+    const container = await fixture<HTMLDivElement>(html`<div></div>`);
+    container.setHTMLUnsafe(
+      '<igc-icon name="bug"><template shadowrootmode="open"></template></igc-icon>'
+    );
+    const icon = container.querySelector(IgcIconComponent.tagName)!;
+
+    await icon.updateComplete;
+    await elementUpdated(icon);
+
+    verifySvg(icon, bugSvgContent);
+  });
+
+  it('renders nothing after it hydrates an icon that is not registered', async () => {
+    const container = await fixture<HTMLDivElement>(html`<div></div>`);
+    container.setHTMLUnsafe(
+      '<igc-icon name="not-registered"><template shadowrootmode="open"></template></igc-icon>'
+    );
+    const icon = container.querySelector(IgcIconComponent.tagName)!;
+
+    await icon.updateComplete;
+    await elementUpdated(icon);
+
+    expect(icon.shadowRoot!.querySelector('svg')).to.be.null;
   });
 
   it('should throw descriptive error when icon cannot be registered', async () => {

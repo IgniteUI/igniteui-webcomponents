@@ -88,6 +88,12 @@ describe('Picker canvas', () => {
       expect(dimensions.height).to.equal(rect.height / 2);
     });
 
+    it('`getMarkerDimensions()` returns zero before the marker renders', () => {
+      const detached = document.createElement(IgcPickerCanvasComponent.tagName);
+
+      expect(detached.getMarkerDimensions()).to.eql({ width: 0, height: 0 });
+    });
+
     it('reflects `x`/`y` into the marker position', async () => {
       canvas.x = 40;
       canvas.y = 20;
@@ -219,6 +225,25 @@ describe('Picker canvas', () => {
       expect(canvas.x).to.equal(x);
       expect(canvas.y).to.equal(y);
       expect(canvas.shadowRoot?.activeElement).to.equal(getMarker(canvas));
+    });
+
+    it('ignores a pointer down of a button other than the main one', () => {
+      const rect = canvas.getBoundingClientRect();
+      const { x, y } = canvas;
+      const eventSpy = spy(canvas, 'emitEvent');
+
+      simulatePointerDown(canvas, {
+        button: 2,
+        clientX: rect.x + 50,
+        clientY: rect.y + 40,
+      });
+      simulatePointerMove(canvas, {
+        clientX: rect.x + 100,
+        clientY: rect.y + 100,
+      });
+
+      expect([canvas.x, canvas.y]).to.eql([x, y]);
+      expect(eventSpy).not.called;
     });
 
     it('does not bubble the `igcColorPicked` event', () => {

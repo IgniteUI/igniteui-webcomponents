@@ -25,6 +25,7 @@ import { isFocused } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
+  simulatePointerEnter,
   simulatePointerLeave,
   simulatePointerMove,
 } from '#internals/testing/simulate.spec.js';
@@ -818,6 +819,34 @@ describe('Rating component', () => {
   });
 
   describe('Hover', () => {
+    it('previews the hovered value in the symbols while the pointer is over them', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating hover-preview value="2"></igc-rating>`
+      );
+      const symbols =
+        rating.renderRoot.querySelector<HTMLElement>('[part="symbols"]')!;
+      const fullIcon = (index: number) =>
+        getRatingSymbols(rating)
+          .item(index)
+          .querySelector<HTMLElement>('igc-icon:not([slot])')!;
+      const symbol = getRatingSymbols(rating).item(3);
+      const { x, width } = getBoundingRect(symbol);
+
+      expect(fullIcon(3).style.clipPath).to.equal('inset(0px 100% 0px 0px)');
+
+      simulatePointerEnter(symbols);
+      simulatePointerMove(symbol, { clientX: x + width / 2 });
+      await elementUpdated(rating);
+
+      expect(rating.value).to.equal(2);
+      expect(fullIcon(3).style.clipPath).to.equal('inset(0px 0% 0px 0px)');
+
+      simulatePointerLeave(symbols);
+      await elementUpdated(rating);
+
+      expect(fullIcon(3).style.clipPath).to.equal('inset(0px 100% 0px 0px)');
+    });
+
     it('emits `igcHover` again when the pointer re-enters the same symbol', async () => {
       const rating = await fixture<IgcRatingComponent>(
         html`<igc-rating hover-preview></igc-rating>`

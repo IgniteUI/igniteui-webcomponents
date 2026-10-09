@@ -1475,6 +1475,20 @@ describe('Button Group', () => {
         expect(group.selectedItems).to.be.empty;
       });
 
+      it('does not navigate when no button of the group holds focus', async () => {
+        await setup();
+        const outside = document.createElement('button');
+        document.body.append(outside);
+        outside.focus();
+
+        simulateKeyboard(group, arrowRight);
+        await elementUpdated(group);
+
+        expect(isFocused(outside)).to.be.true;
+        expect(group.selectedItems).to.be.empty;
+        outside.remove();
+      });
+
       it('does not navigate while the group is disabled', async () => {
         await setup();
         group.disabled = true;

@@ -238,10 +238,6 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
     this._emitTouchedEvent('igcInput', { detail: this.value });
   }
 
-  protected override _syncValueFromMask(): void {
-    this.value = this._parser.parse(this._maskedValue);
-  }
-
   private _updateMaskedValue(): void {
     if (this._isEmptyMask) {
       this._maskedValue = '';

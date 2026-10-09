@@ -1144,4 +1144,136 @@ describe('VirtualScroll', () => {
       expect(firstRect.left).to.be.greaterThan(secondRect.left);
     });
   });
+
+  describe('Additional behavior', () => {
+    it('falls back to the default estimate for a non-positive estimatedItemSize', async () => {
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          estimated-item-size="0"
+          .data=${createItems(10)}
+          .itemTemplate=${itemTemplate}
+        ></igc-virtual-scroll>`
+      );
+
+      const track = el.querySelector<HTMLElement>(
+        '[part="virtualization-track"]'
+      );
+      expect(track?.style.height).to.equal(`${10 * 50}px`);
+    });
+
+    it('renders no items for nullish data', async () => {
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          style="height: 300px"
+          .data=${createItems(10)}
+          .itemTemplate=${itemTemplate}
+        ></igc-virtual-scroll>`
+      );
+      await el.layoutComplete;
+      expect(el.querySelectorAll('[data-vs-index]')).not.to.be.empty;
+
+      el.data = null as unknown as string[];
+      await elementUpdated(el);
+      await el.layoutComplete;
+
+      expect(el.querySelectorAll('[data-vs-index]')).to.be.empty;
+      expect(
+        el.querySelector<HTMLElement>('[part="virtualization-track"]')?.style
+          .height
+      ).to.equal('0px');
+    });
+
+    it('passes isFirst and isLast in the item context', async () => {
+      const contextTemplate: VirtualScrollItemTemplate<unknown> = (ctx) =>
+        html`<span data-first=${ctx.isFirst} data-last=${ctx.isLast}
+          >${ctx.value}</span
+        >`;
+
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          style="height: 300px"
+          .data=${createItems(3)}
+          .itemTemplate=${contextTemplate}
+        ></igc-virtual-scroll>`
+      );
+      await el.layoutComplete;
+
+      const flags = Array.from(
+        el.querySelectorAll<HTMLElement>('[data-vs-index] > span'),
+        ({ dataset }) => [dataset.first, dataset.last]
+      );
+
+      expect(flags).to.eql([
+        ['true', 'false'],
+        ['false', 'false'],
+        ['false', 'true'],
+      ]);
+    });
+
+    it('aligns by block in the horizontal orientation when inline is not set', async () => {
+      const widthTemplate: VirtualScrollItemTemplate<unknown> = (ctx) =>
+        html`<span style="display: block; width: ${FIXED_SIZE}px;"
+          >${ctx.value}</span
+        >`;
+
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          orientation="horizontal"
+          style="width: 300px; height: 100px"
+          estimated-item-size=${FIXED_SIZE}
+          .data=${createItems(1000)}
+          .itemTemplate=${widthTemplate}
+        ></igc-virtual-scroll>`
+      );
+      await el.layoutComplete;
+
+      await el.scrollToIndex(100, { block: 'end' });
+      await el.layoutComplete;
+
+      const view = el.getBoundingClientRect();
+      const item = el
+        .querySelector('[data-vs-index="100"]')!
+        .getBoundingClientRect();
+
+      expect(item.right - view.right).to.be.closeTo(0, 1);
+    });
+
+    it('stops correcting a scroll once a newer scrollToIndex call supersedes it', async () => {
+      // The first items set the adapted estimate; later items are larger, so
+      // the first jump misses and needs a correction pass.
+      const variedTemplate: VirtualScrollItemTemplate<unknown> = (ctx) =>
+        html`<span
+          style="display: block; height: ${ctx.index < 50 ? 30 : 60}px;"
+          >${ctx.value}</span
+        >`;
+
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          style="height: 300px"
+          .data=${createItems(500)}
+          .itemTemplate=${variedTemplate}
+        ></igc-virtual-scroll>`
+      );
+      await el.layoutComplete;
+
+      let scrollEnds = 0;
+      let newer: Promise<void> | undefined;
+
+      el.addEventListener('scrollend', () => {
+        scrollEnds++;
+      });
+      // The first scroll after the initial jump settles is the correction.
+      el.addEventListener('scroll', () => {
+        if (scrollEnds === 1 && !newer) {
+          newer = el.scrollToIndex(0);
+        }
+      });
+
+      await el.scrollToIndex(250);
+      await newer;
+
+      expect(newer).to.exist;
+      expect(el.scrollTop).to.equal(0);
+    });
+  });
 });

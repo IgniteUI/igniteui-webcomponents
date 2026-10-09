@@ -397,6 +397,29 @@ describe('Resizable directive', () => {
       expect([state.current.width, state.current.height]).to.eql([600, 300]);
     });
 
+    it('should keep the aspect ratio from the height in the "vertical" direction', async () => {
+      const resize = spy();
+      renderResizable({
+        target: () => target,
+        direction: 'vertical',
+        maintainAspectRatio: true,
+        resize,
+      });
+
+      // The target is 400x200 - an aspect ratio of 2
+      const initial = target.getBoundingClientRect();
+
+      simulatePointerDown(instance);
+      simulatePointerMove(instance, {
+        clientX: initial.x + 10,
+        clientY: initial.y + 300,
+      });
+      await elementUpdated(instance);
+
+      const { state } = getCallbackParams(resize);
+      expect([state.current.width, state.current.height]).to.eql([600, 300]);
+    });
+
     it('should resize the element resolved from the `target` option instead of the host', async () => {
       renderResizable({ target: () => target, start: resizeStart });
 
@@ -898,6 +921,59 @@ describe('Resizable directive', () => {
 
       expect(cancel.calledOnce).is.true;
       expect(getGhost()).is.null;
+    });
+  });
+
+  describe('Directive life-cycle', () => {
+    beforeEach(async () => {
+      await createFixture({ mode: 'immediate' });
+    });
+
+    it('throws outside an element expression', () => {
+      expect(() =>
+        render(html`<div class=${resizable({})}></div>`, section)
+      ).to.throw('The `resizable` directive can only be used on elements.');
+    });
+
+    it('starts operations after a reconnect with no new render', async () => {
+      const start = spy();
+      const container = document.createElement('div');
+      section.append(container);
+
+      const part = render(
+        html`<div id="resize-host" ${resizable({ start })}></div>`,
+        container,
+        { isConnected: false }
+      );
+      const element = container.querySelector<HTMLElement>('#resize-host')!;
+
+      part.setConnected(true);
+
+      simulatePointerDown(element);
+      expect(start.calledOnce).is.true;
+      simulateLostPointerCapture(element);
+    });
+
+    it('starts operations only after a connected render', async () => {
+      const start = spy();
+      const template = () =>
+        html`<div id="resize-host" ${resizable({ start })}></div>`;
+
+      const container = document.createElement('div');
+      section.append(container);
+
+      const part = render(template(), container, { isConnected: false });
+      const element = container.querySelector<HTMLElement>('#resize-host')!;
+
+      simulatePointerDown(element);
+      expect(start.called).is.false;
+
+      part.setConnected(true);
+      render(template(), container);
+
+      simulatePointerDown(element);
+      expect(start.calledOnce).is.true;
+      simulateLostPointerCapture(element);
     });
   });
 });

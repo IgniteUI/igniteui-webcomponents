@@ -523,6 +523,26 @@ describe('Tree', () => {
     });
   });
 
+  describe('Outside of a tree', () => {
+    it('Should render a standalone item at the root level without a tree', async () => {
+      const item = await fixture<IgcTreeItemComponent>(html`
+        <igc-tree-item label="Standalone">
+          <igc-tree-item label="Child"></igc-tree-item>
+        </igc-tree-item>
+      `);
+      const child = item.getChildren()[0];
+
+      expect(item.tree).to.be.undefined;
+      expect(item.level).to.equal(0);
+      expect(child.parent).to.equal(item);
+      expect(child.level).to.equal(1);
+
+      item.expand();
+      await elementUpdated(item);
+      expect(item.expanded).to.be.true;
+    });
+  });
+
   describe('Expand/Collapse', async () => {
     let topLevelItems: IgcTreeItemComponent[];
     let eventSpy: any;

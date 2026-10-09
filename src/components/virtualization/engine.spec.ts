@@ -131,6 +131,22 @@ describe('VirtualScrollEngine', () => {
 
       expect(engine.totalSize).to.equal(ESTIMATE + 9 * 100);
     });
+
+    it('accepts an estimate before any items exist', () => {
+      const engine = new VirtualScrollEngine();
+      let count = 0;
+      engine.onSizeChange = () => {
+        count++;
+      };
+
+      engine.updateEstimatedSize(80);
+      expect(engine.totalSize).to.equal(0);
+      expect(count).to.equal(0);
+
+      engine.resize(10, 80);
+      expect(engine.totalSize).to.equal(10 * 80);
+      expect(count).to.equal(1);
+    });
   });
 
   describe('Adapted estimate', () => {

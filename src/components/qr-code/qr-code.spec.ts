@@ -5,6 +5,7 @@ import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { asNumber } from '#internals/utils/math.js';
 import { configureTheme } from '#theming/config.js';
 import IgcQrCodeComponent from './qr-code.js';
+import { rasterizeSvg } from './renderer/export.js';
 import type { QrErrorCorrectionLevel } from './types.js';
 
 describe('IgcQrCodeComponent', () => {
@@ -658,6 +659,17 @@ describe('IgcQrCodeComponent', () => {
         expect(auto.width).to.equal(medium.width);
       });
 
+      it('raises the level to Q for a mid-size logo when error-level is not set', async () => {
+        // 0.6 of the H safe area fits Q but not M.
+        const auto = await renderLogo(0.6);
+        const quartile = await renderLogo(0.6, 'Q');
+        const medium = await renderLogo(0.6, 'M');
+
+        expect(auto.viewBox).to.equal(quartile.viewBox);
+        expect(auto.width).to.equal(quartile.width);
+        expect(asNumber(medium.width)).to.be.lessThan(asNumber(auto.width));
+      });
+
       it('caps a large logo to the safe area of an explicit error-level="M"', async () => {
         const auto = await renderLogo(1);
         const medium = await renderLogo(1, 'M');
@@ -906,6 +918,42 @@ describe('IgcQrCodeComponent', () => {
         expect(svg.querySelector('[mask]')).to.be.null;
       });
 
+      it('drops the logo when the logo request fails', async () => {
+        const fetchStub = stub(window, 'fetch').resolves(
+          new Response('', { status: 404 })
+        );
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            logo-src=${createLogoUrl()}
+          ></igc-qr-code>`
+        );
+
+        const svg = await parseSvg(await el.toBlob());
+        expect(fetchStub.calledOnce).to.be.true;
+        expect(svg.querySelector('image')).to.be.null;
+        expect(svg.querySelector('[mask]')).to.be.null;
+      });
+
+      it('drops the logo when the fetched logo is not an image', async () => {
+        stub(window, 'fetch').resolves(
+          new Response('not an image', {
+            status: 200,
+            headers: { 'Content-Type': 'text/plain' },
+          })
+        );
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            logo-src=${createLogoUrl()}
+          ></igc-qr-code>`
+        );
+
+        const svg = await parseSvg(await el.toBlob());
+        expect(svg.querySelector('image')).to.be.null;
+        expect(svg.querySelector('[mask]')).to.be.null;
+      });
+
       it('rejects when there is no value', async () => {
         const el = await fixture<IgcQrCodeComponent>(
           html`<igc-qr-code></igc-qr-code>`
@@ -1030,6 +1078,41 @@ describe('IgcQrCodeComponent', () => {
         el.value = undefined;
         await elementUpdated(el);
         await expectRejection(el.toImage(), Error);
+      });
+
+      it('rejects when the browser cannot encode the format', async () => {
+        // A browser without a WebP encoder silently returns a PNG.
+        stub(HTMLCanvasElement.prototype, 'toBlob').callsFake((callback) =>
+          callback(new Blob([], { type: 'image/png' }))
+        );
+
+        let error: unknown;
+        try {
+          await el.toImage({ format: 'webp' });
+        } catch (e) {
+          error = e;
+        }
+
+        expect((error as Error)?.message).to.equal(
+          'The browser cannot encode image/webp images.'
+        );
+      });
+    });
+
+    describe('rasterizeSvg()', () => {
+      it('rejects when the SVG cannot be loaded', async () => {
+        const broken = new Blob(['<svg'], { type: 'image/svg+xml' });
+
+        let error: unknown;
+        try {
+          await rasterizeSvg(broken, 64, 'png');
+        } catch (e) {
+          error = e;
+        }
+
+        expect((error as Error)?.message).to.equal(
+          'Failed to load the QR code SVG for export.'
+        );
       });
     });
   });

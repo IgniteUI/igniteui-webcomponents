@@ -68,6 +68,19 @@ describe('Masked input', () => {
       expect(input.placeholder).to.equal(parser.escapedMask);
     });
 
+    it('treats a nullish value as an empty one', async () => {
+      element.value = '777';
+      await elementUpdated(element);
+
+      for (const each of [null, undefined]) {
+        element.value = each as unknown as string;
+        await elementUpdated(element);
+
+        expect(element.value).to.equal('');
+        expect(input.value).to.equal('');
+      }
+    });
+
     it('prompt character change (no value)', async () => {
       element.prompt = '*';
       syncParser();

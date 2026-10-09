@@ -15,6 +15,7 @@ import {
   enterKey,
   escapeKey,
   homeKey,
+  shiftKey,
   spaceBar,
   tabKey,
 } from '#internals/controllers/key-bindings.js';
@@ -1503,6 +1504,96 @@ describe('Combo', () => {
       expect(combo.selection[1]).to.equal(cities[4]);
     });
 
+    it('sorts the groups with the collation of the locale', async () => {
+      combo.data = [
+        { id: 'ZM01', name: 'Lusaka', country: 'Zambia', zip: '10101' },
+        { id: 'AT01', name: 'Vienna', country: 'Österreich', zip: '1010' },
+        { id: 'BE01', name: 'Brussels', country: 'Belgium', zip: '1000' },
+      ];
+      combo.groupSorting = 'asc';
+      await openComboPopover(combo);
+
+      const headers = () =>
+        headerItems(combo).map((header) => header.innerText);
+
+      expect(headers()).to.eql(['Belgium', 'Österreich', 'Zambia']);
+
+      // Swedish sorts Ö after Z
+      combo.locale = 'sv';
+      await elementUpdated(combo);
+      await layoutComplete(combo);
+
+      expect(headers()).to.eql(['Belgium', 'Zambia', 'Österreich']);
+    });
+
+    it('filters primitive data by its value', async () => {
+      const combo = await fixture<IgcComboComponent>(
+        html`<igc-combo .data=${['Sofia', 'Varna', 'Plovdiv']}></igc-combo>`
+      );
+      await openComboPopover(combo);
+
+      combo.renderRoot
+        .querySelector('[part="search-input"]')!
+        .dispatchEvent(new CustomEvent('igcInput', { detail: 'var' }));
+      await elementUpdated(combo);
+      await layoutComplete(combo);
+
+      expect(items(combo).map((item) => item.textContent?.trim())).to.eql([
+        'Varna',
+      ]);
+    });
+
+    it('closes the menu and focuses the combo on Shift + Tab', async () => {
+      await openComboPopover(combo);
+
+      simulateKeyboard(options, [shiftKey, tabKey]);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+      expect(isFocused(combo)).to.be.true;
+    });
+
+    it('ignores Space on a stale active option after the data changes', async () => {
+      const eventSpy = spy(combo, 'emitEvent');
+      await openComboPopover(combo);
+
+      simulateKeyboard(options, arrowDown);
+      await comboStable(combo);
+      expect(items(combo).some((item) => item.active)).to.be.true;
+
+      combo.data = [];
+      await comboStable(combo);
+
+      simulateKeyboard(options, spaceBar);
+      await elementUpdated(combo);
+
+      expect(combo.value).to.be.empty;
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    it('does not change the selection when a group header is clicked', async () => {
+      const eventSpy = spy(combo, 'emitEvent');
+      await openComboPopover(combo);
+
+      simulateClick(firstOf(headerItems(combo)));
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.true;
+      expect(combo.value).to.be.empty;
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    it('keeps the selection when the clear icon is clicked and igcChange is canceled', async () => {
+      combo.select(['BG01', 'BG02']);
+      await elementUpdated(combo);
+
+      combo.addEventListener('igcChange', (event) => event.preventDefault());
+      simulateClick(combo.renderRoot.querySelector('[part="clear-icon"]')!);
+      await elementUpdated(combo);
+
+      expect(combo.value).to.eql(['BG01', 'BG02']);
+    });
+
     it('should sort groups with diacritics and none as groupSorting direction', async () => {
       combo.data = citiesWithDiacritics;
       combo.groupSorting = 'asc';
@@ -1786,6 +1877,19 @@ describe('Combo', () => {
         expect(item.getAttribute('aria-setsize')).to.equal(
           `${rendered.length}`
         );
+      }
+    });
+
+    it('prefixes the option ids with the id of the combo', async () => {
+      combo.id = 'cities';
+      await openComboPopover(combo);
+
+      const ids = items(combo).map((item) => item.id);
+
+      expect(ids).to.not.be.empty;
+      expect(new Set(ids).size).to.equal(ids.length);
+      for (const id of ids) {
+        expect(id).to.match(/^cities-item-\d+$/);
       }
     });
 

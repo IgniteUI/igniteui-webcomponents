@@ -1165,6 +1165,29 @@ describe('Tabs component', () => {
       ).to.be.false;
     });
 
+    it('skips the layout work when it leaves the DOM during a selection', async () => {
+      const { indicator } = getTabsDOM(element);
+      const parent = element.parentElement!;
+      const transform = indicator.style.transform;
+      const target = element.tabs[4];
+
+      element.select(target);
+      element.remove();
+      await nextFrame();
+      await nextFrame();
+
+      expect(target.selected).to.be.true;
+      expect(indicator.style.transform).to.equal(transform);
+
+      parent.append(element);
+      await waitUntil(
+        () =>
+          indicator.style.transform ===
+          `translateX(${getTabDOM(target).header.offsetLeft}px)`,
+        'The indicator did not follow the selection after re-attaching'
+      );
+    });
+
     it('does not re-render when the scroll state is unchanged', async () => {
       const { container } = getTabsDOM(element);
 

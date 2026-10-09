@@ -295,6 +295,14 @@ describe('Stepper', () => {
       expect(eventSpy.callCount).to.equal(0);
     });
 
+    it('should not emit events when the active step is activated again', async () => {
+      simulateClick(getStepDOM(stepper.steps[0]).parts.header);
+      await elementUpdated(stepper);
+
+      expect(eventSpy).not.called;
+      expect(stepper.steps[0].active).to.be.true;
+    });
+
     it('should be able to cancel `igcActiveStepChanging`', async () => {
       stepper.addEventListener('igcActiveStepChanging', (e) =>
         e.preventDefault()
@@ -895,6 +903,108 @@ describe('Stepper', () => {
     });
   });
 
+  describe('Step animations', () => {
+    /** The keyframes the step plays on its body and on its content. */
+    function getKeyframes(step: IgcStepComponent) {
+      const { body } = getStepDOM(step).parts;
+      const content = body.querySelector<HTMLElement>('[part="content"]')!;
+      const framesOf = (element: HTMLElement) =>
+        element
+          .getAnimations()
+          .flatMap((animation) =>
+            (animation.effect as KeyframeEffect).getKeyframes()
+          );
+
+      return { body: framesOf(body), content: framesOf(content) };
+    }
+
+    function finishStepAnimations(...steps: IgcStepComponent[]) {
+      for (const step of steps) {
+        const { body } = getStepDOM(step).parts;
+        const content = body.querySelector<HTMLElement>('[part="content"]')!;
+        for (const animation of [
+          ...body.getAnimations(),
+          ...content.getAnimations(),
+        ]) {
+          animation.finish();
+        }
+      }
+    }
+
+    beforeEach(async () => {
+      stepper = await fixture(createStepper());
+    });
+
+    it('should grow the body and fade the content in a vertical stepper', async () => {
+      stepper.orientation = 'vertical';
+      await elementUpdated(stepper);
+
+      const [first, second] = stepper.steps;
+      stepper.next();
+
+      const frames = getKeyframes(second);
+      finishStepAnimations(first, second);
+      await elementUpdated(stepper);
+
+      expect(stepper.verticalAnimation).to.equal('grow');
+      expect(frames.body).to.have.lengthOf(2);
+      expect(frames.body.map((frame) => frame.opacity)).to.eql(['1', '1']);
+      expect(frames.body[1].height).to.match(/px$/);
+      expect(frames.content.map((frame) => frame.opacity)).to.eql(['0', '1']);
+      expect(second.active).to.be.true;
+    });
+
+    it('should fade only the content with a vertical `fade` animation', async () => {
+      stepper.orientation = 'vertical';
+      stepper.verticalAnimation = 'fade';
+      await elementUpdated(stepper);
+
+      const [first, second] = stepper.steps;
+      stepper.next();
+
+      const frames = getKeyframes(second);
+      finishStepAnimations(first, second);
+      await elementUpdated(stepper);
+
+      expect(frames.body).to.be.empty;
+      expect(frames.content.map((frame) => frame.opacity)).to.eql(['0', '1']);
+      expect(second.active).to.be.true;
+    });
+
+    it('should fade only the content with a horizontal `fade` animation', async () => {
+      stepper.horizontalAnimation = 'fade';
+      await elementUpdated(stepper);
+
+      const [first, second] = stepper.steps;
+      stepper.next();
+
+      const frames = getKeyframes(second);
+      finishStepAnimations(first, second);
+      await elementUpdated(stepper);
+
+      expect(frames.body).to.be.empty;
+      expect(frames.content.map((frame) => frame.opacity)).to.eql(['0', '1']);
+    });
+
+    it('should slide a step outside of a stepper with the default duration', async () => {
+      const step = await fixture<IgcStepComponent>(
+        html`<igc-step><span>Content</span></igc-step>`
+      );
+
+      const played = step.toggleAnimation('in');
+      const [animation] = getStepDOM(step).parts.body.getAnimations();
+      const frames = getKeyframes(step);
+      finishStepAnimations(step);
+
+      expect(await played).to.be.true;
+      expect(animation.effect!.getTiming().duration).to.equal(320);
+      expect(frames.body.map((frame) => frame.transform)).to.eql([
+        'translateX(100%)',
+        'translateX(0px)',
+      ]);
+    });
+  });
+
   describe('Keyboard navigation', () => {
     beforeEach(async () => {
       stepper = await fixture(createStepper());
@@ -947,6 +1057,41 @@ describe('Stepper', () => {
 
       simulateKeyboard(step1Header, 'ArrowLeft');
       expect(step0Header).to.equal(stepper.steps[0].shadowRoot!.activeElement);
+    });
+
+    it('should not move the focus on arrow keys when no step holds focus', async () => {
+      const outside = document.createElement('button');
+      document.body.append(outside);
+      outside.focus();
+
+      simulateKeyboard(getStepDOM(stepper.steps[0]).parts.header, 'ArrowRight');
+      await elementUpdated(stepper);
+
+      expect(document.activeElement).to.equal(outside);
+      expect(
+        stepper.steps.some((step) => step.shadowRoot!.activeElement !== null)
+      ).to.be.false;
+      outside.remove();
+    });
+
+    it('should not move the focus on arrow keys inside a shadow root without focus', async () => {
+      const host = await fixture<HTMLDivElement>(html`<div></div>`);
+      const root = host.attachShadow({ mode: 'open' });
+      root.innerHTML = `
+        <igc-stepper>
+          <igc-step><span slot="title">Step 1</span></igc-step>
+          <igc-step><span slot="title">Step 2</span></igc-step>
+        </igc-stepper>
+      `;
+
+      const nested = root.querySelector(IgcStepperComponent.tagName)!;
+      await elementUpdated(nested);
+
+      simulateKeyboard(getStepDOM(nested.steps[0]).parts.header, 'ArrowRight');
+      await elementUpdated(nested);
+
+      expect(root.activeElement).to.be.null;
+      expect(nested.steps[0].active).to.be.true;
     });
 
     it('should wrap around on ArrowRight/Left at the boundary', () => {

@@ -221,6 +221,18 @@ describe('IdRefResolverController', () => {
 
       expect(instance.callCount).to.equal(0);
     });
+
+    it('skips text nodes and elements with an empty id', async () => {
+      const parent = document.createElement('div');
+      const empty = document.createElement('span');
+      empty.setAttribute('id', '');
+      parent.append(empty);
+
+      container.append(document.createTextNode('text'), parent);
+      await elementUpdated(instance);
+
+      expect(instance.callCount).to.equal(0);
+    });
   });
 
   describe('host lifecycle', () => {

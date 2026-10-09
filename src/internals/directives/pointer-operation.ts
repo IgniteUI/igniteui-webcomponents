@@ -299,9 +299,12 @@ export abstract class PointerOperationDirective<
     part: ElementPart,
     [options]: DirectiveParameters<this>
   ) {
+    // Store the host and options also while disconnected, so `reconnected()`
+    // can attach the listeners.
+    this._host = part.element as HTMLElement;
+    this._options = (options ?? {}) as TOptions;
+
     if (this.isConnected) {
-      this._host = part.element as HTMLElement;
-      this._options = (options ?? {}) as TOptions;
       this._attachTriggerListeners();
     }
     return noChange;

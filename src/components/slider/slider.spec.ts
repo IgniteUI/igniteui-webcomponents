@@ -725,6 +725,41 @@ describe('Slider component', () => {
       expect(slider.value).to.eq(50);
     });
 
+    it('page up/down move a continuous slider by at least 1', async () => {
+      slider.step = 0;
+      slider.max = 5;
+      slider.value = 2;
+      await elementUpdated(slider);
+
+      simulateKeyboard(slider, pageUpKey);
+      await elementUpdated(slider);
+      expect(slider.value).to.eq(3);
+
+      simulateKeyboard(slider, pageDownKey, 2);
+      await elementUpdated(slider);
+      expect(slider.value).to.eq(1);
+    });
+
+    it('stops following the pointer when it is disabled during a drag', async () => {
+      const { x, width } = slider.getBoundingClientRect();
+
+      simulatePointerDown(slider, { clientX: x + width / 2 });
+      await elementUpdated(slider);
+      expect(slider.value).to.eq(50);
+
+      slider.disabled = true;
+      await elementUpdated(slider);
+
+      const eventSpy = spy(slider, 'emitEvent');
+      simulatePointerMove(slider, { clientX: x + width * 0.7 });
+      await elementUpdated(slider);
+
+      expect(slider.value).to.eq(50);
+      expect(eventSpy).not.calledWith('igcInput');
+
+      simulateLostPointerCapture(slider);
+    });
+
     it('value should be set to minimum when pressing home key', async () => {
       const eventSpy = spy(slider, 'emitEvent');
 
@@ -1092,6 +1127,29 @@ describe('Slider component', () => {
       expect(eventSpy).calledOnceWithExactly('igcChange', {
         detail: { lower: 40, upper: 70 },
       });
+    });
+
+    it('focuses the lower thumb when the upper thumb is dragged below it', async () => {
+      const { x, width } = slider.getBoundingClientRect();
+      const { thumbs } = getDOM(slider);
+
+      slider.lower = 40;
+      slider.upper = 80;
+      await elementUpdated(slider);
+
+      simulatePointerDown(slider, { clientX: x + width * 0.75 });
+      await elementUpdated(slider);
+
+      expect([slider.lower, slider.upper]).to.eql([40, 75]);
+      expect(thumbs.upper).to.eq(slider.shadowRoot?.activeElement);
+
+      simulatePointerMove(slider, { clientX: x + width * 0.2 });
+      await elementUpdated(slider);
+
+      expect([slider.lower, slider.upper]).to.eql([20, 40]);
+      expect(thumbs.lower).to.eq(slider.shadowRoot?.activeElement);
+
+      simulateLostPointerCapture(slider);
     });
 
     it('when the lower thumb is dragged beyond the upper thumb, the upper thumb should be focused and its dragging should continue.', async () => {
@@ -2362,6 +2420,26 @@ describe('Slider component', () => {
       slider.requestUpdate();
       await elementUpdated(slider);
       expect(tickTexts(slider)).to.eql(['0,00', '2.000,00']);
+    });
+
+    it('renders both ends for a single primary tick', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider primary-ticks="1"></igc-slider>`
+      );
+
+      expect(tickTexts(slider)).to.eql(['0', '100']);
+    });
+
+    it('renders a lone secondary tick at the minimum', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider
+          min="10"
+          primary-ticks="0"
+          secondary-ticks="1"
+        ></igc-slider>`
+      );
+
+      expect(tickTexts(slider)).to.eql(['10']);
     });
 
     it('renders the ticks again for a new scale, secondary ticks or format string', async () => {

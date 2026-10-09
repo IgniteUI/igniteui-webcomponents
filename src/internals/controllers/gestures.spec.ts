@@ -6,6 +6,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import { css, LitElement } from 'lit';
+import { createRef, ref } from 'lit/directives/ref.js';
 import { type SinonFakeTimers, useFakeTimers } from 'sinon';
 import {
   simulateLostPointerCapture,
@@ -182,6 +183,68 @@ describe('Gestures controller', () => {
       expect(event).not.to.be.undefined;
       expect(event.data.direction).equal('down');
       expect(event.data.yEnd).to.equal(y * times);
+    });
+  });
+
+  describe('Ref target', () => {
+    let refTag: string;
+    let refInstance: LitElement & {
+      inner: HTMLElement;
+      events: SwipeEvent[];
+    };
+
+    before(() => {
+      refTag = defineCE(
+        class extends LitElement {
+          public static override styles = css`
+            :host,
+            div {
+              display: block;
+              width: 600px;
+              height: 600px;
+            }
+          `;
+
+          private readonly _ref = createRef<HTMLElement>();
+          public events: SwipeEvent[] = [];
+
+          public get inner(): HTMLElement {
+            return this._ref.value!;
+          }
+
+          constructor() {
+            super();
+            addGesturesController(this, { ref: this._ref }).set(
+              'swipe',
+              (event) => this.events.push(event)
+            );
+          }
+
+          protected override render() {
+            return html`<div ${ref(this._ref)}></div>`;
+          }
+        }
+      );
+    });
+
+    beforeEach(async () => {
+      const tagName = unsafeStatic(refTag);
+      refInstance = await fixture(html`<${tagName}></${tagName}>`);
+    });
+
+    it('recognizes swipes on the referenced element only', () => {
+      simulatePointerDown(refInstance);
+      simulatePointerMove(refInstance, {}, { x: 150 });
+      simulateLostPointerCapture(refInstance);
+
+      expect(refInstance.events).to.be.empty;
+
+      simulatePointerDown(refInstance.inner);
+      simulatePointerMove(refInstance.inner, {}, { x: 150 });
+      simulateLostPointerCapture(refInstance.inner);
+
+      expect(refInstance.events).lengthOf(1);
+      expect(refInstance.events[0].data.direction).to.equal('right');
     });
   });
 });

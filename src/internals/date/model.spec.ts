@@ -176,5 +176,35 @@ describe('Calendar day model', () => {
       expect(firstOf(weekPast).date).to.equal(start.date);
       expect(lastOf(weekPast).date).to.equal(endPast.date + 1);
     });
+
+    it('generating inclusive date ranges (end < start)', () => {
+      const weekPast = Array.from(
+        calendarRange({ start, end: endPast, inclusive: true })
+      );
+
+      expect(weekPast.length).to.equal(end + 1);
+      expect(firstOf(weekPast).equalTo(start)).to.be.true;
+      expect(lastOf(weekPast).equalTo(endPast)).to.be.true;
+    });
+  });
+
+  describe('Edge cases', () => {
+    const day = new CalendarDay({ year: 2024, month: 0, date: 11 });
+
+    it('greaterThanOrEqual', () => {
+      expect(day.greaterThanOrEqual(day.add('day', -1))).to.be.true;
+      expect(day.greaterThanOrEqual(day.native)).to.be.true;
+      expect(day.greaterThanOrEqual(day.add('day', 1))).to.be.false;
+    });
+
+    it('throws for an unknown unit', () => {
+      expect(() => day.add('decade' as 'day', 1)).to.throw(
+        'Invalid interval: decade'
+      );
+    });
+
+    it('converts to the string of the native date', () => {
+      expect(`${day}`).to.equal(String(new Date(2024, 0, 11)));
+    });
   });
 });
