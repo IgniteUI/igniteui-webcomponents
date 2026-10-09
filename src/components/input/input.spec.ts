@@ -503,6 +503,66 @@ describe('Input component', () => {
     });
   });
 
+  describe('Part names', () => {
+    it('queries the prefix and suffix slots once per render', async () => {
+      const input = await fixture<IgcInputComponent>(
+        html`<igc-input><span slot="prefix">$</span></igc-input>`
+      );
+      const slots = (
+        input as unknown as {
+          _slots: { hasAssignedElements(slot: string): boolean };
+        }
+      )._slots;
+      const query = spy(slots, 'hasAssignedElements');
+
+      try {
+        input.value = 'abc';
+        await elementUpdated(input);
+
+        const calls = (slot: string) =>
+          query.getCalls().filter((call) => call.args[0] === slot).length;
+
+        expect(calls('prefix')).to.equal(1);
+        expect(calls('suffix')).to.equal(1);
+        expect(input.renderRoot.querySelector('[part~="input"]')).to.exist;
+        expect(
+          input.renderRoot.querySelector(
+            '[part~="container"][part~="prefixed"]'
+          )
+        ).to.exist;
+        expect(
+          input.renderRoot.querySelector('[part~="input"][part~="filled"]')
+        ).to.exist;
+      } finally {
+        query.restore();
+      }
+    });
+  });
+
+  describe('Validity writes', () => {
+    it('writes the validity only when the flags or the message change', async () => {
+      const input = await fixture<IgcInputComponent>(
+        html`<igc-input required minlength="3"></igc-input>`
+      );
+      const setValidity = spy(ElementInternals.prototype, 'setValidity');
+
+      try {
+        input.value = 'abc';
+        input.value = 'abcd';
+        input.value = 'abcde';
+
+        // Valid three times, so one write.
+        expect(setValidity.callCount).to.equal(1);
+
+        input.value = 'a';
+        expect(setValidity.callCount).to.equal(2);
+        expect(input.validity.tooShort).to.be.true;
+      } finally {
+        setValidity.restore();
+      }
+    });
+  });
+
   describe('Form integration', () => {
     const spec = createFormAssociatedTestBed<IgcInputComponent>(
       html`<igc-input name="input"></igc-input>`

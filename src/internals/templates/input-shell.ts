@@ -10,22 +10,33 @@ import { createIdGenerator } from '../utils/strings.js';
 /** Returns a unique id for a native input element. */
 export const nextInputId = createIdGenerator('input');
 
-/** Returns the shared container part names of an input-like component. */
-export function resolveInputPartNames(
-  slots: Pick<SlotController<'prefix' | 'suffix'>, 'hasAssignedElements'>,
-  base: string,
+type PartSlots = Pick<
+  SlotController<'prefix' | 'suffix'>,
+  'hasAssignedElements'
+>;
+
+/** An element assigned to a named slot without flattening has its `slot` attribute. */
+const VISIBLE = { selector: ':not([hidden])' };
+
+/** Returns the `prefixed`, `suffixed` and `filled` parts of an input-like component. */
+export function resolveInputPartFlags(
+  slots: PartSlots,
   filled: boolean
 ): Record<string, boolean> {
   return {
-    [base]: true,
-    prefixed: slots.hasAssignedElements('prefix', {
-      selector: '[slot="prefix"]:not([hidden])',
-    }),
-    suffixed: slots.hasAssignedElements('suffix', {
-      selector: '[slot="suffix"]:not([hidden])',
-    }),
+    prefixed: slots.hasAssignedElements('prefix', VISIBLE),
+    suffixed: slots.hasAssignedElements('suffix', VISIBLE),
     filled,
   };
+}
+
+/** Returns the shared container part names of an input-like component. */
+export function resolveInputPartNames(
+  slots: PartSlots,
+  base: string,
+  filled: boolean
+): Record<string, boolean> {
+  return { [base]: true, ...resolveInputPartFlags(slots, filled) };
 }
 
 export interface InputShellOptions {
