@@ -2,7 +2,7 @@
 
 > **Part of the [`igniteui-wc-customize-component-theme`](../SKILL.md) skill.**
 
-The Ignite UI Theming MCP server enables AI assistants to generate production-ready theming code. It must be configured in your editor before the theming tools become available.
+With the Ignite UI Theming MCP server, AI assistants can generate production-ready theming code. You must configure the server in your editor before the theming tools become available.
 
 ## VS Code
 
@@ -19,7 +19,7 @@ Create or edit `.vscode/mcp.json` in your project:
 }
 ```
 
-This works whether `igniteui-theming` is installed locally in `node_modules` or needs to be pulled from the npm registry — `npx -y` handles both cases.
+This configuration works when `igniteui-theming` is installed locally in `node_modules`. It also works when `npx` must download `igniteui-theming` from the npm registry. `npx -y` handles both cases.
 
 ## Cursor
 
@@ -57,13 +57,15 @@ Edit the Claude Desktop config file:
 
 1. Go to **Settings → Tools → AI Assistant → MCP Servers**
 2. Click **+ Add MCP Server**
-3. Set Command to `npx` and Arguments to `igniteui-theming igniteui-theming-mcp`
-4. Click OK and restart the AI Assistant
+3. Set Command to `npx`
+4. Set Arguments to `igniteui-theming igniteui-theming-mcp`
+5. Click OK
+6. Restart the AI Assistant
 
 ## Verifying the Setup
 
-After configuring the MCP server, ask your AI assistant:
+After you configure the MCP server, ask your AI assistant:
 
 > "Detect which Ignite UI platform my project uses"
 
-If the MCP server is running, the `detect_platform` tool will analyze your `package.json` and return the detected platform (e.g., `webcomponents`).
+If the MCP server is running, the `detect_platform` tool analyzes your `package.json` and returns the detected platform (for example, `webcomponents`).

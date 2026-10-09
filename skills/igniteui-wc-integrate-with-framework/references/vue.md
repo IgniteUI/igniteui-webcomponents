@@ -1,6 +1,6 @@
 # Integrating Ignite UI Web Components — Vue 3
 
-> Package note: This page shows the default setup for `igniteui-webcomponents`. If the routing step selected `igniteui-webcomponents-charts`, `igniteui-webcomponents-grids`, `igniteui-grid-lite`, or `igniteui-dockmanager`, replace the package-specific install, import, and registration steps below with that package's setup instead of the default one.
+> Package note: This page shows the default setup for `igniteui-webcomponents`. If the routing step selected `igniteui-webcomponents-charts`, `igniteui-webcomponents-grids`, `igniteui-grid-lite`, or `igniteui-dockmanager`, use the setup of that package for the package-specific steps below. These are the install, import, and registration steps.
 
 ## Installation
 
@@ -12,7 +12,7 @@ npm install igniteui-webcomponents
 
 ### Step 1 — Configure Vue to recognize custom elements
 
-Vue needs to know which tags are custom elements so it does not warn about unknown components.
+Vue must know which tags are custom elements. If it does not know, Vue shows warnings about unknown components.
 
 **With Vite** (`vite.config.ts`):
 
@@ -54,7 +54,7 @@ module.exports = {
 
 ### Step 2 — Register the theme and components
 
-In `src/main.ts`, import a theme and register the components before mounting:
+In `src/main.ts`, import a theme and register the components before you mount the app:
 
 ```typescript
 import { createApp } from 'vue';
@@ -111,7 +111,7 @@ const handleChange = (event: CustomEvent) => {
 
 ## Working with Complex Properties
 
-Attributes only accept strings. Pass objects and arrays using a template ref:
+Attributes accept only strings. Use a template ref to pass objects and arrays:
 
 ```vue
 <template>
@@ -138,7 +138,7 @@ onMounted(() => {
 
 | Concern | Details |
 |---------|---------|
-| **isCustomElement** | Required in Vite/CLI config so Vue doesn't treat `igc-*` tags as unresolved components |
+| **isCustomElement** | Required in Vite/CLI config so that Vue does not treat `igc-*` tags as unresolved components |
 | **Event binding** | Use `@igcInput`, `@igcChange`, etc. — not `@input` or `@change` |
 | **Property binding** | Use `:property="value"` or `v-bind:property="value"` for reactive data |
 | **Complex data** | Use a template ref and set the property in `onMounted` |
@@ -160,24 +160,24 @@ const button = document.querySelector('igc-button');
 
 ### Vue warns "Unknown custom element: igc-button"
 
-Configure `isCustomElement` in `vite.config.ts` (or `vue.config.js`) so Vue skips resolution for `igc-*` tags.
+Configure `isCustomElement` in `vite.config.ts` (or `vue.config.js`) so that Vue does not try to resolve `igc-*` tags.
 
 ### Events not firing
 
-Use Vue's `@igcInput` / `@igcChange` syntax. Ignite UI components emit prefixed custom events — standard DOM events like `input` or `change` behave differently.
+Use the Vue `@igcInput` / `@igcChange` syntax. Ignite UI components emit custom events with a prefix. Standard DOM events such as `input` or `change` behave differently.
 
 ### No styles applied
 
-Ensure you import a theme CSS file in `main.ts` before `createApp`. Without it, components render unstyled.
+Make sure that you import a theme CSS file in `main.ts` before `createApp`. Without it, components render without styles.
 
 ### Complex data not reflecting
 
-Set objects and arrays via a `ref` in `onMounted`. Do not bind them as HTML attributes — attributes only accept serialized strings.
+Use a `ref` in `onMounted` to set objects and arrays. Do not bind them as HTML attributes. Attributes accept only serialized strings.
 
 ---
 
 ## Next Steps
 
-- [Optimize bundle size](../../igniteui-wc-optimize-bundle-size/) — import only the components you use
+- [Optimize bundle size](../../igniteui-wc-optimize-bundle-size/) — import only the components that you use
 - [Customize themes](../../igniteui-wc-customize-component-theme/) — apply your brand colors
-- [Component documentation](https://igniteui.github.io/igniteui-webcomponents) — full API reference
+- [Component documentation](https://igniteui.github.io/igniteui-webcomponents) — the full API reference

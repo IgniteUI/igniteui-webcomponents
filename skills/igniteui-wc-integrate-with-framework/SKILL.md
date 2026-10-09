@@ -1,19 +1,19 @@
 ---
 license: MIT
 name: igniteui-wc-integrate-with-framework
-description: "Install and integrate Ignite UI Web Components packages into React, Angular, Vue 3, LitElement, or vanilla JS/HTML apps, detecting the framework and applying framework-specific setup (package choice, component registration, theme imports, schemas/config, events and property binding). WHEN TO USE: the user wants to add Ignite UI Web Components or igniteui-react to a project, set up a new app with them, fix registration/'unknown element' errors, or needs framework-specific wiring for templates, events, or forms. WHEN NOT TO USE: picking which components to use (use choose-components), customizing themes or styles (use customize-component-theme), trimming bundle size or import granularity (use optimize-bundle-size), building a view from a design (use generate-from-image-design or figma-to-app), or projects using Ignite UI for Angular/Blazor native packages instead of Web Components."
+description: "Install and integrate Ignite UI Web Components packages into React, Angular, Vue 3, LitElement, or vanilla JS/HTML apps. Identify the framework and apply the framework-specific setup: package choice, component registration, theme imports, schemas and configuration, events and property binding. WHEN TO USE: the user wants to add Ignite UI Web Components or igniteui-react to a project, create a new app with them, fix registration or 'unknown element' errors, or needs framework-specific configuration for templates, events, or forms. WHEN NOT TO USE: selecting the components to use (use choose-components), customizing themes or styles (use customize-component-theme), reducing bundle size or import granularity (use optimize-bundle-size), building a view from a design (use generate-from-image-design or figma-to-app), or projects that use Ignite UI for Angular/Blazor native packages instead of Web Components."
 user-invocable: true
 ---
 
 # Integrate with Framework
 
-This skill helps users integrate Ignite UI Web Components into their application. It detects the framework or platform in use and loads the appropriate step-by-step integration reference.
+Use this skill to integrate Ignite UI Web Components into an application. Identify the framework or platform, then load the step-by-step integration reference for it.
 
 ## Before You Answer
 
 - Choose the package first, then load the framework reference.
 - Do not assume every setup flow uses `igniteui-webcomponents`.
-- If the required package is not present in `package.json`, add or install the correct Ignite UI dependency first. Absence from `package.json` does not mean the package is invalid.
+- If `package.json` does not contain the necessary package, add or install the correct Ignite UI dependency first. A package that is not in `package.json` can still be valid.
 
 ### Package Routing
 
@@ -25,7 +25,7 @@ This skill helps users integrate Ignite UI Web Components into their application
 | Dock Manager | `igniteui-dockmanager` (trial) `@infragistics/igniteui-dockmanager` (licensed) |
 | Charts | `igniteui-webcomponents-charts` (trial) `@infragistics/igniteui-webcomponents-charts` (licensed) |
 
-If the request only says "grid", infer the package from the requested features:
+If the request only says "grid", use the requested features to select the package:
 
 - Use `igniteui-webcomponents-grids` for editing, paging, sorting, filtering, summaries, grouping, hierarchical data, or pivot features.
 - Use `igniteui-grid-lite` for lightweight tabular data.
@@ -44,23 +44,23 @@ If the request only says "grid", infer the package from the requested features:
 
 ## When to Use
 
-- User wants to add igniteui-webcomponents to a framework project
-- User is experiencing framework-specific integration issues
-- User needs help with component imports and registration
-- User asks about React, Angular, Vue, or vanilla JS setup
+- The user wants to add igniteui-webcomponents to a framework project
+- The user has framework-specific integration problems
+- The user needs help with component imports and registration
+- The user asks about React, Angular, Vue, or vanilla JS setup
 
 ---
 
 ## Framework Detection
 
-Before loading a reference, identify the target framework from the project context. Check the following signals in order:
+Before you load a reference, use the project context to identify the target framework. Check these signals in sequence:
 
 ### 1. Detect React
 
-**Evidence to look for:**
+**Evidence:**
 - `package.json` contains `"react"` or `"react-dom"` in `dependencies` or `devDependencies`
 - Files with `.tsx` or `.jsx` extensions exist in `src/`
-- Entry point imports `ReactDOM` or `createRoot`
+- The entry point imports `ReactDOM` or `createRoot`
 - `vite.config.ts` uses `@vitejs/plugin-react` or `@vitejs/plugin-react-swc`
 
 → **Load:** [react.md](./references/react.md)
@@ -69,11 +69,11 @@ Before loading a reference, identify the target framework from the project conte
 
 ### 2. Detect Angular
 
-**Evidence to look for:**
+**Evidence:**
 - `package.json` contains `"@angular/core"` in `dependencies`
-- `angular.json` file exists in the workspace root
+- An `angular.json` file exists in the workspace root
 - Files with `.component.ts`, `.module.ts`, or `.component.html` patterns exist
-- Entry point calls `bootstrapApplication` or `platformBrowserDynamic`
+- The entry point calls `bootstrapApplication` or `platformBrowserDynamic`
 
 → **Load:** [angular.md](./references/angular.md)
 
@@ -81,11 +81,11 @@ Before loading a reference, identify the target framework from the project conte
 
 ### 3. Detect Vue 3
 
-**Evidence to look for:**
+**Evidence:**
 - `package.json` contains `"vue"` in `dependencies` or `devDependencies`
 - Files with `.vue` extensions exist in `src/`
 - `vite.config.ts` uses `@vitejs/plugin-vue`
-- Entry point calls `createApp`
+- The entry point calls `createApp`
 
 → **Load:** [vue.md](./references/vue.md)
 
@@ -93,12 +93,12 @@ Before loading a reference, identify the target framework from the project conte
 
 ### 4. Vanilla JavaScript / HTML (fallback)
 
-**Evidence to look for:**
-- No major framework found in `package.json`
+**Evidence:**
+- `package.json` does not contain a major framework
 - Plain `.html` files reference a `<script type="module">`
-- Entry point is a plain `.js` or `.ts` file with no framework imports
-- `package.json` contains "lit" — start with the vanilla JS reference; if using Shadow DOM, follow the Shadow root theming note for grids
-- User explicitly asks for vanilla JS, HTML, or LitElement integration
+- The entry point is a plain `.js` or `.ts` file without framework imports
+- `package.json` contains "lit". Start with the vanilla JS reference. If the app uses Shadow DOM, follow the Shadow root theming note for grids.
+- The user asks directly for vanilla JS, HTML, or LitElement integration
 
 → **Load:** [vanilla-js.md](./references/vanilla-js.md)
 
@@ -123,7 +123,7 @@ Then load the matching reference from the options above.
 | Vue 3 | [vue.md](./references/vue.md) |
 | Vanilla JS / HTML / LitElement | [vanilla-js.md](./references/vanilla-js.md) |
 
-Each reference covers:
+Each reference contains:
 
 - Installation
 - Theme import (required for styling)
@@ -131,5 +131,5 @@ Each reference covers:
 - Usage examples
 - TypeScript support
 - Platform-specific considerations
-- Common issues and solutions
+- Common problems and solutions
 

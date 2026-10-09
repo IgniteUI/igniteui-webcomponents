@@ -1,7 +1,7 @@
 ---
 license: MIT
 name: igniteui-wc-migrate-grid-lite-to-premium
-description: "Step-by-step migration from igniteui-grid-lite (IgcGridLite, <igc-grid-lite>) to the premium igniteui-webcomponents-grids data grid (IgcGridComponent, <igc-grid>), covering imports, class names, HTML tags, properties, events, templates, sorting, filtering, remote data, and theming API changes. WHEN TO USE: the user wants to upgrade from Grid Lite to the premium grid, or needs enterprise features Grid Lite lacks (editing, selection, paging, grouping, summaries, Excel export, state persistence). WHEN NOT TO USE: starting a new grid from scratch (use choose-components), migrating between other grids (Tree Grid, Hierarchical Grid, Pivot Grid) or across major versions of the same package, the project uses igniteui-angular or Blazor grids, or the user only needs theming (use customize-component-theme)."
+description: "Migrate step by step from igniteui-grid-lite (IgcGridLite, igc-grid-lite) to the premium igniteui-webcomponents-grids data grid (IgcGridComponent, igc-grid). Covers the changes to imports, class names, HTML tags, properties, events, templates, sorting, filtering, remote data, and the theming API. WHEN TO USE: the user wants to upgrade from Grid Lite to the premium grid, or needs enterprise features that Grid Lite does not have (editing, selection, paging, grouping, summaries, Excel export, state persistence). WHEN NOT TO USE: the user starts a new grid (use choose-components), migrates between other grids (Tree Grid, Hierarchical Grid, Pivot Grid) or across major versions of the same package, the project uses igniteui-angular or Blazor grids, or the user needs only theming (use customize-component-theme)."
 user-invocable: true
 ---
 
@@ -9,17 +9,17 @@ user-invocable: true
 
 ## Purpose
 
-This skill automates the migration from **Grid Lite** (`igniteui-grid-lite`, MIT licensed, `<igc-grid-lite>`) to the **Premium Data Grid** (`igniteui-webcomponents-grids`, commercially licensed, `<igc-grid>`). Use it when a project outgrows Grid Lite's read-only capabilities and needs enterprise features such as editing, selection, paging, grouping, summaries, Excel export, or state persistence.
+Use this skill to migrate a project from **Grid Lite** (`igniteui-grid-lite`, MIT licensed, `<igc-grid-lite>`) to the **Premium Data Grid** (`igniteui-webcomponents-grids`, commercially licensed, `<igc-grid>`). Grid Lite has read-only capabilities. Use this skill when the project needs enterprise features, for example editing, selection, paging, grouping, summaries, Excel export, or state persistence.
 
 ## MANDATORY AGENT PROTOCOL
 
 > **DO NOT write any code from memory.** Grid APIs change between versions.
 
-Before producing migration code:
+Before you write migration code:
 
-1. **Identify the current Grid Lite usage** - read the user's existing TypeScript and HTML files to understand their column configuration, cell templates, data binding, and any `dataPipelineConfiguration` usage.
-2. **Use the MCP server** - call `mcp_igniteui-cli_get_api_reference` or `mcp_igniteui-cli_get_doc` (framework: `webcomponents`) to verify current API details when in doubt.
-3. **Only then produce output** - base all code on verified references, not memory.
+1. **Identify the current Grid Lite usage** - read the existing TypeScript and HTML files of the user. Find the column configuration, cell templates, data binding, and any `dataPipelineConfiguration` usage.
+2. **Use the MCP server** - when you are not sure about an API detail, call `mcp_igniteui-cli_get_api_reference` or `mcp_igniteui-cli_get_doc` (framework: `webcomponents`) to verify it.
+3. **Only then produce output** - write all code from verified references, not from memory.
 
 ---
 
@@ -47,15 +47,15 @@ Migrate from Grid Lite to the Premium Grid when the user needs **any** of these 
 | Clipboard support | No | Yes |
 | Cell merging | No | Yes |
 
-> **IMPORTANT:** The upgrade path from Grid Lite is **always** to `IgcGridComponent` (`<igc-grid>`). Never recommend a different component type as a substitute.
+> **IMPORTANT:** The upgrade path from Grid Lite is **always** to `IgcGridComponent` (`<igc-grid>`). Do not recommend a different component type as a substitute.
 
 ---
 
 ## Step 1 - Install / Verify the Premium Package
 
-Grid Lite uses the separate `igniteui-grid-lite` npm package. The Premium Grid ships in `igniteui-webcomponents-grids` (or `@infragistics/igniteui-webcomponents-grids` for licensed builds).
+Grid Lite uses the separate `igniteui-grid-lite` npm package. The Premium Grid is in the `igniteui-webcomponents-grids` package (or `@infragistics/igniteui-webcomponents-grids` for licensed builds).
 
-> **AGENT INSTRUCTION:** Check `package.json` to determine which package variant is installed. If only `igniteui-grid-lite` is present, the user needs to install the premium package.
+> **AGENT INSTRUCTION:** Check `package.json` to find which package variant is installed. If only `igniteui-grid-lite` is present, the user must install the premium package.
 
 ```bash
 # Remove Grid Lite
@@ -114,7 +114,7 @@ import {
 import gridTheme from 'igniteui-webcomponents-grids/grids/themes/light/material.css?inline';
 ```
 
-> **Grid inside a Shadow root — required step:** A bare CSS import lands in the document head and never reaches inside a Shadow root — the grid's internal structure and elements get no styles. Inject the theme as a `<style>` tag inside the shadow root. For a LitElement component, at the top of `render()`:
+> **Grid inside a Shadow root — required step:** A bare CSS import goes into the document head. It does not go into a Shadow root, so the internal structure and elements of the grid get no styles. Inject the theme as a `<style>` tag inside the shadow root. For a LitElement component, put the tag at the top of `render()`:
 > ```typescript
 > render() {
 >   return html`
@@ -153,7 +153,7 @@ import gridTheme from 'igniteui-webcomponents-grids/grids/themes/light/material.
 </igc-grid>
 ```
 
-> **Note:** `allow-filtering="true"` on `<igc-grid>` is required to enable filtering. Grid Lite had no grid-level filter toggle.
+> **Note:** To enable filtering, set `allow-filtering="true"` on `<igc-grid>`. Grid Lite has no grid-level filter toggle.
 
 ## Step 4 - Update TypeScript References
 
@@ -188,17 +188,17 @@ const column = document.querySelector('igc-column[field="name"]') as IgcColumnCo
 
 **Custom sort strategy migration:**
 
-The Premium Grid has no exported base class for sort strategies: `IgcSortingStrategy` is
-exported as a type only, and the built-in default strategy is internal. A column's `sortStrategy` is any object with this method:
+The Premium Grid does not export a base class for sort strategies. It exports `IgcSortingStrategy`
+as a type only, and the built-in default strategy is internal. A column's `sortStrategy` can be any object that has this method:
 
 ```typescript
 sort(data: any[], fieldName: string, dir: SortingDirection, ignoreCase: boolean,
      valueResolver: (record: any, fieldName: string, isDate?: boolean, isTime?: boolean) => any): any[]
 ```
 
-It receives the whole data array and returns it sorted. Read cell values through
-`valueResolver`, not `record[fieldName]`, so nested fields (e.g. `address.city`) and
-date/time columns work.
+The method receives the full data array and returns it sorted. Read cell values through
+`valueResolver`, not through `record[fieldName]`. This makes sure that nested fields (for example,
+`address.city`) and date/time columns work.
 
 ```typescript
 // Before (Grid Lite) - function comparer on column
@@ -366,7 +366,7 @@ grid.filteringExpressionsTree = tree;
 
 ## Adding Enterprise Features Post-Migration
 
-Once on the Premium Grid, enable the features that motivated the migration:
+After you migrate to the Premium Grid, enable the features that were the reason for the migration:
 
 ### Row Editing
 
@@ -377,7 +377,7 @@ Once on the Premium Grid, enable the features that motivated the migration:
 </igc-grid>
 ```
 
-> **Note:** `primary-key` is strongly recommended whenever editing, selection, or row-targeted APIs (`getRowByKey`, row pinning, transactions) are used. Without it the grid falls back to object identity, which breaks across virtualization and remote data.
+> **Note:** We strongly recommend that you set `primary-key` when you use editing, selection, or row-targeted APIs (`getRowByKey`, row pinning, transactions). Without it, the grid uses object identity. Object identity breaks across virtualization and remote data.
 
 ### Row Selection
 

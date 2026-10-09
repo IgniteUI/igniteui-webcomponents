@@ -30,17 +30,17 @@
 
 Decision rule:
 
-- Use `IgcNavbarComponent` for a top horizontal bar when its slot structure and behavior match the screenshot. Use slotted content and CSS flex overrides to achieve multi-zone layouts inside it. Use a plain `<header>` when that is a closer structural fit.
-- Use `IgcNavDrawerComponent` for a sidebar or side-navigation panel when drawer structure and behavior match the screenshot. Configure `open`, `position`, and mini content according to whether the design shows fixed, collapsible, or icon-only navigation. Use a plain `<aside>` when a static custom sidebar matches the screenshot better.
+- Use `IgcNavbarComponent` for a top horizontal bar when its slot structure and behavior match the screenshot. Use slotted content and CSS flex overrides to make multi-zone layouts inside it. Use a plain `<header>` when that is a closer structural fit.
+- Use `IgcNavDrawerComponent` for a sidebar or side-navigation panel when drawer structure and behavior match the screenshot. Configure `open`, `position`, and mini content for the navigation type in the design: fixed, collapsible, or icon-only. Use a plain `<aside>` when a static custom sidebar matches the screenshot better.
 - Use `IgcTabsComponent` for a horizontal tab strip when the screenshot clearly shows tabbed state switching.
-- Use `IgcDockManagerComponent` only when the screenshot truly shows docked, floating, or IDE-like panels. Do not substitute it for a simple dashboard grid.
+- Use `IgcDockManagerComponent` only when the screenshot clearly shows docked, floating, or IDE-like panels. Do not use it as a substitute for a basic dashboard grid.
 
 Component decision matrix (by visual pattern, domain-neutral):
 
 | Visual Pattern | Recommended Component | Notes |
 |---|---|---|
-| Repeated rows with icon/text/action | `IgcListComponent` + `IgcListItemComponent` | Use when the row anatomy and interaction model match; use `slot="title"`, `slot="subtitle"`, `slot="start"`, `slot="end"`. Use native `<ul>/<li>` or custom containers when that is a closer visual fit |
-| Spreadsheet-like editable or sortable table | `IgcGridComponent` | Use `igniteui-grid-lite` for lightweight tables and advanced grid packages when the screenshot needs built-in editing, paging, filtering, grouping, summaries, hierarchy, or pivoting |
+| Repeated rows with icon/text/action | `IgcListComponent` + `IgcListItemComponent` | Use when the row anatomy and interaction model match. Use `slot="title"`, `slot="subtitle"`, `slot="start"`, `slot="end"`. Use native `<ul>/<li>` or custom containers when that is a closer visual fit |
+| Spreadsheet-like editable or sortable table | `IgcGridComponent` | Use `igniteui-grid-lite` for lightweight tables. Use advanced grid packages when the screenshot needs built-in editing, paging, filtering, grouping, summaries, hierarchy, or pivoting |
 | Hierarchical or tree-structured table | `IgcTreeGridComponent` or `IgcHierarchicalGridComponent` | Use when rows have parent-child or master-detail relationships |
 | Content blocks / summary cards | `IgcCardComponent` | Use when card chrome helps match the panel shape and structure. Use header/content/actions subcomponents with slotted content. Use plain `<div>` containers for flat or highly custom tiles |
 | Any text input field | `IgcInputComponent` | Use when the input anatomy matches the screenshot, including search fields and inline editors. Apply CSS and tokens to match the screenshot's border/radius style |
@@ -49,7 +49,7 @@ Component decision matrix (by visual pattern, domain-neutral):
 | Multi-step form / wizard | `IgcStepperComponent` | Use when a sequence of steps is visually present |
 | Filter chips / tag inputs | `IgcChipComponent` | Use when chip anatomy matches status badges, filter tags, or removable labels in the screenshot |
 | Calendar or date picker as a primary view element | `IgcCalendarComponent`, `IgcDatePickerComponent`, `IgcDateRangePickerComponent` | Use when scheduling or date selection is the core UI |
-| Top icon/action bar | `IgcNavbarComponent` with slotted icon buttons | Use when a navbar structure matches the screenshot; use plain icon buttons or custom containers when that is a closer fit |
+| Top icon/action bar | `IgcNavbarComponent` with slotted icon buttons | Use when a navbar structure matches the screenshot. Use plain icon buttons or custom containers when that is a closer fit |
 
 ## Chart Components
 
@@ -70,7 +70,7 @@ Component decision matrix (by visual pattern, domain-neutral):
 Decision rule:
 
 - Financial or OHLC screenshot: prefer `IgcFinancialChartComponent`.
-- Simple or moderate trend panel: prefer `IgcCategoryChartComponent`; move to `IgcDataChartComponent` when you need lower-level per-series control.
+- Simple or moderate trend panel: prefer `IgcCategoryChartComponent`. Use `IgcDataChartComponent` when you need lower-level per-series control.
 - Highly custom sparkline or microchart: use `IgcSparklineComponent` or a custom fallback if the built-in anatomy is not a close visual match.
 
 ## Data Display Components
@@ -90,9 +90,9 @@ Decision rule:
 Decision rule:
 
 - Use `IgcListComponent` for repeated-row content lists when its row structure and interaction model match the screenshot. The component adds accessible keyboard navigation, item structure, and theming when those benefits fit the design. Use native `<ul>/<li>` or custom containers when they are a closer visual fit.
-- Choose `IgcGridComponent` only when the image is truly tabular (flat rows and columns, spreadsheet-style). Resolve whether the lightweight or advanced grid package is the right fit from the required behavior.
+- Choose `IgcGridComponent` only when the image is clearly tabular (flat rows and columns, spreadsheet-style). Use the required behavior to decide if the lightweight or the advanced grid package is the correct fit.
 - Choose `IgcTreeGridComponent` or `IgcHierarchicalGridComponent` when rows have parent-child or nested structure.
-- Use `IgcChipComponent` when chip anatomy matches the screenshot's status badges, tags, or label pills. Use custom badge or pill markup when a simpler or more exact visual match is needed.
+- Use `IgcChipComponent` when chip anatomy matches the screenshot's status badges, tags, or label pills. Use custom badge or pill markup when you need a simpler or more exact visual match.
 
 ## Form & Input Components
 
@@ -122,10 +122,10 @@ Decision rule:
 
 See [`igniteui-wc-choose-components`](../../igniteui-wc-choose-components/SKILL.md) for the full package routing table (general UI, grids, charts, dock manager, trial vs. licensed).
 
-Install only the packages required by the components you actually selected.
+Install only the packages that the selected components require.
 
 ## Import Patterns
 
-Treat this file as a component selection reference, not as authoritative import guidance for a specific repo. Confirm exact imports and registration from `detect_platform`, the current workspace, framework setup, and `get_doc` results.
+Use this file as a component selection reference, not as authoritative import guidance for a specific repository. Confirm the exact imports and registration from `detect_platform`, the current workspace, framework setup, and `get_doc` results.
 
-For direct Web Components usage, import the component classes from the selected package and register only the needed elements with `defineComponents(...)`. If the host app uses React, Angular, Vue, or another wrapper pattern around Web Components, follow [`igniteui-wc-integrate-with-framework`](../../igniteui-wc-integrate-with-framework/SKILL.md) for the final setup details.
+For direct Web Components usage, import the component classes from the selected package. Register only the necessary elements with `defineComponents(...)`. If the host app uses React, Angular, Vue, or another wrapper pattern around Web Components, follow [`igniteui-wc-integrate-with-framework`](../../igniteui-wc-integrate-with-framework/SKILL.md) for the final setup details.

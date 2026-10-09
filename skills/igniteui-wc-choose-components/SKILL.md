@@ -1,13 +1,13 @@
 ---
 license: MIT
 name: igniteui-wc-choose-components
-description: "Identify the right Ignite UI Web Components (igniteui-webcomponents, grids, charts, dock manager, React wrappers) for a UI requirement and point to official docs, examples, and API references. WHEN TO USE: the user asks which component fits a UI pattern (form, table, dashboard, navigation, chat, etc.), needs to compare options (e.g. Grid Lite vs. premium Grid), wants a component list for a screen, or asks which package a component lives in. WHEN NOT TO USE: implementing a view from a design image or Figma file (use generate-from-image-design or figma-to-app), installing/wiring packages into a framework (use integrate-with-framework), styling/theming (use customize-component-theme), reducing bundle size (use optimize-bundle-size), or migrating Grid Lite to the premium grid (use migrate-grid-lite-to-premium)."
+description: "Identify the correct Ignite UI Web Components (igniteui-webcomponents, grids, charts, dock manager, React wrappers) for a UI requirement. Give links to the official docs, examples, and API references. WHEN TO USE: the user asks which component fits a UI pattern (form, table, dashboard, navigation, chat, etc.), must compare options (for example, Grid Lite vs. premium Grid), wants a component list for a screen, or asks which package contains a component. WHEN NOT TO USE: implementing a view from a design image or Figma file (use generate-from-image-design or figma-to-app), installing/wiring packages into a framework (use integrate-with-framework), styling/theming (use customize-component-theme), reducing bundle size (use optimize-bundle-size), or migrating Grid Lite to the premium grid (use migrate-grid-lite-to-premium)."
 user-invocable: true
 ---
 
 # Choose the Right Ignite UI Components
 
-This skill helps AI agents and developers identify the best Ignite UI components for any UI requirement, then provides direct links to official documentation, usage examples, and API references.
+AI agents and developers use this skill to identify the best Ignite UI components for a UI requirement. The skill also gives direct links to the official documentation, usage examples, and API references.
 
 ## Prerequisites
 
@@ -15,15 +15,15 @@ This skill helps AI agents and developers identify the best Ignite UI components
 
 > **AGENT INSTRUCTION — MCP Server Setup (REQUIRED)**
 >
-> Before using the Ignite UI CLI MCP tools, you MUST verify the MCP server is available
-> by calling `list_components`. If the tool is not available or the call fails,
-> you MUST automatically configure it by following the setup instructions in
+> Before you use the Ignite UI CLI MCP tools, you MUST make sure that the MCP server is available.
+> To do this, call `list_components`. If the tool is not available or the call fails,
+> you MUST configure the server automatically. Follow the setup instructions in
 > [`reference/mcp-setup.md`](./reference/mcp-setup.md).
 >
-> After writing the file, inform the user that the MCP server has been
-> configured and they may need to reload the editor for the tools to activate.
-> Start the MCP server and wait for that MCP server to start before continuing the component-related work.
-> Do NOT skip this step or ask the user to do it manually.
+> After you write the file, tell the user that the MCP server is configured.
+> Also tell the user that it can be necessary to reload the editor to activate the tools.
+> Start the MCP server. Wait until the MCP server starts, then continue the component-related work.
+> Do NOT skip this step. Do NOT ask the user to do it manually.
 
 ## Setting Up the Ignite UI CLI MCP Server
 
@@ -31,9 +31,9 @@ This skill helps AI agents and developers identify the best Ignite UI components
 
 ## Before You Answer
 
-- Choose the package before writing imports or install steps.
-- If the required package is not present in `package.json`, add or install the correct Ignite UI dependency first. Absence from `package.json` does not mean the package is invalid.
-- If the user also needs setup or code, then load [igniteui-wc-integrate-with-framework](../igniteui-wc-integrate-with-framework/SKILL.md).
+- Choose the package before you write imports or install steps.
+- If `package.json` does not contain the necessary package, first add or install the correct Ignite UI dependency. If a package is not in `package.json`, this does not mean that the package is invalid.
+- If the user also needs setup steps or code, load [igniteui-wc-integrate-with-framework](../igniteui-wc-integrate-with-framework/SKILL.md).
 
 ## Example Usage
 
@@ -48,18 +48,18 @@ This skill helps AI agents and developers identify the best Ignite UI components
 
 ## Related Skills
 
-- [igniteui-wc-integrate-with-framework](../igniteui-wc-integrate-with-framework/SKILL.md) — Set up chosen components in React, Angular, Vue, or vanilla JS
+- [igniteui-wc-integrate-with-framework](../igniteui-wc-integrate-with-framework/SKILL.md) — Configure the selected components in React, Angular, Vue, or vanilla JS
 - [igniteui-wc-customize-component-theme](../igniteui-wc-customize-component-theme/SKILL.md) — Style and theme the components you select
-- [igniteui-wc-optimize-bundle-size](../igniteui-wc-optimize-bundle-size/SKILL.md) — Import only the components you actually use
+- [igniteui-wc-optimize-bundle-size](../igniteui-wc-optimize-bundle-size/SKILL.md) — Import only the components that you use
 
 ## When to Use
 
-- Agent or user needs to decide which component fits a UI requirement
-- User describes a UI pattern and needs a matching component name
-- User wants to explore what components are available
-- User needs links to official docs or live examples for a specific component
-- Starting a new feature and mapping requirements to components
-- Reworking existing UI with new or different component requirements
+- The agent or user must decide which component fits a UI requirement
+- The user describes a UI pattern and needs a matching component name
+- The user wants to see which components are available
+- The user needs links to the official docs or live examples for a specific component
+- The user starts a new feature and maps requirements to components
+- The user changes existing UI that has new or different component requirements
 
 ---
 
@@ -80,16 +80,16 @@ If the request only says "grid", choose by features:
 
 ## Component Catalogue by UI Pattern
 
-> **Use MCP to discover the live component catalogue.** Call `list_components({ framework: "webcomponents" })` — it returns all 300+ available docs with doc names, summaries, and premium status. Then call `get_doc` with the exact doc `name` field to get usage patterns, HTML examples, and slots; call `get_api_reference` with the component class name (e.g. `IgcCarouselComponent`) for the full property/method/event API.
+> **Use MCP to find the live component catalogue.** Call `list_components({ framework: "webcomponents" })`. It returns all 300+ available docs with doc names, summaries, and premium status. Then call `get_doc` with the exact doc `name` field to get usage patterns, HTML examples, and slots. Call `get_api_reference` with the component class name (for example, `IgcCarouselComponent`) to get the full property/method/event API.
 >
 > ```
 > list_components({ framework: "webcomponents", filter: "<keyword>" })
 > get_doc({ framework: "webcomponents", name: "<doc-name-from-list>" })
 > ```
 >
-> Use `filter` to narrow results: `"input"`, `"grid"`, `"chart"`, `"nav"`, `"date"`, `"combo"`, etc.
+> Use `filter` to limit the results: `"input"`, `"grid"`, `"chart"`, `"nav"`, `"date"`, `"combo"`, etc.
 
-The tables below are a **quick routing reference** for the most common UI patterns. Component tags and package assignments are stable; for usage examples call `get_doc`, for full property/method/event API call `get_api_reference`.
+The tables below are a **quick routing reference** for the most common UI patterns. Component tags and package assignments are stable. For usage examples, call `get_doc`. For the full property/method/event API, call `get_api_reference`.
 
 ### Inputs & Forms
 
@@ -185,9 +185,9 @@ All inputs are form-associated and integrate natively with `<form>`.
 
 ### Charting & Visualization
 
-> Charts are provided by the **`igniteui-webcomponents-charts`** package (commercial). Use `IgcCategoryChartComponent` or `IgcFinancialChartComponent` for simpler domain-specific scenarios; use `IgcDataChartComponent` for full flexibility (mixed series, numeric/time axes, scatter, polar, etc.).
+> The **`igniteui-webcomponents-charts`** package (commercial) contains the charts. Use `IgcCategoryChartComponent` or `IgcFinancialChartComponent` for simpler domain-specific scenarios. Use `IgcDataChartComponent` for full flexibility (mixed series, numeric/time axes, scatter, polar, etc.).
 >
-> Call `list_components({ framework: "webcomponents", filter: "chart" })` for the full chart doc list, then `get_doc` on the specific chart type before coding.
+> To get the full chart doc list, call `list_components({ framework: "webcomponents", filter: "chart" })`. Before you write code, call `get_doc` for the specific chart type.
 
 | UI Need | Component | Tag |
 |---|---|---|
@@ -213,15 +213,15 @@ Follow these steps when an agent or user describes a UI requirement:
 
 ### Step 1 — Identify UI patterns
 
-Break the described UI into atomic patterns. Examples:
-- "A booking form" → date input, text inputs, button, maybe a calendar picker
+Divide the UI into atomic patterns. Examples:
+- "A booking form" → date input, text inputs, button, optionally a calendar picker
 - "An admin dashboard" → navbar, nav drawer, cards, data grid, charts
 - "A notification center" → snackbar or toast, badge, list
 - "A settings page" → tabs or accordion, switch, input, select, button
 
 ### Step 2 — Map patterns to components
 
-Use the **Component Catalogue** tables above to find matching components. When in doubt:
+Use the **Component Catalogue** tables above to find matching components. If you are not sure, use this table:
 
 | If the user needs… | Prefer… | Over… |
 |---|---|---|
@@ -249,20 +249,20 @@ Confirm which package provides the component:
 
 ### Step 4 — Look up component documentation
 
-These tools serve different data sources — call the right one to avoid guessing:
+These tools use different data sources. Call the correct tool so that you do not guess:
 
-- **Usage patterns, HTML examples, slots** → `get_doc` serves the component's **topic-page** (prose guide, code samples, slot names, CSS examples). Use the kebab-case doc `name` returned by `list_components`:
+- **Usage patterns, HTML examples, slots** → `get_doc` gives the component's **topic-page** (prose guide, code samples, slot names, CSS examples). Use the kebab-case doc `name` that `list_components` returns:
   ```
   get_doc({ framework: "webcomponents", name: "<doc-name>" })
   ```
 
-- **Full property/method/event API** → `get_api_reference` serves **class-level reflection data** (every `@property`, method signature, event name with types). It does NOT overlap with `get_doc` — the topic page rarely lists all properties. Use `search_api` first when you don't know the exact class name (e.g. `IgcCarouselComponent`):
+- **Full property/method/event API** → `get_api_reference` gives **class-level reflection data** (every `@property`, method signature, event name with types). It does NOT overlap with `get_doc`. The topic page rarely lists all properties. If you do not know the exact class name (for example, `IgcCarouselComponent`), use `search_api` first:
   ```
   search_api({ platform: "webcomponents", query: "<component keyword>" })
   get_api_reference({ platform: "webcomponents", component: "<ClassName>" })
   ```
 
-For feature-based questions (e.g., "how does combo filtering work"), use `search_docs` instead:
+For feature-based questions (for example, "how does combo filtering work"), use `search_docs` instead:
 
 ```
 search_docs({ framework: "webcomponents", query: "<feature keyword>" })
@@ -270,7 +270,7 @@ search_docs({ framework: "webcomponents", query: "<feature keyword>" })
 
 ### Step 5 — Provide a starter code snippet
 
-Once components are identified, give the user a minimal working snippet. Example for an admin dashboard shell:
+After you identify the components, give the user a minimal working snippet. Example for an admin dashboard shell:
 
 ```typescript
 import {
@@ -358,7 +358,7 @@ defineComponents(IgcNavbarComponent, IgcNavDrawerComponent, IgcCardComponent, Ig
 ### "I can't find a component for X"
 
 1. Call `list_components({ framework: "webcomponents" })` or use `search_docs` with a feature keyword to find the best match
-2. Consider composing two simpler components (e.g., `<igc-card>` + `<igc-list>` for a list card)
+2. If necessary, combine two simpler components (for example, `<igc-card>` + `<igc-list>` for a list card)
 
 ### "Which grid should I use?"
 
@@ -372,11 +372,11 @@ defineComponents(IgcNavbarComponent, IgcNavDrawerComponent, IgcCardComponent, Ig
 
 ### "I need React support"
 
-Use the [`igniteui-react`](https://www.npmjs.com/package/igniteui-react) package. Components are wrapped with React-friendly event bindings and props. See the [igniteui-wc-integrate-with-framework](../igniteui-wc-integrate-with-framework/SKILL.md) skill for setup.
+Use the [`igniteui-react`](https://www.npmjs.com/package/igniteui-react) package. It wraps the components with React-friendly event bindings and props. For setup, see the [igniteui-wc-integrate-with-framework](../igniteui-wc-integrate-with-framework/SKILL.md) skill.
 
 ### "How do I get commercial components?"
 
-Visit [https://www.infragistics.com/products/ignite-ui-web-components](https://www.infragistics.com/products/ignite-ui-web-components) or contact [Infragistics sales](https://www.infragistics.com/about-us/contact-us) for licensing information.
+For licensing information, go to [https://www.infragistics.com/products/ignite-ui-web-components](https://www.infragistics.com/products/ignite-ui-web-components) or contact [Infragistics sales](https://www.infragistics.com/about-us/contact-us).
 
 ---
 

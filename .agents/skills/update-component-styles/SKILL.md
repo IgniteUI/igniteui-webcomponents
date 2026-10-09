@@ -42,7 +42,7 @@ $theme: $material;
 ```
 
 ```scss
-// dark/[component].bootstrap.scss: emit only the difference from the light base
+// dark/[component].bootstrap.scss: emit only the difference from the light bootstrap theme
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 @use '../light/themes' as light;
@@ -50,9 +50,14 @@ $theme: $material;
 $theme: $bootstrap;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $theme));
+    @include css-vars-from-theme(dark-overrides(light.$bootstrap, $theme));
 }
 ```
+
+In dark mode, the component adopts the light theme sheet and then the dark sheet, so a dark
+file emits only overrides. If `dark/[component].shared.scss` declares a dark base, also give
+the two bases: `dark-overrides(light.$bootstrap, $theme, $base, light.$base)` (see
+`card/themes/dark/`).
 
 - Do not hardcode colors or sizes. Use `var-get()`, `color()`, `contrast-color()`,
   `sizable()` and `--ig-size`.
@@ -63,6 +68,11 @@ $theme: $bootstrap;
   (see [ARIA across shadow boundaries](../../../.github/CODING_GUIDELINES.md#aria-across-shadow-boundaries)).
 - `var-get()` resolves only keys that are in the schema. For a new key, add it to
   `igniteui-theming`, or declare a local variable in `shared/[component].common.scss`.
+- Add a new theme file to the aggregator (`themes.ts`), in cascade order. The component must
+  not import a per-theme sheet directly: the publish build fails, because the sheet would
+  reach the bundles of the other themes.
+- The shared sizing, scrollbar and `[hidden]` rules are in `src/styles/common/component.scss`,
+  which compiles once to `componentBase`. Do not `@use` it in a base file.
 
 ### 2. Document new parts or custom properties
 
@@ -96,10 +106,10 @@ four themes in light and dark mode.
 
 ## Validation Checklist
 
-- [ ] Only `.scss` files are in the diff
+- [ ] Only `.scss` files, and `themes.ts` for a new theme file, are in the diff
 - [ ] Load-path specifiers. Values come from the theming functions.
 - [ ] `[part~='…']` selectors
-- [ ] Dark files emit only `diff(light.$base, $theme)`
+- [ ] Dark files emit only `dark-overrides(light.$[theme], $theme)`
 - [ ] New parts and custom properties are in the JSDoc and in `spec.md`
 - [ ] `build:styles` and `lint:styles` pass. All themes checked.
 - [ ] CHANGELOG updated if the change is user-visible
@@ -113,7 +123,8 @@ four themes in light and dark mode.
 | Applies in one theme only         | It is in a theme file, not in `shared/[component].common.scss`     |
 | Part selector stopped matching    | `[part='x']` with a multi-name `partMap`                           |
 | `var-get()` emits nothing         | The key is not in the schema                                       |
-| Dark looks like light             | `diff(light.$base, …)` is missing, or an entry is missing in `themes.ts` |
+| Dark looks like light             | The dark file is empty, or its entry is missing in `themes.ts`     |
+| Dark repeats the light values     | The dark file uses `diff()`, not `dark-overrides()`                |
 | Consumers cannot override         | Specificity is too high, or the element is not a part              |
 
 ## Reference Examples

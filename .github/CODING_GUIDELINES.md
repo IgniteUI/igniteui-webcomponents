@@ -74,7 +74,7 @@ To make a helper public, move it out of `internals` first.
 ```ts
 export default class IgcFooBarComponent extends LitElement {
   public static readonly tagName = 'igc-foo-bar';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -223,7 +223,8 @@ declare global {
 
   All other imports are relative, including imports from one component to another
   (`../icon/icon.js`). A file in an aliased directory uses relative paths for its own
-  directory and the alias for a different one.
+  directory and the alias for a different one. The exception is the theme aggregator of a
+  component, which is imported through `#themes/*` (see [Styles and Theming](#styles-and-theming)).
 
 - The aliases are Node subpath imports. They are declared in the `imports` field of
   `package.json` (the sources) and of `scripts/_package.json` (the published manifest, with
@@ -262,12 +263,12 @@ Before you write lifecycle code, look for a controller that already does it:
 | `addCommandController`                                        | `#internals/controllers/command.js`         | The Invoker Commands API (`command` / `commandfor`)            |
 | `addIdRefResolver`                                            | `#internals/controllers/id-resolver.js`     | Resolving IDREF attributes to elements                         |
 | `addRootClickController`                                      | `#internals/controllers/root-click.js`      | Closing overlays on an outside click                           |
-| `createMutationController` / `createResizeObserverController` | `#internals/controllers/*-observer.js`      | Observing DOM mutations and size changes                       |
+| `createMutationController` / `addResizeObserverController`    | `#internals/controllers/*-observer.js`      | Observing DOM mutations and size changes                       |
 | `addGesturesController`                                       | `#internals/controllers/gestures.js`        | Swipe gestures                                                 |
 | `addKeyboardFocusRing`                                        | `#internals/controllers/focus-ring.js`      | Focus styles for keyboard focus only                           |
 | `addFullscreenController`                                     | `#internals/controllers/fullscreen.js`      | Fullscreen state                                               |
 | `addAdoptedStylesController`                                  | `#internals/controllers/adopt-styles.js`    | Adopting document styles into a shadow root                    |
-| `addContextProvider` / `createAsyncContext`                   | `#internals/controllers/context-provider.js`, `async-consumer.js` | Sharing state between a parent and its children through Lit context |
+| `addContextProvider` / `addAsyncContextConsumer`              | `#internals/controllers/context-provider.js`, `async-consumer.js` | Sharing state between a parent and its children through Lit context |
 | `createGroupRegistry`                                         | `#internals/controllers/group.js`           | Grouping peers by key, such as radios by `name`                |
 | `addI18nController`                                           | `#internals/i18n/i18n-controller.js`        | Localized resource strings                                     |
 
@@ -349,6 +350,7 @@ themes/
 │   └── [component].{bootstrap,material,fluent,indigo}.scss
 ├── dark/
 │   ├── _themes.scss            # digest-schema() of the dark schemas
+│   ├── [component].shared.scss # Optional: a dark base of the component's own
 │   └── [component].{bootstrap,material,fluent,indigo}.scss
 └── themes.ts                   # Composes everything into the `all` export
 ```
@@ -373,10 +375,14 @@ themes/
   @use '../../../styles/utilities' as *;
   ```
 
+- `src/styles/common/component.scss` holds the rules that every component shares: sizing,
+  `box-sizing`, scrollbars and `[hidden]`. It compiles once, to `componentBase`. Put
+  `componentBase` first in `static styles`. Do not `@use` this file in a base file.
 - Theme values come from the `igniteui-theming` schemas. `_themes.scss` digests them, and
   `var-get()` reads them. `light/[component].shared.scss` emits the full `$base` variable set.
-  The per-theme overrides emit only a difference: `diff($base, $theme)` in `light/`, and
-  `diff(light.$base, $theme)` in `dark/`:
+  A light theme file emits only `diff($base, $theme)`. In dark mode, the component adopts the
+  light theme sheet and then the dark sheet. Thus a dark file emits only the difference from
+  the light theme of the same name, with `dark-overrides()`:
 
   ```scss
   // light/badge.bootstrap.scss
@@ -388,13 +394,45 @@ themes/
   :host {
       @include css-vars-from-theme(diff($base, $theme));
   }
+
+  // dark/badge.bootstrap.scss
+  @use 'styles/utilities' as *;
+  @use 'themes' as *;
+  @use '../light/themes' as light;
+
+  $theme: $bootstrap;
+
+  :host {
+      @include css-vars-from-theme(dark-overrides(light.$bootstrap, $theme));
+  }
   ```
+
+  If `dark/[component].shared.scss` declares a dark base, also give the two bases:
+  `dark-overrides(light.$bootstrap, $theme, $base, light.$base)` (see `card/themes/dark/`).
 
 - Do not hardcode colors or sizes. Use `var-get($theme, 'text-color')`, `contrast-color()`,
   `sizable()` and the `--ig-size` scale.
 - Keep specificity low, and expose parts so that consumers can style the component.
 - `themes.ts` is the only hand-written TypeScript file in `themes/`. It composes the styles
-  into the `Themes` object for `addThemingController`.
+  into the `ComponentThemes` map for `addThemingController`: for each variant, a `shared`
+  entry and one entry per theme. An entry lists its sheets in cascade order:
+  `shared/[component].[theme]`, then `light/`, then (in the dark entry only) `dark/`. See
+  `badge/themes/themes.ts`.
+- Import the aggregator through the `#themes` alias, with its path under `src/components`:
+
+  ```ts
+  // ✅ DO
+  import { all } from '#themes/button/themes/button/themes.js';
+
+  // ❌ DON'T
+  import { all } from './themes/button/themes.js';
+  ```
+
+  A component imports its base and `shared/*.common` styles directly, and every per-theme
+  style through the aggregator. In the published package, the alias selects a single-theme
+  copy of the aggregator when the consumer sets an `igc-theme-<name>` condition (README,
+  "Bundling a single theme"). The build generates these copies and fails on a relative
+  aggregator import, or on a per-theme style that reaches a bundle for another theme.
 
 ## Accessibility
 
@@ -1122,6 +1160,7 @@ export const Basic: Story = {
 | `npm run format`                | Applies the oxlint and oxfmt fixes                                                         |
 | `npm run test`                  | Builds the styles and runs the Web Test Runner suite with coverage                         |
 | `npm run test:ssr`              | Builds the package and renders every tag through Lit SSR; fails when a render throws       |
+| `npm run build:publish`         | Builds the package in `dist`, then writes and checks the single-theme aggregators          |
 | `npm run cem`                   | Regenerates `custom-elements.json`                                                         |
 | `npm run public-api:update`     | Rewrites `public-api.json` after an intended public API change                             |
 | `npm run report:spec-scenarios` | Lists `spec.md` test scenarios out of step with the specs, and specs without an a11y audit |
