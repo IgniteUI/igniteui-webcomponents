@@ -35,16 +35,26 @@ class StepperState {
 
   //#region Per-step state
 
-  /** Merges `state` into the state of `step` and updates the step. */
+  /** Merges `state` into the state of `step`, and updates the step on a change. */
   public set(step: IgcStepComponent, state: Partial<StepState>): void {
+    const current = this.get(step);
+
+    if (
+      current &&
+      Object.entries(state).every(
+        ([key, value]) => current[key as keyof StepState] === value
+      )
+    ) {
+      return;
+    }
+
     this._state.set(step, {
       linearDisabled: false,
       previousCompleted: false,
       visited: false,
-      ...this.get(step),
+      ...current,
       ...state,
     });
-
     step.requestUpdate();
   }
 
@@ -167,6 +177,11 @@ class StepperState {
 
     this.syncState();
     this.setLinearState();
+
+    // A step renders its index, which a change of the collection can shift.
+    for (const step of this._steps) {
+      step.requestUpdate();
+    }
   }
 
   /** Resets all step states and activates the first step. */

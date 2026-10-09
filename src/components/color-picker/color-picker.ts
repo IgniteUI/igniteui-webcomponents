@@ -52,8 +52,7 @@ import IgcSelectComponent from '../select/select.js';
 import type { ColorFormat, ColorPickerMode } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcVisuallyHiddenComponent from '../visually-hidden/visually-hidden.js';
-import { isValidColor, normalizeColor } from './common.js';
-import { ColorModel, getContext } from './model.js';
+import { ColorModel, rgbString } from './model.js';
 import IgcPickerCanvasComponent, {
   type PickerCanvasEventDetail,
 } from './picker-canvas.js';
@@ -410,16 +409,14 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     event: CustomEvent<PickerCanvasEventDetail>
   ): void {
     this._color.setSaturationAndValue(event.detail.x, 100 - event.detail.y);
-    this._updateColor();
-    this._emitInputEvent();
+    this._updateColor(true);
   }
 
   private _handleHueValueChange(event: Event): void {
     stopPropagation(event);
 
     this._color.h = asNumber((event.target as HTMLInputElement).value);
-    this._updateColor();
-    this._emitInputEvent();
+    this._updateColor(true);
   }
 
   private _handleAlphaSliderValueChange(event: Event): void {
@@ -522,17 +519,17 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     stopPropagation(event);
 
     const input = event.target as IgcInputComponent;
-    const value = normalizeColor(event.detail);
-    const cleared = !value;
+    const cleared = !event.detail?.trim();
+    const color = ColorModel.parse(event.detail);
 
     // An invalid and non-empty value reverts the input to the current color.
     // An empty value clears the color.
-    if (!cleared && !isValidColor(value, getContext())) {
+    if (!cleared && color.isEmpty) {
       input.value = this._color.asString(this.format);
       return;
     }
 
-    this._color = cleared ? ColorModel.empty() : ColorModel.parse(value);
+    this._color = color;
     this._updateColor();
     this._syncCanvasPosition();
   }
@@ -583,7 +580,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
    * color", because {@link _previewStyle} uses {@link _alphaColor}.
    */
   private get _opaqueColor(): string {
-    return new ColorModel(this._color.toRGB()).asString('rgb');
+    return rgbString(this._color.toRGB());
   }
 
   /** The alpha channel as the whole percentage that both alpha controls use. */
@@ -632,13 +629,16 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     }
 
     this._color.alpha = alpha;
-    this._updateColor();
-    this._emitInputEvent();
+    this._updateColor(true);
   }
 
-  private _updateColor(): void {
+  private _updateColor(emitInput = false): void {
     this._formValue.setValueAndFormState(this._color.asString(this.format));
     this.requestUpdate();
+
+    if (emitInput) {
+      this._emitInputEvent();
+    }
   }
 
   /**

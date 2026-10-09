@@ -1,6 +1,6 @@
 import { clamp } from '#internals/utils/math.js';
 import type { ColorFormat } from '../types.js';
-import { isValidColor, normalizeColor, parseColor } from './common.js';
+import { tryParseColor } from './common.js';
 import { converter, type HSL, type HSV, type RGB } from './converters.js';
 
 export type { ColorFormat };
@@ -22,6 +22,12 @@ function makeCanvasContext() {
   };
 }
 export const getContext = makeCanvasContext();
+
+/** Formats RGB channels (0-255) and an optional alpha as a CSS `rgb()` color. */
+export function rgbString(rgb: RGB, alpha: number | null = null): string {
+  const [r, g, b] = rgb.map(Math.round);
+  return `rgb(${r} ${g} ${b}${alpha === null ? '' : ` / ${alpha}`})`;
+}
 
 /**
  * A color that keeps its RGB, HSL and HSV values in sync.
@@ -54,16 +60,11 @@ export class ColorModel {
    * An empty or invalid string gives an empty color.
    */
   public static parse(color: string): ColorModel {
-    const ctx = getContext();
-    // Validation rejects a hash-less hex, so normalize first.
-    const normalized = normalizeColor(color);
+    const parsed = tryParseColor(color, getContext());
 
-    if (!isValidColor(normalized, ctx)) {
-      return ColorModel.empty();
-    }
-
-    const parsed = parseColor(normalized, ctx);
-    return new ColorModel(parsed.value, parsed.alpha);
+    return parsed
+      ? new ColorModel(parsed.value, parsed.alpha)
+      : ColorModel.empty();
   }
 
   /** Creates a ColorModel from hue (0-360), saturation and lightness (0-100). */
@@ -244,10 +245,8 @@ export class ColorModel {
                 .padStart(2, '0');
         return `#${hex}${suffix}`;
       }
-      case 'rgb': {
-        const [r, g, b] = this._rgb.map(Math.round);
-        return `rgb(${r} ${g} ${b}${alpha === null ? '' : ` / ${alpha}`})`;
-      }
+      case 'rgb':
+        return rgbString(this._rgb, alpha);
       case 'hsl': {
         const [h, s, l] = this._hsl.map(Math.round);
         return `hsl(${h} ${s}% ${l}%${alpha === null ? '' : ` / ${alpha}`})`;

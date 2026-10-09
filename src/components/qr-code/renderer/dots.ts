@@ -9,6 +9,9 @@ type RenderQrDotsProperties = {
   dotStyle: QrDotStyle;
 };
 
+/** The last path of each matrix, keyed by geometry; an unchanged render reuses it. */
+const paths = new WeakMap<boolean[][], { key: string; path: string }>();
+
 /** Renders the data modules as a single SVG path. */
 export function renderQrDots({
   matrix,
@@ -16,6 +19,14 @@ export function renderQrDots({
   marginPx,
   dotStyle,
 }: RenderQrDotsProperties): TemplateResult {
-  const modules = renderDataModules(matrix, moduleSize, marginPx, dotStyle);
-  return svg`<path part="dots" d=${modules.join(' ')} />`;
+  const key = `${moduleSize}:${marginPx}:${dotStyle}`;
+  let cached = paths.get(matrix);
+
+  if (cached?.key !== key) {
+    const modules = renderDataModules(matrix, moduleSize, marginPx, dotStyle);
+    cached = { key, path: modules.join(' ') };
+    paths.set(matrix, cached);
+  }
+
+  return svg`<path part="dots" d=${cached.path} />`;
 }
