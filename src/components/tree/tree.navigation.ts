@@ -113,11 +113,17 @@ export class IgcTreeNavigationService {
     }
     if (this._focusedItem === item) {
       this.focusItem(null, false);
-      const next = this.tree.items.find((i) => !i.disabled);
-      if (next) {
-        next.tabIndex = 0;
-        this.focusItem(next, false);
-      }
+      this.seedTabStop();
+    }
+  }
+
+  /** Gives the first enabled item the tab stop, without moving the DOM focus. */
+  public seedTabStop(items = this.tree.items): void {
+    const first = items.find((item) => !item.disabled);
+
+    if (first) {
+      first.tabIndex = 0;
+      this.focusItem(first, false);
     }
   }
 
@@ -271,14 +277,7 @@ export class IgcTreeNavigationService {
       return;
     }
 
-    if (shiftKey) {
-      this.selection.selectMultipleItems(item);
-      return;
-    }
-
-    item.selected
-      ? this.selection.deselectItem(item)
-      : this.selection.selectItem(item);
+    this.selection.toggleItem(item, shiftKey);
   }
 
   private readonly _enter = (): void => {

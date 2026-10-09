@@ -56,6 +56,17 @@ export class IgcTreeSelectionService {
     this._emitSelectionEvent(selected.concat(added), added, []);
   }
 
+  /** Toggles the selection of `item` with the event, or extends the range to it. */
+  public toggleItem(item: IgcTreeItemComponent, extendRange: boolean): void {
+    if (extendRange) {
+      this.selectMultipleItems(item);
+    } else if (item.selected) {
+      this.deselectItem(item);
+    } else {
+      this.selectItem(item);
+    }
+  }
+
   /** Select the specified item and emit event. */
   public selectItem(item: IgcTreeItemComponent): void {
     this._flush();

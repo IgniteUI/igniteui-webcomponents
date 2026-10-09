@@ -127,12 +127,7 @@ export default class IgcTreeComponent extends I18nMixin(
       item.init = true;
     }
 
-    // Seed the roving tabindex without moving DOM focus away from the user.
-    const firstNotDisabledItem = items.find((i) => !i.disabled);
-    if (firstNotDisabledItem) {
-      firstNotDisabledItem.tabIndex = 0;
-      this.navService.focusItem(firstNotDisabledItem, false);
-    }
+    this.navService.seedTabStop(items);
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
