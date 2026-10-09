@@ -24,6 +24,7 @@ import { getElementFromPath } from '#internals/utils/events.js';
 import { clamp } from '#internals/utils/math.js';
 import { formatString } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { ContentOrientation } from '../types.js';
 import { IgcCalendarBaseComponent } from './base.js';
@@ -113,7 +114,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   Constructor<IgcCalendarBaseComponent>
 >(IgcCalendarBaseComponent) {
   public static readonly tagName = 'igc-calendar';
-  public static styles = styles;
+  public static styles = [componentBase, styles];
 
   /* blazorSuppress */
   public static register(): void {

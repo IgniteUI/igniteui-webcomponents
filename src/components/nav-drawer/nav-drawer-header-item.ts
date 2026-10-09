@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/header-item.base.css.js';
 import { all } from './themes/header-item.js';
 import { styles as shared } from './themes/shared/header-item/header-item.common.css.js';
@@ -13,7 +14,7 @@ import { styles as shared } from './themes/shared/header-item/header-item.common
  */
 export default class IgcNavDrawerHeaderItemComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer-header-item';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

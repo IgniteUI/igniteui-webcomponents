@@ -4,6 +4,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { blazorInclude } from '#internals/decorators/blazorInclude.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import {
   registerIcon as registerIcon_impl,
@@ -34,7 +35,7 @@ import { all } from './themes/icon-button/themes.js';
  */
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-icon-button';
-  protected static styles = [styles, shared];
+  protected static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

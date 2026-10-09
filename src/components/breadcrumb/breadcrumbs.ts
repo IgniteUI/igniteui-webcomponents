@@ -5,6 +5,7 @@ import { addContextProvider } from '#internals/controllers/context-provider.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcBreadcrumbComponent from './breadcrumb.js';
 import { styles } from './themes/breadcrumbs.base.css.js';
 import { all } from './themes/themes.js';
@@ -48,7 +49,7 @@ import { all } from './themes/themes.js';
  */
 export default class IgcBreadcrumbsComponent extends LitElement {
   public static readonly tagName = 'igc-breadcrumbs';
-  public static override styles = [styles];
+  public static override styles = [componentBase, styles];
 
   /* blazorSuppress */
   public static register(): void {

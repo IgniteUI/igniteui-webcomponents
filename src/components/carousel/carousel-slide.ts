@@ -7,6 +7,7 @@ import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.j
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { createIdGenerator, formatString } from '#internals/utils/strings.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { animations } from './animations.js';
 import type IgcCarouselComponent from './carousel.js';
 import { styles } from './themes/carousel-slide.base.css.js';
@@ -21,7 +22,7 @@ const nextId = createIdGenerator('igc-carousel-slide');
  * @slot - Default slot for the carousel slide.
  */
 export default class IgcCarouselSlideComponent extends LitElement {
-  public static override styles = styles;
+  public static override styles = [componentBase, styles];
   public static readonly tagName = 'igc-carousel-slide';
 
   /* blazorSuppress */

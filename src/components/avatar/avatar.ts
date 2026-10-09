@@ -3,6 +3,7 @@ import { property, state } from 'lit/decorators.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { AvatarShape } from '../types.js';
 import { styles } from './themes/avatar.base.css.js';
 import { styles as shared } from './themes/shared/avatar.common.css.js';
@@ -22,7 +23,7 @@ import { all } from './themes/themes.js';
  */
 export default class IgcAvatarComponent extends LitElement {
   public static readonly tagName = 'igc-avatar';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

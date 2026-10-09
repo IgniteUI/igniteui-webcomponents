@@ -17,6 +17,7 @@ import { partMap } from '#internals/part-map.js';
 import { hasFiles, hasNegativeTabIndex } from '#internals/utils/dom.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
 import {
   IgcInputBaseComponent,
@@ -86,7 +87,7 @@ export default class IgcFileInputComponent extends I18nMixin(
   i18n
 ) {
   public static readonly tagName = 'igc-file-input';
-  public static styles = [baseStyle, shared, styles];
+  public static styles = [componentBase, baseStyle, shared, styles];
 
   /* blazorSuppress */
   public static register(): void {

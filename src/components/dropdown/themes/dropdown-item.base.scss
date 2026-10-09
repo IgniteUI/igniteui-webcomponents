@@ -1,5 +1,4 @@
 @use 'styles/utilities' as *;
-@use 'styles/common/component';
 
 :host {
     @include type-style('body-2');

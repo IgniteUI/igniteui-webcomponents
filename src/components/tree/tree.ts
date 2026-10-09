@@ -12,6 +12,7 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { setOrRemoveAttribute } from '#internals/utils/dom.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { TreeSelection } from '../types.js';
 import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
@@ -58,7 +59,7 @@ export default class IgcTreeComponent extends I18nMixin(
   i18n
 ) {
   public static readonly tagName = 'igc-tree';
-  public static styles = styles;
+  public static styles = [componentBase, styles];
 
   /* blazorSuppress */
   public static register() {

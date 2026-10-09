@@ -31,6 +31,7 @@ import {
 import { bindIf } from '#internals/utils/lit.js';
 import type { Validator } from '#internals/validators.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
@@ -142,7 +143,7 @@ export default class IgcComboComponent<
   i18n
 ) {
   public static readonly tagName = 'igc-combo';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

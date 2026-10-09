@@ -2,6 +2,7 @@ import { property } from 'lit/decorators.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { IgcBaseOptionLikeComponent } from '#internals/mixins/option.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from '../dropdown/themes/dropdown-item.base.css.js';
 import { all } from '../dropdown/themes/item.js';
 import { styles as shared } from '../dropdown/themes/shared/item/dropdown-item.common.css.js';
@@ -21,7 +22,7 @@ import { styles as shared } from '../dropdown/themes/shared/item/dropdown-item.c
  */
 export default class IgcSelectItemComponent extends IgcBaseOptionLikeComponent {
   public static readonly tagName = 'igc-select-item';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

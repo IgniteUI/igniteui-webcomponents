@@ -19,6 +19,7 @@ import { renderToggleShell } from '#internals/templates/toggle-shell.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { isString } from '#internals/utils/types.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { ToggleLabelPosition } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { addRadioGroupController, getGroupMembers } from './controller.js';
@@ -66,7 +67,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   )
 ) {
   public static readonly tagName = 'igc-radio';
-  protected static styles = [styles, shared];
+  protected static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

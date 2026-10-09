@@ -21,6 +21,7 @@ import {
   isPointInsideElement,
 } from '#internals/utils/dom.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { NavDrawerPosition } from '../types.js';
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
@@ -74,7 +75,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(HostAriaMixin(LitElement)) {
   public static readonly tagName = 'igc-nav-drawer';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

@@ -26,6 +26,7 @@ import { firstOf } from '#internals/utils/arrays.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { CalendarSelection } from '../calendar/types.js';
 import type { DatePart } from '../date-time-input/date-part.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
@@ -151,7 +152,7 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
   AbstractConstructor<IgcDatePickerBaseComponent<Date>>
 >(IgcDatePickerBaseComponent) {
   public static readonly tagName = 'igc-date-picker';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

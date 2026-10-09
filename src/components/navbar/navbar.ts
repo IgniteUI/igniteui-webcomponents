@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/navbar.base.css.js';
 import { styles as shared } from './themes/shared/navbar.common.css.js';
 import { all } from './themes/themes.js';
@@ -22,7 +23,7 @@ import { all } from './themes/themes.js';
  */
 export default class IgcNavbarComponent extends LitElement {
   public static readonly tagName = 'igc-navbar';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

@@ -11,6 +11,7 @@ import { partMap } from '#internals/part-map.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { isElement } from '#internals/utils/dom.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { BadgeShape, StyleVariant } from '../types.js';
 import { styles } from './themes/badge.base.css.js';
 import { styles as shared } from './themes/shared/badge.common.css.js';
@@ -36,7 +37,7 @@ import { all } from './themes/themes.js';
  */
 export default class IgcBadgeComponent extends LitElement {
   public static readonly tagName = 'igc-badge';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

@@ -50,6 +50,7 @@ import { bindIf } from '#internals/utils/lit.js';
 import { moveFlag } from '#internals/utils/objects.js';
 import { isString } from '#internals/utils/types.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent, {
@@ -132,7 +133,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   >(IgcComboBoxBaseLikeComponent)
 ) {
   public static readonly tagName = 'igc-select';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

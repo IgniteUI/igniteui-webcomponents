@@ -2,6 +2,7 @@ import { html, LitElement } from 'lit';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/dropdown-header.base.css.js';
 import { all } from './themes/header.js';
 import { styles as shared } from './themes/shared/header/dropdown-header.common.css.js';
@@ -15,7 +16,7 @@ import { styles as shared } from './themes/shared/header/dropdown-header.common.
  */
 export default class IgcDropdownHeaderComponent extends LitElement {
   public static readonly tagName = 'igc-dropdown-header';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

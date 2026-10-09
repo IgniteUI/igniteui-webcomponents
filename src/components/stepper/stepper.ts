@@ -18,6 +18,7 @@ import {
 } from '#internals/utils/events.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import type { ComponentThemes } from '#theming/types.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type {
   HorizontalTransitionAnimation,
   StepperOrientation,
@@ -105,7 +106,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-stepper';
-  public static styles = styles;
+  public static styles = [componentBase, styles];
 
   /* blazorSuppress */
   public static register(): void {

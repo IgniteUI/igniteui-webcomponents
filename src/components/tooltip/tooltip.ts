@@ -22,6 +22,7 @@ import { partMap } from '#internals/part-map.js';
 import { isElement, isLTR } from '#internals/utils/dom.js';
 import { asNumber } from '#internals/utils/math.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
@@ -71,7 +72,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-tooltip';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /** Shared config for the delay properties - a negative delay is no delay. */
   private static readonly _delay: CoercedPropertyConfig<

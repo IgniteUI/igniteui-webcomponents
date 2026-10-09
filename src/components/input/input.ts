@@ -14,6 +14,7 @@ import { partMap } from '#internals/part-map.js';
 import { hasNegativeTabIndex } from '#internals/utils/dom.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type {
   InputType,
   RangeTextSelectMode,
@@ -74,7 +75,7 @@ const Slots = setSlots(
  */
 export default class IgcInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-input';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /** Shared config for the constraint properties - a change revalidates. */
   private static readonly _revalidate: CoercedPropertyConfig<

@@ -23,6 +23,7 @@ import { bindIf } from '#internals/utils/lit.js';
 import { asNumber, clamp } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { CalendarSelection } from '../calendar/types.js';
 import {
   IgcDatePickerBaseComponent,
@@ -201,7 +202,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   AbstractConstructor<IgcDatePickerBaseComponent<DateRangeValue>>
 >(IgcDatePickerBaseComponent) {
   public static readonly tagName = 'igc-date-range-picker';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

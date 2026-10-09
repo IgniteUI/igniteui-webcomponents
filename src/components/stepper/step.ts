@@ -15,6 +15,7 @@ import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type {
   HorizontalTransitionAnimation,
   StepperOrientation,
@@ -99,7 +100,7 @@ const nextId = createIdGenerator('igc-step');
  */
 export default class IgcStepComponent extends HostAriaMixin(LitElement) {
   public static readonly tagName = 'igc-step';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

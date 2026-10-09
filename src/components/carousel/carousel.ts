@@ -50,6 +50,7 @@ import {
 import { asNumber, wrap } from '#internals/utils/math.js';
 import { createIdGenerator, formatString } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcIconComponent from '../icon/icon.js';
 import type {
@@ -105,7 +106,7 @@ export default class IgcCarouselComponent extends I18nMixin(
   ),
   i18n
 ) {
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
   public static readonly tagName = 'igc-carousel';
 
   /* blazorSuppress */

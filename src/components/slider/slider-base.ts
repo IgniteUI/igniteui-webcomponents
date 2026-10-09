@@ -50,6 +50,7 @@ import { equal } from '#internals/utils/objects.js';
 import { formatString } from '#internals/utils/strings.js';
 import { isDefined } from '#internals/utils/types.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import type {
   SliderTickLabelRotation,
@@ -94,7 +95,7 @@ function stepsTo(value: number, base: number, step: number): number {
 
 @blazorDeepImport
 export class IgcSliderBaseComponent extends LitElement {
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   @query(`[part~='thumb']`)
   protected _thumb!: HTMLElement;

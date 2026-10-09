@@ -7,6 +7,7 @@ import { addSlotController, DefaultSlot } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { getTabbables, setOrRemoveAttribute } from '#internals/utils/dom.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import { styles } from './themes/breadcrumb.base.css.js';
 import { styles as shared } from './themes/shared/breadcrumb.common.css.js';
@@ -43,7 +44,7 @@ import { all } from './themes/themes.js';
  */
 export default class IgcBreadcrumbComponent extends LitElement {
   public static readonly tagName = 'igc-breadcrumb';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

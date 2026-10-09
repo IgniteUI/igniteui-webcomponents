@@ -40,6 +40,7 @@ import {
 import { bindIf } from '#internals/utils/lit.js';
 import { asNumber, clamp } from '#internals/utils/math.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcDividerComponent from '../divider/divider.js';
@@ -154,7 +155,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   >(IgcBaseComboBoxComponent)
 ) {
   public static readonly tagName = 'igc-color-picker';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

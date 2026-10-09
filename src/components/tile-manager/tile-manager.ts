@@ -20,6 +20,7 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
 import { asNumber } from '#internals/utils/math.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { TileManagerDragMode, TileManagerResizeMode } from '../types.js';
 import { createTilesState } from './position.js';
 import { createSerializer } from './serializer.js';
@@ -48,7 +49,7 @@ import IgcTileComponent from './tile.js';
 @shadowOptions({ slotAssignment: 'manual' })
 export default class IgcTileManagerComponent extends LitElement {
   public static readonly tagName = 'igc-tile-manager';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register() {

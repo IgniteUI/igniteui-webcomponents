@@ -1,6 +1,7 @@
 import { registerComponent } from '#internals/definitions/register.js';
 import { IgcBaseOptionLikeComponent } from '#internals/mixins/option.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/dropdown-item.base.css.js';
 import { all } from './themes/item.js';
 import { styles as shared } from './themes/shared/item/dropdown-item.common.css.js';
@@ -20,7 +21,7 @@ import { styles as shared } from './themes/shared/item/dropdown-item.common.css.
  */
 export default class IgcDropdownItemComponent extends IgcBaseOptionLikeComponent {
   public static readonly tagName = 'igc-dropdown-item';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

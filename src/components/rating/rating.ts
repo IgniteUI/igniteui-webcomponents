@@ -39,6 +39,7 @@ import {
 } from '#internals/utils/math.js';
 import { formatString } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
 import { styles } from './themes/rating.base.css.js';
@@ -112,7 +113,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   )
 ) {
   public static readonly tagName = 'igc-rating';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

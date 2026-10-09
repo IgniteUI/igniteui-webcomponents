@@ -14,6 +14,7 @@ import { isEmpty } from '#internals/utils/arrays.js';
 import { hasFiles, isPointInsideElement } from '#internals/utils/dom.js';
 import { bindIf, trimmedHtml } from '#internals/utils/lit.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -71,7 +72,7 @@ type DefaultInputRenderers = {
  */
 export default class IgcChatInputComponent extends LitElement {
   public static readonly tagName = 'igc-chat-input';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

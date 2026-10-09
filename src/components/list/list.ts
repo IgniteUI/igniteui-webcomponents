@@ -2,6 +2,7 @@ import { html, LitElement } from 'lit';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcListHeaderComponent from './list-header.js';
 import IgcListItemComponent from './list-item.js';
 import { styles } from './themes/container.base.css.js';
@@ -17,7 +18,7 @@ import { styles as shared } from './themes/shared/container/list.common.css.js';
  */
 export default class IgcListComponent extends LitElement {
   public static readonly tagName = 'igc-list';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

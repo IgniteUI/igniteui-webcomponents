@@ -4,6 +4,7 @@ import { CalendarDay } from '#internals/date/model.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addI18nController } from '#internals/i18n/i18n-controller.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcChipComponent from '../chip/chip.js';
 import type { CustomDateRange, DateRangeValue } from './date-range-picker.js';
 import {
@@ -26,7 +27,7 @@ import { styles as shared } from './themes/shared/predefined-ranges-area.common.
  */
 export default class IgcPredefinedRangesAreaComponent extends LitElement {
   public static readonly tagName = 'igc-predefined-ranges-area';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   private readonly _i18nController =
     addI18nController<DateRangeResourceStrings>(this, dateRangeI18nConfig);

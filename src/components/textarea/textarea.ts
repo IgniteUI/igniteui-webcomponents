@@ -30,6 +30,7 @@ import { addSafeEventListener } from '#internals/utils/events.js';
 import { asNumber } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type {
   RangeTextSelectMode,
   SelectionRangeDirection,
@@ -97,7 +98,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   )
 ) {
   public static readonly tagName = 'igc-textarea';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

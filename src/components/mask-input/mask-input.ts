@@ -5,6 +5,7 @@ import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { MaskBehaviorMixin } from '#internals/mixins/mask-behavior.js';
 import { renderMaskedNativeInput } from '#internals/templates/masked-input.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
@@ -55,7 +56,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   IgcInputBaseComponent
 ) {
   public static readonly tagName = 'igc-mask-input';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

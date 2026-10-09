@@ -6,6 +6,7 @@ import { blazorInclude } from '#internals/decorators/blazorInclude.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import {
   getIconRegistry,
   registerIcon as registerIcon_impl,
@@ -55,7 +56,7 @@ import { all } from './themes/themes.js';
  */
 export default class IgcIconComponent extends HostAriaMixin(LitElement) {
   public static readonly tagName = 'igc-icon';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

@@ -2,6 +2,7 @@ import { queryAssignedElements } from 'lit/decorators.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { IgcGroupBaseComponent } from '#internals/mixins/group.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcDropdownItemComponent from './dropdown-item.js';
 import { styles } from './themes/dropdown-group.base.css.js';
 import { all } from './themes/group.js';
@@ -19,7 +20,7 @@ import { styles as shared } from './themes/shared/group/dropdown-group.common.cs
  */
 export default class IgcDropdownGroupComponent extends IgcGroupBaseComponent {
   public static readonly tagName = 'igc-dropdown-group';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

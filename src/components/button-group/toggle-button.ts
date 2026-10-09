@@ -19,6 +19,7 @@ import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import { setOrRemoveAttribute } from '#internals/utils/dom.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/button.base.css.js';
 import { all } from './themes/button.js';
 import { styles as shared } from './themes/shared/button/button.common.css.js';
@@ -38,7 +39,7 @@ import { styles as shared } from './themes/shared/button/button.common.css.js';
 export default class IgcToggleButtonComponent extends HostAriaMixin(
   LitElement
 ) {
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
   public static readonly tagName = 'igc-toggle-button';
 
   /* blazorSuppress */
