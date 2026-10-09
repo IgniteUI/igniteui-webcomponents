@@ -1,6 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import { isEmpty } from '../utils/arrays.js';
 import { getRoot } from '../utils/dom.js';
+import { getOrInsertComputed } from '../utils/objects.js';
 
 type GroupHost = ReactiveControllerHost & Element;
 
@@ -10,7 +11,7 @@ type GroupScope = object;
 type GroupRegistryConfig<T extends GroupHost, S> = {
   /** The group key of a host. An empty key leaves the host on its own. */
   keyOf: (host: T) => string;
-  /** Derives the state that each member receives on a sync. */
+  /** Derives the state of each member on a sync, from the members in any order. */
   deriveState: (members: T[]) => S;
   /** The scope of the group identity. Defaults to the host root node. */
   scopeOf?: (host: T) => GroupScope;
@@ -99,6 +100,7 @@ export function createGroupRegistry<T extends GroupHost, S>(
       );
     }
 
+    /** The members of the group, in no particular order. */
     private get _group(): Member[] {
       const entries = this._scope
         ? Array.from(groups.get(this._scope)?.get(this._key) ?? [])
@@ -107,13 +109,14 @@ export function createGroupRegistry<T extends GroupHost, S>(
       // A host moves on its next update, so an entry can hold a stale key.
       const members = entries.filter((member) => member._isCurrent);
 
-      return isEmpty(members)
-        ? [this]
-        : members.sort((a, b) => byDocumentOrder(a.host, b.host));
+      return isEmpty(members) ? [this] : members;
     }
 
     public get members(): T[] {
-      return this._group.map((member) => member.host);
+      // Only readers need document order.
+      return this._group
+        .sort((a, b) => byDocumentOrder(a.host, b.host))
+        .map((member) => member.host);
     }
 
     constructor(host: T, onSync: (state: S) => void) {
@@ -146,12 +149,8 @@ export function createGroupRegistry<T extends GroupHost, S>(
         this._scope = scope;
         this._key = key;
 
-        const keys = groups.get(scope) ?? new Map<string, Set<Member>>();
-        const group = keys.get(key) ?? new Set<Member>();
-
-        keys.set(key, group);
-        groups.set(scope, keys);
-        group.add(this);
+        const keys = getOrInsertComputed(groups, scope, () => new Map());
+        getOrInsertComputed(keys, key, () => new Set()).add(this);
       }
 
       this.sync();
