@@ -25,8 +25,8 @@ $input-theme: input-theme.$material;
     // pseudo-element itself opts out.
     appearance: none;
     border-radius: 50%;
-    width: rem(16px);
-    height: rem(16px);
+    width: var(--_slider-thumb-size);
+    height: var(--_slider-thumb-size);
     background-color: $fill;
     border: rem(2px) solid var-get($theme, 'slider-thumb-border-color');
     box-shadow: var(--ig-elevation-1);
@@ -110,6 +110,7 @@ $input-theme: input-theme.$material;
     // saturation/value plane is built from, not a color that can be picked.
     --_current-color: hsl(0deg 100% 50%);
     --_slider-track-size: #{rem(16px)};
+    --_slider-thumb-size: #{rem(16px)};
 
     // Four columns of checkerboard squares across the swatch - see `swatch-preview`.
     --_swatch-grid-size: 50% 50%;
@@ -135,16 +136,22 @@ $input-theme: input-theme.$material;
         #{var-get($theme, 'transparency-grid-odd')} 180deg 270deg,
         #{var-get($theme, 'transparency-grid-even')} 270deg 360deg
     );
+
+    // Pure hues 60deg apart, interpolated in sRGB, walk the hue wheel linearly,
+    // so each point shows the `hsl(h 100% 50%)` the slider sets there. The stops
+    // span the thumb travel, not the whole track: the thumb center stops half
+    // its width short of each end.
+    --_hue-track-start: calc(var(--_slider-thumb-size) / 2);
+    --_hue-track-step: calc((100% - var(--_slider-thumb-size)) / 6);
     --_hue-slider-track: linear-gradient(
-        90deg,
-        #fe1016 0%,
-        #fe7f23 15.38%,
-        #fcee37 28.37%,
-        #1cfe3f 42.31%,
-        #1afffe 55.77%,
-        #2a0af8 69.4%,
-        #fb13e9 84.9%,
-        #f90000 100%
+        to right,
+        #f00 var(--_hue-track-start),
+        #ff0 calc(var(--_hue-track-start) + var(--_hue-track-step)),
+        #0f0 calc(var(--_hue-track-start) + 2 * var(--_hue-track-step)),
+        #0ff calc(var(--_hue-track-start) + 3 * var(--_hue-track-step)),
+        #00f calc(var(--_hue-track-start) + 4 * var(--_hue-track-step)),
+        #f0f calc(var(--_hue-track-start) + 5 * var(--_hue-track-step)),
+        #f00 calc(var(--_hue-track-start) + 6 * var(--_hue-track-step))
     );
     --_alpha-color: var(--_selected-color, var(--_current-color));
     --_alpha-slider-track:
