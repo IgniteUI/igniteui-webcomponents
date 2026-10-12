@@ -3,8 +3,8 @@ import { asNumber, clamp, numberInRangeInclusive } from './math.js';
 import { isDefined } from './types.js';
 
 /**
- * Returns whether an element has a Left-to-Right directionality. During SSR,
- * which cannot resolve it, returns true.
+ * Returns whether an element has a Left-to-Right directionality. SSR cannot
+ * resolve the directionality, so on the server the function returns true.
  */
 export function isLTR(element: HTMLElement) {
   return isServer || element.matches(':dir(ltr)');
