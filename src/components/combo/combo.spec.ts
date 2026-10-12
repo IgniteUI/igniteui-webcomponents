@@ -1584,9 +1584,9 @@ describe('Combo', () => {
       expect(eventSpy).not.calledWith('igcChange');
     });
 
-    it('passes the group to the group header template as a string', async () => {
+    it('passes the group key to the group header template with its own type', async () => {
       type Task = { id: number; name: string; priority?: number };
-      const groups = new Set<unknown>();
+      const keys = new Set<unknown>();
       const tasks: Task[] = [
         { id: 1, name: 'Write specs', priority: 2 },
         { id: 2, name: 'Fix the bug', priority: 1 },
@@ -1600,13 +1600,13 @@ describe('Combo', () => {
           group-key="priority"
         ></igc-combo>`
       );
-      combo.groupHeaderTemplate = ({ group }) => {
-        groups.add(group);
-        return html`${group}`;
+      combo.groupHeaderTemplate = (group) => {
+        keys.add(group.key);
+        return html`${group.key}`;
       };
       await openComboPopover(combo);
 
-      expect([...groups]).to.eql(['1', '2', 'Other']);
+      expect([...keys]).to.eql([1, 2, 'Other']);
     });
 
     it('renders a group header template that reads the deprecated item', async () => {

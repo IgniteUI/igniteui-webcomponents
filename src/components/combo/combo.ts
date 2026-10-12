@@ -476,8 +476,8 @@ export default class IgcComboComponent<
    * @type {ComboGroupHeaderTemplate<T>}
    */
   @property({ attribute: false })
-  public groupHeaderTemplate: ComboGroupHeaderTemplate<T> = ({ group }) =>
-    html`${group}`;
+  public groupHeaderTemplate: ComboGroupHeaderTemplate<T> = (group) =>
+    html`${group.key}`;
 
   /**
    * Sets the value (selected items). The passed value must be a valid JSON array.
@@ -1012,7 +1012,7 @@ export default class IgcComboComponent<
     if (this.groupKey && item.header) {
       return html`
         <igc-combo-header part="group-header">
-          ${this.groupHeaderTemplate({ group: item.group!, item: item.value })}
+          ${this.groupHeaderTemplate({ key: item.group, item: item.value })}
         </igc-combo-header>
       `;
     }

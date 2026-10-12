@@ -53,7 +53,7 @@
 |       4 | 2026-10-02 | Focus after form checks; `invalid` only on checks                                     |
 |       5 | 2026-10-02 | Forward the host `aria-describedby`; no `aria-disabled` on the native input           |
 |       6 | 2026-10-05 | The list keeps its stylesheet on a theme change                                       |
-|       7 | 2026-10-12 | The group header template gets `group`; its `item` is deprecated                      |
+|       7 | 2026-10-12 | The group header template gets the group `key`; its `item` is deprecated              |
 
 ## Overview
 
@@ -209,7 +209,7 @@ the comparison is locale aware.
 
 ```typescript
 combo.itemTemplate = ({ item }) => html`<b>${item.name}</b> - ${item.country}`;
-combo.groupHeaderTemplate = ({ group }) => html`<i>${group}</i>`;
+combo.groupHeaderTemplate = (group) => html`<i>${group.key}</i>`;
 ```
 
 #### Validation
@@ -345,11 +345,11 @@ interface FilteringOptions<T extends object> {
 type ComboItemTemplate<T extends object> = (props: { item: T }) => TemplateResult;
 
 type ComboGroupHeaderTemplate<T extends object> = (props: {
-  /** The value of the `groupKey` field as a string, or `Other`. */
-  group: string;
+  /** The value that the items of the group share in the `groupKey` field, or `Other`. */
+  key: unknown;
   /**
    * A record made for the header, not a data item.
-   * @deprecated since 7.5.0. Use the `group` property instead.
+   * @deprecated since 7.5.0. Use the `key` property instead.
    */
   item: T;
 }) => TemplateResult;
@@ -444,8 +444,8 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 4. `value` and `selection` report the values and the records.
 5. Filtering, including case sensitivity, diacritics matching and `disableFiltering`.
 6. Grouping, the `Other` group for unresolved keys, and the sort directions.
-7. Item and group header templating. The group header template gets `group` as a string, also for number keys and
-   the `Other` group, and a template that reads the deprecated `item` still renders.
+7. Item and group header templating. The group header template gets the group `key` with its own type, also for
+   number keys and the `Other` group, and a template that reads the deprecated `item` still renders.
 8. The empty message and the `empty` slot.
 9. Localization through `locale` and `resourceStrings`.
 10. Opening, closing and the keyboard navigation of the list, including Arrow Down at the end of the matches.
