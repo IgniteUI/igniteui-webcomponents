@@ -1671,6 +1671,49 @@ describe('Chat', () => {
       }
     });
 
+    it('revokes the object URLs of attachments when igcAttachmentAdded is canceled', async () => {
+      const create = spy(URL, 'createObjectURL');
+      const revoke = spy(URL, 'revokeObjectURL');
+      chat.addEventListener('igcAttachmentAdded', (e) => e.preventDefault(), {
+        once: true,
+      });
+
+      try {
+        simulateFileUpload(getChatDOM(chat).input.fileInput, [createImage()]);
+        await elementUpdated(chat);
+
+        expect(chat.draftMessage.attachments).to.be.empty;
+        expect(create.callCount).to.equal(1);
+        expect(revoke.calledOnceWith(create.firstCall.returnValue)).to.be.true;
+      } finally {
+        create.restore();
+        revoke.restore();
+      }
+    });
+
+    it('keeps the object URL of a sent file when igcAttachmentAdded is canceled', async () => {
+      const file = createImage();
+      const revoke = spy(URL, 'revokeObjectURL');
+
+      try {
+        simulateFileUpload(getChatDOM(chat).input.fileInput, [file]);
+        await elementUpdated(chat);
+        simulateClick(getChatDOM(chat).input.sendButton);
+        await elementUpdated(chat);
+
+        chat.addEventListener('igcAttachmentAdded', (e) => e.preventDefault(), {
+          once: true,
+        });
+        simulateFileUpload(getChatDOM(chat).input.fileInput, [file]);
+        await elementUpdated(chat);
+
+        expect(chat.draftMessage.attachments).to.be.empty;
+        expect(revoke.callCount).to.equal(0);
+      } finally {
+        revoke.restore();
+      }
+    });
+
     it('renders a sent image with the URL of its attachment', async () => {
       const create = spy(URL, 'createObjectURL');
 

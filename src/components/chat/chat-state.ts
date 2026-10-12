@@ -246,7 +246,8 @@ export class ChatState {
 
   /**
    * Emits the cancelable `igcAttachmentAdded` event.
-   * On success, adds the new files as attachments.
+   * On success, adds the new files as attachments. On cancel, revokes their
+   * object URLs.
    * @internal
    */
   public attachFilesWithEvent(files: File[]): void {
@@ -281,6 +282,10 @@ export class ChatState {
       })
     ) {
       this.inputAttachments = [...this.inputAttachments, ...newAttachments];
+    } else {
+      for (const { file } of newAttachments) {
+        this._releaseFileURL(file!);
+      }
     }
   }
 
@@ -304,11 +309,14 @@ export class ChatState {
 
     this.inputAttachments = current.toSpliced(current.indexOf(attachment), 1);
 
-    const { file } = attachment;
+    if (attachment.file) {
+      this._releaseFileURL(attachment.file);
+    }
+  }
 
-    // A sent message still shows the file.
+  /** Revokes the object URL of `file`, unless a sent message shows the file. */
+  private _releaseFileURL(file: File): void {
     if (
-      file &&
       !this.messages.some((message) =>
         message.attachments?.some((each) => each.file === file)
       )

@@ -53,7 +53,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Card
   - In the dark Bootstrap theme, the last card content now has its bottom padding. Before, the dark variant did not apply the Bootstrap layout styles of the card.
 - #### Chat
-  - The chat now creates one object URL for each attached file, and revokes it when you remove the attachment. Before, each render created a new object URL and did not revoke the old one, so the memory use increased.
+  - The chat now creates one object URL for each attached file, and revokes it when you remove the attachment or when a listener cancels `igcAttachmentAdded`. Before, each render created a new object URL and did not revoke the old one, so the memory use increased.
   - While the typing indicator or the suggestions show, the message area now scrolls to the bottom only when content is added. Before, each update of the chat scrolled it to the bottom, for example a change of `headerText`, also while the user read earlier messages.
 - #### Checkbox
   - The indicator icon is now hidden from assistive technologies. Before, each checkbox had an unnamed image next to it in the accessibility tree. [#2425](https://github.com/IgniteUI/igniteui-webcomponents/pull/2425)
