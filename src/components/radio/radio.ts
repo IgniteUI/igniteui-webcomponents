@@ -3,7 +3,11 @@ import { property, query, state } from 'lit/decorators.js';
 import { helperText } from '#internals/controllers/aria-projection.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import { addRovingFocusController } from '#internals/controllers/roving-focus.js';
-import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  addSlotController,
+  DefaultSlot,
+  setSlots,
+} from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -14,13 +18,14 @@ import { partMap } from '#internals/part-map.js';
 import { renderToggleShell } from '#internals/templates/toggle-shell.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { isString } from '#internals/utils/types.js';
+import { all } from '#themes/radio/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { ToggleLabelPosition } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { addRadioGroupController, getGroupMembers } from './controller.js';
 import { styles } from './themes/radio.base.css.js';
 import { styles as shared } from './themes/shared/radio.common.css.js';
-import { all } from './themes/themes.js';
 import { radioValidators } from './validators.js';
 
 export interface IgcRadioChangeEventArgs {
@@ -62,7 +67,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   )
 ) {
   public static readonly tagName = 'igc-radio';
-  protected static styles = [styles, shared];
+  protected static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -106,12 +111,11 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   @state()
   private _tabIndex = 0;
 
-  /** All radios of the group, that is having the same name property, in DOM order. */
+  /** All radios of the group, in DOM order. */
   private get _radios(): IgcRadioComponent[] {
     return getGroupMembers(this);
   }
 
-  /** All radios of the group that are not disabled. */
   private get _activeRadios(): IgcRadioComponent[] {
     return this._radios.filter((radio) => !radio.disabled);
   }
@@ -125,7 +129,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     }
   }
 
-  /** Whether this radio is the last checked one of its group. */
   private _isLastChecked(): boolean {
     return this._radios.findLast((radio) => radio.checked) === this;
   }
@@ -175,8 +178,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
       this._updateCheckedState();
     }
 
-    // The tab stop is a state of the group, so a change of the selection derives it
-    // again. A write of the same state leaves the group as it is.
+    // A change of the selection moves the tab stop of the group.
     if (this.checked !== previous) {
       this._group.sync();
     }
@@ -212,7 +214,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   protected override willUpdate(properties: PropertyValues<this>): void {
-    // The name is half of the identity of a group, so a new name moves this radio to another one.
+    // A new name moves this radio to another group.
     if (properties.has('name')) {
       this._group.updateMembership();
     }
@@ -237,7 +239,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   protected _handleSlotChange(): void {
-    this._hideLabel = !this._slots.hasAssignedNodes('[default]', true);
+    this._hideLabel = !this._slots.hasAssignedNodes(DefaultSlot, true);
   }
 
   /** Focuses and checks the radio, as a native radio label does. */
@@ -247,9 +249,8 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   protected override _setDefaultValue(current: string | null): void {
-    // The base mixin gives 'true' if the `checked` attribute is there, and null
-    // if it is removed. `isDefined` accepts null as present, and would check the
-    // radio again on a form reset.
+    // The value is null when the `checked` attribute is removed. `isDefined`
+    // accepts null, which checks the radio again on a form reset.
     this._formValue.defaultValue = isString(current);
     for (const radio of this._siblings()) {
       radio.defaultChecked = false;
@@ -257,9 +258,8 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   /**
-   * Restores the default state without the `checked` setter. That setter unchecks all
-   * siblings, which damages the state of the radios that the browser already reset in
-   * the same `form.reset()` pass.
+   * Skips the `checked` setter, which unchecks the siblings that the same
+   * `form.reset()` pass already restored.
    */
   protected override _restoreDefaultValue(): void {
     const checked = this.checked;
@@ -288,10 +288,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     return super.checkValidity();
   }
 
-  private _reportValidity(): boolean {
-    return super.reportValidity();
-  }
-
   /** Checks for validity of the control and emits the invalid event if it's invalid. */
   public override checkValidity(): boolean {
     for (const radio of this._siblings()) {
@@ -301,13 +297,17 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     return this._checkValidity();
   }
 
-  /** Checks for validity of the control and shows the browser message if it's invalid. */
+  /**
+   * Checks the validity of the group. An invalid radio emits `invalid` and
+   * takes the focus. It shows its own validation messages, not the message of
+   * the browser.
+   */
   public override reportValidity(): boolean {
     for (const radio of this._siblings()) {
       radio._reportValidity();
     }
 
-    return this._reportValidity();
+    return super.reportValidity();
   }
 
   /**
@@ -336,7 +336,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   protected override formAssociatedCallback(form: HTMLFormElement): void {
     super.formAssociatedCallback(form);
 
-    // The form owner is the other half, so a new one moves this radio as well.
+    // A new form owner moves this radio to another group.
     this._group.updateMembership();
   }
 
@@ -350,18 +350,17 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
     this.checked = true;
     this._input.focus();
-    this.emitEvent('igcChange', {
-      detail: {
-        checked: this.checked,
-        value: this.value,
-      },
-    });
+    this._emitChange(this);
   }
 
   protected _navigate(radio: IgcRadioComponent): void {
     this._setTouchedState();
     radio.focus();
     radio.checked = true;
+    this._emitChange(radio);
+  }
+
+  private _emitChange(radio: IgcRadioComponent): void {
     radio.emitEvent('igcChange', {
       detail: { checked: radio.checked, value: radio.value },
     });
@@ -390,7 +389,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
         `,
         hideLabel: this._hideLabel,
         tabindex: this._tabIndex,
-        describedBy: helperText(this, this._slots)?.id,
+        description: helperText(this, this._slots),
         onClick: this._handleClick,
         onKeyDown: this._handleEnterKeydown,
       })}

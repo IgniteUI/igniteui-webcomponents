@@ -12,9 +12,9 @@ import {
 import { partMap } from '#internals/part-map.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { toKebabCase } from '#internals/utils/strings.js';
+import { all as inputThemes } from '#themes/input/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
-import { all as inputThemes } from '../input/themes/themes.js';
 import { styles as shared } from './themes/shared/validator.common.css.js';
 import { styles } from './themes/validator.base.css.js';
 

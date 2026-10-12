@@ -31,6 +31,7 @@
     - [Methods tests](#methods-tests)
     - [User interactions](#user-interactions)
     - [Events tests](#events-tests)
+    - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -39,9 +40,10 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                                   |
+| ------: | ---------- | ----------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                   |
+|       2 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
 
 ## Overview
 
@@ -259,6 +261,11 @@ The suite lives in [`expansion-panel.spec.ts`](./expansion-panel.spec.ts) and ru
 13. `igcOpened` and `igcClosed` are emitted after the transition.
 14. No events are emitted for a programmatic change through the `open` property.
 
+### Host ARIA
+
+15. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
+    target and follow a change, and an axe audit passes with a host label.
+
 ## Assumptions and limitations
 
 - The panel animates its content; the methods do not resolve on the animation, unlike the bulk methods of the
@@ -273,6 +280,7 @@ The suite lives in [`expansion-panel.spec.ts`](./expansion-panel.spec.ts) and ru
 - The header is a button that exposes the expanded state and controls the content region.
 - The content region is labelled by the header, so assistive technology announces what has been expanded.
 - A disabled panel exposes its disabled state and is not focusable.
+- The host `aria-label`, `aria-labelledby` and `aria-describedby` name and describe the header button.
 
 ### Keyboard support
 

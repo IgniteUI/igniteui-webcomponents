@@ -503,8 +503,7 @@ function definePositioningSuites(mode: PositionMode) {
       return rect.top + rect.height / 2;
     }
 
-    // Main-axis edge and cross-axis alignment relations per placement,
-    // shared by both strategies.
+    // Main-axis edge and cross-axis alignment per placement, for both strategies.
     const MATRIX: Array<
       [PopoverPlacement, (f: DOMRect, a: DOMRect) => Array<[number, number]>]
     > = [
@@ -611,6 +610,23 @@ function definePositioningSuites(mode: PositionMode) {
 
       const end = await placementRects('bottom-end', 'rtl');
       expect(end.floater.left).to.be.closeTo(end.anchor.left, 1);
+    });
+
+    it('falls back to `bottom-start` when the placement attribute is removed', async () => {
+      const root = await fixture<HTMLElement>(createPlacedPopover('top-end'));
+      const popover = queryPopover(root);
+      await waitForPaint(popover);
+
+      popover.removeAttribute('placement');
+      await waitForPaint(popover);
+
+      const floater = getFloater(popover);
+      const floaterRect = floater.getBoundingClientRect();
+      const anchorRect = root.querySelector('#btn')!.getBoundingClientRect();
+
+      expect(floater.dataset.placement).to.equal('bottom-start');
+      expect(floaterRect.top).to.be.closeTo(anchorRect.bottom, 1);
+      expect(floaterRect.left).to.be.closeTo(anchorRect.left, 1);
     });
 
     it('keeps `left`/`right` placements physical in RTL', async () => {
@@ -767,9 +783,8 @@ function definePositioningSuites(mode: PositionMode) {
   });
 
   describe('Anchor visibility', () => {
-    // The scroller sits mid-viewport so the popover, which keeps tracking the
-    // clipped anchor position, stays inside the viewport - the hit-test below
-    // then reflects only the hidden state, never off-screen geometry.
+    // The scroller sits mid-viewport, so the popover stays in the viewport and
+    // the hit-test reflects only the hidden state.
     function createClippedPopover() {
       return html`
         <div>
@@ -788,10 +803,8 @@ function definePositioningSuites(mode: PositionMode) {
       `;
     }
 
-    // The native strongly-hidden state from `position-visibility` is not
-    // reflected by checkVisibility() or computed styles - hit-testing is the
-    // one observable signal, and it also covers the fallback's inline
-    // `visibility: hidden`, since hidden elements are never hit-testable.
+    // checkVisibility() and computed styles miss the `position-visibility` hidden
+    // state. A hit-test detects it and the fallback `visibility: hidden` too.
     function isContentHitTestable(root: HTMLElement): boolean {
       const content = root.querySelector('p')!;
       const rect = content.getBoundingClientRect();
@@ -875,10 +888,8 @@ describe('Popover', () => {
     defineComponents(IgcPopoverComponent);
   });
 
-  // The same predicate that the component uses. The CSS tests alone are not
-  // enough. Chromium 125 to 132 passes them, but it ignores the `source`
-  // option of `showPopover`. A forced `native` strategy bypasses the
-  // predicate, so the suite must skip itself instead.
+  // The predicate of the component. A forced `native` strategy bypasses it, so
+  // the suite skips itself.
   const canUseNative = shouldUseNativeAnchorPositioning(
     document.createElement('div')
   );
@@ -900,8 +911,100 @@ describe('Popover', () => {
     });
   }
 
-  // Positioning-strategy-agnostic - the popover owns the document scroll
-  // listener and only notifies; whoever controls `open` closes it.
+  describe('Position strategy switching', () => {
+    let root: HTMLElement;
+    let popover: IgcPopoverComponent;
+    let button: HTMLButtonElement;
+    let svgAnchor: SVGElement;
+
+    beforeEach(async function () {
+      // The switch needs both strategies.
+      if (!canUseNative) {
+        this.skip();
+      }
+
+      root = await fixture<HTMLElement>(html`
+        <div>
+          <button id="btn" type="button">Show message</button>
+          <svg width="40" height="40">
+            <rect id="svg-anchor" width="40" height="40"></rect>
+          </svg>
+          <igc-popover open anchor="btn">
+            <p>Message</p>
+          </igc-popover>
+        </div>
+      `);
+
+      popover = queryPopover(root);
+      button = root.querySelector('#btn')!;
+      svgAnchor = root.querySelector('#svg-anchor')!;
+      await waitForPaint(popover);
+    });
+
+    it('clears the native anchoring when an SVG anchor needs the fallback', async () => {
+      const floater = getFloater(popover);
+      expect(floater.hasAttribute('data-anchored')).to.be.true;
+
+      popover.anchor = svgAnchor;
+      await waitForPaint(popover);
+
+      expect(isFloaterOpen(popover)).to.be.true;
+      expect(floater.hasAttribute('data-anchored')).to.be.false;
+      expect(floater.style.getPropertyValue('--_igc-popover-offset')).to.equal(
+        ''
+      );
+      expect(floater.style.transform).to.not.equal('');
+      expect(floater.getBoundingClientRect().top).to.be.closeTo(
+        svgAnchor.getBoundingClientRect().bottom,
+        1
+      );
+    });
+
+    it('clears the fallback styles when the anchor can use native anchoring again', async () => {
+      const floater = getFloater(popover);
+
+      popover.anchor = svgAnchor;
+      await waitForPaint(popover);
+      expect(floater.style.transform).to.not.equal('');
+
+      popover.anchor = button;
+      await waitForPaint(popover);
+
+      expect(isFloaterOpen(popover)).to.be.true;
+      expect(floater.hasAttribute('data-anchored')).to.be.true;
+      expect(floater.style.transform).to.equal('');
+      expect(floater.style.position).to.equal('');
+      expect(floater.style.left).to.equal('');
+      expect(floater.style.top).to.equal('');
+      expect(floater.getBoundingClientRect().top).to.be.closeTo(
+        button.getBoundingClientRect().bottom,
+        1
+      );
+    });
+  });
+
+  describe('Detached before the first render', () => {
+    it('opens after a removal that happened before the first render', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div><button id="btn" type="button">Show message</button></div>
+      `);
+      const popover = document.createElement(IgcPopoverComponent.tagName);
+      popover.anchor = 'btn';
+      popover.open = true;
+
+      // The removal runs the close path before the shadow root has a container.
+      root.append(popover);
+      popover.remove();
+      expect(popover.hasUpdated).to.be.false;
+
+      root.append(popover);
+      await waitForPaint(popover);
+
+      expect(isFloaterOpen(popover)).to.be.true;
+    });
+  });
+
+  // Strategy-agnostic: the popover only notifies, and the owner of `open` closes it.
   describe('Scroll strategy', () => {
     let popover: IgcPopoverComponent;
     let scroller: HTMLElement;
@@ -955,7 +1058,6 @@ describe('Popover', () => {
         document.removeEventListener('igcPopoverScrollClose', listener);
       }
 
-      // The direct listener on the popover fired, the document one never did.
       expect(closeRequests).to.be.greaterThan(0);
       expect(documentEvents.length).to.equal(0);
     });
@@ -1039,8 +1141,7 @@ describe('Popover', () => {
     });
   });
 
-  // floating-ui specific behavior - the native path has no positioning
-  // strategy concept (anchor positioning is layout-true under sticky).
+  // floating-ui only. The native path has no positioning strategy.
   describe('Positioning strategy [fallback]', () => {
     before(() => {
       setPopoverPositionStrategy('floating');

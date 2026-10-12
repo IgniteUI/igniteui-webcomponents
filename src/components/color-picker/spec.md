@@ -35,6 +35,7 @@
     - [Picker canvas](#picker-canvas)
     - [Color model and parsing](#color-model-and-parsing)
     - [Converters](#converters)
+    - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -48,6 +49,10 @@
 |       1 | 2026-09-21 | Initial specification                              |
 |       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
 |       3 | 2026-09-24 | Keep `aria-expanded` off the input mode text input |
+|       4 | 2026-09-28 | Add the property-based color suite                 |
+|       5 | 2026-09-30 | Serialize the initial value in the declared format |
+|       6 | 2026-10-02 | Focus after form checks; `invalid` only on checks  |
+|       7 | 2026-10-02 | Forward the host `aria-describedby`                |
 
 ## Overview
 
@@ -184,7 +189,9 @@ and HSV representations plus an alpha channel. An empty, whitespace-only or inva
 rather than a stale color; while empty, the anchor renders a checkered background and the serialized value is `''`.
 
 The active `format` determines how the color is re-serialized into the observable `value`. Changing `format`
-re-serializes the existing color without altering it, so no `igcInput` or `igcChange` is emitted.
+re-serializes the existing color without altering it, so no `igcInput` or `igcChange` is emitted. The initial value
+is serialized in the declared `format` whatever the attribute order, and the re-serialization keeps the pristine
+state of the control.
 
 #### The picker surface
 
@@ -230,6 +237,11 @@ once, at construction time. Picking a color through it sets the value and emits 
 The control submits its value under `name`, restores its default value on a form reset, and supports `required` and
 custom validity. Validation messages are rendered through the shared validator container; see the
 [validation container specification](../validation-container/spec.md).
+
+As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
+the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
+`checkValidity()` do not move the focus. The `invalid` event comes only from these checks and from a failed submit,
+not while the user edits the control.
 
 #### Labeling from the light DOM
 
@@ -304,14 +316,14 @@ All of the above are skipped while the component is `disabled`.
 
 ### Methods
 
-| Name              | Type signature            | Description                                                      |
-| ----------------- | ------------------------- | ---------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`    | Shows the component.                                             |
-| hide              | `(): Promise<boolean>`    | Hides the component.                                             |
-| toggle            | `(): Promise<boolean>`    | Toggles the open state of the component.                         |
-| checkValidity     | `(): boolean`             | Checks validity and emits `invalid` when the control is invalid. |
-| reportValidity    | `(): boolean`             | Checks validity and shows the browser message when invalid.      |
-| setCustomValidity | `(message: string): void` | Sets a custom message. Invalid while `message` is not empty.     |
+| Name              | Type signature            | Description                                                             |
+| ----------------- | ------------------------- | ----------------------------------------------------------------------- |
+| show              | `(): Promise<boolean>`    | Shows the component.                                                    |
+| hide              | `(): Promise<boolean>`    | Hides the component.                                                    |
+| toggle            | `(): Promise<boolean>`    | Toggles the open state of the component.                                |
+| checkValidity     | `(): boolean`             | Checks validity and emits `invalid` when the control is invalid.        |
+| reportValidity    | `(): boolean`             | Checks validity; when invalid, emits `invalid` and focuses the control. |
+| setCustomValidity | `(message: string): void` | Sets a custom message. Invalid while `message` is not empty.            |
 
 ### Events
 
@@ -371,7 +383,7 @@ All of the above are skipped while the component is `disabled`.
 
 ## Test scenarios
 
-The component is covered by five suites in this directory, all running in a real browser through
+The component is covered by six suites in this directory, all running in a real browser through
 `@web/test-runner` with `@open-wc/testing` fixtures and assertions:
 
 | Suite | Scope |
@@ -381,6 +393,7 @@ The component is covered by five suites in this directory, all running in a real
 | [`model.spec.ts`](./model.spec.ts) | The color model. |
 | [`common.spec.ts`](./common.spec.ts) | Color string parsing and validation. |
 | [`converters.spec.ts`](./converters.spec.ts) | The color space converters. |
+| [`color.property.spec.ts`](./color.property.spec.ts) | Property-based (fuzz) tests for the converters, the parser and the model. |
 
 The component suite reuses `createFormAssociatedTestBed`, `runValidationContainerTests`,
 `runExternalLabelAssociationTests`, `runAriaProjectionTests` and the `simulate*` helpers from
@@ -400,11 +413,14 @@ The component suite reuses `createFormAssociatedTestBed`, `runValidationContaine
 10. Copy and eye dropper, in environments with and without platform support.
 11. Open and close - the pointer, keyboard and outside-click paths.
 12. Input mode - the anchor input, its label and its prefix.
-13. Rendering of the picker surface rows.
-14. Form association, the touched state, `defaultValue`, and validation.
+13. Rendering of the picker surface rows, and the direction of the slider tracks in LTR and RTL.
+14. Form association, the touched state, `defaultValue`, the initial format, and validation.
 15. Validation message slots, generated by `runValidationContainerTests`.
 16. External label association and ARIA projection, generated by `runExternalLabelAssociationTests` and
     `runAriaProjectionTests`.
+
+The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
+[input suite](../input/spec.md#form-validity-checks) covers them.
 
 ### Picker canvas
 
@@ -421,7 +437,23 @@ The component suite reuses `createFormAssociatedTestBed`, `runValidationContaine
 
 ### Converters
 
-23. The conversions between RGB, HSL, HSV and hex, in both directions, including round-trips.
+23. The conversions between RGB, HSL, HSV and hex, in both directions, including round-trips. The saturation stays
+    finite for a tiny saturation at full value.
+
+### Color properties
+
+24. Converters - the exact hex round-trip, the HSL and HSV round-trips, HSL to RGB directly and through HSV, and
+    every converted channel in range.
+25. Parsing - `parseColor` never throws and returns channels in range. A string that is not a color gives opaque black
+    and an empty model. A model string in each format parses back to the same color.
+26. Model - every color space stays in range for any sequence of channel writes, and a clone equals its source.
+
+### Host ARIA
+
+27. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+    text, and follows a change and a removal.
+28. In button mode, the anchor lists the helper text before the host description, also after the first
+    render.
 
 ## Assumptions and limitations
 
@@ -462,6 +494,7 @@ The component suite reuses `createFormAssociatedTestBed`, `runValidationContaine
 - [`input[type="range"]`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range)
 - [Form-associated custom elements (ElementInternals)](https://developer.mozilla.org/en-US/docs/Web/API/ElementInternals)
 - [CSS Custom State Set](https://developer.mozilla.org/en-US/docs/Web/API/CustomStateSet)
+- A host `aria-describedby` describes the native control after the helper text, by element reference.
 
 ### Keyboard support
 
@@ -471,3 +504,6 @@ Already covered by the [relevant section of the specification](#keyboard-interac
 
 The component works in a Right-to-Left context without additional setup or configuration. The sliders and the picker
 layout follow the document direction; color values are direction-independent.
+
+In RTL, the hue and alpha slider tracks go from right to left, as the sliders do. The tracks use the `dir` attribute
+through `:dir()`. A `direction: rtl` style without a `dir` attribute reverses the sliders but not the tracks.

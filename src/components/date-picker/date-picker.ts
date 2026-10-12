@@ -25,7 +25,9 @@ import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { firstOf } from '#internals/utils/arrays.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/date-picker/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { CalendarSelection } from '../calendar/types.js';
 import type { DatePart } from '../date-time-input/date-part.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
@@ -38,7 +40,6 @@ import {
 } from './date-picker.base.js';
 import { styles } from './themes/date-picker.base.css.js';
 import { styles as shared } from './themes/shared/date-picker.common.css.js';
-import { all } from './themes/themes.js';
 import { datePickerValidators } from './validators.js';
 
 export type IgcDatePickerComponentEventMap = IgcPickerBaseEventMap<Date>;
@@ -92,8 +93,8 @@ type DatePickerResourceStringsType = IDatePickerResourceStrings &
  * @fires igcOpened - Emitted after the calendar popover is shown.
  * @fires igcClosing - Emitted just before the calendar popover is hidden.
  * @fires igcClosed - Emitted after the calendar popover is hidden.
- * @fires igcChange - Emitted when the user modifies and commits the elements's value.
- * @fires igcInput - Emitted when when the user types in the element.
+ * @fires igcChange - Emitted when the user modifies and commits the element's value.
+ * @fires igcInput - Emitted when the user types in the element.
  *
  * @csspart label - The label wrapper that renders content above the target input.
  * @csspart container - The main wrapper that holds all main input elements.
@@ -151,7 +152,7 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
   AbstractConstructor<IgcDatePickerBaseComponent<Date>>
 >(IgcDatePickerBaseComponent) {
   public static readonly tagName = 'igc-date-picker';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -175,8 +176,8 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
   });
 
   /**
-   * For now we use the core validation strings internally only, to avoid mixing with old resources by users.
-   * To Do: Update resourceStrings type when the IgcCalendarResourceStrings is changed to ICalendarResourceStrings
+   * Uses the core validation strings internally only, so they do not mix with user resources.
+   * To Do: Update the resourceStrings type when IgcCalendarResourceStrings becomes ICalendarResourceStrings.
    */
   protected override readonly _i18nController = addI18nController<
     IgcCalendarResourceStrings | DatePickerResourceStringsType
@@ -268,10 +269,7 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
     return firstOf(dates) ?? null;
   }
 
-  /**
-   * A committed edit in the input already emits `igcChange` on its own, so only a
-   * value which the picker itself has changed is left to notify about here.
-   */
+  /** A committed input edit emits `igcChange` itself, so this notifies only picker-made changes. */
   protected override _onBlur(): void {
     if (this._isEditorReadOnly) {
       this._emitChangeIfDirty();
@@ -328,6 +326,22 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
     return this._i18nController.resourceStrings;
   }
 
+  /**
+   * The offset of the start of the text selection in the input, in UTF-16
+   * code units. Equals `selectionEnd` when no text is selected.
+   */
+  public get selectionStart(): number {
+    return this._input?.selectionStart ?? 0;
+  }
+
+  /**
+   * The offset of the end of the text selection in the input, in UTF-16 code
+   * units.
+   */
+  public get selectionEnd(): number {
+    return this._input?.selectionEnd ?? 0;
+  }
+
   //#endregion
 
   //#region Event handlers
@@ -353,7 +367,7 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
 
     const draft = (event.target as IgcDateTimeInputComponent)._uncommittedValue;
 
-    this._calendar.activeDate = draft ?? this._calendar.activeDate;
+    this._setCalendarActiveDate(draft);
     this.emitEvent('igcInput', { detail: draft });
   }
 
@@ -364,10 +378,8 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
   protected override formResetCallback(): void {
     super.formResetCallback();
 
-    // The shadow boundary keeps the inner editor out of the outer form, so the
-    // browser never resets it. It runs its own constraint validation against the
-    // forwarded `required`, `min` and `max`, so a touched editor would keep its
-    // invalid styles after a form reset.
+    // The browser never resets the inner editor, which is outside the form.
+    // Without this, a touched editor keeps its invalid styles after a reset.
     this._input?.['formResetCallback']();
   }
 
@@ -401,11 +413,14 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
   }
 
   /* blazorSuppress */
-  /* Replaces the selected text in the input and re-applies the mask */
+  /**
+   * Replaces the text from `start` to `end` in the input and re-applies the
+   * mask. Without `start` and `end`, replaces the selected text.
+   */
   public setRangeText(
     replacement: string,
-    start: number,
-    end: number,
+    start?: number,
+    end?: number,
     mode?: RangeTextSelectMode
   ): void {
     this._input.setRangeText(replacement, start, end, mode);
@@ -417,14 +432,12 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
   //#region Render methods
 
   private _renderLabel(id: string) {
-    const isDisabled = this._isDropDown || this.readOnly;
-
     return this.label
       ? html`
           <label
             part="label"
             for=${id}
-            @click=${bindIf(!isDisabled, this._handleAnchorClick)}
+            @click=${bindIf(this._opensOnClick, this._handleAnchorClick)}
           >
             ${this.label}
           </label>
@@ -434,7 +447,6 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
 
   protected _renderInput(id: string) {
     const format = getDateTimeFormat(this._displayFormat);
-    const hasClickHandler = !(this._isDropDown || this.readOnly);
 
     return html`
       <igc-date-time-input
@@ -456,7 +468,7 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
         @igcChange=${this._handleInputChangeEvent}
         @igcInput=${this._handleInputEvent}
         @keydown=${this._handleEnterKeydown}
-        @click=${bindIf(hasClickHandler, this._handleInputClick)}
+        @click=${bindIf(this._opensOnClick, this._handleInputClick)}
         exportparts="container, input, label, prefix, suffix"
       >
         ${this._renderEditorSlots()}

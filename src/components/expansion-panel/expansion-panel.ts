@@ -4,6 +4,10 @@ import { createRef, ref } from 'lit/directives/ref.js';
 import { addAnimationController } from '#animations/player.js';
 import { growVerIn, growVerOut } from '#animations/presets/grow/index.js';
 import {
+  ariaBindings,
+  hostAria,
+} from '#internals/controllers/aria-projection.js';
+import {
   addKeybindings,
   altKey,
   arrowDown,
@@ -14,14 +18,16 @@ import { addToggleController } from '#internals/controllers/toggle.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/expansion-panel/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { ExpansionPanelIndicatorPosition } from '../types.js';
 import { styles } from './themes/expansion-panel.base.css.js';
 import { styles as shared } from './themes/shared/expansion-panel.common.css.js';
-import { all } from './themes/themes.js';
 
 export interface IgcExpansionPanelComponentEventMap {
   igcOpening: CustomEvent<IgcExpansionPanelComponent>;
@@ -59,9 +65,9 @@ const nextId = createIdGenerator('igc-expansion-panel');
 export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   IgcExpansionPanelComponentEventMap,
   Constructor<LitElement>
->(LitElement) {
+>(HostAriaMixin(LitElement)) {
   public static readonly tagName = 'igc-expansion-panel';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -199,6 +205,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     return html`
       <div
         ${ref(this._headerRef)}
+        ${ariaBindings(hostAria(this))}
         part="header"
         id="${this._panelId}-header"
         role="button"

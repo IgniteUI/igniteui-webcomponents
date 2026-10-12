@@ -14,8 +14,9 @@ is a summary.
 
 - Use ESM imports with the `.js` extension.
 - Import `src/internals`, `src/theming` and `src/animations` through the `#internals/*`,
-  `#theming/*` and `#animations/*` aliases, never with relative paths. All other imports,
-  including imports between components, are relative.
+  `#theming/*` and `#animations/*` aliases, never with relative paths. Import a theme
+  aggregator (the module in `themes/` that exports `all`) through `#themes/*`. All other
+  imports, including imports between components, are relative.
 - Prefix internal API with `_`. Do not use native private fields (`#field`).
 - Use `readonly` for fields that are not reassigned, and give explicit return types.
 - Use strict types. Use `unknown`, not `any`. Use decorators, but no other non-standard
@@ -36,7 +37,8 @@ is a summary.
   `@coercedProperty` to coerce a value or to run a side effect on each set.
 - Emit events only for user interaction, through `EventEmitterMixin` with a typed event map.
 - Set ARIA through `addInternalsController`. Composite components project ARIA with
-  `addAriaProjector` / `addAriaTarget`.
+  `addAriaProjector` / `addAriaTarget`. A component that forwards the host name or
+  description uses `HostAriaMixin` and `ariaBindings(hostAria(this))`.
 - Accessibility is **mandatory**. Each component passes an a11y audit and meets WCAG 2.1 AA.
 - JSDoc descriptions ship as-is into the public API docs. Do not put `igc-` tag names in the
   prose.
@@ -56,18 +58,25 @@ structural reference.
 - Match parts with `[part~='name']`.
 - Call `addThemingController(this, all)` in the constructor of every component with themed
   styles.
+- Put `componentBase` (`src/styles/common/component.css.js`) first in `static styles`.
+- A dark theme file emits only the difference from the light theme of the same name, with
+  `dark-overrides()`. In dark mode, the component adopts the light sheet before the dark one.
 
 ## State
 
 - Use Lit reactive properties and `@state()` inside a component.
 - To share state between a parent and its children, use Lit context: `addContextProvider`,
-  `createAsyncContext`, and the keys in `src/internals/context.ts`.
+  `addAsyncContextConsumer`, and the keys in `src/internals/context.ts`.
 
 ## Testing and Verification
 
 - Write tests with `@open-wc/testing` in `[name].spec.ts`. The a11y audit is mandatory.
 - Use the shared helpers in `src/internals/testing/`.
-- Run `npm run check`, `npm run lint` and `npm run test` before you open a PR.
+- A parser, converter or serializer also gets property-based tests with fast-check in
+  `[name].property.spec.ts`.
+- Run `npm run check`, `npm run lint` and `npm run test` before you open a PR. `npm run check`
+  also compares the public API with `public-api.json`. After an intended public API change,
+  run `npm run public-api:update` and commit the file.
 
 ## Resources
 

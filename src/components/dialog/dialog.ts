@@ -3,21 +3,26 @@ import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { addAnimationController } from '#animations/player.js';
 import { fadeIn, fadeOut } from '#animations/presets/fade/index.js';
+import {
+  ariaBindings,
+  hostAria,
+} from '#internals/controllers/aria-projection.js';
 import { addCommandController } from '#internals/controllers/command.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { addToggleController } from '#internals/controllers/toggle.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import { isPointInsideElement } from '#internals/utils/dom.js';
-import { bindIf } from '#internals/utils/lit.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/dialog/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
 import { styles } from './themes/dialog.base.css.js';
 import { styles as shared } from './themes/shared/dialog.common.css.js';
-import { all } from './themes/themes.js';
 
 export interface IgcDialogComponentEventMap {
   igcClosing: CustomEvent<void>;
@@ -67,9 +72,9 @@ const nextId = createIdGenerator('title');
 export default class IgcDialogComponent extends EventEmitterMixin<
   IgcDialogComponentEventMap,
   Constructor<LitElement>
->(LitElement) {
+>(HostAriaMixin(LitElement)) {
   public static readonly tagName = 'igc-dialog';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -91,8 +96,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     transition: async (open) => {
       if (open) {
         this.open = true;
-        // A superseded exit clears this too, but only once its animation
-        // reports the cancellation - too late for this render.
+        // A superseded exit also clears this, but too late for this render.
         this._animating = false;
         return this._player.playExclusive(fadeIn());
       }
@@ -110,9 +114,6 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     },
   });
 
-  /**
-   * Backdrop animation helper.
-   */
   @state()
   private _animating = false;
 
@@ -206,7 +207,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   protected override updated(properties: PropertyValues<this>): void {
     if (properties.has('open')) {
-      this.open ? this._dialog?.showModal() : this._dialog?.close();
+      this._syncDialog();
     }
   }
 
@@ -236,15 +237,6 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     }
   }
 
-  private _handleClose(): void {
-    // A close event that cannot be cancelled, for example from repeated Escape
-    // presses, leaves the backdrop visible. Open the dialog again. This handler
-    // runs only if `keepOpenOnEscape` is true.
-    if (this.open) {
-      this._dialog?.showModal();
-    }
-  }
-
   private _handleClick({ clientX, clientY, target }: PointerEvent): void {
     if (
       this.closeOnOutsideClick &&
@@ -261,6 +253,15 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   private _closeWithEvent(): void {
     this._toggleController.hide(true);
+  }
+
+  /**
+   * Opens or closes the dialog to match `open`. It also runs on the `close`
+   * event, so a close that the component cannot cancel, such as a second
+   * Escape, does not leave it open with a closed dialog.
+   */
+  private _syncDialog(): void {
+    this.open ? this._dialog?.showModal() : this._dialog?.close();
   }
 
   //#endregion
@@ -352,7 +353,6 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     const hasTitle = this._slots.hasAssignedElements('title') || !!this.title;
     const hasFooter =
       this._slots.hasAssignedElements('footer') || !this.hideDefaultAction;
-    const labelledBy = this.ariaLabel ?? this._titleId;
 
     return html`
       ${this._renderBackdrop()}
@@ -360,11 +360,10 @@ export default class IgcDialogComponent extends EventEmitterMixin<
         ${ref(this._dialogRef)}
         part=${partMap({ base: true, titled: hasTitle, footed: hasFooter })}
         role="dialog"
-        aria-label=${bindIf(this.ariaLabel, this.ariaLabel)}
-        aria-labelledby=${bindIf(labelledBy, labelledBy)}
+        ${ariaBindings(hostAria(this, { ownLabel: !this.ariaLabel && this._titleId }))}
         @click=${this._handleClick}
         @cancel=${this._handleCancel}
-        @close=${bindIf(this.keepOpenOnEscape, this._handleClose)}
+        @close=${this._syncDialog}
       >
         ${this._renderHeader()} ${this._renderContent()} ${this._renderFooter()}
       </dialog>

@@ -15,16 +15,16 @@ type ScopedViewTransitionElement = HTMLElement & {
   activeViewTransition?: ViewTransition | null;
 };
 
-/**
- * Returns true if the specified node supports scoped view transitions, false otherwise.
- */
 function hasScopedViewTransition(
   node: Node
 ): node is ScopedViewTransitionElement {
   return 'startViewTransition' in node && isFunction(node.startViewTransition);
 }
 
-function skipOnReducedMotion(transition: ViewTransition): ViewTransition {
+/** Handles the `ready` rejection of a skipped transition, and skips it on reduced motion. */
+function prepareTransition(transition: ViewTransition): ViewTransition {
+  transition.ready.catch(() => {});
+
   if (getPrefersReducedMotion()) {
     transition.skipTransition();
   }
@@ -52,11 +52,11 @@ export function startViewTransition(
     } as ViewTransition;
   }
 
-  return skipOnReducedMotion(init.call(globalThis.document, callback));
+  return prepareTransition(init.call(globalThis.document, callback));
 }
 
 /**
- * Starts a scoped view transition on the specified target element and skips it if the user has requested reduced motion.
+ * Starts a scoped view transition on the target and skips it if the user has requested reduced motion.
  * Returns null, without calling `callback`, if the target does not support scoped view transitions.
  */
 export function startScopedViewTransition(
@@ -64,36 +64,24 @@ export function startScopedViewTransition(
   callback: ViewTransitionUpdateCallback
 ): ViewTransition | null {
   return hasScopedViewTransition(target)
-    ? skipOnReducedMotion(target.startViewTransition(callback))
+    ? prepareTransition(target.startViewTransition(callback))
     : null;
 }
 
-/**
- * Sets the view transition name for the specified target element.
- */
 export function setTransitionName(target: HTMLElement, name: string): void {
   target.style.viewTransitionName = name;
 }
 
-/**
- * Clears the view transition name for the specified target elements.
- */
 export function clearTransitionName(...targets: HTMLElement[]): void {
   for (const target of targets) {
     target.style.viewTransitionName = '';
   }
 }
 
-/**
- * Returns the active view transition if one is currently in progress, or null otherwise.
- */
 export function getActiveViewTransition(): ViewTransition | null {
   return globalThis.document?.activeViewTransition ?? null;
 }
 
-/**
- * Returns the active scoped view transition for the specified target element if one is currently in progress, or null otherwise.
- */
 export function getActiveScopedViewTransition(
   target: Node
 ): ViewTransition | null {
@@ -135,13 +123,12 @@ class ScopedViewTransitionDirective extends AsyncDirective {
 }
 
 /**
- * A directive that starts a scoped view transition on the parent element each time
- * the template changes. The first render and renders with an unchanged template
- * (same strings and values) do not start a transition.
- * If the user has requested reduced motion, the transition is skipped.
+ * Starts a scoped view transition on the parent element when the template changes.
+ * The first render and an unchanged template (same strings and values) start no transition.
+ * Reduced motion skips the transition.
  *
  * @remarks
  * The parent node must implement `Element.startViewTransition()`. Otherwise the
- * template is rendered directly, without a transition.
+ * template renders directly, without a transition.
  */
 export const scopedViewTransition = directive(ScopedViewTransitionDirective);

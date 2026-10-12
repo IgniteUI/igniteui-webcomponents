@@ -40,6 +40,7 @@
     - [Validation message slots](#validation-message-slots)
     - [External label association](#external-label-association)
     - [Date part and parser unit suites](#date-part-and-parser-unit-suites)
+    - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -48,10 +49,14 @@
 
 ## Revision history
 
-| Version | Date       | Notes                                              |
-| ------: | ---------- | -------------------------------------------------- |
-|       1 | 2026-09-21 | Initial specification                              |
-|       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
+| Version | Date       | Notes                                                                     |
+| ------: | ---------- | ------------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                     |
+|       2 | 2026-09-24 | Describe the naming order and the host ARIA naming                        |
+|       3 | 2026-09-28 | Describe the year parsing; add the property suite                         |
+|       4 | 2026-10-02 | Focus after form checks; `invalid` only on checks                         |
+|       5 | 2026-10-02 | Forward the host `aria-describedby`; expose `required` as `aria-required` |
+|       6 | 2026-10-07 | Read-only `selectionStart` and `selectionEnd`                             |
 
 ## Overview
 
@@ -220,7 +225,8 @@ Add content around the text through the `prefix`, `suffix` and `helper-text` slo
 #### Input format
 
 The `inputFormat` property is the mask the end-user edits. Every supported format character contributes an editable
-position; anything else is treated as a literal and skipped over while typing.
+position; anything else is treated as a literal and skipped over while typing. Mask flags such as `A` or `0` are
+literals too.
 
 | Format | Description                                                                |
 | :----: | :------------------------------------------------------------------------- |
@@ -229,7 +235,7 @@ position; anything else is treated as a literal and skipped over while typing.
 |  `M`   | Month, single position.                                                    |
 |  `MM`  | Month with an explicitly set leading zero.                                 |
 |  `yy`  | Short (two digit) year format. Values below `50` resolve to the 2000s.     |
-| `yyyy` | Full year format. Any year format other than `yy` is normalized to `yyyy`. |
+| `yyyy` | Full year format. A year format other than `yy` widens to four characters. |
 |  `h`   | Hours in 12-hour format, single position.                                  |
 |  `hh`  | Hours in 12-hour format with an explicitly set leading zero.               |
 |  `H`   | Hours in 24-hour format, single position.                                  |
@@ -240,6 +246,9 @@ position; anything else is treated as a literal and skipped over while typing.
 |  `ss`  | Seconds with an explicitly set leading zero.                               |
 |  `t`   | AM/PM section for 12-hour format.                                          |
 |  `tt`  | AM/PM section for 12-hour format.                                          |
+
+In a `yyyy` part, one or two typed digits resolve like `yy`. Three or four typed digits are kept, so `0049` is year
+49. The default `placeholder` shows the widened year format.
 
 ```html
 <!-- Date only -->
@@ -432,10 +441,16 @@ input.clear();                        // empty the mask and the value
 input.select();
 input.setSelectionRange(0, 2);
 input.setRangeText('12', 0, 2, 'select');
+
+const { selectionStart, selectionEnd } = input;
 ```
 
 Calling `stepUp` or `stepDown` on an empty editor initializes the value first. With no part argument, the part under
 the caret is spun.
+
+`selectionStart` and `selectionEnd` are read-only. They count in the text that the input shows: the input format
+while the input has focus, and the display format when it does not. After `setRangeText()`, they report the new
+selection when `updateComplete` resolves.
 
 #### Labeling from the light DOM
 
@@ -470,6 +485,11 @@ name the control.
 - The value is submitted under `name`.
 - A form reset restores `defaultValue`, which is taken from the `value` attribute.
 - An invalid editor blocks submission, and pressing <kbd>Enter</kbd> submits the owning form only when it is valid.
+
+As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
+the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
+`checkValidity()` do not move the focus. The `invalid` event comes only from these checks and from a failed submit,
+not while the user edits the control.
 
 #### Composition inside other components
 
@@ -546,24 +566,26 @@ example <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> - are ignored, so they stay availab
 | validity          | -              | No        | `ValidityState`             | -                 | Read-only. The validity state of the element.                               |
 | validationMessage | -              | No        | `string`                    | -                 | Read-only. The validation message of the element.                           |
 | willValidate      | -              | No        | `boolean`                   | -                 | Read-only. Whether the element is a candidate for constraint validation.    |
+| selectionStart    | -              | No        | `number`                    | 0                 | Read-only. The offset of the start of the text selection.                   |
+| selectionEnd      | -              | No        | `number`                    | 0                 | Read-only. The offset of the end of the text selection.                     |
 
 ### Methods
 
-| Name              | Type signature                                                                               | Description                                                        |
-| ----------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| stepUp            | `(datePart?: DatePart, delta?: number): void`                                                  | Increments a date/time portion.                                    |
-| stepDown          | `(datePart?: DatePart, delta?: number): void`                                                  | Decrements a date/time portion.                                    |
-| clear             | `(): void`                                                                                     | Clears the input element of user input.                            |
-| hasDateParts      | `(): boolean`                                                                                  | Whether the current format holds a day, month or year part.        |
-| hasTimeParts      | `(): boolean`                                                                                  | Whether the current format holds an hours, minutes or seconds part. |
-| select            | `(): void`                                                                                     | Selects all the text inside the input.                             |
-| setSelectionRange | `(start?: number, end?: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range of the control.                      |
-| setRangeText      | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the selected text and re-applies the mask.                |
-| focus             | `(options?: FocusOptions): void`                                                               | Sets focus on the control.                                         |
-| blur              | `(): void`                                                                                     | Removes focus from the control.                                    |
-| checkValidity     | `(): boolean`                                                                                   | Checks validity and emits `invalid` when the control is invalid.   |
-| reportValidity    | `(): boolean`                                                                                   | Checks validity and shows the browser message when invalid.        |
-| setCustomValidity | `(message: string): void`                                                                       | Sets a custom message. Invalid while `message` is not empty.       |
+| Name              | Type signature                                                                                | Description                                                             |
+| ----------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| stepUp            | `(datePart?: DatePart, delta?: number): void`                                                 | Increments a date/time portion.                                         |
+| stepDown          | `(datePart?: DatePart, delta?: number): void`                                                 | Decrements a date/time portion.                                         |
+| clear             | `(): void`                                                                                    | Clears the input element of user input.                                 |
+| hasDateParts      | `(): boolean`                                                                                 | Whether the current format holds a day, month or year part.             |
+| hasTimeParts      | `(): boolean`                                                                                 | Whether the current format holds an hours, minutes or seconds part.     |
+| select            | `(): void`                                                                                    | Selects all the text inside the input.                                  |
+| setSelectionRange | `(start?: number, end?: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range of the control.                           |
+| setRangeText      | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the selected text and re-applies the mask.                     |
+| focus             | `(options?: FocusOptions): void`                                                              | Sets focus on the control.                                              |
+| blur              | `(): void`                                                                                    | Removes focus from the control.                                         |
+| checkValidity     | `(): boolean`                                                                                 | Checks validity and emits `invalid` when the control is invalid.        |
+| reportValidity    | `(): boolean`                                                                                 | Checks validity; when invalid, emits `invalid` and focuses the control. |
+| setCustomValidity | `(message: string): void`                                                                     | Sets a custom message. Invalid while `message` is not empty.            |
 
 ```typescript
 enum DatePart {
@@ -610,7 +632,7 @@ enum DatePart {
 
 ## Test scenarios
 
-The component is covered by three suites in this directory, all running in a real browser through
+The component is covered by four suites in this directory, all running in a real browser through
 `@web/test-runner` with `@open-wc/testing` fixtures and assertions:
 
 | Suite | Scope |
@@ -618,6 +640,7 @@ The component is covered by three suites in this directory, all running in a rea
 | [`date-time-input.spec.ts`](./date-time-input.spec.ts) | The component: formats, editing, spinning, validation and form integration. |
 | [`date-part.spec.ts`](./date-part.spec.ts) | The date part classes on their own. |
 | [`datetime-mask-parser.spec.ts`](./datetime-mask-parser.spec.ts) | The date-time mask parser on its own. |
+| [`datetime-mask-parser.property.spec.ts`](./datetime-mask-parser.property.spec.ts) | Property-based (fuzz) tests for the parser, with generated formats, dates and input. |
 
 The component suite additionally reuses `createFormAssociatedTestBed`, `runValidationContainerTests`,
 `runExternalLabelAssociationTests`, the `simulate*` helpers and `ValidityHelpers` from
@@ -659,59 +682,72 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 21. `stepUp` and `stepDown` initialize a new date when the value is empty, and spin correctly otherwise.
 22. Respects `spinDelta` and `spinLoop`.
 23. `setRangeText` replaces the range and re-applies the mask.
-24. Non-filled parts get their default value on blur; an invalid date sets a `null` value on blur; a complete input
+24. `selectionStart` and `selectionEnd` report the selection.
+25. Non-filled parts get their default value on blur; an invalid date sets a `null` value on blur; a complete input
     commits its value.
 
 ### Keyboard, wheel and pointer
 
-25. <kbd>Arrow Up</kbd> and <kbd>Arrow Down</kbd> spin the focused part, and are a no-op while read-only.
-26. <kbd>Alt</kbd> + arrow presses are a no-op.
-27. The caret does not move away from the focused part when `stepUp` or `stepDown` are invoked.
-28. <kbd>Arrow Left</kbd> and <kbd>Arrow Right</kbd> navigate to the beginning and the end of a date section.
-29. <kbd>Ctrl</kbd> + <kbd>;</kbd> sets the current date.
-30. The mouse wheel spins the part under the caret, and is a no-op without focus and while read-only.
-31. No change event is emitted while read-only.
-32. Drag enter, drag leave with and without focus, and drop behavior.
+26. <kbd>Arrow Up</kbd> and <kbd>Arrow Down</kbd> spin the focused part, and are a no-op while read-only.
+27. <kbd>Alt</kbd> + arrow presses are a no-op.
+28. The caret does not move away from the focused part when `stepUp` or `stepDown` are invoked.
+29. <kbd>Arrow Left</kbd> and <kbd>Arrow Right</kbd> navigate to the beginning and the end of a date section.
+30. <kbd>Ctrl</kbd> + <kbd>;</kbd> sets the current date.
+31. The mouse wheel spins the part under the caret, and is a no-op without focus and while read-only.
+32. No change event is emitted while read-only.
+33. Drag enter, drag leave with and without focus, and drop behavior.
 
 ### Form integration
 
 Driven by `createFormAssociatedTestBed`.
 
-33. Is form associated, and is not associated on submit without a value.
-34. Is associated on submit.
-35. Is correctly reset on form reset, and resets to the new default after a `setAttribute` call.
-36. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid.
-37. Reflects the disabled state of an ancestor `fieldset`.
-38. Fulfils the required, min, max - both as dates and as string property bindings - and custom constraints.
+34. Is form associated, and is not associated on submit without a value.
+35. Is associated on submit.
+36. Is correctly reset on form reset, and resets to the new default after a `setAttribute` call.
+37. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid.
+38. Reflects the disabled state of an ancestor `fieldset`.
+39. Fulfils the required, min, max - both as dates and as string property bindings - and custom constraints.
+
+The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
+[input suite](../input/spec.md#form-validity-checks) covers them.
 
 ### defaultValue
 
-39. Form integration - correct initial state, correct submission and correct reset.
-40. Validation - fails and passes required validation, and fails and passes the min and max validation.
+40. Form integration - correct initial state, correct submission and correct reset.
+41. Validation - fails and passes required validation, and fails and passes the min and max validation.
 
 ### Validation message slots
 
 Generated by `runValidationContainerTests`.
 
-41. `value-missing`, `range-underflow`, `range-overflow`, `custom-error` and `invalid` render for their matching
+42. `value-missing`, `range-underflow`, `range-overflow`, `custom-error` and `invalid` render for their matching
     constraint.
 
 ### External label association
 
 Generated by `runExternalLabelAssociationTests`.
 
-42. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
+43. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
     `ariaLabelledByElements`, and clicking it focuses the control. A `label` added after the first render names the
     control from the first focus, an axe audit passes with only an external `label`, and the host `aria-labelledby` and
     `aria-label` follow the [naming order](../input/spec.md#naming-order).
 
 ### Date part and parser unit suites
 
-43. [`date-part.spec.ts`](./date-part.spec.ts) covers the part classes: the factory for every part type, `getValue`
+44. [`date-part.spec.ts`](./date-part.spec.ts) covers the part classes: the factory for every part type, `getValue`
     formatting per token, `validate` ranges - including the day validated against its month and year context - and
     `spin` for every part, with leap year adjustment, looping and clamping.
-44. [`datetime-mask-parser.spec.ts`](./datetime-mask-parser.spec.ts) covers the parser that turns a format into a
-    mask and back.
+45. [`datetime-mask-parser.spec.ts`](./datetime-mask-parser.spec.ts) covers the parser that turns a format into a
+    mask and back, including the year format normalization with its case kept, a literal that is a mask flag, the
+    century threshold, the calendar of years below 100, and UTF-16 part positions after an astral literal.
+46. [`datetime-mask-parser.property.spec.ts`](./datetime-mask-parser.property.spec.ts) checks, for generated formats:
+    the `formatDate` / `parseDate` round-trip for dates from year 0 to 9999, the two-digit year range, no throw or
+    invalid date for any string, and the parts that tile the mask and agree with the format-level part queries.
+
+### Host ARIA
+
+47. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+    text, and follows a change and a removal. `required` sets `aria-required`.
 
 ## Assumptions and limitations
 
@@ -740,6 +776,9 @@ Generated by `runExternalLabelAssociationTests`.
 - The required, disabled and read-only states come from the native attributes on the inner input.
 - A composite host that wraps the editor projects its own role and ARIA state onto the native input, so assistive
   technology reports from the element that actually receives focus.
+- A host `aria-describedby` describes the native control after the helper text, by element reference.
+- `required` is exposed as `aria-required` on the native input, not as the native `required`, which would validate
+  the mask prompts.
 
 ### Keyboard support
 

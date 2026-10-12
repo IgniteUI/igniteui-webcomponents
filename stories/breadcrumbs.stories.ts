@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
-  IgcBreadcrumbComponent,
   IgcBreadcrumbsComponent,
   IgcDropdownComponent,
   type IgcDropdownItemComponent,
@@ -8,9 +7,10 @@ import {
   IgcIconComponent,
   IgcListComponent,
   defineComponents,
-  registerIcon,
 } from 'igniteui-webcomponents';
 import { html, render } from 'lit';
+import { registerMaterialIcons } from './story-icons.js';
+import { disableStoryControls, renderInto, storyStyles } from './story.js';
 
 defineComponents(
   IgcBreadcrumbsComponent,
@@ -20,19 +20,16 @@ defineComponents(
   IgcListComponent
 );
 
-const materialIcons = 'https://unpkg.com/material-design-icons@3.0.1';
-
-for (const [name, path] of [
-  ['home', 'action/svg/production/ic_home_24px.svg'],
-  ['settings', 'action/svg/production/ic_settings_24px.svg'],
-  ['people', 'social/svg/production/ic_people_24px.svg'],
-  ['lock', 'action/svg/production/ic_lock_24px.svg'],
-  ['folder', 'file/svg/production/ic_folder_24px.svg'],
-  ['description', 'action/svg/production/ic_description_24px.svg'],
-  ['image', 'image/svg/production/ic_image_24px.svg'],
-]) {
-  registerIcon(name, `${materialIcons}/${path}`);
-}
+registerMaterialIcons(
+  'home',
+  'settings',
+  'people',
+  'lock',
+  'folder',
+  'description',
+  'image',
+  'unfold-more'
+);
 
 // region default
 const metadata: Meta<IgcBreadcrumbsComponent> = {
@@ -79,14 +76,24 @@ function markCurrent(event: Event): void {
   event.preventDefault();
 
   const anchor = event.currentTarget as HTMLAnchorElement;
-  const trail = anchor.closest(IgcBreadcrumbsComponent.tagName)!;
+  const trail = anchor.closest('igc-breadcrumbs')!;
 
-  for (const item of trail.querySelectorAll(IgcBreadcrumbComponent.tagName)) {
+  for (const item of trail.querySelectorAll('igc-breadcrumb')) {
     item.current = false;
   }
 
-  anchor.closest(IgcBreadcrumbComponent.tagName)!.current = true;
+  anchor.closest('igc-breadcrumb')!.current = true;
 }
+
+/** Renders a trail of links, and marks the last link as the current page. */
+const crumbs = (links: [href: string, label: string][]) =>
+  links.map(
+    ([href, label], index) => html`
+      <igc-breadcrumb ?current=${index === links.length - 1}>
+        <a href=${href} @click=${markCurrent}>${label}</a>
+      </igc-breadcrumb>
+    `
+  );
 
 export const Default: Story = {
   parameters: {
@@ -100,42 +107,33 @@ export const Default: Story = {
   render: ({ separator }) => html`
     <nav aria-label="Breadcrumb">
       <igc-breadcrumbs separator=${separator}>
-        <igc-breadcrumb>
-          <a href="/" @click=${markCurrent}>Home</a>
-        </igc-breadcrumb>
-        <igc-breadcrumb>
-          <a href="/electronics" @click=${markCurrent}>Electronics</a>
-        </igc-breadcrumb>
-        <igc-breadcrumb>
-          <a href="/electronics/laptops" @click=${markCurrent}>Laptops</a>
-        </igc-breadcrumb>
-        <igc-breadcrumb>
-          <a href="/electronics/laptops/ultrabooks" @click=${markCurrent}
-            >Ultrabooks</a
-          >
-        </igc-breadcrumb>
-        <igc-breadcrumb current>
-          <a
-            href="/electronics/laptops/ultrabooks/x1-carbon"
-            @click=${markCurrent}
-            >ThinkPad X1 Carbon Gen 12</a
-          >
-        </igc-breadcrumb>
+        ${crumbs([
+          ['/', 'Home'],
+          ['/electronics', 'Electronics'],
+          ['/electronics/laptops', 'Laptops'],
+          ['/electronics/laptops/ultrabooks', 'Ultrabooks'],
+          [
+            '/electronics/laptops/ultrabooks/x1-carbon',
+            'ThinkPad X1 Carbon Gen 12',
+          ],
+        ])}
       </igc-breadcrumbs>
     </nav>
   `,
 };
 
 export const DocumentationSite: Story = {
+  argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'A documentation site that uses a plain text `/` separator provided per item through the `separator` slot. The component hides separators from assistive technology, so screen readers do not announce "slash" between levels. The first item carries a home icon in its `prefix` slot and the API reference item uses the `suffix` slot to flag a link that opens a different site.',
+          'A documentation site that uses a plain text `/` separator provided per item through the `separator` slot. The component hides separators from assistive technology, so screen readers do not announce "slash" between levels. The first item carries a home icon in its `prefix` slot and the API reference item uses the `suffix` slot to flag a link that opens a different site. The icon is decorative, so visually hidden text in the link tells screen reader users that the link opens a new tab.',
       },
     },
   },
   render: () => html`
+    ${storyStyles}
     <nav aria-label="Breadcrumb">
       <igc-breadcrumbs>
         <igc-breadcrumb>
@@ -148,9 +146,10 @@ export const DocumentationSite: Story = {
           <span slot="separator">/</span>
         </igc-breadcrumb>
         <igc-breadcrumb>
-          <a href="https://example.com/api" target="_blank" rel="noopener"
-            >API reference</a
-          >
+          <a href="https://example.com/api" target="_blank" rel="noopener">
+            API reference
+            <span class="sr-only">(opens in a new tab)</span>
+          </a>
           <igc-icon
             slot="suffix"
             name="open_in_new"
@@ -170,15 +169,17 @@ export const DocumentationSite: Story = {
 };
 
 export const AdminConsole: Story = {
+  argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'A user detail page in an admin console. Every level has an icon in its `prefix` slot. The "Settings" level is a grouping node that has no page of its own, so it is rendered `disabled` to keep the hierarchy visible without offering a dead link. The lock icon in the `suffix` slot of "Users" marks a section that needs elevated permissions.',
+          'A user detail page in an admin console. Every level has an icon in its `prefix` slot. The "Settings" level is a grouping node that has no page of its own, so it is rendered `disabled` to keep the hierarchy visible without offering a dead link. The lock icon in the `suffix` slot of "Users" marks a section that needs elevated permissions. The icon is decorative, so visually hidden text in the link gives the same information to screen reader users.',
       },
     },
   },
   render: () => html`
+    ${storyStyles}
     <nav aria-label="Breadcrumb">
       <igc-breadcrumbs separator="chevron_right">
         <igc-breadcrumb>
@@ -191,7 +192,10 @@ export const AdminConsole: Story = {
         </igc-breadcrumb>
         <igc-breadcrumb>
           <igc-icon slot="prefix" name="people"></igc-icon>
-          <a href="/admin/settings/users" @click=${markCurrent}>Users</a>
+          <a href="/admin/settings/users" @click=${markCurrent}>
+            Users
+            <span class="sr-only">(requires the Administrator role)</span>
+          </a>
           <igc-icon
             slot="suffix"
             name="lock"
@@ -361,7 +365,10 @@ function createFileExplorer(container: HTMLElement): void {
         ${folder.children?.map(
           (node) => html`
             <igc-list-item>
-              <igc-icon slot="start" name=${node.kind}></igc-icon>
+              <igc-icon
+                slot="start"
+                name=${node.kind === 'document' ? 'description' : node.kind}
+              ></igc-icon>
               ${
                 node.kind === 'folder'
                   ? html`<a
@@ -386,6 +393,7 @@ function createFileExplorer(container: HTMLElement): void {
 }
 
 export const FileExplorer: Story = {
+  argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
@@ -402,6 +410,7 @@ export const FileExplorer: Story = {
 };
 
 export const LongTrail: Story = {
+  argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
@@ -413,70 +422,136 @@ export const LongTrail: Story = {
   render: () => html`
     <nav aria-label="Breadcrumb" style="max-width: 360px">
       <igc-breadcrumbs separator="chevron_right">
-        <igc-breadcrumb>
-          <a href="/help" @click=${markCurrent}>Help Center</a>
-        </igc-breadcrumb>
-        <igc-breadcrumb>
-          <a href="/help/billing" @click=${markCurrent}>Billing</a>
-        </igc-breadcrumb>
-        <igc-breadcrumb>
-          <a href="/help/billing/subscriptions" @click=${markCurrent}
-            >Subscriptions</a
-          >
-        </igc-breadcrumb>
-        <igc-breadcrumb>
-          <a href="/help/billing/subscriptions/plans" @click=${markCurrent}
-            >Plans and pricing</a
-          >
-        </igc-breadcrumb>
-        <igc-breadcrumb>
-          <a href="/help/billing/subscriptions/plans/team" @click=${markCurrent}
-            >Team plan</a
-          >
-        </igc-breadcrumb>
-        <igc-breadcrumb current>
-          <a
-            href="/help/billing/subscriptions/plans/team/add-seats"
-            @click=${markCurrent}
-            >How to add seats to an existing subscription</a
-          >
-        </igc-breadcrumb>
+        ${crumbs([
+          ['/help', 'Help Center'],
+          ['/help/billing', 'Billing'],
+          ['/help/billing/subscriptions', 'Subscriptions'],
+          ['/help/billing/subscriptions/plans', 'Plans and pricing'],
+          ['/help/billing/subscriptions/plans/team', 'Team plan'],
+          [
+            '/help/billing/subscriptions/plans/team/add-seats',
+            'How to add seats to an existing subscription',
+          ],
+        ])}
       </igc-breadcrumbs>
     </nav>
   `,
 };
 
-export const Sizes: Story = {
+const projects = ['Website', 'Mobile app', 'Data platform'];
+const environments = ['Production', 'Staging', 'Preview'];
+
+const slug = (text: string) => text.toLowerCase().replaceAll(' ', '-');
+
+export const ProjectSwitcher: Story = {
+  argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'The trail follows the `--ig-size` custom property, so it can match a compact toolbar, the page body, or a large page header.',
+          'The header of a deployment console. The project and the environment items hold a link and, in the `suffix` slot, a dropdown that switches to a sibling, so the user does not have to go up the trail and down again. The switch keeps the current page. The header sets `--ig-size` to the small size, so that the trail fits a compact toolbar. The switcher buttons show only an icon, so each has an `aria-label`.',
       },
     },
   },
-  render: () => html`
-    <div style="display: flex; flex-direction: column; gap: 1.5rem">
-      ${[1, 2, 3].map(
-        (size) => html`
-          <nav aria-label="Breadcrumb, size ${size}" style="--ig-size: ${size}">
+  render: () => {
+    const state = { project: projects[0], environment: environments[0] };
+
+    const follow = (event: Event) => event.preventDefault();
+
+    const switcher = (
+      label: string,
+      key: keyof typeof state,
+      options: string[]
+    ) => html`
+      <igc-dropdown
+        slot="suffix"
+        @igcChange=${({ detail }: CustomEvent<IgcDropdownItemComponent>) => {
+          state[key] = detail.value;
+          update();
+        }}
+      >
+        <igc-icon-button
+          slot="target"
+          variant="flat"
+          name="unfold-more"
+          aria-label=${label}
+        ></igc-icon-button>
+        ${options.map(
+          (option) => html`
+            <igc-dropdown-item
+              value=${option}
+              ?selected=${option === state[key]}
+            >
+              ${option}
+            </igc-dropdown-item>
+          `
+        )}
+      </igc-dropdown>
+    `;
+
+    const { mount, update } = renderInto(() => {
+      const { project, environment } = state;
+      const projectUrl = `/acme/${slug(project)}`;
+      const environmentUrl = `${projectUrl}/${slug(environment)}`;
+
+      return html`
+        <header class="bc-header">
+          <nav aria-label="Breadcrumb">
             <igc-breadcrumbs>
               <igc-breadcrumb>
-                <igc-icon slot="prefix" name="home"></igc-icon>
-                <a href="/" @click=${markCurrent}>Home</a>
+                <a href="/acme" @click=${follow}>Acme Inc</a>
               </igc-breadcrumb>
               <igc-breadcrumb>
-                <a href="/projects" @click=${markCurrent}>Projects</a>
+                <a href=${projectUrl} @click=${follow}>${project}</a>
+                ${switcher('Switch project', 'project', projects)}
+              </igc-breadcrumb>
+              <igc-breadcrumb>
+                <a href=${environmentUrl} @click=${follow}>${environment}</a>
+                ${switcher('Switch environment', 'environment', environments)}
               </igc-breadcrumb>
               <igc-breadcrumb current>
-                <a href="/projects/website" @click=${markCurrent}
-                  >Website redesign</a
+                <a href="${environmentUrl}/deployments" @click=${follow}
+                  >Deployments</a
                 >
               </igc-breadcrumb>
             </igc-breadcrumbs>
           </nav>
-        `
-      )}
-    </div>
-  `,
+        </header>
+        <section class="bc-page" aria-label="Deployments">
+          <h3>Deployments of ${project} in ${environment}</h3>
+          <ul>
+            <li>Build 482, 12 minutes ago, ready</li>
+            <li>Build 481, 2 hours ago, ready</li>
+            <li>Build 480, yesterday, failed</li>
+          </ul>
+        </section>
+      `;
+    });
+
+    return html`
+      <style>
+        .bc-console {
+          max-width: 48rem;
+          border: 1px solid var(--ig-gray-300);
+          border-radius: 8px;
+        }
+
+        .bc-header {
+          --ig-size: var(--ig-size-small);
+
+          padding: 0.25rem 1rem;
+          border-block-end: 1px solid var(--ig-gray-300);
+        }
+
+        .bc-page {
+          padding: 1rem;
+        }
+
+        .bc-page h3 {
+          margin: 0 0 0.5rem;
+        }
+      </style>
+      <div class="bc-console" ${mount}></div>
+    `;
+  },
 };

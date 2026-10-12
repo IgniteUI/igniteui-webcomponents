@@ -14,10 +14,8 @@ export interface SlottedIconOptions {
   hidden?: boolean;
   /** The `title` of the default icon. */
   title?: string;
-  /** The accessible label of the default icon. Suppresses `aria-hidden`. */
-  label?: string;
   /**
-   * Adds `aria-hidden="true"` to a default icon that has no label. Pass
+   * Adds `aria-hidden="true"` to the default icon. Pass
    * `false` when an ancestor already hides the icon.
    *
    * @default true
@@ -31,16 +29,13 @@ export interface SlottedIconOptions {
  * the icon component.
  */
 export function renderSlottedIcon(options: SlottedIconOptions): TemplateResult {
-  const ariaHidden = options.label ? false : (options.ariaHidden ?? true);
-
   return html`
     <slot name=${options.slot} ?hidden=${options.hidden ?? false}>
       <igc-icon
         name=${options.icon}
         collection="default"
         title=${ifDefined(options.title)}
-        aria-label=${ifDefined(options.label)}
-        aria-hidden=${bindIf(ariaHidden, 'true')}
+        aria-hidden=${bindIf(options.ariaHidden ?? true, 'true')}
       ></igc-icon>
     </slot>
   `;

@@ -10,8 +10,8 @@ export type ComboRecord<T extends object> = {
   value: T;
   header: boolean;
   /**
-   * 1-based position among the currently visible options, excluding group
-   * headers. `-1` for header records. Reassigned on every pipeline run.
+   * 1-based position among the visible options. `-1` for group headers.
+   * Each pipeline run sets it again.
    */
   position: number;
 };

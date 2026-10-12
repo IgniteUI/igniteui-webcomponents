@@ -5,7 +5,7 @@ import { range } from 'lit/directives/range.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import {
   ariaBindings,
-  resolveNaming,
+  hostAria,
 } from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
@@ -38,12 +38,13 @@ import {
   roundPrecise,
 } from '#internals/utils/math.js';
 import { formatString } from '#internals/utils/strings.js';
+import { all } from '#themes/rating/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
 import { styles } from './themes/rating.base.css.js';
 import { styles as shared } from './themes/shared/rating.common.css.js';
-import { all } from './themes/themes.js';
 
 export interface IgcRatingComponentEventMap {
   igcChange: CustomEvent<number>;
@@ -112,7 +113,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   )
 ) {
   public static readonly tagName = 'igc-rating';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -138,10 +139,10 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   private _symbols: IgcRatingSymbolComponent[] = [];
 
   @query('[part="symbols"]', true)
-  private _container?: HTMLElement;
+  private _symbolsContainer?: HTMLElement;
 
   @query('[part="base"]', true)
-  private readonly _slider!: HTMLElement;
+  private readonly _base!: HTMLElement;
 
   @state()
   private _hoverValue = -1;
@@ -296,22 +297,17 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
     addThemingController(this, all);
 
+    const stepBy = (direction: number) =>
+      this._emitValueUpdate(this.value + direction * this.step);
+
     addKeybindings(this, {
       skip: () => !this._isInteractive,
       bindingDefaults: { repeat: true },
     })
-      .set(arrowUp, () => this._emitValueUpdate(this.value + this.step))
-      .set(arrowRight, () =>
-        this._emitValueUpdate(
-          isLTR(this) ? this.value + this.step : this.value - this.step
-        )
-      )
-      .set(arrowDown, () => this._emitValueUpdate(this.value - this.step))
-      .set(arrowLeft, () =>
-        this._emitValueUpdate(
-          isLTR(this) ? this.value - this.step : this.value + this.step
-        )
-      )
+      .set(arrowUp, () => stepBy(1))
+      .set(arrowRight, () => stepBy(isLTR(this) ? 1 : -1))
+      .set(arrowDown, () => stepBy(-1))
+      .set(arrowLeft, () => stepBy(isLTR(this) ? -1 : 1))
       .set(homeKey, () => this._emitValueUpdate(this.step))
       .set(endKey, () => this._emitValueUpdate(this.max));
   }
@@ -346,7 +342,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     const value = this._calcNewValue(clientX);
 
     if (this._hoverValue !== value) {
-      // Since pointermove spams a lot, only emit on a value change
+      // `pointermove` fires often, so emit only on a value change.
       this._hoverValue = value;
       this.emitEvent('igcHover', { detail: this._hoverValue });
     }
@@ -368,7 +364,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   /** Focuses the slider, as a native range input label does. */
   protected override _handleLabelActivation(): void {
-    this._slider.focus();
+    this.focus();
   }
 
   private _handleHoverEnabled(): void {
@@ -395,8 +391,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   }
 
   private _calcNewValue(x: number): number {
-    const fraction = this._container
-      ? pointToFraction(this._container, x, isLTR(this))
+    const fraction = this._symbolsContainer
+      ? pointToFraction(this._symbolsContainer, x, isLTR(this))
       : 0;
 
     return clamp(this._ceilToStep(this.max * fraction), this.step, this.max);
@@ -411,10 +407,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   }
 
   /**
-   * Removes the floating point noise of the step arithmetic. The decimals of
-   * the value and of the step stay, so a value from the consumer keeps its
-   * precision, and the value, the event payload and `aria-valuenow` stay
-   * readable.
+   * Removes the floating point noise of the step arithmetic. Keeps the decimals
+   * of the value and of the step.
    */
   private _normalize(value: number): number {
     return roundPrecise(
@@ -479,6 +473,20 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     this.value = this._normalize(this.value - n * this.step);
   }
 
+  /* alternateName: focusComponent */
+  /** Sets focus on the rating. A disabled rating does not take the focus. */
+  public override focus(options?: FocusOptions): void {
+    if (!this.disabled) {
+      this._base?.focus(options);
+    }
+  }
+
+  /* alternateName: blurComponent */
+  /** Removes focus from the rating. */
+  public override blur(): void {
+    this._base?.blur();
+  }
+
   //#endregion
 
   private _renderSymbols() {
@@ -514,7 +522,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
         >${this.label}</label
       >
       <div
-        ${ariaBindings(resolveNaming(this, Boolean(this.label) && 'rating-label'))}
+        ${ariaBindings(
+          hostAria(this, {
+            ownLabel: Boolean(this.label) && 'rating-label',
+          })
+        )}
         part="base"
         role="slider"
         tabindex=${this.disabled ? -1 : 0}

@@ -1,14 +1,15 @@
 import { html, LitElement } from 'lit';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/dropdown/themes/header.js';
 import { addThemingController } from '#theming/theming-controller.js';
-import { all } from '../dropdown/themes/header.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles as shared } from '../dropdown/themes/shared/header/dropdown-header.common.css.js';
 import { styles } from './themes/combo-header.base.css.js';
 
 /* blazorSuppress */
 export default class IgcComboHeaderComponent extends LitElement {
   public static readonly tagName: string = 'igc-combo-header';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

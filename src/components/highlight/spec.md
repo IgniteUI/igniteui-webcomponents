@@ -38,9 +38,11 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                             |
+| ------: | ---------- | --------------------------------- |
+|       1 | 2026-09-21 | Initial specification             |
+|       2 | 2026-10-02 | Whitespace matching               |
+|       3 | 2026-10-05 | Stylesheet kept on a theme change |
 
 ## Overview
 
@@ -107,7 +109,8 @@ The wiki page of the component carries a design hand-off heading with no link be
 #### Basic initialization
 
 Setting `searchText` starts a search over the projected content. An empty string clears the highlights.
-`caseSensitive` decides whether only the exact case matches.
+`caseSensitive` decides whether only the exact case matches. A run of whitespace in `searchText` matches any run of
+whitespace in the content, so "cold brew" also finds the two words across a line break of the HTML source.
 
 ```html
 <igc-highlight search-text="lorem" case-sensitive>
@@ -140,7 +143,8 @@ The component does not observe the projected content. After it changes — lazil
 
 The highlight styles live in a stylesheet that is adopted by the tree scope of the projected content rather than
 by the render root of the component, because the matched text nodes belong to that scope. The component
-re-targets the stylesheet when the host moves to another scope and removes it when the host disconnects.
+re-targets the stylesheet when the host moves to another scope and removes it when the host disconnects. When that
+scope is the shadow root of a themed component, a theme change keeps the stylesheet.
 
 The four custom properties are set on the host:
 
@@ -225,15 +229,16 @@ None applicable.
 
 3. The stylesheet is adopted by the tree scope of the projected content, not by the render root of the component.
 4. The stylesheet is re-targeted when the host moves to another tree scope.
-5. The stylesheet is removed from its tree scope when the host disconnects.
+5. The stylesheet stays in the shadow root of a themed component when the theme changes.
+6. The stylesheet is removed from its tree scope when the host disconnects.
 
 ### API tests
 
-6. Changing `searchText` produces the matching number of matches.
-7. `caseSensitive` restricts the matching to the exact case.
-8. `next()` and `previous()` move the active match, and `previous()` wraps to the last one from the first.
-9. `setActive()` sets the active match to the given index.
-10. `search()` picks up content that was added or removed after the previous search.
+7. Changing `searchText` produces the matching number of matches.
+8. `caseSensitive` restricts the matching to the exact case, and a space matches any run of whitespace.
+9. `next()` and `previous()` move the active match, and `previous()` wraps to the last one from the first.
+10. `setActive()` sets the active match to the given index.
+11. `search()` picks up content that was added or removed after the previous search.
 
 ### Not covered by the suite
 

@@ -4,20 +4,25 @@ import {
   CHANGED_THEME_EVENT,
   type ChangeThemeEventDetail,
 } from './theming-event.js';
-import type { Theme, ThemeVariant } from './types.js';
+import {
+  THEME_VARIANTS,
+  THEMES,
+  type Theme,
+  type ThemeVariant,
+} from './types.js';
 
-const THEMES = new Set<unknown>(['bootstrap', 'material', 'indigo', 'fluent']);
-const THEME_VARIANTS = new Set<unknown>(['light', 'dark']);
+const themes = new Set<unknown>(THEMES);
+const variants = new Set<unknown>(THEME_VARIANTS);
 
 let theme: Theme;
 let themeVariant: ThemeVariant;
 
 function isOfTypeTheme(value: unknown): value is Theme {
-  return THEMES.has(value);
+  return themes.has(value);
 }
 
 function isOfTypeThemeVariant(value: unknown): value is ThemeVariant {
-  return THEME_VARIANTS.has(value);
+  return variants.has(value);
 }
 
 function setTheme(value: Theme, variant: ThemeVariant): void {
@@ -44,6 +49,11 @@ class ThemeChangedEmitter extends EventTarget {
       isOfTypeTheme(detail?.theme) &&
       isOfTypeThemeVariant(detail?.themeVariant)
     ) {
+      // A repeated call or another copy of the library may send the active theme again.
+      if (detail.theme === theme && detail.themeVariant === themeVariant) {
+        return;
+      }
+
       setTheme(detail.theme, detail.themeVariant);
       this.dispatchEvent(new CustomEvent(CHANGED_THEME_EVENT));
     }
@@ -81,13 +91,13 @@ export function getTheme(): ChangeThemeEventDetail {
  */
 export function configureTheme(t: Theme, v: ThemeVariant = 'light'): void {
   if (isOfTypeTheme(t) && isOfTypeThemeVariant(v)) {
-    // Also set by the emitter's window listener, but that listener does not exist on the server.
-    setTheme(t, v);
-
-    if (!isServer) {
+    if (isServer) {
+      // On the client, the emitter's window listener sets the state.
+      setTheme(t, v);
+    } else {
       globalThis.dispatchEvent(
         new CustomEvent(CHANGE_THEME_EVENT, {
-          detail: { theme, themeVariant },
+          detail: { theme: t, themeVariant: v },
         })
       );
     }

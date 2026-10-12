@@ -1,5 +1,5 @@
 import { html, nothing, type TemplateResult } from 'lit';
-import IgcValidationContainerComponent from '../../components/validation-container/validation-container.js';
+import { cache } from 'lit/directives/cache.js';
 import type { SlotController } from '../controllers/slot.js';
 import type { IgcFormControl } from '../mixins/forms/types.js';
 import { partMap } from '../part-map.js';
@@ -9,20 +9,22 @@ import { createIdGenerator } from '../utils/strings.js';
 /** Returns a unique id for a native input element. */
 export const nextInputId = createIdGenerator('input');
 
-/** Returns the shared container part names of an input-like component. */
-export function resolveInputPartNames(
-  slots: Pick<SlotController<'prefix' | 'suffix'>, 'hasAssignedElements'>,
-  base: string,
+type PartSlots = Pick<
+  SlotController<'prefix' | 'suffix'>,
+  'hasAssignedElements'
+>;
+
+/** An element assigned to a named slot without flattening has its `slot` attribute. */
+const VISIBLE = { selector: ':not([hidden])' };
+
+/** Returns the `prefixed`, `suffixed` and `filled` parts of an input-like component. */
+export function resolveInputPartFlags(
+  slots: PartSlots,
   filled: boolean
 ): Record<string, boolean> {
   return {
-    [base]: true,
-    prefixed: slots.hasAssignedElements('prefix', {
-      selector: '[slot="prefix"]:not([hidden])',
-    }),
-    suffixed: slots.hasAssignedElements('suffix', {
-      selector: '[slot="suffix"]:not([hidden])',
-    }),
+    prefixed: slots.hasAssignedElements('prefix', VISIBLE),
+    suffixed: slots.hasAssignedElements('suffix', VISIBLE),
     filled,
   };
 }
@@ -38,10 +40,10 @@ export interface InputShellOptions {
   containerParts: Record<string, boolean>;
   /** Renders the native `<input>` element. */
   renderInput: () => TemplateResult;
+  /** The helper text and validation messages, rendered below the container. */
+  helperText: TemplateResult;
   /** Renders extra parts inside the container, as `igc-file-input` needs. */
   renderFileParts?: () => TemplateResult | typeof nothing;
-  /** Container part names that only the material notch layout adds. */
-  materialParts?: Record<string, boolean>;
   /**
    * Hides the prefix and suffix wrappers whose `containerParts` entry is
    * false. Off by default, so the wrappers always render.
@@ -50,14 +52,9 @@ export interface InputShellOptions {
 }
 
 /**
- * Renders the label of the input.
- *
- * @remarks
- * A label click reaches the host twice: the label click, then the synthetic
- * click that label activation sends to the input. That double-fires a
- * consumer click handler and breaks the toggles of `igc-combo` and
- * `igc-select`. The label therefore keeps its own click inside the shadow
- * root; activation is a default action, so focus still moves to the input.
+ * Renders the label of the input. The label stops its own click, because a label click
+ * otherwise reaches the host twice and breaks the `igc-combo` and `igc-select` toggles.
+ * Activation is a default action, so focus still moves.
  */
 function renderLabel(forId: string, label: string) {
   return label
@@ -74,14 +71,14 @@ function renderAffix(name: 'prefix' | 'suffix', hidden: boolean) {
 }
 
 /**
- * Renders the label, prefix, suffix and validation container around the input
- * template of a leaf component, in the notch or the standard layout.
+ * Renders the label, prefix, suffix and helper text around the input template
+ * of a leaf component, in the notch or the standard layout.
  */
 export function renderInputShell(
   host: IgcFormControl,
   {
     containerParts,
-    materialParts,
+    helperText,
     hideEmptyAffixes = false,
     renderFileParts,
     renderInput,
@@ -89,8 +86,7 @@ export function renderInputShell(
     label,
     labelId,
   }: InputShellOptions
-): TemplateResult {
-  const validator = IgcValidationContainerComponent.create(host);
+) {
   const input = renderInput.call(host);
   const fileParts = renderFileParts?.call(host) ?? nothing;
   const prefix = renderAffix(
@@ -103,29 +99,23 @@ export function renderInputShell(
   );
 
   if (theme === 'material') {
-    return html`
-      <div
-        part=${partMap({
-          ...containerParts,
-          ...materialParts,
-          labelled: !!label,
-        })}
-      >
+    return cache(html`
+      <div part=${partMap({ ...containerParts, labelled: !!label })}>
         <div part="start">${prefix}</div>
         ${input}${fileParts}
         <div part="notch">${renderLabel(labelId, label)}</div>
         <div part="filler"></div>
         <div part="end">${suffix}</div>
       </div>
-      ${validator}
-    `;
+      ${helperText}
+    `);
   }
 
-  return html`
+  return cache(html`
     ${renderLabel(labelId, label)}
     <div part=${partMap(containerParts)}>
       ${prefix}${fileParts}${input}${suffix}
     </div>
-    ${validator}
-  `;
+    ${helperText}
+  `);
 }

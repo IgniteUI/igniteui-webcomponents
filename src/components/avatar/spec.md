@@ -34,9 +34,10 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                          |
+| ------: | ---------- | ---------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                          |
+|       2 | 2026-10-01 | A badge goes next to the avatar, not inside it |
 
 ## Overview
 
@@ -113,13 +114,33 @@ again. Without an image, the initials win over a projected icon; the icon is wha
 
 #### Combining with a badge
 
-An [`igc-badge`](../badge/spec.md) projected into the avatar marks a status on it.
+The default slot holds an icon, not an overlay. The avatar clips its content, renders the initials in place of the
+slot and draws the image over it, so a badge projected into the avatar does not show. To mark a status on the
+avatar, put the avatar and an [`igc-badge`](../badge/spec.md) in a wrapper, and position the badge against the
+wrapper.
 
 ```html
-<igc-avatar initials="ZK">
-  <igc-badge variant="danger" outlined>6</igc-badge>
-</igc-avatar>
+<span class="avatar-status">
+  <igc-avatar initials="ZK" alt="Zoe Kim" shape="circle"></igc-avatar>
+  <igc-badge dot outlined variant="success"></igc-badge>
+</span>
 ```
+
+```css
+.avatar-status {
+  position: relative;
+  display: inline-flex;
+}
+
+.avatar-status igc-badge {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+}
+```
+
+`outlined` separates the badge from the image. A color alone means nothing to assistive technologies, so state the
+status in text next to the avatar as well.
 
 ### Localization
 
@@ -192,6 +213,8 @@ None applicable.
 - The avatar has no size property; its dimensions come from the styles applied to it.
 - Only one content kind is shown at a time, and the order is fixed: the image, then the initials, then the icon.
 - A projected icon is ignored while `initials` is set.
+- The default slot cannot hold an overlay, such as a badge: the avatar clips it, the initials replace it and the
+  image covers it. See [Combining with a badge](#combining-with-a-badge).
 - The avatar is presentational and has no interactive behavior of its own.
 
 ## Accessibility

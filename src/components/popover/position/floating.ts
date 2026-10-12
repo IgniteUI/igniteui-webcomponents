@@ -13,9 +13,9 @@ import { resolvePlacement } from './types.js';
 type FloatingUiModule = typeof FloatingUi;
 
 /**
- * The module loads on demand, at the first attach of the fallback strategy. A
- * browser that uses the native strategy never loads it. The published build
- * is ESM, so the bundler of a consumer can split the code at this import.
+ * Loads at the first attach of the fallback strategy, so a browser that uses
+ * the native strategy never loads it. The ESM build lets a consumer bundler
+ * split the code at this import.
  */
 let floatingUiModule: FloatingUiModule | undefined;
 let floatingUiLoader: Promise<FloatingUiModule> | undefined;
@@ -45,16 +45,14 @@ export class FloatingPositionStrategy extends PopoverPositionStrategy {
   private _pendingPosition?: Promise<void>;
 
   /**
-   * Identifies the open cycle. Each `attach` and `detach` increments it.
-   * Every `attach` chains a callback onto the shared module loader, so a
-   * callback of a replaced cycle must not start an update.
+   * Identifies the open cycle, so a module load callback of a replaced cycle
+   * does not start an update.
    */
   private _attachId = 0;
 
   /**
-   * `fixed` if an ancestor of the anchor has `position: sticky`, `absolute`
-   * in all other cases. The value updates one time for each open cycle,
-   * because the calculation walks the DOM and forces a style reflow.
+   * `fixed` if an ancestor of the anchor has `position: sticky`, else `absolute`.
+   * It updates once per open cycle, as the check forces a style reflow.
    */
   private _strategy: 'absolute' | 'fixed' = 'absolute';
 
@@ -65,9 +63,8 @@ export class FloatingPositionStrategy extends PopoverPositionStrategy {
 
     this._middleware = undefined;
 
-    // Remove the inline styles of the previous open cycle. A popover that
-    // closes while the anchor is out of view keeps `visibility: hidden`, and
-    // the first `computePosition` clears it too late.
+    // Remove the previous inline styles. The first `computePosition` clears a
+    // stale `visibility: hidden` too late.
     const reset: Partial<CSSStyleDeclaration> = { visibility: '' };
 
     if (!this._host.sameWidth) {
@@ -95,10 +92,6 @@ export class FloatingPositionStrategy extends PopoverPositionStrategy {
     });
   }
 
-  /**
-   * This strategy loads its module on demand and then positions
-   * asynchronously, so the host waits for both.
-   */
   public override async whenPositioned(): Promise<void> {
     await this._pendingLoad;
     await this._pendingPosition;
@@ -182,9 +175,8 @@ export class FloatingPositionStrategy extends PopoverPositionStrategy {
       middleware.push(floating.arrow({ element: arrow }));
     }
 
-    // `hide()` matches `position-visibility: anchors-visible` of the native
-    // strategy. The `scroll` strategy adds no middleware, which matches
-    // `position-visibility: always`.
+    // Matches the native `position-visibility`: `anchors-visible`, or `always`
+    // for the `scroll` strategy.
     if (scrollStrategy !== 'scroll') {
       middleware.push(floating.hide());
     }

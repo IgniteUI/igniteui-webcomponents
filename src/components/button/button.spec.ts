@@ -2,8 +2,10 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
+import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import { isPopoverOpen } from '#internals/utils/dom.js';
 import IgcInputComponent from '../input/input.js';
+import IgcTooltipComponent from '../tooltip/tooltip.js';
 import IgcButtonComponent from './button.js';
 
 const Variants: Array<IgcButtonComponent['variant']> = [
@@ -16,7 +18,9 @@ const Types: Array<IgcButtonComponent['type']> = ['button', 'reset', 'submit'];
 
 describe('Button tests', () => {
   let button: IgcButtonComponent;
-  before(() => defineComponents(IgcButtonComponent, IgcInputComponent));
+  before(() =>
+    defineComponents(IgcButtonComponent, IgcInputComponent, IgcTooltipComponent)
+  );
 
   describe('Button component', () => {
     const ignored_DOM_parts = {
@@ -115,7 +119,6 @@ describe('Button tests', () => {
 
       expect(button).shadowDom.to.equal(
         `<a
-          role="button"
           href="${button.href}"
         >
         </a>`,
@@ -133,12 +136,11 @@ describe('Button tests', () => {
       await elementUpdated(button);
 
       expect(button).shadowDom.to.equal(
-        `<a
-          aria-disabled="${button.disabled}"
-          href="/"
-          role="button"
-        >
-        </a>`,
+        `<button role="link" disabled type="button">
+          <slot name="prefix"></slot>
+          <slot></slot>
+          <slot name="suffix"></slot>
+        </button>`,
         ignored_DOM_parts
       );
     });
@@ -151,7 +153,6 @@ describe('Button tests', () => {
         expect(button).attribute('variant').to.equal(variant);
         expect(button).shadowDom.to.equal(
           `<a
-            role="button"
             href="/"
           >
           </a>`,
@@ -171,11 +172,9 @@ describe('Button tests', () => {
 
       expect(button).shadowDom.to.equal(
         `<a
-          aria-disabled="${button.disabled}"
           rel="${rel}" download="${download}"
           target="${target}"
           href="${href}"
-          role="button"
         >
         </a>`,
         ignored_DOM_parts
@@ -184,13 +183,139 @@ describe('Button tests', () => {
 
     it('has the correct shadow DOM structure', async () => {
       expect(button).shadowDom.to.equal(
-        `<a part="base" href="/" role="button">
+        `<a part="base" href="/">
           <slot name="prefix"></slot>
           <slot></slot>
           <slot name="suffix"></slot>
         </a>`,
         ignored_DOM_parts
       );
+    });
+
+    it('keeps the native link role', () => {
+      const anchor = button.renderRoot.querySelector('a')!;
+
+      expect(anchor.hasAttribute('role')).to.be.false;
+      expect(anchor.hasAttribute('aria-disabled')).to.be.false;
+    });
+
+    it('takes a disabled link out of the tab order', async () => {
+      button.disabled = true;
+      await elementUpdated(button);
+
+      const base = button.renderRoot.querySelector('[part~="base"]')!;
+      button.focus();
+
+      expect(base.localName).to.equal('button');
+      expect(base.getAttribute('role')).to.equal('link');
+      expect(base.matches(':disabled')).to.be.true;
+      expect(isFocused(button)).to.be.false;
+    });
+
+    it('does not activate a disabled link', async () => {
+      const clicks: Event[] = [];
+
+      button.addEventListener('click', (event) => {
+        // Keeps the test page in place if the link navigates.
+        event.preventDefault();
+        clicks.push(event);
+      });
+
+      button.disabled = true;
+      await elementUpdated(button);
+
+      button.click();
+      button.renderRoot.querySelector<HTMLElement>('[part~="base"]')!.click();
+
+      expect(clicks).to.be.empty;
+    });
+
+    it('keeps the click of a disabled link from capture listeners', async () => {
+      const clicks: Event[] = [];
+
+      button.addEventListener(
+        'click',
+        (event) => {
+          // Keeps the test page in place if the link navigates.
+          event.preventDefault();
+          clicks.push(event);
+        },
+        { capture: true }
+      );
+
+      button.click();
+      expect(clicks).to.have.lengthOf(1);
+
+      button.disabled = true;
+      await elementUpdated(button);
+
+      button.click();
+      button.renderRoot.querySelector<HTMLElement>('[part~="base"]')!.click();
+
+      expect(clicks).to.have.lengthOf(1);
+    });
+
+    it('dispatches no click of a disabled link to ancestor capture listeners', async () => {
+      const clicks: Event[] = [];
+      const listener = (event: Event) => {
+        // Keeps the test page in place if the link navigates.
+        event.preventDefault();
+        clicks.push(event);
+      };
+
+      document.addEventListener('click', listener, { capture: true });
+
+      try {
+        button.disabled = true;
+        await elementUpdated(button);
+
+        button.click();
+
+        expect(clicks).to.be.empty;
+      } finally {
+        document.removeEventListener('click', listener, { capture: true });
+      }
+    });
+
+    it('is accessible when the link is disabled', async () => {
+      button.disabled = true;
+      await elementUpdated(button);
+
+      await expect(button).to.be.accessible();
+      await expect(button).shadowDom.to.be.accessible();
+    });
+
+    it('restores the link when it is enabled again', async () => {
+      button.disabled = true;
+      await elementUpdated(button);
+
+      button.disabled = false;
+      await elementUpdated(button);
+
+      const anchor = button.renderRoot.querySelector('a')!;
+      button.focus();
+
+      expect(anchor.getAttribute('href')).to.equal('/');
+      expect(anchor.hasAttribute('role')).to.be.false;
+      expect(anchor.hasAttribute('aria-disabled')).to.be.false;
+      expect(isFocused(button)).to.be.true;
+    });
+
+    it('takes a link in a disabled fieldset out of the tab order', async () => {
+      const fieldset = await fixture<HTMLFieldSetElement>(
+        html`<fieldset disabled>
+          <igc-button href="/">Click</igc-button>
+        </fieldset>`
+      );
+      const link = fieldset.querySelector(IgcButtonComponent.tagName)!;
+      await elementUpdated(link);
+
+      link.focus();
+
+      expect(
+        link.renderRoot.querySelector('[part~="base"]')!.matches(':disabled')
+      ).to.be.true;
+      expect(isFocused(link)).to.be.false;
     });
   });
 
@@ -284,6 +409,34 @@ describe('Button tests', () => {
         expect(button.commandForElement).to.equal(target);
 
         target.remove();
+      });
+
+      it('clears commandForElement and stops resolving when commandfor is removed', async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <igc-button commandfor="cleared-target">Click</igc-button>
+            <div id="cleared-target" popover></div>
+          </div>
+        `);
+
+        button = container.querySelector<IgcButtonComponent>('igc-button')!;
+        const target = container.querySelector<HTMLElement>('#cleared-target')!;
+        expect(button.commandForElement).to.equal(target);
+
+        button.commandfor = null;
+        await elementUpdated(button);
+
+        expect(button.commandfor).to.be.null;
+        expect(button.commandForElement).to.be.null;
+
+        // The resolver no longer observes, so a matching ID added later is ignored.
+        target.remove();
+        const late = document.createElement('div');
+        late.id = 'cleared-target';
+        container.appendChild(late);
+        await elementUpdated(button);
+
+        expect(button.commandForElement).to.be.null;
       });
     });
 
@@ -422,6 +575,113 @@ describe('Button tests', () => {
       spec.setAncestorDisabledState(false);
       expect(spec.element.disabled).to.be.false;
       expect(button.disabled).to.be.false;
+    });
+  });
+
+  runHostAriaTests({
+    tagName: 'igc-button',
+    template: html`<igc-button>Click</igc-button>`,
+    getTarget: (host) => host.renderRoot.querySelector('[part~="base"]')!,
+  });
+
+  describe('Naming', () => {
+    let container: HTMLElement;
+
+    const native = () => button.renderRoot.querySelector('[part~="base"]')!;
+
+    beforeEach(async () => {
+      container = await fixture<HTMLElement>(html`
+        <div>
+          <span id="name">Save</span>
+          <span id="hint">Saves the draft</span>
+          <label for="button">Save the file</label>
+          <igc-button id="button">Click</igc-button>
+        </div>
+      `);
+      button = container.querySelector('igc-button')!;
+    });
+
+    it('prefers the host `aria-labelledby` over a `<label>`', async () => {
+      button.setAttribute('aria-labelledby', 'name');
+      await elementUpdated(button);
+      expect(native().ariaLabelledByElements).to.eql([
+        container.querySelector('#name'),
+      ]);
+
+      button.removeAttribute('aria-labelledby');
+      await elementUpdated(button);
+      expect(native().ariaLabelledByElements).to.eql([
+        container.querySelector('label'),
+      ]);
+    });
+
+    it('is named by a `<label for>`', () => {
+      expect(native().ariaLabelledByElements).to.eql([
+        container.querySelector('label'),
+      ]);
+    });
+
+    it('prefers the host `aria-label` over a `<label>`, as a native button', async () => {
+      button.setAttribute('aria-label', 'Store the file');
+      await elementUpdated(button);
+
+      expect(native().getAttribute('aria-label')).to.equal('Store the file');
+      expect(native().hasAttribute('aria-labelledby')).to.be.false;
+    });
+
+    it('is named by a `<label>` that is added after the render, on focus', async () => {
+      const element = await fixture<IgcButtonComponent>(
+        html`<igc-button id="late">Click</igc-button>`
+      );
+      const label = document.createElement('label');
+      label.htmlFor = 'late';
+      label.textContent = 'Late';
+      element.before(label);
+
+      element.focus();
+      await elementUpdated(element);
+
+      expect(
+        element.renderRoot.querySelector('button')!.ariaLabelledByElements
+      ).to.eql([label]);
+      label.remove();
+    });
+
+    it('is described by a tooltip that anchors to it', async () => {
+      const tooltip = document.createElement('igc-tooltip');
+      tooltip.anchor = 'button';
+      tooltip.textContent = 'Saves the draft';
+      container.append(tooltip);
+      await elementUpdated(tooltip);
+      await elementUpdated(button);
+
+      expect(native().ariaDescribedByElements).to.eql([tooltip]);
+    });
+
+    it('keeps the host ARIA as a link and as a disabled link', async () => {
+      button.setAttribute('aria-label', 'Open');
+      button.setAttribute('aria-describedby', 'hint');
+      button.href = '/';
+      await elementUpdated(button);
+
+      expect(native().localName).to.equal('a');
+      expect(native().getAttribute('aria-label')).to.equal('Open');
+      expect(native().ariaDescribedByElements).to.eql([
+        container.querySelector('#hint'),
+      ]);
+
+      button.disabled = true;
+      await elementUpdated(button);
+
+      expect(native().getAttribute('role')).to.equal('link');
+      expect(native().getAttribute('aria-label')).to.equal('Open');
+    });
+
+    it('does not forward an empty `aria-label`', async () => {
+      button.setAttribute('aria-label', '');
+      await elementUpdated(button);
+
+      expect(native().hasAttribute('aria-label')).to.be.false;
     });
   });
 });

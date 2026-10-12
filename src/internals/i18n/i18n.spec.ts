@@ -18,9 +18,14 @@ import {
 } from 'igniteui-i18n-core';
 import { ResourceStringsBG } from 'igniteui-i18n-resources';
 import { LitElement } from 'lit';
+import { spy } from 'sinon';
 import type { DateRangePickerResourceStringsType } from '../../components/date-range-picker/date-range-picker.js';
 import type { IgcDateRangePickerResourceStrings } from './EN/date-range-picker.resources.js';
-import { addI18nController, type I18nController } from './i18n-controller.js';
+import {
+  addI18nController,
+  formatDisplayDate,
+  type I18nController,
+} from './i18n-controller.js';
 import { dateRangePickerResourcesMap } from './utils.js';
 
 class TestLocalizedClass<T extends object> extends LitElement {
@@ -161,6 +166,19 @@ describe('Localization', () => {
       ).to.equal('Предходни {0} години');
     });
 
+    it('should keep the merged strings when the same object is set again', async () => {
+      const custom = { selectDate: 'Избор на дата' };
+
+      instance.resourceStrings = custom;
+      await elementUpdated(instance);
+      const merged = instance.resourceStrings;
+
+      instance.resourceStrings = custom;
+
+      expect(instance.isUpdatePending).to.be.false;
+      expect(instance.resourceStrings).to.equal(merged);
+    });
+
     it('should set custom locale and stay that even when locale is changed globally', async () => {
       setCurrentI18n('de');
 
@@ -221,6 +239,19 @@ describe('Localization', () => {
       );
     });
 
+    it('should keep the merged strings when the same object is set again', async () => {
+      const custom = { combo_empty_message: 'Списъкът e празен' };
+
+      instance.resourceStrings = custom;
+      await elementUpdated(instance);
+      const merged = instance.resourceStrings;
+
+      instance.resourceStrings = custom;
+
+      expect(instance.isUpdatePending).to.be.false;
+      expect(instance.resourceStrings).to.equal(merged);
+    });
+
     it('should set custom locale and stay that even when locale is changed globally', async () => {
       setCurrentI18n('de');
 
@@ -277,6 +308,53 @@ describe('Localization', () => {
       setCurrentI18n('en');
 
       expect(text).to.equal('Списъкът е празен');
+    });
+
+    it('should fall back to the default resource strings when the custom ones are cleared', async () => {
+      instance.resourceStrings = {
+        combo_empty_message: 'Custom empty message',
+      };
+      instance.requestUpdate();
+      await elementUpdated(instance);
+
+      instance.resourceStrings = undefined as unknown as object;
+      await elementUpdated(instance);
+
+      expect(instance.shadowRoot?.getElementById('start')?.innerText).to.equal(
+        'The list is empty'
+      );
+      expect(
+        (instance.resourceStrings as IComboResourceStrings).combo_empty_message
+      ).to.equal(ComboResourceStringsEN.combo_empty_message);
+    });
+  });
+
+  describe('Default strings', () => {
+    it('resolves the default strings once for a new instance', async () => {
+      const manager = getI18nManager();
+      const resolve = spy(manager, 'getCurrentResourceStrings');
+
+      try {
+        const tagName = unsafeStatic(tagNew);
+        instance = await fixture(html`<${tagName}></${tagName}`);
+
+        expect(resolve.callCount).to.equal(1);
+        expect(
+          instance.shadowRoot?.getElementById('start')?.innerText
+        ).to.equal(ComboResourceStringsEN.combo_empty_message);
+      } finally {
+        resolve.restore();
+      }
+    });
+  });
+
+  describe('formatDisplayDate', () => {
+    it('should use the default date format of the locale without a display format', () => {
+      const value = new Date(2024, 0, 15, 13, 45);
+
+      expect(formatDisplayDate(value, 'en-US')).to.equal(
+        new Intl.DateTimeFormat('en-US').format(value)
+      );
     });
   });
 });

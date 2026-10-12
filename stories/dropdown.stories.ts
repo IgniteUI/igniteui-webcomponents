@@ -14,7 +14,7 @@ import {
   defineComponents,
   registerIcon,
 } from 'igniteui-webcomponents';
-import { disableStoryControls } from './story.js';
+import { disableStoryControls, dollars } from './story.js';
 
 defineComponents(
   IgcAvatarComponent,
@@ -380,11 +380,6 @@ const orders: Order[] = [
   { id: 'ORD-1044', customer: 'Vitalis AD', total: 96.9, status: 'Refunded' },
 ];
 
-const currency = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-});
-
 /**
  * The row actions of a table are the textbook case for a single dropdown moved
  * between targets: one instance serves every row, instead of one per row.
@@ -504,7 +499,7 @@ export const TableActions: Story = {
                 <tr data-index=${index} data-total=${order.total}>
                   <td>${order.id}</td>
                   <td>${order.customer}</td>
-                  <td class="numeric">${currency.format(order.total)}</td>
+                  <td class="numeric">${dollars.format(order.total)}</td>
                   <td>${order.status}</td>
                   <td>
                     <igc-icon-button

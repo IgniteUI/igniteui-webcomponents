@@ -1,4 +1,10 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  waitUntil,
+} from '@open-wc/testing';
 import { spy } from 'sinon';
 import {
   altKey,
@@ -31,6 +37,18 @@ import IgcDatePickerComponent from './date-picker.js';
 
 describe('Date picker', () => {
   before(() => defineComponents(IgcDatePickerComponent));
+
+  it('exposes `required` as `aria-required` on the native input', async () => {
+    const picker = await fixture<IgcDatePickerComponent>(
+      html`<igc-date-picker required></igc-date-picker>`
+    );
+    const editor = picker.renderRoot.querySelector('igc-date-time-input')!;
+    await elementUpdated(editor);
+
+    expect(
+      editor.renderRoot.querySelector('input')!.getAttribute('aria-required')
+    ).to.equal('true');
+  });
 
   runExternalLabelAssociationTests({
     tagName: IgcDatePickerComponent.tagName,
@@ -508,7 +526,6 @@ describe('Date picker', () => {
         ],
       };
 
-      //test defaults
       expect(picker.value).to.be.null;
       expect(picker.weekStart).to.equal('sunday');
       expect(picker.hideOutsideDays).to.equal(false);
@@ -591,10 +608,9 @@ describe('Date picker', () => {
         await elementUpdated(picker);
         checkDatesEqual(calendar.activeDate, tomorrowDate);
 
-        // value is null
         expect(picker.value).to.be.null;
 
-        // setting the value does not affect the activeDate, when it is explicitly set
+        // An explicit activeDate does not follow value changes.
         picker.value = after20DaysDate.native;
         await elementUpdated(picker);
 
@@ -618,7 +634,6 @@ describe('Date picker', () => {
 
         expect(dateTimeInput.displayFormat).to.equal(testFormat);
 
-        // set via attribute
         testFormat = 'dd--MM--yyyy';
         picker.setAttribute('display-format', testFormat);
         await elementUpdated(picker);
@@ -639,6 +654,28 @@ describe('Date picker', () => {
         }
       });
 
+      it('uses the resource strings that are set for the calendar icon title', async () => {
+        const icon = () =>
+          picker.renderRoot.querySelector('[part="calendar-icon"] igc-icon')!;
+
+        picker.resourceStrings = {
+          ...picker.resourceStrings,
+          date_picker_choose_date: 'Pick a day',
+          date_picker_change_date: 'Pick another day',
+        };
+        await elementUpdated(picker);
+
+        expect(picker.resourceStrings.date_picker_choose_date).to.equal(
+          'Pick a day'
+        );
+        expect(icon().getAttribute('title')).to.equal('Pick a day');
+
+        picker.value = new Date(2024, 2, 21);
+        await elementUpdated(picker);
+
+        expect(icon().getAttribute('title')).to.equal('Pick another day');
+      });
+
       it('should default inputFormat to whatever Intl.DateTimeFormat returns for the current locale', async () => {
         const defaultFormat = 'MM/dd/yyyy';
         expect(picker.locale).to.equal('en-US');
@@ -655,13 +692,11 @@ describe('Date picker', () => {
         expect(picker.getAttribute('display-format')).to.be.null;
         expect(picker.displayFormat).to.equal('M/d/yyyy');
 
-        // updates inputFormat according to changed locale
         picker.locale = 'fr';
         await elementUpdated(picker);
         expect(picker.inputFormat).to.equal('dd/MM/yyyy');
         expect(picker.displayFormat).to.equal('dd/MM/yyyy');
 
-        // sets inputFormat as attribute
         picker.setAttribute('input-format', 'dd-MM-yyyy');
         await elementUpdated(picker);
 
@@ -674,6 +709,18 @@ describe('Date picker', () => {
         expect(picker.inputFormat).to.equal('dd-MM-yyyy');
         expect(picker.displayFormat).to.equal(picker.inputFormat);
       });
+    });
+
+    it('uses its own id for the input and the label', async () => {
+      picker = await fixture<IgcDatePickerComponent>(
+        html`<igc-date-picker id="birthday" label="Birthday"></igc-date-picker>`
+      );
+      const input = picker.renderRoot.querySelector(
+        IgcDateTimeInputComponent.tagName
+      )!;
+
+      expect(input.id).to.equal('birthday');
+      expect(getLabel().htmlFor).to.equal('birthday');
     });
 
     it('should set the underlying igc-input into readonly mode when dialog mode is enabled', async () => {
@@ -838,6 +885,40 @@ describe('Date picker', () => {
       checkDatesEqual(picker.value!, expectedValue);
       checkDatesEqual(dateTimeInput.value!, expectedValue);
     });
+
+    it('setRangeText() replaces the selection without a range', async () => {
+      picker.value = new Date(2024, 2, 21);
+      const expectedValue = new Date(2023, 2, 21);
+      await elementUpdated(picker);
+
+      dateTimeInput.focus();
+      await elementUpdated(picker);
+      picker.setSelectionRange(6, 10);
+      picker.setRangeText('2023');
+      await elementUpdated(picker);
+
+      checkDatesEqual(picker.value!, expectedValue);
+      checkDatesEqual(dateTimeInput.value!, expectedValue);
+    });
+
+    it('selectionStart and selectionEnd are 0 before the input renders', () => {
+      const detached = document.createElement(IgcDatePickerComponent.tagName);
+
+      expect([detached.selectionStart, detached.selectionEnd]).to.eql([0, 0]);
+    });
+
+    it('selectionStart and selectionEnd report the selection in the input', async () => {
+      picker.value = new Date(2024, 2, 21);
+      await elementUpdated(picker);
+
+      dateTimeInput.focus();
+      await elementUpdated(picker);
+      picker.setSelectionRange(3, 5);
+      expect([picker.selectionStart, picker.selectionEnd]).to.eql([3, 5]);
+
+      input.setSelectionRange(6, 10);
+      expect([picker.selectionStart, picker.selectionEnd]).to.eql([6, 10]);
+    });
   });
 
   describe('Uncommitted edits - issue #1346', () => {
@@ -870,9 +951,8 @@ describe('Date picker', () => {
     });
 
     it('survives a host re-applying the bound value mid-edit', async () => {
-      // The grid edit-template scenario from the issue: change detection re-commits
-      // the bound value on every keystroke. It is equal to the committed one, so the
-      // in-progress edit must survive it.
+      // Grid edit-template case: the host re-commits an equal value on every
+      // keystroke. The in-progress edit must survive it.
       const initial = new Date(2020, 2, 3);
       picker.value = initial;
       dateTimeInput.focus();
@@ -910,7 +990,6 @@ describe('Date picker', () => {
       expect(eventSpy).calledWith('igcClosed');
       eventSpy.resetHistory();
 
-      // dialog mode
       picker.mode = 'dialog';
       await picker.show();
 
@@ -971,6 +1050,25 @@ describe('Date picker', () => {
       expect(eventSpy).calledWith('igcClosed');
     });
 
+    it('closes the picker when its dialog is closed by an outside click', async () => {
+      picker.mode = 'dialog';
+      picker.value = new Date(2024, 2, 21);
+      await picker.show();
+
+      const eventSpy = spy(picker, 'emitEvent');
+      const dialog = picker.renderRoot.querySelector('igc-dialog')!;
+      const nativeDialog = dialog.renderRoot.querySelector('dialog')!;
+      const { x, y } = dialog.getBoundingClientRect();
+
+      simulateClick(nativeDialog, { clientX: x + 1, clientY: y - 1 });
+      await waitUntil(() => eventSpy.calledWith('igcClosed'));
+
+      expect(picker.open).to.be.false;
+      expect(dialog.open).to.be.false;
+      expect(eventSpy.firstCall).calledWith('igcClosing');
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
     it('should emit or not igcInput according to nonEditable property', async () => {
       const expectedValue = new Date();
       const eventSpy = spy(picker, 'emitEvent');
@@ -980,8 +1078,7 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       expect(eventSpy).calledOnceWith('igcInput');
-      // Spinning is an uncommitted edit - `value` follows on blur - so the typed
-      // date is only carried by the event detail. See issue #1346.
+      // Spinning is an uncommitted edit, so only the event detail has the date. See #1346.
       checkDatesEqual(
         (eventSpy.firstCall.args[1] as CustomEventInit).detail as Date,
         expectedValue
@@ -1108,7 +1205,6 @@ describe('Date picker', () => {
 
       checkDatesEqual(picker.value!, targetDate);
 
-      // Open the picker and switch to months view
       await picker.show();
 
       simulateClick(calendarDOM.navigation.months);
@@ -1157,8 +1253,6 @@ describe('Date picker', () => {
     it('issue 1884 - should emit igcChange event in dialog mode after clearing the value and losing focus', async () => {
       const eventSpy = spy(picker, 'emitEvent');
 
-      // Dropdown mode
-
       picker.value = CalendarDay.today.native;
       picker.focus();
       picker.blur();
@@ -1179,7 +1273,6 @@ describe('Date picker', () => {
 
       eventSpy.resetHistory();
 
-      // Dialog mode
       picker.mode = 'dialog';
       picker.value = CalendarDay.today.native;
       picker.focus();

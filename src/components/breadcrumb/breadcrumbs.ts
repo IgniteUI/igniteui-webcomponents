@@ -1,13 +1,14 @@
-import { ContextProvider } from '@lit/context';
-import { html, LitElement, type PropertyValues } from 'lit';
+import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { breadcrumbsContext } from '#internals/context.js';
+import { addContextProvider } from '#internals/controllers/context-provider.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/breadcrumb/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcBreadcrumbComponent from './breadcrumb.js';
 import { styles } from './themes/breadcrumbs.base.css.js';
-import { all } from './themes/themes.js';
 
 /**
  * A breadcrumb navigation component that renders an ordered list of breadcrumb items.
@@ -48,21 +49,12 @@ import { all } from './themes/themes.js';
  */
 export default class IgcBreadcrumbsComponent extends LitElement {
   public static readonly tagName = 'igc-breadcrumbs';
-  public static override styles = [styles];
+  public static override styles = [componentBase, styles];
 
   /* blazorSuppress */
   public static register(): void {
     registerComponent(IgcBreadcrumbsComponent, IgcBreadcrumbComponent);
   }
-
-  //#region Internal state
-
-  private readonly _separatorContext = new ContextProvider(this, {
-    context: breadcrumbsContext,
-    initialValue: 'tree_expand',
-  });
-
-  //#endregion
 
   //#region Public properties
 
@@ -84,18 +76,16 @@ export default class IgcBreadcrumbsComponent extends LitElement {
     super();
 
     addThemingController(this, all);
+    addContextProvider(this, {
+      context: breadcrumbsContext,
+      watch: ['separator'],
+      value: () => this.separator,
+    });
     addInternalsController(this, {
       initialARIA: {
         role: 'list',
       },
     });
-  }
-
-  protected override update(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has('separator')) {
-      this._separatorContext.setValue(this.separator, true);
-    }
-    super.update(changedProperties);
   }
 
   protected override render() {

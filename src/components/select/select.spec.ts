@@ -235,21 +235,18 @@ describe('Select', () => {
         // asserts the real `aria-controls` relation by identity readback.
         const axeOptions = axeReflectedRelationsOptions;
 
-        // Closed state
         await expect(select).dom.to.be.accessible(axeOptions);
         await expect(select).shadowDom.to.be.accessible(axeOptions);
 
         select.open = true;
         await elementUpdated(select);
 
-        // Open state
         await expect(select).dom.to.be.accessible(axeOptions);
         await expect(select).shadowDom.to.be.accessible(axeOptions);
 
         select.open = false;
         await elementUpdated(select);
 
-        // Closed state again
         await expect(select).dom.to.be.accessible(axeOptions);
         await expect(select).shadowDom.to.be.accessible(axeOptions);
       });
@@ -377,10 +374,8 @@ describe('Select', () => {
   });
 
   describe('Navigation from an initial selection', () => {
-    // Every way a selection can be established before the user ever touches the
-    // component. Each of them must leave keyboard navigation anchored on the
-    // selected item - navigating away from "nothing" used to walk off the start
-    // of the list and wipe the selection instead.
+    // Each way to set a selection before user input. Keyboard navigation must
+    // start from the selected item.
     const initializers = [
       {
         name: 'value attribute',
@@ -694,6 +689,38 @@ describe('Select', () => {
       expect(select.value).to.equal('a');
     });
 
+    it('drops the active item when it is removed', async () => {
+      select = await fixture<IgcSelectComponent>(createBasicSelect());
+      await openSelect();
+
+      simulateKeyboard(select, arrowDown, 2);
+      await elementUpdated(select);
+
+      const active = getActiveItem()!;
+      expect(active).to.exist;
+      expect(select.selectedItem).to.be.null;
+
+      active.remove();
+      await elementUpdated(select);
+
+      expect(getActiveItem()).to.be.undefined;
+      expect(select.selectedItem).to.be.null;
+    });
+
+    it('ignores mutations that add or remove no items', async () => {
+      select = await fixture<IgcSelectComponent>(createBasicSelect());
+      select.value = 'implementation';
+      await elementUpdated(select);
+
+      const selected = select.selectedItem;
+      select.append(document.createElement('span'));
+      await elementUpdated(select);
+
+      expect(select.selectedItem).to.equal(selected);
+      expect(getActiveItem()).to.equal(selected);
+      expect(select.value).to.equal('implementation');
+    });
+
     it('drops the selection when the selected item is removed', async () => {
       select = await fixture<IgcSelectComponent>(createBasicSelect());
       select.value = 'implementation';
@@ -846,7 +873,6 @@ describe('Select', () => {
     });
 
     it('`select()` works', async () => {
-      // With value
       select.select('implementation');
 
       checkItemState(select.selectedItem!, { selected: true, active: true });
@@ -854,7 +880,6 @@ describe('Select', () => {
       expect(select.value).to.equal(select.selectedItem?.value);
       select.clearSelection();
 
-      // With index
       select.select(4);
       checkItemState(select.selectedItem!, { selected: true, active: true });
       expect(select.selectedItem?.value).to.equal(select.items[4].value);
@@ -892,21 +917,17 @@ describe('Select', () => {
     });
 
     it('`navigateTo() works`', async () => {
-      // Non-existent
       for (const each of [-1, 100, 'Nope']) {
         select.navigateTo(each as any);
         expect(getActiveItem()).to.be.undefined;
       }
 
-      // With value
       select.navigateTo('implementation');
       expect(getActiveItem()?.value).to.equal('implementation');
 
-      // With index
       select.navigateTo(0);
       checkItemState(select.items[0], { active: true });
 
-      // Only one active item
       expect(select.items.filter((item) => item.active).length).to.equal(1);
     });
 
@@ -924,6 +945,15 @@ describe('Select', () => {
 
       ValidityHelpers.isValid(select).to.be.true;
       ValidityHelpers.hasInvalidStyles(select).to.be.false;
+    });
+
+    it('`reportValidity()` focuses an invalid select', async () => {
+      select.value = '';
+      select.required = true;
+      await elementUpdated(select);
+
+      expect(select.reportValidity()).to.be.false;
+      expect(isFocused(select)).to.be.true;
     });
 
     it('reports validity when not required', async () => {
@@ -1280,6 +1310,21 @@ describe('Select', () => {
       expect(select.open).to.be.false;
     });
 
+    it('pressing Tab without an active or a selected item closes the dropdown and selects nothing', async () => {
+      const eventSpy = spy(select, 'emitEvent');
+      await openSelect();
+
+      expect(getActiveItem()).to.be.undefined;
+
+      simulateKeyboard(select, tabKey);
+      await elementUpdated(select);
+
+      expect(select.open).to.be.false;
+      expect(select.selectedItem).to.be.null;
+      expect(select.value).to.be.undefined;
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
     it('pressing Tab while the active item is the current selected item moves focus back to the component', async () => {
       select.value = 'spec';
       await openSelect();
@@ -1295,8 +1340,6 @@ describe('Select', () => {
       expect(select.open).to.be.false;
       expect(isFocused(select)).to.be.true;
     });
-
-    // Search selection
 
     it('does not select disabled items when searching (closed state)', async () => {
       const eventSpy = spy(select, 'emitEvent');
@@ -1374,8 +1417,6 @@ describe('Select', () => {
       expect(select.selectedItem).to.equal(item);
       expect(select.open).to.be.false;
     });
-
-    // Navigation
 
     it('opens dropdown on Alt + ArrowDown', async () => {
       simulateKeyboard(select, [altKey, arrowDown]);
@@ -1460,7 +1501,6 @@ describe('Select', () => {
       const activeItems = Items.filter((item) => !item.disabled);
       const { value: lastValue } = activeItems.at(-1)!;
 
-      // navigate through active items
       for (const { value } of activeItems) {
         simulateKeyboard(select, arrowDown);
         await elementUpdated(select);
@@ -1486,7 +1526,6 @@ describe('Select', () => {
       const activeItems = Items.filter((item) => !item.disabled);
       await openSelect();
 
-      // navigate through active items
       for (const { value } of activeItems) {
         simulateKeyboard(select, arrowDown);
         await elementUpdated(select);
@@ -1514,7 +1553,6 @@ describe('Select', () => {
 
       select.navigateTo('builds');
 
-      // navigate through active items
       for (const { value } of activeItems) {
         simulateKeyboard(select, arrowUp);
         await elementUpdated(select);
@@ -1542,7 +1580,6 @@ describe('Select', () => {
 
       select.navigateTo('builds');
 
-      // navigate through active items
       for (const { value } of activeItems) {
         simulateKeyboard(select, arrowUp);
         await elementUpdated(select);
@@ -1623,7 +1660,6 @@ describe('Select', () => {
         once: true,
       });
 
-      // No selection
       await openSelect();
 
       simulateKeyboard(select, escapeKey);
@@ -1635,7 +1671,6 @@ describe('Select', () => {
 
       eventSpy.resetHistory();
 
-      // With selection
       select.addEventListener('igcClosing', (e) => e.preventDefault(), {
         once: true,
       });
@@ -1837,12 +1872,12 @@ describe('Select', () => {
     it('', async () => {
       const testParameters: ValidationContainerTestsParams<IgcSelectComponent>[] =
         [
-          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
-          { slots: ['customError'] }, // custom-error slot
-          { slots: ['invalid'], props: { required: true } }, // invalid slot
+          { slots: ['valueMissing'], props: { required: true } },
+          { slots: ['customError'] },
+          { slots: ['invalid'], props: { required: true } },
         ];
 
-      runValidationContainerTests(IgcSelectComponent, testParameters);
+      await runValidationContainerTests(IgcSelectComponent, testParameters);
     });
   });
 

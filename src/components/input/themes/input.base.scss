@@ -1,4 +1,3 @@
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
 
 %starfix {
@@ -74,7 +73,7 @@
 
 :host([required]) {
     [part='label']::after {
-        content: '*';
+        @include required-asterisk();
     }
 }
 

@@ -1,7 +1,7 @@
-import type { ReactiveControllerHost } from 'lit';
+import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
 import { createAbortHandle } from '../abort-handler.js';
-import { asArray, partition } from '../utils/arrays.js';
+import { asArray, isEmpty, partition } from '../utils/arrays.js';
 import { isElement } from '../utils/dom.js';
 import { isFunction } from '../utils/types.js';
 import { addHostListeners } from './host-listeners.js';
@@ -13,8 +13,8 @@ export * from './keys.js';
 //#region Modifiers and combination keys
 
 /**
- * Each modifier and the `KeyboardEvent` property it reads; `control` maps to
- * `ctrlKey`. The alphabetical order is what a combination key inherits.
+ * Each modifier and the `KeyboardEvent` property it reads. A combination key
+ * keeps this alphabetical order.
  */
 const MODIFIER_ENTRIES = [
   ['alt', 'altKey'],
@@ -32,6 +32,15 @@ const MODIFIERS = new Set<string>(ALL_MODIFIER_VALUES);
  */
 export const MODIFIER_EVENT_KEYS: Record<string, string> =
   Object.fromEntries(MODIFIER_ENTRIES);
+
+/**
+ * Returns whether `key`, a `KeyboardEvent.key` value, is a modifier.
+ *
+ * @internal
+ */
+export function isModifierKey(key: string): boolean {
+  return MODIFIERS.has(key.toLowerCase());
+}
 
 /**
  * Splits the keys into modifiers (Alt, Control, Meta, Shift) and normal keys,
@@ -57,18 +66,11 @@ function sortModifiers(modifiers: string[]): string[] {
 
 /** Returns the modifiers active for `event`, already sorted. */
 function getActiveModifiers(event: KeyboardEvent): string[] {
-  const active: string[] = [];
-
-  for (const [name, property] of MODIFIER_ENTRIES) {
-    if (event[property]) {
-      active.push(name);
-    }
-  }
-
-  return active;
+  return MODIFIER_ENTRIES.filter(([, property]) => event[property]).map(
+    ([name]) => name
+  );
 }
 
-/** Whether `event` carries at least one active modifier. */
 function hasModifiers(event: KeyboardEvent): boolean {
   return event.altKey || event.ctrlKey || event.metaKey || event.shiftKey;
 }
@@ -89,12 +91,7 @@ function createCombinationKey(keys: string[], modifiers: string[]): string {
 type KeyBindingHandler = (event: KeyboardEvent) => void;
 type KeyBindingObserverCleanup = { unsubscribe: () => void };
 
-/**
- * Whether the controller must ignore the current event.
- *
- * @param node - The target of the event.
- * @param event - The event.
- */
+/** Whether the controller must ignore the event. `node` is its target. */
 type KeyBindingSkipCallback = (node: Element, event: KeyboardEvent) => boolean;
 
 /** The event type that starts the bound handler. */
@@ -108,19 +105,6 @@ interface KeyBindingControllerOptions {
    * The key presses that the controller ignores. CSS selectors match against
    * the composed path of the event; a {@link KeyBindingSkipCallback} decides
    * per event instead. Defaults to `['input', 'textarea', 'select']`.
-   *
-   * @example
-   * ```ts
-   * {
-   *  // Skip events originating from elements with `readonly` attribute
-   *  skip: ['[readonly]']
-   * }
-   * ...
-   * {
-   * // Same as above but with a callback
-   *  skip: (node: Element) => node.hasAttribute('readonly')
-   * }
-   * ```
    */
   skip?: string[] | KeyBindingSkipCallback;
   /** Default options for every binding. A `set` call merges over them. */
@@ -141,16 +125,12 @@ interface KeyBindingOptions {
 /** A registered binding. The key of the binding map holds the combination. */
 interface KeyBinding {
   handler: KeyBindingHandler;
-  options?: KeyBindingOptions;
+  options: KeyBindingOptions;
 }
 
 //#endregion
 
 //#region Internal functions and constants
-
-function isKeydown(event: Event): boolean {
-  return event.type === 'keydown';
-}
 
 function isKeyup(event: Event): boolean {
   return event.type === 'keyup';
@@ -162,8 +142,38 @@ function isKeyup(event: Event): boolean {
  * Manages the key bindings of a host element.
  * @hidden
  */
-class KeyBindingController {
+class KeyBindingController implements ReactiveController {
   //#region Private properties and state
+
+  /**
+   * Controllers with pressed keys. No keyup arrives after the window blurs, so
+   * one shared `blur` listener releases them while any key is down.
+   */
+  private static readonly _holding = new Set<KeyBindingController>();
+
+  private static readonly _releaseAll = (): void => {
+    for (const holder of KeyBindingController._holding) {
+      holder._pressedKeys.clear();
+    }
+    KeyBindingController._holding.clear();
+    globalThis.removeEventListener('blur', KeyBindingController._releaseAll);
+  };
+
+  private static _hold(controller: KeyBindingController): void {
+    if (isEmpty(KeyBindingController._holding)) {
+      globalThis.addEventListener('blur', KeyBindingController._releaseAll);
+    }
+    KeyBindingController._holding.add(controller);
+  }
+
+  private static _release(controller: KeyBindingController): void {
+    if (
+      KeyBindingController._holding.delete(controller) &&
+      isEmpty(KeyBindingController._holding)
+    ) {
+      globalThis.removeEventListener('blur', KeyBindingController._releaseAll);
+    }
+  }
 
   /** Base configuration, shared between instances. Never written to. */
   private static readonly _defaultOptions = {
@@ -185,10 +195,7 @@ class KeyBindingController {
   private _observedElement?: Element;
 
   private get _element(): Element {
-    if (this._observedElement) {
-      return this._observedElement;
-    }
-    return this._ref?.value || this._host;
+    return this._observedElement ?? this._ref?.value ?? this._host;
   }
 
   //#endregion
@@ -203,7 +210,6 @@ class KeyBindingController {
     this._host = host;
     this._ref = options?.ref;
 
-    // Host options merge over the defaults instead of replacing them.
     this._bindingDefaults = {
       ...defaults.bindingDefaults,
       ...options?.bindingDefaults,
@@ -216,43 +222,16 @@ class KeyBindingController {
     }
 
     addHostListeners(host, { events: ['keyup', 'keydown'], listener: this });
-    addHostListeners(host, {
-      target: globalThis,
-      events: ['blur'],
-      listener: this,
-    });
+    host.addController(this);
+  }
+
+  /** @internal */
+  public hostDisconnected(): void {
+    this._pressedKeys.clear();
+    KeyBindingController._release(this);
   }
 
   //#region Private API
-
-  /** Applies the event options of the binding to the keyboard event. */
-  private _applyEventModifiers(
-    binding: KeyBinding,
-    event: KeyboardEvent
-  ): void {
-    if (binding.options?.preventDefault) {
-      event.preventDefault();
-    }
-
-    if (binding.options?.stopPropagation) {
-      event.stopPropagation();
-    }
-  }
-
-  /** Whether the event type matches the triggers of the binding. */
-  private _bindingMatches(binding: KeyBinding, event: KeyboardEvent): boolean {
-    const triggers = binding.options?.triggers ?? ['keydown'];
-
-    if (isKeydown(event) && triggers.includes('keydown')) {
-      return !event.repeat || Boolean(binding.options?.repeat);
-    }
-
-    if (isKeyup(event) && triggers.includes('keyup')) {
-      return true;
-    }
-
-    return false;
-  }
 
   /**
    * Whether to ignore the event. The key has no binding, the event missed the
@@ -266,8 +245,7 @@ class KeyBindingController {
     const element = this._element;
     const selector = this._skipSelector;
 
-    // The host carries the listeners. Only a `ref` puts the observed element
-    // deeper in the tree, where the path must confirm containment.
+    // The host carries the listeners, so a deeper element must be on the path.
     const needsContainmentCheck = element !== this._host;
 
     if (needsContainmentCheck || selector) {
@@ -299,36 +277,28 @@ class KeyBindingController {
 
   //#region Event handling
 
-  /**
-   * Clears the pressed keys on a global blur. No keyup arrives if the user
-   * moves to a different application or tab with a key down.
-   */
-  private _handleGlobalBlur(): void {
-    this._pressedKeys.clear();
-  }
-
-  /** Handles a keyboard event on the observed element. */
-  private _handleKeyEvent(event: KeyboardEvent): void {
+  /** @internal */
+  public handleEvent(event: KeyboardEvent): void {
     const key = event.key.toLowerCase();
     const isModifier = MODIFIERS.has(key);
 
     if (this._shouldSkip(event, key)) {
-      // A keyup always cleans up the key, also for an event that it skips.
+      // A skipped keyup still releases the key.
       if (!isModifier && isKeyup(event)) {
-        this._pressedKeys.delete(key);
+        this._releaseKey(key);
       }
       return;
     }
 
     if (!isModifier) {
       this._pressedKeys.add(key);
+      KeyBindingController._hold(this);
     }
 
     let binding: KeyBinding | undefined;
 
     if (!isModifier && !hasModifiers(event) && this._pressedKeys.size === 1) {
-      // Fast path: one key, no modifier. The combination is the key itself,
-      // so the lookup builds no arrays or strings.
+      // Fast path: a single key without modifiers is its own combination.
       binding = this._bindings.get(key);
     } else {
       const activeModifiers = getActiveModifiers(event);
@@ -339,9 +309,8 @@ class KeyBindingController {
       );
       binding = this._bindings.get(combination);
 
-      // Overlapping presses leave several regular keys down, so the full
-      // combination matches no single-key binding. Fall back to the current
-      // key, so its binding still runs while another key stays down.
+      // Overlapping presses leave several keys down. Fall back to the current
+      // key, so its binding still runs.
       if (!binding && this._pressedKeys.size > 1) {
         binding = this._bindings.get(
           createCombinationKey([key], activeModifiers)
@@ -349,26 +318,35 @@ class KeyBindingController {
       }
     }
 
-    if (binding && this._bindingMatches(binding, event)) {
-      this._applyEventModifiers(binding, event);
-      binding.handler.call(this._host, event);
+    if (binding) {
+      const { handler, options } = binding;
+      const triggers = options.triggers ?? ['keydown'];
+
+      // The event type must be a trigger, and a repeated keydown needs `repeat`.
+      if (
+        triggers.includes(event.type as KeyBindingTrigger) &&
+        (isKeyup(event) || !event.repeat || options.repeat)
+      ) {
+        if (options.preventDefault) {
+          event.preventDefault();
+        }
+        if (options.stopPropagation) {
+          event.stopPropagation();
+        }
+        handler.call(this._host, event);
+      }
     }
 
     if (!isModifier && isKeyup(event)) {
-      this._pressedKeys.delete(key);
+      this._releaseKey(key);
     }
   }
 
-  /** @internal */
-  public handleEvent(event: KeyboardEvent | FocusEvent): void {
-    switch (event.type) {
-      case 'keydown':
-      case 'keyup':
-        this._handleKeyEvent(event as KeyboardEvent);
-        break;
-      case 'blur':
-        this._handleGlobalBlur();
-        break;
+  private _releaseKey(key: string): void {
+    this._pressedKeys.delete(key);
+
+    if (isEmpty(this._pressedKeys)) {
+      KeyBindingController._release(this);
     }
   }
 
@@ -440,10 +418,6 @@ class KeyBindingController {
 
 /**
  * Creates a {@link KeyBindingController}, and adds it to the given host.
- *
- * @param element - The host element of the controller.
- * @param options - The configuration of the controller.
- * @returns The new controller.
  *
  * @example
  * ```ts

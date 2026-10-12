@@ -6,6 +6,7 @@ import {
   type IResourceStrings,
 } from 'igniteui-i18n-core';
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
+import { getOrInsertComputed } from '../utils/objects.js';
 import {
   convertToCoreResource,
   convertToIgcResource,
@@ -76,12 +77,18 @@ class I18nController<T extends object> implements ReactiveController {
   private _locale?: string;
   /** Resolved lazily, and again after a locale or locale data change. */
   private _dateTimeFormats?: LocaleDateTimeFormats;
-  /** Cache of the default resource strings from the i18n manager. */
-  private _defaultResourceStrings: T;
+  /** The default resource strings, resolved lazily. */
+  private _defaults?: T;
+  /** The last value set to `resourceStrings`, as given. */
+  private _rawResourceStrings?: T;
   /** Only the custom strings, which override a part of the defaults. */
   private _customResourceStrings?: T;
   /** The custom resource strings merged over the default ones. */
   private _resourceStrings?: T;
+
+  private get _defaultResourceStrings(): T {
+    return (this._defaults ??= this._getDefaultResourceStrings());
+  }
 
   //#endregion
 
@@ -94,8 +101,7 @@ class I18nController<T extends object> implements ReactiveController {
   public set locale(value: string | undefined) {
     if (this._locale !== value) {
       this._locale = value;
-      this._refreshResourceStrings();
-      this._host.requestUpdate();
+      this._refresh();
     }
   }
 
@@ -109,16 +115,13 @@ class I18nController<T extends object> implements ReactiveController {
 
   /** Sets the custom resource strings of the component. */
   public set resourceStrings(value: T | undefined) {
-    if (this._resourceStrings !== value) {
+    // Compared with the value as given, because the merged copy is never equal to it.
+    if (this._rawResourceStrings !== value) {
+      this._rawResourceStrings = value;
+
       if (value) {
-        this._customResourceStrings = this._resourceMap
-          ? this.getMixedResourceStrings(value)
-          : value;
-        this._resourceStrings = Object.assign(
-          {},
-          this._defaultResourceStrings,
-          this._customResourceStrings
-        );
+        this._customResourceStrings = this._getMixedResourceStrings(value);
+        this._mergeResourceStrings();
       } else {
         this._customResourceStrings = value;
         this._resourceStrings = value;
@@ -162,8 +165,6 @@ class I18nController<T extends object> implements ReactiveController {
       manager.registerI18n(this._defaultEN, manager.defaultLocale);
     }
 
-    this._defaultResourceStrings = this._getDefaultResourceStrings();
-
     this._host.addController(this);
   }
 
@@ -173,9 +174,7 @@ class I18nController<T extends object> implements ReactiveController {
 
     // Global changes are missed while disconnected, so the resolved state
     // can hold a locale that is no longer current.
-    this._dateTimeFormats = undefined;
-    this._refreshResourceStrings();
-    this._host.requestUpdate();
+    this._refresh();
   }
 
   /** @internal */
@@ -185,10 +184,8 @@ class I18nController<T extends object> implements ReactiveController {
 
   /** @internal */
   public handleEvent(event: CustomEvent<IResourceChangeEventArgs>): void {
-    this._dateTimeFormats = undefined;
-    this._refreshResourceStrings();
+    this._refresh();
     this._resourceChangeCallback?.call(this._host, event);
-    this._host.requestUpdate();
   }
 
   //#endregion
@@ -196,19 +193,26 @@ class I18nController<T extends object> implements ReactiveController {
   //#region Internal API
 
   /**
-   * Resolves the locale defaults again, then applies the custom overrides, so
-   * that the merged strings keep no value of an earlier locale.
+   * Drops the cached defaults and formats, then applies the custom overrides, so
+   * the merged strings keep no value of an earlier locale.
    */
-  private _refreshResourceStrings(): void {
-    this._defaultResourceStrings = this._getDefaultResourceStrings();
+  private _refresh(): void {
+    this._defaults = undefined;
+    this._dateTimeFormats = undefined;
+    this._host.requestUpdate();
 
     if (this._customResourceStrings) {
-      this._resourceStrings = Object.assign(
-        {},
-        this._defaultResourceStrings,
-        this._customResourceStrings
-      );
+      this._mergeResourceStrings();
     }
+  }
+
+  /** Applies the custom strings over the defaults of the current locale. */
+  private _mergeResourceStrings(): void {
+    this._resourceStrings = Object.assign(
+      {},
+      this._defaultResourceStrings,
+      this._customResourceStrings
+    );
   }
 
   /**
@@ -224,34 +228,30 @@ class I18nController<T extends object> implements ReactiveController {
       this.locale
     );
 
-    let perResources = defaultStringsCache.get(this._defaultEN);
+    const perResources = getOrInsertComputed(
+      defaultStringsCache,
+      this._defaultEN,
+      () => new WeakMap()
+    );
+    const strings = getOrInsertComputed(
+      perResources,
+      coreResourceStrings,
+      () => {
+        const normalized = {} as T;
 
-    if (!perResources) {
-      perResources = new WeakMap();
-      defaultStringsCache.set(this._defaultEN, perResources);
-    }
-
-    let strings = perResources.get(coreResourceStrings) as T | undefined;
-
-    if (!strings) {
-      const normalizedResourceStrings: T = {} as T;
-      const defaultComponentKeys = Object.keys(this._defaultEN) as (keyof T)[];
-      for (const key of defaultComponentKeys) {
-        let resolvedValue: T[keyof T] = this._defaultEN[key];
-        if (key in coreResourceStrings) {
-          // Internal defaults only. A user must not mix old and core
-          // resources.
-          resolvedValue = coreResourceStrings[
-            key as keyof IResourceStrings
-          ] as T[keyof T];
+        // Internal defaults only. A user must not mix old and core resources.
+        for (const key of Object.keys(this._defaultEN) as (keyof T)[]) {
+          normalized[key] =
+            key in coreResourceStrings
+              ? (coreResourceStrings[
+                  key as keyof IResourceStrings
+                ] as T[keyof T])
+              : this._defaultEN[key];
         }
 
-        normalizedResourceStrings[key] = resolvedValue;
+        return this._getMixedResourceStrings(normalized);
       }
-
-      strings = this.getMixedResourceStrings(normalizedResourceStrings);
-      perResources.set(coreResourceStrings, strings);
-    }
+    ) as T;
 
     // A copy per instance, because the cached object is shared.
     return { ...strings };
@@ -281,7 +281,7 @@ class I18nController<T extends object> implements ReactiveController {
     return this._dateTimeFormats;
   }
 
-  private getMixedResourceStrings(value: T): T {
+  private _getMixedResourceStrings(value: T): T {
     const map = this._resourceMap;
 
     if (map) {

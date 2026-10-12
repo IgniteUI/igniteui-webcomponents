@@ -1,11 +1,9 @@
 import { expect, nextFrame } from '@open-wc/testing';
+import { stub } from 'sinon';
 import { type CalendarDay, toCalendarDay } from '../date/model.js';
 import { toKebabCase } from '../utils/strings.js';
 
-/**
- * Returns an array of all Animation objects affecting this element or which are scheduled to do so in the future.
- * It can optionally return Animation objects for descendant elements too.
- */
+/** Returns the animations of the element and, optionally, its descendants. */
 export function getAnimationsFor(
   element: ShadowRoot | Element,
   options?: GetAnimationsOptions
@@ -13,9 +11,7 @@ export function getAnimationsFor(
   return element.getAnimations(options);
 }
 
-/**
- * Runs all animations for the given element and/or descendant elements to completion.
- */
+/** Finishes the animations of the element and, optionally, its descendants. */
 export function finishAnimationsFor(
   element: ShadowRoot | Element,
   options?: GetAnimationsOptions
@@ -26,18 +22,13 @@ export function finishAnimationsFor(
   }
 }
 
-/**
- * Waits for a started view transition (or any frame-scheduled DOM work)
- * to fully settle by yielding two consecutive animation frames.
- */
+/** Waits two animation frames, so a started view transition settles. */
 export async function viewTransitionComplete(): Promise<void> {
   await nextFrame();
   await nextFrame();
 }
 
-/**
- * Checks if a given element is within the view of another element.
- */
+/** Returns whether `el` is in the visible area of `view`. */
 export function scrolledIntoView(el: HTMLElement, view: HTMLElement): boolean {
   const { top, bottom, height } = el.getBoundingClientRect();
   const { top: viewTop, bottom: viewBottom } = view.getBoundingClientRect();
@@ -51,10 +42,7 @@ export function isFocused(element?: Element): boolean {
   return element ? element.matches(':focus') : false;
 }
 
-/**
- * Compares and returns whether the passed in CSS `{ prop: value }` entries match against
- * the resolved `(getComputedStyle)` styles of the element.
- */
+/** Returns whether the computed styles of the element match `values`. */
 export function compareStyles(
   element: Element,
   values: Partial<CSSStyleDeclaration>
@@ -65,9 +53,17 @@ export function compareStyles(
   );
 }
 
-/**
- * Compares two date values
- */
+/** Asserts that each number of `actual` is within `delta` of the same number of `expected`. */
+export function expectCloseTo(
+  actual: ArrayLike<number>,
+  expected: ArrayLike<number>,
+  delta: number
+): void {
+  for (let i = 0; i < expected.length; i++) {
+    expect(actual[i], `index ${i}`).to.be.closeTo(expected[i], delta);
+  }
+}
+
 export function checkDatesEqual(a: CalendarDay | Date, b: CalendarDay | Date) {
   expect(toCalendarDay(a).equalTo(toCalendarDay(b))).to.be.true;
 }
@@ -79,8 +75,7 @@ export function suppressResizeObserverLoopError(): void {
   }
 
   (window as unknown as Window & Record<string, boolean>)[flag] = true;
-  // Suppress ResizeObserver loop errors that can occur during tests.
-  // These are benign and do not affect test correctness.
+  // ResizeObserver loop errors are benign in tests.
   const errorHandler = window.onerror;
   window.onerror = (message, ...args) => {
     if (typeof message === 'string' && /ResizeObserver loop/.test(message)) {
@@ -90,14 +85,52 @@ export function suppressResizeObserverLoopError(): void {
   };
 }
 
+/** Runs `fn` with `sheets` added to the document, then restores its style sheets. */
+export async function withDocumentSheets(
+  sheets: CSSStyleSheet[],
+  fn: () => unknown
+): Promise<void> {
+  const adopted = [...document.adoptedStyleSheets];
+  document.adoptedStyleSheets = [...adopted, ...sheets];
+
+  try {
+    await fn();
+  } finally {
+    document.adoptedStyleSheets = adopted;
+  }
+}
+
 /**
- * Axe options for components that publish required ARIA relations
- * (e.g. `aria-controls` on a `combobox`) through ARIA element reflection.
- *
- * Reflection blanks the content attribute axe reads, so axe reports the
- * relation as missing and trips `aria-required-attr`. Specs using this must
- * assert the real relation by identity readback instead
- * (e.g. `input.ariaControlsElements[0] === list`).
+ * Runs `fn` and returns the errors that event listeners threw during it. Such
+ * an error goes to the page, not to the dispatcher: mocha fails the test from
+ * `window.onerror`, and the test runner logs it with `console.error`. Both are
+ * replaced while `fn` runs.
+ */
+export function catchListenerErrors(fn: () => void): unknown[] {
+  const errors: unknown[] = [];
+  const { onerror } = window;
+  const consoleError = stub(console, 'error');
+
+  window.onerror = (_message, _source, _line, _column, error) => {
+    errors.push(error);
+    return true;
+  };
+
+  try {
+    fn();
+  } finally {
+    window.onerror = onerror;
+    consoleError.restore();
+  }
+
+  return errors;
+}
+
+/**
+ * Axe options for components that publish required ARIA relations through
+ * ARIA element reflection. Reflection blanks the content attribute that axe
+ * reads, so axe trips `aria-required-attr`. Assert such a relation by element
+ * identity instead.
  */
 export const axeReflectedRelationsOptions = {
   ignoredRules: ['aria-required-attr'],

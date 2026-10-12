@@ -11,8 +11,11 @@ import {
 import { registerComponent } from '#internals/definitions/register.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { partMap } from '#internals/part-map.js';
+import { hasNegativeTabIndex } from '#internals/utils/dom.js';
 import { bindIf } from '#internals/utils/lit.js';
+import { all } from '#themes/input/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type {
   InputType,
   RangeTextSelectMode,
@@ -22,7 +25,6 @@ import IgcValidationContainerComponent from '../validation-container/validation-
 import { IgcInputBaseComponent } from './input-base.js';
 import { styles } from './themes/input.base.css.js';
 import { styles as shared } from './themes/shared/input.common.css.js';
-import { all } from './themes/themes.js';
 import { numberValidators, stringValidators } from './validators.js';
 
 const Slots = setSlots(
@@ -73,7 +75,7 @@ const Slots = setSlots(
  */
 export default class IgcInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-input';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /** Shared config for the constraint properties - a change revalidates. */
   private static readonly _revalidate: CoercedPropertyConfig<
@@ -213,15 +215,40 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @property({ type: Boolean, reflect: true, attribute: 'validate-only' })
   public validateOnly = false;
 
+  /**
+   * The offset of the start of the text selection, in UTF-16 code units.
+   * Equals `selectionEnd` when no text is selected. `null` before the first
+   * render and for the `email` and `number` types, which have no selection.
+   */
+  public get selectionStart(): number | null {
+    return this._input?.selectionStart ?? null;
+  }
+
+  /**
+   * The offset of the end of the text selection, in UTF-16 code units.
+   * `null` before the first render and for the `email` and `number` types.
+   */
+  public get selectionEnd(): number | null {
+    return this._input?.selectionEnd ?? null;
+  }
+
   /* blazorSuppress */
-  /** Replaces the selected text in the input. */
+  /**
+   * Replaces the text from `start` to `end` in the input. Without `start` and
+   * `end`, replaces the selected text.
+   */
   public setRangeText(
     replacement: string,
     start?: number,
     end?: number,
     selectMode: RangeTextSelectMode = 'preserve'
   ): void {
-    this._input?.setRangeText(replacement, start!, end!, selectMode);
+    this._input?.setRangeText(
+      replacement,
+      start ?? this._input.selectionStart ?? 0,
+      end ?? this._input.selectionEnd ?? 0,
+      selectMode
+    );
     this.value = this._input?.value ?? '';
   }
 
@@ -256,8 +283,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   }
 
   protected _renderInput() {
-    const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
-
     return html`
       <input
         ${ariaBindings(this._ariaTarget.resolveBindings())}
@@ -272,7 +297,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         ?disabled=${this.disabled}
         ?required=${this.required}
         ?autofocus=${this.autofocus}
-        tabindex=${bindIf(hasNegativeTabIndex, -1)}
+        tabindex=${bindIf(hasNegativeTabIndex(this), -1)}
         autocomplete=${ifDefined(this.autocomplete as any)}
         inputmode=${ifDefined(this.inputMode)}
         min=${bindIf(!this.validateOnly, this.min)}

@@ -1,21 +1,44 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
+import { html, render } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { range } from 'lit/directives/range.js';
+import { ref } from 'lit/directives/ref.js';
 
 import {
   type DateRangeDescriptor,
   DateRangeType,
   IgcButtonComponent,
   IgcDatePickerComponent,
+  IgcInputComponent,
+  IgcSelectComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
 import {
+  addDays,
+  addMonths,
+  addWorkingDays,
+  dateArg,
+  daysBetween,
+  daysOf,
+  formatDate,
+  isWeekend,
+  longDate,
+  nextWeekday,
+  today,
+} from './story-dates.js';
+import {
   disableStoryControls,
-  formControls,
   formSubmitHandler,
+  scrollingPanel,
+  storyStyles,
 } from './story.js';
 
-defineComponents(IgcDatePickerComponent, IgcButtonComponent);
+defineComponents(
+  IgcButtonComponent,
+  IgcDatePickerComponent,
+  IgcInputComponent,
+  IgcSelectComponent
+);
 
 // region default
 const metadata: Meta<IgcDatePickerComponent> = {
@@ -366,210 +389,374 @@ type Story = StoryObj<IgcDatePickerArgs>;
 
 // endregion
 
+const styles = html`
+  ${storyStyles}
+  <style>
+    .dp-layout {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 1.5rem;
+    }
+
+    .dp-panel {
+      display: grid;
+      gap: 1rem;
+      align-content: start;
+      width: min(100%, 22rem);
+      padding: 1rem;
+      border: 1px solid var(--ig-gray-300);
+      border-radius: 8px;
+    }
+
+    .dp-panel :is(h3, p) {
+      margin: 0;
+    }
+
+    .dp-panel h3 {
+      font-size: 1.125rem;
+    }
+
+    .dp-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+  </style>
+`;
+
 export const Default: Story = {
   parameters: {
     docs: {
       description: {
         story:
-          'A fully interactive date picker in dropdown mode. Use the controls panel to explore all available properties such as `mode`, `displayFormat`, `inputFormat`, `locale`, calendar options, and validation constraints.',
+          'The departure date of a trip. The user types the date, or opens the calendar with the calendar icon or with Alt + Arrow Down. Without `inputFormat`, `displayFormat` and `weekStart`, the picker uses the formats and the first day of the week of the locale. Use the controls panel to change the mode, the formats, the calendar and the validation. `min` and `max` disable the dates in the calendar, but the user can still type such a date, and the picker then becomes invalid. `hideHeader` and `headerOrientation` apply only in the `dialog` mode. The story binds the date properties with the `guard` directive, so a change of another control keeps the date that the user selected.',
       },
     },
   },
   args: {
-    label: 'Pick a date',
+    label: 'Departure date',
   },
   render: (args) => html`
     <igc-date-picker
-      .label=${args.label}
-      .visibleMonths=${args.visibleMonths}
-      .value=${new Date(args.value)}
-      .displayFormat=${args.displayFormat}
-      .inputFormat=${args.inputFormat}
+      style="max-width: 20rem"
+      label=${ifDefined(args.label)}
+      name=${ifDefined(args.name)}
+      placeholder=${ifDefined(args.placeholder)}
+      mode=${args.mode}
+      prompt=${args.prompt}
+      display-format=${ifDefined(args.displayFormat)}
+      input-format=${ifDefined(args.inputFormat)}
+      week-start=${ifDefined(args.weekStart)}
+      visible-months=${args.visibleMonths}
+      header-orientation=${args.headerOrientation}
+      orientation=${args.orientation}
       .locale=${args.locale}
-      .prompt=${args.prompt}
-      .weekStart=${args.weekStart}
-      .hideHeader=${args.hideHeader}
-      .headerOrientation=${args.headerOrientation}
-      .nonEditable=${args.nonEditable}
-      .orientation=${args.orientation}
-      .outlined=${args.outlined}
-      .mode=${args.mode}
-      .min=${new Date(args.min)}
-      .max=${new Date(args.max)}
-      .activeDate=${args.activeDate}
+      .scrollStrategy=${args.scrollStrategy}
+      .value=${dateArg(args.value)}
+      .min=${dateArg(args.min)}
+      .max=${dateArg(args.max)}
+      .activeDate=${dateArg(args.activeDate, today)}
+      ?open=${args.open}
+      ?required=${args.required}
       ?disabled=${args.disabled}
       ?invalid=${args.invalid}
       ?readonly=${args.readOnly}
-      ?required=${args.required}
-      ?open=${args.open}
-      ?show-week-numbers=${args.showWeekNumbers}
+      ?non-editable=${args.nonEditable}
+      ?outlined=${args.outlined}
+      ?hide-header=${args.hideHeader}
       ?hide-outside-days=${args.hideOutsideDays}
-      ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
+      ?show-week-numbers=${args.showWeekNumbers}
       ?keep-open-on-select=${args.keepOpenOnSelect}
+      ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
     >
+      <span slot="helper-text">We show the fares of this day first.</span>
     </igc-date-picker>
   `,
 };
 
-function showTrimester() {
-  const picker = document.querySelector<IgcDatePickerComponent>('#picker')!;
-  picker.visibleMonths = 3;
-}
-
-function showSingleMonth() {
-  const picker = document.querySelector<IgcDatePickerComponent>('#picker')!;
-  picker.visibleMonths = 1;
-}
-
-function selectToday() {
-  const picker = document.querySelector<IgcDatePickerComponent>('#picker')!;
-  picker.value = new Date();
-  picker.hide();
-}
-
-export const DialogMode: Story = {
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Setting `mode="dialog"` opens the calendar in a centered modal overlay rather than an inline dropdown. This mode is better suited to mobile viewports and constrained layouts where a popover would be clipped.',
-      },
-    },
-  },
-  args: {
-    label: 'Pick a date',
-  },
-  render: (args) => html`
-    <igc-date-picker
-      mode="dialog"
-      .label=${args.label}
-      .locale=${args.locale}
-      .weekStart=${args.weekStart}
-      .visibleMonths=${args.visibleMonths}
-      ?show-week-numbers=${args.showWeekNumbers}
-      ?hide-outside-days=${args.hideOutsideDays}
-      ?disabled=${args.disabled}
-      ?readonly=${args.readOnly}
-    >
-      <p slot="helper-text">Opens as a modal dialog.</p>
-    </igc-date-picker>
-  `,
-};
-
-export const DisabledDates: Story = {
+export const Appointment: Story = {
   argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'The `disabledDates` property accepts an array of `DateRangeDescriptor` objects that mark specific dates or ranges as unselectable in the calendar. Supported types include `Between`, `Before`, `After`, `Specific`, and `Weekends`. Selecting a disabled date marks the control as invalid and shows the `bad-input` slot.',
+          'The booking of a check-up at a clinic. The clinic takes bookings from the next working day, for 60 days, and it is closed on weekends. `min` and `max` set the booking period. `disabledDates` disables the weekends and, with a `Specific` descriptor, the days when the clinic is closed. `specialDates` marks the Thursdays, when the clinic is open until 20:00. The special state is only visual, so the descriptors have a `label`: the accessible name of a date ends with "Clinic closed" or "Open until 20:00". The user can still type a date that is not available, so the `bad-input`, `range-underflow` and `range-overflow` slots tell what is wrong. The "Next available day" button in the `actions` slot sets `value` and calls `hide()`. A change of `value` from code does not emit `igcChange`, so the button also updates the summary. The times in the select depend on the day.',
       },
     },
   },
   render: () => {
-    const today = new Date();
-    const nextMonday = new Date(today);
-    nextMonday.setDate(today.getDate() + ((8 - today.getDay()) % 7 || 7));
-    const twoWeeksOut = new Date(nextMonday);
-    twoWeeksOut.setDate(nextMonday.getDate() + 13);
+    const earliest = addWorkingDays(today, 1);
+    const latest = addDays(today, 60);
+    const closed = [addWorkingDays(earliest, 2), addWorkingDays(earliest, 9)];
+    const isClosed = (date: Date) =>
+      closed.some((day) => daysBetween(day, date) === 0);
+    const lateDays = daysOf(earliest, latest).filter(
+      (date) => date.getDay() === 4 && !isClosed(date)
+    );
 
-    const disabled: DateRangeDescriptor[] = [
+    const disabledDates: DateRangeDescriptor[] = [
       { type: DateRangeType.Weekends },
       {
-        type: DateRangeType.Between,
-        dateRange: [nextMonday, twoWeeksOut],
+        type: DateRangeType.Specific,
+        dateRange: closed,
+        label: 'Clinic closed',
+      },
+    ];
+    const specialDates: DateRangeDescriptor[] = [
+      {
+        type: DateRangeType.Specific,
+        dateRange: lateDays,
+        label: 'Open until 20:00',
       },
     ];
 
+    let picker: IgcDatePickerComponent | undefined;
+    let summary: HTMLElement | undefined;
+    let time = '';
+    let booked = false;
+
+    const update = () => {
+      if (!(picker && summary)) {
+        return;
+      }
+
+      const date = picker.value;
+      const available = date !== null && picker.validity.valid;
+      const closes = date?.getDay() === 4 ? 20 : 17;
+      const times = Array.from(
+        range(8, closes),
+        (hour) => `${hour.toString().padStart(2, '0')}:00`
+      );
+
+      if (!times.includes(time)) {
+        time = '';
+      }
+
+      render(
+        html`
+          <h3>Check-up</h3>
+          ${
+            available
+              ? html`
+                  <p>
+                    <strong>${formatDate(date, longDate)}</strong>. The clinic
+                    is open from 8:00 to ${closes}:00.
+                  </p>
+                  <igc-select
+                    label="Time"
+                    placeholder="Choose a time"
+                    value=${time}
+                    @igcChange=${({
+                      detail,
+                    }: CustomEvent<{ value: string }>) => {
+                      time = detail.value;
+                      booked = false;
+                      update();
+                    }}
+                  >
+                    ${times.map(
+                      (value) =>
+                        html`<igc-select-item value=${value}
+                          >${value}</igc-select-item
+                        >`
+                    )}
+                  </igc-select>
+                  <div class="dp-row">
+                    <igc-button
+                      ?disabled=${!time}
+                      @click=${() => {
+                        booked = true;
+                        update();
+                      }}
+                    >
+                      Book the check-up
+                    </igc-button>
+                  </div>
+                `
+              : html`<p class="muted">Choose a day when the clinic is open.</p>`
+          }
+          <p role="status">
+            ${
+              booked && date
+                ? `We booked your check-up on ${formatDate(date, longDate)} at ${time}.`
+                : ''
+            }
+          </p>
+        `,
+        summary
+      );
+    };
+
+    const change = () => {
+      booked = false;
+      update();
+    };
+
+    const nextAvailable = () => {
+      let date = earliest;
+
+      while (isWeekend(date) || isClosed(date)) {
+        date = addDays(date, 1);
+      }
+
+      picker!.value = date;
+      picker!.hide();
+      change();
+    };
+
     return html`
-      <igc-date-picker
-        label="Working days only (weekends + a two-week block disabled)"
-        .disabledDates=${disabled}
-        style="max-width: 320px"
-      >
-        <p slot="helper-text">
-          Weekends and the next two-week block are disabled.
-        </p>
-        <p slot="bad-input">
-          That date is not available. Please pick a working day.
-        </p>
-      </igc-date-picker>
+      ${styles}
+      <div class="dp-layout">
+        <igc-date-picker
+          style="width: min(100%, 20rem)"
+          label="Day of the check-up"
+          .min=${earliest}
+          .max=${latest}
+          .disabledDates=${disabledDates}
+          .specialDates=${specialDates}
+          @igcChange=${change}
+          ${ref((element) => {
+            picker = element as IgcDatePickerComponent | undefined;
+            update();
+          })}
+        >
+          <span slot="helper-text">The clinic is closed on weekends.</span>
+          <span slot="bad-input">The clinic is closed on this day.</span>
+          <span slot="range-underflow">
+            Choose ${formatDate(earliest, longDate)} or a later day.
+          </span>
+          <span slot="range-overflow">
+            You can book up to ${formatDate(latest, longDate)}.
+          </span>
+          <igc-button slot="actions" variant="flat" @click=${nextAvailable}>
+            Next available day
+          </igc-button>
+        </igc-date-picker>
+        <section
+          class="dp-panel"
+          aria-label="Booking summary"
+          ${ref((element) => {
+            summary = element as HTMLElement | undefined;
+            update();
+          })}
+        ></section>
+      </div>
     `;
   },
 };
 
-export const Slots: Story = {
+/** The text of a due date, relative to today. */
+function dueText(date: Date | null): string {
+  if (!date) {
+    return 'No due date';
+  }
+
+  const days = daysBetween(today, date);
+
+  if (days === 0) {
+    return 'Due today';
+  }
+
+  if (days === 1) {
+    return 'Due tomorrow';
+  }
+
+  if (days > 1) {
+    return `Due in ${days} days`;
+  }
+
+  return days === -1 ? 'Overdue by 1 day' : `Overdue by ${-days} days`;
+}
+
+export const DueDate: Story = {
+  argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'All named slots demonstrated: `prefix`, `suffix`, `helper-text`, `title`, `calendar-icon`, `calendar-icon-open`, `clear-icon`, and `actions`. The `actions` slot accepts buttons that can call the picker API methods such as `select()`, `hide()`, and setting `visibleMonths`.',
+          'The due date of a task in a task app. `mode="dialog"` opens the calendar in a modal dialog, which suits a narrow screen. In this mode the input is read-only, and a click on the input opens the dialog. The header of the calendar shows only in the dialog mode: the `title` slot replaces "Select date", and the `header-date` slot replaces the selected date with the date relative to today. The `actions` slot goes in the footer of the dialog, and its buttons set the usual due dates. `display-format="fullDate"` shows the weekday in the input.',
       },
     },
   },
-  args: {
-    label: 'Pick a date',
-  },
-  render: (args) => html`
-    <igc-date-picker
-      id="picker"
-      .label=${args.label}
-      .visibleMonths=${args.visibleMonths}
-      .value=${args.value}
-      .displayFormat=${args.displayFormat}
-      .inputFormat=${args.inputFormat}
-      .locale=${args.locale}
-      .prompt=${args.prompt}
-      .weekStart=${args.weekStart}
-      .hideHeader=${args.hideHeader}
-      .headerOrientation=${args.headerOrientation}
-      .nonEditable=${args.nonEditable}
-      .orientation=${args.orientation}
-      .mode=${args.mode}
-      .min=${args.min}
-      .max=${args.max}
-      .activeDate=${args.activeDate}
-      ?disabled=${args.disabled}
-      ?invalid=${args.invalid}
-      ?readonly=${args.readOnly}
-      ?required=${args.required}
-      ?open=${args.open}
-      ?show-week-numbers=${args.showWeekNumbers}
-      ?hide-outside-days=${args.hideOutsideDays}
-      ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
-      ?keep-open-on-select=${args.keepOpenOnSelect}
-    >
-      <span slot="prefix">$</span>
-      <span slot="suffix">🦀</span>
-      <p slot="helper-text">For example, select your birthday</p>
-      <p slot="title">🎉 Custom title 🎉</p>
-      <span slot="calendar-icon-open">👩‍💻</span>
-      <span slot="calendar-icon">👨‍💻</span>
-      <span slot="clear-icon">🗑️</span>
+  render: () => {
+    const dueDates: [label: string, date: Date | null][] = [
+      ['Today', today],
+      ['Tomorrow', addDays(today, 1)],
+      ['Next Monday', nextWeekday(addDays(today, 1), 1)],
+      ['No due date', null],
+    ];
 
-      <div slot="actions">
-        <igc-button variant="flat" @click=${selectToday}
-          >Select today</igc-button
+    let picker: IgcDatePickerComponent | undefined;
+    let headerDate: HTMLElement | undefined;
+    let status: HTMLElement | undefined;
+
+    const update = () => {
+      const text = dueText(picker?.value ?? null);
+
+      if (headerDate) {
+        headerDate.textContent = text;
+      }
+
+      if (status) {
+        status.textContent = text;
+      }
+    };
+
+    const setDue = (date: Date | null) => {
+      picker!.value = date;
+      picker!.hide();
+      update();
+    };
+
+    return html`
+      ${styles}
+      <section class="dp-panel" aria-labelledby="dp-task-title">
+        <h3 id="dp-task-title">Prepare the quarterly report</h3>
+        <p class="muted">Assigned to Maya Patel</p>
+        <igc-date-picker
+          mode="dialog"
+          label="Due date"
+          display-format="fullDate"
+          .value=${nextWeekday(addDays(today, 2), 5)}
+          @igcChange=${update}
+          ${ref((element) => {
+            picker = element as IgcDatePickerComponent | undefined;
+            update();
+          })}
         >
-        <igc-button variant="flat" @click=${showTrimester}
-          >Trimester view</igc-button
-        >
-        <igc-button variant="flat" @click=${showSingleMonth}
-          >Single month view</igc-button
-        >
-      </div>
-    </igc-date-picker>
-  `,
+          <span slot="title">Due date</span>
+          <span
+            slot="header-date"
+            ${ref((element) => {
+              headerDate = element as HTMLElement | undefined;
+              update();
+            })}
+          ></span>
+          ${dueDates.map(
+            ([label, date]) => html`
+              <igc-button
+                slot="actions"
+                variant="flat"
+                @click=${() => setDue(date)}
+              >
+                ${label}
+              </igc-button>
+            `
+          )}
+        </igc-date-picker>
+        <p
+          role="status"
+          class="muted"
+          ${ref((element) => {
+            status = element as HTMLElement | undefined;
+            update();
+          })}
+        ></p>
+      </section>
+    `;
+  },
 };
-
-const minDate = new Date(2024, 1, 1);
-const maxDate = new Date(2024, 1, 28);
-const disabledDates: DateRangeDescriptor[] = [
-  {
-    type: DateRangeType.Between,
-    dateRange: [minDate, maxDate],
-  },
-];
 
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
@@ -577,84 +764,98 @@ export const Form: Story = {
     docs: {
       description: {
         story:
-          'Demonstrates the date picker inside an HTML `<form>`, covering default state, pre-filled value, read-only, disabled fieldset, required validation, `min`/`max` date constraints, and disabled date ranges — each with appropriate validation slot messages.',
+          'A visa application. A date of birth is faster to type than to find in a calendar, so `input-format="dd/MM/yyyy"` sets the mask and `display-format="longDate"` shows the date in words after the edit. `max` is today, and `active-date` opens the calendar 30 years ago, near the likely year. The arrival date must be from 15 days to one year from today: `min` and `max` set this period, and the `range-underflow` and `range-overflow` slots tell the user the rule. The passport must be valid for 6 months after the arrival. The two `igcChange` handlers compare the dates and call `setCustomValidity()`, and the `custom-error` slot shows the message. The form does not submit while a control is invalid. Submit shows the form data, where each date is an ISO string in UTC. Reset restores the default values and clears the custom error.',
       },
     },
   },
-  args: {
-    value: new Date(2024, 1, 29),
-  },
-  render: (args) => html`
-    <style>
-      fieldset {
-        min-width: 0;
-      }
-    </style>
-    <form action="" @submit=${formSubmitHandler}>
-      <fieldset>
+  render: () => {
+    const earliestArrival = addDays(today, 15);
+    const passportError =
+      'The passport must be valid for 6 months after the arrival date.';
+    let arrival: IgcDatePickerComponent | undefined;
+    let expiry: IgcDatePickerComponent | undefined;
+
+    const checkPassport = () => {
+      const tooShort =
+        arrival?.value &&
+        expiry?.value &&
+        expiry.value < addMonths(arrival.value, 6);
+
+      expiry?.setCustomValidity(tooShort ? passportError : '');
+    };
+
+    return html`
+      ${styles}
+      <form
+        class="dp-panel"
+        @submit=${formSubmitHandler}
+        @reset=${() => expiry?.setCustomValidity('')}
+      >
+        <h3>Visa application</h3>
+        <igc-input name="full-name" label="Full name" required>
+          <span slot="value-missing">Enter your full name.</span>
+        </igc-input>
         <igc-date-picker
-          label="Default"
-          name="picker-default"
-        ></igc-date-picker>
-
-        <igc-date-picker
-          label="Initial value"
-          name="picker-initial"
-          .value=${args.value}
-        ></igc-date-picker>
-
-        <igc-date-picker
-          label="Readonly"
-          name="picker-readonly"
-          readonly
-        ></igc-date-picker>
-      </fieldset>
-
-      <fieldset disabled>
-        <igc-date-picker
-          label="Disabled"
-          name="picker-disabled"
-        ></igc-date-picker>
-      </fieldset>
-
-      <fieldset>
-        <igc-date-picker label="Required" name="picker-required" required>
-          <p slot="value-missing">This field is required!</p>
-        </igc-date-picker>
-      </fieldset>
-
-      <fieldset>
-        <igc-date-picker label="Minimum date" name="picker-min" .min=${minDate}>
-          <p slot="helper-text">
-            Choose a date after ${minDate.toLocaleDateString()}
-          </p>
-          <p slot="range-underflow">
-            Selected date is less that ${minDate.toLocaleDateString()}
-          </p>
-        </igc-date-picker>
-
-        <igc-date-picker label="Maximum date" name="picker-max" .max=${maxDate}>
-          <p slot="helper-text">
-            Choose a date before ${maxDate.toLocaleDateString()}
-          </p>
-          <p slot="range-overflow">
-            Selected date is greater than ${maxDate.toLocaleDateString()}
-          </p>
-        </igc-date-picker>
-      </fieldset>
-
-      <fieldset>
-        <igc-date-picker
-          label="Disabled dates range - between (${minDate.toLocaleDateString()} - ${maxDate.toLocaleDateString()})"
-          name="picker-disabled-ranges"
-          .disabledDates=${disabledDates}
+          name="birth-date"
+          label="Date of birth"
+          required
+          input-format="dd/MM/yyyy"
+          display-format="longDate"
+          .max=${today}
+          .activeDate=${new Date(today.getFullYear() - 30, 0, 1)}
         >
-          <p slot="bad-input">Selected date is in the disabled dates!</p>
+          <span slot="helper-text">For example, 25/12/1990.</span>
+          <span slot="value-missing">Enter your date of birth.</span>
+          <span slot="range-overflow">
+            The date of birth cannot be in the future.
+          </span>
         </igc-date-picker>
-      </fieldset>
-      ${formControls()}
-    </form>
-  `,
+        <igc-date-picker
+          name="arrival-date"
+          label="Arrival date"
+          required
+          .min=${earliestArrival}
+          .max=${addMonths(today, 12)}
+          @igcChange=${checkPassport}
+          ${ref((element) => {
+            arrival = element as IgcDatePickerComponent | undefined;
+          })}
+        >
+          <span slot="helper-text"
+            >Apply at least 15 days before you travel.</span
+          >
+          <span slot="value-missing">Enter the arrival date.</span>
+          <span slot="range-underflow">
+            Choose ${formatDate(earliestArrival, longDate)} or a later day.
+          </span>
+          <span slot="range-overflow">
+            You can apply up to one year before you travel.
+          </span>
+        </igc-date-picker>
+        <igc-date-picker
+          name="passport-expiry"
+          label="Passport expiry date"
+          required
+          .min=${today}
+          @igcChange=${checkPassport}
+          ${ref((element) => {
+            expiry = element as IgcDatePickerComponent | undefined;
+          })}
+        >
+          <span slot="helper-text">
+            The passport must be valid for 6 months after you arrive.
+          </span>
+          <span slot="value-missing">Enter the passport expiry date.</span>
+          <span slot="range-underflow">This passport has expired.</span>
+          <span slot="custom-error">${passportError}</span>
+        </igc-date-picker>
+        <div class="dp-row">
+          <igc-button type="submit">Send the application</igc-button>
+          <igc-button type="reset" variant="outlined">Reset</igc-button>
+        </div>
+      </form>
+    `;
+  },
 };
 
 export const InScrollingPanel: Story = {
@@ -670,36 +871,17 @@ export const InScrollingPanel: Story = {
       },
     },
   },
-  render: ({ label, mode, scrollStrategy }) => html`
-    <style>
-      .panel {
-        max-width: 46rem;
-        height: 16rem;
-        overflow: auto;
-        padding: 1rem;
-        border: 1px solid var(--ig-gray-200, #e0e0e0);
-        border-radius: 4px;
-      }
-    </style>
-
-    <div class="panel">
-      <h4>Order details</h4>
-      <p>
-        Open the calendar and scroll this panel to compare the scroll
-        strategies.
-      </p>
-
-      <igc-date-picker
-        .label=${label}
-        .mode=${mode}
-        .scrollStrategy=${scrollStrategy}
-      ></igc-date-picker>
-
-      <p>
-        ${Array.from(range(1, 24)).map(
-          () => html`Orders placed before noon ship on the selected date. `
-        )}
-      </p>
-    </div>
-  `,
+  render: ({ label, mode, scrollStrategy }) =>
+    scrollingPanel(
+      'Order details',
+      'calendar',
+      'Orders placed before noon ship on the selected date.',
+      html`
+        <igc-date-picker
+          .label=${label}
+          .mode=${mode}
+          .scrollStrategy=${scrollStrategy}
+        ></igc-date-picker>
+      `
+    ),
 };

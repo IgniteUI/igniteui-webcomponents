@@ -12,17 +12,15 @@ import {
   spaceBar,
 } from '#internals/controllers/key-bindings.js';
 import { isLTR, scrollIntoView } from '#internals/utils/dom.js';
+import { moveFlag } from '#internals/utils/objects.js';
 import type IgcTreeItemComponent from './tree-item.js';
 import type IgcTreeComponent from './tree.js';
 import type { IgcTreeSelectionService } from './tree.selection.js';
 
 /**
- * Keyboard navigation and active/focused item tracking for the tree.
- *
- * @remarks
- * The navigable set is not cached. A keypress derives it with a lazy walk that
- * skips collapsed branches, so an item mount, expand or disable does no work,
- * and a caller that needs one item stops at that item.
+ * Keyboard navigation and active/focused item tracking for the tree. The
+ * navigable set is not cached: a keypress derives it with a lazy walk that
+ * skips collapsed branches.
  *
  * @hidden @internal
  */
@@ -85,17 +83,11 @@ export class IgcTreeNavigationService {
       return;
     }
 
-    if (this._activeItem) {
-      this._activeItem.active = false;
-    }
-
+    moveFlag(this._activeItem, value, 'active');
     this._activeItem = value;
 
-    if (this._activeItem) {
-      this._activeItem.active = true;
-      if (shouldEmit) {
-        this.tree.emitEvent('igcActiveItem', { detail: this._activeItem });
-      }
+    if (value && shouldEmit) {
+      this.tree.emitEvent('igcActiveItem', { detail: value });
     }
   }
 
@@ -121,11 +113,17 @@ export class IgcTreeNavigationService {
     }
     if (this._focusedItem === item) {
       this.focusItem(null, false);
-      const next = this.tree.items.find((i) => !i.disabled);
-      if (next) {
-        next.tabIndex = 0;
-        this.focusItem(next, false);
-      }
+      this.seedTabStop();
+    }
+  }
+
+  /** Gives the first enabled item the tab stop, without moving the DOM focus. */
+  public seedTabStop(items = this.tree.items): void {
+    const first = items.find((item) => !item.disabled);
+
+    if (first) {
+      first.tabIndex = 0;
+      this.focusItem(first, false);
     }
   }
 
@@ -279,14 +277,7 @@ export class IgcTreeNavigationService {
       return;
     }
 
-    if (shiftKey) {
-      this.selection.selectMultipleItems(item);
-      return;
-    }
-
-    item.selected
-      ? this.selection.deselectItem(item)
-      : this.selection.selectItem(item);
+    this.selection.toggleItem(item, shiftKey);
   }
 
   private readonly _enter = (): void => {

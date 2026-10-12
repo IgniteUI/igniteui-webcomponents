@@ -10,6 +10,7 @@ import { firstOf } from '#internals/utils/arrays.js';
 import { getElementByIdFromRoot, isPopoverOpen } from '#internals/utils/dom.js';
 import { toggleEventListener } from '#internals/utils/events.js';
 import { isString } from '#internals/utils/types.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { PopoverScrollStrategy } from '../types.js';
 import { FloatingPositionStrategy } from './position/floating.js';
 import {
@@ -57,7 +58,7 @@ export type PopoverPlacement =
  */
 export default class IgcPopoverComponent extends LitElement {
   public static readonly tagName = 'igc-popover';
-  public static override styles = styles;
+  public static override styles = [componentBase, styles];
 
   /* blazorSuppress */
   public static register(): void {

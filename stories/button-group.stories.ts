@@ -1,17 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
-import { createRef, ref } from 'lit/directives/ref.js';
+import { html, render } from 'lit';
+import { ref } from 'lit/directives/ref.js';
 
 import {
   IgcButtonComponent,
   IgcButtonGroupComponent,
-  type IgcCheckboxChangeEventArgs,
   IgcIconComponent,
   IgcSwitchComponent,
   defineComponents,
-  registerIconFromText,
 } from 'igniteui-webcomponents';
-import { disableStoryControls } from './story.js';
+import { registerMaterialIcons } from './story-icons.js';
+import { disableStoryControls, renderInto, storyStyles } from './story.js';
 
 defineComponents(
   IgcButtonComponent,
@@ -20,45 +19,21 @@ defineComponents(
   IgcSwitchComponent
 );
 
-registerIconFromText(
-  'bold',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.6 10.79c.97-.67 1.65-1.77 1.65-2.79 0-2.26-1.75-4-4-4H7v14h7.04c2.09 0 3.71-1.7 3.71-3.79 0-1.52-.86-2.82-2.15-3.42zM10 6.5h3c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-3v-3zm3.5 9H10v-3h3.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5z"/></svg>`
-);
-registerIconFromText(
-  'italic',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 4v3h2.21l-3.42 8H6v3h8v-3h-2.21l3.42-8H18V4z"/></svg>`
-);
-registerIconFromText(
-  'underline',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 17c3.31 0 6-2.69 6-6V3h-2.5v8c0 1.93-1.57 3.5-3.5 3.5S8.5 12.93 8.5 11V3H6v8c0 3.31 2.69 6 6 6zm-7 2v2h14v-2H5z"/></svg>`
-);
-registerIconFromText(
-  'align-left',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 15H3v2h12v-2zm0-8H3v2h12V7zM3 13h18v-2H3v2zm0 8h18v-2H3v2zM3 3v2h18V3H3z"/></svg>`
-);
-registerIconFromText(
+registerMaterialIcons(
   'align-center',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 15v2h10v-2H7zm-4 6h18v-2H3v2zm0-8h18v-2H3v2zm4-6v2h10V7H7zM3 3v2h18V3H3z"/></svg>`
-);
-registerIconFromText(
-  'align-right',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm6-4h12v-2H9v2zm-6-4h18v-2H3v2zm6-4h12V7H9v2zM3 3v2h18V3H3z"/></svg>`
-);
-registerIconFromText(
   'align-justify',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18V7H3v2zm0-6v2h18V3H3z"/></svg>`
-);
-registerIconFromText(
-  'view-list',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 14h4v-4H4v4zm0 5h4v-4H4v4zM4 9h4V5H4v4zm5 5h12v-4H9v4zm0 5h12v-4H9v4zM9 5v4h12V5H9z"/></svg>`
-);
-registerIconFromText(
-  'view-module',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z"/></svg>`
-);
-registerIconFromText(
-  'view-quilt',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 18h5v-6h-5v6zm-6 0h5V5H4v13zm12 0h5v-6h-5v6zM10 5v6h11V5H10z"/></svg>`
+  'align-left',
+  'align-right',
+  'bold',
+  'crop-square',
+  'edit',
+  'italic',
+  'list-bulleted',
+  'list-numbered',
+  'near-me',
+  'pan-tool',
+  'text-fields',
+  'underline'
 );
 
 // region default
@@ -113,392 +88,537 @@ type Story = StoryObj<IgcButtonGroupArgs>;
 
 // endregion
 
-const scenarioStyles = html`
+const styles = html`
+  ${storyStyles}
   <style>
-    .scenario {
-      display: flex;
-      flex-direction: column;
+    .bg-stack {
+      display: grid;
       gap: 1.5rem;
-      max-width: 46rem;
+      max-width: 48rem;
     }
 
-    .scenario p {
-      margin: 0;
+    .bg-field {
+      display: grid;
+      gap: 0.5rem;
+      justify-items: start;
     }
 
-    .row {
+    .bg-label {
+      font-weight: 600;
+    }
+
+    .bg-row {
       display: flex;
       flex-wrap: wrap;
-      align-items: flex-start;
-      gap: 2rem;
-    }
-
-    .case {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .case > strong {
-      font-size: 0.875rem;
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .settings-row {
-      display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 0.5rem 0.75rem;
-      border: 1px solid var(--ig-gray-200, #e0e0e0);
-      border-radius: 4px;
+      gap: 0.75rem;
     }
 
-    .log {
-      margin: 0;
-      min-height: 1.25rem;
-      font-family: monospace;
-      color: var(--ig-primary-500, #09f);
+    .bg-panel {
+      padding: 1rem;
+      border: 1px solid var(--ig-gray-300);
+      border-radius: 8px;
     }
   </style>
 `;
 
-export const Basic: Story = {
+export const Default: Story = {
+  args: { selection: 'single-required' },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The view switcher of a calendar. Use the controls panel to change the selection mode, the alignment and the disabled state. In `single`, a click on the selected button deselects it. In `single-required`, the selection stays. Both single modes expose a `radiogroup`: the group is one tab stop, and the arrow keys move the focus and the selection. In `multiple`, the group exposes a `group` of toggle buttons with `aria-pressed`, each button is a tab stop, and the arrow keys do nothing.',
+      },
+    },
+  },
   render: ({ selection, disabled, alignment }) => html`
     <igc-button-group
+      aria-label="Calendar view"
       .selection=${selection}
       .disabled=${disabled}
       .alignment=${alignment}
     >
-      <igc-toggle-button value="left">Left</igc-toggle-button>
-      <igc-toggle-button value="center">Center</igc-toggle-button>
-      <igc-toggle-button value="right">Right</igc-toggle-button>
-      <igc-toggle-button value="justify">Justify</igc-toggle-button>
+      <igc-toggle-button value="day">Day</igc-toggle-button>
+      <igc-toggle-button value="week" selected>Week</igc-toggle-button>
+      <igc-toggle-button value="month">Month</igc-toggle-button>
+      <igc-toggle-button value="year">Year</igc-toggle-button>
     </igc-button-group>
   `,
 };
 
-export const SelectionModes: Story = {
+export const TextEditor: Story = {
   argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'The three selection modes differ in what a click on an already selected button does: `single` deselects it, `single-required` keeps it selected, and `multiple` toggles each button on its own. The mode also drives the announced semantics - the single modes expose a `radiogroup` of `radio` buttons, while `multiple` exposes a `group` of toggle buttons with `aria-pressed`. Mind that `single-required` does not select a button for you: it only refuses to give up a selection it already has.',
-      },
-    },
-  },
-  render: () => html`
-    ${scenarioStyles}
-    <div class="scenario">
-      <div class="case">
-        <strong>single - one or none selected</strong>
-        <igc-button-group selection="single">
-          <igc-toggle-button value="day">Day</igc-toggle-button>
-          <igc-toggle-button value="week" selected>Week</igc-toggle-button>
-          <igc-toggle-button value="month">Month</igc-toggle-button>
-          <igc-toggle-button value="year">Year</igc-toggle-button>
-        </igc-button-group>
-      </div>
-
-      <div class="case">
-        <strong>single-required - the selection cannot be given up</strong>
-        <igc-button-group selection="single-required">
-          <igc-toggle-button value="xs">XS</igc-toggle-button>
-          <igc-toggle-button value="sm">SM</igc-toggle-button>
-          <igc-toggle-button value="md" selected>MD</igc-toggle-button>
-          <igc-toggle-button value="lg">LG</igc-toggle-button>
-          <igc-toggle-button value="xl">XL</igc-toggle-button>
-        </igc-button-group>
-      </div>
-
-      <div class="case">
-        <strong>multiple - every button toggles on its own</strong>
-        <igc-button-group selection="multiple">
-          <igc-toggle-button value="bold" aria-label="Bold">
-            <igc-icon name="bold"></igc-icon>
-          </igc-toggle-button>
-          <igc-toggle-button value="italic" aria-label="Italic" selected>
-            <igc-icon name="italic"></igc-icon>
-          </igc-toggle-button>
-          <igc-toggle-button value="underline" aria-label="Underline" selected>
-            <igc-icon name="underline"></igc-icon>
-          </igc-toggle-button>
-        </igc-button-group>
-      </div>
-    </div>
-  `,
-};
-
-export const Alignment: Story = {
-  argTypes: disableStoryControls(metadata),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'The `alignment` attribute lays the buttons out in a row (default) or in a column. The group keeps the rounded corners on the leading and trailing button of whichever axis it runs along.',
-      },
-    },
-  },
-  render: () => html`
-    ${scenarioStyles}
-    <div class="row">
-      <div class="case">
-        <strong>horizontal</strong>
-        <igc-button-group alignment="horizontal" selection="single-required">
-          <igc-toggle-button value="list" aria-label="List view">
-            <igc-icon name="view-list"></igc-icon>
-          </igc-toggle-button>
-          <igc-toggle-button value="module" aria-label="Module view" selected>
-            <igc-icon name="view-module"></igc-icon>
-          </igc-toggle-button>
-          <igc-toggle-button value="quilt" aria-label="Quilt view">
-            <igc-icon name="view-quilt"></igc-icon>
-          </igc-toggle-button>
-        </igc-button-group>
-      </div>
-
-      <div class="case">
-        <strong>vertical</strong>
-        <igc-button-group alignment="vertical" selection="single-required">
-          <igc-toggle-button value="left" aria-label="Align left">
-            <igc-icon name="align-left"></igc-icon>
-          </igc-toggle-button>
-          <igc-toggle-button value="center" aria-label="Align center" selected>
-            <igc-icon name="align-center"></igc-icon>
-          </igc-toggle-button>
-          <igc-toggle-button value="right" aria-label="Align right">
-            <igc-icon name="align-right"></igc-icon>
-          </igc-toggle-button>
-          <igc-toggle-button value="justify" aria-label="Justify">
-            <igc-icon name="align-justify"></igc-icon>
-          </igc-toggle-button>
-        </igc-button-group>
-      </div>
-    </div>
-  `,
-};
-
-export const WithIcons: Story = {
-  argTypes: disableStoryControls(metadata),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Icon-only buttons keep a toolbar compact, but an icon carries no accessible name. Put an `aria-label` on the toggle button - it is forwarded to the native button that assistive technology actually reports.',
-      },
-    },
-  },
-  render: () => html`
-    ${scenarioStyles}
-    <div class="row">
-      <igc-button-group selection="multiple">
-        <igc-toggle-button value="bold" aria-label="Bold">
-          <igc-icon name="bold"></igc-icon>
-        </igc-toggle-button>
-        <igc-toggle-button value="italic" aria-label="Italic">
-          <igc-icon name="italic"></igc-icon>
-        </igc-toggle-button>
-        <igc-toggle-button value="underline" aria-label="Underline">
-          <igc-icon name="underline"></igc-icon>
-        </igc-toggle-button>
-      </igc-button-group>
-
-      <igc-button-group selection="single-required">
-        <igc-toggle-button value="left" aria-label="Align left" selected>
-          <igc-icon name="align-left"></igc-icon>
-        </igc-toggle-button>
-        <igc-toggle-button value="center" aria-label="Align center">
-          <igc-icon name="align-center"></igc-icon>
-        </igc-toggle-button>
-        <igc-toggle-button value="right" aria-label="Align right">
-          <igc-icon name="align-right"></igc-icon>
-        </igc-toggle-button>
-        <igc-toggle-button value="justify" aria-label="Justify">
-          <igc-icon name="align-justify"></igc-icon>
-        </igc-toggle-button>
-      </igc-button-group>
-    </div>
-  `,
-};
-
-export const OptionalValues: Story = {
-  argTypes: disableStoryControls(metadata),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'A `value` is optional. The group tracks its buttons by identity, so a group of buttons without values selects and deselects like any other - the value only decides what `selectedItems` reports and what the `selectedItems` setter can match. Buttons that carry no value are simply left out of the reported collection.',
+          'The toolbar of a text editor with three groups. The text style group uses `multiple`, because bold, italic and underline combine. The alignment group uses `single-required`, because text always has an alignment. The list group uses `single`, so a click on the selected list type turns the list off. The buttons show only an icon, so each has an `aria-label`, and each group has an `aria-label` too. The handlers of `igcSelect` and `igcDeselect` read `selectedItems` and apply the result to the preview.',
       },
     },
   },
   render: () => {
-    const log = createRef<HTMLElement>();
+    const lines = [
+      'Pack the tent and the sleeping bags.',
+      'Buy food for three days.',
+      'Check the weather forecast.',
+    ];
+    const state = { marks: [] as string[], align: 'left', list: '' };
 
-    function report(event: Event) {
-      const group = event.currentTarget as IgcButtonGroupComponent;
+    const toggles = (
+      items: [value: string, label: string, icon: string][],
+      selected?: string
+    ) =>
+      items.map(
+        ([value, label, icon]) => html`
+          <igc-toggle-button
+            value=${value}
+            aria-label=${label}
+            ?selected=${value === selected}
+          >
+            <igc-icon name=${icon}></igc-icon>
+          </igc-toggle-button>
+        `
+      );
 
-      if (log.value) {
-        log.value.textContent = `selectedItems: ${JSON.stringify(group.selectedItems)}`;
-      }
-    }
+    const preview = renderInto(() => {
+      const { marks, align, list } = state;
+      const style = [
+        `font-weight: ${marks.includes('bold') ? 700 : 400}`,
+        `font-style: ${marks.includes('italic') ? 'italic' : 'normal'}`,
+        `text-decoration: ${marks.includes('underline') ? 'underline' : 'none'}`,
+        `text-align: ${align}`,
+      ].join('; ');
+      const items = lines.map((line) => html`<li>${line}</li>`);
+
+      return list === 'bulleted'
+        ? html`<ul style=${style}>
+            ${items}
+          </ul>`
+        : list === 'numbered'
+          ? html`<ol style=${style}>
+              ${items}
+            </ol>`
+          : html`<p style=${style}>${lines.join(' ')}</p>`;
+    });
+
+    const sync =
+      (key: 'marks' | 'align' | 'list') =>
+      ({ currentTarget }: Event) => {
+        const values = (currentTarget as IgcButtonGroupComponent).selectedItems;
+
+        if (key === 'marks') {
+          state.marks = values;
+        } else {
+          state[key] = values[0] ?? '';
+        }
+
+        preview.update();
+      };
 
     return html`
-      ${scenarioStyles}
-      <div class="scenario">
-        <div class="case">
-          <strong>No values at all - the selection still moves</strong>
-          <igc-button-group selection="single">
-            <igc-toggle-button>Day</igc-toggle-button>
-            <igc-toggle-button>Week</igc-toggle-button>
-            <igc-toggle-button>Month</igc-toggle-button>
-          </igc-button-group>
-        </div>
+      ${styles}
+      <style>
+        .bg-editor {
+          display: grid;
+          gap: 1rem;
+        }
 
-        <div class="case">
-          <strong>Only the buttons with a value are reported</strong>
+        .bg-editor [data-preview] {
+          min-height: 6rem;
+          padding: 0.5rem 1rem;
+          border: 1px solid var(--ig-gray-300);
+          border-radius: 6px;
+        }
+      </style>
+      <div class="bg-stack bg-editor">
+        <div class="bg-row">
           <igc-button-group
             selection="multiple"
-            @igcSelect=${report}
-            @igcDeselect=${report}
+            aria-label="Text style"
+            @igcSelect=${sync('marks')}
+            @igcDeselect=${sync('marks')}
           >
-            <igc-toggle-button value="bold" aria-label="Bold">
-              <igc-icon name="bold"></igc-icon>
-            </igc-toggle-button>
-            <igc-toggle-button value="italic" aria-label="Italic">
-              <igc-icon name="italic"></igc-icon>
-            </igc-toggle-button>
-            <igc-toggle-button aria-label="Underline">
-              <igc-icon name="underline"></igc-icon>
-            </igc-toggle-button>
+            ${toggles([
+              ['bold', 'Bold', 'bold'],
+              ['italic', 'Italic', 'italic'],
+              ['underline', 'Underline', 'underline'],
+            ])}
           </igc-button-group>
-          <p class="log" ${ref(log)}>selectedItems: []</p>
+
+          <igc-button-group
+            selection="single-required"
+            aria-label="Alignment"
+            @igcSelect=${sync('align')}
+          >
+            ${toggles(
+              [
+                ['left', 'Align left', 'align-left'],
+                ['center', 'Align center', 'align-center'],
+                ['right', 'Align right', 'align-right'],
+                ['justify', 'Justify', 'align-justify'],
+              ],
+              'left'
+            )}
+          </igc-button-group>
+
+          <igc-button-group
+            selection="single"
+            aria-label="List"
+            @igcSelect=${sync('list')}
+            @igcDeselect=${sync('list')}
+          >
+            ${toggles([
+              ['bulleted', 'Bulleted list', 'list-bulleted'],
+              ['numbered', 'Numbered list', 'list-numbered'],
+            ])}
+          </igc-button-group>
         </div>
+        <div
+          data-preview
+          aria-label="Preview"
+          role="region"
+          ${preview.mount}
+        ></div>
       </div>
     `;
   },
 };
 
-export const Disabled: Story = {
+const tools = [
+  {
+    value: 'select',
+    label: 'Select',
+    icon: 'near-me',
+    hint: 'Click a shape to select it.',
+  },
+  { value: 'pen', label: 'Pen', icon: 'edit', hint: 'Drag to draw a line.' },
+  {
+    value: 'rectangle',
+    label: 'Rectangle',
+    icon: 'crop-square',
+    hint: 'Drag to draw a rectangle.',
+  },
+  {
+    value: 'text',
+    label: 'Text',
+    icon: 'text-fields',
+    hint: 'Click to add a text box.',
+  },
+  {
+    value: 'pan',
+    label: 'Pan',
+    icon: 'pan-tool',
+    hint: 'Drag to move the canvas.',
+  },
+];
+
+export const ToolPalette: Story = {
   argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'A disabled group turns its buttons off without touching their own `disabled` property. Switch the group back on and MD - which is disabled in its own right - stays disabled, while the rest become interactive again. Buttons added to a group that is already disabled inherit that state as well.',
+          'The tool palette of a drawing application. `alignment="vertical"` stacks the buttons in a column, and Arrow Up and Arrow Down move between the tools. The palette uses `single-required`, because one tool is always active. The canvas shows the active tool and changes the cursor.',
       },
     },
   },
   render: () => {
-    const group = createRef<IgcButtonGroupComponent>();
+    const pick = ({ currentTarget }: Event) => {
+      const palette = currentTarget as IgcButtonGroupComponent;
+      const tool = tools.find(
+        ({ value }) => value === palette.selectedItems[0]
+      )!;
+      const canvas = palette.nextElementSibling as HTMLElement;
 
-    function toggleGroup({ detail }: CustomEvent<IgcCheckboxChangeEventArgs>) {
-      if (group.value) {
-        group.value.disabled = detail.checked;
-      }
-    }
-
-    return html`
-      ${scenarioStyles}
-      <div class="scenario">
-        <div class="settings-row">
-          <div>
-            <div><strong>Disable the whole group</strong></div>
-            <small>MD is disabled on its own and stays that way.</small>
-          </div>
-
-          <igc-switch @igcChange=${toggleGroup}></igc-switch>
-        </div>
-
-        <igc-button-group ${ref(group)} selection="single">
-          <igc-toggle-button value="xs">XS</igc-toggle-button>
-          <igc-toggle-button value="sm" selected>SM</igc-toggle-button>
-          <igc-toggle-button value="md" disabled>MD</igc-toggle-button>
-          <igc-toggle-button value="lg">LG</igc-toggle-button>
-          <igc-toggle-button value="xl">XL</igc-toggle-button>
-        </igc-button-group>
-      </div>
-    `;
-  },
-};
-
-export const ProgrammaticSelection: Story = {
-  argTypes: disableStoryControls(metadata),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'The `selectedItems` property reads and writes the whole selection: assigning to it replaces what was selected before rather than adding to it, and an empty array clears the group. Programmatic changes are silent - `igcSelect` and `igcDeselect` only report what a user did.',
-      },
-    },
-  },
-  render: () => {
-    const group = createRef<IgcButtonGroupComponent>();
-    const log = createRef<HTMLElement>();
-
-    function report(message: string) {
-      if (log.value) {
-        log.value.textContent = message;
-      }
-    }
-
-    function select(values: string[]) {
-      const element = group.value;
-
-      if (element) {
-        element.selectedItems = values;
-        report(`selectedItems: ${JSON.stringify(element.selectedItems)}`);
-      }
-    }
-
-    function reportEvent(name: string, event: CustomEvent<string | undefined>) {
-      report(`${name}: "${event.detail}"`);
-    }
+      canvas.dataset.tool = tool.value;
+      canvas.querySelector('p')!.textContent = `${tool.label}: ${tool.hint}`;
+    };
 
     return html`
-      ${scenarioStyles}
-      <div class="scenario">
+      ${styles}
+      <style>
+        .bg-drawing {
+          display: flex;
+          gap: 1rem;
+          max-width: 48rem;
+        }
+
+        .bg-canvas {
+          flex: 1;
+          display: grid;
+          place-items: center;
+          min-height: 18rem;
+          border: 1px dashed var(--ig-gray-400);
+          border-radius: 8px;
+          background-image: radial-gradient(
+            var(--ig-gray-300) 1px,
+            transparent 1px
+          );
+          background-size: 16px 16px;
+        }
+
+        .bg-canvas[data-tool='pen'],
+        .bg-canvas[data-tool='rectangle'] {
+          cursor: crosshair;
+        }
+
+        .bg-canvas[data-tool='text'] {
+          cursor: text;
+        }
+
+        .bg-canvas[data-tool='pan'] {
+          cursor: grab;
+        }
+      </style>
+      <div class="bg-drawing">
         <igc-button-group
-          ${ref(group)}
-          selection="multiple"
-          @igcSelect=${(e: CustomEvent<string | undefined>) =>
-            reportEvent('igcSelect', e)}
-          @igcDeselect=${(e: CustomEvent<string | undefined>) =>
-            reportEvent('igcDeselect', e)}
+          alignment="vertical"
+          selection="single-required"
+          aria-label="Tools"
+          @igcSelect=${pick}
         >
-          <igc-toggle-button value="bold" aria-label="Bold">
-            <igc-icon name="bold"></igc-icon>
-          </igc-toggle-button>
-          <igc-toggle-button value="italic" aria-label="Italic">
-            <igc-icon name="italic"></igc-icon>
-          </igc-toggle-button>
-          <igc-toggle-button value="underline" aria-label="Underline">
-            <igc-icon name="underline"></igc-icon>
-          </igc-toggle-button>
+          ${tools.map(
+            ({ value, label, icon }, index) => html`
+              <igc-toggle-button
+                value=${value}
+                aria-label=${label}
+                ?selected=${index === 0}
+              >
+                <igc-icon name=${icon}></igc-icon>
+              </igc-toggle-button>
+            `
+          )}
         </igc-button-group>
+        <div class="bg-canvas" data-tool="select">
+          <p class="muted" role="status">Select: ${tools[0].hint}</p>
+        </div>
+      </div>
+    `;
+  },
+};
 
-        <div class="actions">
-          <igc-button variant="outlined" @click=${() => select(['bold'])}>
-            Bold
-          </igc-button>
+const hotels = [
+  {
+    name: 'Harbor View Hotel',
+    rating: 4.6,
+    amenities: ['wifi', 'parking', 'breakfast', 'pool'],
+  },
+  { name: 'City Loft Suites', rating: 4.2, amenities: ['wifi', 'pets'] },
+  {
+    name: 'Pine Lodge',
+    rating: 4.8,
+    amenities: ['parking', 'breakfast', 'pets'],
+  },
+  {
+    name: 'Sunset Resort',
+    rating: 4.4,
+    amenities: ['wifi', 'parking', 'pool', 'breakfast'],
+  },
+  { name: 'Budget Inn', rating: 3.6, amenities: ['wifi', 'parking'] },
+  {
+    name: 'Garden Guesthouse',
+    rating: 4,
+    amenities: ['breakfast', 'pets', 'wifi'],
+  },
+];
+
+const amenities = [
+  { value: 'wifi', label: 'Wi-Fi' },
+  { value: 'parking', label: 'Parking' },
+  { value: 'pool', label: 'Pool' },
+  { value: 'breakfast', label: 'Breakfast' },
+  { value: 'pets', label: 'Pets allowed' },
+];
+
+export const SearchFilters: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The filters of a hotel search. The amenities use `multiple`, and a hotel must have all selected amenities. The rating uses `single`, so a click on the selected rating clears it. The presets set `selectedItems`, which replaces the selection, and an empty array clears it. A change through `selectedItems` emits no event, so the preset handlers update the results themselves. Each group takes its accessible name from the visible label through `aria-labelledby`.',
+      },
+    },
+  },
+  render: () => {
+    let root: HTMLElement | undefined;
+
+    const update = () => {
+      if (!root) {
+        return;
+      }
+
+      const [amenityGroup, ratingGroup] =
+        root.querySelectorAll('igc-button-group');
+      const wanted = amenityGroup.selectedItems;
+      const minimum = Number(ratingGroup.selectedItems[0] ?? 0);
+      const results = hotels.filter(
+        (hotel) =>
+          hotel.rating >= minimum &&
+          wanted.every((amenity) => hotel.amenities.includes(amenity))
+      );
+
+      render(
+        html`
+          <p class="muted" role="status">
+            ${results.length} of ${hotels.length} hotels
+          </p>
+          <ul>
+            ${results.map(
+              ({ name, rating }) => html`<li>${name}, rated ${rating}</li>`
+            )}
+          </ul>
+        `,
+        root.querySelector<HTMLElement>('[data-results]')!
+      );
+    };
+
+    const preset = (amenityValues: string[], ratingValues: string[]) => () => {
+      const [amenityGroup, ratingGroup] =
+        root!.querySelectorAll('igc-button-group');
+
+      amenityGroup.selectedItems = amenityValues;
+      ratingGroup.selectedItems = ratingValues;
+      update();
+    };
+
+    const mount = (element?: Element) => {
+      root = element as HTMLElement | undefined;
+      update();
+    };
+
+    return html`
+      ${styles}
+      <div class="bg-stack" ${ref(mount)}>
+        <div class="bg-field">
+          <span class="bg-label" id="bg-amenities">Amenities</span>
+          <igc-button-group
+            selection="multiple"
+            aria-labelledby="bg-amenities"
+            @igcSelect=${update}
+            @igcDeselect=${update}
+          >
+            ${amenities.map(
+              ({ value, label }) => html`
+                <igc-toggle-button value=${value}>${label}</igc-toggle-button>
+              `
+            )}
+          </igc-button-group>
+        </div>
+        <div class="bg-field">
+          <span class="bg-label" id="bg-rating">Guest rating</span>
+          <igc-button-group
+            selection="single"
+            aria-labelledby="bg-rating"
+            @igcSelect=${update}
+            @igcDeselect=${update}
+          >
+            <igc-toggle-button value="3.5">3.5 and up</igc-toggle-button>
+            <igc-toggle-button value="4">4 and up</igc-toggle-button>
+            <igc-toggle-button value="4.5">4.5 and up</igc-toggle-button>
+          </igc-button-group>
+        </div>
+        <div class="bg-row">
           <igc-button
             variant="outlined"
-            @click=${() => select(['italic', 'underline'])}
+            @click=${preset(['pool', 'breakfast', 'parking'], ['4'])}
           >
-            Italic + Underline
+            Family trip
           </igc-button>
-          <igc-button variant="outlined" @click=${() => select([])}>
-            Clear
+          <igc-button variant="outlined" @click=${preset(['wifi'], ['4.5'])}>
+            Business trip
+          </igc-button>
+          <igc-button variant="flat" @click=${preset([], [])}>
+            Clear filters
           </igc-button>
         </div>
-
-        <p class="log" ${ref(log)}>Interact with the buttons to see events.</p>
+        <section class="bg-panel" aria-label="Results" data-results></section>
       </div>
+    `;
+  },
+};
+
+export const NotificationSettings: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The notification settings of an account. The switch disables both groups through `disabled` on the group. "Instant" is disabled on its own, because it needs the Pro plan, so it stays disabled when the switch turns the groups on again. The button group is not a form control, so `FormData` does not hold its selection: the submit handler reads `selectedItems` of each group.',
+      },
+    },
+  },
+  render: () => {
+    const toggle = ({ currentTarget }: Event) => {
+      const form = (currentTarget as HTMLElement).closest('form')!;
+      const enabled = (currentTarget as IgcSwitchComponent).checked;
+
+      for (const group of form.querySelectorAll('igc-button-group')) {
+        group.disabled = !enabled;
+      }
+    };
+
+    const submit = (event: SubmitEvent) => {
+      event.preventDefault();
+
+      const form = event.target as HTMLFormElement;
+      const [frequency, topics] = form.querySelectorAll('igc-button-group');
+      const data = {
+        ...Object.fromEntries(new FormData(form)),
+        frequency: frequency.selectedItems[0],
+        topics: topics.selectedItems,
+      };
+
+      form.querySelector('output')!.value = JSON.stringify(data, null, 2);
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .bg-settings output {
+          display: block;
+          white-space: pre;
+          font-family: monospace;
+        }
+      </style>
+      <form class="bg-stack bg-panel bg-settings" @submit=${submit}>
+        <igc-switch name="email" value="on" checked @igcChange=${toggle}>
+          Email notifications
+        </igc-switch>
+        <div class="bg-field">
+          <span class="bg-label" id="bg-frequency">Frequency</span>
+          <igc-button-group
+            selection="single-required"
+            aria-labelledby="bg-frequency"
+          >
+            <igc-toggle-button value="instant" disabled
+              >Instant</igc-toggle-button
+            >
+            <igc-toggle-button value="daily" selected>
+              Daily digest
+            </igc-toggle-button>
+            <igc-toggle-button value="weekly">Weekly digest</igc-toggle-button>
+          </igc-button-group>
+          <small class="muted">Instant emails need the Pro plan.</small>
+        </div>
+        <div class="bg-field">
+          <span class="bg-label" id="bg-topics">Topics</span>
+          <igc-button-group selection="multiple" aria-labelledby="bg-topics">
+            <igc-toggle-button value="mentions" selected>
+              Mentions
+            </igc-toggle-button>
+            <igc-toggle-button value="comments" selected>
+              Comments
+            </igc-toggle-button>
+            <igc-toggle-button value="releases">Releases</igc-toggle-button>
+          </igc-button-group>
+        </div>
+        <div>
+          <igc-button type="submit">Save</igc-button>
+        </div>
+        <output aria-label="Submitted data"></output>
+      </form>
     `;
   },
 };

@@ -1,22 +1,29 @@
-import { sourceCode } from '@igniteui/material-icons-extended';
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html, nothing, render } from 'lit';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 import {
-  IgcIconComponent,
+  IgcButtonComponent,
+  type IgcCheckboxChangeEventArgs,
+  IgcInputComponent,
+  IgcSwitchComponent,
   IgcTextareaComponent,
   defineComponents,
-  registerIconFromText,
 } from 'igniteui-webcomponents';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   disableStoryControls,
-  formControls,
   formSubmitHandler,
+  plural,
+  renderInto,
+  storyStyles,
 } from './story.js';
 
-defineComponents(IgcTextareaComponent, IgcIconComponent);
-registerIconFromText('source-code', sourceCode.value);
+defineComponents(
+  IgcButtonComponent,
+  IgcInputComponent,
+  IgcSwitchComponent,
+  IgcTextareaComponent
+);
 
 // region default
 const metadata: Meta<IgcTextareaComponent> = {
@@ -240,261 +247,574 @@ type Story = StoryObj<IgcTextareaArgs>;
 
 // endregion
 
+const styles = html`
+  ${storyStyles}
+  <style>
+    .ta-stack {
+      display: grid;
+      gap: 1rem;
+      max-width: 40rem;
+    }
+
+    .ta-stack :is(h3, p, ol) {
+      margin: 0;
+    }
+
+    .ta-panel {
+      padding: 1rem;
+      border: 1px solid var(--ig-gray-300);
+      border-radius: 8px;
+    }
+
+    .ta-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .ta-code::part(input) {
+      font-family: ui-monospace, monospace;
+      font-size: 0.875rem;
+    }
+  </style>
+`;
+
 export const Default: Story = {
-  args: { label: 'Your feedback' },
+  args: {
+    label: 'Delivery instructions',
+    placeholder: 'Where can the courier leave the parcel?',
+  },
   parameters: {
     docs: {
       description: {
         story:
-          'A fully interactive textarea. Use the **Controls** panel to explore `resize`, `rows`, `outlined`, `readonly`, `disabled`, `required`, validation constraints, and all other properties.',
+          'The delivery instructions of a checkout. The `label` names the native textarea, and the `helper-text` slot describes it. `rows` sets the height in lines of text. With the default `resize="vertical"`, the user can drag the corner to make the field taller. `auto` grows the field with its content, and `none` keeps the height. Use the controls panel to change the state. `invalid` sets only the invalid style, and `required`, `minlength` and `maxlength` add the validation. Without `validate-only`, the user cannot type past `maxlength`.',
       },
     },
   },
   render: (args) => html`
     <igc-textarea
-      autocapitalize=${ifDefined(args.autocapitalize)}
+      label=${ifDefined(args.label)}
+      placeholder=${ifDefined(args.placeholder || undefined)}
       name=${ifDefined(args.name)}
-      label=${args.label}
-      rows=${args.rows}
-      placeholder=${args.placeholder || nothing}
-      resize=${args.resize}
       value=${ifDefined(args.value)}
+      autocomplete=${ifDefined(args.autocomplete)}
+      autocapitalize=${ifDefined(args.autocapitalize)}
+      inputmode=${ifDefined(args.inputMode)}
+      rows=${args.rows}
+      resize=${args.resize}
+      wrap=${args.wrap}
       minlength=${ifDefined(args.minLength)}
       maxlength=${ifDefined(args.maxLength)}
-      wrap=${args.wrap}
       ?outlined=${args.outlined}
       ?readonly=${args.readOnly}
       ?required=${args.required}
       ?disabled=${args.disabled}
-      ?invalid=${args.invalid}
       ?validate-only=${args.validateOnly}
-      ?spellcheck=${args.spellcheck}
-    ></igc-textarea>
-  `,
-};
-
-export const Slots: Story = {
-  args: { label: 'Textarea with slots' },
-  argTypes: disableStoryControls(metadata),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Demonstrates the available content slots: `prefix` and `suffix` for inline decorations, and `helper-text` for guidance below the input.',
-      },
-    },
-  },
-  render: () => html`
-    <igc-textarea label="Textarea with slots">
-      <igc-icon name="source-code" aria-hidden="true" slot="prefix"></igc-icon>
-      <igc-icon name="source-code" aria-hidden="true" slot="suffix"></igc-icon>
-      <span slot="helper-text">Sample helper text.</span>
+      .invalid=${args.invalid}
+      .spellcheck=${args.spellcheck}
+    >
+      <span slot="helper-text">The courier reads this note at your door.</span>
     </igc-textarea>
   `,
 };
 
-export const ProjectContent: Story = {
+const postLimit = 280;
+
+export const PostComposer: Story = {
   argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'Shows how initial content can be projected into the textarea via the default slot instead of using the `value` attribute. Projected text becomes the initial value and is restored on form reset.',
-      },
-    },
-  },
-  render: ({ rows, resize, required, disabled, outlined, readOnly }) => {
-    return html`
-      <igc-textarea
-        id="comment"
-        spellcheck="false"
-        .outlined=${outlined}
-        ?readonly=${readOnly}
-        label="Leave your comment"
-        .rows=${rows}
-        .resize=${resize}
-        .required=${required}
-        .disabled=${disabled}
-      >
-        <igc-icon
-          name="source-code"
-          aria-hidden="true"
-          slot="prefix"
-        ></igc-icon>
-        <p>Hello world!</p>
-        <span slot="helper-text">Helper text</span>
-      </igc-textarea>
-    `;
-  },
-};
-
-function setMaxChars(value = 0) {
-  render(
-    html`You have used ${value}/255 characters`,
-    document.getElementById('max-chars')!
-  );
-}
-
-function getInput(event: CustomEvent<string>) {
-  setMaxChars(event.detail.length);
-}
-
-export const Validation: Story = {
-  argTypes: disableStoryControls(metadata),
-  play: async () => {
-    setMaxChars();
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Showcases constraint validation with custom slot-based error messages. The second field uses `resize="auto"` and `validate-only` to allow typing beyond `maxlength` while showing live character count and an error when exceeded. Submit the form to trigger all validation messages.',
-      },
-    },
-  },
-  render: () => html`
-    <form @submit=${formSubmitHandler}>
-      <fieldset>
-        <igc-textarea label="Required" required>
-          <p slot="value-missing">This field is required!</p>
-        </igc-textarea>
-      </fieldset>
-
-      <fieldset>
-        <igc-textarea
-          resize="auto"
-          @igcInput=${getInput}
-          label="Max characters"
-          required
-          maxlength="255"
-          validate-only
-        >
-          <p id="max-chars" slot="helper-text"></p>
-          <p slot="value-missing">This field is required!</p>
-          <p slot="too-long">Please, stick to the maximum of 255 characters!</p>
-        </igc-textarea>
-      </fieldset>
-      ${formControls()}
-    </form>
-  `,
-};
-
-export const Form: Story = {
-  argTypes: disableStoryControls(metadata),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Comprehensive form integration demo covering default, initial value via `value` attribute, initial value via slot projection, disabled, readonly, required, min/max length, and `validate-only` states.',
+          'A composer for short posts with a limit of 280 characters. `validate-only` with `maxlength` lets the user type past the limit, as most social apps do: the field becomes invalid and the `too-long` slot replaces the helper text, so the user can shorten the text and does not lose what they typed. The helper text counts the characters that are left, and the textarea describes its native element with it. A screen reader does not read a changed description, so a status region announces the count one second after the typing stops, when 20 or fewer characters are left. `resize="auto"` grows the field with the text. The field has no visible label, so the host `aria-label` names it. Ctrl+Enter (Cmd+Enter on a Mac) posts, and the focus goes back to the field.',
       },
     },
   },
   render: () => {
+    const posts = [
+      {
+        text: 'Our new office opens on Monday. Come and say hello!',
+        time: '2 hours ago',
+      },
+    ];
+    let text = '';
+    let announcement = '';
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const left = () => postLimit - text.length;
+    const canPost = () => text.trim().length > 0 && left() >= 0;
+    const count = () =>
+      left() >= 0
+        ? `${left()} characters left`
+        : `${-left()} characters over the limit`;
+
+    const announceLater = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        announcement = left() <= 20 ? count() : '';
+        story.update();
+      }, 1000);
+    };
+
+    const edit = ({ detail }: CustomEvent<string>) => {
+      text = detail;
+      announcement = '';
+      announceLater();
+      story.update();
+    };
+
+    const post = () => {
+      if (!canPost()) {
+        return;
+      }
+
+      clearTimeout(timer);
+      posts.unshift({ text: text.trim(), time: 'Now' });
+      text = '';
+      announcement = 'Your post is live.';
+      story.update();
+      story.host?.querySelector('igc-textarea')?.focus();
+    };
+
+    const shortcut = (event: KeyboardEvent) => {
+      if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        post();
+      }
+    };
+
+    const story = renderInto(
+      () => html`
+        <h3>Share an update</h3>
+        <igc-textarea
+          aria-label="New post"
+          placeholder="What is new?"
+          rows="2"
+          resize="auto"
+          maxlength=${postLimit}
+          validate-only
+          .value=${text}
+          @igcInput=${edit}
+          @keydown=${shortcut}
+        >
+          <span slot="helper-text">${count()}</span>
+          <span slot="too-long">${count()}. Shorten the post to post it.</span>
+        </igc-textarea>
+        <div class="ta-row">
+          <igc-button ?disabled=${!canPost()} @click=${post}>Post</igc-button>
+          <span class="muted">or press Ctrl+Enter</span>
+        </div>
+        <p class="sr-only" role="status">${announcement}</p>
+        <ol class="ta-posts" aria-label="Your posts">
+          ${posts.map(
+            ({ text, time }) => html`
+              <li>
+                <p>${text}</p>
+                <span class="muted">${time}</span>
+              </li>
+            `
+          )}
+        </ol>
+      `
+    );
+
     return html`
-      <form action="" @submit=${formSubmitHandler}>
-        <fieldset>
-          <igc-textarea name="textarea-default" label="Default">
-            <p slot="helper-text">
-              Default state. No initial value and no validation.
-            </p>
-          </igc-textarea>
-        </fieldset>
+      ${styles}
+      <style>
+        .ta-posts {
+          display: grid;
+          padding: 0;
+          list-style: none;
+        }
 
-        <fieldset>
-          <igc-textarea
-            name="textarea-initial-value"
-            label="Initial value (binding)"
-            value="Hello world!"
+        .ta-posts li {
+          display: grid;
+          gap: 0.25rem;
+          padding-block: 0.75rem;
+          border-block-start: 1px solid var(--ig-gray-300);
+        }
+
+        .ta-posts p {
+          white-space: pre-line;
+        }
+      </style>
+      <section
+        class="ta-stack ta-panel"
+        aria-label="Share an update"
+        ${story.mount}
+      ></section>
+    `;
+  },
+};
+
+const stepsTemplate = '1. \n2. \n3. ';
+
+export const SupportRequest: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A support request. "What happened?" is `required` and has `minlength="30"`: the `value-missing` and `too-short` slots replace the helper text with a message for each rule. A failed submit focuses the first invalid field. The text between the tags of "Steps to reproduce" is its value, as in a native textarea, and also its default value, so Reset brings the numbered template back. "Error message" is for pasted machine text: `spellcheck="false"` and `autocapitalize="off"` leave the text as it is, `wrap="off"` scrolls long lines and does not wrap them, and a style on the `input` part sets a monospace font. Submit shows the form data.',
+      },
+    },
+  },
+  render: () => html`
+    ${styles}
+    <form
+      class="ta-stack ta-panel"
+      aria-labelledby="ta-support-title"
+      @submit=${formSubmitHandler}
+    >
+      <h3 id="ta-support-title">Contact support</h3>
+      <igc-input name="subject" label="Subject" required>
+        <span slot="value-missing">Enter a subject.</span>
+      </igc-input>
+      <igc-textarea
+        name="description"
+        label="What happened?"
+        rows="4"
+        required
+        minlength="30"
+      >
+        <span slot="helper-text">
+          Tell us what you did and what you expected. Use at least 30
+          characters.
+        </span>
+        <span slot="value-missing">Describe the problem.</span>
+        <span slot="too-short">
+          Add more details. Use at least 30 characters.
+        </span>
+      </igc-textarea>
+      <igc-textarea name="steps" label="Steps to reproduce" rows="4">
+        ${stepsTemplate}
+        <span slot="helper-text">Write one step on each line.</span>
+      </igc-textarea>
+      <igc-textarea
+        class="ta-code"
+        name="error"
+        label="Error message"
+        rows="4"
+        spellcheck="false"
+        autocapitalize="off"
+        wrap="off"
+      >
+        <span slot="helper-text">
+          Optional. Paste the text of the error, if you see one.
+        </span>
+      </igc-textarea>
+      <div class="ta-row">
+        <igc-button type="submit">Send request</igc-button>
+        <igc-button type="reset" variant="outlined">Reset</igc-button>
+      </div>
+    </form>
+  `,
+};
+
+const savedReplies = [
+  {
+    title: 'Refund issued',
+    text: 'Hi Maya,\n\nWe issued a refund of [amount] to your card. It shows on your statement in 5 to 10 business days.',
+  },
+  {
+    title: 'Late delivery',
+    text: 'Hi Maya,\n\nYour order left our warehouse late. The new delivery date is [date]. We are sorry for the wait.',
+  },
+  {
+    title: 'Wrong item',
+    text: 'Hi Maya,\n\nWe are sorry that you got the wrong item. Send it back with the return label from [link], and we ship the [item] at no cost.',
+  },
+];
+
+const signature = '\n\nBest regards,\nAlex from Support';
+const order = 'A-10482';
+
+/** A placeholder of a saved reply, such as `[amount]`. */
+const placeholder = /\[[^\]\n]+\]/g;
+
+export const CannedReplies: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The reply box of a support agent. A saved reply fills the textarea, and `focus()` with `setSelectionRange()` selects its first placeholder in square brackets, so the agent types over it. "Next placeholder" reads `selectionEnd` and selects the next placeholder after it, or the first one again. "Insert order number" calls `setRangeText()` without a range, so the number replaces the selected text or goes in at the caret. "Add signature" inserts the signature at the end with a range. `setRangeText()` sends no `igcInput`, so the story reads the new value itself. While a placeholder is left, `setCustomValidity()` makes the field invalid, so Send stops at the field and the `custom-error` slot tells why. After a reply is sent, a form reset clears the field and its invalid state.',
+      },
+    },
+  },
+  render: () => {
+    let text = '';
+    let sent = '';
+
+    const field = () => story.host?.querySelector('igc-textarea');
+    const placeholders = () => text.match(placeholder)?.length ?? 0;
+
+    const sync = () => {
+      const textarea = field();
+
+      if (!textarea) {
+        return;
+      }
+
+      text = textarea.value;
+      const count = placeholders();
+      textarea.setCustomValidity(
+        count
+          ? `Replace ${count === 1 ? 'the placeholder' : `${count} placeholders`} in square brackets.`
+          : ''
+      );
+      story.update();
+    };
+
+    const selectPlaceholder = async () => {
+      const textarea = field();
+
+      if (!textarea) {
+        return;
+      }
+
+      await textarea.updateComplete;
+      const matches = [...textarea.value.matchAll(placeholder)];
+      const match =
+        matches.find(({ index }) => index >= textarea.selectionEnd) ??
+        matches[0];
+      textarea.focus();
+
+      if (match) {
+        textarea.setSelectionRange(match.index, match.index + match[0].length);
+      }
+    };
+
+    const useReply = (reply: string) => async () => {
+      text = reply;
+      sent = '';
+      story.update();
+      await field()?.updateComplete;
+      sync();
+      selectPlaceholder();
+    };
+
+    const insertOrderNumber = () => {
+      const textarea = field()!;
+
+      textarea.setRangeText(order, undefined, undefined, 'end');
+      textarea.focus();
+      sync();
+    };
+
+    const addSignature = () => {
+      const textarea = field()!;
+      const end = textarea.value.length;
+
+      textarea.setRangeText(signature, end, end, 'end');
+      textarea.focus();
+      sync();
+    };
+
+    const send = (event: SubmitEvent) => {
+      event.preventDefault();
+      sent = 'Your reply is on its way to Maya Patel.';
+      (event.target as HTMLFormElement).reset();
+    };
+
+    const clear = () => {
+      text = '';
+      field()?.setCustomValidity('');
+      story.update();
+    };
+
+    const story = renderInto(() => {
+      const count = placeholders();
+
+      return html`
+        <div class="ta-ticket">
+          <h3>Ticket 4821: Where is my refund?</h3>
+          <p class="muted">
+            Maya Patel wrote: I sent the jacket back two weeks ago, and I still
+            have no refund. Order ${order}.
+          </p>
+        </div>
+        <div class="ta-row" role="group" aria-label="Saved replies">
+          ${savedReplies.map(
+            ({ title, text }) => html`
+              <igc-button variant="outlined" @click=${useReply(text)}>
+                ${title}
+              </igc-button>
+            `
+          )}
+        </div>
+        <igc-textarea
+          name="reply"
+          label="Reply"
+          rows="7"
+          required
+          .value=${text}
+          @igcInput=${sync}
+        >
+          <span slot="helper-text">
+            ${
+              count
+                ? `${plural(count, 'placeholder')} left.`
+                : 'Start from a saved reply or write your own.'
+            }
+          </span>
+          <span slot="value-missing">Write a reply.</span>
+          <span slot="custom-error">
+            Replace the text in square brackets before you send the reply.
+          </span>
+        </igc-textarea>
+        <div class="ta-row">
+          <igc-button type="submit">Send</igc-button>
+          <igc-button
+            variant="outlined"
+            ?disabled=${!count}
+            @click=${selectPlaceholder}
           >
-            <p slot="helper-text">
-              Initial value bound through property and no validation. Resetting
-              the form will restore the initial value.
-            </p>
-          </igc-textarea>
-
-          <igc-textarea
-            name="textarea-initial-projected"
-            label="Initial value (slot)"
+            Next placeholder
+          </igc-button>
+          <igc-button variant="outlined" @click=${insertOrderNumber}>
+            Insert order number
+          </igc-button>
+          <igc-button
+            variant="outlined"
+            ?disabled=${!text || text.endsWith(signature)}
+            @click=${addSignature}
           >
-            Hello world!
-            <p slot="helper-text">
-              Initial value bound through text projection and no validation.
-              Resetting the form will restore the initial value.
-            </p>
-          </igc-textarea>
-        </fieldset>
+            Add signature
+          </igc-button>
+        </div>
+        <p class="muted" role="status">${sent}</p>
+      `;
+    });
 
-        <fieldset disabled>
-          <igc-textarea
-            name="textarea-disabled"
-            value="I'm disabled"
-            label="Disabled"
-          >
-            <div slot="helper-text">
-              <p>
-                Disabled state. <strong>Does not</strong> participate in form
-                submission.
-              </p>
-            </div>
-          </igc-textarea>
-        </fieldset>
+    return html`
+      ${styles}
+      <style>
+        .ta-ticket {
+          display: grid;
+          gap: 0.25rem;
+          padding-block-end: 1rem;
+          border-block-end: 1px solid var(--ig-gray-300);
+        }
+      </style>
+      <form
+        class="ta-stack ta-panel"
+        aria-label="Reply to ticket 4821"
+        @submit=${send}
+        @reset=${clear}
+        ${story.mount}
+      ></form>
+    `;
+  },
+};
 
-        <fieldset>
-          <igc-textarea
-            name="textarea-readonly"
-            value="Can't edit me..."
-            readonly
-            label="Readonly"
-          >
-            <div slot="helper-text">
-              <p>
-                Read-only state. <strong>Does</strong> participate in form
-                submission.
-              </p>
-            </div>
-          </igc-textarea>
-        </fieldset>
+const video = {
+  slug: 'night-train',
+  title: 'The night train is back',
+  length: '4:12',
+};
 
-        <fieldset>
-          <igc-textarea name="textarea-required" label="Required" required>
-            <p slot="helper-text">With required validator.</p>
-          </igc-textarea>
+export const EmbedCode: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The share panel of a video. The embed code is `readonly`: the user can focus, select and copy it, but not change it. The switches change the code at once. Copy selects the whole code with `select()` and writes it to the clipboard. When the browser blocks the clipboard, the story focuses the field, so that the selected code is ready for Ctrl+C. `spellcheck="false"` keeps the spelling marks off the code, and `resize="none"` keeps the height of four rows.',
+      },
+    },
+  },
+  render: () => {
+    let controls = true;
+    let startAt = false;
+    let status = '';
 
-          <igc-textarea
-            name="textarea-min-length"
-            label="Minimum length (3)"
-            minlength="3"
-            ><p slot="helper-text">
-              With minimum length validator.
-            </p></igc-textarea
-          >
+    const code = () => {
+      const params = new URLSearchParams();
 
-          <igc-textarea
-            name="textarea-max-length"
-            label="Maximum length (8)"
-            maxlength="8"
-          >
-            <p slot="helper-text">
-              With maximum length validator. Since validate-only is not applied,
-              typing in the input beyond the maximum length is not possible.
-            </p>
-          </igc-textarea>
+      if (!controls) {
+        params.set('controls', '0');
+      }
+      if (startAt) {
+        params.set('start', '90');
+      }
 
-          <igc-textarea
-            name="textarea-max-length-soft"
-            label="Maximum length (8) validate-only"
-            maxlength="8"
-            validate-only
-          >
-            <p slot="helper-text">
-              With maximum length validator and validate-only applied. Typing in
-              the input beyond the maximum length is possible and will
-              invalidate the input.
-            </p>
-          </igc-textarea>
-        </fieldset>
-        ${formControls()}
-      </form>
+      const query = params.size ? `?${params}` : '';
+      return `<iframe src="https://video.example.com/embed/${video.slug}${query}" width="560" height="315" title="${video.title}" allowfullscreen></iframe>`;
+    };
+
+    const option =
+      (set: (checked: boolean) => void) =>
+      ({ detail }: CustomEvent<IgcCheckboxChangeEventArgs>) => {
+        set(detail.checked);
+        status = '';
+        story.update();
+      };
+
+    const copy = async () => {
+      const textarea = story.host!.querySelector('igc-textarea')!;
+      textarea.select();
+
+      try {
+        await navigator.clipboard.writeText(textarea.value);
+        status = 'The embed code is copied.';
+      } catch {
+        textarea.focus();
+        textarea.select();
+        status =
+          'The browser blocked the clipboard. Press Ctrl+C to copy the selected code.';
+      }
+
+      story.update();
+    };
+
+    const story = renderInto(
+      () => html`
+        <div>
+          <h3>Embed the video</h3>
+          <p class="muted">${video.title}, ${video.length}</p>
+        </div>
+        <igc-switch
+          .checked=${controls}
+          @igcChange=${option((checked) => (controls = checked))}
+        >
+          Show the player controls
+        </igc-switch>
+        <igc-switch
+          .checked=${startAt}
+          @igcChange=${option((checked) => (startAt = checked))}
+        >
+          Start at 1:30
+        </igc-switch>
+        <igc-textarea
+          class="ta-code"
+          label="Embed code"
+          rows="4"
+          resize="none"
+          spellcheck="false"
+          readonly
+          .value=${code()}
+        >
+          <span slot="helper-text">
+            Paste the code into the HTML of your page.
+          </span>
+        </igc-textarea>
+        <div class="ta-row">
+          <igc-button @click=${copy}>Copy</igc-button>
+          <span class="muted" role="status">${status}</span>
+        </div>
+      `
+    );
+
+    return html`
+      ${styles}
+      <section
+        class="ta-stack ta-panel"
+        aria-label="Embed the video"
+        ${story.mount}
+      ></section>
     `;
   },
 };

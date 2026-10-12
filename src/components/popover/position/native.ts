@@ -20,11 +20,9 @@ const OFFSET_PROPERTY = '--_igc-popover-offset';
 let nativeSupport: boolean | undefined;
 
 /**
- * Tests the native CSS anchor positioning one time, on the first use.
- *
- * `CSS.supports` cannot test the implicit anchor of `showPopover({ source })`.
- * Chromium 125 to 132 passes the CSS tests but ignores the `source` option.
- * The test therefore measures a real popover.
+ * Tests the native CSS anchor positioning once, with a real popover.
+ * `CSS.supports` cannot test `showPopover({ source })`, which Chromium 125 to
+ * 132 ignores.
  */
 function supportsNativeAnchoring(): boolean {
   nativeSupport ??= probeNativeAnchoring();
@@ -45,9 +43,7 @@ function probeNativeAnchoring(): boolean {
 
   popover.popover = 'manual';
   anchor.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px';
-  // `span-right` also tests the span keywords, which the aligned placements
-  // need. An engine without them drops the declaration and fails the
-  // measurement below.
+  // `span-right` also tests the span keywords that the aligned placements need.
   popover.style.cssText =
     'margin:0;inset:auto;border:none;padding:0;width:1px;height:1px;position-area:bottom span-right';
 
@@ -55,9 +51,8 @@ function probeNativeAnchoring(): boolean {
     document.body.append(anchor, popover);
     popover.showPopover({ source: anchor });
 
-    // An anchored popover sits directly below the 1 pixel anchor. The
-    // tolerance allows for rounding. A browser that ignores `source` centers
-    // the popover, far away.
+    // An anchored popover sits directly below the 1px anchor. A browser that
+    // ignores `source` centers it.
     const anchored = Math.abs(popover.getBoundingClientRect().top - 1) <= 1;
 
     popover.hidePopover();
@@ -72,9 +67,7 @@ function probeNativeAnchoring(): boolean {
 
 /**
  * True if the native CSS anchor positioning can position the `target`.
- *
- * The `source` option accepts only an HTMLElement, so the fallback positions
- * an anchor such as an SVG element.
+ * `source` accepts only an HTMLElement, so an SVG anchor uses the fallback.
  */
 export function shouldUseNativeAnchorPositioning(
   target: Element
@@ -91,10 +84,9 @@ export function shouldUseNativeAnchorPositioning(
 /**
  * The position strategy that uses the native CSS anchor positioning.
  *
- * `showPopover({ source: target })` sets the implicit anchor. This is
- * necessary, because `anchor-name` is tree-scoped and cannot cross the shadow
- * boundary. The CSS rules then do all the positioning. They apply only with
- * the `data-anchored` attribute, which this strategy owns.
+ * `showPopover({ source })` sets the implicit anchor, as `anchor-name` cannot
+ * cross the shadow boundary. The CSS rules apply only with the `data-anchored`
+ * attribute, which this strategy owns.
  */
 export class NativePositionStrategy extends PopoverPositionStrategy {
   /** The anchor that the container currently shows against. */
@@ -102,9 +94,8 @@ export class NativePositionStrategy extends PopoverPositionStrategy {
   private _arrowFrame = 0;
 
   /**
-   * Detects the removal of the anchor from the DOM. The observer does not
-   * detect the removal of a shadow host above the root of the anchor, and
-   * the fallback strategy does not detect it either.
+   * Detects the removal of the anchor. It misses the removal of a shadow host
+   * above the anchor root, as the fallback strategy does.
    */
   private readonly _anchorObserver = new MutationObserver(() => {
     if (this._target?.isConnected === false) {
@@ -181,10 +172,8 @@ export class NativePositionStrategy extends PopoverPositionStrategy {
   //#region Arrow support
 
   /**
-   * The arrow needs JavaScript: CSS gives no signal about the position-try
-   * fallback, and a descendant of the container cannot reference the implicit
-   * anchor. The strategy calculates the side from the rectangles of the
-   * container and the anchor, on each scroll and resize.
+   * The arrow needs JavaScript: CSS gives no position-try signal, and a
+   * descendant of the container cannot reference the implicit anchor.
    */
   private readonly _handleArrowInvalidation = (): void => {
     this._scheduleArrowUpdate();
@@ -251,9 +240,7 @@ export class NativePositionStrategy extends PopoverPositionStrategy {
       ? container.clientWidth
       : container.clientHeight;
 
-    // Compare the centers to find the side after a flip fallback. This stays
-    // correct for an offset gap and for a negative offset that overlaps the
-    // anchor.
+    // Compare the centers to find the side after a flip. This works for any offset.
     const nearSide =
       containerRect[main] + containerRect[mainSize] / 2 <
       anchorRect[main] + anchorRect[mainSize] / 2;

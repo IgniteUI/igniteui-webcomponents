@@ -11,6 +11,7 @@ import {
 import customElements from '../custom-elements.json' with { type: 'json' };
 import report from './report.mjs';
 import { buildAll } from './sass.mjs';
+import { buildThemeEntries } from './theme-entries.mjs';
 
 const exec = promisify(_exec);
 
@@ -78,6 +79,8 @@ async function runTask(tag, cmd) {
       ...RELEASE_FILES.map((file) => copyFile(file, DEST_DIR(file))),
     ]);
   });
+
+  await runTask('Theme entries', () => buildThemeEntries(DEST_DIR()));
 
   await runTask(
     'VSCode custom data + Web types',

@@ -1,8 +1,6 @@
 import { getDateFormatter, getDisplayNamesFormatter } from 'igniteui-i18n-core';
 import { html, nothing, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { addInternalsController } from '#internals/controllers/internals.js';
-import { addKeybindings } from '#internals/controllers/key-bindings.js';
 import { CalendarDay, DAYS_IN_WEEK } from '#internals/date/model.js';
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '#internals/decorators/blazorSuppressComponent.js';
@@ -11,20 +9,19 @@ import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { chunk, firstOf, lastOf } from '#internals/utils/arrays.js';
-import { addSafeEventListener } from '#internals/utils/events.js';
-import { addThemingController } from '#theming/theming-controller.js';
+import { bindIf } from '#internals/utils/lit.js';
+import { all } from '#themes/calendar/themes/days.js';
 import { IgcCalendarBaseComponent } from '../base.js';
 import {
-  areSameMonth,
+  dateChanged,
   generateMonth,
+  getDateRangeLabels,
   getViewElement,
   isDateInRanges,
-  isNextMonth,
-  isPreviousMonth,
+  monthOffset,
+  setupCalendarView,
 } from '../helpers.js';
-import { selectDate } from '../selection.js';
 import { styles } from '../themes/days-view.base.css.js';
-import { all } from '../themes/days.js';
 import type { IgcCalendarViewComponentEventMap } from '../types.js';
 
 export interface IgcDaysViewEventMap extends IgcCalendarViewComponentEventMap {
@@ -117,17 +114,11 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   private _activeDay?: HTMLElement;
 
   private get _rangeStart(): CalendarDay | undefined {
-    return this._hasValues ? firstOf(this._values) : undefined;
+    return firstOf(this._values);
   }
 
   private get _rangeEnd(): CalendarDay | undefined {
-    return this._hasValues ? lastOf(this._values) : undefined;
-  }
-
-  private get _weekLabel(): string {
-    return getDisplayNamesFormatter().getWeekLabel(this.locale, {
-      style: 'short',
-    });
+    return lastOf(this._values);
   }
 
   //#endregion
@@ -161,7 +152,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   public hideTrailingDays = false;
 
   /** The range preview date. */
-  @property({ attribute: false })
+  @property({ attribute: false, hasChanged: dateChanged })
   public set rangePreviewDate(value: Date | undefined) {
     this._rangePreviewDate = value ? CalendarDay.from(value) : undefined;
   }
@@ -184,13 +175,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   constructor() {
     super();
 
-    addInternalsController(this, {
-      initialARIA: { role: 'grid' },
-      reflectRole: true,
-    });
-    addThemingController(this, all);
-    addKeybindings(this).setActivateHandler(this._handleInteraction);
-    addSafeEventListener(this, 'click', this._handleInteraction);
+    setupCalendarView(this, all, this._handleInteraction);
   }
 
   //#endregion
@@ -222,30 +207,6 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   //#region Internal selection methods
 
-  /**
-   * Applies the activation of `value` to the selection of this view.
-   *
-   * @remarks
-   * A calendar writes the selection back to its views on the next render. This
-   * keeps a stand-alone view able to select.
-   */
-  private _selectDate(value: CalendarDay): boolean {
-    const selection = selectDate(
-      { value: this._value, values: this._values },
-      value,
-      { selection: this.selection, disabledDates: this._disabledDates }
-    );
-
-    if (!selection) {
-      return false;
-    }
-
-    this._value = selection.value;
-    this._values = selection.values;
-
-    return true;
-  }
-
   /** Whether `day` is selected. Disabled dates are excluded by the caller. */
   private _isSelected(day: CalendarDay, context: DayRenderContext): boolean {
     switch (this.selection) {
@@ -267,18 +228,19 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   private _setRangePreviewDate(day?: CalendarDay): void {
     this._rangePreviewDate = day;
     this.emitEvent('igcRangePreviewDateChange', {
-      detail: day ? day.native : undefined,
+      detail: day?.native,
     });
   }
 
-  private _changeRangePreview(day: CalendarDay): void {
-    if (this._values.length === 1 && !this._rangeStart!.equalTo(day)) {
-      this._setRangePreviewDate(day);
-    }
-  }
+  /** Previews the range up to a focused or hovered day, and clears the preview when it is left. */
+  private _handleDayPreview(event: Event): void {
+    if (event.type === 'focus' || event.type === 'pointerenter') {
+      const day = CalendarDay.from(new Date(getViewElement(event)));
 
-  private _clearRangePreview(): void {
-    if (this._rangePreviewDate) {
+      if (this._values.length === 1 && !this._rangeStart!.equalTo(day)) {
+        this._setRangePreviewDate(day);
+      }
+    } else if (this._rangePreviewDate) {
       this._setRangePreviewDate();
     }
   }
@@ -297,15 +259,10 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
         month: 'long',
         day: 'numeric',
       }),
-      selectedDates: new Set(),
+      selectedDates: new Set(
+        this._isMultiple ? this._values.map((value) => value.timestamp) : []
+      ),
     };
-
-    if (this._isMultiple) {
-      for (const value of this._values) {
-        context.selectedDates.add(value.timestamp);
-      }
-      return context;
-    }
 
     if (!this._isRange || !this._hasValues) {
       return context;
@@ -317,7 +274,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
     context.selectedRange = boundsOf(start, end);
 
-    // The endpoints of the range extend to the previewed date while it is outside of it
+    // A previewed date outside the range extends its endpoints.
     context.first = (preview?.lessThan(start) ? preview : start).timestamp;
     context.last = (preview?.greaterThan(end) ? preview : end).timestamp;
 
@@ -341,43 +298,31 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     // Range selection in progress
     if (this._rangePreviewDate?.equalTo(day)) {
       return formatter.formatRange(
-        this._rangeStart!.native,
-        this._rangePreviewDate.native
+        this._rangeStart!.timestamp,
+        this._rangePreviewDate.timestamp
       );
     }
 
     // Range selection finished
     if (day.timestamp === first || day.timestamp === last) {
       return formatter.formatRange(
-        this._rangeStart!.native,
-        this._rangeEnd!.native
+        this._rangeStart!.timestamp,
+        this._rangeEnd!.timestamp
       );
     }
 
-    return formatter.format(day.native);
-  }
-
-  private _getDayHandlers(day: CalendarDay) {
-    if (!this._isRange) {
-      return { changePreview: nothing, clearPreview: nothing };
-    }
-
-    return {
-      changePreview: this._changeRangePreview.bind(this, day),
-      clearPreview: this._clearRangePreview.bind(this),
-    };
+    return formatter.format(day.timestamp);
   }
 
   private _getDayProperties(
     day: CalendarDay,
     context: DayRenderContext
   ): DayProperties {
-    const inactive = !areSameMonth(day, this._activeDate);
+    const offset = monthOffset(day, this._activeDate);
+    const inactive = offset !== 0;
     const disabled = isDateInRanges(day, this._disabledDates);
-
     const hidden =
-      (this.hideLeadingDays && isPreviousMonth(day, this._activeDate)) ||
-      (this.hideTrailingDays && isNextMonth(day, this._activeDate));
+      offset < 0 ? this.hideLeadingDays : offset > 0 && this.hideTrailingDays;
 
     return {
       disabled: disabled || hidden,
@@ -393,6 +338,23 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       selected: !disabled && this._isSelected(day, context),
       special: !inactive && isDateInRanges(day, this._specialDates),
     };
+  }
+
+  /** The labels of the descriptors that disable the day or mark it as special. */
+  private _getDayLabels(
+    day: CalendarDay,
+    { disabled, special }: DayProperties
+  ): string[] {
+    if (!(disabled || special)) {
+      return [];
+    }
+
+    const ranges = [
+      ...(disabled ? this._disabledDates : []),
+      ...(special ? this._specialDates : []),
+    ];
+
+    return getDateRangeLabels(day, ranges);
   }
 
   //#endregion
@@ -411,8 +373,11 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     props: DayProperties,
     context: DayRenderContext
   ): TemplateResult {
-    const ariaLabel = this._intlFormatDay(day, context);
-    const { changePreview, clearPreview } = this._getDayHandlers(day);
+    const ariaLabel = [
+      this._intlFormatDay(day, context),
+      ...this._getDayLabels(day, props),
+    ].join(', ');
+    const preview = bindIf(this._isRange, this._handleDayPreview);
 
     return html`
       <span part=${partMap({ date: true, ...props })}>
@@ -424,10 +389,10 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
           aria-selected=${props.selected}
           data-value=${day.timestamp}
           tabindex=${this.active && day.equalTo(this._activeDate) ? 0 : -1}
-          @focus=${changePreview}
-          @blur=${clearPreview}
-          @pointerenter=${changePreview}
-          @pointerleave=${clearPreview}
+          @focus=${preview}
+          @blur=${preview}
+          @pointerenter=${preview}
+          @pointerleave=${preview}
         >
           ${day.date}
         </span>
@@ -436,9 +401,13 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   protected _renderHeaderWeekNumber() {
+    const label = getDisplayNamesFormatter().getWeekLabel(this.locale, {
+      style: 'short',
+    });
+
     return html`
       <span role="columnheader" part="label week-number first">
-        <span part="week-number-inner first"> ${this._weekLabel} </span>
+        <span part="week-number-inner first"> ${label} </span>
       </span>
     `;
   }
@@ -465,15 +434,15 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       ? this._renderHeaderWeekNumber()
       : nothing;
 
-    // The first week of the grid, so that the labels cannot disagree with it
+    // Take the labels from the first grid week, so they always match it.
     const headers = dates.slice(0, DAYS_IN_WEEK).map(
       (day) => html`
         <span
           role="columnheader"
           part="label"
-          aria-label=${aria.format(day.native)}
+          aria-label=${aria.format(day.timestamp)}
         >
-          <span part="label-inner">${label.format(day.native)}</span>
+          <span part="label-inner">${label.format(day.timestamp)}</span>
         </span>
       `
     );

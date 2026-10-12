@@ -32,9 +32,11 @@
     - [Component](#component)
     - [ARIA](#aria)
     - [Scroll strategy tests](#scroll-strategy-tests)
+    - [Theming](#theming)
     - [Form integration tests](#form-integration-tests)
     - [defaultValue](#defaultvalue)
     - [Validation message slots](#validation-message-slots)
+    - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -43,10 +45,14 @@
 
 ## Revision history
 
-| Version | Date       | Notes                                              |
-| ------: | ---------- | -------------------------------------------------- |
-|       1 | 2026-09-21 | Initial specification                              |
-|       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
+| Version | Date       | Notes                                                                                 |
+| ------: | ---------- | ------------------------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                                 |
+|       2 | 2026-09-24 | Describe the naming order and the host ARIA naming                                    |
+|       3 | 2026-10-01 | Correct the `igcChange` cancelability; Arrow Down at the end of the list; input reset |
+|       4 | 2026-10-02 | Focus after form checks; `invalid` only on checks                                     |
+|       5 | 2026-10-02 | Forward the host `aria-describedby`; no `aria-disabled` on the native input           |
+|       6 | 2026-10-05 | The list keeps its stylesheet on a theme change                                       |
 
 ## Overview
 
@@ -236,8 +242,13 @@ names it.
 ```
 
 - The selection is submitted under `name`.
-- A form reset restores `defaultValue`.
+- A form reset restores `defaultValue` and clears the invalid styles of the control and its input.
 - An invalid control blocks submission.
+
+As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
+the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
+`checkValidity()` do not move the focus. The `invalid` event comes only from these checks and from a failed submit,
+not while the user edits the control.
 
 ### Localization
 
@@ -268,7 +279,7 @@ While the list of options **is** visible:
 
 | Key combination                             | Result                                                                        |
 | ------------------------------------------- | ------------------------------------------------------------------------------ |
-| <kbd>Arrow Down</kbd>                       | Activates the next option.                                                    |
+| <kbd>Arrow Down</kbd>                       | Activates the next option; at the last option it does nothing.                |
 | <kbd>Arrow Up</kbd>                         | Activates the previous option; from the first option it returns to the input. |
 | <kbd>Space</kbd>                            | Selects or deselects the active option.                                       |
 | <kbd>Enter</kbd>                            | Selects the active option in single selection mode, and closes the list in all modes. |
@@ -335,24 +346,24 @@ type ComboItemTemplate<T extends object> = (props: { item: T }) => TemplateResul
 
 ### Methods
 
-| Name              | Type signature                                | Description                                                               |
-| ----------------- | --------------------------------------------- | --------------------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`                        | Shows the component.                                                       |
-| hide              | `(): Promise<boolean>`                        | Hides the component.                                                       |
-| toggle            | `(): Promise<boolean>`                        | Toggles the open state of the component.                                   |
-| select            | `(items?: Item<T> \| Item<T>[]): void`        | Selects options by reference or value key. Without an argument, selects all. |
-| deselect          | `(items?: Item<T> \| Item<T>[]): void`        | Deselects options by reference or value key. Without an argument, deselects all. |
-| focus             | `(options?: FocusOptions): void`              | Sets focus on the component.                                               |
-| blur              | `(): void`                                    | Removes focus from the component.                                          |
-| checkValidity     | `(): boolean`                                 | Checks validity and emits `invalid` when the control is invalid.           |
-| reportValidity    | `(): boolean`                                 | Checks validity and shows the browser message when invalid.                |
-| setCustomValidity | `(message: string): void`                     | Sets a custom message. Invalid while `message` is not empty.               |
+| Name              | Type signature                         | Description                                                                      |
+| ----------------- | -------------------------------------- | -------------------------------------------------------------------------------- |
+| show              | `(): Promise<boolean>`                 | Shows the component.                                                             |
+| hide              | `(): Promise<boolean>`                 | Hides the component.                                                             |
+| toggle            | `(): Promise<boolean>`                 | Toggles the open state of the component.                                         |
+| select            | `(items?: Item<T> \| Item<T>[]): void` | Selects options by reference or value key. Without an argument, selects all.     |
+| deselect          | `(items?: Item<T> \| Item<T>[]): void` | Deselects options by reference or value key. Without an argument, deselects all. |
+| focus             | `(options?: FocusOptions): void`       | Sets focus on the component.                                                     |
+| blur              | `(): void`                             | Removes focus from the component.                                                |
+| checkValidity     | `(): boolean`                          | Checks validity and emits `invalid` when the control is invalid.                 |
+| reportValidity    | `(): boolean`                          | Checks validity; when invalid, emits `invalid` and focuses the control.          |
+| setCustomValidity | `(message: string): void`              | Sets a custom message. Invalid while `message` is not empty.                     |
 
 ### Events
 
 | Name       | Cancellable | Description                                       |
 | ---------- | ----------- | ------------------------------------------------- |
-| igcChange  | false       | Emitted when the selection of the control changes. |
+| igcChange  | true        | Emitted before the selection changes. A cancel keeps the selection. |
 | igcOpening | true        | Emitted just before the list of options is opened. |
 | igcOpened  | false       | Emitted after the list of options is opened.      |
 | igcClosing | true        | Emitted just before the list of options is closed. |
@@ -425,9 +436,9 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 7. Item and group header templating.
 8. The empty message and the `empty` slot.
 9. Localization through `locale` and `resourceStrings`.
-10. Opening, closing and the keyboard navigation of the list.
+10. Opening, closing and the keyboard navigation of the list, including Arrow Down at the end of the matches.
 11. The clear action and `disableClear`.
-12. `igcChange` carries the new value, the items and the change type.
+12. `igcChange` carries the new value, the items and the change type, and a cancel keeps the selection.
 
 ### ARIA
 
@@ -438,22 +449,34 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 
 14. `hide`, `scroll` and `close` behave as specified while an ancestor scrolls.
 
+### Theming
+
+15. The list keeps its stylesheet in the shadow root when the theme changes.
+
 ### Form integration tests
 
-15. Is form associated, submits its selection, and is reset with the form.
-16. Reflects the disabled state of an ancestor `fieldset`.
-17. Fulfils the required and custom constraints.
+16. Is form associated, submits its selection, and is reset with the form, including the single-selection input.
+17. Reflects the disabled state of an ancestor `fieldset`.
+18. Fulfils the required and custom constraints.
+
+The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
+[input suite](../input/spec.md#form-validity-checks) covers them.
 
 ### defaultValue
 
-18. Form integration in single selection mode, in multiple selection mode, and with data that arrives late.
-19. Validation against the default value.
+19. Form integration in single selection mode, in multiple selection mode, and with data that arrives late.
+20. Validation against the default value.
 
 ### Validation message slots
 
 Generated by `runValidationContainerTests`.
 
-20. The `value-missing`, `custom-error` and `invalid` slots render for their matching state.
+21. The `value-missing`, `custom-error` and `invalid` slots render for their matching state.
+
+### Host ARIA
+
+22. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+    text, and follows a change and a removal.
 
 ## Assumptions and limitations
 
@@ -476,6 +499,8 @@ Generated by `runValidationContainerTests`.
   case.
 - The helper text and the validation messages are referenced through `aria-describedby`.
 - An external light DOM `label` is projected onto the native input of the anchor as an element reference.
+- A host `aria-describedby` describes the native control after the helper text, by element reference.
+- The native input has no `aria-disabled`. Its native `disabled` state is enough.
 
 ### Keyboard support
 

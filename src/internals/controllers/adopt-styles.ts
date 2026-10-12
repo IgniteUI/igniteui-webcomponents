@@ -5,6 +5,7 @@ import {
   type ReactiveControllerHost,
 } from 'lit';
 import { sameItems } from '../utils/arrays.js';
+import { getOrInsertComputed } from '../utils/objects.js';
 
 const observerConfig: MutationObserverInit = { childList: true, subtree: true };
 
@@ -28,10 +29,8 @@ function getCloneableRules(sheet: CSSStyleSheet): CSSRule[] {
  * share a tracker.
  *
  * @remarks
- * The tracker observes the document while at least one controller adopts, so
- * a stylesheet injected at runtime reaches the shadow roots that already
- * adopted. A stylesheet that changes in place needs an {@link invalidate}
- * call.
+ * The tracker observes the document while a controller adopts. A stylesheet
+ * that changes in place needs an {@link invalidate} call.
  */
 class DocumentStyleSheets {
   //#region Instances
@@ -43,14 +42,11 @@ class DocumentStyleSheets {
 
   /** Returns the tracker of the document, and creates a missing one. */
   public static for(document: Document): DocumentStyleSheets {
-    let instance = DocumentStyleSheets._instances.get(document);
-
-    if (!instance) {
-      instance = new DocumentStyleSheets(document);
-      DocumentStyleSheets._instances.set(document, instance);
-    }
-
-    return instance;
+    return getOrInsertComputed(
+      DocumentStyleSheets._instances,
+      document,
+      () => new DocumentStyleSheets(document)
+    );
   }
 
   //#endregion
@@ -66,9 +62,8 @@ class DocumentStyleSheets {
   private _isStale = true;
 
   /**
-   * The node to observe for stylesheets: the head by convention, which avoids
-   * a mutation record for every DOM change in the page. The fallbacks cover a
-   * document without a head, such as one that `DOMImplementation` creates.
+   * The head, so a body change makes no mutation record. The fallbacks cover
+   * a document without a head.
    */
   private get _observedRoot(): Node {
     return (
@@ -157,9 +152,8 @@ class DocumentStyleSheets {
    * Mirrors the stylesheets that the document holds now.
    *
    * @remarks
-   * The comparison uses the clones and not the document collection, so a
-   * stylesheet that gave nothing before is read again on every pass, and an
-   * unreadable one leaves the consumers alone.
+   * It compares the clones, not the document collection, so an unreadable
+   * stylesheet does not notify the consumers.
    *
    * @returns Whether the mirrored collection has changed.
    */
@@ -185,12 +179,11 @@ class DocumentStyleSheets {
   }
 
   /**
-   * Clones the given stylesheet into a constructable one, in the original
-   * rule order, and skips a rule that the clone does not accept.
+   * Clones the stylesheet into a constructable one, and skips a rule that the
+   * clone does not accept.
    *
    * @remarks
-   * A stylesheet without rules is not cached, so a later pass picks up one
-   * that the document receives empty and fills afterwards.
+   * An empty stylesheet is not cached, so a later pass picks up its rules.
    *
    * @returns The cloned stylesheet, or null when there is nothing to clone.
    */

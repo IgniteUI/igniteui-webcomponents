@@ -1,10 +1,16 @@
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import {
+  ariaBindings,
+  hostAria,
+} from '#internals/controllers/aria-projection.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/tabs/themes/tab-themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles as shared } from './themes/shared/tab/tab.common.css.js';
-import { all } from './themes/tab-themes.js';
 import { styles } from './themes/tab.base.css.js';
 
 const nextId = createIdGenerator('igc-tab');
@@ -25,9 +31,9 @@ const nextId = createIdGenerator('igc-tab');
  * @csspart suffix - Tab header's label suffix.
  * @csspart tab-body - Holds the body content of a single tab, only the body of the selected tab is visible.
  */
-export default class IgcTabComponent extends LitElement {
+export default class IgcTabComponent extends HostAriaMixin(LitElement) {
   public static readonly tagName = 'igc-tab';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -99,10 +105,7 @@ export default class IgcTabComponent extends LitElement {
 
   /**
    * @hidden @internal
-   * Applied by the parent `igc-tabs` whenever the tab set or the selection changes.
-   *
-   * `isTabStop` drives the roving tabindex, keeping the tab strip reachable even
-   * when no tab is selected.
+   * `isTabStop` keeps the strip reachable when no tab is selected.
    */
   public _setTabState(
     posInSet: number,
@@ -121,6 +124,7 @@ export default class IgcTabComponent extends LitElement {
   protected override render(): TemplateResult {
     return html`
       <div
+        ${ariaBindings(hostAria(this))}
         part="tab-header"
         role="tab"
         id=${this._headerId}

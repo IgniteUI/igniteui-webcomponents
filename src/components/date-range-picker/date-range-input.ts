@@ -6,16 +6,20 @@ import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateRangeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { all } from '#themes/input/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import {
   type DatePart,
   type DatePartDeltas,
   DatePartType,
 } from '../date-time-input/date-part.js';
-import { IgcDateTimeInputBaseComponent } from '../date-time-input/date-time-input.base.js';
+import {
+  IgcDateTimeInputBaseComponent,
+  type PartDirection,
+} from '../date-time-input/date-time-input.base.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
-import { all } from '../input/themes/themes.js';
 import type { DateRangeValue } from '../types.js';
 import {
   DateRangeMaskParser,
@@ -38,10 +42,12 @@ export interface IgcDateRangeInputComponentEventMap {
 /* blazorSuppress */
 export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   IgcDateRangeInputComponentEventMap,
-  AbstractConstructor<IgcDateTimeInputBaseComponent<DateRangeValue>>
+  AbstractConstructor<
+    IgcDateTimeInputBaseComponent<DateRangeValue, DateRangePart>
+  >
 >(IgcDateTimeInputBaseComponent) {
   public static readonly tagName = 'igc-date-range-input';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -111,21 +117,15 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
 
   protected override _calculatePartNavigationPosition(
     inputValue: string,
-    direction: number
+    direction: PartDirection
   ): number {
     const cursorPos = this._maskSelection.start;
     const rangeParts = this._parser.parts;
 
     const currentPart = this._parser.getPartForCursor(cursorPos);
 
-    const isStartOrEndPart =
-      currentPart &&
-      (currentPart.position === DateRangePosition.Start ||
-        currentPart.position === DateRangePosition.End);
-
-    if (direction === 0) {
-      // Backward: if inside a start/end part, move to its start; else, move to previous part's start
-      if (isStartOrEndPart && cursorPos !== currentPart.start) {
+    if (direction === 'back') {
+      if (currentPart && cursorPos !== currentPart.start) {
         return currentPart.start;
       }
       const prevPart = rangeParts.findLast(
@@ -134,8 +134,7 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
       return prevPart?.start ?? 0;
     }
 
-    // Forward: if inside a start/end part, move to its end; else, move to next part's end
-    if (isStartOrEndPart && cursorPos !== currentPart.end) {
+    if (currentPart && cursorPos !== currentPart.end) {
       return currentPart.end;
     }
     const nextPart = rangeParts.find(
@@ -149,11 +148,11 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   // #region Internal API Overrides
 
   protected override _performStep(
-    datePart: unknown,
+    datePart: DateRangePart | undefined,
     delta: number | undefined,
-    isDecrement: boolean
-  ): void {
-    // If no value exists, set to today's date first
+    sign: 1 | -1
+  ): boolean {
+    // With no value, start from today.
     const current = this._uncommittedValue;
 
     if (!current?.start && !current?.end) {
@@ -163,53 +162,42 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
       this.updateComplete.then(() =>
         this._input?.setSelectionRange(start, end)
       );
-      return;
+      return true;
     }
 
-    super._performStep(datePart, delta, isDecrement);
+    return super._performStep(datePart, delta, sign);
   }
 
   protected override _buildDisplayValue(): string {
-    if (!this.value?.start && !this.value?.end) {
-      return '';
-    }
-
-    const { start, end } = this.value;
-    const startStr = start
-      ? formatDisplayDate(start, this.locale, this.displayFormat)
-      : '';
-    const endStr = end
-      ? formatDisplayDate(end, this.locale, this.displayFormat)
-      : '';
-    return startStr && endStr
-      ? `${startStr}${this._parser.separator}${endStr}`
-      : startStr || endStr;
+    return [this.value?.start, this.value?.end]
+      .map((date) =>
+        date ? formatDisplayDate(date, this.locale, this.displayFormat) : ''
+      )
+      .filter(Boolean)
+      .join(this._parser.separator);
   }
 
   protected override _calculateSpunValue(
-    datePart: unknown,
+    range: DateRangePart,
     delta: number | undefined,
-    isDecrement: boolean
+    sign: 1 | -1
   ): DateRangeValue {
-    const range = datePart as DateRangePart;
     const part = this._parser.getPartByTypeAndPosition(
       range.part as DatePartType,
       range.position
     );
 
-    const today = CalendarDay.today.native;
-    const defaultValue = { start: today, end: today };
-    const current = this._uncommittedValue;
+    // `_performStep` starts an empty range from today, so `current` is set.
+    const current = this._uncommittedValue!;
 
     if (!part) {
-      return current || defaultValue;
+      return current;
     }
 
     const effectiveDelta =
       delta ?? this._datePartDeltas[range.part as keyof DatePartDeltas] ?? 1;
-    const spinAmount = effectiveDelta * (isDecrement ? -1 : 1);
+    const spinAmount = effectiveDelta * sign;
 
-    // For AM/PM spinning, extract the current AM/PM value from the mask
     const amPmValue = this._readAmPmFromMask(part);
 
     return this._parser.spinDateRangePart(
@@ -221,10 +209,7 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     );
   }
 
-  /**
-   * Gets the date range part at the current cursor position.
-   * Returns undefined if the cursor sits outside any part - in the separator, say.
-   */
+  /** The range part at the cursor, or undefined outside any part (for example, in the separator). */
   protected override _getDatePartAtCursor(): DateRangePart | undefined {
     const part = this._parser.getPartForCursor(this._inputSelection.start);
 
@@ -233,10 +218,7 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
       : undefined;
   }
 
-  /**
-   * Gets the default date range part to target when the input is not focused.
-   * Returns the first date part at the start position.
-   */
+  /** The part to target when the input is not focused: the first start date part. */
   protected override _getDefaultDatePart(): DateRangePart | undefined {
     const firstPart = this._parser.getFirstDatePartForPosition(
       DateRangePosition.Start

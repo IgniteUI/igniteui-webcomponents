@@ -46,9 +46,10 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                         |
+| ------: | ---------- | ------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                         |
+|       2 | 2026-10-02 | An anchor that forwards its description passes the tooltip on |
 
 ## Overview
 
@@ -379,6 +380,8 @@ dismissed through `sticky`; the component itself is not focusable and manages no
 
 - [WAI-ARIA tooltip pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/)
 - [WAI-ARIA 1.2 tooltip role](https://www.w3.org/TR/wai-aria-1.2/#tooltip)
+- A library component that forwards its host `aria-describedby`, such as a button or an input, passes the tooltip on
+  to its native element.
 
 ### Keyboard support
 

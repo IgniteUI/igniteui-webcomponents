@@ -2,15 +2,16 @@
 @use 'themes' as *;
 @use '../light/themes' as light;
 @use 'components/dropdown/themes/dark/themes' as dropdown-theme;
+@use 'components/dropdown/themes/light/themes' as light-dropdown;
 
 $dropdown-theme: dropdown-theme.$bootstrap;
 $theme: $bootstrap;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $theme));
+    @include css-vars-from-theme(dark-overrides(light.$bootstrap, $theme));
 
     [part='base'] {
-        @include css-vars-from-theme($dropdown-theme);
+        @include css-vars-from-theme(dark-overrides(light-dropdown.$bootstrap, $dropdown-theme));
     }
 }
 

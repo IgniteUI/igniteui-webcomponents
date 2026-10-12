@@ -62,8 +62,8 @@ export function convertToDates(
   const sources = isString(value) ? value.split(',') : value;
 
   for (const source of sources) {
-    const trimmed = isString(source) ? source.trim() : source;
-    const date = convertToDate(trimmed);
+    // `convertToDate` trims a string.
+    const date = convertToDate(source);
     if (date) {
       values.push(date);
     }

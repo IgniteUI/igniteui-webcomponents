@@ -5,6 +5,7 @@ import {
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
+import { guard } from 'lit/directives/guard.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { chatContext, chatUserInputContext } from '#internals/context.js';
 import { addContextProvider } from '#internals/controllers/context-provider.js';
@@ -16,9 +17,13 @@ import { chatResourcesMap } from '#internals/i18n/utils.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { isEmpty } from '#internals/utils/arrays.js';
+import { all } from '#themes/chat/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcIconComponent from '../icon/icon.js';
+import IgcListHeaderComponent from '../list/list-header.js';
+import IgcListItemComponent from '../list/list-item.js';
 import IgcListComponent from '../list/list.js';
 import IgcToastComponent from '../toast/toast.js';
 import IgcTooltipComponent from '../tooltip/tooltip.js';
@@ -27,7 +32,6 @@ import IgcChatMessageComponent from './chat-message.js';
 import { ChatState } from './chat-state.js';
 import { styles } from './themes/chat.base.css.js';
 import { styles as shared } from './themes/shared/chat.common.css.js';
-import { all } from './themes/themes.js';
 import type {
   ChatRenderContext,
   ChatTemplateRenderer,
@@ -199,7 +203,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
 >(LitElement) {
   public static readonly tagName = 'igc-chat';
 
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -210,6 +214,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
       IgcButtonComponent,
       IgcIconComponent,
       IgcListComponent,
+      IgcListHeaderComponent,
+      IgcListItemComponent,
       IgcTooltipComponent,
       IgcToastComponent
     );
@@ -249,12 +255,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
   @query(IgcChatInputComponent.tagName)
   private readonly _input?: IgcChatInputComponent;
 
-  @query('[part="typing-indicator"]')
-  private readonly _typingIndicator?: HTMLElement;
-
-  @query('[part="suggestions-container"]')
-  private readonly _suggestionsContainer?: HTMLElement;
-
   @query('[part="message-area-container"]', true)
   private readonly _scrollContainer!: HTMLElement;
 
@@ -277,10 +277,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
    */
   @property({ attribute: false })
   public set draftMessage(value: IgcChatDraftMessage) {
-    if (this._state && value) {
+    if (value) {
       this._state.inputValue = value.text;
       this._state.inputAttachments = value.attachments || [];
-      this.requestUpdate();
     }
   }
 
@@ -328,9 +327,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
   private _getRenderer<U extends keyof DefaultChatRenderers>(
     name: U
   ): DefaultChatRenderers[U] {
-    return this._state.options?.renderers
-      ? (this._state.options.renderers[name] ?? this._defaults[name])
-      : this._defaults[name];
+    return this._state.options?.renderers?.[name] ?? this._defaults[name];
   }
 
   private _handleSuggestionClick(text: string): void {
@@ -342,33 +339,42 @@ export default class IgcChatComponent extends EventEmitterMixin<
    * Scrolls the view to a specific message by id.
    */
   public scrollToMessage(messageId: string): void {
-    if (!isEmpty(this.messages)) {
-      const message = this.renderRoot.querySelector(`#message-${messageId}`);
-      message?.scrollIntoView({ block: 'end', inline: 'end' });
-    }
+    this.renderRoot
+      .querySelector(`#message-${messageId}`)
+      ?.scrollIntoView({ block: 'end', inline: 'end' });
   }
 
   protected override updated(properties: PropertyValues<this>): void {
-    if (
-      (properties.has('messages') ||
-        this._typingIndicator ||
-        this._suggestionsContainer) &&
-      !this._state.disableAutoScroll
-    ) {
+    if (this._state.options?.disableAutoScroll) {
+      return;
+    }
+
+    if (properties.has('messages') || this._contentAdded(properties)) {
       this._scrollToBottom();
     }
   }
 
-  private _scrollToBottom(): void {
-    const current = this._scrollContainer.scrollTop;
+  /** Whether the typing indicator or new suggestions appeared. */
+  private _contentAdded(properties: PropertyValues<this>): boolean {
+    if (!properties.has('options')) {
+      return false;
+    }
 
+    const previous = properties.get('options');
+    const current = this.options;
+
+    return (
+      (Boolean(current?.isTyping) && !previous?.isTyping) ||
+      (current?.suggestions !== previous?.suggestions &&
+        Boolean(current?.suggestions?.length))
+    );
+  }
+
+  private _scrollToBottom(): void {
+    // Read in the frame, after the layout that the update caused.
     requestAnimationFrame(() => {
-      const scrollHeight = this._scrollContainer.scrollHeight;
-      if (current < scrollHeight) {
-        this._scrollContainer.scrollBy({
-          top: Math.abs(scrollHeight - current),
-        });
-      }
+      const { scrollTop, scrollHeight } = this._scrollContainer;
+      this._scrollContainer.scrollBy({ top: scrollHeight - scrollTop });
     });
   }
 
@@ -397,13 +403,16 @@ export default class IgcChatComponent extends EventEmitterMixin<
         ${repeat(
           this._state.messages,
           (message) => message.id,
-          (message) => {
-            return html`
-              <igc-chat-message
-                id=${`message-${message.id}`}
-                part="message-item"
-                .message=${message}
-                exportparts="
+          // The message element updates only for a new message object.
+          (message) =>
+            guard(
+              [message],
+              () => html`
+                <igc-chat-message
+                  id=${`message-${message.id}`}
+                  part="message-item"
+                  .message=${message}
+                  exportparts="
                   message-container,
                   message-header,
                   plain-text: message-content,
@@ -416,10 +425,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
                   attachment-icon,
                   file-name,
                 "
-              >
-              </igc-chat-message>
-            `;
-          }
+                >
+                </igc-chat-message>
+              `
+            )
         )}
         ${
           this._state.options?.isTyping

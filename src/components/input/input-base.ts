@@ -1,6 +1,5 @@
 import { LitElement, nothing, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { cache } from 'lit/directives/cache.js';
 import {
   addAriaTarget,
   helperText,
@@ -14,9 +13,10 @@ import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-
 import {
   nextInputId,
   renderInputShell,
-  resolveInputPartNames,
+  resolveInputPartFlags,
 } from '#internals/templates/input-shell.js';
 import type { ThemingController } from '#theming/theming-controller.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 
 export interface IgcInputComponentEventMap {
   /* alternateName: inputOcurred */
@@ -45,17 +45,19 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
 
   protected readonly _inputId = nextInputId();
 
+  /** Part flags of the current render, shared by the container and the input. */
+  private _partFlags: Record<string, boolean> = {};
+
   @query('input')
   protected readonly _input?: HTMLInputElement;
 
   /**
-   * Names and describes the native input, and applies the ARIA that a
-   * composite host, for example `igc-select`, projects. See {@link addAriaTarget}.
+   * Names and describes the native input, and applies the ARIA a composite
+   * host projects. See {@link addAriaTarget}.
    */
-  protected readonly _ariaTarget = addAriaTarget(this, {
-    description: () => helperText(this, this._slots),
-    hasOwnLabel: () => Boolean(this.label),
-  });
+  protected readonly _ariaTarget = addAriaTarget(this, () =>
+    helperText(this, this._slots)
+  );
 
   /* blazorSuppress */
   /** The value of the control. */
@@ -84,12 +86,8 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   @property()
   public label!: string;
 
-  /**
-   * Resolves the part names for the container based on the current state.
-   * Used to apply conditional styling via CSS parts.
-   */
-  protected _resolvePartNames(base: string) {
-    return resolveInputPartNames(this._slots, base, !!this.value);
+  protected _resolvePartNames(base: string): Record<string, boolean> {
+    return { [base]: true, ...this._partFlags };
   }
 
   /** Selects all the text inside the input. */
@@ -116,15 +114,16 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   }
 
   protected override render() {
-    return cache(
-      renderInputShell(this, {
-        theme: this._themes.theme,
-        label: this.label,
-        labelId: this._inputId,
-        containerParts: this._resolvePartNames('container'),
-        renderInput: this._renderInput,
-        renderFileParts: this._renderFileParts,
-      })
-    );
+    this._partFlags = resolveInputPartFlags(this._slots, !!this.value);
+
+    return renderInputShell(this, {
+      theme: this._themes.theme,
+      label: this.label,
+      labelId: this._inputId,
+      containerParts: this._resolvePartNames('container'),
+      renderInput: this._renderInput,
+      helperText: IgcValidationContainerComponent.create(this),
+      renderFileParts: this._renderFileParts,
+    });
   }
 }

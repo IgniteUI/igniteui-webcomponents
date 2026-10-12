@@ -1,23 +1,34 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
+import { html, render } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { ref } from 'lit/directives/ref.js';
 
 import {
   IgcButtonComponent,
   IgcCarouselComponent,
+  IgcIconButtonComponent,
   IgcIconComponent,
-  IgcInputComponent,
-  IgcTextareaComponent,
   defineComponents,
-  registerIconFromText,
 } from 'igniteui-webcomponents';
-import { disableStoryControls } from './story.js';
+import { registerMaterialIcons } from './story-icons.js';
+import { disableStoryControls, renderInto, storyStyles } from './story.js';
 
 defineComponents(
-  IgcCarouselComponent,
-  IgcIconComponent,
-  IgcInputComponent,
   IgcButtonComponent,
-  IgcTextareaComponent
+  IgcCarouselComponent,
+  IgcIconButtonComponent,
+  IgcIconComponent
+);
+
+registerMaterialIcons(
+  'chevron-left',
+  'chevron-right',
+  'done-all',
+  'explore',
+  'folder-open',
+  'group-add',
+  'pause',
+  'play-arrow'
 );
 
 // region default
@@ -44,7 +55,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     disablePauseOnInteraction: {
       type: 'boolean',
       description:
-        'Whether the carousel should ignore use interactions and not pause on them.',
+        'Whether the carousel should ignore user interactions and not pause on them.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -84,7 +95,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     slidesLabelFormat: {
       type: 'string',
       description:
-        "The format used to set the aria-label on the carousel slides and the text displayed\nwhen the number of indicators is greater than tha maximum indicator count.\nInstances of '{0}' will be replaced with the index of the corresponding slide.\nInstances of '{1}' will be replaced with the total amount of slides.",
+        "The format used to set the aria-label on the carousel slides and the text displayed\nwhen the number of indicators is greater than the maximum indicator count.\nInstances of '{0}' will be replaced with the index of the corresponding slide.\nInstances of '{1}' will be replaced with the total amount of slides.",
       control: 'text',
     },
     interval: {
@@ -131,7 +142,7 @@ export default metadata;
 interface IgcCarouselArgs {
   /** Whether the carousel should skip rotating to the first slide after it reaches the last. */
   disableLoop: boolean;
-  /** Whether the carousel should ignore use interactions and not pause on them. */
+  /** Whether the carousel should ignore user interactions and not pause on them. */
   disablePauseOnInteraction: boolean;
   /** Whether the carousel should skip rendering of the default navigation buttons. */
   hideNavigation: boolean;
@@ -148,7 +159,7 @@ interface IgcCarouselArgs {
   indicatorsLabelFormat: string;
   /**
    * The format used to set the aria-label on the carousel slides and the text displayed
-   * when the number of indicators is greater than tha maximum indicator count.
+   * when the number of indicators is greater than the maximum indicator count.
    * Instances of '{0}' will be replaced with the index of the corresponding slide.
    * Instances of '{1}' will be replaced with the total amount of slides.
    */
@@ -166,92 +177,119 @@ type Story = StoryObj<IgcCarouselArgs>;
 
 // endregion
 
-const icons = [
+const images = 'https://www.infragistics.com/angular-demos-lob/assets/images';
+
+const photos = [
   {
-    name: 'previous',
-    text: '<svg fill="#000000" width="24" height="24" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="M0 220.8C0 266.416 37.765 304 83.2 304h35.647a93.148 93.148 0 0 0 7.929 22.064c-2.507 22.006 3.503 44.978 15.985 62.791C143.9 441.342 180.159 480 242.701 480H264c60.063 0 98.512-40 127.2-40h2.679c5.747 4.952 13.536 8 22.12 8h64c17.673 0 32-12.894 32-28.8V188.8c0-15.906-14.327-28.8-32-28.8h-64c-8.584 0-16.373 3.048-22.12 8H391.2c-6.964 0-14.862-6.193-30.183-23.668l-.129-.148-.131-.146c-8.856-9.937-18.116-20.841-25.851-33.253C316.202 80.537 304.514 32 259.2 32c-56.928 0-92 35.286-92 83.2 0 8.026.814 15.489 2.176 22.4H83.2C38.101 137.6 0 175.701 0 220.8zm48 0c0-18.7 16.775-35.2 35.2-35.2h158.4c0-17.325-26.4-35.2-26.4-70.4 0-26.4 20.625-35.2 44-35.2 8.794 0 20.445 32.712 34.926 56.1 9.074 14.575 19.524 27.225 30.799 39.875 16.109 18.374 33.836 36.633 59.075 39.596v176.752C341.21 396.087 309.491 432 264 432h-21.299c-40.524 0-57.124-22.197-50.601-61.325-14.612-8.001-24.151-33.979-12.925-53.625-19.365-18.225-17.787-46.381-4.95-61.05H83.2C64.225 256 48 239.775 48 220.8zM448 360c13.255 0 24 10.745 24 24s-10.745 24-24 24-24-10.745-24-24 10.745-24 24-24z"/></svg>',
+    src: `${images}/card/media/the_red_ice_forest.jpg`,
+    alt: 'The red and dark blue tops of the trees of a forest, seen from above',
   },
   {
-    name: 'next',
-    text: `<svg fill="#000000" width="24" height="24" viewBox="0 0 589.308 589.308" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
-    <path d="M503.587,148.307c-47.736-34.885-96.696-87.517-154.225-104.652c-5.508-1.836-9.18,1.836-10.403,6.12
-    c-3.672,1.836-6.732,4.896-6.732,10.404c-1.836,39.168-1.836,78.947-1.224,118.115c-49.572-1.224-99.145-1.836-149.328-1.224
-    c-34.272,0.612-128.52-7.956-156.06,22.032c-4.896-1.225-10.404,1.224-12.852,6.731c-18.36,45.288-12.24,102.816-9.792,151.164
-    c2.448,56.916,6.12,113.832,11.016,170.748c0,2.448,1.224,4.284,2.448,5.508c0,3.061,2.448,6.12,7.344,6.732
-    c41.616,6.731,90.576,9.792,131.58-0.612c11.016-2.448,11.016-15.3,4.284-20.808c17.748-58.141-7.344-118.116,5.508-176.868
-    c55.692,3.672,112.608,1.224,168.912-1.836c0,29.988-1.224,59.976-3.672,89.964c0,1.224,0,2.448,0.612,3.672
-    c-0.612,2.448-0.612,4.284-1.225,6.732c-1.224,7.956,5.509,18.972,15.301,15.3c59.363-23.256,105.264-57.528,154.224-96.696
-    c34.271-27.54,87.516-66.096,89.964-114.443C591.103,204.61,530.515,167.891,503.587,148.307z"/>
-    </svg>`,
+    src: `${images}/card/media/yosemite.jpg`,
+    alt: 'Snow on the pine trees and the granite cliffs of Yosemite Valley',
+  },
+  {
+    src: `${images}/card/media/ny.jpg`,
+    alt: 'The skyline of Lower Manhattan at sunset, seen across the Hudson River',
   },
 ];
 
-icons.forEach((icon) => {
-  registerIconFromText(icon.name, icon.text, 'material');
-});
-
-const defaultImages = [
+const destinations = [
   {
-    src: 'https://www.infragistics.com/angular-demos-lob/assets/images/card/media/the_red_ice_forest.jpg',
-    alt: 'Red Ice Forest',
+    image: 'WonderfulCoast',
+    alt: 'Pastel houses on a steep green cliff above a bay with boats',
+    title: 'The Amalfi Coast',
+    text: 'Seven days of cliff villages, boat trips and lemon groves.',
+    price: 39,
   },
   {
-    src: 'https://www.infragistics.com/angular-demos-lob/assets/images/card/media/yosemite.jpg',
-    alt: 'Yosemite',
+    image: 'IslandOfHistory',
+    alt: 'White houses, a windmill and a dome above the sea at sunset',
+    title: 'Santorini',
+    text: 'Watch the sunset from the cliffs of Oia.',
+    price: 45,
   },
   {
-    src: 'https://www.infragistics.com/angular-demos-lob/assets/images/card/media/ny.jpg',
-    alt: 'New York',
-  },
-];
-
-const fancyImages = [
-  {
-    src: 'https://www.infragistics.com/angular-demos-lob/assets/images/carousel/WonderfulCoast.png',
-    alt: 'Wonderful Coast',
+    image: 'GoldenBeaches',
+    alt: 'A woman in a sun hat on a swing chair on a white sand beach',
+    title: 'The Maldives',
+    text: 'White sand, clear water and a house above the sea.',
+    price: 49,
   },
   {
-    src: 'https://www.infragistics.com/angular-demos-lob/assets/images/carousel/CulturalDip.png',
-    alt: 'Cultural Dip',
+    image: 'CulturalDip',
+    alt: 'A pagoda with red roofs and white stone railings',
+    title: 'Singapore',
+    text: 'Gardens, temples and the food markets of the city.',
+    price: 35,
   },
   {
-    src: 'https://www.infragistics.com/angular-demos-lob/assets/images/carousel/GoldenBeaches.png',
-    alt: 'Golden Beaches',
-  },
-  {
-    src: 'https://www.infragistics.com/angular-demos-lob/assets/images/carousel/IslandOfHistory.png',
-    alt: 'Island Of History',
-  },
-  {
-    src: 'https://www.infragistics.com/angular-demos-lob/assets/images/carousel/AmazingBridge.png',
-    alt: 'Amazing Bridge',
+    image: 'AmazingBridge',
+    alt: 'The Golden Gate Bridge at sunset',
+    title: 'San Francisco',
+    text: 'Drive the coast road from the Golden Gate to Big Sur.',
+    price: 42,
   },
 ];
 
-export const Basic: Story = {
+const styles = html`
+  ${storyStyles}
+  <style>
+    .cr-stack {
+      display: grid;
+      gap: 1rem;
+      max-width: 60rem;
+    }
+
+    .cr-stack :is(h2, h3, h4, p, ol, ul) {
+      margin: 0;
+    }
+
+    .cr-panel {
+      display: grid;
+      gap: 0.75rem;
+      align-content: start;
+      padding: 1rem;
+      border: 1px solid var(--ig-gray-300);
+      border-radius: 8px;
+    }
+
+    .cr-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  </style>
+`;
+
+export const Default: Story = {
   parameters: {
     docs: {
       description: {
         story:
-          'A standard image carousel with default dot indicators and navigation arrows. Use the controls panel to interactively explore the available properties.',
+          'A carousel of photos. Use the controls panel to change the animation, the alignment, the loop and the controls. Set `interval` to rotate the slides automatically: the carousel pauses while the pointer is over it or the focus is in it, unless `disablePauseOnInteraction` is set. The carousel has `role="region"`, so it has an `aria-label`, and each image has an `alt` text.',
       },
     },
   },
   render: (args) => html`
     <igc-carousel
+      aria-label="Photos"
+      style="height: 26rem; max-width: 46rem"
       ?disable-loop=${args.disableLoop}
       ?disable-pause-on-interaction=${args.disablePauseOnInteraction}
       ?hide-navigation=${args.hideNavigation}
       ?hide-indicators=${args.hideIndicators}
+      ?vertical=${args.vertical}
       .interval=${args.interval}
       .animationType=${args.animationType}
-      .vertical=${args.vertical}
       .indicatorsOrientation=${args.indicatorsOrientation}
       .maximumIndicatorsCount=${args.maximumIndicatorsCount}
       .indicatorsLabelFormat=${args.indicatorsLabelFormat}
       .slidesLabelFormat=${args.slidesLabelFormat}
+      locale=${ifDefined(args.locale)}
     >
-      ${defaultImages.map(
+      ${photos.map(
         ({ src, alt }) => html`
           <igc-carousel-slide>
             <img src=${src} alt=${alt} />
@@ -262,299 +300,728 @@ export const Basic: Story = {
   `,
 };
 
-export const Vertical: Story = {
+export const Hero: Story = {
   argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'The carousel supports vertical orientation via the `vertical` attribute. Navigation arrows and slide transitions adapt to the vertical axis.',
+          'The hero of the home page of a travel agency. `interval` rotates the slides every six seconds, and `animation-type="fade"` cross-fades them. A slide can hold any content: here an image, a heading, a text and a link button. The rotation pauses while the pointer is over the carousel or the focus is in it, but WCAG 2.2.2 also asks for a control that stops it. So the first control is a button that calls `pause()` and `play()`. The button shows what the user selected, and not the state of the rotation, because the carousel also pauses for a short time when the user interacts with it. When the user prefers reduced motion, the story does not start the rotation and uses `animation-type="none"`. The `previous-button` and `next-button` slots replace the arrow icons.',
       },
     },
   },
-  render: () => html`
-    <igc-carousel
-      vertical
-      style="height: 400px; max-width: 640px; margin-inline: auto;"
-    >
-      ${defaultImages.map(
-        ({ src, alt }) => html`
-          <igc-carousel-slide>
-            <img src=${src} alt=${alt} />
-          </igc-carousel-slide>
-        `
-      )}
-    </igc-carousel>
-  `,
-};
+  render: () => {
+    const interval = 6000;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let rotating = !reduced;
+    let carousel: IgcCarouselComponent | undefined;
+    let host: HTMLElement | undefined;
 
-export const AnimationTypes: Story = {
-  argTypes: disableStoryControls(metadata),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'The `animationType` property controls the transition effect between slides. The three available modes are **slide** (default), **fade**, and **none** (instant switch).',
-      },
-    },
-  },
-  render: () => html`
-    <style>
-      .animation-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1.5rem;
-        padding: 1rem;
+    const toggle = () => {
+      if (rotating) {
+        carousel!.pause();
+      } else {
+        carousel!.interval = interval;
+        carousel!.play();
       }
-      .animation-grid > div > p {
-        font-weight: 600;
-        margin: 0 0 0.5rem;
-        text-align: center;
+
+      rotating = !rotating;
+      update();
+    };
+
+    const update = () => {
+      if (!host) {
+        return;
       }
-    </style>
-    <div class="animation-grid">
-      <div>
-        <p>slide (default)</p>
-        <igc-carousel animation-type="slide">
-          ${defaultImages.map(
-            ({ src, alt }) => html`
+
+      render(
+        html`
+          <igc-icon-button
+            class="cr-rotation"
+            variant="flat"
+            name=${rotating ? 'pause' : 'play-arrow'}
+            aria-label=${rotating ? 'Stop the slide show' : 'Start the slide show'}
+            @click=${toggle}
+          ></igc-icon-button>
+        `,
+        host
+      );
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .cr-hero {
+          position: relative;
+          max-width: 60rem;
+        }
+
+        .cr-hero igc-carousel {
+          height: 28rem;
+          border-radius: 12px;
+          overflow: hidden;
+        }
+
+        .cr-hero .cr-rotation {
+          position: absolute;
+          inset-block-start: 1rem;
+          inset-inline-end: 1rem;
+          z-index: 11;
+          border-radius: 50%;
+          background: var(--ig-surface-500);
+        }
+
+        .cr-hero-caption {
+          position: absolute;
+          inset-inline: 0;
+          inset-block-end: 0;
+          display: grid;
+          gap: 0.5rem;
+          justify-items: start;
+          padding: 4rem 5rem 4.5rem;
+          background: linear-gradient(transparent, rgb(0 0 0 / 0.75));
+          color: #fff;
+        }
+
+        .cr-hero-caption h2 {
+          margin: 0;
+          font-size: 2rem;
+        }
+
+        .cr-hero-caption p {
+          margin: 0;
+        }
+      </style>
+      <div class="cr-hero">
+        <span
+          ${ref((element) => {
+            host = element as HTMLElement | undefined;
+            update();
+          })}
+        ></span>
+        <igc-carousel
+          aria-label="Featured tours"
+          animation-type=${reduced ? 'none' : 'fade'}
+          .interval=${reduced ? undefined : interval}
+          ${ref((element) => {
+            carousel = element as IgcCarouselComponent | undefined;
+          })}
+        >
+          <igc-icon slot="previous-button" name="chevron-left"></igc-icon>
+          <igc-icon slot="next-button" name="chevron-right"></igc-icon>
+          ${destinations.map(
+            ({ image, alt, title, text }) => html`
               <igc-carousel-slide>
-                <img src=${src} alt=${alt} />
+                <img src="${images}/carousel/${image}.png" alt=${alt} />
+                <div class="cr-hero-caption">
+                  <h2>${title}</h2>
+                  <p>${text}</p>
+                  <igc-button
+                    href="#${image}"
+                    @click=${(event: Event) => event.preventDefault()}
+                  >
+                    See the tour
+                  </igc-button>
+                </div>
               </igc-carousel-slide>
             `
           )}
         </igc-carousel>
       </div>
-      <div>
-        <p>fade</p>
-        <igc-carousel animation-type="fade">
-          ${defaultImages.map(
-            ({ src, alt }) => html`
-              <igc-carousel-slide>
-                <img src=${src} alt=${alt} />
-              </igc-carousel-slide>
-            `
-          )}
-        </igc-carousel>
-      </div>
-      <div>
-        <p>none</p>
-        <igc-carousel animation-type="none">
-          ${defaultImages.map(
-            ({ src, alt }) => html`
-              <igc-carousel-slide>
-                <img src=${src} alt=${alt} />
-              </igc-carousel-slide>
-            `
-          )}
-        </igc-carousel>
-      </div>
-    </div>
-  `,
+    `;
+  },
 };
 
-export const AutoPlay: Story = {
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Setting the `interval` property (in milliseconds) enables automatic slide advancement. By default the carousel pauses on user interaction; enable `disable-pause-on-interaction` to keep it playing continuously. Use the **Play** and **Pause** buttons below to control playback programmatically.',
-      },
-    },
-  },
-  args: {
-    interval: 2000,
-  },
-  render: (args) => html`
-    <igc-carousel
-      id="autoCarousel"
-      ?disable-loop=${args.disableLoop}
-      ?disable-pause-on-interaction=${args.disablePauseOnInteraction}
-      ?hide-navigation=${args.hideNavigation}
-      ?hide-indicators=${args.hideIndicators}
-      .interval=${args.interval}
-      .animationType=${args.animationType}
-      .vertical=${args.vertical}
-      .indicatorsOrientation=${args.indicatorsOrientation}
-      .maximumIndicatorsCount=${args.maximumIndicatorsCount}
-      .indicatorsLabelFormat=${args.indicatorsLabelFormat}
-      .slidesLabelFormat=${args.slidesLabelFormat}
-    >
-      ${defaultImages.map(
-        ({ src, alt }) => html`
-          <igc-carousel-slide>
-            <img src=${src} alt=${alt} />
-          </igc-carousel-slide>
-        `
-      )}
-    </igc-carousel>
-    <div
-      style="display: flex; gap: 0.5rem; margin-block-start: 1rem; justify-content: center;"
-    >
-      <igc-button onclick="autoCarousel.play()">Play</igc-button>
-      <igc-button onclick="autoCarousel.pause()">Pause</igc-button>
-    </div>
-  `,
-};
-
-export const CustomNavigation: Story = {
+export const Gallery: Story = {
   argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'Custom navigation icons and indicator styles can be provided via the `previous-button` and `next-button` named slots. Per-slide indicators can be replaced with `igc-carousel-indicator` elements; the `active` slot determines the appearance of the currently active indicator.',
+          'The product page of a shop for photo prints. Each `igc-carousel-slide` has an `igc-carousel-indicator` with a thumbnail, which replaces the default dot. The default slot of the indicator holds the inactive thumbnail, and the `active` slot holds the thumbnail of the active slide. The indicators have the `tab` role, and `indicators-label-format` gives them their names, so the thumbnails have an empty `alt`. `igcSlideChanged` and `current` keep the product details next to the gallery in sync, for the arrows, the thumbnails, the arrow keys and the swipe.',
       },
     },
   },
-  render: () => html`
-    <igc-carousel>
-      <igc-icon
-        slot="previous-button"
-        name="previous"
-        collection="material"
-      ></igc-icon>
+  render: () => {
+    let current = 0;
+    let added = '';
 
-      <igc-icon slot="next-button" name="next" collection="material"></igc-icon>
+    const { mount, update } = renderInto(() => {
+      const { title, price } = destinations[current];
 
-      ${defaultImages.map(
-        ({ src, alt }) => html`
-          <igc-carousel-slide>
-            <img src=${src} alt=${alt} />
-          </igc-carousel-slide>
-
-          <igc-carousel-indicator>
-            <span>🤍</span>
-            <span slot="active">❤️</span>
-          </igc-carousel-indicator>
-        `
-      )}
-    </igc-carousel>
-  `,
-};
-
-export const ThumbnailIndicators: Story = {
-  argTypes: disableStoryControls(metadata),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Thumbnail images can be used as indicator controls by pairing each `igc-carousel-slide` with an `igc-carousel-indicator`. The `active` slot determines the appearance of the selected indicator.',
-      },
-    },
-  },
-  render: () => html`
-    <style>
-      igc-carousel {
-        height: 550px;
-      }
-      igc-carousel::part(indicators) {
-        border-radius: 2px;
-      }
-      .blurred {
-        filter: blur(2px);
-        opacity: 0.5;
-      }
-    </style>
-    <igc-carousel>
-      ${fancyImages.map(
-        ({ src, alt }) => html`
-          <igc-carousel-slide>
-            <img src=${src} alt=${alt} />
-          </igc-carousel-slide>
-
-          <igc-carousel-indicator>
-            <img
-              class="blurred"
-              src=${src.replace('.png', 'Thumb.png')}
-              alt=${`${alt} Thumb`}
-              width="50"
-              height="60"
-            />
-            <img
-              slot="active"
-              src=${src.replace('.png', 'Thumb.png')}
-              alt=${`${alt} Thumb Active`}
-              width="50"
-              height="60"
-            />
-          </igc-carousel-indicator>
-        `
-      )}
-    </igc-carousel>
-  `,
-};
-
-export const Multipage: Story = {
-  argTypes: disableStoryControls(metadata),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Carousel slides can host any content including interactive form elements. This example shows a two-step sign-up flow spanning two slides.',
-      },
-    },
-  },
-  render: () => html`
-    <style>
-      igc-carousel {
-        border-radius: 10px;
-        box-shadow: 0 6px 12px oklch(from #333 l c h / 0.1);
-        border: 1px solid var(--ig-gray-200);
-        max-width: 75%;
-        margin-inline: auto;
-        height: 350px;
-      }
-
-      igc-carousel-slide {
-        display: grid;
-        place-items: center stretch;
-        margin-inline: auto;
-        padding-inline: 96px;
-        padding-block-start: 8px;
-        padding-block-end: 32px;
-      }
-
-      igc-carousel-slide > igc-button {
-        max-width: fit-content;
-      }
-
-      igc-carousel-slide div {
-        text-align: center;
-      }
-    </style>
-    <igc-carousel id="multiCarousel">
-      <igc-carousel-slide>
-        <igc-input type="text" placeholder="Username">
-          <span slot="prefix">🐱</span>
-          <span slot="prefix">💻</span>
-        </igc-input>
-        <igc-textarea label="Leave your comment">
-          <span slot="prefix">💬</span>
-        </igc-textarea>
-        <igc-button>Comment</igc-button>
-        <div>
-          <span>Not a member? 🙀</span>
-          <igc-button onclick="multiCarousel.next()">Sign up</igc-button>
+      return html`
+        <h3>${title}</h3>
+        <p class="muted">Fine art print on matte paper, 40 × 30 cm</p>
+        <p style="font-size: 1.5rem"><strong>$${price}</strong></p>
+        <div class="cr-actions">
+          <igc-button
+            @click=${() => {
+              added = `We added the ${title} print to your cart.`;
+              update();
+            }}
+          >
+            Add to cart
+          </igc-button>
         </div>
-      </igc-carousel-slide>
-      <igc-carousel-slide>
-        <span>Registration</span>
-        <igc-input type="text" placeholder="Enter your name">
-          <span slot="prefix">😄</span>
-        </igc-input>
-        <igc-input type="email" placeholder="Enter your email">
-          <span slot="prefix">✉️</span>
-        </igc-input>
-        <igc-input type="password" placeholder="Create a password">
-          <span slot="prefix">🔒</span>
-        </igc-input>
-        <igc-button>Sign up</igc-button>
-        <div>
-          <span>Already a member?</span>
-          <igc-button onclick="multiCarousel.prev()">Comment</igc-button>
-        </div>
-      </igc-carousel-slide>
-    </igc-carousel>
+        <p class="muted" role="status">${added}</p>
+      `;
+    });
+
+    const change = ({ detail }: CustomEvent<number>) => {
+      current = detail;
+      added = '';
+      update();
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .cr-gallery {
+          display: grid;
+          grid-template-columns: minmax(18rem, 2fr) minmax(14rem, 1fr);
+          gap: 1.5rem;
+          align-items: start;
+        }
+
+        .cr-gallery igc-carousel {
+          height: 30rem;
+        }
+
+        .cr-gallery igc-carousel::part(indicators) {
+          border-radius: 4px;
+        }
+
+        .cr-gallery .cr-thumb {
+          display: block;
+          width: 45px;
+          height: 60px;
+          border-radius: 2px;
+          object-fit: cover;
+        }
+
+        .cr-gallery .cr-thumb:not([slot]) {
+          opacity: 0.6;
+        }
+
+        .cr-gallery .cr-thumb[slot='active'] {
+          outline: 2px solid #fff;
+          outline-offset: -2px;
+        }
+
+        @media (max-width: 40rem) {
+          .cr-gallery {
+            grid-template-columns: 1fr;
+          }
+        }
+      </style>
+      <div class="cr-stack cr-gallery">
+        <igc-carousel
+          aria-label="Print photos"
+          indicators-label-format="Show print {0}"
+          @igcSlideChanged=${change}
+        >
+          ${destinations.map(
+            ({ image, alt }) => html`
+              <igc-carousel-slide>
+                <img src="${images}/carousel/${image}.png" alt=${alt} />
+              </igc-carousel-slide>
+              <igc-carousel-indicator>
+                <img
+                  class="cr-thumb"
+                  src="${images}/carousel/${image}Thumb.png"
+                  alt=""
+                />
+                <img
+                  class="cr-thumb"
+                  slot="active"
+                  src="${images}/carousel/${image}Thumb.png"
+                  alt=""
+                />
+              </igc-carousel-indicator>
+            `
+          )}
+        </igc-carousel>
+        <section
+          class="cr-panel"
+          aria-label="Product details"
+          ${mount}
+        ></section>
+      </div>
+    `;
+  },
+};
+
+const steps = [
+  {
+    icon: 'explore',
+    title: 'Welcome to Acme Projects',
+    text: 'This short tour shows you the basics. It takes one minute.',
+  },
+  {
+    icon: 'folder-open',
+    title: 'Keep your work in projects',
+    text: 'A project holds the tasks, the files and the discussions for one goal.',
+  },
+  {
+    icon: 'group-add',
+    title: 'Invite your team',
+    text: 'Add people with their email address. They get access to the projects that you share with them.',
+  },
+  {
+    icon: 'done-all',
+    title: 'You are ready',
+    text: 'Create your first project, or open the sample project to look around.',
+  },
+];
+
+export const Onboarding: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The first-run tour of an application. `hide-navigation` removes the arrows, and the story renders its own Back and Next buttons, which call `prev()` and `next()`. `disable-loop` stops the tour at the last step. `next()` and `prev()` do not emit `igcSlideChanged`, so the buttons read `current` after the returned promise resolves. A click on a dot emits `igcSlideChanged`, and the story updates the buttons from it. The slides container is a polite live region while the carousel does not rotate, so a screen reader reads the new step.',
+      },
+    },
+  },
+  render: () => {
+    let carousel: IgcCarouselComponent | undefined;
+    let footer: HTMLElement | undefined;
+    let current = 0;
+    let finished = false;
+
+    const go = (direction: 'prev' | 'next') => async () => {
+      if (direction === 'next' && current === steps.length - 1) {
+        finished = true;
+        update();
+        return;
+      }
+
+      await (direction === 'next' ? carousel!.next() : carousel!.prev());
+      current = carousel!.current;
+      update();
+    };
+
+    const restart = async () => {
+      finished = false;
+      await carousel!.select(0);
+      current = 0;
+      update();
+    };
+
+    const update = () => {
+      if (!footer) {
+        return;
+      }
+
+      const last = current === steps.length - 1;
+
+      render(
+        finished
+          ? html`
+              <p>You finished the tour.</p>
+              <igc-button variant="outlined" @click=${restart}>
+                Show the tour again
+              </igc-button>
+            `
+          : html`
+              <igc-button
+                variant="flat"
+                @click=${() => {
+                  finished = true;
+                  update();
+                }}
+              >
+                Skip the tour
+              </igc-button>
+              <span class="cr-spacer"></span>
+              <span class="muted">Step ${current + 1} of ${steps.length}</span>
+              <igc-button
+                variant="outlined"
+                ?disabled=${current === 0}
+                @click=${go('prev')}
+              >
+                Back
+              </igc-button>
+              <igc-button @click=${go('next')}>
+                ${last ? 'Get started' : 'Next'}
+              </igc-button>
+            `,
+        footer
+      );
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .cr-tour {
+          max-width: 36rem;
+          border: 1px solid var(--ig-gray-300);
+          border-radius: 12px;
+          overflow: hidden;
+        }
+
+        .cr-tour igc-carousel {
+          height: 18rem;
+        }
+
+        .cr-tour igc-carousel-slide {
+          display: grid;
+          place-content: center;
+          justify-items: center;
+          gap: 0.75rem;
+          padding: 1.5rem 2rem 3.5rem;
+          text-align: center;
+        }
+
+        .cr-tour igc-carousel-slide igc-icon {
+          --ig-icon-size: 3rem;
+          color: var(--ig-primary-500);
+        }
+
+        .cr-tour-footer {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 1rem;
+          border-block-start: 1px solid var(--ig-gray-300);
+        }
+
+        .cr-spacer {
+          flex: 1;
+        }
+      </style>
+      <section class="cr-stack cr-tour" aria-label="Product tour">
+        <igc-carousel
+          aria-label="Steps"
+          hide-navigation
+          disable-loop
+          @igcSlideChanged=${({ detail }: CustomEvent<number>) => {
+            current = detail;
+            update();
+          }}
+          ${ref((element) => {
+            carousel = element as IgcCarouselComponent | undefined;
+          })}
+        >
+          ${steps.map(
+            ({ icon, title, text }) => html`
+              <igc-carousel-slide>
+                <igc-icon name=${icon} aria-hidden="true"></igc-icon>
+                <h3>${title}</h3>
+                <p class="muted">${text}</p>
+              </igc-carousel-slide>
+            `
+          )}
+        </igc-carousel>
+        <div
+          class="cr-tour-footer"
+          ${ref((element) => {
+            footer = element as HTMLElement | undefined;
+            update();
+          })}
+        ></div>
+      </section>
+    `;
+  },
+};
+
+const announcements = [
+  {
+    date: 'September 28',
+    title: 'Dark mode is here',
+    text: 'Turn it on in Settings, under Appearance.',
+  },
+  {
+    date: 'September 21',
+    title: 'Scheduled maintenance',
+    text: 'The service is not available on Saturday from 02:00 to 04:00 UTC.',
+  },
+  {
+    date: 'September 14',
+    title: 'New export formats',
+    text: 'You can now export the reports as CSV, XLSX and PDF files.',
+  },
+  {
+    date: 'September 7',
+    title: 'Faster search',
+    text: 'The search results now load up to three times faster.',
+  },
+];
+
+export const Announcements: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'An announcements widget in the sidebar of a dashboard. `vertical` stacks the slides and moves them up and down, and the arrows are at the top and the bottom. `indicators-orientation="start"` puts the dots on the start side, so they do not cover the text. The widget does not rotate on its own: the user reads at their own speed.',
+      },
+    },
+  },
+  render: () => html`
+    ${styles}
+    <style>
+      .cr-news {
+        max-width: 22rem;
+      }
+
+      .cr-news igc-carousel {
+        height: 15rem;
+      }
+
+      .cr-news igc-carousel-slide {
+        display: grid;
+        align-content: center;
+        gap: 0.25rem;
+        padding: 3.5rem 1.5rem 3.5rem 3.5rem;
+      }
+
+      .cr-news h4 {
+        font-size: 1rem;
+      }
+    </style>
+    <section class="cr-stack cr-panel cr-news" aria-labelledby="cr-news-title">
+      <h3 id="cr-news-title">What is new</h3>
+      <igc-carousel
+        aria-label="Announcements"
+        vertical
+        indicators-orientation="start"
+      >
+        ${announcements.map(
+          ({ date, title, text }) => html`
+            <igc-carousel-slide>
+              <p class="muted">${date}</p>
+              <h4>${title}</h4>
+              <p>${text}</p>
+            </igc-carousel-slide>
+          `
+        )}
+      </igc-carousel>
+    </section>
   `,
+};
+
+const deck = [
+  {
+    title: 'Q3 2026 business review',
+    points: ['Acme Analytics', 'October 1, 2026'],
+  },
+  {
+    title: 'Agenda',
+    points: ['Highlights', 'Revenue and customers', 'Product and support'],
+  },
+  {
+    title: 'Highlights',
+    points: ['Revenue grew 18%', 'Two new regions', 'Release 4.2 shipped'],
+  },
+  {
+    title: 'Revenue',
+    points: ['$4.8M in Q3', '$1.1M from new customers', 'Churn at 2.1%'],
+  },
+  {
+    title: 'Customers',
+    points: ['1,284 active accounts', '96 new accounts', 'NPS of 52'],
+  },
+  {
+    title: 'Product',
+    points: ['Dark mode', 'New export formats', 'Faster search'],
+  },
+  {
+    title: 'Support',
+    points: ['3,120 tickets', 'First reply in 2 hours', '94% satisfaction'],
+  },
+  {
+    title: 'Team',
+    points: ['12 new people', 'An office in Lisbon', 'A new onboarding plan'],
+  },
+  {
+    title: 'Risks',
+    points: ['Hiring in data science', 'Cloud costs', 'A new competitor'],
+  },
+  {
+    title: 'Q4 goals',
+    points: ['$5.5M revenue', 'Single sign-on', 'Mobile application beta'],
+  },
+  {
+    title: 'Budget',
+    points: ['$1.2M for hiring', '$400K for marketing', '$250K for cloud'],
+  },
+  {
+    title: 'Questions',
+    points: ['Send your questions to the leadership team'],
+  },
+];
+
+export const SlideDeck: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A presentation viewer. The deck has 12 slides, which is more than `maximum-indicators-count` (10), so a label replaces the dots. `slides-label-format="Slide {0} of {1}"` sets the text of the label and the labels of the slides. Without the dots, the carousel has two tab stops: the arrows. The outline next to the carousel calls `select()` with the index of a slide, and `igcSlideChanged` marks the current slide in the outline with `aria-current`.',
+      },
+    },
+  },
+  render: () => {
+    let carousel: IgcCarouselComponent | undefined;
+    let outline: HTMLElement | undefined;
+    let current = 0;
+
+    const go = (index: number) => async () => {
+      await carousel!.select(index);
+      current = carousel!.current;
+      update();
+    };
+
+    const update = () => {
+      if (!outline) {
+        return;
+      }
+
+      render(
+        html`
+          <ol>
+            ${deck.map(
+              ({ title }, index) => html`
+                <li>
+                  <button
+                    type="button"
+                    aria-current=${index === current ? 'true' : 'false'}
+                    @click=${go(index)}
+                  >
+                    ${title}
+                  </button>
+                </li>
+              `
+            )}
+          </ol>
+        `,
+        outline
+      );
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .cr-deck {
+          display: grid;
+          grid-template-columns: minmax(20rem, 3fr) minmax(12rem, 1fr);
+          gap: 1.5rem;
+          align-items: start;
+        }
+
+        /* The carousel takes the height of its parent. */
+        .cr-deck-frame {
+          aspect-ratio: 16 / 9;
+          border: 1px solid var(--ig-gray-300);
+          border-radius: 8px;
+          overflow: hidden;
+        }
+
+        .cr-deck igc-carousel-slide {
+          display: grid;
+          align-content: center;
+          gap: 1rem;
+          padding: 2rem 5rem 3.5rem;
+        }
+
+        .cr-deck igc-carousel-slide h3 {
+          font-size: 1.75rem;
+        }
+
+        .cr-deck igc-carousel-slide ul {
+          display: grid;
+          gap: 0.5rem;
+          font-size: 1.125rem;
+        }
+
+        .cr-outline ol {
+          display: grid;
+          gap: 0.125rem;
+          padding: 0;
+          list-style: none;
+          counter-reset: slide;
+        }
+
+        .cr-outline li {
+          counter-increment: slide;
+        }
+
+        .cr-outline button {
+          display: flex;
+          gap: 0.5rem;
+          width: 100%;
+          padding: 0.375rem 0.5rem;
+          border: 0;
+          border-radius: 4px;
+          background: none;
+          color: inherit;
+          font: inherit;
+          text-align: start;
+          cursor: pointer;
+        }
+
+        .cr-outline button::before {
+          content: counter(slide);
+          min-width: 1.5rem;
+          color: var(--ig-gray-700);
+        }
+
+        .cr-outline button:hover {
+          background: var(--ig-gray-100);
+        }
+
+        .cr-outline button[aria-current='true'] {
+          background: var(--ig-primary-100);
+          color: var(--ig-primary-100-contrast);
+        }
+
+        .cr-outline button[aria-current='true']::before {
+          color: inherit;
+        }
+
+        @media (max-width: 48rem) {
+          .cr-deck {
+            grid-template-columns: 1fr;
+          }
+        }
+      </style>
+      <div class="cr-stack cr-deck">
+        <div class="cr-deck-frame">
+          <igc-carousel
+            aria-label="Q3 2026 business review"
+            slides-label-format="Slide {0} of {1}"
+            @igcSlideChanged=${({ detail }: CustomEvent<number>) => {
+              current = detail;
+              update();
+            }}
+            ${ref((element) => {
+              carousel = element as IgcCarouselComponent | undefined;
+            })}
+          >
+            ${deck.map(
+              ({ title, points }) => html`
+                <igc-carousel-slide>
+                  <h3>${title}</h3>
+                  <ul>
+                    ${points.map((point) => html`<li>${point}</li>`)}
+                  </ul>
+                </igc-carousel-slide>
+              `
+            )}
+          </igc-carousel>
+        </div>
+        <nav
+          class="cr-outline"
+          aria-label="Slides"
+          ${ref((element) => {
+            outline = element as HTMLElement | undefined;
+            update();
+          })}
+        ></nav>
+      </div>
+    `;
+  },
 };

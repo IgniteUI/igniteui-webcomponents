@@ -226,4 +226,22 @@ describe('ElementInternals controller', () => {
       expect(instance.getAttribute('aria-label')).to.equal('');
     });
   });
+
+  describe('labels', () => {
+    it('returns null for an element that is not form associated', async () => {
+      const tag = defineCE(
+        class extends LitElement {
+          public internals = addInternalsController(this);
+        }
+      );
+      const label = await fixture<HTMLLabelElement>(
+        html`<label>Name <${unsafeStatic(tag)}></${unsafeStatic(tag)}></label>`
+      );
+      const host = label.querySelector(tag) as LitElement & {
+        internals: ElementInternalsController;
+      };
+
+      expect(host.internals.labels).to.be.null;
+    });
+  });
 });

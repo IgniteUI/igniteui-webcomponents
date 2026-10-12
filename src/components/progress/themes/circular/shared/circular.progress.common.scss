@@ -4,8 +4,7 @@
 $theme: $material;
 
 :host {
-    // Do not use rem values here
-    // This will break the component in Safari
+    // No rem values here: they break the component in Safari.
     // https://github.com/IgniteUI/igniteui-webcomponents/issues/377
     --stroke-thickness: 1.3px;
     --circular-size: calc(#{var-get($theme, 'diameter')} - var(--stroke-thickness));
@@ -26,7 +25,6 @@ $theme: $material;
     stroke: var-get($theme, 'track-color');
 }
 
-// Mixin for Gradient Colors
 @mixin gradient-variant($variant, $color) {
     :host([variant='#{$variant}']) {
         --gradient-stop-color: #{$color};

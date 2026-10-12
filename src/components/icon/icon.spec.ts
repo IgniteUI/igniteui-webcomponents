@@ -5,7 +5,7 @@ import {
   fixture,
   html,
 } from '@open-wc/testing';
-import { stub } from 'sinon';
+import { type SinonStub, stub } from 'sinon';
 
 import { internalsOf } from '#internals/controllers/internals.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
@@ -60,8 +60,7 @@ function mockResponse() {
 
 /**
  * Resolves once `channel` has received `count` messages.
- * Set up the returned Promise *before* triggering the action so no
- * message is missed, then await it after.
+ * Create the promise before the action, so no message is missed.
  */
 function waitForMessages(
   channel: BroadcastChannel,
@@ -89,6 +88,24 @@ describe('Icon registry', () => {
 
   it('is registered', async () => {
     expect(getIconRegistry()).to.not.be.undefined;
+  });
+
+  it('rejects and registers nothing when the icon request fails', async () => {
+    (globalThis.fetch as SinonStub)
+      .onCall(0)
+      .resolves(new globalThis.Response('', { status: 404 }));
+
+    let error: unknown;
+    try {
+      await registerIcon('missing', '/missing.svg', collection);
+    } catch (e) {
+      error = e;
+    }
+
+    expect((error as Error)?.message).to.equal(
+      'Icon request failed. Status: 404.'
+    );
+    expect(getIconRegistry().get('missing', collection)).to.be.undefined;
   });
 
   it('has the default internal collection', async () => {
@@ -150,13 +167,12 @@ describe('Icon registry', () => {
       registerIconFromText(name, bugSvg, { collection, stripMeta: true });
       const icon = getIconRegistry().get(name, collection)!;
 
-      // Title text is preserved so the host <igc-icon> can still expose it as aria-label.
+      // The host <igc-icon> still exposes the title as aria-label.
       expect(icon.title).to.equal('Bug Icon');
     });
 
     it('cleans up aria-labelledby references to stripped element IDs', () => {
       // bugSvg has aria-labelledby="brbug-desc brbug-title" on the root <svg>.
-      // After stripping, both IDs are gone so the attribute should be removed.
       registerIconFromText(name, bugSvg, { collection, stripMeta: true });
       const icon = getIconRegistry().get(name, collection)!;
 
@@ -164,8 +180,6 @@ describe('Icon registry', () => {
     });
 
     it('retains aria-labelledby IDs that do not belong to stripped elements', () => {
-      // Construct an SVG where aria-labelledby references one external ID in
-      // addition to the title/desc IDs that will be stripped.
       const svgWithExtraRef = [
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"',
         ' aria-labelledby="extra-label brbug-title brbug-desc">',
@@ -181,8 +195,6 @@ describe('Icon registry', () => {
       });
       const icon = getIconRegistry().get(name, collection)!;
 
-      // Only the IDs that belonged to stripped elements are removed;
-      // 'extra-label' must survive.
       expect(icon.svg).to.include('aria-labelledby="extra-label"');
     });
 
@@ -228,6 +240,28 @@ describe('Icon registry', () => {
       expect(icon.svg).not.to.include('<desc');
       expect(icon.svg).not.to.include('aria-labelledby');
       expect(icon.title).to.equal('Nested Icon');
+    });
+
+    it('keeps ARIA references when the stripped elements have no IDs', () => {
+      const svgWithoutIds = [
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"',
+        ' aria-labelledby="external-label">',
+        '<title>Plain Icon</title>',
+        '<desc>No IDs here.</desc>',
+        '<path d="M0 0h24v24H0z"/>',
+        '</svg>',
+      ].join('');
+
+      registerIconFromText(name, svgWithoutIds, {
+        collection,
+        stripMeta: true,
+      });
+      const icon = getIconRegistry().get(name, collection)!;
+
+      expect(icon.svg).not.to.include('<title');
+      expect(icon.svg).not.to.include('<desc');
+      expect(icon.svg).to.include('aria-labelledby="external-label"');
+      expect(icon.title).to.equal('Plain Icon');
     });
 
     it('old string-collection API still works without stripping', () => {
@@ -436,21 +470,16 @@ describe('Icon broadcast service', () => {
     it('when multiple broadcast services are initialized they should not send sync events to each other.', async () => {
       const collections = new Map<string, Map<string, SvgIcon>>();
       const references = new Map<string, Map<string, IconMeta>>();
-      // 2 new broadcasts
       const broadcast1 = new IconsStateBroadcast(collections, references);
       const broadcast2 = new IconsStateBroadcast(collections, references);
-      // 1 global one, initialized when you get the icon registry first time.
+      // The global registry adds a third.
 
-      // a peer is requesting a state sync
       const ready = waitForMessages(channel, 3);
       channel.postMessage({ actionType: ActionType.SyncState });
       await ready;
 
-      // all icon broadcasts must respond with their state
-      // 2 from broadcast service + 1 from global.
       expect(events.length).to.equal(3);
 
-      // dispose of mock services.
       broadcast1['_dispose']();
       broadcast2['_dispose']();
     });
@@ -460,8 +489,6 @@ describe('Icon broadcast service', () => {
     it('registered icon is correctly sent when a peer requests a sync states', async () => {
       const iconName = 'bug';
 
-      // registerIconFromText fires RegisterIcon; the SyncState postMessage
-      // triggers a SyncState response from the registry - 2 messages total.
       const ready = waitForMessages(channel, 2);
       registerIconFromText(iconName, bugSvg, collectionName);
       channel.postMessage({ actionType: ActionType.SyncState });
@@ -488,8 +515,7 @@ describe('Icon broadcast service', () => {
         overwrite: true,
       });
 
-      // setIconRef with external:false fires no broadcast; the SyncState
-      // postMessage triggers exactly one SyncState response.
+      // A non-external ref sends no broadcast.
       const ready = waitForMessages(channel, 1);
       channel.postMessage({ actionType: ActionType.SyncState });
       await ready;
@@ -535,16 +561,12 @@ describe('Icon BFCache (pageshow/pagehide) handling', () => {
     const references = new Map<string, Map<string, IconMeta>>();
     const broadcast = new IconsStateBroadcast(collections, references);
 
-    // Verify channel exists initially
     expect(getChannel(broadcast)).to.not.be.null;
 
-    // Simulate pagehide event directly on the broadcast instance
     broadcast.handleEvent(new Event('pagehide') as PageTransitionEvent);
 
-    // Channel should be disposed (null)
     expect(getChannel(broadcast)).to.be.null;
 
-    // Clean up
     disposeChannel(broadcast);
   });
 
@@ -553,19 +575,15 @@ describe('Icon BFCache (pageshow/pagehide) handling', () => {
     const references = new Map<string, Map<string, IconMeta>>();
     const broadcast = new IconsStateBroadcast(collections, references);
 
-    // Simulate pagehide to dispose channel
     broadcast.handleEvent(new Event('pagehide') as PageTransitionEvent);
 
     expect(getChannel(broadcast)).to.be.null;
 
-    // Simulate pageshow to recreate channel
     broadcast.handleEvent(new Event('pageshow') as PageTransitionEvent);
 
-    // Channel should be recreated
     expect(getChannel(broadcast)).to.not.be.null;
     expect(getChannel(broadcast)).to.be.instanceOf(BroadcastChannel);
 
-    // Clean up
     disposeChannel(broadcast);
   });
 
@@ -574,17 +592,14 @@ describe('Icon BFCache (pageshow/pagehide) handling', () => {
     const references = new Map<string, Map<string, IconMeta>>();
     const broadcast = new IconsStateBroadcast(collections, references);
 
-    // Get reference to initial channel
     const initialChannel = getChannel(broadcast);
     expect(initialChannel).to.not.be.null;
 
     // Simulate pageshow without pagehide first
     broadcast.handleEvent(new Event('pageshow') as PageTransitionEvent);
 
-    // Should still have the same channel instance
     expect(getChannel(broadcast)).to.equal(initialChannel);
 
-    // Clean up
     disposeChannel(broadcast);
   });
 
@@ -593,7 +608,6 @@ describe('Icon BFCache (pageshow/pagehide) handling', () => {
     const references = new Map<string, Map<string, IconMeta>>();
     const broadcast = new IconsStateBroadcast(collections, references);
 
-    // Register an icon
     registerIconFromText('bfcache-icon', bugSvg, collectionName);
     await aTimeout(10);
 
@@ -601,24 +615,19 @@ describe('Icon BFCache (pageshow/pagehide) handling', () => {
     broadcast.handleEvent(new Event('pagehide') as PageTransitionEvent);
     broadcast.handleEvent(new Event('pageshow') as PageTransitionEvent);
 
-    // Wait for message handling
     await aTimeout(0);
 
-    // Clear events from icon registration
     events = [];
 
-    // Request sync from peer
     channel.postMessage({ actionType: ActionType.SyncState });
     await aTimeout(20);
 
-    // Should still respond with icon data after recreation
     expect(events.length).to.be.greaterThan(0);
     const syncEvent = events.find(
       (e) => e.data.actionType === ActionType.SyncState
     );
     expect(syncEvent).to.not.be.undefined;
 
-    // Clean up
     disposeChannel(broadcast);
   });
 
@@ -627,13 +636,10 @@ describe('Icon BFCache (pageshow/pagehide) handling', () => {
     const references = new Map<string, Map<string, IconMeta>>();
     const broadcast = new IconsStateBroadcast(collections, references);
 
-    // Dispose the channel
     broadcast.handleEvent(new Event('pagehide') as PageTransitionEvent);
 
-    // Clear events from any previous operations
     events = [];
 
-    // Try to send a message
     broadcast.send({
       actionType: ActionType.RegisterIcon,
       collections: new Map<string, Map<string, SvgIcon>>(),
@@ -641,10 +647,8 @@ describe('Icon BFCache (pageshow/pagehide) handling', () => {
 
     await aTimeout(10);
 
-    // No events should be received since channel is null
     expect(events.length).to.equal(0);
 
-    // Clean up
     disposeChannel(broadcast);
   });
 });
@@ -798,6 +802,48 @@ describe('Icon component', () => {
     icon.remove();
   });
 
+  it('renders the SVG after it hydrates a declarative shadow root', async () => {
+    const container = await fixture<HTMLDivElement>(html`<div></div>`);
+    container.setHTMLUnsafe(
+      '<igc-icon name="bug"><template shadowrootmode="open"></template></igc-icon>'
+    );
+    const icon = container.querySelector(IgcIconComponent.tagName)!;
+
+    await icon.updateComplete;
+    await elementUpdated(icon);
+
+    verifySvg(icon, bugSvgContent);
+  });
+
+  it('hides the SVG that it renders after it hydrates', async () => {
+    const container = await fixture<HTMLDivElement>(html`<div></div>`);
+    container.setHTMLUnsafe(
+      '<igc-icon name="bug"><template shadowrootmode="open"></template></igc-icon>'
+    );
+    const icon = container.querySelector(IgcIconComponent.tagName)!;
+
+    await icon.updateComplete;
+    await elementUpdated(icon);
+
+    expect(icon.shadowRoot!.querySelector('svg')).to.have.attribute(
+      'aria-hidden',
+      'true'
+    );
+  });
+
+  it('renders nothing after it hydrates an icon that is not registered', async () => {
+    const container = await fixture<HTMLDivElement>(html`<div></div>`);
+    container.setHTMLUnsafe(
+      '<igc-icon name="not-registered"><template shadowrootmode="open"></template></igc-icon>'
+    );
+    const icon = container.querySelector(IgcIconComponent.tagName)!;
+
+    await icon.updateComplete;
+    await elementUpdated(icon);
+
+    expect(icon.shadowRoot!.querySelector('svg')).to.be.null;
+  });
+
   it('should throw descriptive error when icon cannot be registered', async () => {
     expect(() => registerIconFromText('invalid', '<div></div>')).to.throw(
       'SVG element not found or malformed SVG string.'
@@ -840,6 +886,35 @@ describe('Icon component', () => {
       expect(internals.getARIA('ariaLabel')).to.be.null;
     });
 
+    it('hides the SVG, not the host', async () => {
+      const icon = await fixture<IgcIconComponent>(
+        html`<igc-icon name="untitled"></igc-icon>`
+      );
+      const svg = () => icon.renderRoot.querySelector('svg')!;
+
+      expect(svg()).to.have.attribute('aria-hidden', 'true');
+      expect(internalsOf(icon)!.getARIA('ariaHidden')).to.be.null;
+
+      icon.name = 'bug';
+      await elementUpdated(icon);
+      expect(svg()).to.have.attribute('aria-hidden', 'true');
+    });
+
+    for (const name of ['aria-label', 'aria-labelledby']) {
+      it(`updates the role when \`${name}\` changes`, async () => {
+        const icon = await fixture<IgcIconComponent>(
+          html`<igc-icon name="untitled"></igc-icon>`
+        );
+        const internals = internalsOf(icon)!;
+
+        icon.setAttribute(name, 'value');
+        expect(internals.getARIA('role')).to.equal('img');
+
+        icon.removeAttribute(name);
+        expect(internals.getARIA('role')).to.be.null;
+      });
+    }
+
     it('keeps the image role when the host is labelled by the author', async () => {
       const icon = await fixture<IgcIconComponent>(
         html`<igc-icon name="untitled" aria-label="Custom"></igc-icon>`
@@ -851,7 +926,6 @@ describe('Icon component', () => {
 
   describe('Multi-theme support', () => {
     it('should resolve icon references based on theme', async () => {
-      // Test that getIconRef returns different icons for different themes
       const defaultRef = getIconRegistry().getIconRef(
         'expand',
         'default',
@@ -877,7 +951,7 @@ describe('Icon component', () => {
         'fluent'
       );
 
-      // Fluent theme not defined for 'expand', should fallback to default
+      // Fluent has no 'expand' target, so the default one applies.
       expect(fluentRef.name).to.equal('keyboard_arrow_down');
       expect(fluentRef.collection).to.equal('internal');
     });
@@ -891,7 +965,6 @@ describe('Icon component', () => {
 
       const ref = getIconRegistry().getIconRef('expand', 'default', 'indigo');
 
-      // Should return the user-set reference, not the theme-based one
       expect(ref.name).to.equal('bug');
       expect(ref.collection).to.equal('default');
     });
@@ -915,7 +988,6 @@ describe('Icon component', () => {
     });
 
     it('should only resolve theme-based aliases for default collection', async () => {
-      // Theme-based resolution only applies to 'default' collection
       const ref = getIconRegistry().getIconRef('expand', 'custom', 'indigo');
 
       expect(ref.name).to.equal('expand');
@@ -929,7 +1001,6 @@ describe('Icon component', () => {
     });
 
     beforeEach(() => {
-      // Register target icons for our theme-based test
       const bootstrapChevronSvg = '<svg><path d="M7 10l5 5 5-5z"/></svg>';
       const indigoChevronSvg = '<svg><path d="M16.59 8.59L12 13.17"/></svg>';
 
@@ -940,7 +1011,7 @@ describe('Icon component', () => {
       );
       registerIconFromText('indigo-chevron', indigoChevronSvg, 'test-internal');
 
-      // Set up theme-based references manually for testing
+      // A plain reference from the alias to a test icon, without a theme.
       getIconRegistry().setIconRef({
         alias: { name: 'test-expand', collection: 'default' },
         target: { name: 'bootstrap-chevron', collection: 'test-internal' },
@@ -979,8 +1050,6 @@ describe('Icon component', () => {
       await elementUpdated(bootstrapIcon);
       await elementUpdated(indigoIcon);
 
-      // Both should render, but we'd need theme-aware resolution
-      // For now, just verify they both render successfully
       const bootstrapSvg = bootstrapIcon.shadowRoot?.querySelector('svg');
       const indigoSvg = indigoIcon.shadowRoot?.querySelector('svg');
 
@@ -1003,10 +1072,8 @@ describe('Icon component', () => {
       const icon = container.querySelector<IgcIconComponent>('#test-icon')!;
       await elementUpdated(icon);
 
-      // Capture initial content
       const initialContent = icon.shadowRoot!.innerHTML;
 
-      // Set a new reference
       setIconRef('test-expand', 'default', {
         name: 'alternative-icon',
         collection: 'test-internal',
@@ -1014,7 +1081,6 @@ describe('Icon component', () => {
 
       await elementUpdated(icon);
 
-      // Content should have changed
       const updatedContent = icon.shadowRoot!.innerHTML;
       expect(initialContent).to.not.equal(updatedContent);
       expect(updatedContent).to.include('ALTERNATIVE');
@@ -1041,7 +1107,6 @@ describe('Icon component', () => {
       await elementUpdated(icon1);
       await elementUpdated(icon2);
 
-      // Both should render the same custom icon
       const svg1 = icon1.shadowRoot?.querySelector('svg');
       const svg2 = icon2.shadowRoot?.querySelector('svg');
 

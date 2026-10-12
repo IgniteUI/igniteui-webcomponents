@@ -1,45 +1,34 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
+import { html, nothing, render } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { createRef, ref } from 'lit/directives/ref.js';
+import { ref } from 'lit/directives/ref.js';
 
 import {
-  IgcAvatarComponent,
   IgcButtonComponent,
-  IgcCardActionsComponent,
-  IgcCardComponent,
-  IgcCardContentComponent,
-  IgcCardHeaderComponent,
-  IgcChipComponent,
-  IgcDividerComponent,
+  IgcCheckboxComponent,
   IgcExpansionPanelComponent,
   IgcHighlightComponent,
   IgcIconButtonComponent,
+  IgcIconComponent,
   IgcInputComponent,
-  IgcListComponent,
-  IgcListHeaderComponent,
-  IgcListItemComponent,
+  IgcSwitchComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
-import { disableStoryControls } from './story.js';
+import { registerMaterialIcons } from './story-icons.js';
+import { disableStoryControls, storyStyles } from './story.js';
 
 defineComponents(
-  IgcAvatarComponent,
   IgcButtonComponent,
-  IgcCardActionsComponent,
-  IgcCardComponent,
-  IgcCardContentComponent,
-  IgcCardHeaderComponent,
-  IgcChipComponent,
-  IgcDividerComponent,
+  IgcCheckboxComponent,
   IgcExpansionPanelComponent,
   IgcHighlightComponent,
   IgcIconButtonComponent,
+  IgcIconComponent,
   IgcInputComponent,
-  IgcListComponent,
-  IgcListHeaderComponent,
-  IgcListItemComponent
+  IgcSwitchComponent
 );
+
+registerMaterialIcons('search', 'arrow-up', 'arrow-down');
 
 // region default
 const metadata: Meta<IgcHighlightComponent> = {
@@ -91,502 +80,597 @@ type Story = StoryObj<IgcHighlightArgs>;
 
 // endregion
 
-function createSearchController() {
-  const highlightRef = createRef<IgcHighlightComponent>();
-  const statusRef = createRef<HTMLElement>();
+const styles = html`
+  ${storyStyles}
+  <style>
+    .hl-text {
+      max-width: 40rem;
+      margin: 0;
+    }
 
-  function updateStatus() {
-    const highlight = highlightRef.value;
-    const status = statusRef.value;
-    if (!highlight || !status) return;
+    .hl-reader {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      max-width: 44rem;
+      height: 30rem;
+      border: 1px solid var(--ig-gray-300);
+      border-radius: 8px;
+    }
 
-    status.textContent = highlight.size
-      ? `${highlight.current + 1} of ${highlight.size} match${highlight.size === 1 ? '' : 'es'}`
-      : '';
-  }
+    .hl-find {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      border-block-end: 1px solid var(--ig-gray-300);
+    }
 
-  function onInput({ detail }: CustomEvent<string>) {
-    if (!highlightRef.value) return;
-    highlightRef.value.searchText = detail;
-    updateStatus();
-  }
+    .hl-find igc-input {
+      flex: 1 1 14rem;
+    }
 
-  function prev() {
-    highlightRef.value?.previous();
-    updateStatus();
-  }
+    .hl-count {
+      min-width: 5rem;
+      color: var(--ig-gray-700);
+    }
 
-  function next() {
-    highlightRef.value?.next();
-    updateStatus();
-  }
+    .hl-scroll {
+      overflow: auto;
+      padding: 0 1.5rem 1rem;
+    }
 
-  return { highlightRef, statusRef, onInput, prev, next };
-}
+    .hl-scroll h3 {
+      margin-block: 1.25rem 0.5rem;
+      font-size: 1.125rem;
+    }
 
-function SearchBar(controller: ReturnType<typeof createSearchController>) {
-  const { statusRef, onInput, prev, next } = controller;
+    .hl-scroll p {
+      margin-block: 0 0.75rem;
+    }
 
-  return html`
-    <div class="search-bar">
-      <igc-input label="Search" @igcInput=${onInput}>
-        <igc-icon-button
-          aria-label="Go to previous match"
-          variant="flat"
-          name="navigate_before"
-          collection="internal"
-          @click=${prev}
-          slot="suffix"
-        ></igc-icon-button>
-        <igc-icon-button
-          aria-label="Go to next match"
-          variant="flat"
-          @click=${next}
-          slot="suffix"
-          name="navigate_next"
-          collection="internal"
-        ></igc-icon-button>
-        <p ${ref(statusRef)} slot="helper-text"></p>
+    .hl-settings {
+      display: grid;
+      gap: 1rem;
+      max-width: 36rem;
+    }
+
+    .hl-settings p {
+      margin: 0;
+    }
+
+    .hl-settings ul {
+      display: grid;
+      gap: 0.75rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .hl-settings li {
+      display: grid;
+      gap: 0.125rem;
+    }
+
+    .hl-log {
+      font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+      font-size: 0.8125rem;
+    }
+
+    .hl-log div {
+      white-space: pre;
+    }
+
+    .hl-log igc-highlight {
+      --background: var(--ig-warn-200);
+      --foreground: var(--ig-warn-200-contrast);
+      --background-active: var(--ig-warn-600);
+      --foreground-active: var(--ig-warn-600-contrast);
+    }
+  </style>
+`;
+
+/**
+ * A find bar for a scroll container with an `igc-highlight`: a search field, the previous and
+ * next buttons, a match case option, and a status with the position of the active match.
+ */
+function createFinder(
+  label: string,
+  reveal?: (highlight: IgcHighlightComponent) => Promise<unknown>
+) {
+  let bar: HTMLElement | undefined;
+
+  const controls = () => ({
+    input: bar!.querySelector('igc-input')!,
+    matchCase: bar!.querySelector('igc-checkbox')!,
+    highlight: bar!.parentElement!.querySelector('igc-highlight')!,
+  });
+
+  const report = () => {
+    const { highlight } = controls();
+    const status = bar!.querySelector('.hl-count')!;
+
+    status.textContent = !highlight.searchText.trim()
+      ? ''
+      : highlight.size
+        ? `${highlight.current + 1} of ${highlight.size}`
+        : 'No matches';
+
+    for (const button of bar!.querySelectorAll('igc-icon-button')) {
+      button.disabled = !highlight.size;
+    }
+  };
+
+  const search = async () => {
+    const { input, matchCase, highlight } = controls();
+
+    // Each set searches again, also with the same value.
+    if (highlight.caseSensitive !== matchCase.checked) {
+      highlight.caseSensitive = matchCase.checked;
+    }
+    if (highlight.searchText !== input.value) {
+      highlight.searchText = input.value;
+    }
+    await reveal?.(highlight);
+
+    if (highlight.size) {
+      highlight.setActive(0);
+    }
+
+    report();
+  };
+
+  const step = (forward: boolean) => {
+    const { highlight } = controls();
+
+    forward ? highlight.next() : highlight.previous();
+    report();
+  };
+
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      step(!event.shiftKey);
+    }
+  };
+
+  /** Fills in the search field and the match case option, and then searches. */
+  const find = (text: string, caseSensitive: boolean) => {
+    const { input, matchCase } = controls();
+
+    input.value = text;
+    matchCase.checked = caseSensitive;
+    return search();
+  };
+
+  const template = (extra: unknown = nothing) => html`
+    <div
+      class="hl-find"
+      ${ref((element) => {
+        bar = element as HTMLElement | undefined;
+      })}
+    >
+      <igc-input
+        type="search"
+        label=${label}
+        @igcInput=${search}
+        @keydown=${onKeyDown}
+      >
+        <igc-icon slot="prefix" name="search"></igc-icon>
       </igc-input>
-      <igc-divider></igc-divider>
+      <igc-icon-button
+        name="arrow-up"
+        variant="flat"
+        aria-label="Previous match"
+        disabled
+        @click=${() => step(false)}
+      ></igc-icon-button>
+      <igc-icon-button
+        name="arrow-down"
+        variant="flat"
+        aria-label="Next match"
+        disabled
+        @click=${() => step(true)}
+      ></igc-icon-button>
+      <igc-checkbox @igcChange=${search}>Match case</igc-checkbox>
+      ${extra}
+      <span class="hl-count" role="status"></span>
     </div>
   `;
-}
 
-function generateParagraphs(count: number): string[] {
-  const words = [
-    'lorem',
-    'ipsum',
-    'dolor',
-    'sit',
-    'amet',
-    'consectetur',
-    'adipiscing',
-    'elit',
-    'sed',
-    'do',
-    'eiusmod',
-    'tempor',
-    'incididunt',
-    'ut',
-    'labore',
-    'et',
-    'dolore',
-    'magna',
-    'aliqua',
-  ];
-
-  return Array.from({ length: count }, () => {
-    const wordCount = Math.floor(Math.random() * 30) + 40;
-    return Array.from(
-      { length: wordCount },
-      () => words[Math.floor(Math.random() * words.length)]
-    ).join(' ');
-  });
+  return { find, template };
 }
 
 export const Default: Story = {
-  render: (args) => html`
+  args: { searchText: 'cold brew' },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The highlight marks each match of `searchText` in its content. It uses the CSS Custom Highlight API, so it adds no elements to the DOM, and the layout does not change. The first match is the active match, and it has a second color. By default, the search ignores the case: "cold brew" also finds "Cold brew" and "Cold Brew". Set `caseSensitive` to find only the exact case. A space in the search text matches any run of whitespace, so the search also finds "cold brew" where a line break of the HTML source separates the two words. Use the controls panel to change the search.',
+      },
+    },
+  },
+  render: ({ searchText, caseSensitive }) => html`
+    ${styles}
     <igc-highlight
-      search-text=${ifDefined(args.searchText)}
-      ?case-sensitive=${args.caseSensitive}
+      search-text=${ifDefined(searchText)}
+      ?case-sensitive=${caseSensitive}
     >
-      <p>
-        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quae doloribus
-        odit id excepturi ipsum provident eaque dignissimos beatae! Rerum vero
-        distinctio libero, quasi magni quod natus nesciunt doloremque temporibus
-        voluptate?
-      </p>
-    </igc-highlight>
-  `,
-  args: { searchText: 'lorem' },
-};
-
-export const CustomStyling: Story = {
-  argTypes: disableStoryControls(metadata),
-  render: () => html`
-    <style>
-      .blue-highlight {
-        --background: royalblue;
-        --foreground: white;
-        --background-active: dodgerblue;
-        --foreground-active: white;
-      }
-      .dark-highlight {
-        --foreground-active: #000;
-        --foreground: yellow;
-        --background-active: yellow;
-        --background: #000;
-      }
-    </style>
-    <igc-highlight search-text="lorem" class="blue-highlight">
-      <p>
-        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quae doloribus
-        odit id excepturi ipsum provident eaque dignissimos beatae! Rerum vero
-        distinctio libero, quasi magni quod natus nesciunt doloremque temporibus
-        voluptate?
-      </p>
-    </igc-highlight>
-    <igc-divider></igc-divider>
-    <igc-highlight search-text="dolor" class="dark-highlight">
-      <p>
-        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quae doloribus
-        odit id excepturi ipsum provident eaque dignissimos beatae! Rerum vero
-        distinctio libero, quasi magni quod natus nesciunt doloremque temporibus
-        voluptate?
+      <p class="hl-text">
+        Cold brew is coffee that steeps in cold water for 12 to 24 hours.
+        Because the water is cold, less acid comes out of the beans, so cold
+        brew tastes sweeter and less bitter than hot coffee. Use a coarse grind,
+        and one part of coffee for eight parts of water. Keep the coffee in the
+        refrigerator, and drink it in two weeks. Our Cold Brew Week starts on
+        October 12.
       </p>
     </igc-highlight>
   `,
 };
 
-export const SearchUI: Story = {
-  render: (args) => {
-    const controller = createSearchController();
-
-    return html`
-      <style>
-        :root {
-          scroll-behavior: smooth;
-        }
-        .search-bar {
-          position: sticky;
-          top: 0;
-          z-index: 1;
-          background-color: #fff;
-        }
-        @container style(--ig-theme-variant: dark) {
-          .search-bar {
-            background-color: #000;
-          }
-        }
-      </style>
-
-      ${SearchBar(controller)}
-
-      <igc-highlight
-        ${ref(controller.highlightRef)}
-        ?case-sensitive=${args.caseSensitive}
-        .searchText=${args.searchText}
-      >
-        <h1>Document Object Model</h1>
-        <p>
-          <em
-            >Source:
-            <a href="https://en.wikipedia.org/wiki/Document_Object_Model"
-              >Wikipedia</a
-            ></em
-          >
-        </p>
-        <igc-expansion-panel open>
-          <h2 slot="title">Overview</h2>
-          <section>
-            <p>
-              The Document Object Model (DOM) is a cross-platform and
-              language-independent interface that treats an HTML or XML document
-              as a tree structure wherein each node is an object representing a
-              part of the document. The DOM represents a document with a logical
-              tree. Each branch of the tree ends in a node, and each node
-              contains objects. DOM methods allow programmatic access to the
-              tree; with them one can change the structure, style or content of
-              a document. Nodes can have event handlers (also known as event
-              listeners) attached to them. Once an event is triggered, the event
-              handlers get executed.
-            </p>
-            <p>
-              The principal standardization of the DOM was handled by the World
-              Wide Web Consortium (W3C), which last developed a recommendation
-              in 2004. WHATWG took over the development of the standard,
-              publishing it as a living document. The W3C now publishes stable
-              snapshots of the WHATWG standard.
-            </p>
-            <p>In HTML DOM (Document Object Model), every element is a node:</p>
-            <ul>
-              <li>A document is a document node.</li>
-              <li>All HTML elements are element nodes.</li>
-              <li>All HTML attributes are attribute nodes.</li>
-              <li>Text inserted into HTML elements are text nodes.</li>
-              <li>Comments are comment nodes.</li>
-            </ul>
-          </section>
-        </igc-expansion-panel>
-
-        <igc-expansion-panel open>
-          <h2 slot="title">History</h2>
-          <section>
-            <p>
-              The history of the Document Object Model is intertwined with the
-              history of the "browser wars" of the late 1990s between Netscape
-              Navigator and Microsoft Internet Explorer, as well as with that of
-              JavaScript and JScript, the first scripting languages to be widely
-              implemented in the JavaScript engines of web browsers.
-            </p>
-            <p>
-              JavaScript was released by Netscape Communications in 1995 within
-              Netscape Navigator 2.0. Netscape's competitor, Microsoft, released
-              Internet Explorer 3.0 the following year with a reimplementation
-              of JavaScript called JScript. JavaScript and JScript let web
-              developers create web pages with client-side interactivity. The
-              limited facilities for detecting user-generated events and
-              modifying the HTML document in the first generation of these
-              languages eventually became known as "DOM Level 0" or "Legacy
-              DOM." No independent standard was developed for DOM Level 0, but
-              it was partly described in the specifications for HTML 4.
-            </p>
-            <p>
-              Legacy DOM was limited in the kinds of elements that could be
-              accessed. Form, link and image elements could be referenced with a
-              hierarchical name that began with the root document object. A
-              hierarchical name could make use of either the names or the
-              sequential index of the traversed elements. For example, a form
-              input element could be accessed as either document.myForm.myInput
-              or
-              <code>document.forms[0].elements[0]</code>.
-            </p>
-            <p>
-              The Legacy DOM enabled client-side form validation and simple
-              interface interactivity like creating tooltips.
-            </p>
-            <p>
-              In 1997, Netscape and Microsoft released version 4.0 of Netscape
-              Navigator and Internet Explorer respectively, adding support for
-              Dynamic HTML (DHTML) functionality enabling changes to a loaded
-              HTML document. DHTML required extensions to the rudimentary
-              document object that was available in the Legacy DOM
-              implementations. Although the Legacy DOM implementations were
-              largely compatible since JScript was based on JavaScript, the
-              DHTML DOM extensions were developed in parallel by each browser
-              maker and remained incompatible. These versions of the DOM became
-              known as the "Intermediate DOM".
-            </p>
-            <p>
-              After the standardization of ECMAScript, the W3C DOM Working Group
-              began drafting a standard DOM specification. The completed
-              specification, known as "DOM Level 1", became a W3C Recommendation
-              in late 1998. By 2005, large parts of W3C DOM were well-supported
-              by common ECMAScript-enabled browsers, including Internet Explorer
-              6 (from 2001), Opera, Safari and Gecko-based browsers (like
-              Mozilla, Firefox, SeaMonkey and Camino).
-            </p>
-          </section>
-        </igc-expansion-panel>
-      </igc-highlight>
-    `;
-  },
-};
-
-export const Performance: Story = {
-  argTypes: disableStoryControls(metadata),
-  render: () => {
-    const controller = createSearchController();
-    const paragraphs = generateParagraphs(250);
-
-    return html`
-      <style>
-        .perf-highlight {
-          --foreground-active: #222;
-          --background-active: yellow;
-          --foreground: yellow;
-          --background: #222;
-        }
-        .search-bar {
-          position: sticky;
-          top: 0;
-          z-index: 1;
-          background-color: #fff;
-        }
-        @container style(--ig-theme-variant: dark) {
-          .search-bar {
-            background-color: #000;
-          }
-        }
-      </style>
-
-      ${SearchBar(controller)}
-
-      <igc-highlight ${ref(controller.highlightRef)} class="perf-highlight">
-        ${paragraphs.map((p) => html`<p>${p}</p>`)}
-      </igc-highlight>
-    `;
-  },
-};
-
-const articles = [
+const guide = [
   {
-    initials: 'AJ',
-    title: 'Getting Started with Web Components',
-    author: 'Alice Johnson',
-    date: 'Mar 15, 2026',
-    category: 'Tutorial',
-    tags: ['web-components', 'custom-elements', 'beginner'],
-    excerpt:
-      'Web Components are a suite of web platform APIs that allow you to create reusable custom elements with encapsulated functionality. Built on Custom Elements, Shadow DOM, and HTML Templates, they work in any JavaScript framework or without one at all. This tutorial walks you through defining your first custom element, attaching a shadow root, and using HTML templates to stamp out reusable markup.',
+    title: 'Create a project',
+    text: 'A project holds the files, the tasks and the members of a piece of work. To create a project, select New project on the home page, type a name, and then select Create. You can change the name later in the settings of the project.',
   },
   {
-    initials: 'ML',
-    title: 'Reactive Rendering with the Lit Framework',
-    author: 'Marcus Lee',
-    date: 'Mar 10, 2026',
-    category: 'Framework',
-    tags: ['lit', 'reactive', 'performance'],
-    excerpt:
-      "Lit is a lightweight library built on top of the Web Components standard that adds reactive properties and a declarative template system. Its efficient update cycle batches property changes and only re-renders the portions of the DOM that actually changed. By leveraging tagged template literals and the browser's native custom element lifecycle, Lit components stay small, fast, and framework-agnostic.",
+    title: 'Invite people',
+    text: 'Open the project, and then select Share. Type the email addresses of the people, choose a role for each person, and then select Send. A member can edit the files of the project. A viewer can only read them. People without an account get an email with a link to sign up.',
   },
   {
-    initials: 'ST',
-    title: 'Accessibility in Component Design',
-    author: 'Sarah Torres',
-    date: 'Mar 5, 2026',
-    category: 'Accessibility',
-    tags: ['accessibility', 'aria', 'wcag'],
-    excerpt:
-      'Building accessible components means more than adding an aria-label. Every interactive element must be keyboard-navigable, focusable in a logical order, and communicate its state through ARIA roles and properties. Shadow DOM complicates accessibility trees, so authors must ensure focus management and screen-reader announcements work correctly across shadow boundaries. Following WCAG 2.2 guidelines from the start is far less costly than retrofitting them later.',
+    title: 'Share files',
+    text: 'Each file has a link. Select the file, and then select Copy link. The link works only for the members of the project, unless you turn on Anyone with the link. You can turn off the link at any time, and then the old link stops working.',
   },
   {
-    initials: 'DK',
-    title: 'Deep Dive into Shadow DOM',
-    author: 'David Kim',
-    date: 'Feb 28, 2026',
-    category: 'Web Standards',
-    tags: ['shadow-dom', 'encapsulation', 'css'],
-    excerpt:
-      'Shadow DOM creates an isolated DOM subtree attached to a host element, preventing styles and scripts from leaking in or out. Selectors like :host and ::slotted let component authors style the host and slotted light-DOM content respectively, while CSS custom properties pierce the shadow boundary, enabling external theming. Understanding the difference between open and closed shadow roots is essential for building well-encapsulated, themeable custom elements.',
-  },
-  {
-    initials: 'EC',
-    title: 'TypeScript Patterns for Lit Components',
-    author: 'Emily Chen',
-    date: 'Feb 22, 2026',
-    category: 'TypeScript',
-    tags: ['typescript', 'decorators', 'types'],
-    excerpt:
-      "Strong TypeScript typing transforms large component libraries into self-documenting, refactor-safe codebases. Property decorators like @property and @state provide both the Lit reactive system and TypeScript's type checker with metadata at once. Defining strict interfaces for component events and using generic types for slot-aware helpers makes cross-component composition predictable and IDE-friendly across the entire library.",
-  },
-  {
-    initials: 'JR',
-    title: 'Theming with CSS Custom Properties',
-    author: 'James Rivera',
-    date: 'Feb 18, 2026',
-    category: 'Styling',
-    tags: ['css', 'custom-properties', 'design-tokens'],
-    excerpt:
-      'CSS custom properties — often called CSS variables — pierce the shadow boundary, making them the natural choice for theming custom elements. By mapping design tokens to custom properties at the :root or :host level, a single theme change cascades through an entire component library. Pairing this approach with a dedicated theming package lets consumers switch between light, dark, and brand-specific palettes without touching component internals.',
+    title: 'Notifications',
+    text: 'We send an email when somebody mentions you, gives a task to you, or shares a file with you. To change the notifications, open the settings, and then select Notifications. You can turn off each kind of email, or get one summary email each day.',
   },
 ];
 
-export const KnowledgeBase: Story = {
+const questions = [
+  {
+    question: 'Can I move a file to another project?',
+    answer:
+      'Yes. Select the file, select Move, and then choose the project. The members of the new project get access to the file, and the members of the old project lose it.',
+  },
+  {
+    question: 'How do I restore a deleted file?',
+    answer:
+      'Open the trash of the project. A deleted file stays there for 30 days. Select the file, and then select Restore.',
+  },
+  {
+    question: 'Who can see my files?',
+    answer:
+      'Only the members of the project, and the people with the link when you turn on Anyone with the link.',
+  },
+  {
+    question: 'How do I delete my account?',
+    answer:
+      'Open the settings, select Account, and then select Delete the account. We delete your files after 30 days.',
+  },
+];
+
+/** Opens the panels that contain a match, so that the user can see each match. */
+function openPanelsWithMatches(highlight: IgcHighlightComponent) {
+  const text = highlight.searchText.trim();
+  const normalize = (value: string) =>
+    highlight.caseSensitive ? value : value.toLowerCase();
+
+  if (!text) {
+    return Promise.resolve();
+  }
+
+  return Promise.all(
+    [...highlight.querySelectorAll('igc-expansion-panel')]
+      .filter((panel) =>
+        normalize(panel.textContent ?? '').includes(normalize(text))
+      )
+      .map((panel) => panel.show())
+  );
+}
+
+export const FindInPage: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A user guide with a find bar. Type a word, such as "link" or "file". The story sets `searchText`, and `setActive(0)` scrolls the first match into the center of the scroll container. Press Enter or Shift + Enter in the search field, or use the arrow buttons, to go to the next or the previous match with `next()` and `previous()`. Both wrap at the ends. "Match case" sets `caseSensitive`. The highlight also finds the text in the closed panels of the FAQ, so before it moves to the first match, the story opens each panel with a match. The highlight is only visual, so the status after the buttons tells a screen reader the position of the active match, from `current` and `size`.',
+      },
+    },
+  },
   render: () => {
-    const controller = createSearchController();
+    const finder = createFinder('Find in the guide', openPanelsWithMatches);
 
     return html`
-      <style>
-        .kb-layout {
-          display: flex;
-          flex-direction: column;
-          gap: 2rem;
-          padding: 1rem 0;
-        }
-        .kb-section-title {
-          font-size: 1rem;
-          font-weight: 600;
-          margin: 0 0 0.75rem;
-          color: var(--ig-gray-700, #374151);
-        }
-        .kb-card-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-          gap: 1rem;
-        }
-        .kb-card-excerpt {
-          font-size: 0.875rem;
-          line-height: 1.6;
-          color: var(--ig-gray-600, #4b5563);
-          margin: 0;
-        }
-        .kb-tags {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 4px;
-          margin-top: 0.75rem;
-        }
-        .search-bar {
-          position: sticky;
-          top: 0;
-          z-index: 1;
-          background-color: #fff;
-        }
-        @container style(--ig-theme-variant: dark) {
-          .search-bar {
-            background-color: #000;
-          }
-        }
-      </style>
-
-      ${SearchBar(controller)}
-
-      <igc-highlight ${ref(controller.highlightRef)}>
-        <div class="kb-layout">
-          <section>
-            <p class="kb-section-title">Article Index</p>
-            <igc-list>
-              <igc-list-header><h4>Recent Publications</h4></igc-list-header>
-              ${articles.map(
-                (a) => html`
-                  <igc-list-item>
-                    <igc-avatar
-                      slot="start"
-                      initials=${a.initials}
-                      shape="circle"
-                    ></igc-avatar>
-                    <span slot="title">${a.title}</span>
-                    <span slot="subtitle"
-                      >${a.author} &middot; ${a.date} &middot;
-                      ${a.category}</span
-                    >
-                  </igc-list-item>
-                `
-              )}
-            </igc-list>
-          </section>
-
-          <igc-divider></igc-divider>
-
-          <section>
-            <p class="kb-section-title">Featured Articles</p>
-            <div class="kb-card-grid">
-              ${articles.map(
-                (a) => html`
-                  <igc-card>
-                    <igc-card-header>
-                      <igc-avatar
-                        slot="thumbnail"
-                        initials=${a.initials}
-                        shape="circle"
-                      ></igc-avatar>
-                      <h3 slot="title">${a.title}</h3>
-                      <h5 slot="subtitle">${a.author} &middot; ${a.date}</h5>
-                    </igc-card-header>
-                    <igc-card-content>
-                      <p class="kb-card-excerpt">${a.excerpt}</p>
-                      <div class="kb-tags">
-                        ${a.tags.map(
-                          (t) => html`<igc-chip tabindex="-1">${t}</igc-chip>`
-                        )}
-                      </div>
-                    </igc-card-content>
-                    <igc-card-actions>
-                      <igc-button slot="start" variant="flat"
-                        >Read More</igc-button
-                      >
-                      <span slot="end">${a.category}</span>
-                    </igc-card-actions>
-                  </igc-card>
-                `
-              )}
-            </div>
-          </section>
+      ${styles}
+      <div class="hl-reader">
+        ${finder.template()}
+        <div
+          class="hl-scroll"
+          role="region"
+          aria-label="User guide"
+          tabindex="0"
+        >
+          <igc-highlight>
+            ${guide.map(
+              ({ title, text }) => html`
+                <h3>${title}</h3>
+                <p>${text}</p>
+              `
+            )}
+            <h3>Frequently asked questions</h3>
+            ${questions.map(
+              ({ question, answer }) => html`
+                <igc-expansion-panel>
+                  <span slot="title">${question}</span>
+                  <p>${answer}</p>
+                </igc-expansion-panel>
+              `
+            )}
+          </igc-highlight>
         </div>
-      </igc-highlight>
+      </div>
+    `;
+  },
+};
+
+const settings = [
+  {
+    name: 'Display name',
+    section: 'Profile',
+    description: 'The name that other people see next to your messages.',
+  },
+  {
+    name: 'Profile photo',
+    section: 'Profile',
+    description: 'A photo or an image that shows next to your name.',
+  },
+  {
+    name: 'Password',
+    section: 'Security',
+    description: 'Change the password that you use to sign in.',
+  },
+  {
+    name: 'Two-step verification',
+    section: 'Security',
+    description:
+      'Ask for a code from your phone when you sign in on a new device.',
+  },
+  {
+    name: 'Active sessions',
+    section: 'Security',
+    description: 'See the devices that are signed in, and sign them out.',
+    advanced: true,
+  },
+  {
+    name: 'Email notifications',
+    section: 'Notifications',
+    description: 'The emails that we send when somebody mentions you.',
+  },
+  {
+    name: 'Daily summary',
+    section: 'Notifications',
+    description: 'One email each day with the changes in your projects.',
+  },
+  {
+    name: 'Language',
+    section: 'Preferences',
+    description: 'The language of the menus and of the emails.',
+  },
+  {
+    name: 'Time zone',
+    section: 'Preferences',
+    description: 'The time zone of the dates and the times that we show.',
+  },
+  {
+    name: 'Keyboard shortcuts',
+    section: 'Preferences',
+    description: 'Turn the shortcuts with a single key on or off.',
+    advanced: true,
+  },
+  {
+    name: 'API tokens',
+    section: 'Developer',
+    description: 'The tokens that your scripts use to sign in to your account.',
+    advanced: true,
+  },
+  {
+    name: 'Webhooks',
+    section: 'Developer',
+    description: 'Send a request to your server when a file changes.',
+    advanced: true,
+  },
+  {
+    name: 'Delete the account',
+    section: 'Account',
+    description: 'Remove your account, your files and your messages.',
+  },
+];
+
+export const SettingsSearch: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A search in the settings of an application. The list shows only the settings that contain the search text, and the highlight marks the text in each setting. The component does not observe its content: after a render, its ranges point to text that has changed. Lit sets the properties of an element before it updates the children, so a `searchText` binding searches the old list. That is why the story sets `searchText` after each render, or calls `search()` when the text stays the same. Turn on "Show advanced settings" to add settings to the list while the search text stays the same.',
+      },
+    },
+  },
+  render: () => {
+    let query = '';
+    let advanced = false;
+    let host: HTMLElement | undefined;
+
+    const onInput = ({ detail }: CustomEvent<string>) => {
+      query = detail;
+      update();
+    };
+
+    const onAdvanced = ({ detail }: CustomEvent<{ checked: boolean }>) => {
+      advanced = detail.checked;
+      update();
+    };
+
+    const update = () => {
+      if (!host) {
+        return;
+      }
+
+      const text = query.trim();
+      const visible = settings.filter(
+        (setting) =>
+          (advanced || !setting.advanced) &&
+          [setting.name, setting.section, setting.description].some((value) =>
+            value.toLowerCase().includes(text.toLowerCase())
+          )
+      );
+
+      render(
+        html`
+          <div class="hl-settings">
+            <igc-input
+              type="search"
+              label="Search the settings"
+              @igcInput=${onInput}
+            >
+              <igc-icon slot="prefix" name="search"></igc-icon>
+            </igc-input>
+            <igc-switch @igcChange=${onAdvanced}>
+              Show advanced settings
+            </igc-switch>
+            <p class="muted" role="status">
+              ${
+                visible.length
+                  ? `${visible.length} ${visible.length === 1 ? 'setting' : 'settings'}`
+                  : `No settings contain "${text}".`
+              }
+            </p>
+            <igc-highlight>
+              <ul>
+                ${visible.map(
+                  ({ name, section, description }) => html`
+                    <li>
+                      <strong>${name}</strong>
+                      <span>${description}</span>
+                      <span class="muted">${section}</span>
+                    </li>
+                  `
+                )}
+              </ul>
+            </igc-highlight>
+          </div>
+        `,
+        host
+      );
+
+      const highlight = host.querySelector('igc-highlight')!;
+
+      if (highlight.searchText === text) {
+        highlight.search();
+      } else {
+        highlight.searchText = text;
+      }
+    };
+
+    const mount = (element?: Element) => {
+      host = element as HTMLElement | undefined;
+      update();
+    };
+
+    return html`${styles}
+      <div ${ref(mount)}></div>`;
+  },
+};
+
+const levels = ['INFO', 'INFO', 'INFO', 'INFO', 'DEBUG', 'WARN', 'ERROR'];
+const services = ['api', 'auth', 'billing', 'search', 'worker'];
+const messages: Record<string, string[]> = {
+  INFO: [
+    'Request completed in {n} ms',
+    'User {n} signed in',
+    'Cache refreshed with {n} entries',
+    'Error rate for the last hour is 0.{n}%',
+  ],
+  DEBUG: ['Query uses the index orders_by_date', '{n} attempts left'],
+  WARN: ['Slow query took {n} ms', 'Retried the request after a network error'],
+  ERROR: [
+    'Payment for order {n} failed: the card was declined',
+    'The connection to the database timed out after {n} ms',
+  ],
+};
+
+/** Makes the same log at each page load, so the matches do not change. */
+function createLog(count: number): string[] {
+  let seed = 7;
+  const random = (max: number) => {
+    seed = (seed * 16_807) % 2_147_483_647;
+    return seed % max;
+  };
+
+  let time = Date.UTC(2026, 9, 2, 8);
+
+  return Array.from({ length: count }, () => {
+    const level = levels[random(levels.length)];
+    const options = messages[level];
+    const message = options[random(options.length)].replace(
+      '{n}',
+      `${random(900) + 100}`
+    );
+
+    time += random(4000);
+
+    return `${new Date(time).toISOString().slice(11, 23)} ${level.padEnd(5)} [${services[random(services.length)]}] ${message}`;
+  });
+}
+
+let log: string[] | undefined;
+const getLog = () => (log ??= createLog(3000));
+
+export const LogViewer: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A log viewer with 3,000 lines. The search and the navigation stay fast, because the highlight adds no elements to the DOM. "Find errors" and "Find warnings" search for the level with "Match case" on, so the search does not find "error" in the text of the messages. Turn off "Match case" to see the difference. The log sets its own highlight colors with the CSS custom properties `--background`, `--foreground`, `--background-active` and `--foreground-active` on the host. The colors come from the palette with their contrast colors, so the text stays readable in the light and the dark themes.',
+      },
+    },
+  },
+  render: () => {
+    const finder = createFinder('Find in the log');
+    const lines = getLog();
+
+    return html`
+      ${styles}
+      <div class="hl-reader">
+        ${finder.template(html`
+          <igc-button
+            variant="outlined"
+            @click=${() => finder.find('ERROR', true)}
+          >
+            Find errors
+          </igc-button>
+          <igc-button
+            variant="outlined"
+            @click=${() => finder.find('WARN', true)}
+          >
+            Find warnings
+          </igc-button>
+        `)}
+        <div
+          class="hl-scroll hl-log"
+          role="region"
+          aria-label="Log"
+          tabindex="0"
+        >
+          <igc-highlight
+            >${lines.map((line) => html`<div>${line}</div>`)}</igc-highlight
+          >
+        </div>
+      </div>
     `;
   },
 };

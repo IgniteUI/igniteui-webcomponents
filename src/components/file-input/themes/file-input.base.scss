@@ -22,6 +22,7 @@ $theme-file-input: file-input.$base;
     [part='file-names'] {
         display: flex;
         align-items: center;
+        min-width: 0;
         max-height: var-get($theme, 'size');
         height: 100%;
         grid-area: 1 / 3;

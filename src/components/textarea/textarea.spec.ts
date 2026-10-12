@@ -48,7 +48,6 @@ describe('Textarea component', () => {
 
       expect(element.renderRoot.querySelector('[part="notch"]')).to.exist;
 
-      // Reset theme
       configureTheme('bootstrap');
       await nextFrame();
     });
@@ -121,6 +120,102 @@ describe('Textarea component', () => {
       expect(element.value).to.equal([value, ...additional].join('\r\n'));
     });
 
+    /**
+     * Builds a textarea with a helper text and whitespace text nodes in the
+     * default slot, as a formatted template has. `setup` runs before the
+     * children are appended.
+     */
+    function withHelperText(
+      setup: (textarea: IgcTextareaComponent) => void
+    ): IgcTextareaComponent {
+      const textarea = document.createElement(IgcTextareaComponent.tagName);
+      const helper = document.createElement('span');
+
+      helper.slot = 'helper-text';
+      helper.textContent = 'Helper text';
+      setup(textarea);
+      textarea.append(
+        document.createTextNode('\n  '),
+        helper,
+        document.createTextNode('\n')
+      );
+
+      return textarea;
+    }
+
+    it('keeps the value attribute when the default slot has only whitespace', async () => {
+      await createFixture(
+        html`${withHelperText((textarea) => textarea.setAttribute('value', value))}`
+      );
+
+      expect(element.value).to.equal(value);
+      expect(element.defaultValue).to.equal(value);
+      expect(textArea.value).to.equal(value);
+    });
+
+    it('keeps a value set before the first render when the default slot has only whitespace', async () => {
+      await createFixture(
+        html`${withHelperText((textarea) => {
+          textarea.value = value;
+        })}`
+      );
+
+      expect(element.value).to.equal(value);
+      expect(textArea.value).to.equal(value);
+    });
+
+    it('keeps the typed value when whitespace and a helper text are added later', async () => {
+      await createFixture(html`<igc-textarea></igc-textarea>`);
+
+      simulateInput(textArea, { value });
+      await elementUpdated(element);
+
+      const helper = document.createElement('span');
+      helper.slot = 'helper-text';
+      element.append(document.createTextNode('\n  '), helper);
+      await elementUpdated(element);
+
+      expect(element.value).to.equal(value);
+      expect(textArea.value).to.equal(value);
+    });
+
+    it('clears the value when the projected text is removed', async () => {
+      await createFixture(html`<igc-textarea>${value}</igc-textarea>`);
+
+      element.replaceChildren(document.createTextNode('\n  '));
+      await elementUpdated(element);
+
+      expect(element.value).to.be.empty;
+      expect(textArea.value).to.be.empty;
+    });
+
+    it('replaces an edited value when the projected text changes', async () => {
+      await createFixture(html`<igc-textarea>${value}</igc-textarea>`);
+
+      simulateInput(textArea, { value: 'Typed' });
+      await elementUpdated(element);
+
+      element.replaceChildren(document.createTextNode('Projected'));
+      await elementUpdated(element);
+
+      expect(element.value).to.equal('Projected');
+      expect(textArea.value).to.equal('Projected');
+      expect(element.defaultValue).to.equal(value);
+    });
+
+    it('keeps the default value when the projected text matches the current value', async () => {
+      await createFixture(html`<igc-textarea></igc-textarea>`);
+
+      simulateInput(textArea, { value });
+      await elementUpdated(element);
+
+      element.append(document.createTextNode(value));
+      await elementUpdated(element);
+
+      expect(element.value).to.equal(value);
+      expect(element.defaultValue).to.be.empty;
+    });
+
     it('issue #1206 - passing undefined sets the underlying textarea value to undefined', async () => {
       element = await fixture<IgcTextareaComponent>(
         html`<igc-textarea></igc-textarea>`
@@ -171,11 +266,11 @@ describe('Textarea component', () => {
       element = await fixture(html`<igc-textarea></igc-textarea>`);
       textArea = element.renderRoot.querySelector('textarea')!;
 
-      // Switching to material creates a new internal template with another textarea...
+      // Material renders a new template with another textarea,
       configureTheme('material');
       await elementUpdated(element);
 
-      // ..thus the previously referenced non-material textarea should not match the internal query
+      // so the old textarea no longer matches the internal query
       expect(textArea !== (element as any)._input).to.be.true;
 
       configureTheme('bootstrap');
@@ -218,6 +313,28 @@ describe('Textarea component', () => {
       await createFixture(html`<igc-textarea>${projected}</igc-textarea>`);
     });
 
+    it('selection and editing are inert before the textarea renders', () => {
+      const detached = document.createElement(IgcTextareaComponent.tagName);
+
+      expect([detached.selectionStart, detached.selectionEnd]).to.eql([0, 0]);
+
+      detached.setRangeText('text', 0, 0);
+      expect(detached.value).to.equal('');
+    });
+
+    it('does not restrict the native textarea length with validate-only', async () => {
+      await createFixture(
+        html`<igc-textarea maxlength="3" validate-only></igc-textarea>`
+      );
+
+      expect(textArea.hasAttribute('maxlength')).to.be.false;
+
+      element.validateOnly = false;
+      await elementUpdated(element);
+
+      expect(textArea.getAttribute('maxlength')).to.equal('3');
+    });
+
     it('select()', async () => {
       element.select();
       const [start, end] = [textArea.selectionStart, textArea.selectionEnd];
@@ -238,6 +355,28 @@ describe('Textarea component', () => {
 
       expect([start, end]).to.eql([0, 'Goodbye'.length]);
       expect(element.value).to.equal('Goodbye world!');
+    });
+
+    it('selectionStart and selectionEnd report the selection', async () => {
+      element.setSelectionRange(6, projected.length);
+      expect([element.selectionStart, element.selectionEnd]).to.eql([
+        6,
+        projected.length,
+      ]);
+
+      textArea.setSelectionRange(2, 2);
+      expect([element.selectionStart, element.selectionEnd]).to.eql([2, 2]);
+    });
+
+    it('setRangeText() replaces the selection without a range', async () => {
+      element.setSelectionRange(0, 'Hello'.length);
+      element.setRangeText('Goodbye');
+      expect(element.value).to.equal('Goodbye world!');
+
+      element.setSelectionRange(7, 7);
+      element.setRangeText(',', undefined, undefined, 'end');
+      expect(element.value).to.equal('Goodbye, world!');
+      expect([textArea.selectionStart, textArea.selectionEnd]).to.eql([8, 8]);
     });
 
     it('focus()', async () => {
@@ -281,6 +420,44 @@ describe('Textarea component', () => {
 
       element.scrollTo(0, 0);
       expect([textArea.scrollLeft, textArea.scrollTop]).to.eql([0, 0]);
+    });
+  });
+
+  describe('spellcheck', () => {
+    it('reads the attribute as the native attribute', async () => {
+      await createFixture(html`<igc-textarea spellcheck></igc-textarea>`);
+
+      expect(element.spellcheck).to.be.true;
+      expect(textArea.spellcheck).to.be.true;
+
+      element.setAttribute('spellcheck', 'false');
+      await elementUpdated(element);
+
+      expect(element.spellcheck).to.be.false;
+      expect(textArea.spellcheck).to.be.false;
+
+      element.setAttribute('spellcheck', 'true');
+      await elementUpdated(element);
+
+      expect(element.spellcheck).to.be.true;
+      expect(textArea.spellcheck).to.be.true;
+
+      element.setAttribute('spellcheck', 'false');
+      await elementUpdated(element);
+      element.removeAttribute('spellcheck');
+      await elementUpdated(element);
+
+      expect(element.spellcheck).to.be.true;
+      expect(textArea.spellcheck).to.be.true;
+    });
+
+    it('forwards the property', async () => {
+      await createFixture(html`<igc-textarea></igc-textarea>`);
+
+      element.spellcheck = false;
+      await elementUpdated(element);
+
+      expect(textArea.spellcheck).to.be.false;
     });
   });
 
@@ -360,6 +537,25 @@ describe('Textarea component', () => {
       spec.assertSubmitFails();
 
       spec.setProperties({ value: 'abc' });
+      spec.assertSubmitPasses();
+    });
+
+    it('revalidates when the length constraints change without a value change', () => {
+      spec.setProperties({ value: 'abcd' });
+      spec.assertSubmitPasses();
+
+      spec.setProperties({ maxLength: 3 });
+      expect(spec.element.validity.tooLong).to.be.true;
+      spec.assertSubmitFails();
+
+      spec.setProperties({ maxLength: 4 });
+      spec.assertSubmitPasses();
+
+      spec.setProperties({ minLength: 5 });
+      expect(spec.element.validity.tooShort).to.be.true;
+      spec.assertSubmitFails();
+
+      spec.setProperties({ minLength: 4 });
       spec.assertSubmitPasses();
     });
 
@@ -487,14 +683,14 @@ describe('Textarea component', () => {
     it('', async () => {
       const testParameters: ValidationContainerTestsParams<IgcTextareaComponent>[] =
         [
-          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
-          { slots: ['tooLong'], props: { maxLength: 3, value: '1234' } }, // too-long slot
-          { slots: ['tooShort'], props: { minLength: 3, value: '12' } }, // too-short slot
-          { slots: ['customError'] }, // custom-error slot
-          { slots: ['invalid'], props: { required: true } }, // invalid slot
+          { slots: ['valueMissing'], props: { required: true } },
+          { slots: ['tooLong'], props: { maxLength: 3, value: '1234' } },
+          { slots: ['tooShort'], props: { minLength: 3, value: '12' } },
+          { slots: ['customError'] },
+          { slots: ['invalid'], props: { required: true } },
         ];
 
-      runValidationContainerTests(IgcTextareaComponent, testParameters);
+      await runValidationContainerTests(IgcTextareaComponent, testParameters);
     });
   });
 

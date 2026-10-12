@@ -2,13 +2,14 @@ import type { QrCodeExportFormat } from '../types.js';
 
 type QrRasterFormat = Exclude<QrCodeExportFormat, 'svg'>;
 
-/** MIME type of each export format. */
 export const MIME_TYPES: Readonly<Record<QrCodeExportFormat, string>> = {
   svg: 'image/svg+xml',
   png: 'image/png',
   jpeg: 'image/jpeg',
   webp: 'image/webp',
 };
+
+const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
 
 /**
  * Maximum side length in pixels of an exported raster image.
@@ -23,7 +24,6 @@ const EXTENSIONS: Readonly<Record<QrCodeExportFormat, RegExp>> = {
   webp: /\.webp$/i,
 };
 
-/** Whether `format` is one of the supported export formats. */
 export function isExportFormat(format: string): format is QrCodeExportFormat {
   return Object.hasOwn(MIME_TYPES, format);
 }
@@ -61,13 +61,9 @@ async function fetchImageAsDataUrl(url: string): Promise<string | null> {
 }
 
 /**
- * Copies the computed `fill` of every `part` element from the live SVG onto the
- * matching element of the clone as a presentation attribute, and strips the `part`
- * attributes. The clone renders identically outside the shadow root, where the
- * component stylesheet and its CSS custom properties are not available.
- *
- * `fill` is the only property the component theme sets on its parts; extend this
- * when `themes/shared/qr-code.common.scss` starts to style more.
+ * Copies the computed `fill` of each `part` element onto the clone and strips `part`,
+ * so the clone renders the same outside the shadow root. The theme sets only `fill`;
+ * extend this when `themes/shared/qr-code.common.scss` styles more.
  */
 function resolveStyles(source: SVGSVGElement, clone: SVGSVGElement): void {
   const liveParts = source.querySelectorAll<SVGElement>('[part]');
@@ -85,11 +81,8 @@ function resolveStyles(source: SVGSVGElement, clone: SVGSVGElement): void {
 }
 
 /**
- * Replaces a non data-URI logo `href` with an inlined data URI. An SVG loaded as an image
- * cannot fetch external resources, so the logo must be embedded for the export to render it.
- *
- * When the logo cannot be fetched (for example, a cross-origin URL without CORS headers),
- * the logo, its mask and the mask definition are removed so the exported code has no hole.
+ * Inlines a non data-URI logo `href`, because an SVG loaded as an image cannot fetch
+ * resources. A logo that cannot be fetched is removed with its mask, so the code has no hole.
  */
 async function inlineLogo(clone: SVGSVGElement): Promise<void> {
   const image = clone.querySelector('image');
@@ -111,6 +104,20 @@ async function inlineLogo(clone: SVGSVGElement): Promise<void> {
 }
 
 /**
+ * Copies the logo `href` to `xlink:href` for SVG 1.1 consumers (Illustrator, Office, Batik,
+ * older librsvg). `setAttributeNS` makes the serializer declare `xmlns:xlink`; a plain
+ * `setAttribute` leaves the prefix undeclared, which is not valid XML.
+ */
+function addLegacyLogoHref(clone: SVGSVGElement): void {
+  const image = clone.querySelector('image');
+  const href = image?.getAttribute('href');
+
+  if (image && href) {
+    image.setAttributeNS(XLINK_NAMESPACE, 'xlink:href', href);
+  }
+}
+
+/**
  * Creates a self-contained copy of the component SVG: theme colors are resolved
  * to presentation attributes and the logo is inlined as a data URI.
  */
@@ -118,8 +125,12 @@ export async function createSvgSnapshot(
   source: SVGSVGElement
 ): Promise<SVGSVGElement> {
   const clone = source.cloneNode(true) as SVGSVGElement;
+  // A forwarded host relation leaves an empty attribute on the clone.
+  clone.removeAttribute('aria-labelledby');
+  clone.removeAttribute('aria-describedby');
   resolveStyles(source, clone);
   await inlineLogo(clone);
+  addLegacyLogoHref(clone);
   return clone;
 }
 
@@ -142,10 +153,7 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   });
 }
 
-/**
- * Rasterize an SVG blob into a square bitmap of `dimension` pixels per side
- * and encodes it in the requested format.
- */
+/** Rasterizes an SVG blob into a square of `dimension` pixels and encodes it in `format`. */
 export async function rasterizeSvg(
   svgBlob: Blob,
   dimension: number,

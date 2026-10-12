@@ -2,12 +2,18 @@ import { isServer } from 'lit';
 import { asNumber, clamp, numberInRangeInclusive } from './math.js';
 import { isDefined } from './types.js';
 
-/** Returns whether an element has a Left-to-Right directionality. */
+/**
+ * Returns whether an element has a Left-to-Right directionality. SSR cannot
+ * resolve the directionality, so on the server the function returns true.
+ */
 export function isLTR(element: HTMLElement) {
-  return element.matches(':dir(ltr)');
+  return isServer || element.matches(':dir(ltr)');
 }
 
 const LENGTH_PROPERTY = '--igc-resolved-length';
+
+/** A plain pixel length, which needs no style resolution. */
+const PIXEL_LENGTH = /^\d*\.?\d+px$/;
 
 const SUPPORTS_REGISTERED_PROPERTIES =
   !isServer && typeof CSS !== 'undefined' && 'registerProperty' in CSS;
@@ -45,16 +51,14 @@ function canResolveLengths(): boolean {
  * for percentages, for invalid lengths, during SSR and in a browser without
  * registered custom properties. Resolve percentages against the basis of
  * the applicable property instead.
- *
- * @example
- * ```typescript
- * resolveCssLength(element, '5rem'); // 80
- * resolveCssLength(element, '2em'); // 2 x the element font size
- * ```
  */
 export function resolveCssLength(element: HTMLElement, value: string): number {
   if (!canResolveLengths()) {
     return 0;
+  }
+
+  if (PIXEL_LENGTH.test(value)) {
+    return asNumber(value);
   }
 
   const { style } = element;
@@ -123,14 +127,10 @@ export function* iterNodes<T extends Node>(
 
 /**
  * Iterates over `node` and its element ancestors, and crosses each shadow
- * root through its host.
- *
- * @example
- * ```typescript
- * for (const ancestor of iterAncestors(element)) { ... }
- * ```
+ * root through its host. With `flat`, a slotted node goes to its slot, as in
+ * the flat tree.
  */
-export function* iterAncestors(node?: Node | null): Generator<Element> {
+function* iterAncestors(node?: Node | null, flat = false): Generator<Element> {
   let current: Node | null | undefined = node;
 
   while (current) {
@@ -138,16 +138,15 @@ export function* iterAncestors(node?: Node | null): Generator<Element> {
       yield current;
     }
 
-    current = current instanceof ShadowRoot ? current.host : current.parentNode;
+    current =
+      (flat && (current as Element).assignedSlot) ||
+      (current instanceof ShadowRoot ? current.host : current.parentNode);
   }
 }
 
 /** Returns the root node (document or shadow root) of the given node. */
-export function getRoot(
-  node: Node,
-  options?: GetRootNodeOptions
-): Document | ShadowRoot {
-  return node.getRootNode(options) as Document | ShadowRoot;
+export function getRoot(node: Node): Document | ShadowRoot {
+  return node.getRootNode() as Document | ShadowRoot;
 }
 
 /** Returns the element with the given id in the root node of `root`. */
@@ -180,13 +179,6 @@ export function getCenterPoint(element: Element): { x: number; y: number } {
  * @remarks
  * Measured from the logical start edge: the left one when `ltr` is true, the
  * right one otherwise. Returns 0 for an element that has no layout.
- *
- * @example
- * ```typescript
- * // Pointer 30px into a 120px wide element
- * pointToFraction(element, event.clientX); // 0.25
- * pointToFraction(element, event.clientX, false); // 0.75
- * ```
  */
 export function pointToFraction(
   element: Element,
@@ -253,25 +245,39 @@ export function scrollIntoView(
   element?: HTMLElement | null,
   config?: ScrollIntoViewOptions
 ): void {
-  if (!element) {
-    return;
-  }
-
-  element.scrollIntoView(
-    Object.assign(
-      {
-        behavior: 'auto',
-        block: 'nearest',
-        inline: 'nearest',
-      },
-      config
-    )
-  );
+  element?.scrollIntoView({
+    behavior: 'auto',
+    block: 'nearest',
+    inline: 'nearest',
+    ...config,
+  });
 }
 
-/** Returns the default containing layer for a floating element. */
-export function getDefaultLayer(): HTMLElement {
-  return document.body;
+const TABBABLE_SELECTOR =
+  'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
+
+/**
+ * Returns the focused element, also inside open shadow roots. The search starts in `root`, or in
+ * the document when the focus is outside `root`.
+ */
+export function getDeepActiveElement(
+  root: Document | ShadowRoot = document
+): HTMLElement | null {
+  let element = root.activeElement ?? document.activeElement;
+
+  while (element?.shadowRoot?.activeElement) {
+    element = element.shadowRoot.activeElement;
+  }
+
+  return element as HTMLElement | null;
+}
+
+/** Returns `root` itself, when tabbable, followed by its tabbable descendants. */
+export function getTabbables(root: HTMLElement): HTMLElement[] {
+  const descendants = root.querySelectorAll<HTMLElement>(TABBABLE_SELECTOR);
+  return root.matches(TABBABLE_SELECTOR)
+    ? [root, ...descendants]
+    : [...descendants];
 }
 
 /**
@@ -286,6 +292,22 @@ export function setStyles(
   styles: Partial<CSSStyleDeclaration>
 ): void {
   Object.assign(element.style, styles);
+}
+
+/** Sets an attribute, or removes it when `value` is `null` or `undefined`. */
+export function setOrRemoveAttribute(
+  element: Element,
+  name: string,
+  value?: string | null
+): void {
+  value == null
+    ? element.removeAttribute(name)
+    : element.setAttribute(name, value);
+}
+
+/** Whether the host has `tabindex="-1"`, which its native control follows. */
+export function hasNegativeTabIndex(host: Element): boolean {
+  return host.getAttribute('tabindex') === '-1';
 }
 
 /** Returns whether the given input has at least one selected file. */
@@ -303,6 +325,21 @@ export function hasFiles(input: { files: FileList | null }): boolean {
  */
 export function isPopoverOpen(element?: Element): boolean {
   return element?.matches(':popover-open') ?? false;
+}
+
+/**
+ * Returns `element` or its closest ancestor in the top layer (a fullscreen
+ * element, a modal dialog or an open popover). The walk follows the flat tree,
+ * so it finds a top-layer element in the shadow root of a slotted element.
+ */
+export function getTopLayerAncestor(element: Element): HTMLElement | null {
+  for (const ancestor of iterAncestors(element, true)) {
+    if (ancestor.matches(':fullscreen, :modal, :popover-open')) {
+      return ancestor as HTMLElement;
+    }
+  }
+
+  return null;
 }
 
 /**

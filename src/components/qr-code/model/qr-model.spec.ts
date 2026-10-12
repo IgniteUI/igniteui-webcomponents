@@ -12,7 +12,10 @@ import {
   type MaskPattern,
   selectBestMask,
 } from './mask.js';
-import { generateQRCodeMatrix } from './matrix.js';
+import {
+  generateQRCodeMatrix,
+  getAlignmentPatternPositions,
+} from './matrix.js';
 
 function makeMatrix(size: number, fill = false): boolean[][] {
   return Array.from({ length: size }, () => new Array(size).fill(fill));
@@ -95,6 +98,19 @@ describe('QR model - encodeQR', () => {
       }
     });
 
+    it('widens the numeric character count field from version 10 and 27 on', () => {
+      // The first codeword holds the 4-bit mode indicator (0001) and the
+      // top 4 bits of the character count.
+      // 512 in a 12-bit field (V10-V26): 0010 0000 0000.
+      expect(encodeQR('1'.repeat(512), 'M', 10).codewords[0]).to.equal(
+        0b0001_0010
+      );
+      // 1024 in a 14-bit field (V27-V40): 00 0100 0000 0000.
+      expect(encodeQR('1'.repeat(1024), 'M', 27).codewords[0]).to.equal(
+        0b0001_0001
+      );
+    });
+
     it('uses requested version when explicitly provided', () => {
       const result = encodeQR('Hi', 'M', 3);
       expect(result.version).to.equal(3);
@@ -142,6 +158,12 @@ describe('QR model - error correction', () => {
 
     it('returns 9 for V1/H', () => {
       expect(getDataCodewordsCount(1, 3)).to.equal(9);
+    });
+
+    it('returns the ISO/IEC 18004 capacities for V30-V40/M', () => {
+      expect(getDataCodewordsCount(30, 1)).to.equal(1373);
+      expect(getDataCodewordsCount(31, 1)).to.equal(1455);
+      expect(getDataCodewordsCount(40, 1)).to.equal(2334);
     });
   });
 
@@ -197,7 +219,7 @@ describe('QR model - error correction', () => {
 
     describe('multi-block version (V5/M – 2 blocks of 43 data CW)', () => {
       // V5/M: EC_BLOCKS_TABLE[4][1] = { ecPerBlock: 24, groups: [{ numBlocks: 2, dataCW: 43 }] }
-      const totalDataCW = 2 * 43; // 86
+      const totalDataCW = 2 * 43;
       const data = Array.from({ length: totalDataCW }, (_, i) => i % 256);
 
       it('outputs length = data codewords + total EC codewords', () => {
@@ -222,7 +244,7 @@ describe('QR model - masking', () => {
     it('does not toggle function modules', () => {
       const matrix = makeMatrix(3, false);
       const functionModules = makeMatrix(3, false);
-      functionModules[1][1] = true; // mark (1,1) as a function module
+      functionModules[1][1] = true;
 
       // Pattern 0 toggles (row+col)%2===0 → (1,1) would normally be toggled
       const result = applyMask(matrix, functionModules, 0);
@@ -288,8 +310,6 @@ describe('QR model - masking', () => {
   describe('selectBestMask', () => {
     it('returns a value in the range [0, 7]', () => {
       const { matrix, size } = generateQRCodeMatrix('TEST', 'M');
-      // Rebuild a clean unmasked matrix from scratch is complex;
-      // instead verify the contract on any valid matrix
       const functionModules = makeMatrix(size, false);
       const best = selectBestMask(matrix, functionModules);
       expect(best).to.be.within(0, 7);
@@ -431,6 +451,101 @@ describe('QR model - matrix generation', () => {
         expect(result.matrix[4 * version + 9][8]).to.equal(true);
       }
     });
+  });
+
+  describe('Alignment patterns', () => {
+    // Rows of ISO/IEC 18004 Annex E, table E.1.
+    const ISO_ROWS: Record<number, number[]> = {
+      2: [6, 18],
+      7: [6, 22, 38],
+      14: [6, 26, 46, 66],
+      30: [6, 26, 52, 78, 104, 130],
+      31: [6, 30, 56, 82, 108, 134],
+      32: [6, 34, 60, 86, 112, 138],
+      33: [6, 30, 58, 86, 114, 142],
+      36: [6, 24, 50, 76, 102, 128, 154],
+      40: [6, 30, 58, 86, 114, 142, 170],
+    };
+
+    const ALIGNMENT_PATTERN = [
+      [true, true, true, true, true],
+      [true, false, false, false, true],
+      [true, false, true, false, true],
+      [true, false, false, false, true],
+      [true, true, true, true, true],
+    ];
+
+    function extractAlignment(
+      matrix: boolean[][],
+      row: number,
+      col: number
+    ): boolean[][] {
+      return Array.from({ length: 5 }, (_, r) =>
+        Array.from({ length: 5 }, (_, c) => matrix[row - 2 + r][col - 2 + c])
+      );
+    }
+
+    it('has no alignment patterns in version 1', () => {
+      expect(getAlignmentPatternPositions(1)).to.deep.equal([]);
+    });
+
+    it('matches the ISO table rows', () => {
+      for (const [version, row] of Object.entries(ISO_ROWS)) {
+        expect(getAlignmentPatternPositions(Number(version))).to.deep.equal(
+          row,
+          `V${version}`
+        );
+      }
+    });
+
+    it('starts at 6, ends at 4v + 10 and spaces the inner centers evenly for versions 2-40', () => {
+      for (let version = 2; version <= 40; version++) {
+        const positions = getAlignmentPatternPositions(version);
+        const steps = positions.slice(1).map((p, i) => p - positions[i]);
+        const step = steps.at(-1)!;
+
+        expect(positions.length).to.equal(
+          Math.floor(version / 7) + 2,
+          `V${version} count`
+        );
+        expect(positions[0]).to.equal(6, `V${version} first`);
+        expect(positions.at(-1)).to.equal(4 * version + 10, `V${version} last`);
+        expect(steps.every((s) => s > 0)).to.equal(
+          true,
+          `V${version} increasing`
+        );
+        expect(steps.slice(1).every((s) => s === step)).to.equal(
+          true,
+          `V${version} even spacing`
+        );
+        expect(step % 2).to.equal(0, `V${version} even step`);
+      }
+    });
+
+    for (const version of [2, 7, 31, 32, 40]) {
+      it(`places every alignment pattern of V${version} on its center`, () => {
+        const { matrix, size } = generateQRCodeMatrix('A', 'M', version);
+        const positions = getAlignmentPatternPositions(version);
+
+        expect(size).to.equal(4 * version + 17);
+
+        for (const r of positions) {
+          for (const c of positions) {
+            const overlapsFinder =
+              (r <= 8 && c <= 8) ||
+              (r <= 8 && c >= size - 8) ||
+              (r >= size - 8 && c <= 8);
+
+            if (!overlapsFinder) {
+              expect(extractAlignment(matrix, r, c)).to.deep.equal(
+                ALIGNMENT_PATTERN,
+                `V${version} center (${r}, ${c})`
+              );
+            }
+          }
+        }
+      });
+    }
   });
 
   describe('Version information (V7+)', () => {

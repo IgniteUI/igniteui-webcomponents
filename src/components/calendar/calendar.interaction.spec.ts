@@ -689,4 +689,93 @@ describe('Calendar interactions', () => {
 
     expect(daysView.rangePreviewDate).to.be.undefined;
   });
+
+  it('does not emit `igcChange` when the selected date is activated again', async () => {
+    const eventSpy = spy(calendar, 'emitEvent');
+    const current = CalendarDay.from(calendar.value!);
+
+    simulateClick(getDOMDate(current, daysView));
+    await elementUpdated(calendar);
+
+    expect(eventSpy).not.calledWith('igcChange');
+    expect(current.equalTo(calendar.value!)).to.be.true;
+  });
+
+  it('does not select a disabled date when it is clicked', async () => {
+    const eventSpy = spy(calendar, 'emitEvent');
+    const current = CalendarDay.from(calendar.value!);
+    const disabled = current.add('day', -1);
+
+    calendar.disabledDates = [
+      { type: DateRangeType.Specific, dateRange: [disabled.native] },
+    ];
+    await elementUpdated(calendar);
+
+    simulateClick(getDOMDate(disabled, daysView));
+    await elementUpdated(calendar);
+
+    expect(eventSpy).not.calledWith('igcChange');
+    expect(current.equalTo(calendar.value!)).to.be.true;
+  });
+
+  it('does not change the selection when a week number is clicked', async () => {
+    const eventSpy = spy(daysView, 'emitEvent');
+    const current = CalendarDay.from(calendar.value!);
+
+    calendar.showWeekNumbers = true;
+    await elementUpdated(calendar);
+    await elementUpdated(daysView);
+
+    simulateClick(firstOf(getDayViewDOM(daysView).weekNumbers));
+    await elementUpdated(calendar);
+
+    expect(eventSpy).not.called;
+    expect(current.equalTo(calendar.value!)).to.be.true;
+  });
+
+  it('clears the range preview when the range is completed', async () => {
+    const start = CalendarDay.from(calendar.value!).set({ date: 20 });
+    const end = start.set({ date: 24 });
+
+    calendar.selection = 'range';
+    await elementUpdated(calendar);
+
+    simulateClick(getDOMDate(start, daysView));
+    await elementUpdated(calendar);
+
+    getDOMDate(end, daysView).focus();
+    await elementUpdated(calendar);
+
+    expect(end.equalTo(daysView.rangePreviewDate!)).to.be.true;
+
+    const eventSpy = spy(daysView, 'emitEvent');
+
+    simulateClick(getDOMDate(end, daysView));
+    await elementUpdated(calendar);
+
+    expect(eventSpy.firstCall).calledWithExactly('igcRangePreviewDateChange', {
+      detail: undefined,
+    });
+    expect(daysView.rangePreviewDate).to.be.undefined;
+    expect(calendar.values).lengthOf(5);
+  });
+
+  it('marks a previewed date before the range start as its first date', async () => {
+    const start = CalendarDay.from(calendar.value!).set({ date: 20 });
+    const preview = start.set({ date: 15 });
+
+    calendar.selection = 'range';
+    await elementUpdated(calendar);
+
+    simulateClick(getDOMDate(start, daysView));
+    await elementUpdated(calendar);
+
+    getDOMDate(preview, daysView).focus();
+    await elementUpdated(calendar);
+    await elementUpdated(daysView);
+
+    expect(getDOMDate(preview, daysView).part.contains('first')).to.be.true;
+    expect(getDOMDate(start, daysView).part.contains('last')).to.be.true;
+    expect(getDOMDate(start, daysView).part.contains('first')).to.be.false;
+  });
 });

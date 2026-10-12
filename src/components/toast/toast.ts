@@ -1,9 +1,10 @@
 import { html } from 'lit';
+import { IgcBaseAlertLikeComponent } from '#internals/bases/alert.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { IgcBaseAlertLikeComponent } from '#internals/mixins/alert.js';
+import { all } from '#themes/toast/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles as shared } from './themes/shared/toast.common.css.js';
-import { all } from './themes/themes.js';
 import { styles } from './themes/toast.base.css.js';
 
 /**
@@ -21,7 +22,7 @@ import { styles } from './themes/toast.base.css.js';
  */
 export default class IgcToastComponent extends IgcBaseAlertLikeComponent {
   public static readonly tagName = 'igc-toast';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

@@ -36,9 +36,10 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                    |
+| ------: | ---------- | -------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                    |
+|       2 | 2026-10-01 | Position the badge in a wrapper; hidden text through CSS |
 
 ## Overview
 
@@ -125,13 +126,35 @@ than for text. An icon next to text, or text alone, keeps the inline padding of 
 
 #### Positioning against another element
 
-The badge is commonly projected into the element it marks, for example an [avatar](../avatar/spec.md).
+The badge does not position itself. Put the badge and the element it marks in a wrapper with `position: relative`,
+and position the badge against the wrapper. Logical properties keep the badge on the correct side in a Right-to-Left
+context.
 
 ```html
-<igc-avatar src="/users/1.png">
-  <igc-badge variant="success"></igc-badge>
-</igc-avatar>
+<span class="notifier">
+  <igc-icon-button variant="flat" name="mail" aria-label="Messages"></igc-icon-button>
+  <igc-badge>3<span class="visually-hidden"> unread messages</span></igc-badge>
+</span>
 ```
+
+```css
+.notifier {
+  position: relative;
+  display: inline-flex;
+}
+
+.notifier igc-badge {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 55%;
+  pointer-events: none;
+}
+```
+
+`pointer-events: none` lets a click on the badge reach the button under it. The `visually-hidden` class is an
+application utility; see [ARIA roles and properties](#aria-roles-and-properties). Do not project the badge into an
+[avatar](../avatar/spec.md#combining-with-a-badge): the avatar clips its content and hides it behind the initials and
+the image.
 
 ### Localization
 
@@ -207,8 +230,8 @@ None applicable.
 - The badge has no size property; its dimensions follow its content and the styles applied to it.
 - A dot badge ignores whatever is projected into it.
 - The `icon` part applies only when an icon is the sole projected element.
-- The badge does not position itself; where it sits is decided by the element it is projected into or by the
-  application.
+- The badge does not position itself; the application positions it, usually against a wrapper that also holds
+  the element it marks.
 - The badge is not interactive and emits no events.
 
 ## Accessibility
@@ -218,8 +241,9 @@ None applicable.
 - The badge has `role="status"` with `aria-roledescription="badge"`, so that a change of its content is announced
   politely.
 - The role description is fixed and does not encode the variant, since a color is not a meaning an assistive
-  technology can convey. A badge whose variant carries meaning should state it in its content or in a
-  [visually hidden](../visually-hidden/spec.md) companion.
+  technology can convey. A badge whose variant carries meaning should state it in its content. A count should
+  also state what it counts, for example in text that a visually hidden CSS utility of the application hides from
+  the screen. The library does not export a component for this.
 
 ### Keyboard support
 

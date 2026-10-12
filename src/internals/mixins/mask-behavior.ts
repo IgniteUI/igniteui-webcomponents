@@ -1,11 +1,5 @@
 import type { LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import {
-  createMaskHistory,
-  type MaskEditKind,
-  type MaskHistory,
-  type MaskHistoryState,
-} from '../../components/mask-input/mask-history.js';
 import type { MaskParser } from '../../components/mask-input/mask-parser.js';
 import type {
   RangeTextSelectMode,
@@ -17,6 +11,13 @@ import {
   metaKey,
   shiftKey,
 } from '../controllers/key-bindings.js';
+import {
+  createMaskHistory,
+  type MaskEditKind,
+  type MaskHistory,
+  type MaskHistoryState,
+} from '../mask-history.js';
+import type { MaskedInputOptions } from '../templates/masked-input.js';
 import type { AbstractConstructor } from './constructor.js';
 import type { BaseFormAssociatedElement } from './forms/types.js';
 
@@ -24,6 +25,20 @@ export type MaskSelection = {
   start: number;
   end: number;
 };
+
+/** The `renderMaskedNativeInput` handlers that {@link MaskBehaviorMixin} owns. */
+type MaskInputBindings = Pick<
+  MaskedInputOptions,
+  | 'onInput'
+  | 'onBeforeInput'
+  | 'onFocus'
+  | 'onBlur'
+  | 'onClick'
+  | 'onSetMaskSelection'
+  | 'onCompositionStart'
+  | 'onCompositionEnd'
+  | 'onDragLeave'
+>;
 
 /**
  * Maps an `inputType` to its undo granularity. An absent value is a native
@@ -49,8 +64,17 @@ export declare class MaskBehaviorElementInterface {
   protected readonly _input?: HTMLInputElement;
   protected readonly _parser: MaskParser;
 
-  /** Writes the parser state into the public value of the host. */
-  protected _syncValueFromMask(): void;
+  /**
+   * Writes a complete masked text into the value pipeline: `igc-mask-input`
+   * commits to its form value, the date editors keep a draft until blur.
+   */
+  protected _commitMaskedValue(value: string): void;
+
+  /** Whether the committed value is empty. Focus then starts from the empty mask. */
+  protected _isValueEmpty(): boolean;
+
+  /** Shows the mask that fits the focus state, such as a display format while unfocused. */
+  protected _updateMaskDisplay(): void;
 
   //#endregion
 
@@ -92,6 +116,15 @@ export declare class MaskBehaviorElementInterface {
   public get prompt(): string;
   public set prompt(value: string);
 
+  /**
+   * The offset of the start of the text selection, in UTF-16 code units.
+   * Equals `selectionEnd` when no text is selected.
+   */
+  public get selectionStart(): number;
+
+  /** The offset of the end of the text selection, in UTF-16 code units. */
+  public get selectionEnd(): number;
+
   //#endregion
 
   //#region Event handlers
@@ -99,12 +132,15 @@ export declare class MaskBehaviorElementInterface {
   protected _handleInput(event: InputEvent): Promise<void>;
   protected _handleBeforeInput(event: InputEvent): void;
   protected _updateInput(text: string, range: MaskSelection): Promise<void>;
-  protected _commitMaskedValue(value: string): void;
   protected _emitInputEvent(): void;
   protected _setMaskSelection(event: Event): void;
   protected _handleCompositionStart(): void;
   protected _handleCompositionEnd(event: CompositionEvent): void;
   protected _handleClick(): void;
+  protected _handleFocus(): Promise<void>;
+  protected _handleDragLeave(): void;
+  protected _showEditMask(): void;
+  protected get _maskInputBindings(): MaskInputBindings;
 
   //#endregion
 
@@ -155,7 +191,9 @@ export function MaskBehaviorMixin<
     protected abstract readonly _input?: HTMLInputElement;
     protected abstract readonly _parser: MaskParser;
     public abstract select(): void;
-    protected abstract _syncValueFromMask(): void;
+    protected abstract _commitMaskedValue(value: string): void;
+    protected abstract _isValueEmpty(): boolean;
+    protected abstract _updateMaskDisplay(): void;
 
     //#endregion
 
@@ -267,6 +305,19 @@ export function MaskBehaviorMixin<
       return this._parser.prompt;
     }
 
+    /**
+     * The offset of the start of the text selection, in UTF-16 code units.
+     * Equals `selectionEnd` when no text is selected.
+     */
+    public get selectionStart(): number {
+      return this._input?.selectionStart ?? 0;
+    }
+
+    /** The offset of the end of the text selection, in UTF-16 code units. */
+    public get selectionEnd(): number {
+      return this._input?.selectionEnd ?? 0;
+    }
+
     //#endregion
 
     //#region Event handlers
@@ -289,7 +340,7 @@ export function MaskBehaviorMixin<
         return;
       }
 
-      const kind = MaskEditKinds.get(inputType ?? '');
+      const kind = MaskEditKinds.get(inputType);
 
       if (kind === undefined) {
         // An unmodeled mutation already changed the DOM value; a re-render
@@ -407,16 +458,6 @@ export function MaskBehaviorMixin<
       this._input?.setSelectionRange(end, end);
     }
 
-    /**
-     * Writes a complete masked text into the value pipeline. The one leaf
-     * override: `igc-mask-input` commits to its form value, the date editors
-     * keep a draft until blur.
-     */
-    protected _commitMaskedValue(value: string): void {
-      this._maskedValue = value;
-      this._syncValueFromMask();
-    }
-
     /** Emits `igcInput` with the masked value. Override for another payload. */
     protected _emitInputEvent(): void {
       this._emitTouchedEvent('igcInput', { detail: this._maskedValue });
@@ -453,6 +494,50 @@ export function MaskBehaviorMixin<
       if (start === end && start === this._maskedValue.length) {
         this.select();
       }
+    }
+
+    /** Starts an edit. An empty value starts from the empty mask, all selected. */
+    protected async _handleFocus(): Promise<void> {
+      this._focused = true;
+
+      if (this.readOnly) {
+        return;
+      }
+
+      if (this._isValueEmpty()) {
+        this._maskedValue = this._parser.emptyMask;
+        this._historyResync();
+        await this.updateComplete;
+        this.select();
+        return;
+      }
+
+      this._showEditMask();
+      this._historyResync();
+    }
+
+    /** Replaces the display text with the editable mask on a focus with a value. */
+    protected _showEditMask(): void {}
+
+    protected _handleDragLeave(): void {
+      if (!this._focused) {
+        this._updateMaskDisplay();
+      }
+    }
+
+    /** The bindings of the mask editing, for `renderMaskedNativeInput`. */
+    protected get _maskInputBindings(): MaskInputBindings {
+      return {
+        onInput: this._handleInput,
+        onBeforeInput: this._handleBeforeInput,
+        onFocus: this._handleFocus,
+        onBlur: this._handleBlur,
+        onClick: this._handleClick,
+        onSetMaskSelection: this._setMaskSelection,
+        onCompositionStart: this._handleCompositionStart,
+        onCompositionEnd: this._handleCompositionEnd,
+        onDragLeave: this._handleDragLeave,
+      };
     }
 
     /**

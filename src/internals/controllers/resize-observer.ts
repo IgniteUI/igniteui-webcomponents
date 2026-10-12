@@ -97,7 +97,7 @@ class ResizeObserverController implements ReactiveController {
  * {@link ResizeObserverControllerConfig | `config`}, adds it to `host`, and
  * observes each target while the host is connected.
  */
-export function createResizeObserverController(
+export function addResizeObserverController(
   host: ReactiveControllerHost & Element,
   config: ResizeObserverControllerConfig
 ): ResizeObserverController {

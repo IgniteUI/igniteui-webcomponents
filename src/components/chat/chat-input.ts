@@ -1,5 +1,5 @@
 import { ContextConsumer, consume } from '@lit/context';
-import { html, LitElement, nothing, type PropertyValues } from 'lit';
+import { html, isServer, LitElement, nothing, type PropertyValues } from 'lit';
 import { query, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -13,14 +13,15 @@ import { createTimer } from '#internals/timing.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { hasFiles, isPointInsideElement } from '#internals/utils/dom.js';
 import { bindIf, trimmedHtml } from '#internals/utils/lit.js';
+import { all } from '#themes/chat/themes/input.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
 import type { ChatState } from './chat-state.js';
 import { styles } from './themes/input.base.css.js';
-import { all } from './themes/input.js';
 import { styles as shared } from './themes/shared/input/input.common.css.js';
 import type {
   ChatInputRenderContext,
@@ -28,11 +29,7 @@ import type {
   ChatTemplateRenderer,
   IgcChatMessageAttachment,
 } from './types.js';
-import {
-  type ChatAcceptedFileTypes,
-  getChatAcceptedFiles,
-  getIconName,
-} from './utils.js';
+import { getChatAcceptedFiles, getIconName } from './utils.js';
 
 type DefaultInputRenderers = {
   input: ChatTemplateRenderer<ChatInputRenderContext>;
@@ -75,7 +72,7 @@ type DefaultInputRenderers = {
  */
 export default class IgcChatInputComponent extends LitElement {
   public static readonly tagName = 'igc-chat-input';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -101,13 +98,18 @@ export default class IgcChatInputComponent extends LitElement {
   private _userIsTyping = false;
   private _userLastTypeTime = Date.now();
 
+  /**
+   * Set while a server-rendered host is hydrating, during which `render()`
+   * withholds the template so both renders match.
+   */
+  private _hydrating = false;
+
   private readonly _typingTimer = createTimer(() => {
     if (!this._userIsTyping) {
       return;
     }
 
-    // The live delay may have grown since the timer was armed - defer the stop
-    // instead of dropping it.
+    // The delay can grow after the timer starts, so defer the stop.
     const remaining =
       this._userLastTypeTime + this._state.stopTypingDelay - Date.now();
 
@@ -140,7 +142,7 @@ export default class IgcChatInputComponent extends LitElement {
   protected readonly _fileInput?: HTMLInputElement;
 
   @state()
-  private _parts = { 'input-container': true, dragging: false };
+  private _dragging = false;
 
   @state()
   private _shouldAdoptRootStyles = false;
@@ -149,13 +151,15 @@ export default class IgcChatInputComponent extends LitElement {
     return this._stateConsumer.value!;
   }
 
-  private get _acceptedTypes(): ChatAcceptedFileTypes | null {
-    return this._state.acceptedFileTypes;
-  }
-
   constructor() {
     super();
     addThemingController(this, all, { themeChange: this._adoptPageStyles });
+  }
+
+  /** @internal */
+  protected override createRenderRoot(): HTMLElement | DocumentFragment {
+    this._hydrating = this.shadowRoot !== null;
+    return super.createRenderRoot();
   }
 
   protected override update(props: PropertyValues): void {
@@ -163,6 +167,14 @@ export default class IgcChatInputComponent extends LitElement {
       this._adoptedStyles.shouldAdoptStyles(this._shouldAdoptRootStyles);
     }
     super.update(props);
+  }
+
+  protected override firstUpdated(): void {
+    if (this._hydrating) {
+      this._hydrating = false;
+      // Off the current update cycle - avoids Lit's change-in-update warning.
+      queueMicrotask(() => this.requestUpdate());
+    }
   }
 
   /** @internal */
@@ -178,10 +190,8 @@ export default class IgcChatInputComponent extends LitElement {
   private _getRenderer<U extends keyof DefaultInputRenderers>(
     name: U
   ): DefaultInputRenderers[U] {
-    return this._state.options?.renderers
-      ? ((this._state.options.renderers[name] ??
-          this._defaults[name]) as DefaultInputRenderers[U])
-      : this._defaults[name];
+    return (this._state.options?.renderers?.[name] ??
+      this._defaults[name]) as DefaultInputRenderers[U];
   }
 
   private async _sendMessage(): Promise<void> {
@@ -205,18 +215,7 @@ export default class IgcChatInputComponent extends LitElement {
 
   private _setTypingStateAndEmit(state: boolean): void {
     this._userIsTyping = state;
-    this._userInputState.emitUserTypingState(state);
-  }
-
-  private _handleAttachmentRemoved(attachment: IgcChatMessageAttachment): void {
-    const current = this._userInputState.inputAttachments;
-
-    if (this._state.emitAttachmentRemoved(attachment)) {
-      this._state.inputAttachments = current.toSpliced(
-        current.indexOf(attachment),
-        1
-      );
-    }
+    this._userInputState.emitEvent('igcTypingChange', { detail: state });
   }
 
   private _handleKeydown(event: KeyboardEvent): void {
@@ -255,41 +254,34 @@ export default class IgcChatInputComponent extends LitElement {
     );
   }
 
-  private _handleDragEnter(event: DragEvent): void {
+  private _handleDrag(event: DragEvent): void {
     event.preventDefault();
     event.stopPropagation();
 
-    const validFiles = getChatAcceptedFiles(event, this._acceptedTypes);
-    this._parts = { 'input-container': true, dragging: !isEmpty(validFiles) };
-    this._state.emitEvent('igcAttachmentDrag');
-  }
+    const accepted = this._state.acceptedFileTypes;
 
-  private _handleDragOver(event: DragEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
-  }
+    switch (event.type) {
+      case 'dragenter':
+        this._dragging = !isEmpty(getChatAcceptedFiles(event, accepted));
+        this._state.emitEvent('igcAttachmentDrag');
+        break;
+      case 'dragleave': {
+        // Reset only when the pointer leaves the container.
+        const container = event.currentTarget as HTMLElement;
 
-  private _handleDragLeave(event: DragEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
-
-    // Check if we're actually leaving the container
-    const container = event.currentTarget as HTMLElement;
-
-    if (!isPointInsideElement(container, event.clientX, event.clientY)) {
-      this._parts = { 'input-container': true, dragging: false };
+        if (!isPointInsideElement(container, event.clientX, event.clientY)) {
+          this._dragging = false;
+        }
+        break;
+      }
+      case 'drop': {
+        const files = getChatAcceptedFiles(event, accepted);
+        this._dragging = false;
+        this._state.emitEvent('igcAttachmentDrop');
+        this._state.attachFilesWithEvent(files);
+        break;
+      }
     }
-  }
-
-  private _handleDrop(event: DragEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
-    this._parts = { 'input-container': true, dragging: false };
-
-    const validFiles = getChatAcceptedFiles(event, this._acceptedTypes);
-    this._state.emitEvent('igcAttachmentDrop');
-    this._state.attachFilesWithEvent(validFiles);
-    this.requestUpdate();
   }
 
   private _handleInput({ detail }: CustomEvent<string>): void {
@@ -305,18 +297,14 @@ export default class IgcChatInputComponent extends LitElement {
     }
   }
 
-  /**
-   * Default attachments area template used when no custom template is provided.
-   * Renders the list of input attachments as chips.
-   * @returns TemplateResult containing the attachments area
-   */
   private _renderAttachmentsArea(attachments: IgcChatMessageAttachment[]) {
     return html`${attachments?.map(
       (attachment) => html`
         <div part="attachment-wrapper" role="listitem">
           <igc-chip
             removable
-            @igcRemove=${() => this._handleAttachmentRemoved(attachment)}
+            @igcRemove=${() =>
+              this._state.removeAttachmentWithEvent(attachment)}
           >
             <igc-icon
               part="attachment-icon"
@@ -330,11 +318,6 @@ export default class IgcChatInputComponent extends LitElement {
     )} `;
   }
 
-  /**
-   * Default text area template used when no custom template is provided.
-   * Renders a text area for user input.
-   * @returns TemplateResult containing the text area
-   */
   private _renderTextArea() {
     return html`
       <igc-textarea
@@ -416,6 +399,12 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   protected override render() {
+    // No chat provides the state outside a chat or during SSR. A hydrating
+    // host matches that empty server render.
+    if (isServer || this._hydrating || !this._stateConsumer.value) {
+      return nothing;
+    }
+
     const ctx: ChatRenderContext = { instance: this._state.host };
 
     const inputCtx: ChatInputRenderContext = {
@@ -426,11 +415,11 @@ export default class IgcChatInputComponent extends LitElement {
 
     return html`
       <div
-        part=${partMap(this._parts)}
-        @dragenter=${this._handleDragEnter}
-        @dragover=${this._handleDragOver}
-        @dragleave=${this._handleDragLeave}
-        @drop=${this._handleDrop}
+        part=${partMap({ 'input-container': true, dragging: this._dragging })}
+        @dragenter=${this._handleDrag}
+        @dragover=${this._handleDrag}
+        @dragleave=${this._handleDrag}
+        @drop=${this._handleDrag}
       >
         ${
           this._state.hasInputAttachments

@@ -1,4 +1,10 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+} from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
@@ -12,6 +18,7 @@ import {
   type ValidationContainerTestsParams,
 } from '#internals/testing/validity-helpers.spec.js';
 import { firstOf } from '#internals/utils/arrays.js';
+import { configureTheme } from '#theming/config.js';
 import IgcFileInputComponent from './file-input.js';
 
 describe('File Input component', () => {
@@ -152,6 +159,40 @@ describe('File Input component', () => {
         'Choose a file'
       );
     });
+
+    for (const theme of [
+      'bootstrap',
+      'material',
+      'fluent',
+      'indigo',
+    ] as const) {
+      it(`truncates overflowing file names instead of growing (${theme})`, async () => {
+        configureTheme(theme);
+        await createFixture(
+          html`<igc-file-input multiple style="width: 300px"></igc-file-input>`
+        );
+
+        simulateFileUpload(
+          input,
+          Array.from(
+            { length: 8 },
+            (_, i) => new File([''], `a-very-long-file-name-number-${i}.txt`)
+          )
+        );
+        await elementUpdated(element);
+        await nextFrame();
+
+        const container = getDOM('[part~="container"]') as HTMLElement;
+        const names = getDOM('[part="file-names"] > span') as HTMLElement;
+
+        expect(container.scrollWidth).to.be.at.most(element.offsetWidth);
+        expect(names.scrollWidth).to.be.greaterThan(names.clientWidth);
+        expect(getComputedStyle(names).textOverflow).to.equal('ellipsis');
+
+        configureTheme('bootstrap');
+        await nextFrame();
+      });
+    }
   });
 
   describe('Events', () => {
@@ -185,16 +226,13 @@ describe('File Input component', () => {
     it('should update UI invalid state on blur when interacted', async () => {
       await createFixture(html`<igc-file-input required></igc-file-input>`);
 
-      // Internal invalid state, invalid UI is in initial state.
       expect(element.validity.valueMissing).to.be.true;
       expect(element.invalid).to.be.false;
 
-      // Internal invalid state, invalid UI is still in initial state.
       element.focus();
       expect(element.validity.valueMissing).to.be.true;
       expect(element.invalid).to.be.false;
 
-      // Internal invalid state, invalid UI is updated.
       element.blur();
       expect(element.validity.valueMissing).to.be.true;
       expect(element.invalid).to.be.true;
@@ -245,9 +283,7 @@ describe('Form Integration', () => {
   });
 
   it('ignores the value attribute as a default on form reset', () => {
-    // Regression: the value attribute string used to be stored as the
-    // FileList default and iterated into per-character FormData entries
-    // after a form reset.
+    // Regression: a reset submitted the value attribute string per character.
     spec.element.setAttribute('value', 'abc');
     spec.reset();
 
@@ -280,6 +316,6 @@ describe('Validation message slots', () => {
         { slots: ['customError'] },
       ];
 
-    runValidationContainerTests(IgcFileInputComponent, testParameters);
+    await runValidationContainerTests(IgcFileInputComponent, testParameters);
   });
 });

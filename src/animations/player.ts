@@ -4,9 +4,6 @@ import type { AnimationReferenceMetadata } from './types.js';
 
 const LISTENER_OPTIONS = { once: true } as const;
 
-/**
- * Checks the user's preference for reduced motion.
- */
 export function getPrefersReducedMotion(): boolean {
   return (
     globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
@@ -14,15 +11,14 @@ export function getPrefersReducedMotion(): boolean {
 }
 
 /**
- * Manages Web Animation API (WA-API) playback on a host element or a specified target element,
- * including support for 'height: auto' transitions and reduced motion preference.
+ * Plays Web Animations API animations on the host or on a target element.
+ * It supports 'height: auto' keyframes and reduced motion.
  * It uses no host lifecycle hooks, so it is not registered as a reactive controller.
  */
 class AnimationController {
   private readonly _host: HTMLElement;
   private readonly _ref?: Ref<HTMLElement> | HTMLElement;
 
-  /** The passed-in element, else the resolved Ref value, else the host. */
   protected get _target(): HTMLElement {
     if (isElement(this._ref)) {
       return this._ref;
@@ -36,7 +32,7 @@ class AnimationController {
     this._ref = ref;
   }
 
-  /** Pre-processes keyframes, specifically resolving 'auto' height to the element's scrollHeight. */
+  /** Resolves an 'auto' height to the target's scrollHeight. */
   private _parseKeyframes(keyframes: Keyframe[]): Keyframe[] {
     const target = this._target;
 
@@ -48,10 +44,9 @@ class AnimationController {
   }
 
   /**
-   * Plays a sequence of keyframes, first cancelling all existing animations on the target.
-   *
-   * The cancellation must stay synchronous - awaiting before it would let an
-   * animation started earlier in the same tick escape and run to completion.
+   * Cancels all animations on the target, then plays the keyframes.
+   * The cancel must stay synchronous: an await before it lets an animation
+   * started earlier in the same tick run to completion.
    */
   public async playExclusive(
     animation: AnimationReferenceMetadata
@@ -62,10 +57,7 @@ class AnimationController {
     return event.type === 'finish';
   }
 
-  /**
-   * Plays a sequence of keyframes using WA-API.
-   * Automatically sets duration to 0 if 'prefers-reduced-motion' is set.
-   */
+  /** Plays the keyframes. Reduced motion sets the duration to 0. */
   public async play(
     animation: AnimationReferenceMetadata
   ): Promise<AnimationPlaybackEvent> {
@@ -89,7 +81,6 @@ class AnimationController {
     });
   }
 
-  /** Cancels all active animations on the target element. */
   public cancelAll(): void {
     for (const animation of this._target.getAnimations()) {
       animation.cancel();
@@ -98,9 +89,8 @@ class AnimationController {
 }
 
 /**
- * Creates an animation player for the passed in `host` element.
- * The player will run animations on the passed in `target`, or if `target` is undefined,
- * the host element itself.
+ * Creates an animation player for `host`.
+ * It animates `target`, or the host when `target` is undefined.
  */
 export function addAnimationController(
   host: HTMLElement,

@@ -28,12 +28,7 @@ export abstract class PopoverPositionStrategy {
     this._container = container;
   }
 
-  /**
-   * Resolves when the strategy positioned the container.
-   *
-   * A synchronous strategy needs no wait. The host awaits this promise in
-   * `getUpdateComplete`.
-   */
+  /** Resolves when the container is positioned. The host awaits it in `getUpdateComplete`. */
   public whenPositioned(): Promise<unknown> {
     return Promise.resolve();
   }
@@ -41,7 +36,6 @@ export abstract class PopoverPositionStrategy {
   /** Shows the container in the top layer. */
   public abstract show(): void;
 
-  /** Hides the container. */
   public hide(): void {
     if (this._container && isPopoverOpen(this._container)) {
       this._container.hidePopover();

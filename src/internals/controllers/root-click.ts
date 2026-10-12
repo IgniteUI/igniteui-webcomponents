@@ -32,8 +32,7 @@ const ACTIVE_HOSTS = new Set<RootClickControllerHost>();
  * Whether `path` contains the host or the `target` of its configuration.
  *
  * @remarks
- * The caller builds the composed path once per event, and a scan of it beats
- * a set for the one or two hosts that are open together.
+ * A path scan beats a set for the one or two hosts that are open together.
  */
 function isInsideHost(
   path: EventTarget[],

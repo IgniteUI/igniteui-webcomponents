@@ -1,14 +1,13 @@
 import { property } from 'lit/decorators.js';
-import { resolveNaming } from '#internals/controllers/aria-projection.js';
+import { hostAria } from '#internals/controllers/aria-projection.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '#internals/mixins/forms/associated.js';
 import { FormValueNumberTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
-import { asNumber, asPercent, clamp } from '#internals/utils/math.js';
-import { IgcSliderBaseComponent } from './slider-base.js';
-import IgcSliderLabelComponent from './slider-label.js';
+import { asNumber } from '#internals/utils/math.js';
+import { IgcSliderBaseComponent, sliderDependencies } from './slider-base.js';
 
 export interface IgcSliderComponentEventMap {
   /**
@@ -54,13 +53,16 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcSliderComponent, IgcSliderLabelComponent);
+    registerComponent(IgcSliderComponent, ...sliderDependencies);
   }
 
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: 0,
     transformers: FormValueNumberTransformers,
   });
+
+  /** The value as set, until the update resolves it. */
+  private _requestedValue?: number;
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
@@ -69,60 +71,47 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
    */
   @property({ type: Number })
   public set value(value: number) {
-    this._formValue.setValueAndFormState(
-      this.validateValue(asNumber(value, this._formValue.value))
-    );
+    const requested = asNumber(value, this._formValue.value);
+    const resolved = this._validateValue(requested);
+
+    this._requestedValue = this._keepRequest(requested, resolved);
+    this._formValue.setValueAndFormState(resolved);
   }
 
   public get value(): number {
     return this._formValue.value;
   }
 
-  protected override get activeValue(): number {
+  protected override get _activeValue(): number {
     return this.value;
   }
 
-  protected override normalizeValue(): void {
-    const value = this.validateValue(this.value);
+  protected override _normalizeValue(constraintsChanged: boolean): void {
+    if (constraintsChanged) {
+      const value = this._validateValue(this._requestedValue ?? this.value);
 
-    if (value === this.value) {
-      return;
+      if (value !== this.value) {
+        // A clamp is not a user edit, so the pristine state stays.
+        this._withPristine(() => (this.value = value));
+      }
     }
 
-    // A clamp into the current scale is not an edit of the control, so the
-    // form state that it was in carries over.
-    const pristine = this._pristine;
+    this._requestedValue = undefined;
+  }
+
+  protected override _getTrackStyle() {
+    return { width: `${this._percentOf(this.value)}%` };
+  }
+
+  protected override _setActiveValue(value: number): void {
     this.value = value;
-    this._pristine = pristine;
   }
 
-  protected override getTrackStyle() {
-    return {
-      width: `${asPercent(this.value - this.min, this.distance)}%`,
-    };
-  }
-
-  protected override updateValue(increment: number) {
-    const value = clamp(
-      this.value + increment,
-      this.lowerBound,
-      this.upperBound
-    );
-
-    if (this.value === value) {
-      return false;
-    }
-
-    this.value = value;
-    this.emitInputEvent();
-    return true;
-  }
-
-  protected override emitInputEvent() {
+  protected override _emitInputEvent() {
     this._emitTouchedEvent('igcInput', { detail: this.value });
   }
 
-  protected override emitChangeEvent() {
+  protected override _emitChangeEvent() {
     this._emitTouchedEvent('igcChange', { detail: this.value });
   }
 
@@ -139,16 +128,16 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
    * @param stepDecrement Optional step decrement. If no parameter is passed, it defaults to 1.
    */
   public stepDown(stepDecrement = 1) {
-    this.value = this.value - stepDecrement * this.step;
+    this.stepUp(-stepDecrement);
   }
 
   /** Focuses the thumb, as a native range input label does. */
   protected override _handleLabelActivation(): void {
-    this.thumb.focus();
+    this.focus();
   }
 
-  protected override renderThumbs() {
-    return this.renderThumb(this.value, resolveNaming(this, false));
+  protected override _renderThumbs() {
+    return this._renderThumb(this.value, hostAria(this));
   }
 }
 

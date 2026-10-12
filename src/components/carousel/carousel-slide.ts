@@ -3,10 +3,11 @@ import { property } from 'lit/decorators.js';
 import { EaseInOut } from '#animations/easings.js';
 import { addAnimationController } from '#animations/player.js';
 import { carouselContext } from '#internals/context.js';
-import { createAsyncContext } from '#internals/controllers/async-consumer.js';
+import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { createIdGenerator, formatString } from '#internals/utils/strings.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { animations } from './animations.js';
 import type IgcCarouselComponent from './carousel.js';
 import { styles } from './themes/carousel-slide.base.css.js';
@@ -21,7 +22,7 @@ const nextId = createIdGenerator('igc-carousel-slide');
  * @slot - Default slot for the carousel slide.
  */
 export default class IgcCarouselSlideComponent extends LitElement {
-  public static override styles = styles;
+  public static override styles = [componentBase, styles];
   public static readonly tagName = 'igc-carousel-slide';
 
   /* blazorSuppress */
@@ -33,14 +34,6 @@ export default class IgcCarouselSlideComponent extends LitElement {
 
   private _carousel?: IgcCarouselComponent;
 
-  protected get _index(): number {
-    return this._carousel ? this._carousel.slides.indexOf(this) : 0;
-  }
-
-  protected get _total(): number {
-    return this._carousel ? this._carousel.slides.length : 0;
-  }
-
   protected get _animation() {
     const animation = this._carousel?.animationType ?? 'slide';
 
@@ -49,10 +42,6 @@ export default class IgcCarouselSlideComponent extends LitElement {
     }
 
     return animation;
-  }
-
-  protected get _labelFormat(): string {
-    return this._carousel ? this._carousel.slidesLabelFormat : '';
   }
 
   /**
@@ -75,16 +64,18 @@ export default class IgcCarouselSlideComponent extends LitElement {
         ariaRoleDescription: 'slide',
       },
       aria: () => ({
-        ariaLabel: formatString(
-          this._labelFormat,
-          this._index + 1,
-          this._total
-        ),
+        ariaLabel: this._carousel
+          ? formatString(
+              this._carousel.slidesLabelFormat,
+              this._carousel.slides.indexOf(this) + 1,
+              this._carousel.total
+            )
+          : '',
       }),
     });
 
-    // Set carousel reference once provider is ready (addresses Blazor timing issue)
-    createAsyncContext(this, carouselContext, (carousel) => {
+    // Read the carousel when the provider is ready (Blazor timing).
+    addAsyncContextConsumer(this, carouselContext, (carousel) => {
       this._carousel = carousel;
     });
   }
@@ -97,7 +88,7 @@ export default class IgcCarouselSlideComponent extends LitElement {
     type: 'in' | 'out',
     direction: 'normal' | 'reverse' = 'normal'
   ): Promise<boolean> {
-    const animation = animations.get(this._animation)!.get(type)!;
+    const animation = animations[this._animation][type];
 
     return await this._player.playExclusive(
       animation({

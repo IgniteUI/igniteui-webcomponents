@@ -25,14 +25,36 @@ export function numberOfDecimals(number: number): number {
 /**
  * Rounds a number to the given order of magnitude (number of decimal places).
  *
+ * @remarks
+ * Shifts the exponent instead of multiplying, so a binary floating-point error
+ * does not round a half down.
+ * Negative magnitudes are treated as a no-op.
+ *
  * @example
  * ```typescript
  * roundPrecise(3.14159, 2); // 3.14
+ * roundPrecise(1.005, 2); // 1.01
  * ```
  */
 export function roundPrecise(number: number, magnitude = 1): number {
-  const factor = 10 ** magnitude;
-  return Math.round(number * factor) / factor;
+  if (magnitude < 0) {
+    return number;
+  }
+
+  if (!Number.isFinite(number) || Number.isInteger(number)) {
+    return number;
+  }
+
+  return shiftDecimals(
+    Math.round(shiftDecimals(number, magnitude)),
+    -magnitude
+  );
+}
+
+/** Moves the decimal point of `number` by `places`, through its exponent. */
+function shiftDecimals(number: number, places: number): number {
+  const [mantissa, exponent] = number.toString().split('e');
+  return asNumber(`${mantissa}e${asNumber(exponent) + places}`);
 }
 
 /** Returns whether the value lies between the min and max bounds. */
@@ -61,7 +83,15 @@ export function numberInRangeInclusive(
  * ```
  */
 export function asNumber(value: unknown, fallback = 0): number {
-  const parsed = Number.parseFloat(value as string);
+  let parsed: number;
+
+  try {
+    parsed = Number.parseFloat(value as string);
+  } catch {
+    // A symbol, or an object with no string conversion.
+    return fallback;
+  }
+
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 

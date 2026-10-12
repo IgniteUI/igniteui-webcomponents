@@ -10,8 +10,18 @@ $theme: $material;
     box-shadow: var-get($theme, 'elevation');
 }
 
-igc-button::part(base),
-igc-button::part(base):hover {
-    color: var-get($theme, 'button-color');
-    background: transparent;
+// Tokens, not ::part() rules, so that the keyboard focus keeps the style of
+// the button, also on hover.
+igc-button {
+    $color: var-get($theme, 'button-color');
+
+    --ig-flat-button-foreground: #{$color};
+    --ig-flat-button-hover-foreground: #{$color};
+    --ig-flat-button-active-foreground: #{$color};
+    --ig-flat-button-focus-foreground: #{$color};
+    --ig-flat-button-focus-hover-foreground: #{$color};
+    --ig-flat-button-focus-visible-foreground: #{$color};
+    --ig-flat-button-background: transparent;
+    --ig-flat-button-hover-background: transparent;
+    --ig-flat-button-active-background: transparent;
 }

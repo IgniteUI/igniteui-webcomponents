@@ -36,6 +36,21 @@ describe('Date Time Input component', () => {
     defineComponents(IgcDateTimeInputComponent);
   });
 
+  it('exposes `required` as `aria-required` on the native input', async () => {
+    const editor = await fixture<IgcDateTimeInputComponent>(
+      html`<igc-date-time-input required></igc-date-time-input>`
+    );
+    const native = editor.renderRoot.querySelector('input')!;
+
+    expect(native.getAttribute('aria-required')).to.equal('true');
+    expect(native.hasAttribute('required')).to.be.false;
+
+    editor.required = false;
+    await elementUpdated(editor);
+
+    expect(native.hasAttribute('aria-required')).to.be.false;
+  });
+
   const parser = new DateTimeMaskParser();
   const DEFAULT_PROMPT = '_';
   const DEFAULT_FORMAT = 'MM/dd/yyyy';
@@ -59,6 +74,18 @@ describe('Date Time Input component', () => {
       expect(element.prompt).to.equal(DEFAULT_PROMPT);
       expect(element.inputFormat).to.equal(DEFAULT_FORMAT);
       expect(input.placeholder).to.equal(DEFAULT_FORMAT);
+    });
+
+    it('shows the empty mask as the placeholder when the placeholder is cleared', async () => {
+      element.placeholder = '';
+      await elementUpdated(element);
+
+      expect(input.placeholder).to.equal(parser.emptyMask);
+
+      element.placeholder = 'Pick a date';
+      await elementUpdated(element);
+
+      expect(input.placeholder).to.equal('Pick a date');
     });
 
     it('should update inputFormat with no value according to locale', async () => {
@@ -90,7 +117,6 @@ describe('Date Time Input component', () => {
       expect(element.inputFormat).to.equal('dd.MM.yyyy');
       expect(element.displayFormat).to.equal('d.M.yyyy');
 
-      // Restore default locale
       setCurrentI18n('en');
     });
 
@@ -104,7 +130,6 @@ describe('Date Time Input component', () => {
       expect(element.displayFormat).to.equal('d.M.yyyy');
       expect(input.value).to.equal('3.3.2020');
 
-      // Restore default locale
       setCurrentI18n('en');
     });
 
@@ -129,7 +154,6 @@ describe('Date Time Input component', () => {
 
       expect(input.value).to.equal('-- 2020 -- 03 -- 03 --');
 
-      // Reset
       element.displayFormat = undefined as any;
       await elementUpdated(element);
 
@@ -299,8 +323,7 @@ describe('Date Time Input component', () => {
 
         expect(input.value).to.equal('10/10/____');
 
-        // What a framework re-render does: re-commit the bound value. It is equal to
-        // the committed one, so the in-progress edit must survive it.
+        // A framework re-render re-commits an equal value. The edit must survive it.
         element.value = new Date(initial.getTime());
         await elementUpdated(element);
 
@@ -761,6 +784,18 @@ describe('Date Time Input component', () => {
       checkSelectionRange(10, 10);
     });
 
+    it('selectionStart and selectionEnd report the selection', async () => {
+      element.value = new Date(2024, 1, 15);
+      element.inputFormat = 'MM/dd/yyyy';
+      await elementUpdated(element);
+
+      element.setSelectionRange(3, 5);
+      expect([element.selectionStart, element.selectionEnd]).to.eql([3, 5]);
+
+      input.setSelectionRange(0, 2);
+      expect([element.selectionStart, element.selectionEnd]).to.eql([0, 2]);
+    });
+
     it('should respect spinDelta', async () => {
       const value = new Date(2020, 2, 3);
 
@@ -943,8 +978,7 @@ describe('Date Time Input component', () => {
       element.stepDown();
       await elementUpdated(element);
 
-      // Spinning is an uncommitted edit while the input is focused, so the draft
-      // in the mask - not the public value - is what moves.
+      // Spinning while focused is an uncommitted edit, so only the mask draft moves.
       expect(input.value).to.equal('2022/06/01');
       expect(input.selectionStart).to.eq(start);
       expect(input.selectionEnd).to.eq(end);
@@ -987,6 +1021,51 @@ describe('Date Time Input component', () => {
 
       expect(input.selectionStart).to.equal(10);
       expect(input.selectionEnd).to.equal(10);
+    });
+
+    it('Ctrl + ArrowLeft/Right move to the edges of the input outside the literals', async () => {
+      element.value = new Date(2020, 2, 3);
+      element.focus();
+      await elementUpdated(element);
+
+      // No literal before the month part
+      input.setSelectionRange(1, 1);
+      simulateKeyboard(input, [ctrlKey, arrowLeft]);
+      await elementUpdated(element);
+
+      expect([input.selectionStart, input.selectionEnd]).to.eql([0, 0]);
+
+      // No literal after the year part
+      input.setSelectionRange(8, 8);
+      simulateKeyboard(input, [ctrlKey, arrowRight]);
+      await elementUpdated(element);
+
+      expect([input.selectionStart, input.selectionEnd]).to.eql([10, 10]);
+
+      // The next literal after the month part
+      input.setSelectionRange(1, 1);
+      simulateKeyboard(input, [ctrlKey, arrowRight]);
+      await elementUpdated(element);
+
+      expect([input.selectionStart, input.selectionEnd]).to.eql([2, 2]);
+    });
+
+    it('does not spin while the cursor is inside a literal', async () => {
+      const value = new Date(2020, 2, 3);
+      element.inputFormat = 'MM / dd / yyyy';
+      element.value = value;
+      element.focus();
+      await elementUpdated(element);
+
+      const masked = input.value;
+      const eventSpy = spy(element, 'emitEvent');
+      input.setSelectionRange(3, 3);
+      simulateKeyboard(input, arrowUp);
+      await elementUpdated(element);
+
+      expect(input.value).to.equal(masked);
+      expect(element.value).to.eql(value);
+      expect(eventSpy).not.calledWith('igcInput');
     });
 
     it('non filled parts have default value set on blur', async () => {
@@ -1131,7 +1210,7 @@ describe('Date Time Input component', () => {
       expect(element.value.getDate()).to.equal(1);
     });
 
-    //check if needed
+    // TODO: Check whether the three drag tests below are needed.
     it('dragEnter', async () => {
       input.dispatchEvent(new DragEvent('dragenter', { bubbles: true }));
       await elementUpdated(element);
@@ -1139,7 +1218,6 @@ describe('Date Time Input component', () => {
       expect(input.value).to.equal(parser.apply());
     });
 
-    //check if needed
     it('dragLeave without focus', async () => {
       input.dispatchEvent(new DragEvent('dragleave', { bubbles: true }));
       await elementUpdated(element);
@@ -1147,7 +1225,6 @@ describe('Date Time Input component', () => {
       expect(input.value).to.be.empty;
     });
 
-    //check if needed
     it('dragLeave with focus', async () => {
       element.focus();
       input.dispatchEvent(new DragEvent('dragleave', { bubbles: true }));
@@ -1510,20 +1587,23 @@ describe('Date Time Input component', () => {
 
       const testParameters: ValidationContainerTestsParams<IgcDateTimeInputComponent>[] =
         [
-          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          { slots: ['valueMissing'], props: { required: true } },
           {
             slots: ['rangeOverflow'],
-            props: { value: now.native, max: yesterday.native }, // range-overflow slot
+            props: { value: now.native, max: yesterday.native },
           },
           {
             slots: ['rangeUnderflow'],
-            props: { value: now.native, min: tomorrow.native }, // range-underflow slot
+            props: { value: now.native, min: tomorrow.native },
           },
-          { slots: ['customError'] }, // custom-error slot
-          { slots: ['invalid'], props: { required: true } }, // invalid slot
+          { slots: ['customError'] },
+          { slots: ['invalid'], props: { required: true } },
         ];
 
-      runValidationContainerTests(IgcDateTimeInputComponent, testParameters);
+      await runValidationContainerTests(
+        IgcDateTimeInputComponent,
+        testParameters
+      );
     });
   });
 

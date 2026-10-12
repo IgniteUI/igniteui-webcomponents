@@ -39,6 +39,7 @@
     - [Form integration suites](#form-integration-suites)
     - [Predefined ranges area](#predefined-ranges-area)
     - [Range mask parser](#range-mask-parser)
+    - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -47,11 +48,15 @@
 
 ## Revision history
 
-| Version | Date       | Notes                                                     |
-| ------: | ---------- | --------------------------------------------------------- |
-|       1 | 2026-09-21 | Initial specification                                     |
-|       2 | 2026-09-23 | Expose the `ranges` part and add it to the test scenarios |
-|       3 | 2026-09-24 | Describe the naming order and the host ARIA naming        |
+| Version | Date       | Notes                                                                     |
+| ------: | ---------- | ------------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                     |
+|       2 | 2026-09-23 | Expose the `ranges` part and add it to the test scenarios                 |
+|       3 | 2026-09-24 | Describe the naming order and the host ARIA naming                        |
+|       4 | 2026-09-28 | Add the property-based range mask parser suite                            |
+|       5 | 2026-09-28 | Validate a value and bounds set before the first render                   |
+|       6 | 2026-10-02 | Focus after form checks; `invalid` only on checks                         |
+|       7 | 2026-10-02 | Forward the host `aria-describedby`; expose `required` as `aria-required` |
 
 ## Overview
 
@@ -327,6 +332,11 @@ name the control.
 - A form reset restores `defaultValue`.
 - An invalid picker blocks submission.
 
+As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
+the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
+`checkValidity()` do not move the focus. The `invalid` event comes only from these checks and from a failed submit,
+not while the user edits the control.
+
 ### Behaviors
 
 **Clearing the inputs.** On losing focus, `igcChange` is emitted with `{ start: null, end: null }`, in both display
@@ -447,16 +457,16 @@ apply.
 
 ### Methods
 
-| Name              | Type signature                              | Description                                                      |
-| ----------------- | ------------------------------------------- | ---------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`                      | Shows the component.                                             |
-| hide              | `(): Promise<boolean>`                      | Hides the component.                                             |
-| toggle            | `(): Promise<boolean>`                      | Toggles the open state of the component.                         |
-| select            | `(value: DateRangeValue \| null): void`     | Selects a date range value in the picker.                        |
-| clear             | `(): void`                                  | Clears the editors of the picker of any user input.              |
-| checkValidity     | `(): boolean`                               | Checks validity and emits `invalid` when the control is invalid. |
-| reportValidity    | `(): boolean`                               | Checks validity and shows the browser message when invalid.      |
-| setCustomValidity | `(message: string): void`                   | Sets a custom message. Invalid while `message` is not empty.     |
+| Name              | Type signature                          | Description                                                             |
+| ----------------- | --------------------------------------- | ----------------------------------------------------------------------- |
+| show              | `(): Promise<boolean>`                  | Shows the component.                                                    |
+| hide              | `(): Promise<boolean>`                  | Hides the component.                                                    |
+| toggle            | `(): Promise<boolean>`                  | Toggles the open state of the component.                                |
+| select            | `(value: DateRangeValue \| null): void` | Selects a date range value in the picker.                               |
+| clear             | `(): void`                              | Clears the editors of the picker of any user input.                     |
+| checkValidity     | `(): boolean`                           | Checks validity and emits `invalid` when the control is invalid.        |
+| reportValidity    | `(): boolean`                           | Checks validity; when invalid, emits `invalid` and focuses the control. |
+| setCustomValidity | `(message: string): void`               | Sets a custom message. Invalid while `message` is not empty.            |
 
 ### Events
 
@@ -515,7 +525,7 @@ On top of the input and calendar parts it re-exports, the picker exposes:
 
 ## Test scenarios
 
-The component is covered by seven suites in this directory, all running in a real browser through
+The component is covered by eight suites in this directory, all running in a real browser through
 `@web/test-runner` with `@open-wc/testing` fixtures and assertions:
 
 | Suite | Scope |
@@ -527,6 +537,7 @@ The component is covered by seven suites in this directory, all running in a rea
 | [`date-range-picker-two-inputs.form.spec.ts`](./date-range-picker-two-inputs.form.spec.ts) | Form integration for the two inputs mode. |
 | [`predefined-ranges-area.spec.ts`](./predefined-ranges-area.spec.ts) | The internal range chips component. |
 | [`date-range-mask-parser.spec.ts`](./date-range-mask-parser.spec.ts) | The range mask parser on its own. |
+| [`date-range-mask-parser.property.spec.ts`](./date-range-mask-parser.property.spec.ts) | Property-based (fuzz) tests for the range mask parser. |
 
 The suites reuse `createFormAssociatedTestBed`, `runValidationContainerTests`,
 `runExternalLabelAssociationTests` and the `simulate*` helpers from
@@ -534,7 +545,8 @@ The suites reuse `createFormAssociatedTestBed`, `runValidationContainerTests`,
 
 ### Common suite
 
-1. Rendering and initialization of the shared structure, including the exposed `ranges` part.
+1. Rendering and initialization of the shared structure, including the exposed `ranges` part, and a value and bounds
+   set before the first render.
 2. Properties, including localization - formats, resource strings and the separator.
 3. Methods - `show`, `hide`, `toggle`, `select` and `clear`.
 4. Interactions - selection through the calendar, keyboard navigation, and interactions with the show icon.
@@ -571,13 +583,27 @@ Each display mode has its own form suite, with the same groups.
 22. `defaultValue` - initial state, submission, reset and validation.
 23. Validation message slots, generated by `runValidationContainerTests`.
 
+The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
+[input suite](../input/spec.md#form-validity-checks) covers them.
+
 ### Predefined ranges area
 
 24. The internal `igc-predefined-ranges-area` renders the built-in and the custom chips and emits its selection.
 
 ### Range mask parser
 
-25. Initialization, range parsing, range formatting, part queries, spinning, prompt updates and mask updates.
+25. Initialization (a literal separator and a widened year format), range parsing, range formatting, part queries,
+    spinning, prompt updates and mask updates.
+
+### Range mask parser properties
+
+26. For generated formats, separators and dates: the round-trip, each side parsed like a single date, the layout
+    around the separator after a mask change, and no throw or invalid date for any string.
+
+### Host ARIA
+
+27. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+    text, and follows a change and a removal. `required` sets `aria-required` on each editor.
 
 ## Assumptions and limitations
 
@@ -603,6 +629,9 @@ Each display mode has its own form suite, with the same groups.
   invalid state is reflected on both editors.
 - Within the calendar, the ARIA of the [calendar specification](../calendar/spec.md#aria-roles-and-properties)
   applies.
+- A host `aria-describedby` describes the native control after the helper text, by element reference. With two
+  inputs, the end editor gets only the host description: the helper text describes the start editor.
+- `required` is exposed as `aria-required` on the native input of each editor, also with two inputs.
 
 ### Keyboard support
 

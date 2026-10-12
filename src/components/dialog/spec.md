@@ -32,6 +32,7 @@
     - [Interrupted transitions](#interrupted-transitions)
     - [Events and behaviors](#events-and-behaviors)
     - [Form](#form)
+    - [Host ARIA](#host-aria)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -41,9 +42,12 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                     |
+| ------: | ---------- | --------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                     |
+|       2 | 2026-10-02 | Follow a change of `aria-label`                           |
+|       3 | 2026-10-02 | Forward the host `aria-labelledby` and `aria-describedby` |
+|       4 | 2026-10-06 | Open the dialog again after a close that it cannot cancel |
 
 ## Overview
 
@@ -269,7 +273,9 @@ The suite lives in [`dialog.spec.ts`](./dialog.spec.ts) and runs in a real brows
 
 ### WAI-ARIA tests
 
-1. The dialog exposes a `dialog` role and is labelled by its title.
+1. The dialog exposes a `dialog` role and is labelled by its title, or only by `aria-label` when one is set. A
+   change
+   of `aria-label` updates the name, and its removal gives the name back to the title.
 2. The component passes the accessibility audit in the open state.
 
 ### DOM
@@ -294,10 +300,17 @@ The suite lives in [`dialog.spec.ts`](./dialog.spec.ts) and runs in a real brows
 10. `igcClosing` and `igcClosed` are emitted when the dialog closes.
 11. `igcClosing` can be canceled to abort the closing sequence.
 12. The dialog closes on an outside click when `closeOnOutsideClick` is set, and does not when it is not.
+13. When the native dialog closes while `open` stays `true`, the dialog opens again, and the focus goes back to the
+    opener when it closes.
 
 ### Form
 
-13. The dialog closes with the appropriate `returnValue` when a `form[method="dialog"]` inside it is submitted.
+14. The dialog closes with the appropriate `returnValue` when a `form[method="dialog"]` inside it is submitted.
+
+### Host ARIA
+
+15. `aria-labelledby` wins over `aria-label` and the title, an empty `aria-label` keeps the title, and the host
+    `aria-describedby` describes the dialog.
 
 ### Not covered by the suite
 
@@ -316,8 +329,12 @@ are verified manually rather than by the suite.
 
 - The dialog is a native `dialog` element shown modally, so the role, the focus trap, the inert page content and the
   top layer come from the platform.
-- The dialog is labelled by its title, from the `title` slot or the `title` attribute.
+- The dialog is labelled by its title, from the `title` slot or the `title` attribute. An `aria-label` on the element
+  replaces the title as the name, also when it is set or removed later. Use it when the header holds more than the
+  title, such as a close button.
 - The backdrop is decorative and is not exposed to assistive technology.
+- A host `aria-labelledby` names the native dialog before `aria-label` and the title, and a host `aria-describedby`
+  describes it.
 
 ### Keyboard support
 

@@ -35,6 +35,7 @@
     - [Validation message slots](#validation-message-slots)
     - [External label association](#external-label-association)
     - [Parser and history unit suites](#parser-and-history-unit-suites)
+    - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -43,10 +44,15 @@
 
 ## Revision history
 
-| Version | Date       | Notes                                              |
-| ------: | ---------- | -------------------------------------------------- |
-|       1 | 2026-09-21 | Initial specification                              |
-|       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
+| Version | Date       | Notes                                                                     |
+| ------: | ---------- | ------------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                     |
+|       2 | 2026-09-24 | Describe the naming order and the host ARIA naming                        |
+|       3 | 2026-09-28 | Add the property-based parser suite                                       |
+|       4 | 2026-09-28 | An empty control is no bad input                                          |
+|       5 | 2026-10-02 | Focus after form checks; `invalid` only on checks                         |
+|       6 | 2026-10-02 | Forward the host `aria-describedby`; expose `required` as `aria-required` |
+|       7 | 2026-10-07 | Read-only `selectionStart` and `selectionEnd`                             |
 
 ## Overview
 
@@ -177,6 +183,9 @@ By default the mask is `CCCCCCCCCC` - ten optional positions that accept any cha
 Digits typed in a digit position are normalized to ASCII, so input from Arabic-Indic, Devanagari, Thai, full-width
 and the other supported numbering systems is accepted.
 
+Each position holds one UTF-16 code unit. No position accepts an astral character, such as most emoji, because it
+takes two code units.
+
 #### Literals and escaping
 
 Any character in the pattern that is not a flag is a literal and is rendered as-is. A flag character can be turned
@@ -206,7 +215,8 @@ An empty control returns an empty string in both modes.
 <igc-mask-input mask="00/00/0000" prompt="*"></igc-mask-input>
 ```
 
-Only the first character of the assigned string is used, and a mask flag is rejected in favor of the default `_`.
+Only the first character of the assigned string is used. A mask flag, or an astral character such as an emoji, is
+rejected in favor of the current prompt, which starts as `_`.
 
 #### Labeling from the light DOM
 
@@ -248,7 +258,7 @@ The component applies two validators:
 | Validator  | Validity flag  | Fails when                                                              |
 | ---------- | -------------- | ----------------------------------------------------------------------- |
 | `required` | `valueMissing` | The control is required and the value is empty.                         |
-| mask       | `badInput`     | Some positions are filled but not all required positions are satisfied. |
+| mask       | `badInput`     | The value is not empty, and not all required positions are satisfied.   |
 
 `isValidMaskPattern()` exposes the same check programmatically. See the
 [validation container specification](../validation-container/spec.md) for the message slot mechanism.
@@ -264,6 +274,11 @@ The component applies two validators:
 
 The value submitted with the form follows `valueMode`: the raw input in `raw` mode, the formatted string in
 `withFormatting` mode. A form reset restores the default value taken from the `value` attribute.
+
+As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
+the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
+`checkValidity()` do not move the focus. The `invalid` event comes only from these checks and from a failed submit,
+not while the user edits the control.
 
 ### Localization
 
@@ -308,22 +323,27 @@ All other native text-editing keys apply, as the component delegates focus to th
 | validity          | -           | No        | `ValidityState`           | -              | Read-only. The validity state of the element.                               |
 | validationMessage | -           | No        | `string`                  | -              | Read-only. The validation message of the element.                           |
 | willValidate      | -           | No        | `boolean`                 | -              | Read-only. Whether the element is a candidate for constraint validation.    |
+| selectionStart    | -           | No        | `number`                  | 0              | Read-only. The offset of the start of the text selection.                   |
+| selectionEnd      | -           | No        | `number`                  | 0              | Read-only. The offset of the end of the text selection.                     |
 
 The standard `autofocus` global attribute is forwarded to the inner native input.
 
+`selectionStart` and `selectionEnd` are read-only. Set the selection with `setSelectionRange()`. After
+`setRangeText()`, they report the new selection when `updateComplete` resolves.
+
 ### Methods
 
-| Name               | Type signature                                                                               | Description                                                             |
-| ------------------ | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Name               | Type signature                                                                                | Description                                                              |
+| ------------------ | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | isValidMaskPattern | `(): boolean`                                                                                 | Returns whether the current masked input is valid according to the mask. |
-| select             | `(): void`                                                                                    | Selects all the text inside the input.                                  |
-| setSelectionRange  | `(start?: number, end?: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range of the control.                           |
-| setRangeText       | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the selected text in the control and re-applies the mask.      |
-| focus              | `(options?: FocusOptions): void`                                                              | Sets focus on the control.                                              |
-| blur               | `(): void`                                                                                    | Removes focus from the control.                                         |
-| checkValidity      | `(): boolean`                                                                                  | Checks validity and emits `invalid` when the control is invalid.        |
-| reportValidity     | `(): boolean`                                                                                  | Checks validity and shows the browser message when invalid.             |
-| setCustomValidity  | `(message: string): void`                                                                      | Sets a custom message. Invalid while `message` is not empty.            |
+| select             | `(): void`                                                                                    | Selects all the text inside the input.                                   |
+| setSelectionRange  | `(start?: number, end?: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range of the control.                            |
+| setRangeText       | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the selected text in the control and re-applies the mask.       |
+| focus              | `(options?: FocusOptions): void`                                                              | Sets focus on the control.                                               |
+| blur               | `(): void`                                                                                    | Removes focus from the control.                                          |
+| checkValidity      | `(): boolean`                                                                                 | Checks validity and emits `invalid` when the control is invalid.         |
+| reportValidity     | `(): boolean`                                                                                 | Checks validity; when invalid, emits `invalid` and focuses the control.  |
+| setCustomValidity  | `(message: string): void`                                                                     | Sets a custom message. Invalid while `message` is not empty.             |
 
 ### Events
 
@@ -371,7 +391,8 @@ The suite lives in [`mask-input.spec.ts`](./mask-input.spec.ts). It runs in a re
 | `simulateInput / simulateClick / simulateKeyboard` | User interaction driven without real device events. |
 | `ValidityHelpers` | Assertions for validity, invalid styling and validation slot presence and content. |
 | `mask-parser.spec.ts` | A unit suite for the pattern parser itself, independent of the component. |
-| `mask-history.spec.ts` | A unit suite for the undo and redo history, independent of the component. |
+| `mask-parser.property.spec.ts` | Property-based (fuzz) tests for the pattern parser, with generated masks, prompts and input. |
+| `internals/mask-history.spec.ts` | A unit suite for the undo and redo history, independent of the component. |
 
 The groups below mirror the `describe` blocks of the suite.
 
@@ -388,72 +409,90 @@ The groups below mirror the `describe` blocks of the suite.
 9. `setCustomValidity`.
 10. `setRangeText`, including clearing a focused input - which keeps the mask visible - and clearing an unfocused
     one, which empties it.
-11. `igcChange` and `igcInput`, with and without literals, and at the end of the pattern.
-12. Is accessible (axe audit).
-13. Focus and blur update the underlying input mask, for an empty and a non-empty value.
-14. Drag enter and drag leave, with and without focus.
-15. <kbd>Delete</kbd> and <kbd>Backspace</kbd> behavior, including skipping literals and a composing backspace.
-16. Default input behavior, composition, cut, paste, drop and browser auto-fill for a mask with literals.
+11. `selectionStart` and `selectionEnd` report the selection, and the selection that `setRangeText` sets once the
+    update completes.
+12. `igcChange` and `igcInput`, with and without literals, and at the end of the pattern.
+13. Is accessible (axe audit).
+14. Focus and blur update the underlying input mask, for an empty and a non-empty value.
+15. Drag enter and drag leave, with and without focus.
+16. <kbd>Delete</kbd> and <kbd>Backspace</kbd> behavior, including skipping literals and a composing backspace.
+17. Default input behavior, composition, cut, paste, drop and browser auto-fill for a mask with literals.
 
 ### Undo and redo
 
 Grouped as `Undo / redo` in the suite.
 
-17. Collapses a run of typed characters into a single step, and redoes the restored run.
-18. Supports the alternate shortcuts.
-19. Preserves interior holes in the mask.
-20. Starts a new step when the caret moves.
-21. Collapses a run of backspaces into a single step, and keeps typing and deleting as separate steps.
-22. Records a paste as its own step.
-23. Does not record an edit that the mask rejects.
-24. Emits `igcInput` when a step is restored, and places the caret where the undone edit began.
-25. Is a no-op with nothing to undo, and does nothing while read-only.
-26. Drops the history on a programmatic value assignment, on a mask change and on a prompt change.
-27. Survives a blur and a refocus.
+18. Collapses a run of typed characters into a single step, and redoes the restored run.
+19. Supports the alternate shortcuts.
+20. Preserves interior holes in the mask.
+21. Starts a new step when the caret moves.
+22. Collapses a run of backspaces into a single step, and keeps typing and deleting as separate steps.
+23. Records a paste as its own step.
+24. Does not record an edit that the mask rejects.
+25. Emits `igcInput` when a step is restored, and places the caret where the undone edit began.
+26. Is a no-op with nothing to undo, and does nothing while read-only.
+27. Drops the history on a programmatic value assignment, on a mask change and on a prompt change.
+28. Survives a blur and a refocus.
 
 ### Form integration
 
 Driven by `createFormAssociatedTestBed`.
 
-28. Is form associated, and is not associated on submit without a value.
-29. Is associated on submit, including with value formatting enabled.
-30. Is correctly reset on form reset, with and without value formatting, after a `setAttribute` call, and refreshes
+29. Is form associated, and is not associated on submit without a value.
+30. Is associated on submit, including with value formatting enabled.
+31. Is correctly reset on form reset, with and without value formatting, after a `setAttribute` call, and refreshes
     the rendered masked value and placeholder afterwards.
-31. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid.
-32. Reflects the disabled state of an ancestor `fieldset`.
-33. Fulfils the required constraint, including with value formatting, the mask pattern constraint and a custom
+32. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid.
+33. Reflects the disabled state of an ancestor `fieldset`.
+34. Fulfils the required constraint, including with value formatting, the mask pattern constraint and a custom
     constraint.
+35. An empty optional control is valid for any mask, and a value that fits no position of a letter mask is a bad
+    input.
+
+The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
+[input suite](../input/spec.md#form-validity-checks) covers them.
 
 ### defaultValue
 
-34. Form integration - correct initial state, correct submission, correct reset, and dropping the undo history on
+36. Form integration - correct initial state, correct submission, correct reset, and dropping the undo history on
     reset.
-35. Validation - fails the initial validation, and passes once `defaultValue` is updated.
+37. Validation - fails the initial validation, and passes once `defaultValue` is updated.
 
 ### Validation message slots
 
 Generated by `runValidationContainerTests`.
 
-36. `value-missing` with `required`.
-37. `bad-input` with an unsatisfied mask pattern.
-38. `custom-error` after `setCustomValidity`.
-39. `invalid` with `required`.
+38. `value-missing` with `required`.
+39. `bad-input` with an unsatisfied mask pattern.
+40. `custom-error` after `setCustomValidity`.
+41. `invalid` with `required`.
 
 ### External label association
 
 Generated by `runExternalLabelAssociationTests`.
 
-40. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
+42. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
     `ariaLabelledByElements`, and clicking it focuses the control. A `label` added after the first render names the
     control from the first focus, an axe audit passes with only an external `label`, and the host `aria-labelledby` and
     `aria-label` follow the [naming order](../input/spec.md#naming-order).
 
 ### Parser and history unit suites
 
-41. [`mask-parser.spec.ts`](./mask-parser.spec.ts) covers the parser on its own: every flag, literals and escaping,
-    applying and parsing values, Unicode digit normalization, and edge and boundary conditions.
-42. [`mask-history.spec.ts`](./mask-history.spec.ts) covers the history on its own: recording, coalescing, traversal
+43. [`mask-parser.spec.ts`](./mask-parser.spec.ts) covers the parser on its own: every flag, literals and escaping,
+    applying and parsing values, Unicode digit normalization, and edge and boundary conditions, including UTF-16
+    positions after an astral literal, and astral input and prompts rejected whole.
+44. [`mask-history.spec.ts`](../../internals/mask-history.spec.ts) covers the history on its own: recording, coalescing, traversal
     and invalidation of the steps.
+45. [`mask-parser.property.spec.ts`](./mask-parser.property.spec.ts) checks, for generated masks, prompts and input:
+    the escaped mask and literal positions; `apply` and `replace` never throw, keep the mask length, literals and
+    flag rules, and never split an astral character; the `apply` / `parse` round-trip; digit normalization; the
+    non-literal position lookups; and prompt normalization.
+
+### Host ARIA
+
+46. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+    text, and follows a change and a removal. `required` sets `aria-required`.
+
 ## Assumptions and limitations
 
 - The mask input does not expose a `type` attribute, since it is always an input of type `text`.
@@ -471,6 +510,9 @@ Generated by `runExternalLabelAssociationTests`.
   control.
 - The helper text and the validation messages are referenced through `aria-describedby`.
 - The required, disabled and read-only states come from the native attributes on the inner input.
+- A host `aria-describedby` describes the native control after the helper text, by element reference.
+- `required` is exposed as `aria-required` on the native input, not as the native `required`, which would validate
+  the mask prompts.
 
 ### Keyboard support
 

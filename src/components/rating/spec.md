@@ -34,6 +34,7 @@
     - [Default value](#default-value)
     - [Accessibility tests](#accessibility-tests)
     - [Hover](#hover)
+    - [Host ARIA](#host-aria)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -48,6 +49,9 @@
 |       1 | 2026-09-21 | Initial specification                                                                |
 |       2 | 2026-09-23 | Describe when the `--symbol-*-filter` properties apply                               |
 |       3 | 2026-09-24 | Label external `label` elements and host `aria-labelledby`, focus from a label click |
+|       4 | 2026-10-02 | Correct the `reportValidity` description                                             |
+|       5 | 2026-10-02 | Forward the host `aria-describedby`                                                  |
+|       6 | 2026-10-06 | `focus()` and `blur()` move the focus to the slider element                          |
 
 ## Overview
 
@@ -159,7 +163,8 @@ the keyboard while keeping the control in the tab order, and `disabled` blocks t
 The rating is a form-associated custom element with a number value. The `value` attribute seeds `defaultValue`, so
 a form reset restores it, clamping it into the range. It follows the disabled state of an ancestor fieldset and
 supports `setCustomValidity`, `checkValidity` and `reportValidity`. Its validation behavior follows the
-[form-associated elements specification](../validation-container/spec.md).
+[form-associated elements specification](../validation-container/spec.md). `focus()` moves the focus to the slider
+element, so a failed submit and `reportValidity()` focus an invalid rating. A disabled rating does not take the focus.
 
 ### Localization
 
@@ -207,13 +212,15 @@ value: `{0}` is replaced with the current value and `{1}` with the maximum.
 
 ### Methods
 
-| Method              | Signature                        | Description                                                   |
-| ------------------- | -------------------------------- | ------------------------------------------------------------- |
-| `stepUp`            | `(n?: number): void`             | Increases the value by `n` steps.                              |
-| `stepDown`          | `(n?: number): void`             | Decreases the value by `n` steps.                              |
-| `checkValidity`     | `(): boolean`                    | Checks the validity and emits `invalid` when it fails.         |
-| `reportValidity`    | `(): boolean`                    | Checks the validity and shows the browser message.             |
-| `setCustomValidity` | `(message: string): void`        | Sets a custom validation message.                              |
+| Method              | Signature                        | Description                                                           |
+| ------------------- | -------------------------------- | --------------------------------------------------------------------- |
+| `stepUp`            | `(n?: number): void`             | Increases the value by `n` steps.                                     |
+| `stepDown`          | `(n?: number): void`             | Decreases the value by `n` steps.                                     |
+| `focus`             | `(options?: FocusOptions): void` | Moves the focus to the slider element, unless the rating is disabled. |
+| `blur`              | `(): void`                       | Removes the focus from the slider element.                            |
+| `checkValidity`     | `(): boolean`                    | Checks the validity and emits `invalid` when it fails.                |
+| `reportValidity`    | `(): boolean`                    | Checks validity, and emits `invalid` when the control is invalid.     |
+| `setCustomValidity` | `(message: string): void`        | Sets a custom validation message.                                     |
 
 ### Events
 
@@ -319,6 +326,17 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 
 24. `igcHover` is emitted again when the pointer re-enters the same symbol.
 
+### Host ARIA
+
+25. The shared host description suite: the host `aria-describedby` describes the slider element, and follows a
+    change and a removal. The rating has no helper text, so the suite checks no description order.
+
+### Focus
+
+26. `focus()` moves the focus to the slider element and `blur()` removes it. A disabled rating does not take the
+    focus.
+27. An invalid rating takes the focus on a failed submit and on `reportValidity()`.
+
 ### Not covered by the suite
 
 - The projected `value-label` slot is not covered.
@@ -344,6 +362,7 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 - A click on an external `label` focuses the slider.
 - `aria-disabled` and `aria-readonly` expose the two states.
 - The rendered symbols are hidden from assistive technology; the slider and its value text carry the semantics.
+- A host `aria-describedby` describes the slider element, by element reference.
 
 ### Keyboard support
 

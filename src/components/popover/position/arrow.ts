@@ -22,11 +22,9 @@ export function isBlockSide(side: PopoverSide): boolean {
 }
 
 /**
- * Sets the part and the inline styles of the arrow. Both strategies call it,
- * so the arrow gets the same styles.
- *
- * `side` is the side of the container that touches the anchor. `distance` is
- * the position of the arrow on the cross axis of that side.
+ * Sets the part and the inline styles of the arrow for both strategies.
+ * `side` is the container side that touches the anchor. `distance` is the
+ * arrow position on the cross axis of that side.
  */
 export function applyArrowStyles(
   element: HTMLElement,

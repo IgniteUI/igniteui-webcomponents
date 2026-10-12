@@ -1,13 +1,14 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/card/themes/container.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcCardActionsComponent from './card.actions.js';
 import IgcCardContentComponent from './card.content.js';
 import IgcCardHeaderComponent from './card.header.js';
 import IgcCardMediaComponent from './card.media.js';
 import { styles } from './themes/container.base.css.js';
-import { all } from './themes/container.js';
 import { styles as shared } from './themes/shared/container/card.common.css.js';
 
 /**
@@ -37,7 +38,7 @@ import { styles as shared } from './themes/shared/container/card.common.css.js';
  */
 export default class IgcCardComponent extends LitElement {
   public static readonly tagName = 'igc-card';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

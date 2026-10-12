@@ -77,6 +77,16 @@ describe('DatePart Classes', () => {
       });
       expect(part.type).to.equal(DatePartType.Literal);
     });
+
+    it('throws for an unknown date part type', () => {
+      expect(() =>
+        createDatePart('era' as unknown as DatePartType, {
+          start: 0,
+          end: 1,
+          format: 'G',
+        })
+      ).to.throw('Unknown date part type: era');
+    });
   });
 
   describe('getValue', () => {
@@ -368,6 +378,18 @@ describe('DatePart Classes', () => {
         expect(date.getMonth()).to.equal(0); // January
       });
 
+      it('clamps the date to the last day of the target month', () => {
+        const part = createDatePart(DatePartType.Month, {
+          start: 0,
+          end: 2,
+          format: 'MM',
+        });
+        const date = new Date(2024, 0, 31); // January 31
+        part.spin(1, createSpinOptions(date));
+        expect(date.getMonth()).to.equal(1);
+        expect(date.getDate()).to.equal(29); // Leap year February
+      });
+
       it('stops at December without spinLoop', () => {
         const part = createDatePart(DatePartType.Month, {
           start: 0,
@@ -488,6 +510,26 @@ describe('DatePart Classes', () => {
         const original = new Date(date.getTime());
         part.spin(1, createSpinOptions(date, true, 'PM', original));
         expect(date.getHours()).to.equal(2); // 2 AM
+      });
+    });
+
+    describe('AmPm edge cases', () => {
+      const amPm = () =>
+        createDatePart(DatePartType.AmPm, { start: 0, end: 2, format: 'tt' });
+
+      it('does nothing without an AM/PM value', () => {
+        const date = new Date(2024, 5, 15, 9);
+        const originalTime = date.getTime();
+        amPm().spin(1, createSpinOptions(date));
+        expect(date.getTime()).to.equal(originalTime);
+      });
+
+      it('restores the original date when the toggle rolls over the day', () => {
+        // A PM time read as AM moves past midnight
+        const date = new Date(2024, 5, 15, 14);
+        const original = new Date(date.getTime());
+        amPm().spin(1, createSpinOptions(date, true, 'AM', original));
+        expect(date.getTime()).to.equal(original.getTime());
       });
     });
 

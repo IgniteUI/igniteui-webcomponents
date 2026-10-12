@@ -5,7 +5,6 @@ import type {
 } from '../../controllers/internals.js';
 import type { Validator } from '../../validators.js';
 
-export type FormRestoreMode = 'autocomplete' | 'restore';
 export type { FormValueType };
 export type IgcFormControl = LitElement &
   (FormAssociatedElementInterface | FormAssociatedCheckboxElementInterface);
@@ -83,14 +82,23 @@ export declare class BaseFormAssociatedElement {
     init?: CustomEventInit
   ): boolean;
 
+  /** Runs `callback` and restores the pristine flag. */
+  protected _withPristine(callback: () => void): void;
+
   /** Sets the default value from a change of the `value` attribute. */
   protected _setDefaultValue(current: string | null): void;
 
   /** Restores the default value on a form reset. */
   protected _restoreDefaultValue(): void;
 
+  /** Resets the interaction and validity state, as a form reset does. */
+  protected _resetValidationState(): void;
+
   /** Runs the validators and updates the internal validity state. */
   protected _validate(message?: string): void;
+
+  /** Reports the validity without moving the focus. */
+  protected _reportValidity(): boolean;
 
   /** Sets the submission value and the submission state. */
   protected _setFormValue(value: FormValueType, state?: FormValueType): void;
@@ -110,16 +118,14 @@ export declare class BaseFormAssociatedElement {
    */
   protected formResetCallback(): void;
 
-  /** Runs on browser auto-fill. Not implemented. */
-  protected formStateRestoreCallback(
-    state: FormValueType,
-    mode: FormRestoreMode
-  ): void;
-
   /** Checks validity and emits `invalid` when the control is invalid. */
   public checkValidity(): boolean;
 
-  /** Checks validity and shows the browser message when invalid. */
+  /**
+   * Checks validity. As for a native control, an invalid control emits
+   * `invalid` and takes the focus. It shows its own validation messages, not
+   * the message of the browser.
+   */
   public reportValidity(): boolean;
 
   /** Sets a custom message. Invalid while `message` is not empty. */

@@ -1,11 +1,18 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import IgcTabComponent from './tab.js';
 import IgcTabsComponent from './tabs.js';
 
 describe('Tab component', () => {
   before(() => {
     defineComponents(IgcTabComponent, IgcTabsComponent);
+  });
+
+  runHostAriaTests({
+    tagName: 'igc-tab',
+    template: html`<igc-tabs><igc-tab label="One">Content</igc-tab></igc-tabs>`,
+    getTarget: (host) => host.renderRoot.querySelector('[part="tab-header"]')!,
   });
 
   let element: IgcTabsComponent;

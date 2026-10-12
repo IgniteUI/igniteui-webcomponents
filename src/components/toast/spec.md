@@ -27,6 +27,7 @@
     - [ARIA tests](#aria-tests)
     - [API tests](#api-tests)
     - [Positioning tests](#positioning-tests)
+    - [Alert behavior tests](#alert-behavior-tests)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -40,6 +41,7 @@
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-09-23 | Remove the `base` part, which the toast does not render |
+|       3 | 2026-10-07 | The display time waits for the pointer and the keyboard focus and starts again on `show()`; `container` positioning uses an anchor name; an open component shows again after a move; `show()` during the fade-out keeps the component open |
 
 ## Overview
 
@@ -52,7 +54,8 @@ The difference is that a toast carries no action: use a snackbar when the end-us
 ### Key features
 
 - **Non-interactive**: a message only, with no actions to focus.
-- **Auto-dismiss** after a configurable display time, which can be turned off.
+- **Auto-dismiss** after a configurable display time, which can be turned off and waits while the pointer is on the
+  toast.
 - **Two positioning strategies**: against the viewport, or inside the closest visible ancestor.
 - **Three positions**: top, middle and bottom.
 - **Declarative invocation** through the Invoker Commands API, with no JavaScript.
@@ -89,8 +92,9 @@ As a developer, I expect to be able to:
 
 ### End-user experience
 
-The toast appears in the configured position, shows its message, and disappears after the display time. It never
-takes focus and offers nothing to interact with.
+The toast appears in the configured position, shows its message, and disappears after the display time. While the
+pointer is on the toast, it stays, and the display time starts again when the pointer leaves. It never takes focus and
+offers nothing to interact with.
 
 ### Developer experience
 
@@ -111,6 +115,17 @@ await toast.show();
 <igc-toast keep-open>Stays until closed</igc-toast>
 ```
 
+The display time stops while the pointer is on the component, or the keyboard focus is in its content, and starts again
+in full when both leave. A component that moves while it is open shows again in its new place, with a full display
+time.
+`show()` on an open component starts the display time again and resolves `false`, so a new message can reuse the open
+toast:
+
+```typescript
+toast.textContent = 'Link copied';
+await toast.show();
+```
+
 #### Positioning
 
 ```html
@@ -124,6 +139,13 @@ await toast.show();
 | `container`          | Positions inside the bounding box of the closest visible ancestor, at `position`.  |
 
 With `container` positioning, `show()` resolves `false` when no visible ancestor is found.
+
+While it is open in `container` positioning, the component adds a generated name to the inline `anchor-name` of the
+container and sets `position-anchor` on itself. It adds them again when a new `style` attribute, for example from a
+template binding, removes them, and it removes them when it closes or moves. A container that has anchor names of its
+own, also one that gets them while the component is open, or that is in another tree, such as the host of the shadow
+root that holds the component, becomes the `source` of `showPopover()` instead. An anchor name cannot reach another
+tree, and the component does not take over the anchor names of a container.
 
 #### Invoker commands
 
@@ -158,8 +180,8 @@ None applicable. The toast is not interactive and is not reachable with the keyb
 
 | Name   | Type signature         | Description                                                                         |
 | ------ | ---------------------- | ------------------------------------------------------------------------------------- |
-| show   | `(): Promise<boolean>` | Opens the component. Resolves `false` when it is already open, or when `container` positioning finds no visible ancestor. |
-| hide   | `(): Promise<boolean>` | Closes the component. Resolves `false` when it is already closed.                    |
+| show   | `(): Promise<boolean>` | Opens the component, also during the fade-out of `hide()`. When it is already open, the display time starts again, and it resolves `false`. It also resolves `false` when `container` positioning finds no visible ancestor. |
+| hide   | `(): Promise<boolean>` | Closes the component. Resolves `false` when it is already closed or fades out.       |
 | toggle | `(): Promise<boolean>` | Toggles the component. Resolves `true` when the state changed.                       |
 
 ### Events
@@ -179,8 +201,8 @@ None applicable.
 ## Test scenarios
 
 The suite lives in [`toast.spec.ts`](./toast.spec.ts) and runs in a real browser through `@web/test-runner` with
-`@open-wc/testing` fixtures and assertions. It also runs the shared `runInvokerCommandsTests` suite from
-[`src/internals/testing`](../../internals/testing). The groups below mirror the `describe` blocks.
+`@open-wc/testing` fixtures and assertions. It also runs the shared `runAlertTests` and `runInvokerCommandsTests`
+suites from [`src/internals/testing`](../../internals/testing). The groups below mirror the `describe` blocks.
 
 ### ARIA tests
 
@@ -201,6 +223,32 @@ The suite lives in [`toast.spec.ts`](./toast.spec.ts) and runs in a real browser
    directions.
 9. Changing `position` while in `viewport` mode sets no inline styles.
 
+### Alert behavior tests
+
+The shared `runAlertTests` suite, which the snackbar also runs:
+
+10. `show()` on an open component resolves `false` and starts the display time again.
+11. The display time waits while the pointer is in the component, and starts again in full when it leaves.
+12. A close while the pointer is in the component does not stop the display time of the next `show()`.
+13. A move while the pointer is in the component shows it again in the new place, with a full display time.
+14. A component removed during the fade-in does not close while it is detached, and its display time runs in full
+    after it is back.
+15. `show()` during the fade-out keeps the component open and starts the display time again.
+16. `toggle()` during the fade-out keeps the component open.
+17. `hide()` after a `show()` during the fade-out fades the component out, and the first fade-out does not close it at
+    once.
+18. `hide()` during the fade-out resolves `false` and does not start the fade-out again.
+19. `container` positioning adds an anchor name to the container and `position-anchor` to the component, and removes
+    both on close.
+20. Two components in one container add their names to the same `anchor-name`, and each close removes only its own.
+21. A container with anchor names of its own keeps them and becomes the `source`.
+22. A container that gets anchor names of its own while two components are open keeps them, and both components
+    show again with it as the `source`.
+23. A new `style` attribute on the container or the component does not remove the anchor.
+24. `container` positioning places the component inside the container, at the bottom.
+25. In a shadow root without a wrapper, `container` positioning uses the host as the `source`, sets no anchor names,
+    and places the component inside the host.
+
 ### Not covered by the suite
 
 - The suite asserts that `viewport` positioning leaves no inline anchor styles, but does not assert where `top`,
@@ -220,6 +268,8 @@ The suite lives in [`toast.spec.ts`](./toast.spec.ts) and runs in a real browser
 - The message is exposed as a live region and announced politely, so it reaches assistive technology without
   stealing focus.
 - The component contains nothing focusable and never moves focus when it appears.
+- The display time waits while the pointer is on the toast, so that the user has time to read the message
+  ([WCAG 2.2.1 Timing Adjustable](https://www.w3.org/WAI/WCAG22/Understanding/timing-adjustable)).
 
 ### Keyboard support
 

@@ -24,16 +24,11 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
   private _template: TemplateResult;
   private _form!: HTMLFormElement;
 
-  /**
-   * The form associated component for the test bed.
-   */
+  /** The form-associated component under test. */
   public get element(): T {
     return this._element;
   }
 
-  /**
-   * The form element from the test bed.
-   */
   public get form(): HTMLFormElement {
     return this._form;
   }
@@ -50,13 +45,7 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
     this._template = template;
   }
 
-  /**
-   * Creates the fixture.
-   *
-   * @remarks
-   * Called in the async `beforeEach` test hook callback. Pass in the
-   * query selector for the component.
-   */
+  /** Creates the fixture. Call it in `beforeEach`; `qs` selects the component. */
   public async setup(qs: string): Promise<void> {
     this._form = await fixture(
       html`<form><fieldset>${this._template}</fieldset></form>`
@@ -68,15 +57,13 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
     this.form.querySelector('fieldset')?.toggleAttribute('disabled', state);
   }
 
-  /** Resets the form controls. */
   public reset(): void {
     this.form.reset();
   }
 
   /**
-   * Attempts to submit the form element.
-   * If constraint validation passes returns the form data, otherwise returns a
-   * default `initialFormData` sentinel value.
+   * Submits the form. Returns the form data, or the `initialFormData`
+   * sentinel when validation fails.
    */
   public submit(): FormData {
     let data = initialFormData;
@@ -95,9 +82,8 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
   }
 
   /**
-   * Simulates pressing the `Enter` key while the focus is on the given target element (or the component itself if no target is provided).
-   * If the component is inside a form, this will attempt to submit the form.
-   * Returns whether the form submission was triggered.
+   * Sends an `Enter` keydown to `target`, or to the component. Returns whether
+   * the form submits.
    */
   public submitWithEnter(target?: HTMLElement | null): boolean {
     let called = false;
@@ -118,13 +104,7 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
     return called;
   }
 
-  /**
-   * Assigns properties to the element and optionally waits for the update.
-   *
-   * This function takes an object of properties to assign to the element.
-   * It then uses `Object.assign` to merge these properties into the element's properties.
-   * If the `waitForUpdate` parameter is `true`, the function waits for the element to be updated before returning.
-   */
+  /** Assigns properties to the element, and optionally awaits the update. */
   public async setProperties(
     props: { [K in keyof T]?: T[K] | string },
     waitForUpdate = false
@@ -135,13 +115,7 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
     }
   }
 
-  /**
-   * Sets attributes on the element and optionally waits for the update.
-   *
-   * This function takes an object of attributes to set on the element.
-   * It iterates over each attribute and its value, and uses the `setAttribute` method to set the attribute on the element.
-   * If the `waitForUpdate` parameter is `true`, the function waits for the element to be updated before returning.
-   */
+  /** Sets attributes on the element, and optionally awaits the update. */
   public async setAttributes(
     attributes: { [K in keyof T]?: T[K] | string },
     waitForUpdate = false
@@ -154,26 +128,17 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
     }
   }
 
-  /**
-   * Whether the form is submitted and contains the given 'value'
-   * in its form data.
-   */
+  /** Asserts that the submitted form data has `value` for the component. */
   public assertSubmitHasValue(value: unknown, msg?: string): void {
     expect(this.submit().get(this.element.name), msg).to.eql(value);
   }
 
-  /**
-   * Whether the form is submitted and contains the given 'value'
-   * in its form data.
-   */
+  /** Asserts that the submitted form data has all `value` entries. */
   public assertSubmitHasValues(value: unknown, msg?: string): void {
     expect(this.submit().getAll(this.element.name), msg).to.eql(value);
   }
 
-  /**
-   * Whether the form is submitted and contains the given 'key'-'value' pair
-   * in its form data.
-   */
+  /** Asserts that the submitted form data has `value` for `key`. */
   public assertSubmitHasKeyValue = (
     key: string,
     value: unknown,
@@ -182,28 +147,18 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
     expect(this.submit().get(key), msg).to.eql(value);
   };
 
-  /**
-   * Whether the form fails to submit.
-   * The component will be in invalid state and the form data will be empty.
-   */
+  /** Asserts that the form does not submit and the component is invalid. */
   public assertSubmitFails(msg?: string): void {
     expect(this.submit() === initialFormData, msg).to.be.true;
     expect(this.valid, msg).to.be.false;
   }
 
-  /**
-   * Whether the form submits.
-   * The component will be in valid state and the form data will include the
-   * component name and value.
-   */
+  /** Asserts that the form submits and the component is valid. */
   public assertSubmitPasses(msg?: string): void {
     expect(this.submit() === initialFormData, msg).to.be.false;
     expect(this.valid, msg).to.be.true;
   }
 
-  /**
-   * Whether the form element is in 'pristine' state.
-   */
   public assertIsPristine(msg?: string): void {
     expect(this.element['_pristine'], msg).to.be.true;
   }
@@ -411,6 +366,57 @@ export function runExternalLabelAssociationTests(
       ]);
     });
   });
+
+  describe('Host description', () => {
+    const hints =
+      '<span id="host-hint">Hint</span><span id="other-hint">Other</span>';
+
+    it('describes the control by the host `aria-describedby`', async () => {
+      const { container, native } = await createFixture(
+        `${hints}${hostMarkup('aria-describedby="host-hint"')}`
+      );
+
+      expect(native.ariaDescribedByElements?.at(-1)).to.equal(
+        container.querySelector('#host-hint')
+      );
+    });
+
+    it('puts the helper text before the host description', async () => {
+      const { container, host, native } = await createFixture(
+        `${hints}<${tagName} ${hostAttributes} aria-describedby="host-hint"><span slot="helper-text">Help</span></${tagName}>`
+      );
+      const described = native.ariaDescribedByElements ?? [];
+
+      expect(described.at(-1)).to.equal(container.querySelector('#host-hint'));
+
+      if (host.shadowRoot?.querySelector('slot[name="helper-text"]')) {
+        expect(described).to.have.length.above(1);
+        expect(described[0].id).to.match(/helper-text$/);
+      }
+    });
+
+    it('follows a change and a removal of the host `aria-describedby`', async () => {
+      const { container, host, native } = await createFixture(
+        `${hints}${hostMarkup('aria-describedby="host-hint"')}`
+      );
+
+      host.setAttribute('aria-describedby', 'other-hint');
+      await elementUpdated(host);
+      await nextFrame();
+
+      expect(native.ariaDescribedByElements?.at(-1)).to.equal(
+        container.querySelector('#other-hint')
+      );
+
+      host.removeAttribute('aria-describedby');
+      await elementUpdated(host);
+      await nextFrame();
+
+      expect(native.ariaDescribedByElements ?? []).not.to.include(
+        container.querySelector('#other-hint')
+      );
+    });
+  });
 }
 
 export interface AriaProjectionTestConfig {
@@ -418,10 +424,7 @@ export interface AriaProjectionTestConfig {
   tagName: string;
   /** Optional additional attributes to set on the rendered host element. */
   hostAttributes?: string;
-  /**
-   * Locates the AT-exposed native editor (`<input>`/`<textarea>`) that
-   * receives the projected ARIA state within the given host element.
-   */
+  /** Locates the native editor that gets the projected ARIA state. */
   getNativeInput: (host: HTMLElement) => HTMLInputElement | HTMLTextAreaElement;
   /** The scalar ARIA state expected on the native editor. */
   expected: {
@@ -437,15 +440,11 @@ export interface AriaProjectionTestConfig {
 }
 
 /**
- * Shared test suite asserting that a composite host projects its ARIA
- * semantics onto the native editor of its inner input component — the element
- * assistive technology lands on and reports when the host delegates focus.
+ * Tests that a composite host projects its ARIA semantics onto the native
+ * editor of its inner input component.
  *
- * Relations are asserted by element-identity readback
- * (e.g. `input.ariaControlsElements[0] === list`), never by content attribute:
- * they are published through ARIA element reflection, since an IDREF cannot
- * cross the shadow boundary between the editor and the host, and reflection
- * blanks the content attribute by spec.
+ * The specs check relations by element identity: ARIA element reflection
+ * carries them across the shadow boundary and blanks the content attribute.
  */
 export function runAriaProjectionTests(config: AriaProjectionTestConfig): void {
   const {
@@ -475,9 +474,8 @@ export function runAriaProjectionTests(config: AriaProjectionTestConfig): void {
       const host = await createProjectionFixture();
       const native = getNativeInput(host);
 
-      // The input component wrapping the native editor. It carries the
-      // projected `role`/`hasPopup` as `data-role`/`data-haspopup` styling
-      // hooks for the input themes.
+      // The inner input component mirrors `role`/`hasPopup` as
+      // `data-role`/`data-haspopup` for the themes.
       const anchor = (native.getRootNode() as ShadowRoot).host;
 
       if (expected.role) {

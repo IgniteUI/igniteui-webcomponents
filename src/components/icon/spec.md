@@ -42,9 +42,10 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                                                                                 |
+| ------: | ---------- | --------------------------------------------------------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                                                                 |
+|       2 | 2026-10-02 | Hide the SVG from assistive technologies, and follow a change of the author label |
 
 ## Overview
 
@@ -269,8 +270,10 @@ None applicable.
 ### ARIA tests
 
 21. The title of an icon is exposed as an image label.
-22. An icon with no title is left out of the accessibility tree.
-23. The image role is kept when the host is labelled by the author.
+22. An icon with no title has no role. The SVG is `aria-hidden`, also after a change of the icon, and the host is
+    not hidden.
+23. The image role is kept when the host is labelled by the author, and follows a later change of `aria-label` and
+    `aria-labelledby`.
 
 ### Multi-theme support
 
@@ -300,8 +303,11 @@ None applicable.
 
 - An icon whose SVG carries a `<title>`, or whose host is labelled by the author, takes `role="img"` and is named
   by that title.
-- An icon without a title and without an author label is left out of the accessibility tree entirely, which is the
-  correct treatment for a decorative icon.
+- The SVG in the shadow root is always `aria-hidden`, because the host carries the name. An icon without a title
+  and without an author label has no role, so it is left out of the accessibility tree, which is the correct
+  treatment for a decorative icon. The host itself is never hidden, so an author `role` or `title` stays exposed.
+- The component checks the author label again when `aria-label` or `aria-labelledby` changes, so a label set later
+  gives the icon the image role.
 - `stripMeta` removes the `<title>` element from the DOM to suppress the native tooltip, but keeps its text as the
   accessible name.
 

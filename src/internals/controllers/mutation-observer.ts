@@ -10,8 +10,11 @@ export interface MutationControllerConfig<T extends Node = Node> {
   callback: MutationControllerCallback<T>;
   /** The options of the underlying `MutationObserver`. */
   config: MutationObserverInit;
-  /** The element to observe. Defaults to the host component. */
-  target?: Element;
+  /**
+   * The element to observe. Defaults to the host component. A function gives
+   * the elements to observe, again at each start of the observation.
+   */
+  target?: Element | (() => Element[]);
   /** See {@link MutationControllerFilter}. */
   filter?: MutationControllerFilter<T>;
 }
@@ -75,7 +78,7 @@ function createNodeMatcher<T extends Node = Node>(
 
 class MutationController<T extends Node = Node> implements ReactiveController {
   private readonly _host: ReactiveControllerHost & Element;
-  private readonly _target: Element;
+  private readonly _target: Element | (() => Element[]);
   private readonly _config: MutationObserverInit;
   private readonly _callback: MutationControllerCallback<T>;
   private readonly _matches: (node: T) => boolean;
@@ -150,7 +153,16 @@ class MutationController<T extends Node = Node> implements ReactiveController {
 
   /** Starts the observation of the configured target. */
   public observe(): void {
-    this._observer?.observe(this._target, this._config);
+    if (!this._observer) {
+      return;
+    }
+
+    const targets =
+      typeof this._target === 'function' ? this._target() : [this._target];
+
+    for (const target of targets) {
+      this._observer.observe(target, this._config);
+    }
   }
 
   public disconnect(): void {

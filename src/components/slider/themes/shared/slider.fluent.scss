@@ -47,8 +47,8 @@ $thumb-radius: math.div($thumb-size, 2);
     border: rem(2px) solid var-get($theme, 'thumb-border-color');
     width: $thumb-size;
     height: $thumb-size;
-    top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
-    margin-inline-start: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
+    top: -$thumb-radius;
+    margin-inline-start: -$thumb-radius;
 }
 
 :host([disabled]),

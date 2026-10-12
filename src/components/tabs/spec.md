@@ -31,6 +31,7 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
     - [Composition](#composition)
     - [Tab component](#tab-component)
     - [Regressions](#regressions)
+    - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -39,9 +40,12 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                                   |
+| ------: | ---------- | ----------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                   |
+|       2 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
+|       3 | 2026-10-05 | `header` shadow part, painted with the `header-background` theme token; `alignment` applies in every theme, and `justify` gives every tab the same width; a tab selected through `selected` is scrolled into view, confined to the header strip; the scroll buttons are shown by the width of the tab headers |
+|       4 | 2026-10-06 | The selection follows the state of the tabs after each change: an added or new selected tab wins, also when the selected tab is deselected or removed in the same task; a selected tab that moves keeps the selection; of several tabs selected at once, the last one in document order wins |
 
 ## Overview
 
@@ -139,6 +143,10 @@ tabs.selectedTab;  // the selected tab element, or null
 
 Disabled tabs and values that match no tab are ignored.
 
+The `selected` attribute of the tabs also sets the selection, after each change of the tabs. When several tabs become
+selected at once, the last one in document order wins, as in the initial markup. A selected tab that moves keeps the
+selection.
+
 #### Alignment
 
 ```html
@@ -227,6 +235,7 @@ keys follow the writing direction.
 
 | Part                   | Description                                             |
 | ---------------------- | ------------------------------------------------------- |
+| `header`               | The header strip behind the tab headers.                |
 | `start-scroll-button`  | The start scroll button displayed when the tabs overflow. |
 | `end-scroll-button`    | The end scroll button displayed when the tabs overflow. |
 | `selected-indicator`   | The indicator that shows which tab is selected.         |
@@ -270,7 +279,8 @@ The groups below mirror the `describe` blocks.
 
 ### Rendering and defaults
 
-1. The component renders its header strip and the body of the selected tab, and passes the accessibility audit.
+1. The component renders its header strip and the body of the selected tab, and passes the accessibility audit. The
+   selected indicator starts at the start of the strip, also when the page sets `text-align` on the host.
 2. The default alignment and activation are applied.
 3. `tabs`, `selected` and `selectedTab` report the current state.
 
@@ -290,6 +300,9 @@ The groups below mirror the `describe` blocks.
 ### Composition
 
 11. Tabs added or removed at run time are picked up, and the selection is updated when the selected tab is removed.
+    A tab added as selected takes the selection, also when the selected tab is deselected in the same task or the
+    markup is replaced. A selected tab that moves keeps the selection, and of several tabs selected at once the last one
+    in document order wins.
 12. Prefix, label and suffix content renders in the header.
 
 ### Tab component
@@ -301,6 +314,13 @@ The groups below mirror the `describe` blocks.
 
 14. Issue #1140.
 15. Issue #713.
+16. Issue #2416. Tabs removed in the same task, after a microtask or after their first update throw no error. Tabs
+    added again after such a removal follow a change of size.
+
+### Host ARIA
+
+17. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
+    target and follow a change, and an axe audit passes with a host label.
 
 ## Assumptions and limitations
 
@@ -318,6 +338,8 @@ The groups below mirror the `describe` blocks.
   the strip.
 - Disabled tabs expose their disabled state and are skipped by the navigation.
 - The scroll buttons are presentational affordances and are not part of the tab order.
+- The host `aria-label`, `aria-labelledby` and `aria-describedby` of a tab name and describe its `role="tab"`
+  element.
 
 ### Keyboard support
 

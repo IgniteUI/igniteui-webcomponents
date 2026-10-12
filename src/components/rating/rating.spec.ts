@@ -21,9 +21,11 @@ import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
+  simulatePointerEnter,
   simulatePointerLeave,
   simulatePointerMove,
 } from '#internals/testing/simulate.spec.js';
@@ -205,7 +207,6 @@ describe('Rating component', () => {
       expect(symbols.length).to.equal(10);
 
       symbols.forEach((symbol) => {
-        // in lieu of actual rendered check or more comprehensive symbol checks:
         expect(symbol.offsetParent).to.be.ok;
         expect(symbol.getClientRects()).to.not.be.empty;
       });
@@ -325,7 +326,7 @@ describe('Rating component', () => {
 
       const symbol = getRatingSymbols(el).item(0);
       const { x, width } = getBoundingRect(symbol);
-      simulateClick(symbol, { clientX: x + width * 0.55 }); // Click 55% across the width of the symbol
+      simulateClick(symbol, { clientX: x + width * 0.55 });
 
       expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 0.8 });
       expect(el.value).to.equal(0.8);
@@ -336,7 +337,6 @@ describe('Rating component', () => {
 
       const symbol = getRatingSymbols(el).item(2);
       const { x, width } = getBoundingRect(symbol);
-      // Simulate offset click when precision == 1
       simulateClick(symbol, { clientX: x + width / 4 });
 
       expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 3 });
@@ -541,8 +541,6 @@ describe('Rating component', () => {
     });
 
     it('should clamp an out-of-range default value on form reset', () => {
-      // Regression: reset used to restore the raw default, bypassing the
-      // value setter clamping and reporting aria-valuenow beyond max.
       spec.setAttributes({ value: 10 });
       spec.setProperties({ value: 1 });
       spec.reset();
@@ -776,7 +774,79 @@ describe('Rating component', () => {
     });
   });
 
+  describe('Focus', () => {
+    it('moves the focus to the slider on `focus()` and removes it on `blur()`', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating label="Rate"></igc-rating>`
+      );
+      const slider = getRatingWrapper(rating);
+
+      rating.focus();
+      expect(document.activeElement).to.equal(rating);
+      expect(isFocused(slider)).to.be.true;
+
+      rating.blur();
+      expect(isFocused(slider)).to.be.false;
+    });
+
+    it('does not take the focus when disabled', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating label="Rate" disabled></igc-rating>`
+      );
+
+      rating.focus();
+      expect(isFocused(getRatingWrapper(rating))).to.be.false;
+    });
+
+    it('takes the focus when invalid on a failed submit and on `reportValidity()`', async () => {
+      const form = await fixture<HTMLFormElement>(
+        html`<form @submit=${(event: Event) => event.preventDefault()}>
+          <igc-rating name="rating" label="Rate"></igc-rating>
+          <button>Submit</button>
+        </form>`
+      );
+      const rating = form.querySelector(IgcRatingComponent.tagName)!;
+      const slider = getRatingWrapper(rating);
+
+      rating.setCustomValidity('Select a rating');
+      form.requestSubmit();
+      expect(isFocused(slider)).to.be.true;
+
+      rating.blur();
+      rating.reportValidity();
+      expect(isFocused(slider)).to.be.true;
+    });
+  });
+
   describe('Hover', () => {
+    it('previews the hovered value in the symbols while the pointer is over them', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating hover-preview value="2"></igc-rating>`
+      );
+      const symbols =
+        rating.renderRoot.querySelector<HTMLElement>('[part="symbols"]')!;
+      const fullIcon = (index: number) =>
+        getRatingSymbols(rating)
+          .item(index)
+          .querySelector<HTMLElement>('igc-icon:not([slot])')!;
+      const symbol = getRatingSymbols(rating).item(3);
+      const { x, width } = getBoundingRect(symbol);
+
+      expect(fullIcon(3).style.clipPath).to.equal('inset(0px 100% 0px 0px)');
+
+      simulatePointerEnter(symbols);
+      simulatePointerMove(symbol, { clientX: x + width / 2 });
+      await elementUpdated(rating);
+
+      expect(rating.value).to.equal(2);
+      expect(fullIcon(3).style.clipPath).to.equal('inset(0px 0% 0px 0px)');
+
+      simulatePointerLeave(symbols);
+      await elementUpdated(rating);
+
+      expect(fullIcon(3).style.clipPath).to.equal('inset(0px 100% 0px 0px)');
+    });
+
     it('emits `igcHover` again when the pointer re-enters the same symbol', async () => {
       const rating = await fixture<IgcRatingComponent>(
         html`<igc-rating hover-preview></igc-rating>`

@@ -50,4 +50,19 @@ describe('Ripple', () => {
     simulatePointerDown(ripple, { button: 1 });
     await elementUpdated(ripple);
   });
+
+  it('removes the ripple element when its animation finishes', async () => {
+    simulatePointerDown(ripple);
+
+    const wave = ripple.renderRoot.querySelector('span')!;
+    expect(wave).to.exist;
+
+    const [animation] = wave.getAnimations();
+    animation.finish();
+    await animation.finished;
+    await elementUpdated(ripple);
+
+    expect(wave.isConnected).to.be.false;
+    expect(ripple.renderRoot.querySelector('span')).to.be.null;
+  });
 });

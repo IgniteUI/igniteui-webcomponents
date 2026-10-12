@@ -1,4 +1,4 @@
-import { css, LitElement } from 'lit';
+import { LitElement } from 'lit';
 
 import { registerComponent } from '#internals/definitions/register.js';
 
@@ -14,11 +14,6 @@ import { registerComponent } from '#internals/definitions/register.js';
  */
 export default class IgcSliderLabelComponent extends LitElement {
   public static readonly tagName = 'igc-slider-label';
-  public static override styles = css`
-    :host {
-      display: none;
-    }
-  `;
 
   /* blazorSuppress */
   public static register(): void {

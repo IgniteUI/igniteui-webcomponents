@@ -1,6 +1,12 @@
 import { expect } from '@open-wc/testing';
+import { spy } from 'sinon';
 
-import { isValidColor, type ParsedColor, parseColor } from './common.js';
+import {
+  isValidColor,
+  type ParsedColor,
+  parseColor,
+  tryParseColor,
+} from './common.js';
 
 function makeTestContext() {
   try {
@@ -25,8 +31,41 @@ describe('parseColor', () => {
       expect(result.alpha).to.equal(1);
     });
 
+    it('should return default color for an invalid color', () => {
+      expect(parseColor('not-a-color', ctx)).to.deep.equal({
+        value: [0, 0, 0],
+        alpha: 1,
+      });
+    });
+
     it('should return default color when color string is empty', () => {
       const result = parseColor('', ctx);
+
+      expect(result.value).to.deep.equal([0, 0, 0]);
+      expect(result.alpha).to.equal(1);
+    });
+  });
+
+  describe('other context serializations', () => {
+    /** A context that serializes every valid fill style as `serialized`. */
+    function serializingContext(serialized: string) {
+      return {
+        get fillStyle() {
+          return serialized;
+        },
+        set fillStyle(_: string) {},
+      } as unknown as OffscreenCanvasRenderingContext2D;
+    }
+
+    it('reads the alpha of an 8-digit hex serialization', () => {
+      const result = parseColor('#ff804080', serializingContext('#ff804080'));
+
+      expect(result.value).to.deep.equal([255, 128, 64]);
+      expect(result.alpha).to.be.closeTo(0.5, 0.01);
+    });
+
+    it('returns black for a serialization without hex digits', () => {
+      const result = parseColor('red', serializingContext('#'));
 
       expect(result.value).to.deep.equal([0, 0, 0]);
       expect(result.alpha).to.equal(1);
@@ -143,8 +182,7 @@ describe('parseColor', () => {
 
   describe('edge cases', () => {
     it('should handle invalid color strings gracefully', () => {
-      // Invalid colors are rejected before parsing, always returning the
-      // deterministic default result.
+      // Validation rejects the color, so the result is the default.
       const result = parseColor('not-a-color', ctx);
 
       expect(result.value).to.deep.equal([0, 0, 0]);
@@ -152,8 +190,7 @@ describe('parseColor', () => {
     });
 
     it('should handle malformed hex colors gracefully', () => {
-      // Malformed hex colors are rejected before parsing, always returning
-      // the deterministic default result.
+      // Validation rejects the color, so the result is the default.
       const result = parseColor('#zzz', ctx);
 
       expect(result.value).to.deep.equal([0, 0, 0]);
@@ -207,5 +244,25 @@ describe('isValidColor', () => {
 
   it('should return false when context is null', () => {
     expect(isValidColor('#ff0000', null)).to.be.false;
+  });
+});
+
+describe('tryParseColor', () => {
+  it('parses a valid color with one validation', () => {
+    const ctx = makeTestContext()!;
+    const fillStyle = spy(ctx, 'fillStyle', ['set']);
+
+    expect(tryParseColor('ff000080', ctx)).to.deep.include({
+      value: [255, 0, 0],
+    });
+    expect(fillStyle.set.callCount).to.equal(4);
+  });
+
+  it('returns null for an invalid or empty color', () => {
+    const ctx = makeTestContext();
+
+    expect(tryParseColor('not-a-color', ctx)).to.be.null;
+    expect(tryParseColor('', ctx)).to.be.null;
+    expect(tryParseColor('#ff0000', null)).to.be.null;
   });
 });

@@ -12,6 +12,7 @@
     - [End-user experience](#end-user-experience)
     - [Developer experience](#developer-experience)
       - [Basic initialization](#basic-initialization)
+      - [Colors, typography and elevations](#colors-typography-and-elevations)
       - [Registration order](#registration-order)
       - [Nesting](#nesting)
       - [Interaction with the icon registry](#interaction-with-the-icon-registry)
@@ -36,9 +37,10 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                      |
+| ------: | ---------- | ---------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                      |
+|       2 | 2026-10-07 | Describe the theme variables that the provider keeps as-is |
 
 ## Overview
 
@@ -107,6 +109,61 @@ The provider itself renders nothing: it wraps content that takes the look of the
   <igc-button>Fluent light</igc-button>
 </igc-theme-provider>
 ```
+
+#### Colors, typography and elevations
+
+The provider changes the styles of the components. The colors, the typography and the elevations are CSS custom
+properties that the theme file sets on `:root`, and the provider does not change them. So a provider with another
+theme or variant than the page needs these properties too. Without them, a dark provider on a light page gives the
+dark styles of the components with the light colors. The sizes and the spacing are the same in all themes.
+
+Set the properties on the provider. The host renders as `display: contents`, so it has no box, but its content
+inherits custom properties and inherited properties, such as `color` and `font-family`, from it. Only box styles, such
+as a background, need an element inside the provider.
+
+With Sass, include the mixins of `igniteui-theming` in a selector. In a selector, `palette()`, `typography()` and
+`elevations()` set the properties on that selector instead of `:root`.
+
+The theme file sets the scrollbar colors on `:root` too, outside of these mixins. They refer to the gray palette, but a
+custom property resolves its `var()` references on the element that declares it. So the provider inherits the
+scrollbar colors of the page, and you must declare them on the provider again. All themes use gray 400 for the thumb
+and gray 100 for the track, but Indigo uses gray 200 for the track.
+
+```scss
+@use 'igniteui-theming' as *;
+@use 'igniteui-theming/sass/color/presets/dark/material' as *;
+@use 'igniteui-theming/sass/elevations/presets' as elevation;
+@use 'igniteui-theming/sass/typography/presets/material' as type;
+
+igc-theme-provider.material-dark {
+  @include palette($palette);
+  @include typography($font-family: type.$typeface, $type-scale: type.$type-scale);
+  @include elevations(elevation.$material-elevations);
+
+  --ig-scrollbar-thumb-background: var(--ig-gray-400);
+  --ig-scrollbar-track-background: var(--ig-gray-100);
+
+  color: var(--ig-surface-500-contrast);
+  font-family: var(--ig-font-family);
+}
+
+// The host has no box, so the background goes on an element inside it.
+.material-dark > .panel {
+  background: var(--ig-surface-500);
+}
+```
+
+```html
+<igc-theme-provider class="material-dark" theme="material" variant="dark">
+  <div class="panel">
+    <igc-button>Material dark</igc-button>
+  </div>
+</igc-theme-provider>
+```
+
+Without Sass, copy all the `:root` rules of the theme file into a rule for the provider, or into an `@scope` block
+with `:scope` in place of `:root`. The theme file has more than one `:root` rule, and the scrollbar colors are in a
+rule of their own.
 
 #### Registration order
 
@@ -190,11 +247,15 @@ None applicable.
 ### Not covered by the suite
 
 - The visual result of a theme is not asserted here; the provider is covered for the context it supplies.
+- The scoped theme variables of [Colors, typography and elevations](#colors-typography-and-elevations) are application
+  CSS, not behavior of the provider.
 
 ## Assumptions and limitations
 
 - The provider has to be registered before the components that consume its context.
 - Only components of the library react to it; plain HTML inside it is unaffected.
+- It does not change the colors, the typography or the elevations. See
+  [Colors, typography and elevations](#colors-typography-and-elevations).
 - The theme is supplied through the Lit context, so a component that is not a DOM descendant of the provider — for
   example one portalled elsewhere — does not receive it.
 - The host renders as `display: contents`, so it cannot be styled or positioned as a box itself.

@@ -1,10 +1,18 @@
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import type { StyleInfo } from 'lit/directives/style-map.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
-import type { SlotController } from '#internals/controllers/slot.js';
+import {
+  DefaultSlot,
+  type SlotController,
+} from '#internals/controllers/slot.js';
 import { partMap } from '#internals/part-map.js';
-import { asPercent, clamp } from '#internals/utils/math.js';
+import {
+  asNumber,
+  asPercent,
+  clamp,
+  roundPrecise,
+} from '#internals/utils/math.js';
 import { formatString } from '#internals/utils/strings.js';
 import type { StyleVariant } from '../types.js';
 
@@ -12,17 +20,11 @@ import type { StyleVariant } from '../types.js';
 export abstract class IgcProgressBaseComponent extends LitElement {
   protected abstract _slots: SlotController<any>;
 
-  @query('[part="base"]', true)
-  protected _base!: HTMLElement;
-
-  @state()
-  protected _percentage = 0;
-
-  @state()
-  protected _progress = 0;
-
   @state()
   protected _hasFraction = false;
+
+  /** The default label text, which the CSS counters of the label also show. */
+  private _percentText = '0%';
 
   @state()
   protected _styleInfo: StyleInfo = {
@@ -108,8 +110,8 @@ export abstract class IgcProgressBaseComponent extends LitElement {
       changedProperties.has('max') ||
       changedProperties.has('value');
 
-    // Both writes are idempotent, so they are applied unconditionally. A clamp
-    // that does change a value lands it in `changedProperties` for this pass.
+    // The writes are idempotent. A clamp that changes a value lands it in
+    // `changedProperties` for this pass.
     this.max = Math.max(0, this.max);
     this.value = clamp(this.value, 0, this.max);
 
@@ -119,18 +121,25 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   }
 
   private get _labelText(): string {
-    return this.labelFormat ? this._renderLabelFormat() : `${this.value}%`;
+    return this.labelFormat
+      ? formatString(this.labelFormat, this.value, this.max)
+      : this._percentText;
   }
 
   private _updateProgress(): void {
-    const percentage = asPercent(this.value, Math.max(1, this.max));
-    const fractionValue = Math.round((percentage % 1) * 100);
-    this._hasFraction = fractionValue > 0;
+    // Avoid 0 / 0: a `max` of 0 clamps the value to 0.
+    const exact = this.max > 0 ? asPercent(this.value, this.max) : 0;
+    // Round before the split, so 12.996 shows 13%, not "12.100%".
+    const whole = roundPrecise(exact, 2).toFixed(2);
+    const [integer, fraction] = whole.split('.').map((part) => asNumber(part));
+
+    this._hasFraction = fraction > 0;
+    this._percentText = `${this._hasFraction ? whole : integer}%`;
 
     this._styleInfo = {
-      '--_progress-whole': percentage.toFixed(2),
-      '--_progress-integer': Math.floor(percentage),
-      '--_progress-fraction': fractionValue,
+      '--_progress-whole': whole,
+      '--_progress-integer': integer,
+      '--_progress-fraction': fraction,
       '--_transition-duration': `${this.animationDuration}ms`,
     };
   }
@@ -143,19 +152,15 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     };
 
     return this.labelFormat
-      ? html`<span part=${partMap(parts)}>${this._renderLabelFormat()}</span>`
+      ? html`<span part=${partMap(parts)}>${this._labelText}</span>`
       : html`<span part=${partMap({ ...parts, counter: true })}></span>`;
-  }
-
-  protected _renderLabelFormat(): string {
-    return formatString(this.labelFormat, this.value, this.max);
   }
 
   protected _renderDefaultSlot() {
     const hideDefaultLabel =
       this.indeterminate ||
       this.hideLabel ||
-      this._slots.hasAssignedElements('[default]');
+      this._slots.hasAssignedElements(DefaultSlot);
 
     return html`
       <slot part="label"></slot>

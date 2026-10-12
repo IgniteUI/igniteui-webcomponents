@@ -1,25 +1,40 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
-import { range } from 'lit/directives/range.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 
 import {
   type ComboItemTemplate,
+  IgcAvatarComponent,
+  IgcButtonComponent,
+  IgcCircularProgressComponent,
+  type IgcComboChangeEventArgs,
   IgcComboComponent,
+  IgcInputComponent,
   defineComponents,
-  registerIconFromText,
 } from 'igniteui-webcomponents';
+import { registerMaterialIcons } from './story-icons.js';
 import {
+  delay,
   disableStoryControls,
-  formControls,
   formSubmitHandler,
+  renderInto,
+  scrollingPanel,
+  storyStyles,
 } from './story.js';
 
-defineComponents(IgcComboComponent);
+defineComponents(
+  IgcAvatarComponent,
+  IgcButtonComponent,
+  IgcCircularProgressComponent,
+  IgcComboComponent,
+  IgcInputComponent
+);
+
+registerMaterialIcons('location');
 
 interface City {
   id: string;
   name: string;
-  zip: string;
   country: string;
 }
 
@@ -253,115 +268,80 @@ type Story = StoryObj<IgcComboArgs>;
 
 // endregion
 
-const itemTemplate: ComboItemTemplate<City> = ({ item }) => {
-  return html` <div><b>${item?.name ?? item}</b> [${item?.zip}]</div> `;
-};
+const styles = html`
+  ${storyStyles}
+  <style>
+    .cmb-stack {
+      display: grid;
+      gap: 1rem;
+      max-width: 36rem;
+    }
 
-const groupHeaderTemplate: ComboItemTemplate<City> = ({ item }) => {
-  return html`<div>Country of ${item?.country ?? item}</div>`;
-};
-const primitiveData = [1, 2, 3, 4, 5, 'one', 'two', 'three', 'four', 'five'];
+    .cmb-stack :is(h3, p, table) {
+      margin: 0;
+    }
+
+    .cmb-panel {
+      padding: 1rem;
+      border: 1px solid var(--ig-gray-300);
+      border-radius: 8px;
+    }
+
+    .cmb-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  </style>
+`;
 
 const cities: City[] = [
-  {
-    id: 'BG01',
-    name: 'Sofia',
-    country: 'Bulgaria',
-    zip: '1000',
-  },
-  {
-    id: 'BG02',
-    name: 'Plovdiv',
-    country: 'Bulgaria',
-    zip: '4000',
-  },
-  {
-    id: 'BG03',
-    name: 'Varna',
-    country: 'Bulgaria',
-    zip: '9000',
-  },
-  {
-    id: 'US01',
-    name: 'New York',
-    country: 'United States',
-    zip: '10001',
-  },
-  {
-    id: 'US02',
-    name: 'Boston',
-    country: 'United States',
-    zip: '02108',
-  },
-  {
-    id: 'US03',
-    name: 'San Francisco',
-    country: 'United States',
-    zip: '94103',
-  },
-  {
-    id: 'JP01',
-    name: 'Tokyo',
-    country: 'Japan',
-    zip: '163-8001',
-  },
-  {
-    id: 'JP02',
-    name: 'Yokohama',
-    country: 'Japan',
-    zip: '781-0240',
-  },
-  {
-    id: 'JP03',
-    name: 'Osaka',
-    country: 'Japan',
-    zip: '552-0021',
-  },
+  { id: 'br-sao', name: 'São Paulo', country: 'Brazil' },
+  { id: 'br-rio', name: 'Rio de Janeiro', country: 'Brazil' },
+  { id: 'ca-mtl', name: 'Montréal', country: 'Canada' },
+  { id: 'ca-tor', name: 'Toronto', country: 'Canada' },
+  { id: 'de-ber', name: 'Berlin', country: 'Germany' },
+  { id: 'de-muc', name: 'München', country: 'Germany' },
+  { id: 'pl-krk', name: 'Kraków', country: 'Poland' },
+  { id: 'pl-waw', name: 'Warszawa', country: 'Poland' },
+  { id: 'se-mmx', name: 'Malmö', country: 'Sweden' },
+  { id: 'se-sto', name: 'Stockholm', country: 'Sweden' },
+  { id: 'ch-gva', name: 'Genève', country: 'Switzerland' },
+  { id: 'ch-zrh', name: 'Zürich', country: 'Switzerland' },
 ];
-
-registerIconFromText(
-  'location',
-  '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'
-);
-
-registerIconFromText(
-  'no-data',
-  '<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="m17.121 21.364l2.122-2.121m2.121-2.122l-2.121 2.122m0 0L17.12 17.12m2.122 2.122l2.121 2.121M4 6v6s0 3 7 3s7-3 7-3V6"/><path d="M11 3c7 0 7 3 7 3s0 3-7 3s-7-3-7-3s0-3 7-3m0 18c-7 0-7-3-7-3v-6"/></g></svg>',
-  'combo-samples'
-);
 
 export const Default: Story = {
   parameters: {
     docs: {
       description: {
         story:
-          'A fully-featured combo with grouped city data, a custom item template, a prefix icon, and helper text. Use the controls panel to explore all available properties interactively.',
+          'The delivery cities of a shop, grouped by country. `value-key` is the key of the value, `display-key` is the key of the text, and `group-key` makes the groups. The filter ignores case and accents, so "sao" finds "São Paulo" and "zur" finds "Zürich". The combo is a form control with the `combobox` role: the label names it, and the helper text describes it. Use the controls panel to change the state. `single-select` moves the search into the main input.',
       },
     },
   },
   args: {
-    label: 'Location(s)',
-    placeholder: 'Cities of interest',
-    placeholderSearch: 'Search cities...',
-    groupSorting: 'asc',
+    label: 'Delivery cities',
+    placeholder: 'Choose cities',
+    placeholderSearch: 'Search cities',
     valueKey: 'id',
     displayKey: 'name',
     groupKey: 'country',
   },
   render: (args) => html`
     <igc-combo
+      style="max-width: 24rem"
       value-key=${args.valueKey}
       display-key=${args.displayKey}
       group-key=${args.groupKey}
-      value='["BG01", "BG02"]'
+      value='["de-ber", "pl-krk"]'
       .label=${args.label}
       .name=${args.name}
       .placeholder=${args.placeholder}
       .placeholderSearch=${args.placeholderSearch}
       .data=${cities}
-      .itemTemplate=${itemTemplate}
-      .groupHeaderTemplate=${groupHeaderTemplate}
       .groupSorting=${args.groupSorting}
+      .scrollStrategy=${args.scrollStrategy}
       ?case-sensitive-icon=${args.caseSensitiveIcon}
       ?disable-filtering=${args.disableFiltering}
       ?disable-clear=${args.disableClear}
@@ -375,150 +355,522 @@ export const Default: Story = {
       ?single-select=${args.singleSelect}
     >
       <igc-icon slot="prefix" name="location"></igc-icon>
-      <p slot="helper-text">Sample helper text.</p>
+      <span slot="helper-text">
+        We deliver to these cities on the next business day.
+      </span>
     </igc-combo>
   `,
 };
 
-export const NoData: Story = {
+interface Person {
+  id: string;
+  name: string;
+  team: string;
+}
+
+const people: Person[] = [
+  { id: 'maya', name: 'Maya Patel', team: 'Design' },
+  { id: 'zoe', name: 'Zoë Martin', team: 'Design' },
+  { id: 'daniel', name: 'Daniel Okafor', team: 'Frontend' },
+  { id: 'sofia', name: 'Sofía Díaz', team: 'Frontend' },
+  { id: 'aiko', name: 'Aiko Tanaka', team: 'Frontend' },
+  { id: 'liam', name: 'Liam Chen', team: 'Backend' },
+  { id: 'noah', name: 'Noah Schmidt', team: 'Backend' },
+  { id: 'omar', name: 'Omar Haddad', team: 'Operations' },
+];
+
+const initials = (name: string) =>
+  name
+    .split(' ')
+    .map((part) => part[0])
+    .join('');
+
+// The combo renders the templates in its shadow root, where the styles of the
+// page do not apply, so the templates use inline styles.
+const muted = 'color: var(--ig-gray-700)';
+
+const personTemplate: ComboItemTemplate<Person> = ({ item }) => html`
+  <span style="display: flex; align-items: center; gap: 0.5rem">
+    <igc-avatar
+      initials=${initials(item.name)}
+      shape="circle"
+      aria-hidden="true"
+      style="--ig-avatar-size: 1.25rem"
+    ></igc-avatar>
+    ${item.name}
+  </span>
+`;
+
+export const Reviewers: Story = {
   argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'When no data is bound the combo renders an empty-state area. The default template shows a generic message; slot `empty` accepts arbitrary content for a fully custom empty state.',
+          'The reviewers of a pull request. `itemTemplate` renders an avatar next to each name, and the avatar has `aria-hidden`, so the name of the option is the name of the person. The combo renders the template in its shadow root, where the styles of the page do not apply, so the template uses inline styles. `--ig-avatar-size` sets the avatar to 1.25rem, the smallest avatar size of the themes, so it fits the row of the option. The filter uses the display key, so "sofia" finds "Sofía Díaz". `igcChange` comes before the change and is cancelable: the story cancels a fourth reviewer and tells why in the status message. The `empty` slot replaces the default message when the search finds nobody.',
       },
     },
   },
-  render: () => html`
-    <style>
-      igc-combo {
-        margin-bottom: 5rem;
+  render: () => {
+    const limit = 3;
+    const status = createRef<HTMLElement>();
+
+    const change = (event: CustomEvent<IgcComboChangeEventArgs<Person>>) => {
+      const { newValue, type } = event.detail;
+
+      if (type === 'selection' && newValue.length > limit) {
+        event.preventDefault();
+        status.value!.textContent = `You can request up to ${limit} reviewers. Remove a reviewer first.`;
+      } else {
+        status.value!.textContent = `${newValue.length} of ${limit} reviewers requested.`;
       }
-      .no-data {
-        display: flex;
-        justify-content: space-evenly;
+    };
+
+    return html`
+      ${styles}
+      <section
+        class="cmb-stack cmb-panel"
+        aria-labelledby="cmb-reviewers-title"
+      >
+        <h3 id="cmb-reviewers-title">Fix the date format in exports #482</h3>
+        <igc-combo
+          label="Reviewers"
+          placeholder="Request reviewers"
+          placeholder-search="Search people"
+          value-key="id"
+          display-key="name"
+          group-key="team"
+          .data=${people}
+          .itemTemplate=${personTemplate}
+          @igcChange=${change}
+        >
+          <span slot="helper-text">Request up to ${limit} reviewers.</span>
+          <span slot="empty">No one matches your search.</span>
+        </igc-combo>
+        <p class="muted" role="status" ${ref(status)}></p>
+      </section>
+    `;
+  },
+};
+
+interface Zone {
+  id: string;
+  name: string;
+  region: string;
+}
+
+const regions: Record<string, string> = {
+  America: 'Americas',
+  Atlantic: 'Atlantic Ocean',
+  Indian: 'Indian Ocean',
+  Pacific: 'Pacific Ocean',
+};
+
+let zones: Zone[] | undefined;
+
+/** All the time zones of the browser. */
+const getZones = (): Zone[] =>
+  (zones ??= Intl.supportedValuesOf('timeZone').map((id) => {
+    const [region, ...place] = id.split('/');
+
+    return {
+      id,
+      name: place.length
+        ? place.reverse().join(', ').replaceAll('_', ' ')
+        : region,
+      region: place.length ? (regions[region] ?? region) : 'Other',
+    };
+  }));
+
+// The list renders only the options in view, so a zone gets its formatter
+// when its option renders for the first time.
+const formatters = new Map<string, Intl.DateTimeFormat>();
+
+/** The UTC offset of a time zone and the time now in it. */
+const zoneTime = (timeZone: string) => {
+  if (!formatters.has(timeZone)) {
+    formatters.set(
+      timeZone,
+      new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        hour: 'numeric',
+        minute: '2-digit',
+        timeZoneName: 'longOffset',
+      })
+    );
+  }
+
+  const parts = formatters.get(timeZone)!.formatToParts();
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((p) => p.type === type)?.value ?? '';
+
+  return {
+    offset: part('timeZoneName'),
+    time: `${part('hour')}:${part('minute')} ${part('dayPeriod')}`,
+  };
+};
+
+const zoneTemplate: ComboItemTemplate<Zone> = ({ item }) => {
+  const { offset, time } = zoneTime(item.id);
+
+  return html`
+    <span>
+      ${item.name}
+      <span style=${muted}>${offset}, ${time}</span>
+    </span>
+  `;
+};
+
+export const TimeZone: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The time zone setting of a profile. The data is every time zone that the browser knows, more than 400, grouped by region. The list is virtual, so it renders only the options in view. `single-select` puts the search into the main input: type "tokyo" and press Enter to select the first match. Typing clears the selection, so `igcChange` comes first with the `deselection` type. The initial value is the time zone of the browser. Each option shows the UTC offset and the time now in that zone.',
+      },
+    },
+  },
+  render: () => {
+    const data = getZones();
+    const browserZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const initial = data.some(({ id }) => id === browserZone)
+      ? browserZone
+      : 'Europe/London';
+
+    const status = createRef<HTMLElement>();
+
+    const change = ({ detail }: CustomEvent<IgcComboChangeEventArgs<Zone>>) => {
+      // Typing in the main input clears the selection first, and that
+      // deselection lists the old time zone.
+      const [zone] = detail.type === 'selection' ? detail.items : [];
+      status.value!.textContent = zone
+        ? `Meetings now show in the time of ${zone.name} (${zoneTime(zone.id).offset}).`
+        : '';
+    };
+
+    return html`
+      ${styles}
+      <section class="cmb-stack cmb-panel" aria-labelledby="cmb-zone-title">
+        <h3 id="cmb-zone-title">Regional settings</h3>
+        <igc-combo
+          label="Time zone"
+          placeholder="Search time zones"
+          single-select
+          value-key="id"
+          display-key="name"
+          group-key="region"
+          .data=${data}
+          .value=${[initial]}
+          .itemTemplate=${zoneTemplate}
+          @igcChange=${change}
+        >
+          <span slot="helper-text">
+            Meetings and reminders use this time zone.
+          </span>
+          <span slot="empty">No time zone matches your search.</span>
+        </igc-combo>
+        <p class="muted" role="status" ${ref(status)}></p>
+      </section>
+    `;
+  },
+};
+
+const columns = [
+  { key: 'customer', label: 'Customer' },
+  { key: 'date', label: 'Order date' },
+  { key: 'status', label: 'Status' },
+  { key: 'items', label: 'Items' },
+  { key: 'total', label: 'Total' },
+  { key: 'channel', label: 'Sales channel' },
+  { key: 'country', label: 'Country' },
+] as const;
+
+type ColumnKey = (typeof columns)[number]['key'];
+
+const defaultColumns: ColumnKey[] = ['customer', 'date', 'status', 'total'];
+
+const orders: Array<Record<'id' | ColumnKey, string>> = [
+  {
+    id: '10421',
+    customer: 'Maya Patel',
+    date: 'Sep 28',
+    status: 'Shipped',
+    items: '3',
+    total: '$248.00',
+    channel: 'Web',
+    country: 'Canada',
+  },
+  {
+    id: '10422',
+    customer: 'Daniel Okafor',
+    date: 'Sep 29',
+    status: 'Paid',
+    items: '1',
+    total: '$59.90',
+    channel: 'Mobile app',
+    country: 'Nigeria',
+  },
+  {
+    id: '10423',
+    customer: 'Sofía Díaz',
+    date: 'Sep 30',
+    status: 'Shipped',
+    items: '5',
+    total: '$1,120.00',
+    channel: 'Store',
+    country: 'Spain',
+  },
+  {
+    id: '10424',
+    customer: 'Liam Chen',
+    date: 'Oct 1',
+    status: 'Refunded',
+    items: '2',
+    total: '$75.50',
+    channel: 'Web',
+    country: 'Singapore',
+  },
+];
+
+export const ColumnChooser: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A column chooser for a table of orders. The list is short, so `disable-filtering` removes the search input. The Order column always shows, and it is not in the list. `igcChange` gives `newValue`, and the story renders the table from it. The buttons use the methods: "Show all" calls `select()` with no argument, which selects all the options, and "Reset" sets `value` to the default columns. A method or a new `value` does not send `igcChange`, so the buttons render the table themselves.',
+      },
+    },
+  },
+  render: () => {
+    let visible: string[] = [...defaultColumns];
+    const combo = createRef<IgcComboComponent>();
+
+    const { mount, update } = renderInto(() => {
+      const shown = columns.filter(({ key }) => visible.includes(key));
+
+      return html`
+        <table>
+          <caption class="muted">
+            ${shown.length + 1} of ${columns.length + 1} columns
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Order</th>
+              ${shown.map(({ label }) => html`<th scope="col">${label}</th>`)}
+            </tr>
+          </thead>
+          <tbody>
+            ${orders.map(
+              (order) => html`
+                <tr>
+                  <th scope="row">#${order.id}</th>
+                  ${shown.map(({ key }) => html`<td>${order[key]}</td>`)}
+                </tr>
+              `
+            )}
+          </tbody>
+        </table>
+      `;
+    });
+
+    const change = ({ detail }: CustomEvent<IgcComboChangeEventArgs>) => {
+      visible = detail.newValue as string[];
+      update();
+    };
+
+    const showAll = () => {
+      combo.value!.select();
+      visible = combo.value!.value as string[];
+      update();
+    };
+
+    const reset = () => {
+      combo.value!.value = [...defaultColumns];
+      visible = [...defaultColumns];
+      update();
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .cmb-columns {
+          max-width: 48rem;
+        }
+
+        .cmb-columns .cmb-row {
+          align-items: end;
+        }
+
+        .cmb-columns igc-combo {
+          flex: 1 1 18rem;
+        }
+
+        .cmb-table {
+          overflow-x: auto;
+        }
+
+        .cmb-table table {
+          border-collapse: collapse;
+          width: 100%;
+        }
+
+        .cmb-table caption {
+          text-align: start;
+          padding-block-end: 0.5rem;
+        }
+
+        .cmb-table :is(th, td) {
+          padding: 0.5rem;
+          border-block-end: 1px solid var(--ig-gray-300);
+          text-align: start;
+          white-space: nowrap;
+        }
+      </style>
+      <section
+        class="cmb-stack cmb-panel cmb-columns"
+        aria-labelledby="cmb-columns-title"
+      >
+        <h3 id="cmb-columns-title">Orders</h3>
+        <div class="cmb-row">
+          <igc-combo
+            ${ref(combo)}
+            label="Columns"
+            disable-filtering
+            value-key="key"
+            display-key="label"
+            .data=${columns}
+            .value=${visible}
+            @igcChange=${change}
+          ></igc-combo>
+          <igc-button variant="outlined" @click=${showAll}>Show all</igc-button>
+          <igc-button variant="flat" @click=${reset}>Reset</igc-button>
+        </div>
+        <div class="cmb-table" ${mount}></div>
+      </section>
+    `;
+  },
+};
+
+interface Airport {
+  code: string;
+  label: string;
+  search: string;
+  airport: string;
+  country: string;
+}
+
+const airports: Airport[] = (
+  [
+    ['SOF', 'Sofia', 'Vasil Levski', 'Bulgaria'],
+    ['VAR', 'Varna', 'Varna', 'Bulgaria'],
+    ['GRU', 'São Paulo', 'Guarulhos', 'Brazil'],
+    ['CDG', 'Paris', 'Charles de Gaulle', 'France'],
+    ['ORY', 'Paris', 'Orly', 'France'],
+    ['FRA', 'Frankfurt', 'Frankfurt', 'Germany'],
+    ['MUC', 'Munich', 'Franz Josef Strauss', 'Germany'],
+    ['HND', 'Tokyo', 'Haneda', 'Japan'],
+    ['NRT', 'Tokyo', 'Narita', 'Japan'],
+    ['KIX', 'Osaka', 'Kansai', 'Japan'],
+    ['ZRH', 'Zürich', 'Zürich', 'Switzerland'],
+    ['LHR', 'London', 'Heathrow', 'United Kingdom'],
+    ['LGW', 'London', 'Gatwick', 'United Kingdom'],
+    ['JFK', 'New York', 'John F. Kennedy', 'United States'],
+    ['EWR', 'Newark', 'Newark Liberty', 'United States'],
+    ['SFO', 'San Francisco', 'San Francisco', 'United States'],
+  ] as const
+).map(([code, city, airport, country]) => ({
+  code,
+  label: `${city} (${code})`,
+  search: `${code} ${city} ${airport}`,
+  airport,
+  country,
+}));
+
+const airportTemplate: ComboItemTemplate<Airport> = ({ item }) => html`
+  <span>
+    ${item.label}
+    <span style=${muted}>${item.airport}</span>
+  </span>
+`;
+
+export const LazyLoading: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A flight search that loads the airports from the server when the list opens for the first time. `igcOpening` starts the request, and until the data comes, the `empty` slot shows a spinner and a loading message. After the load, the same slot tells that the search found nothing. `filteringOptions` sets `filterKey` to a key that joins the code, the city and the airport name, so "lhr", "london" and "heathrow" all find Heathrow. The status message tells a screen reader user when the airports load.',
+      },
+    },
+  },
+  render: () => {
+    const status = createRef<HTMLElement>();
+    let requested = false;
+
+    const load = async (event: Event) => {
+      if (requested) {
+        return;
       }
-    </style>
-    <igc-combo label="No data and default empty template"></igc-combo>
 
-    <igc-combo label="No data and custom empty template">
-      <div class="no-data" slot="empty">
-        <igc-icon name="no-data" collection="combo-samples"></igc-icon>
-        <p>No data currently bound to the combo</p>
-      </div>
-    </igc-combo>
-  `,
-};
+      const combo = event.target as IgcComboComponent<Airport>;
+      const output = status.value!;
+      const empty = combo.querySelector('[slot="empty"]')!;
 
-export const SingleSelect: Story = {
-  argTypes: disableStoryControls(metadata),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Setting `singleSelect` restricts the combo to one selected item and moves the filtering input into the main trigger field, making it behave like a searchable select. The selection is cleared when the user types to search.',
-      },
-    },
-  },
-  render: () => html`
-    <igc-combo
-      label="Single-select city"
-      placeholder="Pick a city"
-      placeholder-search="Search cities…"
-      .data=${cities}
-      value-key="id"
-      display-key="name"
-      group-key="country"
-      single-select
-      style="max-width: 320px"
-    >
-      <igc-icon slot="prefix" name="location"></igc-icon>
-    </igc-combo>
-  `,
-};
+      requested = true;
+      output.textContent = 'Loading the airports…';
 
-export const Grouping: Story = {
-  argTypes: disableStoryControls(metadata),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'When `groupKey` is set the items are partitioned into labelled groups. The `groupSorting` property controls the sort order of groups: **asc** (default), **desc**, or **none** (preserves data-source order).',
-      },
-    },
-  },
-  render: () => html`
-    <div
-      style="display: flex; flex-wrap: wrap; gap: 1.5rem; padding: 1rem; align-items: flex-start;"
-    >
-      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-        <span style="font-weight: 600;">Ascending (default)</span>
+      await delay(1200);
+
+      combo.data = airports;
+      empty.textContent = 'No airport matches your search.';
+      output.textContent = `${airports.length} airports loaded.`;
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .cmb-loading {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .cmb-loading igc-circular-progress {
+          --ig-circular-bar-diameter: 1.5rem;
+        }
+      </style>
+      <section class="cmb-stack cmb-panel" aria-labelledby="cmb-flight-title">
+        <h3 id="cmb-flight-title">Find a flight</h3>
         <igc-combo
-          label="Cities"
-          .data=${cities}
-          value-key="id"
-          display-key="name"
+          label="From"
+          placeholder="City or airport"
+          single-select
+          value-key="code"
+          display-key="label"
           group-key="country"
-          group-sorting="asc"
-          style="width: 260px"
-        ></igc-combo>
-      </div>
-      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-        <span style="font-weight: 600;">Descending</span>
-        <igc-combo
-          label="Cities"
-          .data=${cities}
-          value-key="id"
-          display-key="name"
-          group-key="country"
-          group-sorting="desc"
-          style="width: 260px"
-        ></igc-combo>
-      </div>
-      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-        <span style="font-weight: 600;">None (data-source order)</span>
-        <igc-combo
-          label="Cities"
-          .data=${cities}
-          value-key="id"
-          display-key="name"
-          group-key="country"
-          group-sorting="none"
-          style="width: 260px"
-        ></igc-combo>
-      </div>
-    </div>
-  `,
+          .filteringOptions=${{ filterKey: 'search' }}
+          .itemTemplate=${airportTemplate}
+          @igcOpening=${load}
+        >
+          <div slot="empty">
+            <span class="cmb-loading">
+              <igc-circular-progress
+                indeterminate
+                aria-label="Loading the airports"
+              ></igc-circular-progress>
+              Loading the airports…
+            </span>
+          </div>
+        </igc-combo>
+        <p class="muted" role="status" ${ref(status)}></p>
+      </section>
+    `;
+  },
 };
 
-export const CustomTemplate: Story = {
-  argTypes: disableStoryControls(metadata),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'The `itemTemplate` and `groupHeaderTemplate` properties accept render functions that receive the bound data item, enabling fully custom list-item and group-header markup. The example below renders each city with its ZIP code and replaces the default group header.',
-      },
-    },
-  },
-  render: () => html`
-    <igc-combo
-      label="Location(s)"
-      placeholder="Cities of interest"
-      placeholder-search="Search cities…"
-      .data=${cities}
-      .itemTemplate=${itemTemplate}
-      .groupHeaderTemplate=${groupHeaderTemplate}
-      value-key="id"
-      display-key="name"
-      group-key="country"
-      style="max-width: 360px"
-    >
-      <igc-icon slot="prefix" name="location"></igc-icon>
-    </igc-combo>
-  `,
-};
+const labels = ['bug', 'feature', 'documentation', 'performance', 'security'];
 
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
@@ -526,90 +878,44 @@ export const Form: Story = {
     docs: {
       description: {
         story:
-          'Demonstrates combo behavior inside an HTML `<form>`, covering multi-select with an initial value, no-value-key binding, single-select mode, primitive data, disabled fieldset, and required validation.',
+          'A form that creates a project. The project lead is `required` and `single-select`: until a person is chosen, the form does not submit, and the `value-missing` slot shows the message. The labels are plain strings, so the combo needs no keys, and the `value` attribute is the default value that Reset restores. The form data has one entry for each selected value, under the `name` of the combo. Submit shows the form data.',
       },
     },
   },
-  render: () => {
-    return html`
-      <style>
-        fieldset {
-          min-width: 0;
-        }
-      </style>
-      <form @submit=${formSubmitHandler}>
-        <fieldset>
-          <igc-combo
-            .data=${cities}
-            label="Default"
-            name="combo"
-            value-key="id"
-            display-key="name"
-          ></igc-combo>
-
-          <igc-combo
-            .data=${cities}
-            label="Initial value"
-            name="combo-initial"
-            value='["BG01", "BG02"]'
-            value-key="id"
-            display-key="name"
-          ></igc-combo>
-
-          <igc-combo
-            .data=${cities}
-            label="No value key"
-            name="combo-not-key"
-            display-key="name"
-          ></igc-combo>
-
-          <igc-combo
-            .data=${cities}
-            single-select
-            label="Single selection"
-            name="combo-single"
-            display-key="name"
-            value-key="id"
-          ></igc-combo>
-        </fieldset>
-
-        <fieldset>
-          <igc-combo
-            .data=${primitiveData}
-            value='[1, "one"]'
-            name="combo-primitive"
-            label="Primitives binding"
-          ></igc-combo>
-        </fieldset>
-
-        <fieldset disabled>
-          <igc-combo
-            .data=${cities}
-            label="Disabled"
-            name="combo-disabled"
-            value-key="id"
-            display-key="name"
-          ></igc-combo>
-        </fieldset>
-
-        <fieldset>
-          <igc-combo
-            .data=${cities}
-            label="Required"
-            name="combo-required"
-            value-key="id"
-            display-key="name"
-            required
-          >
-            <div slot="helper-text">Select a value</div>
-            <div slot="value-missing">This field is required!</div>
-          </igc-combo>
-        </fieldset>
-
-        ${formControls()}
-      </form>
-    `;
-  },
+  render: () => html`
+    ${styles}
+    <form class="cmb-stack cmb-panel" @submit=${formSubmitHandler}>
+      <h3>New project</h3>
+      <igc-input name="title" label="Project name" required></igc-input>
+      <igc-combo
+        name="lead"
+        label="Project lead"
+        placeholder="Choose a person"
+        single-select
+        required
+        value-key="id"
+        display-key="name"
+        group-key="team"
+        .data=${people}
+        .itemTemplate=${personTemplate}
+      >
+        <span slot="value-missing">Choose a project lead.</span>
+      </igc-combo>
+      <igc-combo
+        name="labels"
+        label="Labels"
+        placeholder="Add labels"
+        value='["feature"]'
+        .data=${labels}
+      >
+        <span slot="helper-text">Labels help people find the project.</span>
+      </igc-combo>
+      <div class="cmb-row">
+        <igc-button type="submit">Create project</igc-button>
+        <igc-button type="reset" variant="outlined">Reset</igc-button>
+      </div>
+    </form>
+  `,
 };
 
 export const InScrollingPanel: Story = {
@@ -626,40 +932,22 @@ export const InScrollingPanel: Story = {
       },
     },
   },
-  render: ({ label, placeholder, singleSelect, scrollStrategy }) => html`
-    <style>
-      .panel {
-        max-width: 46rem;
-        height: 16rem;
-        overflow: auto;
-        padding: 1rem;
-        border: 1px solid var(--ig-gray-200, #e0e0e0);
-        border-radius: 4px;
-      }
-    </style>
-
-    <div class="panel">
-      <h4>Shipping preferences</h4>
-      <p>
-        Open the list and scroll this panel to compare the scroll strategies.
-      </p>
-
-      <igc-combo
-        value-key="id"
-        display-key="name"
-        group-key="country"
-        .data=${cities}
-        .label=${label}
-        .placeholder=${placeholder}
-        .scrollStrategy=${scrollStrategy}
-        ?single-select=${singleSelect}
-      ></igc-combo>
-
-      <p>
-        ${Array.from(range(1, 24)).map(
-          () => html`Deliveries are grouped by country and dispatched daily. `
-        )}
-      </p>
-    </div>
-  `,
+  render: ({ label, placeholder, singleSelect, scrollStrategy }) =>
+    scrollingPanel(
+      'Shipping preferences',
+      'list',
+      'Deliveries are grouped by country and dispatched daily.',
+      html`
+        <igc-combo
+          value-key="id"
+          display-key="name"
+          group-key="country"
+          .data=${cities}
+          .label=${label}
+          .placeholder=${placeholder}
+          .scrollStrategy=${scrollStrategy}
+          ?single-select=${singleSelect}
+        ></igc-combo>
+      `
+    ),
 };

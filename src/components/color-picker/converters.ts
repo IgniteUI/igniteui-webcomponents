@@ -1,3 +1,5 @@
+import { clamp } from '#internals/utils/math.js';
+
 const ONE_THIRD = 1 / 3;
 const TWO_THIRDS = 2 / 3;
 
@@ -8,9 +10,7 @@ export type HSV = [number, number, number];
 export const converter = Object.freeze({
   rgb: {
     hex: (rgb: RGB): string => {
-      const [r, g, b] = rgb.map((v) =>
-        Math.min(255, Math.max(0, Math.round(v)))
-      );
+      const [r, g, b] = rgb.map((v) => clamp(Math.round(v), 0, 255));
       const value = (r << 16) + (g << 8) + b;
       return value.toString(16).padStart(6, '0');
     },
@@ -133,11 +133,10 @@ export const converter = Object.freeze({
       const lMin = Math.max(l, 0.01);
 
       l *= 2;
-      // Test the doubled `l`, not `lMin`. `lMin` is captured before the doubling
-      // and never goes above 1, which makes the `2 - l` branch dead and pushes `v`
-      // past 100 for a lightness above 50%.
+      // Test the doubled `l`, not `lMin`. `lMin` never exceeds 1, so testing
+      // it makes `2 - l` dead and pushes `v` past 100 above 50% lightness.
       s *= l <= 1 ? l : 2 - l;
-      sMin *= lMin <= 1 ? lMin : 2 - lMin;
+      sMin *= lMin;
       const v = (l + s) / 2;
       const sv = l === 0 ? (2 * sMin) / (lMin + sMin) : (2 * s) / (l + s);
 
@@ -149,7 +148,9 @@ export const converter = Object.freeze({
       const h = hsv[0] / 60;
       const s = hsv[1] / 100;
       let v = hsv[2] / 100;
-      const hi = Math.floor(h) % 6;
+      // Wrap the sector so that a negative or out-of-range hue still maps
+      // to its color on the wheel.
+      const hi = ((Math.floor(h) % 6) + 6) % 6;
 
       const f = h - Math.floor(h);
       const p = 255 * v * (1 - s);
@@ -168,10 +169,8 @@ export const converter = Object.freeze({
           return [p, q, v];
         case 4:
           return [t, p, v];
-        case 5:
-          return [v, p, q];
         default:
-          return [v, t, p];
+          return [v, p, q];
       }
     },
     hsl: (hsv: HSV): HSL => {
@@ -185,7 +184,9 @@ export const converter = Object.freeze({
       l = (2 - s) * v;
       const lMin = (2 - s) * vMin;
       sl = s * vMin;
-      sl /= lMin <= 1 ? lMin : 2 - lMin;
+      // Expanded `2 - lMin`. The short form cancels to 0 for a value near 100
+      // and a tiny saturation.
+      sl /= lMin <= 1 ? lMin : 2 * (1 - vMin) + s * vMin;
       sl = sl || 0;
       l /= 2;
 
