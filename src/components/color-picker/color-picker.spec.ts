@@ -157,33 +157,27 @@ function getAnchorPreview(picker: IgcColorPickerComponent): {
 }
 
 /**
- * Expects the native hue and alpha ranges to have the `range` direction and
- * their track gradients to run `to` that side. Chromium has no computed style
- * for the track pseudo-element, so the gradient comes from the custom property
- * that the track paints.
- *
- * The alpha track includes the transparency grid, whose colors come from the
- * theme palette. The test page has no palette, so the grid and the whole track
- * property are invalid until the global theme sheet is added.
+ * Expects the hue and alpha ranges to run in `dir` and their track gradients to
+ * follow. The track pseudo-element has no computed style, so the gradient comes
+ * from its custom property, which needs the theme palette.
  */
 async function expectSliderTracks(
   picker: IgcColorPickerComponent,
-  range: 'ltr' | 'rtl',
-  to: 'left' | 'right'
+  dir: 'ltr' | 'rtl'
 ): Promise<void> {
+  const to = dir === 'rtl' ? 'left' : 'right';
+
   await withDocumentSheets([bootstrap.styleSheet!], () => {
-    for (const slider of ['hue', 'alpha']) {
-      const style = getComputedStyle(
-        picker.renderRoot.querySelector(`[part="${slider}"]`)!
-      );
+    for (const [name, slider] of [
+      ['hue', getHueSlider(picker)],
+      ['alpha', getAlphaSlider(picker)],
+    ] as const) {
+      const style = getComputedStyle(slider);
       const gradient = /^linear-gradient\(\s*to (left|right)/.exec(
-        style.getPropertyValue(`--_${slider}-slider-track`)
+        style.getPropertyValue(`--_${name}-slider-track`)
       )?.[1];
 
-      expect({ range: style.direction, gradient }, slider).to.eql({
-        range,
-        gradient: to,
-      });
+      expect({ dir: style.direction, to: gradient }, name).to.eql({ dir, to });
     }
   });
 }
@@ -1250,35 +1244,19 @@ describe('Color picker', () => {
       expect(picker.renderRoot.querySelector('#format-select')).to.be.null;
     });
 
-    // The native ranges run from right to left in RTL. A track gradient that
-    // does not follow them puts the hue thumb for yellow (60) over magenta.
-    it('runs the slider tracks in the direction of the ranges in LTR', async () => {
-      picker = await fixture<IgcColorPickerComponent>(
-        html`<igc-color-picker open show-alpha></igc-color-picker>`
-      );
-
-      await expectSliderTracks(picker, 'ltr', 'right');
-    });
-
-    it('reverses the slider tracks in an RTL ancestor', async () => {
+    it('runs the slider tracks in the direction of the ranges', async () => {
       const container = await fixture<HTMLElement>(
-        html`<div dir="rtl">
-          <igc-color-picker open show-alpha></igc-color-picker>
-        </div>`
+        html`<div><igc-color-picker open show-alpha></igc-color-picker></div>`
       );
       picker = container.querySelector('igc-color-picker')!;
+      await expectSliderTracks(picker, 'ltr');
 
-      await expectSliderTracks(picker, 'rtl', 'left');
-    });
+      container.dir = 'rtl';
+      await expectSliderTracks(picker, 'rtl');
 
-    it('reverses the slider tracks when the host dir changes to RTL', async () => {
-      picker = await fixture<IgcColorPickerComponent>(
-        html`<igc-color-picker open show-alpha></igc-color-picker>`
-      );
-
+      container.removeAttribute('dir');
       picker.dir = 'rtl';
-
-      await expectSliderTracks(picker, 'rtl', 'left');
+      await expectSliderTracks(picker, 'rtl');
     });
   });
 

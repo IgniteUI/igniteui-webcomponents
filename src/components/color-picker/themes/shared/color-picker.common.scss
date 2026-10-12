@@ -137,32 +137,24 @@ $input-theme: input-theme.$material;
         #{var-get($theme, 'transparency-grid-even')} 270deg 360deg
     );
 
-    // The native range runs from right to left in RTL, so the track gradients
-    // follow it.
+    // The gradients span the travel of the thumb center and follow the range
+    // direction, which is right to left in RTL.
     --_slider-track-direction: to right;
+    --_slider-track-inset: calc(var(--_slider-thumb-size) / 2);
 
-    // Pure hues 60deg apart, interpolated in sRGB, walk the hue wheel linearly,
-    // so each point shows the `hsl(h 100% 50%)` the slider sets there. The stops
-    // span the thumb travel, not the whole track: the thumb center stops half
-    // its width short of each end.
-    --_hue-track-start: calc(var(--_slider-thumb-size) / 2);
-    --_hue-track-step: calc((100% - var(--_slider-thumb-size)) / 6);
+    // Pure hues at equal steps give `hsl(h 100% 50%)` at each point.
     --_hue-slider-track: linear-gradient(
         var(--_slider-track-direction),
-        #f00 var(--_hue-track-start),
-        #ff0 calc(var(--_hue-track-start) + var(--_hue-track-step)),
-        #0f0 calc(var(--_hue-track-start) + 2 * var(--_hue-track-step)),
-        #0ff calc(var(--_hue-track-start) + 3 * var(--_hue-track-step)),
-        #00f calc(var(--_hue-track-start) + 4 * var(--_hue-track-step)),
-        #f0f calc(var(--_hue-track-start) + 5 * var(--_hue-track-step)),
-        #f00 calc(var(--_hue-track-start) + 6 * var(--_hue-track-step))
+        #f00 var(--_slider-track-inset),
+        #ff0, #0f0, #0ff, #00f, #f0f,
+        #f00 calc(100% - var(--_slider-track-inset))
     );
     --_alpha-color: var(--_selected-color, var(--_current-color));
     --_alpha-slider-track:
         linear-gradient(
             var(--_slider-track-direction),
-            rgb(from var(--_alpha-color) r g b / 0%) 0%,
-            rgb(from var(--_alpha-color) r g b / 100%) 100%
+            rgb(from var(--_alpha-color) r g b / 0%) var(--_slider-track-inset),
+            rgb(from var(--_alpha-color) r g b / 100%) calc(100% - var(--_slider-track-inset))
         ),
         var(--_transparency-grid);
     --_alpha-track-position: 0 0;
