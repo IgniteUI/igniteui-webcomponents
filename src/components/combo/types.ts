@@ -88,7 +88,7 @@ export interface ComboGroupHeaderContext<T extends object> {
   /**
    * A record made for the header, not a data item. Only the `groupKey`,
    * `valueKey` and `displayKey` fields are set, and each contains the group value.
-   * @deprecated Use `group`.
+   * @deprecated since 7.5.0. Use the `group` property instead.
    */
   item: T;
 }
