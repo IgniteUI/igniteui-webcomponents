@@ -190,8 +190,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       this._domHelpers.updateLayout();
     }
     this._syncSelection(selectedTab);
-
-    this._resizeController.observe(this._headerRef.value!);
   }
 
   protected override update(props: PropertyValues<this>): void {
@@ -257,6 +255,13 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   //#endregion
 
   //#region Private API
+
+  /** A ref callback, so a header rendered while disconnected is observed on connect. */
+  private _observeHeader(header?: Element): void {
+    if (header) {
+      this._resizeController.observe(header);
+    }
+  }
 
   private _isSelectable(tab?: IgcTabComponent): tab is IgcTabComponent {
     return tab != null && !tab.disabled && this._tabs.includes(tab);
@@ -406,6 +411,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     return html`
       <div
         ${ref(this._headerRef)}
+        ${ref(this._observeHeader)}
         part="tabs"
         style=${styleMap(this._domHelpers.styleProperties)}
         @scroll=${this._handleScroll}

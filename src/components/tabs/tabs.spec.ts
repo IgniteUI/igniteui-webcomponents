@@ -1344,6 +1344,72 @@ describe('Tabs component', () => {
       verifySelection(nestedTabs, firstOf(nestedTabs.tabs));
     });
   });
+
+  describe('issue-2416', () => {
+    let tabs: IgcTabsComponent;
+    const reasons: unknown[] = [];
+
+    const onRejection = (event: PromiseRejectionEvent) => {
+      event.preventDefault();
+      reasons.push(event.reason);
+    };
+
+    beforeEach(() => {
+      reasons.length = 0;
+      window.addEventListener('unhandledrejection', onRejection);
+
+      tabs = document.createElement(IgcTabsComponent.tagName);
+
+      for (const label of ['One', 'Two']) {
+        const tab = document.createElement(IgcTabComponent.tagName);
+        tab.label = label;
+        tabs.append(tab);
+      }
+    });
+
+    afterEach(() => {
+      window.removeEventListener('unhandledrejection', onRejection);
+      tabs.remove();
+    });
+
+    const removals: Record<string, () => unknown> = {
+      'in the same task': () => tabs.remove(),
+      'after a microtask': () => Promise.resolve().then(() => tabs.remove()),
+      'after its first update': () =>
+        tabs.updateComplete.then(() => tabs.remove()),
+    };
+
+    for (const [when, remove] of Object.entries(removals)) {
+      it(`does not throw when removed ${when}`, async () => {
+        document.body.append(tabs);
+        await remove();
+        await nextFrame();
+        await nextFrame();
+
+        expect(reasons).to.be.empty;
+      });
+    }
+
+    it('follows resizes when added back after an early removal', async () => {
+      document.body.append(tabs);
+      tabs.remove();
+      await nextFrame();
+
+      document.body.append(tabs);
+      await elementUpdated(tabs);
+
+      const { container } = getTabsDOM(tabs);
+      const width = () => container.style.getPropertyValue('--_ig-tabs-width');
+
+      tabs.style.width = '200px';
+
+      await waitUntil(
+        () => width() === `${container.getBoundingClientRect().width}px`,
+        'The layout did not follow the resize'
+      );
+      expect(reasons).to.be.empty;
+    });
+  });
 });
 
 function getTabsDOM(tabs: IgcTabsComponent) {

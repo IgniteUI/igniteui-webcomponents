@@ -314,10 +314,12 @@ The groups below mirror the `describe` blocks.
 
 14. Issue #1140.
 15. Issue #713.
+16. Issue #2416. Tabs removed in the same task, after a microtask or after their first update throw no error. Tabs
+    added again after such a removal follow a change of size.
 
 ### Host ARIA
 
-16. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
+17. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
     target and follow a change, and an axe audit passes with a host label.
 
 ## Assumptions and limitations
