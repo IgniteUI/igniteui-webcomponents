@@ -2,6 +2,7 @@ import { LitElement, nothing } from 'lit';
 import { registerComponent } from '#internals/definitions/register.js';
 import { getScaleFactor, setStyles } from '#internals/utils/dom.js';
 import { addSafeEventListener } from '#internals/utils/events.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './ripple.material.css.js';
 
 const rippleFrames: Keyframe[] = [
@@ -23,7 +24,7 @@ const rippleAnimation: KeyframeAnimationOptions = {
  */
 export default class IgcRippleComponent extends LitElement {
   public static readonly tagName = 'igc-ripple';
-  public static override styles = styles;
+  public static override styles = [componentBase, styles];
 
   /* blazorSuppress */
   public static register(): void {

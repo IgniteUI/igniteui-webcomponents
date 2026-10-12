@@ -88,7 +88,8 @@ function createDefaultGhost({ width, height }: DOMRect): HTMLElement {
 
 class ResizableDirective extends PointerOperationDirective<
   ResizableOptions,
-  ResizeOperation
+  ResizeOperation,
+  ResizeState
 > {
   constructor(partInfo: PartInfo) {
     super(partInfo, {
@@ -215,7 +216,7 @@ class ResizableDirective extends PointerOperationDirective<
     });
   }
 
-  private _createState(): ResizeState {
+  protected override _createState(): ResizeState {
     const { initial, current, ghost } = this._operation!;
 
     return {
@@ -227,10 +228,6 @@ class ResizableDirective extends PointerOperationDirective<
       trigger: this._host ?? null,
       signal: this._operationAbort.signal,
     };
-  }
-
-  private _createParams(event: PointerEvent): ResizeCallbackParams {
-    return { event, state: this._createState() };
   }
 
   /** Puts the ghost at the start edge of the target, which is the right edge in RTL. */

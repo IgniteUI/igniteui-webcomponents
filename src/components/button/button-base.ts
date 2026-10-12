@@ -218,11 +218,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   protected override firstUpdated(): void {
     this.updateComplete.then(() => {
       if (this._commandfor) {
-        this._commandForElement = getElementByIdFromRoot(
-          this,
-          this._commandfor
-        );
-        this.requestUpdate();
+        this._resolveCommandFor();
       }
     });
   }
@@ -251,9 +247,14 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
 
   private _resolveCommandForElement(ids: Set<string>): void {
     if (this._commandfor && ids.has(this._commandfor)) {
-      this._commandForElement = getElementByIdFromRoot(this, this._commandfor);
-      this.requestUpdate();
+      this._resolveCommandFor();
     }
+  }
+
+  /** Looks up the `commandfor` target again and renders with it. */
+  private _resolveCommandFor(): void {
+    this._commandForElement = getElementByIdFromRoot(this, this._commandfor!);
+    this.requestUpdate();
   }
 
   //#region Public API

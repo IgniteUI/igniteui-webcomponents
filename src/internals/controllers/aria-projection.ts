@@ -73,15 +73,19 @@ export function resolveNaming(
   return naming;
 }
 
-/**
- * Forwards the host name and description to its role or focus element.
- * `fallback` names the element when the host has no name. @internal
- */
+type HostAriaOptions = {
+  /** Whether the element names itself, or the id of the element that names it. */
+  ownLabel?: string | boolean;
+  /** An element that describes the element as well. */
+  description?: Element | null;
+  /** The name of the element when the host has none. */
+  fallback?: string;
+};
+
+/** Forwards the host name and description to its role or focus element. @internal */
 export function hostAria(
   host: Element,
-  ownLabel: string | boolean = false,
-  description: Element | null = null,
-  fallback?: string
+  { ownLabel = false, description = null, fallback }: HostAriaOptions = {}
 ): ARIABindings {
   return {
     ...resolveNaming(host, ownLabel, fallback),

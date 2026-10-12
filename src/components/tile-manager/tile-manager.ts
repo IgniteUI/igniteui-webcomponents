@@ -19,11 +19,12 @@ import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
 import { asNumber } from '#internals/utils/math.js';
+import { all } from '#themes/tile-manager/themes/container.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { TileManagerDragMode, TileManagerResizeMode } from '../types.js';
 import { createTilesState } from './position.js';
 import { createSerializer } from './serializer.js';
-import { all } from './themes/container.js';
 import { styles as shared } from './themes/shared/tile-manager.common.css.js';
 import { styles } from './themes/tile-manager.base.css.js';
 import IgcTileComponent from './tile.js';
@@ -48,7 +49,7 @@ import IgcTileComponent from './tile.js';
 @shadowOptions({ slotAssignment: 'manual' })
 export default class IgcTileManagerComponent extends LitElement {
   public static readonly tagName = 'igc-tile-manager';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register() {

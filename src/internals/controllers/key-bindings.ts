@@ -1,7 +1,7 @@
-import type { ReactiveControllerHost } from 'lit';
+import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
 import { createAbortHandle } from '../abort-handler.js';
-import { asArray, partition } from '../utils/arrays.js';
+import { asArray, isEmpty, partition } from '../utils/arrays.js';
 import { isElement } from '../utils/dom.js';
 import { isFunction } from '../utils/types.js';
 import { addHostListeners } from './host-listeners.js';
@@ -125,7 +125,7 @@ interface KeyBindingOptions {
 /** A registered binding. The key of the binding map holds the combination. */
 interface KeyBinding {
   handler: KeyBindingHandler;
-  options?: KeyBindingOptions;
+  options: KeyBindingOptions;
 }
 
 //#endregion
@@ -142,8 +142,38 @@ function isKeyup(event: Event): boolean {
  * Manages the key bindings of a host element.
  * @hidden
  */
-class KeyBindingController {
+class KeyBindingController implements ReactiveController {
   //#region Private properties and state
+
+  /**
+   * Controllers with pressed keys. No keyup arrives after the window blurs, so
+   * one shared `blur` listener releases them while any key is down.
+   */
+  private static readonly _holding = new Set<KeyBindingController>();
+
+  private static readonly _releaseAll = (): void => {
+    for (const holder of KeyBindingController._holding) {
+      holder._pressedKeys.clear();
+    }
+    KeyBindingController._holding.clear();
+    globalThis.removeEventListener('blur', KeyBindingController._releaseAll);
+  };
+
+  private static _hold(controller: KeyBindingController): void {
+    if (isEmpty(KeyBindingController._holding)) {
+      globalThis.addEventListener('blur', KeyBindingController._releaseAll);
+    }
+    KeyBindingController._holding.add(controller);
+  }
+
+  private static _release(controller: KeyBindingController): void {
+    if (
+      KeyBindingController._holding.delete(controller) &&
+      isEmpty(KeyBindingController._holding)
+    ) {
+      globalThis.removeEventListener('blur', KeyBindingController._releaseAll);
+    }
+  }
 
   /** Base configuration, shared between instances. Never written to. */
   private static readonly _defaultOptions = {
@@ -192,37 +222,16 @@ class KeyBindingController {
     }
 
     addHostListeners(host, { events: ['keyup', 'keydown'], listener: this });
-    addHostListeners(host, {
-      target: globalThis,
-      events: ['blur'],
-      listener: this,
-    });
+    host.addController(this);
+  }
+
+  /** @internal */
+  public hostDisconnected(): void {
+    this._pressedKeys.clear();
+    KeyBindingController._release(this);
   }
 
   //#region Private API
-
-  private _applyEventModifiers(
-    binding: KeyBinding,
-    event: KeyboardEvent
-  ): void {
-    if (binding.options?.preventDefault) {
-      event.preventDefault();
-    }
-
-    if (binding.options?.stopPropagation) {
-      event.stopPropagation();
-    }
-  }
-
-  /** Whether the event type is a trigger. A repeated keydown needs `repeat`. */
-  private _bindingMatches(binding: KeyBinding, event: KeyboardEvent): boolean {
-    const triggers = binding.options?.triggers ?? ['keydown'];
-
-    return (
-      triggers.includes(event.type as KeyBindingTrigger) &&
-      (isKeyup(event) || !event.repeat || !!binding.options?.repeat)
-    );
-  }
 
   /**
    * Whether to ignore the event. The key has no binding, the event missed the
@@ -268,20 +277,22 @@ class KeyBindingController {
 
   //#region Event handling
 
-  private _handleKeyEvent(event: KeyboardEvent): void {
+  /** @internal */
+  public handleEvent(event: KeyboardEvent): void {
     const key = event.key.toLowerCase();
     const isModifier = MODIFIERS.has(key);
 
     if (this._shouldSkip(event, key)) {
       // A skipped keyup still releases the key.
       if (!isModifier && isKeyup(event)) {
-        this._pressedKeys.delete(key);
+        this._releaseKey(key);
       }
       return;
     }
 
     if (!isModifier) {
       this._pressedKeys.add(key);
+      KeyBindingController._hold(this);
     }
 
     let binding: KeyBinding | undefined;
@@ -307,27 +318,35 @@ class KeyBindingController {
       }
     }
 
-    if (binding && this._bindingMatches(binding, event)) {
-      this._applyEventModifiers(binding, event);
-      binding.handler.call(this._host, event);
+    if (binding) {
+      const { handler, options } = binding;
+      const triggers = options.triggers ?? ['keydown'];
+
+      // The event type must be a trigger, and a repeated keydown needs `repeat`.
+      if (
+        triggers.includes(event.type as KeyBindingTrigger) &&
+        (isKeyup(event) || !event.repeat || options.repeat)
+      ) {
+        if (options.preventDefault) {
+          event.preventDefault();
+        }
+        if (options.stopPropagation) {
+          event.stopPropagation();
+        }
+        handler.call(this._host, event);
+      }
     }
 
     if (!isModifier && isKeyup(event)) {
-      this._pressedKeys.delete(key);
+      this._releaseKey(key);
     }
   }
 
-  /** @internal */
-  public handleEvent(event: KeyboardEvent | FocusEvent): void {
-    switch (event.type) {
-      case 'keydown':
-      case 'keyup':
-        this._handleKeyEvent(event as KeyboardEvent);
-        break;
-      case 'blur':
-        // No keyup arrives when the user leaves the window with a key down.
-        this._pressedKeys.clear();
-        break;
+  private _releaseKey(key: string): void {
+    this._pressedKeys.delete(key);
+
+    if (isEmpty(this._pressedKeys)) {
+      KeyBindingController._release(this);
     }
   }
 

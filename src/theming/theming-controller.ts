@@ -1,23 +1,62 @@
 import { ContextConsumer } from '@lit/context';
 import {
   adoptStyles,
-  type LitElement,
   type ReactiveController,
   type ReactiveControllerHost,
   type ReactiveElement,
 } from 'lit';
 
+import { getOrInsertComputed } from '#internals/utils/objects.js';
 import { _themeChangedEmitter, getTheme } from './config.js';
 import { type ThemeContext, themeContext } from './context.js';
 import { CHANGED_THEME_EVENT } from './theming-event.js';
 import type {
+  ComponentThemes,
   Theme,
-  Themes,
   ThemeVariant,
   ThemingControllerConfig,
 } from './types.js';
 
 type ThemeProviderSource = 'uninitialized' | 'context' | 'global';
+
+type ElementClass = typeof ReactiveElement;
+
+/**
+ * The sheets that the instances of an element class adopt, keyed by the theme
+ * map, the class and `variant:theme`. The instances share them, so a theme
+ * resolves once per class.
+ */
+const resolvedSheets = new WeakMap<
+  ComponentThemes,
+  WeakMap<ElementClass, Map<string, ReadonlySet<CSSStyleSheet>>>
+>();
+
+/** Returns the element styles of `ctor` followed by the shared and the theme styles. */
+function resolveSheets(
+  ctor: ElementClass,
+  themes: ComponentThemes,
+  theme: Theme,
+  variant: ThemeVariant
+): ReadonlySet<CSSStyleSheet> {
+  const perClass = getOrInsertComputed(
+    resolvedSheets,
+    themes,
+    () => new WeakMap()
+  );
+  const perTheme = getOrInsertComputed(perClass, ctor, () => new Map());
+
+  return getOrInsertComputed(perTheme, `${variant}:${theme}`, () => {
+    const { shared, [theme]: themed } = themes[variant];
+
+    return new Set(
+      [...ctor.elementStyles, ...[shared, themed].flat()]
+        .filter((style) => style !== undefined)
+        .map((style) =>
+          style instanceof CSSStyleSheet ? style : style.styleSheet!
+        )
+    );
+  });
+}
 
 /**
  * A reactive controller that manages theme adoption for a Lit host element.
@@ -40,12 +79,15 @@ class ThemingController implements ReactiveController {
   //#region Internal state
 
   private readonly _host: ReactiveControllerHost & ReactiveElement;
-  private readonly _themes: Themes;
+  private readonly _themes: ComponentThemes;
   private readonly _options?: ThemingControllerConfig;
 
   private _theme: Theme = 'bootstrap';
   private _variant: ThemeVariant = 'light';
   private _themeSource: ThemeProviderSource = 'uninitialized';
+
+  /** Whether the host has read the theme, so a theme change must update it. */
+  private _observed = false;
 
   /** The element and theme sheets that this controller adopted last. */
   private _sheets: ReadonlySet<CSSStyleSheet> = new Set();
@@ -56,11 +98,13 @@ class ThemingController implements ReactiveController {
 
   /** Gets the current theme. */
   public get theme(): Theme {
+    this._observed = true;
     return this._theme;
   }
 
   /** Gets the current theme variant. */
   public get variant(): ThemeVariant {
+    this._observed = true;
     return this._variant;
   }
 
@@ -68,7 +112,7 @@ class ThemingController implements ReactiveController {
 
   constructor(
     host: ReactiveControllerHost & ReactiveElement,
-    themes: Themes,
+    themes: ComponentThemes,
     config?: ThemingControllerConfig
   ) {
     this._host = host;
@@ -142,19 +186,20 @@ class ThemingController implements ReactiveController {
 
     this._adoptStyles();
     this._options?.themeChange?.call(this._host, this._theme);
-    this._host.requestUpdate();
+
+    // A host that never reads the theme renders the same output for every theme.
+    if (this._observed || this._options?.themeChange) {
+      this._host.requestUpdate();
+    }
   }
 
   private _adoptStyles(): void {
     const root = this._host.shadowRoot!;
-    const ctor = this._host.constructor as typeof LitElement;
-    const { shared, [this._theme]: theme } = this._themes[this._variant];
-    const sheets = new Set(
-      [...ctor.elementStyles, shared, theme]
-        .filter((style) => style !== undefined)
-        .map((style) =>
-          style instanceof CSSStyleSheet ? style : style.styleSheet!
-        )
+    const sheets = resolveSheets(
+      this._host.constructor as ElementClass,
+      this._themes,
+      this._theme,
+      this._variant
     );
 
     // The sheets that other code adopted, such as a virtual scroll or a highlight.
@@ -180,7 +225,8 @@ class ThemingController implements ReactiveController {
  * @param host - The Lit element that will host the controller.
  * @param themes - The theme styles map containing `light` and `dark` variant entries,
  *   each keyed by theme name (`bootstrap`, `material`, `fluent`, `indigo`) and
- *   an optional `shared` entry applied regardless of theme.
+ *   an optional `shared` entry applied regardless of theme. An entry is one
+ *   style sheet, or an array of them in cascade order.
  * @param config - Optional configuration.
  * @param config.themeChange - Callback invoked on the host whenever the active theme changes.
  *
@@ -219,7 +265,7 @@ class ThemingController implements ReactiveController {
  */
 export function addThemingController(
   host: ReactiveControllerHost & ReactiveElement,
-  themes: Themes,
+  themes: ComponentThemes,
   config?: ThemingControllerConfig
 ): ThemingController {
   return new ThemingController(host, themes, config);

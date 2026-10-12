@@ -6,6 +6,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import { LitElement } from 'lit';
+import { spy } from 'sinon';
 import { simulateKeyboard } from '../testing/simulate.spec.js';
 import {
   addKeybindings,
@@ -195,6 +196,34 @@ describe('Key bindings controller', () => {
       dispatch(multiInstance, 'keydown', 'x');
       dispatch(multiInstance, 'keydown', 'z');
       expect(multiInstance.callCount).to.equal(1);
+    });
+
+    it('should add no window listener per instance', async () => {
+      const add = spy(window, 'addEventListener');
+
+      try {
+        const tagName = unsafeStatic(multiTag);
+        await fixture(
+          html`<div>
+          <${tagName}></${tagName}><${tagName}></${tagName}>
+        </div>`
+        );
+
+        expect(add.callCount).to.equal(0);
+      } finally {
+        add.restore();
+      }
+    });
+
+    it('should release the pressed keys when the host disconnects', () => {
+      dispatch(multiInstance, 'keydown', 'x');
+
+      const parent = multiInstance.parentElement!;
+      multiInstance.remove();
+      parent.append(multiInstance);
+
+      dispatch(multiInstance, 'keydown', 'z');
+      expect(multiInstance.callCount).to.equal(0);
     });
 
     it('should clear pressed keys on window blur', () => {

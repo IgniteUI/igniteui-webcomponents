@@ -2,6 +2,7 @@ import IgcAccordionComponent from '../../components/accordion/accordion.js';
 import IgcAvatarComponent from '../../components/avatar/avatar.js';
 import IgcBadgeComponent from '../../components/badge/badge.js';
 import IgcBannerComponent from '../../components/banner/banner.js';
+import IgcBreadcrumbComponent from '../../components/breadcrumb/breadcrumb.js';
 import IgcBreadcrumbsComponent from '../../components/breadcrumb/breadcrumbs.js';
 import IgcButtonGroupComponent from '../../components/button-group/button-group.js';
 import IgcToggleButtonComponent from '../../components/button-group/toggle-button.js';
@@ -85,6 +86,7 @@ const allComponents: IgniteComponent[] = [
   IgcBadgeComponent,
   IgcBannerComponent,
   IgcBreadcrumbsComponent,
+  IgcBreadcrumbComponent,
   IgcButtonComponent,
   IgcIconButtonComponent,
   IgcToggleButtonComponent,

@@ -21,13 +21,16 @@ Read them before making changes; if they disagree with this file, they win.
 - `src/components/[name]/`: one directory per component, with `[name].ts`, `[name].spec.ts`,
   a `spec.md` behavioral contract and, when themed, its SCSS under `themes/`
 - `src/internals/`, `src/theming/`, `src/animations/`: shared code, imported only through the
-  `#internals/*`, `#theming/*` and `#animations/*` aliases
+  `#internals/*`, `#theming/*` and `#animations/*` aliases. The theme aggregator of a component
+  is imported through `#themes/*`.
 - `src/extras/`: opt-in add-ons, published as `igniteui-webcomponents/extras`
 - `src/styles/`: global SCSS utilities, mixins and themes
 - `src/index.ts`: the public entry point of the package
 - `stories/`: Storybook stories, one per component tag
 - `scripts/`: build, styles, stories, typedoc and changelog scripts; `scripts/_package.json`
   is the published manifest
+- `public-api.json`: the committed snapshot of the public API that `npm run check` compares
+  against
 - `skills/`: public, user-facing skills that ship with the package
 - `.agents/`: contributor-facing skills and this context
 
@@ -52,4 +55,6 @@ component or a bug fix, update `CHANGELOG.md`.
 - Public API names, tag names, events or CSS parts without a deprecation plan
 - Generated output: `src/**/*.css.ts`, the `// region default` block of stories,
   `custom-elements.json`, `dist/`
+- `public-api.json` by hand; regenerate it with `npm run public-api:update`, and only for an
+  intended public API change
 - A new import alias goes into both `package.json` and `scripts/_package.json`, never one only

@@ -13,9 +13,10 @@ import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-
 import {
   nextInputId,
   renderInputShell,
-  resolveInputPartNames,
+  resolveInputPartFlags,
 } from '#internals/templates/input-shell.js';
 import type { ThemingController } from '#theming/theming-controller.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 
 export interface IgcInputComponentEventMap {
   /* alternateName: inputOcurred */
@@ -43,6 +44,9 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   protected abstract readonly _slots: SlotController<any>;
 
   protected readonly _inputId = nextInputId();
+
+  /** Part flags of the current render, shared by the container and the input. */
+  private _partFlags: Record<string, boolean> = {};
 
   @query('input')
   protected readonly _input?: HTMLInputElement;
@@ -82,8 +86,8 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   @property()
   public label!: string;
 
-  protected _resolvePartNames(base: string) {
-    return resolveInputPartNames(this._slots, base, !!this.value);
+  protected _resolvePartNames(base: string): Record<string, boolean> {
+    return { [base]: true, ...this._partFlags };
   }
 
   /** Selects all the text inside the input. */
@@ -110,12 +114,15 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   }
 
   protected override render() {
+    this._partFlags = resolveInputPartFlags(this._slots, !!this.value);
+
     return renderInputShell(this, {
       theme: this._themes.theme,
       label: this.label,
       labelId: this._inputId,
       containerParts: this._resolvePartNames('container'),
       renderInput: this._renderInput,
+      helperText: IgcValidationContainerComponent.create(this),
       renderFileParts: this._renderFileParts,
     });
   }

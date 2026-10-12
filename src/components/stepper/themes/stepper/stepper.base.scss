@@ -1,11 +1,9 @@
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
 
 :host {
     font-family: var(--ig-font-family);
     overflow: hidden;
 
-    --margin: #{rem(16px)};
     --body-padding: #{rem(16px)};
     --header-gap: #{rem(8px)};
     --header-padding: #{rem(8px)};
@@ -13,18 +11,15 @@
 
     // Indicator
     --indicator-size: #{rem(24px)};
-    --indicator-roundness: calc(var(--indicator-size) / 2);
     --indicator-box-shadow-size: #{rem(1px)};
 
     // Separator
     --separator-size: #{rem(1px)};
     --separator-type: dashed;
-    --separator-type--completed: solid;
     --separator-position: calc(var(--header-padding) + (var(--indicator-size) / 2) - (var(--separator-size) / 2));
     --separator-min-width: #{rem(36px)};
     --separator-min-width--header: #{rem(4px)};
     --separator-min-width--full: calc(var(--separator-min-width) + var(--separator-min-width--header));
-    --text-min-width: var(--indicator-size);
 
     // Step min width
     --header-min-width: calc(var(--indicator-size) + (var(--header-padding) * 2));
@@ -33,7 +28,6 @@
 }
 
 :host([orientation='horizontal']) {
-    --horizontal-content-disply: block;
     --vertical-separator-visibility: none;
     --horizontal-body-padding: #{rem(16px)};
     --body-display: grid;
@@ -59,14 +53,6 @@
         --body-grid-rows: 1fr;
         --body-transition-delay: 0ms;
     }
-
-    ::slotted(igc-step:first-of-type) {
-        --horizontal-separator-visibility--first-of-type: none;
-    }
-
-    ::slotted(igc-step:last-of-type) {
-        --horizontal-separator-visibility--last-of-type: none;
-    }
 }
 
 :host([orientation='horizontal'][title-position='start']),
@@ -82,7 +68,6 @@
 }
 
 ::slotted(igc-step:last-of-type) {
-    --vertical-body-disply--last-of-type: none;
     --horizontal-separator-display--last-of-type: none;
 }
 
@@ -113,7 +98,6 @@
 
 :host(:not([orientation='horizontal'])) {
     --vertical-header-z-index: 2;
-    --vertical-body-disply: block;
     --vertical-body-height: #{rem(24px)};
     --header-width-vertical: 100%;
     --hide-horizontal-separator: none;
@@ -123,10 +107,6 @@
     width: 100%;
 
     ::slotted(igc-step) {
-        --horizontal-separator-display: none;
-        --step-hide-last-of-type: none;
-        --step-hide-first-of-type: none;
-        --step-width: 100%;
         --body-indent--vertical: calc(var(--header-padding) + var(--indicator-size) + var(--header-gap));
 
         display: flex;

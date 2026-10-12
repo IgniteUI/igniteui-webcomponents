@@ -49,7 +49,9 @@ import {
 import { equal } from '#internals/utils/objects.js';
 import { formatString } from '#internals/utils/strings.js';
 import { isDefined } from '#internals/utils/types.js';
+import { all } from '#themes/slider/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import type {
   SliderTickLabelRotation,
@@ -58,7 +60,6 @@ import type {
 import IgcSliderLabelComponent from './slider-label.js';
 import { styles as shared } from './themes/shared/slider.common.css.js';
 import { styles } from './themes/slider.base.css.js';
-import { all } from './themes/themes.js';
 
 /** The components that both sliders render. */
 export const sliderDependencies = [
@@ -94,16 +95,16 @@ function stepsTo(value: number, base: number, step: number): number {
 
 @blazorDeepImport
 export class IgcSliderBaseComponent extends LitElement {
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   @query(`[part~='thumb']`)
-  protected thumb!: HTMLElement;
+  protected _thumb!: HTMLElement;
 
   @query(`[part='base']`, true)
-  protected base!: HTMLDivElement;
+  protected _base!: HTMLDivElement;
 
   @queryAssignedElements({ selector: 'igc-slider-label' })
-  private labelElements!: HTMLElement[];
+  private _labelElements!: HTMLElement[];
 
   private _min = 0;
   private _max = 100;
@@ -112,29 +113,29 @@ export class IgcSliderBaseComponent extends LitElement {
   private _step = 1;
   private _lowerBound?: number;
   private _upperBound?: number;
-  private startValue?: number;
+  private _startValue?: number;
   /** The pointer that drags a thumb. */
   private _dragPointer?: number;
   /** The locale and a copy of the options of {@link _numberFormat}. */
   private _formatSource?: [string, Intl.NumberFormatOptions];
   private _numberFormat?: Intl.NumberFormat;
-  protected activeThumb?: HTMLElement;
+  protected _activeThumb?: HTMLElement;
 
   private readonly _thumbLabelTimer = createTimer(() => {
-    this.thumbLabelsVisible = false;
+    this._thumbLabelsVisible = false;
   }, 750);
 
   @state()
-  protected thumbLabelsVisible = false;
+  protected _thumbLabelsVisible = false;
 
   @state()
-  protected labels: string[] = [];
+  protected _labels: string[] = [];
 
-  protected get hasLabels() {
-    return this.labels.length > 0;
+  protected get _hasLabels() {
+    return this._labels.length > 0;
   }
 
-  protected get distance() {
+  protected get _distance() {
     return this.max - this.min;
   }
 
@@ -156,7 +157,7 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   public get min(): number {
-    return this.hasLabels ? 0 : this._min;
+    return this._hasLabels ? 0 : this._min;
   }
 
   /**
@@ -178,7 +179,7 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   public get max(): number {
-    return this.hasLabels ? this.labels.length - 1 : this._max;
+    return this._hasLabels ? this._labels.length - 1 : this._max;
   }
 
   /**
@@ -254,7 +255,7 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   public get step(): number {
-    return this.hasLabels ? 1 : this._step;
+    return this._hasLabels ? 1 : this._step;
   }
 
   /**
@@ -320,6 +321,29 @@ export class IgcSliderBaseComponent extends LitElement {
   @property({ type: Number, reflect: true, attribute: 'tick-label-rotation' })
   public tickLabelRotation: SliderTickLabelRotation = 0;
 
+  constructor() {
+    super();
+
+    addThemingController(this, all);
+
+    addSafeEventListener(this, 'pointerdown', this._pointerDown);
+    addSafeEventListener(this, 'pointermove', this._pointerMove);
+    addSafeEventListener(this, 'lostpointercapture', this._lostPointerCapture);
+    addSafeEventListener(this, 'keyup', this._handleKeyUp);
+
+    addKeybindings(this, {
+      skip: () => this.disabled,
+    })
+      .set(arrowLeft, () => this._handleArrowKeys(isLTR(this) ? -1 : 1))
+      .set(arrowRight, () => this._handleArrowKeys(isLTR(this) ? 1 : -1))
+      .set(arrowUp, () => this._handleArrowKeys(1))
+      .set(arrowDown, () => this._handleArrowKeys(-1))
+      .set(homeKey, () => this._handleKeyboardMove(this.lowerBound))
+      .set(endKey, () => this._handleKeyboardMove(this.upperBound))
+      .set(pageUpKey, () => this._handlePageKeys(1))
+      .set(pageDownKey, () => this._handlePageKeys(-1));
+  }
+
   protected override willUpdate(changedProperties: PropertyValues): void {
     // `valueFormatOptions` can change in place, so the update keeps a copy.
     const formatSource: [string, Intl.NumberFormatOptions] = [
@@ -337,8 +361,8 @@ export class IgcSliderBaseComponent extends LitElement {
       this._dismissThumbLabels();
     }
 
-    if (changedProperties.has('thumbLabelsVisible')) {
-      this._listenForEscape(this.thumbLabelsVisible);
+    if (changedProperties.has('_thumbLabelsVisible')) {
+      this._listenForEscape(this._thumbLabelsVisible);
     }
 
     // Only the limit that changed differs from the last scale.
@@ -354,33 +378,10 @@ export class IgcSliderBaseComponent extends LitElement {
       changedProperties.has('lowerBound') ||
       changedProperties.has('upperBound') ||
       changedProperties.has('step') ||
-      changedProperties.has('labels');
+      changedProperties.has('_labels');
 
     // Attributes apply one at a time, so the update resolves the values as set.
-    this.normalizeValue(constraintsChanged);
-  }
-
-  constructor() {
-    super();
-
-    addThemingController(this, all);
-
-    addSafeEventListener(this, 'pointerdown', this.pointerDown);
-    addSafeEventListener(this, 'pointermove', this.pointerMove);
-    addSafeEventListener(this, 'lostpointercapture', this.lostPointerCapture);
-    addSafeEventListener(this, 'keyup', this.handleKeyUp);
-
-    addKeybindings(this, {
-      skip: () => this.disabled,
-    })
-      .set(arrowLeft, () => this.handleArrowKeys(isLTR(this) ? -1 : 1))
-      .set(arrowRight, () => this.handleArrowKeys(isLTR(this) ? 1 : -1))
-      .set(arrowUp, () => this.handleArrowKeys(1))
-      .set(arrowDown, () => this.handleArrowKeys(-1))
-      .set(homeKey, () => this.handleKeyboardMove(this.lowerBound))
-      .set(endKey, () => this.handleKeyboardMove(this.upperBound))
-      .set(pageUpKey, () => this.handlePageKeys(1))
-      .set(pageDownKey, () => this.handlePageKeys(-1));
+    this._normalizeValue(constraintsChanged);
   }
 
   public override disconnectedCallback(): void {
@@ -395,40 +396,40 @@ export class IgcSliderBaseComponent extends LitElement {
    * that has the focus keeps it. A disabled slider does not take the focus.
    */
   public override focus(options?: FocusOptions): void {
-    if (!(this.disabled || this.activeThumb)) {
-      this.thumb?.focus(options);
+    if (!(this.disabled || this._activeThumb)) {
+      this._thumb?.focus(options);
     }
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the thumb. */
   public override blur(): void {
-    this.activeThumb?.blur();
+    this._activeThumb?.blur();
   }
 
-  private handleArrowKeys(delta: -1 | 1) {
-    this.handleKeyboardMove(this.activeValue + (this.step || 1) * delta);
+  private _handleArrowKeys(delta: -1 | 1) {
+    this._handleKeyboardMove(this._activeValue + (this.step || 1) * delta);
   }
 
-  private handlePageKeys(delta: -1 | 1) {
+  private _handlePageKeys(delta: -1 | 1) {
     const step = this.step || 1;
-    this.handleKeyboardMove(
-      this.activeValue +
+    this._handleKeyboardMove(
+      this._activeValue +
         delta * Math.max((this.upperBound - this.lowerBound) / 10, step)
     );
   }
 
-  private handleKeyboardMove(target: number) {
-    if (target === this.activeValue) {
+  private _handleKeyboardMove(target: number) {
+    if (target === this._activeValue) {
       return;
     }
 
-    const updated = this.updateValue(target);
-    this.showThumbLabels();
-    this.hideThumbLabels();
+    const updated = this._updateValue(target);
+    this._showThumbLabels();
+    this._hideThumbLabels();
 
     if (updated) {
-      this.emitChangeEvent();
+      this._emitChangeEvent();
     }
   }
 
@@ -436,31 +437,31 @@ export class IgcSliderBaseComponent extends LitElement {
    * A key release marks keyboard focus, which keeps the labels shown. As for
    * `:focus-visible`, a modifier key alone does not.
    */
-  private handleKeyUp(event: KeyboardEvent) {
+  private _handleKeyUp(event: KeyboardEvent) {
     if (isModifierKey(event.key)) {
       return;
     }
 
-    this.activeThumb?.part.add('focused');
+    this._activeThumb?.part.add('focused');
 
     // Escape hid the labels on its key press.
-    if (this.activeThumb && !isKey(event, escapeKey)) {
-      this.showThumbLabels();
+    if (this._activeThumb && !isKey(event, escapeKey)) {
+      this._showThumbLabels();
     }
   }
 
   /** The labels override `min`, `max` and `step` in their getters. */
-  protected handleSlotChange() {
-    const labels = this.labelElements.map((label) => label.textContent ?? '');
+  protected _handleSlotChange() {
+    const labels = this._labelElements.map((label) => label.textContent ?? '');
 
     // A new array with the same labels would cost one more update.
-    if (!equal(labels, this.labels)) {
-      this.labels = labels;
+    if (!equal(labels, this._labels)) {
+      this._labels = labels;
     }
   }
 
   /* c8 ignore next 3 */
-  protected get activeValue() {
+  protected get _activeValue() {
     return 0;
   }
 
@@ -469,7 +470,7 @@ export class IgcSliderBaseComponent extends LitElement {
    * `constraintsChanged`, and then forgets them.
    */
   /* c8 ignore next */
-  protected normalizeValue(_constraintsChanged: boolean): void {}
+  protected _normalizeValue(_constraintsChanged: boolean): void {}
 
   /**
    * Returns `requested` when the constraints change it, so the update can
@@ -495,24 +496,24 @@ export class IgcSliderBaseComponent extends LitElement {
 
   /** The position of `value` on the scale, in percent. */
   protected _percentOf(value: number): number {
-    return this.distance ? asPercent(value - this.min, this.distance) : 0;
+    return this._distance ? asPercent(value - this.min, this._distance) : 0;
   }
 
   /* c8 ignore next 3 */
-  protected getTrackStyle(): StyleInfo {
+  protected _getTrackStyle(): StyleInfo {
     return {};
   }
 
   /** Moves the active thumb to `target`, and returns whether it moved. */
-  protected updateValue(target: number): boolean {
-    const value = this.validateValue(target);
+  protected _updateValue(target: number): boolean {
+    const value = this._validateValue(target);
 
-    if (value === this.activeValue) {
+    if (value === this._activeValue) {
       return false;
     }
 
     this._setActiveValue(value);
-    this.emitInputEvent();
+    this._emitInputEvent();
     return true;
   }
 
@@ -520,21 +521,21 @@ export class IgcSliderBaseComponent extends LitElement {
   protected _setActiveValue(_value: number): void {}
 
   /* c8 ignore next 3 */
-  protected renderThumbs(): TemplateResult<1> {
+  protected _renderThumbs(): TemplateResult<1> {
     return html``;
   }
 
   /* c8 ignore next */
-  protected emitInputEvent() {}
+  protected _emitInputEvent() {}
 
   /* c8 ignore next */
-  protected emitChangeEvent() {}
+  protected _emitChangeEvent() {}
 
   /**
    * Clamps `value` into the bounds and snaps it to the nearest step from `min`,
    * as a native range input does: a tie goes to the higher step.
    */
-  protected validateValue(value: number) {
+  protected _validateValue(value: number) {
     const { lowerBound, upperBound, min, step } = this;
     const clamped = clamp(value, lowerBound, upperBound);
 
@@ -558,7 +559,7 @@ export class IgcSliderBaseComponent extends LitElement {
     return snapped < lowerBound || snapped > upperBound ? clamped : snapped;
   }
 
-  protected formatValue(value: number) {
+  protected _formatValue(value: number) {
     this._numberFormat ??= new Intl.NumberFormat(
       this.locale,
       this.valueFormatOptions
@@ -569,34 +570,33 @@ export class IgcSliderBaseComponent extends LitElement {
       : strValue;
   }
 
-  protected closestHandle(_event: PointerEvent): HTMLElement {
-    return this.thumb;
+  protected _closestHandle(_event: PointerEvent): HTMLElement {
+    return this._thumb;
   }
 
-  private totalTickCount() {
-    const primaryTicks = this.hasLabels
-      ? this.primaryTicks > 0
-        ? this.labels.length
-        : 0
-      : this.primaryTicks === 1
-        ? 2
-        : this.primaryTicks;
+  private _totalTickCount(): number {
+    const { primaryTicks, secondaryTicks } = this;
+    let primary = primaryTicks === 1 ? 2 : primaryTicks;
 
-    return primaryTicks > 0
-      ? (primaryTicks - 1) * this.secondaryTicks + primaryTicks
-      : this.secondaryTicks > 0
-        ? this.secondaryTicks
-        : 0;
+    if (this._hasLabels) {
+      primary = primaryTicks > 0 ? this._labels.length : 0;
+    }
+
+    if (primary > 0) {
+      return (primary - 1) * secondaryTicks + primary;
+    }
+
+    return secondaryTicks > 0 ? secondaryTicks : 0;
   }
 
-  private tickValue(idx: number, tickCount: number) {
-    const distance = this.distance;
+  private _tickValue(idx: number, tickCount: number) {
+    const distance = this._distance;
     const labelStep = tickCount > 1 ? distance / (tickCount - 1) : distance;
 
     return this.min + labelStep * idx;
   }
 
-  private isPrimary(idx: number) {
+  private _isPrimary(idx: number) {
     return this.primaryTicks > 0 && idx % (this.secondaryTicks + 1) === 0;
   }
 
@@ -605,24 +605,24 @@ export class IgcSliderBaseComponent extends LitElement {
     return this.disabled || this.hideTooltip;
   }
 
-  protected showThumbLabels() {
+  protected _showThumbLabels() {
     if (this._thumbLabelsOff) {
       return;
     }
 
     this._thumbLabelTimer.stop();
-    this.thumbLabelsVisible = true;
+    this._thumbLabelsVisible = true;
   }
 
   /**
    * Starts the hide timer, unless a thumb has keyboard focus. The `focused`
    * part tells it, because a script focus also matches `:focus-visible`.
    */
-  protected hideThumbLabels() {
+  protected _hideThumbLabels() {
     if (
       isDefined(this._dragPointer) ||
-      !this.thumbLabelsVisible ||
-      this.activeThumb?.part.contains('focused')
+      !this._thumbLabelsVisible ||
+      this._activeThumb?.part.contains('focused')
     ) {
       return;
     }
@@ -632,7 +632,7 @@ export class IgcSliderBaseComponent extends LitElement {
 
   private _dismissThumbLabels(): void {
     this._thumbLabelTimer.stop();
-    this.thumbLabelsVisible = false;
+    this._thumbLabelsVisible = false;
   }
 
   /**
@@ -653,24 +653,25 @@ export class IgcSliderBaseComponent extends LitElement {
   };
 
   /** Moves the active thumb to the step nearest to the pointer. */
-  private updateSlider(clientX: number) {
-    if (this.disabled || !this.activeThumb) {
+  private _updateSlider(clientX: number) {
+    if (this.disabled || !this._activeThumb) {
       return;
     }
 
-    const { activeValue, step } = this;
-    const fraction = pointToFraction(this.base, clientX, isLTR(this));
-    const target = this.min + fraction * this.distance;
+    const activeValue = this._activeValue;
+    const { step } = this;
+    const fraction = pointToFraction(this._base, clientX, isLTR(this));
+    const target = this.min + fraction * this._distance;
 
     // Whole steps from the value, so a value off the steps moves as on a key.
-    this.updateValue(
+    this._updateValue(
       step
         ? stepFrom(activeValue, step, stepsTo(target, activeValue, step))
         : target
     );
   }
 
-  private pointerDown(event: PointerEvent) {
+  private _pointerDown(event: PointerEvent) {
     const dragging =
       isDefined(this._dragPointer) && this.hasPointerCapture(this._dragPointer);
 
@@ -680,64 +681,64 @@ export class IgcSliderBaseComponent extends LitElement {
       return;
     }
 
-    const thumb = this.closestHandle(event);
+    const thumb = this._closestHandle(event);
     thumb.focus();
 
-    this.startValue = this.activeValue;
-    this.updateSlider(event.clientX);
+    this._startValue = this._activeValue;
+    this._updateSlider(event.clientX);
 
     this.setPointerCapture(event.pointerId);
     this._dragPointer = event.pointerId;
-    this.showThumbLabels();
+    this._showThumbLabels();
     event.preventDefault();
-    this.activeThumb?.part.remove('focused');
+    this._activeThumb?.part.remove('focused');
   }
 
-  private pointerMove(event: PointerEvent) {
+  private _pointerMove(event: PointerEvent) {
     if (event.pointerId === this._dragPointer) {
-      this.updateSlider(event.clientX);
+      this._updateSlider(event.clientX);
     }
   }
 
-  private lostPointerCapture(event: PointerEvent) {
+  private _lostPointerCapture(event: PointerEvent) {
     if (event.pointerId !== this._dragPointer) {
       return;
     }
 
     this._dragPointer = undefined;
-    this.hideThumbLabels();
+    this._hideThumbLabels();
 
-    if (this.startValue !== this.activeValue) {
-      this.emitChangeEvent();
+    if (this._startValue !== this._activeValue) {
+      this._emitChangeEvent();
     }
-    this.startValue = undefined;
+    this._startValue = undefined;
   }
 
-  protected handleThumbFocus(event: FocusEvent) {
-    this.activeThumb = event.target as HTMLElement;
+  protected _handleThumbFocus(event: FocusEvent) {
+    this._activeThumb = event.target as HTMLElement;
   }
 
-  protected handleThumbBlur(event: FocusEvent) {
-    this.activeThumb?.part.remove('focused');
-    this.activeThumb = undefined;
+  protected _handleThumbBlur(event: FocusEvent) {
+    this._activeThumb?.part.remove('focused');
+    this._activeThumb = undefined;
 
     // The label of a thumb under the pointer stays, as on hover.
     if (!(event.target as Element).matches(':hover')) {
-      this.hideThumbLabels();
+      this._hideThumbLabels();
     }
   }
 
-  protected *_renderTicks() {
-    const total = this.totalTickCount();
+  protected *_renderTickItems() {
+    const total = this._totalTickCount();
     const secondaryTicks = this.secondaryTicks + 1;
 
     for (let i = 0; i < total; i++) {
-      const primary = this.isPrimary(i);
-      const labelInner = this.hasLabels
+      const primary = this._isPrimary(i);
+      const labelInner = this._hasLabels
         ? primary
-          ? this.labels[Math.round(i / secondaryTicks)]
+          ? this._labels[Math.round(i / secondaryTicks)]
           : nothing
-        : this.formatValue(this.tickValue(i, total));
+        : this._formatValue(this._tickValue(i, total));
       // The projected labels name only the primary ticks.
       const labelHidden =
         labelInner === nothing ||
@@ -759,11 +760,11 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   /** The ticks do not depend on the value, so a drag does not render them. */
-  protected renderTicks() {
+  protected _renderTicks() {
     const deps = [
       this.min,
       this.max,
-      this.labels,
+      this._labels,
       this.primaryTicks,
       this.secondaryTicks,
       this.hidePrimaryLabels,
@@ -773,16 +774,16 @@ export class IgcSliderBaseComponent extends LitElement {
     ];
 
     return html`<div part="ticks">
-      ${guard(deps, () => this._renderTicks())}
+      ${guard(deps, () => this._renderTickItems())}
     </div>`;
   }
 
   /** Renders a thumb, and its value label in a popover in the top layer. */
-  protected renderThumb(value: number, aria: ARIABindings, thumbId = 'thumb') {
-    const label = this.hasLabels ? this.labels[value] : undefined;
+  protected _renderThumb(value: number, aria: ARIABindings, thumbId = 'thumb') {
+    const label = this._hasLabels ? this._labels[value] : undefined;
     const formatted = this.valueFormat || this.valueFormatOptions;
     const textValue =
-      label ?? (formatted ? this.formatValue(value) : undefined);
+      label ?? (formatted ? this._formatValue(value) : undefined);
 
     return html`
       <div
@@ -797,10 +798,10 @@ export class IgcSliderBaseComponent extends LitElement {
         aria-valuenow=${value}
         aria-valuetext=${ifDefined(textValue)}
         aria-disabled=${this.disabled}
-        @pointerenter=${this.showThumbLabels}
-        @pointerleave=${this.hideThumbLabels}
-        @focus=${this.handleThumbFocus}
-        @blur=${this.handleThumbBlur}
+        @pointerenter=${this._showThumbLabels}
+        @pointerleave=${this._hideThumbLabels}
+        @focus=${this._handleThumbFocus}
+        @blur=${this._handleThumbBlur}
       ></div>
       ${
         this.hideTooltip
@@ -810,15 +811,15 @@ export class IgcSliderBaseComponent extends LitElement {
                 anchor=${thumbId}
                 placement="top"
                 scroll-strategy="hide"
-                ?open=${this.thumbLabelsVisible}
+                ?open=${this._thumbLabelsVisible}
               >
                 <div
                   part="thumb-label"
                   aria-hidden="true"
-                  style=${styleMap({ opacity: this.thumbLabelsVisible ? 1 : 0 })}
+                  style=${styleMap({ opacity: this._thumbLabelsVisible ? 1 : 0 })}
                 >
                   <div part="thumb-label-inner">
-                    ${textValue ?? this.formatValue(value)}
+                    ${textValue ?? this._formatValue(value)}
                   </div>
                 </div>
               </igc-popover>
@@ -827,12 +828,12 @@ export class IgcSliderBaseComponent extends LitElement {
     `;
   }
 
-  private renderSteps() {
-    if (!this.discreteTrack || !this.step || !this.distance) {
+  private _renderSteps() {
+    if (!this.discreteTrack || !this.step || !this._distance) {
       return nothing;
     }
 
-    const interval = (100 * Math.SQRT2 * this.step) / this.distance;
+    const interval = (100 * Math.SQRT2 * this.step) / this._distance;
 
     return html`
       <div part="steps">
@@ -855,17 +856,17 @@ export class IgcSliderBaseComponent extends LitElement {
 
     return html`
       <div part="base">
-        ${isStart || isMirrored ? this.renderTicks() : nothing}
+        ${isStart || isMirrored ? this._renderTicks() : nothing}
         <div part="track">
           <div part="inactive"></div>
-          <div part="fill" style=${styleMap(this.getTrackStyle())}></div>
-          ${this.renderSteps()}
+          <div part="fill" style=${styleMap(this._getTrackStyle())}></div>
+          ${this._renderSteps()}
         </div>
-        ${isStart ? nothing : this.renderTicks()}
+        ${isStart ? nothing : this._renderTicks()}
         <div part="thumbs" ${ariaBindings(this._thumbsAria())}>
-          ${this.renderThumbs()}
+          ${this._renderThumbs()}
         </div>
-        <slot @slotchange=${this.handleSlotChange}></slot>
+        <slot @slotchange=${this._handleSlotChange}></slot>
       </div>
     `;
   }

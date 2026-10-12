@@ -11,7 +11,7 @@
 [![License: MIT](https://img.shields.io/github/license/IgniteUI/igniteui-webcomponents)](https://github.com/IgniteUI/igniteui-webcomponents/blob/master/LICENSE)
 [![Discord](https://img.shields.io/discord/836634487483269200?logo=discord&logoColor=ffffff)](https://discord.gg/39MjrTRqds)
 
-[Ignite UI for Web Components] is a comprehensive library that includes the fastest [Data Grid] on the market, a high-performing [Hierarchical Grid], Pivot Grid, 60+ data [Charts], [Dock Manager], and more. Plus maps, gauges and other reusable feature-rich components to help you create better web apps and modern-day UX experiences.
+[Ignite UI for Web Components] is a library that includes the [Data Grid], the [Hierarchical Grid], the Pivot Grid, more than 60 data [Charts], the [Dock Manager] and other components. It also includes maps, gauges and other reusable components that help you create web applications.
 
 [Documentation][Ignite UI for Web Components] · [Storybook] · [Changelog] · [Discord](https://discord.gg/39MjrTRqds)
 
@@ -23,6 +23,7 @@
     - [The Lightweight Web Components Data Grid and Data Table](#the-lightweight-web-components-data-grid-and-data-table)
     - [Dock Manager - EXCLUSIVE FEATURE](#dock-manager---exclusive-feature)
 - [Quick start](#quick-start)
+- [Bundling a single theme](#bundling-a-single-theme)
 - [Browser support](#browser-support)
 - [Tooling](#tooling)
   - [Editor metadata](#editor-metadata)
@@ -98,7 +99,7 @@ All components in this package are released under the MIT License. The table lis
 
 ### Grids, Grid Lite and Dock Manager
 
-The grids and the Dock Manager ship in separate packages. Grid Lite is MIT licensed; the others are commercial products.
+The grids and the Dock Manager ship in separate packages. Grid Lite is MIT licensed. The other packages are commercial products.
 
 | Components        | Status |         Documentation          |             License              |                                 Package                                  |
 | :---------------- | :----: | :----------------------------: | :------------------------------: | :----------------------------------------------------------------------: |
@@ -110,13 +111,13 @@ The grids and the Dock Manager ship in separate packages. Grid Lite is MIT licen
 
 #### The Lightweight Web Components Data Grid and Data Table
 
-The Ignite UI for Web Components Data Grid and Table are both lightweight and developed to handle high data volumes. The Web Components Grid offers powerful data visualization capabilities and superior performance on any device. With interactive features that users expect. Fast rendering. Unbeatable interactions. And the best possible user experience that you wouldn’t otherwise be able to achieve with so little code on your own.
+The Ignite UI for Web Components Data Grid and Table are lightweight and can process large volumes of data. The Web Components Grid gives data visualization capabilities and fast rendering on all devices. It also has the interactive features that users expect. You need only a small quantity of code to use them.
 
 #### Dock Manager - EXCLUSIVE FEATURE
 
 ![Dock Manager Picture]
 
-Provide a complete windowing experience, splitting complex layouts into smaller, easier-to-manage panes.
+The Dock Manager gives a complete windowing experience. It splits complex layouts into smaller panes that are easier to manage.
 
 - [Documentation][Dock Manager]
 - License - [Commercial][Commercial License]
@@ -150,15 +151,34 @@ import { defineAllComponents } from 'igniteui-webcomponents';
 defineAllComponents();
 ```
 
-Registering all components increases the bundle size of your application, so register only the ones you use.
+Register only the components that you use. When you register all components, the bundle size of your application increases.
 
-After the components are registered, use them in your HTML:
+After you register the components, use them in your HTML:
 
 ```html
 <igc-avatar initials="AZ"></igc-avatar><igc-badge></igc-badge>
 ```
 
 See the [documentation][Ignite UI for Web Components] for guides on each component, theming, and framework integration.
+
+## Bundling a single theme
+
+Each component contains the styles of all four themes (Material, Bootstrap, Indigo and Fluent) and applies the active one. If your application uses only one theme, set the `igc-theme-<name>` condition in your bundler. The bundle then contains only the styles of that theme and is approximately 15–17% smaller after gzip.
+
+| Tool    | Configuration                                                                                                                                       |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Vite    | `resolve: { conditions: ['igc-theme-bootstrap', ...defaultClientConditions] }`, with `defaultClientConditions` imported from `vite`                 |
+| webpack | `resolve: { conditionNames: ['igc-theme-bootstrap', '...'] }`                                                                                       |
+| esbuild | `conditions: ['igc-theme-bootstrap']`, or `--conditions=igc-theme-bootstrap` on the command line                                                    |
+| Rollup  | `nodeResolve({ exportConditions: ['igc-theme-bootstrap'] })` from `@rollup/plugin-node-resolve`                                                     |
+| Node.js | `node --conditions=igc-theme-bootstrap server.js`, for server-side rendering. In Vite, set `ssr.resolve.conditions` with `defaultServerConditions`. |
+
+The condition names are `igc-theme-material`, `igc-theme-bootstrap`, `igc-theme-indigo` and `igc-theme-fluent`. Set only one of them.
+
+- The light and dark variants of the theme stay in the bundle. Thus, you can still switch between them.
+- If you call `configureTheme()` with a theme that is not in the bundle, the components show only their structural styles.
+- Load the global theme style sheet as before, for example `igniteui-webcomponents/themes/light/bootstrap.css`.
+- Without a condition, the bundle contains all four themes, as before.
 
 ## Browser support
 
@@ -170,8 +190,8 @@ See the [documentation][Ignite UI for Web Components] for guides on each compone
 
 ### Editor metadata
 
-The package comes with its own [Custom Elements Manifest], [VSCode Custom Data Format] for VSCode and [Web Types] for JetBrains IDEs.
-Refer to the documentation of your editor of choice to see if you can take advantage of this metadata for linting, intellisense and documentation.
+The package includes its own [Custom Elements Manifest], [VSCode Custom Data Format] for VSCode and [Web Types] for JetBrains IDEs.
+Refer to the documentation of your editor to find if it can use this metadata for linting, intellisense and documentation.
 
 | Package path                                                 | Description                        |
 | ------------------------------------------------------------ | ---------------------------------- |
@@ -191,7 +211,7 @@ The package also includes reusable skills for GitHub Copilot and other compatibl
 - [Optimizing bundle size](skills/igniteui-wc-optimize-bundle-size/SKILL.md)
 - [Migrating from Grid Lite to the premium Data Grid](skills/igniteui-wc-migrate-grid-lite-to-premium/SKILL.md)
 
-After installing the package, copy the skills into your repository so your agent can discover them automatically:
+After you install the package, copy the skills into your repository so that your agent can find them automatically:
 
 ```sh
 # Unix/macOS
@@ -207,25 +227,27 @@ See the [AI agent skills guide](skills/README.md) for example prompts, supported
 
 ## Accessibility
 
-The components target WCAG 2.1 level AA and follow the ARIA Authoring Practices Guide patterns for their roles. Component specifications run axe-core audits against the light DOM and the shadow DOM, and components are verified by hand with a keyboard and screen readers such as NVDA. Because the components render in Shadow DOM, some ARIA relations cannot be expressed with IDREF attributes; the library uses `ElementInternals` and ARIA element reflection instead, and adopts new platform capabilities as browsers ship them.
+The components target WCAG 2.1 level AA and follow the ARIA Authoring Practices Guide patterns for their roles. Component specifications run axe-core audits against the light DOM and the shadow DOM. Manual checks with a keyboard and with screen readers such as NVDA also verify the components. The components render in Shadow DOM, so some ARIA relations cannot use IDREF attributes. Instead, the library uses `ElementInternals` and ARIA element reflection. It also adopts new platform capabilities when browsers ship them.
 
 Read [ACCESSIBILITY.md][Accessibility] for the conformance target, the verification process, the platform constraints, and what the host application remains responsible for.
 
 ## Security and supply chain
 
-Security fixes are released for the latest major version, and critical fixes are backported to the previous major. Report vulnerabilities privately through [GitHub private vulnerability reporting](https://github.com/IgniteUI/igniteui-webcomponents/security/advisories/new), never in a public issue.
+Security fixes are released for the latest major version. Critical fixes are also backported to the previous major version. Report vulnerabilities privately through [GitHub private vulnerability reporting](https://github.com/IgniteUI/igniteui-webcomponents/security/advisories/new). Do not report them in a public issue.
 
-Every release ships with supply-chain evidence attached to the [GitHub release](https://github.com/IgniteUI/igniteui-webcomponents/releases): the published tarball with its digests, a CycloneDX SBOM, and signed provenance and SBOM attestations that you can check with `gh attestation verify`. GitHub's CodeQL default setup scans every push and pull request, the OpenSSF Scorecard runs weekly, and Dependabot keeps dependencies and actions patched. Property-based (fuzz) tests with [fast-check](https://fast-check.dev/) check the mask, date, color, QR code and layout parsers on every push and pull request, and weekly with random seeds.
+Each [GitHub release](https://github.com/IgniteUI/igniteui-webcomponents/releases) has supply-chain evidence attached. The evidence is the published tarball with its digests, a CycloneDX SBOM, and signed provenance and SBOM attestations. You can check the attestations with `gh attestation verify`.
 
-Read [SECURITY.md][Security] for the support policy, the reporting process, response targets and verification steps, and [THREAT-MODEL.md][Threat model] for the trust boundaries and what the host application remains responsible for.
+GitHub's CodeQL default setup scans every push and pull request. The OpenSSF Scorecard runs weekly. Dependabot keeps dependencies and actions patched. Property-based (fuzz) tests with [fast-check](https://fast-check.dev/) check the mask, date, color, QR code and layout parsers. They run on every push and pull request, and weekly with random seeds.
+
+Read [SECURITY.md][Security] for the support policy, the reporting process, the response targets and the verification steps. Read [THREAT-MODEL.md][Threat model] for the trust boundaries and what the host application remains responsible for.
 
 ## Privacy
 
-The library collects no data. The components send no telemetry, set no cookies, write nothing to web storage, and load no remote code. The few browser capabilities they use, such as fetching an icon URL the host application registers or writing to the clipboard when the user clicks a copy control, are listed in [PRIVACY.md][Privacy].
+The library collects no data. The components send no telemetry, set no cookies, write nothing to web storage, and load no remote code. [PRIVACY.md][Privacy] lists the few browser capabilities that the components use. Examples are a fetch of an icon URL that the host application registers, and a clipboard write when the user clicks a copy control.
 
 ## Contributing
 
-Contributions are welcome. [CONTRIBUTING.md][Contribution Guidelines] covers setting up a development environment, the linting, testing and Storybook commands, and the accessibility, dependency and security requirements for a change. All contributors are expected to follow the [Code of Conduct][Code of Conduct].
+Contributions are welcome. [CONTRIBUTING.md][Contribution Guidelines] tells how to prepare a development environment. It also gives the linting, testing and Storybook commands, and the accessibility, dependency and security requirements for a change. All contributors must follow the [Code of Conduct][Code of Conduct].
 
 ## Support
 

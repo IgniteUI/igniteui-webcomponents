@@ -50,7 +50,6 @@ class HighlightService implements ReactiveController {
   private readonly _host: IgcHighlightComponent;
   private readonly _id: string;
   private readonly _activeId: string;
-  private readonly _styles: string;
   private readonly _styleSheet?: CSSStyleSheet;
 
   private _attachedRoot: (DocumentOrShadowRoot & Node) | null = null;
@@ -87,7 +86,7 @@ class HighlightService implements ReactiveController {
     this._id = `igc-highlight-${nanoid()}`;
     this._activeId = `${this._id}-active`;
 
-    this._styles = `
+    const styles = `
       ::highlight(${this._id}) {
         background-color: var(--background, var(--ig-secondary-700));
         color: var(--foreground, var(--ig-secondary-700-contrast));
@@ -99,7 +98,7 @@ class HighlightService implements ReactiveController {
 
     if (!isServer) {
       this._styleSheet = new CSSStyleSheet();
-      this._styleSheet.replaceSync(this._styles);
+      this._styleSheet.replaceSync(styles);
     }
   }
 
@@ -174,12 +173,10 @@ class HighlightService implements ReactiveController {
     }
 
     this._current = wrap(0, this.size - 1, index);
-    const range = this._ranges[this._current];
-
-    this._activeHighlight.clear();
-    this._activeHighlight.add(range);
+    this._updateActiveHighlight();
 
     if (!options?.preventScroll) {
+      const range = this._ranges[this._current];
       scrollIntoView(range.commonAncestorContainer.parentElement, {
         block: 'center',
         inline: 'center',

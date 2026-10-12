@@ -10,16 +10,11 @@ import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { clamp, numberInRangeInclusive } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/qr-code/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { QRCodeMatrixResult } from './model/matrix.js';
 import { generateQRCodeMatrix } from './model/matrix.js';
-import {
-  DEFAULT_SIZE_RATIO,
-  MAX_SAFE_AREA,
-  SAFE_AREAS,
-} from './renderer/constants.js';
-import { renderQrFinders } from './renderer/corner.js';
-import { renderQrDots } from './renderer/dots.js';
 import {
   createSvgSnapshot,
   downloadFile,
@@ -30,10 +25,16 @@ import {
   rasterizeSvg,
   serializeSvg,
 } from './renderer/export.js';
-import { renderQrMaskAndImage } from './renderer/image.js';
+import {
+  DEFAULT_SIZE_RATIO,
+  MAX_SAFE_AREA,
+  renderQrDots,
+  renderQrFinders,
+  renderQrMaskAndImage,
+  SAFE_AREAS,
+} from './renderer/templates.js';
 import { styles } from './themes/qr-code.base.css.js';
 import { styles as shared } from './themes/shared/qr-code.common.css.js';
-import { all } from './themes/themes.js';
 import type {
   QrCodeExportOptions,
   QrCornerSquareStyle,
@@ -63,7 +64,7 @@ const nextMaskId = createIdGenerator('igc-qr-code-mask');
 export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   public static readonly tagName = 'igc-qr-code';
 
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -428,7 +429,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
 
     return html`
       <svg
-        ${ariaBindings(hostAria(this, true))}
+        ${ariaBindings(hostAria(this, { ownLabel: true }))}
         xmlns="http://www.w3.org/2000/svg"
         role="img"
         width=${this.size}

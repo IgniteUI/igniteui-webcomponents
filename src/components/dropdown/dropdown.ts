@@ -1,5 +1,13 @@
-import { html, type PropertyValues } from 'lit';
+import { html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
+import {
+  getActiveItems,
+  getItems,
+  getNextActiveItem,
+  getPreviousActiveItem,
+  IgcComboBoxBaseLikeComponent,
+  setInitialSelectionState,
+} from '#internals/bases/combo-box.js';
 import { ariaBindings } from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
@@ -19,17 +27,8 @@ import {
   createMutationController,
   type MutationControllerParams,
 } from '#internals/controllers/mutation-observer.js';
-import { addRootClickController } from '#internals/controllers/root-click.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import {
-  getActiveItems,
-  getItems,
-  getNextActiveItem,
-  getPreviousActiveItem,
-  IgcComboBoxBaseLikeComponent,
-  setInitialSelectionState,
-} from '#internals/mixins/combo-box.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { isEmpty } from '#internals/utils/arrays.js';
@@ -41,14 +40,15 @@ import { getElementFromPath } from '#internals/utils/events.js';
 import { moveFlag } from '#internals/utils/objects.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { isString } from '#internals/utils/types.js';
+import { all } from '#themes/dropdown/themes/container.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
 import IgcDropdownGroupComponent from './dropdown-group.js';
 import IgcDropdownHeaderComponent from './dropdown-header.js';
 import IgcDropdownItemComponent from './dropdown-item.js';
-import { all } from './themes/container.js';
 import { styles } from './themes/dropdown.base.css.js';
 import { styles as shared } from './themes/shared/dropdown.common.css.js';
 
@@ -87,7 +87,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   AbstractConstructor<IgcComboBoxBaseLikeComponent>
 >(IgcComboBoxBaseLikeComponent) {
   public static readonly tagName = 'igc-dropdown';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -103,13 +103,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   //#region Internal state
 
   private readonly _keyBindings: KeyBindingController;
-
-  protected override readonly _rootClickController = addRootClickController(
-    this,
-    {
-      onHide: this._handleClosing,
-    }
-  );
 
   private _selectedItem: IgcDropdownItemComponent | null = null;
 
@@ -241,16 +234,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   public override disconnectedCallback(): void {
     this._releaseTarget();
     super.disconnectedCallback();
-  }
-
-  protected override willUpdate(properties: PropertyValues<this>): void {
-    if (!this.hasUpdated) {
-      return;
-    }
-
-    if (properties.has('open') || properties.has('keepOpenOnOutsideClick')) {
-      this._rootClickController.update();
-    }
   }
 
   protected override async firstUpdated(): Promise<void> {

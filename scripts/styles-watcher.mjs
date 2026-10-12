@@ -39,7 +39,18 @@ async function drain() {
         `${now()} change detected: ${Array.from(changed).join(', ')}`
       );
 
-      const { compiled, failed } = await builder.update(changed);
+      /** @type {Awaited<ReturnType<typeof builder.update>>} */
+      let result;
+
+      try {
+        result = await builder.update(changed);
+      } catch (error) {
+        // A rejection here would end the watcher, which runs from a timer.
+        report.error(`${now()} ${/** @type {Error} */ (error).message}`);
+        continue;
+      }
+
+      const { compiled, failed } = result;
 
       if (failed) {
         continue;

@@ -1,7 +1,5 @@
-import { css } from 'lit';
-
-import type { Themes } from '#theming/types.js';
-import { all as inputThemes } from '../../input/themes/themes.js';
+import { all as inputThemes } from '#themes/input/themes/themes.js';
+import type { ComponentThemes } from '#theming/types.js';
 
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/file-input.bootstrap.css.js';
@@ -21,57 +19,29 @@ import { styles as indigo } from './shared/file-input.indigo.css.js';
 import { styles as material } from './shared/file-input.material.css.js';
 
 const light = {
-  shared: css`
-    ${shared}
-    ${inputThemes.light.shared!}
-  `,
-  bootstrap: css`
-    ${bootstrap}
-    ${bootstrapLight}
-    ${inputThemes.light.bootstrap!}
-  `,
-  material: css`
-    ${material}
-    ${materialLight}
-    ${inputThemes.light.material!}
-  `,
-  indigo: css`
-    ${indigo}
-    ${indigoLight}
-    ${inputThemes.light.indigo!}
-  `,
-  fluent: css`
-    ${fluent}
-    ${fluentLight}
-    ${inputThemes.light.fluent!}
-  `,
+  shared: [shared, inputThemes.light.shared!].flat(),
+  bootstrap: [bootstrap, bootstrapLight, inputThemes.light.bootstrap!].flat(),
+  material: [material, materialLight, inputThemes.light.material!].flat(),
+  indigo: [indigo, indigoLight, inputThemes.light.indigo!].flat(),
+  fluent: [fluent, fluentLight, inputThemes.light.fluent!].flat(),
 };
 
 const dark = {
-  shared: css`
-    ${shared}
-    ${inputThemes.dark.shared!}
-  `,
-  bootstrap: css`
-    ${bootstrap}
-    ${bootstrapDark}
-    ${inputThemes.dark.bootstrap!}
-  `,
-  material: css`
-    ${material}
-    ${materialDark}
-    ${inputThemes.dark.material!}
-  `,
-  indigo: css`
-    ${indigo}
-    ${indigoDark}
-    ${inputThemes.dark.indigo!}
-  `,
-  fluent: css`
-    ${fluent}
-    ${fluentDark}
-    ${inputThemes.dark.fluent!}
-  `,
+  shared: [shared, inputThemes.dark.shared!].flat(),
+  bootstrap: [
+    bootstrap,
+    bootstrapLight,
+    bootstrapDark,
+    inputThemes.dark.bootstrap!,
+  ].flat(),
+  material: [
+    material,
+    materialLight,
+    materialDark,
+    inputThemes.dark.material!,
+  ].flat(),
+  indigo: [indigo, indigoLight, indigoDark, inputThemes.dark.indigo!].flat(),
+  fluent: [fluent, fluentLight, fluentDark, inputThemes.dark.fluent!].flat(),
 };
 
-export const all: Themes = { light, dark };
+export const all: ComponentThemes = { light, dark };

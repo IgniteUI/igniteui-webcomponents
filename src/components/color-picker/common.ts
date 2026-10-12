@@ -20,32 +20,32 @@ export function normalizeColor(colorString: string): string {
   return HEX_WITHOUT_HASH_RE.test(trimmed) ? `#${trimmed}` : trimmed;
 }
 
+/** Parses a hex, rgb(a), hsl(a) or named color, or returns `null` for an invalid one. */
+export function tryParseColor(
+  colorString: string,
+  ctx: OffscreenCanvasRenderingContext2D | null
+): ParsedColor | null {
+  const serialized = serializeColor(normalizeColor(colorString), ctx);
+  return serialized === null ? null : fromSerialized(serialized);
+}
+
 /**
  * Parses a hex, rgb(a), hsl(a) or named color into RGB values and alpha.
- * Without a canvas context it returns black.
+ * An invalid color, or no canvas context, gives black.
  */
 export function parseColor(
   colorString: string,
   ctx: OffscreenCanvasRenderingContext2D | null
 ): ParsedColor {
+  return tryParseColor(colorString, ctx) ?? { value: [0, 0, 0], alpha: 1 };
+}
+
+/** Reads the RGB values and the alpha from a canvas serialization. */
+function fromSerialized(color: string): ParsedColor {
   const result: ParsedColor = {
     value: [0, 0, 0],
     alpha: 1,
   };
-
-  if (!colorString || !ctx) {
-    return result;
-  }
-
-  const normalized = normalizeColor(colorString);
-
-  if (!isValidColor(normalized, ctx)) {
-    return result;
-  }
-
-  // The canvas parses the color.
-  ctx.fillStyle = normalized;
-  const color = ctx.fillStyle;
 
   const rgbaMatch = RGBA_RE.exec(color);
 
@@ -73,16 +73,15 @@ export function parseColor(
 }
 
 /**
- * Whether a string is a valid CSS color.
- * An invalid color leaves the canvas fill unchanged, so two different
- * baselines give two different results.
+ * The canvas serialization of a valid color, or `null`. An invalid color
+ * leaves the fill unchanged, so two baselines differ.
  */
-export function isValidColor(
+function serializeColor(
   colorString: string,
   ctx: OffscreenCanvasRenderingContext2D | null
-): boolean {
+): string | null {
   if (!colorString?.trim() || !ctx) {
-    return false;
+    return null;
   }
 
   ctx.fillStyle = '#000';
@@ -93,5 +92,13 @@ export function isValidColor(
   ctx.fillStyle = colorString;
   const onWhite = ctx.fillStyle;
 
-  return onBlack === onWhite;
+  return onBlack === onWhite ? onBlack : null;
+}
+
+/** Whether a string is a valid CSS color. */
+export function isValidColor(
+  colorString: string,
+  ctx: OffscreenCanvasRenderingContext2D | null
+): boolean {
+  return serializeColor(colorString, ctx) !== null;
 }

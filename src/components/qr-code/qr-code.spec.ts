@@ -358,6 +358,29 @@ describe('IgcQrCodeComponent', () => {
     }
   });
 
+  describe('Dots path', () => {
+    it('follows the dot style and keeps the path for a size change', async () => {
+      const el = await fixture<IgcQrCodeComponent>(
+        html`<igc-qr-code value="Path"></igc-qr-code>`
+      );
+      const path = () =>
+        el.renderRoot.querySelector('[part="dots"]')!.getAttribute('d');
+      const square = path();
+
+      el.size = 300;
+      await elementUpdated(el);
+      expect(path()).to.equal(square);
+
+      el.dotStyle = 'circle';
+      await elementUpdated(el);
+      expect(path()).to.not.equal(square);
+
+      el.dotStyle = 'square';
+      await elementUpdated(el);
+      expect(path()).to.equal(square);
+    });
+  });
+
   describe('Logo', () => {
     // Minimal 1×1 transparent PNG — loads synchronously in all browsers.
     const VALID_LOGO =

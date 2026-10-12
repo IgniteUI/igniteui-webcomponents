@@ -1,9 +1,10 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/card/themes/actions.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { ContentOrientation } from '../types.js';
-import { all } from './themes/actions.js';
 import { styles } from './themes/card.actions.base.css.js';
 import { styles as shared } from './themes/shared/actions/card.actions.common.css.js';
 
@@ -28,7 +29,7 @@ import { styles as shared } from './themes/shared/actions/card.actions.common.cs
  */
 export default class IgcCardActionsComponent extends LitElement {
   public static readonly tagName = 'igc-card-actions';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

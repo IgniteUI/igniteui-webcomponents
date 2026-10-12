@@ -23,12 +23,13 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
+import { all } from '#themes/chip/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { StyleVariant } from '../types.js';
 import { styles } from './themes/chip.base.css.js';
 import { styles as shared } from './themes/shared/chip.common.css.js';
-import { all } from './themes/themes.js';
 
 export interface IgcChipComponentEventMap {
   igcRemove: CustomEvent<void>;
@@ -72,7 +73,7 @@ export default class IgcChipComponent extends I18nMixin(
   i18n
 ) {
   public static readonly tagName = 'igc-chip';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

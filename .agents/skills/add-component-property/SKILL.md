@@ -140,7 +140,19 @@ not appear, the story was skipped: the filename does not match the tag, or the r
 missing (this fails with no warning). Then use the property in the hand-written story
 templates.
 
-### 7. Verify
+### 7. Update the public API snapshot
+
+A new property is an addition to the public API. `npm run check` lists additions that are not
+in the committed `public-api.json`, and fails on a removal or a type change. Record the
+property:
+
+```bash
+npm run public-api:update
+```
+
+Commit `public-api.json` with the property.
+
+### 8. Verify
 
 ```bash
 npm run check && npm run test
@@ -155,6 +167,7 @@ npm run check && npm run test
 - [ ] Tests cover the default, a change and, if the decorator allows, the attribute
 - [ ] `spec.md`: API row, test scenarios renumbered, revision history row
 - [ ] `cem` and `build:meta` run. The story template uses the property.
+- [ ] `public-api.json` updated with `npm run public-api:update`
 - [ ] `check` and `test` pass. CHANGELOG updated if the property is user-visible.
 
 ## Common Pitfalls
@@ -168,6 +181,7 @@ npm run check && npm run test
 | `onChange` skips the first real set       | The field initializer was removed. Keep `= undefined` or a default. |
 | Story control missing or description old  | `build:meta` did not run, the story was skipped, or the region was edited |
 | Spec numbering jumps                      | Scenarios were added without renumbering                           |
+| `npm run check` fails on the public API   | A public member was renamed or retyped. Deprecate it instead.      |
 
 ## Reference Examples
 

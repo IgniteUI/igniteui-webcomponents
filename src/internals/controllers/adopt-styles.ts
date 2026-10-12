@@ -5,6 +5,7 @@ import {
   type ReactiveControllerHost,
 } from 'lit';
 import { sameItems } from '../utils/arrays.js';
+import { getOrInsertComputed } from '../utils/objects.js';
 
 const observerConfig: MutationObserverInit = { childList: true, subtree: true };
 
@@ -41,14 +42,11 @@ class DocumentStyleSheets {
 
   /** Returns the tracker of the document, and creates a missing one. */
   public static for(document: Document): DocumentStyleSheets {
-    let instance = DocumentStyleSheets._instances.get(document);
-
-    if (!instance) {
-      instance = new DocumentStyleSheets(document);
-      DocumentStyleSheets._instances.set(document, instance);
-    }
-
-    return instance;
+    return getOrInsertComputed(
+      DocumentStyleSheets._instances,
+      document,
+      () => new DocumentStyleSheets(document)
+    );
   }
 
   //#endregion

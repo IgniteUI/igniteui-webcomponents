@@ -2,15 +2,15 @@
 
 > **Part of the [`igniteui-wc-figma-to-app`](../SKILL.md) skill.**
 >
-> Use this file in Phase 5 for the measurement-driven validation loop. Read it in full before calling any Playwright tool.
+> Use this file in Phase 5 for the measurement-driven validation loop. Read all of it before you call a Playwright tool.
 
 ---
 
 ## Core Philosophy
 
-**Measure, don't eyeball.** The goal is not visual regression (did this change since last week?) but design fidelity (does this match the Figma spec?). Screenshots give you the gestalt; `playwright_browser_evaluate` gives you the numbers; numbers drive corrections.
+**Measure. Do not estimate by eye.** The goal is design fidelity (does this match the Figma spec?), not visual regression (did this change since last week?). Screenshots show the general appearance. `playwright_browser_evaluate` gives the numbers. Use the numbers to make corrections.
 
-**The Web Components twist:** almost everything you want to measure lives inside a shadow root. `document.querySelector('igc-card .title')` returns `null` — not because the element is missing, but because the selector cannot cross the boundary. Every snippet below is shadow-aware and inlines the helpers it uses. Use them instead of writing ad-hoc selectors. A view built as a Lit component is itself a shadow root, so reach its content with a `host >>> selector` path (e.g. `app-dashboard >>> .kpi-card`).
+**The Web Components difference:** almost all of the elements that you measure are inside a shadow root. `document.querySelector('igc-card .title')` returns `null`. The element is not missing: the selector cannot cross the shadow boundary. Each snippet below is shadow-aware and includes the helpers that it uses. Use these snippets instead of ad-hoc selectors. A view that is a Lit component has its own shadow root, so use a `host >>> selector` path to get its content (for example, `app-dashboard >>> .kpi-card`).
 
 ---
 
@@ -42,7 +42,7 @@
 
 ### 1. Viewport reset after resize
 
-After `playwright_browser_resize`, the browser may navigate itself to `about:blank`, and subsequent screenshots and measurements come back empty.
+After `playwright_browser_resize`, the browser can navigate to `about:blank`. Then the next screenshots and measurements come back empty.
 
 ```
 playwright_browser_resize({ width: 1440, height: 900 })
@@ -52,7 +52,7 @@ playwright_browser_navigate({ url: "http://localhost:5173/dashboard" })
 
 ### 2. `playwright_browser_evaluate` uses `function`, not `script`
 
-Passing `script` fails with *"Invalid input: expected string, received undefined"*.
+If you pass `script`, the call fails with *"Invalid input: expected string, received undefined"*.
 
 ```
 // WRONG
@@ -64,7 +64,7 @@ playwright_browser_evaluate({ function: "() => document.title" })
 
 ### 3. Measuring before the components have upgraded
 
-Custom elements upgrade asynchronously, and Lit renders on a microtask. Measuring too early returns pre-upgrade box metrics (often `height: 0`). Wait for the registered elements to render. The snippet only waits on tags that are already defined, with a 3-second cap, so an unregistered tag cannot hang it; it is returned in `undefinedTags` instead:
+Custom elements upgrade asynchronously, and Lit renders on a microtask. If you measure too early, you get pre-upgrade box metrics (frequently `height: 0`). Wait for the registered elements to render. The snippet waits only for tags that are already defined, for a maximum of 3 seconds. Thus an unregistered tag cannot block the snippet. The snippet returns unregistered tags in `undefinedTags`:
 
 ```
 playwright_browser_evaluate({
@@ -74,7 +74,7 @@ playwright_browser_evaluate({
 
 ### 4. An unregistered element fails silently
 
-A missing `defineComponents(...)` produces **no console error** — the tag renders as an empty inline box. Run the registration audit before blaming CSS.
+A missing `defineComponents(...)` call gives **no console error**. The tag renders as an empty inline box. Run the registration audit before you look for CSS problems.
 
 ### 5. Dev server must be running
 
@@ -83,13 +83,13 @@ playwright_browser_navigate({ url: "http://localhost:5173" })
 playwright_browser_console_messages()
 ```
 
-`ERR_CONNECTION_REFUSED` or a blank page means the Vite dev server is not running — ask the user to run `npm start`. Note the port: Vite defaults to **5173**.
+`ERR_CONNECTION_REFUSED` or a blank page means that the Vite dev server is not running. Ask the user to run `npm start`. Check the port: the Vite default is **5173**.
 
 ---
 
 ## The Deep-Query Helper
 
-Every measurement snippet below assumes this helper. It walks shadow roots, so a selector like `igc-card >>> [part="header"]` resolves.
+All measurement snippets below use this helper. It walks shadow roots, so a selector such as `igc-card >>> [part="header"]` resolves.
 
 ```javascript
 // Every snippet below already inlines the helpers it uses. Paste these into new snippets.
@@ -111,7 +111,7 @@ const deepQueryAll = (sel, root = document) => {
 };
 ```
 
-Prefer measuring the **host element** (`igc-card`) for box metrics — width, height, position, margin — and pierce only for internals that the design calls out (header height, row padding). When you must pierce, target documented `::part(...)` names from `get_doc`, never internal class names.
+For box metrics (width, height, position, margin), measure the **host element** (`igc-card`) when possible. Pierce the shadow root only for internal details that the design specifies (header height, row padding). When you must pierce, target documented `::part(...)` names from `get_doc`, never internal class names.
 
 ---
 
@@ -127,7 +127,7 @@ playwright_browser_evaluate({
 })
 ```
 
-Assert: `undefinedTags` is empty; `theme` and `variant` match the design system and variant resolved in Phase 3. An empty `theme` means no theme CSS is loaded — components silently fall back to `bootstrap` / `light`.
+Assert that `undefinedTags` is empty. Assert that `theme` and `variant` match the design system and variant that you resolved in Phase 3. An empty `theme` means that no theme CSS is loaded. In that case, components fall back to `bootstrap` / `light` without a warning.
 
 ### Measure a single element (shadow-aware)
 
@@ -137,7 +137,7 @@ playwright_browser_evaluate({
 })
 ```
 
-> A host element with `display: inline` (the Lit default) reports a misleading box. If width or height look wrong, check for a missing `:host { display: block }` before chasing padding.
+> A host element with `display: inline` (the Lit default) reports a misleading box. If the width or height looks incorrect, look for a missing `:host { display: block }` before you examine the padding.
 
 ### Surfaces audit (mandatory — every page, every Phase 1g surface)
 
@@ -150,7 +150,7 @@ playwright_browser_evaluate({
 **Assert for each entry:**
 
 - Figma surface has a background → `bg !== 'rgba(0, 0, 0, 0)'`
-- Figma section floats on the page background → `bg === 'rgba(0, 0, 0, 0)'` (do not over-surface)
+- Figma section floats on the page background → `bg === 'rgba(0, 0, 0, 0)'` (do not add a surface that the design does not show)
 - `radius`, `padding`, `border`, `shadow` match the Phase 1g values
 - children shown inside the card in Figma are inside the card's bounding rect in the DOM
 
@@ -162,7 +162,7 @@ playwright_browser_evaluate({
 })
 ```
 
-Compare against the Phase 1d inventory. Any control not in the design context output is fabricated and must be removed. `(unlabeled)` entries are also an accessibility failure — icon-only buttons need `aria-label`.
+Compare the result with the Phase 1d inventory. If a control is not in the design context output, it is fabricated. Remove it. `(unlabeled)` entries are also an accessibility failure: icon-only buttons need `aria-label`.
 
 ### Input variant audit (every page with form controls)
 
@@ -172,7 +172,7 @@ playwright_browser_evaluate({
 })
 ```
 
-Compare against the variant detected in Phase 1d. If the design uses border-style inputs everywhere, every control should report `outlined === count`.
+Compare the result with the variant that you detected in Phase 1d. If the design uses border-style inputs everywhere, every control should report `outlined === count`.
 
 ### Property-binding audit (collection-bound charts, grids, combos)
 
@@ -182,7 +182,9 @@ playwright_browser_evaluate({
 })
 ```
 
-`dataLength: null` means the collection was set as an attribute (or not at all) instead of as a property. An empty `brushes` list on a chart means no series colors were assigned, so it is still using the default palette instead of the Figma series colors. The brush members differ per chart: `brushes` / `outlines` on most charts, `brush` on `igc-sparkline`, `fillBrushes` on `igc-treemap`, and `brushes` / `outlines` on each `igc-ring-series` child of `igc-doughnut-chart` (not on the host). `height: 0` means the element or its grid track has no height. Use this audit for the collection-bound host tags in the selected plan; gauges and maps need their own host-specific validation once you know which properties the chosen component binds.
+`dataLength: null` means that the code set the collection as an attribute (or did not set it), not as a property. An empty `brushes` list on a chart means that no series colors are assigned. The chart then uses the default palette instead of the Figma series colors. The brush members are different for each chart: `brushes` / `outlines` on most charts, `brush` on `igc-sparkline`, `fillBrushes` on `igc-treemap`, and `brushes` / `outlines` on each `igc-ring-series` child of `igc-doughnut-chart` (not on the host). `height: 0` means that the element or its grid track has no height.
+
+Use this audit for the collection-bound host tags in the selected plan. Gauges and maps need their own host-specific validation after you know which properties the selected component binds.
 
 ### Measure the gap between two elements
 
@@ -216,7 +218,7 @@ playwright_browser_evaluate({
 })
 ```
 
-Use the reported `part` names — they are the supported styling surface when a design token does not exist for a detail the design requires.
+Use the reported `part` names. When there is no design token for a detail that the design requires, these parts are the supported styling surface.
 
 ---
 
@@ -231,18 +233,18 @@ Use the reported `part` names — they are the supported styling surface when a 
 | **Major**    | Wrong component            | Figma shows a combo, code has a select                      | Fix                         |
 | **Major**    | Wrong variant              | `variant="flat"` when the design shows contained            | Fix                         |
 | **Major**    | Collection not bound       | `data` / `dataSource` set as an attribute, or no series brushes assigned | Fix                         |
-| **Major**    | Token-fixable mismatch     | Color, radius, border, shadow, or text casing differs, or a control height differs by more than 4px, and a component token, palette seed, `--ig-size` step, or `--ig-<style>-<property>` override can close it | Fix |
+| **Major**    | Token-fixable mismatch     | Color, radius, border, shadow, or text casing differs, or a control height differs by more than 4px. A component token, palette seed, `--ig-size` step, or `--ig-<style>-<property>` override can close the difference | Fix |
 | **Minor**    | Spacing off by > 4px       | `gap: 24px` measured, Figma shows `16px`                    | Fix                         |
 | **Minor**    | Font size wrong by > 2px   | `16px` measured, Figma shows `14px`                         | Fix                         |
 | **Cosmetic** | Color rounding             | The same color after conversion: `rgb(51, 51, 51)` vs `#333333`. Any visibly different shade (`#333` vs `#2d2d2d`, a 500-vs-600 seed) is **Major** | Report only |
 | **Cosmetic** | Size off by ≤ 4px          | Spacing or control height within 4px, or font size within 2px, from rounding or sub-pixel layout | Report only |
-| **Accepted** | Approved anatomy delta     | Matches a delta-ledger entry the user approved (e.g. an M3 segmented button's check icon, a sheet rendered as a dialog) | Report only. Do not "fix" it; it does not count toward the 3-retry rule |
+| **Accepted** | Approved anatomy delta     | Matches a delta-ledger entry that the user approved (for example, an M3 segmented button's check icon, a sheet rendered as a dialog) | Report only. Do not "fix" it. It does not count toward the 3-retry rule |
 
-**Exit condition for an artboard:** no Critical, Major, or Minor issues remain. Only Cosmetic and Accepted items may be left, and both go into the final report.
+**Exit condition for an artboard:** no Critical, Major, or Minor issues remain. Only Cosmetic and Accepted items can remain. Put both types in the final report.
 
-> **Accepted needs the user's approval.** A delta is Accepted only after the user approves its ledger entry. Most entries come from Phase 2d. When Phase 5 finds a difference that tokens, documented `::part(...)` selectors, or slotted content cannot close, add it to the ledger and ask the user. Once they approve it, it is Accepted from then on. Until then, classify it normally, and never downgrade it silently.
+> **Accepted needs the user's approval.** A delta is Accepted only after the user approves its ledger entry. Most entries come from Phase 2d. Phase 5 can find a difference that tokens, documented `::part(...)` selectors, or slotted content cannot close. In that case, add it to the ledger and ask the user. After the user approves it, it stays Accepted. Until then, classify it normally, and never downgrade it silently.
 >
-> **Third-party kits (Path B):** color, radius, border, casing, and height mismatches are almost always fixable with component tokens or the `--ig-<style>-<property>` typography overrides. They are Major, never Accepted. Only *structural* differences (a label position the baseline cannot move, an adornment the component does not render, a behavior pattern with no equivalent) qualify for the ledger.
+> **Third-party kits (Path B):** you can almost always fix color, radius, border, casing, and height mismatches with component tokens or the `--ig-<style>-<property>` typography overrides. They are Major, never Accepted. Only *structural* differences can go into the ledger: a label position that the baseline cannot move, an adornment that the component does not render, or a behavior pattern with no equivalent.
 
 ### Mismatch report format
 
@@ -302,7 +304,7 @@ After `playwright_browser_snapshot()`, verify:
 | Check                 | What to look for                                                        |
 | --------------------- | ------------------------------------------------------------------------ |
 | Heading hierarchy     | `h1` → `h2` → `h3` without skipping levels                               |
-| Button labels         | Every button has text or `aria-label` — icon-only buttons especially     |
+| Button labels         | Every button has text or `aria-label` — especially icon-only buttons     |
 | Input labels          | Inputs use the `label` attribute or an associated `<label>`              |
 | Navigation landmark   | `<nav>` or `role="navigation"` wraps the main navigation                 |
 | Main content landmark | `<main>` or `role="main"` wraps the primary content region               |
@@ -318,7 +320,7 @@ After `playwright_browser_snapshot()`, verify:
 1. **Component design token** — `get_component_design_tokens` → `create_component_theme`
 2. **Documented `::part(...)`** — for details with no token
 3. **Slotted content you own** — style it in your own CSS
-4. Never internal class names; never attempts to reach into a shadow root from page CSS
+4. Never use internal class names. Never try to reach into a shadow root from page CSS
 
 ### Density and spacing
 
@@ -328,7 +330,7 @@ set_spacing({ component: "calendar", spacing: 0.75, platform: "webcomponents" })
 set_size({ scope: ".compact-toolbar", size: "small", platform: "webcomponents" })
 ```
 
-Or directly:
+Or set the custom properties directly:
 
 ```css
 igc-calendar {
@@ -337,7 +339,7 @@ igc-calendar {
 }
 ```
 
-Choose the multiplier by visual judgment — never by mapping a Figma pixel value.
+Choose the multiplier by visual judgment. Never map a Figma pixel value to it.
 
 ### Typography correction
 
@@ -351,7 +353,7 @@ Fix the type style, not an internal class. Every type style is a set of `--ig-<s
 }
 ```
 
-If the text belongs to a component, find which type style it uses in the component's doc, or use its typography-related design tokens from `theming_get_component_design_tokens`. Or style content you slot into it.
+If the text is part of a component, find its type style in the component's doc. Or use the typography-related design tokens of the component from `theming_get_component_design_tokens`. Or style the content that you put in its slots.
 
 Inside a Lit view's shadow root, document CSS such as `.ig-typography h1` does not reach native headings. Apply the variables in the view's `static styles` yourself, for example `h1 { font-size: var(--ig-h1-font-size); font-weight: var(--ig-h1-font-weight); line-height: var(--ig-h1-line-height); }`.
 
@@ -363,8 +365,15 @@ background: var(--ig-primary-500);
 color: var(--ig-primary-500-contrast);
 ```
 
-Use `get_color({ color: "primary", variant: "500", contrast: true })` when unsure of the exact variable name.
+If you are not sure of the exact variable name, use `get_color({ color: "primary", variant: "500", contrast: true })`.
 
 ### Missing element
 
-If an element is in Figma but absent from the DOM, check in this order: registration (`customElements.get`) → import path → the slot name it should occupy → then go back to Phase 2 and re-read the component doc. A wrong slot name renders nothing and reports nothing.
+If an element is in Figma but not in the DOM, do these checks in this order:
+
+1. Check the registration (`customElements.get`).
+2. Check the import path.
+3. Check the slot name that the element must use.
+4. Go back to Phase 2 and read the component doc again.
+
+A wrong slot name renders nothing and reports no error.

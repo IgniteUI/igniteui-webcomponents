@@ -719,6 +719,22 @@ describe('Masked input', () => {
       expect(element.value).to.equal('123456');
       expect(input.value).to.equal(parser.apply(element.value));
     });
+
+    it('restores the masked text after an input event without an input type', async () => {
+      element.mask = '(+35\\9) CCC-CCC';
+      element.value = '123456';
+
+      await elementUpdated(element);
+      const masked = input.value;
+
+      // A plain `Event`, as a script dispatches it, has no `inputType`.
+      input.value = 'foreign text';
+      input.dispatchEvent(new Event('input'));
+      await elementUpdated(element);
+
+      expect(element.value).to.equal('123456');
+      expect(input.value).to.equal(masked);
+    });
   });
 
   describe('Undo / redo', () => {

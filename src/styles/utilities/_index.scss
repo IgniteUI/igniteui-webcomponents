@@ -6,6 +6,6 @@
 @forward 'igniteui-theming/sass/typography/functions';
 @forward 'igniteui-theming/sass/typography/mixins';
 @forward 'igniteui-theming/sass/themes/functions';
-@forward 'igniteui-theming/sass/themes/mixins';
+@forward 'igniteui-theming/sass/themes/mixins' hide css-vars-from-theme;
 @forward 'igniteui-theming/sass/utils';
 @forward 'overwrites';

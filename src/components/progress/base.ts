@@ -2,7 +2,10 @@ import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import type { StyleInfo } from 'lit/directives/style-map.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
-import type { SlotController } from '#internals/controllers/slot.js';
+import {
+  DefaultSlot,
+  type SlotController,
+} from '#internals/controllers/slot.js';
 import { partMap } from '#internals/part-map.js';
 import {
   asNumber,
@@ -118,7 +121,9 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   }
 
   private get _labelText(): string {
-    return this.labelFormat ? this._renderLabelFormat() : this._percentText;
+    return this.labelFormat
+      ? formatString(this.labelFormat, this.value, this.max)
+      : this._percentText;
   }
 
   private _updateProgress(): void {
@@ -147,19 +152,15 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     };
 
     return this.labelFormat
-      ? html`<span part=${partMap(parts)}>${this._renderLabelFormat()}</span>`
+      ? html`<span part=${partMap(parts)}>${this._labelText}</span>`
       : html`<span part=${partMap({ ...parts, counter: true })}></span>`;
-  }
-
-  protected _renderLabelFormat(): string {
-    return formatString(this.labelFormat, this.value, this.max);
   }
 
   protected _renderDefaultSlot() {
     const hideDefaultLabel =
       this.indeterminate ||
       this.hideLabel ||
-      this._slots.hasAssignedElements('[default]');
+      this._slots.hasAssignedElements(DefaultSlot);
 
     return html`
       <slot part="label"></slot>

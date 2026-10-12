@@ -1,14 +1,17 @@
-import { LitElement } from 'lit';
+import { LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import type { PopoverScrollStrategy } from '../../components/types.js';
-import type { RootClickController } from '../controllers/root-click.js';
+import {
+  addRootClickController,
+  type RootClickController,
+} from '../controllers/root-click.js';
 import {
   addToggleController,
   type ToggleEventMap,
 } from '../controllers/toggle.js';
 
+import type { UnpackCustomEvent } from '../mixins/event-emitter.js';
 import { iterNodes } from '../utils/dom.js';
-import type { UnpackCustomEvent } from './event-emitter.js';
 
 /* blazorIndirectRender */
 /* omitModule */
@@ -22,7 +25,8 @@ export abstract class IgcBaseComboBoxComponent extends LitElement {
     eventInitDict?: CustomEventInit<D>
   ) => boolean;
 
-  protected abstract _rootClickController: RootClickController;
+  protected readonly _rootClickController: RootClickController =
+    addRootClickController(this, { onHide: this._handleClosing });
   private readonly _toggleController = addToggleController(this);
 
   /**
@@ -47,6 +51,15 @@ export abstract class IgcBaseComboBoxComponent extends LitElement {
    */
   @property({ attribute: 'scroll-strategy' })
   public scrollStrategy: PopoverScrollStrategy = 'hide';
+
+  protected override willUpdate(props: PropertyValues): void {
+    super.willUpdate(props);
+
+    // `keepOpenOnOutsideClick` belongs to `IgcComboBoxBaseLikeComponent`.
+    if (props.has('open') || props.has('keepOpenOnOutsideClick')) {
+      this._rootClickController.update();
+    }
+  }
 
   protected _handleAnchorClick(): void {
     this.open ? this._hide(true) : this._show(true);
@@ -82,7 +95,7 @@ export abstract class IgcBaseComboBoxComponent extends LitElement {
 
 /* blazorIndirectRender */
 /* omitModule */
-export abstract class IgcComboBoxBaseLikeComponent extends IgcBaseComboBoxComponent {
+export class IgcComboBoxBaseLikeComponent extends IgcBaseComboBoxComponent {
   /**
    * Keeps the dropdown of the component open after the user selects an item.
    * @attr keep-open-on-select

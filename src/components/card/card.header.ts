@@ -1,8 +1,9 @@
 import { html, LitElement } from 'lit';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/card/themes/header.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/card.header.base.css.js';
-import { all } from './themes/header.js';
 import { styles as shared } from './themes/shared/header/card.header.common.css.js';
 
 /**
@@ -31,7 +32,7 @@ import { styles as shared } from './themes/shared/header/card.header.common.css.
  */
 export default class IgcCardHeaderComponent extends LitElement {
   public static readonly tagName = 'igc-card-header';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

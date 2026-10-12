@@ -38,10 +38,11 @@ ownership sections. Fill in `## Test scenarios` in step 6.
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/[name]/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/[name].base.css.js';
 import { styles as shared } from './themes/shared/[name].common.css.js';
-import { all } from './themes/themes.js';
 
 /**
  * [One-sentence description.]
@@ -54,7 +55,7 @@ import { all } from './themes/themes.js';
  */
 export default class Igc[Name]Component extends LitElement {
   public static readonly tagName = 'igc-[name]';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -94,7 +95,12 @@ declare global {
 }
 ```
 
-- Pass every component that the template renders to `registerComponent(Self, ...deps)`.
+- Pass every component that the template renders to `registerComponent(Self, ...deps)`,
+  directly. Do not rely on a dependency that registers it. `npm run check` verifies this.
+- `componentBase` holds the sizing, scrollbar and `[hidden]` rules that every component
+  shares. Keep it first in `styles`.
+- Import the theme aggregator through `#themes`, never with a relative path. The publish
+  build fails on a relative import, because it bypasses the single-theme package conditions.
 - Follow the [region layout](../../../.github/CODING_GUIDELINES.md#components) and the
   [import rules](../../../.github/CODING_GUIDELINES.md#imports).
 - Before you write lifecycle code, look for a controller in the
@@ -112,7 +118,6 @@ specifiers.
 
 ```scss
 // themes/[name].base.scss
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
 
 :host {
@@ -134,7 +139,8 @@ $indigo: digest-schema($indigo-[name]);
 
 ```scss
 // themes/light/[name].bootstrap.scss
-// Dark files: add `@use '../light/themes' as light;` and use diff(light.$base, $theme).
+// Dark files: add `@use '../light/themes' as light;` and use
+// dark-overrides(light.$bootstrap, $theme).
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
@@ -157,8 +163,7 @@ Also create `light/[name].shared.scss` (the full variable set from `$base`),
 `themes/themes.ts` is the only hand-written TypeScript file in `themes/`:
 
 ```ts
-import { css } from 'lit';
-import type { Themes } from '#theming/types.js';
+import type { ComponentThemes } from '#theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/[name].bootstrap.css.js';
 import { styles as fluentDark } from './dark/[name].fluent.css.js';
@@ -172,46 +177,28 @@ import { styles as materialLight } from './light/[name].material.css.js';
 import { styles as shared } from './light/[name].shared.css.js';
 
 const light = {
-  shared: css`
-    ${shared}
-  `,
-  bootstrap: css`
-    ${bootstrapLight}
-  `,
-  material: css`
-    ${materialLight}
-  `,
-  fluent: css`
-    ${fluentLight}
-  `,
-  indigo: css`
-    ${indigoLight}
-  `,
+  shared,
+  bootstrap: bootstrapLight,
+  material: materialLight,
+  fluent: fluentLight,
+  indigo: indigoLight,
 };
 
 const dark = {
-  shared: css`
-    ${shared}
-  `,
-  bootstrap: css`
-    ${bootstrapDark}
-  `,
-  material: css`
-    ${materialDark}
-  `,
-  fluent: css`
-    ${fluentDark}
-  `,
-  indigo: css`
-    ${indigoDark}
-  `,
+  shared,
+  bootstrap: [bootstrapLight, bootstrapDark],
+  material: [materialLight, materialDark],
+  fluent: [fluentLight, fluentDark],
+  indigo: [indigoLight, indigoDark],
 };
 
-export const all: Themes = { light, dark };
+export const all: ComponentThemes = { light, dark };
 ```
 
-If you add `shared/[name].[theme].scss` files, put each one before its override. For example,
-`${bootstrap} ${bootstrapLight}` (see `badge/themes/themes.ts`).
+An entry lists its sheets in cascade order. A dark entry starts with the light sheet of the same
+theme, because the dark files emit only overrides. If you add `shared/[name].[theme].scss`
+files, put each one first in both entries, for example `[bootstrap, bootstrapLight]` and
+`[bootstrap, bootstrapLight, bootstrapDark]` (see `badge/themes/themes.ts`).
 
 ### 5. Transpile the styles
 
@@ -307,10 +294,14 @@ Add the export to `src/index.ts` in alphabetical order:
 export { default as Igc[Name]Component } from './components/[name]/[name].js';
 ```
 
+Also add the component to the list in `src/internals/definitions/defineAllComponents.ts`.
+
 ```bash
-npm run cem        # custom-elements.json
-npm run build:meta # the story's `// region default` block
+npm run public-api:update # custom-elements.json, and the new tag and export in public-api.json
+npm run build:meta        # the story's `// region default` block
 ```
+
+Commit `public-api.json` with the component.
 
 ### 9. Verify
 
@@ -324,14 +315,16 @@ Add a CHANGELOG entry.
 
 - [ ] `spec.md` follows the splitter structure. Its API tables match the code and its test
       scenarios match the suite.
-- [ ] Single default export, with `tagName`, `styles`, `register()` and `HTMLElementTagNameMap`
+- [ ] Single default export, with `tagName`, `styles` (`componentBase` first), `register()`
+      and `HTMLElementTagNameMap`
 - [ ] `addThemingController(this, all)` in the constructor
 - [ ] JSDoc with `@element`, `@slot`, `@csspart`, `@cssproperty` and `@event` as applicable, and
       no `igc-` tag names in prose
-- [ ] Complete SCSS scaffold, with every theme file in `themes.ts`
+- [ ] Complete SCSS scaffold, with every theme file in `themes.ts`, imported through `#themes`
 - [ ] The a11y audit covers the shadow DOM and the light DOM
 - [ ] The story is named after the tag and has the region fence
-- [ ] Exported from `src/index.ts`. `cem` and `build:meta` run.
+- [ ] Exported from `src/index.ts` and listed in `defineAllComponents.ts`. `public-api:update`
+      and `build:meta` run.
 - [ ] `check`, `lint` and `test` pass. CHANGELOG updated.
 
 ## Common Pitfalls
@@ -343,6 +336,8 @@ Add a CHANGELOG entry.
 | `[part='base']` stops matching         | `partMap` emits multiple names. Use `[part~='base']`.                               |
 | Story metadata is stale or never made  | The filename does not match the tag, the fence is missing, or the region was edited |
 | `npm run check` fails on imports       | A relative import into `internals`/`theming`/`animations`                           |
+| `npm run check` fails on registration  | `register()` lacks a rendered tag, or `defineAllComponents` lacks the component     |
+| `build:publish` fails on theme entries | A relative aggregator import, or a theme sheet imported outside `themes.ts`         |
 | Spec anchors do not resolve            | A TOC entry is missing, or the slug is wrong (`Undo / redo` → `undo--redo`)         |
 
 ## Reference Examples

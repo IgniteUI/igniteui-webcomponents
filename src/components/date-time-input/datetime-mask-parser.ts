@@ -58,7 +58,7 @@ const DEFAULT_DATE_VALUES = {
   seconds: 0,
 } as const;
 
-export const DEFAULT_DATETIME_FORMAT = 'MM/dd/yyyy';
+const DEFAULT_DATETIME_FORMAT = 'MM/dd/yyyy';
 
 //#endregion
 

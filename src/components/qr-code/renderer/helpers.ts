@@ -31,17 +31,7 @@ function roundedRect(
   radius: number
 ): string {
   const cr = Math.min(radius, width / 2, height / 2);
-  return (
-    `M${x + cr},${y}` +
-    `h${width - 2 * cr}` +
-    `q${cr},0 ${cr},${cr}` +
-    `v${height - 2 * cr}` +
-    `q0,${cr} ${-cr},${cr}` +
-    `h${-(width - 2 * cr)}` +
-    `q${-cr},0 ${-cr},${-cr}` +
-    `v${-(height - 2 * cr)}` +
-    `q0,${-cr} ${cr},${-cr}z`
-  );
+  return roundedRectPerCorner(x, y, width, height, cr, cr, cr, cr);
 }
 
 function roundedRectPerCorner(

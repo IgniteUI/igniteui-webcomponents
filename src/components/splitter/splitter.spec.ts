@@ -1836,6 +1836,65 @@ describe('Splitter', () => {
   });
 
   describe('Resizing with constraints', () => {
+    it('reads no computed style during a drag and reports the dragged size', async () => {
+      const splitter = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          startSize: '200px',
+          startMinSize: '5rem',
+          startMaxSize: '20rem',
+          endSize: '200px',
+        })
+      );
+      await elementUpdated(splitter);
+
+      const bar = getSplitterPart(splitter, BAR_PART);
+      const { left, top } = bar.getBoundingClientRect();
+      const percent = (size: number) =>
+        roundPrecise(asPercent(size, getContainerSize(splitter, 'width')), 0);
+
+      simulatePointerDown(bar, { clientX: left, clientY: top, pointerId: 1 });
+      await elementUpdated(splitter);
+
+      const computedStyle = spy(window, 'getComputedStyle');
+
+      try {
+        simulatePointerMove(
+          bar,
+          { clientX: left, clientY: top, pointerId: 1 },
+          { x: 50, y: 0 }
+        );
+        await elementUpdated(splitter);
+
+        expect(computedStyle.callCount).to.equal(0);
+      } finally {
+        computedStyle.restore();
+      }
+
+      const { startSize } = getPanesSizes(splitter, 'width');
+
+      expect(startSize).to.equal(250);
+      expect(bar.getAttribute('aria-valuenow')).to.equal(
+        percent(startSize).toString()
+      );
+      expect(bar.getAttribute('aria-valuemin')).to.equal(
+        percent(80).toString()
+      );
+      expect(bar.getAttribute('aria-valuemax')).to.equal(
+        percent(320).toString()
+      );
+
+      simulatePointerUp(bar, {
+        clientX: left + 50,
+        clientY: top,
+        pointerId: 1,
+      });
+      await elementUpdated(splitter);
+
+      expect(bar.getAttribute('aria-valuenow')).to.equal(
+        percent(getPanesSizes(splitter, 'width').startSize).toString()
+      );
+    });
+
     const testMinMaxConstraintsPx = async (
       orientation: SplitterOrientation
     ) => {

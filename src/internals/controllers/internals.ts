@@ -66,14 +66,21 @@ class ElementInternalsController implements ReactiveController {
   private readonly _host: ReactiveControllerHost & LitElement;
   private readonly _internals: ElementInternals;
   private readonly _aria?: () => ARIAState;
-  /** Mirrored ARIA properties and the last value this controller wrote. */
-  private readonly _reflected = new Map<ReflectableARIA, string | null>();
+  /** Mirrored ARIA properties and the last written value; only with a `reflect*` option. */
+  private readonly _reflected?: Map<ReflectableARIA, string | null>;
 
   /**
    * The ARIA values this controller last wrote. Each write reaches the
    * accessibility tree, so the controller writes only what changes.
    */
-  private readonly _ariaState = new Map<keyof ARIAMixin, unknown>();
+  private _ariaState?: Map<keyof ARIAMixin, unknown>;
+
+  /** The last `setValidity` flags and message; a repeat skips the write. */
+  private _validity?: string;
+
+  /** Set during a host update, which reads the labels once. */
+  private _updating = false;
+  private _labels?: ReadonlyArray<Element> | null;
 
   /** Returns the closest ancestor `<form>` element, or `null`. */
   public get form(): HTMLFormElement | null {
@@ -95,10 +102,21 @@ class ElementInternalsController implements ReactiveController {
 
   /** Returns the `<label>` elements of the host, or `null` when it has none. */
   public get labels(): ReadonlyArray<Element> | null {
+    if (this._updating && this._labels !== undefined) {
+      return this._labels;
+    }
+
     const host = this._host.constructor as { formAssociated?: boolean };
     // The getter throws for an element that is not form associated.
-    const labels = host.formAssociated ? this._internals.labels : null;
-    return labels?.length ? Array.from(labels as NodeListOf<Element>) : null;
+    const list = host.formAssociated ? this._internals.labels : null;
+    const labels = list?.length
+      ? Array.from(list as NodeListOf<Element>)
+      : null;
+
+    if (this._updating) {
+      this._labels = labels;
+    }
+    return labels;
   }
 
   constructor(
@@ -109,11 +127,15 @@ class ElementInternalsController implements ReactiveController {
     this._internals = this._host.attachInternals();
     this._aria = config?.aria;
 
-    if (config?.reflectRole) {
-      this._reflected.set('role', null);
-    }
-    if (config?.reflectLabel) {
-      this._reflected.set('ariaLabel', null);
+    if (config?.reflectRole || config?.reflectLabel) {
+      this._reflected = new Map();
+
+      if (config.reflectRole) {
+        this._reflected.set('role', null);
+      }
+      if (config.reflectLabel) {
+        this._reflected.set('ariaLabel', null);
+      }
     }
 
     if (config?.initialARIA) {
@@ -126,16 +148,27 @@ class ElementInternalsController implements ReactiveController {
 
   /** @internal */
   public hostConnected(): void {
-    for (const name of this._reflected.keys()) {
-      this._reflectAttribute(name);
+    if (this._reflected) {
+      for (const name of this._reflected.keys()) {
+        this._reflectAttribute(name);
+      }
     }
   }
 
   /** @internal */
   public hostUpdate(): void {
+    this._updating = true;
+    this._labels = undefined;
+
     if (this._aria) {
       this.setARIA(this._aria.call(this._host));
     }
+  }
+
+  /** @internal */
+  public hostUpdated(): void {
+    this._updating = false;
+    this._labels = undefined;
   }
 
   /**
@@ -155,7 +188,7 @@ class ElementInternalsController implements ReactiveController {
     const current = host.getAttribute(attribute);
 
     // An attribute that the author set or changed stays as the author left it.
-    if (current !== null && current !== this._reflected.get(name)) {
+    if (current !== null && current !== this._reflected?.get(name)) {
       return;
     }
 
@@ -164,32 +197,32 @@ class ElementInternalsController implements ReactiveController {
       setOrRemoveAttribute(host, attribute, value);
     }
 
-    this._reflected.set(name, value);
+    this._reflected?.set(name, value);
   }
 
   /** Sets ARIA attributes on the element's internals. */
   public setARIA(state: ARIAState): void {
     // A write through a key of the union needs an index signature.
     const internals = this._internals as unknown as Record<string, unknown>;
+    const written = (this._ariaState ??= new Map());
 
     for (const key in state) {
       const name = key as keyof ARIAMixin;
       const value = state[name];
 
-      if (
-        !this._ariaState.has(name) ||
-        !sameValue(this._ariaState.get(name), value)
-      ) {
-        this._ariaState.set(name, value);
+      if (!written.has(name) || !sameValue(written.get(name), value)) {
+        written.set(name, value);
         internals[name] = value;
       }
     }
 
     // Always reflect a key that the state carries: the internals value alone
     // does not reveal an attribute that the author removed.
-    for (const name of this._reflected.keys()) {
-      if (name in state) {
-        this._reflectAttribute(name);
+    if (this._reflected) {
+      for (const name of this._reflected.keys()) {
+        if (name in state) {
+          this._reflectAttribute(name);
+        }
       }
     }
   }
@@ -221,7 +254,18 @@ class ElementInternalsController implements ReactiveController {
 
   /** Sets the validity state and the validation message of the host. */
   public setValidity(flags?: ValidityStateFlags, message?: string): void {
-    this._internals.setValidity(flags, message);
+    let key = `${message}:`;
+
+    for (const name in flags) {
+      if (flags[name as keyof ValidityStateFlags]) {
+        key += `${name},`;
+      }
+    }
+
+    if (key !== this._validity) {
+      this._validity = key;
+      this._internals.setValidity(flags, message);
+    }
   }
 
   /** Checks host validity, and sends an `invalid` event on a failure. */

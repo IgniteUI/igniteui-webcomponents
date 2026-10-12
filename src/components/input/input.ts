@@ -13,7 +13,9 @@ import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { partMap } from '#internals/part-map.js';
 import { hasNegativeTabIndex } from '#internals/utils/dom.js';
 import { bindIf } from '#internals/utils/lit.js';
+import { all } from '#themes/input/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type {
   InputType,
   RangeTextSelectMode,
@@ -23,7 +25,6 @@ import IgcValidationContainerComponent from '../validation-container/validation-
 import { IgcInputBaseComponent } from './input-base.js';
 import { styles } from './themes/input.base.css.js';
 import { styles as shared } from './themes/shared/input.common.css.js';
-import { all } from './themes/themes.js';
 import { numberValidators, stringValidators } from './validators.js';
 
 const Slots = setSlots(
@@ -74,7 +75,7 @@ const Slots = setSlots(
  */
 export default class IgcInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-input';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /** Shared config for the constraint properties - a change revalidates. */
   private static readonly _revalidate: CoercedPropertyConfig<

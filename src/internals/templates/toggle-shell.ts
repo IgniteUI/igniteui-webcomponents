@@ -51,11 +51,10 @@ export function renderToggleShell(
   host: ToggleShellHost,
   options: ToggleShellOptions
 ): TemplateResult {
-  const aria = hostAria(
-    host,
-    !options.hideLabel && options.labelId,
-    options.description
-  );
+  const aria = hostAria(host, {
+    ownLabel: !options.hideLabel && options.labelId,
+    description: options.description,
+  });
 
   return html`
     <label part=${partMap(options.baseParts)} for=${options.inputId}>

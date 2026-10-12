@@ -1,7 +1,11 @@
 import { LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
-import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  addSlotController,
+  DefaultSlot,
+  setSlots,
+} from '#internals/controllers/slot.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -114,7 +118,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   }
 
   protected _handleSlotChange(): void {
-    this._hideLabel = !this._slots.hasAssignedNodes('[default]');
+    this._hideLabel = !this._slots.hasAssignedNodes(DefaultSlot);
   }
 
   protected _handleClick(event: PointerEvent): void {

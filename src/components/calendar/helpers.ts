@@ -1,4 +1,7 @@
 import { getDateFormatter } from 'igniteui-i18n-core';
+import type { LitElement } from 'lit';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { addKeybindings } from '#internals/controllers/key-bindings.js';
 import {
   CalendarDay,
   calendarRange,
@@ -6,9 +9,15 @@ import {
   type DayParameter,
   toCalendarDay,
 } from '#internals/date/model.js';
-import { firstOf, lastOf } from '#internals/utils/arrays.js';
-import { getElementFromPath } from '#internals/utils/events.js';
+import { firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
+import {
+  addSafeEventListener,
+  getElementFromPath,
+} from '#internals/utils/events.js';
 import { asNumber, modulo } from '#internals/utils/math.js';
+import { getOrInsertComputed } from '#internals/utils/objects.js';
+import { addThemingController } from '#theming/theming-controller.js';
+import type { ComponentThemes } from '#theming/types.js';
 import {
   type DateRangeDescriptor,
   DateRangeType,
@@ -30,6 +39,55 @@ const WEEK_DAYS_MAP = {
   saturday: 6,
 } as const;
 const WEEK_DAY_NAMES = Object.keys(WEEK_DAYS_MAP) as WeekDays[];
+const localeWeekStarts = new Map<string, WeekDays>();
+
+type DayValue = Date | CalendarDay | null | undefined;
+
+const timeOf = (day: DayValue) =>
+  day instanceof CalendarDay ? day.timestamp : day?.getTime();
+
+/** `hasChanged` for a date property or state, compared by time. */
+export function dateChanged(value: unknown, old: unknown): boolean {
+  return timeOf(value as DayValue) !== timeOf(old as DayValue);
+}
+
+/** `hasChanged` for a date list property or state, compared by time. */
+export function datesChanged(value: unknown, old: unknown): boolean {
+  if (value === old) {
+    return false;
+  }
+
+  const next = (value ?? []) as DayValue[];
+  const previous = (old ?? []) as DayValue[];
+
+  return (
+    next.length !== previous.length ||
+    next.some((day, i) => dateChanged(day, previous[i]))
+  );
+}
+
+/** `hasChanged` for a descriptor list, where `undefined` and `[]` are equal. */
+export function rangesChanged(value: unknown, old: unknown): boolean {
+  return (
+    value !== old &&
+    !(isEmpty((value ?? []) as unknown[]) && isEmpty((old ?? []) as unknown[]))
+  );
+}
+
+/** Sets up a calendar view: a themed grid that activates a cell on a click, Enter or Space. */
+export function setupCalendarView(
+  view: LitElement,
+  themes: ComponentThemes,
+  onActivate: (event: Event) => void
+): void {
+  addInternalsController(view, {
+    initialARIA: { role: 'grid' },
+    reflectRole: true,
+  });
+  addThemingController(view, themes);
+  addKeybindings(view).setActivateHandler(onActivate);
+  addSafeEventListener(view, 'click', onActivate);
+}
 
 /** The value of the activated day/month/year element of a calendar view, or -1. */
 export function getViewElement(event: Event): number {
@@ -51,7 +109,11 @@ export function getLocaleWeekStart(locale: string): WeekDays {
   }
 
   // igniteui-i18n-core numbers the days 1 (Monday) - 7 (Sunday)
-  return WEEK_DAY_NAMES[getDateFormatter().getFirstDayOfWeek(locale) % 7];
+  return getOrInsertComputed(
+    localeWeekStarts,
+    locale,
+    () => WEEK_DAY_NAMES[getDateFormatter().getFirstDayOfWeek(locale) % 7]
+  );
 }
 
 /**
@@ -71,31 +133,17 @@ export function isDatePartBefore(
   return indexOf(first) < indexOf(second);
 }
 
-export function areSameMonth(
-  first: DayParameter,
-  second: DayParameter
-): boolean {
-  const a = toCalendarDay(first);
-  const b = toCalendarDay(second);
-  return a.year === b.year && a.month === b.month;
-}
+const monthIndex = (value: DayParameter) =>
+  value instanceof Date
+    ? value.getFullYear() * 12 + value.getMonth()
+    : value.year * 12 + value.month;
 
-export function isNextMonth(
+/** The number of months from `origin` to `target`, 0 for the same month. */
+export function monthOffset(
   target: DayParameter,
   origin: DayParameter
-): boolean {
-  const a = toCalendarDay(target);
-  const b = toCalendarDay(origin);
-  return a.year === b.year ? a.month > b.month : a.year > b.year;
-}
-
-export function isPreviousMonth(
-  target: DayParameter,
-  origin: DayParameter
-): boolean {
-  const a = toCalendarDay(target);
-  const b = toCalendarDay(origin);
-  return a.year === b.year ? a.month < b.month : a.year < b.year;
+): number {
+  return monthIndex(target) - monthIndex(origin);
 }
 
 /** Yields the days rendered by a single days view - six weeks starting on `firstWeekDay`. */
@@ -149,11 +197,10 @@ function isDateInRange(
       return value.lessThan(first);
 
     case DateRangeType.Between: {
-      const a = toCalendarDay(first).timestamp;
-      const b = toCalendarDay(lastOf(range.dateRange)).timestamp;
-      return (
-        value.timestamp >= Math.min(a, b) && value.timestamp <= Math.max(a, b)
-      );
+      const last = lastOf(range.dateRange);
+      return CalendarDay.compare(first, last) > 0
+        ? value.lessThanOrEqual(first) && value.greaterThanOrEqual(last)
+        : value.greaterThanOrEqual(first) && value.lessThanOrEqual(last);
     }
 
     case DateRangeType.Specific:

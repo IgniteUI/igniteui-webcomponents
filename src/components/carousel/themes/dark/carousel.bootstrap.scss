@@ -1,10 +1,11 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
+@use '../light/themes' as light;
 
 $theme: $bootstrap;
 
 :host {
-    @include css-vars-from-theme(diff($base, $theme));
+    @include css-vars-from-theme(dark-overrides(light.$bootstrap, $theme, $base, light.$base));
 
     --navigation-border-radius: #{var-get($theme, 'border-radius')};
 }

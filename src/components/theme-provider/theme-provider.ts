@@ -96,3 +96,9 @@ export default class IgcThemeProviderComponent extends LitElement {
     return html`<slot></slot>`;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-theme-provider': IgcThemeProviderComponent;
+  }
+}

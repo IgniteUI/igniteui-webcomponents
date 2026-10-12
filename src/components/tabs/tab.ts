@@ -7,9 +7,10 @@ import {
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/tabs/themes/tab-themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles as shared } from './themes/shared/tab/tab.common.css.js';
-import { all } from './themes/tab-themes.js';
 import { styles } from './themes/tab.base.css.js';
 
 const nextId = createIdGenerator('igc-tab');
@@ -32,7 +33,7 @@ const nextId = createIdGenerator('igc-tab');
  */
 export default class IgcTabComponent extends HostAriaMixin(LitElement) {
   public static readonly tagName = 'igc-tab';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

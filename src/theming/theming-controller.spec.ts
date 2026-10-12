@@ -16,7 +16,7 @@ import {
   type ThemingController,
 } from './theming-controller.js';
 import { CHANGE_THEME_EVENT } from './theming-event.js';
-import type { Theme, Themes } from './types.js';
+import type { ComponentThemes, Theme, Themes } from './types.js';
 
 const mockThemes: Themes = {
   light: {
@@ -556,6 +556,162 @@ describe('Theming Controller', () => {
         mockThemes.light.shared!.styleSheet,
         mockThemes.light.bootstrap!.styleSheet,
       ]);
+    });
+  });
+
+  describe('Update Gating', () => {
+    type CountingElement = LitElement & { updateCount: number };
+
+    function defineCounting(readsTheme: boolean): string {
+      return defineCE(
+        class extends LitElement {
+          public updateCount = 0;
+
+          private readonly _theming = addThemingController(this, mockThemes);
+
+          protected override updated(): void {
+            this.updateCount++;
+          }
+
+          protected override render() {
+            return readsTheme
+              ? litHtml`<span>${this._theming.theme}</span>`
+              : litHtml`<span>static</span>`;
+          }
+        }
+      );
+    }
+
+    let readingTag: string;
+    let staticTag: string;
+
+    before(() => {
+      readingTag = defineCounting(true);
+      staticTag = defineCounting(false);
+    });
+
+    beforeEach(() => {
+      configureTheme('bootstrap', 'light');
+    });
+
+    it('updates a host that reads the theme on a theme change', async () => {
+      const tag = unsafeStatic(readingTag);
+      const el = await fixture<CountingElement>(html`<${tag}></${tag}>`);
+      const count = el.updateCount;
+
+      configureTheme('material', 'dark');
+      await elementUpdated(el);
+
+      expect(el.updateCount).to.equal(count + 1);
+      expect(el.shadowRoot!.textContent).to.equal('material');
+    });
+
+    it('does not update a host that never reads the theme, but swaps its theme sheets', async () => {
+      const tag = unsafeStatic(staticTag);
+      const el = await fixture<CountingElement>(html`<${tag}></${tag}>`);
+      const count = el.updateCount;
+
+      configureTheme('material', 'dark');
+      await elementUpdated(el);
+
+      expect(el.updateCount).to.equal(count);
+      expect(Array.from(el.shadowRoot!.adoptedStyleSheets)).to.include.members([
+        mockThemes.dark.shared!.styleSheet,
+        mockThemes.dark.material!.styleSheet,
+      ]);
+    });
+
+    it('does not update the host when the active theme is set again', async () => {
+      const tag = unsafeStatic(readingTag);
+      const el = await fixture<CountingElement>(html`<${tag}></${tag}>`);
+      const count = el.updateCount;
+
+      setTimeout(() => configureTheme('bootstrap', 'light'));
+      const { detail } = await oneEvent(window, CHANGE_THEME_EVENT);
+      await elementUpdated(el);
+
+      expect(detail).to.deep.equal({
+        theme: 'bootstrap',
+        themeVariant: 'light',
+      });
+      expect(el.updateCount).to.equal(count);
+    });
+  });
+
+  describe('Array Entries', () => {
+    const base = css`
+      :host {
+        --test-base: 1;
+      }
+    `;
+    const override = css`
+      :host {
+        --test-base: 2;
+      }
+    `;
+    const arrayThemes: ComponentThemes = {
+      light: {
+        shared: [mockThemes.light.shared!],
+        bootstrap: [base, override],
+      },
+      dark: { bootstrap: [base] },
+    };
+    let arrayTag: string;
+
+    before(() => {
+      arrayTag = defineCE(
+        class extends LitElement {
+          constructor() {
+            super();
+            addThemingController(this, arrayThemes);
+          }
+        }
+      );
+    });
+
+    beforeEach(() => {
+      configureTheme('bootstrap', 'light');
+    });
+
+    it('adopts the sheets of an array entry in order', async () => {
+      const tag = unsafeStatic(arrayTag);
+      const el = await fixture<LitElement>(html`<${tag}></${tag}>`);
+
+      expect(
+        Array.from(el.shadowRoot!.adoptedStyleSheets)
+      ).to.have.ordered.members([
+        mockThemes.light.shared!.styleSheet,
+        base.styleSheet,
+        override.styleSheet,
+      ]);
+      expect(getComputedStyle(el).getPropertyValue('--test-base')).to.equal(
+        '2'
+      );
+    });
+
+    it('adopts the array entry of the new variant', async () => {
+      const tag = unsafeStatic(arrayTag);
+      const el = await fixture<LitElement>(html`<${tag}></${tag}>`);
+
+      configureTheme('bootstrap', 'dark');
+      await elementUpdated(el);
+
+      expect(
+        Array.from(el.shadowRoot!.adoptedStyleSheets)
+      ).to.have.ordered.members([base.styleSheet]);
+    });
+
+    it('gives the instances of a class the same sheets', async () => {
+      const tag = unsafeStatic(arrayTag);
+      const container = await fixture<HTMLElement>(
+        html`<div><${tag}></${tag}><${tag}></${tag}></div>`
+      );
+      const [first, second] = Array.from(
+        container.children,
+        (child) => child.shadowRoot!.adoptedStyleSheets
+      );
+
+      expect(first).to.have.ordered.members(second);
     });
   });
 

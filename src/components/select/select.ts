@@ -1,6 +1,14 @@
-import { html, type PropertyValues, type TemplateResult } from 'lit';
+import { html, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import {
+  getActiveItems,
+  getItems,
+  getNextActiveItem,
+  getPreviousActiveItem,
+  IgcComboBoxBaseLikeComponent,
+  setInitialSelectionState,
+} from '#internals/bases/combo-box.js';
 import { addAriaProjector } from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
@@ -20,19 +28,10 @@ import {
   createMutationController,
   type MutationControllerParams,
 } from '#internals/controllers/mutation-observer.js';
-import { addRootClickController } from '#internals/controllers/root-click.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import {
-  getActiveItems,
-  getItems,
-  getNextActiveItem,
-  getPreviousActiveItem,
-  IgcComboBoxBaseLikeComponent,
-  setInitialSelectionState,
-} from '#internals/mixins/combo-box.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
@@ -50,7 +49,9 @@ import {
 import { bindIf } from '#internals/utils/lit.js';
 import { moveFlag } from '#internals/utils/objects.js';
 import { isString } from '#internals/utils/types.js';
+import { all } from '#themes/select/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent, {
@@ -62,7 +63,6 @@ import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
 import { styles } from './themes/select.base.css.js';
 import { styles as shared } from './themes/shared/select.common.css.js';
-import { all } from './themes/themes.js';
 import { selectValidators } from './validators.js';
 
 export interface IgcSelectComponentEventMap {
@@ -133,7 +133,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   >(IgcComboBoxBaseLikeComponent)
 ) {
   public static readonly tagName = 'igc-select';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -158,13 +158,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private _lastKeyTime = 0;
 
   private readonly _slots = addSlotController(this, { slots: Slots });
-
-  protected override readonly _rootClickController = addRootClickController(
-    this,
-    {
-      onHide: this._handleClosing,
-    }
-  );
 
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: undefined,
@@ -209,7 +202,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   @property()
   public set value(value: string | undefined) {
     this._updateValue(value);
-    this._setSelectedItem(this._getItem(this._formValue.value!) ?? null);
+    this._setSelectedItem(this._resolveItem(this._formValue.value!) ?? null);
   }
 
   public get value(): string | undefined {
@@ -280,16 +273,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   //#region Life-cycle hooks
 
-  protected override willUpdate(changedProperties: PropertyValues<this>): void {
-    if (!this.hasUpdated) {
-      return;
-    }
-
-    if (changedProperties.has('open')) {
-      this._rootClickController.update();
-    }
-  }
-
   constructor() {
     super();
 
@@ -346,7 +329,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       return;
     }
 
-    const match = this.value ? this._getItem(this.value) : undefined;
+    const match = this.value ? this._resolveItem(this.value) : undefined;
 
     if (match) {
       if (match !== this._selectedItem) {
@@ -379,7 +362,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
       this._selectItem(selected, false);
     } else if (this.value) {
-      const item = this._getItem(this.value);
+      const item = this._resolveItem(this.value);
 
       // An unmatched value is kept, not discarded - its item may still arrive.
       if (item) {
@@ -585,8 +568,13 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     }
   }
 
-  private _getItem(value: string): IgcSelectItemComponent | undefined {
-    return this.items.find((item) => item.value === value);
+  /** Resolves an item by its `value`, or by its index in {@link items}. */
+  private _resolveItem(
+    value: string | number
+  ): IgcSelectItemComponent | undefined {
+    return isString(value)
+      ? this.items.find((item) => item.value === value)
+      : this.items[value];
   }
 
   /**
@@ -632,7 +620,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   /* blazorSuppress */
   /** Navigates to the specified item. If it exists, returns the found item, otherwise - null. */
   public navigateTo(value: string | number): IgcSelectItemComponent | null {
-    const item = isString(value) ? this._getItem(value) : this.items[value];
+    const item = this._resolveItem(value);
     this._navigateToActiveItem(item);
     return item ?? null;
   }
@@ -646,7 +634,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   /* blazorSuppress */
   /** Selects the specified item. If it exists, returns the found item, otherwise - null. */
   public select(value: string | number): IgcSelectItemComponent | null {
-    const item = isString(value) ? this._getItem(value) : this.items[value];
+    const item = this._resolveItem(value);
     return item ? this._selectItem(item, false) : null;
   }
 

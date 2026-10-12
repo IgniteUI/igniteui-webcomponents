@@ -15,18 +15,22 @@ import {
 } from '#internals/controllers/context-provider.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { addRovingFocusController } from '#internals/controllers/roving-focus.js';
-import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  addSlotController,
+  DefaultSlot,
+  setSlots,
+} from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { asArray, firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
-import { getRoot } from '#internals/utils/dom.js';
 import { getElementFromPath } from '#internals/utils/events.js';
 import { isDefined } from '#internals/utils/types.js';
+import { all } from '#themes/button-group/themes/group.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { ButtonGroupSelection, ContentOrientation } from '../types.js';
 import { styles } from './themes/group.base.css.js';
-import { all } from './themes/group.js';
 import { styles as shared } from './themes/shared/group/group.common.css.js';
 import IgcToggleButtonComponent from './toggle-button.js';
 
@@ -53,7 +57,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-button-group';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -82,7 +86,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   });
 
   private get _buttons(): IgcToggleButtonComponent[] {
-    return this._slots.getAssignedElements('[default]', {
+    return this._slots.getAssignedElements(DefaultSlot, {
       selector: IgcToggleButtonComponent.tagName,
     });
   }
@@ -188,7 +192,6 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
       vertical: () => this.alignment === 'vertical',
       homeEnd: false,
       items: () => this._enabledButtons,
-      current: () => this._getFocusedButton(),
       focusItem: (button) => this._navigate(button),
     });
   }
@@ -253,13 +256,6 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   /** The button holding focus, when it is one of the group. */
-  private _getFocusedButton(): IgcToggleButtonComponent | null {
-    const button = getRoot(this).activeElement?.closest(
-      IgcToggleButtonComponent.tagName
-    );
-
-    return button && this._buttons.includes(button) ? button : null;
-  }
 
   /**
    * Focuses `button` and moves the selection to it, as a radio group does.

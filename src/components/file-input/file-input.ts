@@ -16,7 +16,9 @@ import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
 import { hasFiles, hasNegativeTabIndex } from '#internals/utils/dom.js';
 import { bindIf } from '#internals/utils/lit.js';
+import { all } from '#themes/file-input/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
 import {
   IgcInputBaseComponent,
@@ -26,7 +28,6 @@ import { styles as baseStyle } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/file-input.base.css.js';
-import { all } from './themes/themes.js';
 import { fileValidators } from './validators.js';
 
 /* blazorSuppress */
@@ -86,7 +87,7 @@ export default class IgcFileInputComponent extends I18nMixin(
   i18n
 ) {
   public static readonly tagName = 'igc-file-input';
-  public static styles = [baseStyle, shared, styles];
+  public static styles = [componentBase, baseStyle, shared, styles];
 
   /* blazorSuppress */
   public static register(): void {

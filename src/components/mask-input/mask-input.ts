@@ -2,22 +2,18 @@ import { property } from 'lit/decorators.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
-import {
-  MaskBehaviorMixin,
-  type MaskSelection,
-} from '#internals/mixins/mask-behavior.js';
+import { MaskBehaviorMixin } from '#internals/mixins/mask-behavior.js';
 import { renderMaskedNativeInput } from '#internals/templates/masked-input.js';
+import { all } from '#themes/input/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
-import { all } from '../input/themes/themes.js';
 import type { MaskInputValueMode } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { MaskParser } from './mask-parser.js';
 import { maskValidators } from './validators.js';
-
-export type { MaskSelection };
 
 const Slots = setSlots(
   'prefix',
@@ -60,7 +56,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   IgcInputBaseComponent
 ) {
   public static readonly tagName = 'igc-mask-input';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -122,7 +118,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   public set value(string: string) {
     const value = string ?? '';
     this._maskedValue = this._parser.apply(value);
-    this._updateMaskedValue();
+    this._updateMaskDisplay();
     this._formValue.setValueAndFormState(value);
   }
 
@@ -144,9 +140,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   @property()
   public override set mask(value: string) {
     super.mask = value;
-    if (this.value) {
-      this._maskedValue = this._parser.apply(this._formValue.value);
-    }
+    this._reapplyMask();
   }
 
   public override get mask(): string {
@@ -162,9 +156,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   @property()
   public override set prompt(value: string) {
     super.prompt = value;
-    if (this.value) {
-      this._maskedValue = this._parser.apply(this._formValue.value);
-    }
+    this._reapplyMask();
   }
 
   public override get prompt(): string {
@@ -181,34 +173,9 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
     }
   }
 
-  protected _handleDragLeave(): void {
-    if (!this._focused) {
-      this._updateMaskedValue();
-    }
-  }
-
-  protected async _handleFocus(): Promise<void> {
-    this._focused = true;
-
-    if (this.readOnly) {
-      return;
-    }
-
-    if (!this._formValue.value) {
-      this._maskedValue = this._parser.emptyMask;
-      this._historyResync();
-
-      await this.updateComplete;
-      this.select();
-      return;
-    }
-
-    this._historyResync();
-  }
-
   protected override _handleBlur(): void {
     this._focused = false;
-    this._updateMaskedValue();
+    this._updateMaskDisplay();
     super._handleBlur();
   }
 
@@ -230,7 +197,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
 
     // Only `setRangeText` gets here unfocused. An emptied mask then reads as empty, as after a blur.
     if (!this._focused) {
-      this._updateMaskedValue();
+      this._updateMaskDisplay();
     }
   }
 
@@ -238,7 +205,19 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
     this._emitTouchedEvent('igcInput', { detail: this.value });
   }
 
-  private _updateMaskedValue(): void {
+  /** Applies a new mask or prompt to the current value. */
+  private _reapplyMask(): void {
+    if (this.value) {
+      this._maskedValue = this._parser.apply(this._formValue.value);
+    }
+  }
+
+  protected override _isValueEmpty(): boolean {
+    return !this._formValue.value;
+  }
+
+  /** An empty mask shows the placeholder while unfocused. */
+  protected override _updateMaskDisplay(): void {
     if (this._isEmptyMask) {
       this._maskedValue = '';
     }
@@ -270,17 +249,9 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
       autofocus: this.autofocus,
       inputMode: this.inputMode,
       aria: this._ariaTarget.resolveBindings(),
-      onInput: this._handleInput,
-      onBeforeInput: this._handleBeforeInput,
-      onFocus: this._handleFocus,
-      onBlur: this._handleBlur,
-      onClick: this._handleClick,
-      onSetMaskSelection: this._setMaskSelection,
-      onCompositionStart: this._handleCompositionStart,
-      onCompositionEnd: this._handleCompositionEnd,
+      ...this._maskInputBindings,
       onChange: this._handleChange,
       onDragEnter: this._handleDragEnter,
-      onDragLeave: this._handleDragLeave,
     });
   }
 }

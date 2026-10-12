@@ -1,16 +1,17 @@
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { breadcrumbsContext } from '#internals/context.js';
-import { createAsyncContext } from '#internals/controllers/async-consumer.js';
+import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { addSlotController, DefaultSlot } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { getTabbables, setOrRemoveAttribute } from '#internals/utils/dom.js';
+import { all } from '#themes/breadcrumb/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import { styles } from './themes/breadcrumb.base.css.js';
 import { styles as shared } from './themes/shared/breadcrumb.common.css.js';
-import { all } from './themes/themes.js';
 
 /**
  * A single item within a breadcrumb navigation trail.
@@ -43,7 +44,7 @@ import { all } from './themes/themes.js';
  */
 export default class IgcBreadcrumbComponent extends LitElement {
   public static readonly tagName = 'igc-breadcrumb';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -56,7 +57,7 @@ export default class IgcBreadcrumbComponent extends LitElement {
     initialARIA: { role: 'listitem' },
   });
 
-  private readonly _separatorConsumer = createAsyncContext(
+  private readonly _separatorConsumer = addAsyncContextConsumer(
     this,
     breadcrumbsContext
   );

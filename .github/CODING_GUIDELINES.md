@@ -38,23 +38,25 @@ src/
 
 `src/internals` holds the code that components share. None of it is public API:
 
-| Path                | Contents                                                                                           |
-| ------------------- | -------------------------------------------------------------------------------------------------- |
-| `controllers/`      | Reactive controllers. See [Controllers](#controllers).                                             |
-| `date/`             | The `CalendarDay` model, date comparison and conversion helpers                                    |
-| `decorators/`       | `coercedProperty`, `shadowOptions`, the Blazor markers                                             |
-| `definitions/`      | `registerComponent`, `defineComponents`, `defineAllComponents`                                     |
-| `directives/`       | The `resizable()` and `draggable()` pointer directives                                             |
-| `i18n/`             | The localization controller and the deprecated EN resource shapes                                  |
-| `mixins/`           | `EventEmitterMixin`, `I18nMixin`, `HostAriaMixin`, the form-associated mixins, mask behavior, combo box, group, option, alert |
-| `templates/`        | Shared render fragments: `input-shell`, `masked-input`, `toggle-shell`, `slotted-icon`             |
-| `testing/`          | Test helpers and shared suites. They are `*.spec.ts` files, and production code never imports them. |
-| `utils/`            | Helpers split by domain: `arrays`, `dom`, `events`, `lit`, `math`, `objects`, `strings`, `types`   |
-| `abort-handler.ts`  | `createAbortHandle`, a resettable `AbortController`                                                |
-| `context.ts`        | The Lit context keys that components share                                                        |
-| `part-map.ts`       | The `partMap` directive                                                                            |
-| `timing.ts`         | `createTimer`, a restartable timeout                                                               |
-| `validators.ts`     | The shared constraint validators                                                                   |
+| Path               | Contents                                                                                            |
+| ------------------ | --------------------------------------------------------------------------------------------------- |
+| `bases/`           | Abstract base classes: alert, combo box, group, option                                              |
+| `controllers/`     | Reactive controllers. See [Controllers](#controllers).                                              |
+| `date/`            | The `CalendarDay` model, date comparison and conversion helpers                                     |
+| `decorators/`      | `coercedProperty`, `shadowOptions`, the Blazor markers                                              |
+| `definitions/`     | `registerComponent`, `defineComponents`, `defineAllComponents`                                      |
+| `directives/`      | The `resizable()` and `draggable()` pointer directives                                              |
+| `i18n/`            | The localization controller and the deprecated EN resource shapes                                   |
+| `mixins/`          | `EventEmitterMixin`, `I18nMixin`, `HostAriaMixin`, the form-associated mixins, mask behavior        |
+| `templates/`       | Shared render fragments: `input-shell`, `masked-input`, `toggle-shell`, `slotted-icon`              |
+| `testing/`         | Test helpers and shared suites. They are `*.spec.ts` files, and production code never imports them. |
+| `utils/`           | Helpers split by domain: `arrays`, `dom`, `events`, `lit`, `math`, `objects`, `strings`, `types`    |
+| `abort-handler.ts` | `createAbortHandle`, a resettable `AbortController`                                                 |
+| `context.ts`       | The Lit context keys that components share                                                          |
+| `mask-history.ts`  | `createMaskHistory`, the undo and redo history of the mask editors                                  |
+| `part-map.ts`      | The `partMap` directive                                                                             |
+| `timing.ts`        | `createTimer`, a restartable timeout                                                                |
+| `validators.ts`    | The shared constraint validators                                                                    |
 
 `src/index.ts` re-exports only a few approved symbols from `src/internals`:
 `defineComponents`, `defineAllComponents`, the deprecated EN resource shapes, and the
@@ -72,7 +74,7 @@ To make a helper public, move it out of `internals` first.
 ```ts
 export default class IgcFooBarComponent extends LitElement {
   public static readonly tagName = 'igc-foo-bar';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -191,9 +193,22 @@ declare global {
   export { default as IgcFooBarComponent } from './components/foo-bar/foo-bar.js';
   ```
 
+  Also add it to the list in `defineAllComponents.ts`.
+- `register()` lists every component that the templates of the component render, directly.
+  Do not rely on a dependency that registers it. `npm run check` verifies both rules.
+
 - A mixin takes the base class as its first argument. If a leading config argument comes
-  first, the manifest analyzer drops every inherited member. After you change a base class
-  or a mixin, compare `custom-elements.json` before and after the change.
+  first, the manifest analyzer drops every inherited member. `npm run check` compares the
+  public API with the committed `public-api.json` and fails on a removal or a type change.
+  After you change a base class or a mixin, also compare `custom-elements.json` before and
+  after the change: the snapshot does not cover protected members or `inheritedFrom`.
+- Mixins and bases follow these contracts:
+
+  | Contract                                                                           | Reason                                                                                   |
+  | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+  | `I18nMixin(base, config)` takes the base first, like every mixin                   | With a leading config argument, the manifest analyzer drops every inherited member       |
+  | The form-associated mixins already apply `HostAriaMixin`                           | A form component gets the host ARIA forwarding from them; do not apply it again          |
+  | A base that emits before the leaf applies `EventEmitterMixin` declares `emitEvent` | `declare public emitEvent` types its calls; the leaf applies the mixin with the full map |
 
 ## Imports
 
@@ -208,7 +223,8 @@ declare global {
 
   All other imports are relative, including imports from one component to another
   (`../icon/icon.js`). A file in an aliased directory uses relative paths for its own
-  directory and the alias for a different one.
+  directory and the alias for a different one. The exception is the theme aggregator of a
+  component, which is imported through `#themes/*` (see [Styles and Theming](#styles-and-theming)).
 
 - The aliases are Node subpath imports. They are declared in the `imports` field of
   `package.json` (the sources) and of `scripts/_package.json` (the published manifest, with
@@ -247,12 +263,12 @@ Before you write lifecycle code, look for a controller that already does it:
 | `addCommandController`                                        | `#internals/controllers/command.js`         | The Invoker Commands API (`command` / `commandfor`)            |
 | `addIdRefResolver`                                            | `#internals/controllers/id-resolver.js`     | Resolving IDREF attributes to elements                         |
 | `addRootClickController`                                      | `#internals/controllers/root-click.js`      | Closing overlays on an outside click                           |
-| `createMutationController` / `createResizeObserverController` | `#internals/controllers/*-observer.js`      | Observing DOM mutations and size changes                       |
+| `createMutationController` / `addResizeObserverController`    | `#internals/controllers/*-observer.js`      | Observing DOM mutations and size changes                       |
 | `addGesturesController`                                       | `#internals/controllers/gestures.js`        | Swipe gestures                                                 |
 | `addKeyboardFocusRing`                                        | `#internals/controllers/focus-ring.js`      | Focus styles for keyboard focus only                           |
 | `addFullscreenController`                                     | `#internals/controllers/fullscreen.js`      | Fullscreen state                                               |
 | `addAdoptedStylesController`                                  | `#internals/controllers/adopt-styles.js`    | Adopting document styles into a shadow root                    |
-| `addContextProvider` / `createAsyncContext`                   | `#internals/controllers/context-provider.js`, `async-consumer.js` | Sharing state between a parent and its children through Lit context |
+| `addContextProvider` / `addAsyncContextConsumer`              | `#internals/controllers/context-provider.js`, `async-consumer.js` | Sharing state between a parent and its children through Lit context |
 | `createGroupRegistry`                                         | `#internals/controllers/group.js`           | Grouping peers by key, such as radios by `name`                |
 | `addI18nController`                                           | `#internals/i18n/i18n-controller.js`        | Localized resource strings                                     |
 
@@ -334,6 +350,7 @@ themes/
 │   └── [component].{bootstrap,material,fluent,indigo}.scss
 ├── dark/
 │   ├── _themes.scss            # digest-schema() of the dark schemas
+│   ├── [component].shared.scss # Optional: a dark base of the component's own
 │   └── [component].{bootstrap,material,fluent,indigo}.scss
 └── themes.ts                   # Composes everything into the `all` export
 ```
@@ -358,10 +375,14 @@ themes/
   @use '../../../styles/utilities' as *;
   ```
 
+- `src/styles/common/component.scss` holds the rules that every component shares: sizing,
+  `box-sizing`, scrollbars and `[hidden]`. It compiles once, to `componentBase`. Put
+  `componentBase` first in `static styles`. Do not `@use` this file in a base file.
 - Theme values come from the `igniteui-theming` schemas. `_themes.scss` digests them, and
   `var-get()` reads them. `light/[component].shared.scss` emits the full `$base` variable set.
-  The per-theme overrides emit only a difference: `diff($base, $theme)` in `light/`, and
-  `diff(light.$base, $theme)` in `dark/`:
+  A light theme file emits only `diff($base, $theme)`. In dark mode, the component adopts the
+  light theme sheet and then the dark sheet. Thus a dark file emits only the difference from
+  the light theme of the same name, with `dark-overrides()`:
 
   ```scss
   // light/badge.bootstrap.scss
@@ -373,13 +394,45 @@ themes/
   :host {
       @include css-vars-from-theme(diff($base, $theme));
   }
+
+  // dark/badge.bootstrap.scss
+  @use 'styles/utilities' as *;
+  @use 'themes' as *;
+  @use '../light/themes' as light;
+
+  $theme: $bootstrap;
+
+  :host {
+      @include css-vars-from-theme(dark-overrides(light.$bootstrap, $theme));
+  }
   ```
+
+  If `dark/[component].shared.scss` declares a dark base, also give the two bases:
+  `dark-overrides(light.$bootstrap, $theme, $base, light.$base)` (see `card/themes/dark/`).
 
 - Do not hardcode colors or sizes. Use `var-get($theme, 'text-color')`, `contrast-color()`,
   `sizable()` and the `--ig-size` scale.
 - Keep specificity low, and expose parts so that consumers can style the component.
 - `themes.ts` is the only hand-written TypeScript file in `themes/`. It composes the styles
-  into the `Themes` object for `addThemingController`.
+  into the `ComponentThemes` map for `addThemingController`: for each variant, a `shared`
+  entry and one entry per theme. An entry lists its sheets in cascade order:
+  `shared/[component].[theme]`, then `light/`, then (in the dark entry only) `dark/`. See
+  `badge/themes/themes.ts`.
+- Import the aggregator through the `#themes` alias, with its path under `src/components`:
+
+  ```ts
+  // ✅ DO
+  import { all } from '#themes/button/themes/button/themes.js';
+
+  // ❌ DON'T
+  import { all } from './themes/button/themes.js';
+  ```
+
+  A component imports its base and `shared/*.common` styles directly, and every per-theme
+  style through the aggregator. In the published package, the alias selects a single-theme
+  copy of the aggregator when the consumer sets an `igc-theme-<name>` condition (README,
+  "Bundling a single theme"). The build generates these copies and fails on a relative
+  aggregator import, or on a per-theme style that reaches a bundle for another theme.
 
 ## Accessibility
 
@@ -673,6 +726,9 @@ A parser, converter or serializer that takes user or stored input also gets prop
   >(LitElement) {}
   ```
 
+- Declare the event map in the module of the class that emits the events. When `src/index.ts`
+  exports the class, export the map too, as `export type { IgcFooBarEventMap } from …`. The
+  public API snapshot then records it.
 - Event names are camelCase with an `igc` prefix. Cancelable events usually end in `-ing`.
 - By default, `emitEvent` sends an event that bubbles, is composed and is not cancelable. For a
   cancelable event, check the return value:
@@ -1096,16 +1152,20 @@ export const Basic: Story = {
 
 ## Verifying Your Work
 
-| Command                | What it does                                                            |
-| ---------------------- | ----------------------------------------------------------------------- |
-| `npm run build:styles` | Compiles SCSS into the generated `.css.ts` files                        |
-| `npm run check`        | Import aliases, dependency-cruiser rules and TypeScript                 |
-| `npm run lint`         | oxlint, lit-analyzer, oxfmt and Stylelint                               |
-| `npm run format`       | Applies the oxlint and oxfmt fixes                                      |
-| `npm run test`         | Builds the styles and runs the Web Test Runner suite with coverage      |
-| `npm run cem`          | Regenerates `custom-elements.json`                                      |
-| `npm run build:meta`   | Regenerates the story metadata regions                                  |
-| `npm run storybook`    | Dev server with style, manifest and story watchers                      |
+| Command                         | What it does                                                                               |
+| ------------------------------- | ------------------------------------------------------------------------------------------ |
+| `npm run build:styles`          | Compiles SCSS into the generated `.css.ts` files                                           |
+| `npm run check`                 | Import aliases, dependency-cruiser rules, TypeScript, registration and the public API      |
+| `npm run lint`                  | oxlint, lit-analyzer, oxfmt and Stylelint                                                  |
+| `npm run format`                | Applies the oxlint and oxfmt fixes                                                         |
+| `npm run test`                  | Builds the styles and runs the Web Test Runner suite with coverage                         |
+| `npm run test:ssr`              | Builds the package and renders every tag through Lit SSR; fails when a render throws       |
+| `npm run build:publish`         | Builds the package in `dist`, then writes and checks the single-theme aggregators          |
+| `npm run cem`                   | Regenerates `custom-elements.json`                                                         |
+| `npm run public-api:update`     | Rewrites `public-api.json` after an intended public API change                             |
+| `npm run report:spec-scenarios` | Lists `spec.md` test scenarios out of step with the specs, and specs without an a11y audit |
+| `npm run build:meta`            | Regenerates the story metadata regions                                                     |
+| `npm run storybook`             | Dev server with style, manifest and story watchers                                         |
 
 Before you open a PR, run `npm run check`, `npm run lint` and `npm run test`.
 

@@ -5,7 +5,8 @@
     "rootDir": "../src",
     "declaration": false,
     "declarationMap": false,
-    "removeComments": true
+    "removeComments": true,
+    "importHelpers": true
   },
   "include": ["../src/**/*.ts"],
   "exclude": ["../src/**/*.spec.ts"]

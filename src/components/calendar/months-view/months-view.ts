@@ -4,7 +4,7 @@ import type { CalendarDay } from '#internals/date/model.js';
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '#internals/decorators/blazorSuppressComponent.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { areSameMonth, MONTHS_PER_ROW } from '../helpers.js';
+import { MONTHS_PER_ROW, monthOffset } from '../helpers.js';
 import {
   IgcYearMonthViewBaseComponent,
   type YearMonthViewCell,
@@ -75,7 +75,7 @@ export default class IgcMonthsViewComponent extends IgcYearMonthViewBaseComponen
         label: label.format(date),
         ariaLabel: aria.format(date),
         selected: this._value.month === month,
-        current: areSameMonth(today, date),
+        current: monthOffset(today, date) === 0,
       };
     });
   }
