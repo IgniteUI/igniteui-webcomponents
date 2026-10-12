@@ -26,7 +26,7 @@ const light = {
 
 const dark = {
   shared: sharedDark,
-  bootstrap: [bootstrapLight, bootstrapDark],
+  bootstrap: [bootstrap, bootstrapLight, bootstrapDark],
   material: [materialLight, materialDark],
   fluent: [fluent, fluentLight, fluentDark],
   indigo: [indigo, indigoLight, indigoDark],
