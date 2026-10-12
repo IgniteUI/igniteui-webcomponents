@@ -48,6 +48,7 @@
 | ------: | ---------- | ---------------------------------------------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                                                                    |
 |       2 | 2026-10-02 | A delegating item copies the host `aria-label`, `aria-labelledby` and `aria-describedby` |
+|       3 | 2026-10-12 | `items` is empty during server-side rendering                                            |
 
 ## Overview
 
@@ -257,7 +258,7 @@ set. Moving the focus scrolls the target item into view when the tree scrolls.
 | `selection`          | `selection`            | yes       | `"none" \| "multiple" \| "cascade"`   | `none`   | The selection state of the tree.                          |
 | `singleBranchExpand` | `single-branch-expand` | yes       | `boolean`                             | `false`  | Whether more than one item per level can be expanded.     |
 | `toggleNodeOnClick`  | `toggle-node-on-click` | yes       | `boolean`                             | `false`  | Whether a click over an item toggles its expanded state.  |
-| `items`              | —                      | —         | `IgcTreeItemComponent[]`              | —        | All items of the tree, in document order. Read-only.      |
+| `items`              | —                      | —         | `IgcTreeItemComponent[]`              | —        | All items in document order. Read-only. Empty during SSR. |
 | `locale`             | `locale`               | no        | `string`                              | —        | The locale of the resource strings.                       |
 | `resourceStrings`    | —                      | —         | `ITreeResourceStrings`                | —        | The resource strings of the component.                    |
 
@@ -458,6 +459,8 @@ module with the fixtures, the selectors and the assertion helpers the other thre
 
 - The tree is not data bound. The hierarchy is the DOM, and items must be nested directly in one another; an item
   inside a wrapper element is not part of the tree.
+- During server-side rendering there is no light DOM to walk, so `items` is an empty array. The items are
+  available after the tree connects in the browser.
 - End-user selection is only possible through the checkbox of an item. A click on the label never changes the
   selection.
 - The tree is not virtualized. Every item is rendered, so very large hierarchies should be built with load on

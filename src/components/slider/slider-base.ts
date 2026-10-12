@@ -361,10 +361,6 @@ export class IgcSliderBaseComponent extends LitElement {
       this._dismissThumbLabels();
     }
 
-    if (changedProperties.has('_thumbLabelsVisible')) {
-      this._listenForEscape(this._thumbLabelsVisible);
-    }
-
     // Only the limit that changed differs from the last scale.
     if (this._min > this._max) {
       [this._min, this._max] = this._scale;
@@ -382,6 +378,14 @@ export class IgcSliderBaseComponent extends LitElement {
 
     // Attributes apply one at a time, so the update resolves the values as set.
     this._normalizeValue(constraintsChanged);
+  }
+
+  protected override update(changedProperties: PropertyValues): void {
+    if (changedProperties.has('_thumbLabelsVisible')) {
+      this._listenForEscape(this._thumbLabelsVisible);
+    }
+
+    super.update(changedProperties);
   }
 
   public override disconnectedCallback(): void {

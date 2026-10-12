@@ -2,7 +2,7 @@ import {
   type ITreeResourceStrings,
   TreeResourceStringsEN,
 } from 'igniteui-i18n-core';
-import { html, LitElement, type PropertyValues } from 'lit';
+import { html, isServer, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { registerComponent } from '#internals/definitions/register.js';
@@ -106,7 +106,7 @@ export default class IgcTreeComponent extends I18nMixin(
    * Returns all of the tree's items.
    */
   public get items(): IgcTreeItemComponent[] {
-    return collectTreeItems(this);
+    return isServer ? [] : collectTreeItems(this);
   }
 
   constructor() {

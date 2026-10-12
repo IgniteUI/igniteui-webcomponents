@@ -1998,6 +1998,54 @@ describe('Chat', () => {
       verifyCustomStyles(true);
     });
   });
+
+  describe('Hydration', () => {
+    let container: HTMLDivElement;
+
+    beforeEach(async () => {
+      container = await fixture<HTMLDivElement>(html`<div></div>`);
+    });
+
+    /**
+     * Parses a declarative shadow root inside a chat, which provides the state.
+     * Synchronous, so the caller acts before the first update.
+     */
+    function parseDeclarative<T extends Element>(tagName: string): T {
+      container.setHTMLUnsafe(
+        `<igc-chat><${tagName}><template shadowrootmode="open"></template></${tagName}></igc-chat>`
+      );
+      return container.querySelector<T>(tagName)!;
+    }
+
+    it('renders the input after it hydrates a declarative shadow root', async () => {
+      const input = parseDeclarative<IgcChatInputComponent>(
+        IgcChatInputComponent.tagName
+      );
+      const textarea = () =>
+        input.renderRoot.querySelector(IgcTextareaComponent.tagName);
+
+      // The first render matches the empty server render.
+      await input.updateComplete;
+      expect(textarea()).to.be.null;
+
+      await elementUpdated(input);
+      expect(textarea()).to.exist;
+    });
+
+    it('renders the message after it hydrates a declarative shadow root', async () => {
+      const message = parseDeclarative<IgcChatMessageComponent>(
+        IgcChatMessageComponent.tagName
+      );
+      message.message = messages[0];
+
+      // The first render matches the empty server render.
+      await message.updateComplete;
+      expect(getChatMessageDOM(message).container).to.be.null;
+
+      await elementUpdated(message);
+      expect(getChatMessageDOM(message).content).to.have.text(messages[0].text);
+    });
+  });
 });
 
 function getChatDOM(chat: IgcChatComponent) {

@@ -2,9 +2,12 @@ import { isServer } from 'lit';
 import { asNumber, clamp, numberInRangeInclusive } from './math.js';
 import { isDefined } from './types.js';
 
-/** Returns whether an element has a Left-to-Right directionality. */
+/**
+ * Returns whether an element has a Left-to-Right directionality. SSR cannot
+ * resolve the directionality, so on the server the function returns true.
+ */
 export function isLTR(element: HTMLElement) {
-  return element.matches(':dir(ltr)');
+  return isServer || element.matches(':dir(ltr)');
 }
 
 const LENGTH_PROPERTY = '--igc-resolved-length';

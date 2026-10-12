@@ -37,6 +37,7 @@
     - [Keyboard](#keyboard)
     - [Events tests](#events-tests)
     - [Adopted root styles](#adopted-root-styles)
+    - [Hydration](#hydration)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -50,6 +51,7 @@
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-09-23 | Remove the `prefix` and `title` parts and add the `input-container` part |
+|       3 | 2026-10-12 | The input and the messages render empty on the server and render after hydration |
 
 ## Overview
 
@@ -407,12 +409,21 @@ The component exposes a part for every region it renders. The main groups are:
 27. Removing a stylesheet from the document removes its adopted copy, the component styles are not dropped by the
     adoption, and reconnecting the host re-adopts the document styles.
 
+### Hydration
+
+28. An input that hydrates an empty declarative shadow root keeps its first render empty, to match the server
+    render, and renders the composer on the next update.
+29. A message that hydrates an empty declarative shadow root keeps its first render empty, to match the server
+    render, and renders the message on the next update.
+
 ### Not covered by the suite
 
 - Automatic scrolling, `disableAutoScroll` and `scrollToMessage` are not covered.
 - Markdown rendering and the sanitization of the message content are not covered by the component suite.
 - The `locale` fallback and the localized strings are not asserted; the suite runs against the English defaults.
 - Keyboard navigation inside the message list is neither implemented nor covered.
+- Hydration through `@lit-labs/ssr-client` is not covered. The suite parses a declarative shadow root, which
+  checks the render order but not the template match of Lit.
 
 ## Assumptions and limitations
 
@@ -425,6 +436,10 @@ The component exposes a part for every region it renders. The main groups are:
 - `adoptRootStyles` intentionally breaks shadow DOM encapsulation and is documented as a last resort.
 - Sanitization protects the rendered content, but an application that supplies its own renderers is responsible
   for what those render.
+- The input and the messages get their state from the chat, which is not available during server-side rendering.
+  Their shadow roots render empty on the server. On the client, the first render also stays empty, to match the
+  server render during hydration, and the content renders on the next update. Outside a chat, the input and the
+  messages render nothing.
 
 ## Accessibility
 
