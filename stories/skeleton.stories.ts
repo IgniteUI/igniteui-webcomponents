@@ -682,7 +682,7 @@ export const LoadMore: Story = {
         <div class="sk-stack" style="gap: 1rem; max-width: 480px;">
           ${batches.map(
             (batch) => html`
-              <igc-skeleton ?loading=${!batch} style="width: 100%;">
+              <igc-skeleton ?loading=${!batch}>
                 <div class="sk-stack" style="gap: 1rem;">
                   ${(batch ?? posts.map(() => placeholderPost)).map(renderPost)}
                 </div>

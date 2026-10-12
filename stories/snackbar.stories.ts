@@ -67,10 +67,10 @@ const metadata: Meta<IgcSnackbarComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     position: {
-      type: { name: 'enum', value: ['bottom', 'middle', 'top'] },
+      type: { name: 'enum', value: ['top', 'bottom', 'middle'] },
       description:
         'Sets the position of the component in the viewport or in the container.',
-      options: ['bottom', 'middle', 'top'],
+      options: ['top', 'bottom', 'middle'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'bottom' } },
     },
@@ -108,7 +108,7 @@ interface IgcSnackbarArgs {
   /** Keeps the component open after the `displayTime` is over. */
   keepOpen: boolean;
   /** Sets the position of the component in the viewport or in the container. */
-  position: 'bottom' | 'middle' | 'top';
+  position: 'top' | 'bottom' | 'middle';
   /**
    * Sets the positioning strategy of the component.
    *
