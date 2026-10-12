@@ -67,6 +67,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Color picker
   - The initial `value` is now in the notation of `format` when the `value` attribute comes before the `format` attribute. Before, `value` and the form data stayed in hex until the color changed. [#2413](https://github.com/IgniteUI/igniteui-webcomponents/pull/2413)
   - The HSL saturation no longer becomes infinite for a very small saturation at full value. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
+  - The hue slider track now has the correct colors. Before, the thumb for yellow was on the orange part of the track.
+  - The alpha slider track now starts and ends at the limits of the thumb movement. Before, at 0% and 100% the track under the thumb was approximately 4% and 96% opaque.
+  - In right-to-left layouts, the hue and alpha slider tracks now go from right to left, as the sliders do. Before, each thumb was on the wrong color.
 - #### Combo
   - Arrow Down no longer closes the list, or moves the focus back to the search input, when a search finds one match or none. [#2428](https://github.com/IgniteUI/igniteui-webcomponents/pull/2428)
   - A form reset now clears the invalid styles of a required single-selection combo that had the focus. [#2428](https://github.com/IgniteUI/igniteui-webcomponents/pull/2428)

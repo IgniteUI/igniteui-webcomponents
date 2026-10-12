@@ -20,7 +20,10 @@ import {
   runAriaProjectionTests,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
-import { isFocused } from '#internals/testing/helpers.spec.js';
+import {
+  isFocused,
+  withDocumentSheets,
+} from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateInput,
@@ -33,6 +36,7 @@ import {
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
 import { configureTheme } from '#theming/config.js';
+import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcSelectComponent from '../select/select.js';
 import IgcColorPickerComponent from './color-picker.js';
@@ -150,6 +154,32 @@ function getAnchorPreview(picker: IgcColorPickerComponent): {
     opaque: style.getPropertyValue('--_color-preview'),
     alpha: style.getPropertyValue('--_alpha-preview'),
   };
+}
+
+/**
+ * Expects the hue and alpha ranges to run in `dir` and their track gradients to
+ * follow. The track pseudo-element has no computed style, so the gradient comes
+ * from its custom property, which needs the theme palette.
+ */
+async function expectSliderTracks(
+  picker: IgcColorPickerComponent,
+  dir: 'ltr' | 'rtl'
+): Promise<void> {
+  const to = dir === 'rtl' ? 'left' : 'right';
+
+  await withDocumentSheets([bootstrap.styleSheet!], () => {
+    for (const [name, slider] of [
+      ['hue', getHueSlider(picker)],
+      ['alpha', getAlphaSlider(picker)],
+    ] as const) {
+      const style = getComputedStyle(slider);
+      const gradient = /^linear-gradient\(\s*to (left|right)/.exec(
+        style.getPropertyValue(`--_${name}-slider-track`)
+      )?.[1];
+
+      expect({ dir: style.direction, to: gradient }, name).to.eql({ dir, to });
+    }
+  });
 }
 
 describe('Color picker', () => {
@@ -1212,6 +1242,21 @@ describe('Color picker', () => {
       picker.hideFormats = true;
       await elementUpdated(picker);
       expect(picker.renderRoot.querySelector('#format-select')).to.be.null;
+    });
+
+    it('runs the slider tracks in the direction of the ranges', async () => {
+      const container = await fixture<HTMLElement>(
+        html`<div><igc-color-picker open show-alpha></igc-color-picker></div>`
+      );
+      picker = container.querySelector('igc-color-picker')!;
+      await expectSliderTracks(picker, 'ltr');
+
+      container.dir = 'rtl';
+      await expectSliderTracks(picker, 'rtl');
+
+      container.removeAttribute('dir');
+      picker.dir = 'rtl';
+      await expectSliderTracks(picker, 'rtl');
     });
   });
 
