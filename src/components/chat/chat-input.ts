@@ -1,5 +1,5 @@
 import { ContextConsumer, consume } from '@lit/context';
-import { html, LitElement, nothing, type PropertyValues } from 'lit';
+import { html, isServer, LitElement, nothing, type PropertyValues } from 'lit';
 import { query, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -98,6 +98,12 @@ export default class IgcChatInputComponent extends LitElement {
   private _userIsTyping = false;
   private _userLastTypeTime = Date.now();
 
+  /**
+   * Set while a server-rendered host is hydrating, during which `render()`
+   * withholds the template so both renders match.
+   */
+  private _hydrating = false;
+
   private readonly _typingTimer = createTimer(() => {
     if (!this._userIsTyping) {
       return;
@@ -150,11 +156,25 @@ export default class IgcChatInputComponent extends LitElement {
     addThemingController(this, all, { themeChange: this._adoptPageStyles });
   }
 
+  /** @internal */
+  protected override createRenderRoot(): HTMLElement | DocumentFragment {
+    this._hydrating = this.shadowRoot !== null;
+    return super.createRenderRoot();
+  }
+
   protected override update(props: PropertyValues): void {
     if (props.has('_shouldAdoptRootStyles')) {
       this._adoptedStyles.shouldAdoptStyles(this._shouldAdoptRootStyles);
     }
     super.update(props);
+  }
+
+  protected override firstUpdated(): void {
+    if (this._hydrating) {
+      this._hydrating = false;
+      // Off the current update cycle - avoids Lit's change-in-update warning.
+      queueMicrotask(() => this.requestUpdate());
+    }
   }
 
   /** @internal */
@@ -379,6 +399,12 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   protected override render() {
+    // No chat provides the state outside a chat or during SSR. A hydrating
+    // host matches that empty server render.
+    if (isServer || this._hydrating || !this._stateConsumer.value) {
+      return nothing;
+    }
+
     const ctx: ChatRenderContext = { instance: this._state.host };
 
     const inputCtx: ChatInputRenderContext = {

@@ -14,7 +14,7 @@ import { FormValueFileListTransformers } from '#internals/mixins/forms/form-tran
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
-import { hasFiles, hasNegativeTabIndex } from '#internals/utils/dom.js';
+import { hasNegativeTabIndex } from '#internals/utils/dom.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { all } from '#themes/file-input/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -116,11 +116,13 @@ export default class IgcFileInputComponent extends I18nMixin(
   }
 
   private get _fileNames(): string | null {
-    if (!hasFiles(this)) {
+    const files = this._input?.files;
+
+    if (!files?.length) {
       return null;
     }
 
-    return Array.from(this.files)
+    return Array.from(files)
       .map((file) => file.name || 'unnamed')
       .join(', ');
   }

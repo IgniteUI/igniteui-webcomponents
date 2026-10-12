@@ -492,13 +492,17 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     if (changedProperties.has('mode') && !this._isDropDown) {
       this.keepOpenOnSelect = true;
     }
+  }
 
+  protected override update(changedProperties: PropertyValues<this>): void {
     // The render swaps the editors, so the range and validity are re-applied after it.
     if (changedProperties.has('useTwoInputs')) {
       this._syncEditors();
     } else if (changedProperties.has('mode')) {
       this._syncCalendarRange();
     }
+
+    super.update(changedProperties);
   }
 
   protected override firstUpdated() {
