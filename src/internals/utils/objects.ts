@@ -118,16 +118,21 @@ export function moveFlag<K extends string>(
  * the result of `create`. Follows `Map.prototype.getOrInsertComputed`.
  */
 export function getOrInsertComputed<K, V>(
-  map: { get(key: K): V | undefined; set(key: K, value: V): unknown },
+  map: {
+    get(key: K): V | undefined;
+    has(key: K): boolean;
+    set(key: K, value: V): unknown;
+  },
   key: K,
   create: (key: K) => V
 ): V {
   let value = map.get(key);
 
-  if (value === undefined) {
+  // `has()` only on a miss, so that a stored `undefined` stays.
+  if (value === undefined && !map.has(key)) {
     value = create(key);
     map.set(key, value);
   }
 
-  return value;
+  return value as V;
 }

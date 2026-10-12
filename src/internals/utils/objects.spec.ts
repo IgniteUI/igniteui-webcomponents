@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { equal, moveFlag } from './objects.js';
+import { equal, getOrInsertComputed, moveFlag } from './objects.js';
 
 describe('equal', () => {
   it('should return true for strictly equal primitive values', () => {
@@ -479,5 +479,52 @@ describe('moveFlag', () => {
 
     moveFlag(undefined, item, 'selected');
     expect(item.selected).to.be.true;
+  });
+});
+
+describe('getOrInsertComputed', () => {
+  it('stores and returns the created value for a missing key', () => {
+    const map = new Map<string, number[]>();
+    const value = getOrInsertComputed(map, 'a', () => [1]);
+
+    expect(value).to.deep.equal([1]);
+    expect(map.get('a')).to.equal(value);
+  });
+
+  it('returns the stored value and does not call create', () => {
+    const stored = [1];
+    const map = new Map([['a', stored]]);
+    let calls = 0;
+
+    const value = getOrInsertComputed(map, 'a', () => {
+      calls++;
+      return [2];
+    });
+
+    expect(value).to.equal(stored);
+    expect(calls).to.equal(0);
+  });
+
+  it('keeps a key that is mapped to undefined', () => {
+    const map = new Map<string, number | undefined>([['a', undefined]]);
+    let calls = 0;
+
+    const value = getOrInsertComputed(map, 'a', () => {
+      calls++;
+      return 1;
+    });
+
+    expect(value).to.be.undefined;
+    expect(calls).to.equal(0);
+    expect(map.get('a')).to.be.undefined;
+  });
+
+  it('passes the key to create', () => {
+    const map = new WeakMap<object, { key: object }>();
+    const key = {};
+
+    expect(getOrInsertComputed(map, key, (k) => ({ key: k })).key).to.equal(
+      key
+    );
   });
 });
