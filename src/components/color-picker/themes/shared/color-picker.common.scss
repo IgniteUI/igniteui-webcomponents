@@ -137,6 +137,10 @@ $input-theme: input-theme.$material;
         #{var-get($theme, 'transparency-grid-even')} 270deg 360deg
     );
 
+    // The native range runs from right to left in RTL, so the track gradients
+    // follow it.
+    --_slider-track-direction: to right;
+
     // Pure hues 60deg apart, interpolated in sRGB, walk the hue wheel linearly,
     // so each point shows the `hsl(h 100% 50%)` the slider sets there. The stops
     // span the thumb travel, not the whole track: the thumb center stops half
@@ -144,7 +148,7 @@ $input-theme: input-theme.$material;
     --_hue-track-start: calc(var(--_slider-thumb-size) / 2);
     --_hue-track-step: calc((100% - var(--_slider-thumb-size)) / 6);
     --_hue-slider-track: linear-gradient(
-        to right,
+        var(--_slider-track-direction),
         #f00 var(--_hue-track-start),
         #ff0 calc(var(--_hue-track-start) + var(--_hue-track-step)),
         #0f0 calc(var(--_hue-track-start) + 2 * var(--_hue-track-step)),
@@ -156,7 +160,7 @@ $input-theme: input-theme.$material;
     --_alpha-color: var(--_selected-color, var(--_current-color));
     --_alpha-slider-track:
         linear-gradient(
-            to right,
+            var(--_slider-track-direction),
             rgb(from var(--_alpha-color) r g b / 0%) 0%,
             rgb(from var(--_alpha-color) r g b / 100%) 100%
         ),
@@ -294,6 +298,11 @@ $input-theme: input-theme.$material;
             @include empty-swatch();
         }
     }
+}
+
+:host(:dir(rtl)),
+:host([dir='rtl']) {
+    --_slider-track-direction: to left;
 }
 
 :host(:not([disabled], :disabled)) {
