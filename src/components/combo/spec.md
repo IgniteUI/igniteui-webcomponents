@@ -53,6 +53,7 @@
 |       4 | 2026-10-02 | Focus after form checks; `invalid` only on checks                                     |
 |       5 | 2026-10-02 | Forward the host `aria-describedby`; no `aria-disabled` on the native input           |
 |       6 | 2026-10-05 | The list keeps its stylesheet on a theme change                                       |
+|       7 | 2026-10-12 | The group header template gets `group`; its `item` is deprecated                      |
 
 ## Overview
 
@@ -208,7 +209,7 @@ the comparison is locale aware.
 
 ```typescript
 combo.itemTemplate = ({ item }) => html`<b>${item.name}</b> - ${item.country}`;
-combo.groupHeaderTemplate = ({ item }) => html`<i>${item.country}</i>`;
+combo.groupHeaderTemplate = ({ group }) => html`<i>${group}</i>`;
 ```
 
 #### Validation
@@ -308,7 +309,7 @@ Typing while the component is focused filters the list down to the closest match
 | caseSensitiveIcon      | case-sensitive-icon        | No        | `boolean`                           | false             | Enables the case sensitive search icon in the filtering input.  |
 | disableClear           | disable-clear              | No        | `boolean`                           | false             | Hides the clear button.                                         |
 | itemTemplate           | -                          | No        | `ComboItemTemplate<T>`              | -                 | The template for the content of each combo item.                |
-| groupHeaderTemplate    | -                          | No        | `ComboItemTemplate<T>`              | -                 | The template for the content of each group header.              |
+| groupHeaderTemplate    | -                          | No        | `ComboGroupHeaderTemplate<T>`       | -                 | The template for the content of each group header.              |
 | open                   | open                       | Yes       | `boolean`                           | false             | The open state of the component.                                |
 | label                  | label                      | No        | `string \| undefined`               | -                 | The label of the control.                                       |
 | placeholder            | placeholder                | No        | `string \| undefined`               | -                 | The placeholder text of the control.                            |
@@ -342,6 +343,13 @@ interface FilteringOptions<T extends object> {
 }
 
 type ComboItemTemplate<T extends object> = (props: { item: T }) => TemplateResult;
+
+type ComboGroupHeaderTemplate<T extends object> = (props: {
+  /** The value of the `groupKey` field as a string, or `Other`. */
+  group: string;
+  /** @deprecated A record made for the header, not a data item. Use `group`. */
+  item: T;
+}) => TemplateResult;
 ```
 
 ### Methods

@@ -1583,6 +1583,31 @@ describe('Combo', () => {
       expect(eventSpy).not.calledWith('igcChange');
     });
 
+    it('passes the group to the group header template as a string', async () => {
+      type Task = { id: number; name: string; priority?: number };
+      const groups = new Set<unknown>();
+      const tasks: Task[] = [
+        { id: 1, name: 'Write specs', priority: 2 },
+        { id: 2, name: 'Fix the bug', priority: 1 },
+        { id: 3, name: 'Triage' },
+      ];
+      const combo = await fixture<IgcComboComponent<Task>>(
+        html`<igc-combo
+          .data=${tasks}
+          value-key="id"
+          display-key="name"
+          group-key="priority"
+        ></igc-combo>`
+      );
+      combo.groupHeaderTemplate = ({ group }) => {
+        groups.add(group);
+        return html`${group}`;
+      };
+      await openComboPopover(combo);
+
+      expect([...groups]).to.eql(['1', '2', 'Other']);
+    });
+
     it('keeps the selection when the clear icon is clicked and igcChange is canceled', async () => {
       combo.select(['BG01', 'BG02']);
       await elementUpdated(combo);
