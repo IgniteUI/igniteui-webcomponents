@@ -3,9 +3,9 @@ import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/list/themes/item.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from './themes/item.base.css.js';
-import { all } from './themes/item.js';
 import { styles as shared } from './themes/shared/item/list-item.common.css.js';
 
 /**
@@ -61,10 +61,10 @@ export default class IgcListItemComponent extends LitElement {
         <slot name="start"></slot>
       </section>
       <section part="content">
-        <header part="header">
+        <div part="header">
           <slot part="title" name="title"></slot>
           <slot part="subtitle" name="subtitle"></slot>
-        </header>
+        </div>
         <slot></slot>
       </section>
       <section part="end">

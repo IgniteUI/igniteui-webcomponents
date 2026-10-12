@@ -8,11 +8,12 @@ import { chatContext } from '#internals/context.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
 import { trimmedHtml } from '#internals/utils/lit.js';
+import { all } from '#themes/chat/themes/attachments.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { ChatState } from './chat-state.js';
-import { all } from './themes/attachments.js';
 import { styles } from './themes/message-attachments.base.css.js';
 import { styles as shared } from './themes/shared/message-attachments/message-attachments.common.css.js';
 import type {
@@ -45,18 +46,19 @@ type DefaultAttachmentRenderers = {
  * @csspart attachments-container - Container wrapping all attachments.
  * @csspart attachment - Wrapper for a single attachment.
  * @csspart attachment-header - Wrapper for a single attachment header.
- * @csspart attachments-content - Part representing the attachment preview.
+ * @csspart attachment-content - Part representing the attachment preview.
  * @csspart attachment-icon - Icon part representing the attachment type.
  * @csspart file-name - Part representing the attachment's file name.
- * @csspart actions - Container for header action buttons.
- * @csspart image-attachment - Part for the image element inside an image attachment.
+ * @csspart details - Container for the icon and file name inside the attachment header.
+ * @csspart image-attachment-icon - The image element inside an image attachment.
+ * @csspart file-attachment-icon - The file type icon inside a file attachment.
  *
  * @fires igcAttachmentClick - Fired when an attachment header is toggled (clicked).
  * @hidden @internal
  */
 export default class IgcMessageAttachmentsComponent extends LitElement {
   public static readonly tagName = 'igc-message-attachments';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -89,20 +91,13 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   }
 
   private _getRenderer(name: keyof DefaultAttachmentRenderers) {
-    return this._state.options?.renderers
-      ? (this._state.options.renderers[name] ?? this._defaults[name])
-      : this._defaults[name];
+    return this._state.options?.renderers?.[name] ?? this._defaults[name];
   }
 
   private _handleHeaderClick = (attachment: IgcChatMessageAttachment) => {
     this._state.emitEvent('igcAttachmentClick', { detail: attachment });
   };
-  /**
-   * Default attachment header template used when no custom template is provided.
-   * Renders the attachment icon and name.
-   * @param attachment The message attachment to render
-   * @returns TemplateResult containing the rendered attachment header
-   */
+  /** The default header of `attachment`: its icon and its name. */
   private renderHeader(attachment: IgcChatMessageAttachment) {
     const isCurrentUser = this._state.isCurrentUserMessage(this.message);
     const iconName = isImageAttachment(attachment)
@@ -119,12 +114,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     `;
   }
 
-  /**
-   * Default attachment content template used when no custom template is provided.
-   * Renders the attachment content based on its type.
-   * @param attachment The message attachment to render
-   * @returns TemplateResult containing the rendered attachment content
-   */
+  /** The default content of `attachment`, by attachment type. */
   private _renderContent(attachment: IgcChatMessageAttachment) {
     const iconName =
       ChatFileTypeIcons.get(getFileExtension(attachment.name)) ??

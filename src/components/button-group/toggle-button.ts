@@ -7,14 +7,21 @@ import {
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { buttonGroupContext } from '#internals/context.js';
-import { createAsyncContext } from '#internals/controllers/async-consumer.js';
+import {
+  ariaBindings,
+  hostAria,
+} from '#internals/controllers/aria-projection.js';
+import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
+import { setOrRemoveAttribute } from '#internals/utils/dom.js';
+import { all } from '#themes/button-group/themes/button.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/button.base.css.js';
-import { all } from './themes/button.js';
 import { styles as shared } from './themes/shared/button/button.common.css.js';
 
 /**
@@ -23,14 +30,16 @@ import { styles as shared } from './themes/shared/button/button.common.css.js';
  *
  * @element igc-toggle-button
  *
- * @slot Renders the label/content of the button.
+ * @slot - Renders the label/content of the button.
  *
  * @csspart toggle - The native button element.
  * @csspart focused - The native button element when focused through a keyboard interaction.
  */
 @shadowOptions({ delegatesFocus: true })
-export default class IgcToggleButtonComponent extends LitElement {
-  public static override styles = [styles, shared];
+export default class IgcToggleButtonComponent extends HostAriaMixin(
+  LitElement
+) {
+  public static override styles = [componentBase, styles, shared];
   public static readonly tagName = 'igc-toggle-button';
 
   /* blazorSuppress */
@@ -39,7 +48,9 @@ export default class IgcToggleButtonComponent extends LitElement {
   }
 
   private readonly _focusRingManager = addKeyboardFocusRing(this);
-  private readonly _context = createAsyncContext(this, buttonGroupContext);
+  private readonly _context = addAsyncContextConsumer(this, buttonGroupContext);
+
+  private _ownTabIndex?: string | null;
 
   @query('[part~="toggle"]', true)
   private readonly _nativeButton?: HTMLButtonElement;
@@ -74,9 +85,42 @@ export default class IgcToggleButtonComponent extends LitElement {
     addThemingController(this, all);
   }
 
+  public override disconnectedCallback(): void {
+    this._releaseTabIndex();
+    super.disconnectedCallback();
+  }
+
+  protected override willUpdate(): void {
+    const group = this._context.value;
+
+    if (!group || group.instance !== this.parentElement) {
+      return;
+    }
+
+    if (this._ownTabIndex === undefined) {
+      this._ownTabIndex = this.getAttribute('tabindex');
+    }
+
+    setOrRemoveAttribute(this, 'tabindex', group.isTabStop(this) ? null : '-1');
+  }
+
+  /** Restores the `tabindex` that the group took over. */
+  private _releaseTabIndex(): void {
+    if (this._ownTabIndex === undefined) {
+      return;
+    }
+
+    setOrRemoveAttribute(this, 'tabindex', this._ownTabIndex);
+
+    this._ownTabIndex = undefined;
+  }
+
   protected override updated(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has('selected') && this.selected) {
-      this._context.value?.syncSelection(this);
+    if (
+      changedProperties.has('selected') ||
+      changedProperties.has('disabled')
+    ) {
+      this._context.value?.syncState(this);
     }
   }
 
@@ -100,8 +144,7 @@ export default class IgcToggleButtonComponent extends LitElement {
   protected override render(): TemplateResult {
     const group = this._context.value?.instance;
 
-    // A button of a group with a single selection mode is a radio button, and it
-    // is disabled either on its own or through the group it is part of.
+    // In a single selection group the button is a radio. The group can also disable it.
     const isRadio = group != null && group.selection !== 'multiple';
     const disabled = this.disabled || Boolean(group?.disabled);
     const selectedState = this.selected ? 'true' : 'false';
@@ -115,7 +158,7 @@ export default class IgcToggleButtonComponent extends LitElement {
         type="button"
         role=${ifDefined(isRadio ? 'radio' : undefined)}
         ?disabled=${disabled}
-        .ariaLabel=${this.ariaLabel}
+        ${ariaBindings(hostAria(this))}
         aria-checked=${ifDefined(isRadio ? selectedState : undefined)}
         aria-pressed=${ifDefined(isRadio ? undefined : selectedState)}
         aria-disabled=${disabled}

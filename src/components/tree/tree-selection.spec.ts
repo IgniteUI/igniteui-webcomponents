@@ -33,10 +33,9 @@ describe('Tree Selection', () => {
     it("Should be able to change selection type to all 3 options ('None' (default), 'Multiple', 'Cascade')", async () => {
       tree = await TreeTestFunctions.createTreeElement(simpleTree);
       treeSelectionService = tree.selectionService;
-      // Verify that default selection type is 'None'
       expect(tree.selection).to.equal('none');
 
-      // Should allow setting items as selected through API when tree.selection === 'None'
+      // The API selects items even while the selection is 'none'.
       const topLevelItems = tree.items.filter((i) => i.level === 0);
       tree.select([topLevelItems[0]]);
       await elementUpdated(tree);
@@ -69,7 +68,6 @@ describe('Tree Selection', () => {
         TreeTestFunctions.verifyItemSelection(item, true);
       });
 
-      // verify other items are deselected
       tree.items.forEach((item) => {
         if (selectedItems.indexOf(item) === -1) {
           TreeTestFunctions.verifyItemSelection(item, false);
@@ -134,7 +132,7 @@ describe('Tree Selection', () => {
         }
       });
 
-      // Should support multiple selection (e.g. newly selected items do not empty selected collection)
+      // A new selection adds to the selected items.
       itemsToSelect.push(topLevelItems[0]);
       tree.select([topLevelItems[0]]);
       await elementUpdated(tree);
@@ -217,7 +215,6 @@ describe('Tree Selection', () => {
 
       initialSelection.shift();
 
-      // Should emit igcSelection event w/ correct args when an item is deselected
       let args: TreeSelectionEventInit = {
         detail: {
           newSelection: initialSelection,
@@ -240,7 +237,6 @@ describe('Tree Selection', () => {
       expect(cb.indeterminate).to.be.false;
       expect(tree.selectionService.isItemIndeterminate(item12)).to.be.false;
 
-      // Should emit igcSelection event w/ correct args when an item is selected
       args = {
         detail: {
           newSelection: [...initialSelection, item12],
@@ -347,7 +343,7 @@ describe('Tree Selection', () => {
       expect(eventSpy).calledOnceWith('igcSelection', args);
       eventSpy.resetHistory();
 
-      // Select the same range and verify no event is emitted
+      // The same range again emits no event.
       selectionPart = expectedSelection[0].shadowRoot!.querySelector(
         PARTS.select
       );
@@ -397,7 +393,7 @@ describe('Tree Selection', () => {
 
       expect(initialSelection).to.contain(topLevelItems[0]);
 
-      // If a parent is initially selected, all of its children should be selected even if they are initially marked as deselected.
+      // A selected parent selects all its children, also the ones marked as deselected.
       item1Children.forEach((child) => {
         expect(initialSelection).to.contain(child);
         TreeTestFunctions.verifyItemSelection(child, true);
@@ -410,7 +406,6 @@ describe('Tree Selection', () => {
         TreeTestFunctions.verifyItemSelection(child, false);
       });
 
-      // Should be able to set item.selected correctly. All direct and non-direct parents and children should be affected correctly.
       topLevelItems[1].selected = true;
       await elementUpdated(tree);
 
@@ -418,13 +413,31 @@ describe('Tree Selection', () => {
         TreeTestFunctions.verifyItemSelection(child, true);
       });
 
-      // Deselecting selected item should deselect its children
       topLevelItems[0].selected = false;
       await elementUpdated(tree);
 
       item1Children.forEach((child) => {
         TreeTestFunctions.verifyItemSelection(child, false);
       });
+    });
+
+    it('Changing the selection mode should clear the indeterminate state of the parents', async () => {
+      const parent = topLevelItems[1].getChildren()[0];
+      const child = parent.getChildren()[0];
+
+      child.selected = true;
+      await elementUpdated(tree);
+
+      expect(parent.indeterminate).to.be.true;
+      expect(topLevelItems[1].indeterminate).to.be.true;
+
+      tree.selection = 'multiple';
+      await elementUpdated(tree);
+
+      expect(child.selected).to.be.false;
+      expect(parent.indeterminate).to.be.false;
+      expect(topLevelItems[1].indeterminate).to.be.false;
+      expect(treeSelectionService.isItemIndeterminate(parent)).to.be.false;
     });
 
     it('Selecting all children of a parent should mark the parent as selected. All direct and non-direct parents should be affected correctly', async () => {
@@ -437,7 +450,7 @@ describe('Tree Selection', () => {
       item211.selected = true;
       await elementUpdated(tree);
 
-      // Selecting a single child should mark the parent as indeterminate. All direct and non-direct parents should be affected correctly.
+      // One selected child makes the parent and its ancestors indeterminate.
       TreeTestFunctions.verifyItemSelection(item211, true);
       expect(item2Children[0].indeterminate).to.be.true;
       expect(tree.selectionService.isItemIndeterminate(item2Children[0])).to.be
@@ -448,7 +461,7 @@ describe('Tree Selection', () => {
       expect(tree.selectionService.isItemIndeterminate(topLevelItems[1])).to.be
         .true;
 
-      // Selecting the last non-selected child should mark the parent as selected and NOT indeterminate. All direct and non-direct parents should be affected correctly.
+      // The last child to be selected makes the parent selected, not indeterminate.
       tree.select([item212]);
       await elementUpdated(tree);
 
@@ -475,7 +488,7 @@ describe('Tree Selection', () => {
       const item1Children = topLevelItems[0].getChildren();
       const item11Children = item1Children[0].getChildren();
 
-      // Deselecting a single child should mark the parent as indeterminate. All direct and non-direct parents should be affected correctly.
+      // One deselected child makes the parent and its ancestors indeterminate.
       tree.deselect([item11Children[0]]);
       await elementUpdated(tree);
 
@@ -485,12 +498,12 @@ describe('Tree Selection', () => {
       TreeTestFunctions.verifyItemSelection(item1Children[1], true);
       expect(topLevelItems[0].indeterminate).to.be.true;
 
-      // Deselecting the last selected child should mark the parent as deselected and NOT indeterminate. All direct and non-direct parents should be affected correctly.
+      // The last child to be deselected makes the parent deselected, not indeterminate.
       item11Children[1].selected = false;
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyItemSelection(item11Children[1], false);
-      //al of item11 children are deselected
+      // All of item11's children are deselected
       expect(item1Children[0].indeterminate).to.be.false;
       TreeTestFunctions.verifyItemSelection(item1Children[0], false);
       TreeTestFunctions.verifyItemSelection(item1Children[1], true);
@@ -514,7 +527,7 @@ describe('Tree Selection', () => {
         TreeTestFunctions.verifyItemSelection(child, true);
       });
 
-      // Partially selected parents should have the default indicator rendered as indeterminate
+      // A partially selected parent is indeterminate.
       TreeTestFunctions.verifyItemSelection(item3Children[0], false);
       expect(item3Children[0].indeterminate).to.be.true;
 
@@ -587,7 +600,7 @@ describe('Tree Selection', () => {
       item112.selected = true;
       await elementUpdated(tree);
 
-      //Deleting the only child of aselected parent should not affect its selection state
+      // Deleting the only child keeps the state of a selected parent.
       item11.removeChild(item112);
       TreeTestFunctions.verifyItemSelection(item11, true);
       expect(tree.items.length).to.equal(treeItemsLength - 2);
@@ -609,7 +622,7 @@ describe('Tree Selection', () => {
       TreeTestFunctions.verifyItemSelection(topLevelItems[1], false);
       TreeTestFunctions.verifyItemSelection(item21, false);
 
-      //Deleting the only child of a deselected parent should not affect its selection state
+      // Deleting the only child keeps the state of a deselected parent.
       item21.removeChild(item212);
       TreeTestFunctions.verifyItemSelection(item21, false);
     });
@@ -624,7 +637,6 @@ describe('Tree Selection', () => {
       expect(topLevelItems[1].indeterminate).to.be.false;
       expect(item21.indeterminate).to.be.false;
 
-      // Adding a deselected child
       const deselectedChild = tree.ownerDocument.createElement('igc-tree-item');
       deselectedChild.label = 'Tree Item 2.1.3';
       deselectedChild.selected = false;
@@ -637,7 +649,6 @@ describe('Tree Selection', () => {
       expect(topLevelItems[1].indeterminate).to.be.false;
       expect(item21.indeterminate).to.be.false;
 
-      // Adding selected child
       const selectedChild = tree.ownerDocument.createElement('igc-tree-item');
       selectedChild.label = 'Tree Item 2.1.4';
       selectedChild.selected = true;
@@ -660,7 +671,7 @@ describe('Tree Selection', () => {
       expect(topLevelItems[1].indeterminate).to.be.false;
       expect(item11.indeterminate).to.be.false;
 
-      // Adding a selected child to selected parent should not affect the parent selection state
+      // A selected child keeps a selected parent selected.
       const selectedChild = tree.ownerDocument.createElement('igc-tree-item');
       selectedChild.label = 'Tree Item 1.1.3';
       selectedChild.selected = true;
@@ -675,7 +686,6 @@ describe('Tree Selection', () => {
       expect(topLevelItems[0].indeterminate).to.be.false;
       expect(item11.indeterminate).to.be.false;
 
-      // Adding a deselected child
       const deselectedChild = tree.ownerDocument.createElement('igc-tree-item');
       deselectedChild.label = 'Tree Item 1.1.4';
       deselectedChild.selected = false;
@@ -834,6 +844,74 @@ describe('Tree Selection', () => {
       TreeTestFunctions.verifyItemSelection(target, true);
       expect(treeSelectionService.isItemIndeterminate(newParent)).to.be.false;
       expect(treeSelectionService.isItemSelected(newParent)).to.be.true;
+    });
+  });
+
+  describe('Cascade - items added after the first render', () => {
+    const byLabel = (label: string) =>
+      tree.items.find((item) => item.label === label)!;
+
+    function createItem(label: string, selected = false): IgcTreeItemComponent {
+      const item = tree.ownerDocument.createElement(
+        IgcTreeItemComponent.tagName
+      );
+      item.label = label;
+      item.selected = selected;
+      return item;
+    }
+
+    beforeEach(async () => {
+      tree = await TreeTestFunctions.createTreeElement(cascadeSelectionTree);
+      treeSelectionService = tree.selectionService;
+    });
+
+    it('selects the unselected children of a selected subtree added at once', async () => {
+      const parent = createItem('Added', true);
+      const child = createItem('Added child');
+      parent.append(child);
+
+      byLabel('Tree Item 2.2').append(parent);
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyItemSelection(parent, true);
+      TreeTestFunctions.verifyItemSelection(child, true);
+      expect(byLabel('Tree Item 2.2').indeterminate).to.be.false;
+      TreeTestFunctions.verifyItemSelection(byLabel('Tree Item 2.2'), true);
+      expect(byLabel('Tree Item 2').indeterminate).to.be.true;
+    });
+
+    it('reconciles the ancestors once for many children added at once', async () => {
+      const parent = byLabel('Tree Item 1.2');
+      const children = Array.from({ length: 50 }, (_, i) =>
+        createItem(`Added ${i}`)
+      );
+
+      parent.append(...children);
+
+      // A read resolves the pending ancestors first.
+      expect(treeSelectionService.isItemSelected(parent)).to.be.false;
+      expect(treeSelectionService.isItemIndeterminate(parent)).to.be.false;
+      expect(treeSelectionService.isItemIndeterminate(byLabel('Tree Item 1')))
+        .to.be.true;
+
+      await elementUpdated(tree);
+
+      expect(parent.selected).to.be.false;
+      expect(byLabel('Tree Item 1').indeterminate).to.be.true;
+      expect(children.every((child) => !child.selected)).to.be.true;
+    });
+
+    it('keeps a selection made right after items were added', async () => {
+      const parent = byLabel('Tree Item 2.3');
+      const added = createItem('Added');
+
+      parent.append(added);
+      tree.select([added]);
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyItemSelection(added, true);
+      TreeTestFunctions.verifyItemSelection(parent, true);
+      expect(byLabel('Tree Item 2').indeterminate).to.be.true;
     });
   });
 });

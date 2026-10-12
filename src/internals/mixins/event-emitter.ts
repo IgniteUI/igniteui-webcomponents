@@ -3,6 +3,16 @@ import type { AbstractConstructor, Constructor } from './constructor.js';
 
 export type UnpackCustomEvent<T> = T extends CustomEvent<infer U> ? U : never;
 
+/**
+ * The default event init. `detail` is absent: a shared constant would give
+ * every detail-less event the same object.
+ */
+const defaultEventInit: CustomEventInit = {
+  bubbles: true,
+  cancelable: false,
+  composed: true,
+};
+
 export declare class EventEmitterInterface<E> {
   public addEventListener<K extends keyof M, M extends E & HTMLElementEventMap>(
     type: K,
@@ -41,44 +51,6 @@ export function EventEmitterMixin<E, T extends Constructor<LitElement>>(
 ) {
   class EventEmitterElement extends superClass {
     /**
-     * @hidden
-     */
-    public override addEventListener<
-      K extends keyof M,
-      M extends E & HTMLElementEventMap,
-    >(
-      type: K,
-      listener: (this: HTMLElement, ev: M[K]) => any,
-      options?: boolean | AddEventListenerOptions
-    ): void;
-    public override addEventListener(
-      type: string,
-      listener: EventListenerOrEventListenerObject,
-      options?: boolean | AddEventListenerOptions
-    ): void {
-      super.addEventListener(type, listener, options);
-    }
-
-    /**
-     * @hidden
-     */
-    public override removeEventListener<
-      K extends keyof M,
-      M extends E & HTMLElementEventMap,
-    >(
-      type: K,
-      listener: (this: HTMLElement, ev: M[K]) => any,
-      options?: boolean | EventListenerOptions
-    ): void;
-    public override removeEventListener(
-      type: string,
-      listener: EventListenerOrEventListenerObject,
-      options?: boolean | EventListenerOptions
-    ): void {
-      super.removeEventListener(type, listener, options);
-    }
-
-    /**
      * @hidden @internal
      */
     public emitEvent<K extends keyof E, D extends UnpackCustomEvent<E[K]>>(
@@ -86,18 +58,11 @@ export function EventEmitterMixin<E, T extends Constructor<LitElement>>(
       eventInitDict?: CustomEventInit<D>
     ): boolean {
       return this.dispatchEvent(
-        new CustomEvent<D>(
-          type as string,
-          Object.assign(
-            {
-              bubbles: true,
-              cancelable: false,
-              composed: true,
-              detail: {},
-            },
-            eventInitDict
-          )
-        )
+        new CustomEvent<D>(type as string, {
+          detail: {} as D,
+          ...defaultEventInit,
+          ...eventInitDict,
+        })
       );
     }
   }

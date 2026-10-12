@@ -1,20 +1,20 @@
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { createAbortHandle } from '#internals/abort-handler.js';
+import {
+  ariaBindings,
+  hostAria,
+} from '#internals/controllers/aria-projection.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { clamp, numberInRangeInclusive } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/qr-code/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { QRCodeMatrixResult } from './model/matrix.js';
 import { generateQRCodeMatrix } from './model/matrix.js';
-import {
-  DEFAULT_SIZE_RATIO,
-  MAX_SAFE_AREA,
-  SAFE_AREAS,
-} from './renderer/constants.js';
-import { renderQrFinders } from './renderer/corner.js';
-import { renderQrDots } from './renderer/dots.js';
 import {
   createSvgSnapshot,
   downloadFile,
@@ -25,10 +25,16 @@ import {
   rasterizeSvg,
   serializeSvg,
 } from './renderer/export.js';
-import { renderQrMaskAndImage } from './renderer/image.js';
+import {
+  DEFAULT_SIZE_RATIO,
+  MAX_SAFE_AREA,
+  renderQrDots,
+  renderQrFinders,
+  renderQrMaskAndImage,
+  SAFE_AREAS,
+} from './renderer/templates.js';
 import { styles } from './themes/qr-code.base.css.js';
 import { styles as shared } from './themes/shared/qr-code.common.css.js';
-import { all } from './themes/themes.js';
 import type {
   QrCodeExportOptions,
   QrCornerSquareStyle,
@@ -55,10 +61,10 @@ const nextMaskId = createIdGenerator('igc-qr-code-mask');
  * @csspart corner-square - The outer corner (finder-pattern) squares of the QR code.
  * @csspart corner-dot - The inner corner (finder-pattern) dots of the QR code.
  */
-export default class IgcQrCodeComponent extends LitElement {
+export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   public static readonly tagName = 'igc-qr-code';
 
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -81,6 +87,9 @@ export default class IgcQrCodeComponent extends LitElement {
 
   @state()
   private _logoLoadFailed = false;
+
+  /** The error correction level that the application set. */
+  private _errorLevel?: QrErrorCorrectionLevel;
 
   constructor() {
     super();
@@ -111,11 +120,21 @@ export default class IgcQrCodeComponent extends LitElement {
    * The error correction level for the QR code, which determines the QR code's ability to be read if it is partially obscured or damaged.
    * Valid values are 'L', 'M', 'Q', and 'H', where 'L' provides the lowest level of error correction and 'H' provides the highest level.
    *
+   * When the level is not set, the code uses 'M'. A logo that is larger than the safe area of 'M'
+   * raises the level to the smallest level that holds the logo. To restore this behavior, set
+   * `undefined` or remove the attribute.
+   *
    * @attr error-level
    * @default 'M'
    */
   @property({ attribute: 'error-level' })
-  public errorLevel?: QrErrorCorrectionLevel = 'M';
+  public set errorLevel(value: QrErrorCorrectionLevel | null | undefined) {
+    this._errorLevel = value || undefined;
+  }
+
+  public get errorLevel(): QrErrorCorrectionLevel {
+    return this._errorLevel ?? 'M';
+  }
 
   /**
    * The size of the QR code in pixels. This determines the width and height of the generated QR code. The default value is 128 pixels.
@@ -153,8 +172,8 @@ export default class IgcQrCodeComponent extends LitElement {
    * means the logo will cover the full safe area (not the entire QR code).
    * The default value is 0.4, meaning the logo covers 40% of that safe area (~3.6% of the QR code).
    *
-   * When `error-level` is not explicitly set, the smallest error correction level that can
-   * accommodate the requested logo size is chosen automatically.
+   * When `error-level` is not set and the logo is larger than the safe area of level 'M', the
+   * component uses the smallest error correction level that holds the logo.
    *
    * @attr logo-size
    * @default 0.4
@@ -240,11 +259,8 @@ export default class IgcQrCodeComponent extends LitElement {
   }
 
   /**
-   * Determines whether a valid logo source is provided.
-   *
-   * The method checks if the `logoSrc` property is set and if it does not start with potentially unsafe schemes like 'javascript:' or 'vbscript:'.
-   * It also ensures that if the source is a data URI, it must be an image type.
-   * This validation helps prevent security risks associated with rendering untrusted content in the QR code.
+   * Rejects an empty source, the `javascript:` and `vbscript:` schemes, and a
+   * non-image data URI.
    */
   private _hasValidLogoSrc(): boolean {
     if (!this.logoSrc) return false;
@@ -254,34 +270,33 @@ export default class IgcQrCodeComponent extends LitElement {
     return true;
   }
 
+  /**
+   * Returns the smallest level, from 'M' up, that holds a logo of `area`.
+   * A logo removes modules, so it does not lower the level below the default.
+   */
   private _pickErrorLevel(area: number): QrErrorCorrectionLevel {
-    if (area <= SAFE_AREAS.L) return 'L';
     if (area <= SAFE_AREAS.M) return 'M';
     if (area <= SAFE_AREAS.Q) return 'Q';
     return 'H';
   }
 
-  private _getErrorLevelAndArea(hasLogo: boolean) {
-    const userErrorLevel = this.errorLevel;
+  private _getErrorLevelAndArea(hasLogo: boolean): {
+    errorLevel: QrErrorCorrectionLevel;
+    area: number;
+  } {
+    const userErrorLevel = this._errorLevel;
     const size = this.logoSize;
     const sizeRatio = hasLogo ? clamp(size ?? DEFAULT_SIZE_RATIO, 0, 1) : 0;
     const targetArea = sizeRatio * MAX_SAFE_AREA;
 
-    let errorLevel: QrErrorCorrectionLevel;
-    let area: number;
-
     if (userErrorLevel) {
-      errorLevel = userErrorLevel;
-      area = Math.min(targetArea, SAFE_AREAS[userErrorLevel]);
-    } else if (targetArea > 0) {
-      errorLevel = this._pickErrorLevel(targetArea);
-      area = targetArea;
-    } else {
-      errorLevel = 'M';
-      area = 0;
+      return {
+        errorLevel: userErrorLevel,
+        area: Math.min(targetArea, SAFE_AREAS[userErrorLevel]),
+      };
     }
 
-    return { errorLevel, area };
+    return { errorLevel: this._pickErrorLevel(targetArea), area: targetArea };
   }
 
   private _getMatrix(
@@ -414,6 +429,7 @@ export default class IgcQrCodeComponent extends LitElement {
 
     return html`
       <svg
+        ${ariaBindings(hostAria(this, { ownLabel: true }))}
         xmlns="http://www.w3.org/2000/svg"
         role="img"
         width=${this.size}

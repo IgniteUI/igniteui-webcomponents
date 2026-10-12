@@ -40,7 +40,7 @@
   },
   "overrides": [
     {
-      "files": ["scripts/**"],
+      "files": ["scripts/**", "cem.config.mjs"],
       "rules": {
         "no-console": "off",
         "no-control-regex": "off"

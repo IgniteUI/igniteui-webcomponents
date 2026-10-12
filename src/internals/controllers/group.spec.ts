@@ -1,5 +1,6 @@
 import { defineCE, expect, fixture, html } from '@open-wc/testing';
 import { LitElement } from 'lit';
+import { spy } from 'sinon';
 import {
   createGroupRegistry,
   type GroupMemberController,
@@ -66,6 +67,21 @@ describe('Group registry', () => {
 
     expect(registry.membersOf(b)).to.eql([a, b]);
     expect(registry.membersOf(a)).to.eql([a, b]);
+  });
+
+  it('should sync without ordering the members by document position', () => {
+    const members = [1, 2, 3, 4].map((value) => createMember('order', value));
+    const compare = spy(Node.prototype, 'compareDocumentPosition');
+
+    try {
+      createMember('order', 5);
+      members[0].group.sync();
+
+      expect(compare.callCount).to.equal(0);
+      expect(members.map((member) => member.groupSum)).to.eql([15, 15, 15, 15]);
+    } finally {
+      compare.restore();
+    }
   });
 
   it('should keep a member with an empty key on its own', () => {

@@ -1,4 +1,3 @@
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
 
 :host {
@@ -38,7 +37,7 @@
 
 :host([required]) {
     [part='label']::after {
-        content: '*';
+        @include required-asterisk();
     }
 }
 

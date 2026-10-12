@@ -1,39 +1,33 @@
-import { noChange } from 'lit';
+import { directive, type PartInfo } from 'lit/async-directive.js';
+import { setStyles } from '../utils/dom.js';
 import {
-  AsyncDirective,
-  directive,
-  type DirectiveParameters,
-  type ElementPart,
-  type PartInfo,
-  PartType,
-} from 'lit/async-directive.js';
-import { createAbortHandle } from '../abort-handler.js';
-import { escapeKey, isKey } from '../controllers/key-bindings.js';
-import { getDefaultLayer, setStyles } from '../utils/dom.js';
-import { preventDefault } from '../utils/events.js';
+  type PointerOperationOptions,
+  PointerOperationDirective,
+  type PointerOperationState,
+} from './pointer-operation.js';
 
-export type ResizeMode = 'immediate' | 'deferred';
 export type ResizeDirection = 'horizontal' | 'vertical' | 'both';
-export type ResizeGhostFactory = (initial: DOMRect) => HTMLElement;
 export type ResizeCallback = (params: ResizeCallbackParams) => unknown;
 export type ResizeCancelCallback = (state: ResizeState) => unknown;
 
 export type ResizeState = {
   /** The dimensions of the resize target at the start of the operation. */
   initial: DOMRect;
-  /** The current dimensions of the resize target. Mutable from within the callbacks. */
+  /** The current dimensions. The callbacks can change this rectangle. */
   current: DOMRect;
-  /** Difference between the current and initial width. */
+  /** The difference between the current and the initial width. */
   deltaX: number;
-  /** Difference between the current and initial height. */
+  /** The difference between the current and the initial height. */
   deltaY: number;
   /** The ghost element when in deferred mode. */
   ghost: HTMLElement | null;
-  /** The element the directive is attached to. */
+  /** The element that carries the directive. */
   trigger: HTMLElement | null;
+  /** Aborts when the operation ends, also in a `start` listener. */
+  signal: AbortSignal;
   /**
-   * When assigned from within the `end` callback, it is invoked instead of the default
-   * behavior of applying the final dimensions to the resize target.
+   * An optional commit function that the `end` callback sets. It runs in
+   * place of the default, which applies the final dimensions to the target.
    */
   commit?: () => unknown;
 };
@@ -43,69 +37,45 @@ export type ResizeCallbackParams = {
   state: ResizeState;
 };
 
-/** Options for the resizable directive. */
-export interface ResizableOptions {
-  /** Whether the directive will listen for and initiate resize operations. Defaults to `true`. */
-  enabled?: boolean;
-  /**
-   * The mode of the resize operation.
-   *
-   * In `immediate` mode the target element is resized in place as the pointer moves.
-   * In `deferred` mode a ghost element is created and resized instead, with the final
-   * dimensions applied to the target when the operation completes.
-   */
-  mode?: ResizeMode;
+/**
+ * Options for the resizable directive. See {@link PointerOperationOptions}
+ * for the shared ones. The mode defaults to `immediate`, which resizes the
+ * target while the pointer moves.
+ */
+export interface ResizableOptions extends PointerOperationOptions {
   /** The direction in which the element can be resized. Defaults to `both`. */
   direction?: ResizeDirection;
-  /**
-   * The element being resized. Defaults to the element the directive is applied to.
-   *
-   * Accepts either an element or a function returning one, resolved at the start
-   * of each resize operation.
-   */
-  target?: HTMLElement | (() => HTMLElement | null | undefined);
-  /** Factory function for the ghost element in deferred mode. */
-  ghostFactory?: ResizeGhostFactory;
-  /** The container in which the deferred ghost element is rendered. Defaults to the document body. */
-  layer?: () => HTMLElement;
-  /** The minimum width of the resizable element in pixels. */
+  /** The size bounds of the resizable element, in pixels. */
   minWidth?: number;
-  /** The maximum width of the resizable element in pixels. */
   maxWidth?: number;
-  /** The minimum height of the resizable element in pixels. */
   minHeight?: number;
-  /** The maximum height of the resizable element in pixels. */
   maxHeight?: number;
-  /** Whether to maintain the initial aspect ratio of the resizable element. */
+  /** Whether the element keeps its initial aspect ratio during a resize. */
   maintainAspectRatio?: boolean;
-  /** Called when a resize operation starts. Return `false` to abort the operation. */
+  /** Runs when a resize starts. A `false` return aborts the operation. */
   start?: ResizeCallback;
-  /** Called on each pointer move during a resize operation. May mutate `state.current`. */
+  /** Runs on each pointer move. The callback can change `state.current`. */
   resize?: ResizeCallback;
-  /** Called when a resize operation completes. May assign `state.commit`. */
+  /** Runs when a resize completes. The callback can set `state.commit`. */
   end?: ResizeCallback;
-  /** Called when a resize operation is cancelled with the Escape key. */
+  /** Runs when Escape, `pointercancel` or a disconnect cancels a resize operation. */
   cancel?: ResizeCancelCallback;
 }
 
-type ResizeOperation = {
-  pointerId: number;
+type ResizeOperation = PointerOperationState & {
   target: HTMLElement;
   initial: DOMRect;
   current: DOMRect;
-  ghost: HTMLElement | null;
-  /** Inline size styles of the target before the operation, restored on cancel. */
+  /** Whether the target is right-to-left. Its width then grows to the left. */
+  rtl: boolean;
+  /** The inline size styles of the target, restored on an immediate cancel. */
   targetStyles: { width: string; height: string };
 };
 
-function createDefaultGhost({ x, y, width, height }: DOMRect): HTMLElement {
+function createDefaultGhost({ width, height }: DOMRect): HTMLElement {
   const element = document.createElement('div');
-  const { scrollX, scrollY } = window;
 
   setStyles(element, {
-    position: 'absolute',
-    top: `${y + scrollY}px`,
-    left: `${x + scrollX}px`,
     zIndex: '1000',
     background: 'pink',
     opacity: '0.85',
@@ -116,30 +86,28 @@ function createDefaultGhost({ x, y, width, height }: DOMRect): HTMLElement {
   return element;
 }
 
-class ResizableDirective extends AsyncDirective {
-  private readonly _triggerAbort = createAbortHandle();
-  private readonly _resizeAbort = createAbortHandle();
-
-  private _options: ResizableOptions = {};
-  private _host?: HTMLElement;
-  private _operation: ResizeOperation | null = null;
-
+class ResizableDirective extends PointerOperationDirective<
+  ResizableOptions,
+  ResizeOperation,
+  ResizeState
+> {
   constructor(partInfo: PartInfo) {
-    super(partInfo);
+    super(partInfo, {
+      name: 'resizable',
+      ghostAttribute: 'data-resize-ghost',
+      defaultMode: 'immediate',
+      defaultGhost: createDefaultGhost,
+    });
+  }
 
-    if (partInfo.type !== PartType.ELEMENT) {
-      throw new Error(
-        'The `resizable` directive can only be used on elements.'
-      );
+  protected override _cancelOperation(): void {
+    this._options.cancel?.(this._createState());
+
+    const { ghost, target, targetStyles } = this._operation!;
+
+    if (!ghost) {
+      setStyles(target, targetStyles);
     }
-  }
-
-  private get _enabled(): boolean {
-    return this._options.enabled ?? true;
-  }
-
-  private get _isDeferred(): boolean {
-    return this._options.mode === 'deferred';
   }
 
   // #region Event handlers
@@ -155,31 +123,35 @@ class ResizableDirective extends AsyncDirective {
     }
 
     const initial = target.getBoundingClientRect();
+    const ghost = this._isDeferred ? this._createGhost(target, initial) : null;
 
     this._operation = {
       pointerId: event.pointerId,
       target,
       initial,
-      current: structuredClone(initial),
-      ghost: this._isDeferred ? this._createGhost(initial) : null,
+      current: DOMRect.fromRect(initial),
+      // Not `isLTR`: `:dir()` misses a CSS `direction`.
+      rtl: getComputedStyle(target).direction === 'rtl',
+      ghost,
       targetStyles: { width: target.style.width, height: target.style.height },
     };
 
-    if (this._options.start?.(this._createParams(event)) === false) {
-      this._dispose();
+    if (ghost) {
+      this._placeGhost(ghost, initial);
+    }
+
+    if (
+      !this._runStart(() => this._options.start?.(this._createParams(event)))
+    ) {
       return;
     }
 
-    const host = this._host!;
-    const { signal } = this._resizeAbort;
-
-    host.setPointerCapture(event.pointerId);
-    host.addEventListener('pointermove', this._handlePointerMove, { signal });
-    host.addEventListener('lostpointercapture', this._handlePointerEnd, {
-      signal,
-    });
-    host.addEventListener('contextmenu', preventDefault, { signal });
-    globalThis.addEventListener('keydown', this._handleKeydown, { signal });
+    this._startOperationListeners(
+      this._host!,
+      event.pointerId,
+      this._handlePointerMove,
+      this._handlePointerEnd
+    );
   };
 
   private readonly _handlePointerMove = (event: PointerEvent): void => {
@@ -187,15 +159,23 @@ class ResizableDirective extends AsyncDirective {
       return;
     }
 
-    this._updateDimensions(event);
+    const { ghost, target } = this._operation;
+    // The page can scroll during the operation, so measure the target again.
+    // The reads come before the writes below, which would force a layout.
+    const edges = target.getBoundingClientRect();
+    const origin = ghost ? this._getGhostOrigin(ghost) : null;
+
+    this._updateDimensions(event, edges);
 
     const params = this._createParams(event);
     this._options.resize?.(params);
     this._operation.current = params.state.current;
 
-    this._applyDimensions(
-      this._isDeferred ? this._operation.ghost : this._operation.target
-    );
+    this._applyDimensions(ghost ?? target);
+
+    if (ghost && origin) {
+      this._placeGhost(ghost, edges, origin);
+    }
   };
 
   private readonly _handlePointerEnd = (event: PointerEvent): void => {
@@ -216,32 +196,11 @@ class ResizableDirective extends AsyncDirective {
     this._dispose();
   };
 
-  private readonly _handleKeydown = (event: KeyboardEvent): void => {
-    if (!this._operation || !isKey(event, escapeKey)) {
-      return;
-    }
-
-    this._options.cancel?.(this._createState());
-
-    if (!this._isDeferred) {
-      setStyles(this._operation.target, this._operation.targetStyles);
-    }
-
-    this._dispose();
-  };
-
   // #endregion
 
   // #region Internal API
 
-  /** Prevents native touch interactions from interfering with an enabled directive. */
-  private readonly _preventNativeBehavior = (event: Event): void => {
-    if (this._enabled) {
-      event.preventDefault();
-    }
-  };
-
-  private _addTriggerListeners(): void {
+  protected override _attachTriggerListeners(): void {
     if (!this._host) {
       return;
     }
@@ -257,23 +216,7 @@ class ResizableDirective extends AsyncDirective {
     });
   }
 
-  private _resolveTarget(): HTMLElement | null {
-    const { target } = this._options;
-    return (
-      (typeof target === 'function' ? target() : target) ?? this._host ?? null
-    );
-  }
-
-  private _createGhost(initial: DOMRect): HTMLElement {
-    const ghost =
-      this._options.ghostFactory?.(initial) ?? createDefaultGhost(initial);
-
-    ghost.setAttribute('data-resize-ghost', '');
-    (this._options.layer?.() ?? getDefaultLayer()).append(ghost);
-    return ghost;
-  }
-
-  private _createState(): ResizeState {
+  protected override _createState(): ResizeState {
     const { initial, current, ghost } = this._operation!;
 
     return {
@@ -283,15 +226,30 @@ class ResizableDirective extends AsyncDirective {
       deltaY: current.height - initial.height,
       ghost,
       trigger: this._host ?? null,
+      signal: this._operationAbort.signal,
     };
   }
 
-  private _createParams(event: PointerEvent): ResizeCallbackParams {
-    return { event, state: this._createState() };
+  /** Puts the ghost at the start edge of the target, which is the right edge in RTL. */
+  private _placeGhost(
+    ghost: HTMLElement,
+    edges: DOMRect,
+    origin = this._getGhostOrigin(ghost)
+  ): void {
+    const { current, rtl } = this._operation!;
+
+    this._translate(ghost, {
+      x: (rtl ? edges.right - current.width : edges.x) - origin.x,
+      y: edges.y - origin.y,
+    });
   }
 
-  private _updateDimensions({ clientX, clientY }: PointerEvent): void {
-    const { initial, current } = this._operation!;
+  /** Sizes `current` from the pointer and the current `edges` of the target. */
+  private _updateDimensions(
+    { clientX, clientY }: PointerEvent,
+    edges: DOMRect
+  ): void {
+    const { initial, current, rtl } = this._operation!;
     const {
       direction = 'both',
       maintainAspectRatio,
@@ -304,8 +262,9 @@ class ResizableDirective extends AsyncDirective {
     const horizontal = direction !== 'vertical';
     const vertical = direction !== 'horizontal';
 
-    let width = horizontal ? clientX - initial.x : initial.width;
-    let height = vertical ? clientY - initial.y : initial.height;
+    const inlineSize = rtl ? edges.right - clientX : clientX - edges.x;
+    let width = horizontal ? inlineSize : initial.width;
+    let height = vertical ? clientY - edges.y : initial.height;
 
     if (maintainAspectRatio) {
       const ratio = initial.width / initial.height;
@@ -326,63 +285,20 @@ class ResizableDirective extends AsyncDirective {
     current.height = height;
   }
 
-  /** Applies the current dimensions of the operation as inline styles to the given element. */
-  private _applyDimensions(element: HTMLElement | null): void {
-    if (element) {
-      const { current } = this._operation!;
-      setStyles(element, {
-        width: `${current.width}px`,
-        height: `${current.height}px`,
-      });
-    }
-  }
-
-  /** Stops the current resize operation, cleaning up the ghost element and event listeners. */
-  private _dispose(): void {
-    this._resizeAbort.abort();
-
-    if (this._operation) {
-      const { pointerId, ghost } = this._operation;
-
-      if (this._host?.hasPointerCapture(pointerId)) {
-        this._host.releasePointerCapture(pointerId);
-      }
-
-      ghost?.remove();
-      this._operation = null;
-    }
+  /** Applies the current dimensions to `element` as inline styles. */
+  private _applyDimensions(element: HTMLElement): void {
+    const { current } = this._operation!;
+    setStyles(element, {
+      width: `${current.width}px`,
+      height: `${current.height}px`,
+    });
   }
 
   // #endregion
-
-  protected override reconnected(): void {
-    this._addTriggerListeners();
-  }
-
-  protected override disconnected(): void {
-    this._dispose();
-    this._triggerAbort.abort();
-  }
-
-  public override update(
-    part: ElementPart,
-    [options]: DirectiveParameters<this>
-  ) {
-    if (this.isConnected) {
-      this._host = part.element as HTMLElement;
-      this._options = options ?? {};
-      this._addTriggerListeners();
-    }
-    return noChange;
-  }
-
-  public render(_options?: ResizableOptions) {
-    return noChange;
-  }
 }
 
 /**
- * A directive that makes an element a trigger for resizing a target element,
- * either in place or through a deferred ghost element.
+ * A directive that makes an element a resize trigger. It resizes the target
+ * in place, or through a deferred ghost element.
  */
 export const resizable = directive(ResizableDirective);

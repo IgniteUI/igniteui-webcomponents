@@ -9,15 +9,16 @@ import {
 import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { createResizeObserverController } from '#internals/controllers/resize-observer.js';
+import { addHostListeners } from '#internals/controllers/host-listeners.js';
+import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
-import { isLTR } from '#internals/utils/dom.js';
+import { getRoot, isLTR } from '#internals/utils/dom.js';
 import { asNumber, clamp } from '#internals/utils/math.js';
 import { VirtualScrollEngine } from './engine.js';
+import { recycle } from './recycle.js';
 import {
-  type ScrollAlignment,
   type VirtualScrollDataRequest,
   VirtualScrollItemContext,
   type VirtualScrollState,
@@ -27,6 +28,8 @@ import {
 export type VirtualScrollItemTemplate<T> = (
   context: VirtualScrollItemContext<T>
 ) => TemplateResult | typeof nothing;
+
+export type VirtualScrollKeyFunction<T> = (item: T, index: number) => unknown;
 
 export interface IgcVirtualScrollComponentEventMap {
   igcStateChange: CustomEvent<VirtualScrollState>;
@@ -113,6 +116,7 @@ export default class IgcVirtualScrollComponent<
 
         :where(igc-virtual-scroll) [part="virtualization-track"] {
           position: relative;
+          overflow: clip;
           width: 100%;
           min-height: 100%;
         }
@@ -158,43 +162,45 @@ export default class IgcVirtualScrollComponent<
 
   protected readonly _engine = new VirtualScrollEngine();
   private readonly _contentRef = createRef<HTMLDivElement>();
-  private readonly _itemResizeController = createResizeObserverController(
-    this,
-    {
-      callback: this._handleItemResize,
-      target: null,
-      requestUpdate: false,
-    }
-  );
+  private readonly _itemResizeController = addResizeObserverController(this, {
+    callback: this._handleItemResize,
+    target: null,
+    requestUpdate: false,
+  });
 
   private _currentRange: VisibleRange = EMPTY_RANGE;
 
   /**
-   * The item index each wrapper element was last observed under. Lit reuses
-   * the wrapper elements across renders. After a scroll, the same element
-   * can host a different item at an identical size, and a ResizeObserver
-   * does not report that. See `_scheduleItemMeasurement`.
+   * The item index each wrapper element was last observed under. See
+   * `_scheduleItemMeasurement`.
    */
   private readonly _observedItemIndexes = new WeakMap<Element, number>();
+
+  /**
+   * The first index whose measurement a `data` change discarded, or
+   * `Infinity`. See `_scheduleItemMeasurement`.
+   */
+  private _remeasureFrom = Number.POSITIVE_INFINITY;
+
   private _lastEmittedState: VirtualScrollState | null = null;
   private _hasPendingDataRequest = false;
   private _layoutCompletePromise: Promise<void> | null = null;
   private _scrollRequestId = 0;
 
+  /** The number of completed updates. See `_resolveLayoutComplete`. */
+  private _updateCount = 0;
+
   /**
-   * The `startIndex` of the last emitted `igcDataRequest`, which is also the
-   * item count at that emit. See `_checkDataRequest`.
-   *
-   * Kept across a disconnect, like `_hasPendingDataRequest`: a move in the
-   * DOM does not undo what the consumer was already asked for. If only one
-   * of the two were cleared, the request loop would reopen on reconnect.
+   * The `startIndex` of the last `igcDataRequest`, which is the item count at
+   * that emit. Kept across a disconnect, as `_hasPendingDataRequest` is: clearing
+   * only one of the two opens the request loop again on reconnect.
    */
   private _lastDataRequestIndex = -1;
 
   /**
-   * The live scroll offset on the active axis. Not reactive by design:
-   * `render` reads it only through `_currentRange`, so `_handleScroll`
-   * schedules an update only when the window moves.
+   * The live scroll offset on the active axis. Not reactive: `render` reads it
+   * only through `_currentRange`, so `_handleScroll` schedules an update only
+   * if the window moves.
    */
   private _scrollPosition = 0;
 
@@ -235,6 +241,8 @@ export default class IgcVirtualScrollComponent<
   /**
    * Estimated item size in pixels, used before an item is measured in the DOM.
    * After the first render of an item, the engine replaces the estimate with the measured size.
+   * The average measured size also replaces the estimate of the items that are not measured
+   * yet, so the scrollbar follows the real content.
    * @attr estimated-item-size
    * @default 50
    */
@@ -253,9 +261,30 @@ export default class IgcVirtualScrollComponent<
    * infer an item's position from the markup. Templates that render a role
    * with set semantics (`option`, `listitem`, `row`, ...) should map the
    * context's `index` and `count` onto `aria-posinset` and `aria-setsize`.
+   *
+   * Item elements are recycled (see `keyFunction`), so DOM state that the
+   * template does not bind moves to another item, for example the state of a
+   * checkbox without a `checked` binding. Bind all item state. Lit compares a
+   * binding with the value that it set last, not with the element, so bind
+   * state that the user changes with Lit's `live` directive. Also write user
+   * changes back to the item, or they are lost when the item leaves the window.
+   * To get new DOM for each item, wrap the content in Lit's `keyed` directive
+   * with the item key: `` html`${keyed(ctx.value.id, content)}` ``.
    */
   @property({ attribute: false })
   public itemTemplate: VirtualScrollItemTemplate<T> | null = null;
+
+  /* blazorSuppress */
+  /**
+   * A function that returns a unique key for an item. Receives the item and its index in `data`.
+   *
+   * An item keeps its rendered element while its key stays in the rendered window. The elements
+   * of keys that leave the window are reused for keys that enter it. Without it, the index is the
+   * key, so after a `data` change an index keeps its element and shows its new item. Set it when
+   * items move within `data`, for example on sort, insert or remove.
+   */
+  @property({ attribute: false })
+  public keyFunction: VirtualScrollKeyFunction<T> | null = null;
 
   //#endregion
 
@@ -265,7 +294,7 @@ export default class IgcVirtualScrollComponent<
       return;
     }
 
-    const root = this.getRootNode() as Document | ShadowRoot;
+    const root = getRoot(this);
     const sheet = IgcVirtualScrollComponent._getStyleSheet();
     if (!root.adoptedStyleSheets.includes(sheet)) {
       root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
@@ -275,10 +304,14 @@ export default class IgcVirtualScrollComponent<
   constructor() {
     super();
     this._engine.onSizeChange = () => this.requestUpdate();
-    this._handleScroll = this._handleScroll.bind(this);
 
-    // Viewport resize observer
-    createResizeObserverController(this, {
+    addHostListeners(this, {
+      events: ['scroll'],
+      listener: this._handleScroll,
+      options: { passive: true },
+    });
+
+    addResizeObserverController(this, {
       callback: this._measureViewport,
     });
   }
@@ -296,31 +329,20 @@ export default class IgcVirtualScrollComponent<
     this._adoptStyles();
     this._engine.initMaxBrowserSize(this.ownerDocument);
     this._measureViewport();
-    this.addEventListener('scroll', this._handleScroll, { passive: true });
-  }
-
-  /** @internal */
-  public override disconnectedCallback(): void {
-    super.disconnectedCallback();
-    this.removeEventListener('scroll', this._handleScroll);
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
-    // TODO: Either fix this in the theming controller or come up with some other solution.
-
-    // Verified on every update, not only in `connectedCallback`; a no-op
-    // when the sheet is already present. A host that renders this component
-    // in its own shadow root (for example, combo) can have that root's
-    // `adoptedStyleSheets` replaced by its theming logic. That drops this
-    // sheet without this element reconnecting.
+    // Code outside the library can replace the sheets of the root and drop this one.
     this._adoptStyles();
 
     if (changed.has('data')) {
+      const firstChanged = this._firstChangedIndex(changed.get('data'));
       this._engine.resize(
         this._items.length,
         this._normalizedItemSize,
-        this._firstChangedIndex(changed.get('data'))
+        firstChanged
       );
+      this._remeasureFrom = Math.min(this._remeasureFrom, firstChanged);
       this._hasPendingDataRequest = false;
     }
 
@@ -337,6 +359,8 @@ export default class IgcVirtualScrollComponent<
   }
 
   protected override updated(_changed: PropertyValues<this>): void {
+    this._updateCount++;
+    this._positionContent();
     this._scheduleItemMeasurement();
     this._checkDataRequest();
     this._emitStateChange();
@@ -356,28 +380,6 @@ export default class IgcVirtualScrollComponent<
       ? { height: `${this._engine.domSize}px` }
       : { width: `${this._engine.domSize}px` };
 
-    // The content wrapper is absolutely positioned at the origin of a track
-    // that is `domSize` px tall or wide. A translation to the first rendered
-    // item's scroll offset puts that item at its virtual position.
-    let contentPosition = this._engine.getScrollOffsetForIndex(
-      range.startIndex
-    );
-    const physicalRangeSize = this._engine.getPhysicalRangeSize(
-      range.startIndex,
-      range.endIndex
-    );
-    contentPosition = clamp(
-      contentPosition,
-      0,
-      this._engine.domSize - physicalRangeSize
-    );
-    const isRTL = !isVertical && !isLTR(this);
-    const contentStyle = {
-      transform: isVertical
-        ? `translateY(${contentPosition}px)`
-        : `translateX(${isRTL ? -contentPosition : contentPosition}px)`,
-    };
-
     const visibleItems =
       range.endIndex >= range.startIndex
         ? items.slice(range.startIndex, range.endIndex + 1)
@@ -393,15 +395,18 @@ export default class IgcVirtualScrollComponent<
           ${ref(this._contentRef)}
           part="virtualization-content"
           role="presentation"
-          style=${styleMap(contentStyle)}
         >
-          ${visibleItems.map((item, i) => {
-            const itemIndex = range.startIndex + i;
-            const ctx = new VirtualScrollItemContext(item, itemIndex, count);
-            return html`<div role="presentation" data-vs-index=${itemIndex}>
-              ${this.itemTemplate!(ctx)}
-            </div>`;
-          })}
+          ${recycle(
+            visibleItems,
+            (item, i) => this._keyOf(item, range.startIndex + i),
+            (item, i) => {
+              const itemIndex = range.startIndex + i;
+              const ctx = new VirtualScrollItemContext(item, itemIndex, count);
+              return html`<div role="presentation" data-vs-index=${itemIndex}>
+                ${this.itemTemplate!(ctx)}
+              </div>`;
+            }
+          )}
         </div>
       </div>
     `;
@@ -415,12 +420,10 @@ export default class IgcVirtualScrollComponent<
     return this.orientation === 'vertical';
   }
 
-  /** The configured `overScan`, normalized to a non-negative integer. */
   private get _normalizedOverScan(): number {
     return Math.max(0, Math.floor(asNumber(this.overScan, 2)));
   }
 
-  /** The configured `estimatedItemSize`, normalized to a positive number. */
   private get _normalizedItemSize(): number {
     const size = asNumber(this.estimatedItemSize);
     return size > 0 ? size : DEFAULT_ESTIMATED_ITEM_SIZE;
@@ -429,6 +432,11 @@ export default class IgcVirtualScrollComponent<
   /** `data`, guarded against a nullish value set by the consumer. */
   private get _items(): T[] {
     return this.data ?? [];
+  }
+
+  /** The key that ties the item at `index` to its rendered element. */
+  private _keyOf(item: T, index: number): unknown {
+    return this.keyFunction ? this.keyFunction(item, index) : index;
   }
 
   /**
@@ -446,40 +454,26 @@ export default class IgcVirtualScrollComponent<
   }
 
   /**
-   * The scroll offset that aligns `index` in the viewport according to
-   * `options`, from the engine's current size data. As more items are
-   * measured, the same input can give a different, more accurate result.
-   *
-   * For `block: 'nearest'` on an item already in view, returns the current
-   * offset, so no scroll occurs.
+   * The scroll offset that aligns `index` in the viewport, as `options` gives,
+   * from the current size data of the engine. The same input can give a
+   * different result as more items are measured.
    */
   private _getAlignedScrollOffset(
     index: number,
     options?: ScrollIntoViewOptions
   ): number {
-    const requested = this._isVertical
+    const position = this._isVertical
       ? (options?.block ?? 'start')
       : (options?.inline ?? options?.block ?? 'start');
-    const current = this._currentAxisScroll();
 
-    if (
-      requested === 'nearest' &&
-      this._engine.isIndexInView(index, current, this._viewportSize)
-    ) {
-      return current;
-    }
-
-    const align: ScrollAlignment =
-      requested === 'center' || requested === 'end' ? requested : 'start';
-
-    return this._engine.getAlignedScrollOffset(
+    return this._engine.resolveScrollOffset(
       index,
+      this._currentAxisScroll(),
       this._viewportSize,
-      align
+      position
     );
   }
 
-  /** Applies a scroll offset to the correct axis, accounting for RTL. */
   private _applyScroll(offset: number, behavior: ScrollBehavior): void {
     if (this._isVertical) {
       this.scrollTo({ top: offset, behavior });
@@ -488,7 +482,6 @@ export default class IgcVirtualScrollComponent<
     }
   }
 
-  /** The current real scroll position on the active axis, normalized for RTL. */
   private _currentAxisScroll(): number {
     return this._isVertical
       ? this.scrollTop
@@ -498,13 +491,9 @@ export default class IgcVirtualScrollComponent<
   }
 
   /**
-   * Applies a scroll offset to the active axis and waits for the scroll,
-   * instant or smooth, to settle.
-   *
-   * `scrollend` does not fire when the requested offset does not move the
-   * scroll position, so that case resolves immediately. The timeout covers
-   * an event that never arrives, for example when the element disconnects
-   * mid-scroll.
+   * Applies a scroll offset and waits for the scroll to settle. `scrollend` does
+   * not fire if the position does not move, so that case resolves immediately.
+   * The timeout covers an event that never arrives, e.g. after a disconnect.
    */
   private _scrollAndWaitForEnd(
     offset: number,
@@ -529,9 +518,8 @@ export default class IgcVirtualScrollComponent<
   }
 
   /**
-   * Resolves with `task` or with a deadline of `ms`, whichever comes first.
-   * The signal then tears down the other, so no live timer or dangling
-   * listener remains.
+   * Resolves with `task`, or with a deadline of `ms`, whichever is first. The
+   * signal then stops the other, so no timer or listener stays alive.
    */
   private _withDeadline(
     ms: number,
@@ -555,9 +543,9 @@ export default class IgcVirtualScrollComponent<
   }
 
   /**
-   * Resolves when no `scroll` event arrives for `SCROLL_IDLE_MS`: the
-   * closest replacement for `scrollend`. The first timer starts immediately,
-   * so a scroll that does not move still settles.
+   * Resolves if no `scroll` event arrives for `SCROLL_IDLE_MS`, which is the
+   * closest replacement for `scrollend`. The first timer starts immediately, so
+   * a scroll that does not move also settles.
    */
   private _waitForScrollIdle(signal: AbortSignal): Promise<void> {
     return new Promise((resolve) => {
@@ -590,15 +578,10 @@ export default class IgcVirtualScrollComponent<
   }
 
   /**
-   * Records the new scroll offset. Schedules a render only when the rendered
-   * window moves.
-   *
-   * `render` derives the track size, the content translate, and the item
-   * slice from `_currentRange`, not from the scroll offset. Without the
-   * guard, a scroll inside one item would re-run each item template for an
-   * identical result. `willUpdate` still recomputes `_currentRange` for each
-   * other trigger, so this suppresses only redundant passes, never a needed
-   * one.
+   * Schedules a render only if the rendered window moves. `willUpdate`
+   * recomputes `_currentRange` for the other triggers, so the guard skips only
+   * redundant template runs. Under compression, a scroll inside one window
+   * moves only the content.
    */
   private _handleScroll(): void {
     this._scrollPosition = this._currentAxisScroll();
@@ -609,15 +592,35 @@ export default class IgcVirtualScrollComponent<
       endIndex !== this._currentRange.endIndex
     ) {
       this.requestUpdate();
+    } else if (this._engine.isCompressed) {
+      this._positionContent();
     }
   }
 
   /**
-   * The number of leading items that kept their identity across a `data`
-   * change: the index of the first item whose measured size no longer
-   * matches its rendered content. An append (the `igcDataRequest` flow)
-   * retains all items. A filter or a replacement retains only the unchanged
-   * prefix.
+   * The transform is set outside `render`, because under compression the offset
+   * changes on each scroll, also inside one window. The track clips the
+   * over-scanned items past its end, so they do not grow the scroll size.
+   */
+  private _positionContent(): void {
+    const content = this._contentRef.value;
+    if (!content) return;
+
+    const offset = this._engine.getContentOffset(
+      this._currentRange.startIndex,
+      this._scrollPosition,
+      this._viewportSize
+    );
+
+    content.style.transform = this._isVertical
+      ? `translateY(${offset}px)`
+      : `translateX(${isLTR(this) ? offset : -offset}px)`;
+  }
+
+  /**
+   * The first index at which the old and the new items differ by identity, or
+   * the shorter length. Measurements below it stay valid, so an item that
+   * changes in place keeps its measured size.
    */
   private _firstChangedIndex(previous: T[] | undefined): number {
     if (!previous) {
@@ -648,25 +651,24 @@ export default class IgcVirtualScrollComponent<
         this._engine.measureItem(index, measured);
       }
     }
+
+    this._engine.adaptEstimate(this._currentRange.startIndex);
   }
 
   /**
-   * Synchronizes the item observer with the rendered window and applies only
-   * the difference. A newly observed element gets one initial measurement.
-   * An `observe` call on an already observed element is a no-op, so a
-   * re-measurement on demand requires re-registration: unobserve, then
-   * observe.
-   *
-   * Re-registration is applied to each element whose `data-vs-index`
-   * changed. Lit reuses the wrapper elements across renders, so after a
-   * scroll the same element can host a different item at an identical size.
-   * The observer does not report that, and the new index would keep its
-   * estimated size.
+   * Syncs the item observer with the rendered window. `observe` on an observed
+   * element does nothing, so an element whose `data-vs-index` changed is
+   * unobserved and observed again: a recycled wrapper can hold another item of
+   * the same size, which the observer does not report. A `data` change that
+   * discards measurements keeps the wrappers and indexes, so the wrappers from
+   * `_remeasureFrom` on are observed again as well.
    */
   private _scheduleItemMeasurement(): void {
     const content = this._contentRef.value;
     if (!content) return;
 
+    const remeasureFrom = this._remeasureFrom;
+    this._remeasureFrom = Number.POSITIVE_INFINITY;
     const observed = this._itemResizeController.targets;
 
     for (const element of observed) {
@@ -679,7 +681,11 @@ export default class IgcVirtualScrollComponent<
       const index = asNumber((element as HTMLElement).dataset.vsIndex, -1);
       const isObserved = observed.has(element);
 
-      if (isObserved && this._observedItemIndexes.get(element) === index) {
+      if (
+        isObserved &&
+        index < remeasureFrom &&
+        this._observedItemIndexes.get(element) === index
+      ) {
         continue;
       }
 
@@ -692,9 +698,9 @@ export default class IgcVirtualScrollComponent<
   }
 
   /**
-   * Emits `igcStateChange`. Skipped when the window is empty or equal to the
-   * last reported one, because measurement passes re-render without a window
-   * change.
+   * Emits `igcStateChange`. Does nothing if the window is empty or equal to
+   * the last reported one, because a measurement pass renders again with no
+   * window change.
    */
   private _emitStateChange(): void {
     const { startIndex, endIndex } = this._currentRange;
@@ -732,10 +738,9 @@ export default class IgcVirtualScrollComponent<
       return;
     }
 
-    // Each `data` change clears `_hasPendingDataRequest`, including one that
-    // appends nothing. Without this second guard, a consumer whose source is
-    // exhausted, and that reassigns `data` in response to a request, would
-    // receive the same request on each reassignment.
+    // Each `data` change clears `_hasPendingDataRequest`, also one that
+    // appends nothing. This guard stops a repeat request to an exhausted
+    // source.
     if (this._lastDataRequestIndex === total) {
       return;
     }
@@ -752,17 +757,22 @@ export default class IgcVirtualScrollComponent<
   }
 
   /**
-   * Resolves on the next animation frame, or after `LAYOUT_FRAME_TIMEOUT_MS`
-   * when no frame arrives. A hidden tab or a disconnected element gets no
-   * frames, and `layoutComplete` must still settle there. That state has no
-   * layout to wait for, so an early resolve is safe.
+   * Resolves after the next frame has delivered its `ResizeObserver`
+   * callbacks, or after `LAYOUT_FRAME_TIMEOUT_MS` if no frame arrives.
+   *
+   * A frame runs its animation frame callbacks before its layout and its
+   * `ResizeObserver` callbacks, so a resolve in the `requestAnimationFrame`
+   * callback comes before the measurements. A task queued from that callback
+   * runs after them.
    */
-  private _nextFrame(): Promise<void> {
+  private _nextMeasurement(): Promise<void> {
     return this._withDeadline(
       LAYOUT_FRAME_TIMEOUT_MS,
       (signal) =>
         new Promise((resolve) => {
-          const id = requestAnimationFrame(() => resolve());
+          const id = requestAnimationFrame(() =>
+            resolve(this._timeout(0, signal))
+          );
           signal.addEventListener('abort', () => cancelAnimationFrame(id), {
             once: true,
           });
@@ -771,19 +781,21 @@ export default class IgcVirtualScrollComponent<
   }
 
   /**
-   * Waits for the current update, then lets ResizeObserver item measurements
-   * run. When those schedule a follow-up render, for example an estimate
-   * replaced by a measured size, the wait repeats until nothing is pending,
-   * up to a safety cap.
+   * Waits for the current update, then lets the ResizeObserver measurements
+   * run. If those render again, for example when a measured size replaces an
+   * estimate, the wait repeats until a frame passes with no render, up to a
+   * safety cap. A render during the wait is complete before the check, so
+   * `isUpdatePending` alone misses it.
    */
   private async _resolveLayoutComplete(): Promise<void> {
     try {
       await this.updateComplete;
 
       for (let i = 0; i < MAX_LAYOUT_SETTLE_PASSES; i++) {
-        await this._nextFrame();
+        const updates = this._updateCount;
+        await this._nextMeasurement();
 
-        if (!this.isUpdatePending) {
+        if (!this.isUpdatePending && this._updateCount === updates) {
           break;
         }
 
@@ -811,14 +823,15 @@ export default class IgcVirtualScrollComponent<
    * one or more follow-up renders.
    */
   public get layoutComplete(): Promise<void> {
-    if (!this._layoutCompletePromise) {
-      this._layoutCompletePromise = this._resolveLayoutComplete();
-    }
-    return this._layoutCompletePromise;
+    return (this._layoutCompletePromise ??= this._resolveLayoutComplete());
   }
 
   /**
    * Scrolls to the specified item index.
+   *
+   * `block` (`inline` in the horizontal orientation) positions the item as in
+   * `scrollIntoView`, and defaults to `start`. With `nearest`, the item
+   * scrolls the smallest distance that brings it into view.
    *
    * Items outside the rendered window have only an estimated size, so the
    * first jump can miss the target. The items at the landing point are then

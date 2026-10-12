@@ -9,12 +9,12 @@ const NULL_UNDEFINED_RE = /undefined|null/;
 const ARRAY_TYPE_RE = /\[\]/;
 const GENERIC_TYPE_RE = /<.*>/;
 
-/** A generic mixin leaks its bare type parameter — `T | null` — into the manifest. */
+/** A generic mixin leaks its bare type parameter, `T | null`, into the manifest. */
 const TYPE_PARAM_RE = /^[A-Z]\d?$/;
 
 /**
- * A `keyof` alias over the component's generic data — `Keys<T>` — is a string
- * key at the attribute level, unlike other generics which have no control.
+ * A `keyof` alias over the component's generic data, `Keys<T>`, is a string key at
+ * the attribute level. Other generics have no control.
  */
 const KEYOF_ALIAS_RE = /\bKeys<[^>]*>/g;
 
@@ -170,17 +170,17 @@ function resolveDefaultValue(tsType, value, options) {
     return tsType === 'boolean' ? false : undefined;
   }
 
+  const raw = unquote(value);
+
   switch (tsType) {
     case 'boolean':
       return value === 'true';
     case 'number':
       return Number.parseFloat(value);
     default:
-      // Follows the union it belongs to, so a numeric enum defaults to one of its
-      // members rather than to the digits spelled as a string.
-      return typeof options?.[0] === 'number'
-        ? Number(unquote(value))
-        : unquote(value);
+      // Follows the member it names, so a numeric union defaults to one of its
+      // numbers rather than to the digits spelled as a string.
+      return options?.includes(Number(raw)) ? Number(raw) : raw;
   }
 }
 
@@ -267,24 +267,22 @@ class StoriesBuilder {
       return { tsType: '' };
     }
 
-    // Only a union of literals stands for a set of values — `Element | string` is two
-    // types, not two things to pick between.
-    const literals = parts.every((part) => STRING_LITERAL_RE.test(part));
+    // Only a union of literals gives a set of values. `Element | string` is two
+    // types, not two values to select.
+    const literals = parts.every(
+      (part) => STRING_LITERAL_RE.test(part) || NUMBER_RE.test(part)
+    );
 
-    // The analyzer quotes numeric literals as though they were strings, expanding
-    // `SliderTickLabelRotation` (`0 | 90 | -90`) to `'0' | '90' | `.
-    const numeric =
-      literals && parts.every((part) => NUMBER_RE.test(unquote(part)));
-
+    // The analyzer writes a numeric literal bare, `0 | 90 | -90`, so a quoted member
+    // is a string. A union holds both forms, so convert each member on its own.
     /** @type {SBEnumValues | undefined} */
     const values = literals
-      ? parts.map((part) => (numeric ? Number(unquote(part)) : unquote(part)))
+      ? parts.map((part) =>
+          NUMBER_RE.test(part) ? Number(part) : unquote(part)
+        )
       : undefined;
 
-    const tsType =
-      values && numeric
-        ? values.join(' | ')
-        : parts.map((part) => part.replace(/'/g, '"')).join(' | ');
+    const tsType = parts.map((part) => part.replace(/'/g, '"')).join(' | ');
 
     return {
       tsType,

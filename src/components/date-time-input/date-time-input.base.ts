@@ -1,7 +1,9 @@
 import { LitElement, type PropertyValues, type TemplateResult } from 'lit';
 import { eventOptions, property, query } from 'lit/decorators.js';
-import { cache } from 'lit/directives/cache.js';
-import { addAriaTarget } from '#internals/controllers/aria-projection.js';
+import {
+  addAriaTarget,
+  helperText,
+} from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
   arrowDown,
@@ -17,28 +19,28 @@ import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { addI18nController } from '#internals/i18n/i18n-controller.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import type { FormValue } from '#internals/mixins/forms/form-value.js';
-import {
-  MaskBehaviorMixin,
-  type MaskSelection,
-} from '#internals/mixins/mask-behavior.js';
+import { MaskBehaviorMixin } from '#internals/mixins/mask-behavior.js';
 import {
   nextInputId,
   renderInputShell,
-  resolveInputPartNames,
+  resolveInputPartFlags,
 } from '#internals/templates/input-shell.js';
 import { renderMaskedNativeInput } from '#internals/templates/masked-input.js';
 import { equal } from '#internals/utils/objects.js';
 import type { ThemingController } from '#theming/theming-controller.js';
 import type { RangeTextSelectMode } from '../types.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import {
   type DatePartDeltas,
   DatePartType,
   DEFAULT_DATE_PARTS_SPIN_DELTAS,
   type IDatePart,
 } from './date-part.js';
+import type { DateFormatMaskParser } from './datetime-mask-parser.js';
 import { dateTimeInputValidators } from './validators.js';
 
-export type { MaskSelection };
+/** The direction of a part navigation: `Ctrl + ArrowLeft` or `Ctrl + ArrowRight`. */
+export type PartDirection = 'back' | 'forward';
 
 const Slots = setSlots(
   'prefix',
@@ -58,30 +60,31 @@ const Slots = setSlots(
 @shadowOptions({ delegatesFocus: true })
 export abstract class IgcDateTimeInputBaseComponent<
   T,
+  P,
 > extends MaskBehaviorMixin(FormAssociatedRequiredMixin(LitElement)) {
   // #region Internal state and properties
 
   protected abstract readonly _themes: ThemingController;
 
+  protected abstract override readonly _parser: DateFormatMaskParser<IDatePart>;
+
   protected readonly _slots = addSlotController(this, { slots: Slots });
 
   protected readonly _inputId = nextInputId();
+
+  /** Part flags of the current render, shared by the container and the input. */
+  private _partFlags: Record<string, boolean> = {};
 
   @query('input')
   protected override readonly _input?: HTMLInputElement;
 
   /**
-   * Receives ARIA semantics projected by a composite host
-   * (e.g. `igc-date-picker`) onto the inner native input.
-   * See {@link addAriaTarget}.
+   * Names and describes the native input, and applies the ARIA a composite host
+   * projects. See {@link addAriaTarget}.
    */
-  protected readonly _ariaTarget = addAriaTarget(this, {
-    labels: () => this._internals.labels,
-    description: () =>
-      this._slots.hasAssignedElements('helper-text')
-        ? this.renderRoot.querySelector('#helper-text')
-        : null,
-  });
+  protected readonly _ariaTarget = addAriaTarget(this, () =>
+    helperText(this, this._slots)
+  );
 
   protected override get __validators() {
     return dateTimeInputValidators;
@@ -104,13 +107,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Whether the user has an uncommitted edit in progress.
-   *
-   * While set, the masked text - not the public `value` - is the source of truth:
-   * typing updates the mask only, and the parsed result reaches `value` (together
-   * with `igcChange`) when the edit is committed on blur. Keeping `value` in sync
-   * with the last emitted `igcChange` is what stops a host that two-way binds the
-   * property from clobbering a half-typed mask on an unrelated re-render.
+   * Whether the user has an uncommitted edit. While set, the masked text is the source
+   * of truth until blur, so a two-way bound host cannot replace a half-typed mask.
    */
   protected _isEditing = false;
 
@@ -118,8 +116,7 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected _oldValue: T | null = null;
 
   /**
-   * The value currently in the editor - the parsed draft while an edit is in
-   * progress, otherwise the committed public value.
+   * The parsed draft during an edit, else the committed value.
    *
    * @hidden @internal
    */
@@ -132,7 +129,7 @@ export abstract class IgcDateTimeInputBaseComponent<
     return { ...DEFAULT_DATE_PARTS_SPIN_DELTAS, ...this.spinDelta };
   }
 
-  protected get _targetDatePart(): unknown {
+  protected get _targetDatePart(): P | undefined {
     return this._focused
       ? this._getDatePartAtCursor()
       : this._getDefaultDatePart();
@@ -266,10 +263,10 @@ export abstract class IgcDateTimeInputBaseComponent<
       bindingDefaults: { repeat: true },
     })
       .set([ctrlKey, ';'], this._setCurrentDateTime)
-      .set(arrowUp, this._keyboardSpin.bind(this, 'up'))
-      .set(arrowDown, this._keyboardSpin.bind(this, 'down'))
-      .set([ctrlKey, arrowLeft], this._navigateParts.bind(this, 0))
-      .set([ctrlKey, arrowRight], this._navigateParts.bind(this, 1));
+      .set(arrowUp, this._keyboardSpin.bind(this, 1))
+      .set(arrowDown, this._keyboardSpin.bind(this, -1))
+      .set([ctrlKey, arrowLeft], this._navigateParts.bind(this, 'back'))
+      .set([ctrlKey, arrowRight], this._navigateParts.bind(this, 'forward'));
   }
 
   protected override update(props: PropertyValues<this>): void {
@@ -293,40 +290,24 @@ export abstract class IgcDateTimeInputBaseComponent<
     this._updateMaskDisplay();
   }
 
-  protected _handleDragLeave(): void {
-    if (!this._focused) {
-      this._updateMaskDisplay();
-    }
-  }
-
   protected _handleDragEnter(): void {
     if (!this._focused) {
       this._maskedValue = this._buildMaskedValue();
     }
   }
 
-  protected async _handleFocus(): Promise<void> {
-    this._focused = true;
-
-    if (this.readOnly) {
-      return;
+  protected override _handleFocus(): Promise<void> {
+    if (!this.readOnly) {
+      this._oldValue = this.value;
     }
 
-    this._oldValue = this.value;
+    return super._handleFocus();
+  }
 
-    if (this._isValueEmpty()) {
-      this._maskedValue = this._parser.emptyMask;
-      this._historyResync();
-      await this.updateComplete;
-      this.select();
-      return;
-    }
-
+  protected override _showEditMask(): void {
     if (this.displayFormat !== this.inputFormat) {
       this._updateMaskDisplay();
     }
-
-    this._historyResync();
   }
 
   protected override _handleBlur(): void {
@@ -335,9 +316,6 @@ export abstract class IgcDateTimeInputBaseComponent<
     super._handleBlur();
   }
 
-  /**
-   * Handles wheel events for spinning date parts.
-   */
   @eventOptions({ passive: false })
   protected async _handleWheel(event: WheelEvent): Promise<void> {
     if (!this._focused || this.readOnly) return;
@@ -346,8 +324,9 @@ export abstract class IgcDateTimeInputBaseComponent<
     event.stopPropagation();
 
     const { start, end } = this._inputSelection;
-    event.deltaY > 0 ? this.stepDown() : this.stepUp();
-    this._emitInputEvent();
+    if (this._performStep(undefined, undefined, event.deltaY > 0 ? -1 : 1)) {
+      this._emitInputEvent();
+    }
 
     await this.updateComplete;
     this.setSelectionRange(start, end);
@@ -357,10 +336,7 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   //#region Keybindings
 
-  /**
-   * Navigates to the previous or next date part.
-   */
-  protected _navigateParts(direction: number): void {
+  protected _navigateParts(direction: PartDirection): void {
     const position = this._calculatePartNavigationPosition(
       this._input?.value ?? '',
       direction
@@ -368,12 +344,10 @@ export abstract class IgcDateTimeInputBaseComponent<
     this.setSelectionRange(position, position);
   }
 
-  /**
-   * Handles keyboard-triggered spinning (arrow up/down).
-   */
-  protected async _keyboardSpin(direction: 'up' | 'down'): Promise<void> {
-    direction === 'up' ? this.stepUp() : this.stepDown();
-    this._emitInputEvent();
+  protected async _keyboardSpin(sign: 1 | -1): Promise<void> {
+    if (this._performStep(undefined, undefined, sign)) {
+      this._emitInputEvent();
+    }
     await this.updateComplete;
     this.setSelectionRange(this._maskSelection.start, this._maskSelection.end);
   }
@@ -382,33 +356,28 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   //#region Internal API
 
-  /**
-   * Common logic for stepping up or down a date part.
-   * @internal
-   */
+  /** @internal */
+  /** Spins the given or targeted date part. Returns false when no part is targeted, for example in a literal. */
   protected _performStep(
-    datePart: unknown,
+    datePart: P | undefined,
     delta: number | undefined,
-    isDecrement: boolean
-  ): void {
+    sign: 1 | -1
+  ): boolean {
     const part = datePart || this._targetDatePart;
-    if (!part) return;
+    if (!part) return false;
 
     const { start, end } = this._inputSelection;
-    this._setDraftValue(this._calculateSpunValue(part, delta, isDecrement));
+    this._setDraftValue(this._calculateSpunValue(part, delta, sign));
     this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
+    return true;
   }
 
-  /**
-   * Updates the displayed mask value based on focus state.
-   * When focused, shows the editable mask. When unfocused, defers to the leaf's display formatter.
-   */
-  protected _updateMaskDisplay(): void {
+  /** Shows the editable mask when focused, else the display format. */
+  protected override _updateMaskDisplay(): void {
     if (!this._focused) {
       this._maskedValue = this._buildDisplayValue();
     } else if (!this._isEditing) {
-      // An edit in progress owns the masked text. Rebuilding it from `value` here
-      // would discard whatever the user has typed so far.
+      // An edit in progress owns the masked text. A rebuild discards the typed text.
       this._maskedValue = this._buildMaskedValue();
     }
   }
@@ -417,17 +386,15 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected _buildMaskedValue(): string {
     const masked = this._formatValue(this.value);
 
-    // A value-less mask formats to the empty mask; prefer whatever is already in
-    // the editor so that a partially typed mask survives a re-render.
+    // Keep the editor text for an empty value, so a partial mask survives a re-render.
     return masked === this._parser.emptyMask
       ? this._maskedValue || masked
       : masked;
   }
 
   /**
-   * Applies a value produced by an interactive edit (spinning, `Ctrl + ;`).
-   * While focused this only moves the draft; outside of an editing session - e.g. a
-   * programmatic `stepUp()` - there is no blur coming to commit it.
+   * Applies a value from a spin or `Ctrl + ;`. A focused editor moves only the draft.
+   * An unfocused one commits at once, because no blur follows.
    */
   protected _setDraftValue(value: T): void {
     if (!this._focused) {
@@ -441,20 +408,19 @@ export abstract class IgcDateTimeInputBaseComponent<
 
     this._isEditing = true;
     this._maskedValue = next;
-    this.requestUpdate();
   }
 
   /**
-   * Whether the committed value is empty, i.e. gaining focus should start the
-   * edit from the empty mask rather than the formatted value.
+   * Whether the committed value is empty. Focus then starts the edit from the
+   * empty mask, not from the formatted value.
    */
-  protected _isValueEmpty(): boolean {
+  protected override _isValueEmpty(): boolean {
     return !this.value;
   }
 
   /**
-   * Applies a programmatic value assignment: bails when the value is unchanged,
-   * cancels any edit in progress, and re-renders the mask from the new value.
+   * Applies a value assignment from code. Stops if the value is unchanged,
+   * cancels an edit, and renders the mask again from the new value.
    */
   protected _applyValue(value: T | null): void {
     if (equal(this._formValue.value, value)) {
@@ -467,9 +433,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Reads the AM/PM designator as currently typed in the mask for the given
-   * format part, so spinning it toggles from what the user sees rather than
-   * from the underlying date.
+   * Reads the AM/PM designator as typed in the mask for the given format part,
+   * so that a spin changes what the user sees, not the date below it.
    */
   protected _readAmPmFromMask(part?: IDatePart): string | undefined {
     return part?.type === DatePartType.AmPm
@@ -485,18 +450,16 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Commits the current draft to the public value, emitting `igcChange` when the
-   * committed value differs from the one the input was focused with.
+   * Commits the draft to the public value. Emits `igcChange` if the committed
+   * value differs from the value at focus.
    */
   protected _commitEdit(): void {
-    // Only an actual edit is re-parsed. Without this guard a mask holding a
-    // display-formatted value - a read-only or untouched input - would be read back
-    // under the input format and mangled.
+    // Only a real edit is parsed again. A display-formatted mask parses wrong
+    // under the input format.
     if (this._isEditing) {
       this._isEditing = false;
 
-      // A partially filled mask is parsed leniently, missing parts falling back to
-      // their defaults; only a mask that resolves to nothing clears the value.
+      // A partial mask parses leniently. Only an empty result clears the value.
       const parsed = this._parseMask(false);
 
       if (parsed === null) {
@@ -506,12 +469,10 @@ export abstract class IgcDateTimeInputBaseComponent<
       }
     }
 
-    // The assignments above are no-ops when the value did not change, so the mask
-    // still has to be flipped back to the display format explicitly.
+    // The assignments skip an unchanged value, so restore the display format here.
     this._updateMaskDisplay();
 
-    // The value can also have moved without an edit - `clear()` or a programmatic
-    // assignment while focused - and that is a committed change just the same.
+    // `clear()` or a set while focused also moves the value. That is a commit too.
     if (!this.readOnly && !equal(this._oldValue, this.value)) {
       this._oldValue = this.value;
       this.emitEvent('igcChange', { detail: this.value });
@@ -519,18 +480,18 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Marks the masked text as an uncommitted edit. The parsed result deliberately
-   * does not reach the public `value` here - that happens on commit - so that the
-   * property stays in sync with the last emitted `igcChange`. See {@link _isEditing}.
+   * Marks the masked text as an uncommitted edit. The parsed result reaches `value`
+   * at commit. See {@link _isEditing}.
    */
-  protected override _syncValueFromMask(): void {
+  protected override _commitMaskedValue(value: string): void {
+    this._maskedValue = value;
+
     if (this._focused) {
       this._isEditing = true;
       return;
     }
 
-    // A mask mutation outside of an editing session - e.g. text dropped onto an
-    // unfocused input - has no blur coming to commit it.
+    // A change outside an edit, such as a drop on an unfocused input, gets no blur.
     this._applyDraft();
   }
 
@@ -540,9 +501,6 @@ export abstract class IgcDateTimeInputBaseComponent<
     this._updateMaskDisplay();
   }
 
-  /**
-   * Checks if all mask positions are filled (no prompt characters remain).
-   */
   protected _isMaskComplete(): boolean {
     return !this._maskedValue.includes(this.prompt);
   }
@@ -554,7 +512,6 @@ export abstract class IgcDateTimeInputBaseComponent<
     const previous = this._parser.mask;
     this._parser.mask = formatString;
 
-    // Update placeholder if not set or if it matches the old format
     if (!this.placeholder || previous === this.placeholder) {
       this.placeholder = this._parser.mask;
     }
@@ -567,11 +524,8 @@ export abstract class IgcDateTimeInputBaseComponent<
     }
   }
 
-  /**
-   * Resolves the part names for the container based on the current state.
-   */
   protected _resolvePartNames(base: string): Record<string, boolean> {
-    return resolveInputPartNames(this._slots, base, !this._isEmptyMask);
+    return { [base]: true, ...this._partFlags };
   }
 
   // #endregion
@@ -597,14 +551,14 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   /* blazorSuppress */
   /** Increments a date/time portion. */
-  public stepUp(datePart?: unknown, delta?: number): void {
-    this._performStep(datePart, delta, false);
+  public stepUp(datePart?: P, delta?: number): void {
+    this._performStep(datePart, delta, 1);
   }
 
   /* blazorSuppress */
   /** Decrements a date/time portion. */
-  public stepDown(datePart?: unknown, delta?: number): void {
-    this._performStep(datePart, delta, true);
+  public stepDown(datePart?: P, delta?: number): void {
+    this._performStep(datePart, delta, -1);
   }
 
   /* blazorSuppress */
@@ -632,42 +586,29 @@ export abstract class IgcDateTimeInputBaseComponent<
   //#region Render
 
   protected _renderInput(): TemplateResult {
-    const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
-
-    return renderMaskedNativeInput({
+    return renderMaskedNativeInput(this, {
       id: this._inputId,
       partNames: this._resolvePartNames('input'),
-      name: this.name,
       value: this._maskedValue,
       placeholder: this.placeholder || this._parser.emptyMask,
-      readOnly: this.readOnly,
-      disabled: this.disabled,
-      tabindex: hasNegativeTabIndex ? -1 : undefined,
       aria: this._ariaTarget.resolveBindings(),
-      onInput: this._handleInput,
-      onBeforeInput: this._handleBeforeInput,
-      onFocus: this._handleFocus,
-      onBlur: this._handleBlur,
-      onClick: this._handleClick,
-      onSetMaskSelection: this._setMaskSelection,
-      onCompositionStart: this._handleCompositionStart,
-      onCompositionEnd: this._handleCompositionEnd,
+      ...this._maskInputBindings,
       onWheel: this._handleWheel,
       onDragEnter: this._handleDragEnter,
-      onDragLeave: this._handleDragLeave,
     });
   }
 
   protected override render() {
-    return cache(
-      renderInputShell(this, {
-        theme: this._themes.theme,
-        label: this.label,
-        labelId: this._inputId,
-        containerParts: this._resolvePartNames('container'),
-        renderInput: this._renderInput,
-      })
-    );
+    this._partFlags = resolveInputPartFlags(this._slots, !this._isEmptyMask);
+
+    return renderInputShell(this, {
+      theme: this._themes.theme,
+      label: this.label,
+      labelId: this._inputId,
+      containerParts: this._resolvePartNames('container'),
+      renderInput: this._renderInput,
+      helperText: IgcValidationContainerComponent.create(this),
+    });
   }
 
   //#endregion
@@ -684,12 +625,9 @@ export abstract class IgcDateTimeInputBaseComponent<
   public abstract set value(value: T | null);
 
   /**
-   * Parses the current masked text into the leaf's value type.
-   *
-   * A `strict` parse mirrors the committed value semantics - an incomplete mask has
-   * no value yet and resolves to `null` rather than to a defaults-filled one. A lenient
-   * parse completes the missing parts from their defaults, an empty mask excepted - that
-   * one holds no value to complete and resolves to `null` as well.
+   * Parses the masked text into the value type of the leaf. A `strict` parse gives `null`
+   * for an incomplete mask; a lenient one fills the missing parts from their defaults.
+   * An empty mask gives `null` in both modes.
    */
   protected abstract _parseMask(strict: boolean): T | null;
 
@@ -699,19 +637,28 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected abstract _buildDisplayValue(): string;
   protected abstract _calculatePartNavigationPosition(
     value: string,
-    direction: number
+    direction: PartDirection
   ): number;
   protected abstract _calculateSpunValue(
-    part: unknown,
+    part: P,
     delta: number | undefined,
-    isDecrement: boolean
+    sign: 1 | -1
   ): T;
   protected abstract _setCurrentDateTime(): void;
-  protected abstract _getDatePartAtCursor(): unknown;
-  protected abstract _getDefaultDatePart(): unknown;
+  protected abstract _getDatePartAtCursor(): P | undefined;
+  protected abstract _getDefaultDatePart(): P | undefined;
 
-  public abstract hasDateParts(): boolean;
-  public abstract hasTimeParts(): boolean;
+  /* blazorSuppress */
+  /** Whether the current format holds a date part: day, month or year. */
+  public hasDateParts(): boolean {
+    return this._parser.hasDateParts();
+  }
+
+  /* blazorSuppress */
+  /** Whether the current format holds a time part: hours, minutes or seconds. */
+  public hasTimeParts(): boolean {
+    return this._parser.hasTimeParts();
+  }
 
   // #endregion
 }

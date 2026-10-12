@@ -3,6 +3,7 @@ import {
   expect,
   fixture,
   html,
+  nextFrame,
   waitUntil,
 } from '@open-wc/testing';
 import { range } from 'lit/directives/range.js';
@@ -21,6 +22,7 @@ import {
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
+import { configureTheme } from '#theming/config.js';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcTabComponent from './tab.js';
 import IgcTabsComponent from './tabs.js';
@@ -69,9 +71,8 @@ describe('Tabs component', () => {
       `);
     });
 
-    // `aria-required-children` is suppressed as a false positive: axe walks the DOM and
-    // sees each tab's panel nested in the tablist, while browsers expose the flat tree
-    // where the roles resolve correctly. Screen readers announce the tabs as expected.
+    // `aria-required-children` is a false positive: axe sees each panel nested in
+    // the tablist, but the flat tree that browsers expose resolves the roles.
     it('is accessible', async () => {
       await expect(element).to.be.accessible({
         ignoredRules: ['aria-required-children'],
@@ -236,9 +237,8 @@ describe('Tabs component', () => {
     });
 
     it('prevents the default action of the activation keys', async () => {
-      // A tab header is focusable but has no native activation behavior, so
-      // Space would scroll the page on top of selecting the tab. The event is
-      // hand-rolled because the shared helper dispatches non-cancelable ones.
+      // A tab header has no native activation, so Space would also scroll the
+      // page. The shared helper dispatches non-cancelable events, so build one here.
       const activate = (key: string) => {
         const event = new KeyboardEvent('keydown', {
           key,
@@ -279,6 +279,27 @@ describe('Tabs component', () => {
       expect(indicator.style.width).to.eq(
         `${getTabDOM(firstOf(selected)).header.offsetWidth}px`
       );
+    });
+
+    it('places the selected indicator at the start when the page sets `text-align`', async () => {
+      // The Bootstrap theme shows no indicator.
+      configureTheme('material');
+
+      try {
+        const tabs = await fixture<IgcTabsComponent>(html`
+          <igc-tabs style="width: 600px; text-align: center">
+            <igc-tab label="One"></igc-tab>
+            <igc-tab label="Two" selected></igc-tab>
+          </igc-tabs>
+        `);
+        await elementUpdated(tabs);
+
+        // The transform moves the indicator to its tab from this position.
+        expect(getTabsDOM(tabs).indicator.offsetLeft).to.equal(0);
+      } finally {
+        configureTheme('bootstrap');
+        await nextFrame();
+      }
     });
 
     it('selected indicator align with the selected tab (RTL)', async () => {
@@ -402,6 +423,27 @@ describe('Tabs component', () => {
       expect(Math.abs(90 - widths[1])).to.equal(0);
       expect(Math.abs(90 - widths[2])).to.equal(0);
       expect(Math.abs(90 - widths[3])).to.equal(0);
+    });
+
+    it('gives every tab the same width when `alignment` is set to justify, whatever the labels', async () => {
+      const tabs = await fixture<IgcTabsComponent>(html`
+        <igc-tabs alignment="justify" style="width: 600px">
+          <igc-tab label="A">Content 1</igc-tab>
+          <igc-tab label="A longer label">Content 2</igc-tab>
+          <igc-tab label="Mid">Content 3</igc-tab>
+          <igc-tab label="An even longer tab label">Content 4</igc-tab>
+        </igc-tabs>
+      `);
+      await elementUpdated(tabs);
+
+      const expectedWidth =
+        getTabsDOM(tabs).container.offsetWidth / tabs.tabs.length;
+
+      for (const tab of tabs.tabs) {
+        expect(
+          getTabDOM(tab).header.getBoundingClientRect().width
+        ).to.be.closeTo(expectedWidth, 1);
+      }
     });
 
     it('aligns tab headers properly when `alignment` is set to center', async () => {
@@ -573,6 +615,58 @@ describe('Tabs component', () => {
       const tab = document.createElement(IgcTabComponent.tagName);
       tab.label = 'New tab';
       element.append(tab);
+
+      await elementUpdated(tab);
+      await elementUpdated(element);
+
+      verifySelection(element, tab);
+    });
+
+    it('selects an added selected tab when the active tab is deselected at the same time', async () => {
+      const tab = document.createElement(IgcTabComponent.tagName);
+      tab.label = 'New tab';
+      tab.selected = true;
+
+      // A declarative render moves `selected` to the new tab in one task.
+      element.tabs[0].selected = false;
+      element.append(tab);
+
+      await elementUpdated(tab);
+      await elementUpdated(element);
+
+      verifySelection(element, tab);
+    });
+
+    it('selects the selected tab of new markup', async () => {
+      element.innerHTML = `
+        <igc-tab label="New 1">Content 1</igc-tab>
+        <igc-tab label="New 2" selected>Content 2</igc-tab>
+      `;
+      const [, selected] = element.tabs;
+
+      await elementUpdated(selected);
+      await elementUpdated(element);
+
+      verifySelection(element, selected);
+    });
+
+    it('keeps the selection when the selected tab moves', async () => {
+      const active = element.tabs[0];
+
+      element.append(active);
+      await elementUpdated(element);
+
+      verifySelection(element, active);
+    });
+
+    it('selects the last tab in document order when several tabs become selected at once', async () => {
+      const tab = document.createElement(IgcTabComponent.tagName);
+      element.append(tab);
+      await elementUpdated(tab);
+      await elementUpdated(element);
+
+      tab.selected = true;
+      element.tabs[1].selected = true;
 
       await elementUpdated(tab);
       await elementUpdated(element);
@@ -857,6 +951,168 @@ describe('Tabs component', () => {
       );
     });
 
+    it('scrolls a tab selected through its `selected` property into view', async () => {
+      element.style.width = '400px';
+      await elementUpdated(element);
+
+      const { container } = getTabsDOM(element);
+      const tab = lastOf(element.tabs)!;
+      const header = getTabDOM(tab).header;
+
+      expect(
+        isInView(container, header),
+        'The last tab is in view to begin with'
+      ).to.be.false;
+
+      // Selection driven by the DOM, the way a framework binding applies it.
+      tab.selected = true;
+      await elementUpdated(element);
+
+      await waitUntil(
+        () => isInView(container, header),
+        'The programmatically selected tab was not scrolled into view'
+      );
+      expect(getTabsDOM(element).selected).to.deep.equal([tab]);
+    });
+
+    it('scrolls a tab added as selected into view', async () => {
+      element.style.width = '400px';
+      await elementUpdated(element);
+
+      const { container } = getTabsDOM(element);
+      const tab = document.createElement(IgcTabComponent.tagName);
+      tab.label = 'Added';
+      tab.selected = true;
+
+      element.append(tab);
+      await elementUpdated(element);
+
+      await waitUntil(
+        () => isInView(container, getTabDOM(tab).header),
+        'The added selected tab was not scrolled into view'
+      );
+      expect(getTabsDOM(element).selected).to.deep.equal([tab]);
+    });
+
+    it('scrolls an added selected tab into view when it is the one that makes the strip overflow', async () => {
+      // Four tabs fit, the fifth one brings in the scroll buttons.
+      const tabs = await fixture<IgcTabsComponent>(html`
+        <igc-tabs style="width: 400px">
+          ${Array.from(range(1, 5)).map(
+            (idx) =>
+              html`<igc-tab .label=${`Tab ${idx}`}>Content ${idx}</igc-tab>`
+          )}
+        </igc-tabs>
+      `);
+      const { container } = getTabsDOM(tabs);
+
+      expect(
+        tabs.renderRoot.querySelector('[part="end-scroll-button"]'),
+        'The strip overflows to begin with'
+      ).to.be.null;
+
+      const tab = document.createElement(IgcTabComponent.tagName);
+      tab.label = 'Added';
+      tab.selected = true;
+
+      tabs.append(tab);
+      await elementUpdated(tabs);
+
+      await waitUntil(
+        () =>
+          tabs.renderRoot.querySelector('[part="end-scroll-button"]') !== null,
+        'The scroll buttons did not appear'
+      );
+      await waitUntil(
+        () => isInView(container, getTabDOM(tab).header),
+        'The added selected tab was not scrolled into view'
+      );
+    });
+
+    it('hides the scroll buttons when removing a tab makes the strip fit again', async () => {
+      // Four tabs fit in 400px, the fifth one brings in the scroll buttons.
+      const tabs = await fixture<IgcTabsComponent>(html`
+        <igc-tabs style="width: 400px">
+          ${Array.from(range(1, 6)).map(
+            (idx) =>
+              html`<igc-tab .label=${`Tab ${idx}`}>Content ${idx}</igc-tab>`
+          )}
+        </igc-tabs>
+      `);
+      const endButton = () =>
+        tabs.renderRoot.querySelector('[part="end-scroll-button"]');
+
+      await waitUntil(
+        () => endButton() !== null,
+        'The strip does not overflow'
+      );
+
+      lastOf(tabs.tabs)!.remove();
+      await elementUpdated(tabs);
+
+      await waitUntil(
+        () => endButton() === null,
+        'The scroll buttons stayed after the tabs fit again'
+      );
+    });
+
+    it('does not scroll the page when a selected tab is out of view', async () => {
+      // Push the tabs below the fold so that a document scroll would be observable.
+      const wrapper = await fixture<HTMLElement>(html`
+        <div>
+          <div style="height: 300vh"></div>
+          <igc-tabs style="width: 400px">
+            ${Array.from(range(1, 19)).map(
+              (idx) =>
+                html`<igc-tab .label=${`Item ${idx}`}>Content ${idx}</igc-tab>`
+            )}
+          </igc-tabs>
+        </div>
+      `);
+      const tabs = wrapper.querySelector(IgcTabsComponent.tagName)!;
+      const { container } = getTabsDOM(tabs);
+
+      window.scrollTo(0, 0);
+      const target = lastOf(tabs.tabs)!;
+
+      target.selected = true;
+      await elementUpdated(tabs);
+      await waitUntil(
+        () => isInView(container, getTabDOM(target).header),
+        'The programmatically selected tab was not scrolled into view'
+      );
+
+      expect(window.scrollY, 'The page was scrolled').to.equal(0);
+    });
+
+    it('reveals a tab selected in the initial markup without scrolling the page', async () => {
+      // The tabs are below the fold and the last tab is selected from the start, which is
+      // the case where the initial scroll into view used to move the document.
+      const wrapper = await fixture<HTMLElement>(html`
+        <div>
+          <div style="height: 300vh"></div>
+          <igc-tabs style="width: 400px">
+            ${Array.from(range(1, 19)).map(
+              (idx) =>
+                html`<igc-tab .label=${`Item ${idx}`} ?selected=${idx === 18}
+                  >Content ${idx}</igc-tab
+                >`
+            )}
+          </igc-tabs>
+        </div>
+      `);
+      const tabs = wrapper.querySelector(IgcTabsComponent.tagName)!;
+      const { container } = getTabsDOM(tabs);
+      const target = lastOf(tabs.tabs)!;
+
+      await waitUntil(
+        () => isInView(container, getTabDOM(target).header),
+        'The initially selected tab was not scrolled into view'
+      );
+      expect(getTabsDOM(tabs).selected).to.deep.equal([target]);
+      expect(window.scrollY, 'The page was scrolled').to.equal(0);
+    });
+
     it('scrolls the previous out of view tab into view', async () => {
       element.style.width = '400px';
       await elementUpdated(element);
@@ -907,6 +1163,29 @@ describe('Tabs component', () => {
         isInView(container, next),
         'Scrolled further than the first out of view tab'
       ).to.be.false;
+    });
+
+    it('skips the layout work when it leaves the DOM during a selection', async () => {
+      const { indicator } = getTabsDOM(element);
+      const parent = element.parentElement!;
+      const transform = indicator.style.transform;
+      const target = element.tabs[4];
+
+      element.select(target);
+      element.remove();
+      await nextFrame();
+      await nextFrame();
+
+      expect(target.selected).to.be.true;
+      expect(indicator.style.transform).to.equal(transform);
+
+      parent.append(element);
+      await waitUntil(
+        () =>
+          indicator.style.transform ===
+          `translateX(${getTabDOM(target).header.offsetLeft}px)`,
+        'The indicator did not follow the selection after re-attaching'
+      );
     });
 
     it('does not re-render when the scroll state is unchanged', async () => {
@@ -1063,6 +1342,72 @@ describe('Tabs component', () => {
 
       verifySelection(tabs, lastOf(tabs.tabs));
       verifySelection(nestedTabs, firstOf(nestedTabs.tabs));
+    });
+  });
+
+  describe('issue-2416', () => {
+    let tabs: IgcTabsComponent;
+    const reasons: unknown[] = [];
+
+    const onRejection = (event: PromiseRejectionEvent) => {
+      event.preventDefault();
+      reasons.push(event.reason);
+    };
+
+    beforeEach(() => {
+      reasons.length = 0;
+      window.addEventListener('unhandledrejection', onRejection);
+
+      tabs = document.createElement(IgcTabsComponent.tagName);
+
+      for (const label of ['One', 'Two']) {
+        const tab = document.createElement(IgcTabComponent.tagName);
+        tab.label = label;
+        tabs.append(tab);
+      }
+    });
+
+    afterEach(() => {
+      window.removeEventListener('unhandledrejection', onRejection);
+      tabs.remove();
+    });
+
+    const removals: Record<string, () => unknown> = {
+      'in the same task': () => tabs.remove(),
+      'after a microtask': () => Promise.resolve().then(() => tabs.remove()),
+      'after its first update': () =>
+        tabs.updateComplete.then(() => tabs.remove()),
+    };
+
+    for (const [when, remove] of Object.entries(removals)) {
+      it(`does not throw when removed ${when}`, async () => {
+        document.body.append(tabs);
+        await remove();
+        await nextFrame();
+        await nextFrame();
+
+        expect(reasons).to.be.empty;
+      });
+    }
+
+    it('follows resizes when added back after an early removal', async () => {
+      document.body.append(tabs);
+      tabs.remove();
+      await nextFrame();
+
+      document.body.append(tabs);
+      await elementUpdated(tabs);
+
+      const { container } = getTabsDOM(tabs);
+      const width = () => container.style.getPropertyValue('--_ig-tabs-width');
+
+      tabs.style.width = '200px';
+
+      await waitUntil(
+        () => width() === `${container.getBoundingClientRect().width}px`,
+        'The layout did not follow the resize'
+      );
+      expect(reasons).to.be.empty;
     });
   });
 });

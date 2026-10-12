@@ -5,7 +5,7 @@
 $theme: $indigo;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $theme));
+    @include css-vars-from-theme(dark-overrides(light.$indigo, $theme));
 }
 
 :host([variant='warning']) [part~='base'] {

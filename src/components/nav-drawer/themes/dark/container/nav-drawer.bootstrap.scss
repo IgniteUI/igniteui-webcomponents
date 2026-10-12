@@ -5,6 +5,6 @@
 $theme: $bootstrap;
 
 :host {
-    @include css-vars-from-theme(diff($base, $theme));
-    @include css-vars-from-theme(diff(light.$base-overlay, $bootstrap-overlay));
+    @include css-vars-from-theme(dark-overrides(light.$bootstrap, $theme, $base, light.$base));
+    @include css-vars-from-theme(dark-overrides(light.$overlay-bootstrap, $bootstrap-overlay));
 }

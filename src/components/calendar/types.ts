@@ -20,6 +20,11 @@ export interface DateRangeDescriptor {
    * {@link DateRangeType.Weekdays} and {@link DateRangeType.Weekends}.
    */
   dateRange?: Date[];
+  /**
+   * What the dates mean, for example `'Free delivery'`. The calendar adds the label
+   * to the accessible name of each matching date, so assistive technologies announce it.
+   */
+  label?: string;
 }
 
 export type WeekDays =

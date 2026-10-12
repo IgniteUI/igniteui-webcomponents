@@ -1,7 +1,6 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
 @use '../../vars' as *;
-@use '../../animations' as *;
 
 $theme: $material;
 
@@ -39,7 +38,6 @@ $theme: $material;
     }
 }
 
-// Generate styles for each variant
 @each $part, $color-key in (
     'primary': 'fill-color-default',
     'danger': 'fill-color-danger',

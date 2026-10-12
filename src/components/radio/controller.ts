@@ -6,13 +6,11 @@ import { getRoot } from '#internals/utils/dom.js';
 import type IgcRadioComponent from './radio.js';
 
 /**
- * All connected radios that have a name, grouped by form owner and name - the
- * identity of a radio group. Radios without a form owner group by root node,
- * the way the native ones do.
+ * Connected radios, grouped by form owner (or root node, as native radios do)
+ * and name.
  *
- * The group-wide state is whether the group holds a reachable selection:
- * a disabled radio is out of the tab order, so a selection that it holds must
- * not take the tab stop from the radios that the user can still reach.
+ * The group state is true when an enabled radio is checked. A disabled radio is
+ * out of the tab order, so its selection must not take the tab stop.
  */
 const radioGroups = createGroupRegistry<IgcRadioComponent, boolean>({
   keyOf: (radio) => radio.name || '',

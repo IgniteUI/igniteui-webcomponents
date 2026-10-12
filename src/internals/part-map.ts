@@ -24,7 +24,7 @@ class PartMapDirective extends Directive {
       (partInfo.strings?.length as number) > 0
     ) {
       throw new Error(
-        '`partMap() can only be used in the `part` attribute and must be the only part in the attribute.'
+        'partMap() can only be used in the `part` attribute, and must be the only binding in it.'
       );
     }
   }
@@ -74,8 +74,10 @@ class PartMapDirective extends Directive {
 }
 
 /**
- * Similar to Lit's {@link https://lit.dev/docs/templates/directives/#classmap | `classMap`} and
- * {@link https://lit.dev/docs/templates/directives/#stylemap | `styleMap`} but for `part` attributes.
+ * Sets the `part` attribute of an element from a map of part names, like the
+ * Lit {@link https://lit.dev/docs/templates/directives/#classmap | `classMap`}
+ * and {@link https://lit.dev/docs/templates/directives/#stylemap | `styleMap`}
+ * directives.
  */
 export const partMap = directive(PartMapDirective);
 export type { PartMapDirective };

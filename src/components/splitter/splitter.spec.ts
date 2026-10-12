@@ -5,6 +5,7 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { resetMouse, sendMouse } from '@web/test-runner-commands';
 import { spy } from 'sinon';
 import {
   arrowDown,
@@ -65,26 +66,18 @@ describe('Splitter', () => {
 
       const bar = getSplitterPart(splitter, BAR_PART);
       expect(bar.getAttribute('role')).to.equal('separator');
-
-      // The name states what the separator does; the collapsed/expanded state
-      // is a description, so the name does not change as panes collapse.
-      const label = splitter.shadowRoot!.querySelector('#splitter-label')!;
-      const state = splitter.shadowRoot!.querySelector('#splitter-state')!;
-
-      expect(bar.getAttribute('aria-labelledby')).to.equal('splitter-label');
-      expect(bar.getAttribute('aria-describedby')).to.equal('splitter-state');
-      expect(label.textContent?.trim()).to.equal('Resize panes');
-      expect(state.textContent).to.contain('Start pane expanded');
-
+      expect(bar.getAttribute('aria-label')).to.equal('Resize panes');
+      expect(bar.hasAttribute('aria-describedby')).to.be.false;
       expect(bar.getAttribute('aria-valuetext')).to.equal(
         `${bar.getAttribute('aria-valuenow')}%`
       );
 
+      // The value tells a collapsed pane.
       splitter.toggle('start');
       await elementUpdated(splitter);
 
-      expect(label.textContent?.trim()).to.equal('Resize panes');
-      expect(state.textContent).to.contain('Start pane collapsed');
+      expect(bar.getAttribute('aria-label')).to.equal('Resize panes');
+      expect(bar.getAttribute('aria-valuetext')).to.equal('0%');
     });
 
     it('should render both panes with equal sizes if no explicit sizes set', async () => {
@@ -336,6 +329,75 @@ describe('Splitter', () => {
 
       expect(splitter.startSize).to.equal('auto');
       expect(splitter.endSize).to.equal('auto');
+    });
+  });
+
+  describe('Host ARIA', () => {
+    it('names the bar through the host `aria-label`, and follows a change and a removal', async () => {
+      const bar = getSplitterPart(splitter, BAR_PART);
+
+      splitter.setAttribute('aria-label', 'Resize the file list');
+      await elementUpdated(splitter);
+      expect(bar.getAttribute('aria-label')).to.equal('Resize the file list');
+      await expect(splitter).to.be.accessible();
+
+      splitter.setAttribute('aria-label', 'Resize the terminal');
+      await elementUpdated(splitter);
+      expect(bar.getAttribute('aria-label')).to.equal('Resize the terminal');
+
+      splitter.removeAttribute('aria-label');
+      await elementUpdated(splitter);
+      expect(bar.getAttribute('aria-label')).to.equal('Resize panes');
+    });
+
+    it('names the bar through the host `aria-labelledby` before `aria-label`', async () => {
+      const container = await fixture<HTMLElement>(html`
+        <div>
+          <span id="files-label">Resize the file list</span>
+          <igc-splitter aria-labelledby="files-label" aria-label="Ignored">
+            <div slot="start">Files</div>
+            <div slot="end">Editor</div>
+          </igc-splitter>
+        </div>
+      `);
+      const host = container.querySelector(IgcSplitterComponent.tagName)!;
+      await elementUpdated(host);
+      const bar = getSplitterPart(host, BAR_PART);
+
+      expect(bar.ariaLabelledByElements).to.eql([
+        container.querySelector('#files-label'),
+      ]);
+      expect(bar.hasAttribute('aria-label')).to.be.false;
+      await expect(container).to.be.accessible();
+
+      host.removeAttribute('aria-labelledby');
+      await elementUpdated(host);
+      expect(bar.ariaLabelledByElements ?? []).to.be.empty;
+      expect(bar.getAttribute('aria-label')).to.equal('Ignored');
+    });
+
+    it('describes the bar through the host `aria-describedby`', async () => {
+      const container = await fixture<HTMLElement>(html`
+        <div>
+          <p id="layout-hint">Ctrl and an arrow key collapse a pane.</p>
+          <igc-splitter aria-describedby="layout-hint">
+            <div slot="start">Files</div>
+            <div slot="end">Editor</div>
+          </igc-splitter>
+        </div>
+      `);
+      const host = container.querySelector(IgcSplitterComponent.tagName)!;
+      await elementUpdated(host);
+      const bar = getSplitterPart(host, BAR_PART);
+
+      expect(bar.ariaDescribedByElements).to.eql([
+        container.querySelector('#layout-hint'),
+      ]);
+
+      host.removeAttribute('aria-describedby');
+      await elementUpdated(host);
+      expect(bar.ariaDescribedByElements ?? []).to.be.empty;
+      expect(bar.hasAttribute('aria-describedby')).to.be.false;
     });
   });
 
@@ -1112,7 +1174,6 @@ describe('Splitter', () => {
       }
 
       let currentSizes = getPanesSizes(splitter, 'width');
-      // should stop at minSize (100px)
       expect(currentSizes.startSize).to.be.closeTo(100, 1);
 
       splitter.startSize = '250px';
@@ -1125,8 +1186,7 @@ describe('Splitter', () => {
       }
 
       currentSizes = getPanesSizes(splitter, 'width');
-      // should stop exactly at maxSize (400px) - the pane sizes now sum to the
-      // available space, so flex-shrink no longer eats into the constraint
+      // flex-shrink does not reduce the max size.
       expect(currentSizes.startSize).to.be.closeTo(400, 2);
 
       splitter.orientation = 'vertical';
@@ -1301,8 +1361,8 @@ describe('Splitter', () => {
       simulateKeyboard(bar, homeKey);
       await elementUpdated(splitter);
 
-      // Home/End go through the same pipeline as a drag, so the resulting unit
-      // follows the pane it is applied to - both were `auto`, hence percentages.
+      // Home/End use the drag path. Both panes were `auto`, so the result is
+      // a percentage.
       const minPercent = roundPrecise(asPercent(100, containerSize), 2);
       expect(splitter.startSize).to.equal(`${minPercent}%`);
       expect(splitter.endSize).to.equal(
@@ -1612,7 +1672,6 @@ describe('Splitter', () => {
       // Splitter bar is still visible but non-interactive
       expect(bar).to.exist;
       expect(bar.hidden).to.be.false;
-      // Bar handle is hidden
       const barHandle = getSplitterPart(splitter, DRAG_HANDLE_PART);
       expect(barHandle).to.exist;
       expect(barHandle.hidden).to.be.true;
@@ -1777,6 +1836,65 @@ describe('Splitter', () => {
   });
 
   describe('Resizing with constraints', () => {
+    it('reads no computed style during a drag and reports the dragged size', async () => {
+      const splitter = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          startSize: '200px',
+          startMinSize: '5rem',
+          startMaxSize: '20rem',
+          endSize: '200px',
+        })
+      );
+      await elementUpdated(splitter);
+
+      const bar = getSplitterPart(splitter, BAR_PART);
+      const { left, top } = bar.getBoundingClientRect();
+      const percent = (size: number) =>
+        roundPrecise(asPercent(size, getContainerSize(splitter, 'width')), 0);
+
+      simulatePointerDown(bar, { clientX: left, clientY: top, pointerId: 1 });
+      await elementUpdated(splitter);
+
+      const computedStyle = spy(window, 'getComputedStyle');
+
+      try {
+        simulatePointerMove(
+          bar,
+          { clientX: left, clientY: top, pointerId: 1 },
+          { x: 50, y: 0 }
+        );
+        await elementUpdated(splitter);
+
+        expect(computedStyle.callCount).to.equal(0);
+      } finally {
+        computedStyle.restore();
+      }
+
+      const { startSize } = getPanesSizes(splitter, 'width');
+
+      expect(startSize).to.equal(250);
+      expect(bar.getAttribute('aria-valuenow')).to.equal(
+        percent(startSize).toString()
+      );
+      expect(bar.getAttribute('aria-valuemin')).to.equal(
+        percent(80).toString()
+      );
+      expect(bar.getAttribute('aria-valuemax')).to.equal(
+        percent(320).toString()
+      );
+
+      simulatePointerUp(bar, {
+        clientX: left + 50,
+        clientY: top,
+        pointerId: 1,
+      });
+      await elementUpdated(splitter);
+
+      expect(bar.getAttribute('aria-valuenow')).to.equal(
+        percent(getPanesSizes(splitter, 'width').startSize).toString()
+      );
+    });
+
     const testMinMaxConstraintsPx = async (
       orientation: SplitterOrientation
     ) => {
@@ -1903,7 +2021,6 @@ describe('Splitter', () => {
       const initialCombinedSize = initialSizes.startSize + initialSizes.endSize;
 
       // Try to grow start pane to max, but end pane has min (150px)
-      // Result: Start pane can only grow as much as end pane allows
       const delta = 1000;
       await resize(constraintSplitter, isX ? delta : 0, isX ? 0 : delta);
 
@@ -1947,7 +2064,6 @@ describe('Splitter', () => {
       const initialCombinedSize = initialSizes.startSize + initialSizes.endSize;
 
       // Try to grow start pane to max (80%), but end pane has min (30%)
-      // Result: Start pane can only grow as much as end pane allows
       const delta = 1000;
       await resize(constraintSplitter, isX ? delta : 0, isX ? 0 : delta);
 
@@ -1995,8 +2111,8 @@ describe('Splitter', () => {
       const isX = orientation === 'horizontal';
       const axis = isX ? 'width' : 'height';
       const totalAvailable = getTotalSize(mixedConstraintSplitter, axis);
-      // `max-width: 50%` resolves against the container in CSS, and the drag
-      // math now uses that same basis.
+      // CSS resolves `max-width: 50%` against the container, and so does the
+      // drag math.
       const expectedStartMax = Math.round(
         (getContainerSize(mixedConstraintSplitter, axis) * 50) / 100
       );
@@ -2052,7 +2168,6 @@ describe('Splitter', () => {
       const initialCombinedSize = initialSizes.startSize + initialSizes.endSize;
 
       // Try to grow start pane to max, but end pane has min (150px)
-      // Result: Start pane can only grow as much as end pane allows
       const delta = 1000;
       await resize(constraintSplitter, isX ? delta : 0, isX ? 0 : delta);
 
@@ -2094,7 +2209,6 @@ describe('Splitter', () => {
       const initialCombinedSize = initialSizes.startSize + initialSizes.endSize;
 
       // Try to grow start pane to max (80%), but end pane has min (30%)
-      // Result: Start pane can only grow as much as end pane allows
       const delta = 1000;
       await resize(constraintSplitter, isX ? delta : 0, isX ? 0 : delta);
 
@@ -2412,7 +2526,7 @@ describe('Splitter', () => {
       const initialSizes = getPanesSizes(splitter, 'width');
       const initialTotal = getTotalSize(splitter, 'width');
 
-      // increase tolerance to 3px to account for rounding differences in percentage calculations across browsers
+      // 3px tolerance for cross-browser rounding of percentages
       expect(initialSizes.startSize).to.be.closeTo(initialTotal * 0.25, 3);
       expect(initialSizes.endSize).to.be.closeTo(initialTotal * 0.5, 3);
 
@@ -2505,7 +2619,7 @@ describe('Splitter', () => {
       bar.focus();
       await elementUpdated(splitter);
 
-      // arrowLeft should increase start pane size in RTL, as opposed to LTR, where arrowLeft decreases it
+      // In RTL, arrowLeft increases the start pane size
       simulateKeyboard(bar, arrowLeft);
       await elementUpdated(splitter);
 
@@ -3032,8 +3146,8 @@ describe('Splitter', () => {
 
       expect(splitter.startSize).to.equal('300px');
 
-      // The stale snapshot is dropped wholesale - keeping the end pane's share
-      // would over-subscribe the container and shrink both panes.
+      // Both saved sizes are dropped, or the end pane over-subscribes the
+      // container.
       const sizes = getPanesSizes(splitter, 'width');
       expect(sizes.startSize).to.equal(300);
       expect(sizes.startSize + sizes.endSize).to.equal(
@@ -3228,6 +3342,137 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
 
       expect(getPanesSizes(splitter, 'width')).to.deep.equal(sizes);
+    });
+  });
+
+  describe('Interaction guards', () => {
+    afterEach(async () => {
+      await resetMouse();
+    });
+
+    it('should ignore a pointerdown with a non-primary button', async () => {
+      const previousSizes = getPanesSizes(splitter, 'width');
+      const eventSpy = spy(splitter, 'emitEvent');
+      const bar = getSplitterPart(splitter, BAR_PART);
+      const barRect = bar.getBoundingClientRect();
+
+      simulatePointerDown(bar, {
+        button: 2,
+        clientX: barRect.left,
+        clientY: barRect.top,
+      });
+      simulatePointerMove(
+        bar,
+        { clientX: barRect.left, clientY: barRect.top },
+        { x: 100, y: 0 }
+      );
+      await elementUpdated(splitter);
+
+      expect(eventSpy.calledWith('igcResizeStart')).to.be.false;
+      expect(eventSpy.calledWith('igcResizing')).to.be.false;
+      expect(getPanesSizes(splitter, 'width')).to.deep.equal(previousSizes);
+    });
+
+    it('should ignore a second pointer while a drag is in progress', async () => {
+      const previousSizes = getPanesSizes(splitter, 'width');
+      const eventSpy = spy(splitter, 'emitEvent');
+      const bar = getSplitterPart(splitter, BAR_PART);
+      const barRect = bar.getBoundingClientRect();
+      const origin = { clientX: barRect.left, clientY: barRect.top };
+
+      simulatePointerDown(bar, { ...origin, pointerId: 1 });
+      simulatePointerDown(bar, { ...origin, pointerId: 2 });
+      await elementUpdated(splitter);
+
+      expect(getResizeDetails(eventSpy, 'igcResizeStart')).to.have.lengthOf(1);
+
+      // The second pointer does not drive the drag.
+      simulatePointerMove(bar, { ...origin, pointerId: 2 }, { x: 50, y: 0 });
+      await elementUpdated(splitter);
+
+      expect(getPanesSizes(splitter, 'width')).to.deep.equal(previousSizes);
+
+      simulatePointerMove(bar, { ...origin, pointerId: 1 }, { x: 50, y: 0 });
+      simulatePointerUp(bar, {
+        clientX: origin.clientX + 50,
+        clientY: origin.clientY,
+        pointerId: 1,
+      });
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      expect(getPanesSizes(splitter, 'width').startSize).to.be.closeTo(
+        previousSizes.startSize + 50,
+        1
+      );
+      expect(getResizeDetails(eventSpy, 'igcResizeEnd')).to.have.lengthOf(1);
+    });
+
+    it('should capture the pointer for a real drag and release it at the end', async () => {
+      const previousSizes = getPanesSizes(splitter, 'width');
+      const eventSpy = spy(splitter, 'emitEvent');
+      const bar = getSplitterPart(splitter, BAR_PART);
+      const barRect = bar.getBoundingClientRect();
+      const x = Math.round(barRect.left + barRect.width / 2);
+      const y = Math.round(barRect.top + barRect.height / 2);
+
+      let pointerId = -1;
+      bar.addEventListener('pointerdown', (e) => (pointerId = e.pointerId), {
+        once: true,
+      });
+
+      await sendMouse({ type: 'move', position: [x, y] });
+      await sendMouse({ type: 'down' });
+      await elementUpdated(splitter);
+
+      expect(bar.hasPointerCapture(pointerId)).to.be.true;
+
+      await sendMouse({ type: 'move', position: [x + 60, y] });
+      await sendMouse({ type: 'up' });
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      expect(bar.hasPointerCapture(pointerId)).to.be.false;
+      expect(getResizeDetails(eventSpy, 'igcResizeEnd')).to.have.lengthOf(1);
+      expect(getPanesSizes(splitter, 'width').startSize).to.be.closeTo(
+        previousSizes.startSize + 60,
+        1
+      );
+    });
+
+    it('should ignore Home/End while resizing is disabled', async () => {
+      splitter.disableResize = true;
+      await elementUpdated(splitter);
+
+      const previousSizes = getPanesSizes(splitter, 'width');
+      const eventSpy = spy(splitter, 'emitEvent');
+      const bar = getSplitterPart(splitter, BAR_PART);
+      bar.focus();
+
+      simulateKeyboard(bar, homeKey);
+      simulateKeyboard(bar, endKey);
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      expect(eventSpy.calledWith('igcResizeStart')).to.be.false;
+      expect(getPanesSizes(splitter, 'width')).to.deep.equal(previousSizes);
+    });
+
+    it('should report a zero ARIA value for a container without size', async () => {
+      const empty = await fixture<IgcSplitterComponent>(html`
+        <igc-splitter style="width: 0; height: 0; overflow: hidden">
+          <div slot="start">Pane 1</div>
+          <div slot="end">Pane 2</div>
+        </igc-splitter>
+      `);
+      empty.startMinSize = '10%';
+      await elementUpdated(empty);
+
+      const bar = getSplitterPart(empty, BAR_PART);
+
+      expect(bar.ariaValueNow).to.equal('0');
+      expect(bar.ariaValueText).to.equal('0%');
+      expect(bar.ariaValueMin).to.equal('0');
     });
   });
 
@@ -3465,7 +3710,6 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
 
       const currentSizes = getPanesSizes(splitter, 'width');
-      // start pane should not go below its minSize of 600px
       expect(currentSizes.startSize).to.equal(600);
       expect(currentSizes.endSize).to.equal(
         getTotalSize(splitter, 'width') - 600

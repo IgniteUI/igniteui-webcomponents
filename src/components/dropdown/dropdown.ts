@@ -1,5 +1,14 @@
-import { html, type PropertyValues } from 'lit';
+import { html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
+import {
+  getActiveItems,
+  getItems,
+  getNextActiveItem,
+  getPreviousActiveItem,
+  IgcComboBoxBaseLikeComponent,
+  setInitialSelectionState,
+} from '#internals/bases/combo-box.js';
+import { ariaBindings } from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
   arrowDown,
@@ -18,34 +27,28 @@ import {
   createMutationController,
   type MutationControllerParams,
 } from '#internals/controllers/mutation-observer.js';
-import { addRootClickController } from '#internals/controllers/root-click.js';
-import { addRootScrollHandler } from '#internals/controllers/root-scroll.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import {
-  getActiveItems,
-  getItems,
-  getNextActiveItem,
-  getPreviousActiveItem,
-  IgcComboBoxBaseLikeComponent,
-  setInitialSelectionState,
-} from '#internals/mixins/combo-box.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { isEmpty } from '#internals/utils/arrays.js';
-import { getElementByIdFromRoot } from '#internals/utils/dom.js';
+import {
+  getElementByIdFromRoot,
+  setOrRemoveAttribute,
+} from '#internals/utils/dom.js';
 import { getElementFromPath } from '#internals/utils/events.js';
+import { moveFlag } from '#internals/utils/objects.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { isString } from '#internals/utils/types.js';
+import { all } from '#themes/dropdown/themes/container.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
-import type { PopoverScrollStrategy } from '../types.js';
 import IgcDropdownGroupComponent from './dropdown-group.js';
 import IgcDropdownHeaderComponent from './dropdown-header.js';
 import IgcDropdownItemComponent from './dropdown-item.js';
-import { all } from './themes/container.js';
 import { styles } from './themes/dropdown.base.css.js';
 import { styles as shared } from './themes/shared/dropdown.common.css.js';
 
@@ -67,7 +70,7 @@ const nextItemId = createIdGenerator('igc-dropdown-item');
  * @fires igcChange - Emitted when the selected item changes.
  * @fires igcOpening - Emitted just before the dropdown is opened.
  * @fires igcOpened - Emitted after the dropdown is opened.
- * @fires igcClosing - Emitter just before the dropdown is closed.
+ * @fires igcClosing - Emitted just before the dropdown is closed.
  * @fires igcClosed - Emitted after closing the dropdown.
  *
  * @slot target - Renders the dropdown's target element.
@@ -84,7 +87,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   AbstractConstructor<IgcComboBoxBaseLikeComponent>
 >(IgcComboBoxBaseLikeComponent) {
   public static readonly tagName = 'igc-dropdown';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -100,17 +103,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   //#region Internal state
 
   private readonly _keyBindings: KeyBindingController;
-
-  private readonly _rootScrollController = addRootScrollHandler(this, {
-    hideCallback: this._handleClosing,
-  });
-
-  protected override readonly _rootClickController = addRootClickController(
-    this,
-    {
-      onHide: this._handleClosing,
-    }
-  );
 
   private _selectedItem: IgcDropdownItemComponent | null = null;
 
@@ -129,7 +121,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   @query('slot[name="target"]')
   private readonly _targetSlot!: HTMLSlotElement | null;
 
-  /** The element currently assigned to the `target` slot, if any. */
   private get _slottedTarget(): HTMLElement | undefined {
     const [target] =
       this._targetSlot?.assignedElements({ flatten: true }) ?? [];
@@ -154,13 +145,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
    */
   @property()
   public placement: PopoverPlacement = 'bottom-start';
-
-  /**
-   * Determines the behavior of the component during scrolling of the parent container.
-   * @attr scroll-strategy
-   */
-  @property({ attribute: 'scroll-strategy' })
-  public scrollStrategy: PopoverScrollStrategy = 'scroll';
 
   /**
    * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
@@ -252,23 +236,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     super.disconnectedCallback();
   }
 
-  protected override willUpdate(properties: PropertyValues<this>): void {
-    if (!this.hasUpdated) {
-      return;
-    }
-
-    const openChanged = properties.has('open');
-    const strategyChanged = properties.has('scrollStrategy');
-
-    if (openChanged || properties.has('keepOpenOnOutsideClick')) {
-      this._rootClickController.update();
-    }
-
-    if (openChanged || strategyChanged) {
-      this._rootScrollController.update({ resetListeners: strategyChanged });
-    }
-  }
-
   protected override async firstUpdated(): Promise<void> {
     await this.updateComplete;
     const selected = setInitialSelectionState(this.items);
@@ -287,9 +254,8 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   //#region Event handlers
 
   /**
-   * Re-resolves the selection whenever items enter or leave the light DOM -
-   * frameworks routinely render them after the initial paint, and a selected or
-   * navigated item may be taken out from under us.
+   * Resolves the selection again when items enter or leave the light DOM, for
+   * example after a late framework render.
    */
   private _handleItemsChange({
     changes: { added, removed },
@@ -301,7 +267,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     const items = this.items;
 
     if (this._selectedItem && !items.includes(this._selectedItem)) {
-      this._clearSelectedItem();
+      this._setSelectedItem(null);
     } else if (this._activeItem && !items.includes(this._activeItem)) {
       this._activateItem(this._selectedItem);
     }
@@ -321,10 +287,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     this._updateTarget();
 
     super._handleAnchorClick();
-  }
-
-  private _handleClosing(): void {
-    this._hide(true);
   }
 
   private _handleArrowUp(): void {
@@ -364,26 +326,14 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   }
 
   private _activateItem(item: IgcDropdownItemComponent | null): void {
-    if (this._activeItem && this._activeItem !== item) {
-      this._activeItem.active = false;
-    }
-
+    moveFlag(this._activeItem, item, 'active');
     this._activeItem = item;
-
-    if (item) {
-      item.active = true;
-    }
-
     this._syncAnchorARIA();
   }
 
-  private _setSelectedItem(item: IgcDropdownItemComponent): void {
-    if (this._selectedItem && this._selectedItem !== item) {
-      this._selectedItem.selected = false;
-    }
-
+  private _setSelectedItem(item: IgcDropdownItemComponent | null): void {
+    moveFlag(this._selectedItem, item, 'selected');
     this._selectedItem = item;
-    item.selected = true;
     this._activateItem(item);
   }
 
@@ -392,7 +342,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     emit = true
   ): IgcDropdownItemComponent | null {
     if (!item) {
-      this._clearSelectedItem();
+      this._setSelectedItem(null);
       return null;
     }
 
@@ -412,15 +362,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     }
 
     return this._selectedItem;
-  }
-
-  private _clearSelectedItem(): void {
-    if (this._selectedItem) {
-      this._selectedItem.selected = false;
-    }
-
-    this._selectedItem = null;
-    this._activateItem(null);
   }
 
   /** Highlights `item` and, while the list is open, brings it into view. */
@@ -447,8 +388,8 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   }
 
   /**
-   * Moves everything bound to the anchor - key event listeners, outside click
-   * exemption and ARIA - over to the one currently in effect.
+   * Moves all that is bound to the anchor to the current one: the key event
+   * listeners, the outside-click exemption and the ARIA state.
    */
   private _updateTarget(): void {
     const target = this._explicitTarget ?? this._slottedTarget;
@@ -466,8 +407,8 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   }
 
   /**
-   * Only an anchor outside of our own DOM needs listeners of its own - keyboard
-   * events on a slotted one already reach the host.
+   * Only an anchor outside this DOM needs its own listeners. A keyboard event
+   * on a slotted anchor already reaches the host.
    */
   private _observeTarget(): void {
     const target = this._target;
@@ -492,13 +433,9 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   }
 
   /**
-   * Publishes the popup state and the navigation position on the current anchor.
-   *
-   * `aria-activedescendant` goes on the anchor because that is what holds DOM
-   * focus - the list is never focused, since the key bindings are observed on
-   * the anchor itself. There is no `aria-controls` to go with it: the list it
-   * would name lives in this shadow root, which an IDREF cannot cross and ARIA
-   * element reflection only ever resolves out of, never into.
+   * Publishes the popup state and the navigation position on the anchor, which
+   * holds focus. There is no `aria-controls`: neither an IDREF nor element
+   * reflection can reach into this shadow root.
    */
   private _syncAnchorARIA(): void {
     const anchor = this._target;
@@ -513,17 +450,14 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     anchor.setAttribute('aria-expanded', `${this.open}`);
 
     if (active) {
-      // Items only need an id if they have none of their own
       active.id ||= nextItemId();
-      anchor.setAttribute('aria-activedescendant', active.id);
-    } else {
-      anchor.removeAttribute('aria-activedescendant');
     }
+    setOrRemoveAttribute(anchor, 'aria-activedescendant', active?.id);
   }
 
   /**
-   * Stops driving the current anchor: its key event listeners go, along with
-   * everything {@link _syncAnchorARIA} wrote onto it.
+   * Releases the current anchor: removes its key event listeners and all that
+   * {@link _syncAnchorARIA} wrote onto it.
    */
   private _releaseTarget(): void {
     this._targetListeners?.unsubscribe();
@@ -546,8 +480,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     if (target) {
       this._setExplicitTarget(target);
 
-      // A target that resolves to nothing, with no anchor to fall back on,
-      // would open a list the popover cannot place - and so cannot show.
+      // The popover cannot place the list without an anchor.
       if (!this._target) {
         return false;
       }
@@ -574,11 +507,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   /** Navigates to the specified item. If it exists, returns the found item, otherwise - null. */
   public navigateTo(value: string | number): IgcDropdownItemComponent | null {
     const item = this._resolveItem(value);
-
-    if (item) {
-      this._navigateToActiveItem(item);
-    }
-
+    this._navigateToActiveItem(item);
     return item ?? null;
   }
 
@@ -597,14 +526,12 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
 
   /**  Clears the current selection of the dropdown. */
   public clearSelection(): void {
-    this._clearSelectedItem();
+    this._setSelectedItem(null);
   }
 
   //#endregion
 
   protected override render() {
-    const labelledBy = this._target ? [this._target] : null;
-
     return html`<igc-popover
       ?open=${this.open}
       ?flip=${this.flip}
@@ -612,7 +539,8 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
       .anchor=${this._target}
       .offset=${this.distance}
       .placement=${this.placement}
-      shift
+      .scrollStrategy=${this.scrollStrategy}
+      @igcPopoverScrollClose=${this._handleClosing}
     >
       <slot
         name="target"
@@ -625,7 +553,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
           id="dropdown-list"
           role="listbox"
           part="list"
-          .ariaLabelledByElements=${labelledBy}
+          ${ariaBindings({ labelledBy: this._target && [this._target] })}
         >
           <slot></slot>
         </div>

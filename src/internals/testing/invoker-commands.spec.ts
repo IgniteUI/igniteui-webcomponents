@@ -19,8 +19,8 @@ export interface InvokerCommandsTestConfig {
   /** Tag name of the component under test. Queried from the rendered fixture. */
   tagName: string;
   /**
-   * Fixture content — the component under test carrying an `id` equal to
-   * {@link InvokerCommandsTestConfig.commandFor}, plus any required children.
+   * The component with an `id` equal to
+   * {@link InvokerCommandsTestConfig.commandFor}, plus its required children.
    */
   template: TemplateResult;
   /** The id of the component instance the invoker button targets. */
@@ -28,10 +28,8 @@ export interface InvokerCommandsTestConfig {
 }
 
 /**
- * Shared test suite asserting that a component with `open`/`show()`/`hide()`
- * semantics integrates with the Invoker Commands API — an `igc-button` with
- * `command="--show" | "--hide" | "--toggle"` and `commandfor` pointing at the
- * component toggles it declaratively.
+ * Tests that an `igc-button` with `command` (`--show`, `--hide`, `--toggle`)
+ * and `commandfor` controls a component with `open`/`show()`/`hide()`.
  */
 export function runInvokerCommandsTests(
   config: InvokerCommandsTestConfig

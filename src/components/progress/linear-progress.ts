@@ -4,12 +4,13 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
+import { all } from '#themes/progress/themes/linear/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { LinearProgressLabelAlign } from '../types.js';
 import { IgcProgressBaseComponent } from './base.js';
 import { styles } from './themes/linear/linear.progress.base.css.js';
 import { styles as shared } from './themes/linear/shared/linear.progress.common.css.js';
-import { all } from './themes/linear/themes.js';
 
 /**
  * A linear progress indicator used to express unspecified wait time or display
@@ -33,7 +34,7 @@ import { all } from './themes/linear/themes.js';
  */
 export default class IgcLinearProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-linear-progress';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

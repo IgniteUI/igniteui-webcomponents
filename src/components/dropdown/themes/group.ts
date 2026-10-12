@@ -1,19 +1,13 @@
-import { css } from 'lit';
-
-import type { Themes } from '#theming/types.js';
+import type { ComponentThemes } from '#theming/types.js';
 // Shared Styles
 import { styles as fluent } from './shared/group/dropdown-group.fluent.css.js';
 
 const light = {
-  fluent: css`
-    ${fluent}
-  `,
+  fluent,
 };
 
 const dark = {
-  fluent: css`
-    ${fluent}
-  `,
+  fluent,
 };
 
-export const all: Themes = { light, dark };
+export const all: ComponentThemes = { light, dark };

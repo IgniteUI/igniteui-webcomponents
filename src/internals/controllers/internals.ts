@@ -3,44 +3,40 @@ import type {
   ReactiveController,
   ReactiveControllerHost,
 } from 'lit';
-import type { FormValueType } from '../mixins/forms/types.js';
+import { sameItems } from '../utils/arrays.js';
+import { setOrRemoveAttribute } from '../utils/dom.js';
 
-/** A subset of the ARIA attributes exposed through `ElementInternals`. */
-type ARIAState = { [K in keyof ARIAMixin]?: ARIAMixin[K] };
+/** The value types that `ElementInternals.setFormValue` accepts. */
+export type FormValueType = string | File | FormData | null;
 
-/** Configuration for the ElementInternalsController. */
-type ElementInternalsConfig<T extends keyof ARIAMixin = keyof ARIAMixin> = {
-  /** Initial ARIA attributes to set on the element internals. */
-  initialARIA?: Partial<Record<T, ARIAMixin[T]>>;
+/** A subset of the ARIA attributes that `ElementInternals` gives. */
+export type ARIAState = { [K in keyof ARIAMixin]?: ARIAMixin[K] };
+
+type ElementInternalsConfig = {
+  initialARIA?: ARIAState;
   /**
-   * ARIA attributes derived from host state, recomputed on every host update.
-   * Keep the projection cheap - it runs whether or not the properties it reads
-   * have changed.
+   * ARIA attributes derived from the host state. It runs on every host
+   * update, so keep it cheap; only changed values reach the internals.
    */
   aria?: () => ARIAState;
   /**
-   * Whether to also mirror the internals `role` to a `role` content attribute
-   * on the host element.
+   * Whether the controller also mirrors the internals `role` onto a `role`
+   * content attribute of the host element.
    *
-   * Workaround for axe, which reads content attributes only and does not see
-   * `ElementInternals` ARIA. An author-supplied `role` attribute always wins -
-   * the controller only writes the attribute when it is absent or was written
-   * by the controller itself.
+   * @remarks
+   * Workaround: axe reads content attributes only and does not see
+   * `ElementInternals` ARIA. A `role` attribute from the author always wins.
    */
   reflectRole?: boolean;
   /**
-   * Whether to also mirror the internals `ariaLabel` to an `aria-label`
-   * content attribute on the host element.
-   *
-   * Same workaround and ownership rules as {@link reflectRole}.
+   * Whether the controller also mirrors the internals `ariaLabel` onto an
+   * `aria-label` content attribute of the host element. Same rules as
+   * {@link reflectRole}.
    */
   reflectLabel?: boolean;
 };
 
-/**
- * Internals ARIA properties the controller can mirror onto host content
- * attributes, mapped to the attribute each one reflects to.
- */
+/** The mirrored internals ARIA properties and their content attributes. */
 const reflectable = {
   role: 'role',
   ariaLabel: 'aria-label',
@@ -48,85 +44,79 @@ const reflectable = {
 
 type ReflectableARIA = keyof typeof reflectable;
 
+/** Whether two ARIA values are equal. Element lists compare by their items. */
+function sameValue(a: unknown, b: unknown): boolean {
+  return Array.isArray(a) && Array.isArray(b) ? sameItems(a, b) : a === b;
+}
+
 /**
- * Internal registry resolving a host element to its internals controller.
- *
- * `attachInternals()` throws when called twice on the same element, so a host
- * maps to at most one controller.
+ * Resolves a host element to its internals controller. `attachInternals()`
+ * throws on a second call, so a host has one controller at most.
  */
 const registry = new WeakMap<Element, ElementInternalsController>();
 
 /**
- * A Lit ReactiveController to manage `ElementInternals` for a host element.
- * Provides methods to interact with custom element states and ARIA attributes..
+ * Manages the `ElementInternals` of a host element.
+ *
+ * @remarks
+ * The form-related members need a form associated host, that is, one with
+ * `static formAssociated = true`.
  */
 class ElementInternalsController implements ReactiveController {
   private readonly _host: ReactiveControllerHost & LitElement;
   private readonly _internals: ElementInternals;
   private readonly _aria?: () => ARIAState;
-  /**
-   * The internals ARIA properties mirrored onto host content attributes,
-   * each with the last attribute value this controller wrote for it.
-   */
-  private readonly _reflected = new Map<ReflectableARIA, string | null>();
+  /** Mirrored ARIA properties and the last written value; only with a `reflect*` option. */
+  private readonly _reflected?: Map<ReflectableARIA, string | null>;
 
   /**
-   * Gets the closest ancestor `<form>` element or `null`.
-   *
-   * @remarks
-   * The host element must be form associated, that is, it should have
-   * `static formAssociated = true` in order to return the parent form.
+   * The ARIA values this controller last wrote. Each write reaches the
+   * accessibility tree, so the controller writes only what changes.
    */
+  private _ariaState?: Map<keyof ARIAMixin, unknown>;
+
+  /** The last `setValidity` flags and message; a repeat skips the write. */
+  private _validity?: string;
+
+  /** Set during a host update, which reads the labels once. */
+  private _updating = false;
+  private _labels?: ReadonlyArray<Element> | null;
+
+  /** Returns the closest ancestor `<form>` element, or `null`. */
   public get form(): HTMLFormElement | null {
     return this._internals.form;
   }
 
-  /**
-   * Returns a `ValidityState` object which represents the different validity states
-   * the element can be in, with respect to constraint validation.
-   *
-   * @remarks
-   * The host element must be form associated, that is, it should have
-   * `static formAssociated = true`.
-   */
   public get validity(): ValidityState {
     return this._internals.validity;
   }
 
-  /**
-   * Returns a string containing the validation message of this element.
-   *
-   * @remarks
-   * The host element must be form associated, that is, it should have
-   * `static formAssociated = true`.
-   */
   public get validationMessage(): string {
     return this._internals.validationMessage;
   }
 
-  /**
-   * Returns a boolean value which returns true if the element is a submittable element
-   * which is a candidate for constraint validation.
-   *
-   * @remarks
-   * The host element must be form associated, that is, it should have
-   * `static formAssociated = true`.
-   */
+  /** Whether the element is submittable and constraint validated. */
   public get willValidate(): boolean {
     return this._internals.willValidate;
   }
 
-  /**
-   * Returns a read-only array of the `<label>` elements associated with the host element, or `null` if there are no associated labels.
-   * The association is determined by the `for` attribute of `<label>` elements or by nesting the host element inside a `<label>`.
-   *
-   * @remarks
-   * The host element must be form associated, that is, it should have
-   * `static formAssociated = true` in order to return associated labels.
-   */
+  /** Returns the `<label>` elements of the host, or `null` when it has none. */
   public get labels(): ReadonlyArray<Element> | null {
-    const labels = this._internals.labels as NodeListOf<Element> | null;
-    return labels && labels.length > 0 ? Array.from(labels) : null;
+    if (this._updating && this._labels !== undefined) {
+      return this._labels;
+    }
+
+    const host = this._host.constructor as { formAssociated?: boolean };
+    // The getter throws for an element that is not form associated.
+    const list = host.formAssociated ? this._internals.labels : null;
+    const labels = list?.length
+      ? Array.from(list as NodeListOf<Element>)
+      : null;
+
+    if (this._updating) {
+      this._labels = labels;
+    }
+    return labels;
   }
 
   constructor(
@@ -137,11 +127,15 @@ class ElementInternalsController implements ReactiveController {
     this._internals = this._host.attachInternals();
     this._aria = config?.aria;
 
-    if (config?.reflectRole) {
-      this._reflected.set('role', null);
-    }
-    if (config?.reflectLabel) {
-      this._reflected.set('ariaLabel', null);
+    if (config?.reflectRole || config?.reflectLabel) {
+      this._reflected = new Map();
+
+      if (config.reflectRole) {
+        this._reflected.set('role', null);
+      }
+      if (config.reflectLabel) {
+        this._reflected.set('ariaLabel', null);
+      }
     }
 
     if (config?.initialARIA) {
@@ -154,24 +148,33 @@ class ElementInternalsController implements ReactiveController {
 
   /** @internal */
   public hostConnected(): void {
-    for (const name of this._reflected.keys()) {
-      this._reflectAttribute(name);
+    if (this._reflected) {
+      for (const name of this._reflected.keys()) {
+        this._reflectAttribute(name);
+      }
     }
   }
 
   /** @internal */
   public hostUpdate(): void {
+    this._updating = true;
+    this._labels = undefined;
+
     if (this._aria) {
       this.setARIA(this._aria.call(this._host));
     }
   }
 
+  /** @internal */
+  public hostUpdated(): void {
+    this._updating = false;
+    this._labels = undefined;
+  }
+
   /**
-   * Mirrors a reflected internals ARIA property onto its content attribute on
-   * the host.
-   *
-   * Deferred until the host is connected - custom elements must not gain
-   * attributes during construction.
+   * Copies an internals ARIA property onto its host content attribute. Waits
+   * for the connection, because a custom element must get no attribute while it
+   * is constructed.
    */
   private _reflectAttribute(name: ReflectableARIA): void {
     const host = this._host;
@@ -184,39 +187,49 @@ class ElementInternalsController implements ReactiveController {
     const value = this._internals[name];
     const current = host.getAttribute(attribute);
 
-    // Write only when the attribute is absent or still holds the value this
-    // controller wrote - an attribute changed by the author is theirs to keep.
-    if (current !== null && current !== this._reflected.get(name)) {
+    // An attribute that the author set or changed stays as the author left it.
+    if (current !== null && current !== this._reflected?.get(name)) {
       return;
     }
 
-    // Only a null value takes its attribute with it - an empty string is a
-    // valid ARIA value and stays mirrored as an empty attribute.
+    // Only null removes the attribute; an empty string is a valid ARIA value.
     if (current !== value) {
-      value === null
-        ? host.removeAttribute(attribute)
-        : host.setAttribute(attribute, value);
+      setOrRemoveAttribute(host, attribute, value);
     }
 
-    this._reflected.set(name, value);
+    this._reflected?.set(name, value);
   }
 
   /** Sets ARIA attributes on the element's internals. */
-  public setARIA<T extends keyof ARIAMixin = keyof ARIAMixin>(
-    state: Partial<Record<T, ARIAMixin[T]>>
-  ): void {
-    Object.assign(this._internals, state);
+  public setARIA(state: ARIAState): void {
+    // A write through a key of the union needs an index signature.
+    const internals = this._internals as unknown as Record<string, unknown>;
+    const written = (this._ariaState ??= new Map());
 
-    for (const name of this._reflected.keys()) {
-      if (name in state) {
-        this._reflectAttribute(name);
+    for (const key in state) {
+      const name = key as keyof ARIAMixin;
+      const value = state[name];
+
+      if (!written.has(name) || !sameValue(written.get(name), value)) {
+        written.set(name, value);
+        internals[name] = value;
+      }
+    }
+
+    // Always reflect a key that the state carries: the internals value alone
+    // does not reveal an attribute that the author removed.
+    if (this._reflected) {
+      for (const name of this._reflected.keys()) {
+        if (name in state) {
+          this._reflectAttribute(name);
+        }
       }
     }
   }
 
   /**
-   * Returns an ARIA attribute set on the element's internals. Internals-based
-   * ARIA leaves no trace in the DOM, so this is the only way to read it back.
+   * Returns an ARIA attribute of the internals. Internals-based ARIA leaves no
+   * trace in the DOM, so this is the only way to read it back.
    */
   public getARIA<T extends keyof ARIAMixin = keyof ARIAMixin>(
     name: T
@@ -224,10 +237,7 @@ class ElementInternalsController implements ReactiveController {
     return this._internals[name];
   }
 
-  /**
-   * Adds or removes a custom state from the element's internals.
-   * Custom states can be styled via `:state()` selector in CSS.
-   */
+  /** Adds or removes a custom state, which CSS matches with `:state()`. */
   public setState(state: string, value: boolean): void {
     value
       ? this._internals.states.add(state)
@@ -235,56 +245,44 @@ class ElementInternalsController implements ReactiveController {
   }
 
   /**
-   * Sets both the state and submission value of internals's target element to value.
-   *
-   * If value is null, the element won't participate in form submission.
-   *
-   * @remarks
-   * The host element must be form associated, that is, it should have
-   * `static formAssociated = true`.
+   * Sets the state and the submission value of the host element. A `null`
+   * value keeps the element out of the form submission.
    */
   public setFormValue(value: FormValueType, state?: FormValueType): void {
     this._internals.setFormValue(value, state);
   }
 
-  /**
-   * Sets the internal validity state of the host element as well as the validation
-   * message.
-   *
-   * @remarks
-   * The host element must be form associated, that is, it should have
-   * `static formAssociated = true`.
-   */
+  /** Sets the validity state and the validation message of the host. */
   public setValidity(flags?: ValidityStateFlags, message?: string): void {
-    this._internals.setValidity(flags, message);
+    let key = `${message}:`;
+
+    for (const name in flags) {
+      if (flags[name as keyof ValidityStateFlags]) {
+        key += `${name},`;
+      }
+    }
+
+    if (key !== this._validity) {
+      this._validity = key;
+      this._internals.setValidity(flags, message);
+    }
   }
 
-  /**
-   * Checks the internal validity of the host element and fires an `invalid` event if
-   * the host element fails validation constraints.
-   *
-   * @remarks
-   * The host element must be form associated, that is, it should have
-   * `static formAssociated = true`.
-   */
+  /** Checks host validity, and sends an `invalid` event on a failure. */
   public checkValidity(): boolean {
     return this._internals.checkValidity();
   }
 
   /**
-   * Checks the internal validity of the host element and fires an `invalid` event if
-   * the host element fails validation constraints.
-   *
-   * @remarks
-   * The host element must be form associated, that is, it should have
-   * `static formAssociated = true`.
+   * Checks host validity and reports the result to the user. It sends an
+   * `invalid` event on a failure.
    */
   public reportValidity(): boolean {
     return this._internals.reportValidity();
   }
 }
 
-/** Creates and adds a {@link ElementInternalsController} to a LitElement host. */
+/** Creates an {@link ElementInternalsController} and adds it to a Lit host. */
 export function addInternalsController(
   host: ReactiveControllerHost & LitElement,
   config?: ElementInternalsConfig
@@ -293,11 +291,11 @@ export function addInternalsController(
 }
 
 /**
- * Resolves the {@link ElementInternalsController} of the given element, if it has one.
+ * The {@link ElementInternalsController} of `element`, or `undefined`.
  *
- * Internal cross-component/spec lookup. Not part of the public API - lives under
- * `#internals` and must not be re-exported from the package entry point. Prefer this
- * over exposing `public` `@hidden @internal` members on component classes.
+ * @remarks
+ * An internal lookup for the components and the specs. The package entry point
+ * must not export it. Use it in place of a `@hidden` member on a component.
  */
 export function internalsOf(
   element: Element

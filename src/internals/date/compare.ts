@@ -1,4 +1,8 @@
-/** Compares two dates, optionally ignoring their time or their date portion. */
+/**
+ * Compares two dates with the given comparator. Ignores the time portion
+ * when `includeTime` is `false`, and the date portion when `includeDate` is
+ * `false`.
+ */
 function compareDates(
   value: Date,
   boundary: Date,

@@ -3,10 +3,12 @@ import {
   expect,
   fixture,
   html,
+  oneEvent,
   waitUntil,
 } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
 import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import IgcButtonComponent from '../button/button.js';
@@ -43,6 +45,81 @@ describe('Dialog', () => {
 
       await expect(dialog).does.to.be.accessible();
       await expect(dialog).shadowDom.to.be.accessible();
+    });
+
+    it('is labelled only by `aria-label` when one is set', async () => {
+      dialog = await fixture<IgcDialogComponent>(html`
+        <igc-dialog aria-label="Keyboard shortcuts" open>
+          <h2 slot="title">Keyboard shortcuts</h2>
+          <button slot="title">Close</button>
+        </igc-dialog>
+      `);
+      nativeDialog = dialog.renderRoot.querySelector('dialog')!;
+
+      expect(nativeDialog)
+        .attribute('aria-label')
+        .to.equal('Keyboard shortcuts');
+      expect(nativeDialog).not.to.have.attribute('aria-labelledby');
+    });
+  });
+
+  describe('Host ARIA', () => {
+    let container: HTMLElement;
+
+    beforeEach(async () => {
+      container = await fixture<HTMLElement>(html`
+        <div>
+          <span id="dialog-name">Shortcuts</span>
+          <span id="dialog-hint">Press a key</span>
+          <igc-dialog open>
+            <h2 slot="title">Keyboard shortcuts</h2>
+          </igc-dialog>
+        </div>
+      `);
+      dialog = container.querySelector('igc-dialog')!;
+      nativeDialog = dialog.renderRoot.querySelector('dialog')!;
+    });
+
+    it('prefers `aria-labelledby` over `aria-label` and the title', async () => {
+      const titleId = dialog.renderRoot.querySelector('header')!.id;
+
+      dialog.setAttribute('aria-label', 'Custom');
+      dialog.setAttribute('aria-labelledby', 'dialog-name');
+      await elementUpdated(dialog);
+
+      expect(nativeDialog.ariaLabelledByElements).to.eql([
+        container.querySelector('#dialog-name'),
+      ]);
+      expect(nativeDialog).not.to.have.attribute('aria-label');
+
+      dialog.removeAttribute('aria-labelledby');
+      await elementUpdated(dialog);
+
+      expect(nativeDialog).attribute('aria-label').to.equal('Custom');
+      expect(nativeDialog).not.to.have.attribute('aria-labelledby');
+
+      dialog.removeAttribute('aria-label');
+      await elementUpdated(dialog);
+
+      expect(nativeDialog).attribute('aria-labelledby').to.equal(titleId);
+    });
+
+    it('keeps the title as the name with an empty `aria-label`', async () => {
+      dialog.setAttribute('aria-label', '');
+      await elementUpdated(dialog);
+
+      expect(nativeDialog)
+        .attribute('aria-labelledby')
+        .to.equal(dialog.renderRoot.querySelector('header')!.id);
+    });
+
+    it('is described by the host `aria-describedby`', async () => {
+      dialog.setAttribute('aria-describedby', 'dialog-hint');
+      await elementUpdated(dialog);
+
+      expect(nativeDialog.ariaDescribedByElements).to.eql([
+        container.querySelector('#dialog-hint'),
+      ]);
     });
   });
 
@@ -310,6 +387,24 @@ describe('Dialog', () => {
 
       expect(dialog.open).to.be.true;
       expect(nativeDialog.open).to.be.true;
+    });
+
+    it('opens the dialog again when it closes while `open` stays true', async () => {
+      const opener = await fixture<HTMLButtonElement>(
+        html`<button>Open</button>`
+      );
+      opener.focus();
+      await dialog.show();
+
+      // As after a close request that the dialog cannot cancel.
+      nativeDialog.close();
+      await oneEvent(nativeDialog, 'close');
+
+      expect(dialog.open).to.be.true;
+      expect(nativeDialog.open).to.be.true;
+
+      await dialog.hide();
+      expect(isFocused(opener)).to.be.true;
     });
   });
 

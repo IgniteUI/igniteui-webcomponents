@@ -1,11 +1,12 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
+@use '../light/themes' as light;
 
 :host {
-    @include css-vars-from-theme($bootstrap);
-    @include css-vars-from-theme($bootstrap-input);
+    @include css-vars-from-theme(dark-overrides(light.$bootstrap, $bootstrap));
+    @include css-vars-from-theme(dark-overrides(light.$bootstrap-input, $bootstrap-input));
 
     igc-dialog {
-        @include css-vars-from-theme($bootstrap-dialog);
+        @include css-vars-from-theme(dark-overrides(light.$bootstrap-dialog, $bootstrap-dialog));
     }
 }

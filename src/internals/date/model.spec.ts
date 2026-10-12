@@ -1,7 +1,9 @@
 import { expect } from '@open-wc/testing';
+import { fourDigitYearDate } from '../testing/date-arbitraries.spec.js';
+import { fc } from '../testing/fast-check-setup.spec.js';
 
 import { firstOf, lastOf } from '../utils/arrays.js';
-import { CalendarDay, calendarRange } from './model.js';
+import { CalendarDay, calendarRange, createDate } from './model.js';
 
 describe('Calendar day model', () => {
   describe('Basic API', () => {
@@ -135,6 +137,39 @@ describe('Calendar day model', () => {
     });
   });
 
+  describe('equalTo', () => {
+    it('compares a `Date` by its calendar day, ignoring the time', () => {
+      const day = new CalendarDay({ year: 2024, month: 2, date: 31 });
+
+      expect(day.equalTo(new Date(2024, 2, 31, 23, 59, 59, 999))).to.be.true;
+      expect(day.equalTo(new Date(2024, 2, 31))).to.be.true;
+      expect(day.equalTo(new Date(2024, 3, 1))).to.be.false;
+      expect(day.equalTo(new Date(2023, 2, 31))).to.be.false;
+    });
+
+    it('compares a `Date` of a year below 100', () => {
+      const early = createDate(42, 5, 15);
+
+      expect(new CalendarDay({ year: 42, month: 5, date: 15 }).equalTo(early))
+        .to.be.true;
+      expect(new CalendarDay({ year: 1942, month: 5, date: 15 }).equalTo(early))
+        .to.be.false;
+    });
+
+    it('agrees with the timestamp comparison for any two dates', () => {
+      fc.assert(
+        fc.property(fourDigitYearDate, fourDigitYearDate, (a, b) => {
+          const day = CalendarDay.from(a);
+
+          expect(day.equalTo(b)).to.equal(
+            day.timestamp === CalendarDay.from(b).timestamp
+          );
+          expect(day.equalTo(a)).to.be.true;
+        })
+      );
+    });
+  });
+
   describe('Date ranges', () => {
     const start = new CalendarDay({ year: 2024, month: 0, date: 11 });
     const endFuture = start.add('day', 7);
@@ -175,6 +210,36 @@ describe('Calendar day model', () => {
 
       expect(firstOf(weekPast).date).to.equal(start.date);
       expect(lastOf(weekPast).date).to.equal(endPast.date + 1);
+    });
+
+    it('generating inclusive date ranges (end < start)', () => {
+      const weekPast = Array.from(
+        calendarRange({ start, end: endPast, inclusive: true })
+      );
+
+      expect(weekPast.length).to.equal(end + 1);
+      expect(firstOf(weekPast).equalTo(start)).to.be.true;
+      expect(lastOf(weekPast).equalTo(endPast)).to.be.true;
+    });
+  });
+
+  describe('Edge cases', () => {
+    const day = new CalendarDay({ year: 2024, month: 0, date: 11 });
+
+    it('greaterThanOrEqual', () => {
+      expect(day.greaterThanOrEqual(day.add('day', -1))).to.be.true;
+      expect(day.greaterThanOrEqual(day.native)).to.be.true;
+      expect(day.greaterThanOrEqual(day.add('day', 1))).to.be.false;
+    });
+
+    it('throws for an unknown unit', () => {
+      expect(() => day.add('decade' as 'day', 1)).to.throw(
+        'Invalid interval: decade'
+      );
+    });
+
+    it('converts to the string of the native date', () => {
+      expect(`${day}`).to.equal(String(new Date(2024, 0, 11)));
     });
   });
 });

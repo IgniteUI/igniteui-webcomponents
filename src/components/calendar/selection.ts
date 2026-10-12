@@ -15,13 +15,9 @@ export interface CalendarSelectionOptions {
 }
 
 /**
- * Applies the activation of `day` to `state` and returns the resulting selection, or
- * `null` when the activation changes nothing - a disabled date, or the already selected
- * date of a `single` selection.
- *
- * @remarks
- * Both the calendar and a stand-alone days view select through this, so the two cannot
- * disagree on what activating a date means.
+ * Applies the activation of `day` to `state` and returns the new selection.
+ * Returns `null` when nothing changes: a disabled date, or the selected date of a `single` selection.
+ * The calendar and a stand-alone days view both use this, so they always agree.
  */
 export function selectDate(
   state: CalendarSelectionState,

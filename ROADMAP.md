@@ -62,7 +62,7 @@
 
 ## Milestone 19, version 6.3.0, Released Nov 18th, 2025
 
-1. **[DONE]** [Bugs fixes](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/general-changelog-dv-wc#bug-fixes-3)
+1. **[DONE]** [Bug fixes](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/general-changelog-dv-wc#bug-fixes-3)
 
 ## Milestone 18, version 6.1.0, Released Jun 12th, 2025
 
@@ -86,31 +86,31 @@
 
 ## Milestone 14, version 5.0.0, Released Aug 27th, 2024
 
-1. **[DONE]** Support of custom icon libriries [#1304](https://github.com/IgniteUI/igniteui-webcomponents/issues/1304) 
+1. **[DONE]** Support for custom icon libraries [#1304](https://github.com/IgniteUI/igniteui-webcomponents/issues/1304) 
 
 ## Milestone 13, version [4.10.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.9.0...4.10.0) Released Jul 01st, 2024
 
 1. **[DONE]** Banner component [#1174](https://github.com/IgniteUI/igniteui-webcomponents/issues/1174)
 2. **[DONE]** Divider component [#1178](https://github.com/IgniteUI/igniteui-webcomponents/issues/1237)
 3. **[DONE]** Date picker component [#174](https://github.com/IgniteUI/igniteui-webcomponents/issues/174)
-4. **[DONE]** Radio group - Bind underlying radio components name and checked state through the radio group [#315](https://github.com/IgniteUI/igniteui-webcomponents/issues/315)
+4. **[DONE]** Radio group - the radio group now binds the name and the checked state of its radio components [#315](https://github.com/IgniteUI/igniteui-webcomponents/issues/315)
 
 ## Milestone 12, version [4.9.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.0...4.9.0) Released Apr 30th, 2024
 
-1.  **[DONE]** Button group component now allows resetting the selection state via the selectedItems property [#1168](https://github.com/IgniteUI/igniteui-webcomponents/issues/1168)
-2.  **[DONE]** Input, Textarea - exposed validateOnly to enable validation rules being enforced without restricting user input [#1178](https://github.com/IgniteUI/igniteui-webcomponents/issues/1178)
+1.  **[DONE]** Button group component - you can now reset the selection state through the selectedItems property [#1168](https://github.com/IgniteUI/igniteui-webcomponents/issues/1168)
+2.  **[DONE]** Input, Textarea - exposed validateOnly, which applies the validation rules but does not restrict user input [#1178](https://github.com/IgniteUI/igniteui-webcomponents/issues/1178)
 
 ## Milestone 11, version [4.8.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.7.0...4.8.0) Released Mar 20th, 2024
 
 1. **[DONE]** Hierarchical Grid Component
-2. **[DONE]** Combo component can now set groupSorting to none which shows the groups in the order of the provided data [#1026](https://github.com/IgniteUI/igniteui-webcomponents/issues/1026)
+2. **[DONE]** Combo component can now set groupSorting to none, which shows the groups in the order of the provided data [#1026](https://github.com/IgniteUI/igniteui-webcomponents/issues/1026)
 3. **[DONE]** Button/Icon button - updated visual looks across themes, new states [#1050](https://github.com/IgniteUI/igniteui-webcomponents/issues/1050)
 4. **[DONE]** Navigation bar - added border in Bootstrap theme [#1060](https://github.com/IgniteUI/igniteui-webcomponents/issues/1060)
 
 ## Milestone 10, version [4.7.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.6.0...4.7.0) Released Jan 05th, 2024
 
-1.  **[DONE]** Tree - Added toggleNodeOnClick property that determines whether clicking over a node will change its expanded state or not. Defaults to false [#1003](https://github.com/IgniteUI/igniteui-webcomponents/issues/1003)
-2.  **[DONE]** Rating - allowReset added. When enabled selecting the same value will reset the component [#1014](https://github.com/IgniteUI/igniteui-webcomponents/issues/1014)
+1.  **[DONE]** Tree - Added the toggleNodeOnClick property. It sets whether a click on a node changes its expanded state. The default is false [#1003](https://github.com/IgniteUI/igniteui-webcomponents/issues/1003)
+2.  **[DONE]** Rating - Added allowReset. When it is enabled, a selection of the same value resets the component [#1014](https://github.com/IgniteUI/igniteui-webcomponents/issues/1014)
 3.  **[DONE]** Toggle-icon-expanded slot added to Select [#983](https://github.com/IgniteUI/igniteui-webcomponents/issues/983)
 
 ## Milestone 9, version [4.6.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.5.0...4.6.0) Released Dec 05th, 2023
@@ -133,7 +133,7 @@
 
 ## Milestone 6, version [4.3.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.0...4.3.0) Released Jun 28th, 2023
 
-1.  **[DONE]** Data Grid Documentation & Samples improvments
+1.  **[DONE]** Data Grid Documentation & Samples improvements
 
 ## Milestone 5, version [4.2.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.1.1...4.2.0) Released Jan 31st, 2023
 

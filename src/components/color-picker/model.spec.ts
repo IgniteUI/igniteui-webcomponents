@@ -25,8 +25,7 @@ describe('ColorModel', () => {
     });
 
     it('should place an empty color at the origin of the saturation/value plane', () => {
-      // Drives the initial marker position of the picker canvas: saturation 0
-      // and value 100 is the white corner a picker with no value starts in.
+      // Saturation 0 and value 100 is the white corner where an empty picker starts.
       expect(ColorModel.empty().toHSV()).to.eql([0, 0, 100]);
     });
 
@@ -478,7 +477,6 @@ describe('ColorModel', () => {
       const rgb1 = color.asString('rgb');
       const hsl1 = color.asString('hsl');
 
-      // Simulate multiple conversions
       const { h, s, l } = color;
       color.h = h;
       color.s = s;
@@ -519,6 +517,11 @@ describe('ColorModel', () => {
       expect(color.v).to.equal(100);
     });
 
+    it('should wrap a negative or out-of-range HSV hue', () => {
+      expect(ColorModel.fromHSV(-60, 100, 100).h).to.be.closeTo(300, 0.001);
+      expect(ColorModel.fromHSV(420, 100, 100).h).to.be.closeTo(60, 0.001);
+    });
+
     it('should create color from HSV with alpha', () => {
       const color = ColorModel.fromHSV(60, 50, 75, 0.3);
 
@@ -527,8 +530,6 @@ describe('ColorModel', () => {
       expect(color.alpha).to.equal(0.3);
     });
 
-    // Regression: `parse` validated the raw string, so a hash-less hex was
-    // rejected before `parseColor` could restore its `#`.
     it('should parse a hex string without a leading hash', () => {
       for (const [input, expected] of [
         ['ff0000', '#ff0000'],
@@ -565,7 +566,6 @@ describe('ColorModel', () => {
       expect(clone.b).to.equal(original.b);
       expect(clone.alpha).to.equal(original.alpha);
 
-      // Verify it's a different instance
       clone.r = 200;
       expect(original.r).to.equal(128);
     });
@@ -612,10 +612,8 @@ describe('ColorModel', () => {
       const originalRGB: [number, number, number] = [128, 64, 192];
       const color = new ColorModel(originalRGB);
 
-      // Mutate the original array
       originalRGB[0] = 0;
 
-      // Color should not be affected
       expect(color.r).to.equal(128);
     });
   });

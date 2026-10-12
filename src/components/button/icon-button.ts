@@ -3,7 +3,9 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { blazorInclude } from '#internals/decorators/blazorInclude.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/button/themes/icon-button/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import {
   registerIcon as registerIcon_impl,
@@ -13,7 +15,6 @@ import type { IconButtonVariant } from '../types.js';
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './themes/icon-button/icon-button.base.css.js';
 import { styles as shared } from './themes/icon-button/shared/icon-button.common.css.js';
-import { all } from './themes/icon-button/themes.js';
 
 /**
  * A button that displays a single icon, designed for compact, icon-only
@@ -34,7 +35,7 @@ import { all } from './themes/icon-button/themes.js';
  */
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-icon-button';
-  protected static styles = [styles, shared];
+  protected static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

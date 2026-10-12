@@ -15,6 +15,7 @@ import {
   simulateClick,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
+import { configureTheme } from '#theming/config.js';
 import type IgcButtonComponent from '../button/button.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { DateRangeType } from '../calendar/types.js';
@@ -55,6 +56,32 @@ describe('Date range picker - common tests for single and two inputs mode', () =
   });
 
   describe('Rendering and initialization', () => {
+    it('accepts a value and bounds set before the first render', async () => {
+      const today = CalendarDay.today;
+
+      for (const useTwoInputs of [false, true]) {
+        const element = document.createElement(
+          IgcDateRangePickerComponent.tagName
+        ) as IgcDateRangePickerComponent;
+
+        // Validation runs on each set, before any editor exists.
+        expect(() =>
+          Object.assign(element, {
+            useTwoInputs,
+            value: { start: today.native, end: today.add('day', 1).native },
+            max: today.add('day', -1).native,
+            min: today.add('day', -5).native,
+          })
+        ).not.to.throw();
+
+        document.body.append(element);
+        await elementUpdated(element);
+
+        expect(element.validity.rangeOverflow).to.be.true;
+        element.remove();
+      }
+    });
+
     it('should be successfully initialized in open state in dropdown mode', async () => {
       picker = await fixture<IgcDateRangePickerComponent>(
         html`<igc-date-range-picker open></igc-date-range-picker>`
@@ -119,6 +146,53 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       clear = getIcon(picker, clearIcon);
       expect(clear).not.to.be.null;
     });
+
+    it('exposes the ranges part of the predefined ranges area', async () => {
+      const style = document.createElement('style');
+      style.textContent =
+        'igc-date-range-picker::part(ranges) { --part-probe: exposed; }';
+      document.head.append(style);
+
+      try {
+        picker.usePredefinedRanges = true;
+        await elementUpdated(picker);
+
+        const ranges = picker.renderRoot
+          .querySelector(IgcPredefinedRangesAreaComponent.tagName)!
+          .renderRoot.querySelector('[part~="ranges"]')!;
+        expect(
+          getComputedStyle(ranges).getPropertyValue('--part-probe').trim()
+        ).to.equal('exposed');
+      } finally {
+        style.remove();
+      }
+    });
+
+    it('renders outlined and contained dialog buttons in the indigo theme', async () => {
+      const variants = () =>
+        Array.from(
+          picker.renderRoot.querySelectorAll<IgcButtonComponent>(
+            'igc-button[slot="footer"]'
+          ),
+          (button) => button.variant
+        );
+
+      picker.mode = 'dialog';
+      await elementUpdated(picker);
+
+      expect(variants()).to.eql(['flat', 'flat']);
+
+      try {
+        configureTheme('indigo');
+        await elementUpdated(picker);
+        picker.requestUpdate();
+        await elementUpdated(picker);
+
+        expect(variants()).to.eql(['outlined', 'contained']);
+      } finally {
+        configureTheme('bootstrap');
+      }
+    });
   });
 
   describe('Properties', () => {
@@ -134,7 +208,6 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       await elementUpdated(picker);
       expect(picker.visibleMonths).to.equal(2);
 
-      // test with NaN or undefined
       picker.visibleMonths = Number.NaN;
       await elementUpdated(picker);
       expect(picker.visibleMonths).to.equal(2);
@@ -282,7 +355,6 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         ],
       };
 
-      //test defaults
       expect(picker.value).to.deep.equal({ start: null, end: null });
       expect(picker.weekStart).to.equal('sunday');
       expect(picker.hideOutsideDays).to.equal(false);
@@ -325,13 +397,11 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         expect(picker.getAttribute('display-format')).to.be.null;
         expect(picker.displayFormat).to.equal('M/d/yyyy');
 
-        // updates inputFormat according to changed locale
         picker.locale = 'fr';
         await elementUpdated(picker);
         expect(picker.inputFormat).to.equal('dd/MM/yyyy');
         expect(picker.displayFormat).to.equal(picker.inputFormat);
 
-        // sets inputFormat as attribute
         picker.setAttribute('input-format', 'dd-MM-yyyy');
         await elementUpdated(picker);
 
@@ -416,7 +486,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           (key) => key as keyof IgcDateRangePickerResourceStrings
         );
 
-        // { ...picker.resourceStrings, ...testObject } will not work for old resources, due to resourceStrings returning mixed resources now.
+        // A spread of picker.resourceStrings fails for old resources, because it returns mixed resources.
         const testResourceStrings = testObject;
         picker.resourceStrings = testResourceStrings;
         await elementUpdated(picker);
@@ -527,6 +597,25 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           await elementUpdated(picker);
           expect(eventSpy).not.calledWith('igcChange');
         });
+
+        it('clears the value when the range start is activated again in the calendar', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          await picker.show();
+
+          await selectDates(today, null, calendar);
+          expect(eventSpy).calledWith('igcChange', {
+            detail: { start: today.native, end: today.native },
+          });
+
+          await selectDates(today, null, calendar);
+          await elementUpdated(picker);
+
+          expect(eventSpy.lastCall).calledWith('igcChange', {
+            detail: { start: null, end: null },
+          });
+          expect(picker.value).to.deep.equal({ start: null, end: null });
+          expect(picker.open).to.be.true;
+        });
       });
       describe('Keyboard navigation', () => {
         it('should close the picker when in open state on pressing Escape', async () => {
@@ -545,7 +634,6 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           expect(eventSpy).calledWith('igcClosed');
           eventSpy.resetHistory();
 
-          // dialog mode
           picker.mode = 'dialog';
           await elementUpdated(picker);
 

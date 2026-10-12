@@ -6,10 +6,7 @@ import FilterDataOperation from './filter.js';
 
 type City = { name: string; country: string };
 
-/**
- * The filter operation only reads `searchTerm` and `filteringOptions` off the
- * data state, so a plain stand-in keeps these tests off the component lifecycle.
- */
+/** The filter reads only `searchTerm` and `filteringOptions`, so a stub is enough. */
 function stateStub(
   searchTerm: string,
   filteringOptions: FilteringOptions<City>
@@ -69,8 +66,7 @@ describe('Combo filter operation', () => {
     ]);
   });
 
-  // The operation memoizes each record's normalized text, so every option that
-  // feeds that normalization has to invalidate the cache when it changes.
+  // The normalized text is cached, so each normalization option must reset the cache.
   it('re-normalizes when caseSensitive changes between passes', () => {
     expect(names(filter.apply(data, stateStub('sof', defaults)))).to.eql([
       'Sofia',

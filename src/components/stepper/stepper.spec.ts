@@ -1,6 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -13,6 +14,17 @@ import IgcStepperComponent from './stepper.js';
 describe('Stepper', () => {
   before(() => {
     defineComponents(IgcStepperComponent, IgcIconComponent);
+  });
+
+  runHostAriaTests({
+    tagName: 'igc-step',
+    template: html`<igc-stepper
+      ><igc-step><span slot="title">Step</span></igc-step></igc-stepper
+    >`,
+    getTarget: (host) => host.renderRoot.querySelector('[data-step-header]')!,
+    // The stepper sets its `tablist` role through ElementInternals, which axe
+    // does not read.
+    ignoredRules: ['aria-required-parent'],
   });
 
   let stepper: IgcStepperComponent;
@@ -67,6 +79,52 @@ describe('Stepper', () => {
           i === 0 ? 'true' : 'false'
         );
       }
+    });
+
+    it('should set `aria-disabled` on the header of a disabled step', async () => {
+      const step = stepper.steps[1];
+      const { header } = getStepDOM(step).parts;
+      expect(header.getAttribute('aria-disabled')).to.equal('false');
+
+      step.disabled = true;
+      await elementUpdated(step);
+      expect(header.getAttribute('aria-disabled')).to.equal('true');
+
+      step.disabled = false;
+      await elementUpdated(step);
+      expect(header.getAttribute('aria-disabled')).to.equal('false');
+    });
+
+    it('should set `aria-disabled` on the headers of the steps that linear mode locks', async () => {
+      stepper = await fixture(createLinearStepper());
+      const [, blocking, locked] = stepper.steps;
+      const headers = stepper.steps.map(
+        (step) => getStepDOM(step).parts.header
+      );
+
+      expect(headers.map((header) => header.ariaDisabled)).to.eql([
+        'false',
+        'false',
+        'true',
+      ]);
+
+      blocking.invalid = false;
+      await elementUpdated(blocking);
+      await elementUpdated(locked);
+      expect(headers[2].getAttribute('aria-disabled')).to.equal('false');
+    });
+
+    it('should make the content of the inactive steps inert', async () => {
+      const bodies = () =>
+        stepper.steps.map((step) => getStepDOM(step).parts.body.inert);
+
+      expect(bodies()).to.eql([false, true, true, true, true]);
+
+      stepper.navigateTo(2);
+      await elementUpdated(stepper);
+      await Promise.all(stepper.steps.map((step) => elementUpdated(step)));
+
+      expect(bodies()).to.eql([true, true, false, true, true]);
     });
 
     it('should have proper tabindex values based on active state', async () => {
@@ -170,6 +228,35 @@ describe('Stepper', () => {
       expect(stepper.steps[0].active).to.be.true;
       expect(stepper.steps[1].active).to.be.false;
     });
+
+    it('should keep a step change that a click in the content of a step makes', async () => {
+      const button = document.createElement('button');
+      button.addEventListener('click', () => stepper.next());
+      stepper.steps[0].append(button);
+      await elementUpdated(stepper.steps[0]);
+      const eventSpy = spy(stepper, 'emitEvent');
+
+      simulateClick(button);
+      await elementUpdated(stepper);
+
+      expect(stepper.steps[1].active).to.be.true;
+      expect(stepper.steps[0].active).to.be.false;
+      expect(eventSpy).not.called;
+    });
+
+    it('should ignore a click on a header of a nested stepper', async () => {
+      const inner = await fixture<IgcStepperComponent>(createStepper());
+      stepper.steps[0].append(inner);
+      await elementUpdated(stepper.steps[0]);
+      const eventSpy = spy(stepper, 'emitEvent');
+
+      simulateClick(getStepDOM(inner.steps[1]).parts.header);
+      await elementUpdated(stepper);
+
+      expect(inner.steps[1].active).to.be.true;
+      expect(stepper.steps[0].active).to.be.true;
+      expect(eventSpy).not.called;
+    });
   });
 
   describe('Events', () => {
@@ -206,6 +293,14 @@ describe('Stepper', () => {
       stepper.navigateTo(2);
       await elementUpdated(stepper);
       expect(eventSpy.callCount).to.equal(0);
+    });
+
+    it('should not emit events when the active step is activated again', async () => {
+      simulateClick(getStepDOM(stepper.steps[0]).parts.header);
+      await elementUpdated(stepper);
+
+      expect(eventSpy).not.called;
+      expect(stepper.steps[0].active).to.be.true;
     });
 
     it('should be able to cancel `igcActiveStepChanging`', async () => {
@@ -252,7 +347,6 @@ describe('Stepper', () => {
     });
 
     it('should do nothing at the boundary with `next()` / `prev()`', async () => {
-      // at last step, next() does nothing
       stepper.navigateTo(4);
       await elementUpdated(stepper);
 
@@ -261,7 +355,6 @@ describe('Stepper', () => {
 
       expect(stepper.steps[4].active).to.be.true;
 
-      // at first step, prev() does nothing
       stepper.navigateTo(0);
       await elementUpdated(stepper);
 
@@ -286,7 +379,6 @@ describe('Stepper', () => {
     });
 
     it('should reset to the first accessible step and clear visited state', async () => {
-      // visit several steps
       stepper.navigateTo(1);
       await elementUpdated(stepper);
       stepper.navigateTo(2);
@@ -398,6 +490,42 @@ describe('Stepper', () => {
     });
   });
 
+  describe('Step updates', () => {
+    const indicatorNumbers = () =>
+      stepper.steps.map(
+        (step) =>
+          getStepDOM(step).parts.indicator.querySelector('span')?.textContent
+      );
+
+    beforeEach(async () => {
+      stepper = await fixture(createStepper());
+    });
+
+    it('renumbers every step when a step is inserted first', async () => {
+      const step = document.createElement(IgcStepComponent.tagName);
+      step.innerHTML = '<span slot="title">Step 0</span>';
+
+      stepper.prepend(step);
+      await elementUpdated(stepper);
+      await Promise.all(stepper.steps.map((step) => step.updateComplete));
+
+      expect(indicatorNumbers()).to.eql(['1', '2', '3', '4', '5', '6']);
+    });
+
+    it('updates only the steps whose state changes', async () => {
+      const updates = stepper.steps.map((step) =>
+        spy(step as unknown as { update(): void }, 'update')
+      );
+
+      stepper.steps[1].complete = true;
+      await elementUpdated(stepper);
+      await Promise.all(stepper.steps.map((step) => step.updateComplete));
+
+      // The step itself, and the next one for its `previousCompleted` state.
+      expect(updates.map((update) => update.callCount)).to.eql([0, 1, 1, 0, 0]);
+    });
+  });
+
   describe('Linear mode', () => {
     beforeEach(async () => {
       stepper = await fixture(createLinearStepper());
@@ -498,7 +626,6 @@ describe('Stepper', () => {
       stepper.steps[0].optional = false;
       await elementUpdated(stepper);
 
-      // step 1 is locked
       expect(isStepAccessible(stepper.steps[1])).to.be.false;
 
       stepper.steps[2].disabled = true;
@@ -812,6 +939,108 @@ describe('Stepper', () => {
     });
   });
 
+  describe('Step animations', () => {
+    /** The keyframes the step plays on its body and on its content. */
+    function getKeyframes(step: IgcStepComponent) {
+      const { body } = getStepDOM(step).parts;
+      const content = body.querySelector<HTMLElement>('[part="content"]')!;
+      const framesOf = (element: HTMLElement) =>
+        element
+          .getAnimations()
+          .flatMap((animation) =>
+            (animation.effect as KeyframeEffect).getKeyframes()
+          );
+
+      return { body: framesOf(body), content: framesOf(content) };
+    }
+
+    function finishStepAnimations(...steps: IgcStepComponent[]) {
+      for (const step of steps) {
+        const { body } = getStepDOM(step).parts;
+        const content = body.querySelector<HTMLElement>('[part="content"]')!;
+        for (const animation of [
+          ...body.getAnimations(),
+          ...content.getAnimations(),
+        ]) {
+          animation.finish();
+        }
+      }
+    }
+
+    beforeEach(async () => {
+      stepper = await fixture(createStepper());
+    });
+
+    it('should grow the body and fade the content in a vertical stepper', async () => {
+      stepper.orientation = 'vertical';
+      await elementUpdated(stepper);
+
+      const [first, second] = stepper.steps;
+      stepper.next();
+
+      const frames = getKeyframes(second);
+      finishStepAnimations(first, second);
+      await elementUpdated(stepper);
+
+      expect(stepper.verticalAnimation).to.equal('grow');
+      expect(frames.body).to.have.lengthOf(2);
+      expect(frames.body.map((frame) => frame.opacity)).to.eql(['1', '1']);
+      expect(frames.body[1].height).to.match(/px$/);
+      expect(frames.content.map((frame) => frame.opacity)).to.eql(['0', '1']);
+      expect(second.active).to.be.true;
+    });
+
+    it('should fade only the content with a vertical `fade` animation', async () => {
+      stepper.orientation = 'vertical';
+      stepper.verticalAnimation = 'fade';
+      await elementUpdated(stepper);
+
+      const [first, second] = stepper.steps;
+      stepper.next();
+
+      const frames = getKeyframes(second);
+      finishStepAnimations(first, second);
+      await elementUpdated(stepper);
+
+      expect(frames.body).to.be.empty;
+      expect(frames.content.map((frame) => frame.opacity)).to.eql(['0', '1']);
+      expect(second.active).to.be.true;
+    });
+
+    it('should fade only the content with a horizontal `fade` animation', async () => {
+      stepper.horizontalAnimation = 'fade';
+      await elementUpdated(stepper);
+
+      const [first, second] = stepper.steps;
+      stepper.next();
+
+      const frames = getKeyframes(second);
+      finishStepAnimations(first, second);
+      await elementUpdated(stepper);
+
+      expect(frames.body).to.be.empty;
+      expect(frames.content.map((frame) => frame.opacity)).to.eql(['0', '1']);
+    });
+
+    it('should slide a step outside of a stepper with the default duration', async () => {
+      const step = await fixture<IgcStepComponent>(
+        html`<igc-step><span>Content</span></igc-step>`
+      );
+
+      const played = step.toggleAnimation('in');
+      const [animation] = getStepDOM(step).parts.body.getAnimations();
+      const frames = getKeyframes(step);
+      finishStepAnimations(step);
+
+      expect(await played).to.be.true;
+      expect(animation.effect!.getTiming().duration).to.equal(320);
+      expect(frames.body.map((frame) => frame.transform)).to.eql([
+        'translateX(100%)',
+        'translateX(0px)',
+      ]);
+    });
+  });
+
   describe('Keyboard navigation', () => {
     beforeEach(async () => {
       stepper = await fixture(createStepper());
@@ -864,6 +1093,41 @@ describe('Stepper', () => {
 
       simulateKeyboard(step1Header, 'ArrowLeft');
       expect(step0Header).to.equal(stepper.steps[0].shadowRoot!.activeElement);
+    });
+
+    it('should not move the focus on arrow keys when no step holds focus', async () => {
+      const outside = document.createElement('button');
+      document.body.append(outside);
+      outside.focus();
+
+      simulateKeyboard(getStepDOM(stepper.steps[0]).parts.header, 'ArrowRight');
+      await elementUpdated(stepper);
+
+      expect(document.activeElement).to.equal(outside);
+      expect(
+        stepper.steps.some((step) => step.shadowRoot!.activeElement !== null)
+      ).to.be.false;
+      outside.remove();
+    });
+
+    it('should not move the focus on arrow keys inside a shadow root without focus', async () => {
+      const host = await fixture<HTMLDivElement>(html`<div></div>`);
+      const root = host.attachShadow({ mode: 'open' });
+      root.innerHTML = `
+        <igc-stepper>
+          <igc-step><span slot="title">Step 1</span></igc-step>
+          <igc-step><span slot="title">Step 2</span></igc-step>
+        </igc-stepper>
+      `;
+
+      const nested = root.querySelector(IgcStepperComponent.tagName)!;
+      await elementUpdated(nested);
+
+      simulateKeyboard(getStepDOM(nested.steps[0]).parts.header, 'ArrowRight');
+      await elementUpdated(nested);
+
+      expect(root.activeElement).to.be.null;
+      expect(nested.steps[0].active).to.be.true;
     });
 
     it('should wrap around on ArrowRight/Left at the boundary', () => {
@@ -964,9 +1228,7 @@ describe('Stepper', () => {
 
   describe('Context binding', () => {
     it('should correctly bind context when a step is connected before its stepper parent', async () => {
-      // Connect the step in isolation — the AsyncContextConsumer defers ContextConsumer
-      // creation until after updateComplete, but no provider exists at that point so
-      // the context remains unresolved.
+      // Connect the step alone. No provider exists, so the context stays unresolved.
       const step = document.createElement(
         IgcStepComponent.tagName
       ) as IgcStepComponent;
@@ -974,14 +1236,10 @@ describe('Stepper', () => {
       document.body.appendChild(step);
       await elementUpdated(step);
 
-      // No stepper context yet — step is not active and not part of any stepper.
       expect(step.active).to.be.false;
 
-      // Create the stepper, adopt the step, and connect it to the document.
-      // The step first disconnects from body, then reconnects as a child of the
-      // stepper. On reconnect, the ContextConsumer (subscribe: true) re-dispatches
-      // a context-request event that the stepper's ContextProvider answers,
-      // completing the binding via createAsyncContext.
+      // Move the step into a new stepper. On reconnect, the step requests the
+      // context again and the stepper provides it.
       const stepperEl = document.createElement(
         IgcStepperComponent.tagName
       ) as IgcStepperComponent;
@@ -990,14 +1248,11 @@ describe('Stepper', () => {
       document.body.appendChild(stepperEl);
       await elementUpdated(stepperEl);
 
-      // Context is now bound — the stepper recognizes the step.
       expect(stepperEl.steps).to.include(step);
       expect(stepperEl.steps).to.have.lengthOf(1);
 
-      // The sole step is activated by default.
       expect(stepperEl.steps[0].active).to.be.true;
 
-      // Indicator reflects the correct step index (1-based).
       expect(
         getStepDOM(step).parts.indicator.querySelector('span')!.textContent
       ).to.equal('1');

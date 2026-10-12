@@ -1,6 +1,5 @@
 @use 'styles/utilities' as *;
 
-// STEPPER
 :host {
     --indicator-box-shadow-size: #{rem(1px)};
     --separator-size: #{rem(1px)};

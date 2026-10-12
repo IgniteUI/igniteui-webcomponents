@@ -1,15 +1,11 @@
-/** Argument bag passed to the {@link coercedProperty} callbacks. */
+/** The argument object that the {@link coercedProperty} callbacks get. */
 export interface CoercedPropertyContext<T, H> {
-  /**
-   * For `transform` - the incoming raw value; for `onChange` - the value
-   * that was stored after coercion.
-   */
+  /** The raw value in `transform`, the coerced value in `onChange`. */
   value: T;
 
-  /** The component instance the property belongs to. */
   host: H;
 
-  /** The previously stored value, or `undefined` on the initial assignment. */
+  /** The value stored before, or `undefined` on the initial assignment. */
   previous: T | undefined;
 }
 
@@ -18,21 +14,17 @@ export interface CoercedPropertyConfig<T, H> {
   /** Coerces every incoming value, the field initializer included. */
   transform?: (context: CoercedPropertyContext<T, H>) => T;
 
-  /**
-   * Runs after a value is stored. Skipped for the field initializer, matching
-   * the backing-field defaults of a hand-written accessor pair which never run
-   * through the setter.
-   */
+  /** Runs after the property stores a value, but not for the initializer. */
   onChange?: (context: CoercedPropertyContext<T, H>) => void;
 }
 
 /**
- * Replaces the hand-written backing-field accessor pair around a reactive
- * property with a declarative coerce/side-effect configuration.
+ * Replaces a hand-written accessor pair of a reactive property with
+ * declarative coercion and side effects.
  *
- * Composes with `@property` - Lit must keep wrapping the accessor for change
- * detection, and the manifest analyzer must keep seeing the `@property`
- * declaration:
+ * @remarks
+ * Apply it below `@property`, so Lit keeps its wrapper for change detection
+ * and the manifest analyzer still sees the declaration:
  *
  * ```ts
  * @property({ type: Number })
@@ -43,11 +35,10 @@ export interface CoercedPropertyConfig<T, H> {
  * public value = 0;
  * ```
  *
- * The declaration must keep its initializer - it provides the default the
- * old backing field carried, and its assignment marks construction so
- * `onChange` only fires for later sets. Properties whose getter computes a
- * derived value or whose storage lives outside the instance (form value
- * state, controllers) keep their hand-written accessors.
+ * Keep the initializer: it gives the default value and marks the
+ * construction, so `onChange` runs for a later set only. Keep hand-written
+ * accessors for a computed getter, or for storage that lives outside the
+ * instance.
  */
 export function coercedProperty<T, H extends object = object>(
   config: CoercedPropertyConfig<T, H>
@@ -55,10 +46,8 @@ export function coercedProperty<T, H extends object = object>(
   const { transform, onChange } = config;
 
   return (prototype: object, name: PropertyKey): void => {
-    // When `@property` is written below this decorator it has already
-    // installed Lit's accessor; wrap it instead of shadowing it so change
-    // detection keeps working. In the canonical order (this decorator below
-    // `@property`) there is no descriptor yet and Lit wraps ours.
+    // A `@property` applied first leaves its accessor here. Wrap it to keep
+    // change detection.
     const wrapped = Object.getOwnPropertyDescriptor(prototype, name);
     const store = new WeakMap<object, T>();
     const initialized = new WeakSet<object>();

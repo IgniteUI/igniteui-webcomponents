@@ -2,7 +2,10 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
+import {
+  createFormAssociatedTestBed,
+  runExternalLabelAssociationTests,
+} from '#internals/testing/form-testbed.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import {
@@ -175,8 +178,12 @@ describe('Radio Component', () => {
       );
       const input = radio.renderRoot.querySelector('input') as HTMLInputElement;
 
+      // An IDREF does not cross the shadow boundary. The host binds the
+      // element by reference.
       expect(radio.getAttribute('aria-labelledby')).to.equal(labelId);
-      expect(input.getAttribute('aria-labelledby')).to.equal(labelId);
+      expect(input.ariaLabelledByElements).to.eql([
+        document.getElementById(labelId),
+      ]);
     });
 
     it('should emit click event only once', async () => {
@@ -205,11 +212,9 @@ describe('Radio Component', () => {
       // Initial render - invalid state but no styles applied
       expect(radios.every((radio) => radio.invalid)).to.be.false;
 
-      // checkValidity - all radios from the group should have invalid styles applied
       expect(firstOf(radios).reportValidity()).to.be.false;
       expect(radios.every((radio) => radio.invalid)).to.be.true;
 
-      // Set a checked radio - valid state, invalid styles should not be applied
       firstOf(radios).checked = true;
       expect(firstOf(radios).reportValidity()).to.be.true;
       expect(radios.every((radio) => radio.invalid)).to.be.false;
@@ -285,8 +290,7 @@ describe('Radio Component', () => {
     });
 
     it('should not restore a checked state whose attribute was removed before reset', () => {
-      // Regression: removing the `checked` attribute used to leave
-      // `defaultChecked` as true, re-checking the radio on form reset.
+      // Removing the `checked` attribute must clear `defaultChecked`.
       const radio = firstOf(radios);
 
       radio.toggleAttribute('checked', true);
@@ -404,13 +408,11 @@ describe('Radio Component', () => {
     });
 
     it('synchronously validates component', () => {
-      // Invalid state
       expect(spec.form.checkValidity()).to.be.false;
       spec.assertSubmitFails();
 
       spec.reset();
 
-      // Passes
       spec.element.click();
       expect(spec.form.checkValidity()).to.be.true;
       spec.assertSubmitPasses();
@@ -640,12 +642,19 @@ describe('Radio Component', () => {
     it('', async () => {
       const testParameters: ValidationContainerTestsParams<IgcRadioComponent>[] =
         [
-          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
-          { slots: ['customError'] }, // custom-error slot
-          { slots: ['invalid'], props: { required: true } }, // invalid slot
+          { slots: ['valueMissing'], props: { required: true } },
+          { slots: ['customError'] },
+          { slots: ['invalid'], props: { required: true } },
         ];
 
-      runValidationContainerTests(IgcRadioComponent, testParameters);
+      await runValidationContainerTests(IgcRadioComponent, testParameters);
     });
+  });
+
+  runExternalLabelAssociationTests({
+    tagName: IgcRadioComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcRadioComponent).renderRoot.querySelector('input')!,
+    checkable: true,
   });
 });

@@ -1,15 +1,14 @@
 import { html, nothing, type TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+import { ariaBindings, hostAria } from '../controllers/aria-projection.js';
 import { partMap } from '../part-map.js';
-import { bindIf } from '../utils/lit.js';
 
 export interface ToggleShellOptions {
-  /** The type of the native input element. */
   type: 'checkbox' | 'radio';
-  /** The id of the native input; the wrapping label points at it through `for`. */
+  /** The id of the native input; the `for` target of the wrapping label. */
   inputId: string;
-  /** The id of the label span, the fallback `aria-labelledby` target. */
+  /** The id of the label span. */
   labelId: string;
   /** Resolved part-name map for the wrapping label element. */
   baseParts: Record<string, boolean>;
@@ -19,52 +18,57 @@ export interface ToggleShellOptions {
   labelParts: Record<string, boolean>;
   /** Renders the control indicator inside the control span. */
   renderControl: () => TemplateResult;
-  /** Current checked state rendered through `live()`. */
-  checked: boolean;
   /** Hides the label span when the default slot has no assigned content. */
   hideLabel: boolean;
-  name?: string;
-  value?: string;
-  required: boolean;
-  disabled: boolean;
   /**
-   * Current indeterminate state rendered through `live()`. When absent, the
-   * binding stays `false` and `live()` skips the property write entirely.
+   * The current indeterminate state, rendered through `live()`. Defaults to
+   * `false`, and `live()` then writes nothing.
    */
   indeterminate?: boolean;
-  /** When provided, sets the `tabindex` attribute. */
   tabindex?: number;
-  /** Resolved `aria-labelledby` target - an external id or `labelId`. */
-  ariaLabelledBy: string;
-  /** When provided, sets the `aria-describedby` attribute. */
-  ariaDescribedBy?: string;
+  /** The helper-text container that describes the native input. */
+  description?: Element | null;
 
   onClick: (event: PointerEvent) => void;
   onKeyDown: (event: KeyboardEvent) => void;
   onBlur?: () => void;
 }
 
+/** The host state that {@link renderToggleShell} binds onto the native input. */
+type ToggleShellHost = HTMLElement & {
+  checked: boolean;
+  disabled: boolean;
+  required: boolean;
+  name?: string;
+  value?: string;
+};
+
 /**
- * Renders the label-wrapped native input shared by the toggle controls
- * (`igc-checkbox`, `igc-switch`, `igc-radio`).
- * Centralizes the input binding set so leaves only describe their part maps
- * and control indicator.
+ * Renders the native input and its wrapping label for a toggle control. A leaf
+ * component supplies only its part maps and its control indicator.
  */
-export function renderToggleShell(options: ToggleShellOptions): TemplateResult {
+export function renderToggleShell(
+  host: ToggleShellHost,
+  options: ToggleShellOptions
+): TemplateResult {
+  const aria = hostAria(host, {
+    ownLabel: !options.hideLabel && options.labelId,
+    description: options.description,
+  });
+
   return html`
     <label part=${partMap(options.baseParts)} for=${options.inputId}>
       <input
+        ${ariaBindings(aria)}
         id=${options.inputId}
         type=${options.type}
-        name=${ifDefined(options.name)}
-        value=${ifDefined(options.value)}
-        ?required=${options.required}
-        ?disabled=${options.disabled}
-        .checked=${live(options.checked)}
+        name=${ifDefined(host.name)}
+        value=${ifDefined(host.value)}
+        ?required=${host.required}
+        ?disabled=${host.disabled}
+        .checked=${live(host.checked)}
         .indeterminate=${live(options.indeterminate ?? false)}
-        tabindex=${bindIf(options.tabindex != null, options.tabindex)}
-        aria-labelledby=${options.ariaLabelledBy}
-        aria-describedby=${ifDefined(options.ariaDescribedBy)}
+        tabindex=${ifDefined(options.tabindex)}
         @keydown=${options.onKeyDown}
         @click=${options.onClick}
         @blur=${options.onBlur ?? nothing}

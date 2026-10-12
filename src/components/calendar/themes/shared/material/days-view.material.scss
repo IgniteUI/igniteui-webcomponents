@@ -383,11 +383,8 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         }
     }
 
-    // The ::after element is used for the special dates to create a border around them.
-    // For the selected + special, current + special dates and non-range special dates,
-    // we want the ::after element to be smaller than the date size, so we set it to inner-size.
-    // for the dates in a range, the ::after element should be the same size as the date,
-    // so we leave it as is (size).
+    // The ::after element draws the border of a special date. It uses inner-size for
+    // selected + special, current + special and non-range special dates, and the full size in a range.
     &[part~='selected'][part~='special']:not([part~='range']),
     &[part~='selected'][part~='special'][part~='first'],
     &[part~='selected'][part~='special'][part~='last'],
@@ -399,8 +396,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
     }
 
 
-    // This part is making sure that the first and last dates
-    // that are also inactive, current or special have the same styles as the normal selected date.
+    // The first and last dates that are also inactive, current or special look like a selected date.
     &[part~='selected'][part~='inactive'][part~='first'],
     &[part~='selected'][part~='inactive'][part~='last'],
     &[part~='selected'][part~='current'][part~='first'],

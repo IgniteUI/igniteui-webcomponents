@@ -26,10 +26,13 @@ import {
   simulateClick,
   simulateInput,
   simulateKeyboard,
+  simulateScroll,
 } from '#internals/testing/simulate.spec.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
+import { DatePart } from '../date-time-input/date-part.js';
 import type IgcDialogComponent from '../dialog/dialog.js';
 import IgcDateRangeInputComponent from './date-range-input.js';
+import { DateRangePosition } from './date-range-mask-parser.js';
 import IgcDateRangePickerComponent from './date-range-picker.js';
 import {
   checkSelectedRange,
@@ -40,6 +43,18 @@ import {
 
 describe('Date range picker - single input', () => {
   before(() => defineComponents(IgcDateRangePickerComponent));
+
+  it('exposes `required` as `aria-required` on the native input', async () => {
+    const picker = await fixture<IgcDateRangePickerComponent>(
+      html`<igc-date-range-picker required></igc-date-range-picker>`
+    );
+    const editor = picker.renderRoot.querySelector('igc-date-range-input')!;
+    await elementUpdated(editor);
+
+    expect(
+      editor.renderRoot.querySelector('input')!.getAttribute('aria-required')
+    ).to.equal('true');
+  });
 
   runExternalLabelAssociationTests({
     tagName: IgcDateRangePickerComponent.tagName,
@@ -183,8 +198,6 @@ describe('Date range picker - single input', () => {
 
     it('should modify value only through calendar selection and not input', async () => {
       const eventSpy = spy(picker, 'emitEvent');
-      // current implementation of DRP single input is not editable;
-      // to refactor when the input is made editable
       picker.nonEditable = true;
       await elementUpdated(picker);
 
@@ -406,8 +419,6 @@ describe('Date range picker - single input', () => {
       input.focus();
       await elementUpdated(input);
 
-      // Press arrow up without selecting a specific part
-      // Should increment the last end position part (year)
       const initialDate = new Date(2025, 0, 15); // Jan 15, 2025
       picker.value = { start: initialDate, end: initialDate };
       await elementUpdated(picker);
@@ -427,6 +438,28 @@ describe('Date range picker - single input', () => {
       expect(input.value).to.equal('01/15/2025 - 01/15/2026');
     });
   });
+  describe('Scroll strategy', () => {
+    // Inherited from the picker base class - one end-to-end smoke test.
+    it('`close` behavior', async () => {
+      const container = await fixture<HTMLDivElement>(html`
+        <div style="height: 1200px">
+          <igc-date-range-picker
+            scroll-strategy="close"
+          ></igc-date-range-picker>
+        </div>
+      `);
+      picker = container.querySelector(IgcDateRangePickerComponent.tagName)!;
+      const eventSpy = spy(picker, 'emitEvent');
+
+      await picker.show();
+      await simulateScroll(container, { top: 200 });
+
+      expect(picker.open).to.be.false;
+      expect(eventSpy.firstCall).calledWith('igcClosing');
+      expect(eventSpy.lastCall).calledWith('igcClosed');
+    });
+  });
+
   describe('Methods', () => {
     it('should clear the input on invoking clear()', async () => {
       const eventSpy = spy(picker, 'emitEvent');
@@ -491,6 +524,46 @@ describe('Date range picker - single input', () => {
       expect(rangeInput.value?.start?.getMonth()).to.equal(0);
       expect(rangeInput.value?.start?.getDate()).to.equal(15);
       expect(input.value).to.equal('1/15/2025 - 1/16/2025');
+    });
+
+    it('does not step a date part that the input format does not have', async () => {
+      const value = {
+        start: new Date(2025, 0, 15),
+        end: new Date(2025, 0, 16),
+      };
+      picker.value = value;
+      await elementUpdated(picker);
+
+      rangeInput.stepUp({
+        part: DatePart.Hours,
+        position: DateRangePosition.Start,
+      });
+      await elementUpdated(rangeInput);
+
+      expect(rangeInput.value).to.deep.equal(value);
+      expect(input.value).to.equal('1/15/2025 - 1/16/2025');
+    });
+
+    it('does not step anything while the cursor is in the separator', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      const inputEventSpy = spy(rangeInput, 'emitEvent');
+      picker.value = {
+        start: new Date(2025, 0, 15),
+        end: new Date(2025, 0, 16),
+      };
+      await elementUpdated(picker);
+
+      input.focus();
+      await elementUpdated(rangeInput);
+      input.setSelectionRange(11, 11);
+
+      simulateKeyboard(input, arrowUp);
+      await elementUpdated(rangeInput);
+
+      expect(input.value).to.equal('01/15/2025 - 01/16/2025');
+      expect(eventSpy).not.calledWith('igcChange');
+      expect(inputEventSpy).not.calledWith('igcInput');
+      expect(rangeInput._uncommittedValue).to.deep.equal(picker.value);
     });
   });
   describe('Interactions', () => {
@@ -940,6 +1013,50 @@ describe('Date range picker - single input', () => {
         await elementUpdated(picker);
 
         expect(input.value).to.equal('04/23/2027 - 05/23/2025');
+      });
+
+      it('moves to the edges of the date parts with Ctrl + arrow keys', async () => {
+        picker.value = {
+          start: new Date(2025, 3, 22),
+          end: new Date(2025, 3, 23),
+        };
+        await elementUpdated(picker);
+
+        input.focus();
+        await elementUpdated(rangeInput);
+
+        const navigate = async (from: number, key: string) => {
+          input.setSelectionRange(from, from);
+          simulateKeyboard(input, [ctrlKey, key]);
+          await elementUpdated(rangeInput);
+          return [input.selectionStart, input.selectionEnd];
+        };
+
+        // Inside a part: to its end, or back to its start
+        expect(await navigate(1, arrowRight)).to.eql([2, 2]);
+        expect(await navigate(4, arrowLeft)).to.eql([3, 3]);
+        // In the separator: back to the start of the last start date part
+        expect(await navigate(11, arrowLeft)).to.eql([6, 6]);
+        // At the edges of the input: stays there
+        expect(await navigate(0, arrowLeft)).to.eql([0, 0]);
+        expect(await navigate(23, arrowRight)).to.eql([23, 23]);
+      });
+
+      it('ignores the input events of the editor when nonEditable is set', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        picker.nonEditable = true;
+        await elementUpdated(picker);
+
+        const event = new CustomEvent('igcInput', {
+          cancelable: true,
+          detail: '',
+        });
+        rangeInput.dispatchEvent(event);
+        await elementUpdated(picker);
+
+        expect(event.defaultPrevented).to.be.true;
+        expect(eventSpy).not.called;
+        expect(calendar.values).to.be.empty;
       });
 
       it('should set the range to the current date (start-end) if no value and arrow up/down pressed', async () => {

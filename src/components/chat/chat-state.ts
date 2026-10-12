@@ -11,22 +11,51 @@ import type {
   ChatSuggestionsPosition,
   IgcChatMessage,
   IgcChatMessageAttachment,
-  IgcChatMessageReaction,
   IgcChatOptions,
 } from './types.js';
 import {
   type ChatAcceptedFileTypes,
+  getFileURL,
   isImageAttachment,
   parseAcceptedFileTypes,
+  revokeFileURL,
 } from './utils.js';
 
-/**
- * Internal state manager for the `<igc-chat>` component.
- *
- * Manages messages, input value, attachments, options, and event emissions.
- */
+/** The context that republishes on an option change. A new option fails to compile until listed. */
+const OPTION_READERS: Record<
+  keyof IgcChatOptions,
+  'messages' | 'input' | 'both' | 'host'
+> = {
+  currentUserId: 'messages',
+  isTyping: 'messages',
+  // The input reads it through the message context.
+  adoptRootStyles: 'messages',
+  renderers: 'both',
+  acceptedFiles: 'input',
+  inputPlaceholder: 'input',
+  disableInputAttachments: 'input',
+  stopTypingDelay: 'host',
+  suggestions: 'host',
+  suggestionsPosition: 'host',
+  headerText: 'host',
+  disableAutoScroll: 'host',
+};
+
+function optionsChanged(
+  previous: IgcChatOptions | undefined,
+  next: IgcChatOptions | undefined,
+  context: 'messages' | 'input'
+): boolean {
+  return (Object.keys(OPTION_READERS) as (keyof IgcChatOptions)[]).some(
+    (key) =>
+      (OPTION_READERS[key] === context || OPTION_READERS[key] === 'both') &&
+      previous?.[key] !== next?.[key]
+  );
+}
+
+/** Internal state manager for `<igc-chat>`. */
 export class ChatState {
-  //#region Internal properties and state /** The host `<igc-chat>` component instance */
+  //#region Internal properties and state
   private readonly _host: IgcChatComponent;
 
   private readonly _contextUpdateFn: () => unknown;
@@ -35,23 +64,18 @@ export class ChatState {
   private _actionsTooltip?: IgcTooltipComponent;
   private _actionToast?: IgcToastComponent;
 
-  /** The current list of messages */
-  private _messages: IgcChatMessage[] = [];
-  /** Chat options/configuration */
   private _options?: IgcChatOptions;
 
-  /** List of current input attachments */
   private _inputAttachments: IgcChatMessageAttachment[] = [];
-  /** Current input text */
   private _inputValue = '';
-  /**
-   * Cache of accepted file types, organized into extensions, mimeTypes, and wildcardTypes
-   */
+  /** Parsed `acceptedFiles`: extensions, MIME types and wildcard types. */
   private _acceptedTypesCache: ChatAcceptedFileTypes | null = null;
 
   //#endregion
 
   //#region Public properties
+
+  public messages: IgcChatMessage[] = [];
 
   public get host(): IgcChatComponent {
     return this._host;
@@ -61,93 +85,62 @@ export class ChatState {
     return this._acceptedTypesCache;
   }
 
-  public get disableAutoScroll(): boolean {
-    return this._options?.disableAutoScroll ?? false;
-  }
-
-  /**
-   * Gets the list of chat messages.
-   */
-  public get messages(): IgcChatMessage[] {
-    return this._messages;
-  }
-
-  /**
-   * Sets the list of chat messages.
-   */
-  public set messages(value: IgcChatMessage[]) {
-    this._messages = value;
-  }
-
-  /**
-   * Gets current chat options.
-   */
   public get options(): IgcChatOptions | undefined {
     return this._options;
   }
 
-  /**
-   * Sets chat options and requests host update.
-   */
   public set options(value: IgcChatOptions) {
+    const previous = this._options;
+
     this._options = value;
-    this._setAcceptedTypesCache();
-    this._contextUpdateFn.call(this._host);
+
+    if (value?.acceptedFiles !== previous?.acceptedFiles) {
+      this._acceptedTypesCache = value?.acceptedFiles
+        ? parseAcceptedFileTypes(value.acceptedFiles)
+        : null;
+    }
+
+    // Streaming sets options per chunk; republish only a context whose fields changed.
+    if (optionsChanged(previous, value, 'messages')) {
+      this._contextUpdateFn();
+    }
+    if (optionsChanged(previous, value, 'input')) {
+      this._userInputContextUpdateFn();
+    }
   }
 
-  /**
-   * Gets the current user ID from options or returns 'user' as fallback.
-   */
   public get currentUserId(): string {
     return this._options?.currentUserId ?? 'user';
   }
 
-  /**
-   * Gets the current suggestionsPosition from options or returns the default value 'below-messages'.
-   */
   public get suggestionsPosition(): ChatSuggestionsPosition {
     return this._options?.suggestionsPosition ?? 'below-messages';
   }
 
-  /**
-   * Gets the current stopTypingDelay from options or returns the default value `3000`.
-   */
   public get stopTypingDelay(): number {
     return this._options?.stopTypingDelay ?? 3000;
   }
 
-  /**
-   * Gets the list of attachments currently attached to input.
-   */
   public get inputAttachments(): IgcChatMessageAttachment[] {
     return this._inputAttachments;
   }
 
-  /**
-   * Sets the input attachments and requests host update.
-   */
   public set inputAttachments(value: IgcChatMessageAttachment[]) {
     this._inputAttachments = value;
-    this._userInputContextUpdateFn.call(this._host);
+    this._userInputContextUpdateFn();
   }
 
-  /**
-   * Gets the current input value.
-   */
   public get inputValue(): string {
     return this._inputValue;
   }
 
-  /**
-   * Sets the current input value and requests host update.
-   */
   public set inputValue(value: string) {
     this._inputValue = value;
-    this._userInputContextUpdateFn.call(this._host);
+    this._userInputContextUpdateFn();
   }
 
   /**
-   * Returns whether the default chat input textarea has a trimmed value payload.
+   * Whether the textarea holds more than whitespace.
    * @internal
    */
   public get hasInputValue(): boolean {
@@ -155,7 +148,7 @@ export class ChatState {
   }
 
   /**
-   * Returns whether the default file input of the chat has any attached files.
+   * Whether the input holds attachments.
    * @internal
    */
   public get hasInputAttachments(): boolean {
@@ -192,44 +185,6 @@ export class ChatState {
   }
 
   /** @internal */
-  public emitMessageCreated(message: IgcChatMessage): boolean {
-    return this._host.emitEvent('igcMessageCreated', {
-      detail: message,
-      cancelable: true,
-    });
-  }
-
-  /** @internal */
-  public emitAttachmentsAdded(
-    attachments: IgcChatMessageAttachment[]
-  ): boolean {
-    return this._host.emitEvent('igcAttachmentAdded', {
-      detail: attachments,
-      cancelable: true,
-    });
-  }
-
-  /** @internal */
-  public emitAttachmentRemoved(attachment: IgcChatMessageAttachment): boolean {
-    return this._host.emitEvent('igcAttachmentRemoved', {
-      detail: attachment,
-      cancelable: true,
-    });
-  }
-
-  /** @internal */
-  public emitMessageReaction(reaction: IgcChatMessageReaction): boolean {
-    return this._host.emitEvent('igcMessageReact', { detail: reaction });
-  }
-
-  /** @internal */
-  public emitUserTypingState(state: boolean): boolean {
-    return this._host.emitEvent('igcTypingChange', { detail: state });
-  }
-
-  /**
-   * @internal
-   */
   public showActionsTooltip(target: Element, message: string): void {
     if (!this._actionsTooltip) {
       this._actionsTooltip = document.createElement(
@@ -243,9 +198,7 @@ export class ChatState {
     this._actionsTooltip.show(target);
   }
 
-  /**
-   * @internal
-   */
+  /** @internal */
   public showActionToast(content: string): void {
     if (!this._actionToast) {
       this._actionToast = document.createElement(IgcToastComponent.tagName);
@@ -258,16 +211,6 @@ export class ChatState {
 
   //#endregion
 
-  /**
-   * Updates the internal cache for accepted file types.
-   * Parses the acceptedFiles string option into extensions, mimeTypes, and wildcard types.
-   */
-  private _setAcceptedTypesCache(): void {
-    this._acceptedTypesCache = this.options?.acceptedFiles
-      ? parseAcceptedFileTypes(this.options.acceptedFiles)
-      : null;
-  }
-
   protected _createMessage(message: Partial<IgcChatMessage>): IgcChatMessage {
     return {
       id: message.id ?? nanoid(),
@@ -278,32 +221,33 @@ export class ChatState {
     };
   }
 
-  public addMessage(message: Partial<IgcChatMessage>) {
-    this.messages.push(this._createMessage(message));
-    this._host.requestUpdate('messages');
-  }
-
   //#region Public API
 
   /**
-   * Adds a new chat message.
-   * Emits 'igcMessageCreated' event which can be canceled to prevent adding.
-   * Clears input value and attachments on success.
+   * Emits the cancelable `igcMessageCreated` event.
+   * On success, adds the message and clears the input.
    * @internal
    */
   public addMessageWithEvent(message: Partial<IgcChatMessage>): void {
     const newMessage = this._createMessage(message);
 
-    if (this.emitMessageCreated(newMessage)) {
-      this.addMessage(newMessage);
+    if (
+      this.emitEvent('igcMessageCreated', {
+        detail: newMessage,
+        cancelable: true,
+      })
+    ) {
+      this.messages.push(this._createMessage(newMessage));
+      this._host.requestUpdate('messages');
       this.inputValue = '';
       this.inputAttachments = [];
     }
   }
 
   /**
-   * Adds files as attachments to the input.
-   * Emits 'igcAttachmentChange' event which can be canceled to prevent adding.
+   * Emits the cancelable `igcAttachmentAdded` event.
+   * On success, adds the new files as attachments. On cancel, revokes their
+   * object URLs.
    * @internal
    */
   public attachFilesWithEvent(files: File[]): void {
@@ -317,7 +261,7 @@ export class ChatState {
         continue;
       }
 
-      const url = URL.createObjectURL(file);
+      const url = getFileURL(file);
       const attachment: IgcChatMessageAttachment = {
         id: nanoid(),
         url,
@@ -331,8 +275,53 @@ export class ChatState {
       newAttachments.push(attachment);
     }
 
-    if (this.emitAttachmentsAdded(newAttachments)) {
+    if (
+      this.emitEvent('igcAttachmentAdded', {
+        detail: newAttachments,
+        cancelable: true,
+      })
+    ) {
       this.inputAttachments = [...this.inputAttachments, ...newAttachments];
+    } else {
+      for (const { file } of newAttachments) {
+        this._releaseFileURL(file!);
+      }
+    }
+  }
+
+  /**
+   * Emits the cancelable `igcAttachmentRemoved` event.
+   * On success, removes the attachment and revokes the URL of a file that no
+   * sent message shows.
+   * @internal
+   */
+  public removeAttachmentWithEvent(attachment: IgcChatMessageAttachment): void {
+    const current = this.inputAttachments;
+
+    if (
+      !this.emitEvent('igcAttachmentRemoved', {
+        detail: attachment,
+        cancelable: true,
+      })
+    ) {
+      return;
+    }
+
+    this.inputAttachments = current.toSpliced(current.indexOf(attachment), 1);
+
+    if (attachment.file) {
+      this._releaseFileURL(attachment.file);
+    }
+  }
+
+  /** Revokes the object URL of `file`, unless a sent message shows the file. */
+  private _releaseFileURL(file: File): void {
+    if (
+      !this.messages.some((message) =>
+        message.attachments?.some((each) => each.file === file)
+      )
+    ) {
+      revokeFileURL(file);
     }
   }
 

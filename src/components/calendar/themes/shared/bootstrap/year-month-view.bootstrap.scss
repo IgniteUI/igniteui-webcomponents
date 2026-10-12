@@ -15,8 +15,7 @@ $theme: $bootstrap;
     &:focus,
     &:focus-visible,
     &:focus-within {
-        // Don't use outline color transparent here since :focus-visible will have transparent border around
-        // the element that will cover the outline of the box shadow.
+        // Do not use a transparent outline color: on :focus-visible the transparent border covers the box-shadow outline.
         outline: none;
     }
 

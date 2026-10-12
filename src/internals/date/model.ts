@@ -20,25 +20,56 @@ const MILLISECONDS_PER_DAY = 86400000;
 const WEEKDAY_MIN = 1; // Monday
 const WEEKDAY_MAX = 5; // Friday
 
+/** The months and days that one `unit` of {@link CalendarDay.add} moves. */
+const UNIT_STEPS: Record<DayInterval, [months: number, days: number]> = {
+  year: [12, 0],
+  quarter: [3, 0],
+  month: [1, 0],
+  week: [0, 7],
+  day: [0, 1],
+};
+
+/**
+ * Returns a local date. Unlike the `Date` constructor, it keeps the years 0 to 99.
+ */
+export function createDate(
+  year: number,
+  month = 0,
+  date = 1,
+  hours = 0,
+  minutes = 0,
+  seconds = 0
+): Date {
+  const result = new Date(2000, 0, 1);
+  result.setFullYear(year, month, date);
+  result.setHours(hours, minutes, seconds, 0);
+  return result;
+}
+
+/** Returns the number of days in `month` (zero-based) of `year`. */
+export function daysInMonth(year: number, month: number): number {
+  return createDate(year, month + 1, 0).getDate();
+}
+
 export function toCalendarDay(date: DayParameter): CalendarDay {
   return date instanceof Date ? CalendarDay.from(date) : date;
 }
 
-/** Null-preserving {@link toCalendarDay}: empty values convert to `null`. */
+/** Returns the {@link toCalendarDay} result of `date`, or `null` if empty. */
 export function toCalendarDayOrNull(
   date?: DayParameter | null
 ): CalendarDay | null {
   return date ? toCalendarDay(date) : null;
 }
 
-/** Truncates the time portion of `date`, passing empty values through as `null`. */
+/** Truncates the time portion of `date`. An empty value gives `null`. */
 export function truncateTime(date?: Date | null): Date | null {
   return date ? CalendarDay.from(date).native : null;
 }
 
 /**
- * Yields the days between `start` and `end`, stepping by `unit` and stopping short of
- * `end` unless `inclusive` is set.
+ * Yields the days between `start` and `end`, stepped by `unit`. Stops before
+ * `end`, unless `inclusive` is `true`.
  */
 export function* calendarRange(
   options: CalendarRangeParams
@@ -47,25 +78,21 @@ export function* calendarRange(
 
   let currentDate = toCalendarDay(start);
   const endDate =
-    typeof end === 'number'
-      ? toCalendarDay(start).add(unit, end)
-      : toCalendarDay(end);
+    typeof end === 'number' ? currentDate.add(unit, end) : toCalendarDay(end);
 
   const isReversed = endDate.lessThan(currentDate);
   const step = isReversed ? -1 : 1;
 
-  const shouldContinue = () => {
-    if (inclusive) {
-      return isReversed
-        ? currentDate.greaterThanOrEqual(endDate)
-        : currentDate.lessThanOrEqual(endDate);
-    }
-    return isReversed
-      ? currentDate.greaterThan(endDate)
-      : currentDate.lessThan(endDate);
-  };
+  // Direction and bound are fixed, so select the comparison once.
+  const isInRange = inclusive
+    ? isReversed
+      ? CalendarDay.prototype.greaterThanOrEqual
+      : CalendarDay.prototype.lessThanOrEqual
+    : isReversed
+      ? CalendarDay.prototype.greaterThan
+      : CalendarDay.prototype.lessThan;
 
-  while (shouldContinue()) {
+  while (isInRange.call(currentDate, endDate)) {
     yield currentDate;
     currentDate = currentDate.add(unit, step);
   }
@@ -87,7 +114,6 @@ export class CalendarDay {
     return CalendarDay.from(new Date());
   }
 
-  /** Constructs a new CalendarDay instance from a Date object. */
   public static from(date: Date): CalendarDay {
     return new CalendarDay({
       year: date.getFullYear(),
@@ -107,20 +133,27 @@ export class CalendarDay {
    * ```
    */
   public static compare(first: DayParameter, second: DayParameter): number {
-    const a = toCalendarDay(first);
-    const b = toCalendarDay(second);
+    const diff = CalendarDay._key(first) - CalendarDay._key(second);
 
-    if (a.equalTo(b)) {
+    if (diff === 0) {
       return 0;
     }
-    return a.greaterThan(b) ? 1 : -1;
+    return diff > 0 ? 1 : -1;
+  }
+
+  /**
+   * Orders days by their date fields. A month view runs hundreds of comparisons
+   * per render, and a timestamp of a `Date` argument would need a new `Date`.
+   */
+  private static _key(value: DayParameter): number {
+    const date = value instanceof Date ? value : value._date;
+    return (date.getFullYear() * 16 + date.getMonth()) * 32 + date.getDate();
   }
 
   constructor(args: CalendarDayParams) {
-    this._date = new Date(args.year, args.month, args.date ?? 1);
+    this._date = createDate(args.year, args.month, args.date);
   }
 
-  /** Returns a copy of this instance. */
   public clone(): CalendarDay {
     return CalendarDay.from(this._date);
   }
@@ -131,12 +164,11 @@ export class CalendarDay {
     const month = args.month ?? this.month;
     const date = args.date ?? this.date;
 
-    // Clamp date to the last day of the month if it exceeds the month's days
+    // Clamp to the last day of the month when the date overflows it.
     if (date > 0) {
-      const temp = new Date(year, month, date);
+      const temp = createDate(year, month, date);
       if (temp.getMonth() !== month) {
-        const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
-        return new CalendarDay({ year, month, date: lastDayOfMonth });
+        return new CalendarDay({ year, month, date: daysInMonth(year, month) });
       }
     }
 
@@ -144,27 +176,20 @@ export class CalendarDay {
   }
 
   public add(unit: DayInterval, value: number): CalendarDay {
+    if (!Object.hasOwn(UNIT_STEPS, unit)) {
+      throw new Error(`Invalid interval: ${unit}`);
+    }
+
+    const [months, days] = UNIT_STEPS[unit];
     const result = this.clone();
 
-    switch (unit) {
-      case 'year':
-        result._date.setFullYear(result.year + value);
-        return checkRollover(this, result);
-      case 'quarter':
-        result._date.setMonth(result.month + 3 * value);
-        return checkRollover(this, result);
-      case 'month':
-        result._date.setMonth(result.month + value);
-        return checkRollover(this, result);
-      case 'week':
-        result._date.setDate(result.date + 7 * value);
-        return result;
-      case 'day':
-        result._date.setDate(result.date + value);
-        return result;
-      default:
-        throw new Error(`Invalid interval: ${unit}`);
+    if (months) {
+      result._date.setMonth(result.month + months * value);
+      return checkRollover(this, result);
     }
+
+    result._date.setDate(result.date + days * value);
+    return result;
   }
 
   /** Returns the day of the week (Sunday = 0). */
@@ -172,17 +197,14 @@ export class CalendarDay {
     return this._date.getDay();
   }
 
-  /** Returns the full year. */
   public get year(): number {
     return this._date.getFullYear();
   }
 
-  /** Returns the month. */
   public get month(): number {
     return this._date.getMonth();
   }
 
-  /** Returns the date */
   public get date(): number {
     return this._date.getDate();
   }
@@ -196,8 +218,8 @@ export class CalendarDay {
    * Returns the ISO 8601 week number.
    *
    * @remarks
-   * Week 1 is the week containing the first Thursday of the year.
-   * Weeks start on Monday. Some years can have 53 weeks.
+   * Week 1 holds the first Thursday of the year, weeks start on Monday, and
+   * a year can have 53 weeks.
    */
   public get week(): number {
     const target = new Date(this._date);
@@ -205,9 +227,9 @@ export class CalendarDay {
     const dayNum = target.getDay() || 7;
     target.setDate(target.getDate() + 4 - dayNum);
 
-    const yearStart = new Date(target.getFullYear(), 0, 1);
+    const yearStart = createDate(target.getFullYear());
 
-    // Calculate full weeks to nearest Thursday
+    // Full weeks up to the nearest Thursday.
     const weekNo = Math.ceil(
       ((target.getTime() - yearStart.getTime()) / MILLISECONDS_PER_DAY + 1) /
         DAYS_IN_WEEK
@@ -216,44 +238,42 @@ export class CalendarDay {
     return weekNo;
   }
 
-  /** Returns the underlying native date instance. */
+  /** Returns a copy of the underlying native `Date` instance. */
   public get native(): Date {
     return new Date(this._date);
   }
 
   /**
-   * Whether the current date is a weekend day.
-   *
-   * @remarks
-   * This is naive, since it does not account for locale specifics.
+   * Returns whether the current date is a weekend day. The check is naive
+   * and ignores locale specifics.
    */
   public get weekend(): boolean {
     return this.day < WEEKDAY_MIN || this.day > WEEKDAY_MAX;
   }
 
   public equalTo(value: DayParameter): boolean {
-    const other = toCalendarDay(value).timestamp;
-    return this.timestamp === other;
+    return this._diff(value) === 0;
   }
 
   public greaterThan(value: DayParameter): boolean {
-    const other = toCalendarDay(value).timestamp;
-    return this.timestamp > other;
+    return this._diff(value) > 0;
   }
 
   public greaterThanOrEqual(value: DayParameter): boolean {
-    const other = toCalendarDay(value).timestamp;
-    return this.timestamp >= other;
+    return this._diff(value) >= 0;
   }
 
   public lessThan(value: DayParameter): boolean {
-    const other = toCalendarDay(value).timestamp;
-    return this.timestamp < other;
+    return this._diff(value) < 0;
   }
 
   public lessThanOrEqual(value: DayParameter): boolean {
-    const other = toCalendarDay(value).timestamp;
-    return this.timestamp <= other;
+    return this._diff(value) <= 0;
+  }
+
+  /** Positive after `value`, negative before it, `NaN` for an invalid date. */
+  private _diff(value: DayParameter): number {
+    return CalendarDay._key(this) - CalendarDay._key(value);
   }
 
   public toString(): string {

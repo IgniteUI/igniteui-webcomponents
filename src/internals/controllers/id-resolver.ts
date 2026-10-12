@@ -1,16 +1,16 @@
 import { isServer, type LitElement, type ReactiveController } from 'lit';
 import { isDocument, isElement } from '../utils/dom.js';
+import { getOrInsertComputed } from '../utils/objects.js';
 
 const ID_REF_EMITTERS = new WeakMap<Node, IdRefChangeEmitter>();
 const ID_REF_EVENT = 'id-refs-change';
 
 function getEmitter(root: Node): IdRefChangeEmitter {
-  let emitter = ID_REF_EMITTERS.get(root);
-  if (!emitter) {
-    emitter = new IdRefChangeEmitter(root);
-    ID_REF_EMITTERS.set(root, emitter);
-  }
-  return emitter;
+  return getOrInsertComputed(
+    ID_REF_EMITTERS,
+    root,
+    () => new IdRefChangeEmitter(root)
+  );
 }
 
 /** Adds the ids of `nodes` and of any of their descendants to `affected`. */
@@ -49,8 +49,8 @@ function refObserverCallback(
 }
 
 /**
- * Emits events when ID references in a root node change, allowing components to reactively update resolved references.
- * Uses a reference counting mechanism to avoid unnecessary observation when no components are using it.
+ * Sends an event when an ID in a root node changes. Its consumers share one
+ * reference-counted observer.
  */
 class IdRefChangeEmitter extends EventTarget {
   private readonly _observer?: MutationObserver;
@@ -68,9 +68,7 @@ class IdRefChangeEmitter extends EventTarget {
     }
   }
 
-  /**
-   * Increment the reference count. Starts the underlying MutationObserver on the first call.
-   */
+  /** Starts the mutation observer on the first call. */
   public retain(): void {
     if (this._refCount++ === 0) {
       const root = isDocument(this._root) ? this._root.body : this._root;
@@ -83,9 +81,7 @@ class IdRefChangeEmitter extends EventTarget {
     }
   }
 
-  /**
-   * Decrement the reference count. Stops the underlying MutationObserver when the count reaches zero.
-   */
+  /** Stops the observer when the reference count reaches zero. */
   public release(): void {
     if (this._refCount > 0 && --this._refCount === 0) {
       this._observer?.disconnect();
@@ -93,15 +89,14 @@ class IdRefChangeEmitter extends EventTarget {
   }
 }
 
-/**
- * Reactive controller that allows a host component to resolve ID references
- * scoped to its root node, and react to changes in those references.
- */
+/** Resolves ID references in a root node. See {@link addIdRefResolver}. */
 class IdRefResolverController implements ReactiveController {
   private readonly _host: LitElement;
   private readonly _callback: (ids: Set<string>) => unknown;
+  /** Whether the consumer asked for the observation. */
   private _active = false;
-  private _connected = false;
+
+  /** The emitter of the current root node, non-null only while observing. */
   private _emitter: IdRefChangeEmitter | null = null;
 
   constructor(host: LitElement, callback: (ids: Set<string>) => unknown) {
@@ -111,6 +106,10 @@ class IdRefResolverController implements ReactiveController {
   }
 
   private _observe(): void {
+    if (this._emitter) {
+      return;
+    }
+
     const root = this._host.getRootNode();
     this._emitter = getEmitter(root);
     this._emitter.retain();
@@ -132,7 +131,6 @@ class IdRefResolverController implements ReactiveController {
 
   /** @internal */
   public hostConnected(): void {
-    this._connected = true;
     if (this._active) {
       this._observe();
     }
@@ -140,34 +138,29 @@ class IdRefResolverController implements ReactiveController {
 
   /** @internal */
   public hostDisconnected(): void {
-    if (this._active) {
-      this._unobserve();
-    }
-    this._connected = false;
+    this._unobserve();
   }
 
-  /** Start tracking ID reference changes in the document. */
   public observe(): void {
-    if (this._active) return;
     this._active = true;
-    if (this._connected) {
+
+    if (this._host.isConnected) {
       this._observe();
     }
   }
 
-  /** Stop tracking ID reference changes in the document. */
   public unobserve(): void {
-    if (!this._active) return;
     this._active = false;
-    if (this._connected) {
-      this._unobserve();
-    }
+    this._unobserve();
   }
 }
 
 /**
- * Adds an ID reference resolver controller to the host component, allowing it to resolve ID references scoped to
- * its root node and react to changes in those references.
+ * Adds a controller that resolves ID references in the root node of the host.
+ *
+ * @remarks
+ * The controller calls `callback` with the ids that changed. Call `observe`
+ * to start and `unobserve` to stop. A root node shares one observation.
  */
 export function addIdRefResolver(
   host: LitElement,

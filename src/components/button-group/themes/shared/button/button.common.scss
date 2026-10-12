@@ -20,7 +20,6 @@ $theme: $material;
         $icon-size: rem(18px);
 
         --ig-icon-size: #{$icon-size};
-        --igx-icon-size: #{$icon-size};
 
         min-height: $material-flat-btn-size;
         min-width: var(--button-min-width);

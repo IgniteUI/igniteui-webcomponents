@@ -1,27 +1,22 @@
-import { EaseInOut } from '../../easings.js';
 import { animation } from '../../types.js';
 
-const baseOptions: KeyframeAnimationOptions = {
-  duration: 350,
-  easing: EaseInOut.Quad,
-};
+const slide =
+  (axis: 'X' | 'Y', from: string, to: string) =>
+  (options?: KeyframeAnimationOptions) =>
+    animation(
+      [
+        { transform: `translate${axis}(${from})` },
+        { transform: `translate${axis}(${to})` },
+      ],
+      options
+    );
 
-const slideInHor = (options = baseOptions) =>
-  animation(
-    [
-      { transform: 'translateX(100%)', opacity: 0 },
-      { transform: 'translateX(0)', opacity: 1 },
-    ],
-    options
-  );
+const slideInHor = slide('X', '100%', '0');
+const slideOutHor = slide('X', '0', '-100%');
+const slideInVer = slide('Y', '100%', '0');
+const slideOutVer = slide('Y', '0', '-100%');
 
-const slideOutHor = (options = baseOptions) =>
-  animation(
-    [
-      { transform: 'translateX(0)', opacity: 1 },
-      { transform: 'translateX(-100%)', opacity: 0 },
-    ],
-    options
-  );
+/** An animation without keyframes, for a disabled transition. */
+const noop = () => animation([], {});
 
-export { slideInHor, slideOutHor };
+export { noop, slideInHor, slideInVer, slideOutHor, slideOutVer };

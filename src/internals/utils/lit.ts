@@ -1,8 +1,11 @@
 import { html, nothing, type TemplateResult } from 'lit';
 
 /**
- * Similar to Lit's `ifDefined` directive except one can check `assertion`
- * and bind a different `value` through this wrapper.
+ * Returns `value` when `assertion` is truthy, and `nothing` otherwise.
+ *
+ * @remarks
+ * Like the `ifDefined` directive of Lit, but the condition and the bound
+ * value are separate.
  */
 export function bindIf<T>(assertion: unknown, value: T): NonNullable<T> {
   return assertion

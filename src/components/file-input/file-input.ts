@@ -14,9 +14,11 @@ import { FormValueFileListTransformers } from '#internals/mixins/forms/form-tran
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
-import { hasFiles } from '#internals/utils/dom.js';
+import { hasNegativeTabIndex } from '#internals/utils/dom.js';
 import { bindIf } from '#internals/utils/lit.js';
+import { all } from '#themes/file-input/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
 import {
   IgcInputBaseComponent,
@@ -26,7 +28,6 @@ import { styles as baseStyle } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/file-input.base.css.js';
-import { all } from './themes/themes.js';
 import { fileValidators } from './validators.js';
 
 /* blazorSuppress */
@@ -66,7 +67,7 @@ const i18n: I18nControllerConfig<IFileInputResourceStrings> = {
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcChange - Emitted when the control's checked state changes.
+ * @fires igcChange - Emitted when the selection of the control changes.
  * @fires igcCancel - Emitted when the control's file picker dialog is canceled.
  *
  * @csspart container - The main wrapper that holds all main input elements.
@@ -86,7 +87,7 @@ export default class IgcFileInputComponent extends I18nMixin(
   i18n
 ) {
   public static readonly tagName = 'igc-file-input';
-  public static styles = [baseStyle, shared, styles];
+  public static styles = [componentBase, baseStyle, shared, styles];
 
   /* blazorSuppress */
   public static register(): void {
@@ -115,19 +116,18 @@ export default class IgcFileInputComponent extends I18nMixin(
   }
 
   private get _fileNames(): string | null {
-    if (!hasFiles(this)) {
+    const files = this._input?.files;
+
+    if (!files?.length) {
       return null;
     }
 
-    return Array.from(this.files)
+    return Array.from(files)
       .map((file) => file.name || 'unnamed')
       .join(', ');
   }
 
-  /**
-   * Indicates whether the file picker dialog is currently active.
-   * Used to manage validation on blur.
-   */
+  /** Whether the file picker dialog is open. Validation on blur depends on it. */
   @state()
   private _filePickerActive = false;
 
@@ -185,18 +185,14 @@ export default class IgcFileInputComponent extends I18nMixin(
   //#region Internal methods
 
   /**
-   * A file input cannot have a default file list, so the `value` attribute
-   * never contributes a default - otherwise its string would be stored as the
-   * FileList default and submitted character-by-character after a form reset.
+   * A file input has no default file list, so the `value` attribute gives no default.
+   * Otherwise a reset submits its string one character at a time.
    */
   protected override _setDefaultValue(): void {
     this._formValue.defaultValue = null;
   }
 
-  /**
-   * Restores directly instead of through the `value` setter: the setter is
-   * deliberately inert (read-only semantics) and never updates the form state.
-   */
+  /** Restores directly, because the read-only `value` setter never updates the form state. */
   protected override _restoreDefaultValue(): void {
     if (this._input) {
       this._input.value = '';
@@ -230,9 +226,17 @@ export default class IgcFileInputComponent extends I18nMixin(
     this._filePickerActive ? this._validate() : super._handleBlur();
   }
 
-  /* c8 ignore next 3 */
   protected _handleClick(): void {
     this._filePickerActive = true;
+  }
+
+  /**
+   * Focuses the native input and opens the file picker. Delegated focus alone
+   * goes to the browse button.
+   */
+  protected override _handleLabelActivation(): void {
+    this._input?.focus();
+    this._input?.click();
   }
 
   //#endregion
@@ -263,8 +267,6 @@ export default class IgcFileInputComponent extends I18nMixin(
   }
 
   protected override _renderInput() {
-    const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
-
     return html`
       <input
         ${ariaBindings(this._ariaTarget.resolveBindings())}
@@ -275,7 +277,7 @@ export default class IgcFileInputComponent extends I18nMixin(
         ?required=${this.required}
         ?autofocus=${this.autofocus}
         ?multiple=${this.multiple}
-        tabindex=${bindIf(hasNegativeTabIndex, -1)}
+        tabindex=${bindIf(hasNegativeTabIndex(this), -1)}
         accept=${bindIf(this.accept, this.accept)}
         @click=${this._handleClick}
         @change=${this._handleChange}

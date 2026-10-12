@@ -1,4 +1,3 @@
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
 
 :host {
@@ -15,6 +14,13 @@
 
 input[type='radio'] {
     @include hide-default();
+}
+
+// In a horizontal radio group the host is `display: contents`, so the messages are items of the group grid.
+// They come after all the radios, each in a row of its own.
+igc-validator {
+    grid-row: auto;
+    order: 1;
 }
 
 [part~='base'] {

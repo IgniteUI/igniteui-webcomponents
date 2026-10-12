@@ -1,6 +1,7 @@
+import { setOrRemoveAttribute } from '#internals/utils/dom.js';
 import type { SvgIcon } from './types.js';
 
-/** ARIA attributes that may reference stripped element IDs and need to be cleaned up. */
+/** ARIA attributes that can reference the IDs of stripped elements. */
 const ARIA_ID_REF_ATTRS = ['aria-labelledby', 'aria-describedby'] as const;
 
 /* blazorSuppress */
@@ -10,9 +11,8 @@ export class SvgIconParser {
   /**
    * Parses an SVG string into a {@link SvgIcon} descriptor.
    *
-   * @param stripMeta - Removes every `<title>` and `<desc>` element from the
-   *   stored markup. The title text is still returned in {@link SvgIcon.title},
-   *   so the host `<igc-icon>` can keep exposing it as its `aria-label`.
+   * @param stripMeta - Removes `<title>` and `<desc>` from the stored markup.
+   *   {@link SvgIcon.title} still holds the title for the host `aria-label`.
    */
   public parse(svgString: string, stripMeta = false): SvgIcon {
     // Created on first use so the registry can be constructed without a DOM.
@@ -26,8 +26,7 @@ export class SvgIconParser {
       throw new Error('SVG element not found or malformed SVG string.');
     }
 
-    // Only a direct child titles the icon as a whole - packs also put <title>
-    // elements on individual shapes.
+    // Read only a direct child. Icon packs also put <title> on single shapes.
     const title = svg.querySelector(':scope > title')?.textContent ?? undefined;
 
     if (stripMeta) {
@@ -37,11 +36,7 @@ export class SvgIconParser {
     return { svg: svg.outerHTML, title };
   }
 
-  /**
-   * Removes all `<title>` and `<desc>` elements, and with them any
-   * `aria-labelledby` / `aria-describedby` id they were the target of -
-   * a reference left dangling would be invalid markup.
-   */
+  /** Removes `<title>` and `<desc>` and the ARIA ID references to them. */
   private _stripMetaElements(svg: SVGElement): void {
     const strippedIds = new Set<string>();
 
@@ -67,11 +62,7 @@ export class SvgIconParser {
         .filter((id) => !strippedIds.has(id))
         .join(' ');
 
-      if (cleaned) {
-        svg.setAttribute(attr, cleaned);
-      } else {
-        svg.removeAttribute(attr);
-      }
+      setOrRemoveAttribute(svg, attr, cleaned || null);
     }
   }
 }

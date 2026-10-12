@@ -4,6 +4,7 @@ import {
   type DirectiveParameters,
   directive,
 } from 'lit/async-directive.js';
+import { sameItems } from '#internals/utils/arrays.js';
 import { isFunction } from '#internals/utils/types.js';
 import { getPrefersReducedMotion } from './player.js';
 
@@ -14,13 +15,21 @@ type ScopedViewTransitionElement = HTMLElement & {
   activeViewTransition?: ViewTransition | null;
 };
 
-/**
- * Returns true if the specified node supports scoped view transitions, false otherwise.
- */
 function hasScopedViewTransition(
   node: Node
 ): node is ScopedViewTransitionElement {
   return 'startViewTransition' in node && isFunction(node.startViewTransition);
+}
+
+/** Handles the `ready` rejection of a skipped transition, and skips it on reduced motion. */
+function prepareTransition(transition: ViewTransition): ViewTransition {
+  transition.ready.catch(() => {});
+
+  if (getPrefersReducedMotion()) {
+    transition.skipTransition();
+  }
+
+  return transition;
 }
 
 /**
@@ -31,86 +40,62 @@ export function startViewTransition(
 ): ViewTransition {
   const init = globalThis.document?.startViewTransition;
 
-  /* c8 ignore next 11 */
+  /* c8 ignore next 10 */
   if (!init) {
-    callback();
-    const resolved = Promise.resolve();
+    const done = Promise.resolve(callback()).then(() => {});
 
     return {
-      finished: resolved,
-      ready: resolved,
-      updateCallbackDone: resolved,
+      finished: done,
+      ready: done,
+      updateCallbackDone: done,
       skipTransition: () => {},
     } as ViewTransition;
   }
 
-  const transition = init.call(globalThis.document, callback);
-
-  if (getPrefersReducedMotion()) {
-    transition.skipTransition();
-  }
-
-  return transition;
+  return prepareTransition(init.call(globalThis.document, callback));
 }
 
 /**
- * Starts a scoped view transition on the specified target element and skips it if the user has requested reduced motion.
+ * Starts a scoped view transition on the target and skips it if the user has requested reduced motion.
+ * Returns null, without calling `callback`, if the target does not support scoped view transitions.
  */
 export function startScopedViewTransition(
-  target: HTMLElement,
+  target: Node,
   callback: ViewTransitionUpdateCallback
 ): ViewTransition | null {
-  if (!hasScopedViewTransition(target)) {
-    return null;
-  }
-
-  const transition = target.startViewTransition(callback);
-
-  if (getPrefersReducedMotion()) {
-    transition.skipTransition();
-  }
-
-  return transition;
+  return hasScopedViewTransition(target)
+    ? prepareTransition(target.startViewTransition(callback))
+    : null;
 }
 
-/**
- * Sets the view transition name for the specified target element.
- */
 export function setTransitionName(target: HTMLElement, name: string): void {
   target.style.viewTransitionName = name;
 }
 
-/**
- * Clears the view transition name for the specified target elements.
- */
 export function clearTransitionName(...targets: HTMLElement[]): void {
   for (const target of targets) {
     target.style.viewTransitionName = '';
   }
 }
 
-/**
- * Returns the active view transition if one is currently in progress, or null otherwise.
- */
 export function getActiveViewTransition(): ViewTransition | null {
   return globalThis.document?.activeViewTransition ?? null;
 }
 
-/**
- * Returns the active scoped view transition for the specified target element if one is currently in progress, or null otherwise.
- */
 export function getActiveScopedViewTransition(
   target: Node
 ): ViewTransition | null {
-  if (!hasScopedViewTransition(target)) {
-    return null;
-  }
+  return hasScopedViewTransition(target)
+    ? (target.activeViewTransition ?? null)
+    : null;
+}
 
-  return target.activeViewTransition ?? null;
+function isSameTemplate(a: TemplateResult, b: TemplateResult): boolean {
+  return a.strings === b.strings && sameItems(a.values, b.values);
 }
 
 class ScopedViewTransitionDirective extends AsyncDirective {
-  private _isFirstRender = true;
+  private _template?: TemplateResult;
 
   public override render(template: TemplateResult): TemplateResult {
     return template;
@@ -119,40 +104,31 @@ class ScopedViewTransitionDirective extends AsyncDirective {
   public override update(
     part: ChildPart,
     [template]: DirectiveParameters<this>
-  ) {
-    if (this._isFirstRender) {
-      this._isFirstRender = false;
+  ): TemplateResult | typeof noChange {
+    const previous = this._template;
+    this._template = template;
+
+    if (!previous || isSameTemplate(previous, template)) {
       return this.render(template);
     }
 
-    const parent = part.parentNode;
-
-    if (!hasScopedViewTransition(parent)) {
-      return this.render(template);
-    }
-
-    const transition = parent.startViewTransition(() => {
+    const transition = startScopedViewTransition(part.parentNode, () => {
       this.setValue(template);
+      // Let nested elements render before the new state is captured.
       return new Promise((resolve) => requestAnimationFrame(resolve));
     });
 
-    if (getPrefersReducedMotion()) {
-      transition.skipTransition();
-    }
-
-    return noChange;
+    return transition ? noChange : this.render(template);
   }
 }
 
 /**
- * A directive that enables scoped view transitions for a template.
- *
- * When applied, it will start a view transition whenever the template is updated,
- * provided that the parent node supports view transitions.
- * If the user has requested reduced motion, the transition will be skipped.
+ * Starts a scoped view transition on the parent element when the template changes.
+ * The first render and an unchanged template (same strings and values) start no transition.
+ * Reduced motion skips the transition.
  *
  * @remarks
- * This directive is intended to be used with Lit templates inside a component that supports view transitions.
- * It will not work if the parent node does not support view transitions (e.g., if the parent is not a document or element that implements the ViewTransition interface).
+ * The parent node must implement `Element.startViewTransition()`. Otherwise the
+ * template renders directly, without a transition.
  */
 export const scopedViewTransition = directive(ScopedViewTransitionDirective);

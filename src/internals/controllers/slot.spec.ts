@@ -247,4 +247,31 @@ describe('Slots controller', () => {
       expect(startSlot.slot).to.equal('start');
     });
   });
+
+  describe('Without observed slots', () => {
+    it('runs the onChange callback for every slot', async () => {
+      const changes: string[] = [];
+      const tagName = unsafeStatic(
+        defineCE(
+          class extends LitElement {
+            public readonly slotController = addSlotController(this, {
+              onChange: ({ slot }) => changes.push(slot),
+            });
+
+            protected override render() {
+              return html`<slot name="start"></slot><slot></slot>`;
+            }
+          }
+        )
+      );
+
+      const host = await fixture<LitElement>(html`<${tagName}></${tagName}>`);
+      const element = document.createElement('span');
+      element.slot = 'start';
+      host.append(element, document.createElement('span'));
+      await elementUpdated(host);
+
+      expect(changes).to.have.members(['start', '']);
+    });
+  });
 });

@@ -11,6 +11,6 @@
     }
 }
 
-[part='base mini'] {
+[part~='base'][part~='mini'] {
     padding: pad(rem(8px));
 }

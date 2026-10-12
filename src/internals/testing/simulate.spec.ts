@@ -124,19 +124,11 @@ interface MockInputEventConfig extends InputEventInit {
   /** The value to set on the passed input */
   value?: string;
 
-  /**
-   * Whether to skip setting the value to the input target.
-   * Useful when the test scenario cares for the handling of the event.
-   */
+  /** Skips the value assignment, so that only the event fires. */
   skipValueProperty?: boolean;
 }
 
-/**
- * Simulates input interaction for a given input DOM element.
- *
- * @param input - the input element
- * @param options - a {@link MockInputEventConfig} object
- */
+/** Simulates input interaction for a given input DOM element. */
 export function simulateInput(
   input: HTMLInputElement | HTMLTextAreaElement,
   options: MockInputEventConfig = { value: '', skipValueProperty: false }
@@ -150,8 +142,6 @@ export function simulateInput(
 /**
  * Simulates keyboard interaction on a given element node.
  *
- * @param node - the target element
- * @param key - the key(s) to simulate
  * @param times - how many times to simulate keydown with the passed key(s). Defaults to 1.
  */
 export function simulateKeyboard(
@@ -191,9 +181,7 @@ export function simulateKeyboard(
   }
 }
 
-/**
- * Simulates scrolling for a given element.
- */
+/** Simulates scrolling for a given element. */
 export async function simulateScroll(
   node: Element,
   options?: ScrollToOptions
@@ -204,9 +192,7 @@ export async function simulateScroll(
   await nextFrame();
 }
 
-/**
- * Simulates a wheel event for a given element.
- */
+/** Simulates a wheel event for a given element. */
 export function simulateWheel(node: Element, options?: WheelEventInit): void {
   node.dispatchEvent(
     new WheelEvent('wheel', { bubbles: true, composed: true, ...options })

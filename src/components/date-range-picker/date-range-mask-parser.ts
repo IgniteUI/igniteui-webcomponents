@@ -8,9 +8,11 @@ import {
 import {
   DateFormatMaskParser,
   DateTimeMaskParser,
-  DEFAULT_DATETIME_FORMAT,
 } from '../date-time-input/datetime-mask-parser.js';
-import type { MaskOptions } from '../mask-input/mask-parser.js';
+import {
+  escapeMaskFlags,
+  type MaskOptions,
+} from '../mask-input/mask-parser.js';
 import type { DateRangeValue } from '../types.js';
 
 //#region Types and Enums
@@ -30,7 +32,6 @@ export interface DateRangePart {
 export enum DateRangePosition {
   Start = 'start',
   End = 'end',
-  Separator = 'separator',
 }
 
 /**
@@ -41,7 +42,6 @@ export interface IDateRangePart extends IDatePart {
   position: DateRangePosition;
 }
 
-/** Options for the DateRangeMaskParser */
 export interface DateRangeMaskOptions extends MaskOptions {
   /** Separator (defaults to ' - ') */
   separator?: string;
@@ -51,15 +51,13 @@ export interface DateRangeMaskOptions extends MaskOptions {
 
 //#region Constants
 
-/** Default separator between start and end dates */
 const DEFAULT_SEPARATOR = ' - ';
 
 //#endregion
 
 /**
- * Re-creates one date's parts at their position within the range. Going back through the
- * factory keeps them real part instances - spreading would copy the data and lose the
- * prototype along with it.
+ * Re-creates one date's parts at their range position. The factory keeps real part
+ * instances; a spread loses the prototype.
  */
 function offsetParts(
   parts: ReadonlyArray<IDatePart>,
@@ -79,51 +77,63 @@ function offsetParts(
 }
 
 /**
- * A specialized mask parser for date range input fields.
- * Uses composition with two DateTimeMaskParser instances to handle start and end dates.
- *
- * Accepts a single date format (e.g., 'MM/dd/yyyy') which creates two parsers
- * internally, one for the start date and one for the end date.
- *
- * @example
- * ```ts
- * const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
- * parser.parseDateRange('12/25/2023 - 12/31/2023'); // Returns DateRangeValue
- * parser.formatDateRange({ start: date1, end: date2 }); // Returns formatted string
- * ```
+ * A mask parser for date range inputs. A single date format (e.g. 'MM/dd/yyyy') creates
+ * two internal DateTimeMaskParser instances, one for each end of the range.
  */
 export class DateRangeMaskParser extends DateFormatMaskParser<IDateRangePart> {
   private _startParser: DateTimeMaskParser;
   private _endParser: DateTimeMaskParser;
 
-  /** The separator between start and end dates */
   private _separator: string;
 
-  /** Start position of the separator in the mask */
-  private _separatorStart: number;
+  private _separatorStart!: number;
 
-  /** End position of the separator in the mask */
-  private _separatorEnd: number;
+  private _separatorEnd!: number;
 
-  /**
-   * Gets the separator string used between start and end dates.
-   */
+  /** The separator between start and end dates. */
   public get separator(): string {
     return this._separator;
   }
 
   constructor(options?: DateRangeMaskOptions) {
-    const format = options?.format || DEFAULT_DATETIME_FORMAT;
     const separator = options?.separator || DEFAULT_SEPARATOR;
     const promptCharacter = options?.promptCharacter;
+    const startParser = new DateTimeMaskParser({
+      format: options?.format,
+      promptCharacter,
+    });
+    const format = startParser.mask;
 
     super({ format: `${format}${separator}${format}`, promptCharacter });
 
-    this._startParser = new DateTimeMaskParser({ format, promptCharacter });
+    this._startParser = startParser;
     this._endParser = new DateTimeMaskParser({ format, promptCharacter });
     this._separator = separator;
+    this._setSeparatorBounds();
+
+    // Parse again. The base constructor ran before the separator was set.
+    this._parseMaskLiterals();
+  }
+
+  private _setSeparatorBounds(): void {
     this._separatorStart = this._startParser.mask.length;
-    this._separatorEnd = this._separatorStart + separator.length;
+    this._separatorEnd = this._separatorStart + this._separator.length;
+  }
+
+  /**
+   * Converts each date as a single date format and escapes the separator letters.
+   * Returns an empty pattern while the base constructor runs.
+   */
+  protected override _toMaskFormat(format: string): string {
+    if (this._separator === undefined) {
+      return '';
+    }
+
+    return (
+      super._toMaskFormat(format.slice(0, this._separatorStart)) +
+      escapeMaskFlags(this._separator) +
+      super._toMaskFormat(format.slice(this._separatorEnd))
+    );
   }
 
   protected override _buildParts(): IDateRangePart[] {
@@ -146,11 +156,10 @@ export class DateRangeMaskParser extends DateFormatMaskParser<IDateRangePart> {
   public override set mask(value: string) {
     this._startParser.mask = value;
     this._endParser.mask = value;
+    this._setSeparatorBounds();
 
-    this._separatorStart = this._startParser.mask.length;
-    this._separatorEnd = this._separatorStart + this._separator.length;
-
-    super.mask = `${value}${this._separator}${value}`;
+    const format = this._startParser.mask;
+    super.mask = `${format}${this._separator}${format}`;
   }
 
   public override get mask(): string {
@@ -161,10 +170,8 @@ export class DateRangeMaskParser extends DateFormatMaskParser<IDateRangePart> {
    * Sets the prompt character and updates both parsers.
    *
    * @remarks
-   * Each half of the range is parsed and formatted by its own sub-parser, so all three
-   * have to agree on the prompt. Read back through `super` rather than propagating the
-   * argument, since the base setter normalizes it to a single character and rejects one
-   * that collides with a mask flag.
+   * All three parsers must agree on the prompt. It is read back through `super`, because
+   * the base setter normalizes the value.
    */
   public override set prompt(value: string) {
     super.prompt = value;
@@ -179,10 +186,7 @@ export class DateRangeMaskParser extends DateFormatMaskParser<IDateRangePart> {
 
   //#region Date Range Parsing
 
-  /**
-   * Parses a masked string into a DateRangeValue using the two internal parsers.
-   * Returns null if the string cannot be parsed.
-   */
+  /** Parses a masked string into a DateRangeValue. Returns null if parsing fails. */
   public parseDateRange(masked: string): DateRangeValue | null {
     if (!masked || masked === this.emptyMask) {
       return null;
@@ -239,10 +243,7 @@ export class DateRangeMaskParser extends DateFormatMaskParser<IDateRangePart> {
 
   //#region Spinning Support
 
-  /**
-   * Spins a date part within the range (for stepUp/stepDown functionality).
-   * Delegates to the underlying date part's spin method.
-   */
+  /** Spins a date part within the range, for stepUp/stepDown. */
   public spinDateRangePart(
     part: IDateRangePart,
     delta: number,

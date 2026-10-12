@@ -1,54 +1,42 @@
-/**
- * A utility class that wraps AbortController, allowing its signal to be
- * used for event listeners and providing a mechanism to reset it,
- * effectively generating a fresh AbortController instance on subsequent access
- * after an abort call.
- */
+/** A resettable `AbortController`. See {@link createAbortHandle}. */
 class AbortHandle {
-  private _controller: AbortController;
-
-  constructor() {
-    this._controller = new AbortController();
-  }
-
   /**
-   * Returns the AbortSignal associated with the current AbortController instance.
-   * This signal can be passed to functions like `addEventListener` or `fetch`.
+   * The current controller, created by a read of `signal`. A handle that
+   * aborts without such a read allocates nothing.
    */
+  private _controller?: AbortController;
+
+  /** The signal of the current controller. */
   public get signal(): AbortSignal {
+    this._controller ??= new AbortController();
     return this._controller.signal;
   }
 
   /**
-   * Aborts the current AbortController instance and immediately creates a new,
-   * fresh AbortController.
-   *
-   * Any operations or event listeners associated with the previous signal
-   * will be aborted. Subsequent accesses to `signal` will return the
-   * signal from the new controller.
+   * Aborts the current controller, then drops it. The next read of `signal`
+   * gives the signal of a new controller.
    */
   public abort(reason?: unknown): void {
-    this._controller.abort(reason);
-    this._controller = new AbortController();
+    this._controller?.abort(reason);
+    this._controller = undefined;
   }
 
   /**
-   * Resets the controller without triggering an abort.
-   * This is useful if you want to explicitly get a fresh signal without
-   * aborting any ongoing operations from the previous signal.
+   * Drops the current controller without aborting it, to get a new signal
+   * while the previous operations continue.
    */
   public reset(): void {
-    this._controller = new AbortController();
+    this._controller = undefined;
   }
 }
 
 /**
- * Creates and returns an `AbortHandle` object that wraps an AbortController,
- * providing a resettable AbortSignal. This allows you to use the signal for event
- * listeners, fetch requests, or other cancellable operations, and then
- * reset the underlying AbortController to get a fresh signal without
- * needing to create a new wrapper object.
+ * Creates an `AbortHandle`, which wraps an `AbortController` and gives a
+ * signal that the caller can reset. An abort or a reset installs a new
+ * controller, so the caller keeps the same handle.
  */
 export function createAbortHandle(): AbortHandle {
   return new AbortHandle();
 }
+
+export type { AbortHandle };

@@ -1,9 +1,8 @@
 @use 'styles/utilities' as *;
 @use '../../light/themes' as *;
 
-// In indigo theme the current date background has higher specificity then the special date background
-// so when user change the special date background the current date background will be applied when both states are set
-// However the text color and the inner circle border color of the special date will be visible to make the special date recognizable
+// The current date background has higher specificity than the special date background, so it wins when both states apply.
+// The special date text color and inner circle border stay visible, so the special date is still recognizable.
 
 $theme: $indigo;
 $border-width: rem(1px);

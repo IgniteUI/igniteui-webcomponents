@@ -5,7 +5,7 @@
 $theme: $fluent;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $theme));
+    @include css-vars-from-theme(dark-overrides(light.$fluent, $theme));
 }
 
 @mixin chip-outlined-variants-dark($variant, $variant-color, $border-shade, $color-shade) {

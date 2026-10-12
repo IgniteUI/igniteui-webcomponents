@@ -7,19 +7,22 @@ import type { ChatState } from '../components/chat/chat-state.js';
 import type IgcTileManagerComponent from '../components/tile-manager/tile-manager.js';
 
 export type ButtonGroupContext = {
-  /** The igc-button-group instance. */
+  /** The `igc-button-group` instance. */
   instance: IgcButtonGroupComponent;
   /**
-   * Reconciles the group with a button that has turned selected on its own,
-   * so that the single selection modes can drop the previous selection.
+   * Reconciles the group with a button that changes its own state. A single
+   * selection mode drops the previous selection, and the roving tab stop
+   * moves off a button that can no longer hold it.
    */
-  syncSelection: (button: IgcToggleButtonComponent) => void;
+  syncState: (button: IgcToggleButtonComponent) => void;
+  /** Whether `button` is the tab stop of the group. */
+  isTabStop: (button: IgcToggleButtonComponent) => boolean;
 };
 
 export type TileManagerContext = {
-  /** The igc-tile-manager instance. */
+  /** The `igc-tile-manager` instance. */
   instance: IgcTileManagerComponent;
-  /** The internal CSS grid container of the igc-tile-manager. */
+  /** The internal CSS grid container of the `igc-tile-manager`. */
   grid: Ref<HTMLElement>;
   /** Synchronizes the tile manager with the maximized state of its tiles. */
   setMaximizedState: () => void;
@@ -42,7 +45,10 @@ const chatUserInputContext = createContext<ChatState>(
   Symbol('chat-user-input-context')
 );
 
+const breadcrumbsContext = createContext<string>(Symbol('breadcrumbs-context'));
+
 export {
+  breadcrumbsContext,
   buttonGroupContext,
   carouselContext,
   chatContext,

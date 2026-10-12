@@ -15,6 +15,7 @@ import {
   simulateFocus,
   simulatePointerEnter,
   simulatePointerLeave,
+  simulateScroll,
 } from '#internals/testing/simulate.spec.js';
 import IgcTooltipComponent from './tooltip.js';
 
@@ -97,7 +98,6 @@ describe('Tooltip', () => {
         `<igc-popover
           inert
           flip
-          shift
         >
           <div part="base">
             <slot></slot>
@@ -115,7 +115,6 @@ describe('Tooltip', () => {
       expect(tooltip).shadowDom.to.equal(
         `<igc-popover
           flip
-          shift
           open
         >
           <div part="base">
@@ -170,8 +169,6 @@ describe('Tooltip', () => {
       const second = document.querySelector('#second') as HTMLButtonElement;
       const third = document.querySelector('#third') as HTMLButtonElement;
 
-      // If no anchor is provided.
-      // Considers the first preceding sibling that is an element as the target.
       simulatePointerEnter(third);
       await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
@@ -182,7 +179,6 @@ describe('Tooltip', () => {
       await hideComplete();
       expect(tooltip.open).to.be.false;
 
-      // By providing an IDREF
       tooltip.anchor = first.id;
       await elementUpdated(tooltip);
 
@@ -196,7 +192,6 @@ describe('Tooltip', () => {
       await hideComplete();
       expect(tooltip.open).to.be.false;
 
-      // By providing an Element
       simulatePointerEnter(second);
       await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
@@ -298,6 +293,44 @@ describe('Tooltip', () => {
       await elementUpdated(tooltip);
 
       expect(popover.arrow).to.be.null;
+    });
+
+    it('should offset the arrow of an aligned placement toward its alignment', async () => {
+      const popover = tooltip.renderRoot.querySelector('igc-popover')!;
+      const cases: Array<[IgcTooltipComponent['placement'], number]> = [
+        ['bottom', 0],
+        ['bottom-start', -8],
+        ['bottom-end', 8],
+        ['left-start', -8],
+        ['right-end', 8],
+      ];
+
+      tooltip.withArrow = true;
+
+      for (const [placement, offset] of cases) {
+        tooltip.placement = placement;
+        await elementUpdated(tooltip);
+
+        expect(popover.arrowOffset, placement).to.equal(offset);
+      }
+    });
+
+    it('should mirror the arrow offset of vertical placements only in RTL', async () => {
+      const popover = tooltip.renderRoot.querySelector('igc-popover')!;
+      tooltip.dir = 'rtl';
+      tooltip.withArrow = true;
+
+      tooltip.placement = 'top-start';
+      await elementUpdated(tooltip);
+      expect(popover.arrowOffset).to.equal(8);
+
+      tooltip.placement = 'top-end';
+      await elementUpdated(tooltip);
+      expect(popover.arrowOffset).to.equal(-8);
+
+      tooltip.placement = 'left-start';
+      await elementUpdated(tooltip);
+      expect(popover.arrowOffset).to.equal(-8);
     });
 
     it('should provide content via the `message` property', async () => {
@@ -426,7 +459,6 @@ describe('Tooltip', () => {
         `<igc-popover
           inert
           flip
-          shift
         >
           <div part="base">
             <slot></slot>
@@ -640,7 +672,7 @@ describe('Tooltip', () => {
       expect(result).to.be.true;
       expect(tooltip.open).to.be.false;
 
-      // the transient anchor should not reopen the tooltip once its hidden
+      // The transient anchor must not reopen the tooltip once it is hidden.
       simulatePointerEnter(transientAnchor);
       await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
@@ -688,6 +720,52 @@ describe('Tooltip', () => {
 
       expect(eventSpy).calledWith('igcOpening', { cancelable: true });
       expect(eventSpy).calledWith('igcOpened', { cancelable: false });
+    });
+  });
+
+  describe('Scroll strategy', () => {
+    let container: HTMLElement;
+
+    beforeEach(async () => {
+      container = await fixture(html`
+        <div style="height: 1200px">
+          <button id="target">I have a tooltip</button>
+          <igc-tooltip anchor="target">It works!</igc-tooltip>
+        </div>
+      `);
+      tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
+    });
+
+    it('`scroll` behavior', async () => {
+      tooltip.scrollStrategy = 'scroll';
+      await tooltip.show();
+      await simulateScroll(container, { top: 200 });
+      await hideComplete();
+
+      expect(tooltip.open).to.be.true;
+    });
+
+    it('`close` behavior', async () => {
+      const eventSpy = spy(tooltip, 'emitEvent');
+
+      tooltip.scrollStrategy = 'close';
+      await tooltip.show();
+      await simulateScroll(container, { top: 200 });
+      await hideComplete();
+
+      expect(tooltip.open).to.be.false;
+      expect(eventSpy.firstCall).calledWith('igcClosing');
+      expect(eventSpy.lastCall).calledWith('igcClosed');
+    });
+
+    it('`close` dismisses a sticky tooltip too', async () => {
+      tooltip.sticky = true;
+      tooltip.scrollStrategy = 'close';
+      await tooltip.show();
+      await simulateScroll(container, { top: 200 });
+      await hideComplete();
+
+      expect(tooltip.open).to.be.false;
     });
   });
 
@@ -826,7 +904,6 @@ describe('Tooltip', () => {
       await showComplete();
       expect(tooltip.open).to.be.true;
 
-      // Move cursor from anchor to tooltip
       simulatePointerLeave(anchor);
       await nextFrame();
       simulatePointerEnter(tooltip);
@@ -834,7 +911,6 @@ describe('Tooltip', () => {
 
       expect(tooltip.open).to.be.true;
 
-      // Move cursor outside the tooltip
       simulatePointerLeave(tooltip);
       await clock.tickAsync(DEFAULT_HIDE_DELAY);
       await hideComplete();
@@ -857,6 +933,47 @@ describe('Tooltip', () => {
 
       await clock.tickAsync(1);
       await hideComplete(tooltip);
+      expect(tooltip.open).to.be.false;
+    });
+
+    it('toggles on a trigger that both shows and hides', async () => {
+      // `click` is also one of the default hide triggers.
+      tooltip.showTriggers = 'click';
+
+      simulateClick(anchor);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      await showComplete();
+      expect(tooltip.open).to.be.true;
+
+      simulateClick(anchor);
+      await clock.tickAsync(DEFAULT_HIDE_DELAY);
+      await hideComplete();
+      expect(tooltip.open).to.be.false;
+    });
+
+    it('drops the anchor when `anchor` changes to an ID that does not resolve', async () => {
+      expect(anchor.hasAttribute('aria-describedby')).to.be.true;
+
+      tooltip.anchor = 'missing-anchor';
+      await elementUpdated(tooltip);
+
+      expect(anchor.hasAttribute('aria-describedby')).to.be.false;
+
+      simulatePointerEnter(anchor);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      await showComplete();
+      expect(tooltip.open).to.be.false;
+    });
+
+    it('has no show triggers once the `show-triggers` attribute is removed', async () => {
+      tooltip.setAttribute('show-triggers', 'focusin');
+      tooltip.removeAttribute('show-triggers');
+      await elementUpdated(tooltip);
+
+      simulatePointerEnter(anchor);
+      simulateFocus(anchor);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      await showComplete();
       expect(tooltip.open).to.be.false;
     });
 
@@ -1144,6 +1261,27 @@ describe('Tooltip', () => {
       await hideComplete(tooltip);
 
       expect(tooltip.open).to.be.false;
+    });
+
+    it('ignores keys other than Escape while a tooltip is shown', async () => {
+      const container = await fixture(createTooltips());
+      const [tooltip] = container.querySelectorAll(IgcTooltipComponent.tagName);
+      const hideSpy = spy(tooltip, 'hide');
+
+      await tooltip.show();
+      await showComplete(tooltip);
+
+      document.documentElement.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Enter',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await clock.tickAsync(DEFAULT_HIDE_DELAY);
+
+      expect(hideSpy).not.called;
+      expect(tooltip.open).to.be.true;
     });
 
     it('pressing Escape in an active page with multiple opened tooltips hides the last shown', async () => {

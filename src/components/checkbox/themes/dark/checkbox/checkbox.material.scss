@@ -5,7 +5,7 @@
 $theme: $material;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $theme));
+    @include css-vars-from-theme(dark-overrides(light.$material, $theme));
 }
 
 [part~='base']:hover {

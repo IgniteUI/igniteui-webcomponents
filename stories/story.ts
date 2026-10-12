@@ -1,5 +1,6 @@
 import type { ArgTypes, Meta } from '@storybook/web-components-vite';
-import { html } from 'lit';
+import { html, render } from 'lit';
+import { ref } from 'lit/directives/ref.js';
 
 import { IgcDialogComponent, defineComponents } from 'igniteui-webcomponents';
 defineComponents(IgcDialogComponent);
@@ -55,4 +56,147 @@ function randomBetween(min: number, max: number): number {
 
 export function randomIntBetween(min: number, max: number): number {
   return Math.floor(randomBetween(Math.ceil(min), Math.floor(max) + 1));
+}
+
+/** Formats US dollars with cents, for example "$1,234.50". */
+export const dollars = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+});
+
+/** Formats US dollars rounded to whole dollars, for example "$1,235". */
+export const wholeDollars = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 0,
+});
+
+/**
+ * `plural(2, 'night')` is "2 nights", and
+ * `plural(1, 'file is', 'files are')` is "1 file is".
+ */
+export function plural(count: number, one: string, other = `${one}s`): string {
+  return `${count} ${count === 1 ? one : other}`;
+}
+
+/** Resolves after `ms` milliseconds, for example to simulate a request. */
+export function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function prefersReducedMotion(): boolean {
+  return matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
+ * Focuses a component after its update. A component that has not rendered
+ * yet has nothing in its shadow root to focus, so `focus()` does nothing.
+ */
+export async function focusAfterUpdate(
+  element?: (HTMLElement & { updateComplete: Promise<unknown> }) | null
+): Promise<void> {
+  await element?.updateComplete;
+  element?.focus();
+}
+
+/** Reads `key` from `localStorage`, or `null` when the browser blocks it. */
+export function readStored(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+/** Writes `value` to `localStorage`, or removes `key` when `value` is `null`. */
+export function writeStored(key: string, value: string | null): void {
+  try {
+    value === null
+      ? localStorage.removeItem(key)
+      : localStorage.setItem(key, value);
+  } catch {
+    // The value then lasts only until the page reloads.
+  }
+}
+
+/**
+ * The classes that many stories share. `.sr-only` hides text and keeps it for
+ * assistive technologies, because `igc-visually-hidden` is not public.
+ * `.muted` is secondary text.
+ */
+export const storyStyles = html`
+  <style>
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .muted {
+      color: var(--ig-gray-700);
+    }
+  </style>
+`;
+
+/**
+ * Renders `view()` into an element on each `update()` call. Bind `mount` on
+ * the element. Storybook disconnects and connects the story root, so `mount`
+ * runs again with the same element and renders it again.
+ */
+export function renderInto(view: () => unknown) {
+  let host: HTMLElement | undefined;
+
+  const update = () => {
+    if (host) {
+      render(view(), host);
+    }
+  };
+
+  return {
+    mount: ref((element) => {
+      host = element as HTMLElement | undefined;
+      update();
+    }),
+    update,
+    get host() {
+      return host;
+    },
+  };
+}
+
+/**
+ * A panel that scrolls, with `control` between a hint and enough text to
+ * scroll, for the `scroll-strategy` stories.
+ */
+export function scrollingPanel(
+  heading: string,
+  subject: string,
+  filler: string,
+  control: unknown
+) {
+  return html`
+    <style>
+      .story-scrolling-panel {
+        max-width: 46rem;
+        height: 16rem;
+        overflow: auto;
+        padding: 1rem;
+        border: 1px solid var(--ig-gray-200, #e0e0e0);
+        border-radius: 4px;
+      }
+    </style>
+
+    <div class="story-scrolling-panel">
+      <h4>${heading}</h4>
+      <p>
+        Open the ${subject} and scroll this panel to compare the scroll
+        strategies.
+      </p>
+      ${control}
+      <p>${`${filler} `.repeat(23)}</p>
+    </div>
+  `;
 }

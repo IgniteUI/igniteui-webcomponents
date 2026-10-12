@@ -1,30 +1,19 @@
-import type { ReactiveController, ReactiveControllerHost } from 'lit';
+import type { ReactiveControllerHost } from 'lit';
+import { addHostListeners } from './host-listeners.js';
 
-/**
- * Callback invoked when the host element is about to enter/leave fullscreen mode.
- *
- * The callback is passed the current fullscreen `state`.
- * Returning a falsy value from the callback will stop the current fullscreen state change.
- */
-type FullscreenControllerCallback = (state: boolean) => boolean;
-
-/** Configuration object for the fullscreen controller. */
 type FullscreenControllerConfiguration = {
   /**
-   * Invoked when the host element is entering fullscreen mode.
-   * See the {@link FullscreenControllerCallback} for details.
+   * Runs when the host enters or leaves fullscreen mode, with the new `state`.
+   * Before a {@link FullscreenController.setState} change it is `cancelable`,
+   * and a falsy return value stops the change. After a change by the browser
+   * it is not, and the return value is ignored.
    */
-  enter?: FullscreenControllerCallback;
-  /**
-   * Invoked when the host element is leaving fullscreen mode.
-   * See the {@link FullscreenControllerCallback} for details.
-   */
-  exit?: FullscreenControllerCallback;
+  onChange?: (state: boolean, cancelable: boolean) => boolean;
 };
 
-class FullscreenController implements ReactiveController {
+class FullscreenController {
   private _host: ReactiveControllerHost & HTMLElement;
-  private _options: FullscreenControllerConfiguration = {};
+  private _options: FullscreenControllerConfiguration;
 
   private _fullscreen = false;
 
@@ -37,50 +26,59 @@ class FullscreenController implements ReactiveController {
     options?: FullscreenControllerConfiguration
   ) {
     this._host = host;
-    Object.assign(this._options, options);
+    this._options = { ...options };
+
+    addHostListeners(host, { events: ['fullscreenchange'], listener: this });
     host.addController(this);
   }
 
   /**
-   * Transitions the host element to/from fullscreen mode.
-   * This method **will invoke** enter/exit callbacks if present.
+   * A removed host leaves fullscreen, but the event goes to the document, so
+   * the state syncs on reconnect.
+   * @internal
    */
-  public setState(fullscreen: boolean): void {
-    const callback = fullscreen ? this._options.enter : this._options.exit;
+  public hostConnected(): void {
+    this._sync();
+  }
 
-    if (callback && !callback.call(this._host, fullscreen)) {
+  /** Moves the host element into or out of fullscreen mode. */
+  public setState(fullscreen: boolean): void {
+    const { onChange } = this._options;
+
+    if (onChange && !onChange.call(this._host, fullscreen, true)) {
       return;
     }
 
     this._fullscreen = fullscreen;
+    this._host.requestUpdate();
 
+    // A change rejects, for example a request without user activation. The
+    // state of the browser then comes back.
     if (fullscreen) {
-      // Rejects when the request is not user activated or the element is not
-      // allowed to go fullscreen - roll the state back so the host re-renders.
-      this._host.requestFullscreen().catch(() => {
-        this._fullscreen = false;
-        this._host.requestUpdate();
-      });
+      this._host.requestFullscreen().catch(() => this._sync());
     } else if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
+      document.exitFullscreen().catch(() => this._sync());
     }
   }
 
-  /** @internal */
+  /**
+   * Follows a change that the browser made, such as Escape or a
+   * `requestFullscreen()` call from outside the controller.
+   * @internal
+   */
   public handleEvent(): void {
-    if (!document.fullscreenElement && this._fullscreen) {
-      this.setState(false);
+    this._sync();
+  }
+
+  /** Takes the state of the browser, and reports a change as not cancelable. */
+  private _sync(): void {
+    const fullscreen = this._host.matches(':fullscreen');
+
+    if (fullscreen !== this._fullscreen) {
+      this._fullscreen = fullscreen;
+      this._options.onChange?.call(this._host, fullscreen, false);
+      this._host.requestUpdate();
     }
-  }
-
-  /** @internal */
-  public hostConnected(): void {
-    this._host.addEventListener('fullscreenchange', this);
-  }
-
-  /** @internal */
-  public hostDisconnected(): void {
-    this._host.removeEventListener('fullscreenchange', this);
   }
 }
 

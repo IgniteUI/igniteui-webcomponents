@@ -1,9 +1,10 @@
+@use 'sass:math';
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
 
 $theme: $bootstrap;
 $thumb-size: rem(16px);
-$thumb-radius: calc(#{$thumb-size} / 2);
+$thumb-radius: math.div($thumb-size, 2);
 
 [part='track'],
 [part='inactive'] {
@@ -17,8 +18,8 @@ $thumb-radius: calc(#{$thumb-size} / 2);
 [part~='thumb'] {
     width: $thumb-size;
     height: $thumb-size;
-    top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
-    margin-inline-start: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
+    top: -$thumb-radius;
+    margin-inline-start: -$thumb-radius;
 
     &:focus {
         border: rem(1px) solid var-get($theme, 'thumb-border-focus-color');
