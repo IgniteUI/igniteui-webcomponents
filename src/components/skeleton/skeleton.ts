@@ -78,6 +78,45 @@ function narrow(
     : clip;
 }
 
+/** Returns whether `b` continues `a` on the same line, with no gap between them. */
+function continuesLine(a: Box, b: Box): boolean {
+  return (
+    Math.abs(a.top - b.top) < 0.5 &&
+    Math.abs(a.bottom - b.bottom) < 0.5 &&
+    b.left - a.right < 1 &&
+    a.left - b.right < 1
+  );
+}
+
+/**
+ * Joins the boxes that continue each other on a line into one box. The browser
+ * returns a box for each text node, and templates often split a line of text
+ * into several text nodes. Skips the boxes with no area.
+ */
+function joinLines(rects: Iterable<DOMRect>): Box[] {
+  const boxes: Box[] = [];
+
+  for (const rect of rects) {
+    if (isEmptyBox(rect)) continue;
+
+    const last = boxes.at(-1);
+
+    if (last && continuesLine(last, rect)) {
+      // A `DOMRect` has no own properties to spread.
+      boxes[boxes.length - 1] = {
+        left: Math.min(last.left, rect.left),
+        top: last.top,
+        right: Math.max(last.right, rect.right),
+        bottom: last.bottom,
+      };
+    } else {
+      boxes.push(rect);
+    }
+  }
+
+  return boxes;
+}
+
 /**
  * A skeleton component that overlays placeholder shapes on top of projected
  * content while it is in a loading state, then smoothly reveals the content
@@ -335,8 +374,7 @@ export default class IgcSkeletonComponent extends LitElement {
       const draw = style.visibility === 'visible';
       let rendered = false;
 
-      for (const rect of rects) {
-        if (isEmptyBox(rect)) continue;
+      for (const rect of joinLines(rects)) {
         rendered = true;
 
         const shape = intersectBoxes(rect, clip);
@@ -417,28 +455,45 @@ export default class IgcSkeletonComponent extends LitElement {
       return slot ? clipThrough(slot, parent, clip) : clip;
     };
 
-    /** Returns whether a child node of `parent` has a box. */
+    /**
+     * Returns whether a child node of `parent` has a box. The text nodes
+     * between two child elements are one run, without the whitespace-only
+     * text nodes at its ends.
+     */
     const visitChildren = (
       parent: Element,
       style: CSSStyleDeclaration,
       clip: Clip
     ): boolean => {
       let rendered = false;
+      let first: Text | undefined;
+      let last: Text | undefined;
+
+      const addRun = (): void => {
+        // A range measures skipped text too.
+        const runClip = first && clipFor(first, parent, style, clip);
+
+        if (first && last && runClip) {
+          range.setStart(first, 0);
+          range.setEnd(last, last.length);
+          rendered = add(range.getClientRects(), runClip, style) || rendered;
+        }
+
+        first = last = undefined;
+      };
 
       for (const child of parent.childNodes) {
         if (isElement(child)) {
+          addRun();
           rendered =
             visit(child, clipFor(child, parent, style, clip)) || rendered;
         } else if (child instanceof Text && /\S/.test(child.data)) {
-          // A range measures skipped text too.
-          const childClip = clipFor(child, parent, style, clip);
-          if (!childClip) continue;
-
-          range.selectNodeContents(child);
-          rendered = add(range.getClientRects(), childClip, style) || rendered;
+          first ??= child;
+          last = child;
         }
       }
 
+      addRun();
       return rendered;
     };
 

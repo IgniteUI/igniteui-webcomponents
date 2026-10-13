@@ -45,6 +45,7 @@
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-25 | Initial specification |
 |       2 | 2026-10-12 | Measurement of line boxes, empty containers, SVG, skipped content, `visibility` and `display: contents`; clips in the content and its shadow trees; radius of a covering shadow element or a rounded clip; CSS `zoom`; web fonts; block host; cyclic `wave` delay |
+|       3 | 2026-10-13 | Text split into several text nodes gets one shape for each line |
 
 ## Overview
 
@@ -192,12 +193,14 @@ Each `shape` part also carries the name of the active animation, for example `sh
 
 ## Assumptions and limitations
 
-- A shape source is a leaf element or a non-whitespace text node whose parent has child elements, has
-  `display: contents` or is the host. A leaf element is a visible element with no child elements, an inline SVG, or an
+- A shape source is a leaf element or a text run. A text run is the text nodes between two child elements, without
+  the whitespace-only text nodes at its ends, in a parent that has child elements, has `display: contents` or is the
+  host. A leaf element is a visible element with no child elements, an inline SVG, or an
   element whose child nodes have no area, for example a `<select>` or a `<video>` with `<source>` children. A custom
   element with no light DOM children counts as one leaf, whatever its shadow DOM contains.
 - Leaf elements and text runs get one shape for each line box. The text of a leaf element is covered by the shape of
-  the element.
+  the element. The browser returns a box for each text node, and templates often split text into several text nodes
+  (for example `#${id}`), so the boxes of one source that touch on a line join into one shape.
 - Elements and text with `visibility: hidden` get no shape. An element with `display: contents` gets no shape, but its
   content does. Skipped content gets no shape, also through `display: contents` and slots: all content of an element
   with `content-visibility: hidden`, which gets one shape over its box instead, and all but the `<summary>` of a closed
@@ -275,28 +278,30 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 23. Hidden, zero-size and `visibility: hidden` elements and text get no shape, but a visible child of a hidden element
     does.
 24. A wrapped inline element gets one shape for each line.
-25. An inline SVG, an element whose child nodes have no area (such as a `<select>`) and an element with
+25. A leaf element and a text run whose text is split into several text nodes get one shape for each line, also in a
+    right-to-left layout. A source that touches the next one keeps its own shape.
+26. An inline SVG, an element whose child nodes have no area (such as a `<select>`) and an element with
     `content-visibility: hidden` each get one shape over their box. A closed `<details>` gets a shape only over its
     `<summary>`, also when its text is in a `display: contents` child, and text slotted into a shadow element with
     `content-visibility: hidden` gets none.
-26. Radius: a shape keeps the radius of its source, or of a shadow element that covers the source, also in a covering
+27. Radius: a shape keeps the radius of its source, or of a shadow element that covers the source, also in a covering
     wrapper, or of a rounded clip that it fills. A rounded clip that crops the source wins over the radius of the
     source. Other shapes, and sources with a `0%` radius, fall back to the radius in the styles.
-27. Clipping: the shapes are clipped to scroll containers in the content and in its shadow trees, and follow their
+28. Clipping: the shapes are clipped to scroll containers in the content and in its shadow trees, and follow their
     scroll. The clip is the padding box, only in the axes that the overflow clips. Paint containment clips, and the
     hidden overflow of an inline element does not.
-28. Live updates in a fixed-size host: added content, attribute changes, text changes, source resizes, a zero-size
+29. Live updates in a fixed-size host: added content, attribute changes, text changes, source resizes, a zero-size
     source that grows and a web font load all update the shapes. Text in the host reflows its shapes when only the host
     resizes.
 
 ### Lifecycle
 
-29. A disconnect during the reveal clears the reveal timer, and raises no error when the timer would fire.
-30. After a reconnect in the idle state, content changes start no measurement.
-31. The `revealing` state ends on disconnect, and loading that ends while disconnected starts no reveal.
-32. A move in the frame that loading starts still draws the shapes.
-33. No measurement runs while disconnected.
-34. Resizes start no measurement after loading ends.
+30. A disconnect during the reveal clears the reveal timer, and raises no error when the timer would fire.
+31. After a reconnect in the idle state, content changes start no measurement.
+32. The `revealing` state ends on disconnect, and loading that ends while disconnected starts no reveal.
+33. A move in the frame that loading starts still draws the shapes.
+34. No measurement runs while disconnected.
+35. Resizes start no measurement after loading ends.
 
 ### Not covered by the suite
 

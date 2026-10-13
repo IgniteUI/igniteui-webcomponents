@@ -601,6 +601,75 @@ describe('Skeleton', () => {
       shapes.forEach((shape, i) => expectAligned(shape, lines[i]));
     });
 
+    /** Text split into several nodes, as a template renders `#${id}`. */
+    function splitText(...parts: string[]): Node[] {
+      return parts.flatMap((part, i) => [
+        ...(i ? [document.createComment('')] : []),
+        document.createTextNode(part),
+      ]);
+    }
+
+    function uniqueTops(rects: Iterable<DOMRect>): number[] {
+      return [...new Set(Array.from(rects, (rect) => Math.round(rect.top)))];
+    }
+
+    it('renders one shape for a leaf whose text is split into several nodes', async () => {
+      const link = document.createElement('a');
+      link.append(...splitText('#', '10480'));
+      const el = await createSkeletonWith(link);
+
+      expect(link.getClientRects()).to.have.lengthOf(2);
+      expect(getShapes(el)).to.have.lengthOf(1);
+      expectAligned(firstOf(getShapes(el)), link.getBoundingClientRect());
+    });
+
+    it('renders one shape for each line of a wrapped leaf with split text', async () => {
+      const paragraph = document.createElement('p');
+      paragraph.style.width = '80px';
+      const link = document.createElement('a');
+      link.append(...splitText('a link ', 'that wraps ', 'over lines'));
+      paragraph.append(link);
+      const el = await createSkeletonWith(paragraph);
+
+      const lines = uniqueTops(link.getClientRects());
+
+      expect(lines.length).to.be.greaterThan(1);
+      expect(
+        uniqueTops(getShapes(el).map((shape) => shape.getBoundingClientRect()))
+      ).to.deep.equal(lines);
+      expect(getShapes(el)).to.have.lengthOf(lines.length);
+    });
+
+    it('renders one shape for a text run that is split into several nodes', async () => {
+      const paragraph = document.createElement('p');
+      const bold = document.createElement('b');
+      bold.textContent = 'Revenue';
+      const run = splitText('Last', ' ', '30', ' days');
+      paragraph.append(bold, ...run, document.createTextNode(' '));
+      const el = await createSkeletonWith(paragraph);
+
+      const range = document.createRange();
+      range.setStartBefore(firstOf(run));
+      range.setEndAfter(run.at(-1)!);
+
+      // <b> and the run touch, but they are separate sources.
+      expect(getShapes(el)).to.have.lengthOf(2);
+      expectAligned(getShapes(el)[0], bold);
+      expectAligned(getShapes(el)[1], range.getBoundingClientRect());
+    });
+
+    it('renders one shape for split text in a right-to-left layout', async () => {
+      const paragraph = document.createElement('p');
+      paragraph.dir = 'rtl';
+      const link = document.createElement('a');
+      link.append(...splitText('שלום ', '30', ' עולם'));
+      paragraph.append(link);
+      const el = await createSkeletonWith(paragraph);
+
+      expect(getShapes(el)).to.have.lengthOf(1);
+      expectAligned(firstOf(getShapes(el)), link.getBoundingClientRect());
+    });
+
     it('clips the shapes to a scroll container and follows its scroll', async () => {
       const scroller = document.createElement('div');
       setStyles(scroller, { height: '50px', overflow: 'auto' });
