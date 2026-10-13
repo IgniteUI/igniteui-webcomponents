@@ -1,4 +1,3 @@
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
 
 :host {
@@ -18,6 +17,11 @@
 
 :host(:state(listening)) [part~='indicator'] {
     animation: pulse 1.5s ease-out infinite;
+
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+        opacity: 1;
+    }
 }
 
 @keyframes pulse {
@@ -29,12 +33,5 @@
     to {
         transform: scale(1.4);
         opacity: 0;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    :host(:state(listening)) [part~='indicator'] {
-        animation: none;
-        opacity: 1;
     }
 }

@@ -1,5 +1,6 @@
 import { createAbortHandle } from '#internals/abort-handler.js';
 import { createTimer } from '#internals/timing.js';
+import { numberInRangeInclusive } from '#internals/utils/math.js';
 import { isFunction, isString } from '#internals/utils/types.js';
 import {
   isSpeechToTextErrorCode,
@@ -12,65 +13,62 @@ import type {
   SpeechToTextProviderOptions,
 } from '../components/speech-to-text/types.js';
 
-/**
- * Configuration of the WebSocket speech-to-text provider.
- */
+/** The settings of the WebSocket speech-to-text provider. */
 export interface WebSocketSpeechToTextProviderOptions {
-  /** The WebSocket endpoint that receives the audio and answers with transcripts. */
+  /** The WebSocket endpoint that receives the audio and sends back transcripts. */
   url: string | URL;
-  /** WebSocket sub-protocols to request. */
+  /** The WebSocket sub-protocols to request. */
   protocols?: string | string[];
   /**
-   * The MIME type the audio is recorded in. When omitted, or when the browser cannot record it,
-   * the first supported type among `audio/webm;codecs=opus`, `audio/webm`, `audio/ogg;codecs=opus`
-   * and `audio/mp4` is used. The negotiated type is sent to the server in the `start` message.
+   * The MIME type of the recorded audio. If it is not set, or the browser cannot record it, the
+   * provider uses the first supported type of `audio/webm;codecs=opus`, `audio/webm`,
+   * `audio/ogg;codecs=opus` and `audio/mp4`. The `start` message tells the server the type.
    */
   mimeType?: string;
   /**
-   * How often, in milliseconds, an audio chunk is sent.
+   * The time in milliseconds between two audio chunks.
    * @default 250
    */
   timeslice?: number;
   /**
-   * Constraints of the audio track requested from the microphone.
+   * The constraints of the audio track that the provider requests from the microphone.
    * @default { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true }
    */
   audio?: MediaTrackConstraints;
   /**
-   * How long, in milliseconds, to wait for the `end` message of the server after the audio stopped
-   * before the session is ended locally.
+   * The time in milliseconds that the provider waits for the `end` message after the audio
+   * stops. After this time, the provider ends the session itself.
    * @default 5000
    */
   endTimeout?: number;
   /**
-   * The maximum number of bytes of audio the browser may hold in the send buffer of the socket.
-   * When the connection or the server stalls and the buffer grows past this limit, the session
-   * ends with a `network` error instead of buffering audio for the rest of the session.
+   * The maximum number of audio bytes in the send buffer of the socket. If the connection or the
+   * server stops and the buffer becomes larger, the session ends with a `network` error.
    * @default 1048576
    */
   maxBufferedAmount?: number;
 }
 
 /**
- * A message the provider sends to the server as a JSON text frame.
+ * A message that the provider sends to the server as a JSON text frame.
  *
- * - `start` opens a session and carries the recognition options and the MIME type of the audio frames that follow.
- * - `stop` announces that no more audio follows; the server should flush its final results and answer with `end`.
+ * - `start` opens a session. It contains the recognition options and the MIME type of the audio frames that follow.
+ * - `stop` tells the server that no more audio follows. The server sends its last final results, then `end`.
  *
- * Audio is sent between the two as binary frames in the announced MIME type, as produced by `MediaRecorder`.
- * The frames form one continuous recording; they are not independently decodable.
+ * Between the two messages, the provider sends the `MediaRecorder` audio as binary frames, in the MIME type of
+ * `start`. The frames are one continuous recording. A frame alone cannot be decoded.
  */
 export type WebSocketSpeechToTextClientMessage =
   | ({ type: 'start'; mimeType: string } & SpeechToTextProviderOptions)
   | { type: 'stop' };
 
 /**
- * A message the server sends to the provider as a JSON text frame.
+ * A message that the server sends to the provider as a JSON text frame.
  *
- * - `result` carries an interim (`isFinal` false) or final transcript.
- * - `activity` reports detected speech that has no transcript yet; it resets the silence timeout of the component.
- * - `error` reports a failure; the server may continue or follow with `end`.
- * - `end` closes the session. A connection closed before `end` is reported as a `network` error.
+ * - `result` contains an interim (`isFinal` false) or a final transcript.
+ * - `activity` reports speech that has no transcript yet. It resets the silence timeout of the component.
+ * - `error` reports a failure. The server can continue, or send `end`.
+ * - `end` closes the session. If the connection closes before `end`, the provider reports a `network` error.
  */
 export type WebSocketSpeechToTextServerMessage =
   | {
@@ -138,13 +136,13 @@ function toProviderError(error: unknown): SpeechToTextProviderError {
 }
 
 /**
- * A speech-to-text provider that records the microphone with `MediaRecorder` and streams the
- * audio to a WebSocket endpoint, which answers with transcripts.
+ * A speech-to-text provider that records the microphone with `MediaRecorder` and sends the audio
+ * to a WebSocket endpoint. The endpoint sends back transcripts.
  *
- * Use it with the speech-to-text component where the Web Speech API is not available, or where
- * recognition should run through a service you control. The wire protocol is described by
- * `WebSocketSpeechToTextClientMessage` and `WebSocketSpeechToTextServerMessage`, and in
- * `src/extras/speech-to-text-websocket-protocol.md` in the repository.
+ * Use it with the speech-to-text component where the Web Speech API is not available, or to use
+ * a recognition service that you control. `WebSocketSpeechToTextClientMessage` and
+ * `WebSocketSpeechToTextServerMessage` describe the protocol. The repository file
+ * `src/extras/speech-to-text-websocket-protocol.md` describes it in full.
  *
  * @example
  * ```ts
@@ -231,8 +229,7 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
         (event) => this._handleMessage(event, listener),
         { signal }
       );
-      // Teardown detaches this listener before it closes the socket, so only
-      // a close initiated by the server or the network arrives here.
+      // Only a close by the server or the network arrives here.
       socket.addEventListener(
         'close',
         () =>
@@ -256,7 +253,7 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
             return;
           }
 
-          // A stalled connection keeps the socket open while the send buffer grows.
+          // If the connection stops, the socket stays open and the buffer grows.
           if (socket.bufferedAmount + event.data.size > maxBufferedAmount) {
             this._fail(
               'network',
@@ -287,7 +284,7 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
       recorder.start(this._options.timeslice ?? DEFAULT_TIMESLICE);
       listener.onStart();
     } catch (error) {
-      // An abort while starting has already torn the session down.
+      // An abort during the start already removed the session.
       if (this._listener === listener) {
         this._teardown();
       }
@@ -296,7 +293,7 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
   }
 
   public stop(): void {
-    // The final chunk arrives through `dataavailable` before `stop` fires.
+    // The last chunk comes in `dataavailable`, before the `stop` event.
     stopRecorder(this._recorder);
   }
 
@@ -311,7 +308,7 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
       const socket = new WebSocket(this._options.url, this._options.protocols);
       socket.binaryType = 'arraybuffer';
 
-      // Settling the promise detaches every listener below.
+      // `settled.abort()` removes all the listeners below.
       const settled = new AbortController();
       const options = { signal: settled.signal };
 
@@ -370,17 +367,27 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
     }
 
     switch (message?.type) {
-      case 'result':
-        // Drop results without a transcript.
-        if (isString(message.transcript)) {
+      case 'result': {
+        const { transcript, isFinal, confidence, alternatives } = message;
+
+        // The frame is not trusted. Ignore a result without a transcript, and
+        // fields of the wrong type.
+        if (isString(transcript)) {
           listener.onResult({
-            transcript: message.transcript,
-            isFinal: Boolean(message.isFinal),
-            confidence: message.confidence,
-            alternatives: message.alternatives,
+            transcript,
+            isFinal: isFinal === true,
+            confidence:
+              typeof confidence === 'number' &&
+              numberInRangeInclusive(confidence, 0, 1)
+                ? confidence
+                : undefined,
+            alternatives: Array.isArray(alternatives)
+              ? alternatives.filter(isString)
+              : undefined,
           });
         }
         break;
+      }
       case 'activity':
         listener.onActivity();
         break;
@@ -414,13 +421,13 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
   private _teardown(): void {
     this._endTimer.stop();
 
-    // Detach every listener before tearing down, so the teardown itself does
-    // not re-enter through `stop` / `close` events.
+    // Remove the listeners first, so that the `stop` and `close` events of the
+    // teardown do not call the provider again.
     this._abort.abort();
 
     stopRecorder(this._recorder);
     stopTracks(this._stream);
-    // `close()` is a no-op on a socket that is already closing or closed.
+    // `close()` does nothing on a socket that closes or is closed.
     this._socket?.close();
 
     this._recorder = undefined;
@@ -436,7 +443,7 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
       return;
     }
 
-    // Without a recorder, `start()` is still pending and rejects instead.
+    // Without a recorder, `start()` did not resolve. It rejects instead.
     const started = this._recorder !== undefined;
     this._teardown();
 

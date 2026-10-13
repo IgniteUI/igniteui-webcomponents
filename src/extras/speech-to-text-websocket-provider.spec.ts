@@ -9,7 +9,6 @@ import { WebSocketSpeechToTextProvider } from './speech-to-text-websocket-provid
 class MockSocket extends EventTarget {
   public static readonly CONNECTING = 0;
   public static readonly OPEN = 1;
-  public static readonly CLOSING = 2;
   public static readonly CLOSED = 3;
   public static instances: MockSocket[] = [];
 
@@ -49,6 +48,10 @@ class MockSocket extends EventTarget {
 
   public message(data: unknown): void {
     this.dispatchEvent(new MessageEvent('message', { data }));
+  }
+
+  public get frames(): Blob[] {
+    return this.sent.filter((entry): entry is Blob => entry instanceof Blob);
   }
 
   public get json(): Array<Record<string, unknown>> {
@@ -98,6 +101,8 @@ class MockRecorder extends EventTarget {
   }
 }
 
+const ENDPOINT = 'wss://example.com/stt';
+
 const OPTIONS: SpeechToTextProviderOptions = {
   lang: 'en-US',
   continuous: true,
@@ -125,7 +130,7 @@ describe('WebSocketSpeechToTextProvider', () => {
     options: Partial<SpeechToTextProviderOptions> = {}
   ) {
     const pending = provider.start({ ...OPTIONS, ...options }, listener);
-    // Let `getUserMedia` resolve and the socket get created.
+    // Wait until `getUserMedia` resolves and the provider creates the socket.
     await nextFrame();
     socket().open();
     await pending;
@@ -145,7 +150,7 @@ describe('WebSocketSpeechToTextProvider', () => {
     } as unknown as MediaStream);
 
     provider = new WebSocketSpeechToTextProvider({
-      url: 'wss://example.com/stt',
+      url: ENDPOINT,
     });
     listener = createListener();
   });
@@ -184,7 +189,7 @@ describe('WebSocketSpeechToTextProvider', () => {
         autoGainControl: true,
       },
     });
-    expect(socket().url).to.equal('wss://example.com/stt');
+    expect(socket().url).to.equal(ENDPOINT);
     expect(socket().binaryType).to.equal('arraybuffer');
 
     expect(recorder().mimeType).to.equal('audio/webm;codecs=opus');
@@ -206,7 +211,7 @@ describe('WebSocketSpeechToTextProvider', () => {
 
   it('honors the configured protocols, constraints, MIME type and timeslice', async () => {
     provider = new WebSocketSpeechToTextProvider({
-      url: 'wss://example.com/stt',
+      url: ENDPOINT,
       protocols: ['stt.v1'],
       audio: { channelCount: 2 },
       mimeType: 'audio/webm',
@@ -222,7 +227,7 @@ describe('WebSocketSpeechToTextProvider', () => {
 
   it('falls back to a supported MIME type', async () => {
     provider = new WebSocketSpeechToTextProvider({
-      url: 'wss://example.com/stt',
+      url: ENDPOINT,
       mimeType: 'audio/flac',
     });
     await startProvider();
@@ -236,9 +241,9 @@ describe('WebSocketSpeechToTextProvider', () => {
     recorder().data(0);
     recorder().data(16);
 
-    const frames = socket().sent.filter((entry) => entry instanceof Blob);
+    const { frames } = socket();
     expect(frames).to.have.lengthOf(1);
-    expect((frames[0] as Blob).size).to.equal(16);
+    expect(frames[0].size).to.equal(16);
   });
 
   it('fails with `network` when the send buffer stalls', async () => {
@@ -257,14 +262,12 @@ describe('WebSocketSpeechToTextProvider', () => {
     });
     expect(listener.onEnd).calledOnce;
     expect(socket().readyState).to.equal(MockSocket.CLOSED);
-    expect(
-      socket().sent.filter((entry) => entry instanceof Blob)
-    ).to.have.lengthOf(1);
+    expect(socket().frames).to.have.lengthOf(1);
   });
 
   it('honors the configured send buffer limit', async () => {
     provider = new WebSocketSpeechToTextProvider({
-      url: 'wss://example.com/stt',
+      url: ENDPOINT,
       maxBufferedAmount: 8,
     });
     await startProvider();
@@ -275,7 +278,7 @@ describe('WebSocketSpeechToTextProvider', () => {
       code: 'network',
       message: 'The connection to the speech service stalled.',
     });
-    expect(socket().sent.filter((entry) => entry instanceof Blob)).to.be.empty;
+    expect(socket().frames).to.be.empty;
   });
 
   it('maps server results', async () => {
@@ -306,6 +309,42 @@ describe('WebSocketSpeechToTextProvider', () => {
       isFinal: true,
       confidence: 0.8,
       alternatives: ['hallo'],
+    });
+  });
+
+  it('drops result fields of the wrong type', async () => {
+    await startProvider();
+
+    socket().message(
+      JSON.stringify({
+        type: 'result',
+        transcript: 'hi',
+        isFinal: 'false',
+        confidence: 5,
+        alternatives: ['hey', 1, null, 'high'],
+      })
+    );
+    socket().message(
+      JSON.stringify({
+        type: 'result',
+        transcript: 'hello',
+        isFinal: true,
+        confidence: '0.5',
+        alternatives: 'hallo',
+      })
+    );
+
+    expect(listener.onResult.firstCall.args[0]).to.deep.equal({
+      transcript: 'hi',
+      isFinal: false,
+      confidence: undefined,
+      alternatives: ['hey', 'high'],
+    });
+    expect(listener.onResult.secondCall.args[0]).to.deep.equal({
+      transcript: 'hello',
+      isFinal: true,
+      confidence: undefined,
+      alternatives: undefined,
     });
   });
 
@@ -435,7 +474,7 @@ describe('WebSocketSpeechToTextProvider', () => {
 
   it('ends locally when the server does not answer the `stop` in time', async () => {
     provider = new WebSocketSpeechToTextProvider({
-      url: 'wss://example.com/stt',
+      url: ENDPOINT,
       endTimeout: 20,
     });
     await startProvider();

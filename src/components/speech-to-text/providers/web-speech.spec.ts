@@ -63,8 +63,10 @@ describe('WebSpeechProvider', () => {
 
   const latest = () => MockRecognition.instances.at(-1)!;
 
-  async function startProvider() {
-    const pending = provider.start(OPTIONS, listener);
+  async function startProvider(
+    options: Partial<SpeechToTextProviderOptions> = {}
+  ) {
+    const pending = provider.start({ ...OPTIONS, ...options }, listener);
     latest().emit('start');
     await pending;
   }
@@ -128,18 +130,14 @@ describe('WebSpeechProvider', () => {
       ['zh-Hant', 'zh-Hant-TW'],
     ]) {
       provider = new WebSpeechProvider();
-      const pending = provider.start({ ...OPTIONS, lang }, listener);
-      latest().emit('start');
-      await pending;
+      await startProvider({ lang });
 
       expect(latest().lang).to.equal(expected);
     }
   });
 
   it('passes an invalid language tag through unchanged', async () => {
-    const pending = provider.start({ ...OPTIONS, lang: 'not a tag' }, listener);
-    latest().emit('start');
-    await pending;
+    await startProvider({ lang: 'not a tag' });
 
     expect(latest().lang).to.equal('not a tag');
   });
@@ -164,7 +162,7 @@ describe('WebSpeechProvider', () => {
     expect(error.message).to.equal('Denied');
     expect(listener.onStart).not.called;
 
-    // The end event that follows is ignored.
+    // The provider ignores the `end` event that follows.
     latest().emit('end');
     expect(listener.onEnd).not.called;
   });
@@ -252,6 +250,26 @@ describe('WebSpeechProvider', () => {
       transcript: 'how are',
       isFinal: false,
     });
+  });
+
+  it('requests interim results and reports them as activity when they are not wanted', async () => {
+    await startProvider({ interimResults: false });
+
+    expect(latest().interimResults).to.be.true;
+
+    latest().emitResult(0, [
+      { isFinal: false, alternatives: [{ transcript: 'how', confidence: 0 }] },
+    ]);
+
+    expect(listener.onResult).not.called;
+    expect(listener.onActivity).calledOnce;
+
+    latest().emitResult(0, [
+      { isFinal: true, alternatives: [{ transcript: 'how', confidence: 1 }] },
+    ]);
+
+    expect(listener.onResult).calledOnce;
+    expect(listener.onActivity).calledOnce;
   });
 
   it('emits finals and the pending interim of one result event in order', async () => {

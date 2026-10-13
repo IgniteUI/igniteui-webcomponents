@@ -6,15 +6,17 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 import { getCurrentI18n } from 'igniteui-i18n-core';
+import type { LitElement } from 'lit';
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
 import { escapeKey } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { IgcSpeechToTextResourceStringsEN } from '#internals/i18n/EN/speech-to-text.resources.js';
+import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
+import { SpeechToTextResourceStringsEN } from './i18n.js';
 import { SpeechToTextProviderError } from './provider-error.js';
 import IgcSpeechToTextComponent from './speech-to-text.js';
 import type {
@@ -30,11 +32,19 @@ class FakeProvider implements SpeechToTextProvider {
   public listener?: SpeechToTextProviderListener;
   public options?: SpeechToTextProviderOptions;
   public startError?: unknown;
+  /** Whether start() listens immediately. If not, start() waits for `resolveStart()`. */
   public autoStart = true;
   public endOnStop = true;
+  /** Whether abort() rejects a pending start(). */
+  public rejectOnAbort = true;
   public startCalls = 0;
   public stopCalls = 0;
   public abortCalls = 0;
+
+  private _pending?: {
+    resolve: () => void;
+    reject: (reason: unknown) => void;
+  };
 
   public async start(
     options: SpeechToTextProviderOptions,
@@ -50,7 +60,27 @@ class FakeProvider implements SpeechToTextProvider {
 
     if (this.autoStart) {
       listener.onStart();
+      return;
     }
+
+    await new Promise<void>((resolve, reject) => {
+      this._pending = { resolve, reject };
+    });
+  }
+
+  /** Resolves the pending start(), after onStart() when `notify` is true. */
+  public resolveStart(notify = true): void {
+    const pending = this._takePending();
+
+    if (notify) {
+      this.listener?.onStart();
+    }
+
+    pending?.resolve();
+  }
+
+  public rejectStart(reason: unknown): void {
+    this._takePending()?.reject(reason);
   }
 
   public stop(): void {
@@ -62,7 +92,18 @@ class FakeProvider implements SpeechToTextProvider {
 
   public abort(): void {
     this.abortCalls++;
-    this.listener?.onEnd();
+
+    if (!this._pending) {
+      this.listener?.onEnd();
+    } else if (this.rejectOnAbort) {
+      this.rejectStart(new SpeechToTextProviderError('aborted'));
+    }
+  }
+
+  private _takePending() {
+    const pending = this._pending;
+    this._pending = undefined;
+    return pending;
   }
 
   public final(
@@ -93,10 +134,12 @@ describe('Speech to text', () => {
   let el: IgcSpeechToTextComponent;
   let provider: FakeProvider;
 
-  const strings = IgcSpeechToTextResourceStringsEN;
+  const strings = SpeechToTextResourceStringsEN;
 
-  const getButton = () =>
-    el.renderRoot.querySelector(IgcIconButtonComponent.tagName)!;
+  const getButton = (host: LitElement = el) =>
+    host.renderRoot.querySelector(IgcIconButtonComponent.tagName)!;
+  const getNative = (host: LitElement = el) =>
+    getButton(host).renderRoot.querySelector('[part~="base"]')!;
   const getStatus = () => el.renderRoot.querySelector('igc-visually-hidden')!;
   const getStates = () =>
     ['idle', 'starting', 'listening', 'stopping', 'unsupported'].filter(
@@ -155,7 +198,7 @@ describe('Speech to text', () => {
       expect(icon.getAttribute('aria-hidden')).to.equal('true');
       expect(button.variant).to.equal('flat');
       expect(button.getAttribute('aria-label')).to.equal(
-        strings.speechToTextStart
+        strings.speech_to_text_start
       );
       expect(button.disabled).to.be.false;
     });
@@ -186,7 +229,7 @@ describe('Speech to text', () => {
     });
 
     it('applies custom resource strings', async () => {
-      el.resourceStrings = { ...strings, speechToTextStart: 'Talk to me' };
+      el.resourceStrings = { ...strings, speech_to_text_start: 'Talk to me' };
       await elementUpdated(el);
 
       expect(getButton().getAttribute('aria-label')).to.equal('Talk to me');
@@ -205,22 +248,17 @@ describe('Speech to text', () => {
       expect(el.supported).to.be.false;
       expect(getButton().disabled).to.be.true;
       expect(getButton().getAttribute('aria-label')).to.equal(
-        strings.speechToTextUnsupported
+        strings.speech_to_text_unsupported
       );
     });
 
-    it('emits `igcError` with `not-supported` on start()', async () => {
+    it('ignores start() without emitting events', async () => {
       const eventSpy = spy(el, 'emitEvent');
       await el.start();
 
       expect(el.state).to.equal('idle');
       expect(provider.startCalls).to.equal(0);
-      expect(eventSpy).calledOnceWith('igcError', {
-        detail: {
-          code: 'not-supported',
-          message: strings.speechToTextUnsupported,
-        },
-      });
+      expect(eventSpy).not.called;
     });
   });
 
@@ -229,44 +267,58 @@ describe('Speech to text', () => {
       await createFixture();
     });
 
-    it('starts a session and reports the state transitions', async () => {
+    it('starts a session and reports the state transitions of the provider', async () => {
       const eventSpy = spy(el, 'emitEvent');
       await startListening();
 
       expect(provider.startCalls).to.equal(1);
       expect(el.state).to.equal('listening');
       expect(getStates()).to.deep.equal(['listening']);
+      // start() does not emit the `starting` state that it sets itself.
       expect(eventSpy.getCalls().map((call) => call.args)).to.deep.equal([
-        ['igcStateChange', { detail: 'starting' }],
         ['igcStateChange', { detail: 'listening' }],
         ['igcStart'],
       ]);
+    });
+
+    it('listens when the provider resolves start() without onStart()', async () => {
+      provider.autoStart = false;
+      const eventSpy = spy(el, 'emitEvent');
+
+      const pending = el.start();
+      provider.resolveStart(false);
+      await pending;
+
+      expect(el.state).to.equal('listening');
+      expect(
+        eventSpy.getCalls().filter((call) => call.args[0] === 'igcStart')
+      ).to.have.lengthOf(1);
     });
 
     it('swaps the button label and announces while listening', async () => {
       await startListening();
 
       expect(getButton().getAttribute('aria-label')).to.equal(
-        strings.speechToTextStop
+        strings.speech_to_text_stop
       );
       expect(getStatus().textContent?.trim()).to.equal(
-        strings.speechToTextListening
+        strings.speech_to_text_listening
       );
     });
 
     it('updates the accessible name of the native button', async () => {
       const button = getButton();
-      const native = button.renderRoot.querySelector('[part~="base"]')!;
+      const native = getNative();
 
       expect(native.getAttribute('aria-label')).to.equal(
-        strings.speechToTextStart
+        strings.speech_to_text_start
       );
 
       await startListening();
       await elementUpdated(button);
 
       expect(native.getAttribute('aria-label')).to.equal(
-        strings.speechToTextStop
+        strings.speech_to_text_stop
       );
     });
 
@@ -326,13 +378,13 @@ describe('Speech to text', () => {
       expect(provider.stopCalls).to.equal(1);
       expect(el.state).to.equal('idle');
       expect(el.transcript).to.equal('hello world');
+      // stop() does not emit the `stopping` state that it sets itself.
       expect(eventSpy.getCalls().map((call) => call.args)).to.deep.equal([
-        ['igcStateChange', { detail: 'stopping' }],
         ['igcStateChange', { detail: 'idle' }],
         ['igcEnd', { detail: { transcript: 'hello world', reason: 'manual' } }],
       ]);
       expect(getStatus().textContent?.trim()).to.equal(
-        strings.speechToTextStopped
+        strings.speech_to_text_stopped
       );
     });
 
@@ -420,6 +472,7 @@ describe('Speech to text', () => {
       expect(el.state).to.equal('starting');
 
       el.abort();
+      expect(el.state).to.equal('stopping');
       await pending;
 
       expect(provider.abortCalls).to.equal(1);
@@ -439,7 +492,8 @@ describe('Speech to text', () => {
         }
       });
 
-      await startListening();
+      simulateClick(getButton());
+      await elementUpdated(el);
 
       expect(provider.startCalls).to.equal(0);
       expect(provider.abortCalls).to.equal(1);
@@ -462,6 +516,46 @@ describe('Speech to text', () => {
       expect(provider.startCalls).to.equal(2);
       // The abort of the first session must not end the second one.
       expect(el.state).to.equal('starting');
+    });
+
+    it('waits in `stopping` until an aborted start settles', async () => {
+      provider.autoStart = false;
+      provider.rejectOnAbort = false;
+      const eventSpy = spy(el, 'emitEvent');
+
+      const pending = el.start();
+      el.abort();
+      expect(el.state).to.equal('stopping');
+
+      // The provider is still busy, so a new session does not start.
+      await el.start();
+      expect(provider.startCalls).to.equal(1);
+
+      provider.rejectStart(new SpeechToTextProviderError('aborted'));
+      await pending;
+
+      expect(el.state).to.equal('idle');
+      expect(eventSpy).not.calledWith('igcError');
+
+      provider.autoStart = true;
+      await startListening();
+      expect(el.state).to.equal('listening');
+    });
+
+    it('aborts the provider again when it starts after an abort', async () => {
+      provider.autoStart = false;
+      provider.rejectOnAbort = false;
+      const eventSpy = spy(el, 'emitEvent');
+
+      const pending = el.start();
+      el.abort();
+      provider.resolveStart();
+      await pending;
+
+      expect(provider.abortCalls).to.equal(2);
+      expect(el.state).to.equal('idle');
+      expect(eventSpy).not.calledWith('igcStart');
+      expect(eventSpy).not.calledWith('igcEnd');
     });
 
     it('reports a session the provider ended on its own', async () => {
@@ -502,6 +596,34 @@ describe('Speech to text', () => {
 
       expect(provider.abortCalls).to.equal(1);
       expect(el.state).to.equal('idle');
+    });
+
+    it('keeps a session started in the same tick as a provider change', async () => {
+      const next = new FakeProvider();
+
+      el.provider = next;
+      await el.start();
+      await elementUpdated(el);
+
+      expect(next.startCalls).to.equal(1);
+      expect(next.abortCalls).to.equal(0);
+      expect(el.state).to.equal('listening');
+    });
+
+    it('aborts the session when disabled', async () => {
+      await startListening();
+      const eventSpy = spy(el, 'emitEvent');
+
+      el.disabled = true;
+
+      expect(provider.abortCalls).to.equal(1);
+      expect(el.state).to.equal('idle');
+      expect(eventSpy).not.calledWith('igcStateChange', {
+        detail: 'stopping',
+      });
+      expect(eventSpy).calledWith('igcEnd', {
+        detail: { transcript: '', reason: 'manual' },
+      });
     });
 
     it('aborts the session when removed from the DOM', async () => {
@@ -583,7 +705,70 @@ describe('Speech to text', () => {
         detail: { transcript: '', reason: 'error' },
       });
       expect(getStatus().textContent?.trim()).to.equal(
-        `${strings.speechToTextError}: Connection lost`
+        strings.speech_to_text_error_network
+      );
+    });
+
+    it('announces the localized message of the error code', async () => {
+      await startListening();
+      el.resourceStrings = {
+        speech_to_text_error: 'Fehler',
+        speech_to_text_error_not_allowed: 'Nicht erlaubt',
+      };
+
+      for (const [code, expected] of [
+        ['not-allowed', 'Nicht erlaubt'],
+        ['service-not-allowed', 'Nicht erlaubt'],
+        ['no-speech', strings.speech_to_text_error_no_speech],
+        ['audio-capture', strings.speech_to_text_error_audio_capture],
+        [
+          'language-not-supported',
+          strings.speech_to_text_error_language_not_supported,
+        ],
+        ['aborted', 'Fehler'],
+        ['unknown', 'Fehler'],
+      ] as const) {
+        provider.error(code, 'Untranslated provider text');
+        await elementUpdated(el);
+
+        expect(getStatus().textContent?.trim()).to.equal(expected);
+      }
+    });
+
+    it('announces a repeated error again', async () => {
+      const getText = () =>
+        Array.from(getStatus().childNodes).find(
+          (node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim()
+        );
+
+      await startListening();
+      provider.error('network', 'Connection lost');
+      await elementUpdated(el);
+      const first = getText();
+
+      provider.error('network', 'Connection lost');
+      await elementUpdated(el);
+
+      expect(getText()?.textContent?.trim()).to.equal(
+        strings.speech_to_text_error_network
+      );
+      expect(getText()).to.not.equal(first);
+    });
+
+    it('ends with reason `provider` when a result follows an error', async () => {
+      await startListening();
+      const eventSpy = spy(el, 'emitEvent');
+
+      provider.error('no-speech', 'Nothing heard');
+      provider.final('recovered');
+      provider.end();
+      await elementUpdated(el);
+
+      expect(eventSpy).calledWith('igcEnd', {
+        detail: { transcript: 'recovered', reason: 'provider' },
+      });
+      expect(getStatus().textContent?.trim()).to.equal(
+        strings.speech_to_text_stopped
       );
     });
 
@@ -685,6 +870,25 @@ describe('Speech to text', () => {
       expect(el.state).to.equal('listening');
     });
 
+    it('does not arm a timeout that is not a finite number', async () => {
+      el.silenceTimeout = Number.POSITIVE_INFINITY;
+      await startListening();
+
+      clock.tick(60_000);
+      expect(el.state).to.equal('listening');
+    });
+
+    it('caps a timeout above the limit of setTimeout', async () => {
+      el.silenceTimeout = 1e10;
+      await startListening();
+
+      clock.tick(1);
+      expect(el.state).to.equal('listening');
+
+      clock.tick(2 ** 31 - 2);
+      expect(el.state).to.equal('idle');
+    });
+
     it('applies changes of the timeout while listening', async () => {
       await startListening();
 
@@ -724,6 +928,24 @@ describe('Speech to text', () => {
       simulateClick(getButton());
       await nextFrame();
       expect(el.state).to.equal('idle');
+    });
+
+    it('emits every state change of a session the user toggles', async () => {
+      const eventSpy = spy(el, 'emitEvent');
+
+      simulateClick(getButton());
+      await nextFrame();
+      simulateClick(getButton());
+      await nextFrame();
+
+      expect(eventSpy.getCalls().map((call) => call.args)).to.deep.equal([
+        ['igcStateChange', { detail: 'starting' }],
+        ['igcStateChange', { detail: 'listening' }],
+        ['igcStart'],
+        ['igcStateChange', { detail: 'stopping' }],
+        ['igcStateChange', { detail: 'idle' }],
+        ['igcEnd', { detail: { transcript: '', reason: 'manual' } }],
+      ]);
     });
 
     it('aborts on click while starting', async () => {
@@ -775,5 +997,14 @@ describe('Speech to text', () => {
       expect(provider.abortCalls).to.equal(1);
       expect(el.state).to.equal('idle');
     });
+  });
+
+  runHostAriaTests({
+    tagName: IgcSpeechToTextComponent.tagName,
+    template: html`<igc-speech-to-text
+      .provider=${new FakeProvider()}
+    ></igc-speech-to-text>`,
+    getTarget: getNative,
+    fallbackLabel: strings.speech_to_text_start,
   });
 });

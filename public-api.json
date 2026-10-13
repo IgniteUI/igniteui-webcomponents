@@ -48,6 +48,7 @@
     "IDatePickerResourceStrings",
     "IDateRangePickerResourceStrings",
     "IFileInputResourceStrings",
+    "ISpeechToTextResourceStrings",
     "ITreeResourceStrings",
     "IconButtonVariant",
     "IconMeta",
@@ -155,6 +156,8 @@
     "IgcSliderLabelComponent",
     "IgcSnackbarComponent",
     "IgcSnackbarComponentEventMap",
+    "IgcSpeechToTextComponent",
+    "IgcSpeechToTextComponentEventMap",
     "IgcSplitterComponent",
     "IgcSplitterComponentEventMap",
     "IgcSplitterLayoutChangedEventArgs",
@@ -203,6 +206,17 @@
     "SelectionRangeDirection",
     "SliderTickLabelRotation",
     "SliderTickOrientation",
+    "SpeechToTextEndEventArgs",
+    "SpeechToTextEndReason",
+    "SpeechToTextErrorCode",
+    "SpeechToTextErrorEventArgs",
+    "SpeechToTextProvider",
+    "SpeechToTextProviderError",
+    "SpeechToTextProviderListener",
+    "SpeechToTextProviderOptions",
+    "SpeechToTextResourceStringsEN",
+    "SpeechToTextResultEventArgs",
+    "SpeechToTextState",
     "SplitterOrientation",
     "StepperOrientation",
     "StepperStepType",
@@ -224,6 +238,7 @@
     "VirtualScrollItemTemplate",
     "VirtualScrollKeyFunction",
     "VirtualScrollState",
+    "WebSpeechProvider",
     "WeekDays",
     "configureTheme",
     "defineAllComponents",
@@ -3319,6 +3334,59 @@
         "message"
       ],
       "cssProperties": []
+    },
+    "igc-speech-to-text": {
+      "class": "IgcSpeechToTextComponent",
+      "attributes": {
+        "continuous": "boolean",
+        "disabled": "boolean",
+        "interim-results": "boolean",
+        "locale": "string",
+        "max-alternatives": "number",
+        "silence-timeout": "number",
+        "variant": "IconButtonVariant ('contained' | 'flat' | 'outlined')"
+      },
+      "properties": {
+        "continuous": "boolean",
+        "disabled": "boolean",
+        "interimResults": "boolean",
+        "locale": "string",
+        "maxAlternatives": "number",
+        "provider": "SpeechToTextProvider | undefined",
+        "resourceStrings": "TGet",
+        "silenceTimeout": "number",
+        "state": "readonly SpeechToTextState ('idle' | 'listening' | 'starting' | 'stopping')",
+        "static isSupported": "readonly boolean",
+        "static tagName": "readonly string",
+        "supported": "readonly boolean",
+        "transcript": "readonly string",
+        "variant": "IconButtonVariant ('contained' | 'flat' | 'outlined')"
+      },
+      "methods": {
+        "abort": "() => void",
+        "start": "() => Promise<void>",
+        "static register": "() => void",
+        "stop": "() => void",
+        "toggle": "() => Promise<void>"
+      },
+      "events": {
+        "igcEnd": "unknown",
+        "igcError": "unknown",
+        "igcInterim": "unknown",
+        "igcResult": "unknown",
+        "igcStart": "unknown",
+        "igcStateChange": "unknown"
+      },
+      "slots": [
+        ""
+      ],
+      "cssParts": [
+        "button",
+        "indicator"
+      ],
+      "cssProperties": [
+        "--indicator-color"
+      ]
     },
     "igc-splitter": {
       "class": "IgcSplitterComponent",

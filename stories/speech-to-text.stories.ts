@@ -32,7 +32,7 @@ const metadata: Meta<IgcSpeechToTextComponent> = {
     docs: {
       description: {
         component:
-          'A button that turns speech into text.\n\nPressing the button starts a recognition session; the recognized text arrives through\n`igcInterim` and `igcResult` events and the session ends with `igcEnd`. The `locale` of the\ncomponent selects the language of the speech. Recognition is delegated to a provider.\nWithout an explicit `provider`, the component uses the Web Speech API of the browser and\nrenders disabled where the API is not available.',
+          'A button that changes speech into text.\n\nWhen the user pushes the button, a recognition session starts. The recognized text comes in\n`igcInterim` and `igcResult` events, and `igcEnd` reports the end of the session. The `locale` of\nthe component sets the language of the speech. A provider does the recognition. Without a\n`provider`, the component uses the Web Speech API of the browser, and it is disabled where the\nAPI is not available.',
       },
     },
     actions: {
@@ -57,27 +57,28 @@ const metadata: Meta<IgcSpeechToTextComponent> = {
     interimResults: {
       type: 'boolean',
       description:
-        'Whether interim results are reported through `igcInterim` while an utterance is in progress.',
+        'Whether `igcInterim` reports interim results while the user speaks.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     maxAlternatives: {
       type: 'number',
       description:
-        'The maximum number of alternative transcripts a final result carries.',
+        'The maximum number of alternative transcripts in a final result. The minimum is 1.',
       control: 'number',
       table: { defaultValue: { summary: '1' } },
     },
     silenceTimeout: {
       type: 'number',
       description:
-        'The time in milliseconds without speech activity after which the session stops on its own.\nZero disables the timeout.',
+        'The time in milliseconds without speech after which the session stops.\nZero, a negative value, or a value that is not a finite number disables the timeout.',
       control: 'number',
       table: { defaultValue: { summary: '0' } },
     },
     disabled: {
       type: 'boolean',
-      description: 'Whether the component is disabled.',
+      description:
+        'Whether the component is disabled. A change to `true` aborts the active session.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -91,7 +92,7 @@ const metadata: Meta<IgcSpeechToTextComponent> = {
     locale: {
       type: 'string',
       description:
-        "The locale used to resolve the component's resource strings.\nFalls back to the global locale when not set.",
+        'The locale for the resource strings. Falls back to the global locale.',
       control: 'text',
     },
   },
@@ -110,23 +111,20 @@ export default metadata;
 interface IgcSpeechToTextArgs {
   /** Whether the session continues after the first utterance until it is stopped. */
   continuous: boolean;
-  /** Whether interim results are reported through `igcInterim` while an utterance is in progress. */
+  /** Whether `igcInterim` reports interim results while the user speaks. */
   interimResults: boolean;
-  /** The maximum number of alternative transcripts a final result carries. */
+  /** The maximum number of alternative transcripts in a final result. The minimum is 1. */
   maxAlternatives: number;
   /**
-   * The time in milliseconds without speech activity after which the session stops on its own.
-   * Zero disables the timeout.
+   * The time in milliseconds without speech after which the session stops.
+   * Zero, a negative value, or a value that is not a finite number disables the timeout.
    */
   silenceTimeout: number;
-  /** Whether the component is disabled. */
+  /** Whether the component is disabled. A change to `true` aborts the active session. */
   disabled: boolean;
   /** The variant of the trigger button. */
   variant: 'contained' | 'flat' | 'outlined';
-  /**
-   * The locale used to resolve the component's resource strings.
-   * Falls back to the global locale when not set.
-   */
+  /** The locale for the resource strings. Falls back to the global locale. */
   locale: string;
 }
 type Story = StoryObj<IgcSpeechToTextArgs>;

@@ -11,9 +11,13 @@ export type Timer = {
   stop(): void;
 };
 
+/** The longest delay `setTimeout` accepts. It runs a longer delay at once. */
+const MAX_DELAY = 2 ** 31 - 1;
+
 /**
  * Creates a restartable timeout around `callback`. The callback runs one time
- * at most, `delay` milliseconds after the most recent `start` call.
+ * at most, `delay` milliseconds after the most recent `start` call. A delay
+ * longer than `setTimeout` accepts is capped.
  */
 export function createTimer(callback: () => void, defaultDelay = 0): Timer {
   let handle: ReturnType<typeof setTimeout> | undefined;
@@ -24,10 +28,13 @@ export function createTimer(callback: () => void, defaultDelay = 0): Timer {
     },
     start(delay = defaultDelay): void {
       clearTimeout(handle);
-      handle = setTimeout(() => {
-        handle = undefined;
-        callback();
-      }, delay);
+      handle = setTimeout(
+        () => {
+          handle = undefined;
+          callback();
+        },
+        Math.min(delay, MAX_DELAY)
+      );
     },
     stop(): void {
       clearTimeout(handle);

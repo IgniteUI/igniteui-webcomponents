@@ -1,34 +1,43 @@
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { keyed } from 'lit/directives/keyed.js';
+import {
+  ariaBindings,
+  hostAria,
+} from '#internals/controllers/aria-projection.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import {
   addKeybindings,
   escapeKey,
 } from '#internals/controllers/key-bindings.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import {
-  type IgcSpeechToTextResourceStrings,
-  IgcSpeechToTextResourceStringsEN,
-} from '#internals/i18n/EN/speech-to-text.resources.js';
 import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { createTimer } from '#internals/timing.js';
 import { asNumber } from '#internals/utils/math.js';
+import { all } from '#themes/speech-to-text/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { IconButtonVariant } from '../types.js';
 import IgcVisuallyHiddenComponent from '../visually-hidden/visually-hidden.js';
+import {
+  type ISpeechToTextResourceStrings,
+  SpeechToTextResourceStringsEN,
+} from './i18n.js';
 import { SpeechToTextProviderError } from './provider-error.js';
 import { WebSpeechProvider } from './providers/web-speech.js';
 import { styles as shared } from './themes/shared/speech-to-text.common.css.js';
 import { styles } from './themes/speech-to-text.base.css.js';
-import { all } from './themes/themes.js';
 import type {
   SpeechToTextEndEventArgs,
   SpeechToTextEndReason,
+  SpeechToTextErrorCode,
   SpeechToTextErrorEventArgs,
   SpeechToTextProvider,
   SpeechToTextProviderListener,
@@ -45,24 +54,50 @@ export interface IgcSpeechToTextComponentEventMap {
   igcStateChange: CustomEvent<SpeechToTextState>;
 }
 
-/** One recognition session. Its identity tells late provider callbacks apart from the current session. */
+/** One recognition session. Its identity separates late provider callbacks from the current session. */
 interface Session {
   provider: SpeechToTextProvider;
+  /** Whether the provider listens. `onStart()` or the resolved `start()` sets it. */
+  listening?: boolean;
+  /** Whether the session stopped before the provider listened. */
+  aborted?: boolean;
+  /** Whether the provider reported an error and sent no result after it. */
+  failed?: boolean;
+  /** Why the component stopped the session. */
   endReason?: SpeechToTextEndReason;
 }
 
-const i18n: I18nControllerConfig<IgcSpeechToTextResourceStrings> = {
-  defaultEN: IgcSpeechToTextResourceStringsEN,
+type EndOptions = {
+  /** Whether to discard the results that the provider did not send yet. */
+  abort?: boolean;
+  /** Whether to emit `igcStateChange`. Only user interaction and the timer emit it. */
+  emit?: boolean;
 };
 
+const i18n: I18nControllerConfig<ISpeechToTextResourceStrings> = {
+  defaultEN: SpeechToTextResourceStringsEN,
+};
+
+const ERROR_STRINGS = {
+  'not-allowed': 'speech_to_text_error_not_allowed',
+  'service-not-allowed': 'speech_to_text_error_not_allowed',
+  'no-speech': 'speech_to_text_error_no_speech',
+  'audio-capture': 'speech_to_text_error_audio_capture',
+  network: 'speech_to_text_error_network',
+  'language-not-supported': 'speech_to_text_error_language_not_supported',
+  'not-supported': 'speech_to_text_error',
+  aborted: 'speech_to_text_error',
+  unknown: 'speech_to_text_error',
+} satisfies Record<SpeechToTextErrorCode, keyof ISpeechToTextResourceStrings>;
+
 /**
- * A button that turns speech into text.
+ * A button that changes speech into text.
  *
- * Pressing the button starts a recognition session; the recognized text arrives through
- * `igcInterim` and `igcResult` events and the session ends with `igcEnd`. The `locale` of the
- * component selects the language of the speech. Recognition is delegated to a provider.
- * Without an explicit `provider`, the component uses the Web Speech API of the browser and
- * renders disabled where the API is not available.
+ * When the user pushes the button, a recognition session starts. The recognized text comes in
+ * `igcInterim` and `igcResult` events, and `igcEnd` reports the end of the session. The `locale` of
+ * the component sets the language of the speech. A provider does the recognition. Without a
+ * `provider`, the component uses the Web Speech API of the browser, and it is disabled where the
+ * API is not available.
  *
  * @example
  * ```html
@@ -81,26 +116,26 @@ const i18n: I18nControllerConfig<IgcSpeechToTextResourceStrings> = {
  *
  * @slot - Custom content of the trigger button. Replaces the default microphone icon.
  *
- * @fires igcStart - Emitted when the provider starts listening.
- * @fires igcInterim - Emitted with an interim result while an utterance is in progress. Requires `interimResults`.
+ * @fires igcStart - Emitted when the provider starts to listen.
+ * @fires igcInterim - Emitted with an interim result while the user speaks. Requires `interimResults`.
  * @fires igcResult - Emitted with each final result.
- * @fires igcEnd - Emitted when the session ends, with the full transcript and the reason.
+ * @fires igcEnd - Emitted when a session that listened ends. Contains the full transcript and the reason.
  * @fires igcError - Emitted when the provider reports an error or cannot start.
- * @fires igcStateChange - Emitted when the lifecycle state of the component changes.
+ * @fires igcStateChange - Emitted when the user, the provider or the silence timeout changes the lifecycle state. Method calls and property changes do not emit it.
  *
  * @csspart button - The trigger button.
- * @csspart indicator - The pulsing ring rendered around the button while listening.
+ * @csspart indicator - The ring that pulses around the button while the component listens.
  *
  * @cssproperty --indicator-color - The color of the listening indicator.
  */
 export default class IgcSpeechToTextComponent extends I18nMixin(
   EventEmitterMixin<IgcSpeechToTextComponentEventMap, Constructor<LitElement>>(
-    LitElement
+    HostAriaMixin(LitElement)
   ),
   i18n
 ) {
   public static readonly tagName = 'igc-speech-to-text';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -113,9 +148,7 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
   }
 
   /* blazorSuppress */
-  /**
-   * Whether the default provider, the Web Speech API of the browser, is available.
-   */
+  /** Whether the default provider, the Web Speech API of the browser, is available. */
   public static get isSupported(): boolean {
     return WebSpeechProvider.isSupported;
   }
@@ -123,17 +156,21 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
   //#region Internal state and properties
 
   private readonly _internals = addInternalsController(this);
-  private readonly _silenceTimer = createTimer(() => this._end('silence'));
+  private readonly _silenceTimer = createTimer(() =>
+    this._end('silence', { emit: true })
+  );
 
   private _defaultProvider?: WebSpeechProvider;
   private _session?: Session;
   private _segments: string[] = [];
+  private _announcement = '';
 
   @state()
   private _state: SpeechToTextState = 'idle';
 
+  /** Changes with each announcement, so that the live region also announces a repeated message. */
   @state()
-  private _announcement = '';
+  private _announcementId = 0;
 
   private get _resolvedProvider(): SpeechToTextProvider {
     return this.provider ?? (this._defaultProvider ??= new WebSpeechProvider());
@@ -152,7 +189,7 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
   public continuous = false;
 
   /**
-   * Whether interim results are reported through `igcInterim` while an utterance is in progress.
+   * Whether `igcInterim` reports interim results while the user speaks.
    * @attr interim-results
    * @default false
    */
@@ -160,28 +197,42 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
   public interimResults = false;
 
   /**
-   * The maximum number of alternative transcripts a final result carries.
+   * The maximum number of alternative transcripts in a final result. The minimum is 1.
    * @attr max-alternatives
    * @default 1
    */
   @property({ type: Number, attribute: 'max-alternatives' })
+  @coercedProperty<number, IgcSpeechToTextComponent>({
+    transform: ({ value }) => Math.max(1, Math.floor(asNumber(value, 1))),
+  })
   public maxAlternatives = 1;
 
   /**
-   * The time in milliseconds without speech activity after which the session stops on its own.
-   * Zero disables the timeout.
+   * The time in milliseconds without speech after which the session stops.
+   * Zero, a negative value, or a value that is not a finite number disables the timeout.
    * @attr silence-timeout
    * @default 0
    */
   @property({ type: Number, attribute: 'silence-timeout' })
+  @coercedProperty<number, IgcSpeechToTextComponent>({
+    transform: ({ value }) => Math.max(0, asNumber(value)),
+    onChange: ({ host }) => host._armSilenceTimer(),
+  })
   public silenceTimeout = 0;
 
   /**
-   * Whether the component is disabled.
+   * Whether the component is disabled. A change to `true` aborts the active session.
    * @attr disabled
    * @default false
    */
   @property({ type: Boolean, reflect: true })
+  @coercedProperty<boolean, IgcSpeechToTextComponent>({
+    onChange: ({ value, host }) => {
+      if (value) {
+        host.abort();
+      }
+    },
+  })
   public disabled = false;
 
   /**
@@ -194,11 +245,20 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
 
   /* blazorSuppress */
   /**
-   * The recognition provider. Defaults to a provider built on the Web Speech API.
-   * Changing the provider while a session is active aborts the session.
+   * The recognition provider. The default provider uses the Web Speech API.
+   * A change of the provider aborts the active session.
    */
   @property({ attribute: false })
-  public provider?: SpeechToTextProvider;
+  @coercedProperty<SpeechToTextProvider | undefined, IgcSpeechToTextComponent>({
+    onChange: ({ host }) => {
+      const session = host._session;
+
+      if (session && session.provider !== host._resolvedProvider) {
+        host.abort();
+      }
+    },
+  })
+  public provider?: SpeechToTextProvider = undefined;
 
   /** The lifecycle state of the component. */
   public get state(): SpeechToTextState {
@@ -212,9 +272,7 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
 
   /** Whether the active provider can run in the current environment. */
   public get supported(): boolean {
-    return this.provider
-      ? this.provider.isSupported
-      : WebSpeechProvider.isSupported;
+    return (this.provider ?? WebSpeechProvider).isSupported;
   }
 
   //#endregion
@@ -225,7 +283,7 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
 
     addKeybindings(this, {
       skip: () => this._state === 'idle',
-    }).set(escapeKey, () => this.abort());
+    }).set(escapeKey, () => this._end('manual', { abort: true, emit: true }));
 
     this._internals.setState('idle', true);
   }
@@ -237,16 +295,6 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
     this.abort();
   }
 
-  protected override willUpdate(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has('provider')) {
-      this.abort();
-    }
-
-    if (changedProperties.has('silenceTimeout')) {
-      this._armSilenceTimer();
-    }
-  }
-
   protected override update(changedProperties: PropertyValues<this>): void {
     this._internals.setState('unsupported', !this.supported);
     super.update(changedProperties);
@@ -254,14 +302,29 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
 
   //#endregion
 
+  //#region Event handlers
+
+  private _handleClick(): void {
+    if (this._state === 'idle') {
+      this._start(true);
+    } else {
+      this._end('manual', { emit: true });
+    }
+  }
+
+  //#endregion
+
   //#region Provider listener
 
-  /** Creates the listener of `session`. Callbacks that arrive after the session ended are ignored. */
+  /**
+   * Creates the listener of `session`. It ignores the callbacks of a session that ended.
+   * For a session that stopped before the provider listened, it accepts only `onEnd()`.
+   */
   private _createListener(session: Session): SpeechToTextProviderListener {
     const guard =
       <T extends unknown[]>(handler: (...args: T) => void) =>
       (...args: T) => {
-        if (this._session === session) {
+        if (this._session === session && !session.aborted) {
           handler(...args);
         }
       };
@@ -269,31 +332,47 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
     return {
       onStart: guard(() => this._handleProviderStart(session)),
       onResult: guard((result: SpeechToTextResultEventArgs) =>
-        this._handleProviderResult(result)
+        this._handleProviderResult(session, result)
       ),
       onError: guard((error: SpeechToTextErrorEventArgs) => {
-        session.endReason = 'error';
+        session.failed = true;
         this._emitError(error);
       }),
-      onEnd: guard(() => this._handleProviderEnd(session)),
+      onEnd: () => {
+        if (this._session === session) {
+          this._handleProviderEnd(session);
+        }
+      },
       onActivity: guard(() => this._armSilenceTimer()),
     };
   }
 
   private _handleProviderStart(session: Session): void {
-    this._setState('listening');
+    // `onStart()` and the resolved `start()` both call this.
+    if (session.listening) {
+      return;
+    }
 
-    // A handler of `igcStateChange` may have ended the session already.
+    session.listening = true;
+    this._setState('listening', true);
+
+    // A handler of `igcStateChange` can end the session.
     if (this._session !== session) {
       return;
     }
 
-    this._announcement = this.resourceStrings.speechToTextListening;
+    this._announce(this.resourceStrings.speech_to_text_listening);
     this.emitEvent('igcStart');
     this._armSilenceTimer();
   }
 
-  private _handleProviderResult(result: SpeechToTextResultEventArgs): void {
+  private _handleProviderResult(
+    session: Session,
+    result: SpeechToTextResultEventArgs
+  ): void {
+    // A result after an error shows that the provider recovered.
+    session.failed = false;
+
     if (result.isFinal) {
       const transcript = result.transcript.trim();
 
@@ -310,28 +389,31 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
   }
 
   private _handleProviderEnd(session: Session): void {
-    const reason = session.endReason ?? 'provider';
-    // Capture the outcome first: a handler of `igcStateChange` may start a new
-    // session, which resets the transcript.
+    const reason = session.endReason ?? (session.failed ? 'error' : 'provider');
+    // Read the transcript first. A handler of `igcStateChange` can start a new
+    // session, which clears it.
     const detail: SpeechToTextEndEventArgs = {
       transcript: this.transcript,
       reason,
     };
 
-    if (reason !== 'error') {
-      this._announcement = this.resourceStrings.speechToTextStopped;
+    if (session.listening && reason !== 'error') {
+      this._announce(this.resourceStrings.speech_to_text_stopped);
     }
 
     this._clearSession();
-    this._setState('idle');
-    this.emitEvent('igcEnd', { detail });
+    this._setState('idle', true);
+
+    if (session.listening) {
+      this.emitEvent('igcEnd', { detail });
+    }
   }
 
   //#endregion
 
   //#region Internal API
 
-  private _setState(value: SpeechToTextState): void {
+  private _setState(value: SpeechToTextState, emit: boolean): void {
     if (this._state === value) {
       return;
     }
@@ -339,10 +421,12 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
     this._internals.setState(this._state, false);
     this._internals.setState(value, true);
     this._state = value;
-    this.emitEvent('igcStateChange', { detail: value });
+
+    if (emit) {
+      this.emitEvent('igcStateChange', { detail: value });
+    }
   }
 
-  /** Stops the silence timer and drops the session. */
   private _clearSession(): void {
     this._silenceTimer.stop();
     this._session = undefined;
@@ -356,36 +440,102 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
     }
   }
 
-  private _end(reason: SpeechToTextEndReason, abort = false): void {
+  private async _start(emit: boolean): Promise<void> {
+    if (this.disabled || this._state !== 'idle') {
+      return;
+    }
+
+    const provider = this._resolvedProvider;
+
+    if (!provider.isSupported) {
+      return;
+    }
+
+    const session: Session = { provider };
+
+    this._segments = [];
+    this._session = session;
+    this._setState('starting', emit);
+
+    // A handler of `igcStateChange` can abort the session.
+    if (session.aborted) {
+      this._clearSession();
+      this._setState('idle', true);
+      return;
+    }
+
+    const { locale: lang, continuous, interimResults, maxAlternatives } = this;
+
+    try {
+      await provider.start(
+        { lang, continuous, interimResults, maxAlternatives },
+        this._createListener(session)
+      );
+    } catch (error) {
+      if (this._session === session) {
+        this._clearSession();
+
+        if (!session.aborted) {
+          const { code, message } = SpeechToTextProviderError.from(error);
+          this._emitError({ code, message });
+        }
+
+        this._setState('idle', true);
+      }
+      return;
+    }
+
+    if (this._session !== session) {
+      return;
+    }
+
+    if (session.aborted) {
+      // The provider started after the abort. Abort it again. Its `onEnd()`
+      // ends the session.
+      provider.abort();
+    } else {
+      this._handleProviderStart(session);
+    }
+  }
+
+  private _end(
+    reason: 'manual' | 'silence',
+    { abort = false, emit = false }: EndOptions = {}
+  ): void {
     const session = this._session;
 
-    // A graceful stop is already in progress; only an abort can cut it short.
+    // During a stop, only an abort has an effect.
     if (!session || (this._state === 'stopping' && !abort)) {
       return;
     }
 
-    if (this._state === 'starting') {
-      // Nothing is captured yet. Drop the session so the outcome of the pending
-      // start is ignored and let the provider tear down what it has set up.
-      this._clearSession();
-      session.provider.abort();
-      this._setState('idle');
-      return;
+    // Before the provider listens, there are no results to keep, so a stop is
+    // an abort. The session stays until `start()` of the provider settles, so
+    // a new session does not find the provider busy.
+    const starting = this._state === 'starting';
+
+    if (starting) {
+      session.aborted = true;
     }
 
     session.endReason = reason;
     this._silenceTimer.stop();
-    this._setState('stopping');
+    this._setState('stopping', emit);
 
-    if (abort) {
+    if (abort || starting) {
       session.provider.abort();
     } else {
       session.provider.stop();
     }
   }
 
+  private _announce(message: string | undefined): void {
+    this._announcement = message ?? '';
+    this._announcementId++;
+  }
+
   private _emitError(error: SpeechToTextErrorEventArgs): void {
-    this._announcement = `${this.resourceStrings.speechToTextError}: ${error.message}`;
+    this._announce(this.resourceStrings[ERROR_STRINGS[error.code]]);
     this.emitEvent('igcError', { detail: error });
   }
 
@@ -394,76 +544,30 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
   //#region Public API
 
   /**
-   * Starts a recognition session. Does nothing while a session is active or when the component is disabled.
-   * Emits `igcError` with code `not-supported` when the provider cannot run in the current environment.
+   * Starts a recognition session. Does nothing while a session is active, when the component is
+   * disabled, or when the provider cannot run in the current environment.
    */
   public async start(): Promise<void> {
-    if (this.disabled || this._state !== 'idle') {
-      return;
-    }
-
-    const provider = this._resolvedProvider;
-
-    if (!provider.isSupported) {
-      this._emitError({
-        code: 'not-supported',
-        message: this.resourceStrings.speechToTextUnsupported,
-      });
-      return;
-    }
-
-    const session: Session = { provider };
-
-    this._segments = [];
-    this._session = session;
-    this._setState('starting');
-
-    // A handler of `igcStateChange` may have aborted the session already.
-    if (this._session !== session) {
-      return;
-    }
-
-    try {
-      await provider.start(
-        {
-          lang: this.locale,
-          continuous: this.continuous,
-          interimResults: this.interimResults,
-          maxAlternatives: Math.max(
-            1,
-            Math.floor(asNumber(this.maxAlternatives, 1))
-          ),
-        },
-        this._createListener(session)
-      );
-    } catch (error) {
-      if (this._session === session) {
-        const { code, message } = SpeechToTextProviderError.from(error);
-        this._clearSession();
-        this._emitError({ code, message });
-        this._setState('idle');
-      }
-    }
+    await this._start(false);
   }
 
   /**
-   * Stops capturing audio. The provider delivers its remaining final results before `igcEnd` is emitted.
-   * A session that is still starting is aborted instead.
+   * Stops the audio capture. The provider sends its remaining final results, then `igcEnd` is
+   * emitted. A session that is starting is aborted.
    */
   public stop(): void {
     this._end('manual');
   }
 
-  /**
-   * Ends the session immediately. Results that are not delivered yet are discarded.
-   */
+  /** Ends the session immediately and discards the results that the provider did not send yet. */
   public abort(): void {
-    this._end('manual', true);
+    this._end('manual', { abort: true });
   }
 
   /**
-   * Starts a session when idle, stops the active one, or aborts a session that is still starting.
-   * Does nothing while a session is stopping, so a repeated stop does not discard the pending results.
+   * Starts a session when the component is idle. Stops an active session, or aborts a session
+   * that is starting. Does nothing while a session stops, so that a second stop does not discard
+   * the pending results.
    */
   public async toggle(): Promise<void> {
     if (this._state === 'idle') {
@@ -477,21 +581,21 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
 
   protected override render() {
     const { supported, resourceStrings: strings } = this;
-    let label = strings.speechToTextStop;
+    let label = strings.speech_to_text_stop;
 
     if (!supported) {
-      label = strings.speechToTextUnsupported;
+      label = strings.speech_to_text_unsupported;
     } else if (this._state === 'idle') {
-      label = strings.speechToTextStart;
+      label = strings.speech_to_text_start;
     }
 
     return html`
       <igc-icon-button
         part="button"
         variant=${this.variant}
-        aria-label=${label}
+        ${ariaBindings(hostAria(this, { fallback: label }))}
         ?disabled=${this.disabled || !supported}
-        @click=${this.toggle}
+        @click=${this._handleClick}
       >
         <slot>
           <igc-icon
@@ -503,7 +607,7 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
       </igc-icon-button>
       <span part="indicator" aria-hidden="true"></span>
       <igc-visually-hidden role="status" aria-live="polite">
-        ${this._announcement}
+        ${keyed(this._announcementId, this._announcement)}
       </igc-visually-hidden>
     `;
   }

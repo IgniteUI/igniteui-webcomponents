@@ -12,9 +12,9 @@ import type {
 
 //#region Web Speech API typings
 
-// The DOM lib of TypeScript does not describe the Web Speech API, and the
-// published typings must not require consumers to add it, so the surface the
-// provider touches is declared locally.
+// The DOM lib of TypeScript has no Web Speech API types, and the published
+// types must not make consumers add them. Thus, this file declares the part of
+// the API that the provider uses.
 
 interface RecognitionAlternative {
   readonly transcript: string;
@@ -60,10 +60,9 @@ function getRecognitionConstructor(): RecognitionConstructor | undefined {
 }
 
 /**
- * Adds the likely region to a language tag that has none (`en` becomes `en-US`).
- *
- * The speech service of Edge fails with a `network` error for a tag without a region,
- * while Chrome accepts it. An invalid tag is returned as is.
+ * Adds the probable region to a language tag without a region (`en` becomes `en-US`).
+ * The speech service of Edge fails with a `network` error for a tag without a region.
+ * Returns an invalid tag without a change.
  */
 function toRegionalLanguageTag(lang: string): string {
   try {
@@ -82,12 +81,12 @@ function toRegionalLanguageTag(lang: string): string {
 
 /* blazorSuppress */
 /**
- * A speech-to-text provider built on the `SpeechRecognition` interface of the Web Speech API.
+ * A speech-to-text provider that uses the `SpeechRecognition` interface of the Web Speech API.
  *
- * This is the provider the speech-to-text component uses when no other one is assigned.
- * Recognition runs through the speech service of the browser; on most browsers that means
- * the audio is sent to a remote service and an active network connection is required.
- * Browsers without the API, such as Firefox by default, report `isSupported` as `false`.
+ * The speech-to-text component uses this provider when it has no other provider. The speech
+ * service of the browser does the recognition. Most browsers send the audio to a remote service,
+ * so a network connection is necessary. In a browser without the API, for example Firefox with
+ * its default settings, `isSupported` is `false`.
  */
 export class WebSpeechProvider implements SpeechToTextProvider {
   /** Whether the Web Speech API is available in the current environment. */
@@ -126,7 +125,10 @@ export class WebSpeechProvider implements SpeechToTextProvider {
     const recognition = new RecognitionImpl();
     recognition.lang = toRegionalLanguageTag(options.lang);
     recognition.continuous = options.continuous;
-    recognition.interimResults = options.interimResults;
+    // Interim results are the only sign of speech between `speechstart` and the
+    // final result, so the provider always requests them. When the component
+    // does not want them, they become activity, which resets the silence timeout.
+    recognition.interimResults = true;
     recognition.maxAlternatives = options.maxAlternatives;
     this._recognition = recognition;
 
@@ -148,7 +150,11 @@ export class WebSpeechProvider implements SpeechToTextProvider {
       recognition.addEventListener(
         'result',
         (event) =>
-          this._handleResult(event as RecognitionResultEvent, listener),
+          this._handleResult(
+            event as RecognitionResultEvent,
+            listener,
+            options.interimResults
+          ),
         { signal }
       );
 
@@ -219,7 +225,8 @@ export class WebSpeechProvider implements SpeechToTextProvider {
 
   private _handleResult(
     event: RecognitionResultEvent,
-    listener: SpeechToTextProviderListener
+    listener: SpeechToTextProviderListener,
+    interimResults: boolean
   ): void {
     const { results } = event;
     let interim = '';
@@ -240,16 +247,23 @@ export class WebSpeechProvider implements SpeechToTextProvider {
       };
 
       if (result.length > 1) {
-        args.alternatives = Array.from(result)
-          .slice(1)
-          .map((alternative) => alternative.transcript);
+        args.alternatives = Array.from(
+          result,
+          (alternative) => alternative.transcript
+        ).slice(1);
       }
 
       listener.onResult(args);
     }
 
-    if (interim) {
+    if (!interim) {
+      return;
+    }
+
+    if (interimResults) {
       listener.onResult({ transcript: interim, isFinal: false });
+    } else {
+      listener.onActivity();
     }
   }
 

@@ -120,10 +120,6 @@ export {
   type IgcChatResourceStrings,
 } from '#internals/i18n/EN/chat.resources.js';
 export {
-  IgcSpeechToTextResourceStringsEN,
-  type IgcSpeechToTextResourceStrings,
-} from '#internals/i18n/EN/speech-to-text.resources.js';
-export {
   type ICalendarResourceStrings,
   type ICarouselResourceStrings,
   type IChatResourceStrings,
@@ -145,6 +141,10 @@ export {
   registerI18n,
   setCurrentI18n,
 } from 'igniteui-i18n-core';
+export {
+  type ISpeechToTextResourceStrings,
+  SpeechToTextResourceStringsEN,
+} from './components/speech-to-text/i18n.js';
 
 // Event maps
 export type { IgcBannerComponentEventMap } from './components/banner/banner.js';

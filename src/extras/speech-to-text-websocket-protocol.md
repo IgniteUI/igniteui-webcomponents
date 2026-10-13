@@ -202,6 +202,9 @@ For reference, the provider behaves as follows:
 - Ignores text frames that are not valid JSON or have an unknown `type`, and `result`
   messages whose `transcript` is not a string. An `error` whose `message` is not a
   string is reported with a default message.
+- Treats a `result` as final only when `isFinal` is the boolean `true`. Drops a
+  `confidence` that is not a number between 0 and 1, and the `alternatives` entries
+  that are not strings.
 - Ends the session with a `network` error when the send buffer of the socket grows past
   `maxBufferedAmount` bytes (1 MiB by default), which happens when the connection or the
   server stops consuming audio while the socket stays open.

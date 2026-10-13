@@ -1,28 +1,28 @@
 /**
  * The lifecycle state of the speech-to-text component.
  *
- * - `idle` - nothing is captured.
- * - `starting` - the provider is starting; the microphone permission prompt may be pending.
- * - `listening` - audio is captured and transcribed.
- * - `stopping` - the provider flushes its final results before it ends.
+ * - `idle` - the component captures nothing.
+ * - `starting` - the provider starts. The microphone permission prompt can be open.
+ * - `listening` - the provider captures and transcribes audio.
+ * - `stopping` - the provider sends its last final results, or an aborted start of the provider settles.
  */
 export type SpeechToTextState = 'idle' | 'starting' | 'listening' | 'stopping';
 
 /**
  * Why a speech-to-text session ended.
  *
- * - `manual` - `stop()` or `abort()` was called, or the user toggled the button.
- * - `silence` - no speech was detected for the duration of `silenceTimeout`.
- * - `error` - the provider reported an error and ended.
- * - `provider` - the provider ended on its own, for example after a single utterance.
+ * - `manual` - `stop()` or `abort()` was called, or the user pushed the button or pressed Escape.
+ * - `silence` - there was no speech for the duration of `silenceTimeout`.
+ * - `error` - the provider reported an error and ended before it sent a result.
+ * - `provider` - the provider ended the session, for example after one utterance.
  */
 export type SpeechToTextEndReason = 'manual' | 'silence' | 'error' | 'provider';
 
 /**
- * Error codes reported by the speech-to-text component. The codes mirror the
+ * The error codes of the speech-to-text component. They are the same as the
  * `SpeechRecognitionErrorEvent` codes of the Web Speech API, plus `not-supported`
- * for environments without a usable provider. Codes the component cannot trigger,
- * such as the grammar and phrase related ones of the Web Speech API, map to `unknown`.
+ * for an environment without a usable provider. Web Speech API codes that the
+ * component cannot cause, for example the grammar and phrase codes, become `unknown`.
  */
 export type SpeechToTextErrorCode =
   | 'not-supported'
@@ -36,46 +36,35 @@ export type SpeechToTextErrorCode =
   | 'unknown';
 
 /* jsonAPIPlainObject */
-/**
- * A recognized piece of speech.
- */
+/** A recognized part of the speech. */
 export interface SpeechToTextResultEventArgs {
   /**
-   * The recognized text. For an interim result this is the current best guess
-   * for the utterance in progress; for a final result it is the finalized segment.
+   * The recognized text. For an interim result, it is the current best guess for the
+   * utterance. For a final result, it is the final segment.
    */
   transcript: string;
-  /**
-   * Whether the result is final. Interim results are replaced by later results
-   * for the same utterance.
-   */
+  /** Whether the result is final. Later results for the same utterance replace an interim result. */
   isFinal: boolean;
-  /**
-   * The confidence of the provider in the transcript, between 0 and 1, when available.
-   */
+  /** The confidence of the provider in the transcript, from 0 to 1, if available. */
   confidence?: number;
   /**
-   * Alternative transcripts for the same utterance, most likely first, excluding `transcript`.
-   * Populated only when the provider supports alternatives and `maxAlternatives` is greater than 1.
+   * Other transcripts for the same utterance, most probable first, without `transcript`.
+   * Only a provider that supports alternatives sends them, when `maxAlternatives` is more than 1.
    */
   alternatives?: string[];
 }
 
 /* jsonAPIPlainObject */
-/**
- * An error reported by the speech-to-text component.
- */
+/** An error that the speech-to-text component reports. */
 export interface SpeechToTextErrorEventArgs {
   /** The error code. */
   code: SpeechToTextErrorCode;
-  /** A human-readable description of the error. */
+  /** A description of the error that a person can read. */
   message: string;
 }
 
 /* jsonAPIPlainObject */
-/**
- * Details of a finished speech-to-text session.
- */
+/** The details of a speech-to-text session that ended. */
 export interface SpeechToTextEndEventArgs {
   /** The full final transcript of the session. */
   transcript: string;
@@ -84,39 +73,37 @@ export interface SpeechToTextEndEventArgs {
 }
 
 /* blazorSuppress */
-/**
- * The recognition settings the component passes to its provider when a session starts.
- */
+/** The recognition settings that the component gives to its provider when a session starts. */
 export interface SpeechToTextProviderOptions {
   /** The BCP 47 language tag of the speech. */
   lang: string;
   /** Whether the session continues after the first utterance. */
   continuous: boolean;
-  /** Whether interim results are wanted. */
+  /** Whether the component wants interim results. */
   interimResults: boolean;
-  /** The maximum number of alternative transcripts per result. */
+  /** The maximum number of alternative transcripts in a result. */
   maxAlternatives: number;
 }
 
 /* blazorSuppress */
 /**
- * The callbacks a provider invokes to report progress to the component.
+ * The callbacks that a provider calls to report progress to the component.
  *
- * After `start()` resolves, a provider must eventually call `onEnd()` exactly once,
- * whether the session ends normally, because of `stop()` / `abort()`, or after an error.
+ * After `start()` resolves, the provider must call `onEnd()` one time. This applies to a
+ * normal end, to an end after `stop()` or `abort()`, and to an end after an error.
  */
 export interface SpeechToTextProviderListener {
-  /** The provider is listening. */
+  /** The provider listens. Not necessary when `start()` resolves only after the provider listens. */
   onStart(): void;
-  /** An interim or final result is available. */
+  /** An interim or a final result is available. */
   onResult(result: SpeechToTextResultEventArgs): void;
-  /** The provider encountered an error. It may still deliver results, or call `onEnd()` next. */
+  /** The provider has an error. Results or `onEnd()` can follow. */
   onError(error: SpeechToTextErrorEventArgs): void;
-  /** The session ended. No further callbacks follow. */
+  /** The session ended. No more callbacks follow. */
   onEnd(): void;
   /**
-   * Speech or sound activity was detected. Resets the silence timeout of the component.
-   * Results count as activity on their own; call this for activity that produces no result yet.
+   * The provider found speech or sound. This resets the silence timeout of the component.
+   * Results also reset it, so call this only for activity that has no result yet.
    */
   onActivity(): void;
 }
@@ -125,23 +112,25 @@ export interface SpeechToTextProviderListener {
 /**
  * A speech recognition backend for the speech-to-text component.
  *
- * The component ships with a provider built on the Web Speech API and the `extras`
- * entry point ships one that streams microphone audio to a WebSocket endpoint.
- * Implement this interface to plug in a different service.
+ * The component has a provider that uses the Web Speech API. The `extras` entry point has a
+ * provider that sends the microphone audio to a WebSocket endpoint. Implement this interface
+ * to use a different service.
  */
 export interface SpeechToTextProvider {
   /** Whether the provider can run in the current environment. */
   readonly isSupported: boolean;
   /**
-   * Starts a recognition session. Resolves once the provider is listening and
-   * rejects, preferably with a `SpeechToTextProviderError`, when it cannot start.
+   * Starts a recognition session. Resolves when the provider listens. Rejects, preferably with
+   * a `SpeechToTextProviderError`, when the provider cannot start. An `abort()` before the
+   * provider listens should make it reject. The component starts a new session only after the
+   * returned promise settles.
    */
   start(
     options: SpeechToTextProviderOptions,
     listener: SpeechToTextProviderListener
   ): Promise<void>;
-  /** Stops capturing audio and lets the provider deliver its remaining final results. */
+  /** Stops the audio capture. The provider then sends its remaining final results. */
   stop(): void;
-  /** Ends the session immediately, discarding results that are not yet delivered. */
+  /** Ends the session immediately and discards the results that the provider did not send yet. */
   abort(): void;
 }

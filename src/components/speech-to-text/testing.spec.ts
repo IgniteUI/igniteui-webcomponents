@@ -1,7 +1,7 @@
 import { spy } from 'sinon';
 import type { SpeechToTextProviderListener } from './types.js';
 
-/** A provider listener whose callbacks are all sinon spies. */
+/** A provider listener with a sinon spy for each callback. */
 export function createListener() {
   return {
     onStart: spy(),
