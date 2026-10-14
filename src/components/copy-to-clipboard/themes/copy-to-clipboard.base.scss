@@ -1,0 +1,27 @@
+@use 'styles/utilities' as *;
+
+:host {
+    --_offset: #{pad(rem(4px))};
+
+    display: block;
+}
+
+[part~='button'] {
+    position: absolute;
+    inset-block-start: var(--_offset);
+    inset-inline-end: var(--_offset);
+    padding: var(--_offset);
+    transition: opacity .2s ease-in-out;
+
+    @media (prefers-reduced-motion: reduce) {
+        transition: none;
+    }
+}
+
+// Without hover, as on a touch screen, the button stays visible.
+@media (hover: hover) {
+    :host(:not(:hover, :focus-within)) [part~='button'] {
+        opacity: 0;
+        pointer-events: none;
+    }
+}

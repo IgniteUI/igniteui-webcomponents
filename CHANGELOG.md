@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### Copy to clipboard
+  - New `igc-copy-to-clipboard` component. It overlays a copy button on its slotted content and writes the rendered text to the clipboard. The button appears on hover or when focus enters the component, and stays visible on devices without hover.
+    - `format` selects the serialization: `plain` (default) collapses whitespace into a single body of text, and `preserve` keeps paragraph breaks and code indentation.
+    - `disable-interaction` hides the button. The `--copy` command from the Invoker Commands API still triggers the copy action.
+    - The `copy-icon`, `success-icon` and `error-icon` slots replace the default icons. A visually hidden live region announces the result of the copy action.
+    - `igcCopy` gives the `status` (`'success'` or `'error'`) and the `text` of each copy action, from the button or the `--copy` command; the text is there also on failure. While the status icon shows, the component matches `:state(ig-success)` or `:state(ig-error)`.
+    - The `aria-label`, `aria-labelledby` and `aria-describedby` of the component name and describe the copy button.
 - #### Calendar, Date picker, Date range picker
   - `DateRangeDescriptor` has an optional `label`. The calendar adds the labels of the matching `specialDates` and `disabledDates` descriptors to the accessible name of a date, for example "Thursday, October 8, 2026, Free delivery". Before, the special state was only visual, and assistive technologies did not announce it. [#2423](https://github.com/IgniteUI/igniteui-webcomponents/pull/2423)
 - #### Combo
