@@ -13,11 +13,11 @@ import { addHostListeners } from './host-listeners.js';
  *
  * @example
  * ```ts
- * class IgcDialogComponent extends LitElement {
- *   private readonly _commands = addCommandController(this)
- *     .set('--show', this.show)
- *     .set('--hide', this.hide)
- *     .set('--toggle', this.toggle);
+ * class MyElement extends LitElement {
+ *   constructor() {
+ *     super();
+ *     addCommandController(this).set('--next', this.next);
+ *   }
  * }
  * ```
  */
@@ -54,6 +54,23 @@ class CommandController {
 /** Creates a {@link CommandController} and adds it to the given host. */
 export function addCommandController(host: LitElement): CommandController {
   return new CommandController(host);
+}
+
+type ToggleCommandsHost = LitElement & {
+  show(): unknown;
+  hide(): unknown;
+  toggle(): unknown;
+};
+
+/**
+ * Adds a {@link CommandController} that runs the `show`, `hide` and `toggle`
+ * methods of the host for the `--show`, `--hide` and `--toggle` commands.
+ */
+export function addToggleCommands(host: ToggleCommandsHost): CommandController {
+  return addCommandController(host)
+    .set('--show', host.show)
+    .set('--hide', host.hide)
+    .set('--toggle', host.toggle);
 }
 
 export type { CommandController };

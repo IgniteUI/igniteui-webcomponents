@@ -1,11 +1,9 @@
-import { ContextConsumer } from '@lit/context';
-import { html, isServer, LitElement, nothing, type PropertyValues } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { html, isServer, LitElement, nothing } from 'lit';
+import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { until } from 'lit/directives/until.js';
-import { chatContext } from '#internals/context.js';
-import { addAdoptedStylesController } from '#internals/controllers/adopt-styles.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { HydrationMixin } from '#internals/mixins/hydration.js';
 import { partMap } from '#internals/part-map.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { trimmedHtml } from '#internals/utils/lit.js';
@@ -15,6 +13,7 @@ import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import type { ChatState } from './chat-state.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
+import { addChatStateConsumer } from './state-consumer.js';
 import { styles } from './themes/message.base.css.js';
 import { styles as shared } from './themes/shared/chat-message/chat-message.common.css.js';
 import type {
@@ -55,7 +54,9 @@ type DefaultMessageRenderers = {
  * The message text is sanitized with DOMPurify before rendering,
  * and can be rendered with a markdown renderer if provided.
  */
-export default class IgcChatMessageComponent extends LitElement {
+export default class IgcChatMessageComponent extends HydrationMixin(
+  LitElement
+) {
   public static readonly tagName = 'igc-chat-message';
   public static override styles = [componentBase, styles, shared];
 
@@ -68,7 +69,7 @@ export default class IgcChatMessageComponent extends LitElement {
     );
   }
 
-  private readonly _adoptedStyles = addAdoptedStylesController(this);
+  private readonly _chat = addChatStateConsumer(this);
 
   private readonly _defaults = Object.freeze<DefaultMessageRenderers>({
     messageHeader: () => this._renderHeader(),
@@ -77,27 +78,8 @@ export default class IgcChatMessageComponent extends LitElement {
     messageActions: () => this._renderActions(),
   });
 
-  private readonly _stateChanged = () => {
-    this._shouldAdoptRootStyles = Boolean(this._state.options?.adoptRootStyles);
-  };
-
-  private readonly _stateConsumer = new ContextConsumer(this, {
-    context: chatContext,
-    callback: this._stateChanged,
-    subscribe: true,
-  });
-
-  /**
-   * Set while a server-rendered host is hydrating, during which `render()`
-   * withholds the template so both renders match.
-   */
-  private _hydrating = false;
-
-  @state()
-  private _shouldAdoptRootStyles = false;
-
   private get _state(): ChatState {
-    return this._stateConsumer.value!;
+    return this._chat.state!;
   }
 
   /**
@@ -108,33 +90,9 @@ export default class IgcChatMessageComponent extends LitElement {
 
   constructor() {
     super();
-    addThemingController(this, all, { themeChange: this._adoptPageStyles });
-  }
-
-  /** @internal */
-  protected override createRenderRoot(): HTMLElement | DocumentFragment {
-    this._hydrating = this.shadowRoot !== null;
-    return super.createRenderRoot();
-  }
-
-  protected override update(props: PropertyValues): void {
-    if (props.has('_shouldAdoptRootStyles')) {
-      this._adoptedStyles.shouldAdoptStyles(this._shouldAdoptRootStyles);
-    }
-    super.update(props);
-  }
-
-  protected override firstUpdated(): void {
-    if (this._hydrating) {
-      this._hydrating = false;
-      // Off the current update cycle - avoids Lit's change-in-update warning.
-      queueMicrotask(() => this.requestUpdate());
-    }
-  }
-
-  private _adoptPageStyles(): void {
-    this._adoptedStyles.invalidateCache(this.ownerDocument);
-    this._adoptedStyles.shouldAdoptStyles(this._shouldAdoptRootStyles);
+    addThemingController(this, all, {
+      themeChange: () => this._chat.refreshStyles(),
+    });
   }
 
   private _getRenderer(name: keyof DefaultMessageRenderers) {
@@ -312,7 +270,7 @@ export default class IgcChatMessageComponent extends LitElement {
   protected override render() {
     // No chat provides the state outside a chat or during SSR. A hydrating
     // host matches that empty server render.
-    if (isServer || this._hydrating || !this._stateConsumer.value) {
+    if (isServer || this._hydrating || !this._chat.state) {
       return nothing;
     }
 

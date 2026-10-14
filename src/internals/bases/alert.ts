@@ -6,7 +6,7 @@ import type {
   AbsolutePosition,
   NotificationPositioning,
 } from '../../components/types.js';
-import { addCommandController } from '../controllers/command.js';
+import { addToggleCommands } from '../controllers/command.js';
 import { addHostListeners } from '../controllers/host-listeners.js';
 import { addInternalsController } from '../controllers/internals.js';
 import { createMutationController } from '../controllers/mutation-observer.js';
@@ -150,10 +150,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   constructor() {
     super();
 
-    addCommandController(this)
-      .set('--show', this.show)
-      .set('--hide', this.hide)
-      .set('--toggle', this.toggle);
+    addToggleCommands(this);
 
     addInternalsController(this, {
       initialARIA: {

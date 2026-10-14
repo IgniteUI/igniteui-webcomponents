@@ -554,4 +554,55 @@ describe('Date Range Picker Two Inputs - Form integration', () => {
     )!;
     expect(singleInput.invalid).to.be.true;
   });
+
+  describe('Editor commit', () => {
+    it('marks the picker as touched when an editor commits a value', async () => {
+      // The focus stays in the picker, so only the commit marks it as touched.
+      spec.setProperties({ min: today.native });
+
+      const [start] = spec.element.renderRoot.querySelectorAll(
+        IgcDateTimeInputComponent.tagName
+      );
+
+      start.value = today.add('day', -5).native;
+      start.dispatchEvent(
+        new CustomEvent('igcChange', { detail: start.value })
+      );
+      await elementUpdated(spec.element);
+
+      expect(spec.element.validity.rangeUnderflow).to.be.true;
+      ValidityHelpers.hasInvalidStyles(spec.element).to.be.true;
+    });
+  });
+
+  describe('Form reset', () => {
+    it('clears the invalid styles of the inner editors', async () => {
+      spec.setProperties({
+        min: today.native,
+        defaultValue: { start: today.add('day', -5).native, end: null },
+      });
+
+      const [start] = spec.element.renderRoot.querySelectorAll(
+        IgcDateTimeInputComponent.tagName
+      );
+      const native = start.renderRoot.querySelector('input')!;
+
+      native.focus();
+      native.blur();
+      await elementUpdated(spec.element);
+      await elementUpdated(start);
+
+      ValidityHelpers.hasInvalidStyles(start).to.be.true;
+
+      spec.reset();
+      await elementUpdated(spec.element);
+      await elementUpdated(start);
+
+      ValidityHelpers.hasInvalidStyles(start).to.be.false;
+      checkSelectedRange(spec.element, {
+        start: today.add('day', -5).native,
+        end: null,
+      });
+    });
+  });
 });

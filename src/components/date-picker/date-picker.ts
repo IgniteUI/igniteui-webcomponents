@@ -248,8 +248,8 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
     return this._input ?? null;
   }
 
-  protected override _focusInput(): void {
-    this._input.focus();
+  protected override get _editors(): IgcDateTimeInputComponent[] {
+    return [this._input];
   }
 
   protected override _focusAndSelectInput(): void {
@@ -259,10 +259,6 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
 
   protected override _syncCalendarOnToggle(): void {
     this._setCalendarActiveDate(this.value);
-  }
-
-  protected override _clearEditors(): void {
-    this._input?.clear();
   }
 
   protected override _valueFromCalendarSelection(dates: Date[]): Date | null {
@@ -369,18 +365,6 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
 
     this._setCalendarActiveDate(draft);
     this.emitEvent('igcInput', { detail: draft });
-  }
-
-  //#endregion
-
-  //#region Form associated overrides
-
-  protected override formResetCallback(): void {
-    super.formResetCallback();
-
-    // The browser never resets the inner editor, which is outside the form.
-    // Without this, a touched editor keeps its invalid styles after a reset.
-    this._input?.['formResetCallback']();
   }
 
   //#endregion

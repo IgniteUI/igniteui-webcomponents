@@ -5,7 +5,6 @@ import {
   type TemplateResult,
 } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import { buttonGroupContext } from '#internals/context.js';
 import {
   ariaBindings,
@@ -18,6 +17,7 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import { setOrRemoveAttribute } from '#internals/utils/dom.js';
+import { bindIf } from '#internals/utils/lit.js';
 import { all } from '#themes/button-group/themes/button.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
@@ -156,11 +156,11 @@ export default class IgcToggleButtonComponent extends HostAriaMixin(
           focused: this._focusRingManager.focused,
         })}
         type="button"
-        role=${ifDefined(isRadio ? 'radio' : undefined)}
+        role=${bindIf(isRadio, 'radio')}
         ?disabled=${disabled}
         ${ariaBindings(hostAria(this))}
-        aria-checked=${ifDefined(isRadio ? selectedState : undefined)}
-        aria-pressed=${ifDefined(isRadio ? undefined : selectedState)}
+        aria-checked=${bindIf(isRadio, selectedState)}
+        aria-pressed=${bindIf(!isRadio, selectedState)}
         aria-disabled=${disabled}
       >
         <slot></slot>

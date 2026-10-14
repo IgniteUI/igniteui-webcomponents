@@ -7,7 +7,7 @@ import {
   ariaBindings,
   hostAria,
 } from '#internals/controllers/aria-projection.js';
-import { addCommandController } from '#internals/controllers/command.js';
+import { addToggleCommands } from '#internals/controllers/command.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { addToggleController } from '#internals/controllers/toggle.js';
 import { registerComponent } from '#internals/definitions/register.js';
@@ -199,10 +199,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     super();
 
     addThemingController(this, all);
-    addCommandController(this)
-      .set('--show', this.show)
-      .set('--hide', this.hide)
-      .set('--toggle', this.toggle);
+    addToggleCommands(this);
   }
 
   protected override updated(properties: PropertyValues<this>): void {
