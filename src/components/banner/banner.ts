@@ -8,7 +8,6 @@ import { addInternalsController } from '#internals/controllers/internals.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { addToggleController } from '#internals/controllers/toggle.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { all } from '#themes/banner/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -54,12 +53,11 @@ export interface IgcBannerComponentEventMap {
  * @csspart content - The container for the default message slot.
  * @csspart actions - The container for the action buttons slot.
  */
-export default class IgcBannerComponent extends EventEmitterMixin<
-  IgcBannerComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcBannerComponent extends EventEmitterMixin<IgcBannerComponentEventMap>(
+  LitElement
+) {
   public static readonly tagName = 'igc-banner';
-  public static styles = [styles];
+  public static override styles = [styles];
 
   /* blazorSuppress */
   public static register(): void {

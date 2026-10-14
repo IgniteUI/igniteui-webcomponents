@@ -11,7 +11,6 @@ import { addToggleCommands } from '#internals/controllers/command.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { addToggleController } from '#internals/controllers/toggle.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
@@ -69,12 +68,11 @@ const nextId = createIdGenerator('title');
  * @csspart backdrop - The decorative backdrop overlay element.
  * @csspart animating - Applied to the backdrop while an animation is running.
  */
-export default class IgcDialogComponent extends EventEmitterMixin<
-  IgcDialogComponentEventMap,
-  Constructor<LitElement>
->(HostAriaMixin(LitElement)) {
+export default class IgcDialogComponent extends EventEmitterMixin<IgcDialogComponentEventMap>(
+  HostAriaMixin(LitElement)
+) {
   public static readonly tagName = 'igc-dialog';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

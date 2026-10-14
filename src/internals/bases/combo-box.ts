@@ -15,7 +15,7 @@ import { iterNodes } from '../utils/dom.js';
 
 /* blazorIndirectRender */
 /* omitModule */
-export abstract class IgcBaseComboBoxComponent extends LitElement {
+export class IgcBaseComboBoxComponent extends LitElement {
   /* blazorSuppress */
   declare public emitEvent: <
     K extends keyof ToggleEventMap,

@@ -25,7 +25,6 @@ import {
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
@@ -151,11 +150,11 @@ function getEyeDropper(): EyeDropperConstructor | undefined {
 export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcColorPickerComponentEventMap,
-    AbstractConstructor<IgcBaseComboBoxComponent>
+    typeof IgcBaseComboBoxComponent
   >(IgcBaseComboBoxComponent)
 ) {
   public static readonly tagName = 'igc-color-picker';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

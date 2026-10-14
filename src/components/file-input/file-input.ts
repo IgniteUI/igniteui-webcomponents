@@ -8,7 +8,6 @@ import { ariaBindings } from '#internals/controllers/aria-projection.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
-import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueFileListTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
@@ -82,12 +81,12 @@ const i18n: I18nControllerConfig<IFileInputResourceStrings> = {
 export default class IgcFileInputComponent extends I18nMixin(
   EventEmitterMixin<
     IgcFileInputComponentEventMap,
-    AbstractConstructor<IgcInputBaseComponent>
+    typeof IgcInputBaseComponent
   >(IgcInputBaseComponent),
   i18n
 ) {
   public static readonly tagName = 'igc-file-input';
-  public static styles = [componentBase, baseStyle, shared, styles];
+  public static override styles = [componentBase, baseStyle, shared, styles];
 
   /* blazorSuppress */
   public static register(): void {

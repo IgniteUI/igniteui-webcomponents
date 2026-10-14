@@ -2,7 +2,6 @@ import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { IgcBaseAlertLikeComponent } from '#internals/bases/alert.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { all } from '#themes/snackbar/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -39,10 +38,10 @@ export interface IgcSnackbarComponentEventMap {
  */
 export default class IgcSnackbarComponent extends EventEmitterMixin<
   IgcSnackbarComponentEventMap,
-  AbstractConstructor<IgcBaseAlertLikeComponent>
+  typeof IgcBaseAlertLikeComponent
 >(IgcBaseAlertLikeComponent) {
   public static readonly tagName = 'igc-snackbar';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

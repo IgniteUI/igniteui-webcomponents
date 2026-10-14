@@ -7,7 +7,7 @@ import { addSafeEventListener, preventDefault } from '../../utils/events.js';
 import { getOrInsertComputed } from '../../utils/objects.js';
 import { isFunction, isString } from '../../utils/types.js';
 import type { Validator } from '../../validators.js';
-import type { Constructor } from '../constructor.js';
+import type { Constructor, LitElementConstructor } from '../constructor.js';
 import { HostAriaMixin } from '../host-aria.js';
 import type { FormValue } from './form-value.js';
 import {
@@ -110,7 +110,7 @@ function isInvalidControl(element: ListedElement): boolean {
 }
 
 /** `stateKey` names the state property, whose attribute sets the default. */
-function BaseFormAssociated<T extends Constructor<LitElement>>(
+function BaseFormAssociated<T extends LitElementConstructor>(
   base: T,
   stateKey: 'value' | 'checked' = 'value'
 ) {
@@ -531,9 +531,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(
  * Turns the given class into a form-associated custom element with a
  * `defaultValue` property.
  */
-export function FormAssociatedMixin<T extends Constructor<LitElement>>(
-  base: T
-) {
+export function FormAssociatedMixin<T extends LitElementConstructor>(base: T) {
   class FormAssociatedElement extends BaseFormAssociated(base) {
     /* blazorCSSuppress */
     @property({ attribute: false })
@@ -566,7 +564,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
  * Turns the given class into a form-associated checkbox custom element with
  * a `defaultChecked` property.
  */
-export function FormAssociatedCheckboxMixin<T extends Constructor<LitElement>>(
+export function FormAssociatedCheckboxMixin<T extends LitElementConstructor>(
   base: T
 ) {
   class FormAssociatedCheckboxElement extends BaseFormAssociated(

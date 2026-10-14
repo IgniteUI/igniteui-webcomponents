@@ -18,7 +18,6 @@ import {
   getDateTimeFormat,
 } from '#internals/i18n/i18n-controller.js';
 import { datePickerResourcesMap } from '#internals/i18n/utils.js';
-import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateTimeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
@@ -149,10 +148,10 @@ type DatePickerResourceStringsType = IDatePickerResourceStrings &
 @shadowOptions({ delegatesFocus: true })
 export default class IgcDatePickerComponent extends EventEmitterMixin<
   IgcDatePickerComponentEventMap,
-  AbstractConstructor<IgcDatePickerBaseComponent<Date>>
+  typeof IgcDatePickerBaseComponent<Date>
 >(IgcDatePickerBaseComponent) {
   public static readonly tagName = 'igc-date-picker';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

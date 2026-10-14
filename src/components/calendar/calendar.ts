@@ -16,7 +16,6 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { CalendarDay } from '#internals/date/model.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
@@ -111,10 +110,10 @@ const MAX_DISABLED_DATE_SKIP = 1000;
  */
 export default class IgcCalendarComponent extends EventEmitterMixin<
   IgcCalendarComponentEventMap,
-  Constructor<IgcCalendarBaseComponent>
+  typeof IgcCalendarBaseComponent
 >(IgcCalendarBaseComponent) {
   public static readonly tagName = 'igc-calendar';
-  public static styles = [componentBase, styles];
+  public static override styles = [componentBase, styles];
 
   /* blazorSuppress */
   public static register(): void {

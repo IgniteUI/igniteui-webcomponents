@@ -12,7 +12,6 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { addHostListeners } from '#internals/controllers/host-listeners.js';
 import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { getRoot, isLTR } from '#internals/utils/dom.js';
 import { asNumber, clamp } from '#internals/utils/math.js';
@@ -80,10 +79,7 @@ const EMPTY_RANGE: VisibleRange = Object.freeze({
  */
 export default class IgcVirtualScrollComponent<
   T = any,
-> extends EventEmitterMixin<
-  IgcVirtualScrollComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
+> extends EventEmitterMixin<IgcVirtualScrollComponentEventMap>(LitElement) {
   public static readonly tagName = 'igc-virtual-scroll';
 
   /* blazorSuppress */

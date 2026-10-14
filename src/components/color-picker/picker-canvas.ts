@@ -9,7 +9,6 @@ import {
   arrowUp,
 } from '#internals/controllers/key-bindings.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import {
@@ -51,12 +50,11 @@ type CanvasGeometry = {
  * @csspart marker - The draggable marker indicating the picked saturation/value.
  * @csspart dragging - Present on the marker while it is being dragged.
  */
-export default class IgcPickerCanvasComponent extends EventEmitterMixin<
-  IgcPickerCanvasEventMap,
-  AbstractConstructor<LitElement>
->(LitElement) {
+export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPickerCanvasEventMap>(
+  LitElement
+) {
   public static readonly tagName = 'igc-picker-canvas';
-  public static styles = [componentBase, styles];
+  public static override styles = [componentBase, styles];
 
   public static register(): void {
     registerComponent(IgcPickerCanvasComponent);

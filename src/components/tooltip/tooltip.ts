@@ -16,7 +16,6 @@ import {
   type CoercedPropertyConfig,
 } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { isElement, isLTR } from '#internals/utils/dom.js';
@@ -67,12 +66,11 @@ type TooltipStateOptions = {
  * @fires igcClosing - Emitted before the tooltip begins to close. Can be canceled to prevent closing.
  * @fires igcClosed - Emitted after the tooltip has been fully removed from view.
  */
-export default class IgcTooltipComponent extends EventEmitterMixin<
-  IgcTooltipComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcTooltipComponent extends EventEmitterMixin<IgcTooltipComponentEventMap>(
+  LitElement
+) {
   public static readonly tagName = 'igc-tooltip';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /** Shared config for the delay properties - a negative delay is no delay. */
   private static readonly _delay: CoercedPropertyConfig<

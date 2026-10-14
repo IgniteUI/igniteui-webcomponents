@@ -75,7 +75,7 @@ const Slots = setSlots(
  */
 export default class IgcInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-input';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /** Shared config for the constraint properties - a change revalidates. */
   private static readonly _revalidate: CoercedPropertyConfig<

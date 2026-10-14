@@ -14,7 +14,6 @@ import { registerComponent } from '#internals/definitions/register.js';
 import type { IgcChatResourceStrings } from '#internals/i18n/EN/chat.resources.js';
 import { addI18nController } from '#internals/i18n/i18n-controller.js';
 import { chatResourcesMap } from '#internals/i18n/utils.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { all } from '#themes/chat/themes/themes.js';
@@ -197,13 +196,12 @@ const Slots = setSlots(
  * @csspart attachment-icon - Styles the icon of an attachment.
  * @csspart file-name - Styles the file name shown in an attachment.
  */
-export default class IgcChatComponent extends EventEmitterMixin<
-  IgcChatComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcChatComponent extends EventEmitterMixin<IgcChatComponentEventMap>(
+  LitElement
+) {
   public static readonly tagName = 'igc-chat';
 
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

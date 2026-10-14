@@ -9,7 +9,6 @@ import {
   setSlots,
 } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { getRoot } from '#internals/utils/dom.js';
 import {
@@ -93,12 +92,11 @@ const STEPPER_SYNC_PROPERTIES: (keyof IgcStepperComponent)[] = [
  * </igc-stepper>
  * ```
  */
-export default class IgcStepperComponent extends EventEmitterMixin<
-  IgcStepperComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcStepperComponent extends EventEmitterMixin<IgcStepperComponentEventMap>(
+  LitElement
+) {
   public static readonly tagName = 'igc-stepper';
-  public static styles = [componentBase, styles];
+  public static override styles = [componentBase, styles];
 
   /* blazorSuppress */
   public static register(): void {

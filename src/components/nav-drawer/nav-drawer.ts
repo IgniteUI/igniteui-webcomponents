@@ -11,7 +11,6 @@ import { addToggleCommands } from '#internals/controllers/command.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { addToggleController } from '#internals/controllers/toggle.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
@@ -70,12 +69,11 @@ function drawerAria(drawer: IgcNavDrawerComponent): ARIABindings {
  * @csspart main - The main content container of the drawer.
  * @csspart mini - The mini variant container of the drawer.
  */
-export default class IgcNavDrawerComponent extends EventEmitterMixin<
-  IgcNavDrawerComponentEventMap,
-  Constructor<LitElement>
->(HostAriaMixin(LitElement)) {
+export default class IgcNavDrawerComponent extends EventEmitterMixin<IgcNavDrawerComponentEventMap>(
+  HostAriaMixin(LitElement)
+) {
   public static readonly tagName = 'igc-nav-drawer';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

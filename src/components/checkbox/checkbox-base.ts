@@ -7,7 +7,6 @@ import {
   setSlots,
 } from '#internals/controllers/slot.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedCheckboxRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import { FormValueBooleanTransformers } from '#internals/mixins/forms/form-transformers.js';
@@ -31,9 +30,7 @@ export interface IgcCheckboxComponentEventMap {
 
 @blazorDeepImport
 export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixin(
-  EventEmitterMixin<IgcCheckboxComponentEventMap, Constructor<LitElement>>(
-    LitElement
-  )
+  EventEmitterMixin<IgcCheckboxComponentEventMap>(LitElement)
 ) {
   protected override get __validators() {
     return checkBoxValidators;

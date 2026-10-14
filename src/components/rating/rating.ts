@@ -24,7 +24,6 @@ import {
 } from '#internals/controllers/slot.js';
 import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '#internals/mixins/forms/associated.js';
 import { FormValueNumberTransformers } from '#internals/mixins/forms/form-transformers.js';
@@ -108,12 +107,10 @@ const Slots = setSlots('symbol', 'value-label');
  * @cssproperty --symbol-empty-filter - The filter(s) applied to projected empty symbols, other than icons, when the rating is disabled.
  */
 export default class IgcRatingComponent extends FormAssociatedMixin(
-  EventEmitterMixin<IgcRatingComponentEventMap, Constructor<LitElement>>(
-    LitElement
-  )
+  EventEmitterMixin<IgcRatingComponentEventMap>(LitElement)
 ) {
   public static readonly tagName = 'igc-rating';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

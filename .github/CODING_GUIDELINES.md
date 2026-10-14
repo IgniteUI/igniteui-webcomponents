@@ -720,11 +720,15 @@ A parser, converter or serializer that takes user or stored input also gets prop
     igcStateChange: CustomEvent<Record<string, unknown>>;
   }
 
-  export default class IgcFooBarComponent extends EventEmitterMixin<
-    IgcFooBarEventMap,
-    Constructor<LitElement>
-  >(LitElement) {}
+  export default class IgcFooBarComponent extends EventEmitterMixin<IgcFooBarEventMap>(
+    LitElement
+  ) {}
   ```
+
+  For a base class other than `LitElement`, give its type as the second type argument:
+  `EventEmitterMixin<IgcFooBarEventMap, typeof IgcFooBaseComponent>(IgcFooBaseComponent)`. Do
+  not use `Constructor<…>` there, because it removes the statics of the base and `static styles`
+  then cannot take `override`.
 
 - Declare the event map in the module of the class that emits the events. When `src/index.ts`
   exports the class, export the map too, as `export type { IgcFooBarEventMap } from …`. The

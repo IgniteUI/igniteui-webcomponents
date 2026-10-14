@@ -18,7 +18,6 @@ import {
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
@@ -67,13 +66,11 @@ const i18n: I18nControllerConfig<IChipResourceStrings> = {
  */
 @shadowOptions({ delegatesFocus: true })
 export default class IgcChipComponent extends I18nMixin(
-  EventEmitterMixin<IgcChipComponentEventMap, Constructor<LitElement>>(
-    HostAriaMixin(LitElement)
-  ),
+  EventEmitterMixin<IgcChipComponentEventMap>(HostAriaMixin(LitElement)),
   i18n
 ) {
   public static readonly tagName = 'igc-chip';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

@@ -9,7 +9,6 @@ import {
   setSlots,
 } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedCheckboxRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import { FormValueBooleanTransformers } from '#internals/mixins/forms/form-transformers.js';
@@ -62,12 +61,10 @@ const nextId = createIdGenerator('radio');
  * @csspart label - The radio control label.
  */
 export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMixin(
-  EventEmitterMixin<IgcRadioComponentEventMap, Constructor<LitElement>>(
-    LitElement
-  )
+  EventEmitterMixin<IgcRadioComponentEventMap>(LitElement)
 ) {
   public static readonly tagName = 'igc-radio';
-  protected static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

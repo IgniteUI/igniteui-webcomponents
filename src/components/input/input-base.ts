@@ -7,7 +7,6 @@ import {
 import type { SlotController } from '#internals/controllers/slot.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import {
@@ -36,9 +35,7 @@ export interface IgcInputComponentEventMap {
 @blazorDeepImport
 @shadowOptions({ delegatesFocus: true })
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
-  EventEmitterMixin<IgcInputComponentEventMap, Constructor<LitElement>>(
-    LitElement
-  )
+  EventEmitterMixin<IgcInputComponentEventMap>(LitElement)
 ) {
   protected abstract readonly _themes: ThemingController;
   protected abstract readonly _slots: SlotController<any>;

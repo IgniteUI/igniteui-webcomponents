@@ -27,7 +27,6 @@ import {
 } from '#internals/controllers/mutation-observer.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
 import {
@@ -81,10 +80,10 @@ const nextItemId = createIdGenerator('igc-dropdown-item');
 )
 export default class IgcDropdownComponent extends EventEmitterMixin<
   IgcDropdownComponentEventMap,
-  AbstractConstructor<IgcComboBoxBaseLikeComponent>
+  typeof IgcComboBoxBaseLikeComponent
 >(IgcComboBoxBaseLikeComponent) {
   public static readonly tagName = 'igc-dropdown';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

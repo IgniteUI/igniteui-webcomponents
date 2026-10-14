@@ -1,7 +1,6 @@
 import { property } from 'lit/decorators.js';
 import { hostAria } from '#internals/controllers/aria-projection.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '#internals/mixins/forms/associated.js';
 import { FormValueNumberTransformers } from '#internals/mixins/forms/form-transformers.js';
@@ -44,10 +43,9 @@ export interface IgcSliderComponentEventMap {
  * @csspart fill - The filled part of the track.
  */
 export default class IgcSliderComponent extends FormAssociatedMixin(
-  EventEmitterMixin<
-    IgcSliderComponentEventMap,
-    Constructor<IgcSliderBaseComponent>
-  >(IgcSliderBaseComponent)
+  EventEmitterMixin<IgcSliderComponentEventMap, typeof IgcSliderBaseComponent>(
+    IgcSliderBaseComponent
+  )
 ) {
   public static readonly tagName = 'igc-slider';
 

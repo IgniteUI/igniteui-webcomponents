@@ -21,7 +21,6 @@ import {
   setSlots,
 } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { asArray, firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
 import { getElementFromPath } from '#internals/utils/events.js';
@@ -52,12 +51,11 @@ export interface IgcButtonGroupComponentEventMap {
  *
  * @csspart group - The button group container.
  */
-export default class IgcButtonGroupComponent extends EventEmitterMixin<
-  IgcButtonGroupComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcButtonGroupComponent extends EventEmitterMixin<IgcButtonGroupComponentEventMap>(
+  LitElement
+) {
   public static readonly tagName = 'igc-button-group';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

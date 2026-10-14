@@ -15,7 +15,6 @@ import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
-import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
@@ -138,13 +137,13 @@ export default class IgcComboComponent<
   FormAssociatedRequiredMixin(
     EventEmitterMixin<
       IgcComboComponentEventMap,
-      AbstractConstructor<IgcBaseComboBoxComponent>
+      typeof IgcBaseComboBoxComponent
     >(IgcBaseComboBoxComponent)
   ),
   i18n
 ) {
   public static readonly tagName = 'igc-combo';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
