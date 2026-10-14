@@ -8,6 +8,7 @@ import {
 } from '@open-wc/testing';
 
 import { type SinonFakeTimers, spy, stub, useFakeTimers } from 'sinon';
+import { internalsOf } from '#internals/controllers/internals.js';
 import {
   arrowLeft,
   arrowRight,
@@ -114,6 +115,17 @@ describe('Carousel', () => {
     it('passes the a11y audit', async () => {
       await expect(carousel).to.be.accessible();
       await expect(carousel).shadowDom.to.be.accessible();
+    });
+
+    it('sets a role description on the carousel and not on the slides', () => {
+      expect(internalsOf(carousel)!.getARIA('ariaRoleDescription')).to.equal(
+        'carousel'
+      );
+
+      for (const slide of slides) {
+        expect(internalsOf(slide)!.getARIA('role')).to.equal('tabpanel');
+        expect(internalsOf(slide)!.getARIA('ariaRoleDescription')).to.be.null;
+      }
     });
 
     it('is correctly initialized with its default component state', () => {

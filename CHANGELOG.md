@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The date picker, the date time input, the input, the mask input and the textarea have read-only `selectionStart` and `selectionEnd` properties. Before, an application could set the selection with `setSelectionRange()`, but it could not read it. In the input, the two properties are `null` for the `email` and `number` types, as on the native input. In the mask input and the date time input, they report the selection from `setRangeText()` when `updateComplete` resolves. [#2451](https://github.com/IgniteUI/igniteui-webcomponents/pull/2451) [#2452](https://github.com/IgniteUI/igniteui-webcomponents/pull/2452)
 
 ### Changed
+- #### Avatar, Badge, Carousel
+  - The avatar, the badge and the carousel slide no longer have an `aria-roledescription`. Screen readers now announce the role of the element ("image", "status" or "tab panel") in the language of the user. Before, they announced the English words "avatar", "badge" and "slide" in all languages. The carousel keeps its "carousel" role description. To set a role description, put an `aria-roledescription` attribute on the element.
 - #### Library
   - The package has a new runtime dependency, `tslib`. The components import the TypeScript helpers from it, so a bundle contains one copy of each helper.
   - The bundle of all components is approximately 6% smaller after gzip. The components share one copy of their common styles, and the dark theme styles contain only the values that are different from the light theme.

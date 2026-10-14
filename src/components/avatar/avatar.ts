@@ -66,7 +66,7 @@ export default class IgcAvatarComponent extends LitElement {
     addThemingController(this, all);
 
     addInternalsController(this, {
-      initialARIA: { role: 'img', ariaRoleDescription: 'avatar' },
+      initialARIA: { role: 'img' },
       aria: () => ({ ariaLabel: this.alt ?? this.initials ?? null }),
     });
   }
