@@ -23,6 +23,7 @@
     - [CSS Shadow parts](#css-shadow-parts)
   - [Test scenarios](#test-scenarios)
     - [Default](#default)
+    - [Motion](#motion)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -32,9 +33,10 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                  |
+| ------: | ---------- | ------------------------------------------------------ |
+|       1 | 2026-09-21 | Initial specification                                  |
+|       2 | 2026-10-14 | Respect `prefers-reduced-motion`; clean up on a cancel |
 
 ## Overview
 
@@ -52,14 +54,16 @@ decorates, fills it, and plays an expanding, fading circle from the point of the
 
 - **A press ripple** that starts at the position of the pointer.
 - **Primary button only**, so a secondary or middle click does not play it.
-- **Self-cleaning**: the element created for the animation is removed when the animation finishes.
+- **Self-cleaning**: the element created for the animation is removed when the animation finishes or is cancelled.
+- **Reduced motion**: with `prefers-reduced-motion: reduce`, the animation plays with a duration of zero.
 
 ### Acceptance criteria
 
 - The ripple must play from the position of the pointer press.
 - It must cover the element it decorates.
 - It must ignore anything but the primary pointer button.
-- It must leave no elements behind after the animation.
+- It must leave no elements behind after the animation, also when the animation is cancelled.
+- It must respect `prefers-reduced-motion`.
 - The element must be integrated and themeable with the theming mechanism of the library.
 
 ## User stories
@@ -102,7 +106,8 @@ application builds.
 
 #### Styling the ripple
 
-The duration and the easing of the animation are fixed in the implementation and are not configurable. The color
+The duration and the easing of the animation are fixed in the implementation and are not configurable. With
+`prefers-reduced-motion: reduce`, the duration is zero. The color
 is read from the `--color` custom property of the ripple element, and falls back to `--ig-gray-800` of the active
 palette when the property is not set.
 
@@ -147,6 +152,12 @@ None applicable.
 1. The DOM state is correct before and after the ripple animation, so the animation element is created and then
    cleaned up.
 2. No ripple is played for a non-primary pointer button.
+3. The animation element is removed when its animation finishes.
+
+### Motion
+
+4. With `prefers-reduced-motion: reduce`, the animation plays with a duration of zero.
+5. The animation element is removed when its animation is cancelled.
 
 ### Not covered by the suite
 

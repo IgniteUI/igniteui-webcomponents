@@ -1,13 +1,13 @@
-import { ContextConsumer, consume } from '@lit/context';
-import { html, isServer, LitElement, nothing, type PropertyValues } from 'lit';
+import { consume } from '@lit/context';
+import { html, isServer, LitElement, nothing } from 'lit';
 import { query, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { until } from 'lit/directives/until.js';
-import { chatContext, chatUserInputContext } from '#internals/context.js';
-import { addAdoptedStylesController } from '#internals/controllers/adopt-styles.js';
+import { chatUserInputContext } from '#internals/context.js';
 import { enterKey, isKey, tabKey } from '#internals/controllers/keys.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { HydrationMixin } from '#internals/mixins/hydration.js';
 import { partMap } from '#internals/part-map.js';
 import { createTimer } from '#internals/timing.js';
 import { isEmpty } from '#internals/utils/arrays.js';
@@ -21,6 +21,7 @@ import IgcChipComponent from '../chip/chip.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
 import type { ChatState } from './chat-state.js';
+import { addChatStateConsumer } from './state-consumer.js';
 import { styles } from './themes/input.base.css.js';
 import { styles as shared } from './themes/shared/input/input.common.css.js';
 import type {
@@ -70,7 +71,7 @@ type DefaultInputRenderers = {
  * @csspart attachment-wrapper - Wrapper for individual attachment
  * @csspart attachment-name - Display name of an attachment
  */
-export default class IgcChatInputComponent extends LitElement {
+export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
   public static readonly tagName = 'igc-chat-input';
   public static override styles = [componentBase, styles, shared];
 
@@ -98,12 +99,6 @@ export default class IgcChatInputComponent extends LitElement {
   private _userIsTyping = false;
   private _userLastTypeTime = Date.now();
 
-  /**
-   * Set while a server-rendered host is hydrating, during which `render()`
-   * withholds the template so both renders match.
-   */
-  private _hydrating = false;
-
   private readonly _typingTimer = createTimer(() => {
     if (!this._userIsTyping) {
       return;
@@ -120,17 +115,7 @@ export default class IgcChatInputComponent extends LitElement {
     }
   });
 
-  private readonly _adoptedStyles = addAdoptedStylesController(this);
-
-  private readonly _stateChanged = () => {
-    this._shouldAdoptRootStyles = Boolean(this._state.options?.adoptRootStyles);
-  };
-
-  private readonly _stateConsumer = new ContextConsumer(this, {
-    context: chatContext,
-    callback: this._stateChanged,
-    subscribe: true,
-  });
+  private readonly _chat = addChatStateConsumer(this);
 
   @consume({ context: chatUserInputContext, subscribe: true })
   private readonly _userInputState!: ChatState;
@@ -144,47 +129,20 @@ export default class IgcChatInputComponent extends LitElement {
   @state()
   private _dragging = false;
 
-  @state()
-  private _shouldAdoptRootStyles = false;
-
   private get _state(): ChatState {
-    return this._stateConsumer.value!;
+    return this._chat.state!;
   }
 
   constructor() {
     super();
-    addThemingController(this, all, { themeChange: this._adoptPageStyles });
-  }
-
-  /** @internal */
-  protected override createRenderRoot(): HTMLElement | DocumentFragment {
-    this._hydrating = this.shadowRoot !== null;
-    return super.createRenderRoot();
-  }
-
-  protected override update(props: PropertyValues): void {
-    if (props.has('_shouldAdoptRootStyles')) {
-      this._adoptedStyles.shouldAdoptStyles(this._shouldAdoptRootStyles);
-    }
-    super.update(props);
-  }
-
-  protected override firstUpdated(): void {
-    if (this._hydrating) {
-      this._hydrating = false;
-      // Off the current update cycle - avoids Lit's change-in-update warning.
-      queueMicrotask(() => this.requestUpdate());
-    }
+    addThemingController(this, all, {
+      themeChange: () => this._chat.refreshStyles(),
+    });
   }
 
   /** @internal */
   public focusInput(): void {
     this._textInputElement?.focus();
-  }
-
-  private _adoptPageStyles(): void {
-    this._adoptedStyles.invalidateCache(this.ownerDocument);
-    this._adoptedStyles.shouldAdoptStyles(this._shouldAdoptRootStyles);
   }
 
   private _getRenderer<U extends keyof DefaultInputRenderers>(
@@ -401,7 +359,7 @@ export default class IgcChatInputComponent extends LitElement {
   protected override render() {
     // No chat provides the state outside a chat or during SSR. A hydrating
     // host matches that empty server render.
-    if (isServer || this._hydrating || !this._stateConsumer.value) {
+    if (isServer || this._hydrating || !this._chat.state) {
       return nothing;
     }
 

@@ -5,6 +5,7 @@ import { addInternalsController } from '#internals/controllers/internals.js';
 import { blazorInclude } from '#internals/decorators/blazorInclude.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
+import { HydrationMixin } from '#internals/mixins/hydration.js';
 import { all } from '#themes/icon/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
@@ -54,7 +55,9 @@ import { styles as shared } from './themes/shared/icon.common.css.js';
  * registerIconFromText('custom-icon', customIconSvg, 'my-collection');
  * ```
  */
-export default class IgcIconComponent extends HostAriaMixin(LitElement) {
+export default class IgcIconComponent extends HydrationMixin(
+  HostAriaMixin(LitElement)
+) {
   public static readonly tagName = 'igc-icon';
   public static override styles = [componentBase, styles, shared];
 
@@ -70,12 +73,6 @@ export default class IgcIconComponent extends HostAriaMixin(LitElement) {
   });
 
   private readonly _onRegistryChange = (): void => this._getIcon();
-
-  /**
-   * Set while a server-rendered host is hydrating, during which `render()`
-   * withholds the SVG so both renders match.
-   */
-  private _hydrating = false;
 
   @state()
   private _svg = '';
@@ -142,12 +139,6 @@ export default class IgcIconComponent extends HostAriaMixin(LitElement) {
     super.disconnectedCallback();
   }
 
-  /** @internal */
-  protected override createRenderRoot(): HTMLElement | DocumentFragment {
-    this._hydrating = this.shadowRoot !== null;
-    return super.createRenderRoot();
-  }
-
   protected override update(props: PropertyValues): void {
     if (props.has('name') || props.has('collection')) {
       this._getIcon();
@@ -161,15 +152,10 @@ export default class IgcIconComponent extends HostAriaMixin(LitElement) {
     }
   }
 
-  protected override firstUpdated(): void {
-    if (this._hydrating) {
-      this._hydrating = false;
-
-      // Off the current update cycle - avoids Lit's change-in-update warning.
-      // Named, so the update treats the withheld SVG as a change.
-      if (this._svg) {
-        queueMicrotask(() => this.requestUpdate('_svg'));
-      }
+  protected override _onHydrated(): void {
+    // Named, so the update treats the withheld SVG as a change.
+    if (this._svg) {
+      this.requestUpdate('_svg');
     }
   }
 
