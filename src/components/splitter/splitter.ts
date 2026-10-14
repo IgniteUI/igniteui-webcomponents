@@ -20,7 +20,6 @@ import {
 import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
@@ -173,12 +172,11 @@ const DEFAULT_RESIZE_STATE: SplitterResizeState = {
  * A part name is therefore not tied to a fixed side: with the end pane
  * collapsed, `end-expand-btn` lands on the *first* of the two.
  */
-export default class IgcSplitterComponent extends EventEmitterMixin<
-  IgcSplitterComponentEventMap,
-  Constructor<LitElement>
->(HostAriaMixin(LitElement)) {
+export default class IgcSplitterComponent extends EventEmitterMixin<IgcSplitterComponentEventMap>(
+  HostAriaMixin(LitElement)
+) {
   public static readonly tagName = 'igc-splitter';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

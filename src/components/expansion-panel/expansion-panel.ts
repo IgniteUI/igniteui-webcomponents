@@ -16,7 +16,6 @@ import {
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { addToggleController } from '#internals/controllers/toggle.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
@@ -62,12 +61,11 @@ const nextId = createIdGenerator('igc-expansion-panel');
  * @csspart indicator - The indicator container.
  * @csspart content - The expansion panel's content wrapper.
  */
-export default class IgcExpansionPanelComponent extends EventEmitterMixin<
-  IgcExpansionPanelComponentEventMap,
-  Constructor<LitElement>
->(HostAriaMixin(LitElement)) {
+export default class IgcExpansionPanelComponent extends EventEmitterMixin<IgcExpansionPanelComponentEventMap>(
+  HostAriaMixin(LitElement)
+) {
   public static readonly tagName = 'igc-expansion-panel';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

@@ -30,7 +30,6 @@ import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import { FormValueSelectTransformers } from '#internals/mixins/forms/form-transformers.js';
@@ -125,11 +124,11 @@ const Slots = setSlots(
 export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcSelectComponentEventMap,
-    AbstractConstructor<IgcComboBoxBaseLikeComponent>
+    typeof IgcComboBoxBaseLikeComponent
   >(IgcComboBoxBaseLikeComponent)
 ) {
   public static readonly tagName = 'igc-select';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

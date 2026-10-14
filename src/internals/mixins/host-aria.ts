@@ -1,5 +1,4 @@
-import type { LitElement } from 'lit';
-import type { Constructor } from './constructor.js';
+import type { Constructor, LitElementConstructor } from './constructor.js';
 
 /** @internal */
 export const HOST_ARIA_ATTRIBUTES = [
@@ -19,16 +18,11 @@ export declare class HostAriaElementInterface {
  * changes, so the render can forward it into the shadow root.
  * @internal
  */
-export function HostAriaMixin<T extends Constructor<LitElement>>(base: T) {
+export function HostAriaMixin<T extends LitElementConstructor>(base: T) {
   class HostAriaElement extends base {
-    /**
-     * `Reflect.get` calls the base getter with this class as `this`, because
-     * the mixin base type has no static `observedAttributes`.
-     * @internal
-     */
-    public static get observedAttributes(): string[] {
-      const inherited = Reflect.get(base, 'observedAttributes', this);
-      return [...(inherited as string[]), ...HOST_ARIA_ATTRIBUTES];
+    /** @internal */
+    public static override get observedAttributes(): string[] {
+      return [...super.observedAttributes, ...HOST_ARIA_ATTRIBUTES];
     }
 
     /** @internal */

@@ -56,7 +56,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   IgcInputBaseComponent
 ) {
   public static readonly tagName = 'igc-mask-input';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

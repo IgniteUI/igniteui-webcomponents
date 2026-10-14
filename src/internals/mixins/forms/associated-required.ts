@@ -1,6 +1,6 @@
 import type { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import type { Constructor } from '../constructor.js';
+import type { Constructor, LitElementConstructor } from '../constructor.js';
 import {
   FormAssociatedCheckboxMixin,
   FormAssociatedMixin,
@@ -41,7 +41,7 @@ function BaseFormAssociatedRequired<
  * Turns the given class into a form-associated custom element with a
  * `required` attribute.
  */
-export function FormAssociatedRequiredMixin<T extends Constructor<LitElement>>(
+export function FormAssociatedRequiredMixin<T extends LitElementConstructor>(
   base: T
 ) {
   class FormAssociatedRequiredElement extends BaseFormAssociatedRequired(
@@ -59,7 +59,7 @@ export function FormAssociatedRequiredMixin<T extends Constructor<LitElement>>(
  * with a `required` attribute.
  */
 export function FormAssociatedCheckboxRequiredMixin<
-  T extends Constructor<LitElement>,
+  T extends LitElementConstructor,
 >(base: T) {
   class FormAssociatedCheckboxRequiredElement extends BaseFormAssociatedRequired(
     FormAssociatedCheckboxMixin(base)

@@ -22,7 +22,6 @@ import {
 import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
 import { addRovingFocusController } from '#internals/controllers/roving-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { firstOf, isEmpty } from '#internals/utils/arrays.js';
@@ -60,12 +59,11 @@ export interface IgcTabsComponentEventMap {
  * @csspart end-scroll-button - The end scroll button displayed when the tabs overflow.
  * @csspart selected-indicator - The indicator that shows which tab is selected.
  */
-export default class IgcTabsComponent extends EventEmitterMixin<
-  IgcTabsComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponentEventMap>(
+  LitElement
+) {
   public static readonly tagName = 'igc-tabs';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

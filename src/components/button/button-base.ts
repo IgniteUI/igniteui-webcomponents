@@ -12,7 +12,6 @@ import { addIdRefResolver } from '#internals/controllers/id-resolver.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
@@ -50,10 +49,9 @@ export interface IgcButtonEventMap {
  */
 @blazorDeepImport
 @shadowOptions({ delegatesFocus: true })
-export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
-  IgcButtonEventMap,
-  Constructor<LitElement>
->(HostAriaMixin(LitElement)) {
+export abstract class IgcButtonBaseComponent extends EventEmitterMixin<IgcButtonEventMap>(
+  HostAriaMixin(LitElement)
+) {
   public static readonly formAssociated = true;
 
   //#region Internal state

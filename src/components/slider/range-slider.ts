@@ -7,7 +7,6 @@ import {
   resolveNaming,
 } from '#internals/controllers/aria-projection.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { getCenterPoint } from '#internals/utils/dom.js';
@@ -57,7 +56,7 @@ export interface IgcRangeSliderComponentEventMap {
  */
 export default class IgcRangeSliderComponent extends EventEmitterMixin<
   IgcRangeSliderComponentEventMap,
-  Constructor<IgcSliderBaseComponent>
+  typeof IgcSliderBaseComponent
 >(HostAriaMixin(IgcSliderBaseComponent)) {
   public static readonly tagName = 'igc-range-slider';
 

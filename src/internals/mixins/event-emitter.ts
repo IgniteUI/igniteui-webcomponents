@@ -43,9 +43,15 @@ export declare class EventEmitterInterface<E> {
   ): boolean;
 }
 
-export function EventEmitterMixin<E, T extends AbstractConstructor<LitElement>>(
-  superClass: T
-): Constructor<EventEmitterInterface<E>> & T;
+/**
+ * Adds `emitEvent` and typed event listeners for the event map `E`. When the
+ * base class is not `LitElement`, pass `typeof Base` as `T`, so the result
+ * keeps the statics of the base.
+ */
+export function EventEmitterMixin<
+  E,
+  T extends AbstractConstructor<LitElement> = typeof LitElement,
+>(superClass: T): Constructor<EventEmitterInterface<E>> & T;
 export function EventEmitterMixin<E, T extends Constructor<LitElement>>(
   superClass: T
 ) {

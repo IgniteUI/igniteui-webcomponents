@@ -5,7 +5,6 @@ import { CalendarDay, DAYS_IN_WEEK } from '#internals/date/model.js';
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '#internals/decorators/blazorSuppressComponent.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { chunk, firstOf, lastOf } from '#internals/utils/arrays.js';
@@ -98,10 +97,10 @@ interface DayProperties {
 @blazorIndirectRender
 export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
-  Constructor<IgcCalendarBaseComponent>
+  typeof IgcCalendarBaseComponent
 >(IgcCalendarBaseComponent) {
   public static readonly tagName = 'igc-days-view';
-  public static styles = styles;
+  public static override styles = styles;
 
   /* blazorSuppress */
   public static register(): void {

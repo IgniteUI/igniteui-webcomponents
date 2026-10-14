@@ -27,7 +27,6 @@ import {
   type ResizeDirection,
   resizable,
 } from '#internals/directives/resize.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
@@ -145,12 +144,11 @@ const Slots = setSlots(
  * @csspart active - Indicates that the resize adorners show. Applies to `tile-container`.
  * @csspart custom - Indicates a slotted custom adorner. Applies to `trigger-side`, `trigger` and `trigger-bottom`.
  */
-export default class IgcTileComponent extends EventEmitterMixin<
-  IgcTileComponentEventMap,
-  Constructor<LitElement>
->(HostAriaMixin(LitElement)) {
+export default class IgcTileComponent extends EventEmitterMixin<IgcTileComponentEventMap>(
+  HostAriaMixin(LitElement)
+) {
   public static readonly tagName = 'igc-tile';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {

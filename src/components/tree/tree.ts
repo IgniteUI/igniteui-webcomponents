@@ -7,7 +7,6 @@ import { property } from 'lit/decorators.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { setOrRemoveAttribute } from '#internals/utils/dom.js';
@@ -53,13 +52,11 @@ const i18n: I18nControllerConfig<ITreeResourceStrings> = {
  */
 @blazorAdditionalDependencies('IgcTreeItemComponent')
 export default class IgcTreeComponent extends I18nMixin(
-  EventEmitterMixin<IgcTreeComponentEventMap, Constructor<LitElement>>(
-    LitElement
-  ),
+  EventEmitterMixin<IgcTreeComponentEventMap>(LitElement),
   i18n
 ) {
   public static readonly tagName = 'igc-tree';
-  public static styles = [componentBase, styles];
+  public static override styles = [componentBase, styles];
 
   /* blazorSuppress */
   public static register() {
