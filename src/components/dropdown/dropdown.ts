@@ -1,13 +1,11 @@
 import { html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import {
-  getActiveItems,
   getItems,
-  getNextActiveItem,
-  getPreviousActiveItem,
   IgcComboBoxBaseLikeComponent,
   setInitialSelectionState,
 } from '#internals/bases/combo-box.js';
+import { createListSelection } from '#internals/bases/list-selection.js';
 import { ariaBindings } from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
@@ -31,13 +29,12 @@ import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditi
 import { registerComponent } from '#internals/definitions/register.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
-import { isEmpty } from '#internals/utils/arrays.js';
+import { firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
 import {
   getElementByIdFromRoot,
   setOrRemoveAttribute,
 } from '#internals/utils/dom.js';
 import { getElementFromPath } from '#internals/utils/events.js';
-import { moveFlag } from '#internals/utils/objects.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { isString } from '#internals/utils/types.js';
 import { all } from '#themes/dropdown/themes/container.js';
@@ -104,10 +101,13 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
 
   private readonly _keyBindings: KeyBindingController;
 
-  private _selectedItem: IgcDropdownItemComponent | null = null;
-
-  /** The item keyboard navigation moves from. Only {@link _activateItem} assigns it. */
-  private _activeItem: IgcDropdownItemComponent | null = null;
+  private readonly _selection = createListSelection<IgcDropdownItemComponent>(
+    this,
+    {
+      itemTag: IgcDropdownItemComponent.tagName,
+      onChange: () => this._syncAnchorARIA(),
+    }
+  );
 
   /** The anchor passed to `show()` / `toggle()`, if any. */
   private _explicitTarget?: HTMLElement;
@@ -125,15 +125,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     const [target] =
       this._targetSlot?.assignedElements({ flatten: true }) ?? [];
     return target as HTMLElement | undefined;
-  }
-
-  private get _activeItems(): IgcDropdownItemComponent[] {
-    return Array.from(
-      getActiveItems<IgcDropdownItemComponent>(
-        this,
-        IgcDropdownItemComponent.tagName
-      )
-    );
   }
 
   //#endregion
@@ -170,9 +161,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
 
   /** Returns the items of the dropdown. */
   public get items(): IgcDropdownItemComponent[] {
-    return Array.from(
-      getItems<IgcDropdownItemComponent>(this, IgcDropdownItemComponent.tagName)
-    );
+    return this._selection.items;
   }
 
   /** Returns the group items of the dropdown. */
@@ -187,7 +176,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
 
   /** Returns the selected item from the dropdown or null. */
   public get selectedItem(): IgcDropdownItemComponent | null {
-    return this._selectedItem;
+    return this._selection.selected;
   }
 
   //#endregion
@@ -260,16 +249,8 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   private _handleItemsChange({
     changes: { added, removed },
   }: MutationControllerParams<IgcDropdownItemComponent>): void {
-    if (!this.hasUpdated || (isEmpty(added) && isEmpty(removed))) {
-      return;
-    }
-
-    const items = this.items;
-
-    if (this._selectedItem && !items.includes(this._selectedItem)) {
-      this._setSelectedItem(null);
-    } else if (this._activeItem && !items.includes(this._activeItem)) {
-      this._activateItem(this._selectedItem);
+    if (this.hasUpdated && !(isEmpty(added) && isEmpty(removed))) {
+      this._selection.prune();
     }
   }
 
@@ -290,21 +271,19 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   }
 
   private _handleArrowUp(): void {
-    this._navigateToActiveItem(
-      getPreviousActiveItem(this.items, this._activeItem)
-    );
+    this._selection.navigate(this._selection.previous());
   }
 
   private _handleArrowDown(): void {
-    this._navigateToActiveItem(getNextActiveItem(this.items, this._activeItem));
+    this._selection.navigate(this._selection.next());
   }
 
   private _handleHome(): void {
-    this._navigateToActiveItem(this._activeItems.at(0));
+    this._selection.navigate(firstOf(this._selection.activeItems));
   }
 
   private _handleEnd(): void {
-    this._navigateToActiveItem(this._activeItems.at(-1));
+    this._selection.navigate(lastOf(this._selection.activeItems));
   }
 
   private _handleTab(): void {
@@ -320,21 +299,9 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
 
   /** Selects the item navigation is on, if there is one. */
   private _commitActiveItem(): void {
-    if (this._activeItem) {
-      this._selectItem(this._activeItem);
+    if (this._selection.active) {
+      this._selectItem(this._selection.active);
     }
-  }
-
-  private _activateItem(item: IgcDropdownItemComponent | null): void {
-    moveFlag(this._activeItem, item, 'active');
-    this._activeItem = item;
-    this._syncAnchorARIA();
-  }
-
-  private _setSelectedItem(item: IgcDropdownItemComponent | null): void {
-    moveFlag(this._selectedItem, item, 'selected');
-    this._selectedItem = item;
-    this._activateItem(item);
   }
 
   private _selectItem(
@@ -342,14 +309,14 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     emit = true
   ): IgcDropdownItemComponent | null {
     if (!item) {
-      this._setSelectedItem(null);
+      this._selection.select(null);
       return null;
     }
 
     // Re-selecting the current item is not a change, but still a commit.
-    const changed = this._selectedItem !== item;
+    const changed = this._selection.selected !== item;
 
-    changed ? this._setSelectedItem(item) : this._activateItem(item);
+    this._selection.select(item);
 
     if (emit) {
       if (changed) {
@@ -361,30 +328,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
       }
     }
 
-    return this._selectedItem;
-  }
-
-  /** Highlights `item` and, while the list is open, brings it into view. */
-  private _navigateToActiveItem(item?: IgcDropdownItemComponent | null): void {
-    if (!item) {
-      return;
-    }
-
-    this._activateItem(item);
-
-    // Closed, the list is inert and off screen.
-    if (this.open) {
-      item.scrollIntoView({ behavior: 'auto', block: 'nearest' });
-    }
-  }
-
-  /** Resolves an item by its `value`, or by its index in {@link items}. */
-  private _resolveItem(
-    value: string | number
-  ): IgcDropdownItemComponent | undefined {
-    return isString(value)
-      ? this.items.find((item) => item.value === value)
-      : this.items[value];
+    return this._selection.selected;
   }
 
   /**
@@ -444,7 +388,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
       return;
     }
 
-    const active = this.open ? this._activeItem : null;
+    const active = this.open ? this._selection.active : null;
 
     anchor.setAttribute('aria-haspopup', 'listbox');
     anchor.setAttribute('aria-expanded', `${this.open}`);
@@ -506,8 +450,8 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   /* blazorSuppress */
   /** Navigates to the specified item. If it exists, returns the found item, otherwise - null. */
   public navigateTo(value: string | number): IgcDropdownItemComponent | null {
-    const item = this._resolveItem(value);
-    this._navigateToActiveItem(item);
+    const item = this._selection.resolve(value);
+    this._selection.navigate(item);
     return item ?? null;
   }
 
@@ -520,13 +464,13 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   /* blazorSuppress */
   /** Selects the specified item. If it exists, returns the found item, otherwise - null. */
   public select(value: string | number): IgcDropdownItemComponent | null {
-    const item = this._resolveItem(value);
+    const item = this._selection.resolve(value);
     return item ? this._selectItem(item, false) : null;
   }
 
   /**  Clears the current selection of the dropdown. */
   public clearSelection(): void {
-    this._setSelectedItem(null);
+    this._selection.select(null);
   }
 
   //#endregion

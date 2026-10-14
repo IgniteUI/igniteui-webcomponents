@@ -131,49 +131,6 @@ export function getItems<T extends HTMLElement>(
   });
 }
 
-export function getActiveItems<T extends HTMLElement & { disabled: boolean }>(
-  root: Node,
-  tagName: string
-): Generator<T> {
-  return getItems<T>(root, tagName, (item) => !item.disabled);
-}
-
-/**
- * Returns the closest non-disabled item to `from` in the given direction. A
- * missing or detached `from` starts at the edge; falls back to `from`, or
- * `undefined` when there is nothing to navigate to.
- */
-function getActiveItemFrom<T extends HTMLElement & { disabled: boolean }>(
-  items: T[],
-  from: T | null | undefined,
-  step: -1 | 1
-): T | undefined {
-  const index = from ? items.indexOf(from) : -1;
-  const current = index < 0 ? (step === 1 ? -1 : items.length) : index;
-
-  for (let i = current + step; i >= 0 && i < items.length; i += step) {
-    if (!items[i].disabled) {
-      return items[i];
-    }
-  }
-
-  return items[current];
-}
-
-/** Returns the first non-disabled item after `from`, else `from` itself. */
-export function getNextActiveItem<
-  T extends HTMLElement & { disabled: boolean },
->(items: T[], from?: T | null): T | undefined {
-  return getActiveItemFrom(items, from, 1);
-}
-
-/** Returns the first non-disabled item before `from`, else `from` itself. */
-export function getPreviousActiveItem<
-  T extends HTMLElement & { disabled: boolean },
->(items: T[], from?: T | null): T | undefined {
-  return getActiveItemFrom(items, from, -1);
-}
-
 export function setInitialSelectionState<
   T extends HTMLElement & { selected: boolean },
 >(items: T[]): T | null {

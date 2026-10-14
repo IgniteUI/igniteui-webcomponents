@@ -30,6 +30,7 @@ import type { CalendarSelection } from '../calendar/types.js';
 import {
   IgcDatePickerBaseComponent,
   type IgcPickerBaseEventMap,
+  type PickerEditor,
   pickerDependencies,
 } from '../date-picker/date-picker.base.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
@@ -60,9 +61,6 @@ export interface CustomDateRange {
   label: string;
   dateRange: DateRangeValue;
 }
-
-/** Either editor the picker renders the range in - the masked single one or a start/end pair. */
-type PickerEditor = IgcDateRangeInputComponent | IgcDateTimeInputComponent;
 
 export type IgcDateRangePickerComponentEventMap =
   IgcPickerBaseEventMap<DateRangeValue>;
@@ -251,8 +249,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   @query(IgcDateRangeInputComponent.tagName)
   private readonly _input!: IgcDateRangeInputComponent;
 
-  /** The editors currently rendered by the picker. */
-  private get _editors(): PickerEditor[] {
+  protected override get _editors(): PickerEditor[] {
     return this.useTwoInputs ? Array.from(this._inputs) : [this._input];
   }
 
@@ -305,10 +302,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     return this._input ?? this._inputs?.[0] ?? null;
   }
 
-  protected override _focusInput(): void {
-    firstOf(this._editors).focus();
-  }
-
   protected override _focusAndSelectInput(): void {
     this.useTwoInputs ? this._inputs[0].select() : this._input.focus();
   }
@@ -327,12 +320,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   protected override _syncCalendarOnToggle(): void {
     this._setCalendarActiveDate(this._firstDefinedInRange);
     this._calendar['_activeDaysViewIndex'] = 0;
-  }
-
-  protected override _clearEditors(): void {
-    for (const editor of this._editors) {
-      editor?.clear();
-    }
   }
 
   protected override _onDialogClosing(): void {
@@ -665,8 +652,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
       end: null,
     };
 
-    this.value = { start, end };
-    this.emitEvent('igcChange', { detail: this.value });
+    this._commitValue({ start, end }, 'igcChange');
   }
 
   private _swapDates(range: DateRangeValue): DateRangeValue {
