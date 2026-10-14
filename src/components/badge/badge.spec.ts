@@ -162,18 +162,14 @@ describe('Badge', () => {
   });
 
   describe('ARIA', () => {
-    it('should expose a static role description that ignores the variant', async () => {
+    it('should expose a status role and no role description', async () => {
       const el = await fixture<IgcBadgeComponent>(
         html`<igc-badge variant="success">1</igc-badge>`
       );
       const internals = internalsOf(el)!;
 
       expect(internals.getARIA('role')).to.equal('status');
-      expect(internals.getARIA('ariaRoleDescription')).to.equal('badge');
-
-      el.variant = 'danger';
-      await elementUpdated(el);
-      expect(internals.getARIA('ariaRoleDescription')).to.equal('badge');
+      expect(internals.getARIA('ariaRoleDescription')).to.be.null;
     });
   });
 });

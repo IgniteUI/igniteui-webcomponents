@@ -59,10 +59,7 @@ export default class IgcCarouselSlideComponent extends LitElement {
     super();
 
     addInternalsController(this, {
-      initialARIA: {
-        role: 'tabpanel',
-        ariaRoleDescription: 'slide',
-      },
+      initialARIA: { role: 'tabpanel' },
       aria: () => ({
         ariaLabel: this._carousel
           ? formatString(

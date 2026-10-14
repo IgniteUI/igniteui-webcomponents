@@ -135,14 +135,14 @@ describe('Avatar', () => {
       };
     }
 
-    it('should expose an image role, a role description and no name of its own', async () => {
+    it('should expose an image role, no role description and no name of its own', async () => {
       const el = await fixture<IgcAvatarComponent>(
         html`<igc-avatar></igc-avatar>`
       );
 
       expect(ariaOf(el)).to.eql({
         role: 'img',
-        roleDescription: 'avatar',
+        roleDescription: null,
         label: null,
       });
     });

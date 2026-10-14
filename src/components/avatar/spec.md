@@ -201,7 +201,7 @@ None applicable.
 
 ### ARIA tests
 
-7. The avatar exposes an image role and a role description, and no name of its own.
+7. The avatar exposes an image role, no role description and no name of its own.
 8. The accessible name is derived from the alternative text, and from the initials when there is none.
 
 ### Not covered by the suite
@@ -221,7 +221,9 @@ None applicable.
 
 ### ARIA roles and properties
 
-- The avatar has `role="img"` with `aria-roledescription="avatar"`.
+- The avatar has `role="img"` and no role description. Assistive technologies announce the image role in the
+  language of the user, and the ARIA specification limits role descriptions to container roles and widgets. An
+  application can set `aria-roledescription` on the host.
 - Its accessible name comes from `alt`, and from `initials` when there is no alternative text. Without either, it
   carries no name of its own, so a surrounding element can provide one.
 - An image with no alternative text is rendered as decorative, so that it is not announced twice.

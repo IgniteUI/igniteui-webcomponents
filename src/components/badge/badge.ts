@@ -94,7 +94,7 @@ export default class IgcBadgeComponent extends LitElement {
     addThemingController(this, all);
 
     addInternalsController(this, {
-      initialARIA: { role: 'status', ariaRoleDescription: 'badge' },
+      initialARIA: { role: 'status' },
     });
   }
 

@@ -334,7 +334,8 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 
 ### Initialization
 
-1. The component passes the accessibility audit and is initialized with its default state.
+1. The component passes the accessibility audit and is initialized with its default state. The carousel has a
+   role description and its slides have none.
 2. The carousel, its slides and its controls render correctly, and a slide renders correctly in both its active
    and its inactive state.
 3. `hideIndicators` and `hideNavigation` skip rendering the respective controls.
@@ -427,7 +428,8 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 ### ARIA roles and properties
 
 - The carousel has `role="region"` and `aria-roledescription="carousel"`.
-- A slide has `role="tabpanel"`, `aria-roledescription="slide"` and a label composed from `slidesLabelFormat`.
+- A slide has `role="tabpanel"` and a label composed from `slidesLabelFormat`. It has no role description, as the
+  WAI-ARIA APG tabbed carousel specifies for slides with the tab panel role.
 - The indicator container has `role="tablist"`, and each indicator has `role="tab"`, `aria-selected` for its
   state, `aria-controls` pointing at its slide and a label composed from `indicatorsLabelFormat`.
 - The navigation buttons carry the localized previous and next labels and control the slides container.

@@ -218,7 +218,7 @@ None applicable.
 
 ### ARIA tests
 
-9. The role description is static and does not change with the variant.
+9. The badge exposes a status role and no role description.
 
 ### Not covered by the suite
 
@@ -238,10 +238,12 @@ None applicable.
 
 ### ARIA roles and properties
 
-- The badge has `role="status"` with `aria-roledescription="badge"`, so that a change of its content is announced
-  politely.
-- The role description is fixed and does not encode the variant, since a color is not a meaning an assistive
-  technology can convey. A badge whose variant carries meaning should state it in its content. A count should
+- The badge has `role="status"`, so that a change of its content is announced politely.
+- The badge has no role description. Assistive technologies announce the status role in the language of the user,
+  and the ARIA specification limits role descriptions to container roles and widgets. An application can set
+  `aria-roledescription` on the host.
+- The variant is not exposed, since a color is not a meaning an assistive technology can convey. A badge whose
+  variant carries meaning should state it in its content. A count should
   also state what it counts, for example in text that a visually hidden CSS utility of the application hides from
   the screen. The library does not export a component for this.
 
