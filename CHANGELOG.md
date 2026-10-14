@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - #### Calendar, Date picker, Date range picker
   - `DateRangeDescriptor` has an optional `label`. The calendar adds the labels of the matching `specialDates` and `disabledDates` descriptors to the accessible name of a date, for example "Thursday, October 8, 2026, Free delivery". Before, the special state was only visual, and assistive technologies did not announce it. [#2423](https://github.com/IgniteUI/igniteui-webcomponents/pull/2423)
+- #### Combo
+  - The group header template receives the group as `key`, the value that the items of the group share in the `groupKey` field. `groupHeaderTemplate` has the new `ComboGroupHeaderTemplate` type, and its context has the new `ComboGroupHeaderContext` type. Your current templates continue to work. [#2462](https://github.com/IgniteUI/igniteui-webcomponents/issues/2462)
 - #### Library
   - The repository has new `SECURITY.md`, `PRIVACY.md`, `ACCESSIBILITY.md`, `THREAT-MODEL.md` and `.github/SUPPORT.md` documents. `SECURITY.md` gives the supported versions: 7.x gets all security fixes, and 6.5.x gets fixes for critical vulnerabilities only. Report a vulnerability through GitHub private vulnerability reporting, not in a public issue. [#2383](https://github.com/IgniteUI/igniteui-webcomponents/pull/2383)
   - The package has four export conditions that keep only one theme in your bundle: `igc-theme-material`, `igc-theme-bootstrap`, `igc-theme-indigo` and `igc-theme-fluent`. Set one condition in your bundler, or with `node --conditions`. The bundle then contains only the component styles of that theme, light and dark, and is approximately 15–17% smaller after gzip. Without a condition, the bundle contains all four themes, as before. If you call `configureTheme()` with a theme that is not in the bundle, the components show only their structural styles. For the bundler settings, see "Bundling a single theme" in the README.
@@ -34,6 +36,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `igcTileDragEnd` and `igcTileDragCancel` now fire after the tiles have their new or restored positions, as `igcTileResizeEnd` does. So a handler can call `saveLayout()` and `loadLayout()`. The end or cancel event of a drag still comes before the `igcTileDragStart` of the next drag. Before, the events fired before the view transition applied the positions. So `saveLayout()` returned the old layout, and the transition overwrote the layout from `loadLayout()`. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
 - #### Theming
   - The component styles no longer declare `--ig-theme` and `--ig-theme-variant`. The library reads the two variables from the document root only. Thus `getComputedStyle()` on a component gives the inherited values, usually the values of the document root.
+
+### Deprecated
+- #### Combo
+  - The `item` of the group header template is deprecated because it is not a data item. Use `key`. [#2462](https://github.com/IgniteUI/igniteui-webcomponents/issues/2462)
 
 ### Fixed
 - #### Accordion

@@ -49,6 +49,7 @@ import type IgcVirtualScrollComponent from '../virtualization/virtualization.js'
 import type IgcComboHeaderComponent from './combo-header.js';
 import type IgcComboItemComponent from './combo-item.js';
 import IgcComboComponent from './combo.js';
+import type { ComboItemTemplate } from './types.js';
 
 describe('Combo', () => {
   type City = {
@@ -1581,6 +1582,52 @@ describe('Combo', () => {
       expect(combo.open).to.be.true;
       expect(combo.value).to.be.empty;
       expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    it('passes the group key to the group header template with its own type', async () => {
+      type Task = { id: number; name: string; priority?: number };
+      const keys = new Set<unknown>();
+      const tasks: Task[] = [
+        { id: 1, name: 'Write specs', priority: 2 },
+        { id: 2, name: 'Fix the bug', priority: 1 },
+        { id: 3, name: 'Triage' },
+      ];
+      const combo = await fixture<IgcComboComponent<Task>>(
+        html`<igc-combo
+          .data=${tasks}
+          value-key="id"
+          display-key="name"
+          group-key="priority"
+        ></igc-combo>`
+      );
+      combo.groupHeaderTemplate = (group) => {
+        keys.add(group.key);
+        return html`${group.key}`;
+      };
+      await openComboPopover(combo);
+
+      expect([...keys]).to.eql([1, 2, 'Other']);
+    });
+
+    it('renders a group header template that reads the deprecated item', async () => {
+      const headers: City[] = [];
+      const legacyTemplate: ComboItemTemplate<City> = ({ item }) => {
+        headers.push(item);
+        return html`${item.country}`;
+      };
+
+      combo.groupHeaderTemplate = legacyTemplate;
+      await openComboPopover(combo);
+
+      expect(headerItems(combo).map((header) => header.innerText)).to.eql([
+        'Bulgaria',
+        'United States',
+      ]);
+      expect(firstOf(headers)).to.eql({
+        id: 'Bulgaria',
+        name: 'Bulgaria',
+        country: 'Bulgaria',
+      });
     });
 
     it('keeps the selection when the clear icon is clicked and igcChange is canceled', async () => {
