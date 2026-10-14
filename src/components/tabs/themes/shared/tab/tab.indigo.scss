@@ -29,3 +29,19 @@ $theme: $indigo;
 
     text-transform: uppercase;
 }
+
+@media (forced-colors: active) {
+    :host [part~='tab-header'] {
+        border-top: 0;
+
+        &:hover {
+            outline: rem(1px) solid CanvasText;
+            outline-offset: rem(-1px);
+        }
+    }
+
+    :host([selected]) [part~='tab-header']:focus {
+        outline: rem(1px) solid Highlight;
+        outline-offset: rem(-1px);
+    }
+}

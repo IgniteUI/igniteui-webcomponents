@@ -6,56 +6,57 @@ import {
   type ResolvedARIABindings,
 } from '../controllers/aria-projection.js';
 import { partMap } from '../part-map.js';
+import { hasNegativeTabIndex } from '../utils/dom.js';
 import { bindIf } from '../utils/lit.js';
 
 export interface MaskedInputOptions {
-  /** Optional id for the native input element. */
   id?: string;
   /** Resolved part-name map applied to the input. */
   partNames: Record<string, boolean>;
-  /** The form-associated name attribute. */
-  name?: string;
   /** Current value to render through `live()`. */
   value: string;
-  /** Pre-resolved placeholder text. Caller decides empty-string semantics. */
+  /** The resolved placeholder text. The caller defines an empty string. */
   placeholder: string;
-  readOnly: boolean;
-  disabled: boolean;
   autofocus?: boolean;
   inputMode?: string;
-  /** When provided, sets the `tabindex` attribute. */
-  tabindex?: number;
   /**
-   * Resolved ARIA bindings for the native input - the projected host state
-   * merged with the editor's own (see `AriaTargetController.resolveBindings`).
+   * The projected host state merged with the editor bindings. See
+   * `AriaTargetController.resolveBindings`.
    */
   aria: ResolvedARIABindings;
 
-  // Required mask handlers
   onInput: (event: InputEvent) => void;
-  /** Wired to `beforeinput` so the component owns `historyUndo` / `historyRedo`. */
+  /** Owns `historyUndo` and `historyRedo` through `beforeinput`. */
   onBeforeInput: (event: InputEvent) => void;
   onFocus: (event: FocusEvent) => void;
   onBlur: (event: FocusEvent) => void;
   onClick: () => void;
-  /** Wired to `keydown`, `cut`, and `dragstart` to capture the current selection. */
+  /** Captures the selection on `keydown`, `cut` and `dragstart`. */
   onSetMaskSelection: (event: Event) => void;
   onCompositionStart: () => void;
   onCompositionEnd: (event: CompositionEvent) => void;
 
-  // Optional handlers
   onChange?: () => void;
   onWheel?: (event: WheelEvent) => void;
   onDragEnter?: () => void;
   onDragLeave?: () => void;
 }
 
+/** The host state that {@link renderMaskedNativeInput} binds onto the native input. */
+type MaskedInputHost = Element & {
+  name?: string;
+  readOnly: boolean;
+  disabled: boolean;
+  /** Binds `aria-required`: the native `required` would validate the prompts. */
+  required: boolean;
+};
+
 /**
- * Renders the native `<input>` element shared by mask-driven components
- * (`igc-mask-input`, `igc-date-time-input`, `igc-date-range-input`).
- * Centralizes mask event wiring so leaves only describe their extras.
+ * Renders the native `<input>` of the mask-driven components, with the mask
+ * event bindings, so a leaf component describes only its extras.
  */
 export function renderMaskedNativeInput(
+  host: MaskedInputHost,
   opts: MaskedInputOptions
 ): TemplateResult {
   return html`
@@ -63,15 +64,15 @@ export function renderMaskedNativeInput(
       id=${ifDefined(opts.id)}
       type="text"
       part=${partMap(opts.partNames)}
-      name=${ifDefined(opts.name)}
+      name=${ifDefined(host.name)}
       .value=${live(opts.value)}
       .placeholder=${opts.placeholder}
-      ?readonly=${opts.readOnly}
-      ?disabled=${opts.disabled}
+      ?readonly=${host.readOnly}
+      ?disabled=${host.disabled}
       ?autofocus=${opts.autofocus}
       inputmode=${ifDefined(opts.inputMode)}
-      tabindex=${bindIf(opts.tabindex != null, opts.tabindex)}
-      ${ariaBindings(opts.aria)}
+      tabindex=${bindIf(hasNegativeTabIndex(host), -1)}
+      ${ariaBindings(host.required ? { ...opts.aria, required: 'true' } : opts.aria)}
       @input=${opts.onInput}
       @beforeinput=${opts.onBeforeInput}
       @focus=${opts.onFocus}

@@ -1,15 +1,12 @@
-import { html, LitElement } from 'lit';
 import { queryAssignedElements } from 'lit/decorators.js';
-import { addInternalsController } from '#internals/controllers/internals.js';
-import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { IgcGroupBaseComponent } from '#internals/bases/group.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { all } from '#themes/dropdown/themes/group.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcDropdownItemComponent from './dropdown-item.js';
 import { styles } from './themes/dropdown-group.base.css.js';
-import { all } from './themes/group.js';
 import { styles as shared } from './themes/shared/group/dropdown-group.common.css.js';
-
-const Slots = setSlots('label');
 
 /**
  * A container for a group of dropdown items.
@@ -21,26 +18,14 @@ const Slots = setSlots('label');
  *
  * @csspart label - The native label element.
  */
-export default class IgcDropdownGroupComponent extends LitElement {
+export default class IgcDropdownGroupComponent extends IgcGroupBaseComponent {
   public static readonly tagName = 'igc-dropdown-group';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
     registerComponent(IgcDropdownGroupComponent);
   }
-
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      role: 'group',
-    },
-  });
-
-  private readonly _slots = addSlotController(this, {
-    slots: Slots,
-    initial: true,
-    onChange: this._labelChange,
-  });
 
   /* blazorSuppress */
   /** All child dropdown items. */
@@ -54,24 +39,6 @@ export default class IgcDropdownGroupComponent extends LitElement {
     super();
 
     addThemingController(this, all);
-  }
-
-  /**
-   * The label is rendered into this shadow root, out of reach of an
-   * `aria-labelledby` on the host, so its text names the `group` directly.
-   */
-  private _labelChange(): void {
-    const label = this._slots.getAssignedText('label', true);
-    this._internals.setARIA({ ariaLabel: label || null });
-  }
-
-  protected override render() {
-    return html`
-      <label part="label">
-        <slot name="label"></slot>
-      </label>
-      <slot></slot>
-    `;
   }
 }
 

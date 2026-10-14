@@ -1,19 +1,20 @@
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import {
   addAriaTarget,
   ariaBindings,
+  helperText,
 } from '#internals/controllers/aria-projection.js';
-import { createResizeObserverController } from '#internals/controllers/resize-observer.js';
+import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
 import {
   addSlotController,
+  DefaultSlot,
   type InferSlotNames,
-  type SlotChangeCallbackParameters,
   setSlots,
+  type SlotChangeCallbackParameters,
 } from '#internals/controllers/slot.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
@@ -23,12 +24,14 @@ import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import {
   renderInputShell,
-  resolveInputPartNames,
+  resolveInputPartFlags,
 } from '#internals/templates/input-shell.js';
 import { addSafeEventListener } from '#internals/utils/events.js';
 import { asNumber } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/textarea/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import type {
   RangeTextSelectMode,
   SelectionRangeDirection,
@@ -37,7 +40,6 @@ import type {
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles as shared } from './themes/shared/textarea.common.css.js';
 import { styles } from './themes/textarea.base.css.js';
-import { all } from './themes/themes.js';
 import { textAreaValidators } from './validators.js';
 
 export interface IgcTextareaComponentEventMap {
@@ -80,7 +82,7 @@ const Slots = setSlots(
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcInput - Emitted when the control receives user input.
- * @fires igcChange - Emitted when the a change to the control value is committed by the user.
+ * @fires igcChange - Emitted when a change to the control value is committed by the user.
  *
  * @csspart container - The main wrapper that holds all main input elements of the textarea.
  * @csspart input - The native input element of the textarea.
@@ -96,7 +98,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   )
 ) {
   public static readonly tagName = 'igc-textarea';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -114,20 +116,19 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     onChange: this._handleSlotChange,
   });
 
-  /**
-   * Receives ARIA semantics projected by a composite host onto the inner
-   * native textarea. See {@link addAriaTarget}.
-   */
-  private readonly _ariaTarget = addAriaTarget(this, {
-    labels: () => this._internals.labels,
-    description: () =>
-      this._slots.hasAssignedElements('helper-text')
-        ? this.renderRoot.querySelector('#helper-text')
-        : null,
-  });
+  /** Names and describes the native textarea. See {@link addAriaTarget}. */
+  private readonly _ariaTarget = addAriaTarget(this, () =>
+    helperText(this, this._slots)
+  );
 
   @query('textarea')
   private readonly _input?: HTMLTextAreaElement;
+
+  /** The text of the default slot that was applied last. */
+  private _projectedValue = '';
+
+  private _maxLength!: number;
+  private _minLength!: number;
 
   protected override get __validators() {
     return textAreaValidators;
@@ -187,7 +188,14 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
    * @attr maxlength
    */
   @property({ type: Number, attribute: 'maxlength' })
-  public maxLength!: number;
+  public set maxLength(value: number) {
+    this._maxLength = value;
+    this._validate();
+  }
+
+  public get maxLength(): number {
+    return this._maxLength;
+  }
 
   /**
    * The minimum number of characters (UTF-16 code units) required that the user should enter.
@@ -195,7 +203,14 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
    * @attr minlength
    */
   @property({ type: Number, attribute: 'minlength' })
-  public minLength!: number;
+  public set minLength(value: number) {
+    this._minLength = value;
+    this._validate();
+  }
+
+  public get minLength(): number {
+    return this._minLength;
+  }
 
   /**
    * Whether the control will have outlined appearance.
@@ -261,8 +276,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   @property({
     type: Boolean,
     converter: {
-      fromAttribute: (value) => !(!value || value === 'false'),
-      toAttribute: (value) => (value ? 'true' : 'false'),
+      // As the native attribute: only "false" turns the check off.
+      fromAttribute: (value) => value?.toLowerCase() !== 'false',
     },
   })
   public override spellcheck = true;
@@ -286,6 +301,19 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   @property({ type: Boolean, reflect: true, attribute: 'validate-only' })
   public validateOnly = false;
 
+  /**
+   * The offset of the start of the text selection, in UTF-16 code units.
+   * Equals `selectionEnd` when no text is selected.
+   */
+  public get selectionStart(): number {
+    return this._input?.selectionStart ?? 0;
+  }
+
+  /** The offset of the end of the text selection, in UTF-16 code units. */
+  public get selectionEnd(): number {
+    return this._input?.selectionEnd ?? 0;
+  }
+
   //#endregion
 
   //#region Life-cycle hooks
@@ -293,7 +321,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   constructor() {
     super();
 
-    createResizeObserverController(this, {
+    addResizeObserverController(this, {
       callback: this._setAreaHeight,
     });
 
@@ -345,10 +373,18 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     }
 
     const value = this._slots
-      .getAssignedNodes('[default]', true)
+      .getAssignedNodes(DefaultSlot, true)
       .map((node) => node.textContent?.trim())
       .filter(Boolean)
       .join('\r\n');
+
+    // Whitespace around slotted elements is not projected text, so it keeps
+    // the value from the attribute, the property or the user.
+    if (value === this._projectedValue) {
+      return;
+    }
+
+    this._projectedValue = value;
 
     if (value === this.value) {
       return;
@@ -389,14 +425,22 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   /* blazorSuppress */
-  /** Replaces the selected text in the control. */
+  /**
+   * Replaces the text from `start` to `end` in the control. Without `start` and
+   * `end`, replaces the selected text.
+   */
   public setRangeText(
     replacement: string,
-    start: number,
-    end: number,
+    start?: number,
+    end?: number,
     selectMode: RangeTextSelectMode = 'preserve'
   ): void {
-    this._input?.setRangeText(replacement, start, end, selectMode);
+    this._input?.setRangeText(
+      replacement,
+      start ?? this._input.selectionStart,
+      end ?? this._input.selectionEnd,
+      selectMode
+    );
     this.value = this._input?.value ?? '';
   }
 
@@ -444,21 +488,19 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   protected override render() {
-    return cache(
-      renderInputShell(this, {
-        theme: this._themes.theme,
-        label: this.label,
-        labelId: this._inputId,
-        containerParts: resolveInputPartNames(
-          this._slots,
-          'container',
-          !!this.value
-        ),
-        materialParts: { placeholder: !!this.placeholder },
-        hideEmptyAffixes: true,
-        renderInput: this._renderInput,
-      })
-    );
+    return renderInputShell(this, {
+      theme: this._themes.theme,
+      label: this.label,
+      labelId: this._inputId,
+      containerParts: {
+        container: true,
+        ...resolveInputPartFlags(this._slots, !!this.value),
+        placeholder: this._themes.theme === 'material' && !!this.placeholder,
+      },
+      hideEmptyAffixes: true,
+      renderInput: this._renderInput,
+      helperText: IgcValidationContainerComponent.create(this),
+    });
   }
 
   //#endregion

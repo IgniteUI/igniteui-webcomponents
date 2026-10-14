@@ -1,11 +1,18 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import IgcToggleButtonComponent from './toggle-button.js';
 
 describe('Toggle Button', () => {
   before(() => {
     defineComponents(IgcToggleButtonComponent);
+  });
+
+  runHostAriaTests({
+    tagName: 'igc-toggle-button',
+    template: html`<igc-toggle-button>Bold</igc-toggle-button>`,
+    getTarget: (host) => host.renderRoot.querySelector('button')!,
   });
 
   const DIFF_OPTIONS = {

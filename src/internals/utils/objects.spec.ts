@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { equal } from './objects.js';
+import { equal, getOrInsertComputed, moveFlag } from './objects.js';
 
 describe('equal', () => {
   it('should return true for strictly equal primitive values', () => {
@@ -127,6 +127,11 @@ describe('equal', () => {
     const date1 = new Date('2025-04-22T12:00:00.000Z');
     const date2 = new Date('2025-04-22T12:00:00.000Z');
     expect(equal(date1, date2)).to.be.true;
+  });
+
+  it('should return true for two invalid Dates', () => {
+    expect(equal(new Date(Number.NaN), new Date('invalid'))).to.be.true;
+    expect(equal(new Date(Number.NaN), new Date(0))).to.be.false;
   });
 
   it('should return false for Dates with different time values', () => {
@@ -368,6 +373,72 @@ describe('equal', () => {
     expect(equal(a, mismatched)).to.be.false;
   });
 
+  it('should match Set elements one to one', () => {
+    expect(equal(new Set([{ x: 1 }, { x: 1 }]), new Set([{ x: 1 }, { x: 2 }])))
+      .to.be.false;
+    expect(equal(new Set([{ x: 1 }, { x: 1 }]), new Set([{ x: 1 }, { x: 1 }])))
+      .to.be.true;
+  });
+
+  it('should match Map entries one to one', () => {
+    const left = new Map([
+      [{ k: 1 }, 'v'],
+      [{ k: 1 }, 'v'],
+    ]);
+    const right = new Map([
+      [{ k: 1 }, 'v'],
+      [{ k: 2 }, 'v'],
+    ]);
+    expect(equal(left, right)).to.be.false;
+  });
+
+  it('should give the same result in both directions', () => {
+    const valueOf = Object.create({ valueOf: () => 1 });
+    // A `toString` that mimics the default one still differs from it.
+    const toString = Object.create({ toString: () => '[object Object]' });
+
+    expect(equal({}, valueOf)).to.be.false;
+    expect(equal(valueOf, {})).to.be.false;
+    expect(equal({}, toString)).to.be.false;
+    expect(equal(toString, {})).to.be.false;
+  });
+
+  it('should not treat objects pending in different pairs as equal', () => {
+    // `a` and `d` are both pending when they meet, but they differ.
+    const a: Record<string, unknown> = {};
+    const b: Record<string, unknown> = {};
+    const c: Record<string, unknown> = { q: a };
+    const d: Record<string, unknown> = {};
+    a.p = c;
+    b.p = d;
+    d.q = d;
+
+    expect(equal(a, b)).to.be.false;
+  });
+
+  it('should compare null-prototype objects', () => {
+    const create = (value: number) =>
+      Object.assign(Object.create(null), { a: value });
+
+    expect(equal(create(1), create(1))).to.be.true;
+    expect(equal(create(1), create(2))).to.be.false;
+  });
+
+  it('should not throw when only one null-prototype object has valueOf or toString', () => {
+    const bare = Object.create(null);
+    const withValueOf = Object.assign(Object.create(null), {
+      valueOf: () => 1,
+    });
+    const withToString = Object.assign(Object.create(null), {
+      toString: () => 'a',
+    });
+
+    expect(equal(withValueOf, bare)).to.be.false;
+    expect(equal(withToString, bare)).to.be.false;
+    expect(equal(bare, withValueOf)).to.be.false;
+    expect(equal(bare, withToString)).to.be.false;
+  });
+
   it('should still terminate on circular references', () => {
     const a: Record<string, unknown> = { name: 'a' };
     const b: Record<string, unknown> = { name: 'a' };
@@ -380,5 +451,80 @@ describe('equal', () => {
     c.self = c;
     d.self = d;
     expect(equal(c, d)).to.be.false;
+  });
+});
+
+describe('moveFlag', () => {
+  it('clears the flag on the old item and sets it on the new one', () => {
+    const from = { active: true };
+    const to = { active: false };
+
+    moveFlag(from, to, 'active');
+    expect(from.active).to.be.false;
+    expect(to.active).to.be.true;
+  });
+
+  it('keeps the flag when both items are the same', () => {
+    const item = { active: true };
+
+    moveFlag(item, item, 'active');
+    expect(item.active).to.be.true;
+  });
+
+  it('accepts a missing item on either side', () => {
+    const item = { selected: true };
+
+    moveFlag(item, null, 'selected');
+    expect(item.selected).to.be.false;
+
+    moveFlag(undefined, item, 'selected');
+    expect(item.selected).to.be.true;
+  });
+});
+
+describe('getOrInsertComputed', () => {
+  it('stores and returns the created value for a missing key', () => {
+    const map = new Map<string, number[]>();
+    const value = getOrInsertComputed(map, 'a', () => [1]);
+
+    expect(value).to.deep.equal([1]);
+    expect(map.get('a')).to.equal(value);
+  });
+
+  it('returns the stored value and does not call create', () => {
+    const stored = [1];
+    const map = new Map([['a', stored]]);
+    let calls = 0;
+
+    const value = getOrInsertComputed(map, 'a', () => {
+      calls++;
+      return [2];
+    });
+
+    expect(value).to.equal(stored);
+    expect(calls).to.equal(0);
+  });
+
+  it('keeps a key that is mapped to undefined', () => {
+    const map = new Map<string, number | undefined>([['a', undefined]]);
+    let calls = 0;
+
+    const value = getOrInsertComputed(map, 'a', () => {
+      calls++;
+      return 1;
+    });
+
+    expect(value).to.be.undefined;
+    expect(calls).to.equal(0);
+    expect(map.get('a')).to.be.undefined;
+  });
+
+  it('passes the key to create', () => {
+    const map = new WeakMap<object, { key: object }>();
+    const key = {};
+
+    expect(getOrInsertComputed(map, key, (k) => ({ key: k })).key).to.equal(
+      key
+    );
   });
 });

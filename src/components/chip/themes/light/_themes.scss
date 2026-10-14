@@ -1,8 +1,11 @@
+@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/light/chip' as *;
 
-$base: digest-schema($light-chip);
-$material: digest-schema($material-chip);
-$bootstrap: digest-schema($bootstrap-chip);
-$fluent: digest-schema($fluent-chip);
-$indigo: digest-schema($indigo-chip);
+// Schema keys the component styles never read.
+$_unused: ('ghost-background', 'ghost-elevation', 'ghost-text-color');
+$base: map.remove(digest-schema($light-chip), $_unused...);
+$material: map.remove(digest-schema($material-chip), $_unused...);
+$bootstrap: map.remove(digest-schema($bootstrap-chip), $_unused...);
+$fluent: map.remove(digest-schema($fluent-chip), $_unused...);
+$indigo: map.remove(digest-schema($indigo-chip), $_unused...);

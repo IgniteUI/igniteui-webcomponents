@@ -34,6 +34,48 @@ describe('DateRangeMaskParser', () => {
       expect(parser.mask).to.equal('MM/dd/yyyy to MM/dd/yyyy');
     });
 
+    it('keeps the letters and mask flags of a separator literal', () => {
+      const parser = new DateRangeMaskParser({
+        format: 'MM/dd/yyyy',
+        separator: ' to ',
+      });
+
+      // The separator stays literal, so the `t` is not an AM/PM position.
+      expect(parser.emptyMask).to.equal('__/__/____ to __/__/____');
+      expect(parser.apply('1225202512312025')).to.equal(
+        '12/25/2025 to 12/31/2025'
+      );
+
+      const range = parser.parseDateRange('12/25/2025 to 12/31/2025')!;
+      expect(range.start!.getDate()).to.equal(25);
+      expect(range.end!.getDate()).to.equal(31);
+
+      const flags = new DateRangeMaskParser({ separator: ' a 0 ' });
+      expect(flags.emptyMask).to.equal('__/__/____ a 0 __/__/____');
+
+      flags.mask = 'dd.MM.yyyy';
+      expect(flags.emptyMask).to.equal('__.__.____ a 0 __.__.____');
+    });
+
+    it('widens the year of the date format but not a y in the separator', () => {
+      const parser = new DateRangeMaskParser({
+        format: 'M/d/y',
+        separator: ' y ',
+      });
+
+      expect(parser.mask).to.equal('M/d/yyyy y M/d/yyyy');
+      expect(parser.emptyMask).to.equal('_/_/____ y _/_/____');
+
+      const endMonth = parser.getPartByTypeAndPosition(
+        DatePartType.Month,
+        DateRangePosition.End
+      );
+      expect(endMonth!.start).to.equal(11);
+
+      parser.mask = 'MM/dd/yyy';
+      expect(parser.mask).to.equal('MM/dd/yyyy y MM/dd/yyyy');
+    });
+
     it('creates parser with custom prompt character', () => {
       const parser = new DateRangeMaskParser({
         format: 'MM/dd/yyyy',
@@ -239,12 +281,13 @@ describe('DateRangeMaskParser', () => {
       const newRange = parser.spinDateRangePart(monthPart, 1, null, true);
 
       const today = CalendarDay.today.native;
+      // Spinning clamps the day to the target month's length (Aug 31 -> Sep 30),
+      // mirrored here by CalendarDay's month-rollover clamp.
+      const spun = CalendarDay.today.add('month', 1).native;
       expect(newRange.start).to.not.be.null;
       expect(newRange.start!.getFullYear()).to.equal(today.getFullYear());
-      expect(newRange.start!.getMonth()).to.equal(
-        CalendarDay.today.add('month', 1).native.getMonth()
-      );
-      expect(newRange.start!.getDate()).to.equal(today.getDate());
+      expect(newRange.start!.getMonth()).to.equal(spun.getMonth());
+      expect(newRange.start!.getDate()).to.equal(spun.getDate());
       expect(newRange.end).to.be.null;
     });
   });

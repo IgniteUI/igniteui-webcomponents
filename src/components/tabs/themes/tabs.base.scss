@@ -1,4 +1,3 @@
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
 @use 'tabs.common' as *;
 @use 'sass:map';
@@ -9,16 +8,8 @@
 
     display: block;
     overflow: hidden;
-    position: relative;
     height: 100%;
     text-align: initial;
-}
-
-%fake-column {
-    content: '';
-    width: 100%;
-    height: 100%;
-    grid-row: 1;
 }
 
 [part~='tabs'] {
@@ -28,9 +19,6 @@
     scroll-behavior: smooth;
     overflow: scroll hidden;
     scroll-snap-type: both proximity;
-
-    // Hide the scrollbar for mobile devices
-
     scrollbar-width: none;
 
     &::-webkit-scrollbar {
@@ -43,6 +31,9 @@
     grid-template-rows: minmax(var(--header-min-height), auto) auto 1fr;
     align-items: center;
     position: relative;
+
+    // Without it, the `1fr` filler columns collapse and `alignment` has no effect.
+    flex-grow: 1;
 
     ::slotted(igc-tab) {
         display: contents;
@@ -67,6 +58,12 @@
     min-width: $tab-min-width;
 }
 
+// The pseudo-elements take the filler tracks, so the headers stay in the tab tracks.
+%filler-column {
+    content: '';
+    grid-row: 1;
+}
+
 :host([alignment='start']) {
     [part~='inner']:not([part~='scrollable']) {
         grid-template-columns:
@@ -74,7 +71,7 @@
             1fr;
 
         &::after {
-            @extend %fake-column;
+            @extend %filler-column;
         }
     }
 }
@@ -87,7 +84,7 @@
 
         &::before,
         &::after {
-            @extend %fake-column;
+            @extend %filler-column;
         }
     }
 }
@@ -100,7 +97,7 @@
             );
 
         &::before {
-            @extend %fake-column;
+            @extend %filler-column;
         }
     }
 }
@@ -121,9 +118,17 @@
     [part~='inner']:not([part~='scrollable']) {
         grid-template-columns: repeat(
             var(--_tabs-count),
-            minmax($tab-min-width, auto)
+            minmax($tab-min-width, 1fr)
         );
     }
+}
+
+// Behind the tab headers, so a translucent `item-background` composites over
+// `header-background`. Out of flow, so it does not move or size the headers.
+[part~='header'] {
+    position: absolute;
+    inset: 0;
+    grid-row: 1 / 2;
 }
 
 [part~='start-scroll-button'],
@@ -159,6 +164,8 @@ igc-icon-button::part(base) {
     position: relative;
     grid-row: 2;
     grid-column: 1 / -1;
+
+    // A page `text-align` on the host would move the static position of the span.
     text-align: initial;
 
     span {

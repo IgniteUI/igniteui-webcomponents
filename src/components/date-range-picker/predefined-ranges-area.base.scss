@@ -1,4 +1,3 @@
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
 
 :host {
@@ -15,4 +14,15 @@
     gap: rem(8px);
     max-height: #{sizable(rem(84px), rem(96px), rem(120px))};
     overflow-y: auto;
+}
+
+@media (forced-colors: active) {
+    :host {
+        border: 1px solid CanvasText;
+        border-block-start: 0;
+
+        igc-chip::part(base) {
+            border: rem(1px) solid CanvasText;
+        }
+    }
 }

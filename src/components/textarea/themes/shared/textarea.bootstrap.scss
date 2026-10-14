@@ -181,3 +181,20 @@ textarea {
         border-inline-end: rem(1px) solid var(--border-color);
     }
 }
+
+@media (forced-colors: active) {
+    :host(:focus-within) [part~='container'] {
+        --border-color: Highlight;
+    }
+
+    :host([disabled]),
+    :host(:disabled) {
+        [part~='container'] {
+            --disabled-border-color: GrayText;
+        }
+
+        [part~='label'] {
+            color: GrayText;
+        }
+    }
+}

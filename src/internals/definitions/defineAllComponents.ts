@@ -2,6 +2,8 @@ import IgcAccordionComponent from '../../components/accordion/accordion.js';
 import IgcAvatarComponent from '../../components/avatar/avatar.js';
 import IgcBadgeComponent from '../../components/badge/badge.js';
 import IgcBannerComponent from '../../components/banner/banner.js';
+import IgcBreadcrumbComponent from '../../components/breadcrumb/breadcrumb.js';
+import IgcBreadcrumbsComponent from '../../components/breadcrumb/breadcrumbs.js';
 import IgcButtonGroupComponent from '../../components/button-group/button-group.js';
 import IgcToggleButtonComponent from '../../components/button-group/toggle-button.js';
 import IgcButtonComponent from '../../components/button/button.js';
@@ -47,6 +49,7 @@ import IgcNavbarComponent from '../../components/navbar/navbar.js';
 import IgcCircularGradientComponent from '../../components/progress/circular-gradient.js';
 import IgcCircularProgressComponent from '../../components/progress/circular-progress.js';
 import IgcLinearProgressComponent from '../../components/progress/linear-progress.js';
+import IgcQrCodeComponent from '../../components/qr-code/qr-code.js';
 import IgcRadioGroupComponent from '../../components/radio-group/radio-group.js';
 import IgcRadioComponent from '../../components/radio/radio.js';
 import IgcRatingSymbolComponent from '../../components/rating/rating-symbol.js';
@@ -73,6 +76,7 @@ import IgcToastComponent from '../../components/toast/toast.js';
 import IgcTooltipComponent from '../../components/tooltip/tooltip.js';
 import IgcTreeItemComponent from '../../components/tree/tree-item.js';
 import IgcTreeComponent from '../../components/tree/tree.js';
+import IgcVirtualScrollComponent from '../../components/virtualization/virtualization.js';
 import { defineComponents } from './defineComponents.js';
 import type { IgniteComponent } from './register.js';
 
@@ -82,6 +86,8 @@ const allComponents: IgniteComponent[] = [
   IgcAccordionComponent,
   IgcBadgeComponent,
   IgcBannerComponent,
+  IgcBreadcrumbsComponent,
+  IgcBreadcrumbComponent,
   IgcButtonComponent,
   IgcIconButtonComponent,
   IgcToggleButtonComponent,
@@ -152,8 +158,10 @@ const allComponents: IgniteComponent[] = [
   IgcTileComponent,
   IgcTileManagerComponent,
   IgcTooltipComponent,
+  IgcQrCodeComponent,
+  IgcVirtualScrollComponent,
 ];
 
-export function defineAllComponents() {
+export function defineAllComponents(): void {
   defineComponents(...allComponents);
 }

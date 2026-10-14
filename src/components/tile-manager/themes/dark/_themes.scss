@@ -1,8 +1,11 @@
+@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/dark/tile-manager' as *;
 
-$base: digest-schema($dark-base-tile-manager);
-$material: digest-schema($dark-material-tile-manager);
-$bootstrap: digest-schema($dark-bootstrap-tile-manager);
-$fluent: digest-schema($dark-fluent-tile-manager);
-$indigo: digest-schema($dark-indigo-tile-manager);
+// Schema keys the component styles never read.
+$_unused: ('overlay-background',);
+$base: map.remove(digest-schema($dark-base-tile-manager), $_unused...);
+$material: map.remove(digest-schema($dark-material-tile-manager), $_unused...);
+$bootstrap: map.remove(digest-schema($dark-bootstrap-tile-manager), $_unused...);
+$fluent: map.remove(digest-schema($dark-fluent-tile-manager), $_unused...);
+$indigo: map.remove(digest-schema($dark-indigo-tile-manager), $_unused...);

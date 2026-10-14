@@ -1,5 +1,6 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
+import { spy } from 'sinon';
 import { CalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
@@ -504,6 +505,17 @@ describe('Calendar Rendering', () => {
       );
     });
 
+    it('derives the active date from the value before the first render', async () => {
+      const date = new CalendarDay({ year: 2023, month: 7, date: 6 });
+      const element = document.createElement(IgcCalendarComponent.tagName);
+      const render = spy(element as unknown as { render(): unknown }, 'render');
+
+      element.value = date.native;
+      calendar = await fixture<IgcCalendarComponent>(element);
+
+      expect(render.callCount).to.equal(1);
+    });
+
     it('issue #1278', async () => {
       const today = new CalendarDay({ year: 2024, month: 6, date: 25 });
       calendar.activeDate = today.native;
@@ -547,7 +559,6 @@ describe('Calendar Rendering', () => {
         expect(dateDOM.part.contains('inactive')).to.be.true;
       }
 
-      // Move active date to August
       calendar.activeDate = today.set({ month: 7 }).native;
       await elementUpdated(calendar);
 
@@ -557,6 +568,96 @@ describe('Calendar Rendering', () => {
         expect(dateDOM.part.contains('special')).to.be.true;
         expect(dateDOM.part.contains('inactive')).to.be.false;
       }
+    });
+
+    describe('Descriptor labels', () => {
+      const october = new CalendarDay({ year: 2026, month: 9, date: 1 });
+      const label = (date: CalendarDay) =>
+        getDOMDate(date, getCalendarDOM(calendar).views.days).ariaLabel!;
+      const specific = (
+        date: CalendarDay,
+        label?: string
+      ): DateRangeDescriptor => ({
+        type: DateRangeType.Specific,
+        dateRange: [date.native],
+        label,
+      });
+
+      beforeEach(async () => {
+        calendar.activeDate = october.native;
+        await elementUpdated(calendar);
+      });
+
+      it('adds the label of a special date to its accessible name', async () => {
+        const date = october.set({ date: 8 });
+        const plain = label(date);
+
+        calendar.specialDates = [specific(date, 'Free delivery')];
+        await elementUpdated(calendar);
+
+        expect(label(date)).to.equal(`${plain}, Free delivery`);
+      });
+
+      it('adds the label of a disabled date to its accessible name', async () => {
+        const date = october.set({ date: 14 });
+        const plain = label(date);
+
+        calendar.disabledDates = [specific(date, 'Fully booked')];
+        await elementUpdated(calendar);
+
+        expect(label(date)).to.equal(`${plain}, Fully booked`);
+      });
+
+      it('adds nothing for a descriptor without a label', async () => {
+        const date = october.set({ date: 9 });
+        const plain = label(date);
+
+        calendar.specialDates = [specific(date)];
+        await elementUpdated(calendar);
+
+        expect(label(date)).to.equal(plain);
+      });
+
+      it('joins the labels of all the matching descriptors without duplicates', async () => {
+        const date = october.set({ date: 15 });
+        const plain = label(date);
+
+        calendar.specialDates = [
+          specific(date, 'Free delivery'),
+          {
+            type: DateRangeType.Between,
+            dateRange: [october.native, date.native],
+            label: 'Team event',
+          },
+          { type: DateRangeType.Weekdays, label: 'Free delivery' },
+        ];
+        calendar.disabledDates = [
+          {
+            type: DateRangeType.After,
+            dateRange: [october.set({ date: 14 }).native],
+            label: 'Fully booked',
+          },
+        ];
+        await elementUpdated(calendar);
+
+        expect(label(date)).to.equal(
+          `${plain}, Fully booked, Free delivery, Team event`
+        );
+      });
+
+      it('adds no special label to a date of an adjacent month', async () => {
+        const special = october.set({ month: 10, date: 2 });
+        const disabled = october.set({ month: 10, date: 3 });
+        const plainSpecial = label(special);
+        const plainDisabled = label(disabled);
+
+        calendar.specialDates = [specific(special, 'Free delivery')];
+        calendar.disabledDates = [specific(disabled, 'Fully booked')];
+        await elementUpdated(calendar);
+
+        expect(label(special)).to.equal(plainSpecial);
+        expect(label(disabled)).to.equal(`${plainDisabled}, Fully booked`);
+      });
     });
 
     it('issue #2035 - Incorrect ISO 8601 week numbering', async () => {
@@ -572,6 +673,58 @@ describe('Calendar Rendering', () => {
       const lastWeekNumber = lastOf(daysViewDOM.weekNumbers);
 
       expect(lastWeekNumber.innerText).to.equal('1');
+    });
+  });
+
+  describe('Change detection', () => {
+    const day = (date: number) =>
+      new CalendarDay({ year: 2025, month: 3, date }).native;
+
+    beforeEach(async () => {
+      calendar = await createCalendarElement(
+        html`<igc-calendar
+          selection="range"
+          visible-months="2"
+          .activeDate=${day(1)}
+          .values=${[day(3), day(6)]}
+          .disabledDates=${[
+            { type: DateRangeType.Specific, dateRange: [day(20)] },
+          ]}
+        ></igc-calendar>`
+      );
+    });
+
+    it('does not update for a value equal to the current one', () => {
+      calendar.activeDate = day(1);
+      calendar.values = [day(3), day(6)];
+      calendar.specialDates = undefined;
+
+      expect(calendar.isUpdatePending).to.be.false;
+    });
+
+    function spyOnViews() {
+      return Array.from(
+        calendar.renderRoot.querySelectorAll('igc-days-view'),
+        (view) => spy(view as unknown as { update(): void }, 'update')
+      );
+    }
+
+    it('does not update the views when it renders with the same state', async () => {
+      const updates = spyOnViews();
+
+      calendar.requestUpdate();
+      await elementUpdated(calendar);
+
+      expect(updates.map((update) => update.callCount)).to.eql([0, 0]);
+    });
+
+    it('still updates the views for a changed value', async () => {
+      const updates = spyOnViews();
+
+      calendar.values = [day(3), day(8)];
+      await elementUpdated(calendar);
+
+      expect(updates.map((update) => update.callCount)).to.eql([1, 1]);
     });
   });
 

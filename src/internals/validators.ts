@@ -15,6 +15,14 @@ export interface Validator<T = any> {
   isValid: ValidatorHandler<T>;
 }
 
+function minBoundMessage(min: unknown): string {
+  return formatString(ValidationResourceStringsEN.min_validation_error!, min);
+}
+
+function maxBoundMessage(max: unknown): string {
+  return formatString(ValidationResourceStringsEN.max_validation_error!, max);
+}
+
 const emailRegex =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
@@ -64,12 +72,24 @@ export const maxLengthValidator: Validator<{
     maxLength && value ? value.length <= asNumber(maxLength) : true,
 };
 
+/**
+ * Compiles `pattern` as a native control does: it must match the whole value,
+ * it uses the `v` flag, and an invalid pattern sets no constraint.
+ */
+function compilePattern(pattern: string): RegExp | null {
+  try {
+    return new RegExp(`^(?:${pattern})$`, 'v');
+  } catch {
+    return null;
+  }
+}
+
 export const patternValidator: Validator<{ pattern?: string; value: string }> =
   {
     key: 'patternMismatch',
     message: ValidationResourceStringsEN.pattern_validation_error!,
     isValid: ({ pattern, value }) =>
-      pattern && value ? new RegExp(pattern, 'u').test(value) : true,
+      pattern && value ? (compilePattern(pattern)?.test(value) ?? true) : true,
   };
 
 export const minValidator: Validator<{
@@ -77,8 +97,7 @@ export const minValidator: Validator<{
   value: number | string;
 }> = {
   key: 'rangeUnderflow',
-  message: ({ min }) =>
-    formatString(ValidationResourceStringsEN.min_validation_error!, min),
+  message: ({ min }) => minBoundMessage(min),
   isValid: ({ min, value }) =>
     isDefined(value) && value !== '' && isDefined(min)
       ? asNumber(value) >= asNumber(min)
@@ -90,8 +109,7 @@ export const maxValidator: Validator<{
   value: number | string;
 }> = {
   key: 'rangeOverflow',
-  message: ({ max }) =>
-    formatString(ValidationResourceStringsEN.max_validation_error!, max),
+  message: ({ max }) => maxBoundMessage(max),
   isValid: ({ max, value }) =>
     isDefined(value) && value !== '' && isDefined(max)
       ? asNumber(value) <= asNumber(max)
@@ -138,8 +156,7 @@ export const minDateValidator: Validator<{
   min?: Date | null;
 }> = {
   key: 'rangeUnderflow',
-  message: ({ min }) =>
-    formatString(ValidationResourceStringsEN.min_validation_error!, min),
+  message: ({ min }) => minBoundMessage(min),
   isValid: ({ value, min }) =>
     value && min ? CalendarDay.compare(value, min) >= 0 : true,
 };
@@ -149,19 +166,18 @@ export const maxDateValidator: Validator<{
   max?: Date | null;
 }> = {
   key: 'rangeOverflow',
-  message: ({ max }) =>
-    formatString(ValidationResourceStringsEN.max_validation_error!, max),
+  message: ({ max }) => maxBoundMessage(max),
   isValid: ({ value, max }) =>
     value && max ? CalendarDay.compare(value, max) <= 0 : true,
 };
 
-/** A host whose bound comparisons follow the parts present in its format. */
+/** A host that compares bounds at the granularity of its own format. */
 interface DatePartsHost {
   hasDateParts(): boolean;
   hasTimeParts(): boolean;
 }
 
-/** Compares a date against a bound at the granularity of the host's format. */
+/** Compares a date with a bound at the granularity of the host format. */
 type DateBoundComparer = (
   date: Date,
   bound: Date,
@@ -169,7 +185,10 @@ type DateBoundComparer = (
   hasDateParts: boolean
 ) => boolean;
 
-/** Whether no value of the host exceeds `bound`. An absent bound holds. */
+/**
+ * Returns `true` when no value of the host exceeds `bound`. An unset bound
+ * and an empty value both pass.
+ */
 function isWithinBound<T extends DatePartsHost>(
   host: T,
   bound: Date | null | undefined,
@@ -186,36 +205,32 @@ function isWithinBound<T extends DatePartsHost>(
 }
 
 /**
- * Creates a `rangeUnderflow` validator for hosts whose `min` comparison must
- * respect the parts of the host's format - day granularity when the format has
- * no time parts, time-of-day granularity when it has no date parts.
- *
- * `resolveValues` returns the dates checked against the bound; empty slots
- * are skipped, so a partial range validates only its present ends.
+ * Creates a `rangeUnderflow` validator for the `min` bound of a host.
+ * The comparison follows the host format: day granularity without time
+ * parts, time-of-day granularity without date parts. Empty slots from
+ * `resolveValues` are skipped, so a partial range validates only its ends.
  */
 export function createMinDateTimeValidator<
   T extends DatePartsHost & { min?: Date | null },
 >(resolveValues: (host: T) => (Date | null | undefined)[]): Validator<T> {
   return {
     key: 'rangeUnderflow',
-    message: ({ min }) =>
-      formatString(ValidationResourceStringsEN.min_validation_error!, min),
+    message: (host) => minBoundMessage(host.min),
     isValid: (host) =>
       isWithinBound(host, host.min, resolveValues(host), isDateLessThanMin),
   };
 }
 
 /**
- * Creates a `rangeOverflow` validator for hosts whose `max` comparison must
- * respect the parts of the host's format. See {@link createMinDateTimeValidator}.
+ * Creates a `rangeOverflow` validator for the `max` bound of a host.
+ * See {@link createMinDateTimeValidator}.
  */
 export function createMaxDateTimeValidator<
   T extends DatePartsHost & { max?: Date | null },
 >(resolveValues: (host: T) => (Date | null | undefined)[]): Validator<T> {
   return {
     key: 'rangeOverflow',
-    message: ({ max }) =>
-      formatString(ValidationResourceStringsEN.max_validation_error!, max),
+    message: (host) => maxBoundMessage(host.max),
     isValid: (host) =>
       isWithinBound(host, host.max, resolveValues(host), isDateExceedingMax),
   };

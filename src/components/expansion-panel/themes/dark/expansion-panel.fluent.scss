@@ -1,8 +1,9 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
+@use '../light/themes' as light;
 
 $theme: $fluent;
 
 :host {
-    @include css-vars-from-theme(diff($base, $theme));
+    @include css-vars-from-theme(dark-overrides(light.$fluent, $theme, $base, light.$base));
 }

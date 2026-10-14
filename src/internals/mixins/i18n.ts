@@ -19,24 +19,18 @@ export declare class I18nInterface<
 }
 
 /**
- * Mixes in the localization surface of a component - the `locale` and
- * `resourceStrings` reactive properties forwarding to an i18n controller
- * created with the passed configuration.
+ * Adds the `locale` and `resourceStrings` properties, both backed by the
+ * protected `_i18nController` that `config` creates.
  *
- * The controller is exposed as the protected `_i18nController` for hosts
- * that need direct access.
+ * @remarks
+ * `TGet` defaults to `Required<T>`, because the controller merges the full
+ * `defaultEN` set under any overrides, so every key resolves. A component
+ * that also accepts a deprecated resource shape overrides `TGet` with the
+ * intersection of the two shapes.
  *
- * `TGet` is the type of the resolved strings. It defaults to `Required<T>`,
- * because the controller merges the full `defaultEN` set under any overrides,
- * so every key resolves even though the resource interfaces declare them
- * optional. Components that still accept a deprecated component-specific
- * resource shape override it: `T` is the union of the two shapes accepted,
- * `TGet` their intersection.
- *
- * The base class must be the first argument - the manifest analyzer resolves
- * the superclass of an `extends Mixin(...)` clause from the first argument,
- * and a leading config object would sever the inheritance chain in the
- * manifest (dropping every inherited public member from the docs).
+ * The base class must be the first argument. The manifest analyzer reads the
+ * superclass of `extends Mixin(...)` from that argument; a leading config
+ * object drops every inherited public member from the docs.
  */
 export function I18nMixin<
   T extends object,
@@ -47,8 +41,8 @@ export function I18nMixin<
     protected readonly _i18nController = addI18nController<T>(this, config);
 
     /**
-     * The locale used to resolve the component's resource strings.
-     * Falls back to the global locale when not set.
+     * The locale for the resource strings. Falls back to the global locale.
+     *
      * @attr locale
      */
     @property()
@@ -60,9 +54,7 @@ export function I18nMixin<
       return this._i18nController.locale;
     }
 
-    /**
-     * The resource strings for localization.
-     */
+    /** The resource strings for localization. */
     @property({ attribute: false })
     public set resourceStrings(value: T) {
       this._i18nController.resourceStrings = value;

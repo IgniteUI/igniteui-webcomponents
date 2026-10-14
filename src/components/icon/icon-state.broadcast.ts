@@ -13,18 +13,12 @@ type IconBroadcastEvent =
   | PageTransitionEvent;
 
 /**
- * Publishes icon registry state to other browsing contexts of the same origin
- * using the BroadcastChannel API.
+ * Publishes icon registry state to other same-origin browsing contexts. The traffic is
+ * one-way: it sends registrations and reference updates, and answers a `SyncState`
+ * request of the Ignite UI for Angular icon service with the user-set state.
  *
- * @remarks
- * The traffic is one-way by design: this side broadcasts its own registrations
- * and reference updates, and answers a peer's `SyncState` request with the
- * user-set part of the registry. It never applies inbound state and never
- * requests a sync itself - the Ignite UI for Angular icon service is the peer
- * that consumes these messages.
- *
- * The channel is created on page show and disposed on page hide, so a page
- * restored from the bfcache gets a working one. Under SSR the instance is inert.
+ * The channel opens on page show and closes on page hide, so a page restored
+ * from the bfcache gets a working one. Under SSR the instance is inert.
  */
 export class IconsStateBroadcast {
   private static readonly _origin = 'igniteui-webcomponents';
@@ -74,7 +68,7 @@ export class IconsStateBroadcast {
   private _syncState({
     data: { actionType, origin },
   }: MessageEvent<BroadcastIconsChangeMessage>): void {
-    // no need to sync with other wc icon services, just with angular elements
+    // Sync only with Angular peers.
     if (
       actionType !== ActionType.SyncState ||
       origin === IconsStateBroadcast._origin

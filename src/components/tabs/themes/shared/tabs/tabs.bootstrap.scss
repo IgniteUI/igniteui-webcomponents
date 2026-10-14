@@ -7,33 +7,9 @@ $theme: $bootstrap;
     --header-min-height: #{rem(48px)};
 }
 
-[part~='inner'] {
-    flex-grow: 1;
-}
-
-:host([alignment='start']) {
-    [part~='inner']:not([part~='scrollable']) {
-        &::after {
-            box-shadow: inset 0 calc(var(--_border-size) * -1) 0 0 var-get($theme, 'border-color');
-        }
-    }
-}
-
-:host([alignment='center']) {
-    [part~='inner']:not([part~='scrollable']) {
-        &::before,
-        &::after {
-            box-shadow: inset 0 calc(var(--_border-size) * -1) 0 0 var-get($theme, 'border-color');
-        }
-    }
-}
-
-:host([alignment='end']) {
-    [part~='inner']:not([part~='scrollable']) {
-        &::before {
-            box-shadow: inset 0 calc(var(--_border-size) * -1) 0 0 var-get($theme, 'border-color');
-        }
-    }
+// The bottom border of the header strip. The selected tab paints over it.
+[part~='header'] {
+    box-shadow: inset 0 calc(var(--_border-size) * -1) 0 0 var-get($theme, 'border-color');
 }
 
 [part='selected-indicator'] {

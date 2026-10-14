@@ -1,7 +1,9 @@
 import { LitElement, nothing } from 'lit';
+import { getPrefersReducedMotion } from '#animations/player.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { getScaleFactor, setStyles } from '#internals/utils/dom.js';
 import { addSafeEventListener } from '#internals/utils/events.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './ripple.material.css.js';
 
 const rippleFrames: Keyframe[] = [
@@ -10,19 +12,10 @@ const rippleFrames: Keyframe[] = [
 ];
 
 const rippleAnimation: KeyframeAnimationOptions = {
-  duration: 600, // --igc-ripple-duration,
+  duration: 600, // --igc-ripple-duration
   fill: 'forwards',
   easing: 'linear', // --igc-ripple-easing
 };
-
-let rippleElement: HTMLElement;
-
-function getRippleElement(): HTMLSpanElement {
-  if (!rippleElement) {
-    rippleElement = document.createElement('span');
-  }
-  return rippleElement.cloneNode() as HTMLElement;
-}
 
 /**
  * A ripple can be applied to an element to represent
@@ -32,7 +25,7 @@ function getRippleElement(): HTMLSpanElement {
  */
 export default class IgcRippleComponent extends LitElement {
   public static readonly tagName = 'igc-ripple';
-  public static override styles = styles;
+  public static override styles = [componentBase, styles];
 
   /* blazorSuppress */
   public static register(): void {
@@ -49,13 +42,13 @@ export default class IgcRippleComponent extends LitElement {
       return;
     }
 
-    const element = getRippleElement();
+    const element = document.createElement('span');
     const { radius, top, left } = this._getDimensions(
       event.clientX,
       event.clientY
     );
 
-    const styles: Partial<CSSStyleDeclaration> = {
+    setStyles(element, {
       position: 'absolute',
       display: 'block',
       pointerEvents: 'none',
@@ -70,12 +63,16 @@ export default class IgcRippleComponent extends LitElement {
       top: `${top}px`,
       left: `${left}px`,
       background: 'var(--color, var(--ig-gray-800))',
-    };
-
-    setStyles(element, styles);
+    });
     this.renderRoot.appendChild(element);
 
-    await element.animate(rippleFrames, rippleAnimation).finished;
+    const wave = element.animate(rippleFrames, {
+      ...rippleAnimation,
+      duration: getPrefersReducedMotion() ? 0 : rippleAnimation.duration,
+    });
+
+    // A cancel rejects `finished`. The wave must go in that case too.
+    await wave.finished.catch(() => {});
     element.remove();
   }
 

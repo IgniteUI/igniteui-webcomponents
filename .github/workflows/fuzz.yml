@@ -1,0 +1,45 @@
+# Runs the property-based tests with a random seed and more runs, to find new
+# counterexamples. See CONTRIBUTING.md to replay a failure.
+name: Fuzz
+
+permissions: read-all
+
+on:
+  schedule:
+    # Sundays at 02:30 UTC.
+    - cron: '30 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: 'fast-check seed, or "random"'
+        default: 'random'
+      num-runs:
+        description: 'Runs for each property'
+        default: '1000'
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: '24'
+        cache: 'npm'
+    - run: npm ci
+
+    - uses: ./.github/actions/setup-playwright
+
+    # The tile-manager suite needs the compiled styles.
+    - run: npm run build:styles
+
+    - name: Run the property-based tests
+      env:
+        FC_SEED: ${{ inputs.seed || 'random' }}
+        FC_NUM_RUNS: ${{ inputs.num-runs || '1000' }}
+        TEST_TIMEOUT: '120000'
+      run: npx wtr --files "src/**/*.property.spec.ts"

@@ -1,4 +1,3 @@
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
 
 :host {
@@ -24,4 +23,10 @@
     border: none;
     backface-visibility: hidden;
     transition: box-shadow .1s ease-out;
+}
+
+@media (forced-colors: active) {
+    :host([elevated]) {
+        border: rem(1px) solid CanvasText;
+    }
 }

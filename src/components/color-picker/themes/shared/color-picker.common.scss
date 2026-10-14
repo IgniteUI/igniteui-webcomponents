@@ -25,8 +25,8 @@ $input-theme: input-theme.$material;
     // pseudo-element itself opts out.
     appearance: none;
     border-radius: 50%;
-    width: rem(16px);
-    height: rem(16px);
+    width: var(--_slider-thumb-size);
+    height: var(--_slider-thumb-size);
     background-color: $fill;
     border: rem(2px) solid var-get($theme, 'slider-thumb-border-color');
     box-shadow: var(--ig-elevation-1);
@@ -96,7 +96,6 @@ $input-theme: input-theme.$material;
     --_outline-size: #{rem(1px)};
     --_picker-popover-size: #{sizable(rem(290px), rem(314px), rem(360px))};
     --_input-row-spacing: #{rem(16px)};
-    --_input-row-gap: #{rem(12px)};
     --_alpha-row-spacing: #{sizable(rem(8px), rem(12px), rem(16px))};
     --_swatches-spacing: #{rem(16px)};
     --_swatches-row-gap: #{rem(12px)};
@@ -111,6 +110,7 @@ $input-theme: input-theme.$material;
     // saturation/value plane is built from, not a color that can be picked.
     --_current-color: hsl(0deg 100% 50%);
     --_slider-track-size: #{rem(16px)};
+    --_slider-thumb-size: #{rem(16px)};
 
     // Four columns of checkerboard squares across the swatch - see `swatch-preview`.
     --_swatch-grid-size: 50% 50%;
@@ -136,23 +136,25 @@ $input-theme: input-theme.$material;
         #{var-get($theme, 'transparency-grid-odd')} 180deg 270deg,
         #{var-get($theme, 'transparency-grid-even')} 270deg 360deg
     );
+
+    // The gradients span the travel of the thumb center and follow the range
+    // direction, which is right to left in RTL.
+    --_slider-track-direction: to right;
+    --_slider-track-inset: calc(var(--_slider-thumb-size) / 2);
+
+    // Pure hues at equal steps give `hsl(h 100% 50%)` at each point.
     --_hue-slider-track: linear-gradient(
-        90deg,
-        #fe1016 0%,
-        #fe7f23 15.38%,
-        #fcee37 28.37%,
-        #1cfe3f 42.31%,
-        #1afffe 55.77%,
-        #2a0af8 69.4%,
-        #fb13e9 84.9%,
-        #f90000 100%
+        var(--_slider-track-direction),
+        #f00 var(--_slider-track-inset),
+        #ff0, #0f0, #0ff, #00f, #f0f,
+        #f00 calc(100% - var(--_slider-track-inset))
     );
     --_alpha-color: var(--_selected-color, var(--_current-color));
     --_alpha-slider-track:
         linear-gradient(
-            to right,
-            rgb(from var(--_alpha-color) r g b / 0%) 0%,
-            rgb(from var(--_alpha-color) r g b / 100%) 100%
+            var(--_slider-track-direction),
+            rgb(from var(--_alpha-color) r g b / 0%) var(--_slider-track-inset),
+            rgb(from var(--_alpha-color) r g b / 100%) calc(100% - var(--_slider-track-inset))
         ),
         var(--_transparency-grid);
     --_alpha-track-position: 0 0;
@@ -288,6 +290,11 @@ $input-theme: input-theme.$material;
             @include empty-swatch();
         }
     }
+}
+
+:host(:dir(rtl)),
+:host([dir='rtl']) {
+    --_slider-track-direction: to left;
 }
 
 :host(:not([disabled], :disabled)) {

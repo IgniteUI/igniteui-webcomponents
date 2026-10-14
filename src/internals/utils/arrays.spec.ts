@@ -6,6 +6,7 @@ import {
   isEmpty,
   lastOf,
   partition,
+  sameItems,
 } from './arrays.js';
 
 describe('Array utilities', () => {
@@ -74,6 +75,23 @@ describe('Array utilities', () => {
     it('should handle empty and single-sided inputs', () => {
       expect(partition([], () => true)).to.eql([[], []]);
       expect(partition([1, 3], (x) => x % 2 === 0)).to.eql([[], [1, 3]]);
+    });
+  });
+
+  describe('sameItems', () => {
+    it('compares items by identity and order', () => {
+      const [a, b] = [{}, {}];
+
+      expect(sameItems([a, b], [a, b])).to.be.true;
+      expect(sameItems([a, b], [b, a])).to.be.false;
+      expect(sameItems([a], [{}])).to.be.false;
+      expect(sameItems(null, undefined)).to.be.true;
+      expect(sameItems([], null)).to.be.false;
+    });
+
+    it('matches NaN to itself, like Object.is', () => {
+      expect(sameItems([Number.NaN], [Number.NaN])).to.be.true;
+      expect(sameItems([0], [-0])).to.be.false;
     });
   });
 });

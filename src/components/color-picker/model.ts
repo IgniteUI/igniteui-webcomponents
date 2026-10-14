@@ -1,11 +1,10 @@
 import { clamp } from '#internals/utils/math.js';
 import type { ColorFormat } from '../types.js';
-import { isValidColor, normalizeColor, parseColor } from './common.js';
+import { tryParseColor } from './common.js';
 import { converter, type HSL, type HSV, type RGB } from './converters.js';
 
 export type { ColorFormat };
 
-/** The color space a channel write is expressed in. */
 type ColorSpace = 'rgb' | 'hsl' | 'hsv';
 type Channel = 0 | 1 | 2;
 
@@ -24,22 +23,14 @@ function makeCanvasContext() {
 }
 export const getContext = makeCanvasContext();
 
+/** Formats RGB channels (0-255) and an optional alpha as a CSS `rgb()` color. */
+export function rgbString(rgb: RGB, alpha: number | null = null): string {
+  const [r, g, b] = rgb.map(Math.round);
+  return `rgb(${r} ${g} ${b}${alpha === null ? '' : ` / ${alpha}`})`;
+}
+
 /**
- * Represents a color with support for RGB, HSL, and HSV color spaces.
- * Automatically syncs between color spaces when properties are modified.
- *
- * @example
- * ```ts
- * // Create from RGB
- * const color = new ColorModel([255, 0, 0], 0.5);
- *
- * // Parse from string
- * const parsed = ColorModel.parse('#ff0000');
- *
- * // Modify and convert
- * color.h = 120;
- * console.log(color.asString('hsl')); // 'hsla(120, 100%, 50%, 0.5)'
- * ```
+ * A color that keeps its RGB, HSL and HSV values in sync.
  */
 export class ColorModel {
   private _rgb: RGB;
@@ -54,14 +45,9 @@ export class ColorModel {
   }
 
   /**
-   * Creates an empty color, representing a missing/undefined color value.
-   * An empty color serializes to an empty string and is considered "empty"
-   * until any of its channels are modified.
-   *
-   * Backed by white rather than black: an empty color still has to be drawn,
-   * and white is HSV `[0, 0, 100]` - the origin of the saturation/value plane,
-   * where a picker with nothing selected should start. Black would put the
-   * marker in the opposite corner, on a color the user never chose.
+   * Creates an empty color. It serializes to an empty string until a channel
+   * changes. It is white, the origin of the saturation/value plane, so an
+   * empty picker starts there.
    */
   public static empty(): ColorModel {
     const color = new ColorModel([255, 255, 255], 1);
@@ -70,24 +56,15 @@ export class ColorModel {
   }
 
   /**
-   * Parses a color string and creates a ColorModel instance.
-   * Supports hex, rgb, rgba, hsl, hsla, and named color formats.
-   *
-   * Empty, whitespace-only, or otherwise invalid strings produce an empty
-   * ColorModel instead of a stale/incorrect color.
+   * Parses a hex, rgb(a), hsl(a) or named color.
+   * An empty or invalid string gives an empty color.
    */
   public static parse(color: string): ColorModel {
-    const ctx = getContext();
-    // Normalized up front - validating the raw string would reject a hash-less
-    // hex before `parseColor` ever got the chance to restore its `#`.
-    const normalized = normalizeColor(color);
+    const parsed = tryParseColor(color, getContext());
 
-    if (!isValidColor(normalized, ctx)) {
-      return ColorModel.empty();
-    }
-
-    const parsed = parseColor(normalized, ctx);
-    return new ColorModel(parsed.value, parsed.alpha);
+    return parsed
+      ? new ColorModel(parsed.value, parsed.alpha)
+      : ColorModel.empty();
   }
 
   /** Creates a ColorModel from hue (0-360), saturation and lightness (0-100). */
@@ -110,10 +87,7 @@ export class ColorModel {
     return new ColorModel(converter.hsv.rgb([h, s, v]), alpha);
   }
 
-  /**
-   * @param value - RGB values as [r, g, b] tuple (0-255 each)
-   * @param alpha - Alpha channel value (0-1)
-   */
+  /** RGB channels are 0-255 and alpha is 0-1. */
   constructor(value: RGB, alpha = 1) {
     // Copied to prevent external mutations.
     this._rgb = [value[0], value[1], value[2]];
@@ -145,10 +119,7 @@ export class ColorModel {
     }
   }
 
-  /**
-   * Writes a single channel and brings the rest of the model back in sync.
-   * Every channel setter goes through here, so no space is ever left stale.
-   */
+  /** Writes one channel and syncs the other color spaces. */
   private _setChannel(
     space: ColorSpace,
     index: Channel,
@@ -239,11 +210,8 @@ export class ColorModel {
   }
 
   /**
-   * Sets the HSV saturation and value in a single atomic update, preserving
-   * the current hue and alpha. Intended for the 2D saturation/value picker
-   * area, where both components change together and setting them through the
-   * individual `s` (HSL) and `v` (HSV) setters would be both incorrect
-   * (mixing color spaces) and order-dependent.
+   * Sets the HSV saturation and value in one update and keeps the hue and alpha.
+   * The `s` (HSL) and `v` (HSV) setters mix color spaces and depend on order.
    *
    * @param saturation - HSV saturation (0-100)
    * @param value - HSV value (0-100)
@@ -258,9 +226,6 @@ export class ColorModel {
   /**
    * Converts the color to a CSS color string. An empty color renders as an
    * empty string.
-   *
-   * @param format - The output format ('hex', 'rgb', or 'hsl')
-   * @param forceAlpha - Whether to always include the alpha channel
    */
   public asString(format: ColorFormat, forceAlpha = false): string {
     if (this._empty) {
@@ -280,10 +245,8 @@ export class ColorModel {
                 .padStart(2, '0');
         return `#${hex}${suffix}`;
       }
-      case 'rgb': {
-        const [r, g, b] = this._rgb.map(Math.round);
-        return `rgb(${r} ${g} ${b}${alpha === null ? '' : ` / ${alpha}`})`;
-      }
+      case 'rgb':
+        return rgbString(this._rgb, alpha);
       case 'hsl': {
         const [h, s, l] = this._hsl.map(Math.round);
         return `hsl(${h} ${s}% ${l}%${alpha === null ? '' : ` / ${alpha}`})`;
@@ -291,7 +254,6 @@ export class ColorModel {
     }
   }
 
-  /** Creates a copy of this color model. */
   public clone(): ColorModel {
     const color = new ColorModel(this._rgb, this._alpha);
     color._empty = this._empty;
@@ -307,17 +269,14 @@ export class ColorModel {
     );
   }
 
-  /** Returns the RGB values as a tuple. */
   public toRGB(): RGB {
     return [...this._rgb];
   }
 
-  /** Returns the HSL values as a tuple. */
   public toHSL(): HSL {
     return [...this._hsl];
   }
 
-  /** Returns the HSV values as a tuple. */
   public toHSV(): HSV {
     return [...this._hsv];
   }

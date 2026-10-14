@@ -75,10 +75,13 @@ export { default as IgcTooltipComponent } from './components/tooltip/tooltip.js'
 export { default as IgcThemeProviderComponent } from './components/theme-provider/theme-provider.js';
 export { default as IgcCopyToClipboardComponent } from './components/copy-to-clipboard/copy-to-clipboard.js';
 export { default as IgcQrCodeComponent } from './components/qr-code/qr-code.js';
+export { default as IgcBreadcrumbsComponent } from './components/breadcrumb/breadcrumbs.js';
+export { default as IgcBreadcrumbComponent } from './components/breadcrumb/breadcrumb.js';
 export { default as IgcVirtualScrollComponent } from './components/virtualization/virtualization.js';
 export type {
   IgcVirtualScrollComponentEventMap,
   VirtualScrollItemTemplate,
+  VirtualScrollKeyFunction,
 } from './components/virtualization/virtualization.js';
 export type {
   VirtualScrollItemContext,

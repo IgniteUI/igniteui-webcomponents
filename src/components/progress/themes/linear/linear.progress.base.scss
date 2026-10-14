@@ -1,5 +1,4 @@
 @use 'sass:math';
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
 @use '../animations' as *;
 @use '../vars' as *;
@@ -167,4 +166,16 @@
 
 [part~='hidden'] {
     display: none;
+}
+
+@media (forced-colors: active) {
+    :host {
+        [part~='track'] {
+            outline: rem(1px) solid CanvasText;
+        }
+
+        [part~='fill'] {
+            border: rem(2px) solid CanvasText;
+        }
+    }
 }

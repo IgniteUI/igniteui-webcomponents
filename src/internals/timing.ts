@@ -1,34 +1,19 @@
-/**
- * A restartable timeout handle. See {@link createTimer}.
- */
+/** A restartable timeout handle. See {@link createTimer}. */
 export type Timer = {
   /** Whether the timer is currently armed. */
   readonly active: boolean;
   /**
-   * (Re)arms the timer, canceling a previously armed run.
-   *
-   * When `delay` is omitted, the default delay of the timer is used.
+   * Cancels an armed run and arms the timer again. `delay` defaults to the
+   * delay given at creation.
    */
   start(delay?: number): void;
-  /** Cancels the armed run, if any. */
+  /** Cancels the armed run, if there is one. */
   stop(): void;
 };
 
 /**
- * Creates a restartable timeout around `callback`.
- *
- * Every `start` supersedes the previous one, so the callback runs at most once,
- * `delay` milliseconds after the most recent `start` - the recurring
- * "clear the stored handle, then set it again" bookkeeping is kept in one place.
- *
- * @example
- * ```typescript
- * const timer = createTimer(() => this.hideTooltip(), 500);
- *
- * timer.start(); // arms the timer with the default delay
- * timer.start(1000); // supersedes the run above
- * timer.stop(); // cancels it altogether
- * ```
+ * Creates a restartable timeout around `callback`. The callback runs one time
+ * at most, `delay` milliseconds after the most recent `start` call.
  */
 export function createTimer(callback: () => void, defaultDelay = 0): Timer {
   let handle: ReturnType<typeof setTimeout> | undefined;

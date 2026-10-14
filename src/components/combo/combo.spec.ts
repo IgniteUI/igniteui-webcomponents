@@ -15,6 +15,7 @@ import {
   enterKey,
   escapeKey,
   homeKey,
+  shiftKey,
   spaceBar,
   tabKey,
 } from '#internals/controllers/key-bindings.js';
@@ -34,6 +35,7 @@ import {
   simulateClick,
   simulateKeyboard,
   simulatePointerDown,
+  simulateScroll,
 } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
@@ -41,6 +43,7 @@ import {
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
 import { firstOf } from '#internals/utils/arrays.js';
+import { configureTheme } from '#theming/config.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcVirtualScrollComponent from '../virtualization/virtualization.js';
 import type IgcComboHeaderComponent from './combo-header.js';
@@ -203,8 +206,7 @@ describe('Combo', () => {
   const filterCombo = async (term: string) => {
     input.dispatchEvent(new CustomEvent('igcInput', { detail: term }));
     await elementUpdated(combo);
-    // _handleMainInput awaits its own updateComplete internally before
-    // setting the active index, scheduling a follow-up render.
+    // `_handleMainInput` sets the active index after its own `updateComplete`.
     await elementUpdated(combo);
     await layoutComplete(combo);
   };
@@ -396,6 +398,30 @@ describe('Combo', () => {
       expect(eventSpy).calledWith('igcClosing');
       expect(eventSpy).calledWith('igcClosed');
       expect(combo.open).to.be.false;
+    });
+
+    it('should toggle the menu once upon clicking on the label of the input', async () => {
+      combo.label = 'Cities';
+      await elementUpdated(combo);
+
+      const label = input.renderRoot.querySelector('label')!;
+      const eventSpy = spy(combo, 'emitEvent');
+
+      label.click();
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.true;
+      expect(eventSpy).calledWith('igcOpening');
+      expect(eventSpy).not.calledWith('igcClosing');
+      expect(eventSpy).not.calledWith('igcClosed');
+
+      eventSpy.resetHistory();
+      label.click();
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+      expect(eventSpy).calledWith('igcClosing');
+      expect(eventSpy).not.calledWith('igcOpening');
     });
 
     it('should be able to cancel the igcOpening event', async () => {
@@ -635,8 +661,7 @@ describe('Combo', () => {
         ></igc-combo>`
       );
 
-      // The value setter resolves the first match only, so just one of the
-      // two 'a' records starts out selected.
+      // The value setter resolves only the first match, so one 'a' record is selected.
       combo.value = ['a'];
       await elementUpdated(combo);
 
@@ -647,8 +672,7 @@ describe('Combo', () => {
 
       await openComboPopover(combo);
 
-      // Selecting the twin resolves both 'a' records, one of which is already
-      // in the selection.
+      // The twin resolves both 'a' records. One is already selected.
       items(combo)[2].click();
       await elementUpdated(combo);
 
@@ -884,14 +908,12 @@ describe('Combo', () => {
     it('should move focus to the filter input and the close the dropdown on subsequent Arrow Up keypress', async () => {
       await openComboPopover(combo);
 
-      // Move active state to first item and focus to the dropdown
       simulateKeyboard(searchInput, arrowDown);
       await elementUpdated(combo);
 
       expect(isFocused(list)).to.be.true;
       expect(isFocused(searchInput)).to.be.false;
 
-      // Move focus to the search input
       simulateKeyboard(list, arrowUp);
       await elementUpdated(combo);
 
@@ -910,7 +932,6 @@ describe('Combo', () => {
 
       await openComboPopover(combo);
 
-      // Activate first item
       simulateKeyboard(list, arrowDown);
       await elementUpdated(combo);
 
@@ -922,13 +943,46 @@ describe('Combo', () => {
       expect(combo.open).to.be.false;
     });
 
+    it('keeps the dropdown open on Arrow Down at the end of the matches in single-select mode', async () => {
+      combo.singleSelect = true;
+      await elementUpdated(combo);
+      await openComboPopover(combo);
+
+      await filterCombo('sof');
+      simulateKeyboard(input, arrowDown);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.true;
+      expect(firstOf(items(combo)).active).to.be.true;
+
+      await filterCombo('xxx');
+      simulateKeyboard(input, arrowDown);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.true;
+    });
+
+    it('keeps the focus in the list on Arrow Down at the only match', async () => {
+      await openComboPopover(combo);
+      searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: 'sof' }));
+      await elementUpdated(combo);
+      await layoutComplete(combo);
+
+      simulateKeyboard(searchInput, arrowDown);
+      await elementUpdated(combo);
+      simulateKeyboard(list, arrowDown);
+      await elementUpdated(combo);
+
+      expect(isFocused(searchInput)).to.be.false;
+      expect(firstOf(items(combo)).active).to.be.true;
+    });
+
     it('should close the dropdown on Arrow Up in single-select mode', async () => {
       combo.singleSelect = true;
       await elementUpdated(combo);
 
       await openComboPopover(combo);
 
-      // Activate first item
       simulateKeyboard(list, arrowDown);
       await elementUpdated(combo);
 
@@ -1322,13 +1376,11 @@ describe('Combo', () => {
     it('should select item(s) even if the list of items has been filtered', async () => {
       await openComboPopover(combo);
 
-      // Filter the list of items
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: 'sof' }));
 
       await elementUpdated(combo);
       await layoutComplete(combo);
 
-      // Verify we can only see one item in the list
       expect(items(combo)).lengthOf(1);
       expect(firstOf(items(combo)).innerText).to.equal('Sofia');
 
@@ -1337,49 +1389,36 @@ describe('Combo', () => {
       combo.select(selection);
       await elementUpdated(combo);
 
-      // The combo value should've updated
       expect(firstOf(combo.value)).to.equal(selection);
 
-      // Let's verify the list of items has been updated
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: '' }));
 
       await elementUpdated(combo);
       await layoutComplete(combo);
 
-      // Get a list of all selected items
       const selected = items(combo).filter((item) => item.selected);
 
-      // We should only see one item as selected
       expect(selected).lengthOf(1);
-
-      // It should match the one selected via the API
       expect(firstOf(selected).innerText).to.equal('New York');
     });
 
     it('should deselect item(s) even if the list of items has been filtered', async () => {
-      // Select an item via the API
       const selection = 'US01';
       combo.select(selection);
 
       await openComboPopover(combo);
 
-      // Get a list of all selected items
       let selected = items(combo).filter((item) => item.selected);
 
-      // We should only see one item as selected
       expect(selected).lengthOf(1);
-
-      // It should match the one selected via the API
       expect(firstOf(selected).innerText).to.equal('New York');
       expect(firstOf(combo.value)).to.equal(selection);
 
-      // Filter the list of items
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: 'sof' }));
 
       await elementUpdated(combo);
       await layoutComplete(combo);
 
-      // Verify we can only see one item in the list
       expect(items(combo)).lengthOf(1);
       expect(firstOf(items(combo)).innerText).to.equal('Sofia');
 
@@ -1387,19 +1426,15 @@ describe('Combo', () => {
       combo.deselect(selection);
       await elementUpdated(combo);
 
-      // The value should be updated
       expect(combo.value).to.be.empty;
 
-      // Verify the list of items has been updated
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: '' }));
 
       await elementUpdated(combo);
       await layoutComplete(combo);
 
-      // Get a list of all selected items again
       selected = items(combo).filter((item) => item.selected);
 
-      // No items should be selected
       expect(selected).to.be.empty;
     });
 
@@ -1469,6 +1504,96 @@ describe('Combo', () => {
       expect(combo.selection[1]).to.equal(cities[4]);
     });
 
+    it('sorts the groups with the collation of the locale', async () => {
+      combo.data = [
+        { id: 'ZM01', name: 'Lusaka', country: 'Zambia', zip: '10101' },
+        { id: 'AT01', name: 'Vienna', country: 'Österreich', zip: '1010' },
+        { id: 'BE01', name: 'Brussels', country: 'Belgium', zip: '1000' },
+      ];
+      combo.groupSorting = 'asc';
+      await openComboPopover(combo);
+
+      const headers = () =>
+        headerItems(combo).map((header) => header.innerText);
+
+      expect(headers()).to.eql(['Belgium', 'Österreich', 'Zambia']);
+
+      // Swedish sorts Ö after Z
+      combo.locale = 'sv';
+      await elementUpdated(combo);
+      await layoutComplete(combo);
+
+      expect(headers()).to.eql(['Belgium', 'Zambia', 'Österreich']);
+    });
+
+    it('filters primitive data by its value', async () => {
+      const combo = await fixture<IgcComboComponent>(
+        html`<igc-combo .data=${['Sofia', 'Varna', 'Plovdiv']}></igc-combo>`
+      );
+      await openComboPopover(combo);
+
+      combo.renderRoot
+        .querySelector('[part="search-input"]')!
+        .dispatchEvent(new CustomEvent('igcInput', { detail: 'var' }));
+      await elementUpdated(combo);
+      await layoutComplete(combo);
+
+      expect(items(combo).map((item) => item.textContent?.trim())).to.eql([
+        'Varna',
+      ]);
+    });
+
+    it('closes the menu and focuses the combo on Shift + Tab', async () => {
+      await openComboPopover(combo);
+
+      simulateKeyboard(options, [shiftKey, tabKey]);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+      expect(isFocused(combo)).to.be.true;
+    });
+
+    it('ignores Space on a stale active option after the data changes', async () => {
+      const eventSpy = spy(combo, 'emitEvent');
+      await openComboPopover(combo);
+
+      simulateKeyboard(options, arrowDown);
+      await comboStable(combo);
+      expect(items(combo).some((item) => item.active)).to.be.true;
+
+      combo.data = [];
+      await comboStable(combo);
+
+      simulateKeyboard(options, spaceBar);
+      await elementUpdated(combo);
+
+      expect(combo.value).to.be.empty;
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    it('does not change the selection when a group header is clicked', async () => {
+      const eventSpy = spy(combo, 'emitEvent');
+      await openComboPopover(combo);
+
+      simulateClick(firstOf(headerItems(combo)));
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.true;
+      expect(combo.value).to.be.empty;
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    it('keeps the selection when the clear icon is clicked and igcChange is canceled', async () => {
+      combo.select(['BG01', 'BG02']);
+      await elementUpdated(combo);
+
+      combo.addEventListener('igcChange', (event) => event.preventDefault());
+      simulateClick(combo.renderRoot.querySelector('[part="clear-icon"]')!);
+      await elementUpdated(combo);
+
+      expect(combo.value).to.eql(['BG01', 'BG02']);
+    });
+
     it('should sort groups with diacritics and none as groupSorting direction', async () => {
       combo.data = citiesWithDiacritics;
       combo.groupSorting = 'asc';
@@ -1524,15 +1649,13 @@ describe('Combo', () => {
     it('issue 1987 - do not close the dropdown on user pointer selection', async () => {
       await openComboPopover(combo);
 
-      // Trigger a pointerdown event inside the list element
       simulatePointerDown(list);
       await elementUpdated(combo);
 
-      // Then a click outside the list element (for example user selection with a pointer device)
+      // A pointer selection can end with a click outside the list.
       simulateClick(document.body);
       await elementUpdated(combo);
 
-      // The dropdown should remain open
       expect(combo.open).to.be.true;
     });
 
@@ -1588,7 +1711,7 @@ describe('Combo', () => {
       await filterCombo('sof');
       expect(items(combo)).lengthOf(1);
 
-      // Simulate click outside by dispatching blur without confirming a selection
+      // A blur without a selection simulates a click outside.
       simulateBlur(combo);
       await elementUpdated(combo);
 
@@ -1616,6 +1739,75 @@ describe('Combo', () => {
     });
   });
 
+  describe('Scroll strategy', () => {
+    let container: HTMLDivElement;
+
+    beforeEach(async () => {
+      container = await fixture(html`
+        <div style="height: 1200px">
+          <igc-combo
+            .data=${cities}
+            value-key="id"
+            display-key="name"
+          ></igc-combo>
+        </div>
+      `);
+      combo = container.querySelector<IgcComboComponent<City>>(
+        IgcComboComponent.tagName
+      )!;
+    });
+
+    it('`scroll` behavior', async () => {
+      combo.scrollStrategy = 'scroll';
+      await openComboPopover(combo);
+      await simulateScroll(container, { top: 200 });
+
+      expect(combo.open).to.be.true;
+    });
+
+    it('`close` behavior', async () => {
+      const eventSpy = spy(combo, 'emitEvent');
+
+      combo.scrollStrategy = 'close';
+      await openComboPopover(combo);
+      await simulateScroll(container, { top: 200 });
+
+      expect(combo.open).to.be.false;
+      expect(eventSpy.firstCall).calledWith('igcClosing');
+      expect(eventSpy.lastCall).calledWith('igcClosed');
+    });
+  });
+
+  describe('Theming', () => {
+    function hasListStyleSheet(): boolean {
+      return Array.from(combo.shadowRoot!.adoptedStyleSheets).some((sheet) =>
+        Array.from(sheet.cssRules).some((rule) =>
+          rule.cssText.startsWith(':where(igc-virtual-scroll)')
+        )
+      );
+    }
+
+    it('keeps the style sheet of the list on a theme change', async () => {
+      combo = await fixture<IgcComboComponent<City>>(html`
+        <igc-combo
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>
+      `);
+      expect(hasListStyleSheet()).to.be.true;
+
+      try {
+        configureTheme('material');
+        await elementUpdated(combo);
+
+        expect(hasListStyleSheet()).to.be.true;
+      } finally {
+        configureTheme('bootstrap');
+      }
+    });
+  });
+
   describe('ARIA', () => {
     beforeEach(async () => {
       combo = await fixture<IgcComboComponent<City>>(
@@ -1633,6 +1825,31 @@ describe('Combo', () => {
       input = combo.renderRoot.querySelector(
         'igc-input#target'
       ) as IgcInputComponent;
+    });
+
+    it('names the input with the selection status only while no label names it', async () => {
+      const native = input.renderRoot.querySelector('input')!;
+
+      expect(native.getAttribute('aria-label')).to.equal(
+        combo.resourceStrings.combo_aria_label_no_options
+      );
+
+      combo.label = 'Cities';
+      await elementUpdated(combo);
+      await elementUpdated(input);
+
+      expect(native.hasAttribute('aria-label')).to.be.false;
+    });
+
+    it('leaves the disabled state to the native input', async () => {
+      const native = input.renderRoot.querySelector('input')!;
+
+      combo.disabled = true;
+      await elementUpdated(combo);
+      await elementUpdated(input);
+
+      expect(native.disabled).to.be.true;
+      expect(native.hasAttribute('aria-disabled')).to.be.false;
     });
 
     it('should report posinset/setsize excluding group headers', async () => {
@@ -1660,6 +1877,19 @@ describe('Combo', () => {
         expect(item.getAttribute('aria-setsize')).to.equal(
           `${rendered.length}`
         );
+      }
+    });
+
+    it('prefixes the option ids with the id of the combo', async () => {
+      combo.id = 'cities';
+      await openComboPopover(combo);
+
+      const ids = items(combo).map((item) => item.id);
+
+      expect(ids).to.not.be.empty;
+      expect(new Set(ids).size).to.equal(ids.length);
+      for (const id of ids) {
+        expect(id).to.match(/^cities-item-\d+$/);
       }
     });
 
@@ -1823,6 +2053,39 @@ describe('Combo', () => {
       spec.element.setCustomValidity('');
       spec.assertSubmitPasses();
     });
+
+    it('clears the invalid styles of the single-select input on form reset', async () => {
+      spec.setAttributes({ value: '[]' });
+      spec.setProperties({ singleSelect: true, required: true });
+      await elementUpdated(spec.element);
+
+      const target =
+        spec.element.renderRoot.querySelector<IgcInputComponent>('#target')!;
+
+      simulateBlur(target.renderRoot.querySelector('input')!);
+      await elementUpdated(spec.element);
+      ValidityHelpers.hasInvalidStyles(target).to.be.true;
+
+      spec.reset();
+      await elementUpdated(spec.element);
+
+      ValidityHelpers.hasInvalidStyles(spec.element).to.be.false;
+      ValidityHelpers.hasInvalidStyles(target).to.be.false;
+    });
+
+    it('keeps the text of the single-select input on form reset', async () => {
+      spec.setProperties({ singleSelect: true });
+      await elementUpdated(spec.element);
+
+      const target =
+        spec.element.renderRoot.querySelector<IgcInputComponent>('#target')!;
+      expect(target.value).to.equal('Sofia');
+
+      spec.reset();
+      await elementUpdated(spec.element);
+
+      expect(target.value).to.equal('Sofia');
+    });
   });
 
   describe('defaultValue', () => {
@@ -1963,15 +2226,15 @@ describe('Combo', () => {
   });
 
   describe('Validation message slots', () => {
-    it('', () => {
+    it('', async () => {
       const testParameters: ValidationContainerTestsParams<IgcComboComponent>[] =
         [
-          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
-          { slots: ['customError'] }, // custom-error slot
-          { slots: ['invalid'], props: { required: true } }, // invalid slot
+          { slots: ['valueMissing'], props: { required: true } },
+          { slots: ['customError'] },
+          { slots: ['invalid'], props: { required: true } },
         ];
 
-      runValidationContainerTests(IgcComboComponent, testParameters);
+      await runValidationContainerTests(IgcComboComponent, testParameters);
     });
   });
 

@@ -4,7 +4,11 @@ import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { blazorInclude } from '#internals/decorators/blazorInclude.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
+import { HydrationMixin } from '#internals/mixins/hydration.js';
+import { all } from '#themes/icon/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import {
   getIconRegistry,
   registerIcon as registerIcon_impl,
@@ -14,7 +18,6 @@ import {
 import type { IconMeta } from './registry/types.js';
 import { styles } from './themes/icon.base.css.js';
 import { styles as shared } from './themes/shared/icon.common.css.js';
-import { all } from './themes/themes.js';
 
 /**
  * The icon component allows visualizing collections of pre-registered SVG icons.
@@ -52,9 +55,11 @@ import { all } from './themes/themes.js';
  * registerIconFromText('custom-icon', customIconSvg, 'my-collection');
  * ```
  */
-export default class IgcIconComponent extends LitElement {
+export default class IgcIconComponent extends HydrationMixin(
+  HostAriaMixin(LitElement)
+) {
   public static readonly tagName = 'igc-icon';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -68,12 +73,6 @@ export default class IgcIconComponent extends LitElement {
   });
 
   private readonly _onRegistryChange = (): void => this._getIcon();
-
-  /**
-   * Set while a server-rendered host is hydrating, during which `render()`
-   * withholds the SVG so both renders match.
-   */
-  private _hydrating = false;
 
   @state()
   private _svg = '';
@@ -129,34 +128,34 @@ export default class IgcIconComponent extends LitElement {
     getIconRegistry().subscribe(this._onRegistryChange);
   }
 
+  /** An author label applies at once, without a render. @internal */
+  protected override _handleHostAriaChange(): void {
+    this._getIcon();
+  }
+
   /** @internal */
   public override disconnectedCallback(): void {
     getIconRegistry().unsubscribe(this._onRegistryChange);
     super.disconnectedCallback();
   }
 
-  /** @internal */
-  protected override createRenderRoot(): HTMLElement | DocumentFragment {
-    this._hydrating = this.shadowRoot !== null;
-    return super.createRenderRoot();
-  }
-
-  protected override update(props: PropertyValues<this>): void {
+  protected override update(props: PropertyValues): void {
     if (props.has('name') || props.has('collection')) {
       this._getIcon();
     }
 
     super.update(props);
+
+    if (props.has('_svg')) {
+      // The host carries any name, so the SVG is decorative.
+      this.renderRoot.querySelector('svg')?.setAttribute('aria-hidden', 'true');
+    }
   }
 
-  protected override firstUpdated(): void {
-    if (this._hydrating) {
-      this._hydrating = false;
-
-      // Off the current update cycle - avoids Lit's change-in-update warning.
-      if (this._svg) {
-        queueMicrotask(() => this.requestUpdate());
-      }
+  protected override _onHydrated(): void {
+    // Named, so the update treats the withheld SVG as a change.
+    if (this._svg) {
+      this.requestUpdate('_svg');
     }
   }
 

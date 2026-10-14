@@ -1,11 +1,5 @@
 import type { LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import {
-  createMaskHistory,
-  type MaskEditKind,
-  type MaskHistory,
-  type MaskHistoryState,
-} from '../../components/mask-input/mask-history.js';
 import type { MaskParser } from '../../components/mask-input/mask-parser.js';
 import type {
   RangeTextSelectMode,
@@ -17,18 +11,38 @@ import {
   metaKey,
   shiftKey,
 } from '../controllers/key-bindings.js';
+import {
+  createMaskHistory,
+  type MaskEditKind,
+  type MaskHistory,
+  type MaskHistoryState,
+} from '../mask-history.js';
+import type { MaskedInputOptions } from '../templates/masked-input.js';
 import type { AbstractConstructor } from './constructor.js';
+import type { BaseFormAssociatedElement } from './forms/types.js';
 
 export type MaskSelection = {
   start: number;
   end: number;
 };
 
+/** The `renderMaskedNativeInput` handlers that {@link MaskBehaviorMixin} owns. */
+type MaskInputBindings = Pick<
+  MaskedInputOptions,
+  | 'onInput'
+  | 'onBeforeInput'
+  | 'onFocus'
+  | 'onBlur'
+  | 'onClick'
+  | 'onSetMaskSelection'
+  | 'onCompositionStart'
+  | 'onCompositionEnd'
+  | 'onDragLeave'
+>;
+
 /**
- * The `inputType` values the mask editor models, mapped to their undo granularity.
- *
- * Anything absent is a native mutation we do not model - auto-fill is the empty-string
- * entry, `deleteWordBackward` and friends are simply not handled.
+ * Maps an `inputType` to its undo granularity. An absent value is a native
+ * mutation that the editor does not model; the empty string is auto-fill.
  */
 const MaskEditKinds = new Map<string, MaskEditKind>([
   ['insertText', 'insert'],
@@ -41,9 +55,8 @@ const MaskEditKinds = new Map<string, MaskEditKind>([
 ]);
 
 /**
- * Public + protected interface contributed by {@link MaskBehaviorMixin}.
- * Declared as a `declare class` so consumers can see protected members through
- * the cast return type (mirrors the pattern used by the form-associated mixins).
+ * The interface that {@link MaskBehaviorMixin} adds. A `declare class`, so the
+ * cast return type still exposes the protected members.
  */
 export declare class MaskBehaviorElementInterface {
   //#region Required from host
@@ -51,11 +64,17 @@ export declare class MaskBehaviorElementInterface {
   protected readonly _input?: HTMLInputElement;
   protected readonly _parser: MaskParser;
 
-  /** Reflects the current parser state into the host's public value. */
-  protected _syncValueFromMask(): void;
+  /**
+   * Writes a complete masked text into the value pipeline: `igc-mask-input`
+   * commits to its form value, the date editors keep a draft until blur.
+   */
+  protected _commitMaskedValue(value: string): void;
 
-  /** Delegates Enter-key handling to the form-associated base. */
-  protected _handleEnterKeydown(event: KeyboardEvent): void;
+  /** Whether the committed value is empty. Focus then starts from the empty mask. */
+  protected _isValueEmpty(): boolean;
+
+  /** Shows the mask that fits the focus state, such as a display format while unfocused. */
+  protected _updateMaskDisplay(): void;
 
   //#endregion
 
@@ -90,12 +109,21 @@ export declare class MaskBehaviorElementInterface {
   public set mask(value: string);
 
   /**
-   * The prompt symbol to use for unfilled parts of the mask pattern.
+   * The prompt symbol for the unfilled parts of the mask pattern.
    * @attr
    * @default '_'
    */
   public get prompt(): string;
   public set prompt(value: string);
+
+  /**
+   * The offset of the start of the text selection, in UTF-16 code units.
+   * Equals `selectionEnd` when no text is selected.
+   */
+  public get selectionStart(): number;
+
+  /** The offset of the end of the text selection, in UTF-16 code units. */
+  public get selectionEnd(): number;
 
   //#endregion
 
@@ -104,12 +132,15 @@ export declare class MaskBehaviorElementInterface {
   protected _handleInput(event: InputEvent): Promise<void>;
   protected _handleBeforeInput(event: InputEvent): void;
   protected _updateInput(text: string, range: MaskSelection): Promise<void>;
-  protected _commitMaskedValue(value: string): void;
   protected _emitInputEvent(): void;
   protected _setMaskSelection(event: Event): void;
   protected _handleCompositionStart(): void;
   protected _handleCompositionEnd(event: CompositionEvent): void;
   protected _handleClick(): void;
+  protected _handleFocus(): Promise<void>;
+  protected _handleDragLeave(): void;
+  protected _showEditMask(): void;
+  protected get _maskInputBindings(): MaskInputBindings;
 
   //#endregion
 
@@ -148,39 +179,21 @@ export declare class MaskBehaviorElementInterface {
 }
 
 /**
- * Adds masked-input behavior (parser-driven editing, selection tracking,
- * composition handling, range text replacement) to a LitElement-derived class.
- *
- * The host class is expected to provide:
- * - `_input`            - the native `<input>` element (typically via `@query('input')`).
- * - `_parser`           - a {@link MaskParser} (or subclass) instance.
- * - `_setTouchedState`  - from `FormAssociatedMixin`.
- * - `_emitTouchedEvent` - from `FormAssociatedMixin`.
- * - `emitEvent`         - from `EventEmitterMixin`.
- * - `select`            - from the host base.
- *
- * The host class must implement `_syncValueFromMask` to bridge the masked
- * text back into its public `value`. It is called by the default
- * `_commitMaskedValue` implementation.
+ * Adds parser-driven editing, selection tracking, composition handling and
+ * text-range replacement to a form-associated element.
  */
-export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
-  superClass: T
-): AbstractConstructor<MaskBehaviorElementInterface> & T {
+export function MaskBehaviorMixin<
+  T extends AbstractConstructor<LitElement & BaseFormAssociatedElement>,
+>(superClass: T): AbstractConstructor<MaskBehaviorElementInterface> & T {
   abstract class MaskBehaviorElement extends superClass {
     //#region Required from host
 
     protected abstract readonly _input?: HTMLInputElement;
     protected abstract readonly _parser: MaskParser;
-    protected abstract _setTouchedState(): void;
-    protected abstract _emitTouchedEvent(
-      eventName: string,
-      init?: CustomEventInit
-    ): boolean;
     public abstract select(): void;
-    public abstract emitEvent(name: string, init?: CustomEventInit): boolean;
-
-    protected abstract _syncValueFromMask(): void;
-    protected abstract _handleEnterKeydown(event: KeyboardEvent): void;
+    protected abstract _commitMaskedValue(value: string): void;
+    protected abstract _isValueEmpty(): boolean;
+    protected abstract _updateMaskDisplay(): void;
 
     //#endregion
 
@@ -190,9 +203,8 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
     protected _compositionStart = 0;
 
     /**
-     * The signature is the source pattern rather than the escaped one: the date parsers
-     * convert a date format into mask flags, so `MM/dd/yyyy` and `dd/MM/yyyy` share an
-     * escaped mask of `00/00/0000` while meaning entirely different things.
+     * The signature uses the source pattern, not the escaped one:
+     * `MM/dd/yyyy` and `dd/MM/yyyy` both escape to `00/00/0000`.
      */
     protected readonly _history = createMaskHistory(
       () => `${this._parser.mask} ${this._parser.prompt}`
@@ -211,15 +223,13 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
       };
     }
 
-    /** Indicates whether the current mask value is empty. */
     protected get _isEmptyMask(): boolean {
       return this._maskedValue === this._parser.emptyMask;
     }
 
     /**
-     * The masked text as the undo history sees it. `igc-mask-input` blanks it on blur and
-     * restores the empty mask on focus; both spell the same empty document, so without
-     * this normalization every focus of an empty editor would look like a foreign change.
+     * The masked text as the undo history sees it. `igc-mask-input` blanks
+     * it on blur, so without this each focus looks like a foreign change.
      */
     protected get _historyText(): string {
       return this._maskedValue || this._parser.emptyMask;
@@ -232,9 +242,8 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
     constructor(...args: any[]) {
       super(...args);
 
-      // Assigning `input.value` - which every masked edit does - clears the browser's
-      // own undo stack, so the standard shortcuts have to be served from `_history`.
-      // The IME owns the text until `compositionend`, hence the `isComposing` guard.
+      // Assigning `input.value` clears the native undo stack, so the
+      // shortcuts read `_history`. Skip while an IME composition owns it.
       const step =
         (direction: 'undo' | 'redo') =>
         (event: KeyboardEvent): void => {
@@ -282,7 +291,7 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
     }
 
     /**
-     * The prompt symbol to use for unfilled parts of the mask pattern.
+     * The prompt symbol for the unfilled parts of the mask pattern.
      *
      * @attr
      * @default '_'
@@ -296,6 +305,19 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
       return this._parser.prompt;
     }
 
+    /**
+     * The offset of the start of the text selection, in UTF-16 code units.
+     * Equals `selectionEnd` when no text is selected.
+     */
+    public get selectionStart(): number {
+      return this._input?.selectionStart ?? 0;
+    }
+
+    /** The offset of the end of the text selection, in UTF-16 code units. */
+    public get selectionEnd(): number {
+      return this._input?.selectionEnd ?? 0;
+    }
+
     //#endregion
 
     //#region Event handlers
@@ -306,26 +328,24 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
     }: InputEvent): Promise<void> {
       const value = this._input?.value ?? '';
       const { start, end } = this._maskSelection;
-      const deletePosition = this._parser.getNextNonLiteralPosition(end) + 1;
 
-      // Reachable only where `beforeinput` is not cancelable - normally the browser's
-      // history commands are intercepted before they ever mutate the input.
+      // Reachable only where `beforeinput` is not cancelable; otherwise
+      // `_handleBeforeInput` intercepts these first.
       if (inputType === 'historyUndo' || inputType === 'historyRedo') {
         return this._historyStep(inputType === 'historyUndo' ? 'undo' : 'redo');
       }
 
-      // A composing backspace is handled by the composition events instead.
+      // The composition events handle a composing backspace instead.
       if (inputType === 'deleteContentBackward' && isComposing) {
         return;
       }
 
-      const kind = MaskEditKinds.get(inputType ?? '');
+      const kind = MaskEditKinds.get(inputType);
 
       if (kind === undefined) {
-        // A non-modeled mutation has already changed the input's DOM value, so re-render
-        // to let the `live()` binding roll it back to the masked text. Never mid-IME
-        // though - `insertCompositionText` fires repeatedly there and resetting the value
-        // underneath the browser breaks composition outright.
+        // An unmodeled mutation already changed the DOM value; a re-render
+        // lets `live()` restore it. Skip during a composition, which it
+        // would abort.
         if (!isComposing) {
           this.requestUpdate();
         }
@@ -336,10 +356,12 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
 
       switch (inputType) {
         case 'deleteContentForward': {
+          const deletePosition =
+            this._parser.getNextNonLiteralPosition(end) + 1;
+
           await this._updateInput('', { start, end: deletePosition }, kind);
           this._input?.setSelectionRange(deletePosition, deletePosition);
-          // `_updateInput` settled on the parser's cursor, but the caret actually ends up
-          // past the deleted character - record that so a run of deletes coalesces.
+          // Record the caret past the deleted character so deletes coalesce.
           this._history.settle(this._historyText, deletePosition);
           return;
         }
@@ -377,7 +399,7 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
           );
 
         case 'insertFromDrop':
-          // An external drop is preceded by no `dragstart`, so `_maskSelection` is stale.
+          // An external drop sends no `dragstart`; `_maskSelection` is stale.
           return this._updateInput(
             value.substring(
               this._inputSelection.start,
@@ -391,8 +413,7 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
             }
           );
 
-        // Potential browser auto-fill behavior
-        case undefined:
+        // Browser auto-fill sends an empty `inputType`.
         case '':
           return this._updateInput(
             this._parser.parse(
@@ -409,9 +430,8 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
     }
 
     /**
-     * Default mask-update routine. Re-applies the parser, commits the result through
-     * {@link MaskBehaviorElementInterface._commitMaskedValue} and emits an input event
-     * when the edit is not at the trailing mask boundary.
+     * Applies the parser to the text, commits the result, and emits an input
+     * event unless the edit is at the trailing mask boundary.
      */
     protected async _updateInput(
       text: string,
@@ -438,22 +458,7 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
       this._input?.setSelectionRange(end, end);
     }
 
-    /**
-     * Writes a fully-formed masked text into the component's value pipeline.
-     *
-     * This is the one step where the leaves genuinely differ - `igc-mask-input` commits
-     * straight to its form value, while the date editors keep the text as a draft until
-     * blur - so it is also the only thing undo/redo has to delegate.
-     */
-    protected _commitMaskedValue(value: string): void {
-      this._maskedValue = value;
-      this._syncValueFromMask();
-    }
-
-    /**
-     * Emits an `igcInput` event with the current masked value as detail.
-     * Override to emit a different payload (e.g. the parsed value).
-     */
+    /** Emits `igcInput` with the masked value. Override for another payload. */
     protected _emitInputEvent(): void {
       this._emitTouchedEvent('igcInput', { detail: this._maskedValue });
     }
@@ -470,7 +475,7 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
     }
 
     protected _handleCompositionEnd({ data }: CompositionEvent): void {
-      // The whole composed sequence is one undo step, anchored where it began.
+      // One undo step for the whole sequence, anchored where it began.
       this._updateInput(
         data,
         { start: this._compositionStart, end: this._inputSelection.end },
@@ -485,17 +490,60 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
         selectionEnd: 0,
       };
 
-      // Clicking at the end of the input field will select the entire mask
+      // A click at the end of the input field selects the whole mask.
       if (start === end && start === this._maskedValue.length) {
         this.select();
       }
     }
 
+    /** Starts an edit. An empty value starts from the empty mask, all selected. */
+    protected async _handleFocus(): Promise<void> {
+      this._focused = true;
+
+      if (this.readOnly) {
+        return;
+      }
+
+      if (this._isValueEmpty()) {
+        this._maskedValue = this._parser.emptyMask;
+        this._historyResync();
+        await this.updateComplete;
+        this.select();
+        return;
+      }
+
+      this._showEditMask();
+      this._historyResync();
+    }
+
+    /** Replaces the display text with the editable mask on a focus with a value. */
+    protected _showEditMask(): void {}
+
+    protected _handleDragLeave(): void {
+      if (!this._focused) {
+        this._updateMaskDisplay();
+      }
+    }
+
+    /** The bindings of the mask editing, for `renderMaskedNativeInput`. */
+    protected get _maskInputBindings(): MaskInputBindings {
+      return {
+        onInput: this._handleInput,
+        onBeforeInput: this._handleBeforeInput,
+        onFocus: this._handleFocus,
+        onBlur: this._handleBlur,
+        onClick: this._handleClick,
+        onSetMaskSelection: this._setMaskSelection,
+        onCompositionStart: this._handleCompositionStart,
+        onCompositionEnd: this._handleCompositionEnd,
+        onDragLeave: this._handleDragLeave,
+      };
+    }
+
     /**
-     * Intercepts the browser's own history commands - the Edit and context menus, and
-     * the software keyboard on mobile - which never reach the key bindings. The native
-     * stack is empty anyway, so letting one through would only de-sync the input's DOM
-     * value from the masked text.
+     * Intercepts the browser history commands from the Edit menu, the context
+     * menu and the software keyboard, which never reach the key bindings. The
+     * native undo stack is empty, so letting one pass desyncs the input.
      */
     protected _handleBeforeInput(event: InputEvent): void {
       const { inputType } = event;
@@ -516,12 +564,8 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
     //#region Undo/redo
 
     /**
-     * Snapshots the current masked text before `next` replaces it, then reports where the
-     * caret ends up. Must be called *before* the text is committed.
-     *
-     * Only a real change earns an undo step: a character the mask rejects, a backspace at
-     * position zero or a spin that hit a boundary would otherwise leave behind a step
-     * that appears to do nothing when undone.
+     * Records the current masked text before `next` replaces it. Call this
+     * *before* you commit; only a real change adds a step.
      */
     protected _recordHistory(
       kind: MaskEditKind,
@@ -567,14 +611,14 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
       this._commitMaskedValue(state.value);
       this.requestUpdate();
 
-      // Native inputs announce an undo as an `input` event, and the composite hosts
-      // (`igc-date-picker`, `igc-date-range-picker`) read the draft value from ours.
+      // Native inputs announce an undo as an `input` event; the date picker
+      // hosts read their draft value from it.
       this._emitInputEvent();
 
       await this.updateComplete;
 
-      // Through the mixin method, since the input's own keydown handler has already
-      // overwritten `_maskSelection` with the caret as it was before the restore.
+      // Use the mixin method: the keydown handler already overwrote
+      // `_maskSelection` with the pre-restore caret.
       this.setSelectionRange(state.start, state.end);
     }
 
@@ -583,7 +627,7 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
     //#region Public methods
 
     /* blazorSuppress */
-    /** Sets the text selection range of the control */
+    /** Sets the text selection range of the control. */
     public setSelectionRange(
       start?: number,
       end?: number,
@@ -594,7 +638,7 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
     }
 
     /* blazorSuppress */
-    /** Replaces the selected text in the control and re-applies the mask */
+    /** Replaces the selected text in the control and re-applies the mask. */
     public setRangeText(
       replacement: string,
       start?: number,

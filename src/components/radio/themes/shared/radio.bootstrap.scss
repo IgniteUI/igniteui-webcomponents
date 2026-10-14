@@ -137,3 +137,11 @@ $theme: $bootstrap;
         }
     }
 }
+
+@media (forced-colors: active) {
+    [part='control checked'] {
+        &::before {
+            border-width: rem(8px);
+        }
+    }
+}

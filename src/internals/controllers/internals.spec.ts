@@ -181,4 +181,67 @@ describe('ElementInternals controller', () => {
       expect(instance.getAttribute('role')).to.equal('option');
     });
   });
+
+  describe('reflectLabel', () => {
+    let tagName: ReturnType<typeof unsafeStatic>;
+
+    type Fixture = LitElement & { internals: ElementInternalsController };
+
+    before(() => {
+      tagName = unsafeStatic(
+        defineCE(
+          class extends LitElement {
+            public internals = addInternalsController(this, {
+              initialARIA: { ariaLabel: 'Slide 1' },
+              reflectLabel: true,
+            });
+          }
+        )
+      );
+    });
+
+    it('mirrors the internals label as a content attribute on connect', async () => {
+      const instance = await fixture<Fixture>(html`<${tagName}></${tagName}>`);
+
+      expect(instance.getAttribute('aria-label')).to.equal('Slide 1');
+    });
+
+    it('follows the internals label and removes the attribute when cleared', async () => {
+      const instance = await fixture<Fixture>(html`<${tagName}></${tagName}>`);
+
+      instance.internals.setARIA({ ariaLabel: 'Slide 2' });
+
+      expect(instance.getAttribute('aria-label')).to.equal('Slide 2');
+
+      instance.internals.setARIA({ ariaLabel: null });
+
+      expect(instance).to.not.have.attribute('aria-label');
+    });
+
+    it('mirrors an empty label as an empty attribute', async () => {
+      const instance = await fixture<Fixture>(html`<${tagName}></${tagName}>`);
+
+      instance.internals.setARIA({ ariaLabel: '' });
+
+      expect(instance.getAttribute('aria-label')).to.equal('');
+    });
+  });
+
+  describe('labels', () => {
+    it('returns null for an element that is not form associated', async () => {
+      const tag = defineCE(
+        class extends LitElement {
+          public internals = addInternalsController(this);
+        }
+      );
+      const label = await fixture<HTMLLabelElement>(
+        html`<label>Name <${unsafeStatic(tag)}></${unsafeStatic(tag)}></label>`
+      );
+      const host = label.querySelector(tag) as LitElement & {
+        internals: ElementInternalsController;
+      };
+
+      expect(host.internals.labels).to.be.null;
+    });
+  });
 });

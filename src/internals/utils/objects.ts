@@ -1,172 +1,138 @@
-import { isObject, isPlainObject, isRegExp } from './types.js';
+import { isFunction, isObject, isRegExp } from './types.js';
 
-function isUnsafeProperty(key: PropertyKey) {
-  return key === '__proto__' || key === 'constructor' || key === 'prototype';
-}
-
-/** Pairs currently being compared, so a cycle terminates without swallowing real differences. */
+/** The object pairs under comparison at this moment. */
 type Visited = WeakMap<object, WeakSet<object>>;
 
 /**
- * Performs a deep structural equality check between two values, handling
- * arrays, Maps, Sets, RegExps, POJOs and circular references.
+ * Returns whether two values are deeply equal. Handles arrays, Maps, Sets,
+ * RegExps, plain objects and circular references.
  */
-export function equal<T>(
+export function equal(
   a: unknown,
-  b: T,
+  b: unknown,
   visited: Visited = new WeakMap()
 ): boolean {
-  // Early return
   if (Object.is(a, b)) return true;
 
   if (!isObject(a) || !isObject(b)) return false;
   if (a.constructor !== b.constructor) return false;
 
-  // Circular references. This tracks the *pair*, not the two objects separately: the Map and Set
-  // comparisons below probe candidates they expect to fail, and marking those objects on their own
-  // would make a later comparison of the same pair short circuit to `true`.
-  let pending = visited.get(a);
-  if (pending?.has(b)) return true;
-
-  if (!pending) {
-    pending = new WeakSet();
-    visited.set(a, pending);
-  }
-  pending.add(b);
+  // A pending pair counts as equal, which stops cycles. Track pairs, not
+  // objects: `a` can meet another partner while it is still pending.
+  const pending = visited.get(a) ?? new WeakSet();
+  if (pending.has(b)) return true;
+  visited.set(a, pending.add(b));
 
   try {
     return compare(a, b, visited);
   } finally {
-    // Always release the pair, including on the early returns in `compare`.
     pending.delete(b);
   }
 }
 
 function compare(a: object, b: object, visited: Visited): boolean {
-  // RegExp
   if (isRegExp(a) && isRegExp(b))
     return a.source === b.source && a.flags === b.flags;
 
-  // Maps
-  if (a instanceof Map && b instanceof Map) {
-    if (a.size !== b.size) return false;
-    for (const [keyA, valueA] of a.entries()) {
-      let found = false;
-      for (const [keyB, valueB] of b.entries()) {
-        if (equal(keyA, keyB, visited) && equal(valueA, valueB, visited)) {
-          found = true;
-          break;
-        }
-      }
-      if (!found) return false;
-    }
-    return true;
-  }
+  // Map entries iterate as [key, value] arrays.
+  if (
+    (a instanceof Map && b instanceof Map) ||
+    (a instanceof Set && b instanceof Set)
+  )
+    return a.size === b.size && matchOneToOne(a, b, visited);
 
-  // Sets
-  if (a instanceof Set && b instanceof Set) {
-    if (a.size !== b.size) return false;
-    for (const valueA of a) {
-      let found = false;
-      for (const valueB of b) {
-        if (equal(valueA, valueB, visited)) {
-          found = true;
-          break;
-        }
-      }
-      if (!found) return false;
-    }
-    return true;
-  }
-
-  // Arrays
   if (Array.isArray(a) && Array.isArray(b)) {
-    const length = a.length;
-    if (length !== b.length) return false;
-    for (let i = 0; i < length; i++) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
       if (!equal(a[i], b[i], visited)) return false;
     }
     return true;
   }
 
-  // toPrimitive
-  if (a.valueOf !== Object.prototype.valueOf)
-    return a.valueOf() === b.valueOf();
-  // Strings based
-  if (a.toString !== Object.prototype.toString)
-    return a.toString() === b.toString();
+  // A custom conversion on one side only makes the objects unequal, which
+  // keeps `equal` an equivalence relation.
+  for (const method of ['valueOf', 'toString'] as const) {
+    const left = customConversion(a, method);
+    const right = customConversion(b, method);
 
-  const aKeys = Object.keys(a);
-  const bKeys = Object.keys(b);
-  if (aKeys.length !== bKeys.length) return false;
-
-  for (const key of aKeys) {
-    if (!Object.hasOwn(b, key)) return false;
+    // `Object.is`, so that an invalid Date (`NaN`) equals its copy.
+    if (left || right)
+      return (
+        !!left &&
+        !!right &&
+        Object.is(Reflect.apply(left, a, []), Reflect.apply(right, b, []))
+      );
   }
 
-  for (const key of aKeys) {
-    if (!equal(a[key as keyof typeof a], b[key as keyof typeof b], visited))
-      return false;
+  const x = a as Record<string, unknown>;
+  const y = b as Record<string, unknown>;
+  const keys = Object.keys(x);
+
+  return (
+    keys.length === Object.keys(y).length &&
+    keys.every((key) => Object.hasOwn(y, key) && equal(x[key], y[key], visited))
+  );
+}
+
+/** Returns `value[method]` unless it is missing or the default. */
+function customConversion(
+  value: object,
+  method: 'valueOf' | 'toString'
+): CallableFunction | undefined {
+  const fn = (value as Record<string, unknown>)[method];
+  return isFunction(fn) && fn !== Object.prototype[method] ? fn : undefined;
+}
+
+/**
+ * Pairs each item of `left` with a distinct equal item of `right`. Greedy
+ * suffices, since `equal` is an equivalence relation.
+ */
+function matchOneToOne(
+  left: Iterable<unknown>,
+  right: Iterable<unknown>,
+  visited: Visited
+): boolean {
+  const pool = [...right];
+
+  for (const a of left) {
+    const index = pool.findIndex((b) => equal(a, b, visited));
+    if (index < 0) return false;
+    pool.splice(index, 1);
   }
 
   return true;
 }
 
-/**
- * Merges the properties of `source` into `target` performing a recursive deep merge over POJOs and arrays.
- *
- * @remarks
- * This function mutates the `target` object.
- * If that is not the desired outcome, see {@link toMerged} for another approach.
- */
-export function merge<
-  T extends Record<PropertyKey, any>,
-  S extends Record<PropertyKey, any>,
->(target: T, source: S): T & S {
-  const sourceKeys = Object.keys(source) as Array<keyof S>;
-  const length = sourceKeys.length;
-
-  for (let i = 0; i < length; i++) {
-    const key = sourceKeys[i];
-
-    if (isUnsafeProperty(key)) {
-      continue;
-    }
-
-    const sourceValue = source[key];
-    const targetValue = target[key];
-
-    if (Array.isArray(sourceValue)) {
-      if (Array.isArray(targetValue)) {
-        target[key] = merge(targetValue, sourceValue);
-      } else {
-        target[key] = merge([], sourceValue);
-      }
-    } else if (isPlainObject(sourceValue)) {
-      if (isPlainObject(targetValue)) {
-        target[key] = merge(targetValue, sourceValue);
-      } else {
-        target[key] = merge({}, sourceValue);
-      }
-    } else if (targetValue === undefined || sourceValue !== undefined) {
-      target[key] = sourceValue;
-    }
-  }
-
-  return target;
+/** Clears the boolean `flag` on `from` and sets it on `to`. */
+export function moveFlag<K extends string>(
+  from: { [P in K]: boolean } | null | undefined,
+  to: { [P in K]: boolean } | null | undefined,
+  flag: K
+): void {
+  if (from && from !== to) from[flag] = false;
+  if (to) to[flag] = true;
 }
 
 /**
- * Just like {@link merge} but it does not mutate the `target` object instead
- * mutating a structured clone of it.
- *
- * @remarks
- * Since it relies on `structuredClone`, the `target` must not contain
- * non-cloneable values such as functions, DOM nodes or class instances.
+ * Returns the value of `key` in `map`. For a missing key, stores and returns
+ * the result of `create`. Follows `Map.prototype.getOrInsertComputed`.
  */
-export function toMerged<
-  T extends Record<PropertyKey, any>,
-  S extends Record<PropertyKey, any>,
->(target: T, source: S): T & S {
-  return merge(structuredClone(target), source);
+export function getOrInsertComputed<K, V>(
+  map: {
+    get(key: K): V | undefined;
+    has(key: K): boolean;
+    set(key: K, value: V): unknown;
+  },
+  key: K,
+  create: (key: K) => V
+): V {
+  let value = map.get(key);
+
+  // `has()` only on a miss, so that a stored `undefined` stays.
+  if (value === undefined && !map.has(key)) {
+    value = create(key);
+    map.set(key, value);
+  }
+
+  return value as V;
 }

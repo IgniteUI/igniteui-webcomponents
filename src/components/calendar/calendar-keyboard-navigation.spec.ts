@@ -50,7 +50,6 @@ describe('Calendar keyboard interaction', () => {
       const dom = getCalendarDOM(calendar);
       const button = dom.navigation.months;
 
-      // Simulate focus and activation
       button.focus();
       simulateClick(button);
 
@@ -64,7 +63,6 @@ describe('Calendar keyboard interaction', () => {
       const dom = getCalendarDOM(calendar);
       const button = dom.navigation.years;
 
-      // Simulate focus and activation
       button.focus();
       simulateClick(button);
 
@@ -222,9 +220,8 @@ describe('Calendar keyboard interaction', () => {
       const getActiveDOM = () =>
         getDOMDate(CalendarDay.from(calendar.activeDate), daysView);
 
-      // Start on 1st of March
       calendar.activeDate = firstOfMarch.native;
-      // Disabled the whole month of February
+      // Disable the whole month of February
       calendar.disabledDates = [
         {
           type: DateRangeType.Between,
@@ -595,9 +592,59 @@ describe('Calendar keyboard interaction', () => {
       expect(calendar.activeView).to.equal('months');
     });
   });
-});
 
-/* Helper Functions */
+  describe('Multiple visible months', () => {
+    let views: IgcDaysViewComponent[];
+
+    beforeEach(async () => {
+      calendar = await fixture<IgcCalendarComponent>(html`
+        <igc-calendar
+          visible-months="2"
+          .activeDate=${new Date(2021, 6, 31)}
+        ></igc-calendar>
+      `);
+      views = Array.from(
+        calendar.shadowRoot!.querySelectorAll<IgcDaysViewComponent>(
+          'igc-days-view'
+        )
+      );
+    });
+
+    it('moves the active view along when an arrow key leaves its month', async () => {
+      const [first, second] = views;
+      const next = new CalendarDay({ year: 2021, month: 7, date: 1 });
+
+      simulateKeyboard(getDayViewDOM(first).dates.active, arrowRight);
+      await elementUpdated(calendar);
+      await elementUpdated(second);
+
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
+      expect(first.active).to.be.false;
+      expect(second.active).to.be.true;
+      expect(getDayViewDOM(second).dates.active.dataset.value).to.equal(
+        `${next.timestamp}`
+      );
+
+      simulateKeyboard(getDayViewDOM(second).dates.active, arrowLeft);
+      await elementUpdated(calendar);
+
+      expect(first.active).to.be.true;
+      expect(second.active).to.be.false;
+    });
+
+    it('keeps the active view while an arrow key stays in its month', async () => {
+      const [first, second] = views;
+      const previous = new CalendarDay({ year: 2021, month: 6, date: 30 });
+
+      simulateKeyboard(getDayViewDOM(first).dates.active, arrowLeft);
+      await elementUpdated(calendar);
+
+      expect(previous.equalTo(calendar.activeDate)).to.be.true;
+      expect(first.active).to.be.true;
+      expect(second.active).to.be.false;
+    });
+  });
+});
 
 function getMonthViewDOM(element: IgcMonthsViewComponent) {
   const root = element.shadowRoot!;

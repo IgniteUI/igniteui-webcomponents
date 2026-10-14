@@ -5,24 +5,31 @@ import {
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
+import {
+  ariaBindings,
+  hostAria,
+} from '#internals/controllers/aria-projection.js';
 import { addKeybindings } from '#internals/controllers/key-bindings.js';
 import {
   addSlotController,
   type InferSlotNames,
   setSlots,
 } from '#internals/controllers/slot.js';
+import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
+import { all } from '#themes/chip/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { StyleVariant } from '../types.js';
 import { styles } from './themes/chip.base.css.js';
 import { styles as shared } from './themes/shared/chip.common.css.js';
-import { all } from './themes/themes.js';
 
 export interface IgcChipComponentEventMap {
   igcRemove: CustomEvent<void>;
@@ -49,7 +56,7 @@ const i18n: I18nControllerConfig<IChipResourceStrings> = {
  * @slot remove - Content to override the default remove chip icon.
  *
  * @fires igcRemove - Emits an event when the chip component is removed.
- * @fires igcSelect - Emits event when the chip component is selected/deselected and any related animations and transitions also end.
+ * @fires igcSelect - Emits an event when the chip component is selected or deselected.
  *
  * @csspart base - The base wrapper of the chip.
  * @csspart action - The selection control of the chip, wrapping the chip content.
@@ -58,14 +65,15 @@ const i18n: I18nControllerConfig<IChipResourceStrings> = {
  * @csspart suffix - The suffix container of the chip.
  * @csspart remove - The container of the remove control of the chip.
  */
+@shadowOptions({ delegatesFocus: true })
 export default class IgcChipComponent extends I18nMixin(
   EventEmitterMixin<IgcChipComponentEventMap, Constructor<LitElement>>(
-    LitElement
+    HostAriaMixin(LitElement)
   ),
   i18n
 ) {
   public static readonly tagName = 'igc-chip';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -215,6 +223,7 @@ export default class IgcChipComponent extends I18nMixin(
     return html`
       <div part="base">
         <button
+          ${ariaBindings(hostAria(this))}
           part="action"
           type="button"
           .ariaPressed=${ariaPressed}

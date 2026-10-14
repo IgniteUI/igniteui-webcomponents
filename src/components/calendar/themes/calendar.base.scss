@@ -1,4 +1,3 @@
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
 
 :host(igc-calendar) {
@@ -167,4 +166,10 @@
 
 .aria-off-screen {
     @include hide-default();
+}
+
+@media (forced-colors: active) {
+    [part~='header'] {
+        border: rem(1px) solid CanvasText;
+    }
 }

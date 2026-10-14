@@ -95,13 +95,11 @@ export async function setupMarkdownRenderer(
 ): Promise<MarkdownRenderer> {
   const sanitizer = options?.sanitizer ?? DOMPurify.sanitize;
 
-  // Normalize theme option
   const theme =
     typeof options?.theme === 'string'
       ? { light: options.theme, dark: options.theme }
       : (options?.theme ?? DEFAULT_THEME);
 
-  // Create marked instance with default configuration
   const markdown = new Marked({
     breaks: true,
     gfm: true,
@@ -115,13 +113,12 @@ export async function setupMarkdownRenderer(
     ],
   });
 
-  // Setup syntax highlighting if not disabled
   if (!options?.noHighlighter) {
     const langs = options?.languages ?? DEFAULT_LANGUAGES;
     const colorReplacements = options?.colorReplacements ?? {
       '#6f42c1': 'var(--shiki-purple)',
       '#032f62': 'var(--shiki-dark-blue)',
-      '#24292e': 'var(--shiki-navy)',
+      // Both themes map '#24292e' to their own variable below.
       '#d73a49': 'var(--shiki-red)',
       '#005cc5': 'var(--shiki-blue)',
       '#22863a': 'var(--shiki-green)',

@@ -14,7 +14,8 @@ export function numberOfDecimals(number: number): number {
     return 0;
   }
 
-  // Exponential notation, e.g. `1.5e-7` -> 1 mantissa decimal + 7 exponent places
+  // Exponential notation, for example `1.5e-7`: 1 mantissa decimal plus 7
+  // exponent places.
   const [mantissa, exponent] = number.toString().split('e-');
   const decimals = mantissa.split('.')[1]?.length ?? 0;
 
@@ -24,17 +25,39 @@ export function numberOfDecimals(number: number): number {
 /**
  * Rounds a number to the given order of magnitude (number of decimal places).
  *
+ * @remarks
+ * Shifts the exponent instead of multiplying, so a binary floating-point error
+ * does not round a half down.
+ * Negative magnitudes are treated as a no-op.
+ *
  * @example
  * ```typescript
  * roundPrecise(3.14159, 2); // 3.14
+ * roundPrecise(1.005, 2); // 1.01
  * ```
  */
 export function roundPrecise(number: number, magnitude = 1): number {
-  const factor = 10 ** magnitude;
-  return Math.round(number * factor) / factor;
+  if (magnitude < 0) {
+    return number;
+  }
+
+  if (!Number.isFinite(number) || Number.isInteger(number)) {
+    return number;
+  }
+
+  return shiftDecimals(
+    Math.round(shiftDecimals(number, magnitude)),
+    -magnitude
+  );
 }
 
-/** Returns whether the given value lies between the min and max bounds (inclusive). */
+/** Moves the decimal point of `number` by `places`, through its exponent. */
+function shiftDecimals(number: number, places: number): number {
+  const [mantissa, exponent] = number.toString().split('e');
+  return asNumber(`${mantissa}e${asNumber(exponent) + places}`);
+}
+
+/** Returns whether the value lies between the min and max bounds. */
 export function numberInRangeInclusive(
   value: number,
   min: number,
@@ -44,7 +67,7 @@ export function numberInRangeInclusive(
 }
 
 /**
- * Parse the passed `value` as a number or return the `fallback` if it can't be done.
+ * Returns `value` as a number, or the `fallback` when the parse fails.
  *
  * @example
  * ```typescript
@@ -60,15 +83,20 @@ export function numberInRangeInclusive(
  * ```
  */
 export function asNumber(value: unknown, fallback = 0): number {
-  const parsed = Number.parseFloat(value as string);
+  let parsed: number;
+
+  try {
+    parsed = Number.parseFloat(value as string);
+  } catch {
+    // A symbol, or an object with no string conversion.
+    return fallback;
+  }
+
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
 /**
  * Returns the value wrapped between the min and max bounds.
- *
- * If the value is greater than max, returns the min and vice-versa.
- * If the value is between the bounds, it is returned unchanged.
  *
  * @example
  * ```typescript
@@ -88,7 +116,12 @@ export function wrap(min: number, max: number, value: number) {
   return value;
 }
 
-/** Euclidean modulo - like `%` but the result always has the sign of the divisor. */
+/**
+ * Returns the Euclidean modulo of `n` and `d`.
+ *
+ * @remarks
+ * Unlike `%`, the result always has the sign of the divisor.
+ */
 export function modulo(n: number, d: number) {
   return ((n % d) + d) % d;
 }

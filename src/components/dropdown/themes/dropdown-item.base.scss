@@ -1,5 +1,4 @@
 @use 'styles/utilities' as *;
-@use 'styles/common/component';
 
 :host {
     @include type-style('body-2');
@@ -49,4 +48,28 @@
     --component-size: var(--dropdown-size) !important;
 
     margin-inline-start: pad-inline(rem(8px));
+}
+
+@media (forced-colors: active) {
+    :host(:hover),
+    :host([selected]) {
+        color: Highlight !important;
+
+        ::slotted(igc-icon) {
+            color: Highlight !important;
+        }
+    }
+
+    :host([disabled]) {
+        color: GrayText !important;
+
+        ::slotted(igc-icon) {
+            color: GrayText !important;
+        }
+    }
+
+    :host([active]) {
+        outline: rem(1px) solid CanvasText;
+        outline-offset: rem(-1px);
+    }
 }

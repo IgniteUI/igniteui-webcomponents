@@ -51,6 +51,51 @@ describe('Date range picker - two inputs', () => {
         .renderRoot.querySelector('input')!,
   });
 
+  it('describes both native inputs by the host `aria-describedby`', async () => {
+    const container = await fixture<HTMLElement>(html`
+      <div>
+        <span id="range-hint">Pick the dates of your stay</span>
+        <igc-date-range-picker
+          use-two-inputs
+          aria-describedby="range-hint"
+        ></igc-date-range-picker>
+      </div>
+    `);
+    const picker = container.querySelector('igc-date-range-picker')!;
+    const hint = container.querySelector('#range-hint');
+    await elementUpdated(picker);
+
+    for (const editor of picker.renderRoot.querySelectorAll(
+      'igc-date-time-input'
+    )) {
+      await elementUpdated(editor);
+      expect(
+        editor.renderRoot
+          .querySelector('input')!
+          .ariaDescribedByElements?.at(-1)
+      ).to.equal(hint);
+    }
+  });
+
+  it('exposes `required` as `aria-required` on both native inputs', async () => {
+    const picker = await fixture<IgcDateRangePickerComponent>(
+      html`<igc-date-range-picker
+        use-two-inputs
+        required
+      ></igc-date-range-picker>`
+    );
+    const editors = picker.renderRoot.querySelectorAll('igc-date-time-input');
+    await elementUpdated(picker);
+
+    expect(editors).to.have.length(2);
+    for (const editor of editors) {
+      await elementUpdated(editor);
+      expect(
+        editor.renderRoot.querySelector('input')!.getAttribute('aria-required')
+      ).to.equal('true');
+    }
+  });
+
   // The start editor.
   runAriaProjectionTests({
     tagName: IgcDateRangePickerComponent.tagName,
@@ -109,26 +154,34 @@ describe('Date range picker - two inputs', () => {
       expect(picker).is.not.undefined;
     });
 
-    it('is accessible (closed state)', async () => {
-      await expect(picker).shadowDom.to.be.accessible();
-      await expect(picker).lightDom.to.be.accessible();
-    });
+    describe('Accessibility', () => {
+      beforeEach(async () => {
+        picker.labelStart = 'Start';
+        picker.labelEnd = 'End';
+        await elementUpdated(picker);
+      });
 
-    it('is accessible (open state) - default dropdown mode', async () => {
-      picker.open = true;
-      await elementUpdated(picker);
+      it('is accessible (closed state)', async () => {
+        await expect(picker).shadowDom.to.be.accessible();
+        await expect(picker).lightDom.to.be.accessible();
+      });
 
-      await expect(picker).shadowDom.to.be.accessible();
-      await expect(picker).lightDom.to.be.accessible();
-    });
+      it('is accessible (open state) - default dropdown mode', async () => {
+        picker.open = true;
+        await elementUpdated(picker);
 
-    it('is accessible (open state) - dialog mode', async () => {
-      picker.open = true;
-      picker.mode = 'dialog';
-      await elementUpdated(picker);
+        await expect(picker).shadowDom.to.be.accessible();
+        await expect(picker).lightDom.to.be.accessible();
+      });
 
-      await expect(picker).shadowDom.to.be.accessible();
-      await expect(picker).lightDom.to.be.accessible();
+      it('is accessible (open state) - dialog mode', async () => {
+        picker.open = true;
+        picker.mode = 'dialog';
+        await elementUpdated(picker);
+
+        await expect(picker).shadowDom.to.be.accessible();
+        await expect(picker).lightDom.to.be.accessible();
+      });
     });
 
     it('should not render title slot elements in dropdown mode', async () => {
@@ -308,6 +361,39 @@ describe('Date range picker - two inputs', () => {
       expect(dateTimeInputs[0].value).to.equal(picker.value?.start);
       expect(dateTimeInputs[1].value).to.equal(picker.value?.end);
       expect(eventSpy).not.called;
+    });
+  });
+
+  describe('Validity of the editors', () => {
+    it('reports valid editors while the picker is pristine', async () => {
+      picker.required = true;
+      await elementUpdated(picker);
+
+      expect(picker.checkValidity()).to.be.false;
+
+      for (const editor of dateTimeInputs) {
+        expect(editor.checkValidity()).to.be.true;
+        expect(editor.reportValidity()).to.be.true;
+      }
+    });
+
+    it('delegates the editor validity to the picker once it is not pristine', async () => {
+      picker.required = true;
+      picker.value = { start: null, end: null };
+      await elementUpdated(picker);
+
+      for (const editor of dateTimeInputs) {
+        expect(editor.checkValidity()).to.be.false;
+        expect(editor.reportValidity()).to.be.false;
+      }
+
+      picker.value = { start: today.native, end: tomorrow.native };
+      await elementUpdated(picker);
+
+      for (const editor of dateTimeInputs) {
+        expect(editor.checkValidity()).to.be.true;
+        expect(editor.reportValidity()).to.be.true;
+      }
     });
   });
 
@@ -589,8 +675,7 @@ describe('Date range picker - two inputs', () => {
         expect(eventSpy).calledOnceWith('igcInput');
         eventSpy.resetHistory();
 
-        // Spinning is an uncommitted edit - `value` follows on blur - so the spun
-        // date is only visible on the draft. See issue #1346.
+        // Spinning is an uncommitted edit, so only the draft has the date. See #1346.
         expect(dateTimeInputs[0].value).to.be.null;
         expect(dateTimeInputs[0]._uncommittedValue).to.not.be.null;
         checkDatesEqual(dateTimeInputs[0]._uncommittedValue!, expectedValue);
@@ -699,7 +784,6 @@ describe('Date range picker - two inputs', () => {
         const now = new CalendarDay({ year: 2026, month: 3, date: 1 });
         const aMonthAgo = now.add('month', -1);
 
-        // const aMonthAgo = today.add('month', -1);
         picker.value = null;
         picker.open = true;
         await elementUpdated(picker);

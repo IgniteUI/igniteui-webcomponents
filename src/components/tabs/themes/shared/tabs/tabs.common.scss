@@ -17,39 +17,14 @@ $theme: $material;
     --disabled-foreground: #{var-get($theme, 'button-disabled-color')};
     --disabled-background: #{var-get($theme, 'button-background')};
 
-    [part~='base'] {
-        transition: all 0ms;
-    }
-
     &:active,
     &:hover {
         --border-color: #{var-get($theme, 'button-hover-background')};
     }
 }
 
-:host([alignment='start']) {
-    [part~='inner']:not([part~='scrollable']) {
-        &::after {
-            background: var-get($theme, 'item-background');
-        }
-    }
-}
-
-:host([alignment='center']) {
-    [part~='inner']:not([part~='scrollable']) {
-        &::before,
-        &::after {
-            background: var-get($theme, 'item-background');
-        }
-    }
-}
-
-:host([alignment='end']) {
-    [part~='inner']:not([part~='scrollable']) {
-        &::before {
-            background: var-get($theme, 'item-background');
-        }
-    }
+[part~='header'] {
+    background: var-get($theme, 'header-background');
 }
 
 igc-icon-button::part(icon) {

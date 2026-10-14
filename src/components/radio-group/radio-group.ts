@@ -2,16 +2,21 @@ import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { createMutationController } from '#internals/controllers/mutation-observer.js';
-import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  addSlotController,
+  DefaultSlot,
+  setSlots,
+} from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { isDefined } from '#internals/utils/types.js';
+import { all } from '#themes/radio-group/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcRadioComponent from '../radio/radio.js';
 import type { ContentOrientation } from '../types.js';
 import { styles } from './themes/radio-group.base.css.js';
 import { styles as shared } from './themes/shared/radio-group.common.css.js';
-import { all } from './themes/themes.js';
 
 /**
  * Unifies one or more radio components into a single group.
@@ -23,7 +28,7 @@ import { all } from './themes/themes.js';
  */
 export default class IgcRadioGroupComponent extends LitElement {
   public static readonly tagName = 'igc-radio-group';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -47,7 +52,7 @@ export default class IgcRadioGroupComponent extends LitElement {
   private _pendingValue = '';
 
   private get _radios(): IgcRadioComponent[] {
-    return this._slots.getAssignedElements<IgcRadioComponent>('[default]', {
+    return this._slots.getAssignedElements<IgcRadioComponent>(DefaultSlot, {
       selector: IgcRadioComponent.tagName,
       flatten: true,
     });
@@ -100,8 +105,7 @@ export default class IgcRadioGroupComponent extends LitElement {
   public get value(): string {
     const radios = this._radios;
 
-    // The checked radio holds the value of the group. Without radios to apply it to,
-    // the group reports the value that is still pending.
+    // Without radios, the group reports the pending value.
     return isEmpty(radios)
       ? this._pendingValue
       : (radios.find((radio) => radio.checked)?.value ?? '');
@@ -127,10 +131,8 @@ export default class IgcRadioGroupComponent extends LitElement {
   }
 
   /**
-   * Brings the group in sync with its radios. Runs after the first render and after each
-   * change of the slotted content, to adopt the radios that come in at run time. Without
-   * the name of the group, such a radio makes a group of its own, outside of the keyboard
-   * navigation and the single selection of this one.
+   * Syncs the radios after the first render and on each slot change. A radio without
+   * the group name forms a group of its own.
    */
   private _syncRadios(): void {
     const radios = this._radios;
@@ -138,9 +140,8 @@ export default class IgcRadioGroupComponent extends LitElement {
     this._setRadiosName();
     this._setRadiosDefaultChecked();
 
-    // The value of the group applies while no radio holds a selection of its own. This
-    // is the first render, or the moment a radio with a value that had no match comes in.
-    // The `checked` attribute then makes that selection the default state.
+    // The pending value applies only while no radio is checked.
+    // The `checked` attribute makes that selection the default.
     if (this._pendingValue && !radios.some((radio) => radio.checked)) {
       this._setSelectedRadio();
 
@@ -190,8 +191,7 @@ export default class IgcRadioGroupComponent extends LitElement {
       applied ||= radio.checked;
     }
 
-    // A radio holds the value now, so the group reads it from that radio. A value that
-    // stays pending applies again each time the group loses its selection.
+    // The checked radio holds the value now. An unmatched value stays pending.
     if (applied) {
       this._pendingValue = '';
     }

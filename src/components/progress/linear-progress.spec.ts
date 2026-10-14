@@ -5,6 +5,7 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { internalsOf } from '#internals/controllers/internals.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { firstOf } from '#internals/utils/arrays.js';
 import IgcLinearProgressComponent from './linear-progress.js';
@@ -148,6 +149,13 @@ describe('Linear progress component', () => {
       expect(getDOM(progress).fractionLabel).to.equal('14');
     });
 
+    it('carries a fraction that rounds up into the integer', async () => {
+      await updateProgress('value', 12.996);
+
+      expect(getDOM(progress).integerLabel).to.equal('13');
+      expect(getDOM(progress).fraction).to.be.null;
+    });
+
     it('clamps negative values', async () => {
       await updateProgress('value', -100);
 
@@ -247,6 +255,60 @@ describe('Linear progress component', () => {
     });
   });
 
+  describe('Accessibility', () => {
+    const getARIA = <T extends keyof ARIAMixin>(name: T) =>
+      internalsOf(progress)?.getARIA(name);
+
+    beforeEach(async () => {
+      progress = await fixture<IgcLinearProgressComponent>(html`
+        <igc-linear-progress animation-duration="0"></igc-linear-progress>
+      `);
+    });
+
+    it('reports the shown percentage of `max` as the value text', async () => {
+      const cases: [max: number, value: number, text: string][] = [
+        [200, 50, '25%'],
+        [3, 1, '33.33%'],
+        [100, 1.05, '1.05%'],
+        [100, 12.996, '13%'],
+        [100, 99.996, '100%'],
+        [100, 1.005, '1.01%'],
+        [0.5, 0.25, '50%'],
+        [0, 0, '0%'],
+      ];
+
+      for (const [max, value, text] of cases) {
+        await updateProgress('max', max);
+        await updateProgress('value', value);
+
+        const message = `${value} of ${max}`;
+        expect(getARIA('ariaValueNow'), message).to.equal(String(value));
+        expect(getARIA('ariaValueMax'), message).to.equal(String(max));
+        expect(getARIA('ariaValueText'), message).to.equal(text);
+        expect(
+          Number.parseFloat(getDOM(progress).wholeLabel),
+          message
+        ).to.equal(Number.parseFloat(text));
+      }
+    });
+
+    it('reports the formatted label as the value text', async () => {
+      await updateProgress('labelFormat', 'Task {0} of {1}');
+      await updateProgress('max', 10);
+      await updateProgress('value', 8);
+
+      expect(getARIA('ariaValueText')).to.equal('Task 8 of 10');
+    });
+
+    it('reports no value in indeterminate mode', async () => {
+      await updateProgress('value', 40);
+      await updateProgress('indeterminate', true);
+
+      expect(getARIA('ariaValueNow')).to.be.null;
+      expect(getARIA('ariaValueText')).to.be.null;
+    });
+  });
+
   describe('Issues', () => {
     it('#1083 - setting value on initialization should not reset it', async () => {
       progress = document.createElement(IgcLinearProgressComponent.tagName);
@@ -293,6 +355,16 @@ function getDOM(progress: IgcLinearProgressComponent) {
       return getComputedStyle(
         progress.renderRoot.querySelector('[part~="counter"]')!
       ).getPropertyValue('--_progress-integer');
+    },
+    get fraction() {
+      return progress.renderRoot.querySelector<HTMLElement>(
+        '[part~="fraction"]'
+      );
+    },
+    get wholeLabel() {
+      return getComputedStyle(
+        progress.renderRoot.querySelector('[part~="base"]')!
+      ).getPropertyValue('--_progress-whole');
     },
     get fractionLabel() {
       return getComputedStyle(

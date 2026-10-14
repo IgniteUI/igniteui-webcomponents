@@ -1,41 +1,29 @@
-import { noChange } from 'lit';
+import { directive, type PartInfo } from 'lit/async-directive.js';
+import { getRoot, isLTR, setStyles } from '../utils/dom.js';
+import { getElementFromPath } from '../utils/events.js';
 import {
-  AsyncDirective,
-  directive,
-  type DirectiveParameters,
-  type ElementPart,
-  type PartInfo,
-  PartType,
-} from 'lit/async-directive.js';
-import { createAbortHandle } from '../abort-handler.js';
-import { escapeKey, isKey } from '../controllers/key-bindings.js';
-import {
-  getDefaultLayer,
-  getRoot,
-  isLTR,
-  roundByDPR,
-  setStyles,
-} from '../utils/dom.js';
-import { getElementFromPath, preventDefault } from '../utils/events.js';
+  type Point,
+  PointerOperationDirective,
+  type PointerOperationOptions,
+  type PointerOperationState,
+} from './pointer-operation.js';
 
-export type DragMode = 'immediate' | 'deferred';
 export type DragPointerDirection = 'start' | 'end' | 'top' | 'bottom';
-export type DragGhostFactory = (initial: DOMRect) => HTMLElement;
 export type DragCallback = (params: DragCallbackParams) => unknown;
 export type DragCancelCallback = (state: DragState) => unknown;
 
-type Point = { x: number; y: number };
-
 export type DragState = {
-  /** The bounding rectangle of the drag target at the start of the operation. */
+  /** The bounding rectangle of the target at the start of the operation. */
   initial: DOMRect;
-  /** The current bounding rectangle of the drag target. */
   current: DOMRect;
-  /** The current position of the dragged element relative to its containing layer. */
+  /**
+   * The position of the moved element: from the ghost origin (the ghost at
+   * left 0 and top 0) in deferred mode, and from the initial rectangle of
+   * the target in immediate mode.
+   */
   position: Point;
-  /** Offset between the drag target origin and the pointer position at the start of the operation. */
+  /** The distance from the target origin to the pointer at the start. */
   offset: Point;
-  /** Pointer positions and movement direction for the current operation. */
   pointerState: {
     previous: Point;
     current: Point;
@@ -43,8 +31,10 @@ export type DragState = {
   };
   /** The ghost element when in deferred mode. */
   ghost: HTMLElement | null;
-  /** The current element matched through the `matchTarget` callback, if any. */
+  /** The element that the `matchTarget` callback matches, or `null`. */
   element: Element | null;
+  /** Aborts when the operation ends, also in a `start` listener. */
+  signal: AbortSignal;
 };
 
 export type DragCallbackParams = {
@@ -52,85 +42,53 @@ export type DragCallbackParams = {
   state: DragState;
 };
 
-/** Options for the draggable directive. */
-export interface DraggableOptions {
-  /** Whether the directive will listen for and initiate drag operations. Defaults to `true`. */
-  enabled?: boolean;
-  /**
-   * The mode of the drag operation.
-   *
-   * In `immediate` mode the target element is moved in place as the pointer moves.
-   * In `deferred` mode a ghost element is created and moved instead, keeping the
-   * target element at its place until the operation completes.
-   *
-   * Defaults to `deferred`.
-   */
-  mode?: DragMode;
-  /** Whether the dragged element's top left corner snaps to the cursor position at the start of the operation. */
+/**
+ * Options for the draggable directive. See {@link PointerOperationOptions}
+ * for the shared ones. The mode defaults to `deferred`, which moves a ghost
+ * element and leaves the target in place.
+ */
+export interface DraggableOptions extends PointerOperationOptions {
+  /** Whether the dragged element snaps its top left corner to the pointer. */
   snapToCursor?: boolean;
-  /**
-   * The element being dragged. It captures the pointer events for the operation.
-   * Defaults to the element the directive is applied to.
-   *
-   * Accepts either an element or a function returning one, resolved when
-   * the directive options are applied.
-   */
-  target?: HTMLElement | (() => HTMLElement | null | undefined);
-  /**
-   * When provided, a drag operation only starts if the returned element is in the
-   * composed path of the initiating pointer event.
-   */
+  /** Returns the element whose presence in the event path starts a drag. */
   trigger?: () => HTMLElement | null | undefined;
-  /** Guard invoked on the initiating pointer event. Returning `true` skips the drag operation. */
-  skip?: (event: PointerEvent) => boolean;
   /**
-   * Predicate invoked with the elements under the pointer while dragging.
-   * The first matching element is exposed as `state.element` and drives the
-   * `enter`, `leave` and `over` callbacks.
+   * Runs with the `pointerdown`, `touchstart` or `dragstart` event that would
+   * start a drag. A `true` return skips the drag and the native action stays.
+   */
+  skip?(event: Event): boolean;
+  /**
+   * A predicate for the elements under the pointer. The first match becomes
+   * `state.element`, and drives `enter`, `leave` and `over`.
    */
   matchTarget?: (element: Element) => boolean;
-  /** Factory function for the ghost element in deferred mode. */
-  ghostFactory?: DragGhostFactory;
-  /** The container in which the deferred ghost element is rendered. Defaults to the document body. */
-  layer?: () => HTMLElement;
-  /** Called when a drag operation starts. Return `false` to abort the operation. */
+  /** Runs when a drag starts. A `false` return aborts the operation. */
   start?: DragCallback;
-  /** Called on each pointer move during a drag operation. */
+  /** Runs on each pointer move of a drag operation. */
   move?: DragCallback;
-  /** Called when the pointer enters an element matched through `matchTarget`. */
+  /** Runs when the pointer enters a matched element. */
   enter?: DragCallback;
-  /** Called when the pointer leaves the currently matched element. */
+  /** Runs when the pointer leaves the matched element. */
   leave?: DragCallback;
-  /** Called while the pointer moves over the currently matched element. */
+  /** Runs while the pointer moves over the matched element. */
   over?: DragCallback;
-  /** Called when a drag operation completes. */
+  /** Runs when a drag operation completes. */
   end?: DragCallback;
-  /** Called when a drag operation is cancelled with the Escape key. */
+  /** Runs when Escape, `pointercancel` or a disconnect cancels a drag operation. */
   cancel?: DragCancelCallback;
 }
 
-type DragOperation = {
-  pointerId: number;
-  target: HTMLElement;
-  initial: DOMRect;
-  current: DOMRect;
-  position: Point;
-  offset: Point;
-  pointerState: DragState['pointerState'];
-  ghost: HTMLElement | null;
-  matchedElement: Element | null;
-  /** Inline transform of the target before the operation, restored on cancel. */
-  targetTransform: string;
-};
+type DragOperation = PointerOperationState &
+  Omit<DragState, 'ghost' | 'signal'> & {
+    target: HTMLElement;
+    /** The inline transform of the target, restored on an immediate cancel. */
+    targetTransform: string;
+  };
 
 function createDefaultGhost({ width, height }: DOMRect): HTMLElement {
   const element = document.createElement('div');
 
-  // Anchored at the layer origin; the directive positions it via `translate3d`.
   setStyles(element, {
-    position: 'absolute',
-    left: '0',
-    top: '0',
     width: `${width}px`,
     height: `${height}px`,
     zIndex: '1000',
@@ -140,36 +98,44 @@ function createDefaultGhost({ width, height }: DOMRect): HTMLElement {
   return element;
 }
 
-class DraggableDirective extends AsyncDirective {
-  private readonly _triggerAbort = createAbortHandle();
-  private readonly _dragAbort = createAbortHandle();
-
-  private _options: DraggableOptions = {};
-  private _host?: HTMLElement;
+class DraggableDirective extends PointerOperationDirective<
+  DraggableOptions,
+  DragOperation,
+  DragState
+> {
   private _target: HTMLElement | null = null;
-  private _operation: DragOperation | null = null;
 
   constructor(partInfo: PartInfo) {
-    super(partInfo);
+    super(partInfo, {
+      name: 'draggable',
+      ghostAttribute: 'data-drag-ghost',
+      defaultMode: 'deferred',
+      defaultGhost: createDefaultGhost,
+    });
+  }
 
-    if (partInfo.type !== PartType.ELEMENT) {
-      throw new Error(
-        'The `draggable` directive can only be used on elements.'
-      );
+  protected override _cancelOperation(): void {
+    this._options.cancel?.(this._createState());
+
+    const { ghost, target, targetTransform } = this._operation!;
+
+    if (!ghost) {
+      target.style.transform = targetTransform;
     }
   }
 
-  private get _enabled(): boolean {
-    return this._options.enabled ?? true;
+  /** Restores the styles that the operation changed, then disposes. */
+  protected override _dispose(): void {
+    if (this._operation) {
+      this._setDragStyles(false);
+    }
+
+    super._dispose();
   }
 
-  private get _isDeferred(): boolean {
-    return (this._options.mode ?? 'deferred') === 'deferred';
-  }
-
-  /** The element being moved around - the ghost in deferred mode, otherwise the drag target. */
-  private get _dragItem(): HTMLElement {
-    return this._isDeferred ? this._operation!.ghost! : this._operation!.target;
+  protected override disconnected(): void {
+    super.disconnected();
+    this._target = null;
   }
 
   // #region Event handlers
@@ -192,7 +158,7 @@ class DraggableDirective extends AsyncDirective {
       pointerId,
       target,
       initial,
-      current: structuredClone(initial),
+      current: DOMRect.fromRect(initial),
       position: { x: initial.x, y: initial.y },
       offset: { x: initial.x - clientX, y: initial.y - clientY },
       pointerState: {
@@ -200,20 +166,27 @@ class DraggableDirective extends AsyncDirective {
         current: { x: clientX, y: clientY },
         direction: 'end',
       },
-      ghost: this._isDeferred ? this._createGhost(initial) : null,
-      matchedElement: null,
+      ghost: this._isDeferred ? this._createGhost(target, initial) : null,
+      element: null,
       targetTransform: target.style.transform,
     };
 
     this._updatePosition(event);
 
-    if (this._options.start?.(this._createParams(event)) === false) {
-      this._dispose();
+    if (
+      !this._runStart(() => this._options.start?.(this._createParams(event)))
+    ) {
       return;
     }
 
-    this._assignPosition(this._dragItem);
-    this._startOperation(event);
+    this._assignPosition();
+    this._setDragStyles(true);
+    this._startOperationListeners(
+      target,
+      pointerId,
+      this._handlePointerMove,
+      this._handlePointerEnd
+    );
   };
 
   private readonly _handlePointerMove = (event: PointerEvent): void => {
@@ -227,7 +200,7 @@ class DraggableDirective extends AsyncDirective {
 
     this._options.move?.(this._createParams(event));
 
-    this._assignPosition(this._dragItem);
+    this._assignPosition();
   };
 
   private readonly _handlePointerEnd = (event: PointerEvent): void => {
@@ -239,24 +212,10 @@ class DraggableDirective extends AsyncDirective {
     this._dispose();
   };
 
-  private readonly _handleKeydown = (event: KeyboardEvent): void => {
-    if (!this._operation || !isKey(event, escapeKey)) {
-      return;
-    }
-
-    this._options.cancel?.(this._createState());
-
-    if (!this._isDeferred) {
-      this._operation.target.style.transform = this._operation.targetTransform;
-    }
-
-    this._dispose();
-  };
-
-  /** Prevents native drag and touch interactions from interfering with an enabled directive. */
-  private readonly _preventNativeBehavior = (event: Event): void => {
-    if (this._enabled) {
-      event.preventDefault();
+  /** Cancels a touch scroll or a native drag only where a drag can start. */
+  private readonly _preventNativeDrag = (event: Event): void => {
+    if (!this._shouldSkip(event)) {
+      this._preventNativeBehavior(event);
     }
   };
 
@@ -264,7 +223,7 @@ class DraggableDirective extends AsyncDirective {
 
   // #region Internal API
 
-  private _attachTriggerListeners(): void {
+  protected override _attachTriggerListeners(): void {
     const target = this._resolveTarget();
     if (!target) {
       return;
@@ -280,44 +239,16 @@ class DraggableDirective extends AsyncDirective {
     target.addEventListener('pointerdown', this._handlePointerDown, {
       signal,
     });
-    target.addEventListener('dragstart', this._preventNativeBehavior, {
+    target.addEventListener('dragstart', this._preventNativeDrag, {
       signal,
     });
-    target.addEventListener('touchstart', this._preventNativeBehavior, {
+    target.addEventListener('touchstart', this._preventNativeDrag, {
       passive: false,
       signal,
     });
   }
 
-  private _startOperation({ pointerId }: PointerEvent): void {
-    const { target } = this._operation!;
-    const { signal } = this._dragAbort;
-
-    this._setDragStyles(true);
-
-    target.setPointerCapture(pointerId);
-    target.addEventListener('pointermove', this._handlePointerMove, {
-      signal,
-    });
-    target.addEventListener('lostpointercapture', this._handlePointerEnd, {
-      signal,
-    });
-    target.addEventListener('contextmenu', preventDefault, { signal });
-    globalThis.addEventListener('keydown', this._handleKeydown, { signal });
-  }
-
-  private _resolveTarget(): HTMLElement | null {
-    const { target } = this._options;
-    return (
-      (typeof target === 'function' ? target() : target) ?? this._host ?? null
-    );
-  }
-
-  private _resolveLayer(): HTMLElement {
-    return this._options.layer?.() ?? getDefaultLayer();
-  }
-
-  private _shouldSkip(event: PointerEvent): boolean {
+  private _shouldSkip(event: Event): boolean {
     if (this._options.skip?.(event)) {
       return true;
     }
@@ -326,25 +257,9 @@ class DraggableDirective extends AsyncDirective {
     return trigger ? !getElementFromPath((e) => e === trigger, event) : false;
   }
 
-  private _createGhost(initial: DOMRect): HTMLElement {
-    const ghost =
-      this._options.ghostFactory?.(initial) ?? createDefaultGhost(initial);
-
-    ghost.setAttribute('data-drag-ghost', '');
-    this._resolveLayer().append(ghost);
-    return ghost;
-  }
-
-  private _createState(): DragState {
-    const {
-      initial,
-      current,
-      position,
-      offset,
-      pointerState,
-      ghost,
-      matchedElement,
-    } = this._operation!;
+  protected override _createState(): DragState {
+    const { initial, current, position, offset, pointerState, ghost, element } =
+      this._operation!;
 
     return {
       initial,
@@ -353,26 +268,23 @@ class DraggableDirective extends AsyncDirective {
       offset,
       pointerState,
       ghost,
-      element: matchedElement,
+      element,
+      signal: this._operationAbort.signal,
     };
-  }
-
-  private _createParams(event: PointerEvent): DragCallbackParams {
-    return { event, state: this._createState() };
   }
 
   private _updatePosition({ clientX, clientY }: PointerEvent): void {
     const operation = this._operation!;
-    const { x: layerX, y: layerY } = this._isDeferred
-      ? this._resolveLayer().getBoundingClientRect()
+    const { x: originX, y: originY } = operation.ghost
+      ? this._getGhostOrigin(operation.ghost)
       : operation.initial;
     const { x, y } = this._options.snapToCursor
       ? { x: 0, y: 0 }
       : operation.offset;
 
     operation.position = {
-      x: clientX - layerX + x,
-      y: clientY - layerY + y,
+      x: clientX - originX + x,
+      y: clientY - originY + y,
     };
   }
 
@@ -400,40 +312,40 @@ class DraggableDirective extends AsyncDirective {
     }
 
     const operation = this._operation!;
-    const match = getRoot(operation.target)
-      .elementsFromPoint(event.clientX, event.clientY)
-      .find((element) => matchTarget(element));
+    const match =
+      getRoot(operation.target)
+        .elementsFromPoint(event.clientX, event.clientY)
+        .find((element) => matchTarget(element)) ?? null;
 
-    if (match && !operation.matchedElement) {
-      operation.matchedElement = match;
-      this._options.enter?.(this._createParams(event));
+    if (match === operation.element) {
+      if (match) {
+        this._options.over?.(this._createParams(event));
+      }
       return;
     }
 
-    if (!match && operation.matchedElement) {
+    // A fast move can go from one match straight to the next.
+    if (operation.element) {
       this._options.leave?.(this._createParams(event));
-      operation.matchedElement = null;
-      return;
     }
 
-    if (match && match === operation.matchedElement) {
-      this._options.over?.(this._createParams(event));
+    operation.element = match;
+
+    if (match) {
+      this._options.enter?.(this._createParams(event));
     }
   }
 
-  private _assignPosition(element: HTMLElement): void {
-    const { x, y } = this._operation!.position;
-    element.style.transform = `translate3d(${roundByDPR(x)}px,${roundByDPR(y)}px,0)`;
+  /** Moves the ghost in deferred mode, and the target in immediate mode. */
+  private _assignPosition(): void {
+    const { ghost, target, position } = this._operation!;
+    this._translate(ghost ?? target, position);
   }
 
   /**
-   * Toggles touch action, user and text selection for the duration of a drag operation.
-   *
-   * @remarks
-   * Disabling `user-select` only on the dragged element is not enough, since browsers
-   * (notably Safari) will still create a text selection in whatever elements sit under
-   * the pointer while dragging. Applying it to the owner document's body prevents that
-   * across the page for the active drag and is reverted once the operation completes.
+   * Toggles the touch action and the text selection for a drag operation.
+   * Browsers, Safari in particular, still select text under the pointer, so
+   * `user-select` also goes on the document body.
    */
   private _setDragStyles(active: boolean): void {
     const value = active ? 'none' : '';
@@ -452,56 +364,11 @@ class DraggableDirective extends AsyncDirective {
     }
   }
 
-  /** Stops the current drag operation, cleaning up the ghost element and event listeners. */
-  private _dispose(): void {
-    this._dragAbort.abort();
-
-    if (this._operation) {
-      const { pointerId, target, ghost } = this._operation;
-
-      this._setDragStyles(false);
-
-      if (target.hasPointerCapture(pointerId)) {
-        target.releasePointerCapture(pointerId);
-      }
-
-      ghost?.remove();
-      this._operation = null;
-    }
-  }
-
   // #endregion
-
-  protected override reconnected(): void {
-    this._attachTriggerListeners();
-  }
-
-  protected override disconnected(): void {
-    this._dispose();
-    this._triggerAbort.abort();
-    this._target = null;
-  }
-
-  public override update(
-    part: ElementPart,
-    [options]: DirectiveParameters<this>
-  ) {
-    if (this.isConnected) {
-      this._host = part.element as HTMLElement;
-      this._options = options ?? {};
-      this._attachTriggerListeners();
-    }
-    return noChange;
-  }
-
-  public render(_options?: DraggableOptions) {
-    return noChange;
-  }
 }
 
 /**
- * A directive that makes an element draggable, either in place or through
- * a deferred ghost element, with optional hit-testing against other elements
- * while dragging.
+ * A directive that makes an element draggable, in place or through a
+ * deferred ghost element, with an optional hit test of other elements.
  */
 export const draggable = directive(DraggableDirective);

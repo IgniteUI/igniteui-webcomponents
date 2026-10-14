@@ -1,9 +1,12 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { restore, stub } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { asNumber } from '#internals/utils/math.js';
 import { configureTheme } from '#theming/config.js';
 import IgcQrCodeComponent from './qr-code.js';
+import { rasterizeSvg } from './renderer/export.js';
+import type { QrErrorCorrectionLevel } from './types.js';
 
 describe('IgcQrCodeComponent', () => {
   before(() => {
@@ -40,6 +43,59 @@ describe('IgcQrCodeComponent', () => {
       );
       const title = el.renderRoot.querySelector('svg title');
       expect(title?.textContent).to.equal('Scan me');
+    });
+
+    it('updates the SVG title when only ariaLabel changes', async () => {
+      const el = await fixture<IgcQrCodeComponent>(
+        html`<igc-qr-code value="https://example.com"></igc-qr-code>`
+      );
+
+      el.ariaLabel = 'Scan to visit our product page';
+      await elementUpdated(el);
+
+      expect(el.renderRoot.querySelector('svg title')?.textContent).to.equal(
+        'Scan to visit our product page'
+      );
+    });
+
+    it('restores the default SVG title when aria-label is removed', async () => {
+      const el = await fixture<IgcQrCodeComponent>(
+        html`<igc-qr-code
+          value="https://example.com"
+          aria-label="Scan me"
+        ></igc-qr-code>`
+      );
+
+      el.removeAttribute('aria-label');
+      await elementUpdated(el);
+
+      expect(el.renderRoot.querySelector('svg title')?.textContent).to.equal(
+        'QR code: https://example.com'
+      );
+    });
+
+    it('forwards the host `aria-labelledby` and `aria-describedby` to the SVG', async () => {
+      const container = await fixture<HTMLElement>(html`
+        <div>
+          <span id="qr-name">Event ticket</span>
+          <span id="qr-hint">Show it at the entrance</span>
+          <igc-qr-code
+            value="https://example.com"
+            aria-labelledby="qr-name"
+            aria-describedby="qr-hint"
+          ></igc-qr-code>
+        </div>
+      `);
+      const svg = container
+        .querySelector('igc-qr-code')!
+        .renderRoot.querySelector('svg')!;
+
+      expect(svg.ariaLabelledByElements).to.eql([
+        container.querySelector('#qr-name'),
+      ]);
+      expect(svg.ariaDescribedByElements).to.eql([
+        container.querySelector('#qr-hint'),
+      ]);
     });
   });
 
@@ -300,6 +356,29 @@ describe('IgcQrCodeComponent', () => {
         expect(cornerGroups.length).to.equal(3);
       });
     }
+  });
+
+  describe('Dots path', () => {
+    it('follows the dot style and keeps the path for a size change', async () => {
+      const el = await fixture<IgcQrCodeComponent>(
+        html`<igc-qr-code value="Path"></igc-qr-code>`
+      );
+      const path = () =>
+        el.renderRoot.querySelector('[part="dots"]')!.getAttribute('d');
+      const square = path();
+
+      el.size = 300;
+      await elementUpdated(el);
+      expect(path()).to.equal(square);
+
+      el.dotStyle = 'circle';
+      await elementUpdated(el);
+      expect(path()).to.not.equal(square);
+
+      el.dotStyle = 'square';
+      await elementUpdated(el);
+      expect(path()).to.equal(square);
+    });
   });
 
   describe('Logo', () => {
@@ -563,6 +642,74 @@ describe('IgcQrCodeComponent', () => {
 
         expect(widthL).to.be.lessThan(widthH);
       });
+
+      /** Renders a code with `VALID_LOGO`, and returns it with its viewBox and logo width. */
+      async function renderLogo(
+        logoSize: number,
+        errorLevel?: QrErrorCorrectionLevel
+      ): Promise<{ el: IgcQrCodeComponent; viewBox: string; width: string }> {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            logo-size=${logoSize}
+            error-level=${ifDefined(errorLevel)}
+            logo-src=${VALID_LOGO}
+          ></igc-qr-code>`
+        );
+        await elementUpdated(el);
+
+        return {
+          el,
+          viewBox: getSvg(el)!.getAttribute('viewBox')!,
+          width: el.renderRoot.querySelector('image')!.getAttribute('width')!,
+        };
+      }
+
+      it('raises the level for a large logo when error-level is not set', async () => {
+        const auto = await renderLogo(1);
+        const high = await renderLogo(1, 'H');
+
+        expect(auto.viewBox).to.equal(high.viewBox);
+        expect(auto.width).to.equal(high.width);
+        expect(auto.el.errorLevel).to.equal('M');
+      });
+
+      it('keeps level M for a small logo when error-level is not set', async () => {
+        const auto = await renderLogo(0.2);
+        const medium = await renderLogo(0.2, 'M');
+
+        expect(auto.viewBox).to.equal(medium.viewBox);
+        expect(auto.width).to.equal(medium.width);
+      });
+
+      it('raises the level to Q for a mid-size logo when error-level is not set', async () => {
+        // 0.6 of the H safe area fits Q but not M.
+        const auto = await renderLogo(0.6);
+        const quartile = await renderLogo(0.6, 'Q');
+        const medium = await renderLogo(0.6, 'M');
+
+        expect(auto.viewBox).to.equal(quartile.viewBox);
+        expect(auto.width).to.equal(quartile.width);
+        expect(asNumber(medium.width)).to.be.lessThan(asNumber(auto.width));
+      });
+
+      it('caps a large logo to the safe area of an explicit error-level="M"', async () => {
+        const auto = await renderLogo(1);
+        const medium = await renderLogo(1, 'M');
+
+        expect(asNumber(medium.width)).to.be.lessThan(asNumber(auto.width));
+      });
+
+      it('raises the level again after error-level is removed', async () => {
+        const high = await renderLogo(1, 'H');
+        const { el } = await renderLogo(1, 'L');
+
+        el.removeAttribute('error-level');
+        await elementUpdated(el);
+
+        expect(el.errorLevel).to.equal('M');
+        expect(getSvg(el)!.getAttribute('viewBox')).to.equal(high.viewBox);
+      });
     });
 
     describe('logoMargin', () => {
@@ -605,6 +752,8 @@ describe('IgcQrCodeComponent', () => {
   describe('Export', () => {
     const LOGO =
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+    const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
 
     let logoUrl: string | undefined;
 
@@ -701,6 +850,51 @@ describe('IgcQrCodeComponent', () => {
         expect(svg.querySelector('mask')).to.exist;
       });
 
+      it('leaves no empty host relation in the exported SVG', async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <span id="qr-export-hint">Hint</span>
+            <igc-qr-code
+              value="https://example.com"
+              aria-describedby="qr-export-hint"
+            ></igc-qr-code>
+          </div>
+        `);
+        const el = container.querySelector('igc-qr-code')!;
+        const svg = await parseSvg(await el.toBlob());
+
+        expect(svg.hasAttribute('aria-describedby')).to.be.false;
+        expect(svg.hasAttribute('aria-labelledby')).to.be.false;
+      });
+
+      it('writes the logo as both href and xlink:href', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            logo-src=${createLogoUrl()}
+          ></igc-qr-code>`
+        );
+
+        const blob = await el.toBlob();
+        const image = (await parseSvg(blob)).querySelector('image')!;
+        const href = image.getAttribute('href');
+
+        expect(href).to.match(/^data:image\/png/);
+        expect(image.getAttributeNS(XLINK_NAMESPACE, 'href')).to.equal(href);
+        expect(await blob.text()).to.include(
+          `xmlns:xlink="${XLINK_NAMESPACE}"`
+        );
+      });
+
+      it('writes no xlink:href without a logo', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code value="https://example.com"></igc-qr-code>`
+        );
+
+        const markup = await (await el.toBlob()).text();
+        expect(markup).not.to.include('xlink');
+      });
+
       it('inlines a fetched logo as a data URI', async () => {
         const el = await fixture<IgcQrCodeComponent>(
           html`<igc-qr-code
@@ -744,6 +938,42 @@ describe('IgcQrCodeComponent', () => {
         expect(fetchStub.calledOnce).to.be.true;
         expect(svg.querySelector('image')).to.be.null;
         expect(svg.querySelector('mask')).to.be.null;
+        expect(svg.querySelector('[mask]')).to.be.null;
+      });
+
+      it('drops the logo when the logo request fails', async () => {
+        const fetchStub = stub(window, 'fetch').resolves(
+          new Response('', { status: 404 })
+        );
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            logo-src=${createLogoUrl()}
+          ></igc-qr-code>`
+        );
+
+        const svg = await parseSvg(await el.toBlob());
+        expect(fetchStub.calledOnce).to.be.true;
+        expect(svg.querySelector('image')).to.be.null;
+        expect(svg.querySelector('[mask]')).to.be.null;
+      });
+
+      it('drops the logo when the fetched logo is not an image', async () => {
+        stub(window, 'fetch').resolves(
+          new Response('not an image', {
+            status: 200,
+            headers: { 'Content-Type': 'text/plain' },
+          })
+        );
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            logo-src=${createLogoUrl()}
+          ></igc-qr-code>`
+        );
+
+        const svg = await parseSvg(await el.toBlob());
+        expect(svg.querySelector('image')).to.be.null;
         expect(svg.querySelector('[mask]')).to.be.null;
       });
 
@@ -871,6 +1101,41 @@ describe('IgcQrCodeComponent', () => {
         el.value = undefined;
         await elementUpdated(el);
         await expectRejection(el.toImage(), Error);
+      });
+
+      it('rejects when the browser cannot encode the format', async () => {
+        // A browser without a WebP encoder silently returns a PNG.
+        stub(HTMLCanvasElement.prototype, 'toBlob').callsFake((callback) =>
+          callback(new Blob([], { type: 'image/png' }))
+        );
+
+        let error: unknown;
+        try {
+          await el.toImage({ format: 'webp' });
+        } catch (e) {
+          error = e;
+        }
+
+        expect((error as Error)?.message).to.equal(
+          'The browser cannot encode image/webp images.'
+        );
+      });
+    });
+
+    describe('rasterizeSvg()', () => {
+      it('rejects when the SVG cannot be loaded', async () => {
+        const broken = new Blob(['<svg'], { type: 'image/svg+xml' });
+
+        let error: unknown;
+        try {
+          await rasterizeSvg(broken, 64, 'png');
+        } catch (e) {
+          error = e;
+        }
+
+        expect((error as Error)?.message).to.equal(
+          'Failed to load the QR code SVG for export.'
+        );
       });
     });
   });

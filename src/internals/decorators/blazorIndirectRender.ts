@@ -3,9 +3,7 @@ import type {
   Constructor,
 } from '../mixins/constructor.js';
 
-/**
- * Indicates a class should use the indirect renderer in Blazor.
- */
+/** Marks a class for the indirect renderer in Blazor. */
 export function blazorIndirectRender(
   _constructor: Constructor | AbstractConstructor
 ) {}

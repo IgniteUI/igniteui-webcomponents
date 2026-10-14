@@ -562,6 +562,59 @@ describe('Tree Navigation', () => {
     });
   });
 
+  it('Should expand the sibling items of a nested focused item on asterisk (*) key press', async () => {
+    const [item21, item22] = topLevelItems[1].getChildren();
+
+    item22.collapse();
+    await elementUpdated(tree);
+    eventSpy.resetHistory();
+
+    TreeTestFunctions.setFocusAndTriggerKeydown(item21, tree, '*');
+    await waitUntil(() => eventSpy.calledWith('igcItemExpanded'));
+
+    expect(item22.expanded).to.be.true;
+    // Only the siblings in the same group expand.
+    expect(topLevelItems[0].expanded).to.be.false;
+    expect(topLevelItems[2].expanded).to.be.false;
+    expect(eventSpy).calledWith('igcItemExpanded', { detail: item22 });
+  });
+
+  it('Should ignore the navigation keys when every item is disabled', async () => {
+    tree = await TreeTestFunctions.createTreeElement(`
+      <igc-tree selection="multiple">
+        <igc-tree-item label="Item 1" disabled>
+          <igc-tree-item label="Item 1.1" disabled></igc-tree-item>
+        </igc-tree-item>
+        <igc-tree-item label="Item 2" disabled></igc-tree-item>
+      </igc-tree>
+    `);
+    eventSpy = spy(tree, 'emitEvent');
+
+    expect(tree.navService.focusedItem).to.be.null;
+
+    for (const key of [
+      'Home',
+      'End',
+      'ArrowDown',
+      'ArrowUp',
+      'ArrowLeft',
+      'ArrowRight',
+      '*',
+      ' ',
+    ]) {
+      tree.dispatchEvent(
+        new KeyboardEvent('keydown', { key, bubbles: true, composed: true })
+      );
+    }
+    await elementUpdated(tree);
+
+    expect(eventSpy).not.called;
+    expect(tree.navService.focusedItem).to.be.null;
+    expect(tree.navService.activeItem).to.be.null;
+    expect(tree.items.some((item) => item.selected || item.expanded)).to.be
+      .false;
+  });
+
   it('Should activate the focused tree item on Enter key press', async () => {
     expect(treeNavService.focusedItem).to.equal(topLevelItems[0]);
 

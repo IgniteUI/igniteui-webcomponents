@@ -1,15 +1,10 @@
 import { clamp } from '#internals/utils/math.js';
 import type { ScrollAlignment, VisibleRange } from './types.js';
 
-/**
- * The maximum scrollable coordinate of a document does not change.
- * All instances in one document share one probe result.
- */
+/** The max scrollable coordinate of a document is fixed, so instances share one probe. */
 const _maxBrowserSizeCache = new WeakMap<Document, number>();
 
-/**
- * Measures the maximum scrollable coordinate that the browser supports.
- */
+/** Measures the maximum scrollable coordinate that the browser supports. */
 function getMaxBrowserSizeProbePx(doc: Document): number {
   const cached = _maxBrowserSizeCache.get(doc);
   if (cached !== undefined) {
@@ -44,48 +39,42 @@ function clampIndex(index: number, length: number): number {
   return clamp(index, 0, length - 1);
 }
 
-/**
- * Fills `tree` with the partial range sums of `sizes` in one O(N) pass.
- * `tree` is a 1-indexed Fenwick array of `sizes.length + 1` zeroed entries.
- * Returns the total sum.
- */
-function buildTree(tree: Float64Array, sizes: Float64Array): number {
-  const length = sizes.length;
-  let total = 0;
-
-  for (let i = 1; i <= length; i++) {
-    tree[i] += sizes[i - 1];
-    total += sizes[i - 1];
-    const j = i + (i & -i);
-    if (j <= length) {
-      tree[j] += tree[i];
-    }
-  }
-  return total;
-}
+/** The item holds the estimate. */
+const UNMEASURED = 0;
+/** The item was measured under an older estimate. */
+const MEASURED = 1;
+/** The item was measured under the current estimate. */
+const SAMPLED = 2;
 
 /**
- * Binary Indexed Tree (Fenwick tree) over item sizes. Each hot-path operation
- * is O(log N): point update (item measured), prefix sum (scroll offset), and
- * index at offset (scroll to item, through binary lifting).
+ * Fenwick tree over item sizes: O(log N) point update, prefix sum, and index
+ * at offset. It holds only the measured sizes and counts. Each unmeasured item
+ * counts as `estimate`, so an estimate change is O(1).
  */
 class SizeTree {
   public readonly length: number;
 
-  /** A 1-indexed BIT. Each cell holds a partial range sum. */
-  private readonly _tree: Float64Array;
+  /** The size of each unmeasured item. */
+  public estimate: number;
 
-  /** Raw per-item sizes, 0-indexed. Kept for O(1) reads and delta calculation. */
+  /** A 1-indexed BIT of the measured sizes. */
+  private readonly _sums: Float64Array;
+
+  /** A 1-indexed BIT of the number of measured items. */
+  private readonly _counts: Int32Array;
+
+  /** Raw measured sizes, 0-indexed. Kept for O(1) delta calculation. */
   private readonly _sizes: Float64Array;
 
-  /**
-   * Flags the indices that hold a DOM-measured size (`1`) instead of an
-   * estimate (`0`). `applyEstimate` changes only the estimated entries.
-   */
-  private readonly _measured: Uint8Array;
+  /** `UNMEASURED`, `MEASURED` or `SAMPLED` for each item. */
+  private readonly _states: Uint8Array;
 
-  /** Running total. Updated together with the tree in O(1). */
-  private _total: number;
+  private _measuredCount = 0;
+  private _measuredTotal = 0;
+
+  /** Count and size sum of the `SAMPLED` items. */
+  private _sampleCount = 0;
+  private _sampleTotal = 0;
 
   /**
    * The highest power of two <= `length`, for the binary lifting in
@@ -93,44 +82,64 @@ class SizeTree {
    */
   private readonly _topBit: number;
 
-  private constructor(
+  /** Builds the tree in one O(N) pass. Without `states`, no item is measured. */
+  constructor(
     length: number,
-    sizes: Float64Array,
-    tree: Float64Array,
-    total: number,
-    measured: Uint8Array
+    estimate: number,
+    sizes = new Float64Array(length),
+    states = new Uint8Array(length)
   ) {
     this.length = length;
+    this.estimate = estimate;
     this._sizes = sizes;
-    this._tree = tree;
-    this._total = total;
-    this._measured = measured;
+    this._states = states;
+    this._sums = new Float64Array(length + 1);
+    this._counts = new Int32Array(length + 1);
     this._topBit = length > 0 ? 1 << (31 - Math.clz32(length)) : 0;
-  }
 
-  /**
-   * Creates a tree of `length` items, each set to `fillSize` and marked
-   * unmeasured. O(N).
-   */
-  public static filled(length: number, fillSize: number): SizeTree {
-    return SizeTree._build(
-      new Float64Array(length).fill(fillSize),
-      new Uint8Array(length)
-    );
-  }
+    for (let i = 1; i <= length; i++) {
+      const state = states[i - 1];
 
-  /**
-   * Builds a tree from a sizes array and its matching measured-flags array. O(N).
-   */
-  private static _build(sizes: Float64Array, measured: Uint8Array): SizeTree {
-    const tree = new Float64Array(sizes.length + 1);
-    const total = buildTree(tree, sizes);
-    return new SizeTree(sizes.length, sizes, tree, total, measured);
+      if (state !== UNMEASURED) {
+        const size = sizes[i - 1];
+        this._sums[i] += size;
+        this._counts[i]++;
+        this._measuredCount++;
+        this._measuredTotal += size;
+
+        if (state === SAMPLED) {
+          this._sampleCount++;
+          this._sampleTotal += size;
+        }
+      }
+
+      const parent = i + (i & -i);
+      if (parent <= length) {
+        this._sums[parent] += this._sums[i];
+        this._counts[parent] += this._counts[i];
+      }
+    }
   }
 
   /** Total size of all items. O(1). */
   public get totalSize(): number {
-    return this._total;
+    return (
+      this._measuredTotal + (this.length - this._measuredCount) * this.estimate
+    );
+  }
+
+  /** The average size of the `SAMPLED` items, or `0` if there are none. */
+  public get sampleAverage(): number {
+    return this._sampleCount > 0 ? this._sampleTotal / this._sampleCount : 0;
+  }
+
+  /** Whether each item before `index` is measured. O(log N). */
+  public isMeasuredBefore(index: number): boolean {
+    let count = 0;
+    for (let j = index; j > 0; j -= j & -j) {
+      count += this._counts[j];
+    }
+    return count === index;
   }
 
   /**
@@ -139,73 +148,70 @@ class SizeTree {
    */
   public prefixSum(i: number): number {
     let sum = 0;
+    let count = 0;
     for (let j = i; j > 0; j -= j & -j) {
-      sum += this._tree[j];
+      sum += this._sums[j];
+      count += this._counts[j];
     }
-    return sum;
+    return sum + (i - count) * this.estimate;
   }
 
   /**
-   * Sets the size of the item at a 0-based index and marks the item as
-   * measured. Later `applyEstimate()` calls do not change measured items.
+   * Sets the size of the item at a 0-based index and marks it `SAMPLED`.
    * Returns true when the size changed. O(log N).
    */
-  public update(index: number, newSize: number): boolean {
+  public update(index: number, size: number): boolean {
     if (index < 0 || index >= this.length) return false;
 
-    const old = this._sizes[index];
-    this._measured[index] = 1;
-    if (old === newSize) return false;
+    const state = this._states[index];
+    const isNew = state === UNMEASURED;
+    const old = isNew ? 0 : this._sizes[index];
+    const delta = size - old;
 
-    const delta = newSize - old;
-    this._sizes[index] = newSize;
-    this._total += delta;
-    for (let i = index + 1; i <= this.length; i += i & -i) {
-      this._tree[i] += delta;
-    }
-    return true;
-  }
+    this._states[index] = SAMPLED;
+    this._sizes[index] = size;
+    this._measuredTotal += delta;
+    this._sampleTotal += state === SAMPLED ? delta : size;
+    if (state !== SAMPLED) this._sampleCount++;
+    if (isNew) this._measuredCount++;
 
-  /**
-   * Returns a new tree of `newLength` items in one O(N) pass. Sizes and
-   * measured flags are kept up to `min(this.length, newLength, retainCount)`.
-   * The remainder is filled with `fillSize` and marked unmeasured. Pass a
-   * `retainCount` below the item count when the data behind those indices
-   * changed identity.
-   */
-  public cloneResized(
-    newLength: number,
-    fillSize: number,
-    retainCount = newLength
-  ): SizeTree {
-    const sizes = new Float64Array(newLength).fill(fillSize);
-    const measured = new Uint8Array(newLength);
-    const retained = Math.max(0, Math.min(this.length, newLength, retainCount));
-    sizes.set(this._sizes.subarray(0, retained));
-    measured.set(this._measured.subarray(0, retained));
-    return SizeTree._build(sizes, measured);
-  }
-
-  /**
-   * Sets `estimatedSize` on each unmeasured item. Measured items do not
-   * change. Returns true when at least one size changed.
-   *
-   * One estimate change can touch most of the list, so this rebuilds in one
-   * O(N) pass instead of one O(log N) `update` per item.
-   */
-  public applyEstimate(estimatedSize: number): boolean {
-    let changed = false;
-    for (let i = 0; i < this.length; i++) {
-      if (!this._measured[i] && this._sizes[i] !== estimatedSize) {
-        this._sizes[i] = estimatedSize;
-        changed = true;
+    if (isNew || delta !== 0) {
+      for (let i = index + 1; i <= this.length; i += i & -i) {
+        this._sums[i] += delta;
+        if (isNew) this._counts[i]++;
       }
     }
-    if (!changed) return false;
 
-    this._tree.fill(0);
-    this._total = buildTree(this._tree, this._sizes);
-    return true;
+    return size !== (isNew ? this.estimate : old);
+  }
+
+  /**
+   * Returns a new tree of `newLength` items. Measured sizes are kept up to
+   * `min(this.length, newLength, retainCount)`, and the other items are
+   * unmeasured. Pass a `retainCount` below the item count when the data
+   * behind those indices changed identity. O(N).
+   */
+  public cloneResized(newLength: number, retainCount = newLength): SizeTree {
+    const retained = Math.max(0, Math.min(this.length, newLength, retainCount));
+    const sizes = new Float64Array(newLength);
+    const states = new Uint8Array(newLength);
+    sizes.set(this._sizes.subarray(0, retained));
+    states.set(this._states.subarray(0, retained));
+    return new SizeTree(newLength, this.estimate, sizes, states);
+  }
+
+  /**
+   * Starts a new sample: `sampleAverage` then counts only the items measured
+   * after this call. O(N).
+   */
+  public startSample(): void {
+    for (let i = 0; i < this.length; i++) {
+      if (this._states[i] === SAMPLED) {
+        this._states[i] = MEASURED;
+      }
+    }
+    this._sampleCount = 0;
+    this._sampleTotal = 0;
   }
 
   /**
@@ -220,9 +226,14 @@ class SizeTree {
 
     for (let bit = this._topBit; bit > 0; bit >>= 1) {
       const next = idx + bit;
-      if (next <= this.length && this._tree[next] <= remaining) {
+      if (next > this.length) continue;
+
+      // Node `next` covers the `bit` items after `idx`.
+      const size =
+        this._sums[next] + (bit - this._counts[next]) * this.estimate;
+      if (size <= remaining) {
         idx = next;
-        remaining -= this._tree[idx];
+        remaining -= size;
       }
     }
     return Math.min(this.length - 1, idx);
@@ -230,36 +241,27 @@ class SizeTree {
 }
 
 /**
- * Pure scroll-math engine for one axis of virtual scrolling. A Fenwick tree
- * holds all size state.
+ * Pure scroll-math engine for one axis of virtual scrolling.
  *
- * ### Virtual and DOM coordinates
- *
- * Browsers limit how far an element can scroll. When the total item size is
- * larger than that limit, the engine compresses the *virtual* space
- * (`0…totalSize`) into the *DOM* space the browser can represent
- * (`0…domSize`) by the factor `_virtualRatio`. Each offset that crosses that
- * boundary is scaled: incoming scroll positions are multiplied by the ratio,
- * and outgoing offsets are divided by it. Items render at their real pixel
- * size, so item sizes are always virtual.
+ * Browsers limit how far an element can scroll. Past that limit the engine
+ * compresses the virtual space (`0…totalSize`) into the DOM space
+ * (`0…domSize`) by the ratio `(totalSize - viewportSize) / (domSize - viewportSize)`,
+ * so the last DOM scroll position shows the end of the list. Incoming scroll
+ * positions are multiplied by the ratio, and outgoing offsets are divided by it.
+ * Items render at their real pixel size, so item sizes are always virtual.
  */
 export class VirtualScrollEngine {
   private _maxBrowserSize = Number.POSITIVE_INFINITY;
 
-  /**
-   * The ratio `totalSize / maxBrowserSize` when `totalSize` is larger than
-   * the maximum DOM coordinate the browser supports; `1` otherwise.
-   * Maps virtual scroll positions to DOM scroll positions.
-   */
-  private _virtualRatio = 1;
-
-  /** Binary Indexed Tree for O(log N) size queries and updates. */
   private _tree: SizeTree | null = null;
 
-  /**
-   * Called when item sizes or the item count change.
-   * Example: `() => this.requestUpdate()`.
-   */
+  /** The estimate last given to `resize` or `updateEstimatedSize`. */
+  private _configuredEstimate = Number.NaN;
+
+  /** Whether `adaptEstimate` has applied a measured average. */
+  private _hasAdaptedEstimate = false;
+
+  /** Called when item sizes or the item count change. */
   public onSizeChange: (() => void) | null = null;
 
   /** Total virtual size of all items in px. */
@@ -269,21 +271,25 @@ export class VirtualScrollEngine {
 
   /** Total size in DOM space, clamped to the maximum browser size. */
   public get domSize(): number {
-    return this._virtualRatio !== 1 ? this._maxBrowserSize : this.totalSize;
+    return Math.min(this.totalSize, this._maxBrowserSize);
   }
 
-  /** Measures the maximum browser size for the document and rescales. */
+  /** Whether the virtual space is compressed into a smaller DOM space. */
+  public get isCompressed(): boolean {
+    return this.totalSize > this._maxBrowserSize;
+  }
+
   public initMaxBrowserSize(doc: Document): void {
     this._maxBrowserSize = getMaxBrowserSizeProbePx(doc);
-    this._updateVirtualRatio();
   }
 
   /**
-   * Resizes the internal sizes array to `length`. Measured sizes below
-   * `retainCount` are kept. The remainder is filled with `estimatedSize` and
-   * marked unmeasured. Callers that only append can keep the default
-   * `retainCount`. Callers whose data changed identity at some index must
-   * pass that index, so the stale measurements after it are discarded.
+   * Resizes the sizes array to `length` and keeps the measured sizes below
+   * `retainCount`. A caller whose data changed identity at an index passes
+   * that index, so the stale measurements after it are discarded.
+   *
+   * Unmeasured items take `estimatedSize`, or the adapted average while
+   * `estimatedSize` does not change.
    */
   public resize(
     length: number,
@@ -292,18 +298,21 @@ export class VirtualScrollEngine {
   ): void {
     if (this._tree?.length === length && retainCount >= length) return;
 
-    this._tree = this._tree
-      ? this._tree.cloneResized(length, estimatedSize, retainCount)
-      : SizeTree.filled(length, estimatedSize);
-    this._updateVirtualRatio();
+    const reconfigured = this._configureEstimate(estimatedSize);
+    const tree =
+      this._tree?.cloneResized(length, retainCount) ??
+      new SizeTree(length, estimatedSize);
+
+    if (reconfigured) {
+      tree.estimate = estimatedSize;
+    }
+    this._tree = tree;
     this.onSizeChange?.();
   }
 
-  /** Records the measured DOM size for a single item. */
   public measureItem(index: number, size: number): void {
     if (!this._tree?.update(index, size)) return;
 
-    this._updateVirtualRatio();
     this.onSizeChange?.();
   }
 
@@ -313,27 +322,70 @@ export class VirtualScrollEngine {
    * not, because `resize` is then a no-op.
    */
   public updateEstimatedSize(estimatedSize: number): void {
-    if (!this._tree?.applyEstimate(estimatedSize)) return;
+    if (this._configureEstimate(estimatedSize)) {
+      this._applyEstimate(estimatedSize);
+    }
+  }
 
-    this._updateVirtualRatio();
-    this.onSizeChange?.();
+  /**
+   * Sets the estimate of the unmeasured items to the average size measured
+   * since the estimate was last configured. Older sizes can be out of date,
+   * for example after a density change.
+   *
+   * The first change applies anywhere. A later one applies only while each
+   * item before `windowStart` is measured: the offset of the rendered items
+   * then does not depend on the estimate, so the change cannot move them.
+   */
+  public adaptEstimate(windowStart: number): void {
+    const tree = this._tree;
+    if (!tree?.sampleAverage) return;
+    if (this._hasAdaptedEstimate && !tree.isMeasuredBefore(windowStart)) return;
+
+    this._hasAdaptedEstimate = true;
+    this._applyEstimate(tree.sampleAverage);
   }
 
   /**
    * Returns the DOM scroll offset in px that puts the item at `index` at the
-   * leading edge of the viewport.
+   * leading edge of a `viewportSize` px viewport. Not clamped to the
+   * reachable scroll range, see `getAlignedScrollOffset`.
    */
-  public getScrollOffsetForIndex(index: number): number {
+  public getScrollOffsetForIndex(index: number, viewportSize = 0): number {
     if (!this._tree || index <= 0) return 0;
 
     const clamped = Math.min(index, this._tree.length);
-    return this._tree.prefixSum(clamped) / this._virtualRatio;
+    return this._tree.prefixSum(clamped) / this._ratio(viewportSize);
+  }
+
+  /**
+   * Returns the DOM offset of the content wrapper, whose first item is at
+   * `startIndex`, for the given scroll state. The items then show the virtual
+   * pixels from `scrollPosition * ratio` at the leading edge of the viewport,
+   * as `getVisibleRange` and the alignment math expect.
+   *
+   * Without compression, the result is the offset of the item and does not
+   * depend on `scrollPosition`. With it, the result changes on each scroll, so
+   * the content moves by the ratio for each DOM pixel.
+   */
+  public getContentOffset(
+    startIndex: number,
+    scrollPosition: number,
+    viewportSize: number
+  ): number {
+    if (!this._tree || this._tree.length === 0) return 0;
+
+    const start = this._tree.prefixSum(
+      clampIndex(startIndex, this._tree.length)
+    );
+    return (
+      start - Math.max(0, scrollPosition) * (this._ratio(viewportSize) - 1)
+    );
   }
 
   /**
    * The largest DOM scroll offset the host can reach for the given viewport
-   * size. A request beyond it does nothing, so offsets given to a caller
-   * that waits for the scroll to settle are clamped to it.
+   * size. A request past it does nothing, so an offset given to a caller that
+   * waits for the scroll to settle is clamped to this value.
    */
   private _getMaxScrollOffset(viewportSize: number): number {
     return Math.max(0, this.domSize - viewportSize);
@@ -345,9 +397,8 @@ export class VirtualScrollEngine {
    * reachable scroll range.
    *
    * The slack is computed in virtual space against the item's real size and
-   * converted to DOM space once, at the end. One DOM pixel equals
-   * `_virtualRatio` virtual pixels, so mixed coordinates would scale the
-   * slack.
+   * converted to DOM space once, at the end. One DOM pixel equals `_ratio`
+   * virtual pixels, so mixed coordinates would scale the slack.
    */
   public getAlignedScrollOffset(
     index: number,
@@ -367,9 +418,34 @@ export class VirtualScrollEngine {
     }
 
     return clamp(
-      offset / this._virtualRatio,
+      offset / this._ratio(viewportSize),
       0,
       this._getMaxScrollOffset(viewportSize)
+    );
+  }
+
+  /**
+   * Returns the DOM scroll offset that brings the item at `index` into view
+   * as `position` asks. `nearest` follows native `scrollIntoView`: an item in
+   * view, or one that covers the viewport, keeps `scrollPosition`, and any
+   * other item scrolls the smallest distance to an edge alignment.
+   */
+  public resolveScrollOffset(
+    index: number,
+    scrollPosition: number,
+    viewportSize: number,
+    position: ScrollLogicalPosition = 'start'
+  ): number {
+    if (position === 'nearest') {
+      const start = this.getAlignedScrollOffset(index, viewportSize, 'start');
+      const end = this.getAlignedScrollOffset(index, viewportSize, 'end');
+      return clamp(scrollPosition, Math.min(start, end), Math.max(start, end));
+    }
+
+    return this.getAlignedScrollOffset(
+      index,
+      viewportSize,
+      position === 'center' || position === 'end' ? position : 'start'
     );
   }
 
@@ -389,7 +465,7 @@ export class VirtualScrollEngine {
     const clamped = clampIndex(index, this._tree.length);
     const itemStart = this._tree.prefixSum(clamped);
     const itemEnd = this._tree.prefixSum(clamped + 1);
-    const viewStart = Math.max(0, scrollPosition) * this._virtualRatio;
+    const viewStart = Math.max(0, scrollPosition) * this._ratio(viewportSize);
     const viewEnd = viewStart + viewportSize;
 
     const contained = itemStart >= viewStart && itemEnd <= viewEnd;
@@ -398,10 +474,7 @@ export class VirtualScrollEngine {
     return contained || spanning;
   }
 
-  /**
-   * Returns the visible and over-scanned item range for the given scroll
-   * state.
-   */
+  /** Returns the visible and over-scanned item range for the given scroll state. */
   public getVisibleRange(
     scrollPosition: number,
     viewportSize: number,
@@ -411,10 +484,9 @@ export class VirtualScrollEngine {
       return { startIndex: 0, endIndex: -1 };
     }
 
-    // The viewport is not scaled by the virtual ratio. Items render at their
-    // real pixel size, so a `viewportSize` px viewport always shows that many
-    // virtual pixels of items, at any compression of the scroll range.
-    const startOffset = Math.max(0, scrollPosition) * this._virtualRatio;
+    // The ratio does not scale the viewport: items render at their real size,
+    // so the viewport shows `viewportSize` virtual pixels at any compression.
+    const startOffset = Math.max(0, scrollPosition) * this._ratio(viewportSize);
     const first = this._tree.findIndexAtOffset(startOffset);
     const last = this._tree.findIndexAtOffset(startOffset + viewportSize);
 
@@ -424,11 +496,7 @@ export class VirtualScrollEngine {
     };
   }
 
-  /**
-   * Sum of the actual sizes of the items in [startIndex, endIndex]. The
-   * render pass uses it to clamp the content translate offset, so rendered
-   * items do not overflow past `domSize` under coordinate compression.
-   */
+  /** Sum of the actual sizes of the items in [startIndex, endIndex]. */
   public getPhysicalRangeSize(startIndex: number, endIndex: number): number {
     if (!this._tree) return 0;
 
@@ -437,9 +505,37 @@ export class VirtualScrollEngine {
     return this._tree.prefixSum(end) - this._tree.prefixSum(start);
   }
 
-  private _updateVirtualRatio(): void {
-    const totalSize = this._tree?.totalSize ?? 0;
-    this._virtualRatio =
-      totalSize <= this._maxBrowserSize ? 1 : totalSize / this._maxBrowserSize;
+  /**
+   * Records a changed configured estimate and starts a new sample. Returns
+   * false for an unchanged one, which keeps the adapted average.
+   */
+  private _configureEstimate(estimatedSize: number): boolean {
+    if (estimatedSize === this._configuredEstimate) return false;
+
+    this._configuredEstimate = estimatedSize;
+    this._tree?.startSample();
+    return true;
+  }
+
+  private _applyEstimate(estimatedSize: number): void {
+    const tree = this._tree;
+    if (!tree) return;
+
+    const total = tree.totalSize;
+    tree.estimate = estimatedSize;
+    if (tree.totalSize === total) return;
+
+    this.onSizeChange?.();
+  }
+
+  /**
+   * Virtual pixels per DOM pixel of scroll: `1` without compression, else the
+   * ratio of the virtual scroll range to the DOM one.
+   */
+  private _ratio(viewportSize: number): number {
+    const domRange = this._maxBrowserSize - viewportSize;
+    return this.isCompressed && domRange > 0
+      ? (this.totalSize - viewportSize) / domRange
+      : 1;
   }
 }

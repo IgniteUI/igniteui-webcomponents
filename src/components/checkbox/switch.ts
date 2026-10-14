@@ -3,10 +3,11 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
 import { renderToggleShell } from '#internals/templates/toggle-shell.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
+import { all } from '#themes/checkbox/themes/switch-themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { styles as shared } from './themes/shared/switch/switch.common.css.js';
-import { all } from './themes/switch-themes.js';
 import { styles } from './themes/switch.base.css.js';
 
 const nextId = createIdGenerator('switch');
@@ -27,7 +28,7 @@ const nextId = createIdGenerator('switch');
  */
 export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-switch';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -43,10 +44,9 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   }
 
   protected override render() {
-    const labelledBy = this.getAttribute('aria-labelledby');
     const checked = this.checked;
 
-    return renderToggleShell({
+    return renderToggleShell(this, {
       type: 'checkbox',
       inputId: this._inputId,
       labelId: this._labelId,
@@ -59,13 +59,7 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
       labelParts: { label: true, checked },
       renderControl: () =>
         html`<span part=${partMap({ thumb: true, checked })}></span>`,
-      checked,
       hideLabel: this._hideLabel,
-      name: this.name,
-      value: this.value,
-      required: this.required,
-      disabled: this.disabled,
-      ariaLabelledBy: labelledBy ? labelledBy : this._labelId,
       onClick: this._handleClick,
       onKeyDown: this._handleEnterKeydown,
       onBlur: this._handleBlur,

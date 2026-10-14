@@ -1,4 +1,3 @@
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
 
 :host {
@@ -104,5 +103,40 @@
 
     igc-input::part(input)::selection {
         background: transparent;
+    }
+}
+
+@media (forced-colors: active) {
+    [part~='list-wrapper'] {
+        border: rem(1px) solid CanvasText;
+    }
+
+    :host(:disabled) igc-validator::part(helper-text),
+    :host([disabled]) igc-validator::part(helper-text) {
+        color: GrayText;
+    }
+
+    :host(:disabled),
+    :host([disabled]),
+    :host(:disabled) igc-input,
+    :host([disabled]) igc-input {
+        --disabled-text-color: GrayText;
+        --toggle-button-foreground-disabled: GrayText;
+    }
+
+    :host(:disabled) igc-input::part(container),
+    :host([disabled]) igc-input::part(container) {
+        border-color: GrayText;
+    }
+}
+
+@media (forced-colors: active) {
+    [part~='active'] {
+        outline: rem(1px) solid CanvasText;
+        outline-offset: rem(-1px);
+    }
+
+    [part~='selected'] {
+        color: Highlight;
     }
 }

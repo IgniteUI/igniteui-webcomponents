@@ -1,5 +1,10 @@
+import { createDate } from '#internals/date/model.js';
 import { asNumber, clamp } from '#internals/utils/math.js';
-import { type MaskOptions, MaskParser } from '../mask-input/mask-parser.js';
+import {
+  escapeMaskFlags,
+  type MaskOptions,
+  MaskParser,
+} from '../mask-input/mask-parser.js';
 import {
   createDatePart,
   DATE_PART_TYPES,
@@ -31,6 +36,18 @@ const FORMAT_CHAR_TO_DATE_PART = new Map<string, DatePartType>([
 const CENTURY_THRESHOLD = 50;
 const CENTURY_BASE = 2000;
 
+/**
+ * Applies the century threshold to a year of one or two typed digits. Keeps a year of
+ * three or four typed digits.
+ */
+function resolveYear(year: number, typed: string): number {
+  if (typed.length > 2) {
+    return year;
+  }
+
+  return year + (year < CENTURY_THRESHOLD ? CENTURY_BASE : CENTURY_BASE - 100);
+}
+
 /** Default values for missing date parts */
 const DEFAULT_DATE_VALUES = {
   year: 2000,
@@ -41,8 +58,7 @@ const DEFAULT_DATE_VALUES = {
   seconds: 0,
 } as const;
 
-/** Default date/time format */
-export const DEFAULT_DATETIME_FORMAT = 'MM/dd/yyyy';
+const DEFAULT_DATETIME_FORMAT = 'MM/dd/yyyy';
 
 //#endregion
 
@@ -53,35 +69,49 @@ type PartBuilder = DatePartOptions & { type: DatePartType };
 
 /**
  * Converts a date format string into a mask pattern. Date characters become `0`, or `L`
- * for the alphabetic AM/PM marker; everything else is carried over as a literal.
- *
- * @example
- * ```ts
- * toMaskFormat('MM/dd/yyyy'); // '00/00/0000'
- * ```
+ * for the alphabetic AM/PM marker. Other characters stay literal.
  */
-export function toMaskFormat(dateFormat: string): string {
+function toMaskFormat(dateFormat: string): string {
   let result = '';
 
   for (const char of dateFormat) {
     const type = FORMAT_CHAR_TO_DATE_PART.get(char);
-    result += type ? (type === DatePartType.AmPm ? 'L' : '0') : char;
+
+    if (!type) {
+      result += escapeMaskFlags(char);
+    } else {
+      result += type === DatePartType.AmPm ? 'L' : '0';
+    }
   }
 
   return result;
 }
 
-/**
- * Widens a short year format to `yyyy` for editing purposes, `yy` excluded - a two digit
- * year is edited as two digits.
- */
-function normalizeYearFormat(builders: PartBuilder[]): void {
-  const year = builders.find((part) => part.type === DatePartType.Year);
+/** Widens each year run, except `yy`, to four characters. Keeps the case of the run. */
+function normalizeYearFormat(format: string): string {
+  return format.replace(/y+|Y+/g, (run) =>
+    run.length === 2 ? run : run[0].repeat(4)
+  );
+}
 
-  if (year && year.format.length !== 2) {
-    year.end += 4 - year.format.length;
-    year.format = 'yyyy';
+function hasPartOf(format: string, types: ReadonlySet<DatePartType>): boolean {
+  for (const char of format) {
+    const type = FORMAT_CHAR_TO_DATE_PART.get(char);
+    if (type && types.has(type)) {
+      return true;
+    }
   }
+  return false;
+}
+
+/** Returns whether a date format has a day, month or year part. */
+export function formatHasDateParts(format: string): boolean {
+  return hasPartOf(format, DATE_PART_TYPES);
+}
+
+/** Returns whether a date format has an hours, minutes or seconds part. */
+export function formatHasTimeParts(format: string): boolean {
+  return hasPartOf(format, TIME_PART_TYPES);
 }
 
 //#endregion
@@ -94,9 +124,8 @@ export abstract class DateFormatMaskParser<
   T extends IDatePart = IDatePart,
 > extends MaskParser {
   /**
-   * Built on first read, because {@link MaskParser} parses the mask from its constructor -
-   * before any subclass field exists. Declared without an initializer so that it survives
-   * the `_invalidate` call made from there.
+   * Built on first read, because {@link MaskParser} parses the mask in its constructor.
+   * It has no initializer, so it survives the `_invalidate` call from there.
    */
   private _parts?: T[];
 
@@ -117,10 +146,7 @@ export abstract class DateFormatMaskParser<
     this._parts = undefined;
   }
 
-  /**
-   * The part at a cursor position. The end is inclusive, so a caret resting at the end of
-   * a part still resolves to it.
-   */
+  /** The part at a cursor position. The end is inclusive, so a caret at a part end resolves to it. */
   public getPartForCursor(position: number): T | undefined {
     return this.parts.find(
       (part) =>
@@ -140,11 +166,7 @@ export abstract class DateFormatMaskParser<
     return this.parts.find((part) => part.type !== DatePartType.Literal);
   }
 
-  /**
-   * Whether the masked string holds nothing typed at all - every date/time position
-   * is still a prompt. Unlike a partially filled mask, there is no value in it to
-   * complete from the part defaults.
-   */
+  /** Whether every date/time position is still a prompt, so there is nothing to complete. */
   public isBlank(masked: string): boolean {
     return this.parts.every(
       (part) =>
@@ -180,7 +202,19 @@ export abstract class DateFormatMaskParser<
  */
 export class DateTimeMaskParser extends DateFormatMaskParser {
   constructor(options?: MaskOptions) {
-    super({ ...options, format: options?.format || DEFAULT_DATETIME_FORMAT });
+    super({
+      ...options,
+      format: normalizeYearFormat(options?.format || DEFAULT_DATETIME_FORMAT),
+    });
+  }
+
+  public override get mask(): string {
+    return super.mask;
+  }
+
+  /** Sets the date format. Widens each year format, except `yy`, to four characters. */
+  public override set mask(value: string) {
+    super.mask = value && normalizeYearFormat(value);
   }
 
   //#region Date Format Parsing
@@ -191,7 +225,8 @@ export class DateTimeMaskParser extends DateFormatMaskParser {
     let run: PartBuilder | null = null;
     let position = 0;
 
-    for (const char of this.mask) {
+    // Iterate by UTF-16 code unit, like the mask positions.
+    for (const char of this.mask.split('')) {
       const type = FORMAT_CHAR_TO_DATE_PART.get(char);
 
       // A part runs only while the same format character repeats - 'MM' is one part,
@@ -226,8 +261,6 @@ export class DateTimeMaskParser extends DateFormatMaskParser {
       builders.push(run);
     }
 
-    normalizeYearFormat(builders);
-
     return builders.map(({ type, ...options }) =>
       createDatePart(type, options)
     );
@@ -237,24 +270,13 @@ export class DateTimeMaskParser extends DateFormatMaskParser {
 
   //#region Date Parsing
 
-  /**
-   * Parses a masked string into a Date object.
-   * Returns null if the string cannot be parsed into a valid date.
-   */
+  /** Parses a masked string into a Date. Returns null if it is not a valid date. */
   public parseDate(masked: string): Date | null {
     const parts = this._extractDateValues(masked);
 
     // Convert to zero-based month (only if month is in format)
     if (parts[DatePartType.Month] !== undefined) {
       parts[DatePartType.Month]! -= 1;
-    }
-
-    // Apply century threshold for two-digit years (only if year is in format)
-    if (
-      parts[DatePartType.Year] !== undefined &&
-      parts[DatePartType.Year]! < CENTURY_THRESHOLD
-    ) {
-      parts[DatePartType.Year]! += CENTURY_BASE;
     }
 
     if (!this._validateDateParts(parts)) {
@@ -266,9 +288,6 @@ export class DateTimeMaskParser extends DateFormatMaskParser {
     return this._createDateFromParts(parts);
   }
 
-  /**
-   * Extracts numeric values from the masked string for each date part.
-   */
   private _extractDateValues(
     masked: string
   ): Partial<Record<DatePartType, number>> {
@@ -281,20 +300,21 @@ export class DateTimeMaskParser extends DateFormatMaskParser {
         datePart.type === DatePartType.Date ||
         datePart.type === DatePartType.Month;
 
-      parts[datePart.type] = clamp(
-        asNumber(this._typedPart(masked, datePart)),
+      const typed = this._typedPart(masked, datePart);
+      const value = clamp(
+        asNumber(typed),
         isMonthOrDate ? 1 : 0,
         Number.MAX_SAFE_INTEGER
       );
+
+      parts[datePart.type] =
+        datePart.type === DatePartType.Year ? resolveYear(value, typed) : value;
     }
 
     return parts;
   }
 
-  /**
-   * Validates that parsed date parts are within valid ranges.
-   * Only validates parts that are present in the format.
-   */
+  /** Checks that the parsed parts of the format are in range. */
   private _validateDateParts(
     parts: Partial<Record<DatePartType, number>>
   ): boolean {
@@ -341,7 +361,7 @@ export class DateTimeMaskParser extends DateFormatMaskParser {
     parts: Partial<Record<DatePartType, number>>
   ): Date {
     const d = DEFAULT_DATE_VALUES;
-    return new Date(
+    return createDate(
       parts[DatePartType.Year] ?? d.year,
       parts[DatePartType.Month] ?? d.month,
       parts[DatePartType.Date] ?? d.date,

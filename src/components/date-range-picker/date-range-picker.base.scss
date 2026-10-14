@@ -1,4 +1,3 @@
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
 
 :host {
@@ -41,7 +40,7 @@
 
 :host([required]) {
     igc-date-time-input::part(label)::after {
-        content: '*';
+        @include required-asterisk();
     }
 }
 
@@ -81,4 +80,19 @@ igc-date-time-input {
     flex-direction: column;
     width: 100%;
     min-width: 0;
+}
+
+@media (forced-colors: active) {
+    :host igc-focus-trap {
+        max-width: calc(var(--min-width) * 2.02);
+        
+        igc-calendar {
+            border: rem(1px) solid CanvasText;
+        }
+
+        [part~='actions'] {
+            border: 1px solid CanvasText;
+            border-block-start: 0;
+        }
+    }
 }

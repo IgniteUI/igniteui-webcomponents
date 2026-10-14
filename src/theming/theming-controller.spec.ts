@@ -16,9 +16,8 @@ import {
   type ThemingController,
 } from './theming-controller.js';
 import { CHANGE_THEME_EVENT } from './theming-event.js';
-import type { Theme, Themes } from './types.js';
+import type { ComponentThemes, Theme, Themes } from './types.js';
 
-// Mock themes for testing
 const mockThemes: Themes = {
   light: {
     shared: css`
@@ -142,13 +141,11 @@ describe('Theming Controller', () => {
       }
     );
 
-    // Set up default global theme for tests
     configureTheme('bootstrap', 'light');
   });
 
   describe('Global Theme', () => {
     beforeEach(() => {
-      // Reset to default theme before each test
       configureTheme('bootstrap', 'light');
     });
 
@@ -171,7 +168,6 @@ describe('Theming Controller', () => {
       expect(el.themingController.theme).to.equal('bootstrap');
       expect(el.themingController.variant).to.equal('light');
 
-      // Change global theme
       setTimeout(() => configureTheme('material', 'light'));
       await oneEvent(window, CHANGE_THEME_EVENT);
       await elementUpdated(el);
@@ -188,7 +184,6 @@ describe('Theming Controller', () => {
 
       const initialCallCount = el.themeChangeCallCount;
 
-      // Change global theme
       setTimeout(() => configureTheme('fluent', 'dark'));
       await oneEvent(window, CHANGE_THEME_EVENT);
       await elementUpdated(el);
@@ -224,14 +219,11 @@ describe('Theming Controller', () => {
 
       const initialCallCount = el.themeChangeCallCount;
 
-      // Disconnect the element
       el.remove();
 
-      // Change global theme
       setTimeout(() => configureTheme('material', 'dark'));
       await oneEvent(window, CHANGE_THEME_EVENT);
 
-      // The callback should not have been called again
       expect(el.themeChangeCallCount).to.equal(initialCallCount);
     });
   });
@@ -254,6 +246,25 @@ describe('Theming Controller', () => {
 
       expect(el.themingController.theme).to.equal('material');
       expect(el.themingController.variant).to.equal('dark');
+    });
+
+    it('should apply only the context theme when connected inside a theme provider', async () => {
+      const tag = unsafeStatic(themedTag);
+      const container = await fixture<HTMLDivElement>(html`
+        <div>
+          <igc-theme-provider theme="fluent" variant="dark">
+            <${tag}></${tag}>
+          </igc-theme-provider>
+        </div>
+      `);
+
+      const el = container.querySelector(
+        themedTag
+      ) as ThemedTestComponentElement;
+      await elementUpdated(el);
+
+      expect(el.themeChangeCallCount).to.equal(1);
+      expect(el.lastTheme).to.equal('fluent');
     });
 
     it('should update when theme provider theme changes', async () => {
@@ -310,7 +321,7 @@ describe('Theming Controller', () => {
       await elementUpdated(provider);
       await elementUpdated(el);
 
-      // Theme change callback should be called even when only variant changes
+      // A variant-only change also calls the callback.
       expect(el.themeChangeCallCount).to.be.greaterThan(initialCallCount);
     });
 
@@ -332,12 +343,10 @@ describe('Theming Controller', () => {
       expect(el.themingController.theme).to.equal('material');
       expect(el.themingController.variant).to.equal('dark');
 
-      // Change global theme - should not affect component inside provider
       setTimeout(() => configureTheme('bootstrap', 'light'));
       await oneEvent(window, CHANGE_THEME_EVENT);
       await elementUpdated(el);
 
-      // Should still be material, not bootstrap
       expect(el.themingController.theme).to.equal('material');
       expect(el.themingController.variant).to.equal('dark');
     });
@@ -414,7 +423,6 @@ describe('Theming Controller', () => {
         'igc-theme-provider'
       ) as IgcThemeProviderComponent;
 
-      // Dynamically create and add component
       const el = document.createElement(
         themedTag
       ) as ThemedTestComponentElement;
@@ -427,7 +435,6 @@ describe('Theming Controller', () => {
     });
 
     it('should fall back to global theme when moved outside provider', async () => {
-      // Set a known global theme
       configureTheme('bootstrap', 'light');
 
       const tag = unsafeStatic(themedTag);
@@ -447,18 +454,15 @@ describe('Theming Controller', () => {
       )!;
       await elementUpdated(el);
 
-      // After initial render, should have provider theme
       expect(el.themingController.theme).to.equal('material');
       expect(el.themingController.variant).to.equal('dark');
 
-      // Move outside the provider
       container.appendChild(el);
       await elementUpdated(el);
 
       expect(el.themingController.theme).to.equal('bootstrap');
       expect(el.themingController.variant).to.equal('light');
 
-      // Move back inside provider scope
       provider.appendChild(el);
       await elementUpdated(el);
 
@@ -478,8 +482,6 @@ describe('Theming Controller', () => {
 
       await elementUpdated(el);
 
-      // Check that styles are adopted (we can't easily inspect adoptedStyleSheets,
-      // but we can verify the component renders without errors)
       expect(el.shadowRoot).to.not.be.null;
       expect(el.shadowRoot?.adoptedStyleSheets.length).to.be.greaterThan(0);
     });
@@ -494,16 +496,222 @@ describe('Theming Controller', () => {
 
       const initialStylesCount = el.shadowRoot?.adoptedStyleSheets.length ?? 0;
 
-      // Change theme
       setTimeout(() => configureTheme('material', 'dark'));
       await oneEvent(window, CHANGE_THEME_EVENT);
       await elementUpdated(el);
 
-      // Styles should still be adopted
       expect(el.shadowRoot?.adoptedStyleSheets.length).to.be.greaterThan(0);
       expect(el.shadowRoot?.adoptedStyleSheets.length).to.equal(
         initialStylesCount
       );
+    });
+
+    it('should keep the style sheets that it does not own on a theme change', async () => {
+      configureTheme('bootstrap', 'light');
+
+      const tag = unsafeStatic(themedTag);
+      const el = await fixture<ThemedTestComponentElement>(
+        html`<${tag}></${tag}>`
+      );
+      const root = el.shadowRoot!;
+      const [elementSheet] = root.adoptedStyleSheets;
+      const foreign = new CSSStyleSheet();
+      root.adoptedStyleSheets.push(foreign);
+
+      setTimeout(() => configureTheme('material', 'dark'));
+      await oneEvent(window, CHANGE_THEME_EVENT);
+      await elementUpdated(el);
+
+      expect(Array.from(root.adoptedStyleSheets)).to.have.ordered.members([
+        elementSheet,
+        mockThemes.dark.shared!.styleSheet,
+        mockThemes.dark.material!.styleSheet,
+        foreign,
+      ]);
+    });
+    it('adopts a constructed style sheet of the element styles as is', async () => {
+      configureTheme('bootstrap', 'light');
+
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(':host { display: block; }');
+
+      const tag = unsafeStatic(
+        defineCE(
+          class extends LitElement {
+            public static override styles = sheet;
+
+            constructor() {
+              super();
+              addThemingController(this, mockThemes);
+            }
+          }
+        )
+      );
+      const el = await fixture<LitElement>(html`<${tag}></${tag}>`);
+
+      expect(
+        Array.from(el.shadowRoot!.adoptedStyleSheets)
+      ).to.have.ordered.members([
+        sheet,
+        mockThemes.light.shared!.styleSheet,
+        mockThemes.light.bootstrap!.styleSheet,
+      ]);
+    });
+  });
+
+  describe('Update Gating', () => {
+    type CountingElement = LitElement & { updateCount: number };
+
+    function defineCounting(readsTheme: boolean): string {
+      return defineCE(
+        class extends LitElement {
+          public updateCount = 0;
+
+          private readonly _theming = addThemingController(this, mockThemes);
+
+          protected override updated(): void {
+            this.updateCount++;
+          }
+
+          protected override render() {
+            return readsTheme
+              ? litHtml`<span>${this._theming.theme}</span>`
+              : litHtml`<span>static</span>`;
+          }
+        }
+      );
+    }
+
+    let readingTag: string;
+    let staticTag: string;
+
+    before(() => {
+      readingTag = defineCounting(true);
+      staticTag = defineCounting(false);
+    });
+
+    beforeEach(() => {
+      configureTheme('bootstrap', 'light');
+    });
+
+    it('updates a host that reads the theme on a theme change', async () => {
+      const tag = unsafeStatic(readingTag);
+      const el = await fixture<CountingElement>(html`<${tag}></${tag}>`);
+      const count = el.updateCount;
+
+      configureTheme('material', 'dark');
+      await elementUpdated(el);
+
+      expect(el.updateCount).to.equal(count + 1);
+      expect(el.shadowRoot!.textContent).to.equal('material');
+    });
+
+    it('does not update a host that never reads the theme, but swaps its theme sheets', async () => {
+      const tag = unsafeStatic(staticTag);
+      const el = await fixture<CountingElement>(html`<${tag}></${tag}>`);
+      const count = el.updateCount;
+
+      configureTheme('material', 'dark');
+      await elementUpdated(el);
+
+      expect(el.updateCount).to.equal(count);
+      expect(Array.from(el.shadowRoot!.adoptedStyleSheets)).to.include.members([
+        mockThemes.dark.shared!.styleSheet,
+        mockThemes.dark.material!.styleSheet,
+      ]);
+    });
+
+    it('does not update the host when the active theme is set again', async () => {
+      const tag = unsafeStatic(readingTag);
+      const el = await fixture<CountingElement>(html`<${tag}></${tag}>`);
+      const count = el.updateCount;
+
+      setTimeout(() => configureTheme('bootstrap', 'light'));
+      const { detail } = await oneEvent(window, CHANGE_THEME_EVENT);
+      await elementUpdated(el);
+
+      expect(detail).to.deep.equal({
+        theme: 'bootstrap',
+        themeVariant: 'light',
+      });
+      expect(el.updateCount).to.equal(count);
+    });
+  });
+
+  describe('Array Entries', () => {
+    const base = css`
+      :host {
+        --test-base: 1;
+      }
+    `;
+    const override = css`
+      :host {
+        --test-base: 2;
+      }
+    `;
+    const arrayThemes: ComponentThemes = {
+      light: {
+        shared: [mockThemes.light.shared!],
+        bootstrap: [base, override],
+      },
+      dark: { bootstrap: [base] },
+    };
+    let arrayTag: string;
+
+    before(() => {
+      arrayTag = defineCE(
+        class extends LitElement {
+          constructor() {
+            super();
+            addThemingController(this, arrayThemes);
+          }
+        }
+      );
+    });
+
+    beforeEach(() => {
+      configureTheme('bootstrap', 'light');
+    });
+
+    it('adopts the sheets of an array entry in order', async () => {
+      const tag = unsafeStatic(arrayTag);
+      const el = await fixture<LitElement>(html`<${tag}></${tag}>`);
+
+      expect(
+        Array.from(el.shadowRoot!.adoptedStyleSheets)
+      ).to.have.ordered.members([
+        mockThemes.light.shared!.styleSheet,
+        base.styleSheet,
+        override.styleSheet,
+      ]);
+      expect(getComputedStyle(el).getPropertyValue('--test-base')).to.equal(
+        '2'
+      );
+    });
+
+    it('adopts the array entry of the new variant', async () => {
+      const tag = unsafeStatic(arrayTag);
+      const el = await fixture<LitElement>(html`<${tag}></${tag}>`);
+
+      configureTheme('bootstrap', 'dark');
+      await elementUpdated(el);
+
+      expect(
+        Array.from(el.shadowRoot!.adoptedStyleSheets)
+      ).to.have.ordered.members([base.styleSheet]);
+    });
+
+    it('gives the instances of a class the same sheets', async () => {
+      const tag = unsafeStatic(arrayTag);
+      const container = await fixture<HTMLElement>(
+        html`<div><${tag}></${tag}><${tag}></${tag}></div>`
+      );
+      const [first, second] = Array.from(
+        container.children,
+        (child) => child.shadowRoot!.adoptedStyleSheets
+      );
+
+      expect(first).to.have.ordered.members(second);
     });
   });
 

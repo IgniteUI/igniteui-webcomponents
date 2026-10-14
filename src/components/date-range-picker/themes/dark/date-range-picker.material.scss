@@ -1,11 +1,12 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
+@use '../light/themes' as light;
 
 :host {
-    @include css-vars-from-theme($material);
-    @include css-vars-from-theme($material-calendar);
+    @include css-vars-from-theme(dark-overrides(light.$material, $material));
+    @include css-vars-from-theme(dark-overrides(light.$material-calendar, $material-calendar));
 
     igc-dialog {
-        @include css-vars-from-theme($material-dialog);
+        @include css-vars-from-theme(dark-overrides(light.$material-dialog, $material-dialog));
     }
 }

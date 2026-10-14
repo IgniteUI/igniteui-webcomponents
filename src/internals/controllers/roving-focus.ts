@@ -1,6 +1,6 @@
 import type { ReactiveControllerHost } from 'lit';
 import { firstOf, isEmpty, lastOf } from '../utils/arrays.js';
-import { isLTR } from '../utils/dom.js';
+import { getRoot, isLTR } from '../utils/dom.js';
 import { wrap } from '../utils/math.js';
 import { isFunction } from '../utils/types.js';
 import {
@@ -12,56 +12,39 @@ import {
   endKey,
   homeKey,
   type KeyBindingControllerOptions,
-  type KeyBindingOptions,
 } from './key-bindings.js';
 
 type RovingFocusHost = ReactiveControllerHost & HTMLElement;
 
 /**
- * Whether an arrow axis navigates. A predicate keeps the keys bound - and
- * their default behavior suppressed - while gating the navigation itself,
- * for hosts that switch orientation at runtime.
+ * Whether an arrow axis navigates. A predicate keeps the keys bound and
+ * gates only the navigation, for a host that changes orientation at runtime.
  */
 type RovingFocusAxis = boolean | (() => boolean);
 
 type RovingFocusControllerOptions<T extends Element> = {
-  /**
-   * The keyboard-navigable items, in order, with non-interactive ones
-   * already excluded.
-   */
+  /** The keyboard-navigable items, in order, without the inert ones. */
   items: () => T[];
   /**
-   * The item navigation moves relative to - typically resolved from the
-   * focused element. Arrow navigation and activation are no-ops while nullish.
+   * The item that navigation moves from. Defaults to the item that has the
+   * focus or holds the focused element.
    */
-  current: () => T | null | undefined;
-  /**
-   * Moves focus to `item`. The host owns the focus delegation and any side
-   * effects riding along with it (scrolling, selection-follows-focus).
-   */
+  current?: () => T | null | undefined;
+  /** Moves the focus to `item`. The host owns any side effects. */
   focusItem: (item: T) => void;
-  /**
-   * Invoked with the current item on Enter/Space, when the item is part of
-   * {@link RovingFocusControllerOptions.items}. Omit to skip the activation
-   * binding altogether.
-   */
+  /** Runs with the current item on Enter and on Space. */
   activateItem?: (item: T) => void;
-  /** Binding options for the activation keys. */
-  activateOptions?: KeyBindingOptions;
-  /**
-   * Whether ArrowLeft/ArrowRight navigate, following the writing direction.
-   * Defaults to `true`.
-   */
+  /** Whether ArrowLeft and ArrowRight navigate. Defaults to `true`. */
   horizontal?: RovingFocusAxis;
-  /** Whether ArrowUp/ArrowDown navigate. Defaults to `false`. */
+  /** Whether ArrowUp and ArrowDown navigate. Defaults to `false`. */
   vertical?: RovingFocusAxis;
-  /** Whether Home/End jump to the first/last item. Defaults to `true`. */
+  /** Whether Home and End jump to the first and last item. Default `true`. */
   homeEnd?: boolean;
   /**
    * How arrow navigation treats a nullish current item:
    * - `skip` - do nothing (default)
-   * - `wrap` - navigate from just outside the list, so "next" lands on the
-   *   first item and "previous" on the last one
+   * - `wrap` - navigate from outside the list, so "next" lands on the first
+   *   item and "previous" on the last one
    */
   missingCurrent?: 'skip' | 'wrap';
   /** Options forwarded to the underlying key-bindings controller. */
@@ -69,13 +52,11 @@ type RovingFocusControllerOptions<T extends Element> = {
 };
 
 /**
- * Implements the roving keyboard navigation shared by the container
- * components: Home/End jumps and wrapping ArrowKey moves over a flat list of
- * enabled items, relative to the currently focused one, with the horizontal
- * axis following the writing direction.
+ * Implements the roving keyboard navigation of the container components.
  *
- * The host supplies the item list, the current-item resolution and the focus
- * delegation; hierarchical structures (the tree) need their own navigation.
+ * @remarks
+ * Moves wrap over a flat list, and the horizontal axis follows the writing
+ * direction. A hierarchy, such as the tree, needs its own navigation.
  */
 class RovingFocusController<T extends Element> {
   private readonly _host: RovingFocusHost;
@@ -90,7 +71,6 @@ class RovingFocusController<T extends Element> {
       vertical = false,
       homeEnd = true,
       activateItem,
-      activateOptions,
       keybindings,
     } = options;
 
@@ -115,7 +95,7 @@ class RovingFocusController<T extends Element> {
     }
 
     if (activateItem) {
-      bindings.setActivateHandler(() => this._activate(), activateOptions);
+      bindings.setActivateHandler(() => this._activate());
     }
   }
 
@@ -131,7 +111,7 @@ class RovingFocusController<T extends Element> {
     }
 
     const items = this._options.items();
-    const current = this._options.current();
+    const current = this._current(items);
 
     if (
       isEmpty(items) ||
@@ -140,8 +120,7 @@ class RovingFocusController<T extends Element> {
       return;
     }
 
-    // A current item outside the set resolves to -1 as well, wrapping the
-    // navigation in from the closest list edge.
+    // An item outside the set gives -1, so the move wraps in from an edge.
     const index = current ? items.indexOf(current) : -1;
     const direction = rtlAware && !isLTR(this._host) ? -delta : delta;
     const next = wrap(0, items.length - 1, index + direction);
@@ -150,15 +129,27 @@ class RovingFocusController<T extends Element> {
   }
 
   private _activate(): void {
-    const current = this._options.current();
+    const items = this._options.items();
+    const current = this._current(items);
 
-    if (current && this._options.items().includes(current)) {
+    if (current && items.includes(current)) {
       this._options.activateItem!.call(this._host, current);
     }
   }
+
+  private _current(items: T[]): T | null | undefined {
+    if (this._options.current) {
+      return this._options.current();
+    }
+
+    const active = getRoot(this._host).activeElement;
+    return active
+      ? items.find((item) => item === active || item.contains(active))
+      : undefined;
+  }
 }
 
-/** Creates and adds a {@link RovingFocusController} to the given host. */
+/** Creates a {@link RovingFocusController} for the given host. */
 export function addRovingFocusController<T extends Element>(
   host: RovingFocusHost,
   options: RovingFocusControllerOptions<T>

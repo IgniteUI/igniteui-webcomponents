@@ -22,6 +22,7 @@ $theme-file-input: file-input.$base;
     [part='file-names'] {
         display: flex;
         align-items: center;
+        min-width: 0;
         max-height: var-get($theme, 'size');
         height: 100%;
         grid-area: 1 / 3;
@@ -111,5 +112,11 @@ $theme-file-input: file-input.$base;
     [part~='file-names'] {
         color: var-get($theme-file-input, 'file-names-foreground--disabled');
         background: var-get($theme-file-input, 'file-names-background--disabled')
+    }
+}
+
+@media (forced-colors: active) {
+    :host [part~='file-selector-button'] {
+        padding-inline-end: rem(12px);
     }
 }

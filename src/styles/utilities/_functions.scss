@@ -1,5 +1,31 @@
+@use 'sass:map';
+@use 'igniteui-theming/sass/utils' as *;
+
 @function direction($rtl: false) {
     $dir: if($rtl == true, -1, 1);
 
     @return calc(var(--ig-dir, 1) * #{$dir});
+}
+
+/// Returns the declarations a dark theme sheet needs when the light theme
+/// sheet of the same name is adopted before it.
+///
+/// Pass `$dark-base` and `$light-base` when the dark shared sheet declares a
+/// dark base of its own. The result keeps `_meta`, which names the component in
+/// the emitted variables.
+/// @param {Map} $light-theme - The light theme of the same name.
+/// @param {Map} $dark-theme - The dark theme.
+/// @param {Map} $dark-base [null] - The base the dark shared sheet declares.
+/// @param {Map} $light-base [null] - The base the light theme sheet diffs against.
+@function dark-overrides($light-theme, $dark-theme, $dark-base: null, $light-base: null) {
+    $before: $light-theme;
+
+    @if $dark-base {
+        $before: map.merge($dark-base, diff($light-base, $light-theme));
+    }
+
+    $result: diff($before, $dark-theme);
+    $meta: map.get($dark-theme, '_meta');
+
+    @return if($meta, map.merge($result, ('_meta': $meta)), $result);
 }

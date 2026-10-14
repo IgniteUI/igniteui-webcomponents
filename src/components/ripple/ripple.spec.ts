@@ -1,4 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import sinon from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { simulatePointerDown } from '#internals/testing/simulate.spec.js';
 import IgcButtonComponent from '../button/button.js';
@@ -49,5 +50,48 @@ describe('Ripple', () => {
 
     simulatePointerDown(ripple, { button: 1 });
     await elementUpdated(ripple);
+  });
+
+  it('removes the ripple element when its animation finishes', async () => {
+    simulatePointerDown(ripple);
+
+    const wave = ripple.renderRoot.querySelector('span')!;
+    expect(wave).to.exist;
+
+    const [animation] = wave.getAnimations();
+    animation.finish();
+    await animation.finished;
+    await elementUpdated(ripple);
+
+    expect(wave.isConnected).to.be.false;
+    expect(ripple.renderRoot.querySelector('span')).to.be.null;
+  });
+
+  describe('Motion', () => {
+    afterEach(() => sinon.restore());
+
+    it('plays the wave with a zero duration under reduced motion', () => {
+      sinon.stub(window, 'matchMedia').returns({
+        matches: true,
+      } as MediaQueryList);
+
+      simulatePointerDown(ripple);
+
+      const wave = ripple.renderRoot.querySelector('span')!;
+      const [animation] = wave.getAnimations();
+
+      expect(animation.effect?.getTiming().duration).to.equal(0);
+    });
+
+    it('removes the ripple element when its animation is cancelled', async () => {
+      simulatePointerDown(ripple);
+
+      const wave = ripple.renderRoot.querySelector('span')!;
+      const [animation] = wave.getAnimations();
+      animation.cancel();
+      await elementUpdated(ripple);
+
+      expect(wave.isConnected).to.be.false;
+    });
   });
 });

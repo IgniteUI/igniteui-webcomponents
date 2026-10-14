@@ -6,10 +6,11 @@ import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateTimeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { all } from '#themes/input/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
-import { all } from '../input/themes/themes.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import {
   createDatePart,
@@ -17,9 +18,11 @@ import {
   type DatePartDeltas,
   DatePartType,
 } from './date-part.js';
-import { IgcDateTimeInputBaseComponent } from './date-time-input.base.js';
+import {
+  IgcDateTimeInputBaseComponent,
+  type PartDirection,
+} from './date-time-input.base.js';
 import { DateTimeMaskParser } from './datetime-mask-parser.js';
-import { dateTimeInputValidators } from './validators.js';
 
 export interface IgcDateTimeInputComponentEventMap {
   /* alternateName: inputOcurred */
@@ -50,7 +53,7 @@ export interface IgcDateTimeInputComponentEventMap {
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcInput - Emitted when the control input receives user input.
- * @fires igcChange - Emitted when the control's checked state changes.
+ * @fires igcChange - Emitted on blur, when the committed value differs from the one the editor was focused with.
  *
  * @csspart container - The main wrapper that holds all main input elements.
  * @csspart input - The native input element.
@@ -61,10 +64,10 @@ export interface IgcDateTimeInputComponentEventMap {
  */
 export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   IgcDateTimeInputComponentEventMap,
-  AbstractConstructor<IgcDateTimeInputBaseComponent<Date>>
+  AbstractConstructor<IgcDateTimeInputBaseComponent<Date, DatePart>>
 >(IgcDateTimeInputBaseComponent) {
   public static readonly tagName = 'igc-date-time-input';
-  public static styles = [styles, shared];
+  public static styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -82,10 +85,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     initialValue: null,
     transformers: FormValueDateTimeTransformers,
   });
-
-  protected override get __validators() {
-    return dateTimeInputValidators;
-  }
 
   //#endregion
 
@@ -115,27 +114,21 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   //#region Navigation
 
-  /**
-   * Calculates the new cursor position when navigating between date parts.
-   * direction = 0: navigate to start of previous part
-   * direction = 1: navigate to start of next part
-   */
+  /** The cursor position for part navigation. */
   protected override _calculatePartNavigationPosition(
     inputValue: string,
-    direction: number
+    direction: PartDirection
   ): number {
     const cursorPos = this._maskSelection.start;
     const dateParts = this._parser.parts;
 
-    if (direction === 0) {
-      // Navigate backwards: find last literal before cursor
+    if (direction === 'back') {
       const part = dateParts.findLast(
         (part) => part.type === DatePartType.Literal && part.end < cursorPos
       );
       return part?.end ?? 0;
     }
 
-    // Navigate forwards: find first literal after cursor
     const part = dateParts.find(
       (part) => part.type === DatePartType.Literal && part.start > cursorPos
     );
@@ -146,21 +139,14 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   //#region Internal API
 
-  /**
-   * Gets the date part at the current cursor position.
-   * Uses inclusive end to handle cursor at the end of the last part.
-   * Returns undefined if cursor is not within a valid date part.
-   */
+  /** The date part at the cursor, or undefined outside any date part. */
   protected override _getDatePartAtCursor(): DatePart | undefined {
     return this._parser.getPartForCursor(this._inputSelection.start)?.type as
       | DatePart
       | undefined;
   }
 
-  /**
-   * Gets the default date part to target when the input is not focused.
-   * Prioritizes: Date > Hours > First available part
-   */
+  /** The part to target when the input is not focused: Date, then Hours, then the first part. */
   protected override _getDefaultDatePart(): DatePart | undefined {
     return (this._parser.getPartByType(DatePartType.Date)?.type ??
       this._parser.getPartByType(DatePartType.Hours)?.type ??
@@ -182,55 +168,36 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return this._parser.formatDate(value);
   }
 
-  /**
-   * Builds the formatted display value shown when the input is not focused.
-   */
+  /** The formatted value shown when the input is not focused. */
   protected override _buildDisplayValue(): string {
     return isValidDate(this.value)
       ? formatDisplayDate(this.value, this.locale, this.displayFormat)
       : '';
   }
 
-  /**
-   * Sets the value to the current date/time.
-   */
   protected override _setCurrentDateTime(): void {
     this._setDraftValue(new Date());
     this._emitInputEvent();
   }
 
-  /**
-   * Emits an `igcInput` event whose `detail` is the parsed value as an ISO
-   * string (preserving the legacy contract for this component).
-   */
+  /** The `igcInput` detail is the parsed value as an ISO string (the legacy contract). */
   protected override _emitInputEvent(): void {
     this._emitTouchedEvent('igcInput', {
       detail: this._uncommittedValue?.toISOString(),
     });
   }
 
-  /**
-   * Calculates the new date value after spinning a date part.
-   */
   protected override _calculateSpunValue(
     datePart: DatePart,
     delta: number | undefined,
-    isDecrement: boolean
+    sign: 1 | -1
   ): Date {
-    // Default to 1 if delta is 0 or undefined
     const effectiveDelta =
       delta || this._datePartDeltas[datePart as keyof DatePartDeltas] || 1;
 
-    const spinAmount = isDecrement
-      ? -Math.abs(effectiveDelta)
-      : Math.abs(effectiveDelta);
-
-    return this._spinDatePart(datePart, spinAmount);
+    return this._spinDatePart(datePart, sign * Math.abs(effectiveDelta));
   }
 
-  /**
-   * Spins a specific date part by the given delta.
-   */
   protected _spinDatePart(datePart: DatePart, delta: number): Date {
     const current = this._uncommittedValue;
 
@@ -241,15 +208,12 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     const newDate = new Date(current.getTime());
     const partType = datePart as unknown as DatePartType;
 
-    // Get the part instance from the parser, or create one for explicit spin operations
     let part = this._parser.getPartByType(partType);
     if (!part) {
-      // For explicit spin operations (e.g., stepDown(DatePart.Minutes)),
-      // create a temporary part even if not in the format
+      // An explicit spin, e.g. stepDown(DatePart.Minutes), can target a part not in the format.
       part = createDatePart(partType, { start: 0, end: 0, format: '' });
     }
 
-    // For AM/PM, we need to extract the current AM/PM value from the mask
     const amPmValue =
       datePart === DatePart.AmPm
         ? this._readAmPmFromMask(this._parser.getPartByType(DatePartType.AmPm))
@@ -277,24 +241,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   /** Decrements a date/time portion. */
   public override stepDown(datePart?: DatePart, delta?: number): void {
     super.stepDown(datePart, delta);
-  }
-
-  /* blazorSuppress */
-  /**
-   * Checks whether the current format includes date parts (day, month, year).
-   * @internal
-   */
-  public override hasDateParts(): boolean {
-    return this._parser.hasDateParts();
-  }
-
-  /* blazorSuppress */
-  /**
-   * Checks whether the current format includes time parts (hours, minutes, seconds).
-   * @internal
-   */
-  public override hasTimeParts(): boolean {
-    return this._parser.hasTimeParts();
   }
 
   //#endregion

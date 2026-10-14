@@ -63,3 +63,13 @@ $border-width: rem(1px);
         border-color: transparent;
     }
 }
+
+@media (forced-colors: active) {
+    [part~='thumb'] {
+        border: rem(4px) solid CanvasText;
+    }
+
+    [part~='control focused'] [part~='thumb'] {
+        outline-width: rem(1px);
+    }
+}

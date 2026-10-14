@@ -10,9 +10,17 @@ import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
 import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.resources.js';
 import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
+import { calendarResourcesMap } from '#internals/i18n/utils.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { firstOf } from '#internals/utils/arrays.js';
-import { getLocaleWeekStart, getWeekDayNumber } from './helpers.js';
+import {
+  dateChanged,
+  datesChanged,
+  getLocaleWeekStart,
+  getWeekDayNumber,
+  rangesChanged,
+} from './helpers.js';
+import { selectDate } from './selection.js';
 import type {
   CalendarSelection,
   DateRangeDescriptor,
@@ -23,7 +31,7 @@ const i18n: I18nControllerConfig<
   IgcCalendarResourceStrings | ICalendarResourceStrings
 > = {
   defaultEN: CalendarResourceStringsEN,
-  resourceMapName: 'calendar',
+  resourceMap: calendarResourcesMap,
 };
 
 @blazorIndirectRender
@@ -31,7 +39,7 @@ const i18n: I18nControllerConfig<
 export class IgcCalendarBaseComponent extends I18nMixin<
   IgcCalendarResourceStrings | ICalendarResourceStrings,
   typeof LitElement,
-  IgcCalendarResourceStrings & ICalendarResourceStrings
+  IgcCalendarResourceStrings & Required<ICalendarResourceStrings>
 >(LitElement, i18n) {
   private _initialActiveDateSet = false;
   private _weekStart?: WeekDays;
@@ -41,11 +49,8 @@ export class IgcCalendarBaseComponent extends I18nMixin<
   }
 
   /**
-   * The index of the first day of the week (Sunday = 0) as derived from {@link weekStart}.
-   *
-   * @remarks
-   * Derived on access instead of in `update()`, so that its consumers are not sensitive
-   * to the order in which the base class and its descendants update.
+   * The index of the first day of the week (Sunday = 0). Derived on access, so it does
+   * not depend on the update order of the base class and its descendants.
    */
   protected get _firstDayOfWeek(): number {
     return getWeekDayNumber(this.weekStart);
@@ -63,22 +68,23 @@ export class IgcCalendarBaseComponent extends I18nMixin<
     return this.selection === 'range';
   }
 
-  @state()
+  // An equal day is no change, so a new `Date` of the same day skips the update.
+  @state({ hasChanged: dateChanged })
   protected _rangePreviewDate?: CalendarDay;
 
-  @state()
+  @state({ hasChanged: dateChanged })
   protected _activeDate = CalendarDay.today;
 
-  @state()
+  @state({ hasChanged: dateChanged })
   protected _value: CalendarDay | null = null;
 
-  @state()
+  @state({ hasChanged: datesChanged })
   protected _values: CalendarDay[] = [];
 
-  @state()
+  @state({ hasChanged: rangesChanged })
   protected _specialDates: DateRangeDescriptor[] = [];
 
-  @state()
+  @state({ hasChanged: rangesChanged })
   protected _disabledDates: DateRangeDescriptor[] = [];
 
   /* blazorSuppress */
@@ -88,7 +94,7 @@ export class IgcCalendarBaseComponent extends I18nMixin<
    *
    * @attr value
    */
-  @property({ converter: convertToDate })
+  @property({ converter: convertToDate, hasChanged: dateChanged })
   public set value(value: Date | string | null | undefined) {
     this._value = toCalendarDayOrNull(convertToDate(value));
   }
@@ -104,19 +110,23 @@ export class IgcCalendarBaseComponent extends I18nMixin<
    *
    * @attr values
    */
-  @property({ converter: convertToDates })
+  @property({ converter: convertToDates, hasChanged: datesChanged })
   public set values(values: (Date | string)[] | string | null | undefined) {
     const converted = convertToDates(values);
     this._values = converted ? converted.map((v) => CalendarDay.from(v)) : [];
   }
 
   public get values(): Date[] {
-    return this._values ? this._values.map((v) => v.native) : [];
+    return this._values.map((v) => v.native);
   }
 
   /* blazorSuppress */
   /** Get/Set the date which is shown in view and is highlighted. By default it is the current date. */
-  @property({ attribute: 'active-date', converter: convertToDate })
+  @property({
+    attribute: 'active-date',
+    converter: convertToDate,
+    hasChanged: dateChanged,
+  })
   public set activeDate(value: Date | string | null | undefined) {
     this._initialActiveDateSet = true;
     this._activeDate =
@@ -192,6 +202,23 @@ export class IgcCalendarBaseComponent extends I18nMixin<
     return this._disabledDates.length ? this._disabledDates : undefined;
   }
 
+  /** @internal Applies the activation of `day` to the selection and returns whether it changed. */
+  protected _selectDate(day: CalendarDay): boolean {
+    const selection = selectDate(
+      { value: this._value, values: this._values },
+      day,
+      { selection: this.selection, disabledDates: this._disabledDates }
+    );
+
+    if (!selection) {
+      return false;
+    }
+
+    this._value = selection.value;
+    this._values = selection.values;
+    return true;
+  }
+
   /** @internal */
   protected override update(props: PropertyValues): void {
     if (props.has('selection') && this.hasUpdated) {
@@ -203,16 +230,17 @@ export class IgcCalendarBaseComponent extends I18nMixin<
     super.update(props);
   }
 
-  /** @internal */
-  protected override firstUpdated(): void {
-    if (this._initialActiveDateSet) {
+  protected override willUpdate(props: PropertyValues): void {
+    super.willUpdate(props);
+
+    if (this.hasUpdated || this._initialActiveDateSet) {
       return;
     }
 
-    if (this._isSingle) {
-      this.activeDate = this.value ?? this.activeDate;
-    } else {
-      this.activeDate = firstOf(this.values) ?? this.activeDate;
+    const value = this._isSingle ? this._value : firstOf(this._values);
+
+    if (value) {
+      this._activeDate = value;
     }
   }
 }
