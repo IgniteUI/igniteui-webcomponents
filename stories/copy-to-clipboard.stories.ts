@@ -4,16 +4,24 @@ import { html } from 'lit';
 import {
   IgcButtonComponent,
   IgcCopyToClipboardComponent,
+  IgcIconComponent,
+  IgcSwitchComponent,
   IgcTextareaComponent,
+  type IgcCopyToClipboardEventArgs,
   defineComponents,
 } from 'igniteui-webcomponents';
-import { disableStoryControls } from './story.js';
+import { registerMaterialIcons } from './story-icons.js';
+import { disableStoryControls, renderInto, storyStyles } from './story.js';
 
 defineComponents(
   IgcButtonComponent,
   IgcCopyToClipboardComponent,
+  IgcIconComponent,
+  IgcSwitchComponent,
   IgcTextareaComponent
 );
+registerMaterialIcons('copy', 'done', 'download', 'link');
+
 // region default
 const metadata: Meta<IgcCopyToClipboardComponent> = {
   title: 'CopyToClipboard',
@@ -22,23 +30,24 @@ const metadata: Meta<IgcCopyToClipboardComponent> = {
     docs: {
       description: {
         component:
-          'A component that overlays a copy button on top of its slotted content,\nallowing users to copy the text to the clipboard with a single click.',
+          'Overlays a copy button on its slotted content. The button copies the\nrendered text of the content to the clipboard.',
       },
     },
+    actions: { handles: ['igcCopy'] },
   },
   argTypes: {
     disableInteraction: {
       type: 'boolean',
       description:
-        'Disables the copy button and prevents it from appearing on hover or focus.',
+        'Whether the copy button is hidden and disabled. The `--copy` command\nstill copies the content.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     format: {
-      type: { name: 'enum', value: ['plain', 'preserve'] },
+      type: { name: 'enum', value: ['preserve', 'plain'] },
       description:
-        'Controls how the text content is formatted when copied to the clipboard.\n- `plain`: Collapses whitespace into single spaces and block boundaries into single newlines (default).\n- `preserve`: Retains the visual structure such as paragraphs and code indentation.',
-      options: ['plain', 'preserve'],
+        'How the copied text is formatted.\n- `plain`: Collapses whitespace, with one line break between blocks.\n- `preserve`: Keeps paragraph breaks and indentation.',
+      options: ['preserve', 'plain'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'plain' } },
     },
@@ -49,318 +58,568 @@ const metadata: Meta<IgcCopyToClipboardComponent> = {
 export default metadata;
 
 interface IgcCopyToClipboardArgs {
-  /** Disables the copy button and prevents it from appearing on hover or focus. */
+  /**
+   * Whether the copy button is hidden and disabled. The `--copy` command
+   * still copies the content.
+   */
   disableInteraction: boolean;
   /**
-   * Controls how the text content is formatted when copied to the clipboard.
-   * - `plain`: Collapses whitespace into single spaces and block boundaries into single newlines (default).
-   * - `preserve`: Retains the visual structure such as paragraphs and code indentation.
+   * How the copied text is formatted.
+   * - `plain`: Collapses whitespace, with one line break between blocks.
+   * - `preserve`: Keeps paragraph breaks and indentation.
    */
-  format: 'plain' | 'preserve';
+  format: 'preserve' | 'plain';
 }
 type Story = StoryObj<IgcCopyToClipboardArgs>;
 
 // endregion
 
-export const Default: Story = {
-  render: (args) => html`
-    <style>
-      .demo-layout {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-        max-width: 640px;
-      }
+const styles = html`
+  ${storyStyles}
+  <style>
+    .cc-panel {
+      display: grid;
+      gap: 1rem;
+      max-width: 40rem;
+      padding: 1rem 1.5rem 1.5rem;
+      border: 1px solid var(--ig-gray-300);
+      border-radius: 8px;
+    }
 
-      .content-box {
-        border: 1px solid var(--ig-gray-300);
-        border-radius: 8px;
-        padding: 1rem;
+    .cc-panel :is(h3, h4, p) {
+      margin: 0;
+    }
+
+    .cc-wide {
+      max-width: 46rem;
+    }
+
+    .cc-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem 1rem;
+    }
+
+    /* The end padding leaves room for the copy button. */
+    .cc-box {
+      padding: 0.75rem 3.5rem 0.75rem 1rem;
+      border-radius: 4px;
+      background: var(--ig-gray-100);
+      overflow-wrap: anywhere;
+    }
+
+    .cc-code {
+      margin: 0;
+      font:
+        0.875rem / 1.5 ui-monospace,
+        Menlo,
+        Consolas,
+        monospace;
+      white-space: pre-wrap;
+    }
+  </style>
+`;
+
+export const Default: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'An automatic reply that the user copies into a mail client. The copy button shows while the pointer is on the reply or the focus is in it, and always on a device without hover. With the `plain` format, the copied text has one line break between paragraphs. With `preserve`, the empty line between paragraphs stays. Paste into the field to compare. The Actions panel logs the `igcCopy` event with its status and text. Use the controls panel to change the format or to hide the button.',
+      },
+    },
+  },
+  render: (args) => html`
+    ${styles}
+    <style>
+      .cc-reply p + p {
+        margin-block-start: 0.75rem;
       }
     </style>
 
-    <div class="demo-layout">
+    <section class="cc-panel" aria-labelledby="cc-reply-title">
+      <h3 id="cc-reply-title">Automatic reply</h3>
       <igc-copy-to-clipboard
         ?disable-interaction=${args.disableInteraction}
         .format=${args.format}
       >
-        <div class="content-box" tabindex="0">
-          <p>This is some text that can be copied to the clipboard.</p>
+        <div class="cc-box cc-reply">
+          <p>Hello,</p>
           <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Odio
-            quibusdam at non exercitationem labore nostrum. Magni repudiandae
-            maxime perferendis hic laudantium, fuga dolor, consequatur odio
-            minima repellendus error, eum amet.
+            Thank you for your message. I am out of the office from June 2 to
+            June 13, with limited access to email.
           </p>
           <p>
-            Try clicking the copy button above, then paste into the field below.
+            For questions about an order, contact the support team at
+            support@example.com or call +1 555 0100.
+          </p>
+          <p>
+            Best regards,<br />Maya Patel<br />Customer Success, Northwind
+            Traders
           </p>
         </div>
       </igc-copy-to-clipboard>
-
       <igc-textarea
-        label="Paste here to verify"
-        placeholder="Ctrl+V / ⌘V"
+        label="Paste here to compare"
         rows="3"
         resize="auto"
       ></igc-textarea>
-    </div>
+    </section>
   `,
 };
 
-export const PreservedFormat: Story = {
+const mainTs = [
+  'import {',
+  '  defineComponents,',
+  '  IgcButtonComponent,',
+  '  IgcInputComponent,',
+  "} from 'igniteui-webcomponents';",
+  "import 'igniteui-webcomponents/themes/light/bootstrap.css';",
+  '',
+  'defineComponents(IgcButtonComponent, IgcInputComponent);',
+];
+
+const indexHtml = [
+  '<form action="/subscribe">',
+  '  <igc-input type="email" label="Email" required></igc-input>',
+  '  <igc-button type="submit">Subscribe</igc-button>',
+  '</form>',
+];
+
+/**
+ * Puts a line break between the items, for a `<pre>`. Lit's `join` returns a
+ * generator, which renders only once.
+ */
+const lines = (items: unknown[]) =>
+  items.flatMap((item, index) => (index ? ['\n', item] : [item]));
+
+const codeFile = (name: string, source: string[]) => html`
+  <figure class="cc-file">
+    <figcaption>${name}</figcaption>
+    <igc-copy-to-clipboard format="preserve" aria-label="Copy ${name}">
+      <pre class="cc-box cc-code"><code>${lines(
+        source.map((line) => html`<span class="cc-line">${line}</span>`)
+      )}</code></pre>
+    </igc-copy-to-clipboard>
+  </figure>
+`;
+
+export const InstallGuide: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A get-started page with three steps. The code blocks copy with the `preserve` format, so the indentation and the empty line stay. Each component has an `aria-label`, so each copy button has its own name in the tab sequence. The file names are outside the components, and the line numbers and the `$` prompt are CSS generated content, so the copied text does not include them.',
+      },
+    },
+  },
   render: () => html`
+    ${styles}
     <style>
-      .demo-layout {
-        display: flex;
-        flex-direction: column;
+      .cc-steps {
+        display: grid;
         gap: 1.5rem;
-        max-width: 640px;
-      }
-
-      .content-box {
-        border: 1px solid var(--ig-gray-300);
-        border-radius: 8px;
-        padding: 1rem;
-      }
-
-      .content-box p {
-        margin: 0 0 0.75rem;
-      }
-
-      .content-box p:last-of-type {
-        margin-bottom: 1rem;
-      }
-
-      .content-box pre {
         margin: 0;
-        padding: 0.75rem 1rem;
-        background: var(--ig-gray-100);
-        border-radius: 4px;
-        font-size: 0.875rem;
-        overflow-x: auto;
-        white-space: pre;
-      }
-    </style>
-
-    <div class="demo-layout">
-      <igc-copy-to-clipboard format="preserve">
-        <div class="content-box" tabindex="0">
-          <p>
-            With <strong>preserve</strong> format, paragraph breaks and
-            indentation are retained in the copied text.
-          </p>
-          <p>
-            Paste into the field below to verify the structure is preserved.
-          </p>
-          <pre>
-function greet(name) {
-  const message = \`Hello, \${name}!\`;
-  console.log(message);
-  return message;
-}</pre>
-        </div>
-      </igc-copy-to-clipboard>
-
-      <igc-textarea
-        label="Paste here to verify"
-        placeholder="Ctrl+V / ⌘V"
-        rows="3"
-        resize="auto"
-      ></igc-textarea>
-    </div>
-  `,
-};
-
-export const CodeSnippet: Story = {
-  argTypes: disableStoryControls(metadata),
-  render: () => html`
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"
-      rel="stylesheet"
-    />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-
-    <style>
-      .demo-layout {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-        max-width: 640px;
+        padding-inline-start: 1.25rem;
       }
 
-      .code-block {
-        border-radius: 8px;
-        overflow: hidden;
+      .cc-steps h4 {
+        margin-block-end: 0.5rem;
       }
 
-      .code-block pre[class*='language-'] {
+      .cc-file {
         margin: 0;
-        border-radius: 0;
-        font-size: 0.875rem;
       }
 
-      .token.operator {
-        background: none;
+      .cc-file figcaption {
+        margin-block-end: 0.25rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
       }
 
-      p {
+      /* One counter per file, one number per line span. */
+      .cc-file .cc-code {
+        counter-reset: line;
+      }
+
+      .cc-line::before {
+        counter-increment: line;
+        content: counter(line);
+        display: inline-block;
+        width: 2ch;
+        margin-inline-end: 2ch;
+        text-align: end;
+        color: var(--ig-gray-700);
+      }
+
+      .cc-terminal code::before {
+        content: '$';
+        margin-inline-end: 1ch;
         color: var(--ig-gray-700);
       }
     </style>
 
-    <div class="demo-layout">
-      <p>
-        Hover over the code block below and click the copy button to copy the
-        snippet. Paste it into the text field to verify the indentation is
-        preserved.
-      </p>
-
-      <igc-copy-to-clipboard format="preserve">
-        <div class="code-block" tabindex="0">
-          <pre><code class="language-javascript">import { registerIconFromText } from 'igniteui-webcomponents';
-
-const heartSvg = \`
-  &lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"&gt;
-    &lt;path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.27 2 8.5
-             2 5.41 4.42 3 7.5 3c1.74 0 3.41 .81 4.5 2.08
-             C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.41 22 8.5
-             c0 3.77-3.4 6.86-8.55 11.53L12 21.35z"/&gt;
-  &lt;/svg&gt;\`;
-
-registerIconFromText('heart', heartSvg, 'my-icons');</code></pre>
-        </div>
-      </igc-copy-to-clipboard>
-
-      <igc-textarea
-        label="Paste here to verify"
-        placeholder="Ctrl+V / ⌘V"
-        rows="3"
-        resize="auto"
-      ></igc-textarea>
-    </div>
+    <article class="cc-panel cc-wide" aria-labelledby="cc-guide-title">
+      <h3 id="cc-guide-title">Get started</h3>
+      <ol class="cc-steps">
+        <li>
+          <h4>Install the package</h4>
+          <igc-copy-to-clipboard aria-label="Copy the install command">
+            <pre
+              class="cc-box cc-code cc-terminal"
+            ><code>npm install igniteui-webcomponents</code></pre>
+          </igc-copy-to-clipboard>
+        </li>
+        <li>
+          <h4>Register the components and load a theme</h4>
+          ${codeFile('main.ts', mainTs)}
+        </li>
+        <li>
+          <h4>Add the components to a page</h4>
+          ${codeFile('index.html', indexHtml)}
+        </li>
+      </ol>
+    </article>
   `,
 };
 
-export const WithCustomIcon: Story = {
-  render: (args) => html`
-    <style>
-      .demo-layout {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-        max-width: 640px;
-      }
+const inviteCode = 'k7qm2xpa';
 
-      .content-box {
-        border: 1px solid var(--ig-gray-300);
-        border-radius: 8px;
-        padding: 1rem;
-      }
-    </style>
-
-    <div class="demo-layout">
-      <igc-copy-to-clipboard
-        .format=${args.format}
-        ?disable-interaction=${args.disableInteraction}
-      >
-        <svg
-          slot="copy-icon"
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
-          <path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
-          <path d="M16 4h2a2 2 0 0 1 2 2v4" />
-          <path d="M21 14H11" />
-          <path d="m15 10-4 4 4 4" />
-        </svg>
-        <svg
-          slot="success-icon"
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M20 6L9 17l-5-5" />
-        </svg>
-        <div class="content-box" tabindex="0">
-          <p>This story uses a custom SVG icon for the copy button.</p>
-          <p>Paste into the field below to see the copied content.</p>
-        </div>
-      </igc-copy-to-clipboard>
-
-      <igc-textarea
-        label="Paste here to verify"
-        placeholder="Ctrl+V / ⌘V"
-        rows="3"
-        resize="auto"
-      ></igc-textarea>
-    </div>
-  `,
-};
-
-export const ExternalCommandCopyStory: Story = {
+export const ShareInvite: Story = {
   argTypes: disableStoryControls(metadata),
-  render: (args) => html`
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The invite panel of a workspace. A `::part(button)` rule keeps the copy button visible, because users look for it next to a link. The `copy-icon` and `success-icon` slots replace the default icons with a link icon and a done icon, and the `success-button` part gives the button the success color while the done icon shows. A `:state(ig-success)` rule outlines the link for the same time. The component reads the text at the time of the copy, so after "Reset link" it copies the new link.',
+      },
+    },
+  },
+  render: () => {
+    let code = inviteCode;
+
+    const resetLink = () => {
+      code = crypto.randomUUID().slice(0, 8);
+      story.update();
+    };
+
+    const story = renderInto(
+      () => html`
+        <igc-copy-to-clipboard
+          class="cc-invite"
+          aria-label="Copy the invite link"
+        >
+          <igc-icon slot="copy-icon" name="link"></igc-icon>
+          <igc-icon slot="success-icon" name="done"></igc-icon>
+          <div class="cc-box">https://app.example.com/join/${code}</div>
+        </igc-copy-to-clipboard>
+        <div class="cc-row">
+          <igc-button variant="outlined" @click=${resetLink}>
+            Reset link
+          </igc-button>
+          <span class="muted" role="status">
+            ${
+              code === inviteCode
+                ? ''
+                : 'Link reset. The old link no longer works.'
+            }
+          </span>
+        </div>
+      `
+    );
+
+    return html`
+      ${styles}
+      <style>
+        .cc-invite::part(button) {
+          opacity: 1;
+          pointer-events: auto;
+        }
+
+        .cc-invite::part(success-button) {
+          --cc-bg: var(--ig-success-500);
+          --cc-fg: var(--ig-success-500-contrast);
+          --ig-contained-icon-button-background: var(--cc-bg);
+          --ig-contained-icon-button-hover-background: var(--cc-bg);
+          --ig-contained-icon-button-focus-background: var(--cc-bg);
+          --ig-contained-icon-button-focus-hover-background: var(--cc-bg);
+          --ig-contained-icon-button-active-background: var(--cc-bg);
+          --ig-contained-icon-button-foreground: var(--cc-fg);
+          --ig-contained-icon-button-hover-foreground: var(--cc-fg);
+          --ig-contained-icon-button-focus-foreground: var(--cc-fg);
+          --ig-contained-icon-button-focus-hover-foreground: var(--cc-fg);
+          --ig-contained-icon-button-active-foreground: var(--cc-fg);
+        }
+
+        .cc-invite:state(ig-success) .cc-box {
+          outline: 2px solid var(--ig-success-500);
+          outline-offset: -2px;
+        }
+
+        /* The always visible button is taller than one line of text. */
+        .cc-invite .cc-box {
+          padding-block: 1.25rem;
+        }
+      </style>
+
+      <section class="cc-panel" aria-labelledby="cc-invite-title">
+        <div>
+          <h3 id="cc-invite-title">Invite people to Northwind Design</h3>
+          <p class="muted">
+            Anyone with the link can join as a viewer. The link expires in 7
+            days.
+          </p>
+        </div>
+        <div style="display: contents" ${story.mount}></div>
+      </section>
+    `;
+  },
+};
+
+/** A term of the order, with its value in a copy component. */
+const orderField = (term: string, value: unknown) => html`
+  <div>
+    <dt>${term}</dt>
+    <dd>
+      <igc-copy-to-clipboard aria-label="Copy the ${term.toLowerCase()}">
+        ${value}
+      </igc-copy-to-clipboard>
+    </dd>
+  </div>
+`;
+
+export const OrderDetails: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'An order confirmation with the three values that a customer copies most: the order number for support, the tracking number for the carrier site, and the delivery address. Each component has an `aria-label`, so each copy button has its own name. The address copies as one line per `br` element. `--ig-size` makes the copy buttons small, to fit one line of text.',
+      },
+    },
+  },
+  render: () => html`
+    ${styles}
     <style>
-      .demo-layout {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-        max-width: 640px;
+      .cc-order {
+        display: grid;
+        gap: 1rem;
+        margin: 0;
       }
 
-      .content-box {
-        border: 1px solid var(--ig-gray-300);
-        border-radius: 8px;
-        padding: 1rem;
+      .cc-order dt {
+        margin-block-end: 0.25rem;
+        font-weight: 600;
+      }
+
+      .cc-order dd {
+        margin: 0;
+      }
+
+      .cc-order igc-copy-to-clipboard {
+        --ig-size: var(--ig-size-small);
+      }
+
+      .cc-order address {
+        font-style: normal;
       }
     </style>
 
-    <div class="demo-layout">
-      <igc-copy-to-clipboard
-        id="copy-to-clipboard"
-        disable-interaction
-        .format=${args.format}
-      >
-        <div class="content-box" tabindex="0">
-          <p>
-            This story demonstrates using an external button to trigger the copy
-            action. The component's copy button is disabled and hidden, but the
-            content can still be copied by clicking the external button below
-            using the <em>Invoker Commands API</em>.
-          </p>
-          <p>Click the button below to copy the content above.</p>
-        </div>
-      </igc-copy-to-clipboard>
-
-      <igc-button
-        variant="outlined"
-        commandfor="copy-to-clipboard"
-        command="--copy"
-        >Copy paragraphs above</igc-button
-      >
-
-      <igc-textarea
-        label="Paste here to verify"
-        placeholder="Ctrl+V / ⌘V"
-        rows="3"
-        resize="auto"
-      ></igc-textarea>
-    </div>
+    <section class="cc-panel" aria-labelledby="cc-order-title">
+      <div>
+        <h3 id="cc-order-title">Your order is confirmed</h3>
+        <p class="muted">
+          A confirmation is on its way to maya.patel@example.com.
+        </p>
+      </div>
+      <dl class="cc-order">
+        ${orderField(
+          'Order number',
+          html`<div class="cc-box">NW-48213-937</div>`
+        )}
+        ${orderField(
+          'Tracking number',
+          html`<div class="cc-box">1Z 999 AA1 01 2345 6784</div>`
+        )}
+        ${orderField(
+          'Delivery address',
+          html`<address class="cc-box">
+            Maya Patel<br />2049 Harbor Street, Apt 5<br />Portland, OR 97209<br />United
+            States
+          </address>`
+        )}
+      </dl>
+    </section>
   `,
+};
+
+const logLines = lines(
+  [
+    ['12:04:31', 'Run npm ci'],
+    ['12:04:52', 'added 1243 packages in 21s'],
+    ['12:04:53', 'Run npm test'],
+    ['12:06:58', 'FAIL src/cart/totals.spec.ts'],
+    ['12:06:58', '  applies the coupon before tax'],
+    ['12:06:58', '    Expected: 18.36'],
+    ['12:06:58', '    Received: 18.90'],
+    ['12:06:59', 'Tests: 1 failed, 611 passed, 612 total'],
+    ['12:06:59', 'Error: Process completed with exit code 1.'],
+  ].map(
+    ([time, message]) =>
+      html`<span class="cc-time muted">${`${time} `}</span>${message}`
+  )
+);
+
+export const BuildLog: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The output of a failed CI job. The component copies the rendered text, and hidden elements are not rendered, so the copied log matches the page: with "Show timestamps" off, the copied lines have no time. The `preserve` format keeps the indentation of the test failure.',
+      },
+    },
+  },
+  render: () => {
+    const toggleTimestamps = ({ target }: Event) => {
+      const { checked } = target as IgcSwitchComponent;
+      (target as Element)
+        .closest('.cc-panel')
+        ?.classList.toggle('cc-no-time', !checked);
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .cc-log-header {
+          justify-content: space-between;
+        }
+
+        .cc-no-time .cc-time {
+          display: none;
+        }
+      </style>
+
+      <section class="cc-panel cc-wide" aria-labelledby="cc-log-title">
+        <div class="cc-row cc-log-header">
+          <h3 id="cc-log-title">test (ubuntu-latest) failed</h3>
+          <igc-switch checked @igcChange=${toggleTimestamps}>
+            Show timestamps
+          </igc-switch>
+        </div>
+        <igc-copy-to-clipboard format="preserve" aria-label="Copy the log">
+          <pre class="cc-box cc-code"><code>${logLines}</code></pre>
+        </igc-copy-to-clipboard>
+      </section>
+    `;
+  },
+};
+
+const recoveryCodes = [
+  '7f3k-9q2m',
+  'p4xd-81vn',
+  'c6tw-3hje',
+  'm9ra-5zkq',
+  'b2ny-7gfu',
+  'w8ec-4dps',
+  'h5jv-6tlx',
+  'q1mz-2wkb',
+];
+
+const recoveryCodesFile = `data:text/plain;charset=utf-8,${encodeURIComponent(
+  `${recoveryCodes.join('\n')}\n`
+)}`;
+
+export const RecoveryCodes: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The recovery codes step of a two-factor sign-in setup. The page has its own Copy and Download buttons, so the component has `disable-interaction`, which hides its copy button. Copy uses the invoker command `--copy` with `commandfor`, without JavaScript. With the `plain` format, each code is on its own line, because each list item is a block. The `igcCopy` event tells the page the result: after a copy, the Copy button shows "Copied" for two seconds. When the browser blocks the clipboard, the story selects the codes and tells the user to press Ctrl+C. The live region of the component announces the result.',
+      },
+    },
+  },
+  render: () => {
+    let status: IgcCopyToClipboardEventArgs['status'] | undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const showResult = (event: CustomEvent<IgcCopyToClipboardEventArgs>) => {
+      clearTimeout(timer);
+      status = event.detail.status;
+
+      if (status === 'success') {
+        timer = setTimeout(() => {
+          status = undefined;
+          actions.update();
+        }, 2000);
+      } else {
+        getSelection()?.selectAllChildren(event.currentTarget as Element);
+      }
+
+      actions.update();
+    };
+
+    const actions = renderInto(() => {
+      const copied = status === 'success';
+
+      return html`
+        <igc-button command="--copy" commandfor="cc-recovery-codes">
+          <igc-icon slot="prefix" name=${copied ? 'done' : 'copy'}></igc-icon>
+          ${copied ? 'Copied' : 'Copy'}
+        </igc-button>
+        <igc-button
+          variant="outlined"
+          href=${recoveryCodesFile}
+          download="northwind-recovery-codes.txt"
+        >
+          <igc-icon slot="prefix" name="download"></igc-icon>
+          Download
+        </igc-button>
+        <span class="muted" role="status">
+          ${
+            status === 'error'
+              ? 'The browser blocked the clipboard. Press Ctrl+C to copy the selected codes.'
+              : ''
+          }
+        </span>
+      `;
+    });
+
+    return html`
+      ${styles}
+      <style>
+        .cc-codes {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.5rem 2rem;
+          padding: 1rem 1.5rem;
+          list-style: none;
+          font-size: 1rem;
+        }
+      </style>
+
+      <section class="cc-panel" aria-labelledby="cc-codes-title">
+        <div>
+          <h3 id="cc-codes-title">Save your recovery codes</h3>
+          <p class="muted">
+            If you lose your phone, sign in with a recovery code. Each code
+            works once. Keep the codes in a password manager.
+          </p>
+        </div>
+        <igc-copy-to-clipboard
+          id="cc-recovery-codes"
+          disable-interaction
+          @igcCopy=${showResult}
+        >
+          <ul class="cc-box cc-code cc-codes">
+            ${recoveryCodes.map((code) => html`<li>${code}</li>`)}
+          </ul>
+        </igc-copy-to-clipboard>
+        <div class="cc-row" ${actions.mount}></div>
+      </section>
+    `;
+  },
 };

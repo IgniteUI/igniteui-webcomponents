@@ -1,87 +1,86 @@
 import { html, LitElement, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import {
+  ariaBindings,
+  hostAria,
+} from '#internals/controllers/aria-projection.js';
 import { addCommandController } from '#internals/controllers/command.js';
-import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { addSlotController } from '#internals/controllers/slot.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { partMap } from '#internals/part-map.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { createTimer } from '#internals/timing.js';
-import { addSafeEventListener } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import type { CopyFormat } from '../types.js';
 import IgcVisuallyHiddenComponent from '../visually-hidden/visually-hidden.js';
 import { styles } from './themes/copy-to-clipboard.base.css.js';
 
-type CopyStatus = 'copy' | 'success' | 'error';
+/** The icon and the live region message of each copy status. */
+const STATUSES = {
+  copy: { icon: 'copy_content', message: '' },
+  success: {
+    icon: 'copy_success',
+    message: 'Content copied to clipboard successfully.',
+  },
+  error: {
+    icon: 'error',
+    message: 'Failed to copy content to clipboard. Please try again.',
+  },
+} as const;
 
-/** Time in milliseconds the success/error icon stays before the copy icon returns. */
+type CopyStatus = keyof typeof STATUSES;
+
+export interface IgcCopyToClipboardEventArgs {
+  /** Whether the text reached the clipboard. */
+  status: 'success' | 'error';
+  /** The text that the component copied, or tried to copy. */
+  text: string;
+}
+
+export interface IgcCopyToClipboardComponentEventMap {
+  igcCopy: CustomEvent<IgcCopyToClipboardEventArgs>;
+}
+
+/** How long the success or error icon shows, in milliseconds. */
 const STATUS_RESET_DELAY = 1000;
 
-const BUTTON_LABEL = 'Copy content to clipboard. Click to copy.';
-
-/** Events that show (enter/focusin) or hide (leave/focusout) the copy button. */
-const INTERACTION_EVENTS = [
-  'pointerenter',
-  'pointerleave',
-  'focusin',
-  'focusout',
-] as const;
-
-const STATUS_ICONS: Record<CopyStatus, string> = {
-  copy: 'copy_content',
-  success: 'copy_success',
-  error: 'error',
-};
-
-/** Messages for the live region. The default state announces nothing. */
-const STATUS_MESSAGES: Record<CopyStatus, string> = {
-  copy: '',
-  success: 'Content copied to clipboard successfully.',
-  error: 'Failed to copy content to clipboard. Please try again.',
-};
+const BUTTON_LABEL = 'Copy to clipboard';
 
 /**
- * A component that overlays a copy button on top of its slotted content,
- * allowing users to copy the text to the clipboard with a single click.
+ * Overlays a copy button on its slotted content. The button copies the
+ * rendered text of the content to the clipboard.
  *
  * @element igc-copy-to-clipboard
  *
  * @remarks
- * The copy button is hidden by default and becomes visible when the user hovers
- * over the component or moves keyboard focus inside it. The button itself is part
- * of the tab sequence, so keyboard users reach it even when the slotted content
- * has no focusable element.
+ * The copy button shows on hover and on focus, and always on devices without
+ * hover. It is in the tab sequence also when the content has no focusable
+ * element. Hidden elements and custom icons are never copied. A live region
+ * announces the result of each copy action. The `aria-label`, `aria-labelledby`
+ * and `aria-describedby` of the component apply to the copy button.
  *
- * Both `format` values read the rendered text of the content (the `innerText`
- * algorithm), so hidden elements and custom icons are never copied.
+ * @fires igcCopy - Emitted after each copy action, with its status and the text.
  *
- * The copy action can also be triggered through the `--copy` command of the
- * Invoker Commands API, which works even when `disable-interaction` is set.
- * The result of every copy action is announced through a visually hidden live region.
+ * @cssstate ig-success - The component shows the success icon.
+ * @cssstate ig-error - The component shows the error icon.
  *
- * @slot - The content to be displayed and copied. Accepts any HTML.
- * @slot copy-icon - Overrides the default copy icon inside the copy button.
- * @slot success-icon - Overrides the default success icon shown after a successful copy.
- * @slot error-icon - Overrides the default error icon shown if the copy action fails.
+ * @slot - The content to display and copy.
+ * @slot copy-icon - Overrides the default copy icon.
+ * @slot success-icon - Overrides the default success icon.
+ * @slot error-icon - Overrides the default error icon.
  *
- * @csspart button - The icon-button positioned over the slotted content.
- * @csspart copy-button - The icon-button while it shows the copy icon.
- * @csspart success-button - The icon-button while it shows the success icon after a copy action succeeds.
- * @csspart error-button - The icon-button while it shows the error icon after a copy action fails.
- * @csspart visible - Applied to the icon-button while it is shown on hover or focus.
+ * @csspart button - The copy button.
+ * @csspart copy-button - The copy button while it shows the copy icon.
+ * @csspart success-button - The copy button while it shows the success icon.
+ * @csspart error-button - The copy button while it shows the error icon.
  *
  * @example
  * ```html
- * <!-- Basic usage: copy plain prose text -->
- * <igc-copy-to-clipboard>
- *   <p>Some text the user can copy to the clipboard.</p>
- * </igc-copy-to-clipboard>
- * ```
- *
- * @example
- * ```html
- * <!-- Preserve indentation of a code snippet -->
  * <igc-copy-to-clipboard format="preserve">
  *   <pre><code>function greet(name) {
  *   return `Hello, ${name}!`;
@@ -91,28 +90,20 @@ const STATUS_MESSAGES: Record<CopyStatus, string> = {
  *
  * @example
  * ```html
- * <!-- Supply a custom icon for the copy button -->
- * <igc-copy-to-clipboard>
- *   <igc-icon name="copy" slot="copy-icon"></igc-icon>
- *   <p>Content to copy.</p>
- * </igc-copy-to-clipboard>
- * ```
- *
- * @example
- * ```html
- * <!-- Hide the copy button and trigger the copy action through a command -->
- * <igc-copy-to-clipboard id="copy-component" disable-interaction>
+ * <!-- The --copy command works also with disable-interaction -->
+ * <igc-copy-to-clipboard id="snippet" disable-interaction>
  *   <p>Some text to copy.</p>
  * </igc-copy-to-clipboard>
- * <button command="--copy" commandfor="copy-component">
- *   Copy via command
- * </button>
+ * <button command="--copy" commandfor="snippet">Copy</button>
  * ```
  */
 @shadowOptions({ delegatesFocus: true })
-export default class IgcCopyToClipboardComponent extends LitElement {
+export default class IgcCopyToClipboardComponent extends EventEmitterMixin<
+  IgcCopyToClipboardComponentEventMap,
+  Constructor<LitElement>
+>(HostAriaMixin(LitElement)) {
   public static readonly tagName = 'igc-copy-to-clipboard';
-  public static override styles = styles;
+  public static styles = [componentBase, styles];
 
   /* blazorSuppress */
   public static register(): void {
@@ -126,25 +117,26 @@ export default class IgcCopyToClipboardComponent extends LitElement {
   //#region Internal state and properties
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots('copy-icon', 'success-icon', 'error-icon'),
+    slots: ['copy-icon', 'success-icon', 'error-icon'] as const,
   });
 
-  private readonly _resetTimer = createTimer(() => {
-    this._copyStatus = 'copy';
-  }, STATUS_RESET_DELAY);
+  private readonly _internals = addInternalsController(this);
+
+  private readonly _resetTimer = createTimer(
+    () => this._setStatus('copy'),
+    STATUS_RESET_DELAY
+  );
 
   @state()
   private _copyStatus: CopyStatus = 'copy';
 
-  @state()
-  private _hasUserInteraction = false;
-
   //#endregion
 
-  //#region Public properties and attributes
+  //#region Public attributes and properties
 
   /**
-   * Disables the copy button and prevents it from appearing on hover or focus.
+   * Whether the copy button is hidden and disabled. The `--copy` command
+   * still copies the content.
    *
    * @attr disable-interaction
    * @default false
@@ -153,32 +145,29 @@ export default class IgcCopyToClipboardComponent extends LitElement {
   public disableInteraction = false;
 
   /**
-   * Controls how the text content is formatted when copied to the clipboard.
-   * - `plain`: Collapses whitespace into single spaces and block boundaries into single newlines (default).
-   * - `preserve`: Retains the visual structure such as paragraphs and code indentation.
+   * How the copied text is formatted.
+   * - `plain`: Collapses whitespace, with one line break between blocks.
+   * - `preserve`: Keeps paragraph breaks and indentation.
    *
    * @attr format
    * @default 'plain'
    */
-  @property({ reflect: true })
+  @property()
   public format: CopyFormat = 'plain';
 
   //#endregion
 
   constructor() {
     super();
-
-    addCommandController(this).set('--copy', this._handleClick);
-
-    for (const type of INTERACTION_EVENTS) {
-      addSafeEventListener(this, type, this._handleInteraction);
-    }
+    addCommandController(this).set('--copy', this._handleCopy);
   }
 
-  //#region Lit lifecycle
+  //#region Lit lifecycle methods
 
   public override disconnectedCallback(): void {
+    // A reconnected component starts again from the copy icon.
     this._resetTimer.stop();
+    this._setStatus('copy');
     super.disconnectedCallback();
   }
 
@@ -186,28 +175,31 @@ export default class IgcCopyToClipboardComponent extends LitElement {
 
   //#region Event handlers
 
-  private async _handleClick(): Promise<void> {
-    let status: CopyStatus = 'success';
+  private async _handleCopy(): Promise<void> {
+    const text = this._getContentToCopy();
+    let status: IgcCopyToClipboardEventArgs['status'] = 'success';
 
     try {
-      await navigator.clipboard.writeText(this._getContentToCopy());
+      await navigator.clipboard.writeText(text);
     } catch {
-      // Clipboard API unavailable or permission denied — fail gracefully.
+      // The Clipboard API is not available, or the write was denied.
       status = 'error';
     }
 
-    this._copyStatus = status;
+    this._setStatus(status);
     this._resetTimer.start();
-  }
-
-  private _handleInteraction(event: Event): void {
-    this._hasUserInteraction =
-      event.type === 'pointerenter' || event.type === 'focusin';
+    this.emitEvent('igcCopy', { detail: { status, text } });
   }
 
   //#endregion
 
   //#region Internal API
+
+  private _setStatus(status: CopyStatus): void {
+    this._copyStatus = status;
+    this._internals.setState('ig-success', status === 'success');
+    this._internals.setState('ig-error', status === 'error');
+  }
 
   private _getContentToCopy(): string {
     const text = this._getRenderedText();
@@ -216,63 +208,48 @@ export default class IgcCopyToClipboardComponent extends LitElement {
       ? text.replaceAll(/^\n+|\n+$/g, '')
       : text
           .replaceAll(/[ \t]+/g, ' ')
-          .replaceAll(/[ \t]*\n[ \t]*/g, '\n')
-          .replaceAll(/\n+/g, '\n')
+          .replaceAll(/[ \n]*\n[ \n]*/g, '\n')
           .trim();
   }
 
-  /**
-   * Returns the rendered text of the slotted content.
-   *
-   * `innerText` walks the light DOM, so content assigned to the icon slot
-   * would be included as well. The slot is hidden for the duration of
-   * the read, which removes its assigned nodes from the rendered text.
-   */
+  /** `innerText` includes the visible icon slot, so it is hidden during the read. */
   private _getRenderedText(): string {
-    const iconSlot =
-      this.renderRoot.querySelector<HTMLSlotElement>('slot[name]');
+    const iconSlot = this.renderRoot.querySelector<HTMLSlotElement>(
+      `slot[name="${this._copyStatus}-icon"]`
+    );
 
-    if (iconSlot) {
-      iconSlot.hidden = true;
-    }
-
-    try {
+    if (!iconSlot?.assignedNodes().length) {
       return this.innerText;
-    } finally {
-      if (iconSlot) {
-        iconSlot.hidden = false;
-      }
     }
+
+    iconSlot.hidden = true;
+    const text = this.innerText;
+    iconSlot.hidden = false;
+    return text;
   }
 
   //#endregion
 
   protected override render(): TemplateResult {
     const status = this._copyStatus;
-    const parts = partMap({
-      button: true,
-      [`${status}-button`]: true,
-      visible: this._hasUserInteraction && !this.disableInteraction,
-    });
-    const iconName = bindIf(
-      !this._slots.hasAssignedNodes(`${status}-icon`),
-      STATUS_ICONS[status]
-    );
+    const { icon, message } = STATUSES[status];
 
     return html`
       <slot></slot>
       <igc-icon-button
-        part=${parts}
-        name=${iconName}
+        ${ariaBindings(hostAria(this))}
+        part="button ${status}-button"
+        name=${bindIf(!this._slots.hasAssignedNodes(`${status}-icon`), icon)}
         ?disabled=${this.disableInteraction}
-        @click=${this._handleClick}
+        ?hidden=${this.disableInteraction}
+        @click=${this._handleCopy}
       >
         <igc-visually-hidden>${BUTTON_LABEL}</igc-visually-hidden>
-        <slot name="${status}-icon"></slot>
+        <slot name="copy-icon" ?hidden=${status !== 'copy'}></slot>
+        <slot name="success-icon" ?hidden=${status !== 'success'}></slot>
+        <slot name="error-icon" ?hidden=${status !== 'error'}></slot>
       </igc-icon-button>
-      <igc-visually-hidden role="status" aria-live="polite">
-        ${STATUS_MESSAGES[status]}
-      </igc-visually-hidden>
+      <igc-visually-hidden role="status">${message}</igc-visually-hidden>
     `;
   }
 }

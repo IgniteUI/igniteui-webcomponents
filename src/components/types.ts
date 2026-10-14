@@ -22,13 +22,13 @@ export type TreeSelection = 'none' | 'multiple' | 'cascade';
 
 //#region component-specific
 export type AvatarShape = 'square' | 'circle' | 'rounded';
-export type CopyFormat = 'plain' | 'preserve';
 export type BadgeShape = 'rounded' | 'square';
 export type ButtonGroupSelection = 'single' | 'single-required' | 'multiple';
 export type ButtonVariant = 'contained' | 'flat' | 'outlined' | 'fab';
 export type CarouselIndicatorsOrientation = 'end' | 'start';
 export type ColorFormat = 'hex' | 'rgb' | 'hsl';
 export type ColorPickerMode = 'default' | 'input';
+export type CopyFormat = 'plain' | 'preserve';
 /* jsonAPIPlainObject */
 export type DateRangeValue = { start: Date | null; end: Date | null };
 export type DividerType = 'solid' | 'dashed';

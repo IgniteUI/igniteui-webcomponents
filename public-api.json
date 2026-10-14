@@ -26,6 +26,7 @@
     "ComboResourceStringsEN",
     "ComboTemplateProps",
     "ContentOrientation",
+    "CopyFormat",
     "CustomDateRange",
     "DatePart",
     "DatePartDeltas",
@@ -97,6 +98,9 @@
     "IgcComboChangeEventArgs",
     "IgcComboComponent",
     "IgcComboComponentEventMap",
+    "IgcCopyToClipboardComponent",
+    "IgcCopyToClipboardComponentEventMap",
+    "IgcCopyToClipboardEventArgs",
     "IgcDatePickerComponent",
     "IgcDatePickerComponentEventMap",
     "IgcDateRangePickerComponent",
@@ -1280,6 +1284,37 @@
         "selected",
         "suffix",
         "toggle-icon"
+      ],
+      "cssProperties": []
+    },
+    "igc-copy-to-clipboard": {
+      "class": "IgcCopyToClipboardComponent",
+      "attributes": {
+        "disable-interaction": "boolean",
+        "format": "CopyFormat ('plain' | 'preserve')"
+      },
+      "properties": {
+        "disableInteraction": "boolean",
+        "format": "CopyFormat ('plain' | 'preserve')",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {
+        "igcCopy": "unknown"
+      },
+      "slots": [
+        "",
+        "copy-icon",
+        "error-icon",
+        "success-icon"
+      ],
+      "cssParts": [
+        "button",
+        "copy-button",
+        "error-button",
+        "success-button"
       ],
       "cssProperties": []
     },
