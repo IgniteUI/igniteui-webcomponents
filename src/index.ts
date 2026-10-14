@@ -209,6 +209,8 @@ export type {
 } from './components/stepper/common/types.js';
 export type { IgcTreeSelectionEventArgs } from './components/tree/tree.common.js';
 export type {
+  ComboGroupHeaderContext,
+  ComboGroupHeaderTemplate,
   ComboItemTemplate,
   ComboTemplateProps,
   FilteringOptions,

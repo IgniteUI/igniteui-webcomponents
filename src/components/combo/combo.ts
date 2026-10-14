@@ -46,6 +46,7 @@ import { ComboNavigationController } from './controllers/navigation.js';
 import { styles } from './themes/combo.base.css.js';
 import { styles as shared } from './themes/shared/combo.common.css.js';
 import type {
+  ComboGroupHeaderTemplate,
   ComboItemTemplate,
   ComboRecord,
   ComboRenderFunction,
@@ -472,11 +473,11 @@ export default class IgcComboComponent<
   /* blazorSuppress */
   /**
    * The template used for the content of each combo group header.
-   * @type {ComboItemTemplate<T>}
+   * @type {ComboGroupHeaderTemplate<T>}
    */
   @property({ attribute: false })
-  public groupHeaderTemplate: ComboItemTemplate<T> = ({ item }) =>
-    html`${this.groupKey && item[this.groupKey as Keys<T>]}`;
+  public groupHeaderTemplate: ComboGroupHeaderTemplate<T> = (group) =>
+    html`${group.key}`;
 
   /**
    * Sets the value (selected items). The passed value must be a valid JSON array.
@@ -1011,7 +1012,7 @@ export default class IgcComboComponent<
     if (this.groupKey && item.header) {
       return html`
         <igc-combo-header part="group-header">
-          ${this.groupHeaderTemplate({ item: item.value })}
+          ${this.groupHeaderTemplate({ key: item.group, item: item.value })}
         </igc-combo-header>
       `;
     }

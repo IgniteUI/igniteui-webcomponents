@@ -14,6 +14,8 @@ export type ComboRecord<T extends object> = {
    * Each pipeline run sets it again.
    */
   position: number;
+  /** The group value of a header record. Not set on the other records. */
+  group?: unknown;
 };
 
 export type ComboHost<T extends object> = ReactiveControllerHost &
@@ -70,5 +72,23 @@ export type ComboItemTemplate<T extends object> = (
   props: ComboTemplateProps<T>
 ) => TemplateResult;
 export interface ComboTemplateProps<T extends object> {
+  item: T;
+}
+
+export type ComboGroupHeaderTemplate<T extends object> = (
+  props: ComboGroupHeaderContext<T>
+) => TemplateResult;
+/** The context of the group header template. */
+export interface ComboGroupHeaderContext<T extends object> {
+  /**
+   * The value that the items of the group share in the `groupKey` field.
+   * `Other` for the items without a value in that field.
+   */
+  key: unknown;
+  /**
+   * A record made for the header, not a data item. Only the `groupKey`,
+   * `valueKey` and `displayKey` fields are set, and each contains the group value.
+   * @deprecated since 7.5.0. Use the `key` property instead.
+   */
   item: T;
 }
