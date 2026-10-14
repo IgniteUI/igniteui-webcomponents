@@ -40,6 +40,7 @@
 | ------: | ---------- | -------------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                                    |
 |       2 | 2026-10-01 | Position the badge in a wrapper; hidden text through CSS |
+|       3 | 2026-10-14 | No role description on the badge                         |
 
 ## Overview
 
@@ -240,8 +241,8 @@ None applicable.
 
 - The badge has `role="status"`, so that a change of its content is announced politely.
 - The badge has no role description. Assistive technologies announce the status role in the language of the user,
-  and the ARIA specification limits role descriptions to container roles and widgets. An application can set
-  `aria-roledescription` on the host.
+  and the ARIA specification recommends role descriptions only for non-interactive container roles and widgets. An
+  application can set `aria-roledescription` on the host.
 - The variant is not exposed, since a color is not a meaning an assistive technology can convey. A badge whose
   variant carries meaning should state it in its content. A count should
   also state what it counts, for example in text that a visually hidden CSS utility of the application hides from

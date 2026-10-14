@@ -38,6 +38,7 @@
 | ------: | ---------- | ---------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                          |
 |       2 | 2026-10-01 | A badge goes next to the avatar, not inside it |
+|       3 | 2026-10-14 | No role description on the avatar              |
 
 ## Overview
 
@@ -222,8 +223,8 @@ None applicable.
 ### ARIA roles and properties
 
 - The avatar has `role="img"` and no role description. Assistive technologies announce the image role in the
-  language of the user, and the ARIA specification limits role descriptions to container roles and widgets. An
-  application can set `aria-roledescription` on the host.
+  language of the user, and the ARIA specification recommends role descriptions only for non-interactive
+  container roles and widgets. An application can set `aria-roledescription` on the host.
 - Its accessible name comes from `alt`, and from `initials` when there is no alternative text. Without either, it
   carries no name of its own, so a surrounding element can provide one.
 - An image with no alternative text is rendered as decorative, so that it is not announced twice.
