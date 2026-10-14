@@ -1,4 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
+import { createAbortHandle } from '../abort-handler.js';
+import { resolveValue } from '../utils/types.js';
 
 type HostListenersHost = ReactiveControllerHost & EventTarget;
 
@@ -25,7 +27,7 @@ export type HostListenersConfig = {
 class HostListenersController implements ReactiveController {
   private readonly _host: HostListenersHost;
   private readonly _config: HostListenersConfig;
-  private _controller?: AbortController;
+  private readonly _abortHandle = createAbortHandle();
 
   constructor(host: HostListenersHost, config: HostListenersConfig) {
     this._host = host;
@@ -36,13 +38,10 @@ class HostListenersController implements ReactiveController {
   /** @internal */
   public hostConnected(): void {
     const { target, events, listener, options } = this._config;
-    const element =
-      (typeof target === 'function' ? target() : target) ?? this._host;
-    this._controller = new AbortController();
-
+    const element = resolveValue(target) ?? this._host;
     const listenerOptions: AddEventListenerOptions = {
       ...options,
-      signal: this._controller.signal,
+      signal: this._abortHandle.signal,
     };
 
     for (const event of events) {
@@ -52,8 +51,7 @@ class HostListenersController implements ReactiveController {
 
   /** @internal */
   public hostDisconnected(): void {
-    this._controller?.abort();
-    this._controller = undefined;
+    this._abortHandle.abort();
   }
 }
 

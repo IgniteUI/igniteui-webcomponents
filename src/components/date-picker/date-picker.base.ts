@@ -15,7 +15,7 @@ import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import type { UnpackCustomEvent } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
-import { asArray } from '#internals/utils/arrays.js';
+import { asArray, firstOf } from '#internals/utils/arrays.js';
 import {
   addSafeEventListener,
   focusLeftHost,
@@ -37,6 +37,8 @@ import type {
   DateRangeDescriptor,
   WeekDays,
 } from '../calendar/types.js';
+import type IgcDateRangeInputComponent from '../date-range-picker/date-range-input.js';
+import type IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -87,6 +89,11 @@ export const pickerDependencies = [
 type PickerSlots = {
   hasAssignedElements(slot: string): boolean;
 };
+
+/** An editor of a picker: a date-time input, or the masked single input of a range. */
+export type PickerEditor =
+  | IgcDateTimeInputComponent
+  | IgcDateRangeInputComponent;
 
 /* blazorIndirectRender */
 /* omitModule */
@@ -170,7 +177,7 @@ export abstract class IgcDatePickerBaseComponent<
   protected abstract get _value(): T | null;
   protected abstract set _value(value: T | null);
 
-  protected abstract _clearEditors(): void;
+  protected abstract get _editors(): (PickerEditor | undefined)[];
 
   protected abstract get _hasValue(): boolean;
 
@@ -181,8 +188,6 @@ export abstract class IgcDatePickerBaseComponent<
 
   /** The editor whose native input gets the host name and `aria-haspopup="dialog"`. */
   protected abstract get _projectionTarget(): Element | null;
-
-  protected abstract _focusInput(): void;
 
   /** Restores focus to the editor after a calendar selection. */
   protected abstract _focusAndSelectInput(): void;
@@ -504,9 +509,29 @@ export abstract class IgcDatePickerBaseComponent<
     }
   }
 
+  protected override formResetCallback(): void {
+    super.formResetCallback();
+
+    // The browser never resets the inner editors, which are outside the form.
+    // Without this, a touched editor keeps its invalid styles after a reset.
+    for (const editor of this._editors) {
+      editor?.['formResetCallback']();
+    }
+  }
+
   //#endregion
 
   //#region Internal API
+
+  protected _clearEditors(): void {
+    for (const editor of this._editors) {
+      editor?.clear();
+    }
+  }
+
+  protected _focusInput(): void {
+    firstOf(this._editors)?.focus();
+  }
 
   protected _setDateConstraints(): void {
     this._dateConstraints = createDateConstraints(

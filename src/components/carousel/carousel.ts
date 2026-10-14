@@ -48,6 +48,7 @@ import {
   getElementFromPath,
 } from '#internals/utils/events.js';
 import { asNumber, wrap } from '#internals/utils/math.js';
+import { moveFlag } from '#internals/utils/objects.js';
 import { createIdGenerator, formatString } from '#internals/utils/strings.js';
 import { all } from '#themes/carousel/themes/container.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -614,12 +615,8 @@ export default class IgcCarouselComponent extends I18nMixin(
   }
 
   private _activateSlide(slide: IgcCarouselSlideComponent): void {
-    if (this._activeSlide) {
-      this._activeSlide.active = false;
-    }
-
+    moveFlag(this._activeSlide, slide, 'active');
     this._activeSlide = slide;
-    this._activeSlide.active = true;
 
     if (this._hasKeyboardInteractionOnIndicators) {
       this._indicators[this.current]?.focus();

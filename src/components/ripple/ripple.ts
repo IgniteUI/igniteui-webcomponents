@@ -1,4 +1,5 @@
 import { LitElement, nothing } from 'lit';
+import { getPrefersReducedMotion } from '#animations/player.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { getScaleFactor, setStyles } from '#internals/utils/dom.js';
 import { addSafeEventListener } from '#internals/utils/events.js';
@@ -65,7 +66,13 @@ export default class IgcRippleComponent extends LitElement {
     });
     this.renderRoot.appendChild(element);
 
-    await element.animate(rippleFrames, rippleAnimation).finished;
+    const wave = element.animate(rippleFrames, {
+      ...rippleAnimation,
+      duration: getPrefersReducedMotion() ? 0 : rippleAnimation.duration,
+    });
+
+    // A cancel rejects `finished`. The wave must go in that case too.
+    await wave.finished.catch(() => {});
     element.remove();
   }
 
