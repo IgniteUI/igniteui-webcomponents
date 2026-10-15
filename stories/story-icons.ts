@@ -98,6 +98,7 @@ const materialIcons = {
   'play-arrow': 'av/svg/production/ic_play_arrow_24px.svg',
   plus: 'content/svg/production/ic_add_24px.svg',
   redo: 'content/svg/production/ic_redo_24px.svg',
+  refresh: 'navigation/svg/production/ic_refresh_24px.svg',
   'replay-10': 'av/svg/production/ic_replay_10_24px.svg',
   reply: 'content/svg/production/ic_reply_24px.svg',
   'reply-all': 'content/svg/production/ic_reply_all_24px.svg',

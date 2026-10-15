@@ -1,16 +1,25 @@
 import { expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
 import {
+  getBorderRadius,
+  getCSSZoom,
   getDeepActiveElement,
+  getDeepBorderRadius,
+  getOverflowClip,
+  getPaddingBox,
   getScaleFactor,
   getVisibleAncestor,
   hasNegativeTabIndex,
+  intersectBoxes,
+  isEmptyBox,
+  isSameBox,
   iterNodes,
   normalizedTextContent,
   pointToFraction,
   resolveCssLength,
   roundByDPR,
   setOrRemoveAttribute,
+  skipsRendering,
 } from './dom.js';
 
 describe('DOM utilities', () => {
@@ -250,6 +259,191 @@ describe('DOM utilities', () => {
         x: 1,
         y: 1,
       });
+    });
+  });
+
+  describe('isSameBox, intersectBoxes and isEmptyBox', () => {
+    const box = { left: 0, top: 0, right: 10, bottom: 10 };
+
+    it('matches boxes to half a pixel', () => {
+      expect(isSameBox(box, { left: 0.4, top: 0, right: 10, bottom: 10.4 })).to
+        .be.true;
+      expect(isSameBox(box, { left: 0.5, top: 0, right: 10, bottom: 10 })).to.be
+        .false;
+    });
+
+    it('returns the overlap of two boxes', () => {
+      expect(
+        intersectBoxes(box, { left: 5, top: -5, right: 20, bottom: 5 })
+      ).to.eql({ left: 5, top: 0, right: 10, bottom: 5 });
+    });
+
+    it('returns whether a box has no area', () => {
+      expect(isEmptyBox(box)).to.be.false;
+      expect(isEmptyBox(intersectBoxes(box, { ...box, left: 10, right: 20 })))
+        .to.be.true;
+    });
+  });
+
+  describe('getCSSZoom and getPaddingBox', () => {
+    it('returns the zoomed padding box without the borders', async () => {
+      const root = await fixture<HTMLElement>(
+        html`<div style="zoom: 2">
+          <div style="width: 50px; height: 20px; border: 5px solid"></div>
+        </div>`
+      );
+      const element = root.firstElementChild!;
+      const rect = element.getBoundingClientRect();
+      const left = rect.left + 10;
+      const top = rect.top + 10;
+
+      expect(getCSSZoom(element)).to.equal(2);
+      expect(getCSSZoom(root.parentElement!)).to.equal(1);
+      expect(getPaddingBox(element)).to.eql({
+        left,
+        top,
+        right: left + 100,
+        bottom: top + 40,
+      });
+    });
+  });
+
+  describe('getOverflowClip', () => {
+    it('clips only the axes that the overflow clips', async () => {
+      const element = await fixture<HTMLElement>(
+        html`<div style="width: 50px; height: 20px; overflow-x: clip"></div>`
+      );
+      const box = getPaddingBox(element);
+
+      expect(getOverflowClip(element)).to.eql({
+        left: box.left,
+        top: -Infinity,
+        right: box.right,
+        bottom: Infinity,
+      });
+    });
+
+    it('clips both axes with paint containment', async () => {
+      const element = await fixture<HTMLElement>(
+        html`<div style="width: 50px; height: 20px; contain: paint"></div>`
+      );
+
+      expect(getOverflowClip(element)).to.eql(getPaddingBox(element));
+    });
+
+    it('returns null for visible overflow, an inline box and no box', async () => {
+      const root = await fixture<HTMLElement>(
+        html`<div>
+          <div></div>
+          <span style="overflow: hidden"></span>
+          <div style="display: contents; overflow: hidden"></div>
+        </div>`
+      );
+
+      for (const child of root.children) {
+        expect(getOverflowClip(child)).to.be.null;
+      }
+    });
+  });
+
+  describe('getBorderRadius and getDeepBorderRadius', () => {
+    function radiusOf(value: string): string | null {
+      const element = document.createElement('div');
+      element.style.borderRadius = value;
+      document.body.append(element);
+
+      try {
+        return getBorderRadius(getComputedStyle(element));
+      } finally {
+        element.remove();
+      }
+    }
+
+    it('returns null when every corner is square', () => {
+      expect(radiusOf('0')).to.be.null;
+      expect(radiusOf('0%')).to.be.null;
+      expect(radiusOf('0 4px 0 0')).to.equal('0px 4px 0px 0px');
+    });
+
+    it('returns the radius of a nested shadow element that covers the element', async () => {
+      const host = await fixture<HTMLElement>(
+        html`<div style="width: 40px"></div>`
+      );
+      host.attachShadow({ mode: 'open' }).innerHTML =
+        '<div><div style="height: 40px; border-radius: 50%"></div></div>';
+
+      expect(getDeepBorderRadius(host)).to.equal('50%');
+    });
+
+    it('ignores a shadow element that does not cover the element', async () => {
+      const host = await fixture<HTMLElement>(
+        html`<div style="width: 40px; height: 40px"></div>`
+      );
+      host.attachShadow({ mode: 'open' }).innerHTML =
+        '<div style="height: 20px; border-radius: 50%"></div>';
+
+      expect(getDeepBorderRadius(host)).to.be.null;
+    });
+  });
+
+  describe('skipsRendering', () => {
+    it('skips all content with `content-visibility: hidden`', async () => {
+      const element = await fixture<HTMLElement>(
+        html`<div style="content-visibility: hidden"><span></span></div>`
+      );
+
+      expect(skipsRendering(element, element.firstElementChild!)).to.be.true;
+    });
+
+    it('ignores `content-visibility` on an inline box and on no box', async () => {
+      const root = await fixture<HTMLElement>(
+        html`<div>
+          <span style="content-visibility: hidden"><b></b></span>
+          <div style="display: contents; content-visibility: hidden">
+            <b></b>
+          </div>
+        </div>`
+      );
+
+      for (const element of root.children) {
+        expect(skipsRendering(element, element.firstElementChild!)).to.be.false;
+      }
+    });
+
+    it('follows an author override of the details content', async () => {
+      const root = await fixture<HTMLElement>(
+        html`<div>
+          <style>
+            details::details-content {
+              content-visibility: visible;
+            }
+          </style>
+          <details>
+            <summary>Summary</summary>
+            <b></b>
+          </details>
+        </div>`
+      );
+      const details = root.querySelector('details')!;
+
+      expect(skipsRendering(details, details.querySelector('b')!)).to.be.false;
+    });
+
+    it('skips all but the summary of a closed details element', async () => {
+      const details = await fixture<HTMLDetailsElement>(
+        html`<details>
+          <summary>Summary</summary>
+          Text
+        </details>`
+      );
+      const summary = details.querySelector('summary')!;
+      const text = summary.nextSibling!;
+
+      expect(skipsRendering(details, summary)).to.be.false;
+      expect(skipsRendering(details, text)).to.be.true;
+
+      details.open = true;
+      expect(skipsRendering(details, text)).to.be.false;
     });
   });
 

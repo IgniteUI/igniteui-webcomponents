@@ -53,11 +53,11 @@ const metadata: Meta<IgcNavDrawerComponent> = {
     position: {
       type: {
         name: 'enum',
-        value: ['bottom', 'top', 'start', 'end', 'relative'],
+        value: ['top', 'bottom', 'start', 'end', 'relative'],
       },
       description:
         'Sets the position of the drawer.\n\n- `start` - anchored to the inline-start edge (default).\n- `end` - anchored to the inline-end edge.\n- `top` - anchored to the block-start edge.\n- `bottom` - anchored to the block-end edge.\n- `relative` - rendered inline within the page flow; no modal backdrop.',
-      options: ['bottom', 'top', 'start', 'end', 'relative'],
+      options: ['top', 'bottom', 'start', 'end', 'relative'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'start' } },
     },
@@ -96,7 +96,7 @@ interface IgcNavDrawerArgs {
    * - `bottom` - anchored to the block-end edge.
    * - `relative` - rendered inline within the page flow; no modal backdrop.
    */
-  position: 'bottom' | 'top' | 'start' | 'end' | 'relative';
+  position: 'top' | 'bottom' | 'start' | 'end' | 'relative';
   /** Whether the drawer is open. */
   open: boolean;
   /**

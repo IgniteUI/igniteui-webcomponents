@@ -50,8 +50,8 @@ const metadata: Meta<IgcLinearProgressComponent> = {
       type: {
         name: 'enum',
         value: [
-          'bottom',
           'top',
+          'bottom',
           'top-start',
           'top-end',
           'bottom-start',
@@ -60,8 +60,8 @@ const metadata: Meta<IgcLinearProgressComponent> = {
       },
       description: 'The position for the default label of the control.',
       options: [
-        'bottom',
         'top',
+        'bottom',
         'top-start',
         'top-end',
         'bottom-start',
@@ -136,8 +136,8 @@ interface IgcLinearProgressArgs {
   striped: boolean;
   /** The position for the default label of the control. */
   labelAlign:
-    | 'bottom'
     | 'top'
+    | 'bottom'
     | 'top-start'
     | 'top-end'
     | 'bottom-start'

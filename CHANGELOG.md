@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### Skeleton
+  - New `igc-skeleton` component shows a placeholder while its content loads. Set `loading` to hide the content and draw an animated shape over each visible leaf element and run of text. The `animation` attribute selects `pulse`, `breathe` (the default), `shimmer`, `wave` or `glow`. When loading ends, the content fades in and the host has the `revealing` custom state.
+  - While loading, the content is inert and the host has `aria-busy="true"`.
 - #### Calendar, Date picker, Date range picker
   - `DateRangeDescriptor` has an optional `label`. The calendar adds the labels of the matching `specialDates` and `disabledDates` descriptors to the accessible name of a date, for example "Thursday, October 8, 2026, Free delivery". Before, the special state was only visual, and assistive technologies did not announce it. [#2423](https://github.com/IgniteUI/igniteui-webcomponents/pull/2423)
 - #### Combo
