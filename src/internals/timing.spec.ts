@@ -52,6 +52,18 @@ describe('Timing utilities', () => {
       expect(callback.calledOnce).to.be.true;
     });
 
+    it('should cap a delay longer than setTimeout accepts', () => {
+      const callback = spy();
+      const timer = createTimer(callback);
+
+      timer.start(1e10);
+      clock.tick(1);
+      expect(callback.called).to.be.false;
+
+      clock.tick(2 ** 31 - 2);
+      expect(callback.calledOnce).to.be.true;
+    });
+
     it('should cancel the armed run on stop', () => {
       const callback = spy();
       const timer = createTimer(callback, 100);

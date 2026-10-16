@@ -9,6 +9,8 @@ export interface HostAriaTestConfig {
   template: TemplateResult;
   /** Locates the element that receives the host name and description. */
   getTarget: (host: LitElement) => Element;
+  /** The `aria-label` of the target when the host has no name. By default, the target has none. */
+  fallbackLabel?: string;
   /** The axe rules that the audit skips. */
   ignoredRules?: string[];
 }
@@ -51,7 +53,9 @@ export function runHostAriaTests(config: HostAriaTestConfig): void {
       );
 
       await update('aria-label', null);
-      expect(config.getTarget(host).hasAttribute('aria-label')).to.be.false;
+      expect(config.getTarget(host).getAttribute('aria-label')).to.equal(
+        config.fallbackLabel ?? null
+      );
     });
 
     it('names the target by the host `aria-labelledby`', async () => {

@@ -67,6 +67,9 @@ export { default as IgcSwitchComponent } from './components/checkbox/switch.js';
 export { default as IgcTextareaComponent } from './components/textarea/textarea.js';
 export { default as IgcTreeComponent } from './components/tree/tree.js';
 export { default as IgcTreeItemComponent } from './components/tree/tree-item.js';
+export { default as IgcSpeechToTextComponent } from './components/speech-to-text/speech-to-text.js';
+export { WebSpeechProvider } from './components/speech-to-text/providers/web-speech.js';
+export { SpeechToTextProviderError } from './components/speech-to-text/provider-error.js';
 export { default as IgcSplitterComponent } from './components/splitter/splitter.js';
 export { default as IgcStepperComponent } from './components/stepper/stepper.js';
 export { default as IgcStepComponent } from './components/stepper/step.js';
@@ -138,6 +141,10 @@ export {
   registerI18n,
   setCurrentI18n,
 } from 'igniteui-i18n-core';
+export {
+  type ISpeechToTextResourceStrings,
+  SpeechToTextResourceStringsEN,
+} from './components/speech-to-text/i18n.js';
 
 // Event maps
 export type { IgcBannerComponentEventMap } from './components/banner/banner.js';
@@ -162,6 +169,7 @@ export type { IgcNavDrawerComponentEventMap } from './components/nav-drawer/nav-
 export type { IgcFileInputComponentEventMap } from './components/file-input/file-input.js';
 export type { IgcRadioComponentEventMap } from './components/radio/radio.js';
 export type { IgcRatingComponentEventMap } from './components/rating/rating.js';
+export type { IgcSpeechToTextComponentEventMap } from './components/speech-to-text/speech-to-text.js';
 export type { IgcSelectComponentEventMap } from './components/select/select.js';
 export type { IgcSliderComponentEventMap } from './components/slider/slider.js';
 export type { IgcRangeSliderComponentEventMap } from './components/slider/range-slider.js';
@@ -219,6 +227,7 @@ export type {
   RegisterIconOptions,
 } from './components/icon/registry/types.js';
 export type * from './components/chat/types.js';
+export type * from './components/speech-to-text/types.js';
 export type {
   QrCodeExportFormat,
   QrCodeExportOptions,

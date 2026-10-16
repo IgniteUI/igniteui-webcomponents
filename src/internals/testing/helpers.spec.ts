@@ -1,6 +1,7 @@
 import { expect, nextFrame } from '@open-wc/testing';
 import { stub } from 'sinon';
 import { type CalendarDay, toCalendarDay } from '../date/model.js';
+import type { Constructor } from '../mixins/constructor.js';
 import { toKebabCase } from '../utils/strings.js';
 
 /** Returns the animations of the element and, optionally, its descendants. */
@@ -135,3 +136,20 @@ export function catchListenerErrors(fn: () => void): unknown[] {
 export const axeReflectedRelationsOptions = {
   ignoredRules: ['aria-required-attr'],
 };
+
+/**
+ * Awaits a promise that must reject and returns the rejection, asserting
+ * that it is an instance of `type`.
+ */
+export async function expectRejection<T extends Error>(
+  promise: Promise<unknown>,
+  type: Constructor<T>
+): Promise<T> {
+  try {
+    await promise;
+  } catch (error) {
+    expect(error).to.be.instanceOf(type);
+    return error as T;
+  }
+  throw new Error('Expected the promise to reject');
+}
