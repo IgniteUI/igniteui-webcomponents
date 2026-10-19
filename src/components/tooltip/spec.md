@@ -50,6 +50,7 @@
 | ------: | ---------- | ------------------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                                         |
 |       2 | 2026-10-02 | An anchor that forwards its description passes the tooltip on |
+|       3 | 2026-10-19 | Localize the name of the default close button                 |
 
 ## Overview
 
@@ -238,8 +239,14 @@ changed. Setting `open` transitions the tooltip without delays and without anima
 
 ### Localization
 
-No specific implementation is required. The component renders no strings of its own; the `message` property and the
-slotted content come from the application.
+The tooltip takes its resource strings from the `igniteui-i18n-core` package through the `locale` and
+`resourceStrings` properties. Without an explicit `locale`, it falls back to the global locale of the library.
+
+| Key             | Default English value | Used for                                             |
+| --------------- | --------------------- | ---------------------------------------------------- |
+| `tooltip_close` | Close                 | The name of the default close button in sticky mode. |
+
+The `message` property and the slotted content come from the application.
 
 ### Keyboard interactions
 
@@ -265,6 +272,8 @@ slotted content come from the application.
 | hideDelay      | hide-delay      | No        | `number`                         | 300                              | Milliseconds before hiding the tooltip.                         |
 | sticky         | sticky          | Yes       | `boolean`                        | false                            | Whether the tooltip stays visible until it is actively closed.  |
 | scrollStrategy | scroll-strategy | No        | `PopoverScrollStrategy`          | `hide`                           | The behavior of the tooltip when a parent container scrolls.    |
+| locale         | locale          | No        | `string`                         | -                                | The locale for the resource strings. Falls back to the global locale. |
+| resourceStrings | -               | No        | `ITooltipResourceStrings`        | EN                               | The resource strings for localization.                           |
 
 ### Methods
 
@@ -315,7 +324,7 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 5. `placement`, `offset` and `withArrow` are applied to the positioning surface.
 6. `showTriggers` and `hideTriggers` accept comma separated, space separated and mixed lists.
 7. `showDelay` and `hideDelay` are honoured for end-user interaction.
-8. `sticky` renders the close button and ignores the hide triggers.
+8. `sticky` renders the close button, named in the locale of the tooltip, and ignores the hide triggers.
 
 ### Methods tests
 

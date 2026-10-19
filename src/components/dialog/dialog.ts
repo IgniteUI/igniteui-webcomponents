@@ -1,3 +1,4 @@
+import { DialogResourceStringsEN } from 'igniteui-i18n-core';
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -13,6 +14,7 @@ import { addToggleController } from '#internals/controllers/toggle.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
 import { isPointInsideElement } from '#internals/utils/dom.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
@@ -29,6 +31,10 @@ export interface IgcDialogComponentEventMap {
 }
 
 const nextId = createIdGenerator('title');
+
+const i18n = {
+  defaultEN: DialogResourceStringsEN,
+};
 
 /* blazorAdditionalDependency: IgcButtonComponent */
 /**
@@ -59,7 +65,7 @@ const nextId = createIdGenerator('title');
  * @slot message - A dedicated message/body area rendered above the default
  *   slot. Hidden when no content is assigned.
  * @slot footer - Content rendered in the dialog footer. When empty, a
- *   default "OK" close button is shown (unless `hide-default-action` is set).
+ *   default action button is shown (unless `hide-default-action` is set).
  *
  * @csspart base - The native `<dialog>` element.
  * @csspart title - The `<header>` element wrapping the title slot.
@@ -68,8 +74,9 @@ const nextId = createIdGenerator('title');
  * @csspart backdrop - The decorative backdrop overlay element.
  * @csspart animating - Applied to the backdrop while an animation is running.
  */
-export default class IgcDialogComponent extends EventEmitterMixin<IgcDialogComponentEventMap>(
-  HostAriaMixin(LitElement)
+export default class IgcDialogComponent extends I18nMixin(
+  EventEmitterMixin<IgcDialogComponentEventMap>(HostAriaMixin(LitElement)),
+  i18n
 ) {
   public static readonly tagName = 'igc-dialog';
   public static override styles = [componentBase, styles, shared];
@@ -147,7 +154,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<IgcDialogCompo
   public closeOnOutsideClick = false;
 
   /**
-   * When set, the built-in "OK" close button in the footer is not rendered.
+   * When set, the default action button in the footer is not rendered.
    *
    * Has no effect when content is projected into the `footer` slot, since
    * the slot content replaces the default button entirely.
@@ -335,7 +342,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<IgcDialogCompo
               ? nothing
               : html`
                   <igc-button variant="flat" @click=${this._closeWithEvent}>
-                    OK
+                    ${this.resourceStrings.dialog_default_action}
                   </igc-button>
                 `
           }

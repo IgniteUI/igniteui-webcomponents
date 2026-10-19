@@ -7,6 +7,8 @@ import {
   oneEvent,
 } from '@open-wc/testing';
 import { resetMouse, sendKeys, sendMouse } from '@web/test-runner-commands';
+import { registerI18n } from 'igniteui-i18n-core';
+import { TileResourceStringsBG } from 'igniteui-i18n-resources';
 import { range } from 'lit/directives/range.js';
 import { match, restore, spy, stub } from 'sinon';
 import { getActiveViewTransition } from '#animations/view-transition.js';
@@ -287,6 +289,25 @@ describe('Tile Manager component', () => {
       expect(getActionButtons(tile).map(({ ariaLabel }) => ariaLabel)).to.eql([
         'Restore',
         'Enter full screen',
+      ]);
+    });
+
+    it('names the default actions in its locale', async () => {
+      registerI18n(TileResourceStringsBG, 'bg');
+      tile.locale = 'bg';
+      await elementUpdated(tile);
+
+      expect(getActionButtons(tile).map(({ ariaLabel }) => ariaLabel)).to.eql([
+        TileResourceStringsBG.tile_maximize,
+        TileResourceStringsBG.tile_enter_fullscreen,
+      ]);
+
+      tile.maximized = true;
+      await elementUpdated(tile);
+
+      expect(getActionButtons(tile).map(({ ariaLabel }) => ariaLabel)).to.eql([
+        TileResourceStringsBG.tile_restore,
+        TileResourceStringsBG.tile_enter_fullscreen,
       ]);
     });
 

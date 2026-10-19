@@ -1,3 +1,4 @@
+import { ColorPickerResourceStringsEN } from 'igniteui-i18n-core';
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -16,6 +17,7 @@ import {
   preventDefault,
 } from '#internals/utils/events.js';
 import { asPercent, clamp } from '#internals/utils/math.js';
+import { formatString } from '#internals/utils/strings.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/picker-canvas.base.css.js';
 
@@ -107,7 +109,16 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
 
   /** The accessible name of the marker. */
   @property()
-  public markerLabel = 'Saturation and value';
+  public markerLabel: string =
+    ColorPickerResourceStringsEN.color_picker_canvas_label!;
+
+  /**
+   * The format of the marker `aria-valuetext`. `{0}` is the saturation and
+   * `{1}` the brightness, both as whole percentages.
+   */
+  @property()
+  public markerValueFormat: string =
+    ColorPickerResourceStringsEN.color_picker_canvas_value!;
 
   constructor() {
     super();
@@ -243,7 +254,11 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
         aria-valuemin="0"
         aria-valuemax="100"
         aria-valuenow=${saturation}
-        aria-valuetext="Saturation ${saturation}%, brightness ${brightness}%"
+        aria-valuetext=${formatString(
+          this.markerValueFormat,
+          saturation,
+          brightness
+        )}
       ></div>
     `;
   }

@@ -1,3 +1,4 @@
+import { TooltipResourceStringsEN } from 'igniteui-i18n-core';
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -17,6 +18,7 @@ import {
 } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
 import { isElement, isLTR } from '#internals/utils/dom.js';
 import { asNumber } from '#internals/utils/math.js';
@@ -48,6 +50,10 @@ type TooltipStateOptions = {
   withEvents?: boolean;
 };
 
+const i18n = {
+  defaultEN: TooltipResourceStringsEN,
+};
+
 /**
  * Provides a way to display supplementary information related to an element when a user interacts with it (e.g., hover, focus).
  * It offers features such as placement customization, delays, sticky mode, and animations.
@@ -66,8 +72,9 @@ type TooltipStateOptions = {
  * @fires igcClosing - Emitted before the tooltip begins to close. Can be canceled to prevent closing.
  * @fires igcClosed - Emitted after the tooltip has been fully removed from view.
  */
-export default class IgcTooltipComponent extends EventEmitterMixin<IgcTooltipComponentEventMap>(
-  LitElement
+export default class IgcTooltipComponent extends I18nMixin(
+  EventEmitterMixin<IgcTooltipComponentEventMap>(LitElement),
+  i18n
 ) {
   public static readonly tagName = 'igc-tooltip';
   public static override styles = [componentBase, styles, shared];
@@ -557,7 +564,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<IgcTooltipCom
                     <button
                       type="button"
                       part="close-button"
-                      aria-label="Close"
+                      aria-label=${this.resourceStrings.tooltip_close}
                     >
                       <igc-icon
                         name="input_clear"

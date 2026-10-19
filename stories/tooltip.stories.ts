@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html, nothing } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { range } from 'lit/directives/range.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 
@@ -153,6 +154,12 @@ const metadata: Meta<IgcTooltipComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    locale: {
+      type: 'string',
+      description:
+        'The locale for the resource strings and the locale-aware formatting.\nFalls back to the global locale.',
+      control: 'text',
+    },
   },
   args: {
     open: false,
@@ -225,6 +232,11 @@ interface IgcTooltipArgs {
   message: string;
   /** Specifies if the tooltip remains visible until the user closes it via the close button or Esc key. */
   sticky: boolean;
+  /**
+   * The locale for the resource strings and the locale-aware formatting.
+   * Falls back to the global locale.
+   */
+  locale: string;
 }
 type Story = StoryObj<IgcTooltipArgs>;
 
@@ -487,6 +499,7 @@ export const Default: Story = {
       .showTriggers=${args.showTriggers}
       .hideTriggers=${args.hideTriggers}
       .message=${args.message}
+      locale=${ifDefined(args.locale)}
     ></igc-tooltip>
   `,
 };

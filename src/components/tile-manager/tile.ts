@@ -1,3 +1,4 @@
+import { TileResourceStringsEN } from 'igniteui-i18n-core';
 import { html, LitElement, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -29,6 +30,7 @@ import {
 } from '#internals/directives/resize.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
 import { isLTR, pointToFraction } from '#internals/utils/dom.js';
 import { getElementFromPath } from '#internals/utils/events.js';
@@ -67,18 +69,22 @@ export interface IgcTileComponentEventMap {
   igcTileResizeCancel: CustomEvent<IgcTileComponent>;
 }
 
+const i18n = {
+  defaultEN: TileResourceStringsEN,
+};
+
 /**
- * The icon and the English name of each default action, for the current
- * state. The name tells what the action does next.
+ * The icon and the resource key of the name of each default action, for the
+ * current state. The name tells what the action does next.
  */
 const DEFAULT_ACTIONS = {
   maximize: {
-    on: { icon: 'collapse_content', label: 'Restore' },
-    off: { icon: 'expand_content', label: 'Maximize' },
+    on: { icon: 'collapse_content', key: 'tile_restore' },
+    off: { icon: 'expand_content', key: 'tile_maximize' },
   },
   fullscreen: {
-    on: { icon: 'fullscreen_exit', label: 'Exit full screen' },
-    off: { icon: 'fullscreen', label: 'Enter full screen' },
+    on: { icon: 'fullscreen_exit', key: 'tile_exit_fullscreen' },
+    off: { icon: 'fullscreen', key: 'tile_enter_fullscreen' },
   },
 } as const;
 
@@ -144,8 +150,9 @@ const Slots = setSlots(
  * @csspart active - Indicates that the resize adorners show. Applies to `tile-container`.
  * @csspart custom - Indicates a slotted custom adorner. Applies to `trigger-side`, `trigger` and `trigger-bottom`.
  */
-export default class IgcTileComponent extends EventEmitterMixin<IgcTileComponentEventMap>(
-  HostAriaMixin(LitElement)
+export default class IgcTileComponent extends I18nMixin(
+  EventEmitterMixin<IgcTileComponentEventMap>(HostAriaMixin(LitElement)),
+  i18n
 ) {
   public static readonly tagName = 'igc-tile';
   public static override styles = [componentBase, styles, shared];
@@ -612,7 +619,7 @@ export default class IgcTileComponent extends EventEmitterMixin<IgcTileComponent
       type === 'fullscreen'
         ? [this.fullscreen, this._handleFullscreen]
         : [this.maximized, this._handleMaximize];
-    const { icon, label } = DEFAULT_ACTIONS[type][active ? 'on' : 'off'];
+    const { icon, key } = DEFAULT_ACTIONS[type][active ? 'on' : 'off'];
 
     return html`
       <igc-icon-button
@@ -620,7 +627,7 @@ export default class IgcTileComponent extends EventEmitterMixin<IgcTileComponent
         collection="default"
         exportparts="icon"
         name=${icon}
-        aria-label=${label}
+        aria-label=${this.resourceStrings[key]}
         @click=${listener}
       ></igc-icon-button>
     `;

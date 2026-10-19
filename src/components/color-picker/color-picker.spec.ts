@@ -5,6 +5,13 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
+import {
+  ColorPickerResourceStringsEN,
+  type IColorPickerResourceStrings,
+  registerI18n,
+  setCurrentI18n,
+} from 'igniteui-i18n-core';
+import { ColorPickerResourceStringsBG } from 'igniteui-i18n-resources';
 import { spy, stub } from 'sinon';
 import {
   altKey,
@@ -35,6 +42,7 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import { formatString } from '#internals/utils/strings.js';
 import { configureTheme } from '#theming/config.js';
 import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
 import type IgcInputComponent from '../input/input.js';
@@ -180,6 +188,51 @@ async function expectSliderTracks(
       expect({ dir: style.direction, to: gradient }, name).to.eql({ dir, to });
     }
   });
+}
+
+/** The localized labels of a picker with `show-alpha` and no value. */
+function getLabels(picker: IgcColorPickerComponent) {
+  const root = picker.renderRoot;
+  const text = (selector: string) =>
+    root.querySelector(selector)!.textContent!.trim();
+  const marker =
+    getCanvas(picker).renderRoot.querySelector('[part~="marker"]')!;
+
+  return {
+    open: getAnchor(picker).textContent!.trim(),
+    dialog: root.querySelector('#picker')!.getAttribute('aria-label'),
+    hue: getHueSlider(picker).getAttribute('aria-label'),
+    alpha: getAlphaSlider(picker).getAttribute('aria-label'),
+    alphaValue: text('label[for="alpha"]'),
+    alphaPlaceholder: getAlphaInput(picker).placeholder,
+    format: text('label[for="format-select"]'),
+    formatPlaceholder: getFormatSelect(picker).placeholder,
+    copy: text('[part="copy"]'),
+    eyeDropper: text('[part="eye-dropper"]'),
+    canvas: marker.getAttribute('aria-label'),
+    canvasValue: marker.getAttribute('aria-valuetext'),
+  };
+}
+
+/** The labels that {@link getLabels} reads, from a set of resource strings. */
+function expectedLabels(strings: IColorPickerResourceStrings) {
+  const all = strings as Required<IColorPickerResourceStrings>;
+
+  return {
+    open: all.color_picker_open,
+    dialog: all.color_picker_dialog_label,
+    hue: all.color_picker_hue,
+    alpha: all.color_picker_alpha,
+    alphaValue: all.color_picker_alpha_value,
+    alphaPlaceholder: all.color_picker_alpha_value,
+    format: all.color_picker_format,
+    formatPlaceholder: all.color_picker_format,
+    copy: all.color_picker_copy,
+    eyeDropper: all.color_picker_eye_dropper,
+    canvas: all.color_picker_canvas_label,
+    // An empty picker starts at the white corner.
+    canvasValue: formatString(all.color_picker_canvas_value, 0, 100),
+  };
 }
 
 describe('Color picker', () => {
@@ -349,6 +402,71 @@ describe('Color picker', () => {
       // `<label for="alpha">` labels the `igc-input`. An IDREF cannot cross into
       // the shadow root, so the native editor uses element reflection.
       expect(editor.ariaLabelledByElements).to.eql([label]);
+    });
+  });
+
+  describe('Localization', () => {
+    before(() => registerI18n(ColorPickerResourceStringsBG, 'bg'));
+
+    beforeEach(async () => {
+      picker = await fixture<IgcColorPickerComponent>(
+        html`<igc-color-picker show-alpha></igc-color-picker>`
+      );
+      await elementUpdated(getCanvas(picker));
+    });
+
+    async function updated(): Promise<void> {
+      await elementUpdated(picker);
+      await elementUpdated(getCanvas(picker));
+    }
+
+    it('renders the English strings by default', () => {
+      expect(getLabels(picker)).to.eql(
+        expectedLabels(ColorPickerResourceStringsEN)
+      );
+    });
+
+    it('renders the strings of its `locale`', async () => {
+      picker.locale = 'bg';
+      await updated();
+
+      expect(getLabels(picker)).to.eql(
+        expectedLabels(ColorPickerResourceStringsBG)
+      );
+    });
+
+    it('follows a change of the global locale', async () => {
+      setCurrentI18n('bg');
+
+      try {
+        await updated();
+
+        expect(getLabels(picker)).to.eql(
+          expectedLabels(ColorPickerResourceStringsBG)
+        );
+      } finally {
+        setCurrentI18n('en');
+      }
+    });
+
+    it('labels the prefix button of the input mode', async () => {
+      picker.mode = 'input';
+      picker.locale = 'bg';
+      await elementUpdated(picker);
+
+      expect(getAnchor(picker).getAttribute('aria-label')).to.equal(
+        ColorPickerResourceStringsBG.color_picker_open
+      );
+    });
+
+    it('takes single strings from `resourceStrings`', async () => {
+      picker.resourceStrings = { color_picker_hue: 'Farbton' };
+      await updated();
+
+      expect(getLabels(picker)).to.eql({
+        ...expectedLabels(ColorPickerResourceStringsEN),
+        hue: 'Farbton',
+      });
     });
   });
 

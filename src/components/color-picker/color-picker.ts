@@ -1,3 +1,4 @@
+import { ColorPickerResourceStringsEN } from 'igniteui-i18n-core';
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
@@ -28,6 +29,7 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import {
@@ -75,6 +77,10 @@ const Slots = setSlots(
   'invalid',
   'helper-text'
 );
+
+const i18n = {
+  defaultEN: ColorPickerResourceStringsEN,
+};
 
 /** The color string shape of each format. Shown while the input is empty. */
 const formatPlaceholders: Record<ColorFormat, string> = {
@@ -147,11 +153,14 @@ function getEyeDropper(): EyeDropperConstructor | undefined {
  * @csspart swatch - An individual color swatch button.
  */
 @shadowOptions({ delegatesFocus: true })
-export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin(
-  EventEmitterMixin<
-    IgcColorPickerComponentEventMap,
-    typeof IgcBaseComboBoxComponent
-  >(IgcBaseComboBoxComponent)
+export default class IgcColorPickerComponent extends I18nMixin(
+  FormAssociatedRequiredMixin(
+    EventEmitterMixin<
+      IgcColorPickerComponentEventMap,
+      typeof IgcBaseComboBoxComponent
+    >(IgcBaseComboBoxComponent)
+  ),
+  i18n
 ) {
   public static readonly tagName = 'igc-color-picker';
   public static override styles = [componentBase, styles, shared];
@@ -680,6 +689,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         markerColor=${this._opaqueColor}
         .saturation=${saturation}
         .brightness=${brightness}
+        .markerLabel=${this.resourceStrings.color_picker_canvas_label}
+        .markerValueFormat=${this.resourceStrings.color_picker_canvas_value}
       >
       </igc-picker-canvas>
     `;
@@ -692,7 +703,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private _renderHueSlider(): TemplateResult {
     return html`
       <input
-        aria-label="Hue"
+        aria-label=${this.resourceStrings.color_picker_hue}
         type="range"
         part="hue"
         min="0"
@@ -725,18 +736,20 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   private _renderPickerButtons(): TemplateResult {
+    const strings = this.resourceStrings;
+
     return html`
       <div part="buttons">
         ${this._renderIconButton(
           'copy',
           'copy_content',
-          'Copy color value to clipboard',
+          strings.color_picker_copy,
           this._handleCopy
         )}
         ${this._renderIconButton(
           'eye-dropper',
           'eye_dropper',
-          'Pick a color from the screen',
+          strings.color_picker_eye_dropper,
           this._handleEyeDropperClick,
           !this._supportsEyeDropper
         )}
@@ -749,9 +762,11 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   //#region Alpha row rendering
 
   private _renderAlphaRow(): TemplateResult {
+    const strings = this.resourceStrings;
+
     return html`
       <input
-        aria-label="Alpha slider"
+        aria-label=${strings.color_picker_alpha}
         type="range"
         part="alpha"
         min="0"
@@ -762,14 +777,14 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
       />
 
       <igc-visually-hidden>
-        <label for="alpha">Alpha value</label>
+        <label for="alpha">${strings.color_picker_alpha_value}</label>
       </igc-visually-hidden>
 
       <igc-input
         ${ref(this._alphaInputRef)}
         id="alpha"
         name="alpha"
-        placeholder="Alpha value"
+        placeholder=${strings.color_picker_alpha_value}
         inputmode="numeric"
         part="alpha-input"
         outlined
@@ -789,15 +804,17 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   //#region Color formats and input row rendering
 
   private _renderSelect(): TemplateResult {
+    const label = this.resourceStrings.color_picker_format;
+
     return html`
       <igc-visually-hidden>
-        <label for="format-select">Color format</label>
+        <label for="format-select">${label}</label>
       </igc-visually-hidden>
 
       <igc-select
         id="format-select"
         part="format-select"
-        placeholder="Color format"
+        placeholder=${label}
         name="format"
         outlined
         .value=${this.format}
@@ -884,6 +901,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   private _renderButtonAnchor(): TemplateResult {
+    const label = this.resourceStrings.color_picker_open;
+
     return html`
       <button
         ${ref(this._anchorRef)}
@@ -905,7 +924,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         ?disabled=${this.disabled}
         @click=${this._handleAnchorClick}
       >
-        <igc-visually-hidden>Open color picker</igc-visually-hidden>
+        <igc-visually-hidden>${label}</igc-visually-hidden>
       </button>
     `;
   }
@@ -928,7 +947,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
           <button
             type="button"
             part=${this._anchorParts}
-            aria-label="Open color picker"
+            aria-label=${this.resourceStrings.color_picker_open}
             aria-haspopup="dialog"
             aria-controls="picker"
             aria-expanded=${this.open}
@@ -960,7 +979,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
           id="picker"
           part="picker"
           role="dialog"
-          aria-label="Color picker"
+          aria-label=${this.resourceStrings.color_picker_dialog_label}
           aria-modal="false"
         >
           ${this._renderCanvasGradient()}

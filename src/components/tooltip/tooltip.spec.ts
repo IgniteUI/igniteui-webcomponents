@@ -5,6 +5,8 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { registerI18n } from 'igniteui-i18n-core';
+import { TooltipResourceStringsBG } from 'igniteui-i18n-resources';
 import { nothing } from 'lit';
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
@@ -493,6 +495,18 @@ describe('Tooltip', () => {
       await hideComplete();
 
       expect(tooltip.open).to.be.false;
+    });
+
+    it('labels the default close button in its locale', async () => {
+      registerI18n(TooltipResourceStringsBG, 'bg');
+      tooltip.locale = 'bg';
+      tooltip.sticky = true;
+      tooltip.open = true;
+      await elementUpdated(tooltip);
+
+      expect(
+        tooltip.renderRoot.querySelector('button')!.getAttribute('aria-label')
+      ).to.equal(TooltipResourceStringsBG.tooltip_close);
     });
 
     it('should render custom content for close button when in `sticky` mode', async () => {

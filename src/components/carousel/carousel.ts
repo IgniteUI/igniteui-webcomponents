@@ -341,10 +341,10 @@ export default class IgcCarouselComponent extends I18nMixin(
     super();
 
     addInternalsController(this, {
-      initialARIA: {
-        role: 'region',
-        ariaRoleDescription: 'carousel',
-      },
+      initialARIA: { role: 'region' },
+      aria: () => ({
+        ariaRoleDescription: this.resourceStrings.carousel_role_description,
+      }),
     });
 
     addThemingController(this, all);

@@ -7,6 +7,8 @@ import {
   waitUntil,
 } from '@open-wc/testing';
 
+import { registerI18n } from 'igniteui-i18n-core';
+import { CarouselResourceStringsBG } from 'igniteui-i18n-resources';
 import { type SinonFakeTimers, spy, stub, useFakeTimers } from 'sinon';
 import { internalsOf } from '#internals/controllers/internals.js';
 import {
@@ -126,6 +128,16 @@ describe('Carousel', () => {
         expect(internalsOf(slide)!.getARIA('role')).to.equal('tabpanel');
         expect(internalsOf(slide)!.getARIA('ariaRoleDescription')).to.be.null;
       }
+    });
+
+    it('takes the role description from the strings of its locale', async () => {
+      registerI18n(CarouselResourceStringsBG, 'bg');
+      carousel.locale = 'bg';
+      await elementUpdated(carousel);
+
+      expect(internalsOf(carousel)!.getARIA('ariaRoleDescription')).to.equal(
+        CarouselResourceStringsBG.carousel_role_description
+      );
     });
 
     it('is correctly initialized with its default component state', () => {

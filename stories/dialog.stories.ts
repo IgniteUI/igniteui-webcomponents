@@ -58,7 +58,7 @@ const metadata: Meta<IgcDialogComponent> = {
     hideDefaultAction: {
       type: 'boolean',
       description:
-        'When set, the built-in "OK" close button in the footer is not rendered.\n\nHas no effect when content is projected into the `footer` slot, since\nthe slot content replaces the default button entirely.',
+        'When set, the default action button in the footer is not rendered.\n\nHas no effect when content is projected into the `footer` slot, since\nthe slot content replaces the default button entirely.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -73,6 +73,12 @@ const metadata: Meta<IgcDialogComponent> = {
       type: 'string',
       description:
         'The title displayed in the dialog header.\n\nOverridden by any content projected into the `title` slot.',
+      control: 'text',
+    },
+    locale: {
+      type: 'string',
+      description:
+        'The locale for the resource strings and the locale-aware formatting.\nFalls back to the global locale.',
       control: 'text',
     },
   },
@@ -103,7 +109,7 @@ interface IgcDialogArgs {
    */
   closeOnOutsideClick: boolean;
   /**
-   * When set, the built-in "OK" close button in the footer is not rendered.
+   * When set, the default action button in the footer is not rendered.
    *
    * Has no effect when content is projected into the `footer` slot, since
    * the slot content replaces the default button entirely.
@@ -124,6 +130,11 @@ interface IgcDialogArgs {
    * Overridden by any content projected into the `title` slot.
    */
   title: string;
+  /**
+   * The locale for the resource strings and the locale-aware formatting.
+   * Falls back to the global locale.
+   */
+  locale: string;
 }
 type Story = StoryObj<IgcDialogArgs>;
 
@@ -276,6 +287,7 @@ export const Default: Story = {
       ?hide-default-action=${args.hideDefaultAction}
       ?open=${args.open}
       title=${ifDefined(args.title)}
+      locale=${ifDefined(args.locale)}
     >
       <span slot="message">
         We send the report to ana.martins@example.com when it is ready. A large

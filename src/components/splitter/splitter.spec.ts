@@ -6,6 +6,8 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 import { resetMouse, sendMouse } from '@web/test-runner-commands';
+import { registerI18n } from 'igniteui-i18n-core';
+import { SplitterResourceStringsBG } from 'igniteui-i18n-resources';
 import { spy } from 'sinon';
 import {
   arrowDown,
@@ -329,6 +331,28 @@ describe('Splitter', () => {
 
       expect(splitter.startSize).to.equal('auto');
       expect(splitter.endSize).to.equal('auto');
+    });
+  });
+
+  describe('Localization', () => {
+    before(() => registerI18n(SplitterResourceStringsBG, 'bg'));
+
+    it('names the bar in its locale', async () => {
+      splitter.locale = 'bg';
+      await elementUpdated(splitter);
+
+      expect(
+        getSplitterPart(splitter, BAR_PART).getAttribute('aria-label')
+      ).to.equal(SplitterResourceStringsBG.splitter_resize_panes);
+    });
+
+    it('takes the bar name from `resourceStrings`', async () => {
+      splitter.resourceStrings = { splitter_resize_panes: 'Größe ändern' };
+      await elementUpdated(splitter);
+
+      expect(
+        getSplitterPart(splitter, BAR_PART).getAttribute('aria-label')
+      ).to.equal('Größe ändern');
     });
   });
 
