@@ -358,6 +358,35 @@ describe('Localization', () => {
       }
     });
 
+    it('keeps the English strings that the application registers before the first instance', async () => {
+      const defaultEN = { ...ComboResourceStringsEN };
+      const tagName = unsafeStatic(
+        defineCE(
+          class extends TestLocalizedClass<IComboResourceStrings> {
+            public override get defaultEN() {
+              return defaultEN;
+            }
+          }
+        )
+      );
+
+      registerI18n({ combo_empty_message: 'Nothing to show' }, 'en-US');
+
+      try {
+        instance = await fixture(html`<${tagName}></${tagName}>`);
+
+        expect(
+          (instance.resourceStrings as IComboResourceStrings)
+            .combo_empty_message
+        ).to.equal('Nothing to show');
+      } finally {
+        registerI18n(
+          { combo_empty_message: ComboResourceStringsEN.combo_empty_message },
+          'en-US'
+        );
+      }
+    });
+
     it('resolves the strings of its locale on the first update, after a late registration', async () => {
       const element = document.createElement(tagNew) as typeof instance;
       element.locale = 'fr';
