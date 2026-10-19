@@ -2,6 +2,7 @@ import { consume } from '@lit/context';
 import { html, isServer, LitElement, nothing } from 'lit';
 import { query, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
+import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { until } from 'lit/directives/until.js';
 import { chatUserInputContext } from '#internals/context.js';
@@ -13,6 +14,7 @@ import { createTimer } from '#internals/timing.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { hasFiles, isPointInsideElement } from '#internals/utils/dom.js';
 import { bindIf, trimmedHtml } from '#internals/utils/lit.js';
+import { formatString } from '#internals/utils/strings.js';
 import { all } from '#themes/chat/themes/input.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
@@ -141,8 +143,8 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
   }
 
   /** @internal */
-  public focusInput(): void {
-    this._textInputElement?.focus();
+  public focusInput(options?: FocusOptions): void {
+    this._textInputElement?.focus(options);
   }
 
   private _getRenderer<U extends keyof DefaultInputRenderers>(
@@ -233,10 +235,11 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
         break;
       }
       case 'drop': {
-        const files = getChatAcceptedFiles(event, accepted);
         this._dragging = false;
         this._state.emitEvent('igcAttachmentDrop');
-        this._state.attachFilesWithEvent(files);
+        this._state.attachFilesWithEvent(
+          Array.from(event.dataTransfer?.files ?? [])
+        );
         break;
       }
     }
@@ -256,11 +259,22 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
   }
 
   private _renderAttachmentsArea(attachments: IgcChatMessageAttachment[]) {
+    const { chat_remove_attachment } = this._state.resourceStrings;
+
     return html`${attachments?.map(
       (attachment) => html`
         <div part="attachment-wrapper" role="listitem">
           <igc-chip
             removable
+            .resourceStrings=${guard(
+              [attachment.name, chat_remove_attachment],
+              () => ({
+                chip_remove: formatString(
+                  chat_remove_attachment!,
+                  attachment.name
+                ),
+              })
+            )}
             @igcRemove=${() =>
               this._state.removeAttachmentWithEvent(attachment)}
           >
@@ -280,7 +294,7 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
     return html`
       <igc-textarea
         part="text-input"
-        aria-label="Chat text input"
+        aria-label=${this._state.resourceStrings.chat_input_label!}
         placeholder=${ifDefined(this._state.options?.inputPlaceholder)}
         resize="auto"
         rows="1"
@@ -296,6 +310,8 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
   private _renderFileUploadButton() {
     const accepted = this._state.options?.acceptedFiles;
     const attachmentsDisabled = this._state.options?.disableInputAttachments;
+    const { chat_attach_files, chat_file_input_label } =
+      this._state.resourceStrings;
 
     return html`${cache(
       attachmentsDisabled
@@ -303,7 +319,7 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
         : html`
             <label for="input_attachments" part="file-upload">
               <igc-icon-button
-                aria-label="Attach files"
+                aria-label=${chat_attach_files!}
                 variant="flat"
                 name="attach_file"
                 @click=${this._handleFileInputClick}
@@ -313,7 +329,7 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
                 id="input_attachments"
                 tabindex="-1"
                 name="input_attachments"
-                aria-label="Upload button"
+                aria-label=${chat_file_input_label!}
                 multiple
                 accept=${bindIf(accepted, accepted)}
                 @change=${this._handleFileUpload}
@@ -329,7 +345,7 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
 
     return html`
       <igc-icon-button
-        aria-label="Send message"
+        aria-label=${this._state.resourceStrings.chat_send_message!}
         name="send_message"
         variant="contained"
         part="send-button"
@@ -382,7 +398,13 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
         ${
           this._state.hasInputAttachments
             ? html`
-                <div part="attachments" role="list" aria-label="Attachments">
+                <div
+                  part="attachments"
+                  role="list"
+                  aria-label=${
+                    this._state.resourceStrings.chat_attachments_list_label!
+                  }
+                >
                   ${until(this._getRenderer('inputAttachments')(inputCtx))}
                 </div>
               `

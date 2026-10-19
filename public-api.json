@@ -799,6 +799,7 @@
         "static tagName": "readonly string"
       },
       "methods": {
+        "focusInput": "(options?: FocusOptions) => void",
         "scrollToMessage": "(messageId: string) => void",
         "static register": "() => void"
       },

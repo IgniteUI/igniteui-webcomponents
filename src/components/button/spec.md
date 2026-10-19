@@ -48,6 +48,7 @@
 |       3 | 2026-10-01 | A link keeps the link role; a disabled link leaves the tab order and cannot be activated |
 |       4 | 2026-10-02 | Document the default slot of the icon button; follow a change of the host `aria-label`   |
 |       5 | 2026-10-02 | Forward the host `aria-labelledby` and `aria-describedby`; a `<label>` names the button  |
+|       6 | 2026-10-19 | Forward the host `aria-pressed` to the native button, so a button can be a toggle         |
 
 ## Overview
 
@@ -311,6 +312,8 @@ button has no `name` and no `mirrored`. Slotted content takes the size of the ic
 
 21. The host `aria-labelledby`, `aria-describedby`, a `<label for>`, a label added later and an `igc-tooltip` name
     and describe the native element, also as a link and a disabled link. A host `aria-label` wins over a `<label>`.
+22. The host `aria-pressed` reaches the native button, also after a change and a removal, and passes the
+    accessibility audit. A link and a disabled link do not get it.
 
 ### Not covered by the suite
 
@@ -340,6 +343,8 @@ button has no `name` and no `mirrored`. Slotted content takes the size of the ic
   exposes the link role with the native disabled state.
 - A host `aria-labelledby` and `aria-describedby` reach the native element by element reference. A `<label>` for the
   button names it, but a host `aria-label` wins, as for a native button.
+- A host `aria-pressed` reaches the native button, so a button can be a toggle button, such as the like action of
+  a chat message. The link role does not allow `aria-pressed`, so a link and a disabled link do not get it.
 
 ### Keyboard support
 

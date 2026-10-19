@@ -52,6 +52,8 @@
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-09-23 | Remove the `prefix` and `title` parts and add the `input-container` part |
 |       3 | 2026-10-12 | The input and the messages render empty on the server and render after hydration |
+|       4 | 2026-10-19 | The list follows the newest message only from the bottom; `focusInput()`; image MIME types; the file picker applies `acceptedFiles`; keyboard access to attachments |
+|       5 | 2026-10-19 | Named message actions with a pressed state for like and dislike; localized composer labels; a remove name per attachment |
 
 ## Overview
 
@@ -75,7 +77,7 @@ chat.addEventListener('igcMessageCreated', ({ detail }) => send(detail));
 ### Key features
 
 - **Message list** in chronological order, with the messages of the current user styled apart, and automatic
-  scrolling to the newest one.
+  scrolling to the newest one while the user is at the bottom.
 - **Composer** with a text area that grows with its content, sending on <kbd>Enter</kbd> and a new line on
   <kbd>Shift</kbd> + <kbd>Enter</kbd>.
 - **Attachments** through the file picker and through drag and drop, with previews before sending and an accepted
@@ -175,7 +177,14 @@ is rendered as an outgoing one.
 unsent message and written to restore one.
 
 Sending emits a cancelable `igcMessageCreated` with the new message; the component appends it to `messages` unless
-the event is canceled. `scrollToMessage(id)` brings a specific message into view.
+the event is canceled. `scrollToMessage(id)` brings a specific message into view, and `focusInput()` moves the focus
+to the text area of the composer.
+
+While the list is at the bottom, it follows the newest message: each change of `messages`, the typing indicator and
+new suggestions scroll it to the bottom. When the user scrolls up, the list keeps its position, until the user
+scrolls back to the bottom. A new message of the current user, and a `messages` array without the previous last
+message, such as another conversation, scroll to the bottom again. `disableAutoScroll` turns the automatic scrolling
+off.
 
 #### Options
 
@@ -199,7 +208,10 @@ chat.options = {
 #### Attachments
 
 Unless `disableInputAttachments` is set, the composer renders a file picker and accepts dropped files. The
-`acceptedFiles` option is forwarded to the underlying file input and also filters what a drop accepts. Adding and
+`acceptedFiles` option is forwarded to the underlying file input, and it filters the files from the picker and from a
+drop. The picker filter of the browser is only a default, so the user can still pick other files, and the composer
+leaves them out. A pick or a drop that adds no new file emits no `igcAttachmentAdded`. An attachment with a `file` of an image type, or with the `type` `image` or an image MIME type such
+as `image/png`, renders as an image. Adding and
 removing attachments emits the cancelable `igcAttachmentAdded` and `igcAttachmentRemoved`, the drag operation
 emits `igcAttachmentDrag` and `igcAttachmentDrop`, and a click on an attachment of a sent message emits
 `igcAttachmentClick`.
@@ -255,6 +267,14 @@ The chat takes its resource strings from the `igniteui-i18n-core` package throug
 | `chat_attachment_label`     | Attachment                   | The label of a single attachment.            |
 | `chat_attachments_list_label` | Attachments                | The label of the attachments list.           |
 | `chat_message_copied`       | Message copied to clipboard  | The confirmation shown after a copy.         |
+| `chat_input_label`          | Chat text input              | The name of the text area.                   |
+| `chat_attach_files`         | Attach files                 | The name of the attach button.               |
+| `chat_file_input_label`     | Upload button                | The name of the file input.                  |
+| `chat_send_message`         | Send message                 | The name of the send button.                 |
+| `chat_remove_attachment`    | Remove {0}                   | The name of the remove button of an attachment chip; `{0}` is the file name. |
+
+The copy, like, dislike and regenerate strings also name the message actions. A change of the locale or of
+`resourceStrings` renders the labels of the messages and the input again.
 
 The older `IgcChatResourceStrings` interface is deprecated since 7.2.0 in favor of `IChatResourceStrings` and the
 global `registerI18n` mechanism, and both shapes are accepted by the property.
@@ -263,10 +283,11 @@ global `registerI18n` mechanism, and both shapes are accepted by the property.
 
 | Keys                                  | Context           | Description                                                 |
 | ------------------------------------- | ----------------- | ----------------------------------------------------------- |
-| <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd> | anywhere | Moves between the header actions, the message list, the file picker, the text area, the send button and the attachment chips. |
+| <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd> | anywhere | Moves between the header actions, the message list, the attachments of the messages, the file picker, the text area, the send button and the attachment chips. |
 | <kbd>Enter</kbd>                      | text area         | Sends the composed message.                                  |
 | <kbd>Shift</kbd> + <kbd>Enter</kbd>   | text area         | Inserts a new line instead of sending.                        |
 | <kbd>Enter</kbd> / <kbd>Space</kbd>   | suggestion, send button, message action | Activates the control.                 |
+| <kbd>Enter</kbd> / <kbd>Space</kbd>   | attachment of a message | Emits `igcAttachmentClick`.                                  |
 
 ## API
 
@@ -290,7 +311,7 @@ global `registerI18n` mechanism, and both shapes are accepted by the property.
 | `inputPlaceholder`        | `string`                                   | —                 | The placeholder of the composer.                              |
 | `acceptedFiles`           | `string`                                   | —                 | The accepted file types of the file picker.                   |
 | `disableInputAttachments` | `boolean`                                  | `false`           | Turns attachments off.                                        |
-| `disableAutoScroll`       | `boolean`                                  | `false`           | Stops the list from scrolling to the newest message.          |
+| `disableAutoScroll`       | `boolean`                                  | `false`           | Stops the list from following the newest message.             |
 | `isTyping`                | `boolean`                                  | `false`           | Shows the typing indicator of the other side.                 |
 | `stopTypingDelay`         | `number`                                   | `3000`            | The idle time before the typing state is reported as stopped. |
 | `suggestions`             | `string[]`                                 | —                 | The quick replies to render.                                  |
@@ -303,6 +324,7 @@ global `registerI18n` mechanism, and both shapes are accepted by the property.
 | Method            | Signature                        | Description                               |
 | ----------------- | -------------------------------- | ----------------------------------------- |
 | `scrollToMessage` | `(messageId: string): void`      | Scrolls the list to the given message.     |
+| `focusInput`      | `(options?: FocusOptions): void` | Focuses the text area of the composer. Does nothing when a custom `input` renderer replaces it. |
 
 ### Events
 
@@ -416,9 +438,32 @@ The component exposes a part for every region it renders. The main groups are:
 29. A message that hydrates an empty declarative shadow root keeps its first render empty, to match the server
     render, and renders the message on the next update.
 
+### Attachments and focus
+
+30. The file picker and a drop attach only the files that `acceptedFiles` allows and that are not attached yet, and
+    emit no `igcAttachmentAdded` when no file remains.
+31. An attachment with an image MIME type in `type` renders as an image.
+32. The header of an attachment is in the tab order, and <kbd>Enter</kbd> and <kbd>Space</kbd> on it emit
+    `igcAttachmentClick`.
+33. `focusInput()` focuses the text area, and does nothing when a custom `input` renderer replaces it.
+
+### Automatic scrolling
+
+34. The list follows the newest message while it is at the bottom, keeps its position after the user scrolls up,
+    and follows again after the user scrolls back to the bottom.
+35. A new message of the current user, and a new `messages` array without the previous last message, scroll the
+    list to the bottom.
+
+### Names
+
+36. The message actions are named by the resource strings, like and dislike expose `aria-pressed`, and a change of
+    `resourceStrings` renames them.
+37. The text area, the attach button, the file input, the send button, the attachments list and the remove button of
+    an attachment chip are named by the resource strings, and a change of `resourceStrings` renames them.
+
 ### Not covered by the suite
 
-- Automatic scrolling, `disableAutoScroll` and `scrollToMessage` are not covered.
+- Scrolling with the wheel, touch or the keyboard is not covered. The tests set `scrollTop`.
 - Markdown rendering and the sanitization of the message content are not covered by the component suite.
 - The `locale` fallback and the localized strings are not asserted; the suite runs against the English defaults.
 - Keyboard navigation inside the message list is neither implemented nor covered.
@@ -447,11 +492,15 @@ The component exposes a part for every region it renders. The main groups are:
 
 - The message list is a focusable scroll container, so that the history can be reached and scrolled with the
   keyboard alone.
-- The composer text area, the file picker, the upload button and the send button each carry their own label.
-- The attachment chips of the composer form a labelled list, with each chip a list item.
-- An attachment of a sent message is exposed as a button, since clicking it emits `igcAttachmentClick`.
-- The message actions are icon buttons with the localized copy, like, dislike and regenerate labels, and the copy
-  action confirms itself through a tooltip.
+- The composer text area, the file picker, the upload button and the send button each carry their own localized
+  label.
+- The attachment chips of the composer form a labelled list, with each chip a list item. The remove button of a
+  chip names the file, for example "Remove photo.png".
+- An attachment of a sent message is exposed as a button in the tab order, since clicking it emits
+  `igcAttachmentClick`. <kbd>Enter</kbd> and <kbd>Space</kbd> activate it.
+- The message actions are icon buttons with the localized copy, like, dislike and regenerate names. Like and
+  dislike are toggle buttons with `aria-pressed`. A tooltip shows the name on hover and focus, and the copy action
+  confirms itself through a toast.
 
 ### Keyboard support
 

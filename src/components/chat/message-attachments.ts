@@ -5,8 +5,10 @@ import { cache } from 'lit/directives/cache.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { until } from 'lit/directives/until.js';
 import { chatContext } from '#internals/context.js';
+import { addKeybindings } from '#internals/controllers/key-bindings.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
+import { getElementFromPath } from '#internals/utils/events.js';
 import { trimmedHtml } from '#internals/utils/lit.js';
 import { all } from '#themes/chat/themes/attachments.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -28,6 +30,9 @@ import {
   getFileExtension,
   isImageAttachment,
 } from './utils.js';
+
+const getHeader = (event: Event) =>
+  getElementFromPath<HTMLElement>('[part~="attachment-header"]', event);
 
 type DefaultAttachmentRenderers = {
   attachment: ChatTemplateRenderer<ChatAttachmentRenderContext>;
@@ -88,6 +93,11 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   constructor() {
     super();
     addThemingController(this, all);
+
+    // Enter and Space activate a header, as on a native button.
+    addKeybindings(this, {
+      skip: (_, event) => !getHeader(event),
+    }).setActivateHandler((event) => getHeader(event)!.click());
   }
 
   private _getRenderer(name: keyof DefaultAttachmentRenderers) {
@@ -97,6 +107,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   private _handleHeaderClick = (attachment: IgcChatMessageAttachment) => {
     this._state.emitEvent('igcAttachmentClick', { detail: attachment });
   };
+
   /** The default header of `attachment`: its icon and its name. */
   private renderHeader(attachment: IgcChatMessageAttachment) {
     const isCurrentUser = this._state.isCurrentUserMessage(this.message);
@@ -158,6 +169,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     const header = html` <div
       part=${partMap(headerParts)}
       role="button"
+      tabindex="0"
       @click=${() => this._handleHeaderClick(attachment)}
     >
       <div part="details">

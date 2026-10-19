@@ -285,8 +285,10 @@ class I18nController<T extends object> implements ReactiveController {
     const map = this._resourceMap;
 
     if (map) {
+      // Keeps the core keys that have no deprecated counterpart.
       return Object.assign(
         {},
+        value,
         convertToCoreResource(value, map),
         convertToIgcResource(value, map)
       ) as T;

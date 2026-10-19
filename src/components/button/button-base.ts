@@ -50,7 +50,7 @@ export interface IgcButtonEventMap {
 @blazorDeepImport
 @shadowOptions({ delegatesFocus: true })
 export abstract class IgcButtonBaseComponent extends EventEmitterMixin<IgcButtonEventMap>(
-  HostAriaMixin(LitElement)
+  HostAriaMixin(LitElement, ['aria-pressed'])
 ) {
   public static readonly formAssociated = true;
 
@@ -276,6 +276,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<IgcButton
         part=${partMap({ base: true, focused: this._focusRingManager.focused })}
         role=${bindIf(link, 'link')}
         ${ariaBindings(nativeAria(this))}
+        .ariaPressed=${link ? null : this.getAttribute('aria-pressed')}
         ?disabled=${this.disabled}
         type=${ifDefined(link ? 'button' : this.type)}
         @click=${this._handleClick}

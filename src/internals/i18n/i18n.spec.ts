@@ -189,6 +189,20 @@ describe('Localization', () => {
       expect(instance.locale).to.equal('bg');
     });
 
+    it('should keep the core keys that have no old resource name', async () => {
+      const strings = () =>
+        instance.resourceStrings as Record<string, string | undefined>;
+
+      expect(strings().calendar_first_picker_of).to.equal(
+        'First picker of {0} starts from'
+      );
+
+      instance.resourceStrings = { calendar_first_picker_of: 'Начало от' };
+      await elementUpdated(instance);
+
+      expect(strings().calendar_first_picker_of).to.equal('Начало от');
+    });
+
     it('should convert to old resource names when resource strings are set globally from new API', async () => {
       registerI18n(ResourceStringsBG, 'bg');
 

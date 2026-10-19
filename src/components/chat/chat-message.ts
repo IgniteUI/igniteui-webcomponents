@@ -1,6 +1,7 @@
 import { html, isServer, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { until } from 'lit/directives/until.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HydrationMixin } from '#internals/mixins/hydration.js';
@@ -191,22 +192,23 @@ export default class IgcChatMessageComponent extends HydrationMixin(
       return nothing;
     }
 
+    const liked = this.message.reactions?.includes(LIKE_ACTIVE);
+    const disliked = this.message.reactions?.includes(DISLIKE_ACTIVE);
+
     return html`
       ${this._renderActionButton(
         COPY_CONTENT,
         resourceStrings.chat_reaction_copy!
       )}
       ${this._renderActionButton(
-        this.message.reactions?.includes(LIKE_ACTIVE)
-          ? LIKE_ACTIVE
-          : LIKE_INACTIVE,
-        resourceStrings.chat_reaction_like!
+        liked ? LIKE_ACTIVE : LIKE_INACTIVE,
+        resourceStrings.chat_reaction_like!,
+        liked ? 'true' : 'false'
       )}
       ${this._renderActionButton(
-        this.message.reactions?.includes(DISLIKE_ACTIVE)
-          ? DISLIKE_ACTIVE
-          : DISLIKE_INACTIVE,
-        resourceStrings.chat_reaction_dislike!
+        disliked ? DISLIKE_ACTIVE : DISLIKE_INACTIVE,
+        resourceStrings.chat_reaction_dislike!,
+        disliked ? 'true' : 'false'
       )}
       ${this._renderActionButton(
         REGENERATE,
@@ -215,16 +217,23 @@ export default class IgcChatMessageComponent extends HydrationMixin(
     `;
   }
 
-  private _renderActionButton(name: string, tooltipMessage: string) {
+  /** Pass `pressed` for a toggle action, such as like. */
+  private _renderActionButton(
+    name: string,
+    label: string,
+    pressed?: 'true' | 'false'
+  ) {
     return html`
       <igc-icon-button
         id=${`${name}-button`}
         name=${name}
         variant="flat"
+        aria-label=${label}
+        aria-pressed=${ifDefined(pressed)}
         @pointerenter=${({ target }: PointerEvent) =>
-          this._state.showActionsTooltip(target as Element, tooltipMessage)}
+          this._state.showActionsTooltip(target as Element, label)}
         @focus=${({ target }: FocusEvent) =>
-          this._state.showActionsTooltip(target as Element, tooltipMessage)}
+          this._state.showActionsTooltip(target as Element, label)}
       ></igc-icon-button>
     `;
   }

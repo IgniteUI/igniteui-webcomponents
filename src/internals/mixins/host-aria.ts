@@ -15,14 +15,20 @@ export declare class HostAriaElementInterface {
 
 /**
  * Renders the component again when a name or description source of its host
- * changes, so the render can forward it into the shadow root.
+ * changes, so the render can forward it into the shadow root. `state` lists
+ * more host attributes to forward, such as `aria-pressed`.
  * @internal
  */
-export function HostAriaMixin<T extends LitElementConstructor>(base: T) {
+export function HostAriaMixin<T extends LitElementConstructor>(
+  base: T,
+  state: readonly string[] = []
+) {
+  const observed = [...HOST_ARIA_ATTRIBUTES, ...state];
+
   class HostAriaElement extends base {
     /** @internal */
     public static override get observedAttributes(): string[] {
-      return [...super.observedAttributes, ...HOST_ARIA_ATTRIBUTES];
+      return [...super.observedAttributes, ...observed];
     }
 
     /** @internal */
@@ -33,7 +39,7 @@ export function HostAriaMixin<T extends LitElementConstructor>(base: T) {
     ): void {
       super.attributeChangedCallback(name, prev, current);
 
-      if (HOST_ARIA_ATTRIBUTES.includes(name)) {
+      if (observed.includes(name)) {
         this._handleHostAriaChange(name);
       }
     }
