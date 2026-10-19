@@ -5,6 +5,7 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { setCurrentI18n } from 'igniteui-i18n-core';
 import { spy } from 'sinon';
 
 import {
@@ -1525,6 +1526,45 @@ describe('Combo', () => {
       await layoutComplete(combo);
 
       expect(headers()).to.eql(['Belgium', 'Zambia', 'Österreich']);
+    });
+
+    describe('Collation of the global locale', () => {
+      const headers = () =>
+        headerItems(combo).map((header) => header.innerText);
+
+      beforeEach(() => {
+        combo.data = [
+          { id: 'ZM01', name: 'Lusaka', country: 'Zambia', zip: '10101' },
+          { id: 'AT01', name: 'Vienna', country: 'Österreich', zip: '1010' },
+          { id: 'BE01', name: 'Brussels', country: 'Belgium', zip: '1000' },
+        ];
+        combo.groupSorting = 'asc';
+      });
+
+      it('sorts the groups with the collation of the global locale', async () => {
+        await openComboPopover(combo);
+        setCurrentI18n('sv');
+
+        try {
+          await elementUpdated(combo);
+          await layoutComplete(combo);
+
+          expect(headers()).to.eql(['Belgium', 'Zambia', 'Österreich']);
+        } finally {
+          setCurrentI18n('en');
+        }
+      });
+
+      it('sorts the groups with the global locale after the locale attribute is removed', async () => {
+        combo.setAttribute('locale', 'sv');
+        await openComboPopover(combo);
+
+        combo.removeAttribute('locale');
+        await elementUpdated(combo);
+        await layoutComplete(combo);
+
+        expect(headers()).to.eql(['Belgium', 'Österreich', 'Zambia']);
+      });
     });
 
     it('filters primitive data by its value', async () => {

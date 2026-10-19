@@ -23,6 +23,13 @@ function maxBoundMessage(max: unknown): string {
   return formatString(ValidationResourceStringsEN.max_validation_error!, max);
 }
 
+export function disabledDateMessage(value: unknown): string {
+  return formatString(
+    ValidationResourceStringsEN.disabled_date_validation_error!,
+    value
+  );
+}
+
 const emailRegex =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
@@ -122,7 +129,7 @@ export const stepValidator: Validator<{
   value: number | string;
 }> = {
   key: 'stepMismatch',
-  message: 'Value does not conform to step constraint',
+  message: () => ValidationResourceStringsEN.step_validation_error!,
   isValid: ({ min, step, value }) => {
     if (isDefined(value) && value !== '' && isDefined(step)) {
       const _value = asNumber(value) - asNumber(min);

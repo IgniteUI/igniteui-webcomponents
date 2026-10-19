@@ -1,7 +1,7 @@
 import { property } from 'lit/decorators.js';
 import { CalendarDay } from '#internals/date/model.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { formatDisplayDate } from '#internals/i18n/i18n-controller.js';
+import { formatDisplayDate } from '#internals/i18n/date-formats.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateRangeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
@@ -82,16 +82,6 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
 
   public override get value(): DateRangeValue | null {
     return this._formValue.value;
-  }
-
-  // #endregion
-
-  // #region Lifecycle Hooks
-
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    this._initializeDefaultMask();
-    this._updateMaskDisplay();
   }
 
   // #endregion

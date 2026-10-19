@@ -1,4 +1,5 @@
 import type { ReactiveController } from 'lit';
+import { resolveLocale } from '#internals/i18n/locale.js';
 
 import FilterDataOperation from '../operations/filter.js';
 import GroupDataOperation from '../operations/group.js';
@@ -16,7 +17,7 @@ export class DataState<T extends object> implements ReactiveController {
   private readonly _host: ComboHost<T>;
   private readonly _filtering = new FilterDataOperation<T>();
   private readonly _grouping = new GroupDataOperation<T>();
-  private _compareCollator: Intl.Collator;
+  private _compareCollator?: Intl.Collator;
 
   /** The data source, indexed into records. See {@link hostUpdate}. */
   private _indexed: ComboRecord<T>[] = [];
@@ -71,7 +72,9 @@ export class DataState<T extends object> implements ReactiveController {
   }
 
   public get compareCollator(): Intl.Collator {
-    return this._compareCollator;
+    return (this._compareCollator ??= new Intl.Collator(
+      resolveLocale(this._host.locale)
+    ));
   }
 
   //#endregion
@@ -81,7 +84,6 @@ export class DataState<T extends object> implements ReactiveController {
   constructor(host: ComboHost<T>) {
     this._host = host;
     this._host.addController(this);
-    this._compareCollator = new Intl.Collator(this._host.locale);
   }
 
   /**
@@ -146,9 +148,12 @@ export class DataState<T extends object> implements ReactiveController {
 
   //#region Public API for host component
 
-  public updateLocale(locale: string): void {
-    this._compareCollator = new Intl.Collator(locale);
-    this.invalidate();
+  /** Only group sorting uses the collator, so the data changes only if it exists. */
+  public updateLocale(): void {
+    if (this._compareCollator) {
+      this._compareCollator = undefined;
+      this.invalidate();
+    }
   }
 
   /**

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `DateRangeDescriptor` has an optional `label`. The calendar adds the labels of the matching `specialDates` and `disabledDates` descriptors to the accessible name of a date, for example "Thursday, October 8, 2026, Free delivery". Before, the special state was only visual, and assistive technologies did not announce it. [#2423](https://github.com/IgniteUI/igniteui-webcomponents/pull/2423)
 - #### Chat
   - `focusInput()` moves the focus to the text area of the chat input, for example after an application inserts text into `draftMessage`. It does nothing when a custom `input` renderer replaces the text area.
+  - `locale` sets the locale of the resource strings for one chat. Without it, the chat follows the global locale.
 - #### Combo
   - The group header template receives the group as `key`, the value that the items of the group share in the `groupKey` field. `groupHeaderTemplate` has the new `ComboGroupHeaderTemplate` type, and its context has the new `ComboGroupHeaderContext` type. Your current templates continue to work. [#2462](https://github.com/IgniteUI/igniteui-webcomponents/issues/2462)
 - #### Library
@@ -26,6 +27,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - #### Avatar, Badge, Carousel
   - The avatar, the badge and the carousel slide no longer have an `aria-roledescription`. Screen readers now announce the role of the element ("image", "status" or "tab panel") in the language of the user. Before, they announced the English words "avatar", "badge" and "slide" in all languages. The carousel keeps its "carousel" role description. To set a role description, put an `aria-roledescription` attribute on the element.
+- #### Date picker, Date range picker
+  - In TypeScript, the core strings that `resourceStrings` returns now have the type `string`, as in the calendar. Before, their type was `string | undefined`, although the component always resolves them.
 - #### Library
   - The package has a new runtime dependency, `tslib`. The components import the TypeScript helpers from it, so a bundle contains one copy of each helper.
   - The bundle of all components is approximately 6% smaller after gzip. The components share one copy of their common styles, and the dark theme styles contain only the values that are different from the light theme.
@@ -33,6 +36,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The component styles no longer have vendor prefixes for KaiOS, Opera Mini, UC Browser and QQ Browser. The library does not support these browsers.
   - The minimum versions of the optional peer dependencies are now `dompurify` 3.4.16, `marked` 18.1.0 and `shiki` 4.5.0. [#2450](https://github.com/IgniteUI/igniteui-webcomponents/pull/2450)
   - The package now depends on `igniteui-i18n-core` 2.0, which has the new chat resource strings. If you register languages from `igniteui-i18n-resources`, update it to 2.0 too.
+  - The carousel, chat, chip, combo, file input and tree no longer bundle the date formatter of `igniteui-i18n-core`, because they use only resource strings. The bundle of each of these components is approximately 7 KB smaller after minification.
 - #### Snackbar, Toast
   - The display time now stops while the pointer is on the component or the keyboard focus is in it. It starts again in full when both leave. Before, the component closed under the pointer, and a keyboard user could lose the snackbar action before they got to it. A pointer click on the action does not keep the component open, also when the action has the keyboard focus. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
   - `show()` on an open component now starts the display time again. It still resolves `false`. Before, a new message in an open component closed with the time that remained from the previous message. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
@@ -94,6 +98,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Arrow Down no longer closes the list, or moves the focus back to the search input, when a search finds one match or none. [#2428](https://github.com/IgniteUI/igniteui-webcomponents/pull/2428)
   - A form reset now clears the invalid styles of a required single-selection combo that had the focus. [#2428](https://github.com/IgniteUI/igniteui-webcomponents/pull/2428)
   - The native input no longer has `aria-disabled`. Its native `disabled` state is sufficient. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
+  - The group sort order now follows a change of the global locale. Before, it kept the collation of the locale that was active when the combo was created. The removal of the `locale` attribute no longer causes a `TypeError`.
 - #### Date range picker, Date time input, Mask input
   - A mask position holds one UTF-16 code unit. So the editors now reject an astral character, such as an emoji, as input and as a prompt. Before, it moved the positions after it or split into two halves. A mask or input format with an astral literal now edits at the correct positions. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
   - In the mask input, an empty value is no longer a bad input. Only `required` makes an empty control invalid. A value that fits no position of a letter mask, such as `12` for `LLL`, is now a bad input. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
@@ -129,6 +134,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The title and subtitle container of `igc-list-item` is now a `div`, not a `header` element. Before, Chromium exposed it as a `sectionheader` in each item. The `header` part does not change. [#2439](https://github.com/IgniteUI/igniteui-webcomponents/pull/2439)
 - #### Localization
   - The calendar, the date picker, the date range picker and the chat now resolve every core resource string of the component. Before, they kept only the strings that also have an older resource name, so a string added to `igniteui-i18n-core` later was `undefined`.
+  - The date picker and the date range picker now give the calendar strings of `resourceStrings` to their calendar. Before, the calendar used its default strings, so for example a custom `calendar_previous_month` did not name the navigation button.
+  - A date time input that is not in the document during a change of the global locale now uses the new locale when it is added again. Before, it kept the mask of the previous locale.
+  - The API documentation now shows the type of `resourceStrings` for the calendar, carousel, chip, combo, file input and tree. Before, it showed `TGet`.
 - #### Navigation drawer
   - When a drawer with a `mini` variant closes, the focus now goes back to the element that had the focus when the drawer opened, such as a menu button in the rail. Before, the drawer closed its dialog while the rail was still hidden, so the focus went to the page body. [#2440](https://github.com/IgniteUI/igniteui-webcomponents/pull/2440)
   - When the platform closes the dialog of a drawer that stays open, the drawer now opens the dialog again. An example is a second Escape when an `igcClosing` handler cancels the close. When the drawer then closes, the focus goes back to the element that had it when the drawer first opened. Before, `open` stayed `true` with a closed dialog, and `show()` did nothing. [#2440](https://github.com/IgniteUI/igniteui-webcomponents/pull/2440)
@@ -221,6 +229,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The maximize, restore and resize animations now keep the tile content sharp. The box of the tile grows or shrinks and shows the content at its real size. The new content fades in at the start, and the tiles that a maximized tile covers fade in place. The drag preview stays on the pointer during a swap. Before, the animation stretched the tile images, so the text was blurred and out of shape, and the covered tiles moved. The rules for these animations are in the theme style sheets, such as `themes/light/bootstrap.css`. The view transition classes of the author stay on the tile. Browsers without view transition classes keep the default animation. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
 - #### Tree
   - A tree item that gives its role to a link in its label now copies the host `aria-label`, `aria-labelledby` and `aria-describedby` to that link, unless the link has its own. Before, these attributes stayed on the host, where screen readers did not use them. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
+  - A change of the global locale now updates the expand and collapse labels of the tree items. Before, they stayed in the language of the previous locale.
 - #### Virtual scroll
   - `layoutComplete` now resolves after the rendered items are measured. Before, it could resolve first. So `scrollToIndex` stopped its correction early, and an item with a size different from the estimate landed up to tens of pixels from the requested edge. [#2410](https://github.com/IgniteUI/igniteui-webcomponents/pull/2410)
   - A list larger than the maximum scroll size of the browser now shows its last items at the end of the scroll range, and `scrollToIndex` puts the item at the requested edge. The items also move evenly during a scroll. Before, you could not get to the last items, the item landed tens of pixels off, and the items jumped by some pixels each time the rendered window changed. [#2410](https://github.com/IgniteUI/igniteui-webcomponents/pull/2410)

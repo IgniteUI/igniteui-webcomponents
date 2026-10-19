@@ -1,7 +1,7 @@
 import { property } from 'lit/decorators.js';
 import { convertToDate, isValidDate } from '#internals/date/converters.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { formatDisplayDate } from '#internals/i18n/i18n-controller.js';
+import { formatDisplayDate } from '#internals/i18n/date-formats.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateTimeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';

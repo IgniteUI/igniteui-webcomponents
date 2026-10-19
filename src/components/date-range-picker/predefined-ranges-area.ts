@@ -2,17 +2,15 @@ import { html, LitElement, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { CalendarDay } from '#internals/date/model.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
 import { all } from '#themes/date-range-picker/themes/ranges-themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcChipComponent from '../chip/chip.js';
 import type { CustomDateRange, DateRangeValue } from './date-range-picker.js';
 import {
-  dateRangeI18nConfig,
   type DateRangePickerResourceStringsType,
-  type DateRangeResourceStrings,
-  type IgcDateRangePickerResourceStrings,
+  dateRangeI18nConfig,
 } from './i18n.js';
 import { styles } from './predefined-ranges-area.base.css.js';
 import { styles as shared } from './themes/shared/predefined-ranges-area.common.css.js';
@@ -25,12 +23,12 @@ import { styles as shared } from './themes/shared/predefined-ranges-area.common.
  *
  * @element igc-predefined-ranges-area
  */
-export default class IgcPredefinedRangesAreaComponent extends LitElement {
+export default class IgcPredefinedRangesAreaComponent extends I18nMixin(
+  LitElement,
+  dateRangeI18nConfig
+) {
   public static readonly tagName = 'igc-predefined-ranges-area';
   public static override styles = [componentBase, styles, shared];
-
-  private readonly _i18nController =
-    addI18nController<DateRangeResourceStrings>(this, dateRangeI18nConfig);
 
   /* blazorSuppress */
   public static register(): void {
@@ -56,17 +54,6 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
    */
   @property({ attribute: false })
   public customRanges: CustomDateRange[] = [];
-
-  /** The resource strings of the date range area component. */
-  @property({ attribute: false })
-  public set resourceStrings(value: DateRangeResourceStrings) {
-    this._i18nController.resourceStrings = value;
-  }
-
-  public get resourceStrings(): IgcDateRangePickerResourceStrings &
-    DateRangePickerResourceStringsType {
-    return this._i18nController.resourceStrings;
-  }
 
   constructor() {
     super();

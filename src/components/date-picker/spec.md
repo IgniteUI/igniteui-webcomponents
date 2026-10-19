@@ -450,8 +450,8 @@ default format and re-renders both the input and the calendar.
 ```
 
 The `resourceStrings` property overrides individual strings for a single picker. It accepts the calendar resource
-strings as well as the own strings of the picker, used for the title of the calendar icon and the label of the
-dialog:
+strings, which the picker gives to its calendar, as well as the own strings of the picker, used for the title of the
+calendar icon and the label of the dialog:
 
 | Key                       | Default (`en`) |
 | ------------------------- | -------------- |

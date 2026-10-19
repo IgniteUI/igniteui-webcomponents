@@ -452,8 +452,8 @@ module with the fixtures, the selectors and the assertion helpers the other thre
 
 - The `loading` state and the `loading` slot are exercised only through the slot rendering test; there is no
   load-on-demand scenario in the suite.
-- The `locale` and `resourceStrings` properties are not covered; the indicator labels are asserted against their
-  default English values.
+- An explicit `locale` and custom `resourceStrings` are not covered. The indicator labels are asserted in English and
+  after a change of the global locale.
 
 ## Assumptions and limitations
 

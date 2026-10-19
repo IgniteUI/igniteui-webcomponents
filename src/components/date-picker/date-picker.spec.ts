@@ -5,6 +5,7 @@ import {
   html,
   waitUntil,
 } from '@open-wc/testing';
+import { getI18nManager } from 'igniteui-i18n-core';
 import { spy } from 'sinon';
 import {
   altKey,
@@ -708,6 +709,29 @@ describe('Date picker', () => {
         await elementUpdated(picker);
         expect(picker.inputFormat).to.equal('dd-MM-yyyy');
         expect(picker.displayFormat).to.equal(picker.inputFormat);
+      });
+
+      it('forwards its calendar strings to the calendar', async () => {
+        picker.resourceStrings = { calendar_previous_month: 'Back' };
+        await elementUpdated(picker);
+
+        const pickerCalendar = picker.renderRoot.querySelector(
+          IgcCalendarComponent.tagName
+        )!;
+        expect(pickerCalendar.resourceStrings.calendar_previous_month).to.equal(
+          'Back'
+        );
+      });
+
+      it('registers its default resource strings only once', async () => {
+        const register = spy(getI18nManager(), 'registerI18n');
+
+        try {
+          await fixture(html`<igc-date-picker></igc-date-picker>`);
+          expect(register.called).to.be.false;
+        } finally {
+          register.restore();
+        }
       });
     });
 

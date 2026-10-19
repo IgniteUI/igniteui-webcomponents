@@ -1,3 +1,4 @@
+import type { ICalendarResourceStrings } from 'igniteui-i18n-core';
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -12,6 +13,7 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { convertToDate } from '#internals/date/converters.js';
 import { coercedProperty } from '#internals/decorators/coerced-property.js';
+import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.resources.js';
 import type { UnpackCustomEvent } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
@@ -170,7 +172,7 @@ export abstract class IgcDatePickerBaseComponent<
 
   protected abstract readonly _themes: ThemingController;
 
-  /** Only the locale is shared, because the resource strings differ between the pickers. */
+  /** Supplied by `I18nMixin` in each picker; TypeScript does not check the two match. */
   protected abstract readonly _i18nController: { locale: string };
 
   /** Each picker declares its own public `value`, because the type, converter and form state differ. */
@@ -183,8 +185,9 @@ export abstract class IgcDatePickerBaseComponent<
 
   protected abstract get _calendarSelection(): CalendarSelection;
 
-  /** The localized label of the calendar picker. */
-  protected abstract get _selectDateLabel(): string | undefined;
+  /** The strings the picker forwards to its calendar. */
+  protected abstract get _calendarResourceStrings(): IgcCalendarResourceStrings &
+    Required<ICalendarResourceStrings>;
 
   /** The editor whose native input gets the host name and `aria-haspopup="dialog"`. */
   protected abstract get _projectionTarget(): Element | null;
@@ -220,7 +223,7 @@ export abstract class IgcDatePickerBaseComponent<
 
   /** The accessible name of the picker in dialog mode. */
   protected get _dialogLabel(): string | undefined {
-    return this._selectDateLabel;
+    return this._calendarResourceStrings.calendar_select_date;
   }
 
   /** The format the editor(s) fall back to when no display format is set. */
@@ -332,20 +335,6 @@ export abstract class IgcDatePickerBaseComponent<
 
   public get inputFormat(): string {
     return (this._inputFormat ?? this._defaultInputFormat)!;
-  }
-
-  /**
-   * The locale used to format the display value and to resolve the
-   * component's resource strings. Falls back to the global locale when not set.
-   * @attr locale
-   */
-  @property()
-  public set locale(value: string) {
-    this._i18nController.locale = value;
-  }
-
-  public get locale(): string {
-    return this._i18nController.locale;
   }
 
   /**
@@ -473,7 +462,7 @@ export abstract class IgcDatePickerBaseComponent<
   }
 
   public get weekStart(): WeekDays {
-    return this._weekStart ?? getLocaleWeekStart(this.locale);
+    return this._weekStart ?? getLocaleWeekStart(this._i18nController.locale);
   }
 
   //#endregion
@@ -711,7 +700,9 @@ export abstract class IgcDatePickerBaseComponent<
     const hasHeaderDate = this._slots.hasAssignedElements('header-date');
 
     return html`
-      <slot name="title" slot="title">${this._selectDateLabel}</slot>
+      <slot name="title" slot="title"
+        >${this._calendarResourceStrings.calendar_select_date}</slot
+      >
       <slot
         name="header-date"
         slot=${bindIf(hasHeaderDate, 'header-date')}
@@ -737,7 +728,8 @@ export abstract class IgcDatePickerBaseComponent<
         .headerOrientation=${this.headerOrientation}
         .orientation=${this.orientation}
         .visibleMonths=${this._visibleMonths}
-        .locale=${this.locale}
+        .locale=${this._i18nController.locale}
+        .resourceStrings=${this._calendarResourceStrings}
         .disabledDates=${this._dateConstraints}
         .specialDates=${this.specialDates}
         .weekStart=${this.weekStart}

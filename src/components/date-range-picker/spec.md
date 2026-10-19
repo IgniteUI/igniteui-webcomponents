@@ -378,8 +378,8 @@ The following strings are localizable, on top of the calendar resource strings:
 | `date_range_picker_yearToDate`     | Year to Date   | A predefined range chip.                |
 
 `locale` overrides the locale for a single picker and drives the input format, the display format and the calendar
-week start; `resourceStrings` overrides individual strings. Validation messages come from the application through the
-message slots.
+week start; `resourceStrings` overrides individual strings, and the picker gives the calendar strings to its calendar.
+Validation messages come from the application through the message slots.
 
 ### Keyboard interactions
 

@@ -1,12 +1,8 @@
-import {
-  type ITreeResourceStrings,
-  TreeResourceStringsEN,
-} from 'igniteui-i18n-core';
+import { TreeResourceStringsEN } from 'igniteui-i18n-core';
 import { html, isServer, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { setOrRemoveAttribute } from '#internals/utils/dom.js';
@@ -31,7 +27,7 @@ import { IgcTreeSelectionService } from './tree.selection.js';
  */
 const ITEM_RENDER_DEPENDENCIES = ['selection', 'resourceStrings'] as const;
 
-const i18n: I18nControllerConfig<ITreeResourceStrings> = {
+const i18n = {
   defaultEN: TreeResourceStringsEN,
 };
 

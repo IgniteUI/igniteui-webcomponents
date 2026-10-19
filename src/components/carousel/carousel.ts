@@ -1,7 +1,4 @@
-import {
-  CarouselResourceStringsEN,
-  type ICarouselResourceStrings,
-} from 'igniteui-i18n-core';
+import { CarouselResourceStringsEN } from 'igniteui-i18n-core';
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, queryAll, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
@@ -34,7 +31,6 @@ import {
 } from '#internals/controllers/slot.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
@@ -73,7 +69,7 @@ export interface IgcCarouselComponentEventMap {
 const nextId = createIdGenerator('igc-carousel');
 const Slots = setSlots('indicator', 'previous-button', 'next-button');
 
-const i18n: I18nControllerConfig<ICarouselResourceStrings> = {
+const i18n = {
   defaultEN: CarouselResourceStringsEN,
 };
 

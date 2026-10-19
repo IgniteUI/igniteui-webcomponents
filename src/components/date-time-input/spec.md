@@ -82,7 +82,7 @@ Typical scenarios include:
 - **Separate display format**: predefined locale styles (`short`, `medium`, `long`, `full` and their date-only and
   time-only variants) or a custom format string.
 - **Locale awareness**: the default input and display formats are resolved from the active locale and follow runtime
-  localization changes.
+  locale changes.
 - **Deferred value commit**: typing never mutates the public `value`; the edit is committed - and `igcChange`
   emitted - when the editor is blurred.
 - **Partial input completion**: an incompletely filled mask is completed from defaults on commit, and a mask that
@@ -509,8 +509,8 @@ derived from the active locale:
   month, weekday and time period names are rendered through the data of the locale.
 
 The `locale` property overrides the locale for a single editor; when it is not set, the editor follows the global
-locale of the library. A runtime change of the global locale or of the localization resources re-resolves the
-default mask and re-renders the displayed value.
+locale of the library. A runtime change of the global locale re-resolves the default mask and re-renders the displayed
+value, also when the editor is out of the document during the change.
 
 ```html
 <igc-date-time-input locale="ja"></igc-date-time-input>
@@ -559,7 +559,7 @@ example <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> - are ignored, so they stay availab
 | disabled          | disabled       | Yes       | `boolean`                   | false             | The disabled state of the component.                                        |
 | invalid           | invalid        | No        | `boolean`                   | false             | Sets the control into invalid state (visual state only).                    |
 | name              | name           | Yes       | `string`                    | -                 | The name of the control, submitted with the form data.                      |
-| locale            | locale         | No        | `string`                    | the global locale | The locale used to format the display value and resolve the resource strings. |
+| locale            | locale         | No        | `string`                    | the global locale | The locale used to format the display value.                                |
 | mask              | mask           | No        | `string`                    | from the format   | The mask pattern of the component. Inherited; set `inputFormat` instead.    |
 | defaultValue      | -              | No        | `Date \| null`              | -                 | The initial value of the control, restored on a form reset.                 |
 | form              | -              | No        | `HTMLFormElement \| null`   | -                 | Read-only. The form associated with this element.                           |

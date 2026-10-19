@@ -131,7 +131,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     locale: {
       type: 'string',
       description:
-        "The locale used to format the display value and to resolve the\ncomponent's resource strings. Falls back to the global locale when not set.",
+        'The locale used to format the display value. Falls back to the global\nlocale when not set.',
       control: 'text',
     },
   },
@@ -183,8 +183,8 @@ interface IgcDateTimeInputArgs {
   /** Sets whether to loop over the currently spun segment. */
   spinLoop: boolean;
   /**
-   * The locale used to format the display value and to resolve the
-   * component's resource strings. Falls back to the global locale when not set.
+   * The locale used to format the display value. Falls back to the global
+   * locale when not set.
    */
   locale: string;
 }

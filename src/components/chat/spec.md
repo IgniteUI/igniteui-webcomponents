@@ -255,7 +255,8 @@ removed later are handled, as is a theme change and a reconnect of the host.
 
 ### Localization
 
-The chat takes its resource strings from the `igniteui-i18n-core` package through the `resourceStrings` property.
+The chat takes its resource strings from the `igniteui-i18n-core` package through the `locale` and `resourceStrings`
+properties. Without an explicit `locale`, it follows the global locale of the library.
 
 | Key                         | Default English value        | Used for                                    |
 | --------------------------- | ---------------------------- | ------------------------------------------- |
@@ -300,6 +301,7 @@ global `registerI18n` mechanism, and both shapes are accepted by the property.
 | `messages`        | `IgcChatMessage[]`                                | `[]`    | The messages currently displayed.                                |
 | `draftMessage`    | `IgcChatDraftMessage`                             | —       | The message being composed, with its text and its attachments.   |
 | `options`         | `IgcChatOptions \| undefined`                     | —       | The behavior and appearance configuration of the chat.           |
+| `locale`          | `string`                                          | global  | The locale of the resource strings.                               |
 | `resourceStrings` | `IChatResourceStrings`                            | English | The resource strings of the component.                            |
 
 `IgcChatOptions`

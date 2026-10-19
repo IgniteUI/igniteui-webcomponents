@@ -6,6 +6,11 @@ import {
   html,
   waitUntil,
 } from '@open-wc/testing';
+import { registerI18n, setCurrentI18n } from 'igniteui-i18n-core';
+import {
+  ResourceStringsBG,
+  TreeResourceStringsBG,
+} from 'igniteui-i18n-resources';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { scrolledIntoView } from '#internals/testing/helpers.spec.js';
@@ -1322,6 +1327,31 @@ describe('Tree', () => {
     beforeEach(async () => {
       tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
       topLevelItems = tree.items.filter((i) => i.level === 0);
+    });
+
+    it('updates the indicator labels on a change of the global locale', async () => {
+      const item = topLevelItems[1];
+      const icon = () =>
+        TreeTestFunctions.getSlot(item, SLOTS.indicator).assignedElements({
+          flatten: true,
+        })[0];
+
+      expect(icon()).to.have.attribute('aria-label', 'Collapse');
+
+      registerI18n(ResourceStringsBG, 'bg');
+      setCurrentI18n('bg');
+
+      try {
+        await elementUpdated(tree);
+        await elementUpdated(item);
+
+        expect(icon()).to.have.attribute(
+          'aria-label',
+          TreeResourceStringsBG.collapse
+        );
+      } finally {
+        setCurrentI18n('en');
+      }
     });
 
     it('Should render proper role and attributes for the tree and its items', async () => {

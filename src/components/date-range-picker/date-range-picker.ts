@@ -11,12 +11,13 @@ import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditi
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import {
-  addI18nController,
   getDateTimeFormat,
-} from '#internals/i18n/i18n-controller.js';
+  getLocaleDateTimeFormats,
+} from '#internals/i18n/date-formats.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateRangeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
 import { firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { asNumber, clamp } from '#internals/utils/math.js';
@@ -42,12 +43,7 @@ import IgcValidationContainerComponent from '../validation-container/validation-
 import IgcDateRangeInputComponent from './date-range-input.js';
 import { DateRangePosition } from './date-range-mask-parser.js';
 import { styles } from './date-range-picker.base.css.js';
-import {
-  dateRangeI18nConfig,
-  type DateRangePickerResourceStringsType,
-  type DateRangeResourceStrings,
-  type IgcDateRangePickerResourceStrings,
-} from './i18n.js';
+import { dateRangeI18nConfig } from './i18n.js';
 import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
 import { styles as shared } from './themes/shared/date-range-picker.common.css.js';
 import { dateRangeValidators, isCompleteDateRange } from './validators.js';
@@ -195,10 +191,13 @@ const Slots = setSlots(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent, IgcChipComponent, IgcInputComponent'
 )
 @shadowOptions({ delegatesFocus: true })
-export default class IgcDateRangePickerComponent extends EventEmitterMixin<
-  IgcDateRangePickerComponentEventMap,
-  typeof IgcDatePickerBaseComponent<DateRangeValue>
->(IgcDatePickerBaseComponent) {
+export default class IgcDateRangePickerComponent extends I18nMixin(
+  EventEmitterMixin<
+    IgcDateRangePickerComponentEventMap,
+    typeof IgcDatePickerBaseComponent<DateRangeValue>
+  >(IgcDatePickerBaseComponent),
+  dateRangeI18nConfig
+) {
   public static readonly tagName = 'igc-date-range-picker';
   public static override styles = [componentBase, styles, shared];
 
@@ -225,9 +224,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   protected override readonly _slots = addSlotController(this, {
     slots: Slots,
   });
-
-  protected override readonly _i18nController =
-    addI18nController<DateRangeResourceStrings>(this, dateRangeI18nConfig);
 
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: { start: null, end: null },
@@ -284,16 +280,16 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     return this._firstDefinedInRange;
   }
 
-  protected override get _selectDateLabel(): string | undefined {
-    return this.resourceStrings.calendar_select_date;
+  protected override get _calendarResourceStrings() {
+    return this.resourceStrings;
   }
 
   protected override get _defaultDisplayFormat(): string | undefined {
-    return this._inputFormat ?? this._i18nController.localeDisplayFormat;
+    return this._inputFormat ?? getLocaleDateTimeFormats(this.locale).display;
   }
 
   protected override get _defaultInputFormat(): string | undefined {
-    return this._i18nController.localeInputFormat;
+    return getLocaleDateTimeFormats(this.locale).input;
   }
 
   protected override get _projectionTarget() {
@@ -395,17 +391,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     attribute: 'use-predefined-ranges',
   })
   public usePredefinedRanges = false;
-
-  /** The resource strings of the date range picker. */
-  @property({ attribute: false })
-  public set resourceStrings(value: DateRangeResourceStrings) {
-    this._i18nController.resourceStrings = value;
-  }
-
-  public get resourceStrings(): IgcDateRangePickerResourceStrings &
-    DateRangePickerResourceStringsType {
-    return this._i18nController.resourceStrings;
-  }
 
   // #endregion
 
@@ -790,9 +775,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   }
 
   private _renderSingleInput(id: string) {
-    const format =
-      getDateTimeFormat(this.displayFormat) ??
-      this._i18nController.localeDisplayFormat;
+    const format = getDateTimeFormat(this.displayFormat)!;
 
     return html`
       <igc-date-range-input

@@ -75,7 +75,7 @@ const metadata: Meta<IgcTreeComponent> = {
     locale: {
       type: 'string',
       description:
-        'The locale for the resource strings. Falls back to the global locale.',
+        'The locale for the resource strings and the locale-aware formatting.\nFalls back to the global locale.',
       control: 'text',
     },
   },
@@ -95,7 +95,10 @@ interface IgcTreeArgs {
   toggleNodeOnClick: boolean;
   /** The selection state of the tree. */
   selection: 'none' | 'multiple' | 'cascade';
-  /** The locale for the resource strings. Falls back to the global locale. */
+  /**
+   * The locale for the resource strings and the locale-aware formatting.
+   * Falls back to the global locale.
+   */
   locale: string;
 }
 type Story = StoryObj<IgcTreeArgs>;

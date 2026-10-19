@@ -1,7 +1,4 @@
-import {
-  ComboResourceStringsEN,
-  type IComboResourceStrings,
-} from 'igniteui-i18n-core';
+import { ComboResourceStringsEN } from 'igniteui-i18n-core';
 import { html, type PropertyValues, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -14,7 +11,6 @@ import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender
 import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
@@ -73,7 +69,7 @@ const SLOTS = setSlots(
   'invalid'
 );
 
-const i18n: I18nControllerConfig<IComboResourceStrings> = {
+const i18n = {
   defaultEN: ComboResourceStringsEN,
 };
 
@@ -329,21 +325,6 @@ export default class IgcComboComponent<
   public autofocusList = false;
 
   /**
-   * The locale used to resolve the component's resource strings.
-   * Falls back to the global locale when not set.
-   * @attr locale
-   */
-  @property()
-  public override set locale(value: string) {
-    super.locale = value;
-    this._state.updateLocale(value);
-  }
-
-  public override get locale(): string {
-    return super.locale;
-  }
-
-  /**
    * The label of the control.
    * @attr label
    */
@@ -560,6 +541,10 @@ export default class IgcComboComponent<
 
   protected override willUpdate(props: PropertyValues<this>): void {
     super.willUpdate(props);
+
+    if (props.has('locale')) {
+      this._state.updateLocale();
+    }
 
     if (
       props.has('groupKey') ||

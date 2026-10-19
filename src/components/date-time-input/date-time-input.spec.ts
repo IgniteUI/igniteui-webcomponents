@@ -1,5 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { setCurrentI18n } from 'igniteui-i18n-core';
+import { getI18nManager, setCurrentI18n } from 'igniteui-i18n-core';
 import { spy } from 'sinon';
 import {
   altKey,
@@ -131,6 +131,33 @@ describe('Date Time Input component', () => {
       expect(input.value).to.equal('3.3.2020');
 
       setCurrentI18n('en');
+    });
+
+    it('applies a global locale change that happened while detached', async () => {
+      const parent = element.parentElement!;
+      element.remove();
+      setCurrentI18n('no');
+
+      try {
+        parent.append(element);
+        await elementUpdated(element);
+
+        expect(element.inputFormat).to.equal('dd.MM.yyyy');
+        expect(input.placeholder).to.equal('dd.MM.yyyy');
+      } finally {
+        setCurrentI18n('en');
+      }
+    });
+
+    it('does not register resource strings', async () => {
+      const register = spy(getI18nManager(), 'registerI18n');
+
+      try {
+        await fixture(html`<igc-date-time-input></igc-date-time-input>`);
+        expect(register.called).to.be.false;
+      } finally {
+        register.restore();
+      }
     });
 
     it('should use inputFormat if no displayFormat is defined - issue 1114', async () => {

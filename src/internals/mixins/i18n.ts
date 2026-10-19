@@ -18,15 +18,25 @@ export declare class I18nInterface<
   public get resourceStrings(): TGet;
 }
 
+/** The configuration of `I18nMixin`. */
+export type I18nMixinConfig<
+  T extends object,
+  TGet extends T = Required<T>,
+> = I18nControllerConfig<T> & {
+  /**
+   * Typing only, never set: the type `resourceStrings` returns, e.g. the
+   * intersection of a deprecated and a core shape.
+   */
+  readonly resolved?: TGet;
+};
+
 /**
- * Adds the `locale` and `resourceStrings` properties, both backed by the
- * protected `_i18nController` that `config` creates.
+ * Adds the `locale` and `resourceStrings` properties, both backed by an
+ * `I18nController` that `config` creates.
  *
  * @remarks
  * `TGet` defaults to `Required<T>`, because the controller merges the full
- * `defaultEN` set under any overrides, so every key resolves. A component
- * that also accepts a deprecated resource shape overrides `TGet` with the
- * intersection of the two shapes.
+ * `defaultEN` set under any overrides, so every key resolves.
  *
  * The base class must be the first argument. The manifest analyzer reads the
  * superclass of `extends Mixin(...)` from that argument; a leading config
@@ -36,12 +46,13 @@ export function I18nMixin<
   T extends object,
   B extends AbstractConstructor<LitElement>,
   TGet extends T = Required<T>,
->(superClass: B, config: I18nControllerConfig<T>) {
+>(superClass: B, config: I18nMixinConfig<T, TGet>) {
   abstract class I18nElement extends superClass {
     protected readonly _i18nController = addI18nController<T>(this, config);
 
     /**
-     * The locale for the resource strings. Falls back to the global locale.
+     * The locale for the resource strings and the locale-aware formatting.
+     * Falls back to the global locale.
      *
      * @attr locale
      */

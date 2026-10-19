@@ -77,11 +77,26 @@ const metadata: Meta<IgcChatComponent> = {
       ],
     },
   },
+  argTypes: {
+    locale: {
+      type: 'string',
+      description:
+        'The locale for the resource strings and the locale-aware formatting.\nFalls back to the global locale.',
+      control: 'text',
+    },
+  },
 };
 
 export default metadata;
 
-type Story = StoryObj;
+interface IgcChatArgs {
+  /**
+   * The locale for the resource strings and the locale-aware formatting.
+   * Falls back to the global locale.
+   */
+  locale: string;
+}
+type Story = StoryObj<IgcChatArgs>;
 
 // endregion
 

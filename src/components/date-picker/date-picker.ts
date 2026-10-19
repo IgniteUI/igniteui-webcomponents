@@ -12,15 +12,13 @@ import { convertToDate } from '#internals/date/converters.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { getDateTimeFormat } from '#internals/i18n/date-formats.js';
 import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.resources.js';
-import {
-  addI18nController,
-  getDateTimeFormat,
-} from '#internals/i18n/i18n-controller.js';
 import { datePickerResourcesMap } from '#internals/i18n/utils.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateTimeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { I18nMixin, type I18nMixinConfig } from '#internals/mixins/i18n.js';
 import { firstOf } from '#internals/utils/arrays.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
@@ -63,6 +61,17 @@ const Slots = setSlots(
 );
 type DatePickerResourceStringsType = IDatePickerResourceStrings &
   ICalendarResourceStrings;
+
+// TODO: update the type when `IgcCalendarResourceStrings` becomes `ICalendarResourceStrings`.
+const i18n: I18nMixinConfig<
+  IgcCalendarResourceStrings | DatePickerResourceStringsType,
+  IgcCalendarResourceStrings &
+    Required<IDatePickerResourceStrings> &
+    Required<ICalendarResourceStrings>
+> = {
+  defaultEN: { ...DatePickerResourceStringsEN, ...CalendarResourceStringsEN },
+  resourceMap: datePickerResourcesMap,
+};
 
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
@@ -146,10 +155,13 @@ type DatePickerResourceStringsType = IDatePickerResourceStrings &
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent'
 )
 @shadowOptions({ delegatesFocus: true })
-export default class IgcDatePickerComponent extends EventEmitterMixin<
-  IgcDatePickerComponentEventMap,
-  typeof IgcDatePickerBaseComponent<Date>
->(IgcDatePickerBaseComponent) {
+export default class IgcDatePickerComponent extends I18nMixin(
+  EventEmitterMixin<
+    IgcDatePickerComponentEventMap,
+    typeof IgcDatePickerBaseComponent<Date>
+  >(IgcDatePickerBaseComponent),
+  i18n
+) {
   public static readonly tagName = 'igc-date-picker';
   public static override styles = [componentBase, styles, shared];
 
@@ -172,21 +184,6 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
   protected override readonly _themes = addThemingController(this, all);
   protected override readonly _slots = addSlotController(this, {
     slots: Slots,
-  });
-
-  /**
-   * Uses the core validation strings internally only, so they do not mix with user resources.
-   * To Do: Update the resourceStrings type when IgcCalendarResourceStrings becomes ICalendarResourceStrings.
-   */
-  protected override readonly _i18nController = addI18nController<
-    IgcCalendarResourceStrings | DatePickerResourceStringsType
-  >(this, {
-    defaultEN: Object.assign(
-      {},
-      DatePickerResourceStringsEN,
-      CalendarResourceStringsEN
-    ),
-    resourceMap: datePickerResourcesMap,
   });
 
   protected override readonly _formValue = createFormValueState(this, {
@@ -221,8 +218,8 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
     return this.value;
   }
 
-  protected override get _selectDateLabel(): string | undefined {
-    return this.resourceStrings.calendar_select_date;
+  protected override get _calendarResourceStrings() {
+    return this.resourceStrings;
   }
 
   protected override get _calendarIconTitle(): string | undefined {
@@ -305,21 +302,6 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
    */
   @property()
   public placeholder!: string;
-
-  /**
-   * The resource strings for localization.
-   */
-  @property({ attribute: false })
-  public set resourceStrings(
-    value: IgcCalendarResourceStrings | DatePickerResourceStringsType
-  ) {
-    this._i18nController.resourceStrings = value;
-  }
-
-  public get resourceStrings(): IgcCalendarResourceStrings &
-    DatePickerResourceStringsType {
-    return this._i18nController.resourceStrings;
-  }
 
   /**
    * The offset of the start of the text selection in the input, in UTF-16

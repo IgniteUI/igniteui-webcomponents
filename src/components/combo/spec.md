@@ -203,7 +203,7 @@ combo.filteringOptions = {
 
 When a group key is set, the options are grouped by it. Items whose group key resolves to `null` or `undefined` are
 aggregated into an `Other` group. `groupSorting` controls the direction - `asc` by default, `desc`, or `none` - and
-the comparison is locale aware.
+the comparison uses the collation of `locale`, also after a change of the global locale.
 
 #### Templating
 
@@ -324,7 +324,7 @@ Typing while the component is focused filters the list down to the closest match
 | disabled               | disabled                   | Yes       | `boolean`                           | false             | The disabled state of the component.                            |
 | invalid                | invalid                    | No        | `boolean`                           | false             | Sets the control into invalid state (visual state only).        |
 | name                   | name                       | Yes       | `string`                            | -                 | The name of the control, submitted with the form data.          |
-| locale                 | locale                     | No        | `string`                            | the global locale | The locale used to resolve the resource strings.                |
+| locale                 | locale                     | No        | `string`                            | the global locale | The locale of the resource strings and of the group sort order. |
 | resourceStrings        | -                          | No        | `IComboResourceStrings`             | EN                | The resource strings for localization.                          |
 | defaultValue           | -                          | No        | `ComboValue<T>[]`                   | -                 | The initial value of the control, restored on a form reset.     |
 | form                   | -                          | No        | `HTMLFormElement \| null`           | -                 | Read-only. The form associated with this element.               |
