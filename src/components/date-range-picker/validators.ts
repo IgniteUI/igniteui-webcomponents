@@ -1,10 +1,10 @@
-import { ValidationResourceStringsEN } from 'igniteui-i18n-core';
 import { calendarRange } from '#internals/date/model.js';
 import { isEmpty } from '#internals/utils/arrays.js';
-import { formatString } from '#internals/utils/strings.js';
 import {
   createMaxDateTimeValidator,
   createMinDateTimeValidator,
+  disabledDateMessage,
+  requiredValidator,
   type Validator,
 } from '#internals/validators.js';
 import { isDateInRanges } from '../calendar/helpers.js';
@@ -24,7 +24,7 @@ const maxDateRangeValidator =
 
 const requiredDateRangeValidator: Validator<IgcDateRangePickerComponent> = {
   key: 'valueMissing',
-  message: ValidationResourceStringsEN.required_validation_error!,
+  message: requiredValidator.message,
   isValid: (host) => {
     return host.required ? isCompleteDateRange(host.value) : true;
   },
@@ -32,11 +32,7 @@ const requiredDateRangeValidator: Validator<IgcDateRangePickerComponent> = {
 
 const badInputDateRangeValidator: Validator<IgcDateRangePickerComponent> = {
   key: 'badInput',
-  message: (host) =>
-    formatString(
-      ValidationResourceStringsEN.disabled_date_validation_error!,
-      host.value
-    ),
+  message: (host) => disabledDateMessage(host.value),
   isValid: (host) => {
     const { value, disabledDates } = host;
 

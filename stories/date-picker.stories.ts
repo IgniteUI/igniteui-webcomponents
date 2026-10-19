@@ -74,6 +74,12 @@ const metadata: Meta<IgcDatePickerComponent> = {
       description: 'The placeholder text of the control.',
       control: 'text',
     },
+    locale: {
+      type: 'string',
+      description:
+        'The locale for the resource strings and the locale-aware formatting.\nFalls back to the global locale.',
+      control: 'text',
+    },
     required: {
       type: 'boolean',
       description:
@@ -145,12 +151,6 @@ const metadata: Meta<IgcDatePickerComponent> = {
       type: 'string',
       description:
         'The date format to apply on the input.\nDefaults to the current locale Intl.DateTimeFormat',
-      control: 'text',
-    },
-    locale: {
-      type: 'string',
-      description:
-        "The locale used to format the display value and to resolve the\ncomponent's resource strings. Falls back to the global locale when not set.",
       control: 'text',
     },
     min: {
@@ -299,6 +299,11 @@ interface IgcDatePickerArgs {
   value: Date;
   /** The placeholder text of the control. */
   placeholder: string;
+  /**
+   * The locale for the resource strings and the locale-aware formatting.
+   * Falls back to the global locale.
+   */
+  locale: string;
   /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name of the control, submitted with the form data. */
@@ -329,11 +334,6 @@ interface IgcDatePickerArgs {
    * Defaults to the current locale Intl.DateTimeFormat
    */
   inputFormat: string;
-  /**
-   * The locale used to format the display value and to resolve the
-   * component's resource strings. Falls back to the global locale when not set.
-   */
-  locale: string;
   /** The minimum value required for the picker to remain valid. */
   min: Date;
   /** The maximum value required for the picker to remain valid. */

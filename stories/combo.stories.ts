@@ -85,12 +85,6 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    locale: {
-      type: 'string',
-      description:
-        "The locale used to resolve the component's resource strings.\nFalls back to the global locale when not set.",
-      control: 'text',
-    },
     label: {
       type: 'string',
       description: 'The label of the control.',
@@ -149,6 +143,12 @@ const metadata: Meta<IgcComboComponent> = {
       description: 'Hides the clear button.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
+    },
+    locale: {
+      type: 'string',
+      description:
+        'The locale for the resource strings and the locale-aware formatting.\nFalls back to the global locale.',
+      control: 'text',
     },
     required: {
       type: 'boolean',
@@ -217,11 +217,6 @@ interface IgcComboArgs {
   autofocus: boolean;
   /** Focuses the list of options when the menu opens. */
   autofocusList: boolean;
-  /**
-   * The locale used to resolve the component's resource strings.
-   * Falls back to the global locale when not set.
-   */
-  locale: string;
   /** The label of the control. */
   label: string;
   /** The placeholder text of the control. */
@@ -242,6 +237,11 @@ interface IgcComboArgs {
   disableFiltering: boolean;
   /** Hides the clear button. */
   disableClear: boolean;
+  /**
+   * The locale for the resource strings and the locale-aware formatting.
+   * Falls back to the global locale.
+   */
+  locale: string;
   /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name of the control, submitted with the form data. */

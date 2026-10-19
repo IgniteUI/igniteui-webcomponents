@@ -1,7 +1,4 @@
-import {
-  ChipResourceStringsEN,
-  type IChipResourceStrings,
-} from 'igniteui-i18n-core';
+import { ChipResourceStringsEN } from 'igniteui-i18n-core';
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -17,7 +14,6 @@ import {
 } from '#internals/controllers/slot.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
@@ -37,7 +33,7 @@ export interface IgcChipComponentEventMap {
 
 const Slots = setSlots('start', 'prefix', 'suffix', 'end');
 
-const i18n: I18nControllerConfig<IChipResourceStrings> = {
+const i18n = {
   defaultEN: ChipResourceStringsEN,
 };
 

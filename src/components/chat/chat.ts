@@ -12,9 +12,9 @@ import { addContextProvider } from '#internals/controllers/context-provider.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { IgcChatResourceStrings } from '#internals/i18n/EN/chat.resources.js';
-import { addI18nController } from '#internals/i18n/i18n-controller.js';
 import { chatResourcesMap } from '#internals/i18n/utils.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { I18nMixin, type I18nMixinConfig } from '#internals/mixins/i18n.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { all } from '#themes/chat/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -125,6 +125,14 @@ const Slots = setSlots(
   'typing-indicator'
 );
 
+const i18n: I18nMixinConfig<
+  IgcChatResourceStrings | IChatResourceStrings,
+  IgcChatResourceStrings & IChatResourceStrings
+> = {
+  defaultEN: ChatResourceStringsEN,
+  resourceMap: chatResourcesMap,
+};
+
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
 /**
@@ -199,8 +207,9 @@ const Slots = setSlots(
  * @csspart attachment-icon - Styles the icon of an attachment.
  * @csspart file-name - Styles the file name shown in an attachment.
  */
-export default class IgcChatComponent extends EventEmitterMixin<IgcChatComponentEventMap>(
-  LitElement
+export default class IgcChatComponent extends I18nMixin(
+  EventEmitterMixin<IgcChatComponentEventMap>(LitElement),
+  i18n
 ) {
   public static readonly tagName = 'igc-chat';
 
@@ -234,14 +243,6 @@ export default class IgcChatComponent extends EventEmitterMixin<IgcChatComponent
 
   private readonly _slots = addSlotController(this, {
     slots: Slots,
-  });
-
-  // Before the context providers, so they publish the strings of the current locale.
-  private readonly _i18nController = addI18nController<
-    IgcChatResourceStrings | IChatResourceStrings
-  >(this, {
-    defaultEN: ChatResourceStringsEN,
-    resourceMap: chatResourcesMap,
   });
 
   // The input and the messages read the labels through this context.
@@ -312,20 +313,21 @@ export default class IgcChatComponent extends EventEmitterMixin<IgcChatComponent
     return this._state.options;
   }
 
+  // Re-declared only to keep the strings out of the Blazor wrapper.
   /* blazorSuppress */
   /**
    * The resource strings of the chat.
    */
-  @property({ attribute: false })
-  public set resourceStrings(
+  public override set resourceStrings(
     value: IgcChatResourceStrings | IChatResourceStrings
   ) {
-    this._i18nController.resourceStrings = value;
+    super.resourceStrings = value;
   }
 
   /* blazorSuppress */
-  public get resourceStrings(): IgcChatResourceStrings & IChatResourceStrings {
-    return this._i18nController.resourceStrings;
+  public override get resourceStrings(): IgcChatResourceStrings &
+    IChatResourceStrings {
+    return super.resourceStrings;
   }
 
   constructor() {

@@ -381,6 +381,18 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         picker.usePredefinedRanges = true;
       });
 
+      it('forwards its calendar strings to the calendar', async () => {
+        picker.resourceStrings = { calendar_previous_month: 'Back' };
+        await elementUpdated(picker);
+
+        const pickerCalendar = picker.renderRoot.querySelector(
+          IgcCalendarComponent.tagName
+        )!;
+        expect(pickerCalendar.resourceStrings.calendar_previous_month).to.equal(
+          'Back'
+        );
+      });
+
       it('should default inputFormat to whatever Intl.DateTimeFormat returns for the current locale', async () => {
         const defaultFormat = 'MM/dd/yyyy';
         expect(picker.locale).to.equal('en-US');

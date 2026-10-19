@@ -1,13 +1,9 @@
-import {
-  FileInputResourceStringsEN,
-  type IFileInputResourceStrings,
-} from 'igniteui-i18n-core';
+import { FileInputResourceStringsEN } from 'igniteui-i18n-core';
 import { html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ariaBindings } from '#internals/controllers/aria-projection.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueFileListTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
@@ -49,7 +45,7 @@ const Slots = setSlots(
   'invalid'
 );
 
-const i18n: I18nControllerConfig<IFileInputResourceStrings> = {
+const i18n = {
   defaultEN: FileInputResourceStringsEN,
 };
 

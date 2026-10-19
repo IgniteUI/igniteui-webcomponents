@@ -16,7 +16,8 @@ import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { convertToDate } from '#internals/date/converters.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
-import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import { getLocaleDateTimeFormats } from '#internals/i18n/date-formats.js';
+import { addLocaleController } from '#internals/i18n/i18n-controller.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import type { FormValue } from '#internals/mixins/forms/form-value.js';
 import { MaskBehaviorMixin } from '#internals/mixins/mask-behavior.js';
@@ -90,10 +91,7 @@ export abstract class IgcDateTimeInputBaseComponent<
     return dateTimeInputValidators;
   }
 
-  private readonly _i18nController = addI18nController(this, {
-    defaultEN: {},
-    onResourceChange: this._handleResourceChange,
-  });
+  private readonly _localeController = addLocaleController(this);
 
   protected _min: Date | null = null;
   protected _max: Date | null = null;
@@ -101,9 +99,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected _displayFormat?: string;
   protected _inputFormat?: string;
 
-  /** The locale-default display format, resolved by the i18n controller. */
   protected get _defaultDisplayFormat(): string {
-    return this._i18nController.localeDisplayFormat;
+    return getLocaleDateTimeFormats(this.locale).display;
   }
 
   /**
@@ -238,17 +235,17 @@ export abstract class IgcDateTimeInputBaseComponent<
   public spinLoop = true;
 
   /**
-   * The locale used to format the display value and to resolve the
-   * component's resource strings. Falls back to the global locale when not set.
+   * The locale used to format the display value. Falls back to the global
+   * locale when not set.
    * @attr locale
    */
   @property()
   public set locale(value: string) {
-    this._i18nController.locale = value;
+    this._localeController.locale = value;
   }
 
   public get locale(): string {
-    return this._i18nController.locale;
+    return this._localeController.locale;
   }
 
   // #endregion
@@ -284,11 +281,6 @@ export abstract class IgcDateTimeInputBaseComponent<
   //#endregion
 
   // #region Event handlers
-
-  private _handleResourceChange(): void {
-    this._initializeDefaultMask();
-    this._updateMaskDisplay();
-  }
 
   protected _handleDragEnter(): void {
     if (!this._focused) {
@@ -520,7 +512,7 @@ export abstract class IgcDateTimeInputBaseComponent<
   /** Applies the locale-default mask, unless an explicit input format is set. */
   protected _initializeDefaultMask(): void {
     if (!this._inputFormat) {
-      this._applyMask(this._i18nController.localeInputFormat);
+      this._applyMask(getLocaleDateTimeFormats(this.locale).input);
     }
   }
 

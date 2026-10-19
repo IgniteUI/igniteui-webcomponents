@@ -20,12 +20,9 @@ import { ResourceStringsBG } from 'igniteui-i18n-resources';
 import { LitElement } from 'lit';
 import { spy } from 'sinon';
 import type { DateRangePickerResourceStringsType } from '../../components/date-range-picker/date-range-picker.js';
+import { formatDisplayDate, getLocaleDateTimeFormats } from './date-formats.js';
 import type { IgcDateRangePickerResourceStrings } from './EN/date-range-picker.resources.js';
-import {
-  addI18nController,
-  formatDisplayDate,
-  type I18nController,
-} from './i18n-controller.js';
+import { addI18nController, type I18nController } from './i18n-controller.js';
 import { dateRangePickerResourcesMap } from './utils.js';
 
 class TestLocalizedClass<T extends object> extends LitElement {
@@ -360,6 +357,23 @@ describe('Localization', () => {
         resolve.restore();
       }
     });
+
+    it('resolves the strings of its locale on the first update, after a late registration', async () => {
+      const element = document.createElement(tagNew) as typeof instance;
+      element.locale = 'fr';
+      document.body.append(element);
+
+      try {
+        registerI18n({ combo_empty_message: 'La liste est vide' }, 'fr');
+        await elementUpdated(element);
+
+        expect(element.shadowRoot?.getElementById('start')?.innerText).to.equal(
+          'La liste est vide'
+        );
+      } finally {
+        element.remove();
+      }
+    });
   });
 
   describe('formatDisplayDate', () => {
@@ -369,6 +383,55 @@ describe('Localization', () => {
       expect(formatDisplayDate(value, 'en-US')).to.equal(
         new Intl.DateTimeFormat('en-US').format(value)
       );
+    });
+  });
+
+  describe('getLocaleDateTimeFormats', () => {
+    afterEach(() => {
+      setCurrentI18n('en');
+    });
+
+    it('returns the display and input formats of the locale', () => {
+      expect(getLocaleDateTimeFormats('en-US')).to.deep.equal({
+        display: 'M/d/yyyy',
+        input: 'MM/dd/yyyy',
+      });
+      expect(getLocaleDateTimeFormats('de-DE')).to.deep.equal({
+        display: 'd.M.yyyy',
+        input: 'dd.MM.yyyy',
+      });
+    });
+
+    it('resolves an invalid locale to the global locale, also during a locale change', () => {
+      const manager = getI18nManager();
+      const seen: string[] = [];
+      const listener = () => seen.push(getLocaleDateTimeFormats('xx-!!').input);
+
+      expect(getLocaleDateTimeFormats('xx-!!').input).to.equal('MM/dd/yyyy');
+
+      manager.addEventListener('onResourceChange', listener);
+      try {
+        setCurrentI18n('de-DE');
+      } finally {
+        manager.removeEventListener('onResourceChange', listener);
+      }
+
+      expect(seen).to.deep.equal(['dd.MM.yyyy']);
+      expect(getLocaleDateTimeFormats('xx-!!').input).to.equal('dd.MM.yyyy');
+      expect(getLocaleDateTimeFormats('').input).to.equal('dd.MM.yyyy');
+    });
+
+    it('drops the cached formats when the cache is full', () => {
+      const formats = getLocaleDateTimeFormats('fr-FR');
+      expect(getLocaleDateTimeFormats('fr-FR')).to.equal(formats);
+
+      for (let i = 0; i < 64; i++) {
+        getLocaleDateTimeFormats(`en-x-n${i}`);
+      }
+
+      const refreshed = getLocaleDateTimeFormats('fr-FR');
+      expect(refreshed).to.not.equal(formats);
+      expect(refreshed).to.deep.equal(formats);
     });
   });
 });

@@ -1,5 +1,6 @@
 import { CalendarResourceStringsEN } from 'igniteui-i18n-core';
-import { calendarResourcesMap, convertToIgcResource } from '../utils.js';
+import { convertToIgcResource } from '../converters.js';
+import { calendarResourcesMap } from '../utils.js';
 
 /* blazorSuppress */
 /**
