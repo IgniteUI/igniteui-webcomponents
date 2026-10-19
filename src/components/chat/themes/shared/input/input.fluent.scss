@@ -1,5 +1,5 @@
 @use 'styles/utilities' as *;
-@use '../../light/themes' as *;
+@use 'components/textarea/themes/light/themes' as *;
 
 $theme: $fluent;
 
