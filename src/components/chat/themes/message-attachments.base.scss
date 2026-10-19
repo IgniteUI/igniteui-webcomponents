@@ -33,6 +33,12 @@
     padding: rem(6px) 0 0;
 }
 
+// The attachment clips its content, so the outline goes inside the header.
+[part~='attachment-header']:focus-visible {
+    outline: rem(2px) solid color(primary, 500);
+    outline-offset: rem(-2px);
+}
+
 [part~='attachment-content'] {
     display: flex;
     justify-content: center;

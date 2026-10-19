@@ -6,8 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### Button, Icon button
+  - A host `aria-pressed` now goes to the native button, so a button can be a toggle button. A link and a disabled link do not get it, because the link role does not allow it.
 - #### Calendar, Date picker, Date range picker
   - `DateRangeDescriptor` has an optional `label`. The calendar adds the labels of the matching `specialDates` and `disabledDates` descriptors to the accessible name of a date, for example "Thursday, October 8, 2026, Free delivery". Before, the special state was only visual, and assistive technologies did not announce it. [#2423](https://github.com/IgniteUI/igniteui-webcomponents/pull/2423)
+- #### Chat
+  - `focusInput()` moves the focus to the text area of the chat input, for example after an application inserts text into `draftMessage`. It does nothing when a custom `input` renderer replaces the text area.
 - #### Combo
   - The group header template receives the group as `key`, the value that the items of the group share in the `groupKey` field. `groupHeaderTemplate` has the new `ComboGroupHeaderTemplate` type, and its context has the new `ComboGroupHeaderContext` type. Your current templates continue to work. [#2462](https://github.com/IgniteUI/igniteui-webcomponents/issues/2462)
 - #### Library
@@ -28,6 +32,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A theme change now updates only the components that render differently for each theme. A `configureTheme()` call with the active theme and variant does not update the components.
   - The component styles no longer have vendor prefixes for KaiOS, Opera Mini, UC Browser and QQ Browser. The library does not support these browsers.
   - The minimum versions of the optional peer dependencies are now `dompurify` 3.4.16, `marked` 18.1.0 and `shiki` 4.5.0. [#2450](https://github.com/IgniteUI/igniteui-webcomponents/pull/2450)
+  - The package now depends on `igniteui-i18n-core` 2.0, which has the new chat resource strings. If you register languages from `igniteui-i18n-resources`, update it to 2.0 too.
 - #### Snackbar, Toast
   - The display time now stops while the pointer is on the component or the keyboard focus is in it. It starts again in full when both leave. Before, the component closed under the pointer, and a keyboard user could lose the snackbar action before they got to it. A pointer click on the action does not keep the component open, also when the action has the keyboard focus. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
   - `show()` on an open component now starts the display time again. It still resolves `false`. Before, a new message in an open component closed with the time that remained from the previous message. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
@@ -63,6 +68,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Chat
   - The chat now creates one object URL for each attached file, and revokes it when you remove the attachment or when a listener cancels `igcAttachmentAdded`. Before, each render created a new object URL and did not revoke the old one, so the memory use increased.
   - While the typing indicator or the suggestions show, the message area now scrolls to the bottom only when content is added. Before, each update of the chat scrolled it to the bottom, for example a change of `headerText`, also while the user read earlier messages.
+  - The message area now follows the newest message only while it is at the bottom. When the user scrolls up to read earlier messages, new messages, the typing indicator and new suggestions do not move it. A new message of the current user, and a `messages` array without the previous last message, such as another conversation, scroll to the bottom again. Before, each change of `messages` scrolled to the bottom, also a change of an earlier message.
+  - An attachment with an image MIME type in `type`, such as `image/png`, now renders as an image. Before, only the type `image` and attachments with an image `file` rendered as images.
+  - The file picker now attaches only the files that `acceptedFiles` allows, as a drop does. Before, a user could pick any file in the dialog of the browser, and the chat attached it. A pick or a drop that adds no file, because `acceptedFiles` does not allow the files or they are already attached, no longer emits an empty `igcAttachmentAdded`.
+  - The header of an attachment in a message is now in the tab order, and `Enter` and `Space` activate it and emit `igcAttachmentClick`. Before, it had the button role but keyboard users could not reach it.
+  - The copy, like, dislike and regenerate actions of a message now have names from the `chat_reaction_*` resource strings, and like and dislike tell their state with `aria-pressed`. Before, screen readers announced them as unnamed buttons.
+  - The text area, the attach button, the file input and the send button now take their names from the `chat_input_label`, `chat_attach_files`, `chat_file_input_label` and `chat_send_message` resource strings, and the attachments list from `chat_attachments_list_label`. The remove button of an attachment chip now names the file with `chat_remove_attachment`, for example "Remove photo.png". Before, the names were in English only, and each remove button said "remove chip".
+  - A change of the locale or of `resourceStrings` now renames the message actions and the input controls. Before, they kept the strings of their first render.
 - #### Checkbox
   - The indicator icon is now hidden from assistive technologies. Before, each checkbox had an unnamed image next to it in the accessibility tree. [#2425](https://github.com/IgniteUI/igniteui-webcomponents/pull/2425)
 - #### Chip
@@ -115,6 +127,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### List
   - `igc-list-header` now has the `listitem` role. Before, it had the `separator` role. A list cannot contain a separator, and a separator hides its content from assistive technologies, so a screen reader could skip the text of the header. Screen readers now read the header and count it with the items. Put a heading in the header, so that users can move from group to group. [#2439](https://github.com/IgniteUI/igniteui-webcomponents/pull/2439)
   - The title and subtitle container of `igc-list-item` is now a `div`, not a `header` element. Before, Chromium exposed it as a `sectionheader` in each item. The `header` part does not change. [#2439](https://github.com/IgniteUI/igniteui-webcomponents/pull/2439)
+- #### Localization
+  - The calendar, the date picker, the date range picker and the chat now resolve every core resource string of the component. Before, they kept only the strings that also have an older resource name, so a string added to `igniteui-i18n-core` later was `undefined`.
 - #### Navigation drawer
   - When a drawer with a `mini` variant closes, the focus now goes back to the element that had the focus when the drawer opened, such as a menu button in the rail. Before, the drawer closed its dialog while the rail was still hidden, so the focus went to the page body. [#2440](https://github.com/IgniteUI/igniteui-webcomponents/pull/2440)
   - When the platform closes the dialog of a drawer that stays open, the drawer now opens the dialog again. An example is a second Escape when an `igcClosing` handler cancels the close. When the drawer then closes, the focus goes back to the element that had it when the drawer first opened. Before, `open` stayed `true` with a closed dialog, and `show()` did nothing. [#2440](https://github.com/IgniteUI/igniteui-webcomponents/pull/2440)

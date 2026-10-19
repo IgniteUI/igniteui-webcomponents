@@ -683,5 +683,33 @@ describe('Button tests', () => {
 
       expect(native().hasAttribute('aria-label')).to.be.false;
     });
+
+    it('forwards the host `aria-pressed` to the native button', async () => {
+      button.setAttribute('aria-pressed', 'false');
+      await elementUpdated(button);
+      expect(native().getAttribute('aria-pressed')).to.equal('false');
+      await expect(button).to.be.accessible();
+
+      button.ariaPressed = 'true';
+      await elementUpdated(button);
+      expect(native().getAttribute('aria-pressed')).to.equal('true');
+
+      button.removeAttribute('aria-pressed');
+      await elementUpdated(button);
+      expect(native().hasAttribute('aria-pressed')).to.be.false;
+    });
+
+    it('does not forward `aria-pressed` to a link or a disabled link', async () => {
+      button.setAttribute('aria-pressed', 'true');
+      button.href = '/';
+      await elementUpdated(button);
+      expect(native().localName).to.equal('a');
+      expect(native().hasAttribute('aria-pressed')).to.be.false;
+
+      button.disabled = true;
+      await elementUpdated(button);
+      expect(native().getAttribute('role')).to.equal('link');
+      expect(native().hasAttribute('aria-pressed')).to.be.false;
+    });
   });
 });

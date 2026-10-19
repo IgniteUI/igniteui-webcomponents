@@ -16,6 +16,7 @@ import type {
 import {
   type ChatAcceptedFileTypes,
   getFileURL,
+  isAcceptedFileType,
   isImageAttachment,
   parseAcceptedFileTypes,
   revokeFileURL,
@@ -245,9 +246,9 @@ export class ChatState {
   }
 
   /**
-   * Emits the cancelable `igcAttachmentAdded` event.
-   * On success, adds the new files as attachments. On cancel, revokes their
-   * object URLs.
+   * Emits the cancelable `igcAttachmentAdded` event for the new files that
+   * `acceptedFiles` allows, if any. On success, adds them as attachments. On
+   * cancel, revokes their object URLs.
    * @internal
    */
   public attachFilesWithEvent(files: File[]): void {
@@ -257,7 +258,10 @@ export class ChatState {
     );
 
     for (const file of files) {
-      if (fileNames.has(file.name)) {
+      if (
+        fileNames.has(file.name) ||
+        !isAcceptedFileType(file, this._acceptedTypesCache)
+      ) {
         continue;
       }
 
@@ -273,6 +277,10 @@ export class ChatState {
         attachment.thumbnail = url;
       }
       newAttachments.push(attachment);
+    }
+
+    if (isEmpty(newAttachments)) {
+      return;
     }
 
     if (

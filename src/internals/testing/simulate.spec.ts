@@ -209,16 +209,21 @@ export function simulateDoubleClick(node: Element): void {
  * Simulates the user selecting the given files through a native file input,
  * dispatching the resulting `change` event.
  */
-export function simulateFileUpload(
-  input: HTMLInputElement,
-  files: File[]
-): void {
+/** Creates a `DataTransfer` that holds `files`. */
+export function createDataTransfer(files: File[]): DataTransfer {
   const dataTransfer = new DataTransfer();
 
   for (const file of files) {
     dataTransfer.items.add(file);
   }
 
-  input.files = dataTransfer.files;
+  return dataTransfer;
+}
+
+export function simulateFileUpload(
+  input: HTMLInputElement,
+  files: File[]
+): void {
+  input.files = createDataTransfer(files).files;
   input.dispatchEvent(new Event('change', { bubbles: true }));
 }

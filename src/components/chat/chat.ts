@@ -41,6 +41,9 @@ import type {
   IgcChatOptions,
 } from './types.js';
 
+/** The distance from the bottom, in pixels, that still counts as the bottom. */
+const BOTTOM_TOLERANCE = 2;
+
 type DefaultChatRenderers = {
   suggestionPrefix: ChatTemplateRenderer<ChatRenderContext>;
 };
@@ -233,16 +236,7 @@ export default class IgcChatComponent extends EventEmitterMixin<IgcChatComponent
     slots: Slots,
   });
 
-  private readonly _context = addContextProvider(this, {
-    context: chatContext,
-    value: () => this._state,
-  });
-
-  private readonly _userInputContext = addContextProvider(this, {
-    context: chatUserInputContext,
-    value: () => this._state,
-  });
-
+  // Before the context providers, so they publish the strings of the current locale.
   private readonly _i18nController = addI18nController<
     IgcChatResourceStrings | IChatResourceStrings
   >(this, {
@@ -250,11 +244,28 @@ export default class IgcChatComponent extends EventEmitterMixin<IgcChatComponent
     resourceMap: chatResourcesMap,
   });
 
+  // The input and the messages read the labels through this context.
+  private readonly _context = addContextProvider(this, {
+    context: chatContext,
+    value: () => this._state,
+    watch: ['resourceStrings'],
+  });
+
+  private readonly _userInputContext = addContextProvider(this, {
+    context: chatUserInputContext,
+    value: () => this._state,
+  });
+
   @query(IgcChatInputComponent.tagName)
   private readonly _input?: IgcChatInputComponent;
 
   @query('[part="message-area-container"]', true)
   private readonly _scrollContainer!: HTMLElement;
+
+  /** Whether the list follows the newest message. */
+  private _followNewest = true;
+  private _lastScrollTop = 0;
+  private _lastMessageId?: string;
 
   /**
    * The list of chat messages currently displayed.
@@ -342,8 +353,48 @@ export default class IgcChatComponent extends EventEmitterMixin<IgcChatComponent
       ?.scrollIntoView({ block: 'end', inline: 'end' });
   }
 
+  /**
+   * Moves the focus to the text area of the chat input. Does nothing when a
+   * custom `input` renderer replaces the text area.
+   */
+  public focusInput(options?: FocusOptions): void {
+    this._input?.focusInput(options);
+  }
+
+  private _handleScroll(): void {
+    const { scrollTop, scrollHeight, clientHeight } = this._scrollContainer;
+
+    if (scrollHeight - scrollTop - clientHeight <= BOTTOM_TOLERANCE) {
+      this._followNewest = true;
+    } else if (scrollTop < this._lastScrollTop) {
+      // New content and the scroll to the bottom never move the list up.
+      this._followNewest = false;
+    }
+
+    this._lastScrollTop = scrollTop;
+  }
+
+  /** Follows again for a new message of the current user, or for replaced messages. */
+  private _updateFollowNewest(): void {
+    const messages = this._state.messages;
+    const previous = messages.findLastIndex(
+      ({ id }) => id === this._lastMessageId
+    );
+
+    // One update can add a message of the current user and a reply after it.
+    this._followNewest ||=
+      (previous < 0 && this._lastMessageId !== undefined) ||
+      messages
+        .slice(previous + 1)
+        .some((message) => this._state.isCurrentUserMessage(message));
+
+    this._lastMessageId = messages.at(-1)?.id;
+  }
+
   protected override updated(properties: PropertyValues<this>): void {
-    if (this._state.options?.disableAutoScroll) {
+    this._updateFollowNewest();
+
+    if (this._state.options?.disableAutoScroll || !this._followNewest) {
       return;
     }
 
@@ -371,6 +422,11 @@ export default class IgcChatComponent extends EventEmitterMixin<IgcChatComponent
   private _scrollToBottom(): void {
     // Read in the frame, after the layout that the update caused.
     requestAnimationFrame(() => {
+      // The user can scroll up before the frame.
+      if (!this._followNewest) {
+        return;
+      }
+
       const { scrollTop, scrollHeight } = this._scrollContainer;
       this._scrollContainer.scrollBy({ top: scrollHeight - scrollTop });
     });
@@ -513,7 +569,7 @@ export default class IgcChatComponent extends EventEmitterMixin<IgcChatComponent
       <div part="chat-container">
         ${this._renderHeader()}
 
-        <div part="message-area-container">
+        <div part="message-area-container" @scroll=${this._handleScroll}>
           ${cache(
             hasMessages || this._state.options?.isTyping
               ? this._renderMessages()

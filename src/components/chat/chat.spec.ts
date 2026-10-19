@@ -1,13 +1,18 @@
 import { elementUpdated, expect, fixture, nextFrame } from '@open-wc/testing';
 import { html, nothing } from 'lit';
 import { restore, spy, stub, useFakeTimers } from 'sinon';
-import { enterKey, tabKey } from '#internals/controllers/key-bindings.js';
+import {
+  enterKey,
+  spaceBar,
+  tabKey,
+} from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   isFocused,
   suppressResizeObserverLoopError,
 } from '#internals/testing/helpers.spec.js';
 import {
+  createDataTransfer,
   simulateBlur,
   simulateClick,
   simulateFileUpload,
@@ -15,6 +20,7 @@ import {
   simulateInput,
   simulateKeyboard,
   simulatePointerEnter,
+  simulateScroll,
 } from '#internals/testing/simulate.spec.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import { configureTheme } from '#theming/config.js';
@@ -893,6 +899,22 @@ describe('Chat', () => {
       });
     });
 
+    it('emits igcAttachmentClick on `Enter` and `Space` on the attachment header', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      chat.messages = [messages[1]];
+
+      const header = getChatAttachmentDOM(
+        await getFirstAttachments(chat)
+      ).headerButton;
+      expect(header.tabIndex).to.equal(0);
+
+      simulateKeyboard(header, enterKey);
+      simulateKeyboard(header, spaceBar);
+      simulateKeyboard(header, tabKey);
+
+      expect(eventSpy.withArgs('igcAttachmentClick')).calledTwice;
+    });
+
     it('emits igcTypingChange', async () => {
       const clock = useFakeTimers({ now: 0, toFake: ['Date', 'setTimeout'] });
 
@@ -991,6 +1013,33 @@ describe('Chat', () => {
       await elementUpdated(chat);
 
       expect(eventSpy.getCalls()).is.empty;
+    });
+
+    it('leaves `Enter` and `Space` to a control in a custom attachment header', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      chat.options = {
+        renderers: {
+          attachmentHeader: ({ attachment }) =>
+            html`<input aria-label=${attachment.name} />`,
+        },
+      };
+      chat.messages = [messages[1]];
+
+      const input = (await getFirstAttachments(chat)).renderRoot.querySelector(
+        'input'
+      )!;
+
+      for (const key of [enterKey, spaceBar]) {
+        const event = new KeyboardEvent('keydown', {
+          key,
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+        });
+        input.dispatchEvent(event);
+        expect(event.defaultPrevented, key).to.be.false;
+      }
+      expect(eventSpy).not.calledWith('igcAttachmentClick');
     });
 
     it('emits igcInputFocus', async () => {
@@ -1127,6 +1176,56 @@ describe('Chat', () => {
       expect(header.textContent?.trim()).to.equal('Try these');
     });
 
+    it('names the input controls from the resource strings', async () => {
+      simulateFileUpload(getChatDOM(chat).input.fileInput, [files[0]]);
+      await elementUpdated(chat);
+
+      const labels = () => {
+        const { self, textarea, attachButton, fileInput, sendButton, chips } =
+          getChatDOM(chat).input;
+
+        return [
+          textarea,
+          attachButton,
+          fileInput,
+          sendButton,
+          self.renderRoot.querySelector('[part="attachments"]'),
+          chips[0].renderRoot.querySelector('[role="button"]'),
+        ].map((element) => element?.getAttribute('aria-label'));
+      };
+
+      await elementUpdated(getChatDOM(chat).input.chips[0]);
+      expect(labels()).to.eql([
+        'Chat text input',
+        'Attach files',
+        'Upload button',
+        'Send message',
+        'Attachments',
+        'Remove test.txt',
+      ]);
+
+      chat.resourceStrings = {
+        chat_input_label: 'Nachricht',
+        chat_attach_files: 'Dateien anhängen',
+        chat_file_input_label: 'Hochladen',
+        chat_send_message: 'Senden',
+        chat_attachments_list_label: 'Anhänge',
+        chat_remove_attachment: '{0} entfernen',
+      };
+      await elementUpdated(chat);
+      await elementUpdated(getChatDOM(chat).input.self);
+      await elementUpdated(getChatDOM(chat).input.chips[0]);
+
+      expect(labels()).to.eql([
+        'Nachricht',
+        'Dateien anhängen',
+        'Hochladen',
+        'Senden',
+        'Anhänge',
+        'test.txt entfernen',
+      ]);
+    });
+
     it('renders a custom `suggestionPrefix` renderer', async () => {
       chat.options = {
         suggestions: ['Suggestion 1'],
@@ -1185,6 +1284,23 @@ describe('Chat', () => {
       expect(getChatDOM(chat).messageList).to.be.null;
     });
 
+    it('`focusInput` moves the focus to the text area', () => {
+      chat.focusInput();
+
+      expect(isFocused(getChatDOM(chat).input.textarea)).to.be.true;
+    });
+
+    it('`focusInput` does nothing when a custom renderer replaces the text area', async () => {
+      chat.options = {
+        renderers: { input: () => html`<textarea></textarea>` },
+      };
+      await elementUpdated(chat);
+      await elementUpdated(getChatDOM(chat).input.self);
+
+      expect(() => chat.focusInput()).not.to.throw();
+      expect(chat.matches(':focus-within')).to.be.false;
+    });
+
     it('does not send a message on `Enter` when the input is empty', async () => {
       const eventSpy = spy(chat, 'emitEvent');
       const textArea = getChatDOM(chat).input.textarea;
@@ -1220,6 +1336,50 @@ describe('Chat', () => {
         'image.png',
       ]);
       expect(getChatDOM(chat).input.chips).lengthOf(2);
+    });
+
+    it('attaches only the picked files that `acceptedFiles` allows', async () => {
+      chat.options = { acceptedFiles: 'image/*' };
+      await elementUpdated(chat);
+      const eventSpy = spy(chat, 'emitEvent');
+
+      simulateFileUpload(getChatDOM(chat).input.fileInput, files);
+      await elementUpdated(chat);
+
+      expect(chat.draftMessage.attachments?.map(({ name }) => name)).to.eql([
+        'image.png',
+      ]);
+      const added = eventSpy.withArgs('igcAttachmentAdded').firstCall.args[1]
+        ?.detail as IgcChatMessageAttachment[];
+      expect(added.map(({ name }) => name)).to.eql(['image.png']);
+    });
+
+    it('emits no igcAttachmentAdded for a drop without new accepted files', async () => {
+      chat.options = { acceptedFiles: '.txt' };
+      simulateFileUpload(getChatDOM(chat).input.fileInput, [files[0]]);
+      await elementUpdated(chat);
+      const eventSpy = spy(chat, 'emitEvent');
+
+      getDropZone().dispatchEvent(
+        createDragEvent('drop', {}, createDataTransfer(files))
+      );
+      await elementUpdated(chat);
+
+      expect(eventSpy).calledWith('igcAttachmentDrop');
+      expect(eventSpy).not.calledWith('igcAttachmentAdded');
+      expect(getChatDOM(chat).input.chips).lengthOf(1);
+    });
+
+    it('emits no igcAttachmentAdded when `acceptedFiles` allows no picked file', async () => {
+      chat.options = { acceptedFiles: '.pdf' };
+      await elementUpdated(chat);
+      const eventSpy = spy(chat, 'emitEvent');
+
+      simulateFileUpload(getChatDOM(chat).input.fileInput, files);
+      await elementUpdated(chat);
+
+      expect(eventSpy).not.calledWith('igcAttachmentAdded');
+      expect(chat.draftMessage.attachments).to.be.empty;
     });
 
     it('accepts any dropped file when `acceptedFiles` is not set', async () => {
@@ -1333,6 +1493,34 @@ describe('Chat', () => {
         chat.renderRoot.querySelectorAll(IgcTooltipComponent.tagName)
       ).lengthOf(1);
       expect(tooltips[0].message).to.equal(chat_reaction_like);
+    });
+
+    it('names the message actions and exposes the like and dislike state', async () => {
+      chat.messages = [{ ...messages[0], reactions: [] }];
+      await elementUpdated(chat);
+
+      const message = getChatDOM(chat).messages[0];
+      const state = () =>
+        getChatMessageDOM(message).defaultActionButtons.map((button) => [
+          button.getAttribute('aria-label'),
+          button.getAttribute('aria-pressed'),
+        ]);
+
+      expect(state()).to.eql([
+        ['Copy', null],
+        ['Like', 'false'],
+        ['Dislike', 'false'],
+        ['Regenerate', null],
+      ]);
+
+      simulateClick(getActionButton(message, 'thumb_up_inactive'));
+      await elementUpdated(message);
+      expect(state()[1]).to.eql(['Like', 'true']);
+
+      chat.resourceStrings = { chat_reaction_like: 'Gefällt mir' };
+      await elementUpdated(chat);
+      await elementUpdated(message);
+      expect(state()[1]).to.eql(['Gefällt mir', 'true']);
     });
 
     it('toggles an active dislike back to inactive', async () => {
@@ -1545,6 +1733,30 @@ describe('Chat', () => {
       expect(
         attachment.renderRoot.querySelector('img')!.getAttribute('src')
       ).to.equal('');
+    });
+
+    it('renders an attachment with an image MIME type as an image', async () => {
+      chat.messages = [
+        {
+          id: 'mime',
+          text: 'Files',
+          sender: 'bot',
+          attachments: [
+            { id: 'photo', name: 'photo', type: 'image/png' },
+            { id: 'invoice', name: 'invoice', type: 'application/pdf' },
+          ],
+        },
+      ];
+
+      const attachment = await getFirstAttachments(chat);
+
+      const icons = Array.from(
+        attachment.renderRoot.querySelectorAll('[part="attachment-icon"]'),
+        (icon) => icon.getAttribute('name')
+      );
+
+      expect(attachment.renderRoot.querySelectorAll('img')).lengthOf(1);
+      expect(icons).to.eql(['attach_image', 'document_thumbnail']);
     });
 
     it('renders the generic file icon for a name without an extension', async () => {
@@ -1761,6 +1973,109 @@ describe('Chat', () => {
       await nextFrame();
 
       expect(scrollBy.callCount).to.equal(1);
+    });
+  });
+
+  describe('Automatic scrolling', () => {
+    const createMessages = (prefix: string): IgcChatMessage[] =>
+      Array.from({ length: 30 }, (_, i) => ({
+        id: `${prefix}-${i}`,
+        text: `Message ${i}`,
+        sender: 'bot',
+      }));
+
+    const setMessages = async (value: IgcChatMessage[]) => {
+      chat.messages = value;
+      await elementUpdated(chat);
+      await nextFrame();
+      await nextFrame();
+    };
+
+    const appendMessage = (sender = 'bot') =>
+      setMessages([...chat.messages, { id: 'new', text: 'New', sender }]);
+
+    const expectAtBottom = () => {
+      const { scrollHeight, scrollTop, clientHeight } =
+        getChatDOM(chat).messageArea;
+      expect(scrollHeight - scrollTop - clientHeight).to.be.at.most(2);
+    };
+
+    beforeEach(async () => {
+      chat.style.height = '300px';
+      await setMessages(createMessages('first'));
+    });
+
+    it('follows the newest message while the list is at the bottom', async () => {
+      expectAtBottom();
+
+      await appendMessage();
+
+      expectAtBottom();
+    });
+
+    it('keeps the position after the user scrolls up', async () => {
+      const { messageArea } = getChatDOM(chat);
+      await simulateScroll(messageArea, { top: 0 });
+
+      await appendMessage();
+      chat.options = { isTyping: true, suggestions: ['Yes'] };
+      await elementUpdated(chat);
+      await nextFrame();
+
+      expect(messageArea.scrollTop).to.equal(0);
+    });
+
+    it('follows the newest message again after the user scrolls to the bottom', async () => {
+      const { messageArea } = getChatDOM(chat);
+      await simulateScroll(messageArea, { top: 0 });
+      await simulateScroll(messageArea, { top: messageArea.scrollHeight });
+
+      await appendMessage();
+
+      expectAtBottom();
+    });
+
+    it('scrolls to a new message of the current user', async () => {
+      await simulateScroll(getChatDOM(chat).messageArea, { top: 0 });
+
+      await appendMessage('user');
+
+      expectAtBottom();
+    });
+
+    it('scrolls to a message of the current user that comes with a reply', async () => {
+      await simulateScroll(getChatDOM(chat).messageArea, { top: 0 });
+
+      await setMessages([
+        ...chat.messages,
+        { id: 'mine', text: 'Mine', sender: 'user' },
+        { id: 'reply', text: 'Reply', sender: 'bot' },
+      ]);
+
+      expectAtBottom();
+    });
+
+    it('drops a queued scroll when the user scrolls up before the frame', async () => {
+      const { messageArea } = getChatDOM(chat);
+
+      chat.messages = [
+        ...chat.messages,
+        { id: 'new', text: 'New', sender: 'bot' },
+      ];
+      await elementUpdated(chat);
+      // The scroll to the bottom waits for the next frame.
+      await simulateScroll(messageArea, { top: 0 });
+      await nextFrame();
+
+      expect(messageArea.scrollTop).to.equal(0);
+    });
+
+    it('scrolls to the bottom when the messages are replaced', async () => {
+      await simulateScroll(getChatDOM(chat).messageArea, { top: 0 });
+
+      await setMessages(createMessages('second'));
+
+      expectAtBottom();
     });
   });
 
@@ -2065,6 +2380,11 @@ function getChatDOM(chat: IgcChatComponent) {
       get fileInput() {
         return inputArea.renderRoot.querySelector('input')!;
       },
+      get attachButton() {
+        return inputArea.renderRoot.querySelector<IgcIconButtonComponent>(
+          '[name="attach_file"]'
+        )!;
+      },
       get sendButton() {
         return inputArea.renderRoot.querySelector<IgcIconButtonComponent>(
           '[name="send_message"]'
@@ -2081,6 +2401,11 @@ function getChatDOM(chat: IgcChatComponent) {
     },
     get messageList() {
       return root.querySelector<HTMLElement>('[part="message-list"]')!;
+    },
+    get messageArea() {
+      return root.querySelector<HTMLElement>(
+        '[part="message-area-container"]'
+      )!;
     },
     get messages() {
       return Array.from(root.querySelectorAll(IgcChatMessageComponent.tagName));
@@ -2134,12 +2459,28 @@ function getChatMessageDOM(message: IgcChatMessageComponent) {
   };
 }
 
+/** The rendered attachments of the first message of `chat`. */
+async function getFirstAttachments(
+  chat: IgcChatComponent
+): Promise<IgcMessageAttachmentsComponent> {
+  await elementUpdated(chat);
+
+  const attachments = getChatMessageDOM(getChatDOM(chat).messages[0])
+    .attachments[0];
+  await elementUpdated(attachments);
+
+  return attachments;
+}
+
 function getChatAttachmentDOM(attachment: IgcMessageAttachmentsComponent) {
   const root = attachment.renderRoot;
 
   return {
     get header() {
       return root.querySelector<HTMLElement>('[part="details"]')!;
+    },
+    get headerButton() {
+      return root.querySelector<HTMLElement>('[part~="attachment-header"]')!;
     },
     get content() {
       return root.querySelector<HTMLElement>('[part~="attachment-content"]')!;
