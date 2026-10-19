@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A theme change now updates only the components that render differently for each theme. A `configureTheme()` call with the active theme and variant does not update the components.
   - The component styles no longer have vendor prefixes for KaiOS, Opera Mini, UC Browser and QQ Browser. The library does not support these browsers.
   - The minimum versions of the optional peer dependencies are now `dompurify` 3.4.16, `marked` 18.1.0 and `shiki` 4.5.0. [#2450](https://github.com/IgniteUI/igniteui-webcomponents/pull/2450)
+  - The components no longer register their English resource strings with `igniteui-i18n-core`. They still show their English strings for the keys that a locale does not have. `getCurrentResourceStrings()` of `igniteui-i18n-core` now returns only the strings that you register.
   - The package now depends on `igniteui-i18n-core` 2.0, which has the new chat resource strings. If you register languages from `igniteui-i18n-resources`, update it to 2.0 too.
   - The carousel, chat, chip, combo, file input and tree no longer bundle the date formatter of `igniteui-i18n-core`, because they use only resource strings. The bundle of each of these components is approximately 7 KB smaller after minification.
 - #### Snackbar, Toast
@@ -137,6 +138,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The date picker and the date range picker now give the calendar strings of `resourceStrings` to their calendar. Before, the calendar used its default strings, so for example a custom `calendar_previous_month` did not name the navigation button.
   - A date time input that is not in the document during a change of the global locale now uses the new locale when it is added again. Before, it kept the mask of the previous locale.
   - The API documentation now shows the type of `resourceStrings` for the calendar, carousel, chip, combo, file input and tree. Before, it showed `TGet`.
+  - English strings that you register with `registerI18n(strings, 'en-US')` before the first instance of a component is created now apply. Before, that instance registered the default English strings of the component over them.
 - #### Navigation drawer
   - When a drawer with a `mini` variant closes, the focus now goes back to the element that had the focus when the drawer opened, such as a menu button in the rail. Before, the drawer closed its dialog while the rail was still hidden, so the focus went to the page body. [#2440](https://github.com/IgniteUI/igniteui-webcomponents/pull/2440)
   - When the platform closes the dialog of a drawer that stays open, the drawer now opens the dialog again. An example is a second Escape when an `igcClosing` handler cancels the close. When the drawer then closes, the focus goes back to the element that had it when the drawer first opened. Before, `open` stayed `true` with a closed dialog, and `show()` did nothing. [#2440](https://github.com/IgniteUI/igniteui-webcomponents/pull/2440)

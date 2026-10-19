@@ -723,7 +723,7 @@ describe('Date picker', () => {
         );
       });
 
-      it('registers its default resource strings only once', async () => {
+      it('does not register resource strings', async () => {
         const register = spy(getI18nManager(), 'registerI18n');
 
         try {
