@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Chat
   - `focusInput()` moves the focus to the text area of the chat input, for example after an application inserts text into `draftMessage`. It does nothing when a custom `input` renderer replaces the text area.
   - `locale` sets the locale of the resource strings for one chat. Without it, the chat follows the global locale.
+- #### Color picker, Dialog, Splitter, Tile manager, Tooltip
+  - `locale` and `resourceStrings` localize the default texts: the accessible labels of the color picker (its buttons, dialog, sliders, canvas marker, alpha input and format select), the default action of the dialog, the default name of the splitter bar, the names of the maximize and fullscreen actions of a tile, and the name of the close button of a sticky tooltip. The strings come from `igniteui-i18n-core`, and the languages from `igniteui-i18n-resources`. Before, these texts were always in English.
 - #### Combo
   - The group header template receives the group as `key`, the value that the items of the group share in the `groupKey` field. `groupHeaderTemplate` has the new `ComboGroupHeaderTemplate` type, and its context has the new `ComboGroupHeaderContext` type. Your current templates continue to work. [#2462](https://github.com/IgniteUI/igniteui-webcomponents/issues/2462)
 - #### Library
@@ -26,7 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - #### Avatar, Badge, Carousel
-  - The avatar, the badge and the carousel slide no longer have an `aria-roledescription`. Screen readers now announce the role of the element ("image", "status" or "tab panel") in the language of the user. Before, they announced the English words "avatar", "badge" and "slide" in all languages. The carousel keeps its "carousel" role description. To set a role description, put an `aria-roledescription` attribute on the element.
+  - The avatar, the badge and the carousel slide no longer have an `aria-roledescription`. Screen readers now announce the role of the element ("image", "status" or "tab panel") in the language of the user. Before, they announced the English words "avatar", "badge" and "slide" in all languages. The carousel keeps its role description, which now comes from the `carousel_role_description` resource string, so it follows `locale`. To set a role description, put an `aria-roledescription` attribute on the element.
 - #### Date picker, Date range picker
   - In TypeScript, the core strings that `resourceStrings` returns now have the type `string`, as in the calendar. Before, their type was `string | undefined`, although the component always resolves them.
 - #### Library
@@ -36,7 +38,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The component styles no longer have vendor prefixes for KaiOS, Opera Mini, UC Browser and QQ Browser. The library does not support these browsers.
   - The minimum versions of the optional peer dependencies are now `dompurify` 3.4.16, `marked` 18.1.0 and `shiki` 4.5.0. [#2450](https://github.com/IgniteUI/igniteui-webcomponents/pull/2450)
   - The components no longer register their English resource strings with `igniteui-i18n-core`. They still show their English strings for the keys that a locale does not have. `getCurrentResourceStrings()` of `igniteui-i18n-core` now returns only the strings that you register.
-  - The package now depends on `igniteui-i18n-core` 2.0, which has the new chat resource strings. If you register languages from `igniteui-i18n-resources`, update it to 2.0 too.
+  - The package now depends on `igniteui-i18n-core` 2.0, which has the new resource strings of the carousel, chat, color picker, dialog, splitter, tile and tooltip. If you register languages from `igniteui-i18n-resources`, update it to 2.0 too.
   - The carousel, chat, chip, combo, file input and tree no longer bundle the date formatter of `igniteui-i18n-core`, because they use only resource strings. The bundle of each of these components is approximately 7 KB smaller after minification.
 - #### Snackbar, Toast
   - The display time now stops while the pointer is on the component or the keyboard focus is in it. It starts again in full when both leave. Before, the component closed under the pointer, and a keyboard user could lose the snackbar action before they got to it. A pointer click on the action does not keep the component open, also when the action has the keyboard focus. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)

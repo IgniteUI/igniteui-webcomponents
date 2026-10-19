@@ -39,6 +39,8 @@
     - [Nested splitters tests](#nested-splitters-tests)
     - [RTL tests](#rtl-tests)
     - [Edge scenarios](#edge-scenarios)
+    - [Host ARIA](#host-aria)
+    - [Localization](#localization-1)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
     - [Keyboard support](#keyboard-support)
@@ -50,6 +52,7 @@
 | ------: | ---------- | --------------------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                                           |
 |       2 | 2026-10-07 | Host ARIA names and describes the bar, no English state text    |
+|       3 | 2026-10-19 | Localize the default name of the bar                            |
 
 ## Overview
 
@@ -254,8 +257,14 @@ Nested splitters operate independently; a resize in one does not disturb the oth
 
 ### Localization
 
-The splitter has one text: "Resize panes", the English default name of the bar. Set `aria-labelledby` or `aria-label`
-on the splitter to give the bar a localized name. All visual elements are icon-based.
+The splitter takes its resource strings from the `igniteui-i18n-core` package through the `locale` and
+`resourceStrings` properties. Without an explicit `locale`, it falls back to the global locale of the library.
+
+| Key                     | Default English value | Used for                     |
+| ----------------------- | --------------------- | ---------------------------- |
+| `splitter_resize_panes` | Resize panes          | The default name of the bar. |
+
+A host `aria-labelledby` or `aria-label` replaces the default name. All visual elements are icon-based.
 
 ### Keyboard interactions
 
@@ -291,6 +300,8 @@ on the splitter to give the bar a localized name. All visual elements are icon-b
 | endMaxSize          | end-max-size          | No        | `string \| undefined`       | -            | The maximum display size for the end pane.                                  |
 | startCollapsed      | start-collapsed       | Yes       | `boolean`                   | false        | Gets/sets the collapsed state of the start pane.                            |
 | endCollapsed        | end-collapsed         | Yes       | `boolean`                   | false        | Gets/sets the collapsed state of the end pane.                              |
+| locale              | locale                | No        | `string`                    | -            | The locale for the resource strings. Falls back to the global locale.       |
+| resourceStrings     | -                     | No        | `ISplitterResourceStrings`  | EN           | The resource strings for localization.                                      |
 
 ### Methods
 
@@ -438,6 +449,10 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 30. The host `aria-labelledby` names the bar by element reference, before the host `aria-label`, and the host
     `aria-describedby` describes it. A removal of either is followed.
 
+### Localization
+
+31. The bar takes its default name from the strings of `locale` and from `resourceStrings`.
+
 ## Accessibility
 
 ### ARIA roles and properties
@@ -452,7 +467,8 @@ properties are present on the splitter bar:
 - the **aria-valuenow**, **aria-valuemin** and **aria-valuemax** attributes report the current position, the size of
   the start pane in percent. **aria-valuetext** adds the percent sign. The value is 0 while the start pane is collapsed
   and 100 while the end pane is collapsed.
-- the bar takes its name from the host `aria-labelledby`, then the host `aria-label`, and otherwise "Resize panes". As
+- the bar takes its name from the host `aria-labelledby`, then the host `aria-label`, and otherwise the
+  `splitter_resize_panes` resource string ("Resize panes" in English). As
   the window splitter pattern suggests, point `aria-labelledby` at the label of the start pane, so that nested
   splitters have different names. A host `aria-describedby` describes the bar. Both relations use element references,
   and a change of the host attributes at runtime is picked up.

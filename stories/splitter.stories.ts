@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 
 import {
@@ -127,6 +128,12 @@ const metadata: Meta<IgcSplitterComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    locale: {
+      type: 'string',
+      description:
+        'The locale for the resource strings and the locale-aware formatting.\nFalls back to the global locale.',
+      control: 'text',
+    },
   },
   args: {
     orientation: 'horizontal',
@@ -232,6 +239,11 @@ interface IgcSplitterArgs {
    * collapse or expand the pane programmatically.
    */
   endCollapsed: boolean;
+  /**
+   * The locale for the resource strings and the locale-aware formatting.
+   * Falls back to the global locale.
+   */
+  locale: string;
 }
 type Story = StoryObj<IgcSplitterArgs>;
 
@@ -329,6 +341,7 @@ export const Default: Story = {
       .startMaxSize=${args.startMaxSize}
       .endMinSize=${args.endMinSize}
       .endMaxSize=${args.endMaxSize}
+      locale=${ifDefined(args.locale)}
     >
       <section
         slot="start"

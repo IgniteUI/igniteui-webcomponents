@@ -1,3 +1,4 @@
+import { SplitterResourceStringsEN } from 'igniteui-i18n-core';
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -22,6 +23,7 @@ import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
 import { isLTR, resolveCssLength } from '#internals/utils/dom.js';
 import { preventDefault } from '#internals/utils/events.js';
@@ -85,6 +87,10 @@ const DEFAULT_RESIZE_STATE: SplitterResizeState = {
   endPane: null,
   dragStartPosition: { x: 0, y: 0 },
   dragPointerId: -1,
+};
+
+const i18n = {
+  defaultEN: SplitterResourceStringsEN,
 };
 
 /**
@@ -172,8 +178,9 @@ const DEFAULT_RESIZE_STATE: SplitterResizeState = {
  * A part name is therefore not tied to a fixed side: with the end pane
  * collapsed, `end-expand-btn` lands on the *first* of the two.
  */
-export default class IgcSplitterComponent extends EventEmitterMixin<IgcSplitterComponentEventMap>(
-  HostAriaMixin(LitElement)
+export default class IgcSplitterComponent extends I18nMixin(
+  EventEmitterMixin<IgcSplitterComponentEventMap>(HostAriaMixin(LitElement)),
+  i18n
 ) {
   public static readonly tagName = 'igc-splitter';
   public static override styles = [componentBase, styles, shared];
@@ -1068,7 +1075,11 @@ export default class IgcSplitterComponent extends EventEmitterMixin<IgcSplitterC
     return html`
       <div
         ${ref(this._separatorRef)}
-        ${ariaBindings(hostAria(this, { fallback: 'Resize panes' }))}
+        ${ariaBindings(
+          hostAria(this, {
+            fallback: this.resourceStrings.splitter_resize_panes,
+          })
+        )}
         part="splitter-bar"
         role="separator"
         tabindex=${this.disableCollapse && this.disableResize ? -1 : 0}

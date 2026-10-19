@@ -33,6 +33,7 @@
     - [Events and behaviors](#events-and-behaviors)
     - [Form](#form)
     - [Host ARIA](#host-aria)
+    - [Localization](#localization-1)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -48,6 +49,7 @@
 |       2 | 2026-10-02 | Follow a change of `aria-label`                           |
 |       3 | 2026-10-02 | Forward the host `aria-labelledby` and `aria-describedby` |
 |       4 | 2026-10-06 | Open the dialog again after a close that it cannot cancel |
+|       5 | 2026-10-19 | Localize the default action through `igniteui-i18n-core`  |
 
 ## Overview
 
@@ -204,8 +206,14 @@ calling `hide()`.
 
 ### Localization
 
-None applicable beyond the default action. The title, the message, the content and any custom actions come from the
-application.
+The dialog takes its resource strings from the `igniteui-i18n-core` package through the `locale` and
+`resourceStrings` properties. Without an explicit `locale`, it falls back to the global locale of the library.
+
+| Key                     | Default English value | Used for                               |
+| ----------------------- | --------------------- | -------------------------------------- |
+| `dialog_default_action` | OK                    | The text of the default action button. |
+
+The title, the message, the content and any custom actions come from the application.
 
 ### Keyboard interactions
 
@@ -226,6 +234,8 @@ application.
 | closeOnOutsideClick | close-on-outside-click  | No        | `boolean`             | false   | When set, clicking the backdrop closes the dialog.                       |
 | hideDefaultAction   | hide-default-action     | No        | `boolean`             | false   | When set, the built-in OK button is not rendered.                        |
 | returnValue         | -                       | No        | `string \| undefined` | -       | The return value of the dialog.                                          |
+| locale              | locale                  | No        | `string`              | -       | The locale for the resource strings. Falls back to the global locale.    |
+| resourceStrings     | -                       | No        | `IDialogResourceStrings` | EN      | The resource strings for localization.                                   |
 
 ### Methods
 
@@ -311,6 +321,10 @@ The suite lives in [`dialog.spec.ts`](./dialog.spec.ts) and runs in a real brows
 
 15. `aria-labelledby` wins over `aria-label` and the title, an empty `aria-label` keeps the title, and the host
     `aria-describedby` describes the dialog.
+
+### Localization
+
+16. The default action renders in English, in the strings of `locale`, and from `resourceStrings`.
 
 ### Not covered by the suite
 

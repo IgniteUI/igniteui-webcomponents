@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { range } from 'lit/directives/range.js';
 import { ref } from 'lit/directives/ref.js';
 
@@ -78,6 +79,12 @@ const metadata: Meta<IgcColorPickerComponent> = {
       options: ['default', 'input'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'default' } },
+    },
+    locale: {
+      type: 'string',
+      description:
+        'The locale for the resource strings and the locale-aware formatting.\nFalls back to the global locale.',
+      control: 'text',
     },
     required: {
       type: 'boolean',
@@ -167,6 +174,11 @@ interface IgcColorPickerArgs {
    * also opens the picker.
    */
   mode: 'default' | 'input';
+  /**
+   * The locale for the resource strings and the locale-aware formatting.
+   * Falls back to the global locale.
+   */
+  locale: string;
   /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name of the control, submitted with the form data. */
@@ -287,6 +299,7 @@ export const Default: Story = {
         .format=${args.format}
         .mode=${args.mode}
         .scrollStrategy=${args.scrollStrategy}
+        locale=${ifDefined(args.locale)}
         ?hide-formats=${args.hideFormats}
         ?show-alpha=${args.showAlpha}
         ?required=${args.required}

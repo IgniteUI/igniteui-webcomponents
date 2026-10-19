@@ -50,6 +50,7 @@
 | ------: | ---------- | --------------------------------- |
 |       1 | 2026-09-21 | Initial specification             |
 |       2 | 2026-10-14 | No role description on the slides |
+|       3 | 2026-10-19 | Role description from `carousel_role_description` |
 
 ## Overview
 
@@ -212,6 +213,7 @@ The carousel takes its resource strings from the `igniteui-i18n-core` package th
 | `carousel_of`             | of                    | The default slide label, as `{0} of {1}`.         |
 | `carousel_previous_slide` | previous slide        | The label of the previous navigation button.      |
 | `carousel_next_slide`     | next slide            | The label of the next navigation button.          |
+| `carousel_role_description` | carousel              | The role description of the carousel.            |
 
 The `indicatorsLabelFormat` and `slidesLabelFormat` properties override the two composed labels. `{0}` is replaced
 with the index of the slide and `{1}` with the total number of slides.
@@ -336,7 +338,7 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 ### Initialization
 
 1. The component passes the accessibility audit and is initialized with its default state. The carousel has a
-   role description and its slides have none.
+   role description from the strings of its locale, and its slides have none.
 2. The carousel, its slides and its controls render correctly, and a slide renders correctly in both its active
    and its inactive state.
 3. `hideIndicators` and `hideNavigation` skip rendering the respective controls.
@@ -413,8 +415,8 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 
 - `animationType` is not asserted per value; the suite exercises the default `slide` animation.
 - `indicatorsOrientation` and `vertical` are covered only indirectly, through the swipe and the rendering tests.
-- The `locale` and `resourceStrings` properties are not covered; the labels are asserted against the default
-  English values and the format properties.
+- Of the `locale` and `resourceStrings` properties, only the role description is covered; the labels are asserted
+  against the default English values and the format properties.
 
 ## Assumptions and limitations
 
@@ -428,7 +430,8 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 
 ### ARIA roles and properties
 
-- The carousel has `role="region"` and `aria-roledescription="carousel"`.
+- The carousel has `role="region"` and an `aria-roledescription` from `carousel_role_description` ("carousel" in
+  English).
 - A slide has `role="tabpanel"` and a label composed from `slidesLabelFormat`. It has no role description, as in the
   WAI-ARIA APG tabbed carousel pattern, where slides with the tab panel role have none.
 - The indicator container has `role="tablist"`, and each indicator has `role="tab"`, `aria-selected` for its

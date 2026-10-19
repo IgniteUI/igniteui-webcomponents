@@ -6,6 +6,8 @@ import {
   oneEvent,
   waitUntil,
 } from '@open-wc/testing';
+import { DialogResourceStringsEN, registerI18n } from 'igniteui-i18n-core';
+import { DialogResourceStringsBG } from 'igniteui-i18n-resources';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
@@ -60,6 +62,41 @@ describe('Dialog', () => {
         .attribute('aria-label')
         .to.equal('Keyboard shortcuts');
       expect(nativeDialog).not.to.have.attribute('aria-labelledby');
+    });
+  });
+
+  describe('Localization', () => {
+    const defaultAction = () =>
+      dialog.renderRoot.querySelector('footer igc-button')!.textContent!.trim();
+
+    before(() => registerI18n(DialogResourceStringsBG, 'bg'));
+
+    beforeEach(async () => {
+      dialog = await fixture<IgcDialogComponent>(
+        html`<igc-dialog></igc-dialog>`
+      );
+    });
+
+    it('renders the English default action', () => {
+      expect(defaultAction()).to.equal(
+        DialogResourceStringsEN.dialog_default_action
+      );
+    });
+
+    it('renders the default action in its locale', async () => {
+      dialog.locale = 'bg';
+      await elementUpdated(dialog);
+
+      expect(defaultAction()).to.equal(
+        DialogResourceStringsBG.dialog_default_action
+      );
+    });
+
+    it('takes the default action from `resourceStrings`', async () => {
+      dialog.resourceStrings = { dialog_default_action: 'Done' };
+      await elementUpdated(dialog);
+
+      expect(defaultAction()).to.equal('Done');
     });
   });
 
