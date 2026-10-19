@@ -444,15 +444,17 @@ The component exposes a part for every region it renders. The main groups are:
     emit no `igcAttachmentAdded` when no file remains.
 31. An attachment with an image MIME type in `type` renders as an image.
 32. The header of an attachment is in the tab order, and <kbd>Enter</kbd> and <kbd>Space</kbd> on it emit
-    `igcAttachmentClick`.
+    `igcAttachmentClick`. <kbd>Enter</kbd> and <kbd>Space</kbd> from inside a custom `attachmentHeader` do not
+    activate the header.
 33. `focusInput()` focuses the text area, and does nothing when a custom `input` renderer replaces it.
 
 ### Automatic scrolling
 
 34. The list follows the newest message while it is at the bottom, keeps its position after the user scrolls up,
-    and follows again after the user scrolls back to the bottom.
-35. A new message of the current user, and a new `messages` array without the previous last message, scroll the
-    list to the bottom.
+    also when the user scrolls up before a queued scroll runs, and follows again after the user scrolls back to the
+    bottom.
+35. A new message of the current user, also with a reply after it in the same update, and a new `messages` array
+    without the previous last message, scroll the list to the bottom.
 
 ### Names
 

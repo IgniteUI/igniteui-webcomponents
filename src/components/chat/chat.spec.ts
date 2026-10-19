@@ -1015,6 +1015,33 @@ describe('Chat', () => {
       expect(eventSpy.getCalls()).is.empty;
     });
 
+    it('leaves `Enter` and `Space` to a control in a custom attachment header', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      chat.options = {
+        renderers: {
+          attachmentHeader: ({ attachment }) =>
+            html`<input aria-label=${attachment.name} />`,
+        },
+      };
+      chat.messages = [messages[1]];
+
+      const input = (await getFirstAttachments(chat)).renderRoot.querySelector(
+        'input'
+      )!;
+
+      for (const key of [enterKey, spaceBar]) {
+        const event = new KeyboardEvent('keydown', {
+          key,
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+        });
+        input.dispatchEvent(event);
+        expect(event.defaultPrevented, key).to.be.false;
+      }
+      expect(eventSpy).not.calledWith('igcAttachmentClick');
+    });
+
     it('emits igcInputFocus', async () => {
       const eventSpy = spy(chat, 'emitEvent');
 
@@ -2014,6 +2041,33 @@ describe('Chat', () => {
       await appendMessage('user');
 
       expectAtBottom();
+    });
+
+    it('scrolls to a message of the current user that comes with a reply', async () => {
+      await simulateScroll(getChatDOM(chat).messageArea, { top: 0 });
+
+      await setMessages([
+        ...chat.messages,
+        { id: 'mine', text: 'Mine', sender: 'user' },
+        { id: 'reply', text: 'Reply', sender: 'bot' },
+      ]);
+
+      expectAtBottom();
+    });
+
+    it('drops a queued scroll when the user scrolls up before the frame', async () => {
+      const { messageArea } = getChatDOM(chat);
+
+      chat.messages = [
+        ...chat.messages,
+        { id: 'new', text: 'New', sender: 'bot' },
+      ];
+      await elementUpdated(chat);
+      // The scroll to the bottom waits for the next frame.
+      await simulateScroll(messageArea, { top: 0 });
+      await nextFrame();
+
+      expect(messageArea.scrollTop).to.equal(0);
     });
 
     it('scrolls to the bottom when the messages are replaced', async () => {

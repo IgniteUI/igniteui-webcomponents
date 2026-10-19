@@ -377,21 +377,18 @@ export default class IgcChatComponent extends EventEmitterMixin<IgcChatComponent
   /** Follows again for a new message of the current user, or for replaced messages. */
   private _updateFollowNewest(): void {
     const messages = this._state.messages;
-    const last = messages.at(-1);
+    const previous = messages.findLastIndex(
+      ({ id }) => id === this._lastMessageId
+    );
 
-    if (last?.id === this._lastMessageId) {
-      return;
-    }
+    // One update can add a message of the current user and a reply after it.
+    this._followNewest ||=
+      (previous < 0 && this._lastMessageId !== undefined) ||
+      messages
+        .slice(previous + 1)
+        .some((message) => this._state.isCurrentUserMessage(message));
 
-    const replaced =
-      this._lastMessageId !== undefined &&
-      !messages.some(({ id }) => id === this._lastMessageId);
-
-    if (replaced || (last && this._state.isCurrentUserMessage(last))) {
-      this._followNewest = true;
-    }
-
-    this._lastMessageId = last?.id;
+    this._lastMessageId = messages.at(-1)?.id;
   }
 
   protected override updated(properties: PropertyValues<this>): void {
@@ -425,6 +422,11 @@ export default class IgcChatComponent extends EventEmitterMixin<IgcChatComponent
   private _scrollToBottom(): void {
     // Read in the frame, after the layout that the update caused.
     requestAnimationFrame(() => {
+      // The user can scroll up before the frame.
+      if (!this._followNewest) {
+        return;
+      }
+
       const { scrollTop, scrollHeight } = this._scrollContainer;
       this._scrollContainer.scrollBy({ top: scrollHeight - scrollTop });
     });

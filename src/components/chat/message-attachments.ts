@@ -31,8 +31,15 @@ import {
   isImageAttachment,
 } from './utils.js';
 
-const getHeader = (event: Event) =>
-  getElementFromPath<HTMLElement>('[part~="attachment-header"]', event);
+/** Only the header itself, so a control in a custom header keeps its keys. */
+function getHeader(event: Event): HTMLElement | undefined {
+  const header = getElementFromPath<HTMLElement>(
+    '[part~="attachment-header"]',
+    event
+  );
+
+  return header === event.composedPath()[0] ? header : undefined;
+}
 
 type DefaultAttachmentRenderers = {
   attachment: ChatTemplateRenderer<ChatAttachmentRenderContext>;
