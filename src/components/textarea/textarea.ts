@@ -1,4 +1,4 @@
-import { html, LitElement, type PropertyValues } from 'lit';
+import { html, isServer, LitElement, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -107,6 +107,12 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   private readonly _inputId = nextId();
 
   private readonly _themes = addThemingController(this, all);
+
+  /** With CSS field sizing, `resize="auto"` needs no height measurement. */
+  private readonly _fieldSizing =
+    !isServer &&
+    typeof CSS !== 'undefined' &&
+    CSS.supports('field-sizing: content');
 
   private readonly _slots = addSlotController(this, {
     slots: Slots,
@@ -318,15 +324,26 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   constructor() {
     super();
 
-    addResizeObserverController(this, {
-      callback: this._setAreaHeight,
-    });
+    if (!this._fieldSizing) {
+      addResizeObserverController(this, {
+        callback: this._setAreaHeight,
+      });
+    }
 
     addSafeEventListener(this, 'blur', this._handleBlur);
   }
 
   protected override updated(props: PropertyValues<this>): void {
-    if (props.has('rows') || props.has('resize') || props.has('value')) {
+    // A new mode starts from the `rows` height. This also removes a height
+    // that the end-user set with the resize handle.
+    if (props.has('resize')) {
+      this._input?.style.removeProperty('height');
+    }
+
+    if (
+      !this._fieldSizing &&
+      (props.has('rows') || props.has('resize') || props.has('value'))
+    ) {
       this._setAreaHeight();
     }
   }
@@ -338,22 +355,16 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   protected _setAreaHeight(): void {
     const input = this._input;
 
-    if (!input) {
-      return;
-    }
-
-    if (this.resize !== 'auto') {
-      input.style.removeProperty('height');
+    if (!input || this.resize !== 'auto') {
       return;
     }
 
     input.style.height = 'auto';
 
-    const { borderTopWidth, borderBottomWidth } = getComputedStyle(input);
+    // The auto size mode uses the content box.
+    const { paddingTop, paddingBottom } = getComputedStyle(input);
     const height =
-      input.scrollHeight +
-      asNumber(borderTopWidth) +
-      asNumber(borderBottomWidth);
+      input.scrollHeight - asNumber(paddingTop) - asNumber(paddingBottom);
 
     input.style.height = `${height}px`;
   }
@@ -456,6 +467,10 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   //#region Renderers
 
   protected _renderInput() {
+    const autoSize = this.resize === 'auto';
+    // As the native control, use two rows for a value that is not positive.
+    const rows = this.rows >= 1 ? Math.trunc(this.rows) : 2;
+
     return html`
       <slot style="display: none"></slot>
       <textarea
@@ -463,8 +478,10 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
         id=${this._inputId}
         part="input"
         style=${styleMap({
-          resize: this.resize === 'auto' ? 'none' : this.resize,
+          resize: autoSize ? 'none' : this.resize,
+          '--_rows': rows,
         })}
+        ?data-auto-size=${autoSize}
         @input=${this._handleInput}
         @change=${this._handleChange}
         placeholder=${ifDefined(this.placeholder)}

@@ -258,6 +258,13 @@ textarea {
             grid-column: 2 / -1;
             max-width: calc(100% - #{rem(2px)});
         }
+
+        // A content-box `max-width` excludes the padding, so a margin
+        // keeps the same gap.
+        textarea[data-auto-size] {
+            max-width: none;
+            margin-inline-end: rem(2px);
+        }
     }
 
     [part~='container'][part~='filled'],

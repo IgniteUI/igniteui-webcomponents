@@ -54,8 +54,7 @@
 }
 
 igc-textarea::part(input) {
-    // maximum eight lines
-    max-height: rem(216px);
+    max-height: 8lh;
     overflow-y: auto;
 }
 
