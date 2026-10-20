@@ -230,6 +230,8 @@ export type {
 } from './components/icon/registry/types.js';
 export type * from './components/chat/types.js';
 export type {
+  QrCodeCopyFormat,
+  QrCodeCopyOptions,
   QrCodeExportFormat,
   QrCodeExportOptions,
   QrCornerSquareStyle,

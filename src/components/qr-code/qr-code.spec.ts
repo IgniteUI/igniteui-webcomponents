@@ -1,6 +1,12 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  aTimeout,
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+} from '@open-wc/testing';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { restore, stub } from 'sinon';
+import { restore, type SinonStub, stub } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { asNumber } from '#internals/utils/math.js';
 import { configureTheme } from '#theming/config.js';
@@ -774,9 +780,17 @@ describe('IgcQrCodeComponent', () => {
       return doc.documentElement as unknown as SVGSVGElement;
     }
 
+    async function getImageSize(blob: Blob): Promise<number[]> {
+      const bitmap = await createImageBitmap(blob);
+      const size = [bitmap.width, bitmap.height];
+      bitmap.close();
+      return size;
+    }
+
     async function expectRejection(
       promise: Promise<unknown>,
-      type: new (...args: never[]) => Error
+      type: new (...args: never[]) => Error,
+      message?: string
     ): Promise<void> {
       let error: unknown;
       try {
@@ -785,6 +799,9 @@ describe('IgcQrCodeComponent', () => {
         error = e;
       }
       expect(error).to.be.instanceOf(type);
+      if (message !== undefined) {
+        expect((error as Error).message).to.equal(message);
+      }
     }
 
     afterEach(() => {
@@ -1068,6 +1085,20 @@ describe('IgcQrCodeComponent', () => {
         );
       });
 
+      it('uses the size that the code has when the export renders', async () => {
+        const file = el.toImage();
+        el.size = 64;
+
+        expect(await getImageSize(await file)).to.eql([64, 64]);
+      });
+
+      it('rejects a size set after the call that exceeds the maximum canvas size', async () => {
+        const file = el.toImage({ scale: 2 });
+        el.size = 10_000;
+
+        await expectRejection(file, RangeError);
+      });
+
       it('triggers a download when requested', async () => {
         const click = stub(HTMLAnchorElement.prototype, 'click');
 
@@ -1119,6 +1150,155 @@ describe('IgcQrCodeComponent', () => {
         expect((error as Error)?.message).to.equal(
           'The browser cannot encode image/webp images.'
         );
+      });
+    });
+
+    describe('copyToClipboard()', () => {
+      let el: IgcQrCodeComponent;
+      let write: SinonStub;
+      let supports: SinonStub;
+
+      /** Reads the item as a real write does, so no export work outlives the test. */
+      async function readItem([item]: ClipboardItem[]): Promise<void> {
+        await Promise.all(item.types.map((type) => item.getType(type)));
+      }
+
+      function getWrittenItem(): ClipboardItem {
+        expect(write.calledOnce).to.be.true;
+        const [items] = write.firstCall.args as [ClipboardItem[]];
+        expect(items).to.have.length(1);
+        return items[0];
+      }
+
+      beforeEach(async () => {
+        el = await fixture(
+          html`<igc-qr-code
+            value="https://example.com"
+            size="256"
+          ></igc-qr-code>`
+        );
+        write = stub(navigator.clipboard, 'write').callsFake(readItem);
+        supports = stub(ClipboardItem, 'supports').returns(true);
+      });
+
+      it('copies a PNG image at the component size by default', async () => {
+        const copy = el.copyToClipboard();
+        // Safari and Firefox accept a write only inside the user gesture.
+        expect(write.calledOnce).to.be.true;
+        expect(await copy).to.equal('png');
+
+        const item = getWrittenItem();
+        expect(item.types).to.eql(['image/png']);
+        expect(await getImageSize(await item.getType('image/png'))).to.eql([
+          256, 256,
+        ]);
+      });
+
+      it('copies an SVG image with a PNG image for applications that do not read SVG', async () => {
+        const copy = el.copyToClipboard({ format: 'svg', scale: 2 });
+        expect(write.calledOnce).to.be.true;
+        expect(await copy).to.equal('svg');
+
+        const item = getWrittenItem();
+        expect(item.types).to.eql(['image/svg+xml', 'image/png']);
+
+        const svg = await parseSvg(await item.getType('image/svg+xml'));
+        expect(svg.getAttribute('width')).to.equal('512');
+        expect(svg.querySelector('[part]')).to.be.null;
+        expect(svg.querySelector('rect')!.getAttribute('fill')).to.equal(
+          'rgb(255, 255, 255)'
+        );
+
+        const png = await item.getType('image/png');
+        expect(await getImageSize(png)).to.eql([512, 512]);
+      });
+
+      it('uses the size that the code has when the copy renders', async () => {
+        const copy = el.copyToClipboard({ format: 'svg' });
+        el.size = 64;
+        await copy;
+
+        const item = getWrittenItem();
+        const svg = await parseSvg(await item.getType('image/svg+xml'));
+        expect(svg.getAttribute('width')).to.equal('64');
+        expect(await getImageSize(await item.getType('image/png'))).to.eql([
+          64, 64,
+        ]);
+      });
+
+      it('copies only the PNG image when the clipboard does not take SVG', async () => {
+        supports.withArgs('image/svg+xml').returns(false);
+
+        expect(await el.copyToClipboard({ format: 'svg' })).to.equal('png');
+        expect(getWrittenItem().types).to.eql(['image/png']);
+      });
+
+      it('copies only the PNG image without ClipboardItem.supports()', async () => {
+        supports.value(undefined);
+
+        expect(await el.copyToClipboard({ format: 'svg' })).to.equal('png');
+        expect(getWrittenItem().types).to.eql(['image/png']);
+      });
+
+      it('rejects when the clipboard rejects the write', async () => {
+        write.callsFake(async (items: ClipboardItem[]) => {
+          await readItem(items);
+          throw new DOMException('Document is not focused.', 'NotAllowedError');
+        });
+
+        await expectRejection(el.copyToClipboard(), DOMException);
+      });
+
+      it('leaves no unhandled rejection when a refused write skips a failed export', async () => {
+        // A refused write does not read the item.
+        write.rejects(
+          new DOMException('Write permission denied.', 'NotAllowedError')
+        );
+        const unhandled: unknown[] = [];
+        const onUnhandled = (event: PromiseRejectionEvent) => {
+          event.preventDefault();
+          unhandled.push(event.reason);
+        };
+        addEventListener('unhandledrejection', onUnhandled);
+
+        try {
+          const copy = el.copyToClipboard();
+          el.value = undefined;
+          await expectRejection(copy, DOMException);
+          await aTimeout(50);
+        } finally {
+          removeEventListener('unhandledrejection', onUnhandled);
+        }
+
+        expect(unhandled).to.be.empty;
+      });
+
+      it('rejects without the Clipboard API', async () => {
+        stub(navigator, 'clipboard').value(undefined);
+
+        await expectRejection(
+          el.copyToClipboard(),
+          Error,
+          'The Clipboard API is not available.'
+        );
+      });
+
+      it('rejects invalid options without a write', async () => {
+        await expectRejection(el.copyToClipboard({ scale: 0 }), RangeError);
+        await expectRejection(el.copyToClipboard({ scale: 1000 }), RangeError);
+        await expectRejection(
+          el.copyToClipboard({ format: 'jpeg' as unknown as 'png' }),
+          TypeError
+        );
+        expect(write.called).to.be.false;
+      });
+
+      it('rejects when there is no value without a write', async () => {
+        el.value = undefined;
+        await elementUpdated(el);
+
+        await expectRejection(el.copyToClipboard(), Error);
+        expect(write.called).to.be.false;
       });
     });
 

@@ -16,6 +16,7 @@ import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { QRCodeMatrixResult } from './model/matrix.js';
 import { generateQRCodeMatrix } from './model/matrix.js';
 import {
+  canCopySvg,
   createSvgSnapshot,
   downloadFile,
   ensureExtension,
@@ -36,6 +37,8 @@ import {
 import { styles } from './themes/qr-code.base.css.js';
 import { styles as shared } from './themes/shared/qr-code.common.css.js';
 import type {
+  QrCodeCopyFormat,
+  QrCodeCopyOptions,
   QrCodeExportOptions,
   QrCornerSquareStyle,
   QrDotStyle,
@@ -338,6 +341,38 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
     return createSvgSnapshot(svg);
   }
 
+  /** Returns `size * scale` in whole pixels. Throws a RangeError when `scale` or the result is out of range. */
+  private _getExportDimension(scale: number, size = this.size): number {
+    if (!Number.isFinite(scale) || scale <= 0) {
+      throw new RangeError(
+        'The export scale must be a positive finite number.'
+      );
+    }
+
+    const dimension = Math.round(size * scale);
+    if (!numberInRangeInclusive(dimension, 1, MAX_EXPORT_DIMENSION)) {
+      throw new RangeError(
+        `The exported image side must be between 1 and ${MAX_EXPORT_DIMENSION} pixels.`
+      );
+    }
+
+    return dimension;
+  }
+
+  /** Serializes a snapshot resized to `scale`, measured from its rendered width. */
+  private async _serializeSnapshot(
+    scale: number
+  ): Promise<{ blob: Blob; dimension: number }> {
+    const svg = await this._createSnapshot();
+    const dimension = this._getExportDimension(
+      scale,
+      Number(svg.getAttribute('width'))
+    );
+    svg.setAttribute('width', `${dimension}`);
+    svg.setAttribute('height', `${dimension}`);
+    return { blob: serializeSvg(svg), dimension };
+  }
+
   /* blazorSuppress */
   /**
    * Serializes the QR code to an `image/svg+xml` blob.
@@ -370,24 +405,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
       throw new TypeError(`Unsupported export format: ${format}.`);
     }
 
-    if (!Number.isFinite(scale) || scale <= 0) {
-      throw new RangeError(
-        'The export scale must be a positive finite number.'
-      );
-    }
-
-    const dimension = Math.round(this.size * scale);
-    if (!numberInRangeInclusive(dimension, 1, MAX_EXPORT_DIMENSION)) {
-      throw new RangeError(
-        `The exported image side must be between 1 and ${MAX_EXPORT_DIMENSION} pixels.`
-      );
-    }
-
-    const svg = await this._createSnapshot();
-    svg.setAttribute('width', `${dimension}`);
-    svg.setAttribute('height', `${dimension}`);
-
-    const svgBlob = serializeSvg(svg);
+    const { blob: svgBlob, dimension } = await this._serializeSnapshot(scale);
     const blob =
       format === 'svg'
         ? svgBlob
@@ -401,6 +419,63 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
     }
 
     return file;
+  }
+
+  /* blazorSuppress */
+  /**
+   * Copies the QR code to the clipboard as an image and resolves to the format that the clipboard
+   * received. A browser that cannot copy SVG gets only the PNG.
+   *
+   * Browsers accept a clipboard write only in a focused document during a user action, so call
+   * the method directly from the event handler, with no `await` before it.
+   *
+   * Rejects when the component has no `value`, when `format` is not supported, when `scale` is
+   * not a positive finite number, when the image exceeds the maximum canvas size, when the
+   * Clipboard API is not available, or when the browser refuses the write.
+   */
+  public async copyToClipboard(
+    options?: QrCodeCopyOptions
+  ): Promise<QrCodeCopyFormat> {
+    const { format = 'png', scale = 1 } = options ?? {};
+
+    if (format !== 'png' && format !== 'svg') {
+      throw new TypeError(`Unsupported copy format: ${format}.`);
+    }
+
+    // Reject a bad scale before the write; the export checks it again at the rendered size.
+    this._getExportDimension(scale);
+
+    if (!this.value) {
+      throw new Error('Cannot copy an igc-qr-code without a value.');
+    }
+
+    // An insecure context has no `navigator.clipboard`.
+    const clipboard = navigator.clipboard;
+    if (!clipboard) {
+      throw new Error('The Clipboard API is not available.');
+    }
+
+    const copied = format === 'svg' && canCopySvg() ? 'svg' : 'png';
+
+    // The write starts before the first `await`, while the user action is active,
+    // so the images go in as promises.
+    const image = this._serializeSnapshot(scale);
+    const svg = image.then(({ blob }) => blob);
+    const png = image.then(({ blob, dimension }) =>
+      rasterizeSvg(blob, dimension, 'png')
+    );
+    // A refused write never reads the item, so a failed export would go unhandled.
+    svg.catch(() => {});
+    png.catch(() => {});
+
+    await clipboard.write([
+      new ClipboardItem(
+        copied === 'svg'
+          ? { [MIME_TYPES.svg]: svg, [MIME_TYPES.png]: png }
+          : { [MIME_TYPES.png]: png }
+      ),
+    ]);
+    return copied;
   }
 
   protected override render() {

@@ -6,6 +6,7 @@ import {
   IgcQrCodeComponent,
   IgcSelectComponent,
   IgcSwitchComponent,
+  type QrCodeCopyFormat,
   type QrCodeExportFormat,
 } from 'igniteui-webcomponents';
 import { html } from 'lit';
@@ -796,7 +797,7 @@ export const Export: Story = {
     docs: {
       description: {
         story:
-          '`toImage()` exports the code as a `png`, `jpeg`, `webp` or `svg` file. `scale` multiplies `size`, so a scale of 4 gives a 1024 pixel image of this code for print. `download: true` opens the download dialog, and without it the returned `File` goes to the clipboard, as the "Copy PNG" button does. `toBlob()` returns an SVG blob with the colors and the logo inlined, so the blob looks the same outside the component. The preview shows that blob in an `img` element.',
+          '`toImage()` exports the code as a `png`, `jpeg`, `webp` or `svg` file. `scale` multiplies `size`, so a scale of 4 gives a 1024 pixel image of this code for print. `download: true` opens the download dialog. `copyToClipboard()` copies the code as an image: "Copy PNG" copies a PNG image, and "Copy SVG" copies an SVG image and a PNG image for applications that do not read SVG. A browser that cannot copy SVG gets only the PNG. The buttons call the method directly in the click handler, because browsers accept a clipboard write only during a user action. `toBlob()` returns an SVG blob with the colors and the logo inlined, so the blob looks the same outside the component. The preview shows that blob in an `img` element.',
       },
     },
   },
@@ -834,13 +835,15 @@ export const Export: Story = {
           return `Downloaded ${file.name} (${file.type}).`;
         });
 
-    const copy = (event: Event) =>
+    const copied: Record<QrCodeCopyFormat, string> = {
+      svg: 'Copied an SVG image and a PNG image to the clipboard.',
+      png: 'Copied a PNG image to the clipboard.',
+    };
+
+    const copy = (format: QrCodeCopyFormat) => (event: Event) =>
       run(event, async () => {
-        const file = await context(event).qr.toImage({ scale: 2 });
-        await navigator.clipboard.write([
-          new ClipboardItem({ [file.type]: file }),
-        ]);
-        return 'Copied a PNG image to the clipboard.';
+        const { qr } = context(event);
+        return copied[await qr.copyToClipboard({ format, scale: 2 })];
       });
 
     const preview = (event: Event) =>
@@ -888,7 +891,12 @@ export const Export: Story = {
           <igc-button @click=${download('webp', 2)}>
             Download WebP (2x)
           </igc-button>
-          <igc-button variant="outlined" @click=${copy}>Copy PNG</igc-button>
+          <igc-button variant="outlined" @click=${copy('png')}>
+            Copy PNG
+          </igc-button>
+          <igc-button variant="outlined" @click=${copy('svg')}>
+            Copy SVG
+          </igc-button>
           <igc-button variant="outlined" @click=${preview}>
             Preview SVG blob
           </igc-button>
