@@ -2042,6 +2042,7 @@
       "attributes": {
         "accept": "string",
         "autofocus": "boolean",
+        "directory": "boolean",
         "disabled": "boolean",
         "invalid": "boolean",
         "label": "string",
@@ -2057,6 +2058,7 @@
         "accept": "string",
         "autofocus": "boolean",
         "defaultValue": "unknown",
+        "directory": "boolean",
         "disabled": "boolean",
         "files": "readonly FileList",
         "form": "readonly HTMLFormElement | null",
