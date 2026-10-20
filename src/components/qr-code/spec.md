@@ -18,6 +18,7 @@
       - [Module and corner shapes](#module-and-corner-shapes)
       - [Theming colors](#theming-colors)
       - [Exporting](#exporting)
+      - [Copying to the clipboard](#copying-to-the-clipboard)
       - [Programmatic control](#programmatic-control)
     - [Localization](#localization)
     - [Keyboard interactions](#keyboard-interactions)
@@ -37,6 +38,7 @@
     - [Style variants](#style-variants)
     - [Logo](#logo)
     - [Export](#export)
+    - [Clipboard](#clipboard)
     - [Host ARIA](#host-aria)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
@@ -53,6 +55,7 @@
 |       2 | 2026-09-28 | Add the property-based model suite; V30-V40/M table fix              |
 |       3 | 2026-09-30 | Automatic error level, reactive label, `xlink:href` export           |
 |       4 | 2026-10-02 | Forward the host `aria-labelledby` and `aria-describedby` to the SVG |
+|       5 | 2026-10-20 | `copyToClipboard()`; exports read `size` after the pending render      |
 
 ## Overview
 
@@ -77,6 +80,7 @@ authentication setup URLs, contact sharing and linking printed material to digit
   element.
 - **Configurable size and margin**, the second one expressed in modules.
 - **Export** to an SVG blob, or to a PNG, JPEG, WebP or SVG file, optionally scaled and downloaded.
+- **Copy to the clipboard** as a PNG or SVG image.
 - **Safe by default**: unsafe logo URL schemes and non-image `data:` URIs are rejected.
 
 ### Acceptance criteria
@@ -89,6 +93,7 @@ authentication setup URLs, contact sharing and linking printed material to digit
 - Unsafe logo values must be rejected, and the component must recover when a failed logo is replaced.
 - `dot-style` and `square-style` must control their shapes independently.
 - The colors must be customizable and must not invert with the light and dark theme variants.
+- `copyToClipboard()` must start the clipboard write inside the user action that calls it.
 - The element must be integrated and themeable with the theming mechanism of the library.
 - The element must be WAI-ARIA compliant and must handle degenerate configurations without throwing.
 
@@ -100,6 +105,7 @@ As an end-user, I expect to be able to:
 
 - see a QR code I can scan with the camera of a mobile device or with a scanning app;
 - scan the code correctly even when a logo sits at its center;
+- copy the code as an image and paste it into a document, an email or a chat;
 - have the purpose of the code announced by my screen reader when I cannot see it.
 
 ### Developer stories
@@ -115,6 +121,7 @@ As a developer, I expect to be able to:
 - style the modules and the finder corners independently;
 - theme the colors through CSS custom properties and target the internals through parts;
 - export the code as a file or a blob, so that it can be printed or stored;
+- copy the code to the clipboard from a button, without clipboard code of my own;
 - provide a custom `aria-label` for what assistive technology announces.
 
 ## Functionality
@@ -205,7 +212,8 @@ present.
 
 `toImage(options)` exports a file. `scale` multiplies the `size` of the component, `format` takes `png`, `jpeg`,
 `webp` or `svg`, `fileName` names the file and gets the extension of the format appended, and `download` opens the
-browser download dialog.
+browser download dialog. The export waits for pending property changes to render and then reads `size`, so a `size`
+set right after the call applies to the image.
 
 ```ts
 const file = await qrCode.toImage({ format: 'png', scale: 2, download: true });
@@ -213,6 +221,32 @@ const file = await qrCode.toImage({ format: 'png', scale: 2, download: true });
 
 Both methods reject when the component has no value, and `toImage()` also rejects on an unsupported format, a
 non-positive or non-finite scale, and a result that exceeds the maximum canvas size.
+
+#### Copying to the clipboard
+
+`copyToClipboard(options)` writes the code to the clipboard. `format` takes `png`, the default, or `svg`, and `scale`
+multiplies the `size` of the component, as in `toImage()`. The promise resolves to the format that the clipboard
+received:
+
+- `png`: a PNG image.
+- `svg`: an SVG image and a PNG image of the same code. An application that does not read SVG pastes the PNG. A
+  browser that cannot copy SVG gets only the PNG, and the promise resolves to `png`.
+
+Browsers accept a clipboard write only in a focused document and during a user action. Safari and Firefox measure the
+action as a short transient activation, about 5 seconds in WebKit, so a write that starts after a slow `await`, such
+as the export of the image, fails. The method starts the write before its first `await` and gives the images to the
+clipboard as promises. Thus, call it directly from the event handler, with no `await` before it:
+
+```ts
+copyButton.addEventListener('click', async () => {
+  const format = await qrCode.copyToClipboard({ format: 'svg', scale: 2 });
+  status.textContent = `Copied the QR code as ${format.toUpperCase()}.`;
+});
+```
+
+The method rejects when the component has no value, on an unsupported format or an invalid scale, without the
+Clipboard API (an insecure context), and when the browser refuses the write, for example in a document that does not
+have focus.
 
 #### Programmatic control
 
@@ -257,6 +291,7 @@ Not applicable. The component is presentational, is not part of the tab order an
 | --------- | -------------------------------------------------- | -------------------------------------------------------------------- |
 | `toBlob`  | `(): Promise<Blob>`                                | Serializes the code to an `image/svg+xml` blob.                       |
 | `toImage` | `(options?: QrCodeExportOptions): Promise<File>`   | Exports the code as a `png`, `jpeg`, `webp` or `svg` file.            |
+| `copyToClipboard` | `(options?: QrCodeCopyOptions): Promise<QrCodeCopyFormat>` | Copies the code to the clipboard as a PNG or SVG image. |
 
 `QrCodeExportOptions`
 
@@ -266,6 +301,13 @@ Not applicable. The component is presentational, is not part of the tab order an
 | `format`   | `"svg" \| "png" \| "jpeg" \| "webp"`     | `png`       | The output format.                                      |
 | `scale`    | `number`                                 | `1`         | The multiplier applied to the size of the component.    |
 | `download` | `boolean`                                | `false`     | Whether to open the browser download dialog.            |
+
+`QrCodeCopyOptions`
+
+| Option   | Type               | Default | Description                                                         |
+| -------- | ------------------ | ------- | ------------------------------------------------------------------- |
+| `format` | `QrCodeCopyFormat` (`"png" \| "svg"`) | `png` | The image format; an `svg` copy also holds a PNG image. |
+| `scale`  | `number`           | `1`     | The multiplier applied to the size of the component.                 |
 
 ### Events
 
@@ -354,26 +396,41 @@ None. The SVG is rendered entirely from the properties of the component.
     export is awaited, and one that cannot be fetched is dropped together with its mask. The logo is written as both
     `href` and `xlink:href`, and a code without a logo has no `xlink:href`.
 21. `toImage()` exports a PNG at the component size by default, scales the raster output, and exports an opaque
-    JPEG, a WebP and an SVG with scaled dimensions.
+    JPEG, a WebP and an SVG with scaled dimensions. A `size` set right after the call applies to the image.
 22. An existing matching extension in the file name is kept, and the download dialog opens only when requested.
-23. Both methods reject without a value, and `toImage()` rejects invalid options.
+23. Both methods reject without a value, and `toImage()` rejects invalid options, also a `size` set right after the
+    call that makes the image larger than the maximum canvas size.
+
+### Clipboard
+
+24. `copyToClipboard()` copies a PNG image at the component size by default, and a `size` set right after the call
+    applies to the copy.
+25. An `svg` copy holds an SVG image, with the theme colors resolved and the parts stripped, and a PNG image, both
+    multiplied by `scale`. A clipboard that does not take SVG gets only the PNG, and so does a browser without
+    `ClipboardItem.supports()`.
+26. The clipboard write starts before the first `await` of the method, for a PNG copy and an SVG copy.
+27. The method rejects when the clipboard refuses the write and without the Clipboard API. It also rejects on invalid
+    options and without a value, and then it writes nothing. A refused write that skips a failed export leaves no
+    unhandled rejection.
 
 ### QR model properties
 
-24. Each version and error correction level holds as many codewords as the symbol has room for, checked against the
+28. Each version and error correction level holds as many codewords as the symbol has room for, checked against the
     module count of ISO/IEC 18004.
-25. Generated numeric, alphanumeric and byte data encodes into the smallest version that holds it, with the
+29. Generated numeric, alphanumeric and byte data encodes into the smallest version that holds it, with the
     codeword count of that version, and the encoding mode matches the characters of the data.
-26. The matrix is square, with the side length of its version, and data over the capacity of a version throws the
+30. The matrix is square, with the side length of its version, and data over the capacity of a version throws the
     capacity error.
 
 ### Host ARIA
 
-27. The host `aria-labelledby` and `aria-describedby` reach the SVG, and the exported SVG has neither attribute.
+31. The host `aria-labelledby` and `aria-describedby` reach the SVG, and the exported SVG has neither attribute.
 
 ### Not covered by the suite
 
 - `margin` is not asserted on its own.
+- A real clipboard write: the suite stubs the Clipboard API, because headless Chromium denies a clipboard write
+  without a permission grant. A check in headed Chromium 156 on 2026-10-20 read back the PNG copy and the SVG copy.
 
 ## Assumptions and limitations
 
@@ -383,8 +440,14 @@ None. The SVG is rendered entirely from the properties of the component.
 - Logo sources are validated for their scheme and their media type, not for their content.
 - A pinned `version` that cannot hold the value is the responsibility of the application.
 - The colors deliberately do not follow the light and dark theme variants.
-- `toImage()` is bounded by the maximum canvas size of the browser, so a very large size and scale combination is
-  rejected.
+- `toImage()` and `copyToClipboard()` are bounded by the maximum canvas size of the browser, so a very large size and
+  scale combination is rejected.
+- `copyToClipboard()` needs a secure context, a focused document and a user action. The application must call it
+  directly from the event handler of the action.
+- On 2026-10-20, only Chromium 124 and later copies SVG to the clipboard. The method follows
+  `ClipboardItem.supports('image/svg+xml')`, so other browsers get the PNG until they report SVG support.
+- A browser without `ClipboardItem.supports()`, for example Chrome before 121 or Safari before 18.4, gets only the
+  PNG image.
 
 ## Accessibility
 

@@ -46,3 +46,20 @@ export interface QrCodeExportOptions {
    */
   download?: boolean;
 }
+
+/** Image format of a QR code copied to the clipboard. */
+export type QrCodeCopyFormat = 'png' | 'svg';
+
+/** Options for copying the QR code to the clipboard. */
+export interface QrCodeCopyOptions {
+  /**
+   * The image format. An `svg` copy also holds a PNG image for applications that do not read SVG.
+   * @default 'png'
+   */
+  format?: QrCodeCopyFormat;
+  /**
+   * Multiplier applied to the `size` of the component. A 256px QR code with a `scale` of 2 copies as a 512x512 image.
+   * @default 1
+   */
+  scale?: number;
+}

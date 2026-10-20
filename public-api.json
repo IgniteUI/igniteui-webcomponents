@@ -202,6 +202,8 @@
     "PickerMode",
     "PopoverPlacement",
     "PopoverScrollStrategy",
+    "QrCodeCopyFormat",
+    "QrCodeCopyOptions",
     "QrCodeExportFormat",
     "QrCodeExportOptions",
     "QrCornerSquareStyle",
@@ -2768,6 +2770,7 @@
         "version": "number | undefined"
       },
       "methods": {
+        "copyToClipboard": "(options?: QrCodeCopyOptions) => Promise<QrCodeCopyFormat>",
         "static register": "() => void",
         "toBlob": "() => Promise<Blob>",
         "toImage": "(options?: QrCodeExportOptions) => Promise<File>"
