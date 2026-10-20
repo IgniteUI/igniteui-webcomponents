@@ -47,9 +47,19 @@ function sameStrings(a: object, b: object): boolean {
   );
 }
 
+/** The controller of each host. */
+const controllers = new WeakMap<Node, LocaleController>();
+
 /**
  * Tracks the locale of a Lit web component. A change of the resolved locale,
  * also a global one, updates the host as a change of its `locale` property.
+ *
+ * @remarks
+ * A host without its own locale inherits the locale of the nearest ancestor
+ * host in the DOM tree (not through slots), across shadow roots. Each
+ * controller keeps its children, so a change updates only the hosts below it.
+ * Not Lit context: each new child provider makes its ancestor provider send
+ * all its subscriptions again.
  */
 class LocaleController implements ReactiveController {
   /**
@@ -68,22 +78,46 @@ class LocaleController implements ReactiveController {
   private _locale?: string;
   /** The locale of the last refresh, see {@link resolveLocale}. */
   private _resolvedLocale?: string;
+  private _parent?: LocaleController;
+  private _children?: Set<LocaleController>;
+  /** The inherited locale at the disconnect, for an update while detached. */
+  private _detachedLocale?: string;
+  /**
+   * An upgraded host connects after its descendants, so they skip it. The
+   * first change that it passes on moves them under it.
+   */
+  private _adoptPending: boolean;
 
-  /** Sets a custom locale, which overrides the global one. */
+  /** Sets the own locale, which overrides the inherited and global ones. */
   public set locale(value: string | undefined) {
-    if (this._locale !== value) {
-      this._locale = value;
-      this._refresh();
+    const old = this._customLocale;
+    this._locale = value;
+
+    if (this._customLocale !== old || this._adoptPending) {
+      this._update();
     }
   }
 
-  /** The custom locale, or the global one. */
+  /** The own, the inherited, or the global locale. */
   public get locale(): string {
-    return this._locale ?? getCurrentI18n();
+    return this._customLocale ?? getCurrentI18n();
+  }
+
+  /** The own or the inherited locale. */
+  private get _customLocale(): string | undefined {
+    return this._locale ?? this._parent?._validLocale ?? this._detachedLocale;
+  }
+
+  /** The custom locale if it is a valid tag. Only a valid tag passes down. */
+  private get _validLocale(): string | undefined {
+    const custom = this._customLocale;
+    return custom === this._resolvedLocale ? custom : undefined;
   }
 
   constructor(host: ReactiveElement) {
     this._host = host;
+    this._adoptPending = host.isConnected;
+    controllers.set(host, this);
     host.addController(this);
   }
 
@@ -95,21 +129,89 @@ class LocaleController implements ReactiveController {
       LocaleController._refreshConnected
     );
     LocaleController._connected.add(this);
+
+    let parent: LocaleController | undefined;
+    let node = this._host.parentNode;
+
+    while (node && !(parent = controllers.get(node))) {
+      node = node.parentNode ?? (node as ShadowRoot).host;
+    }
+
+    this._setParent(parent);
+    this._detachedLocale = undefined;
+
     // Global changes are missed while disconnected.
-    this._refresh();
+    if (this._adoptPending && this._locale != null) {
+      this._update();
+    } else {
+      this._refresh();
+    }
   }
 
   /** @internal */
   public hostDisconnected(): void {
     LocaleController._connected.delete(this);
+    this._detachedLocale = this._parent?._validLocale;
+    this._setParent(undefined);
+  }
+
+  private _setParent(parent: LocaleController | undefined): void {
+    this._parent?._children?.delete(this);
+    this._parent = parent;
+
+    if (parent) {
+      (parent._children ??= new Set()).add(this);
+    }
+  }
+
+  /** Refreshes the host, and then the children that inherit its locale. */
+  private _update(): void {
+    this._refresh();
+
+    // An upgrade sets the attributes before it connects the host.
+    if (!LocaleController._connected.has(this)) {
+      return;
+    }
+
+    if (this._adoptPending) {
+      this._adoptPending = false;
+      this._adopt(this._host);
+    }
+
+    for (const child of this._children ?? []) {
+      if (child._locale == null) {
+        child._update();
+      }
+    }
+  }
+
+  /**
+   * Moves the nearest connected controllers below `node`, also in open
+   * shadow roots, under this one. Closed shadow roots are out of reach.
+   */
+  private _adopt(node: ParentNode): void {
+    for (const element of node.children) {
+      const controller = controllers.get(element);
+
+      if (controller && LocaleController._connected.has(controller)) {
+        controller._setParent(this);
+      } else {
+        this._adopt(element);
+      }
+    }
+
+    const shadow = (node as Element).shadowRoot;
+
+    if (shadow) {
+      this._adopt(shadow);
+    }
   }
 
   protected _refresh(): void {
     const old = this._resolvedLocale;
+    const custom = this._customLocale;
     // The global locale is always a valid tag.
-    this._resolvedLocale = this._locale
-      ? resolveLocale(this._locale)
-      : getCurrentI18n();
+    this._resolvedLocale = custom ? resolveLocale(custom) : getCurrentI18n();
 
     // The first resolve is the initial state, not a change.
     if (old !== undefined && old !== this._resolvedLocale) {

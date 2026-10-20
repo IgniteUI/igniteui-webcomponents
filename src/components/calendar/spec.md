@@ -269,8 +269,8 @@ activated date; the calendar consumes these internally and surfaces a single pub
 
 The rendered strings and formats resolve through the library i18n mechanism and the `Intl` APIs:
 
-- `locale` selects the locale for the month names, the weekday labels and the header date, and falls back to the
-  global locale of the library.
+- `locale` selects the locale for the month names, the weekday labels and the header date. Without it, the calendar
+  takes the locale of the nearest ancestor component that sets one, and then the global locale of the library.
 - `resourceStrings` overrides the calendar resource strings, such as the labels of the navigation buttons.
 - The first day of the week is derived from the locale when `weekStart` is not set, falling back to Sunday in
   engines without `Intl.Locale.prototype.getWeekInfo()`. An explicit `weekStart` always wins.
@@ -331,7 +331,7 @@ by a year or by a page of years, and <kbd>Enter</kbd> or <kbd>Space</kbd> activa
 | formatOptions    | -                  | No        | `Pick<Intl.DateTimeFormatOptions, 'month' \| 'weekday'>` | `{ month: 'long', weekday: 'narrow' }`  | The options used to format the months and the weekdays.                     |
 | disabledDates    | -                  | No        | `DateRangeDescriptor[] \| undefined`                     | -                                       | The disabled dates of the component.                                        |
 | specialDates     | -                  | No        | `DateRangeDescriptor[] \| undefined`                     | -                                       | The special dates of the component.                                         |
-| locale           | locale             | No        | `string`                                                 | the global locale                       | The locale for the resource strings and the date formatting.                |
+| locale           | locale             | No        | `string`                                                 | the inherited or global locale         | The locale for the resource strings and the date formatting.                |
 | resourceStrings  | -                  | No        | `IgcCalendarResourceStrings`                             | EN                                      | The resource strings for localization.                                      |
 
 `value`, `values` and `activeDate` accept `Date` objects and ISO date strings, including through their attributes.

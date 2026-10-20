@@ -17,6 +17,7 @@ import {
 } from '#internals/decorators/coerced-property.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { addLocaleController } from '#internals/i18n/i18n-controller.js';
 import { partMap } from '#internals/part-map.js';
 import { asNumber } from '#internals/utils/math.js';
 import { all } from '#themes/tile-manager/themes/container.js';
@@ -80,6 +81,8 @@ export default class IgcTileManagerComponent extends LitElement {
   private _tilesState = createTilesState(this);
 
   private _grid = createRef<HTMLElement>();
+
+  private readonly _localeController = addLocaleController(this);
 
   // #endregion
 
@@ -157,6 +160,22 @@ export default class IgcTileManagerComponent extends LitElement {
   @property()
   @coercedProperty(IgcTileManagerComponent._styleVariable('--grid-gap'))
   public gap?: string = undefined;
+
+  /**
+   * The locale of the tiles. A tile without its own locale takes this one.
+   * Without it, the manager takes the locale of the nearest ancestor component
+   * that sets one, and then the global locale.
+   *
+   * @attr locale
+   */
+  @property()
+  public set locale(value: string) {
+    this._localeController.locale = value;
+  }
+
+  public get locale(): string {
+    return this._localeController.locale;
+  }
 
   /**
    * Gets the tiles sorted by their position in the layout.

@@ -235,8 +235,9 @@ export abstract class IgcDateTimeInputBaseComponent<
   public spinLoop = true;
 
   /**
-   * The locale used to format the display value. Falls back to the global
-   * locale when not set.
+   * The locale used to format the display value. Without it, the input takes
+   * the locale of the nearest ancestor component that sets one, and then the
+   * global locale.
    * @attr locale
    */
   @property()

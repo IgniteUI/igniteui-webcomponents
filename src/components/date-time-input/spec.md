@@ -508,9 +508,10 @@ derived from the active locale:
 - `displayFormat` falls back to the default date-time format of the locale, and the predefined styles as well as the
   month, weekday and time period names are rendered through the data of the locale.
 
-The `locale` property overrides the locale for a single editor; when it is not set, the editor follows the global
-locale of the library. A runtime change of the global locale re-resolves the default mask and re-renders the displayed
-value, also when the editor is out of the document during the change.
+The `locale` property overrides the locale for a single editor. When it is not set, the editor takes the locale of the
+nearest ancestor component that sets one, and then the global locale of the library. A runtime change of the global
+locale re-resolves the default mask and re-renders the displayed value, also when the editor is out of the document
+during the change.
 
 ```html
 <igc-date-time-input locale="ja"></igc-date-time-input>
@@ -559,7 +560,7 @@ example <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> - are ignored, so they stay availab
 | disabled          | disabled       | Yes       | `boolean`                   | false             | The disabled state of the component.                                        |
 | invalid           | invalid        | No        | `boolean`                   | false             | Sets the control into invalid state (visual state only).                    |
 | name              | name           | Yes       | `string`                    | -                 | The name of the control, submitted with the form data.                      |
-| locale            | locale         | No        | `string`                    | the global locale | The locale used to format the display value.                                |
+| locale            | locale         | No        | `string`                    | the inherited or global locale | The locale used to format the display value.                                |
 | mask              | mask           | No        | `string`                    | from the format   | The mask pattern of the component. Inherited; set `inputFormat` instead.    |
 | defaultValue      | -              | No        | `Date \| null`              | -                 | The initial value of the control, restored on a form reset.                 |
 | form              | -              | No        | `HTMLFormElement \| null`   | -                 | Read-only. The form associated with this element.                           |

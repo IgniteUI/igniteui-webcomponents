@@ -256,7 +256,8 @@ removed later are handled, as is a theme change and a reconnect of the host.
 ### Localization
 
 The chat takes its resource strings from the `igniteui-i18n-core` package through the `locale` and `resourceStrings`
-properties. Without an explicit `locale`, it follows the global locale of the library.
+properties. Without an explicit `locale`, it takes the locale of the nearest ancestor component that sets one, and
+then the global locale of the library.
 
 | Key                         | Default English value        | Used for                                    |
 | --------------------------- | ---------------------------- | ------------------------------------------- |
