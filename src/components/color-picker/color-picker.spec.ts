@@ -459,6 +459,20 @@ describe('Color picker', () => {
       );
     });
 
+    it('labels the color value input', async () => {
+      const label = () =>
+        picker.renderRoot
+          .querySelector('label[for="color-input"]')!
+          .textContent!.trim();
+
+      expect(label()).to.equal(ColorPickerResourceStringsEN.color_picker_value);
+
+      picker.locale = 'bg';
+      await elementUpdated(picker);
+
+      expect(label()).to.equal(ColorPickerResourceStringsBG.color_picker_value);
+    });
+
     it('takes single strings from `resourceStrings`', async () => {
       picker.resourceStrings = { color_picker_hue: 'Farbton' };
       await updated();
