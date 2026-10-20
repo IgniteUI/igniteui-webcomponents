@@ -42,7 +42,9 @@ textarea {
     border: none;
     padding-block: pad-block(rem(20px)) pad-block(rem(6px));
     padding-inline-start: 0;
-    width: 100%;
+
+    // The container grid stretches the auto width.
+    width: auto;
     min-width: 0;
     height: auto;
     outline-style: none;
@@ -52,6 +54,23 @@ textarea {
 
     &::placeholder {
         opacity: 1;
+    }
+}
+
+// `resize="auto"`. Field sizing ignores `rows`, so the minimum height is
+// `rows` lines, and the content box keeps the theme padding and border out
+// of it. A browser without field sizing ignores the property, and the
+// component sets the height.
+textarea[data-auto-size] {
+    field-sizing: content;
+    box-sizing: content-box;
+    min-block-size: calc(var(--_rows) * 1lh);
+
+    // Field sizing also sizes the width to the text. Keep the width of a
+    // shrink-to-fit layout at about 20 characters, as the native `cols`.
+    @supports (field-sizing: content) {
+        contain: inline-size;
+        contain-intrinsic-inline-size: 20ch;
     }
 }
 
