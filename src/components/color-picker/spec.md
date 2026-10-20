@@ -289,10 +289,10 @@ the component has no visible copy of its own, except the placeholders of the alp
 | `color_picker_eye_dropper`   | Pick a color from the screen      | The name of the eye dropper button.                            |
 | `color_picker_canvas_label`  | Saturation and value              | The name of the canvas marker.                                 |
 | `color_picker_canvas_value`  | Saturation {0}%, brightness {1}%  | The `aria-valuetext` of the canvas marker. `{0}` is the saturation and `{1}` the brightness. |
+| `color_picker_value`         | Color value                       | The label of the color value input.                            |
 
-The label of the color value input ("Color value input") and the item text of the format select (Hex, RGB, HSL) are
-not localized. `igniteui-i18n-core` has no key for the label, and the format names are notation names. Color values
-are locale-independent CSS strings.
+The item text of the format select (Hex, RGB, HSL) is not localized, because the format names are notation names.
+Color values are locale-independent CSS strings.
 
 ### Keyboard interactions
 

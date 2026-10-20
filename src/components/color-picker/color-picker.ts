@@ -828,10 +828,12 @@ export default class IgcColorPickerComponent extends I18nMixin(
   }
 
   private _renderInputsRow(): TemplateResult {
+    const label = this.resourceStrings.color_picker_value;
+
     return html`
       ${cache(this.hideFormats ? nothing : this._renderSelect())}
       <igc-visually-hidden>
-        <label for="color-input"> Color value input </label>
+        <label for="color-input">${label}</label>
       </igc-visually-hidden>
 
       <igc-input
