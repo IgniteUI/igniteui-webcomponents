@@ -117,9 +117,18 @@ export default class IgcFileInputComponent extends I18nMixin(
       return null;
     }
 
-    return Array.from(files)
-      .map((file) => file.name || 'unnamed')
-      .join(', ');
+    // A folder selection shows the folder, not each of its files.
+    if (files[0].webkitRelativePath) {
+      const folders = new Set<string>();
+
+      for (const file of files) {
+        folders.add(file.webkitRelativePath.split('/', 1)[0]);
+      }
+
+      return Array.from(folders).join(', ');
+    }
+
+    return Array.from(files, (file) => file.name || 'unnamed').join(', ');
   }
 
   /** Whether the file picker dialog is open. Validation on blur depends on it. */
@@ -140,6 +149,7 @@ export default class IgcFileInputComponent extends I18nMixin(
   public set value(value: string) {
     if (value === '' && this._input) {
       this._input.value = value;
+      this._formValue.setValueAndFormState(null);
     }
   }
 
@@ -155,6 +165,17 @@ export default class IgcFileInputComponent extends I18nMixin(
    */
   @property({ type: Boolean, reflect: true })
   public multiple = false;
+
+  /**
+   * Whether the user selects a folder instead of files. The selection then holds
+   * every file in the folder and its subfolders, and the `webkitRelativePath` of
+   * each file gives its path from the folder.
+   *
+   * @attr
+   * @default false
+   */
+  @property({ type: Boolean })
+  public directory = false;
 
   /**
    * The file types the control accepts, as a comma-separated list.
@@ -272,6 +293,7 @@ export default class IgcFileInputComponent extends I18nMixin(
         ?required=${this.required}
         ?autofocus=${this.autofocus}
         ?multiple=${this.multiple}
+        .webkitdirectory=${this.directory}
         tabindex=${bindIf(hasNegativeTabIndex(this), -1)}
         accept=${bindIf(this.accept, this.accept)}
         @click=${this._handleClick}
