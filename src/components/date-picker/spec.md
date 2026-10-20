@@ -441,9 +441,9 @@ Everything locale-dependent is derived from the active locale:
   resources.
 - The calendar week start is derived from the locale when `week-start` is not set.
 
-The `locale` property overrides the locale for a single picker; when it is not set, the picker follows the global
-locale of the library. A runtime change of the global locale or of the localization resources re-resolves the
-default format and re-renders both the input and the calendar.
+The `locale` property overrides the locale for a single picker. When it is not set, the picker takes the locale of the
+nearest ancestor component that sets one, and then the global locale of the library. A runtime change of the global
+locale or of the localization resources re-resolves the default format and re-renders both the input and the calendar.
 
 ```html
 <igc-date-picker locale="ja"></igc-date-picker>
@@ -526,7 +526,7 @@ When focus is within the calendar, the keyboard navigation follows the
 | disabled               | disabled                   | Yes       | `boolean`                     | false             | The disabled state of the component.                                     |
 | invalid                | invalid                    | No        | `boolean`                     | false             | Sets the control into invalid state (visual state only).                 |
 | name                   | name                       | Yes       | `string`                      | -                 | The name of the control, submitted with the form data.                   |
-| locale                 | locale                     | No        | `string`                      | the global locale | The locale used to format the value and resolve the resource strings.    |
+| locale                 | locale                     | No        | `string`                      | the inherited or global locale | The locale used to format the value and resolve the resource strings.    |
 | resourceStrings        | -                          | No        | calendar and picker strings   | EN                | The resource strings for localization.                                   |
 | defaultValue           | -                          | No        | `Date \| null`                | -                 | The initial value of the control, restored on a form reset.              |
 | form                   | -                          | No        | `HTMLFormElement \| null`     | -                 | Read-only. The form associated with this element.                        |

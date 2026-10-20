@@ -449,7 +449,7 @@ apply.
 | disabled               | disabled                   | Yes       | `boolean`                   | false             | The disabled state of the component.                                     |
 | invalid                | invalid                    | No        | `boolean`                   | false             | Sets the control into invalid state (visual state only).                 |
 | name                   | name                       | Yes       | `string`                    | -                 | The name of the control, submitted with the form data.                   |
-| locale                 | locale                     | No        | `string`                    | the global locale | The locale used to format the value and resolve the resource strings.    |
+| locale                 | locale                     | No        | `string`                    | the inherited or global locale | The locale used to format the value and resolve the resource strings.    |
 | resourceStrings        | -                          | No        | range picker and calendar strings | EN          | The resource strings of the date range picker.                           |
 | defaultValue           | -                          | No        | `DateRangeValue \| null`    | -                 | The initial value of the control, restored on a form reset.              |
 | form                   | -                          | No        | `HTMLFormElement \| null`   | -                 | Read-only. The form associated with this element.                        |

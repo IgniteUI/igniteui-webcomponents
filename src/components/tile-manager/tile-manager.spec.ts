@@ -311,6 +311,38 @@ describe('Tile Manager component', () => {
       ]);
     });
 
+    it('names the default actions in the locale of the manager', async () => {
+      const bgNames = [
+        TileResourceStringsBG.tile_maximize,
+        TileResourceStringsBG.tile_enter_fullscreen,
+      ];
+
+      registerI18n(TileResourceStringsBG, 'bg');
+      tileManager.locale = 'bg';
+      await elementUpdated(tile);
+
+      expect(tile.locale).to.equal('bg');
+      expect(getActionButtons(tile).map(({ ariaLabel }) => ariaLabel)).to.eql(
+        bgNames
+      );
+
+      const added = document.createElement(IgcTileComponent.tagName);
+      tileManager.append(added);
+      await elementUpdated(added);
+
+      expect(getActionButtons(added).map(({ ariaLabel }) => ariaLabel)).to.eql(
+        bgNames
+      );
+
+      tile.locale = 'en';
+      await elementUpdated(tile);
+
+      expect(getActionButtons(tile).map(({ ariaLabel }) => ariaLabel)).to.eql([
+        'Maximize',
+        'Enter full screen',
+      ]);
+    });
+
     it('hides the header divider from assistive technology', () => {
       const divider = tile.renderRoot.querySelector('igc-divider')!;
       expect(divider.getAttribute('aria-hidden')).to.equal('true');

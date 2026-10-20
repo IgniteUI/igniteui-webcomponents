@@ -20,6 +20,7 @@ import { ResourceStringsBG } from 'igniteui-i18n-resources';
 import { LitElement } from 'lit';
 import { spy } from 'sinon';
 import type { DateRangePickerResourceStringsType } from '../../components/date-range-picker/date-range-picker.js';
+import { I18nMixin } from '../mixins/i18n.js';
 import { formatDisplayDate, getLocaleDateTimeFormats } from './date-formats.js';
 import type { IgcDateRangePickerResourceStrings } from './EN/date-range-picker.resources.js';
 import { addI18nController, type I18nController } from './i18n-controller.js';
@@ -402,6 +403,292 @@ describe('Localization', () => {
       } finally {
         element.remove();
       }
+    });
+  });
+
+  describe('Locale inheritance', () => {
+    const BG = ResourceStringsBG.combo_empty_message!;
+    const EN = ComboResourceStringsEN.combo_empty_message!;
+
+    type Localized = LitElement & { locale: string };
+
+    const localizedClass = () =>
+      class extends I18nMixin(LitElement, {
+        defaultEN: ComboResourceStringsEN,
+      }) {
+        protected override render() {
+          return html`<span lang=${this.locale}
+            >${this.resourceStrings.combo_empty_message}</span
+          >`;
+        }
+      };
+
+    let tag: ReturnType<typeof unsafeStatic>;
+    let tagName: string;
+    let shadowHost: ReturnType<typeof unsafeStatic>;
+    let lateTags = 0;
+
+    /** A tag that the test defines after its elements connect. */
+    const lateTag = () => `test-late-locale-${lateTags++}`;
+
+    const textOf = (element: Localized) =>
+      element.shadowRoot?.querySelector('span')?.innerText;
+
+    const langOf = (element: Localized) =>
+      element.shadowRoot?.querySelector('span')?.lang;
+
+    const get = (root: ParentNode, selector: string) =>
+      root.querySelector<Localized>(selector)!;
+
+    before(() => {
+      tagName = defineCE(localizedClass());
+      tag = unsafeStatic(tagName);
+      shadowHost = unsafeStatic(
+        defineCE(
+          class extends LitElement {
+            protected override render() {
+              return html`<${tag}></${tag}>`;
+            }
+          }
+        )
+      );
+    });
+
+    beforeEach(() => {
+      registerI18n(ResourceStringsBG, 'bg');
+    });
+
+    afterEach(() => {
+      setCurrentI18n('en');
+    });
+
+    it('takes the locale of the nearest ancestor that sets one', async () => {
+      const root = await fixture<Localized>(html`
+        <${tag} locale="bg">
+          <div>
+            <${tag} id="middle">
+              <${tag} id="inner"></${tag}>
+            </${tag}>
+          </div>
+        </${tag}>
+      `);
+      const inner = get(root, '#inner');
+      await elementUpdated(inner);
+
+      expect(get(root, '#middle').locale).to.equal('bg');
+      expect(inner.locale).to.equal('bg');
+      expect(textOf(inner)).to.equal(BG);
+    });
+
+    it('takes the locale across shadow roots', async () => {
+      const root = await fixture<Localized>(html`
+        <${tag} locale="bg"><${shadowHost}></${shadowHost}></${tag}>
+      `);
+      const host = root.firstElementChild as LitElement;
+      await elementUpdated(host);
+
+      const inner = get(host.renderRoot, tagName);
+      await elementUpdated(inner);
+
+      expect(inner.locale).to.equal('bg');
+      expect(textOf(inner)).to.equal(BG);
+    });
+
+    it('follows a locale change of the ancestor', async () => {
+      const root = await fixture<Localized>(html`
+        <${tag}><${tag} id="inner"></${tag}></${tag}>
+      `);
+      const inner = get(root, '#inner');
+
+      root.setAttribute('locale', 'bg');
+      await elementUpdated(inner);
+
+      expect(inner.locale).to.equal('bg');
+      expect(textOf(inner)).to.equal(BG);
+
+      root.removeAttribute('locale');
+      await elementUpdated(inner);
+
+      expect(inner.locale).to.equal('en');
+      expect(textOf(inner)).to.equal(EN);
+    });
+
+    it('keeps its own locale, and passes it to its descendants', async () => {
+      const root = await fixture<Localized>(html`
+        <${tag} locale="bg">
+          <${tag} id="middle" locale="de">
+            <${tag} id="inner"></${tag}>
+          </${tag}>
+        </${tag}>
+      `);
+      const middle = get(root, '#middle');
+      const inner = get(root, '#inner');
+      await elementUpdated(inner);
+
+      expect(middle.locale).to.equal('de');
+      expect(inner.locale).to.equal('de');
+      expect(textOf(inner)).to.equal(EN);
+
+      middle.removeAttribute('locale');
+      await elementUpdated(inner);
+
+      expect(middle.locale).to.equal('bg');
+      expect(inner.locale).to.equal('bg');
+      expect(textOf(inner)).to.equal(BG);
+    });
+
+    it('follows the global locale only without an ancestor that sets one', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <${tag} id="free"></${tag}>
+          <${tag} locale="de"><${tag} id="pinned"></${tag}></${tag}>
+        </div>
+      `);
+      const free = get(root, '#free');
+      const pinned = get(root, '#pinned');
+
+      setCurrentI18n('bg');
+      await elementUpdated(free);
+
+      expect(free.locale).to.equal('bg');
+      expect(textOf(free)).to.equal(BG);
+      expect(pinned.locale).to.equal('de');
+      expect(textOf(pinned)).to.equal(EN);
+    });
+
+    it('takes the locale of its new ancestor after a move', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <${tag} id="bg" locale="bg"></${tag}>
+          <${tag} locale="de"><${tag} id="child"></${tag}></${tag}>
+        </div>
+      `);
+      const child = get(root, '#child');
+      await elementUpdated(child);
+
+      expect(child.locale).to.equal('de');
+
+      get(root, '#bg').append(child);
+      await elementUpdated(child);
+
+      expect(child.locale).to.equal('bg');
+      expect(textOf(child)).to.equal(BG);
+
+      root.append(child);
+      await elementUpdated(child);
+
+      expect(child.locale).to.equal('en');
+      expect(textOf(child)).to.equal(EN);
+    });
+
+    it('keeps the inherited locale for an update while detached', async () => {
+      const root = await fixture<Localized>(html`
+        <${tag} locale="bg"><${tag} id="child"></${tag}></${tag}>
+      `);
+      const child = get(root, '#child');
+      await elementUpdated(child);
+
+      child.remove();
+      child.requestUpdate();
+      await elementUpdated(child);
+
+      expect(child.locale).to.equal('bg');
+
+      root.append(child);
+      await elementUpdated(child);
+
+      expect(langOf(child)).to.equal('bg');
+    });
+
+    it('does not pass an invalid or empty locale to its descendants', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <${tag} locale="xx_!!"><${tag} id="invalid"></${tag}></${tag}>
+          <${tag} locale=""><${tag} id="empty"></${tag}></${tag}>
+        </div>
+      `);
+      const invalid = get(root, '#invalid');
+      const empty = get(root, '#empty');
+
+      setCurrentI18n('bg');
+      await elementUpdated(invalid);
+      await elementUpdated(empty);
+
+      expect(invalid.locale).to.equal('bg');
+      expect(textOf(invalid)).to.equal(BG);
+      expect(empty.locale).to.equal('bg');
+      expect(textOf(empty)).to.equal(BG);
+    });
+
+    it('takes the locale of an ancestor that upgrades after it', async () => {
+      const late = lateTag();
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <${unsafeStatic(late)} locale="bg">
+            <${tag} id="child"></${tag}>
+          </${unsafeStatic(late)}>
+        </div>
+      `);
+      const child = get(root, '#child');
+      await elementUpdated(child);
+
+      expect(child.locale).to.equal('en');
+
+      customElements.define(late, localizedClass());
+      await elementUpdated(child);
+
+      expect(child.locale).to.equal('bg');
+      expect(textOf(child)).to.equal(BG);
+
+      get(root, late).locale = 'de';
+      await elementUpdated(child);
+
+      expect(child.locale).to.equal('de');
+    });
+
+    it('reaches the descendants that upgrade before an ancestor without a locale', async () => {
+      const top = lateTag();
+      const middle = lateTag();
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <${unsafeStatic(top)} locale="bg">
+            <${unsafeStatic(middle)}>
+              <${tag} id="child"></${tag}>
+            </${unsafeStatic(middle)}>
+          </${unsafeStatic(top)}>
+        </div>
+      `);
+      const child = get(root, '#child');
+
+      customElements.define(middle, localizedClass());
+      customElements.define(top, localizedClass());
+      await elementUpdated(child);
+
+      expect(child.locale).to.equal('bg');
+      expect(textOf(child)).to.equal(BG);
+
+      get(root, middle).locale = 'de';
+      await elementUpdated(child);
+
+      expect(child.locale).to.equal('de');
+    });
+    it('moves the descendants under a late ancestor that sets the inherited locale', async () => {
+      const late = lateTag();
+      const root = await fixture<Localized>(html`
+        <${tag} locale="bg">
+          <${unsafeStatic(late)}>
+            <${tag} id="child"></${tag}>
+          </${unsafeStatic(late)}>
+        </${tag}>
+      `);
+      const child = get(root, '#child');
+
+      customElements.define(late, localizedClass());
+      get(root, late).locale = 'bg';
+      root.locale = 'de';
+      await elementUpdated(child);
+
+      expect(child.locale).to.equal('bg');
     });
   });
 

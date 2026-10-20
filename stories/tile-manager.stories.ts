@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { type TemplateResult, html, nothing } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -92,6 +93,12 @@ const metadata: Meta<IgcTileManagerComponent> = {
       description: 'The gap between the tiles.',
       control: 'text',
     },
+    locale: {
+      type: 'string',
+      description:
+        'The locale of the tiles. A tile without its own locale takes this one.\nWithout it, the manager takes the locale of the nearest ancestor component\nthat sets one, and then the global locale.',
+      control: 'text',
+    },
   },
   args: { resizeMode: 'none', dragMode: 'none', columnCount: 0 },
 };
@@ -111,6 +118,12 @@ interface IgcTileManagerArgs {
   minRowHeight: string;
   /** The gap between the tiles. */
   gap: string;
+  /**
+   * The locale of the tiles. A tile without its own locale takes this one.
+   * Without it, the manager takes the locale of the nearest ancestor component
+   * that sets one, and then the global locale.
+   */
+  locale: string;
 }
 type Story = StoryObj<IgcTileManagerArgs>;
 
@@ -310,6 +323,7 @@ export const Default: Story = {
       .gap=${args.gap}
       .dragMode=${args.dragMode}
       .resizeMode=${args.resizeMode}
+      locale=${ifDefined(args.locale)}
     >
       ${kpiTile('Revenue', '$12,480', 'up', '8% more than last Tuesday')}
       ${kpiTile('Orders', '184', 'up', '12 more than last Tuesday')}

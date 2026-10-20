@@ -121,7 +121,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     locale: {
       type: 'string',
       description:
-        'The locale for the resource strings and the locale-aware formatting.\nFalls back to the global locale.',
+        'The locale of the component. Without it, the component takes the locale\nof the nearest ancestor component that sets one, and then the global\nlocale.',
       control: 'text',
     },
   },
@@ -171,8 +171,9 @@ interface IgcCarouselArgs {
   /** The animation type. */
   animationType: 'slide' | 'fade' | 'none';
   /**
-   * The locale for the resource strings and the locale-aware formatting.
-   * Falls back to the global locale.
+   * The locale of the component. Without it, the component takes the locale
+   * of the nearest ancestor component that sets one, and then the global
+   * locale.
    */
   locale: string;
 }

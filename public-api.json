@@ -3800,6 +3800,7 @@
         "column-count": "number",
         "drag-mode": "TileManagerDragMode ('none' | 'tile' | 'tile-header')",
         "gap": "string | undefined",
+        "locale": "string",
         "min-column-width": "string | undefined",
         "min-row-height": "string | undefined",
         "resize-mode": "TileManagerResizeMode ('always' | 'hover' | 'none')"
@@ -3808,6 +3809,7 @@
         "columnCount": "number",
         "dragMode": "TileManagerDragMode ('none' | 'tile' | 'tile-header')",
         "gap": "string | undefined",
+        "locale": "string",
         "minColumnWidth": "string | undefined",
         "minRowHeight": "string | undefined",
         "resizeMode": "TileManagerResizeMode ('always' | 'hover' | 'none')",

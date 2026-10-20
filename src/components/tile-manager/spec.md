@@ -56,6 +56,7 @@ This directory hosts two public components: [`igc-tile-manager`](#igc-tile-manag
 |       3 | 2026-10-07 | Tile region, action names, reading order, fullscreen sync, RTL resize, cancelable events |
 |       4 | 2026-10-08 | Nested managers: own placement of the inner tiles, swap transitions of an outer tile |
 |       5 | 2026-10-19 | Localize the names of the default tile actions               |
+|       6 | 2026-10-20 | Tile manager `locale`, which the tiles inherit               |
 
 ## Overview
 
@@ -256,7 +257,8 @@ not an object. Invalid JSON throws a `SyntaxError`.
 ### Localization
 
 The tile takes its resource strings from the `igniteui-i18n-core` package through the `locale` and
-`resourceStrings` properties. Without an explicit `locale`, it falls back to the global locale of the library.
+`resourceStrings` properties. Without an explicit `locale`, it takes the locale of the nearest ancestor component
+that sets one, and then the global locale of the library.
 
 | Key                     | Default English value | Used for                                                            |
 | ----------------------- | --------------------- | ------------------------------------------------------------------- |
@@ -265,7 +267,8 @@ The tile takes its resource strings from the `igniteui-i18n-core` package throug
 | `tile_enter_fullscreen` | Enter full screen     | The name of the fullscreen action of a tile that is not fullscreen. |
 | `tile_exit_fullscreen`  | Exit full screen      | The name of the fullscreen action of a fullscreen tile.             |
 
-Each tile has its own `locale` and `resourceStrings`. The tile manager has no strings. The titles and the content come
+Each tile has its own `locale` and `resourceStrings`. The tile manager has no strings, but its `locale` sets the
+locale of the tiles that have no `locale`, also of the tiles that you add later. The titles and the content come
 from the application. Buttons in the `maximize-action` and `fullscreen-action` slots replace the default actions and
 their names.
 
@@ -290,6 +293,7 @@ Dragging and resizing are pointer interactions.
 | gap            | gap               | No        | `string \| undefined`     | -       | The gap size between the tiles.                                           |
 | dragMode       | drag-mode         | No        | `TileManagerDragMode`     | `none`  | Whether drag and drop operations are enabled.                             |
 | resizeMode     | resize-mode       | No        | `TileManagerResizeMode`   | `none`  | Whether resize operations are enabled.                                    |
+| locale         | locale            | No        | `string`                  | -       | The locale of the tiles without a `locale`. Falls back to the inherited locale, then the global one. |
 | tiles          | -                 | No        | `IgcTileComponent[]`      | -       | Read-only. The tiles, sorted by their position in the layout.              |
 
 #### Methods
@@ -343,7 +347,7 @@ A container within the tile manager for displaying various types of information.
 | disableResize     | disable-resize      | Yes       | `boolean`         | false   | Disables resizing regardless of the tile manager setting.               |
 | disableMaximize   | disable-maximize    | Yes       | `boolean`         | false   | Disables the maximize action and its slot.                              |
 | disableFullscreen | disable-fullscreen  | Yes       | `boolean`         | false   | Disables the fullscreen action and its slot.                            |
-| locale            | locale              | No        | `string`          | -       | The locale for the resource strings. Falls back to the global locale.     |
+| locale            | locale              | No        | `string`          | -       | The locale for the resource strings. Falls back to the inherited locale, then the global one.     |
 | resourceStrings   | -                   | No        | `ITileResourceStrings` | EN      | The resource strings for localization.                                    |
 
 #### Events
@@ -474,7 +478,8 @@ The groups below mirror the `describe` blocks.
 
 24. A tile is a region that its title names. A change of the title element and an `aria-label` on the host change the
     name.
-25. The default actions are named by what they do next, also in the locale of the tile, and the header divider is hidden from assistive technology.
+25. The default actions are named by what they do next, also in the locale of the tile or of the manager, and the
+    header divider is hidden from assistive technology.
 26. While a tile is maximized, the other tiles are hidden and their content is skipped, also when a descendant sets
     `visibility: visible`. A covered tile that goes fullscreen stays visible. Removing the maximized tile releases the
     grid height.

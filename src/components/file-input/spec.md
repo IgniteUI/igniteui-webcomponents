@@ -272,7 +272,7 @@ The browse button is excluded from the tab order, so the control is a single tab
 | invalid           | invalid      | No        | `boolean`                   | false   | Sets the control into invalid state (visual state only).                             |
 | name              | name         | Yes       | `string`                    | -       | The name of the control, submitted with the form data.                               |
 | autofocus         | autofocus    | No        | `boolean`                   | false   | Whether the control should receive focus automatically.                              |
-| locale            | locale       | No        | `string`                    | -       | The locale for the resource strings. Falls back to the global locale.                |
+| locale            | locale       | No        | `string`                    | -       | The locale for the resource strings. Falls back to the inherited locale, then the global one.                |
 | resourceStrings   | -            | No        | `IFileInputResourceStrings` | EN      | The resource strings for localization.                                               |
 | form              | -            | No        | `HTMLFormElement \| null`   | -       | Read-only. The form associated with this element.                                    |
 | validity          | -            | No        | `ValidityState`             | -       | Read-only. The validity state of the element.                                        |

@@ -157,7 +157,7 @@ const metadata: Meta<IgcTooltipComponent> = {
     locale: {
       type: 'string',
       description:
-        'The locale for the resource strings and the locale-aware formatting.\nFalls back to the global locale.',
+        'The locale of the component. Without it, the component takes the locale\nof the nearest ancestor component that sets one, and then the global\nlocale.',
       control: 'text',
     },
   },
@@ -233,8 +233,9 @@ interface IgcTooltipArgs {
   /** Specifies if the tooltip remains visible until the user closes it via the close button or Esc key. */
   sticky: boolean;
   /**
-   * The locale for the resource strings and the locale-aware formatting.
-   * Falls back to the global locale.
+   * The locale of the component. Without it, the component takes the locale
+   * of the nearest ancestor component that sets one, and then the global
+   * locale.
    */
   locale: string;
 }

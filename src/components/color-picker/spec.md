@@ -272,7 +272,8 @@ picker.setCustomValidity('Pick a lighter shade');
 ### Localization
 
 The component takes its resource strings from the `igniteui-i18n-core` package through the `locale` and
-`resourceStrings` properties. Without an explicit `locale`, it falls back to the global locale of the library. A key
+`resourceStrings` properties. Without an explicit `locale`, it takes the locale of the nearest ancestor component
+that sets one, and then the global locale of the library. A key
 that the strings of a locale do not have falls back to its English value. The strings are accessibility-only text:
 the component has no visible copy of its own, except the placeholders of the alpha input and the format select.
 
@@ -318,7 +319,7 @@ All of the above are skipped while the component is `disabled`.
 | swatches          | -               | No        | `string[]`                | `[]`      | Pre-defined color strings rendered as clickable swatches.                |
 | showAlpha         | show-alpha      | Yes       | `boolean`                 | false     | Whether to show the alpha slider and input.                              |
 | hideFormats       | hide-formats    | Yes       | `boolean`                 | false     | Whether to hide the format picker buttons.                               |
-| locale            | locale          | No        | `string`                  | -         | The locale for the resource strings. Falls back to the global locale.    |
+| locale            | locale          | No        | `string`                  | -         | The locale for the resource strings. Falls back to the inherited locale, then the global one.    |
 | resourceStrings   | -               | No        | `IColorPickerResourceStrings` | EN    | The resource strings for localization.                                   |
 | open              | open            | Yes       | `boolean`                 | false     | The open state of the component.                                         |
 | scrollStrategy    | scroll-strategy | No        | `PopoverScrollStrategy`   | `hide`    | The behavior of the component when a parent container scrolls.           |

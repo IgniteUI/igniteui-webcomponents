@@ -207,7 +207,8 @@ calling `hide()`.
 ### Localization
 
 The dialog takes its resource strings from the `igniteui-i18n-core` package through the `locale` and
-`resourceStrings` properties. Without an explicit `locale`, it falls back to the global locale of the library.
+`resourceStrings` properties. Without an explicit `locale`, it takes the locale of the nearest ancestor component
+that sets one, and then the global locale of the library.
 
 | Key                     | Default English value | Used for                               |
 | ----------------------- | --------------------- | -------------------------------------- |
@@ -234,7 +235,7 @@ The title, the message, the content and any custom actions come from the applica
 | closeOnOutsideClick | close-on-outside-click  | No        | `boolean`             | false   | When set, clicking the backdrop closes the dialog.                       |
 | hideDefaultAction   | hide-default-action     | No        | `boolean`             | false   | When set, the built-in OK button is not rendered.                        |
 | returnValue         | -                       | No        | `string \| undefined` | -       | The return value of the dialog.                                          |
-| locale              | locale                  | No        | `string`              | -       | The locale for the resource strings. Falls back to the global locale.    |
+| locale              | locale                  | No        | `string`              | -       | The locale for the resource strings. Falls back to the inherited locale, then the global one.    |
 | resourceStrings     | -                       | No        | `IDialogResourceStrings` | EN      | The resource strings for localization.                                   |
 
 ### Methods
