@@ -275,6 +275,12 @@ describe('Key bindings controller', () => {
       expect(repeatInstance.callCount).to.equal(1);
     });
 
+    it('should prevent default on repeated keydown by default', () => {
+      const event = dispatch(repeatInstance, 'keydown', 'a', true);
+      expect(event.defaultPrevented).to.be.true;
+      expect(repeatInstance.callCount).to.equal(0);
+    });
+
     it('should fire the correct binding when keys overlap (keyup not yet fired for previous key)', () => {
       let repeatInstance2: LitElement & {
         lastKey: string | undefined;
@@ -341,14 +347,14 @@ function dispatch(
   type: 'keydown' | 'keyup',
   key: string,
   repeat = false
-) {
-  node.dispatchEvent(
-    new KeyboardEvent(type, {
-      key,
-      bubbles: true,
-      composed: true,
-      cancelable: true,
-      repeat,
-    })
-  );
+): KeyboardEvent {
+  const event = new KeyboardEvent(type, {
+    key,
+    bubbles: true,
+    composed: true,
+    cancelable: true,
+    repeat,
+  });
+  node.dispatchEvent(event);
+  return event;
 }

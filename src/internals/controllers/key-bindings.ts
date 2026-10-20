@@ -323,17 +323,16 @@ class KeyBindingController implements ReactiveController {
       const triggers = options.triggers ?? ['keydown'];
 
       // The event type must be a trigger, and a repeated keydown needs `repeat`.
-      if (
-        triggers.includes(event.type as KeyBindingTrigger) &&
-        (isKeyup(event) || !event.repeat || options.repeat)
-      ) {
+      if (triggers.includes(event.type as KeyBindingTrigger)) {
         if (options.preventDefault) {
           event.preventDefault();
         }
         if (options.stopPropagation) {
           event.stopPropagation();
         }
-        handler.call(this._host, event);
+        if (isKeyup(event) || !event.repeat || options.repeat) {
+          handler.call(this._host, event);
+        }
       }
     }
 
