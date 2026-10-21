@@ -35,7 +35,7 @@ const metadata: Meta<IgcRadioComponent> = {
     docs: {
       description: {
         component:
-          'The radio component allows the user to select a single option from an available set of options that are listed side by side.',
+          'Lets the user select one option from a set. Radios with the same `name`\nform a group, and only one radio of the group is checked.',
       },
     },
     actions: { handles: ['igcChange'] },
@@ -44,18 +44,20 @@ const metadata: Meta<IgcRadioComponent> = {
     required: {
       type: 'boolean',
       description:
-        'When set, makes the component a required field for validation.',
+        'Whether the group of the radio is required. A required group fails\nvalidation while none of its radios is checked.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     value: {
       type: 'string',
-      description: 'The value of the control.',
+      description:
+        'The value of the control, submitted when the control is checked.',
       control: 'text',
     },
     checked: {
       type: 'boolean',
-      description: 'The checked state of the control.',
+      description:
+        'Whether the control is checked. A checked radio clears the other radios\nof its group.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -73,13 +75,15 @@ const metadata: Meta<IgcRadioComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component.',
+      description:
+        'Whether the control is disabled. A disabled control is not validated,\nand the form does not submit its value.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
-      description: 'Sets the control into invalid state (visual state only).',
+      description:
+        'Whether the control shows the invalid state. It changes only the visual\nstate, not the validity.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -96,19 +100,31 @@ const metadata: Meta<IgcRadioComponent> = {
 export default metadata;
 
 interface IgcRadioArgs {
-  /** When set, makes the component a required field for validation. */
+  /**
+   * Whether the group of the radio is required. A required group fails
+   * validation while none of its radios is checked.
+   */
   required: boolean;
-  /** The value of the control. */
+  /** The value of the control, submitted when the control is checked. */
   value: string;
-  /** The checked state of the control. */
+  /**
+   * Whether the control is checked. A checked radio clears the other radios
+   * of its group.
+   */
   checked: boolean;
   /** The label position of the radio control. */
   labelPosition: 'after' | 'before';
   /** The name of the control, submitted with the form data. */
   name: string;
-  /** The disabled state of the component. */
+  /**
+   * Whether the control is disabled. A disabled control is not validated,
+   * and the form does not submit its value.
+   */
   disabled: boolean;
-  /** Sets the control into invalid state (visual state only). */
+  /**
+   * Whether the control shows the invalid state. It changes only the visual
+   * state, not the validity.
+   */
   invalid: boolean;
 }
 type Story = StoryObj<IgcRadioArgs>;

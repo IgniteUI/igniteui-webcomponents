@@ -49,6 +49,7 @@ This directory hosts three public components: [`igc-nav-drawer`](#igc-nav-drawer
 |       2 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
 |       3 | 2026-10-05 | Return the focus to the mini variant; reopen a dialog closed early      |
 |       4 | 2026-10-06 | Keep the first opener when the dialog opens again                       |
+|       5 | 2026-10-21 | API descriptions aligned with the JSDoc.                                |
 
 ## Overview
 
@@ -220,7 +221,7 @@ The components render no strings of their own; the item content and the label co
 | ---------------- | --------------------- | --------- | ----------------------- | ------- | ----------------------------------------------------------------- |
 | open             | open                  | Yes       | `boolean`               | false   | Whether the drawer is open.                                     |
 | position         | position              | Yes       | `NavDrawerPosition`     | `start` | The position of the drawer.                                     |
-| label            | label                 | No        | `string \| undefined`   | -       | An accessible label for the drawer.                             |
+| label            | label                 | No        | `string \| undefined`   | -       | The accessible label of the `<dialog>`, or of the `<nav>` landmark in the `relative` position, and of the mini variant. Give each navigation landmark on a page a distinct label. |
 | keepOpenOnEscape | keep-open-on-escape   | No        | `boolean`               | false   | Whether the drawer stays open when <kbd>Escape</kbd> is pressed. Only applies to the non-relative positions. |
 
 #### Methods
@@ -252,6 +253,7 @@ The components render no strings of their own; the item content and the label co
 | `base` | The base wrapper of the drawer.              |
 | `main` | The main content container of the drawer.    |
 | `mini` | The mini variant container of the drawer.    |
+| `hidden` | Added to the mini part when the mini slot has no content. |
 
 ### igc-nav-drawer-item
 
@@ -259,8 +261,8 @@ Represents a navigation drawer item.
 
 | Property | Attribute | Reflected | Type      | Default | Description                                  |
 | -------- | --------- | --------- | --------- | ------- | ---------------------------------------------- |
-| active   | active    | Yes       | `boolean` | false   | Determines whether the drawer item is active. |
-| disabled | disabled  | Yes       | `boolean` | false   | Determines whether the drawer item is disabled. |
+| active   | active    | Yes       | `boolean` | false   | Whether the drawer item is active.           |
+| disabled | disabled  | Yes       | `boolean` | false   | Whether the drawer item is disabled.         |
 
 | Slot      | Description                              |
 | --------- | ---------------------------------------- |
@@ -272,6 +274,7 @@ Represents a navigation drawer item.
 | `base`    | The base wrapper of the drawer item. |
 | `icon`    | The icon container.                  |
 | `content` | The content container.               |
+| `mini`    | Added to the base part when the content slot is empty. |
 
 ### igc-nav-drawer-header-item
 

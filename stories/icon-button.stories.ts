@@ -65,7 +65,7 @@ const metadata: Meta<IgcIconButtonComponent> = {
     mirrored: {
       type: 'boolean',
       description:
-        'Determines whether the icon should be mirrored in right-to-left contexts.',
+        'Whether the icon is flipped horizontally. Use it for a directional icon\nin a right-to-left layout.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -112,7 +112,8 @@ const metadata: Meta<IgcIconButtonComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'When set, the button will be disabled and non-interactive.',
+      description:
+        'Whether the button is disabled. A disabled button ignores user interaction.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -144,7 +145,10 @@ interface IgcIconButtonArgs {
   name: string;
   /** The collection the icon belongs to. */
   collection: string;
-  /** Determines whether the icon should be mirrored in right-to-left contexts. */
+  /**
+   * Whether the icon is flipped horizontally. Use it for a directional icon
+   * in a right-to-left layout.
+   */
   mirrored: boolean;
   /**
    * The variant of the button which determines its visual appearance.
@@ -191,7 +195,7 @@ interface IgcIconButtonArgs {
    * setting `rel="noopener noreferrer"` is strongly recommended for security.
    */
   rel: string;
-  /** When set, the button will be disabled and non-interactive. */
+  /** Whether the button is disabled. A disabled button ignores user interaction. */
   disabled: boolean;
   /**
    * The command to invoke on the target element specified by `commandfor`.

@@ -52,7 +52,7 @@ export interface IgcTabsComponentEventMap {
  *
  * @fires igcChange - Emitted when the selected tab changes.
  *
- * @slot - Renders the `IgcTabComponents` inside default slot.
+ * @slot - Renders the tab components inside the default slot.
  *
  * @csspart header - The header strip behind the tab headers.
  * @csspart start-scroll-button - The start scroll button displayed when the tabs overflow.
@@ -108,7 +108,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
   //#region Public properties
 
   /**
-   * Determines the alignment of the tabs header strip.
+   * The alignment of the tab headers in the header strip.
    *
    * @attr alignment
    * @default 'start'
@@ -117,10 +117,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
   public alignment: TabsAlignment = 'start';
 
   /**
-   * Determines the activation behavior of the tabs.
+   * The activation behavior of the tabs.
    *
-   * When set to 'auto', the tab will be selected when it receives focus.
-   * When set to 'manual', the tab will only be selected when it is clicked or activated with the keyboard.
+   * With `auto`, a tab is selected when it receives keyboard focus.
+   * With `manual`, a tab is selected only on click, or on Enter or Space.
    *
    * @attr activation
    * @default 'auto'
@@ -129,18 +129,21 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
   public activation: TabsActivation = 'auto';
 
   /* blazorSuppress */
-  /** Returns the direct tab children of this element. */
+  /** The tab children of the component. */
   public get tabs(): IgcTabComponent[] {
     return this._tabs;
   }
 
-  /** Returns the currently selected tab label or IDREF if no label property is set. */
+  /**
+   * The label of the selected tab, or its `id` when the tab has no label.
+   * An empty string when no tab is selected.
+   */
   public get selected(): string {
     return this._activeTab?.label || this._activeTab?.id || '';
   }
 
   /* blazorSuppress */
-  /** Returns the currently selected tab, if any. */
+  /** The selected tab, or `null` when no tab is selected. */
   public get selectedTab(): IgcTabComponent | null {
     return this._activeTab ?? null;
   }
@@ -369,8 +372,18 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
    */
   public select(idOrLabel: string): void;
   /* blazorSuppress (ref is reserved) */
+  /**
+   * Selects the passed tab and displays the corresponding panel.
+   *
+   * A disabled tab, or a tab that is not a child of the component, is ignored.
+   */
   public select(ref: IgcTabComponent): void;
   /* blazorSuppress (ref is reserved) */
+  /**
+   * Selects a tab by reference, IDREF or label, and displays the corresponding panel.
+   *
+   * Disabled tabs and values not matching any tab are ignored.
+   */
   public select(ref: IgcTabComponent | string): void {
     const tab = isString(ref)
       ? this._tabs.find((each) => each.id === ref || each.label === ref)

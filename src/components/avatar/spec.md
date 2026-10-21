@@ -39,6 +39,7 @@
 |       1 | 2026-09-21 | Initial specification                          |
 |       2 | 2026-10-01 | A badge goes next to the avatar, not inside it |
 |       3 | 2026-10-14 | No role description on the avatar              |
+|       4 | 2026-10-21 | API descriptions aligned with the JSDoc.       |
 
 ## Overview
 
@@ -183,7 +184,7 @@ None applicable.
 | ---------- | ------------------------------------ |
 | `base`     | The wrapper of the avatar.            |
 | `initials` | The wrapper of the initials.          |
-| `image`    | The wrapper of the image.             |
+| `image`    | The image element of the avatar.      |
 
 ## Test scenarios
 

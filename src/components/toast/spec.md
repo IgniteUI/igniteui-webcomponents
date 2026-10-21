@@ -42,6 +42,7 @@
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-09-23 | Remove the `base` part, which the toast does not render |
 |       3 | 2026-10-07 | The display time waits for the pointer and the keyboard focus and starts again on `show()`; `container` positioning uses an anchor name; an open component shows again after a move; `show()` during the fade-out keeps the component open |
+|       4 | 2026-10-21 | API descriptions aligned with the JSDoc. |
 
 ## Overview
 
@@ -170,10 +171,10 @@ None applicable. The toast is not interactive and is not reachable with the keyb
 
 | Property    | Attribute    | Reflected | Type                      | Default    | Description                                                 |
 | ----------- | ------------ | --------- | ------------------------- | ---------- | ------------------------------------------------------------- |
-| open        | open         | Yes       | `boolean`                 | false      | The open state of the component.                            |
-| displayTime | display-time | No        | `number`                  | 4000       | The time in milliseconds that the component stays visible.  |
-| keepOpen    | keep-open    | Yes       | `boolean`                 | false      | Keeps the component open after the display time is over.    |
-| position    | position     | Yes       | `AbsolutePosition`        | `bottom`   | The position of the component in the viewport.              |
+| open        | open         | Yes       | `boolean`                 | false      | Whether the component is open.                            |
+| displayTime | display-time | No        | `number`                  | 4000       | The time in milliseconds that the component stays visible. The time stops while the pointer or the keyboard focus is in the component, and starts again from the full value when both leave. A value of 0 or less keeps the component open.  |
+| keepOpen    | keep-open    | Yes       | `boolean`                 | false      | Whether the component stays open after the `displayTime` is over.    |
+| position    | position     | Yes       | `AbsolutePosition`        | `bottom`   | The position of the component in the viewport or in the container.              |
 | positioning | positioning  | Yes       | `NotificationPositioning` | `viewport` | The positioning strategy of the component.                  |
 
 ### Methods
@@ -182,7 +183,7 @@ None applicable. The toast is not interactive and is not reachable with the keyb
 | ------ | ---------------------- | ------------------------------------------------------------------------------------- |
 | show   | `(): Promise<boolean>` | Opens the component, also during the fade-out of `hide()`. When it is already open, the display time starts again, and it resolves `false`. It also resolves `false` when `container` positioning finds no visible ancestor. |
 | hide   | `(): Promise<boolean>` | Closes the component. Resolves `false` when it is already closed or fades out.       |
-| toggle | `(): Promise<boolean>` | Toggles the component. Resolves `true` when the state changed.                       |
+| toggle | `(): Promise<boolean>` | Opens the component when it is closed, and closes it when it is open. Resolves `true` when the state changes.                       |
 
 ### Events
 
@@ -192,7 +193,7 @@ None applicable.
 
 | Name      | Description                            |
 | --------- | -------------------------------------- |
-| (default) | Default slot for the toast content.    |
+| (default) | The content of the toast.              |
 
 ### CSS Shadow parts
 

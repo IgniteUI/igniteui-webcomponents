@@ -49,14 +49,14 @@ const metadata: Meta<IgcRatingComponent> = {
     max: {
       type: 'number',
       description:
-        'The maximum value for the rating.\n\nIf there are projected symbols, the maximum value will be resolved\nbased on the number of symbols.',
+        'The maximum value for the rating.\n\nWith projected symbols, the maximum value is the number of symbols. A\nmaximum below the value also lowers the value.',
       control: 'number',
       table: { defaultValue: { summary: '5' } },
     },
     step: {
       type: 'number',
       description:
-        'The minimum value change allowed.\n\nValid values are in the interval between 0.001 and 1 inclusive.\nThe component clamps a value outside of the interval to the closest bound.',
+        'The minimum value change allowed.\n\nValid values are in the interval between 0.001 and 1 inclusive.\nThe component clamps a value outside of the interval to the closest bound.\nIn single selection mode, the step is always 1.',
       control: 'number',
       table: { defaultValue: { summary: '1' } },
     },
@@ -68,12 +68,12 @@ const metadata: Meta<IgcRatingComponent> = {
     valueFormat: {
       type: 'string',
       description:
-        "A format string which sets aria-valuetext. Instances of '{0}' will be replaced\nwith the current value of the control and instances of '{1}' with the maximum value for the control.\n\nImportant for screen-readers and useful for localization.",
+        'The format of the `aria-valuetext` of the rating. `{0}` stands for the\nvalue and `{1}` for the maximum value.\n\nUse it for screen readers and for localization.',
       control: 'text',
     },
     value: {
       type: 'number',
-      description: 'The value of the component',
+      description: 'The value of the rating, clamped between 0 and `max`.',
       control: 'number',
       table: { defaultValue: { summary: '0' } },
     },
@@ -86,13 +86,15 @@ const metadata: Meta<IgcRatingComponent> = {
     },
     readOnly: {
       type: 'boolean',
-      description: 'Makes the control a readonly field.',
+      description:
+        'Whether the rating is read-only. A read-only rating shows its value but\nignores user input.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     single: {
       type: 'boolean',
-      description: 'Toggles single selection visual mode.',
+      description:
+        'Whether only the symbol at the value is full, instead of all symbols up\nto it. It also sets `step` to 1 and rounds the value up.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -110,13 +112,15 @@ const metadata: Meta<IgcRatingComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component.',
+      description:
+        'Whether the control is disabled. A disabled control is not validated,\nand the form does not submit its value.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
-      description: 'Sets the control into invalid state (visual state only).',
+      description:
+        'Whether the control shows the invalid state. It changes only the visual\nstate, not the validity.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -140,8 +144,8 @@ interface IgcRatingArgs {
   /**
    * The maximum value for the rating.
    *
-   * If there are projected symbols, the maximum value will be resolved
-   * based on the number of symbols.
+   * With projected symbols, the maximum value is the number of symbols. A
+   * maximum below the value also lowers the value.
    */
   max: number;
   /**
@@ -149,32 +153,45 @@ interface IgcRatingArgs {
    *
    * Valid values are in the interval between 0.001 and 1 inclusive.
    * The component clamps a value outside of the interval to the closest bound.
+   * In single selection mode, the step is always 1.
    */
   step: number;
   /** The label of the control. */
   label: string;
   /**
-   * A format string which sets aria-valuetext. Instances of '{0}' will be replaced
-   * with the current value of the control and instances of '{1}' with the maximum value for the control.
+   * The format of the `aria-valuetext` of the rating. `{0}` stands for the
+   * value and `{1}` for the maximum value.
    *
-   * Important for screen-readers and useful for localization.
+   * Use it for screen readers and for localization.
    */
   valueFormat: string;
-  /** The value of the component */
+  /** The value of the rating, clamped between 0 and `max`. */
   value: number;
   /** Whether to show a preview of the value when hovering over the symbols. */
   hoverPreview: boolean;
-  /** Makes the control a readonly field. */
+  /**
+   * Whether the rating is read-only. A read-only rating shows its value but
+   * ignores user input.
+   */
   readOnly: boolean;
-  /** Toggles single selection visual mode. */
+  /**
+   * Whether only the symbol at the value is full, instead of all symbols up
+   * to it. It also sets `step` to 1 and rounds the value up.
+   */
   single: boolean;
   /** Whether to reset the rating when the user selects the same value. */
   allowReset: boolean;
   /** The name of the control, submitted with the form data. */
   name: string;
-  /** The disabled state of the component. */
+  /**
+   * Whether the control is disabled. A disabled control is not validated,
+   * and the form does not submit its value.
+   */
   disabled: boolean;
-  /** Sets the control into invalid state (visual state only). */
+  /**
+   * Whether the control shows the invalid state. It changes only the visual
+   * state, not the validity.
+   */
   invalid: boolean;
 }
 type Story = StoryObj<IgcRatingArgs>;

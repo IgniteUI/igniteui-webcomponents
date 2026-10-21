@@ -41,19 +41,18 @@ type DefaultMessageRenderers = {
 /**
  * A chat message component for displaying individual messages in the chat component.
  *
- * @element igc-chat-message
- *
- *
  * This component renders a single chat message including:
- * - Message text (sanitized)
+ * - Message text
  * - Attachments (if any)
  * - Custom templates for message content and actions (if provided via chat options)
  *
  * It distinguishes sent messages from received messages by comparing
  * the message sender with the current user ID from chat state.
  *
- * The message text is sanitized with DOMPurify before rendering,
- * and can be rendered with a markdown renderer if provided.
+ * The default renderer shows the message text as plain text. A `messageContent`
+ * renderer in the chat options can replace it, for example with a markdown renderer.
+ *
+ * @element igc-chat-message
  */
 export default class IgcChatMessageComponent extends HydrationMixin(
   LitElement

@@ -37,7 +37,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     docs: {
       description: {
         component:
-          'A date time input is an input field that lets you set and edit the date and time in a chosen input element\nusing customizable display and input formats.',
+          'An input field to enter and edit a date and time value, with configurable input and display formats.',
       },
     },
     actions: { handles: ['igcInput', 'igcChange'] },
@@ -45,7 +45,8 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
   argTypes: {
     readOnly: {
       type: 'boolean',
-      description: 'Makes the control a readonly field.',
+      description:
+        'Whether the control is read-only. The user cannot change its value.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -64,7 +65,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     required: {
       type: 'boolean',
       description:
-        'When set, makes the component a required field for validation.',
+        'Whether the control is required. A required control that has no value,\nor is not checked, fails validation.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -75,19 +76,21 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component.',
+      description:
+        'Whether the control is disabled. A disabled control is not validated,\nand the form does not submit its value.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
-      description: 'Sets the control into invalid state (visual state only).',
+      description:
+        'Whether the control shows the invalid state. It changes only the visual\nstate, not the validity.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     outlined: {
       type: 'boolean',
-      description: 'Whether the control will have outlined appearance.',
+      description: 'Whether the control has an outlined appearance.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -103,7 +106,8 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     },
     inputFormat: {
       type: 'string',
-      description: 'The date format to apply on the input.',
+      description:
+        'The date format of the input while the user edits the value.\nWithout it, the input uses the input format of the locale.',
       control: 'text',
     },
     min: {
@@ -119,12 +123,13 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     displayFormat: {
       type: 'string',
       description:
-        'Format to display the value in when not editing.\nDefaults to the locale format if not set.',
+        'The format of the value while the input does not have focus.\nWithout it, the input uses `inputFormat` when set, else the display format of the locale.',
       control: 'text',
     },
     spinLoop: {
       type: 'boolean',
-      description: 'Sets whether to loop over the currently spun segment.',
+      description:
+        'Whether a spun date part wraps around at its limits.\nWhen false, the part stops at its minimum or maximum.',
       control: 'boolean',
       table: { defaultValue: { summary: 'true' } },
     },
@@ -149,38 +154,53 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
 export default metadata;
 
 interface IgcDateTimeInputArgs {
-  /** Makes the control a readonly field. */
+  /** Whether the control is read-only. The user cannot change its value. */
   readOnly: boolean;
   /** The mask pattern of the component. */
   mask: string;
   /** The prompt symbol for the unfilled parts of the mask pattern. */
   prompt: string;
-  /** When set, makes the component a required field for validation. */
+  /**
+   * Whether the control is required. A required control that has no value,
+   * or is not checked, fails validation.
+   */
   required: boolean;
   /** The name of the control, submitted with the form data. */
   name: string;
-  /** The disabled state of the component. */
+  /**
+   * Whether the control is disabled. A disabled control is not validated,
+   * and the form does not submit its value.
+   */
   disabled: boolean;
-  /** Sets the control into invalid state (visual state only). */
+  /**
+   * Whether the control shows the invalid state. It changes only the visual
+   * state, not the validity.
+   */
   invalid: boolean;
-  /** Whether the control will have outlined appearance. */
+  /** Whether the control has an outlined appearance. */
   outlined: boolean;
   /** The placeholder text of the control. */
   placeholder: string;
   /** The label for the control. */
   label: string;
-  /** The date format to apply on the input. */
+  /**
+   * The date format of the input while the user edits the value.
+   * Without it, the input uses the input format of the locale.
+   */
   inputFormat: string;
   /** The minimum value required for the input to remain valid. */
   min: Date;
   /** The maximum value required for the input to remain valid. */
   max: Date;
   /**
-   * Format to display the value in when not editing.
-   * Defaults to the locale format if not set.
+   * The format of the value while the input does not have focus.
+   * Without it, the input uses `inputFormat` when set, else the display format of the locale.
    */
   displayFormat: string;
-  /** Sets whether to loop over the currently spun segment. */
+  /**
+   * Whether a spun date part wraps around at its limits.
+   * When false, the part stops at its minimum or maximum.
+   */
   spinLoop: boolean;
   /**
    * The locale used to format the display value. Without it, the input takes

@@ -19,12 +19,14 @@ const nextId = createIdGenerator('switch');
  *
  * @slot - The switch label.
  *
- * @fires igcChange - Emitted when the control's checked state changes.
+ * @fires igcChange - Emitted when the checked state of the control changes by user interaction.
  *
  * @csspart base - The base wrapper of the switch.
- * @csspart control - The switch input element.
+ * @csspart control - The track of the switch. It holds the thumb.
  * @csspart thumb - The position indicator of the switch.
  * @csspart label - The switch label.
+ * @csspart checked - Added to the base, control, label and thumb parts when the switch is checked.
+ * @csspart focused - Added to the control part when the switch has keyboard focus.
  */
 export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-switch';

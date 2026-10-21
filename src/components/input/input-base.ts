@@ -61,7 +61,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   public abstract value: string;
 
   /**
-   * Whether the control will have outlined appearance.
+   * Whether the control has an outlined appearance.
    *
    * @attr
    * @default false

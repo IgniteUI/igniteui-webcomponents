@@ -26,11 +26,10 @@ export interface IgcBannerComponentEventMap {
  * The banner slides into view with an animated grow transition and renders
  * inline, pushing the surrounding page content rather than overlaying it.
  *
- * The component integrates with the
- * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):
- * an Ignite button or a native `<button>` with `command="--show"` / `"--hide"` /
- * `"--toggle"` and `commandfor` pointing to this element will call the
- * corresponding method declaratively without any JavaScript.
+ * The component supports the
+ * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API).
+ * A button with `command="--show"`, `"--hide"` or `"--toggle"` and a
+ * `commandfor` that points to this element calls the matching method.
  *
  * @element igc-banner
  *
@@ -41,8 +40,8 @@ export interface IgcBannerComponentEventMap {
  *   animation has completed.
  *
  * @slot - The banner message text content.
- * @slot prefix - An icon or illustration rendered to the left of the message.
- *   Useful for reinforcing the message type (info, warning, success, etc.).
+ * @slot prefix - An icon or illustration rendered before the message, reinforcing
+ *   the message type.
  * @slot actions - Custom action elements rendered in the banner's action area.
  *   When provided, replaces the default "OK" dismiss button.
  *
@@ -88,10 +87,8 @@ export default class IgcBannerComponent extends EventEmitterMixin<IgcBannerCompo
   /**
    * Whether the banner is open.
    *
-   * Setting this property programmatically will immediately show or hide the
-   * banner without animation and without emitting close events.
-   * Prefer the `show()`, `hide()`, and `toggle()` methods for animated
-   * transitions.
+   * Setting it skips the animation and the close events. Use the `show()`,
+   * `hide()` and `toggle()` methods for an animated transition.
    * @attr open
    * @default false
    */

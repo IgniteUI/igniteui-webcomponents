@@ -49,6 +49,7 @@
 |       1 | 2026-09-21 | Initial specification                                                                    |
 |       2 | 2026-10-02 | A delegating item copies the host `aria-label`, `aria-labelledby` and `aria-describedby` |
 |       3 | 2026-10-12 | `items` is empty during server-side rendering                                            |
+|       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                                 |
 
 ## Overview
 
@@ -256,10 +257,10 @@ set. Moving the focus scrolls the target item into view when the tree scrolls.
 
 | Property             | Attribute              | Reflected | Type                                  | Default  | Description                                              |
 | -------------------- | ---------------------- | --------- | ------------------------------------- | -------- | -------------------------------------------------------- |
-| `selection`          | `selection`            | yes       | `"none" \| "multiple" \| "cascade"`   | `none`   | The selection state of the tree.                          |
-| `singleBranchExpand` | `single-branch-expand` | yes       | `boolean`                             | `false`  | Whether more than one item per level can be expanded.     |
-| `toggleNodeOnClick`  | `toggle-node-on-click` | yes       | `boolean`                             | `false`  | Whether a click over an item toggles its expanded state.  |
-| `items`              | —                      | —         | `IgcTreeItemComponent[]`              | —        | All items in document order. Read-only. Empty during SSR. |
+| `selection`          | `selection`            | yes       | `"none" \| "multiple" \| "cascade"`   | `none`   | The selection mode of the tree. A change clears the current selection. |
+| `singleBranchExpand` | `single-branch-expand` | yes       | `boolean`                             | `false`  | Whether only one branch of the tree can be expanded at a time. When the user expands an item, the items outside its path collapse. |
+| `toggleNodeOnClick`  | `toggle-node-on-click` | yes       | `boolean`                             | `false`  | Whether a click on an item toggles its expanded state. |
+| `items`              | —                      | —         | `IgcTreeItemComponent[]`              | —        | All items of the tree, in document order. Empty during server-side rendering. Read-only. |
 | `locale`             | `locale`               | no        | `string`                              | —        | The locale of the resource strings.                       |
 | `resourceStrings`    | —                      | —         | `ITreeResourceStrings`                | —        | The resource strings of the component.                    |
 
@@ -268,12 +269,12 @@ set. Moving the focus scrolls the target item into view when the tree scrolls.
 | Property   | Attribute  | Reflected | Type                            | Default | Description                                                    |
 | ---------- | ---------- | --------- | ------------------------------- | ------- | -------------------------------------------------------------- |
 | `label`    | `label`    | no        | `string`                        | `''`    | The text of the item, rendered when the label slot is empty.    |
-| `value`    | `value`    | no        | `any`                           | —       | The value the item visualizes.                                  |
-| `expanded` | `expanded` | yes       | `boolean`                       | `false` | The expansion state of the item.                                |
-| `selected` | `selected` | yes       | `boolean`                       | `false` | The selection state of the item.                                |
-| `active`   | `active`   | yes       | `boolean`                       | `false` | Marks the item as the active item of the tree.                  |
-| `disabled` | `disabled` | yes       | `boolean`                       | `false` | Disabled items take no user interaction.                        |
-| `loading`  | `loading`  | yes       | `boolean`                       | `false` | Renders a loading indicator, for load-on-demand scenarios.       |
+| `value`    | `value`    | no        | `any`                           | —       | The value that the tree item represents. The component does not use it. |
+| `expanded` | `expanded` | yes       | `boolean`                       | `false` | Whether the tree item is expanded. |
+| `selected` | `selected` | yes       | `boolean`                       | `false` | Whether the tree item is selected. |
+| `active`   | `active`   | yes       | `boolean`                       | `false` | Whether the item is the active item of the tree. When true, the ancestors of the item expand. |
+| `disabled` | `disabled` | yes       | `boolean`                       | `false` | Whether the tree item is disabled. A disabled item does not respond to user interaction. |
+| `loading`  | `loading`  | yes       | `boolean`                       | `false` | Whether the item is loading data, for load-on-demand scenarios. The item shows a loading indicator in place of the expand indicator. |
 | `level`    | —          | —         | `number`                        | `0`     | The depth of the item relative to the root.                     |
 | `parent`   | —          | —         | `IgcTreeItemComponent \| null`  | `null`  | The parent item, when there is one.                             |
 | `path`     | —          | —         | `IgcTreeItemComponent[]`        | —       | The path to the item, the top-most ancestor first. Read-only.   |
@@ -285,8 +286,8 @@ set. Moving the focus scrolls the target item into view when the tree scrolls.
 
 | Method       | Signature                                   | Description                                                            |
 | ------------ | ------------------------------------------- | ---------------------------------------------------------------------- |
-| `select`     | `(items?: IgcTreeItemComponent[]): void`    | Selects the passed items, or all of them. Emits no event.               |
-| `deselect`   | `(items?: IgcTreeItemComponent[]): void`    | Deselects the passed items, or all of them. Emits no event.             |
+| `select`     | `(items?: IgcTreeItemComponent[]): void`    | Selects the passed items. Without an argument, selects all items. Emits no event. |
+| `deselect`   | `(items?: IgcTreeItemComponent[]): void`    | Deselects the passed items. Without an argument, deselects all items. Emits no event. |
 | `expand`     | `(items?: IgcTreeItemComponent[]): void`    | Expands the passed items, or all of them.                               |
 | `collapse`   | `(items?: IgcTreeItemComponent[]): void`    | Collapses the passed items, or all of them.                             |
 
@@ -318,7 +319,7 @@ All events are emitted by `igc-tree`, including those caused by an item.
 | --------------- | ------------- | --------------------------------------------------------------- |
 | `igc-tree`      | default       | The tree items.                                                  |
 | `igc-tree-item` | default       | The nested tree items.                                           |
-| `igc-tree-item` | `label`       | The content of the item, in place of the `label` property.        |
+| `igc-tree-item` | `label`       | Renders the content of the tree item, in place of the `label` property. |
 | `igc-tree-item` | `indicator`   | The expand indicator of the item.                                 |
 | `igc-tree-item` | `loading`     | The loading indicator of the item.                                |
 | `igc-tree-item` | `indentation` | The area before the item, empty by default.                       |
@@ -330,6 +331,7 @@ All events are emitted by `igc-tree`, including those caused by an item.
 | Part        | Description                                                  |
 | ----------- | ------------------------------------------------------------ |
 | `wrapper`   | The wrapper of the item.                                      |
+| `indentation` | The indentation area before the tree item.                  |
 | `selected`  | Marks the selected state. Applies to `wrapper`.               |
 | `focused`   | Marks the focused state. Applies to `wrapper`.                |
 | `active`    | Marks the active state. Applies to `wrapper`.                 |

@@ -51,6 +51,7 @@
 |       1 | 2026-09-21 | Initial specification                                         |
 |       2 | 2026-10-02 | An anchor that forwards its description passes the tooltip on |
 |       3 | 2026-10-19 | Localize the name of the default close button                 |
+|       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                      |
 
 ## Overview
 
@@ -263,18 +264,18 @@ The `message` property and the slotted content come from the application.
 | -------------- | --------------- | --------- | -------------------------------- | -------------------------------- | ---------------------------------------------------------------- |
 | open           | open            | Yes       | `boolean`                        | false                            | Whether the tooltip is showing.                                 |
 | anchor         | anchor          | No        | `Element \| string \| undefined` | -                                | An element instance or an IDREF to use as the anchor.           |
-| message        | message         | No        | `string`                         | `''`                             | Plain text as the tooltip content.                              |
+| message        | message         | No        | `string`                         | `''`                             | The plain-text content of the tooltip. Slotted content replaces it. |
 | placement      | placement       | No        | `PopoverPlacement`               | `bottom`                         | Where to place the tooltip relative to its anchor.              |
 | offset         | offset          | No        | `number`                         | 6                                | The offset of the tooltip from the anchor, in pixels.           |
 | withArrow      | with-arrow      | Yes       | `boolean`                        | false                            | Whether to render an arrow indicator for the tooltip.           |
-| showTriggers   | show-triggers   | No        | `string`                         | `pointerenter,focusin`           | Which event triggers will show the tooltip.                     |
-| hideTriggers   | hide-triggers   | No        | `string`                         | `pointerleave,click,focusout`    | Which event triggers will hide the tooltip.                     |
-| showDelay      | show-delay      | No        | `number`                         | 200                              | Milliseconds before showing the tooltip.                        |
-| hideDelay      | hide-delay      | No        | `number`                         | 300                              | Milliseconds before hiding the tooltip.                         |
-| sticky         | sticky          | Yes       | `boolean`                        | false                            | Whether the tooltip stays visible until it is actively closed.  |
-| scrollStrategy | scroll-strategy | No        | `PopoverScrollStrategy`          | `hide`                           | The behavior of the tooltip when a parent container scrolls.    |
+| showTriggers   | show-triggers   | No        | `string`                         | `pointerenter,focusin`           | The anchor events that show the tooltip.                        |
+| hideTriggers   | hide-triggers   | No        | `string`                         | `pointerleave,click,focusout`    | The anchor events that hide the tooltip.                        |
+| showDelay      | show-delay      | No        | `number`                         | 200                              | The time in milliseconds before a show trigger opens the tooltip. |
+| hideDelay      | hide-delay      | No        | `number`                         | 300                              | The time in milliseconds before a hide trigger closes the tooltip. |
+| sticky         | sticky          | Yes       | `boolean`                        | false                            | Whether the tooltip stays visible until the user closes it with the close button or the `Escape` key. |
+| scrollStrategy | scroll-strategy | No        | `PopoverScrollStrategy`          | `hide`                           | The behavior of the tooltip when an ancestor scroll container scrolls. |
 | locale         | locale          | No        | `string`                         | -                                | The locale for the resource strings. Falls back to the inherited locale, then the global one. |
-| resourceStrings | -               | No        | `ITooltipResourceStrings`        | EN                               | The resource strings for localization.                           |
+| resourceStrings | -               | No        | `ITooltipResourceStrings`        | EN                               | The texts of the component. The strings that you set replace the strings of the current locale. Reading returns all the strings, with your strings over the locale strings.                           |
 
 ### Methods
 
@@ -288,16 +289,16 @@ The `message` property and the slotted content come from the application.
 
 | Name       | Cancellable | Description                                                        |
 | ---------- | ----------- | ------------------------------------------------------------------ |
-| igcOpening | true        | Emitted before the tooltip begins to open. Can be canceled to prevent opening. |
-| igcOpened  | false       | Emitted after the tooltip has successfully opened and is visible.  |
-| igcClosing | true        | Emitted before the tooltip begins to close. Can be canceled to prevent closing. |
-| igcClosed  | false       | Emitted after the tooltip has been fully removed from view.        |
+| igcOpening | true        | Emitted before the tooltip opens on a user interaction. Can be canceled to prevent opening. |
+| igcOpened  | false       | Emitted after the tooltip opens on a user interaction and is visible. |
+| igcClosing | true        | Emitted before the tooltip closes on a user interaction. Can be canceled to prevent closing. Not emitted for the `Escape` key. |
+| igcClosed  | false       | Emitted after the tooltip closes on a user interaction and is no longer visible. |
 
 ### Slots
 
 | Name           | Description                                                          |
 | -------------- | -------------------------------------------------------------------- |
-| (default)      | Default slot of the tooltip component.                               |
+| (default)      | The content of the tooltip. Replaces the `message` text.             |
 | `close-button` | Slot for a custom sticky-mode close action, such as an icon or button. |
 
 ### CSS Shadow parts
@@ -305,7 +306,7 @@ The `message` property and the slotted content come from the application.
 | Part           | Description                                                        |
 | -------------- | ------------------------------------------------------------------ |
 | `base`         | The wrapping container of the tooltip content.                     |
-| `simple-text`  | The container where the `message` property is rendered.            |
+| `simple-text`  | Added to the base part when the tooltip shows the `message` text, not slotted content. |
 | `close-button` | The default sticky-mode close button.                              |
 
 ## Test scenarios

@@ -36,7 +36,7 @@ const metadata: Meta<IgcSnackbarComponent> = {
     docs: {
       description: {
         component:
-          'A snackbar component is used to provide feedback about an operation\nby showing a brief message at the bottom of the screen.\n\nThe component integrates with the\n[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):\nan Ignite button or a native `<button>` with `command="--show"` / `"--hide"` /\n`"--toggle"` and `commandfor` pointing to this element will call the\ncorresponding method declaratively without any JavaScript.',
+          'Shows a brief message about an operation, with an optional action.\n\nThe component supports the\n[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API).\nA button with `command="--show"`, `"--hide"` or `"--toggle"` and a\n`commandfor` that points to this element calls the matching method.',
       },
     },
     actions: { handles: ['igcAction'] },
@@ -49,27 +49,28 @@ const metadata: Meta<IgcSnackbarComponent> = {
     },
     open: {
       type: 'boolean',
-      description: 'Sets the open state of the component.',
+      description: 'Whether the component is open.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     displayTime: {
       type: 'number',
       description:
-        'Sets the time in milliseconds that the component stays visible.\nThe time stops while the pointer or the keyboard focus is in the\ncomponent, and starts again when both leave.',
+        'The time in milliseconds that the component stays visible. The time\nstops while the pointer or the keyboard focus is in the component, and\nstarts again from the full value when both leave. A value of 0 or less\nkeeps the component open.',
       control: 'number',
       table: { defaultValue: { summary: '4000' } },
     },
     keepOpen: {
       type: 'boolean',
-      description: 'Keeps the component open after the `displayTime` is over.',
+      description:
+        'Whether the component stays open after the `displayTime` is over.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     position: {
       type: { name: 'enum', value: ['bottom', 'middle', 'top'] },
       description:
-        'Sets the position of the component in the viewport or in the container.',
+        'The position of the component in the viewport or in the container.',
       options: ['bottom', 'middle', 'top'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'bottom' } },
@@ -77,7 +78,7 @@ const metadata: Meta<IgcSnackbarComponent> = {
     positioning: {
       type: { name: 'enum', value: ['viewport', 'container'] },
       description:
-        'Sets the positioning strategy of the component.\n\n`viewport` - positions against the viewport, ignoring every ancestor.\n`container` - positions inside the bounding box of the closest visible\nancestor, at the place that `position` sets.',
+        'The positioning strategy of the component.\n\n`viewport` - positions against the viewport, ignoring every ancestor.\n`container` - positions inside the bounding box of the closest visible\nancestor, at the place that `position` sets.',
       options: ['viewport', 'container'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'viewport' } },
@@ -97,20 +98,21 @@ export default metadata;
 interface IgcSnackbarArgs {
   /** The text of the action button. */
   actionText: string;
-  /** Sets the open state of the component. */
+  /** Whether the component is open. */
   open: boolean;
   /**
-   * Sets the time in milliseconds that the component stays visible.
-   * The time stops while the pointer or the keyboard focus is in the
-   * component, and starts again when both leave.
+   * The time in milliseconds that the component stays visible. The time
+   * stops while the pointer or the keyboard focus is in the component, and
+   * starts again from the full value when both leave. A value of 0 or less
+   * keeps the component open.
    */
   displayTime: number;
-  /** Keeps the component open after the `displayTime` is over. */
+  /** Whether the component stays open after the `displayTime` is over. */
   keepOpen: boolean;
-  /** Sets the position of the component in the viewport or in the container. */
+  /** The position of the component in the viewport or in the container. */
   position: 'bottom' | 'middle' | 'top';
   /**
-   * Sets the positioning strategy of the component.
+   * The positioning strategy of the component.
    *
    * `viewport` - positions against the viewport, ignoring every ancestor.
    * `container` - positions inside the bounding box of the closest visible

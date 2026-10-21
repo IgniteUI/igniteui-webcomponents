@@ -12,7 +12,7 @@ import { styles as shared } from '../dropdown/themes/shared/item/dropdown-item.c
  *
  * @element igc-select-item
  *
- * @slot - Renders the all content bar the prefix and suffix.
+ * @slot - Renders all content except the prefix and suffix.
  * @slot prefix - Renders content before the main content area.
  * @slot suffix - Renders content after the main content area.
  *
@@ -30,7 +30,8 @@ export default class IgcSelectItemComponent extends IgcBaseOptionLikeComponent {
   }
 
   /**
-   * Whether the item is active.
+   * Whether the item is active. The active item is the target of keyboard
+   * navigation and the only item in the tab order.
    * @attr
    */
   @property({ type: Boolean, reflect: true })

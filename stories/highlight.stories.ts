@@ -38,7 +38,7 @@ const metadata: Meta<IgcHighlightComponent> = {
     docs: {
       description: {
         component:
-          'The highlight component provides efficient searching and highlighting of text\nprojected into it via its default slot. It uses the native CSS Custom Highlight API\nto apply highlight styles to matched text nodes without modifying the DOM.\n\nThe component supports case-sensitive matching, programmatic navigation between\nmatches, and automatic scroll-into-view of the active match.',
+          'Searches the text projected into its default slot and highlights the matches.\nIt uses the native CSS Custom Highlight API, so it does not change the DOM.\n\nThe component supports case-sensitive matching and programmatic navigation between\nmatches. Navigation scrolls the active match into view.',
       },
     },
   },
@@ -46,7 +46,7 @@ const metadata: Meta<IgcHighlightComponent> = {
     caseSensitive: {
       type: 'boolean',
       description:
-        'Whether to match the searched text with case sensitivity in mind.\nWhen `true`, only exact-case occurrences of `searchText` are highlighted.',
+        'Whether the matching distinguishes upper and lower case.\nWhen `true`, only exact-case occurrences of `searchText` are highlighted.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -65,7 +65,7 @@ export default metadata;
 
 interface IgcHighlightArgs {
   /**
-   * Whether to match the searched text with case sensitivity in mind.
+   * Whether the matching distinguishes upper and lower case.
    * When `true`, only exact-case occurrences of `searchText` are highlighted.
    */
   caseSensitive: boolean;

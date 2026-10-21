@@ -28,6 +28,8 @@
 - [Tooling](#tooling)
   - [Editor metadata](#editor-metadata)
   - [AI agent skills](#ai-agent-skills)
+  - [Agent documentation (llms.txt)](#agent-documentation-llmstxt)
+  - [MCP servers](#mcp-servers)
 - [Accessibility](#accessibility)
 - [Security and supply chain](#security-and-supply-chain)
 - [Privacy](#privacy)
@@ -208,10 +210,18 @@ The package also includes reusable skills for GitHub Copilot and other compatibl
 - [Integrating with React, Angular, Vue, or vanilla JavaScript](skills/igniteui-wc-integrate-with-framework/SKILL.md)
 - [Customizing component themes](skills/igniteui-wc-customize-component-theme/SKILL.md)
 - [Generating a view from an image or design](skills/igniteui-wc-generate-from-image-design/SKILL.md)
+- [Building a view from a Figma design](skills/igniteui-wc-figma-to-app/SKILL.md)
+- [Configuring a data grid](skills/igniteui-wc-grids/SKILL.md)
 - [Optimizing bundle size](skills/igniteui-wc-optimize-bundle-size/SKILL.md)
 - [Migrating from Grid Lite to the premium Data Grid](skills/igniteui-wc-migrate-grid-lite-to-premium/SKILL.md)
 
-After you install the package, copy the skills into your repository so that your agent can find them automatically:
+To install the skills, use the [`skills` CLI](https://github.com/vercel-labs/skills). It asks which skills to install and for which agents:
+
+```sh
+npx skills add IgniteUI/igniteui-webcomponents
+```
+
+You can also copy the skills from the package into your repository, so that your agent finds them automatically:
 
 ```sh
 # Unix/macOS
@@ -224,6 +234,29 @@ Copy-Item -Recurse node_modules\igniteui-webcomponents\skills\* .github\skills\
 ```
 
 See the [AI agent skills guide](skills/README.md) for example prompts, supported workflows, and additional installation locations.
+
+### Agent documentation (llms.txt)
+
+The package includes API documentation for AI agents in the [llms.txt](https://llmstxt.org) format. The build generates it from the Custom Elements Manifest, so it matches the installed version.
+
+| Package path                                  | Description                                                                                             |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `igniteui-webcomponents/llms.txt`             | The index: usage notes, a link to the page of each component, the skills and other resources            |
+| `igniteui-webcomponents/docs/<tag>.md`        | The API of one component: properties, methods, events, slots, CSS parts and CSS custom properties       |
+| `igniteui-webcomponents/llms-full.txt`        | The usage notes and all the component pages in one file                                                 |
+
+Tell your agent to read `node_modules/igniteui-webcomponents/llms.txt`. An agent without the package can read the files from an npm CDN, for example `https://cdn.jsdelivr.net/npm/igniteui-webcomponents/llms.txt`. The guides on the documentation site have their own [llms.txt index](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/llms.txt).
+
+### MCP servers
+
+Two free MCP servers (MIT license) give AI agents tools for Ignite UI:
+
+| Server                | Command                                         | Tools                                                                                     |
+| --------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Ignite UI CLI MCP     | `npx -y igniteui-cli mcp`                       | Search the documentation and the API reference, list components, scaffold a project      |
+| Ignite UI Theming MCP | `npx -y igniteui-theming igniteui-theming-mcp`  | Create palettes, themes, typography and component themes, read the design tokens          |
+
+To configure the two servers and the skills for your agents in one step, run `npx igniteui-cli ai-config` in your project.
 
 ## Accessibility
 

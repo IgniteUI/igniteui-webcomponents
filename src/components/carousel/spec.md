@@ -51,6 +51,7 @@
 |       1 | 2026-09-21 | Initial specification             |
 |       2 | 2026-10-14 | No role description on the slides |
 |       3 | 2026-10-19 | Role description from `carousel_role_description` |
+|       4 | 2026-10-21 | API descriptions aligned with the JSDoc.          |
 
 ## Overview
 
@@ -242,16 +243,16 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 
 | Property                    | Attribute                      | Reflected | Type                              | Default | Description                                                          |
 | --------------------------- | ------------------------------ | --------- | --------------------------------- | ------- | -------------------------------------------------------------------- |
-| `disableLoop`               | `disable-loop`                 | yes       | `boolean`                         | `false` | Whether to stop instead of rotating back to the first slide.          |
-| `disablePauseOnInteraction` | `disable-pause-on-interaction` | yes       | `boolean`                         | `false` | Whether to ignore user interactions and keep rotating.                |
-| `hideNavigation`            | `hide-navigation`              | yes       | `boolean`                         | `false` | Whether to skip rendering the navigation buttons.                     |
-| `hideIndicators`            | `hide-indicators`              | yes       | `boolean`                         | `false` | Whether to skip rendering the indicator controls.                     |
+| `disableLoop`               | `disable-loop`                 | yes       | `boolean`                         | `false` | Whether the carousel stops at the first and the last slide instead of looping. |
+| `disablePauseOnInteraction` | `disable-pause-on-interaction` | yes       | `boolean`                         | `false` | Whether the carousel keeps playing when the user hovers over it or moves the focus into it. |
+| `hideNavigation`            | `hide-navigation`              | yes       | `boolean`                         | `false` | Whether the navigation buttons are hidden. |
+| `hideIndicators`            | `hide-indicators`              | yes       | `boolean`                         | `false` | Whether the indicator controls (dots) are hidden. |
 | `vertical`                  | `vertical`                     | yes       | `boolean`                         | `false` | Whether the carousel is vertically aligned.                           |
-| `indicatorsOrientation`     | `indicators-orientation`       | no        | `"start" \| "end"`                | `end`   | The position of the indicator controls.                               |
-| `indicatorsLabelFormat`     | `indicators-label-format`      | no        | `string`                          | `slide {0}` | The format of the label of an indicator.                          |
-| `slidesLabelFormat`         | `slides-label-format`          | no        | `string`                          | `{0} of {1}` | The format of the label of a slide and of the indicators label.  |
-| `interval`                  | `interval`                     | no        | `number \| undefined`             | —       | The time in milliseconds between two slides.                          |
-| `maximumIndicatorsCount`    | `maximum-indicators-count`     | no        | `number`                          | `10`    | Above this number of slides a label replaces the dots.                |
+| `indicatorsOrientation`     | `indicators-orientation`       | no        | `"start" \| "end"`                | `end`   | The position of the indicator controls (dots). |
+| `indicatorsLabelFormat`     | `indicators-label-format`      | no        | `string`                          | `slide {0}` | The format of the `aria-label` of the carousel indicators. Each `{0}` changes to the number of the corresponding slide. |
+| `slidesLabelFormat`         | `slides-label-format`          | no        | `string`                          | `{0} of {1}` | The format of the `aria-label` of the carousel slides, and of the label that shows when the number of slides is greater than `maximumIndicatorsCount`. Each `{0}` changes to the number of the slide, and each `{1}` to the total number of slides. |
+| `interval`                  | `interval`                     | no        | `number \| undefined`             | —       | The duration in milliseconds between changing the active slide. A positive value starts the automatic rotation. |
+| `maximumIndicatorsCount`    | `maximum-indicators-count`     | no        | `number`                          | `10`    | The maximum number of indicator controls (dots) that can be shown. With more slides, a label shows instead of the dots. |
 | `animationType`             | `animation-type`               | no        | `"slide" \| "fade" \| "none"`     | `slide` | The animation played when the active slide changes.                   |
 | `slides`                    | —                              | —         | `IgcCarouselSlideComponent[]`     | —       | The slides of the carousel. Read-only.                                |
 | `total`                     | —                              | —         | `number`                          | —       | The number of slides. Read-only.                                      |
@@ -265,15 +266,15 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 
 | Property   | Attribute  | Reflected | Type      | Default | Description                              |
 | ---------- | ---------- | --------- | --------- | ------- | ---------------------------------------- |
-| `active`   | `active`   | yes       | `boolean` | `false` | Whether the slide is the active one.      |
-| `previous` | `previous` | yes       | `boolean` | `false` | Whether the slide was the previous one.   |
+| `active`   | `active`   | yes       | `boolean` | `false` | Whether the slide is the active slide of the carousel. |
+| `previous` | `previous` | yes       | `boolean` | `false` | Whether the slide is the outgoing slide of a running transition. The carousel sets this value. |
 
 `igc-carousel-indicator`
 
 | Property | Attribute | Reflected | Type      | Default | Description                                  |
 | -------- | --------- | --------- | --------- | ------- | -------------------------------------------- |
-| `active` | —         | —         | `boolean` | `false` | Whether the indicator is in its active state. |
-| `index`  | —         | —         | `number`  | `0`     | The position of the indicator in the set.     |
+| `active` | —         | —         | `boolean` | `false` | Whether the indicator is in its active state. The carousel sets this value. |
+| `index`  | —         | —         | `number`  | `0`     | The zero-based position of the indicator in the set. The carousel sets this value. |
 
 ### Methods
 
@@ -281,9 +282,9 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 | -------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | `play`   | `(): void`                                                                                  | Resumes the rotation of the slides.                               |
 | `pause`  | `(): void`                                                                                  | Pauses the rotation of the slides.                                |
-| `next`   | `(): Promise<boolean>`                                                                      | Moves to the next slide and resolves with whether it happened.    |
-| `prev`   | `(): Promise<boolean>`                                                                      | Moves to the previous slide and resolves with whether it happened. |
-| `select` | `(slideOrIndex: IgcCarouselSlideComponent \| number, animationDirection?: 'next' \| 'prev'): Promise<boolean>` | Moves to the given slide. |
+| `next`   | `(): Promise<boolean>`                                                                      | Switches to the next slide, runs any animations, and returns whether the operation was successful. |
+| `prev`   | `(): Promise<boolean>`                                                                      | Switches to the previous slide, runs any animations, and returns whether the operation was successful. |
+| `select` | `(slideOrIndex: IgcCarouselSlideComponent \| number, animationDirection?: 'next' \| 'prev'): Promise<boolean>` | Switches to the passed-in slide or to the slide at the given index, runs any animations, and returns whether the operation was successful. |
 
 ### Events
 
@@ -302,8 +303,8 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 | `igc-carousel`           | `previous-button` | The content of the previous navigation button.                              |
 | `igc-carousel`           | `next-button`     | The content of the next navigation button.                                  |
 | `igc-carousel-slide`     | default           | The content of the slide.                                                   |
-| `igc-carousel-indicator` | default           | The inactive state of the indicator.                                        |
-| `igc-carousel-indicator` | `active`          | The active state of the indicator.                                          |
+| `igc-carousel-indicator` | default           | Renders the inactive state of the indicator.                                |
+| `igc-carousel-indicator` | `active`          | Renders the active state of the indicator.                                  |
 
 ### CSS Shadow parts
 
@@ -317,6 +318,7 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 | `dot`        | The container of a dot indicator.                                       |
 | `active`     | The container of the active dot indicator.                              |
 | `label`      | The label shown in place of the indicators.                             |
+| `indicators` | The wrapper of the indicators, or of the label that replaces them.      |
 | `start`      | The wrapper of the indicators while `indicators-orientation` is `start`. |
 
 `igc-carousel-indicator`

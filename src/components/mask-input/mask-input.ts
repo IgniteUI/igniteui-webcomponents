@@ -28,28 +28,27 @@ const Slots = setSlots(
 /* blazorSupportsVisualChildren */
 /* blazorIndirectRender */
 /**
- * A masked input is an input field where a developer can control user input and format the visible value,
- * based on configurable rules
+ * An input field that restricts user input to a mask pattern and formats the visible value.
  *
  * @element igc-mask-input
  *
- * @slot prefix - Renders content before the input
- * @slot suffix - Renders content after the input
- * @slot helper-text - Renders content below the input
+ * @slot prefix - Renders content before the input.
+ * @slot suffix - Renders content after the input.
+ * @slot helper-text - Renders content below the input.
  * @slot value-missing - Renders content when the required validation fails.
- * @slot bad-input - Renders content when a required mask pattern validation fails.
- * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot bad-input - Renders content when the value does not fill the required positions of the mask.
+ * @slot custom-error - Renders content when a custom message is set with `setCustomValidity()`.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcInput - Emitted when the control receives user input
- * @fires igcChange - Emitted when an alteration of the control's value is committed by the user
+ * @fires igcInput - Emitted when the control receives user input.
+ * @fires igcChange - Emitted when the user commits a change to the value of the control.
  *
- * @csspart container - The main wrapper that holds all main input elements
- * @csspart input - The native input element
- * @csspart label - The native label element
- * @csspart prefix - The prefix wrapper
- * @csspart suffix - The suffix wrapper
- * @csspart helper-text - The helper text wrapper
+ * @csspart container - The main wrapper that holds all main input elements.
+ * @csspart input - The native input element.
+ * @csspart label - The native label element.
+ * @csspart prefix - The prefix wrapper.
+ * @csspart suffix - The suffix wrapper.
+ * @csspart helper-text - The helper text wrapper.
  */
 
 export default class IgcMaskInputComponent extends MaskBehaviorMixin(
@@ -94,12 +93,12 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   //#region Public attributes and properties
 
   /**
-   * Dictates the behavior when retrieving the value of the control:
+   * The format of the `value` and of the submitted form value:
    *
-   * - `raw`: Returns clean input (e.g. "5551234567")
-   * - `withFormatting`: Returns with mask formatting (e.g. "(555) 123-4567")
+   * - `raw`: The input without the mask literals and prompts (e.g. "5551234567")
+   * - `withFormatting`: The input with the mask formatting (e.g. "(555) 123-4567")
    *
-   * Empty values always return an empty string, regardless of the value mode.
+   * An empty value is always an empty string, regardless of the value mode.
    * @attr value-mode
    * @default 'raw'
    */
@@ -108,9 +107,9 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
-   * The value of the input.
+   * The value of the control. Its format depends on `valueMode`.
    *
-   * Regardless of the currently set `value-mode`, an empty value returns an empty string.
+   * An empty value is always an empty string, regardless of the value mode.
    *
    * @attr
    */
@@ -132,7 +131,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   }
 
   /**
-   * The masked pattern of the component.
+   * The mask pattern of the control.
    *
    * @attr
    * @default 'CCCCCCCCCC'

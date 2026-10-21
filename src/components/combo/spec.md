@@ -54,6 +54,7 @@
 |       5 | 2026-10-02 | Forward the host `aria-describedby`; no `aria-disabled` on the native input           |
 |       6 | 2026-10-05 | The list keeps its stylesheet on a theme change                                       |
 |       7 | 2026-10-12 | The group header template gets the group `key`; its `item` is deprecated              |
+|       8 | 2026-10-21 | API descriptions aligned with the JSDoc.                                              |
 
 ## Overview
 
@@ -297,39 +298,37 @@ Typing while the component is focused filters the list down to the closest match
 | Property               | Attribute                  | Reflected | Type                                | Default           | Description                                                     |
 | ---------------------- | -------------------------- | --------- | ----------------------------------- | ----------------- | ---------------------------------------------------------------- |
 | data                   | -                          | No        | `T[]`                               | `[]`              | The data source used to generate the list of options.           |
-| value                  | value                      | No        | `ComboValue<T>[]`                   | `[]`              | The current selection, by value key when one is provided.       |
+| value                  | value                      | No        | `ComboValue<T>[]`                   | `[]`              | The values of the selected items. With a `valueKey`, each value is that field of an item. Without it, each value is the item itself. |
 | selection              | -                          | No        | `T[]`                               | `[]`              | Read-only. The current selection as records of the data source. |
 | valueKey               | value-key                  | No        | `Keys<T> \| undefined`              | -                 | The key in the data source used when selecting items.           |
-| displayKey             | display-key                | No        | `Keys<T> \| undefined`              | -                 | The key in the data source used to display items in the list.   |
+| displayKey             | display-key                | No        | `Keys<T> \| undefined`              | -                 | The key in the data source used to display items in the list. Falls back to `valueKey`. |
 | groupKey               | group-key                  | No        | `Keys<T> \| string \| undefined`    | -                 | The key in the data source used to group items in the list.     |
-| groupSorting           | group-sorting              | No        | `'asc' \| 'desc' \| 'none'`         | `asc`             | Sorts the items in each group ascending or descending.          |
-| singleSelect           | single-select              | Yes       | `boolean`                           | false             | Enables single selection and moves filtering to the main input. |
+| groupSorting           | group-sorting              | No        | `'asc' \| 'desc' \| 'none'`         | `asc`             | The sort order of the groups, by their group value. With `none`, the groups keep the order of the data source. |
+| singleSelect           | single-select              | Yes       | `boolean`                           | false             | Whether only one item can be selected. In this mode, the main input filters the list of options. |
 | filteringOptions       | filtering-options          | No        | `FilteringOptions<T>`               | -                 | Configures the filtering of the combo.                          |
-| disableFiltering       | disable-filtering          | No        | `boolean`                           | false             | Disables the filtering of the list of options.                  |
-| caseSensitiveIcon      | case-sensitive-icon        | No        | `boolean`                           | false             | Enables the case sensitive search icon in the filtering input.  |
-| disableClear           | disable-clear              | No        | `boolean`                           | false             | Hides the clear button.                                         |
+| disableFiltering       | disable-filtering          | No        | `boolean`                           | false             | Whether the filtering of the list of options is disabled. In multiple selection mode, it also hides the search input. |
+| caseSensitiveIcon      | case-sensitive-icon        | No        | `boolean`                           | false             | Whether the search input shows the icon that toggles case-sensitive filtering. |
+| disableClear           | disable-clear              | No        | `boolean`                           | false             | Whether the clear button is hidden.                             |
 | itemTemplate           | -                          | No        | `ComboItemTemplate<T>`              | -                 | The template for the content of each combo item.                |
 | groupHeaderTemplate    | -                          | No        | `ComboGroupHeaderTemplate<T>`       | -                 | The template for the content of each group header.              |
-| open                   | open                       | Yes       | `boolean`                           | false             | The open state of the component.                                |
+| open                   | open                       | Yes       | `boolean`                           | false             | Whether the component is open.                                |
 | label                  | label                      | No        | `string \| undefined`               | -                 | The label of the control.                                       |
 | placeholder            | placeholder                | No        | `string \| undefined`               | -                 | The placeholder text of the control.                            |
 | placeholderSearch      | placeholder-search         | No        | `string`                            | from the resources | The placeholder text of the search input.                      |
 | outlined               | outlined                   | Yes       | `boolean`                           | false             | Whether the control has an outlined appearance.                 |
-| autofocus              | autofocus                  | No        | `boolean`                           | false             | Whether the control should receive focus automatically.         |
-| autofocusList          | autofocus-list             | No        | `boolean`                           | false             | Focuses the list of options when the menu opens.                |
-| keepOpenOnSelect       | keep-open-on-select        | Yes       | `boolean`                           | false             | Keeps the list open after the user selects an item.             |
-| keepOpenOnOutsideClick | keep-open-on-outside-click | Yes       | `boolean`                           | false             | Keeps the list open when the user clicks outside of it.         |
+| autofocus              | autofocus                  | No        | `boolean`                           | false             | Whether the control takes the focus automatically.              |
+| autofocusList          | autofocus-list             | No        | `boolean`                           | false             | Whether the list of options, not the search input, takes the focus when the list opens. It has no effect in single selection mode. |
 | scrollStrategy         | scroll-strategy            | No        | `PopoverScrollStrategy`             | `hide`            | The behavior of the component when a parent container scrolls.  |
-| required               | required                   | Yes       | `boolean`                           | false             | Makes the component a required field for validation.            |
-| disabled               | disabled                   | Yes       | `boolean`                           | false             | The disabled state of the component.                            |
-| invalid                | invalid                    | No        | `boolean`                           | false             | Sets the control into invalid state (visual state only).        |
+| required               | required                   | Yes       | `boolean`                           | false             | Whether the control is required. A required control that has no value, or is not checked, fails validation.            |
+| disabled               | disabled                   | Yes       | `boolean`                           | false             | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                            |
+| invalid                | invalid                    | No        | `boolean`                           | false             | Whether the control shows the invalid state. It changes only the visual state, not the validity.        |
 | name                   | name                       | Yes       | `string`                            | -                 | The name of the control, submitted with the form data.          |
 | locale                 | locale                     | No        | `string`                            | the inherited or global locale | The locale of the resource strings and of the group sort order. |
-| resourceStrings        | -                          | No        | `IComboResourceStrings`             | EN                | The resource strings for localization.                          |
-| defaultValue           | -                          | No        | `ComboValue<T>[]`                   | -                 | The initial value of the control, restored on a form reset.     |
-| form                   | -                          | No        | `HTMLFormElement \| null`           | -                 | Read-only. The form associated with this element.               |
-| validity               | -                          | No        | `ValidityState`                     | -                 | Read-only. The validity state of the element.                   |
-| validationMessage      | -                          | No        | `string`                            | -                 | Read-only. The validation message of the element.               |
+| resourceStrings        | -                          | No        | `IComboResourceStrings`             | EN                | The texts of the component. The strings that you set replace the strings of the current locale. Reading returns all the strings, with your strings over the locale strings.                          |
+| defaultValue           | -                          | No        | `ComboValue<T>[]`                   | -                 | The default value of the control. A form reset restores the value to it. While the value is unchanged since the start or the last form reset, a new default also sets the value. The `value` attribute also sets it.     |
+| form                   | -                          | No        | `HTMLFormElement \| null`           | -                 | Read-only. The form that the control is associated with, or `null`.               |
+| validity               | -                          | No        | `ValidityState`                     | -                 | Read-only. The validity state of the control.                   |
+| validationMessage      | -                          | No        | `string`                            | -                 | Read-only. The validation message of the control. It is empty when the control is valid.               |
 | willValidate           | -                          | No        | `boolean`                           | -                 | Read-only. Whether the element is a candidate for validation.   |
 
 ```typescript
@@ -359,26 +358,26 @@ type ComboGroupHeaderTemplate<T extends object> = (props: {
 
 | Name              | Type signature                         | Description                                                                      |
 | ----------------- | -------------------------------------- | -------------------------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`                 | Shows the component.                                                             |
-| hide              | `(): Promise<boolean>`                 | Hides the component.                                                             |
-| toggle            | `(): Promise<boolean>`                 | Toggles the open state of the component.                                         |
-| select            | `(items?: Item<T> \| Item<T>[]): void` | Selects options by reference or value key. Without an argument, selects all.     |
-| deselect          | `(items?: Item<T> \| Item<T>[]): void` | Deselects options by reference or value key. Without an argument, deselects all. |
+| show              | `(): Promise<boolean>`                 | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one.                                                             |
+| hide              | `(): Promise<boolean>`                 | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                             |
+| toggle            | `(): Promise<boolean>`                 | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes.                                         |
+| select            | `(items?: Item<T> \| Item<T>[]): void` | Selects options in the list by reference or by `valueKey` value. It does not emit `igcChange`. Without an argument, it selects all items, or clears the selection in single selection mode. |
+| deselect          | `(items?: Item<T> \| Item<T>[]): void` | Deselects options in the list by reference or by `valueKey` value. It does not emit `igcChange`. Without an argument, it deselects all items. |
 | focus             | `(options?: FocusOptions): void`       | Sets focus on the component.                                                     |
 | blur              | `(): void`                             | Removes focus from the component.                                                |
-| checkValidity     | `(): boolean`                          | Checks validity and emits `invalid` when the control is invalid.                 |
-| reportValidity    | `(): boolean`                          | Checks validity; when invalid, emits `invalid` and focuses the control.          |
-| setCustomValidity | `(message: string): void`              | Sets a custom message. Invalid while `message` is not empty.                     |
+| checkValidity     | `(): boolean`                          | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid.                 |
+| reportValidity    | `(): boolean`                          | Checks validity. As for a native control, an invalid control emits `invalid` and takes the focus. It shows its own validation messages, not the message of the browser. Returns `true` when the control is valid.          |
+| setCustomValidity | `(message: string): void`              | Sets a custom validation message. The control is invalid while the message is not empty. An empty string removes the custom error.                     |
 
 ### Events
 
 | Name       | Cancellable | Description                                       |
 | ---------- | ----------- | ------------------------------------------------- |
-| igcChange  | true        | Emitted before the selection changes. A cancel keeps the selection. |
-| igcOpening | true        | Emitted just before the list of options is opened. |
-| igcOpened  | false       | Emitted after the list of options is opened.      |
-| igcClosing | true        | Emitted just before the list of options is closed. |
-| igcClosed  | false       | Emitted after the list of options is closed.      |
+| igcChange  | true        | Emitted before the user changes the selection. Cancel the event to keep the selection. |
+| igcOpening | true        | Emitted before the user opens the list of options. Cancelable. |
+| igcOpened  | false       | Emitted after the list of options opens on a user action. |
+| igcClosing | true        | Emitted before the user closes the list of options. Cancelable. |
+| igcClosed  | false       | Emitted after the list of options closes on a user action. |
 
 ```typescript
 interface IgcComboChangeEventArgs<T> {
@@ -398,8 +397,8 @@ interface IgcComboChangeEventArgs<T> {
 | `footer`        | Renders a container after the list of options.                                   |
 | `empty`         | Renders content when the list has no items or data.                              |
 | `helper-text`   | Renders content below the input.                                                 |
-| `toggle-icon`   | Renders content inside the suffix container.                                     |
-| `clear-icon`    | Renders content inside the suffix container.                                     |
+| `toggle-icon`   | Renders content that replaces the default toggle icon.                           |
+| `clear-icon`    | Renders content that replaces the default clear icon.                            |
 | `value-missing` | Renders content when the required validation fails.                              |
 | `custom-error`  | Renders content when setCustomValidity(message) is set.                          |
 | `invalid`       | Renders content when the component is in invalid state (validity.valid = false). |
@@ -413,19 +412,21 @@ interface IgcComboChangeEventArgs<T> {
 | `native-input`       | The native input of the main input field.                      |
 | `prefix` / `suffix`  | The prefix and suffix wrappers.                                |
 | `toggle-icon`        | The toggle icon wrapper.                                       |
+| `filled`             | Added to the toggle-icon part when the combo has a value.      |
 | `clear-icon`         | The clear icon wrapper.                                        |
 | `case-icon`          | The case icon wrapper.                                         |
 | `helper-text`        | The helper text wrapper.                                       |
+| `filter-input`       | The wrapper of the search input.                               |
 | `search-input`       | The search input field.                                        |
 | `list-wrapper`       | The list of options wrapper.                                   |
 | `list`               | The list of options box.                                       |
 | `item`               | Each item in the list of options.                              |
-| `group-header`       | Each header in the list of options.                            |
-| `active`             | Appended to the item parts when the item is active.            |
-| `selected`           | Appended to the item parts when the item is selected.          |
-| `checkbox`           | The checkbox of each list item.                                |
-| `checkbox-indicator` | The checkbox indicator of each list item.                      |
-| `checked`            | Appended to the checkbox parts when the checkbox is checked.   |
+| `group-header`       | Each group header in the list of options.                      |
+| `active`             | Added to the item part when the item is active, and to the case-icon part while case-sensitive filtering is on. |
+| `selected`           | Added to the item part when the item is selected.              |
+| `checkbox`           | The checkbox of each item in the list.                         |
+| `checkbox-indicator` | The checkbox indicator of each item in the list.               |
+| `checked`            | Added to the checkbox and checkbox-indicator parts when the checkbox is checked. |
 | `header` / `footer`  | The containers holding the header and footer content.          |
 | `empty`              | The container holding the empty content.                       |
 

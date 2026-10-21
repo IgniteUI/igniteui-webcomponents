@@ -3,6 +3,8 @@ license: MIT
 name: skill-authoring
 description: "Provides rules for writing or updating a SKILL.md in this repository: frontmatter validation for license, name and description, the WHEN TO USE and WHEN NOT TO USE description format, and the 500-line body budget with progressive disclosure into reference files. WHEN TO USE: creating a new skill under .agents/skills/ or skills/, or editing an existing skill's frontmatter, scope, or length. WHEN NOT TO USE: writing component code, styles, or tests (use create-new-component, add-component-property, or update-component-styles), reviewing a component pull request (use review-component-pr), or changing the coding rules themselves (edit .github/CODING_GUIDELINES.md)."
 user-invocable: true
+metadata:
+  internal: true
 ---
 
 # Ignite UI for Web Components — Skill Authoring
@@ -22,6 +24,7 @@ Quick-reference for writing a `SKILL.md` that agents can discover and load relia
 | `license` | Required. Must specify the license under which the skill is released. Default is MIT. |
 | `name` | Required. Max 64 characters. Lowercase letters, numbers, and hyphens only. No XML tags. No reserved words (`anthropic`, `claude`). Public skills use the `igniteui-wc-` prefix; internal skills use a plain kebab-case name. |
 | `description` | Required. Non-empty. Max 1,024 characters. No XML tags. |
+| `metadata.internal` | Required for internal skills, absent from public skills. Set it to the YAML boolean `true`, not the string `"true"`. The [`skills` CLI](https://github.com/vercel-labs/skills) then hides the skill, so `npx skills add IgniteUI/igniteui-webcomponents` offers only the public skills. |
 
 Write the description in the third person: say what the skill covers, then add both markers:
 
@@ -38,7 +41,7 @@ Agents see only `name` and `description` until they load the skill, so the descr
 
 ## Checklist
 
-1. Frontmatter passes the rules above.
+1. Frontmatter passes the rules above. An internal skill has `metadata.internal: true`.
 2. The description includes `WHEN TO USE:` and `WHEN NOT TO USE:`.
 3. The body is under 500 lines, and every reference file is linked from `SKILL.md`.
 4. The skill is listed in the Skills table of its README: [.agents/skills/README.md](../README.md) for internal skills, [skills/README.md](../../../skills/README.md) for public skills. Internal skills are also listed in the Workflow section of [.agents/context/project.md](../../context/project.md).

@@ -50,7 +50,7 @@ const metadata: Meta<IgcVirtualScrollComponent> = {
     docs: {
       description: {
         component:
-          'A virtual scroll component for large lists. Only the items visible in the\nviewport are rendered.',
+          'A virtual scroll component for large lists. Only the items visible in the\nviewport are rendered.\n\nThe component renders into its light DOM, so `::part()` does not apply to its\nparts. Select them with attribute selectors, such as `[part~="virtualization-track"]`.',
       },
     },
     actions: { handles: ['igcStateChange', 'igcDataRequest'] },
@@ -58,7 +58,7 @@ const metadata: Meta<IgcVirtualScrollComponent> = {
   argTypes: {
     orientation: {
       type: { name: 'enum', value: ['horizontal', 'vertical'] },
-      description: 'Scroll orientation of the virtual scroll.',
+      description: 'The scroll axis of the component.',
       options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'vertical' } },
@@ -84,7 +84,7 @@ const metadata: Meta<IgcVirtualScrollComponent> = {
 export default metadata;
 
 interface IgcVirtualScrollArgs {
-  /** Scroll orientation of the virtual scroll. */
+  /** The scroll axis of the component. */
   orientation: 'horizontal' | 'vertical';
   /**
    * Number of extra items to render beyond the visible area of the viewport.

@@ -137,7 +137,7 @@ const Slots = setSlots(
  * @csspart title - The title container of the tile.
  * @csspart actions - The actions container of the tile header.
  * @csspart content-container - The container wrapping the tile’s main content.
- * @csspart tile-container - The wrapper around the tile content and its resize adorners.
+ * @csspart tile-container - The wrapper around the tile content and its resize adorners. Present only while the tile can resize.
  * @csspart trigger-side - The side resize handle of the tile.
  * @csspart trigger - The corner resize handle of the tile.
  * @csspart trigger-bottom - The bottom resize handle of the tile.
@@ -311,7 +311,7 @@ export default class IgcTileComponent extends I18nMixin(
   public rowStart: number | null = null;
 
   /**
-   * Indicates whether the tile occupies the whole screen.
+   * Whether the tile occupies the whole screen.
    *
    * @remarks
    * To enter fullscreen from a custom `fullscreen-action`, call
@@ -325,7 +325,7 @@ export default class IgcTileComponent extends I18nMixin(
   }
 
   /**
-   * Indicates whether the tile occupies all available space within the layout.
+   * Whether the tile occupies all available space within the layout.
    *
    * @attr maximized
    */

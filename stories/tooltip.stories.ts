@@ -38,7 +38,7 @@ const metadata: Meta<IgcTooltipComponent> = {
     docs: {
       description: {
         component:
-          'Provides a way to display supplementary information related to an element when a user interacts with it (e.g., hover, focus).\nIt offers features such as placement customization, delays, sticky mode, and animations.',
+          'Shows supplementary information about an element when the user interacts with it, for example on hover or focus.\nIt supports custom placement, delays, a sticky mode and animations.',
       },
     },
     actions: {
@@ -103,7 +103,7 @@ const metadata: Meta<IgcTooltipComponent> = {
     scrollStrategy: {
       type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
       description:
-        'Sets the behavior of the tooltip when the parent container scrolls.\n\nIf the value is `hide`, the tooltip hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the tooltip stays visible and anchored.\n\nIf the value is `close`, the tooltip closes on each scroll. The tooltip\nalso closes if you set the `sticky` property. The Escape key behaves the\nsame way.',
+        'The behavior of the tooltip when an ancestor scroll container scrolls.\n\nIf the value is `hide`, the tooltip hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the tooltip stays visible and anchored.\n\nIf the value is `close`, the tooltip closes on each scroll, also in\nsticky mode. The `Escape` key also closes a sticky tooltip.',
       options: ['scroll', 'hide', 'close'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'hide' } },
@@ -116,41 +116,42 @@ const metadata: Meta<IgcTooltipComponent> = {
     showTriggers: {
       type: 'string',
       description:
-        'Which event triggers will show the tooltip.\nExpects a comma separated string of different event triggers.',
+        'The anchor events that show the tooltip.\nA list of event names, separated by commas or spaces.',
       control: 'text',
       table: { defaultValue: { summary: 'pointerenter,focusin' } },
     },
     hideTriggers: {
       type: 'string',
       description:
-        'Which event triggers will hide the tooltip.\nExpects a comma separated string of different event triggers.',
+        'The anchor events that hide the tooltip.\nA list of event names, separated by commas or spaces.',
       control: 'text',
       table: { defaultValue: { summary: 'pointerleave,click,focusout' } },
     },
     showDelay: {
       type: 'number',
       description:
-        'Specifies the number of milliseconds that should pass before showing the tooltip.',
+        'The time in milliseconds before a show trigger opens the tooltip.\nA negative value is the same as 0.',
       control: 'number',
       table: { defaultValue: { summary: '200' } },
     },
     hideDelay: {
       type: 'number',
       description:
-        'Specifies the number of milliseconds that should pass before hiding the tooltip.',
+        'The time in milliseconds before a hide trigger closes the tooltip.\nA negative value is the same as 0.',
       control: 'number',
       table: { defaultValue: { summary: '300' } },
     },
     message: {
       type: 'string',
-      description: 'Specifies plain text as the tooltip content.',
+      description:
+        'The plain-text content of the tooltip. Slotted content replaces it.',
       control: 'text',
       table: { defaultValue: { summary: '' } },
     },
     sticky: {
       type: 'boolean',
       description:
-        'Specifies if the tooltip remains visible until the user closes it via the close button or Esc key.',
+        'Whether the tooltip stays visible until the user closes it with the close button or the `Escape` key.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -200,37 +201,42 @@ interface IgcTooltipArgs {
     | 'left-start'
     | 'left-end';
   /**
-   * Sets the behavior of the tooltip when the parent container scrolls.
+   * The behavior of the tooltip when an ancestor scroll container scrolls.
    *
    * If the value is `hide`, the tooltip hides while the anchor is fully out
    * of view. `hide` is the default value.
    *
    * If the value is `scroll`, the tooltip stays visible and anchored.
    *
-   * If the value is `close`, the tooltip closes on each scroll. The tooltip
-   * also closes if you set the `sticky` property. The Escape key behaves the
-   * same way.
+   * If the value is `close`, the tooltip closes on each scroll, also in
+   * sticky mode. The `Escape` key also closes a sticky tooltip.
    */
   scrollStrategy: 'scroll' | 'hide' | 'close';
   /** An element instance or an IDREF to use as the anchor for the tooltip. */
   anchor: Element | string;
   /**
-   * Which event triggers will show the tooltip.
-   * Expects a comma separated string of different event triggers.
+   * The anchor events that show the tooltip.
+   * A list of event names, separated by commas or spaces.
    */
   showTriggers: string;
   /**
-   * Which event triggers will hide the tooltip.
-   * Expects a comma separated string of different event triggers.
+   * The anchor events that hide the tooltip.
+   * A list of event names, separated by commas or spaces.
    */
   hideTriggers: string;
-  /** Specifies the number of milliseconds that should pass before showing the tooltip. */
+  /**
+   * The time in milliseconds before a show trigger opens the tooltip.
+   * A negative value is the same as 0.
+   */
   showDelay: number;
-  /** Specifies the number of milliseconds that should pass before hiding the tooltip. */
+  /**
+   * The time in milliseconds before a hide trigger closes the tooltip.
+   * A negative value is the same as 0.
+   */
   hideDelay: number;
-  /** Specifies plain text as the tooltip content. */
+  /** The plain-text content of the tooltip. Slotted content replaces it. */
   message: string;
-  /** Specifies if the tooltip remains visible until the user closes it via the close button or Esc key. */
+  /** Whether the tooltip stays visible until the user closes it with the close button or the `Escape` key. */
   sticky: boolean;
   /**
    * The locale of the component. Without it, the component takes the locale

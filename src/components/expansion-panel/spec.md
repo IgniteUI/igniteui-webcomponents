@@ -44,6 +44,7 @@
 | ------: | ---------- | ----------------------------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                                                   |
 |       2 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
+|       3 | 2026-10-21 | API descriptions aligned with the JSDoc.                                |
 
 ## Overview
 
@@ -183,8 +184,8 @@ The keys apply while the header of the panel has focus.
 
 | Property          | Attribute          | Reflected | Type                                | Default | Description                                                 |
 | ----------------- | ------------------ | --------- | ----------------------------------- | ------- | ------------------------------------------------------------- |
-| open              | open               | Yes       | `boolean`                           | false   | Indicates whether the contents of the control are visible.  |
-| disabled          | disabled           | Yes       | `boolean`                           | false   | Whether the panel is disabled. Disabled panels are ignored for user interactions. |
+| open              | open               | Yes       | `boolean`                           | false   | Whether the panel is expanded and its content is visible.   |
+| disabled          | disabled           | Yes       | `boolean`                           | false   | Whether the panel is disabled. A disabled panel does not respond to user interaction. |
 | indicatorPosition | indicator-position | Yes       | `ExpansionPanelIndicatorPosition`   | `start` | The indicator position of the expansion panel.              |
 
 ### Methods
@@ -199,9 +200,9 @@ The keys apply while the header of the panel has focus.
 
 | Name       | Cancellable | Description                                  |
 | ---------- | ----------- | -------------------------------------------- |
-| igcOpening | true        | Emitted before opening the expansion panel.  |
+| igcOpening | true        | Emitted before the user opens the panel. Cancelable. |
 | igcOpened  | false       | Emitted after the expansion panel is opened. |
-| igcClosing | true        | Emitted before closing the expansion panel.  |
+| igcClosing | true        | Emitted before the user closes the panel. Cancelable. |
 | igcClosed  | false       | Emitted after the expansion panel is closed. |
 
 ### Slots

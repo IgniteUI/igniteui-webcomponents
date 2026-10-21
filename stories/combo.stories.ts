@@ -46,7 +46,7 @@ const metadata: Meta<IgcComboComponent> = {
     docs: {
       description: {
         component:
-          'The Combo component is similar to the Select component in that it provides a list of options from which the user can make a selection.\nIn contrast to the Select component, the Combo component displays all options in a virtualized list of items,\nmeaning the combo box can simultaneously show thousands of options, where one or more options can be selected.\nAdditionally, users can create custom item templates, allowing for robust data visualization.\nThe Combo component features case-sensitive filtering, grouping, complex data binding, dynamic addition of values and more.',
+          'The combo lets the user select one or more options from a list. Unlike the select, it shows the options in a\nvirtualized list, so the list can hold thousands of options.\nThe combo supports custom item templates, case-sensitive filtering, grouping and binding to complex data.',
       },
     },
     actions: {
@@ -69,19 +69,20 @@ const metadata: Meta<IgcComboComponent> = {
     singleSelect: {
       type: 'boolean',
       description:
-        'Enables single selection mode and moves item filtering to the main input.',
+        'Whether only one item can be selected. In this mode, the main input\nfilters the list of options.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     autofocus: {
       type: 'boolean',
-      description: 'Whether the control should receive focus automatically.',
+      description: 'Whether the control takes the focus automatically.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     autofocusList: {
       type: 'boolean',
-      description: 'Focuses the list of options when the menu opens.',
+      description:
+        'Whether the list of options, not the search input, takes the focus when\nthe list opens. It has no effect in single selection mode.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -108,7 +109,7 @@ const metadata: Meta<IgcComboComponent> = {
     displayKey: {
       type: 'string',
       description:
-        'The key in the data source used to display items in the list.',
+        'The key in the data source used to display items in the list. Falls back\nto `valueKey`.',
       control: 'text',
     },
     groupKey: {
@@ -120,7 +121,7 @@ const metadata: Meta<IgcComboComponent> = {
     groupSorting: {
       type: { name: 'enum', value: ['none', 'asc', 'desc'] },
       description:
-        'Sorts the items in each group by ascending or descending order.',
+        'The sort order of the groups, by their group value. With `none`, the\ngroups keep the order of the data source.',
       options: ['none', 'asc', 'desc'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'asc' } },
@@ -128,19 +129,20 @@ const metadata: Meta<IgcComboComponent> = {
     caseSensitiveIcon: {
       type: 'boolean',
       description:
-        'Enables the case sensitive search icon in the filtering input.',
+        'Whether the search input shows the icon that toggles case-sensitive\nfiltering.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     disableFiltering: {
       type: 'boolean',
-      description: 'Disables the filtering of the list of options.',
+      description:
+        'Whether the filtering of the list of options is disabled. In multiple\nselection mode, it also hides the search input.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     disableClear: {
       type: 'boolean',
-      description: 'Hides the clear button.',
+      description: 'Whether the clear button is hidden.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -153,7 +155,7 @@ const metadata: Meta<IgcComboComponent> = {
     required: {
       type: 'boolean',
       description:
-        'When set, makes the component a required field for validation.',
+        'Whether the control is required. A required control that has no value,\nor is not checked, fails validation.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -164,26 +166,28 @@ const metadata: Meta<IgcComboComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component.',
+      description:
+        'Whether the control is disabled. A disabled control is not validated,\nand the form does not submit its value.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
-      description: 'Sets the control into invalid state (visual state only).',
+      description:
+        'Whether the control shows the invalid state. It changes only the visual\nstate, not the validity.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     open: {
       type: 'boolean',
-      description: 'Sets the open state of the component.',
+      description: 'Whether the component is open.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     scrollStrategy: {
       type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
       description:
-        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
+        'The behavior of the component when a parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
       options: ['scroll', 'hide', 'close'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'hide' } },
@@ -211,11 +215,17 @@ export default metadata;
 interface IgcComboArgs {
   /** Whether the control has an outlined appearance. */
   outlined: boolean;
-  /** Enables single selection mode and moves item filtering to the main input. */
+  /**
+   * Whether only one item can be selected. In this mode, the main input
+   * filters the list of options.
+   */
   singleSelect: boolean;
-  /** Whether the control should receive focus automatically. */
+  /** Whether the control takes the focus automatically. */
   autofocus: boolean;
-  /** Focuses the list of options when the menu opens. */
+  /**
+   * Whether the list of options, not the search input, takes the focus when
+   * the list opens. It has no effect in single selection mode.
+   */
   autofocusList: boolean;
   /** The label of the control. */
   label: string;
@@ -225,17 +235,29 @@ interface IgcComboArgs {
   placeholderSearch: string;
   /** The key in the data source used when selecting items. */
   valueKey: string;
-  /** The key in the data source used to display items in the list. */
+  /**
+   * The key in the data source used to display items in the list. Falls back
+   * to `valueKey`.
+   */
   displayKey: string;
   /** The key in the data source used to group items in the list. */
   groupKey: string;
-  /** Sorts the items in each group by ascending or descending order. */
+  /**
+   * The sort order of the groups, by their group value. With `none`, the
+   * groups keep the order of the data source.
+   */
   groupSorting: 'none' | 'asc' | 'desc';
-  /** Enables the case sensitive search icon in the filtering input. */
+  /**
+   * Whether the search input shows the icon that toggles case-sensitive
+   * filtering.
+   */
   caseSensitiveIcon: boolean;
-  /** Disables the filtering of the list of options. */
+  /**
+   * Whether the filtering of the list of options is disabled. In multiple
+   * selection mode, it also hides the search input.
+   */
   disableFiltering: boolean;
-  /** Hides the clear button. */
+  /** Whether the clear button is hidden. */
   disableClear: boolean;
   /**
    * The locale of the component. Without it, the component takes the locale
@@ -243,18 +265,27 @@ interface IgcComboArgs {
    * locale.
    */
   locale: string;
-  /** When set, makes the component a required field for validation. */
+  /**
+   * Whether the control is required. A required control that has no value,
+   * or is not checked, fails validation.
+   */
   required: boolean;
   /** The name of the control, submitted with the form data. */
   name: string;
-  /** The disabled state of the component. */
+  /**
+   * Whether the control is disabled. A disabled control is not validated,
+   * and the form does not submit its value.
+   */
   disabled: boolean;
-  /** Sets the control into invalid state (visual state only). */
+  /**
+   * Whether the control shows the invalid state. It changes only the visual
+   * state, not the validity.
+   */
   invalid: boolean;
-  /** Sets the open state of the component. */
+  /** Whether the component is open. */
   open: boolean;
   /**
-   * Sets the behavior of the component when the parent container scrolls.
+   * The behavior of the component when a parent container scrolls.
    *
    * If the value is `hide`, the component hides while the anchor is fully out
    * of view. `hide` is the default value.

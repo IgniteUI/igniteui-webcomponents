@@ -20,23 +20,23 @@ import { styles } from './themes/icon.base.css.js';
 import { styles as shared } from './themes/shared/icon.common.css.js';
 
 /**
- * The icon component allows visualizing collections of pre-registered SVG icons.
+ * Shows an SVG icon from a collection of registered icons.
  *
  * @element igc-icon
  *
  * @remarks
  * The icon component renders SVG icons from registered icon collections. Icons can be:
- * - Loaded from the internal collection (built-in icons)
+ * - The internal icons that the library components use
  * - Registered dynamically using `registerIcon` or `registerIconFromText`
  * - Referenced by aliases that resolve differently based on the active theme
  *
- * Icons automatically adapt to the current theme when used within a theme provider.
+ * An alias resolves for the active theme, also inside a theme provider.
  * The component subscribes to the icon registry and updates automatically when icons
  * are registered or references are updated.
  *
  * @example
  * ```html
- * <!-- Use a built-in icon -->
+ * <!-- Use an icon registered in the default collection -->
  * <igc-icon name="star"></igc-icon>
  *
  * <!-- Use an icon from a specific collection -->
@@ -88,14 +88,14 @@ export default class IgcIconComponent extends HydrationMixin(
    * - A direct reference to a registered icon in the specified collection
    * - An alias that resolves to different icons based on the current theme
    *
-   * When the icon name or collection changes, the component automatically
-   * fetches and renders the new icon.
+   * When the icon name or collection changes, the component looks up
+   * and renders the new icon in the registry.
    */
   @property()
   public name = '';
 
   /**
-   * The name of the registered collection for look up of icons.
+   * The registered collection to look the icon up in.
    *
    * @attr collection
    * @default "default"
@@ -109,7 +109,7 @@ export default class IgcIconComponent extends HydrationMixin(
   public collection = 'default';
 
   /**
-   * Whether to flip the icon horizontally. Useful for RTL (right-to-left) layouts.
+   * Whether the icon is flipped horizontally, for example for RTL layouts.
    *
    * @attr mirrored
    * @default false

@@ -67,9 +67,13 @@ const EMPTY_RANGE: VisibleRange = Object.freeze({
  * A virtual scroll component for large lists. Only the items visible in the
  * viewport are rendered.
  *
+ * The component renders into its light DOM, so `::part()` does not apply to its
+ * parts. Select them with attribute selectors, such as `[part~="virtualization-track"]`.
+ *
  * @element igc-virtual-scroll
  *
- * @fires igcStateChange - Emitted when the rendered virtual window changes.
+ * @fires igcStateChange - Emitted when the rendered window, the viewport size or the total content
+ * size changes.
  * @fires igcDataRequest - Emitted when the rendered window comes within a few items of the end
  * of `data`. Also emitted on the first render, when the loaded items do not fill the viewport.
  *
@@ -218,7 +222,7 @@ export default class IgcVirtualScrollComponent<
   public data: T[] = [];
 
   /**
-   * Scroll orientation of the virtual scroll.
+   * The scroll axis of the component.
    * @attr orientation
    * @default 'vertical'
    */
@@ -254,9 +258,9 @@ export default class IgcVirtualScrollComponent<
    * down the list. Use padding on the item, or a gap on a wrapper, instead.
    *
    * Only the current window is in the DOM, so assistive technology cannot
-   * infer an item's position from the markup. Templates that render a role
-   * with set semantics (`option`, `listitem`, `row`, ...) should map the
-   * context's `index` and `count` onto `aria-posinset` and `aria-setsize`.
+   * infer an item's position from the markup. In a template that renders a
+   * role with set semantics (`option`, `listitem`, `row`, ...), map the
+   * context's `index` and `count` to `aria-posinset` and `aria-setsize`.
    *
    * Item elements are recycled (see `keyFunction`), so DOM state that the
    * template does not bind moves to another item, for example the state of a
@@ -299,6 +303,8 @@ export default class IgcVirtualScrollComponent<
 
   constructor() {
     super();
+    // The analyzer records this assignment as an `onSizeChange` member.
+    /** @hidden @internal */
     this._engine.onSizeChange = () => this.requestUpdate();
 
     addHostListeners(this, {

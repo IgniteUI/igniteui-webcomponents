@@ -51,24 +51,24 @@ const metadata: Meta<IgcRangeSliderComponent> = {
     },
     thumbLabelLower: {
       type: 'string',
-      description: 'The aria label for the lower thumb.',
+      description: 'The accessible name of the lower thumb.',
       control: 'text',
     },
     thumbLabelUpper: {
       type: 'string',
-      description: 'The aria label for the upper thumb.',
+      description: 'The accessible name of the upper thumb.',
       control: 'text',
     },
     min: {
       type: 'number',
       description:
-        'The minimum value of the slider scale. Defaults to 0.\n\nIf `min` is greater than `max`, the update keeps the previous `min`. The\nupdate checks the values after all of them are set, so the order of the\nattributes has no effect.\n\nIf `labels` are provided (projected), then `min` is always 0.\n\nIf `lowerBound` is less than `min`, the slider uses `min` as the lower bound.',
+        'The minimum value of the slider scale. Defaults to 0.\n\nIf `min` is greater than `max`, the update keeps the previous `min`. The\nupdate checks the values after all of them are set, so the order of the\nattributes has no effect.\n\nWith slider labels in the default slot, `min` is always 0.\n\nIf `lowerBound` is less than `min`, the slider uses `min` as the lower bound.',
       control: 'number',
     },
     max: {
       type: 'number',
       description:
-        'The maximum value of the slider scale. Defaults to 100.\n\nIf `max` is less than `min`, the update keeps the previous `max`. The\nupdate checks the values after all of them are set, so the order of the\nattributes has no effect.\n\nIf `labels` are provided (projected), then `max` is always the number of\nlabels minus one.\n\nIf `upperBound` is greater than `max`, the slider uses `max` as the upper bound.',
+        'The maximum value of the slider scale. Defaults to 100.\n\nIf `max` is less than `min`, the update keeps the previous `max`. The\nupdate checks the values after all of them are set, so the order of the\nattributes has no effect.\n\nWith slider labels in the default slot, `max` is always the number of\nlabels minus one.\n\nIf `upperBound` is greater than `max`, the slider uses `max` as the upper bound.',
       control: 'number',
     },
     lowerBound: {
@@ -85,27 +85,28 @@ const metadata: Meta<IgcRangeSliderComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'Disables the UI interactions of the slider.',
+      description:
+        'Whether the slider is disabled. A disabled slider ignores user interaction.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     discreteTrack: {
       type: 'boolean',
       description:
-        'Marks the slider track as discrete so it displays the steps.\nIf the `step` is 0, the slider will remain continuous even if `discreteTrack` is `true`.',
+        'Whether the track shows the steps. It has no effect when `step` is 0.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     hideTooltip: {
       type: 'boolean',
-      description: 'Hides the thumb tooltip.',
+      description: 'Whether the thumb tooltip is hidden.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     step: {
       type: 'number',
       description:
-        'Specifies the granularity that the value must adhere to.\n\nIf set to 0 no stepping is implied and any value in the range is allowed.\nA negative step is not valid, so the previous step stays.\nIf `labels` are provided (projected) then the step is always assumed to be 1 since it is a discrete slider.',
+        'The interval between two valid values, counted from `min`.\n\nIf set to 0 no stepping is implied and any value in the range is allowed.\nA negative step is not valid, so the previous step stays.\nWith slider labels in the default slot, the step is always 1.',
       control: 'number',
       table: { defaultValue: { summary: '1' } },
     },
@@ -119,26 +120,27 @@ const metadata: Meta<IgcRangeSliderComponent> = {
     secondaryTicks: {
       type: 'number',
       description:
-        'The number of secondary ticks. It defaults to 0 which means no secondary ticks are displayed.',
+        'The number of secondary ticks between two primary ticks. Without primary\nticks, it is the total number of ticks. The default 0 shows no secondary ticks.',
       control: 'number',
       table: { defaultValue: { summary: '0' } },
     },
     tickOrientation: {
       type: { name: 'enum', value: ['start', 'end', 'mirror'] },
-      description: 'Changes the orientation of the ticks.',
+      description:
+        'Where the ticks are drawn: before the track (`start`), after it (`end`),\nor on both sides (`mirror`).',
       options: ['start', 'end', 'mirror'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'end' } },
     },
     hidePrimaryLabels: {
       type: 'boolean',
-      description: 'Hides the primary tick labels.',
+      description: 'Whether the labels of the primary ticks are hidden.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     hideSecondaryLabels: {
       type: 'boolean',
-      description: 'Hides the secondary tick labels.',
+      description: 'Whether the labels of the secondary ticks are hidden.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -152,7 +154,7 @@ const metadata: Meta<IgcRangeSliderComponent> = {
     valueFormat: {
       type: 'string',
       description:
-        'String format used for the thumb and tick label values in the slider.',
+        'String format used for the thumb and tick label values in the slider.\nThe `{0}` placeholder holds the formatted number.',
       control: 'text',
     },
     tickLabelRotation: {
@@ -189,9 +191,9 @@ interface IgcRangeSliderArgs {
    * attribute is removed, it follows `upperBound`.
    */
   upper: number;
-  /** The aria label for the lower thumb. */
+  /** The accessible name of the lower thumb. */
   thumbLabelLower: string;
-  /** The aria label for the upper thumb. */
+  /** The accessible name of the upper thumb. */
   thumbLabelUpper: string;
   /**
    * The minimum value of the slider scale. Defaults to 0.
@@ -200,7 +202,7 @@ interface IgcRangeSliderArgs {
    * update checks the values after all of them are set, so the order of the
    * attributes has no effect.
    *
-   * If `labels` are provided (projected), then `min` is always 0.
+   * With slider labels in the default slot, `min` is always 0.
    *
    * If `lowerBound` is less than `min`, the slider uses `min` as the lower bound.
    */
@@ -212,7 +214,7 @@ interface IgcRangeSliderArgs {
    * update checks the values after all of them are set, so the order of the
    * attributes has no effect.
    *
-   * If `labels` are provided (projected), then `max` is always the number of
+   * With slider labels in the default slot, `max` is always the number of
    * labels minus one.
    *
    * If `upperBound` is greater than `max`, the slider uses `max` as the upper bound.
@@ -222,36 +224,42 @@ interface IgcRangeSliderArgs {
   lowerBound: number;
   /** The upper bound of the slider value. If not set, the `max` value is applied. */
   upperBound: number;
-  /** Disables the UI interactions of the slider. */
+  /** Whether the slider is disabled. A disabled slider ignores user interaction. */
   disabled: boolean;
-  /**
-   * Marks the slider track as discrete so it displays the steps.
-   * If the `step` is 0, the slider will remain continuous even if `discreteTrack` is `true`.
-   */
+  /** Whether the track shows the steps. It has no effect when `step` is 0. */
   discreteTrack: boolean;
-  /** Hides the thumb tooltip. */
+  /** Whether the thumb tooltip is hidden. */
   hideTooltip: boolean;
   /**
-   * Specifies the granularity that the value must adhere to.
+   * The interval between two valid values, counted from `min`.
    *
    * If set to 0 no stepping is implied and any value in the range is allowed.
    * A negative step is not valid, so the previous step stays.
-   * If `labels` are provided (projected) then the step is always assumed to be 1 since it is a discrete slider.
+   * With slider labels in the default slot, the step is always 1.
    */
   step: number;
   /** The number of primary ticks. It defaults to 0 which means no primary ticks are displayed. */
   primaryTicks: number;
-  /** The number of secondary ticks. It defaults to 0 which means no secondary ticks are displayed. */
+  /**
+   * The number of secondary ticks between two primary ticks. Without primary
+   * ticks, it is the total number of ticks. The default 0 shows no secondary ticks.
+   */
   secondaryTicks: number;
-  /** Changes the orientation of the ticks. */
+  /**
+   * Where the ticks are drawn: before the track (`start`), after it (`end`),
+   * or on both sides (`mirror`).
+   */
   tickOrientation: 'start' | 'end' | 'mirror';
-  /** Hides the primary tick labels. */
+  /** Whether the labels of the primary ticks are hidden. */
   hidePrimaryLabels: boolean;
-  /** Hides the secondary tick labels. */
+  /** Whether the labels of the secondary ticks are hidden. */
   hideSecondaryLabels: boolean;
   /** The locale used to format the thumb and tick label values in the slider. */
   locale: string;
-  /** String format used for the thumb and tick label values in the slider. */
+  /**
+   * String format used for the thumb and tick label values in the slider.
+   * The `{0}` placeholder holds the formatted number.
+   */
   valueFormat: string;
   /** The degrees for the rotation of the tick labels. Defaults to 0. */
   tickLabelRotation: 0 | 90 | -90;

@@ -106,7 +106,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<IgcButton
   //#region Public properties
 
   /**
-   * Disables all buttons inside the group.
+   * Whether all buttons in the group are disabled.
    *
    * @attr disabled
    * @default false
@@ -124,7 +124,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<IgcButton
   public alignment: ContentOrientation = 'horizontal';
 
   /**
-   * Controls the mode of selection for the button group.
+   * The selection mode of the group. A change of the mode clears the selection.
    *
    * @attr selection
    * @default 'single'
@@ -133,7 +133,11 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<IgcButton
   public selection: ButtonGroupSelection = 'single';
 
   /**
-   * Gets/Sets the currently selected buttons (their values).
+   * The values of the selected buttons. A button without a value is not in
+   * the list.
+   *
+   * When set, selects the buttons with these values. A single selection mode
+   * selects only the first matching button.
    * @attr
    */
   @property({ attribute: 'selected-items', type: Array, reflect: false })

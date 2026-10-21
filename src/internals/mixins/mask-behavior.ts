@@ -95,7 +95,7 @@ export declare class MaskBehaviorElementInterface {
   //#region Public attributes and properties
 
   /**
-   * Makes the control a readonly field.
+   * Whether the control is read-only. The user cannot change its value.
    * @attr readonly
    * @default false
    */
@@ -167,7 +167,11 @@ export declare class MaskBehaviorElementInterface {
     direction?: SelectionRangeDirection
   ): void;
 
-  /** Replaces the selected text in the control and re-applies the mask. */
+  /**
+   * Replaces the text from `start` to `end` and applies the mask again.
+   * Without `start` and `end`, it replaces the selected text. `selectMode`
+   * sets the selection after the change.
+   */
   public setRangeText(
     replacement: string,
     start?: number,
@@ -268,7 +272,7 @@ export function MaskBehaviorMixin<
     //#region Public attributes and properties
 
     /**
-     * Makes the control a readonly field.
+     * Whether the control is read-only. The user cannot change its value.
      *
      * @attr readonly
      * @default false
@@ -638,7 +642,11 @@ export function MaskBehaviorMixin<
     }
 
     /* blazorSuppress */
-    /** Replaces the selected text in the control and re-applies the mask. */
+    /**
+     * Replaces the text from `start` to `end` and applies the mask again.
+     * Without `start` and `end`, it replaces the selected text. `selectMode`
+     * sets the selection after the change.
+     */
     public setRangeText(
       replacement: string,
       start?: number,

@@ -52,6 +52,7 @@
 |       4 | 2026-10-02 | Forward the host `aria-describedby`                |
 |       5 | 2026-10-20 | Add `directory`; a label click opens the picker    |
 |       6 | 2026-10-20 | `value = ''` also clears the form value            |
+|       7 | 2026-10-21 | API descriptions aligned with the JSDoc.           |
 
 ## Overview
 
@@ -292,25 +293,25 @@ The browse button is excluded from the tab order, so the control is a single tab
 
 | Property          | Attribute    | Reflected | Type                        | Default | Description                                                                          |
 | ----------------- | ------------ | --------- | --------------------------- | ------- | ------------------------------------------------------------------------------------ |
-| value             | value        | No        | `string`                    | `''`    | The name of the first selected file. Read-only; only `''` can be assigned, to clear. |
+| value             | value        | No        | `string`                    | `''`    | The value of the control: the name of the first selected file, as the native file input gives it. As for the native file input, only an empty string can be set. It clears the selection. |
 | files             | -            | No        | `FileList`                  | -       | Read-only. The list of selected files.                                               |
 | multiple          | multiple     | Yes       | `boolean`                   | false   | Whether the control allows the user to select more than one file.                    |
 | accept            | accept       | No        | `string`                    | `''`    | The file types the control accepts, as a comma-separated list.                       |
 | directory         | directory    | No        | `boolean`                   | false   | Whether the user selects a folder instead of files. The selection then holds every file in the folder and its subfolders, and the `webkitRelativePath` of each file gives its path from the folder. |
 | label             | label        | No        | `string`                    | -       | The label for the control.                                                           |
 | placeholder       | placeholder  | No        | `string`                    | -       | The text shown when no file is chosen.                                               |
-| outlined          | outlined     | Yes       | `boolean`                   | false   | Whether the control will have outlined appearance.                                   |
-| required          | required     | Yes       | `boolean`                   | false   | Makes the component a required field for validation.                                 |
-| disabled          | disabled     | Yes       | `boolean`                   | false   | The disabled state of the component.                                                 |
-| invalid           | invalid      | No        | `boolean`                   | false   | Sets the control into invalid state (visual state only).                             |
+| outlined          | outlined     | Yes       | `boolean`                   | false   | Whether the control has an outlined appearance.                                      |
+| required          | required     | Yes       | `boolean`                   | false   | Whether the control is required. A required control that has no value, or is not checked, fails validation.                                 |
+| disabled          | disabled     | Yes       | `boolean`                   | false   | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                                                 |
+| invalid           | invalid      | No        | `boolean`                   | false   | Whether the control shows the invalid state. It changes only the visual state, not the validity.                             |
 | name              | name         | Yes       | `string`                    | -       | The name of the control, submitted with the form data.                               |
-| autofocus         | autofocus    | No        | `boolean`                   | false   | Whether the control should receive focus automatically.                              |
+| autofocus         | autofocus    | No        | `boolean`                   | false   | Whether the control receives focus automatically.                                    |
 | locale            | locale       | No        | `string`                    | -       | The locale for the resource strings. Falls back to the inherited locale, then the global one.                |
-| resourceStrings   | -            | No        | `IFileInputResourceStrings` | EN      | The resource strings for localization.                                               |
-| form              | -            | No        | `HTMLFormElement \| null`   | -       | Read-only. The form associated with this element.                                    |
-| validity          | -            | No        | `ValidityState`             | -       | Read-only. The validity state of the element.                                        |
-| validationMessage | -            | No        | `string`                    | -       | Read-only. The validation message of the element.                                    |
-| willValidate      | -            | No        | `boolean`                   | -       | Read-only. Whether the element is a candidate for constraint validation.             |
+| resourceStrings   | -            | No        | `IFileInputResourceStrings` | EN      | The texts of the component. The strings that you set replace the strings of the current locale. Reading returns all the strings, with your strings over the locale strings.                                               |
+| form              | -            | No        | `HTMLFormElement \| null`   | -       | Read-only. The form that the control is associated with, or `null`.                                    |
+| validity          | -            | No        | `ValidityState`             | -       | Read-only. The validity state of the control.                                        |
+| validationMessage | -            | No        | `string`                    | -       | Read-only. The validation message of the control. It is empty when the control is valid.                                    |
+| willValidate      | -            | No        | `boolean`                   | -       | Read-only. Whether the control is a candidate for constraint validation.             |
 
 ### Methods
 
@@ -318,9 +319,9 @@ The browse button is excluded from the tab order, so the control is a single tab
 | ----------------- | -------------------------------- | ----------------------------------------------------------------------- |
 | focus             | `(options?: FocusOptions): void` | Sets focus on the control.                                              |
 | blur              | `(): void`                       | Removes focus from the control.                                         |
-| checkValidity     | `(): boolean`                    | Checks validity and emits `invalid` when the control is invalid.        |
-| reportValidity    | `(): boolean`                    | Checks validity; when invalid, emits `invalid` and focuses the control. |
-| setCustomValidity | `(message: string): void`        | Sets a custom message. Invalid while `message` is not empty.            |
+| checkValidity     | `(): boolean`                    | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid.        |
+| reportValidity    | `(): boolean`                    | Checks validity. As for a native control, an invalid control emits `invalid` and takes the focus. It shows its own validation messages, not the message of the browser. Returns `true` when the control is valid. |
+| setCustomValidity | `(message: string): void`        | Sets a custom validation message. The control is invalid while the message is not empty. An empty string removes the custom error.            |
 
 ### Events
 
@@ -334,12 +335,12 @@ The browse button is excluded from the tab order, so the control is a single tab
 | Name                 | Description                                                                      |
 | -------------------- | --------------------------------------------------------------------------------- |
 | `prefix`             | Renders content before the input.                                                |
-| `suffix`             | Renders content after input.                                                     |
+| `suffix`             | Renders content after the input.                                                 |
 | `helper-text`        | Renders content below the input.                                                 |
-| `file-selector-text` | Renders content for the browse button when input type is file.                   |
-| `file-missing-text`  | Renders content when input type is file and no file is chosen.                   |
+| `file-selector-text` | Renders content for the browse button.                                           |
+| `file-missing-text`  | Renders content when no file is chosen.                                          |
 | `value-missing`      | Renders content when the required validation fails.                              |
-| `custom-error`       | Renders content when setCustomValidity(message) is set.                          |
+| `custom-error`       | Renders content when a custom message is set with `setCustomValidity()`.         |
 | `invalid`            | Renders content when the component is in invalid state (validity.valid = false). |
 
 ### CSS Shadow parts
@@ -349,8 +350,8 @@ The browse button is excluded from the tab order, so the control is a single tab
 | `container`            | The main wrapper that holds all main input elements. |
 | `input`                | The native input element.                            |
 | `label`                | The native label element.                            |
-| `file-names`           | The file names wrapper when input type is 'file'.    |
-| `file-selector-button` | The browse button when input type is 'file'.         |
+| `file-names`           | The file names wrapper.                              |
+| `file-selector-button` | The browse button wrapper.                           |
 | `prefix`               | The prefix wrapper.                                  |
 | `suffix`               | The suffix wrapper.                                  |
 | `helper-text`          | The helper text wrapper.                             |

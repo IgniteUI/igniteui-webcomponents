@@ -41,7 +41,7 @@ const metadata: Meta<IgcCalendarComponent> = {
     docs: {
       description: {
         component:
-          'Represents a calendar that lets users\nto select a date value in a variety of different ways.',
+          'A calendar that lets the user select a single date, multiple dates or a date range.',
       },
     },
     actions: { handles: ['igcChange'] },
@@ -50,14 +50,14 @@ const metadata: Meta<IgcCalendarComponent> = {
     hideOutsideDays: {
       type: 'boolean',
       description:
-        'Whether to hide the dates that do not belong to the current active month.',
+        'Whether the calendar hides the dates that do not belong to the current month.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     hideHeader: {
       type: 'boolean',
       description:
-        'Whether to render the calendar header part.\nWhen the calendar selection is set to `multiple` the header is always hidden.',
+        'Whether the calendar hides its header.\nIn `multiple` selection mode, the header is always hidden.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -84,7 +84,8 @@ const metadata: Meta<IgcCalendarComponent> = {
     },
     activeView: {
       type: { name: 'enum', value: ['days', 'months', 'years'] },
-      description: 'The current active view of the component.',
+      description:
+        'The active view of the calendar: `days`, `months` or `years`.',
       options: ['days', 'months', 'years'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'days' } },
@@ -97,26 +98,26 @@ const metadata: Meta<IgcCalendarComponent> = {
     },
     value: {
       type: 'date',
-      description:
-        'The current value of the calendar.\nUsed when selection is set to single',
+      description: 'The value of the calendar in `single` selection mode.',
       control: 'date',
     },
     activeDate: {
       type: 'date',
       description:
-        'Get/Set the date which is shown in view and is highlighted. By default it is the current date.',
+        'The date that the calendar shows and highlights. It changes when the user navigates.\nWithout it, the calendar starts at its value, or at the current date when there is no value.',
       control: 'date',
     },
     selection: {
       type: { name: 'enum', value: ['multiple', 'single', 'range'] },
-      description: 'Sets the type of selection in the component.',
+      description:
+        'The selection mode of the calendar: `single`, `multiple` or `range`.\nA change after the first render clears the value and the values.',
       options: ['multiple', 'single', 'range'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'single' } },
     },
     showWeekNumbers: {
       type: 'boolean',
-      description: 'Whether to show the week numbers.',
+      description: 'Whether the calendar shows the week numbers.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -133,7 +134,7 @@ const metadata: Meta<IgcCalendarComponent> = {
           'saturday',
         ],
       },
-      description: 'Gets/Sets the first day of the week.',
+      description: 'The first day of the week.',
       options: [
         'sunday',
         'monday',
@@ -161,11 +162,11 @@ const metadata: Meta<IgcCalendarComponent> = {
 export default metadata;
 
 interface IgcCalendarArgs {
-  /** Whether to hide the dates that do not belong to the current active month. */
+  /** Whether the calendar hides the dates that do not belong to the current month. */
   hideOutsideDays: boolean;
   /**
-   * Whether to render the calendar header part.
-   * When the calendar selection is set to `multiple` the header is always hidden.
+   * Whether the calendar hides its header.
+   * In `multiple` selection mode, the header is always hidden.
    */
   hideHeader: boolean;
   /** The orientation of the calendar header. */
@@ -177,7 +178,7 @@ interface IgcCalendarArgs {
   orientation: 'horizontal' | 'vertical';
   /** The number of months displayed in the days view. */
   visibleMonths: number;
-  /** The current active view of the component. */
+  /** The active view of the calendar: `days`, `months` or `years`. */
   activeView: 'days' | 'months' | 'years';
   /**
    * The locale of the component. Without it, the component takes the locale
@@ -185,18 +186,21 @@ interface IgcCalendarArgs {
    * locale.
    */
   locale: string;
-  /**
-   * The current value of the calendar.
-   * Used when selection is set to single
-   */
+  /** The value of the calendar in `single` selection mode. */
   value: Date;
-  /** Get/Set the date which is shown in view and is highlighted. By default it is the current date. */
+  /**
+   * The date that the calendar shows and highlights. It changes when the user navigates.
+   * Without it, the calendar starts at its value, or at the current date when there is no value.
+   */
   activeDate: Date;
-  /** Sets the type of selection in the component. */
+  /**
+   * The selection mode of the calendar: `single`, `multiple` or `range`.
+   * A change after the first render clears the value and the values.
+   */
   selection: 'multiple' | 'single' | 'range';
-  /** Whether to show the week numbers. */
+  /** Whether the calendar shows the week numbers. */
   showWeekNumbers: boolean;
-  /** Gets/Sets the first day of the week. */
+  /** The first day of the week. */
   weekStart:
     | 'sunday'
     | 'monday'

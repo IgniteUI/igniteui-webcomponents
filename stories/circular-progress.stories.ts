@@ -33,7 +33,7 @@ const metadata: Meta<IgcCircularProgressComponent> = {
   argTypes: {
     max: {
       type: 'number',
-      description: 'Maximum value of the control.',
+      description: 'The maximum value of the control.',
       control: 'number',
       table: { defaultValue: { summary: '100' } },
     },
@@ -55,19 +55,20 @@ const metadata: Meta<IgcCircularProgressComponent> = {
     },
     animationDuration: {
       type: 'number',
-      description: 'Animation duration in milliseconds.',
+      description: 'The duration of the fill animation in milliseconds.',
       control: 'number',
       table: { defaultValue: { summary: '500' } },
     },
     indeterminate: {
       type: 'boolean',
-      description: 'The indeterminate state of the control.',
+      description:
+        'Whether the progress is indeterminate. An indeterminate progress has no\nvalue and does not show the default label.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     hideLabel: {
       type: 'boolean',
-      description: 'Shows/hides the label of the control.',
+      description: 'Whether the default label is hidden.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -91,17 +92,20 @@ const metadata: Meta<IgcCircularProgressComponent> = {
 export default metadata;
 
 interface IgcCircularProgressArgs {
-  /** Maximum value of the control. */
+  /** The maximum value of the control. */
   max: number;
   /** The value of the control. */
   value: number;
   /** The variant of the control. */
   variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
-  /** Animation duration in milliseconds. */
+  /** The duration of the fill animation in milliseconds. */
   animationDuration: number;
-  /** The indeterminate state of the control. */
+  /**
+   * Whether the progress is indeterminate. An indeterminate progress has no
+   * value and does not show the default label.
+   */
   indeterminate: boolean;
-  /** Shows/hides the label of the control. */
+  /** Whether the default label is hidden. */
   hideLabel: boolean;
   /**
    * Format string for the default label of the control.

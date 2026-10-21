@@ -19,7 +19,8 @@ function BaseFormAssociatedRequired<
     protected _required = false;
 
     /**
-     * When set, makes the component a required field for validation.
+     * Whether the control is required. A required control that has no value,
+     * or is not checked, fails validation.
      * @attr
      * @default false
      */

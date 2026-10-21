@@ -559,11 +559,13 @@
         "navigation",
         "navigation-button",
         "navigation-buttons",
+        "picker-dates",
         "preview",
         "range",
         "selected",
         "single",
         "special",
+        "vertical",
         "week-number",
         "week-number-inner",
         "weekend",
@@ -730,6 +732,7 @@
       "cssParts": [
         "active",
         "dot",
+        "indicators",
         "label",
         "navigation",
         "next",
@@ -980,7 +983,9 @@
       ],
       "cssParts": [
         "base",
+        "checked",
         "control",
+        "focused",
         "indicator",
         "label"
       ],
@@ -1085,6 +1090,7 @@
         "gradient"
       ],
       "cssParts": [
+        "base",
         "fill",
         "gradient_end",
         "gradient_start",
@@ -1116,7 +1122,6 @@
       "properties": {
         "defaultValue": "unknown",
         "disabled": "boolean",
-        "emitEvent": "<\n    K extends keyof ToggleEventMap,\n    D extends UnpackCustomEvent<ToggleEventMap[K]>,\n  >(\n    event: K,\n    eventInitDict?: CustomEventInit<D>\n  ) => boolean",
         "form": "readonly HTMLFormElement | null",
         "format": "ColorFormat ('hex' | 'hsl' | 'rgb')",
         "hideFormats": "boolean",
@@ -1163,18 +1168,24 @@
       ],
       "cssParts": [
         "alpha",
+        "alpha-input",
         "alpha-row",
         "anchor",
         "buttons",
+        "color-picker",
         "copy",
+        "dragging",
         "empty",
         "eye-dropper",
         "format-select",
         "hue",
+        "input-mode",
         "inputs-row",
         "label",
         "main-row",
+        "marker",
         "picker",
+        "picker-canvas",
         "swatch",
         "swatches"
       ],
@@ -1217,7 +1228,6 @@
         "disabled": "boolean",
         "disableFiltering": "boolean",
         "displayKey": "unknown",
-        "emitEvent": "<\n    K extends keyof ToggleEventMap,\n    D extends UnpackCustomEvent<ToggleEventMap[K]>,\n  >(\n    event: K,\n    eventInitDict?: CustomEventInit<D>\n  ) => boolean",
         "filteringOptions": "FilteringOptions<T>",
         "form": "readonly HTMLFormElement | null",
         "groupHeaderTemplate": "ComboGroupHeaderTemplate<T>",
@@ -1286,6 +1296,8 @@
         "checked",
         "clear-icon",
         "empty",
+        "filled",
+        "filter-input",
         "footer",
         "group-header",
         "header",
@@ -1343,7 +1355,6 @@
         "disabled": "boolean",
         "disabledDates": "DateRangeDescriptor[]",
         "displayFormat": "string",
-        "emitEvent": "<\n    K extends keyof ToggleEventMap,\n    D extends UnpackCustomEvent<ToggleEventMap[K]>,\n  >(\n    event: K,\n    eventInitDict?: CustomEventInit<D>\n  ) => boolean",
         "form": "readonly HTMLFormElement | null",
         "headerOrientation": "CalendarHeaderOrientation ('horizontal' | 'vertical')",
         "hideHeader": "boolean",
@@ -1427,6 +1438,7 @@
         "calendar-icon",
         "calendar-icon-open",
         "calendar-label",
+        "calendar-label-inner",
         "clear-icon",
         "container",
         "current",
@@ -1449,6 +1461,7 @@
         "month",
         "month-inner",
         "months-navigation",
+        "months-row",
         "months-view",
         "navigation",
         "navigation-button",
@@ -1467,6 +1480,7 @@
         "year-inner",
         "years-navigation",
         "years-range",
+        "years-row",
         "years-view"
       ],
       "cssProperties": []
@@ -1518,7 +1532,6 @@
         "disabled": "boolean",
         "disabledDates": "DateRangeDescriptor[]",
         "displayFormat": "string",
-        "emitEvent": "<\n    K extends keyof ToggleEventMap,\n    D extends UnpackCustomEvent<ToggleEventMap[K]>,\n  >(\n    event: K,\n    eventInitDict?: CustomEventInit<D>\n  ) => boolean",
         "form": "readonly HTMLFormElement | null",
         "headerOrientation": "CalendarHeaderOrientation ('horizontal' | 'vertical')",
         "hideHeader": "boolean",
@@ -1617,6 +1630,7 @@
         "calendar-icon-open-start",
         "calendar-icon-start",
         "calendar-label",
+        "calendar-label-inner",
         "clear-icon",
         "clear-icon-end",
         "clear-icon-start",
@@ -1635,11 +1649,13 @@
         "hidden",
         "inactive",
         "input",
+        "inputs",
         "label",
         "last",
         "month",
         "month-inner",
         "months-navigation",
+        "months-row",
         "months-view",
         "navigation",
         "navigation-button",
@@ -1660,6 +1676,7 @@
         "year-inner",
         "years-navigation",
         "years-range",
+        "years-row",
         "years-view"
       ],
       "cssProperties": []
@@ -1719,7 +1736,6 @@
         "blur": "() => void",
         "checkValidity": "() => boolean",
         "clear": "() => void",
-        "emitEvent": "(name: string, init?: CustomEventInit) => boolean",
         "focus": "(options?: FocusOptions) => void",
         "hasDateParts": "() => boolean",
         "hasTimeParts": "() => boolean",
@@ -1849,8 +1865,10 @@
         "backdrop",
         "base",
         "content",
+        "footed",
         "footer",
-        "title"
+        "title",
+        "titled"
       ],
       "cssProperties": []
     },
@@ -1892,7 +1910,6 @@
       },
       "properties": {
         "distance": "number",
-        "emitEvent": "<\n    K extends keyof ToggleEventMap,\n    D extends UnpackCustomEvent<ToggleEventMap[K]>,\n  >(\n    event: K,\n    eventInitDict?: CustomEventInit<D>\n  ) => boolean",
         "flip": "boolean",
         "groups": "readonly IgcDropdownGroupComponent[]",
         "items": "readonly IgcDropdownItemComponent[]",
@@ -2370,12 +2387,14 @@
         ""
       ],
       "cssParts": [
+        "base",
         "danger",
         "fill",
         "indeterminate",
         "info",
         "label",
         "primary",
+        "secondary",
         "striped",
         "success",
         "track",
@@ -2577,6 +2596,7 @@
       ],
       "cssParts": [
         "base",
+        "hidden",
         "main",
         "mini"
       ],
@@ -2620,7 +2640,8 @@
       "cssParts": [
         "base",
         "content",
-        "icon"
+        "icon",
+        "mini"
       ],
       "cssProperties": []
     },
@@ -2838,8 +2859,11 @@
       ],
       "cssParts": [
         "base",
+        "checked",
         "control",
-        "label"
+        "focused",
+        "label",
+        "ripple"
       ],
       "cssProperties": []
     },
@@ -2924,10 +2948,13 @@
         "igcChange": "unknown",
         "igcInput": "unknown"
       },
-      "slots": [],
+      "slots": [
+        ""
+      ],
       "cssParts": [
         "base",
         "fill",
+        "focused",
         "inactive",
         "steps",
         "thumb",
@@ -3048,7 +3075,9 @@
       "events": {},
       "slots": [],
       "cssParts": [],
-      "cssProperties": []
+      "cssProperties": [
+        "--color"
+      ]
     },
     "igc-select": {
       "class": "IgcSelectComponent",
@@ -3074,7 +3103,6 @@
         "defaultValue": "unknown",
         "disabled": "boolean",
         "distance": "number",
-        "emitEvent": "<\n    K extends keyof ToggleEventMap,\n    D extends UnpackCustomEvent<ToggleEventMap[K]>,\n  >(\n    event: K,\n    eventInitDict?: CustomEventInit<D>\n  ) => boolean",
         "form": "readonly HTMLFormElement | null",
         "groups": "readonly IgcSelectGroupComponent[]",
         "invalid": "boolean",
@@ -3132,10 +3160,13 @@
         "value-missing"
       ],
       "cssParts": [
+        "base",
+        "filled",
         "helper-text",
         "input",
         "label",
         "list",
+        "native-input",
         "prefix",
         "suffix",
         "toggle-icon"
@@ -3278,10 +3309,13 @@
         "igcChange": "unknown",
         "igcInput": "unknown"
       },
-      "slots": [],
+      "slots": [
+        ""
+      ],
       "cssParts": [
         "base",
         "fill",
+        "focused",
         "inactive",
         "steps",
         "thumb",
@@ -3402,6 +3436,7 @@
         "start"
       ],
       "cssParts": [
+        "base",
         "drag-handle",
         "end-collapse-btn",
         "end-expand-btn",
@@ -3547,7 +3582,9 @@
       ],
       "cssParts": [
         "base",
+        "checked",
         "control",
+        "focused",
         "label",
         "thumb"
       ],
@@ -3577,6 +3614,7 @@
         "suffix"
       ],
       "cssParts": [
+        "base",
         "content",
         "prefix",
         "suffix",
@@ -3968,10 +4006,8 @@
       "properties": {
         "items": "readonly IgcTreeItemComponent[]",
         "locale": "string",
-        "navService": "unknown",
         "resourceStrings": "Required<ITreeResourceStrings>",
         "selection": "TreeSelection ('cascade' | 'multiple' | 'none')",
-        "selectionService": "unknown",
         "singleBranchExpand": "boolean",
         "static tagName": "readonly string",
         "toggleNodeOnClick": "boolean"
@@ -4040,6 +4076,7 @@
       "cssParts": [
         "active",
         "focused",
+        "indentation",
         "indicator",
         "label",
         "select",
@@ -4085,7 +4122,6 @@
         "itemTemplate": "VirtualScrollItemTemplate<T> | null",
         "keyFunction": "VirtualScrollKeyFunction<T> | null",
         "layoutComplete": "readonly Promise<void>",
-        "onSizeChange": "unknown",
         "orientation": "'vertical' | 'horizontal' ('horizontal' | 'vertical')",
         "overScan": "number",
         "static tagName": "readonly string"

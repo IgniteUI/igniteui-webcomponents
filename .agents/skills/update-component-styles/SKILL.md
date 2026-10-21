@@ -1,6 +1,8 @@
 ---
 name: update-component-styles
 description: Update component styling following the SCSS to Lit CSS workflow with proper theme support
+metadata:
+  internal: true
 ---
 
 # Update Component Styles

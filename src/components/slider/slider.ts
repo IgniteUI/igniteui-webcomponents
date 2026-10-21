@@ -20,9 +20,12 @@ export interface IgcSliderComponentEventMap {
 }
 
 /**
- * A slider component used to select numeric value within a range.
+ * A slider component used to select a numeric value within a range.
  *
  * @element igc-slider
+ *
+ * @slot - Renders slider labels. Their text replaces the numbers in the thumb
+ * and tick labels.
  *
  * @fires igcInput - Emitted when a value is changed via thumb drag or keyboard interaction.
  * @fires igcChange - Emitted when a value change is committed on a thumb drag end or keyboard interaction.
@@ -35,6 +38,7 @@ export interface IgcSliderComponentEventMap {
  * @csspart tick-label-inner - The inner element of the tick label.
  * @csspart thumbs - The thumbs container.
  * @csspart thumb - The thumb element.
+ * @csspart focused - Added to the thumb part when the thumb has keyboard focus.
  * @csspart thumb-label - The thumb tooltip label container.
  * @csspart thumb-label-inner - The thumb tooltip label inner element.
  * @csspart track - The track container.

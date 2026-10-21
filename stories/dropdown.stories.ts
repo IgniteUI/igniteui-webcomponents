@@ -49,7 +49,12 @@ const metadata: Meta<IgcDropdownComponent> = {
   title: 'Dropdown',
   component: 'igc-dropdown',
   parameters: {
-    docs: { description: { component: 'Represents a Dropdown component.' } },
+    docs: {
+      description: {
+        component:
+          'Shows a list of items in a popup next to a target element. The user\nselects one item from the list.',
+      },
+    },
     actions: {
       handles: [
         'igcChange',
@@ -101,7 +106,7 @@ const metadata: Meta<IgcDropdownComponent> = {
     flip: {
       type: 'boolean',
       description:
-        "Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.\nWhen true, once enough space is detected on its preferred side, it will flip back.",
+        'Whether the dropdown flips to the opposite side of the target when it does not fit in the visible area.\nIt flips back when its preferred side has enough space again.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -113,35 +118,34 @@ const metadata: Meta<IgcDropdownComponent> = {
     },
     sameWidth: {
       type: 'boolean',
-      description:
-        "Whether the dropdown's width should be the same as the target's one.",
+      description: 'Whether the dropdown has the same width as the target.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     keepOpenOnSelect: {
       type: 'boolean',
       description:
-        'Keeps the dropdown of the component open after the user selects an item.',
+        'Whether the component stays open after the user selects an item.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     keepOpenOnOutsideClick: {
       type: 'boolean',
       description:
-        'Keeps the dropdown of the component open when the user clicks outside of\nit.',
+        'Whether the component stays open when the user clicks outside of it.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     open: {
       type: 'boolean',
-      description: 'Sets the open state of the component.',
+      description: 'Whether the component is open.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     scrollStrategy: {
       type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
       description:
-        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
+        'The behavior of the component when a parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
       options: ['scroll', 'hide', 'close'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'hide' } },
@@ -177,25 +181,22 @@ interface IgcDropdownArgs {
     | 'left-start'
     | 'left-end';
   /**
-   * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
-   * When true, once enough space is detected on its preferred side, it will flip back.
+   * Whether the dropdown flips to the opposite side of the target when it does not fit in the visible area.
+   * It flips back when its preferred side has enough space again.
    */
   flip: boolean;
   /** The distance from the target element. */
   distance: number;
-  /** Whether the dropdown's width should be the same as the target's one. */
+  /** Whether the dropdown has the same width as the target. */
   sameWidth: boolean;
-  /** Keeps the dropdown of the component open after the user selects an item. */
+  /** Whether the component stays open after the user selects an item. */
   keepOpenOnSelect: boolean;
-  /**
-   * Keeps the dropdown of the component open when the user clicks outside of
-   * it.
-   */
+  /** Whether the component stays open when the user clicks outside of it. */
   keepOpenOnOutsideClick: boolean;
-  /** Sets the open state of the component. */
+  /** Whether the component is open. */
   open: boolean;
   /**
-   * Sets the behavior of the component when the parent container scrolls.
+   * The behavior of the component when a parent container scrolls.
    *
    * If the value is `hide`, the component hides while the anchor is fully out
    * of view. `hide` is the default value.

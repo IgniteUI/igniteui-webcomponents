@@ -58,6 +58,7 @@
 |       6 | 2026-10-02 | Focus after form checks; `invalid` only on checks                         |
 |       7 | 2026-10-02 | Forward the host `aria-describedby`; expose `required` as `aria-required` |
 |       8 | 2026-10-14 | An editor commit marks the picker touched; a reset resets the editors     |
+|       9 | 2026-10-21 | API descriptions aligned with the JSDoc.                                  |
 
 ## Overview
 
@@ -412,74 +413,74 @@ apply.
 
 | Property               | Attribute                  | Reflected | Type                        | Default           | Description                                                              |
 | ---------------------- | -------------------------- | --------- | --------------------------- | ----------------- | ------------------------------------------------------------------------ |
-| value                  | value                      | No        | `DateRangeValue \| null`    | -                 | The value of the picker.                                                 |
-| useTwoInputs           | use-two-inputs             | Yes       | `boolean`                   | false             | Use two inputs to display the range. Makes them editable in dropdown mode. |
-| usePredefinedRanges    | usePredefinedRanges        | Yes       | `boolean`                   | false             | Whether to show chips with predefined ranges.                            |
-| customRanges           | -                          | No        | `CustomDateRange[]`         | `[]`              | Renders chips with custom ranges based on the elements of the array.     |
-| mode                   | mode                       | No        | `PickerMode`                | `dropdown`        | Whether the calendar opens in a dropdown or a modal dialog.              |
-| open                   | open                       | Yes       | `boolean`                   | false             | The open state of the component.                                         |
+| value                  | value                      | No        | `DateRangeValue \| null`    | -                 | The value of the picker: a range with a `start` and an `end` date.       |
+| useTwoInputs           | use-two-inputs             | Yes       | `boolean`                   | false             | Whether the picker shows the start and the end date in two separate inputs. |
+| usePredefinedRanges    | use-predefined-ranges      | Yes       | `boolean`                   | false             | Whether the picker shows chips with predefined ranges.                   |
+| customRanges           | -                          | No        | `CustomDateRange[]`         | `[]`              | The custom date ranges that the picker shows as chips. A click on a chip selects its range. |
+| mode                   | mode                       | No        | `PickerMode`                | `dropdown`        | Whether the calendar opens in a dropdown or in a modal dialog. In `dialog` mode, the user cannot type in the input. |
+| open                   | open                       | Yes       | `boolean`                   | false             | Whether the component is open.                                         |
 | label                  | label                      | No        | `string`                    | -                 | The label of the picker.                                                 |
 | labelStart             | label-start                | No        | `string`                    | `''`              | The label of the start input.                                            |
 | labelEnd               | label-end                  | No        | `string`                    | `''`              | The label of the end input.                                              |
 | placeholder            | placeholder                | No        | `string`                    | -                 | The placeholder of the single input.                                     |
 | placeholderStart       | placeholder-start          | No        | `string`                    | `''`              | The placeholder of the start input.                                      |
 | placeholderEnd         | placeholder-end            | No        | `string`                    | `''`              | The placeholder of the end input.                                        |
-| inputFormat            | input-format               | No        | `string`                    | from the locale   | The date format to apply on the inputs.                                  |
-| displayFormat          | display-format             | No        | `string`                    | `inputFormat`     | Format to display the value in when not editing.                         |
+| inputFormat            | input-format               | No        | `string`                    | from the locale   | The date format of the input while the user edits the value. Without it, the input uses the input format of the locale. |
+| displayFormat          | display-format             | No        | `string`                    | -               | The format of the value while the input does not have focus. Without it, the input uses `inputFormat` when set, else the display format of the locale. |
 | prompt                 | prompt                     | No        | `string`                    | `_`               | The prompt symbol to use for unfilled parts of the mask.                 |
-| min                    | min                        | No        | `Date \| null`              | -                 | The minimum value required for the picker to remain valid.               |
-| max                    | max                        | No        | `Date \| null`              | -                 | The maximum value required for the picker to remain valid.               |
-| disabledDates          | -                          | No        | `DateRangeDescriptor[]`     | `[]`              | The disabled dates of the picker.                                        |
-| specialDates           | -                          | No        | `DateRangeDescriptor[]`     | -                 | The special dates of the picker.                                         |
-| activeDate             | active-date                | No        | `Date`                      | derived           | The date shown in the calendar and highlighted.                          |
-| visibleMonths          | visible-months             | No        | `number`                    | 2                 | The number of months displayed in the calendar.                          |
+| min                    | min                        | No        | `Date \| null`              | -                 | The minimum value required for the picker to remain valid. The calendar disables the dates before it. |
+| max                    | max                        | No        | `Date \| null`              | -                 | The maximum value required for the picker to remain valid. The calendar disables the dates after it. |
+| disabledDates          | -                          | No        | `DateRangeDescriptor[]`     | `[]`              | The date ranges that the user cannot select in the calendar. A value that includes one of these dates is invalid. |
+| specialDates           | -                          | No        | `DateRangeDescriptor[]`     | -                 | The date ranges that the calendar marks as special.                      |
+| activeDate             | active-date                | No        | `Date`                      | derived           | The date that the calendar shows and highlights. Without it, the calendar starts at the value, or at the current date when there is no value. |
+| visibleMonths          | visible-months             | No        | `number`                    | 2                 | The number of months displayed in the calendar: 1 or 2.                  |
 | orientation            | orientation                | No        | `ContentOrientation`        | `horizontal`      | The orientation of the multiple months in the days view.                 |
-| headerOrientation      | header-orientation         | Yes       | `CalendarHeaderOrientation` | `horizontal`      | The orientation of the calendar header. Dialog mode only.                |
-| hideHeader             | hide-header                | Yes       | `boolean`                   | false             | Whether the calendar hides its header. Dialog mode only.                 |
-| hideOutsideDays        | hide-outside-days          | Yes       | `boolean`                   | false             | Controls the visibility of the dates outside the current month.          |
-| showWeekNumbers        | show-week-numbers          | Yes       | `boolean`                   | false             | Whether to show the number of the week in the calendar.                  |
-| weekStart              | week-start                 | No        | `WeekDays`                  | from the locale   | The start day of the week for the calendar.                              |
+| headerOrientation      | header-orientation         | Yes       | `CalendarHeaderOrientation` | `horizontal`      | The orientation of the calendar header. It applies only in `dialog` mode. |
+| hideHeader             | hide-header                | Yes       | `boolean`                   | false             | Whether the calendar hides its header. In `dropdown` mode, the header is always hidden. |
+| hideOutsideDays        | hide-outside-days          | Yes       | `boolean`                   | false             | Whether the calendar hides the dates that do not belong to the current month. |
+| showWeekNumbers        | show-week-numbers          | Yes       | `boolean`                   | false             | Whether the calendar shows the week numbers.                             |
+| weekStart              | week-start                 | No        | `WeekDays`                  | from the locale   | The first day of the week in the calendar.                               |
 | keepOpenOnSelect       | keep-open-on-select        | Yes       | `boolean`                   | false             | Keeps the picker open after a selection.                                 |
-| keepOpenOnOutsideClick | keep-open-on-outside-click | Yes       | `boolean`                   | false             | Keeps the picker open when the user clicks outside of it.                |
+| keepOpenOnOutsideClick | keep-open-on-outside-click | Yes       | `boolean`                   | false             | Whether the component stays open when the user clicks outside of it.                |
 | scrollStrategy         | scroll-strategy            | No        | `PopoverScrollStrategy`     | `hide`            | The behavior of the component when a parent container scrolls.           |
-| nonEditable            | non-editable               | Yes       | `boolean`                   | false             | Whether to allow typing in the inputs.                                   |
-| readOnly               | readonly                   | Yes       | `boolean`                   | false             | Makes the control a readonly field.                                      |
-| outlined               | outlined                   | Yes       | `boolean`                   | false             | Whether the control will have outlined appearance.                       |
-| required               | required                   | Yes       | `boolean`                   | false             | Makes the component a required field for validation.                     |
-| disabled               | disabled                   | Yes       | `boolean`                   | false             | The disabled state of the component.                                     |
-| invalid                | invalid                    | No        | `boolean`                   | false             | Sets the control into invalid state (visual state only).                 |
+| nonEditable            | non-editable               | Yes       | `boolean`                   | false             | Whether the user cannot type in the input. The user can still select a date in the calendar. |
+| readOnly               | readonly                   | Yes       | `boolean`                   | false             | Whether the control is read-only. The user cannot change the value or open the calendar. |
+| outlined               | outlined                   | Yes       | `boolean`                   | false             | Whether the control has an outlined appearance.                          |
+| required               | required                   | Yes       | `boolean`                   | false             | Whether the control is required. A required control that has no value, or is not checked, fails validation.                     |
+| disabled               | disabled                   | Yes       | `boolean`                   | false             | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                                     |
+| invalid                | invalid                    | No        | `boolean`                   | false             | Whether the control shows the invalid state. It changes only the visual state, not the validity.                 |
 | name                   | name                       | Yes       | `string`                    | -                 | The name of the control, submitted with the form data.                   |
 | locale                 | locale                     | No        | `string`                    | the inherited or global locale | The locale used to format the value and resolve the resource strings.    |
 | resourceStrings        | -                          | No        | range picker and calendar strings | EN          | The resource strings of the date range picker.                           |
-| defaultValue           | -                          | No        | `DateRangeValue \| null`    | -                 | The initial value of the control, restored on a form reset.              |
-| form                   | -                          | No        | `HTMLFormElement \| null`   | -                 | Read-only. The form associated with this element.                        |
-| validity               | -                          | No        | `ValidityState`             | -                 | Read-only. The validity state of the element.                            |
-| validationMessage      | -                          | No        | `string`                    | -                 | Read-only. The validation message of the element.                        |
-| willValidate           | -                          | No        | `boolean`                   | -                 | Read-only. Whether the element is a candidate for constraint validation. |
+| defaultValue           | -                          | No        | `DateRangeValue \| null`    | -                 | The default value of the control. A form reset restores the value to it. While the value is unchanged since the start or the last form reset, a new default also sets the value. The `value` attribute also sets it.              |
+| form                   | -                          | No        | `HTMLFormElement \| null`   | -                 | Read-only. The form that the control is associated with, or `null`.                        |
+| validity               | -                          | No        | `ValidityState`             | -                 | Read-only. The validity state of the control.                            |
+| validationMessage      | -                          | No        | `string`                    | -                 | Read-only. The validation message of the control. It is empty when the control is valid.                        |
+| willValidate           | -                          | No        | `boolean`                   | -                 | Read-only. Whether the control is a candidate for constraint validation. |
 
 ### Methods
 
 | Name              | Type signature                          | Description                                                             |
 | ----------------- | --------------------------------------- | ----------------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`                  | Shows the component.                                                    |
-| hide              | `(): Promise<boolean>`                  | Hides the component.                                                    |
-| toggle            | `(): Promise<boolean>`                  | Toggles the open state of the component.                                |
-| select            | `(value: DateRangeValue \| null): void` | Selects a date range value in the picker.                               |
-| clear             | `(): void`                              | Clears the editors of the picker of any user input.                     |
-| checkValidity     | `(): boolean`                           | Checks validity and emits `invalid` when the control is invalid.        |
-| reportValidity    | `(): boolean`                           | Checks validity; when invalid, emits `invalid` and focuses the control. |
-| setCustomValidity | `(message: string): void`               | Sets a custom message. Invalid while `message` is not empty.            |
+| show              | `(): Promise<boolean>`                  | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one.                                                    |
+| hide              | `(): Promise<boolean>`                  | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                    |
+| toggle            | `(): Promise<boolean>`                  | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes.                                |
+| select            | `(value: DateRangeValue \| null): void` | Sets the value of the picker to `value`. It does not emit events.       |
+| clear             | `(): void`                              | Clears the value and the input text of the picker.                      |
+| checkValidity     | `(): boolean`                           | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid.        |
+| reportValidity    | `(): boolean`                           | Checks validity. As for a native control, an invalid control emits `invalid` and takes the focus. It shows its own validation messages, not the message of the browser. Returns `true` when the control is valid. |
+| setCustomValidity | `(message: string): void`               | Sets a custom validation message. The control is invalid while the message is not empty. An empty string removes the custom error.            |
 
 ### Events
 
 | Name       | Cancellable | Detail                   | Description                                          |
 | ---------- | ----------- | ------------------------ | ---------------------------------------------------- |
-| igcOpening | true        | -                        | Emitted just before the calendar popover is shown.    |
-| igcOpened  | false       | -                        | Emitted after the calendar popover is shown.          |
-| igcClosing | true        | -                        | Emitted just before the calendar popover is hidden.   |
-| igcClosed  | false       | -                        | Emitted after the calendar popover is hidden.         |
-| igcChange  | false       | `DateRangeValue \| null` | Emitted when the user modifies and commits the value. |
-| igcInput   | false       | `DateRangeValue \| null` | Emitted when the user types in the element.           |
+| igcOpening | true        | -                        | Emitted before a user interaction opens the calendar. Cancelable. |
+| igcOpened  | false       | -                        | Emitted after a user interaction opens the calendar. |
+| igcClosing | true        | -                        | Emitted before a user interaction closes the calendar. Cancelable. |
+| igcClosed  | false       | -                        | Emitted after a user interaction closes the calendar. |
+| igcChange  | false       | `DateRangeValue \| null` | Emitted when the user commits a change to the value. |
+| igcInput   | false       | `DateRangeValue \| null` | Emitted when the user types in an input.             |
 
 ### Slots
 
@@ -493,11 +494,11 @@ apply.
 | `suffix-end`               | Renders content after the end input (two inputs).                                |
 | `separator`                | Renders the separator element between the two inputs.                            |
 | `helper-text`              | Renders content below the input.                                                 |
-| `title`                    | Renders content in the calendar title.                                           |
-| `header-date`              | Renders content instead of the current range in the calendar header.             |
-| `clear-icon`               | Renders a clear icon template.                                                   |
-| `clear-icon-start`         | Renders a clear icon template for the start input (two inputs).                  |
-| `clear-icon-end`           | Renders a clear icon template for the end input (two inputs).                    |
+| `title`                    | Renders content in the calendar title. It applies only in `dialog` mode.         |
+| `header-date`              | Renders content instead of the current range in the calendar header. It applies only in `dialog` mode. |
+| `clear-icon`               | Renders the icon of the clear button.                                            |
+| `clear-icon-start`         | Renders the icon of the clear button for the start input (two inputs).           |
+| `clear-icon-end`           | Renders the icon of the clear button for the end input (two inputs).             |
 | `calendar-icon`            | Renders the icon/content for the calendar picker.                                |
 | `calendar-icon-start`      | Renders the icon/content for the start input (two inputs).                       |
 | `calendar-icon-end`        | Renders the icon/content for the end input (two inputs).                         |
@@ -505,11 +506,11 @@ apply.
 | `calendar-icon-open-start` | Renders the open state icon/content for the start input (two inputs).            |
 | `calendar-icon-open-end`   | Renders the open state icon/content for the end input (two inputs).              |
 | `actions`                  | Renders content in the action part of the picker in open state.                  |
-| `bad-input`                | Renders content when the value is in the disabledDates ranges.                   |
+| `bad-input`                | Renders content when the range includes a date in the `disabledDates` ranges.    |
 | `value-missing`            | Renders content when the required validation fails.                              |
 | `range-overflow`           | Renders content when the max validation fails.                                   |
 | `range-underflow`          | Renders content when the min validation fails.                                   |
-| `custom-error`             | Renders content when setCustomValidity(message) is set.                          |
+| `custom-error`             | Renders content when a custom message is set with `setCustomValidity()`.         |
 | `invalid`                  | Renders content when the component is in invalid state (validity.valid = false). |
 
 ### CSS Shadow parts
@@ -518,6 +519,7 @@ On top of the input and calendar parts it re-exports, the picker exposes:
 
 | Part                                                                     | Description                                             |
 | ------------------------------------------------------------------------ | ------------------------------------------------------- |
+| `inputs`                                                                 | The wrapper of the start input, the separator and the end input (two inputs). |
 | `separator`                                                              | The separator element between the two inputs.           |
 | `ranges`                                                                 | The wrapper that renders the custom and predefined ranges. |
 | `label`                                                                  | The label wrapper above the target input.               |

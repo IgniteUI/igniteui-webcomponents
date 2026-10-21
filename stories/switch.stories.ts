@@ -51,7 +51,7 @@ const metadata: Meta<IgcSwitchComponent> = {
     required: {
       type: 'boolean',
       description:
-        'When set, makes the component a required field for validation.',
+        'Whether the control is required. A required control that has no value,\nor is not checked, fails validation.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -62,24 +62,27 @@ const metadata: Meta<IgcSwitchComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component.',
+      description:
+        'Whether the control is disabled. A disabled control is not validated,\nand the form does not submit its value.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
-      description: 'Sets the control into invalid state (visual state only).',
+      description:
+        'Whether the control shows the invalid state. It changes only the visual\nstate, not the validity.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     value: {
       type: 'string',
-      description: 'The value of the control.',
+      description:
+        'The value of the control, submitted when the control is checked.',
       control: 'text',
     },
     checked: {
       type: 'boolean',
-      description: 'The checked state of the control.',
+      description: 'Whether the control is checked.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -103,17 +106,26 @@ const metadata: Meta<IgcSwitchComponent> = {
 export default metadata;
 
 interface IgcSwitchArgs {
-  /** When set, makes the component a required field for validation. */
+  /**
+   * Whether the control is required. A required control that has no value,
+   * or is not checked, fails validation.
+   */
   required: boolean;
   /** The name of the control, submitted with the form data. */
   name: string;
-  /** The disabled state of the component. */
+  /**
+   * Whether the control is disabled. A disabled control is not validated,
+   * and the form does not submit its value.
+   */
   disabled: boolean;
-  /** Sets the control into invalid state (visual state only). */
+  /**
+   * Whether the control shows the invalid state. It changes only the visual
+   * state, not the validity.
+   */
   invalid: boolean;
-  /** The value of the control. */
+  /** The value of the control, submitted when the control is checked. */
   value: string;
-  /** The checked state of the control. */
+  /** Whether the control is checked. */
   checked: boolean;
   /** The label position of the control. */
   labelPosition: 'after' | 'before';

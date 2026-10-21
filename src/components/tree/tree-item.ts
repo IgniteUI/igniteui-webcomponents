@@ -48,12 +48,13 @@ import type { IgcTreeSelectionService } from './tree.selection.js';
  * @element igc-tree-item
  *
  * @slot - Renders nested tree-item component.
- * @slot label - Renders the tree item container.
+ * @slot label - Renders the content of the tree item, in place of the `label` property.
  * @slot indicator - Renders the expand indicator container.
  * @slot loading - Renders the tree item loading indicator container.
  * @slot indentation - Renders the container (by default the space) before the tree item.
  *
  * @csspart wrapper - The wrapper for the tree item.
+ * @csspart indentation - The indentation area before the tree item.
  * @csspart selected - Indicates selected state. Applies to `wrapper`.
  * @csspart focused - Indicates focused state. Applies to `wrapper`.
  * @csspart active - Indicates an active state. Applies to `wrapper`.
@@ -147,42 +148,44 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
   public label = '';
 
   /**
-   * The tree item expansion state.
+   * Whether the tree item is expanded.
    * @attr
    */
   @property({ reflect: true, type: Boolean })
   public expanded = false;
 
   /**
-   * Marks the item as the tree's active item.
+   * Whether the item is the active item of the tree. When true, the ancestors of
+   * the item expand.
    * @attr
    */
   @property({ reflect: true, type: Boolean })
   public active = false;
 
   /**
-   * Get/Set whether the tree item is disabled. Disabled items are ignored for user interactions.
+   * Whether the tree item is disabled. A disabled item does not respond to user interaction.
    * @attr
    */
   @property({ reflect: true, type: Boolean })
   public disabled = false;
 
   /**
-   * The tree item selection state.
+   * Whether the tree item is selected.
    * @attr
    */
   @property({ reflect: true, type: Boolean })
   public selected = false;
 
   /**
-   * To be used for load-on-demand scenarios in order to specify whether the item is loading data.
+   * Whether the item is loading data, for load-on-demand scenarios. The item
+   * shows a loading indicator in place of the expand indicator.
    * @attr
    */
   @property({ reflect: true, type: Boolean })
   public loading = false;
 
   /**
-   * The value entry that the tree item is visualizing. Required for searching through items.
+   * The value that the tree item represents. The component does not use it.
    * @type any
    * @attr
    */
@@ -251,11 +254,10 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
 
   /**
    * The full path to the tree item, starting from the top-most ancestor.
-   *
-   * `parent` is read into a local first: reading `parent.path` twice per level
-   * would make a single access cost 2^depth instead of `depth`.
    */
   public get path(): IgcTreeItemComponent[] {
+    // `parent` is read into a local first: reading `parent.path` twice per level
+    // would make a single access cost 2^depth instead of `depth`.
     const parent = this.parent;
     return parent ? [...parent.path, this] : [this];
   }

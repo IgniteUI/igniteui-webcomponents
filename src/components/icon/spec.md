@@ -46,6 +46,7 @@
 | ------: | ---------- | --------------------------------------------------------------------------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                                                                                                 |
 |       2 | 2026-10-02 | Hide the SVG from assistive technologies, and follow a change of the author label |
+|       3 | 2026-10-21 | API descriptions aligned with the JSDoc. |
 
 ## Overview
 
@@ -185,7 +186,7 @@ None applicable. The icon is presentational and is not part of the tab order.
 | ------------ | ------------ | --------- | --------- | --------- | ---------------------------------------------------- |
 | `name`       | `name`       | no        | `string`  | `''`      | The name of the icon to draw.                         |
 | `collection` | `collection` | no        | `string`  | `default` | The registered collection to look the icon up in.     |
-| `mirrored`   | `mirrored`   | yes       | `boolean` | `false`   | Flips the icon horizontally.                          |
+| `mirrored`   | `mirrored`   | yes       | `boolean` | `false`   | Whether the icon is flipped horizontally, for example for RTL layouts. |
 
 ### Registry functions
 

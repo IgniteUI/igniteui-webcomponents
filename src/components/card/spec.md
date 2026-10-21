@@ -45,6 +45,7 @@ This directory hosts five public components: [`igc-card`](#igc-card), [`igc-card
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-10-21 | API descriptions aligned with the JSDoc. |
 
 ## Overview
 
@@ -175,7 +176,7 @@ A container that wraps different elements related to a single subject.
 
 | Property | Attribute | Reflected | Type      | Default | Description                                                                 |
 | -------- | --------- | --------- | --------- | ------- | ----------------------------------------------------------------------------- |
-| elevated | elevated  | Yes       | `boolean` | false   | Gives the card an elevated appearance with a shadow. When false, it is outlined. |
+| elevated | elevated  | Yes       | `boolean` | false   | Whether the card has an elevated appearance with a shadow. When false, the card uses an outlined style with a border. |
 
 | Slot      | Description                                                                          |
 | --------- | ------------------------------------------------------------------------------------ |

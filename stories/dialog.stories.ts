@@ -35,7 +35,7 @@ const metadata: Meta<IgcDialogComponent> = {
     docs: {
       description: {
         component:
-          'A modal dialog component built on the native `<dialog>` element.\n\nThe dialog traps focus while open and blocks interaction with the rest\nof the page (modal semantics). It supports animated open/close\ntransitions, an optional backdrop overlay, and multiple content areas\nthrough named slots.\n\nThe component integrates with the\n[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):\nan Ignite button or a native `<button>` with `command="--show"` / `"--hide"` / `"--toggle"`\nand `commandfor` pointing to this element will call the corresponding method\ndeclaratively without any JavaScript.',
+          'A modal dialog component built on the native `<dialog>` element.\n\nThe dialog traps focus while open and blocks interaction with the rest\nof the page (modal semantics). It supports animated open/close\ntransitions, a backdrop overlay, and multiple content areas\nthrough named slots.\n\nThe component supports the\n[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API).\nA button with `command="--show"`, `"--hide"` or `"--toggle"` and a `commandfor`\nthat points to this element calls the matching method.',
       },
     },
     actions: { handles: ['igcClosing', 'igcClosed'] },
@@ -44,28 +44,28 @@ const metadata: Meta<IgcDialogComponent> = {
     keepOpenOnEscape: {
       type: 'boolean',
       description:
-        'When set, pressing the `Escape` key will not close the dialog.\n\nBy default the browser closes a modal dialog on `Escape`. Enable this\noption when the dialog guards unsaved work and should require an explicit\nuser action to dismiss.',
+        'Whether the dialog stays open when the user presses the `Escape` key.\n\nUse it when the dialog guards unsaved work and needs an explicit user\naction to close.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     closeOnOutsideClick: {
       type: 'boolean',
       description:
-        'When set, clicking on the backdrop area outside the dialog surface\nwill close it (emitting close events).\n\nHas no effect when the dialog is not yet open.',
+        'Whether a click on the backdrop, outside the dialog surface, closes the\ndialog. The close emits the close events.\n\nHas no effect when the dialog is not yet open.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     hideDefaultAction: {
       type: 'boolean',
       description:
-        'When set, the default action button in the footer is not rendered.\n\nHas no effect when content is projected into the `footer` slot, since\nthe slot content replaces the default button entirely.',
+        'Whether the default action button in the footer is hidden.\n\nHas no effect when content is projected into the `footer` slot, because\nthe slot content replaces the default button.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     open: {
       type: 'boolean',
       description:
-        'Whether the dialog is open.\n\nSetting this property programmatically will open or close the dialog\nwithout animation and without emitting close events.\nPrefer the `show()`, `hide()`, and `toggle()` methods for animated\ntransitions.',
+        'Whether the dialog is open.\n\nSetting it skips the animation and the close events. Use the `show()`,\n`hide()` and `toggle()` methods for an animated transition.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -94,34 +94,31 @@ export default metadata;
 
 interface IgcDialogArgs {
   /**
-   * When set, pressing the `Escape` key will not close the dialog.
+   * Whether the dialog stays open when the user presses the `Escape` key.
    *
-   * By default the browser closes a modal dialog on `Escape`. Enable this
-   * option when the dialog guards unsaved work and should require an explicit
-   * user action to dismiss.
+   * Use it when the dialog guards unsaved work and needs an explicit user
+   * action to close.
    */
   keepOpenOnEscape: boolean;
   /**
-   * When set, clicking on the backdrop area outside the dialog surface
-   * will close it (emitting close events).
+   * Whether a click on the backdrop, outside the dialog surface, closes the
+   * dialog. The close emits the close events.
    *
    * Has no effect when the dialog is not yet open.
    */
   closeOnOutsideClick: boolean;
   /**
-   * When set, the default action button in the footer is not rendered.
+   * Whether the default action button in the footer is hidden.
    *
-   * Has no effect when content is projected into the `footer` slot, since
-   * the slot content replaces the default button entirely.
+   * Has no effect when content is projected into the `footer` slot, because
+   * the slot content replaces the default button.
    */
   hideDefaultAction: boolean;
   /**
    * Whether the dialog is open.
    *
-   * Setting this property programmatically will open or close the dialog
-   * without animation and without emitting close events.
-   * Prefer the `show()`, `hide()`, and `toggle()` methods for animated
-   * transitions.
+   * Setting it skips the animation and the close events. Use the `show()`,
+   * `hide()` and `toggle()` methods for an animated transition.
    */
   open: boolean;
   /**

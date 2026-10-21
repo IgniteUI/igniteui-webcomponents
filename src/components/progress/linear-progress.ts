@@ -18,19 +18,21 @@ import { styles as shared } from './themes/linear/shared/linear.progress.common.
  *
  * @element igc-linear-progress
  *
- * @slot - The text area container.
+ * @slot - Custom label content. A slotted element replaces the default label.
  *
+ * @csspart base - The wrapper of the linear progress.
  * @csspart track - The linear progress track area.
  * @csspart fill - The linear progress indicator area.
- * @csspart striped - The linear progress striped indicator.
+ * @csspart secondary - Added to the second fill element, which the indeterminate animation uses.
+ * @csspart striped - Added to the fill parts when the progress is striped.
  * @csspart label - The linear progress label.
  * @csspart value - The linear progress label value.
- * @csspart indeterminate - The linear progress indeterminate state.
- * @csspart primary - The linear progress indicator primary state.
- * @csspart danger - The linear progress indicator error state.
- * @csspart warning - The linear progress indicator warning state.
- * @csspart info - The linear progress indicator info state.
- * @csspart success - The linear progress indicator success state.
+ * @csspart indeterminate - Added to the fill parts while the progress is indeterminate.
+ * @csspart primary - Added to the fill parts when the variant is `primary`.
+ * @csspart danger - Added to the fill parts when the variant is `danger`.
+ * @csspart warning - Added to the fill parts when the variant is `warning`.
+ * @csspart info - Added to the fill parts when the variant is `info`.
+ * @csspart success - Added to the fill parts when the variant is `success`.
  */
 export default class IgcLinearProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-linear-progress';
@@ -46,7 +48,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
   });
 
   /**
-   * Sets the striped look of the control.
+   * Whether the fill of the control is striped.
    * @attr
    */
   @property({ type: Boolean, reflect: true })

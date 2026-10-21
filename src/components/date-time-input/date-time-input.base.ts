@@ -137,7 +137,7 @@ export abstract class IgcDateTimeInputBaseComponent<
   // #region Public attributes and properties
 
   /**
-   * Whether the control will have outlined appearance.
+   * Whether the control has an outlined appearance.
    *
    * @attr
    * @default false
@@ -160,7 +160,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   public label!: string;
 
   /**
-   * The date format to apply on the input.
+   * The date format of the input while the user edits the value.
+   * Without it, the input uses the input format of the locale.
    * @attr input-format
    */
   @property({ attribute: 'input-format' })
@@ -205,8 +206,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Format to display the value in when not editing.
-   * Defaults to the locale format if not set.
+   * The format of the value while the input does not have focus.
+   * Without it, the input uses `inputFormat` when set, else the display format of the locale.
    * @attr display-format
    */
   @property({ attribute: 'display-format' })
@@ -221,14 +222,15 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Delta values used to increment or decrement each date part on step actions.
+   * The amount by which a step action increments or decrements each date part.
    * All values default to `1`.
    */
   @property({ attribute: false })
   public spinDelta?: DatePartDeltas;
 
   /**
-   * Sets whether to loop over the currently spun segment.
+   * Whether a spun date part wraps around at its limits.
+   * When false, the part stops at its minimum or maximum.
    * @attr spin-loop
    */
   @property({ type: Boolean, attribute: 'spin-loop' })
@@ -543,19 +545,28 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /* blazorSuppress */
-  /** Increments a date/time portion. */
+  /**
+   * Increments a date or time part by `delta`, or by its `spinDelta` value.
+   * Without `datePart`, it changes the part at the cursor or a default part.
+   */
   public stepUp(datePart?: P, delta?: number): void {
     this._performStep(datePart, delta, 1);
   }
 
   /* blazorSuppress */
-  /** Decrements a date/time portion. */
+  /**
+   * Decrements a date or time part by `delta`, or by its `spinDelta` value.
+   * Without `datePart`, it changes the part at the cursor or a default part.
+   */
   public stepDown(datePart?: P, delta?: number): void {
     this._performStep(datePart, delta, -1);
   }
 
   /* blazorSuppress */
-  /** Replaces the selected text in the control and re-applies the mask. */
+  /**
+   * Replaces the text from `start` to `end` in the input and re-applies the mask.
+   * Without `start` and `end`, replaces the selected text. The `value` updates at once.
+   */
   public override setRangeText(
     replacement: string,
     start?: number,
@@ -566,7 +577,7 @@ export abstract class IgcDateTimeInputBaseComponent<
     this._applyDraft();
   }
 
-  /** Clears the input element of user input. */
+  /** Clears the value and the text of the input. */
   public clear(): void {
     this._isEditing = false;
     this._maskedValue = '';
@@ -610,7 +621,10 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   protected abstract override readonly _formValue: FormValue<T | null>;
 
-  /** Provided by `EventEmitterMixin` in the concrete components. */
+  /**
+   * Provided by `EventEmitterMixin` in the concrete components.
+   * @hidden @internal
+   */
   public abstract emitEvent(name: string, init?: CustomEventInit): boolean;
 
   /** The committed value of the input. */
@@ -642,13 +656,13 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected abstract _getDefaultDatePart(): P | undefined;
 
   /* blazorSuppress */
-  /** Whether the current format holds a date part: day, month or year. */
+  /** Returns whether the input format has a date part: day, month or year. */
   public hasDateParts(): boolean {
     return this._parser.hasDateParts();
   }
 
   /* blazorSuppress */
-  /** Whether the current format holds a time part: hours, minutes or seconds. */
+  /** Returns whether the input format has a time part: hours, minutes or seconds. */
   public hasTimeParts(): boolean {
     return this._parser.hasTimeParts();
   }

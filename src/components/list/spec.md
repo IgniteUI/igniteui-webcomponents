@@ -43,6 +43,7 @@ This directory hosts three public components: [`igc-list`](#igc-list), [`igc-lis
 |       1 | 2026-09-21 | Initial specification                            |
 |       2 | 2026-10-05 | A header has the `listitem` role                 |
 |       3 | 2026-10-05 | The title and subtitle container adds no role    |
+|       4 | 2026-10-21 | API descriptions aligned with the JSDoc.         |
 
 ## Overview
 
@@ -172,7 +173,7 @@ A container intended for row items in the list component.
 
 | Property | Attribute | Reflected | Type      | Default | Description                              |
 | -------- | --------- | --------- | --------- | ------- | ------------------------------------------ |
-| selected | selected  | Yes       | `boolean` | false   | Defines whether the list item is selected. |
+| selected | selected  | Yes       | `boolean` | false   | Whether the list item is selected. It changes only the visual style of the item. |
 
 | Slot       | Description                               |
 | ---------- | ----------------------------------------- |

@@ -57,14 +57,14 @@ const nextId = createIdGenerator('igc-step');
  * @csspart complete-end - Indicates a complete state of the previous step. Applies to `header-container`.
  * @csspart optional - Indicates an optional state. Applies to `header-container`.
  * @csspart invalid - Indicates an invalid state. Applies to `header-container`.
- * @csspart top - Indicates that the title should be above the indicator. Applies to `header-container`.
- * @csspart bottom - Indicates that the title should be below the indicator. Applies to `header-container`.
- * @csspart start - Indicates that the title should be before the indicator. Applies to `header-container`.
- * @csspart end - Indicates that the title should be after the indicator. Applies to `header-container`.
+ * @csspart top - Indicates that the title is above the indicator. Applies to `header-container`.
+ * @csspart bottom - Indicates that the title is below the indicator. Applies to `header-container`.
+ * @csspart start - Indicates that the title is before the indicator. Applies to `header-container`.
+ * @csspart end - Indicates that the title is after the indicator. Applies to `header-container`.
  * @csspart header - Wrapper of the step's `indicator` and `text`.
  * @csspart indicator - The indicator of the step.
  * @csspart text - Wrapper of the step's `title` and `subtitle`.
- * @csspart empty - Indicates that no title and subtitle have been provided to the step. Applies to `text`.
+ * @csspart empty - Indicates that the step shows no title and subtitle. Applies to `text`.
  * @csspart title - The title of the step.
  * @csspart subtitle - The subtitle of the step.
  * @csspart body - Wrapper of the step's `content`.
@@ -201,8 +201,8 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
   /**
    * Whether the step is invalid.
    *
-   * Invalid steps are styled with an error state and are not
-   * interactive when the stepper is in linear mode.
+   * A visited step that is not active shows an error state. In linear mode,
+   * the user cannot open the steps after an invalid step.
    *
    * @attr invalid
    * @default false
@@ -224,8 +224,7 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
   /**
    * Whether the step is optional.
    *
-   * Optional steps validity does not affect the default behavior when the stepper is in linear mode i.e.
-   * if optional step is invalid the user could still move to the next step.
+   * In linear mode, an invalid optional step does not block the steps after it.
    *
    * @attr optional
    * @default false

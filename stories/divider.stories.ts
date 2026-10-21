@@ -35,7 +35,7 @@ const metadata: Meta<IgcDividerComponent> = {
     docs: {
       description: {
         component:
-          'The divider allows the content author to easily create a horizontal/vertical\nrule as a break between content, to better organize information on a page.',
+          'Shows a horizontal or vertical rule as a break between content on a page.',
       },
     },
   },
@@ -49,13 +49,13 @@ const metadata: Meta<IgcDividerComponent> = {
     middle: {
       type: 'boolean',
       description:
-        'When set and inset is provided, it will shrink the divider line from both sides.',
+        'Whether the `--inset` value shrinks the line from both sides, not only from the start.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     type: {
       type: { name: 'enum', value: ['solid', 'dashed'] },
-      description: 'Whether to render a solid or a dashed divider line.',
+      description: 'The style of the divider line: solid or dashed.',
       options: ['solid', 'dashed'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'solid' } },
@@ -69,9 +69,9 @@ export default metadata;
 interface IgcDividerArgs {
   /** Whether to render a vertical divider line. */
   vertical: boolean;
-  /** When set and inset is provided, it will shrink the divider line from both sides. */
+  /** Whether the `--inset` value shrinks the line from both sides, not only from the start. */
   middle: boolean;
-  /** Whether to render a solid or a dashed divider line. */
+  /** The style of the divider line: solid or dashed. */
   type: 'solid' | 'dashed';
 }
 type Story = StoryObj<IgcDividerArgs>;

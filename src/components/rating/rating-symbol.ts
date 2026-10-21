@@ -5,13 +5,13 @@ import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/rating-symbol.base.css.js';
 
 /**
- *
- * Used when a custom icon/symbol/element needs to be passed to the rating component.
+ * A custom symbol for the rating. Put the full symbol in the default slot and
+ * the empty symbol in the `empty` slot.
  *
  * @element igc-rating-symbol
  *
  * @slot - Default slot for projected full symbols/icons.
- * @slot empty - Default slot for projected empty symbols/icons.
+ * @slot empty - Renders the projected empty symbols/icons.
  *
  * @csspart symbol - The symbol wrapping container.
  * @csspart full - The full symbol wrapping container.

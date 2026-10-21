@@ -39,11 +39,11 @@ const i18n = {
  *
  * @slot - Renders the tree items inside default slot.
  *
- * @fires igcSelection - Emitted when item selection is changing, before the selection completes.
+ * @fires igcSelection - Emitted when item selection is changing, before the selection completes. Cancelable.
  * @fires igcItemCollapsed - Emitted when tree item is collapsed.
- * @fires igcItemCollapsing - Emitted when tree item is about to collapse.
+ * @fires igcItemCollapsing - Emitted when tree item is about to collapse. Cancelable.
  * @fires igcItemExpanded - Emitted when tree item is expanded.
- * @fires igcItemExpanding - Emitted when tree item is about to expand.
+ * @fires igcItemExpanding - Emitted when tree item is about to expand. Cancelable.
  * @fires igcActiveItem - Emitted when the tree's `active` item changes.
  */
 @blazorAdditionalDependencies('IgcTreeItemComponent')
@@ -66,21 +66,22 @@ export default class IgcTreeComponent extends I18nMixin(
   public navService!: IgcTreeNavigationService;
 
   /**
-   * Whether a single or multiple of a parent's child items can be expanded.
+   * Whether only one branch of the tree can be expanded at a time. When the user
+   * expands an item, the items outside its path collapse.
    * @attr single-branch-expand
    */
   @property({ attribute: 'single-branch-expand', reflect: true, type: Boolean })
   public singleBranchExpand = false;
 
   /**
-   * Whether clicking over nodes will change their expanded state or not.
+   * Whether a click on an item toggles its expanded state.
    * @attr toggle-node-on-click
    */
   @property({ attribute: 'toggle-node-on-click', reflect: true, type: Boolean })
   public toggleNodeOnClick = false;
 
   /**
-   * The selection state of the tree.
+   * The selection mode of the tree. A change clears the current selection.
    * @attr
    */
   @property({ reflect: true })
@@ -96,7 +97,7 @@ export default class IgcTreeComponent extends I18nMixin(
 
   /* blazorSuppress */
   /**
-   * Returns all of the tree's items.
+   * All items of the tree, in document order. Empty during server-side rendering.
    */
   public get items(): IgcTreeItemComponent[] {
     return isServer ? [] : collectTreeItems(this);
@@ -107,7 +108,11 @@ export default class IgcTreeComponent extends I18nMixin(
 
     addThemingController(this, all);
 
+    // The analyzer records a constructor assignment as a second member, so
+    // each assignment repeats the tags of its field.
+    /** @hidden @internal */
     this.selectionService = new IgcTreeSelectionService(this);
+    /** @hidden @internal */
     this.navService = new IgcTreeNavigationService(this, this.selectionService);
   }
 
@@ -179,7 +184,7 @@ export default class IgcTreeComponent extends I18nMixin(
   }
 
   /* blazorSuppress */
-  /** Select all items if the items collection is empty. Otherwise, select the items in the items collection. */
+  /** Selects the passed items. Without an argument, selects all items. Emits no event. */
   public select(
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]
@@ -196,7 +201,7 @@ export default class IgcTreeComponent extends I18nMixin(
   }
 
   /* blazorSuppress */
-  /** Deselect all items if the items collection is empty. Otherwise, deselect the items in the items collection. */
+  /** Deselects the passed items. Without an argument, deselects all items. Emits no event. */
   public deselect(
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]

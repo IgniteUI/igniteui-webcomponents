@@ -51,6 +51,7 @@ This directory hosts four public components: [`igc-dropdown`](#igc-dropdown),
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-10-21 | API descriptions aligned with the JSDoc. |
 
 ## Overview
 
@@ -217,13 +218,13 @@ The dropdown itself is not focusable and has no tab index, so the target keeps t
 
 | Property               | Attribute                  | Reflected | Type                                    | Default        | Description                                                     |
 | ---------------------- | -------------------------- | --------- | --------------------------------------- | -------------- | ---------------------------------------------------------------- |
-| open                   | open                       | Yes       | `boolean`                               | false          | The open state of the component.                                |
+| open                   | open                       | Yes       | `boolean`                               | false          | Whether the component is open.                                |
 | placement              | placement                  | No        | `PopoverPlacement`                      | `bottom-start` | The preferred placement around the target element.              |
 | distance               | distance                   | No        | `number`                                | 0              | The distance from the target element.                           |
-| flip                   | flip                       | No        | `boolean`                               | false          | Whether to flip to the opposite side when about to overflow.    |
-| sameWidth              | same-width                 | No        | `boolean`                               | false          | Whether the width should match the width of the target.         |
-| keepOpenOnSelect       | keep-open-on-select        | Yes       | `boolean`                               | false          | Keeps the dropdown open after the user selects an item.         |
-| keepOpenOnOutsideClick | keep-open-on-outside-click | Yes       | `boolean`                               | false          | Keeps the dropdown open when the user clicks outside of it.     |
+| flip                   | flip                       | No        | `boolean`                               | false          | Whether the dropdown flips to the opposite side of the target when it does not fit in the visible area. It flips back when its preferred side has enough space again. |
+| sameWidth              | same-width                 | No        | `boolean`                               | false          | Whether the dropdown has the same width as the target.          |
+| keepOpenOnSelect       | keep-open-on-select        | Yes       | `boolean`                               | false          | Whether the component stays open after the user selects an item.         |
+| keepOpenOnOutsideClick | keep-open-on-outside-click | Yes       | `boolean`                               | false          | Whether the component stays open when the user clicks outside of it.     |
 | scrollStrategy         | scroll-strategy            | No        | `PopoverScrollStrategy`                 | `hide`         | The behavior of the component when a parent container scrolls.  |
 | items                  | -                          | No        | `IgcDropdownItemComponent[]`            | -              | Read-only. The items of the dropdown.                           |
 | groups                 | -                          | No        | `IgcDropdownGroupComponent[]`           | -              | Read-only. The group items of the dropdown.                     |
@@ -233,9 +234,9 @@ The dropdown itself is not focusable and has no tab index, so the target keeps t
 
 | Name           | Type signature                                                     | Description                                                                  |
 | -------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| show           | `(target?: HTMLElement \| string): Promise<boolean>`               | Shows the component, optionally against the given target.                    |
-| hide           | `(): Promise<boolean>`                                             | Hides the component.                                                         |
-| toggle         | `(target?: HTMLElement \| string): Promise<boolean>`               | Toggles the open state, optionally against the given target.                 |
+| show           | `(target?: HTMLElement \| string): Promise<boolean>`               | Opens the dropdown. It does not emit events. The optional `target` is the anchor element, or its ID. The promise resolves to `false` when the dropdown is already open or has no anchor, or when a later call replaces this one. |
+| hide           | `(): Promise<boolean>`                                             | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                         |
+| toggle         | `(target?: HTMLElement \| string): Promise<boolean>`               | Opens the dropdown when it is closed, and closes it when it is open. It does not emit events. The optional `target` is the anchor element for the open, or its ID. The promise resolves to `true` when the state changes. |
 | select         | `(value: string \| number): IgcDropdownItemComponent \| null`      | Selects the item with the given value or index, and returns it.              |
 | navigateTo     | `(value: string \| number): IgcDropdownItemComponent \| null`      | Activates the item with the given value or index, and returns it.            |
 | clearSelection | `(): void`                                                         | Clears the current selection of the dropdown.                                |
@@ -244,11 +245,11 @@ The dropdown itself is not focusable and has no tab index, so the target keeps t
 
 | Name       | Cancellable | Description                                 |
 | ---------- | ----------- | ------------------------------------------- |
-| igcChange  | false       | Emitted when the selected item changes.     |
-| igcOpening | true        | Emitted just before the dropdown is opened. |
-| igcOpened  | false       | Emitted after the dropdown is opened.       |
-| igcClosing | true        | Emitted just before the dropdown is closed. |
-| igcClosed  | false       | Emitted after closing the dropdown.         |
+| igcChange  | false       | Emitted when the user selects a different item. The detail is the item. |
+| igcOpening | true        | Emitted before the user opens the dropdown. Cancelable. |
+| igcOpened  | false       | Emitted after the dropdown opens on a user action. |
+| igcClosing | true        | Emitted before the user closes the dropdown. Cancelable. |
+| igcClosed  | false       | Emitted after the dropdown closes on a user action. |
 
 #### Slots
 
@@ -271,8 +272,8 @@ Represents an item in a dropdown list.
 | Property | Attribute | Reflected | Type      | Default | Description                                                   |
 | -------- | --------- | --------- | --------- | ------- | -------------------------------------------------------------- |
 | value    | value     | No        | `string`  | -       | The value of the item. Falls back to the text content.        |
-| selected | selected  | Yes       | `boolean` | false   | Whether the item is selected.                                 |
-| active   | active    | Yes       | `boolean` | false   | Whether the item is active.                                   |
+| selected | selected  | Yes       | `boolean` | false   | Whether the item is selected. It also sets `active` to the same value.                                 |
+| active   | active    | Yes       | `boolean` | false   | Whether the item is active. The active item has the visual focus during keyboard navigation.                                   |
 | disabled | disabled  | Yes       | `boolean` | false   | Whether the item is disabled.                                 |
 
 | Slot      | Description                                   |
@@ -298,7 +299,7 @@ A container for a group of dropdown items.
 | Slot      | Description                                        |
 | --------- | -------------------------------------------------- |
 | `label`   | Contains the label of the group.                   |
-| (default) | The items belonging to this group.                 |
+| (default) | Renders the items of the group.                    |
 
 | Part    | Description               |
 | ------- | ------------------------- |

@@ -42,24 +42,23 @@ const i18n = {
  *
  * The dialog traps focus while open and blocks interaction with the rest
  * of the page (modal semantics). It supports animated open/close
- * transitions, an optional backdrop overlay, and multiple content areas
+ * transitions, a backdrop overlay, and multiple content areas
  * through named slots.
  *
- * The component integrates with the
- * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):
- * an Ignite button or a native `<button>` with `command="--show"` / `"--hide"` / `"--toggle"`
- * and `commandfor` pointing to this element will call the corresponding method
- * declaratively without any JavaScript.
+ * The component supports the
+ * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API).
+ * A button with `command="--show"`, `"--hide"` or `"--toggle"` and a `commandfor`
+ * that points to this element calls the matching method.
  *
  * @element igc-dialog
  *
- * @fires igcClosing - Emitted just before the dialog closes. Cancelable -
+ * @fires igcClosing - Emitted before the dialog closes on a user action. Cancelable -
  *   call `event.preventDefault()` to abort the closing sequence.
- * @fires igcClosed - Emitted after the dialog has fully closed and its
- *   exit animation has completed.
+ * @fires igcClosed - Emitted after the dialog closes on a user action and its
+ *   exit animation completes.
  *
- * @slot - General-purpose content area. Also the target for any
- *   `<form method="dialog">` placed inside the dialog.
+ * @slot - General-purpose content area. A `<form method="dialog">` in this
+ *   slot closes the dialog on submit.
  * @slot title - Content rendered in the dialog header. Falls back to the
  *   `title` attribute when empty.
  * @slot message - A dedicated message/body area rendered above the default
@@ -68,6 +67,8 @@ const i18n = {
  *   default action button is shown (unless `hide-default-action` is set).
  *
  * @csspart base - The native `<dialog>` element.
+ * @csspart titled - Added to the base part when the dialog has a title.
+ * @csspart footed - Added to the base part when the footer has slotted content or a default action.
  * @csspart title - The `<header>` element wrapping the title slot.
  * @csspart content - The `<section>` element wrapping the message and default slots.
  * @csspart footer - The `<footer>` element wrapping the footer slot.
@@ -131,11 +132,10 @@ export default class IgcDialogComponent extends I18nMixin(
   //#region Public properties
 
   /**
-   * When set, pressing the `Escape` key will not close the dialog.
+   * Whether the dialog stays open when the user presses the `Escape` key.
    *
-   * By default the browser closes a modal dialog on `Escape`. Enable this
-   * option when the dialog guards unsaved work and should require an explicit
-   * user action to dismiss.
+   * Use it when the dialog guards unsaved work and needs an explicit user
+   * action to close.
    * @attr keep-open-on-escape
    * @default false
    */
@@ -143,8 +143,8 @@ export default class IgcDialogComponent extends I18nMixin(
   public keepOpenOnEscape = false;
 
   /**
-   * When set, clicking on the backdrop area outside the dialog surface
-   * will close it (emitting close events).
+   * Whether a click on the backdrop, outside the dialog surface, closes the
+   * dialog. The close emits the close events.
    *
    * Has no effect when the dialog is not yet open.
    * @attr close-on-outside-click
@@ -154,10 +154,10 @@ export default class IgcDialogComponent extends I18nMixin(
   public closeOnOutsideClick = false;
 
   /**
-   * When set, the default action button in the footer is not rendered.
+   * Whether the default action button in the footer is hidden.
    *
-   * Has no effect when content is projected into the `footer` slot, since
-   * the slot content replaces the default button entirely.
+   * Has no effect when content is projected into the `footer` slot, because
+   * the slot content replaces the default button.
    * @attr hide-default-action
    * @default false
    */
@@ -167,10 +167,8 @@ export default class IgcDialogComponent extends I18nMixin(
   /**
    * Whether the dialog is open.
    *
-   * Setting this property programmatically will open or close the dialog
-   * without animation and without emitting close events.
-   * Prefer the `show()`, `hide()`, and `toggle()` methods for animated
-   * transitions.
+   * Setting it skips the animation and the close events. Use the `show()`,
+   * `hide()` and `toggle()` methods for an animated transition.
    * @attr open
    * @default false
    */

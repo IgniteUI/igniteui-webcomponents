@@ -73,7 +73,7 @@ const metadata: Meta<IgcThemeProviderComponent> = {
     docs: {
       description: {
         component:
-          'A theme provider component that uses Lit context to provide theme information\nto descendant components.\n\nThis component allows you to scope a theme to a specific part of the page.\nAll library components within this provider will use the specified theme\ninstead of the global theme.',
+          'Provides a theme to its descendant components through Lit context.\n\nUse it to scope a theme to a part of the page. The library components in\nthe provider use its theme instead of the global theme.',
       },
     },
   },

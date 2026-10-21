@@ -55,7 +55,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   protected _hideLabel = true;
 
   /**
-   * The value of the control.
+   * The value of the control, submitted when the control is checked.
    * @attr
    */
   @property()
@@ -72,7 +72,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
 
   /* @tsTwoWayProperty(true, "igcChange", "detail.checked", false) */
   /**
-   * The checked state of the control.
+   * Whether the control is checked.
    * @attr
    */
   @property({ type: Boolean })

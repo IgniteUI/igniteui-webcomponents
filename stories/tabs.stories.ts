@@ -60,7 +60,7 @@ const metadata: Meta<IgcTabsComponent> = {
   argTypes: {
     alignment: {
       type: { name: 'enum', value: ['start', 'end', 'center', 'justify'] },
-      description: 'Determines the alignment of the tabs header strip.',
+      description: 'The alignment of the tab headers in the header strip.',
       options: ['start', 'end', 'center', 'justify'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'start' } },
@@ -68,7 +68,7 @@ const metadata: Meta<IgcTabsComponent> = {
     activation: {
       type: { name: 'enum', value: ['manual', 'auto'] },
       description:
-        "Determines the activation behavior of the tabs.\n\nWhen set to 'auto', the tab will be selected when it receives focus.\nWhen set to 'manual', the tab will only be selected when it is clicked or activated with the keyboard.",
+        'The activation behavior of the tabs.\n\nWith `auto`, a tab is selected when it receives keyboard focus.\nWith `manual`, a tab is selected only on click, or on Enter or Space.',
       options: ['manual', 'auto'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'auto' } },
@@ -80,13 +80,13 @@ const metadata: Meta<IgcTabsComponent> = {
 export default metadata;
 
 interface IgcTabsArgs {
-  /** Determines the alignment of the tabs header strip. */
+  /** The alignment of the tab headers in the header strip. */
   alignment: 'start' | 'end' | 'center' | 'justify';
   /**
-   * Determines the activation behavior of the tabs.
+   * The activation behavior of the tabs.
    *
-   * When set to 'auto', the tab will be selected when it receives focus.
-   * When set to 'manual', the tab will only be selected when it is clicked or activated with the keyboard.
+   * With `auto`, a tab is selected when it receives keyboard focus.
+   * With `manual`, a tab is selected only on click, or on Enter or Space.
    */
   activation: 'manual' | 'auto';
 }

@@ -41,6 +41,7 @@
 |       1 | 2026-09-21 | Initial specification                                    |
 |       2 | 2026-10-01 | Position the badge in a wrapper; hidden text through CSS |
 |       3 | 2026-10-14 | No role description on the badge                         |
+|       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                 |
 
 ## Overview
 
@@ -173,8 +174,8 @@ None applicable. The badge is not interactive and is not part of the tab order.
 | ---------- | ---------- | --------- | ----------------------------------------------------------- | --------- | ------------------------------------------------- |
 | `variant`  | `variant`  | yes       | `"primary" \| "info" \| "success" \| "warning" \| "danger"` | `primary` | The style variant of the badge.                    |
 | `shape`    | `shape`    | yes       | `"rounded" \| "square"`                                     | `rounded` | The shape of the badge.                            |
-| `outlined` | `outlined` | yes       | `boolean`                                                   | `false`   | Draws an outline around the badge.                 |
-| `dot`      | `dot`      | yes       | `boolean`                                                   | `false`   | Renders the badge as a dot, without content.       |
+| `outlined` | `outlined` | yes       | `boolean`                                                   | `false`   | Whether the badge has an outline.                  |
+| `dot`      | `dot`      | yes       | `boolean`                                                   | `false`   | Whether the badge renders as a small dot without content. |
 
 ### Methods
 
@@ -195,7 +196,7 @@ None applicable.
 | Part   | Description                                                              |
 | ------ | ------------------------------------------------------------------------ |
 | `base` | The wrapper of the badge.                                                 |
-| `icon` | Present on the wrapper when an `igc-icon` is the only projected element.   |
+| `icon` | Added to the base part when an icon is the only slotted element.          |
 
 ## Test scenarios
 

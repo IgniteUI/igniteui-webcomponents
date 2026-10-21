@@ -55,14 +55,14 @@ const metadata: Meta<IgcColorPickerComponent> = {
     format: {
       type: { name: 'enum', value: ['hex', 'rgb', 'hsl'] },
       description:
-        'Sets the color format of the string value.\n\nA format change renders `value` in the new notation. The color does not\nchange, so the component emits no `igcInput` or `igcChange`.',
+        'The color format of the string value.\n\nA format change renders `value` in the new notation. The color does not\nchange, so the component emits no `igcInput` or `igcChange`.',
       options: ['hex', 'rgb', 'hsl'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'hex' } },
     },
     hideFormats: {
       type: 'boolean',
-      description: 'Whether to hide the format picker buttons.',
+      description: 'Whether the format select is hidden.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -89,7 +89,7 @@ const metadata: Meta<IgcColorPickerComponent> = {
     required: {
       type: 'boolean',
       description:
-        'When set, makes the component a required field for validation.',
+        'Whether the control is required. A required control that has no value,\nor is not checked, fails validation.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -100,26 +100,28 @@ const metadata: Meta<IgcColorPickerComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component.',
+      description:
+        'Whether the control is disabled. A disabled control is not validated,\nand the form does not submit its value.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
-      description: 'Sets the control into invalid state (visual state only).',
+      description:
+        'Whether the control shows the invalid state. It changes only the visual\nstate, not the validity.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     open: {
       type: 'boolean',
-      description: 'Sets the open state of the component.',
+      description: 'Whether the component is open.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     scrollStrategy: {
       type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
       description:
-        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
+        'The behavior of the component when a parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
       options: ['scroll', 'hide', 'close'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'hide' } },
@@ -156,13 +158,13 @@ interface IgcColorPickerArgs {
    */
   value: string;
   /**
-   * Sets the color format of the string value.
+   * The color format of the string value.
    *
    * A format change renders `value` in the new notation. The color does not
    * change, so the component emits no `igcInput` or `igcChange`.
    */
   format: 'hex' | 'rgb' | 'hsl';
-  /** Whether to hide the format picker buttons. */
+  /** Whether the format select is hidden. */
   hideFormats: boolean;
   /** Whether to show the alpha slider and input. */
   showAlpha: boolean;
@@ -180,18 +182,27 @@ interface IgcColorPickerArgs {
    * locale.
    */
   locale: string;
-  /** When set, makes the component a required field for validation. */
+  /**
+   * Whether the control is required. A required control that has no value,
+   * or is not checked, fails validation.
+   */
   required: boolean;
   /** The name of the control, submitted with the form data. */
   name: string;
-  /** The disabled state of the component. */
+  /**
+   * Whether the control is disabled. A disabled control is not validated,
+   * and the form does not submit its value.
+   */
   disabled: boolean;
-  /** Sets the control into invalid state (visual state only). */
+  /**
+   * Whether the control shows the invalid state. It changes only the visual
+   * state, not the validity.
+   */
   invalid: boolean;
-  /** Sets the open state of the component. */
+  /** Whether the component is open. */
   open: boolean;
   /**
-   * Sets the behavior of the component when the parent container scrolls.
+   * The behavior of the component when a parent container scrolls.
    *
    * If the value is `hide`, the component hides while the anchor is fully out
    * of view. `hide` is the default value.

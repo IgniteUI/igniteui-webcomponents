@@ -45,6 +45,7 @@
 |       1 | 2026-09-21 | Initial specification                                                   |
 |       2 | 2026-10-01 | Delegate the focus                                                      |
 |       3 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
+|       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                |
 
 ## Overview
 
@@ -168,7 +169,7 @@ that sets one, and then the global locale of the library.
 | ----------------- | ------------ | --------- | ------------------------------------------------------------------------ | ------- | ---------------------------------------------- |
 | `selectable`      | `selectable` | yes       | `boolean`                                                                | `false` | Whether the chip can be selected.               |
 | `selected`        | `selected`   | yes       | `boolean`                                                                | `false` | Whether the chip is selected.                   |
-| `removable`       | `removable`  | yes       | `boolean`                                                                | `false` | Whether the chip renders a remove control.      |
+| `removable`       | `removable`  | yes       | `boolean`                                                                | `false` | Whether the chip shows a remove control. A disabled chip hides it. |
 | `disabled`        | `disabled`   | yes       | `boolean`                                                                | `false` | Whether the chip is disabled.                   |
 | `outlined`        | `outlined`   | yes       | `boolean`                                                                | `false` | Whether the chip is outlined.                   |
 | `variant`         | `variant`    | yes       | `"primary" \| "info" \| "success" \| "warning" \| "danger" \| undefined` | —       | The color variant of the chip.                  |
@@ -183,8 +184,8 @@ None applicable.
 
 | Event       | Detail    | Cancelable | Description                                   |
 | ----------- | --------- | ---------- | --------------------------------------------- |
-| `igcSelect` | `boolean` | no         | The chip was selected or deselected.          |
-| `igcRemove` | —         | no         | The remove control of the chip was activated. |
+| `igcSelect` | `boolean` | no         | Emitted when the user selects or deselects the chip. The detail is the new selected state. |
+| `igcRemove` | —         | no         | Emitted when the user activates the remove control. The chip does not remove itself. |
 
 The detail of `igcSelect` is the new `selected` state of the chip.
 
@@ -192,13 +193,13 @@ The detail of `igcSelect` is the new `selected` state of the chip.
 
 | Name     | Description                                                  |
 | -------- | ------------------------------------------------------------ |
-| default  | The label of the chip.                                        |
+| default  | Renders the label of the chip.                                |
 | `start`  | Content at the start of the chip, before the prefix.           |
 | `prefix` | Content before the label.                                      |
 | `suffix` | Content after the label.                                      |
 | `end`    | Content at the end of the chip, after the suffix.              |
-| `select` | The indicator rendered while the chip is selected.             |
-| `remove` | The content of the remove control.                             |
+| `select` | Renders content while a selectable chip is selected. It replaces the default selected icon. |
+| `remove` | Renders content that replaces the default remove icon.         |
 
 ### CSS Shadow parts
 

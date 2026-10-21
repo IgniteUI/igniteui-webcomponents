@@ -46,6 +46,7 @@
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-09-23 | Limit the variant parts to the linear progress |
 |       3 | 2026-10-01 | Announce the shown percentage, round it to two decimals |
+|       4 | 2026-10-21 | API descriptions aligned with the JSDoc. |
 
 ## Overview
 
@@ -190,16 +191,16 @@ Shared by `igc-linear-progress` and `igc-circular-progress`:
 | `value`             | `value`              | no        | `number`                                                    | `0`       | The value of the control.                        |
 | `max`               | `max`                | no        | `number`                                                    | `100`     | The maximum value of the control.                |
 | `variant`           | `variant`            | yes       | `"primary" \| "info" \| "success" \| "warning" \| "danger"` | `primary` | The variant of the control.                      |
-| `indeterminate`     | `indeterminate`      | no        | `boolean`                                                   | `false`   | The indeterminate state of the control.          |
-| `hideLabel`         | `hide-label`         | no        | `boolean`                                                   | `false`   | Hides the default label.                         |
+| `indeterminate`     | `indeterminate`      | no        | `boolean`                                                   | `false`   | Whether the progress is indeterminate. An indeterminate progress has no value and does not show the default label. |
+| `hideLabel`         | `hide-label`         | no        | `boolean`                                                   | `false`   | Whether the default label is hidden.             |
 | `labelFormat`       | `label-format`       | no        | `string`                                                    | —         | The format of the default label.                 |
-| `animationDuration` | `animation-duration` | no        | `number`                                                    | `500`     | The duration of the fill animation, in ms.       |
+| `animationDuration` | `animation-duration` | no        | `number`                                                    | `500`     | The duration of the fill animation in milliseconds. |
 
 `igc-linear-progress` adds:
 
 | Property     | Attribute     | Reflected | Type                                                                              | Default     | Description                        |
 | ------------ | ------------- | --------- | --------------------------------------------------------------------------------- | ----------- | ---------------------------------- |
-| `striped`    | `striped`     | yes       | `boolean`                                                                         | `false`     | The striped look of the control.    |
+| `striped`    | `striped`     | yes       | `boolean`                                                                         | `false`     | Whether the fill of the control is striped. |
 | `labelAlign` | `label-align` | yes       | `"top" \| "bottom" \| "top-start" \| "top-end" \| "bottom-start" \| "bottom-end"` | `top-start` | The position of the default label.  |
 
 `igc-circular-gradient`:
@@ -222,16 +223,16 @@ None applicable.
 
 | Component               | Name       | Description                                                        |
 | ----------------------- | ---------- | ------------------------------------------------------------------ |
-| both indicators         | default    | Replaces the label area of the indicator.                           |
-| `igc-circular-progress` | `gradient` | The gradient stops of the fill; accepts `igc-circular-gradient`.     |
+| both indicators         | default    | Custom label content. A slotted element replaces the default label. |
+| `igc-circular-progress` | `gradient` | The gradient stops of the fill. Accepts `igc-circular-gradient` elements. |
 
 ### CSS Shadow parts
 
-Shared by both indicators: `track`, `fill`, `label`, `value` and `indeterminate`.
+Shared by both indicators: `base`, `track`, `fill`, `label`, `value` and `indeterminate`.
 
 | Component               | Additional parts                                                                          |
 | ----------------------- | ----------------------------------------------------------------------------------------- |
-| `igc-linear-progress`   | `striped`, and one part per variant: `primary`, `info`, `success`, `warning` and `danger` |
+| `igc-linear-progress`   | `secondary`, `striped`, and one part per variant: `primary`, `info`, `success`, `warning` and `danger` |
 | `igc-circular-progress` | `svg`, `gradient_start`, `gradient_end`                                                   |
 
 ## Test scenarios

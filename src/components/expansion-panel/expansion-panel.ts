@@ -38,25 +38,24 @@ export interface IgcExpansionPanelComponentEventMap {
 const nextId = createIdGenerator('igc-expansion-panel');
 
 /**
- * The Expansion Panel Component provides a way to display information in a toggleable way -
- * compact summary view containing title and description and expanded detail view containing
- * additional content to the summary header.
+ * Shows a header with a title and a subtitle, and content that the user can
+ * expand and collapse.
  *
  * @element igc-expansion-panel
  *
- * @slot - renders the default content of the panel
- * @slot title - renders the title of the panel's header
- * @slot subtitle - renders the subtitle of the panel's header
- * @slot indicator - renders the expand/collapsed indicator
- * @slot indicator-expanded - renders the expanded state of the indicator
+ * @slot - Renders the default content of the panel.
+ * @slot title - Renders the title of the panel header.
+ * @slot subtitle - Renders the subtitle of the panel header.
+ * @slot indicator - Renders the expand/collapse indicator.
+ * @slot indicator-expanded - Renders the expanded state of the indicator.
  *
- * @fires igcOpening - Emitted before opening the expansion panel.
+ * @fires igcOpening - Emitted before the user opens the panel. Cancelable.
  * @fires igcOpened - Emitted after the expansion panel is opened.
- * @fires igcClosing - Emitted before closing the expansion panel.
+ * @fires igcClosing - Emitted before the user closes the panel. Cancelable.
  * @fires igcClosed - Emitted after the expansion panel is closed.
  *
  * @csspart header - The container of the expansion indicator, title and subtitle.
- * @csspart title -  The title container.
+ * @csspart title - The title container.
  * @csspart subtitle - The subtitle container.
  * @csspart indicator - The indicator container.
  * @csspart content - The expansion panel's content wrapper.
@@ -90,14 +89,15 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<IgcExp
   });
 
   /**
-   * Indicates whether the contents of the control should be visible.
+   * Whether the panel is expanded and its content is visible.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
   public open = false;
 
   /**
-   * Get/Set whether the expansion panel is disabled. Disabled panels are ignored for user interactions.
+   * Whether the panel is disabled. A disabled panel does not respond to user
+   * interaction.
    * @attr
    */
   @property({ type: Boolean, reflect: true })

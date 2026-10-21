@@ -40,6 +40,7 @@
 | ------: | ---------- | ---------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                          |
 |       2 | 2026-10-01 | The navigation skips panels that do not render |
+|       3 | 2026-10-21 | API descriptions aligned with the JSDoc.       |
 
 ## Overview
 
@@ -185,8 +186,8 @@ attribute or `display: none`.
 
 | Property     | Attribute     | Reflected | Type                             | Default | Description                                            |
 | ------------ | ------------- | --------- | -------------------------------- | ------- | -------------------------------------------------------- |
-| singleExpand | single-expand | Yes       | `boolean`                        | false   | Allows only one panel to be expanded at a time.        |
-| panels       | -             | No        | `IgcExpansionPanelComponent[]`   | -       | Read-only. All direct expansion panel children.        |
+| singleExpand | single-expand | Yes       | `boolean`                        | false   | Whether only one panel can be expanded at a time. When the user expands a panel, the other panels collapse. |
+| panels       | -             | No        | `IgcExpansionPanelComponent[]`   | -       | Read-only. The direct expansion panel children of the accordion. |
 
 ### Methods
 

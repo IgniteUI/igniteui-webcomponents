@@ -51,15 +51,17 @@ const i18n = {
 
 /* blazorSuppress */
 /**
+ * A form control that lets the user select one or more files, or a folder.
+ *
  * @element igc-file-input
  *
  * @slot prefix - Renders content before the input.
- * @slot suffix - Renders content after input.
+ * @slot suffix - Renders content after the input.
  * @slot helper-text - Renders content below the input.
- * @slot file-selector-text - Renders content for the browse button when input type is file.
- * @slot file-missing-text - Renders content when input type is file and no file is chosen.
+ * @slot file-selector-text - Renders content for the browse button.
+ * @slot file-missing-text - Renders content when no file is chosen.
  * @slot value-missing - Renders content when the required validation fails.
- * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot custom-error - Renders content when a custom message is set with `setCustomValidity()`.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcChange - Emitted when the selection of the control changes.
@@ -68,8 +70,8 @@ const i18n = {
  * @csspart container - The main wrapper that holds all main input elements.
  * @csspart input - The native input element.
  * @csspart label - The native label element.
- * @csspart file-names - The file names wrapper when input type is 'file'.
- * @csspart file-selector-button - The browse button when input type is 'file'.
+ * @csspart file-names - The file names wrapper.
+ * @csspart file-selector-button - The browse button wrapper.
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
@@ -141,8 +143,8 @@ export default class IgcFileInputComponent extends I18nMixin(
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
-   * The value of the control.
-   * Similar to native file input, this property is read-only and cannot be set programmatically.
+   * The value of the control: the name of the first selected file, as the native file input gives it.
+   * As for the native file input, only an empty string can be set. It clears the selection.
    * @attr
    */
   @property()
@@ -185,13 +187,13 @@ export default class IgcFileInputComponent extends I18nMixin(
   public accept = '';
 
   /**
-   * Whether the control should receive focus automatically.
+   * Whether the control receives focus automatically.
    * @attr
    */
   @property({ type: Boolean })
   public override autofocus!: boolean;
 
-  /** Returns the list of selected files. */
+  /** The list of selected files. */
   public get files(): FileList {
     return this._input?.files ?? new DataTransfer().files;
   }

@@ -67,14 +67,14 @@ const metadata: Meta<IgcSplitterComponent> = {
     hideCollapseButtons: {
       type: 'boolean',
       description:
-        'Whether the expand/collapse buttons on the splitter bar are hidden.\n\nNote that the buttons will also be hidden if `disable-collapse` is true or\nif a pane is currently collapsed.',
+        'Whether the expand/collapse buttons on the splitter bar are hidden.\n\nThe buttons are also hidden when `disable-collapse` is true. While a pane\nis collapsed, only its expand button shows.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     hideDragHandle: {
       type: 'boolean',
       description:
-        'Whether the drag handle on the splitter bar is hidden.\n\nNote that the drag handle will also be hidden if `disable-resize` is true.',
+        'Whether the drag handle on the splitter bar is hidden.\n\nThe drag handle is also hidden when `disable-resize` is true.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -171,14 +171,14 @@ interface IgcSplitterArgs {
   /**
    * Whether the expand/collapse buttons on the splitter bar are hidden.
    *
-   * Note that the buttons will also be hidden if `disable-collapse` is true or
-   * if a pane is currently collapsed.
+   * The buttons are also hidden when `disable-collapse` is true. While a pane
+   * is collapsed, only its expand button shows.
    */
   hideCollapseButtons: boolean;
   /**
    * Whether the drag handle on the splitter bar is hidden.
    *
-   * Note that the drag handle will also be hidden if `disable-resize` is true.
+   * The drag handle is also hidden when `disable-resize` is true.
    */
   hideDragHandle: boolean;
   /**

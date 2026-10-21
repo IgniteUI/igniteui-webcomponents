@@ -129,23 +129,29 @@ function getEyeDropper(): EyeDropperConstructor | undefined {
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  * @slot helper-text - Renders content below the picker.
  *
- * @fires igcOpening - Emitted just before the picker dropdown is open.
- * @fires igcOpened - Emitted after the picker dropdown is open.
- * @fires igcClosing - Emitted just before the picker dropdown is closed.
- * @fires igcClosed - Emitted after closing the picker dropdown.
- * @fires igcInput - Emitted when the value of the component is changed.
- * @fires igcChange - Emitted when the value of the component is committed.
+ * @fires igcOpening - Emitted before the user opens the picker dropdown. Cancelable.
+ * @fires igcOpened - Emitted after the picker dropdown opens on a user action.
+ * @fires igcClosing - Emitted before the user closes the picker dropdown. Cancelable.
+ * @fires igcClosed - Emitted after the picker dropdown closes on a user action.
+ * @fires igcInput - Emitted when the user changes the color with the canvas, the sliders, the alpha input, a swatch or the eyedropper.
+ * @fires igcChange - Emitted when the focus leaves the component after the user changed the color.
  *
+ * @csspart color-picker - The wrapper of the anchor, the label and the helper text.
  * @csspart anchor - The trigger element that opens the picker (the button in default mode, or the swatch prefix in input mode).
  * @csspart empty - Applied alongside `anchor` when no color value is set, rendering a checkered background.
- * @csspart label - The label rendered above the anchor in default mode.
+ * @csspart input-mode - Added to the anchor part in input mode.
+ * @csspart label - The label rendered after the anchor in default mode.
  * @csspart picker - The popover container holding the canvas, sliders, inputs and swatches.
+ * @csspart picker-canvas - The saturation and value canvas.
+ * @csspart marker - The marker on the canvas that shows the saturation and value.
+ * @csspart dragging - Added to the marker part while the user drags it.
  * @csspart main-row - The row containing the hue slider and the copy/eyedropper buttons.
  * @csspart alpha-row - The row containing the alpha slider and input, rendered when `show-alpha` is set.
  * @csspart inputs-row - The row containing the format select and the color value input.
  * @csspart buttons - The wrapper around the copy and eyedropper buttons.
  * @csspart hue - The hue slider.
  * @csspart alpha - The alpha slider.
+ * @csspart alpha-input - The input of the alpha value, rendered when `show-alpha` is set.
  * @csspart copy - The button that copies the current color value to the clipboard.
  * @csspart eye-dropper - The button that activates the EyeDropper API.
  * @csspart format-select - The select control used to switch the color string format.
@@ -248,7 +254,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
   }
 
   /**
-   * Sets the color format of the string value.
+   * The color format of the string value.
    *
    * A format change renders `value` in the new notation. The color does not
    * change, so the component emits no `igcInput` or `igcChange`.
@@ -260,7 +266,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
   public format: ColorFormat = 'hex';
 
   /**
-   * Whether to hide the format picker buttons.
+   * Whether the format select is hidden.
    *
    * @attr hide-formats
    * @default false
@@ -292,8 +298,8 @@ export default class IgcColorPickerComponent extends I18nMixin(
 
   /**
    * Pre-defined color strings. The component renders them as clickable
-   * swatches below the picker controls. A click on a swatch commits its color
-   * as the value.
+   * swatches below the picker controls. A click on a swatch sets its color as
+   * the value.
    */
   @property({ attribute: false })
   public swatches: string[] = [];

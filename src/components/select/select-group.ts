@@ -19,7 +19,7 @@ import IgcSelectItemComponent from './select-item.js';
  * @element igc-select-group
  *
  * @slot label - Contains the group's label.
- * @slot - Intended to contain the items belonging to this group.
+ * @slot - Renders the items of the group.
  *
  * @csspart label - The native label element.
  */
@@ -62,7 +62,7 @@ export default class IgcSelectGroupComponent extends IgcGroupBaseComponent {
   }
 
   /**
-   * Whether the group item and all its children are disabled.
+   * Whether the group and all its children are disabled.
    * @attr
    */
   @property({ reflect: true, type: Boolean })

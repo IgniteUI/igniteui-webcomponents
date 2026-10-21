@@ -66,6 +66,10 @@ export default class IgcRadioGroupComponent extends LitElement {
   public alignment: ContentOrientation = 'vertical';
 
   /* blazorCSSuppress */
+  /**
+   * The value of the radio that is checked by default. A form reset checks
+   * the radio with this value.
+   */
   @property({ attribute: false })
   public set defaultValue(value: string) {
     this._defaultValue = value;

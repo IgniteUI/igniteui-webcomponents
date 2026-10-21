@@ -44,13 +44,13 @@ const Slots = setSlots(
 );
 
 /**
- * A highly customizable single-line text field for entering and editing data,
- * with support for prefix/suffix content, helper text, form integration, and built-in validation.
+ * A single-line text field to enter and edit data. It supports prefix and
+ * suffix content, helper text, form integration and built-in validation.
  *
  * @element igc-input
  *
  * @slot prefix - Renders content before the input.
- * @slot suffix - Renders content after input.
+ * @slot suffix - Renders content after the input.
  * @slot helper-text - Renders content below the input.
  * @slot value-missing - Renders content when the required validation fails.
  * @slot type-mismatch - Renders content when the url/email type validation fails.
@@ -60,7 +60,7 @@ const Slots = setSlots(
  * @slot range-overflow - Renders content when the max validation fails.
  * @slot range-underflow - Renders content when the min validation fails.
  * @slot step-mismatch - Renders content when the step validation fails.
- * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot custom-error - Renders content when a custom message is set with `setCustomValidity()`.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcInput - Emitted when the control input receives user input.
@@ -127,7 +127,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   public type: InputType = 'text';
 
   /**
-   * Makes the control a readonly field.
+   * Whether the control is read-only.
    *
    * @attr readonly
    * @default false
@@ -192,7 +192,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   public step?: number = undefined;
 
   /**
-   * Whether the control should receive focus automatically.
+   * Whether the control receives focus automatically.
    * @attr
    */
   @property({ type: Boolean })
@@ -206,8 +206,8 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   public autocomplete!: string;
 
   /**
-   * Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property for
-   * string-type inputs or allows spin buttons to exceed the predefined `min/max` limits for number-type inputs.
+   * Whether the validation rules apply without restricting user input. The user can type past `maxLength`,
+   * and the spin buttons of a `number` input can go past `min` and `max`.
    *
    * @attr validate-only
    * @default false
@@ -253,7 +253,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   }
 
   /* blazorSuppress */
-  /** Sets the text selection range of the control */
+  /** Sets the text selection range of the control. */
   public setSelectionRange(
     start?: number,
     end?: number,

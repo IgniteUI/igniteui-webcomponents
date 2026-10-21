@@ -49,6 +49,7 @@
 |       4 | 2026-10-02 | Document the default slot of the icon button; follow a change of the host `aria-label`   |
 |       5 | 2026-10-02 | Forward the host `aria-labelledby` and `aria-describedby`; a `<label>` names the button  |
 |       6 | 2026-10-19 | Forward the host `aria-pressed` to the native button, so a button can be a toggle         |
+|       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                                                 |
 
 ## Overview
 
@@ -201,7 +202,7 @@ Shared by `igc-button` and `igc-icon-button`:
 
 | Property            | Attribute    | Reflected | Type                                             | Default     | Description                                            |
 | ------------------- | ------------ | --------- | ------------------------------------------------ | ----------- | ------------------------------------------------------ |
-| `disabled`          | `disabled`   | yes       | `boolean`                                        | `false`     | Disables the button.                                    |
+| `disabled`          | `disabled`   | yes       | `boolean`                                        | `false`     | Whether the button is disabled. A disabled button ignores user interaction. |
 | `type`              | `type`       | yes       | `"button" \| "submit" \| "reset"`                | `button`    | The behavior of the button; ignored while `href` is set. |
 | `href`              | `href`       | no        | `string \| undefined`                            | —           | Renders the component as an anchor to this URL.          |
 | `download`          | `download`   | no        | `string \| undefined`                            | —           | Downloads the target instead of navigating to it.        |
@@ -224,7 +225,7 @@ Shared by `igc-button` and `igc-icon-button`:
 | ------------ | ------------ | --------- | ----------------------------------------- | ----------- | --------------------------------------------- |
 | `name`       | `name`       | no        | `string \| undefined`                     | —           | The name of the icon to show.                  |
 | `collection` | `collection` | no        | `string \| undefined`                     | —           | The collection the icon belongs to.            |
-| `mirrored`   | `mirrored`   | no        | `boolean`                                 | `false`     | Mirrors the icon in a right-to-left context.   |
+| `mirrored`   | `mirrored`   | no        | `boolean`                                 | `false`     | Whether the icon is flipped horizontally. Use it for a directional icon in a right-to-left layout. |
 | `variant`    | `variant`    | yes       | `"contained" \| "outlined" \| "flat"`     | `contained` | The visual variant of the button.              |
 
 ### Methods
@@ -244,7 +245,7 @@ None of their own. The components emit the native events of the rendered `<butto
 | `igc-button`      | default  | The label of the button.                          |
 | `igc-button`      | `prefix` | Content before the label.                         |
 | `igc-button`      | `suffix` | Content after the label.                          |
-| `igc-icon-button` | default  | Content after the icon, such as text or a ripple. |
+| `igc-icon-button` | default  | Renders content after the icon, such as text or a ripple. |
 
 The icon of `igc-icon-button` comes from the registry. The default slot renders after the icon, and alone when the
 button has no `name` and no `mirrored`. Slotted content takes the size of the icon.
@@ -254,7 +255,7 @@ button has no `name` and no `mirrored`. Slotted content takes the size of the ic
 | Component         | Part     | Description                                      |
 | ----------------- | -------- | ------------------------------------------------ |
 | `igc-button`      | `base`   | The native button or anchor element.              |
-| `igc-icon-button` | `base`   | The wrapping element of the icon button.          |
+| `igc-icon-button` | `base`   | The native button or anchor element.              |
 | `igc-icon-button` | `icon`   | The icon element.                                 |
 
 ## Test scenarios

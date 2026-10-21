@@ -54,6 +54,7 @@
 |       3 | 2026-10-12 | The input and the messages render empty on the server and render after hydration |
 |       4 | 2026-10-19 | The list follows the newest message only from the bottom; `focusInput()`; image MIME types; the file picker applies `acceptedFiles`; keyboard access to attachments |
 |       5 | 2026-10-19 | Named message actions with a pressed state for like and dislike; localized composer labels; a remove name per attachment |
+|       6 | 2026-10-21 | API descriptions aligned with the JSDoc. |
 
 ## Overview
 
@@ -301,7 +302,7 @@ global `registerI18n` mechanism, and both shapes are accepted by the property.
 | ----------------- | ------------------------------------------------- | ------- | --------------------------------------------------------------- |
 | `messages`        | `IgcChatMessage[]`                                | `[]`    | The messages currently displayed.                                |
 | `draftMessage`    | `IgcChatDraftMessage`                             | —       | The message being composed, with its text and its attachments.   |
-| `options`         | `IgcChatOptions \| undefined`                     | —       | The behavior and appearance configuration of the chat.           |
+| `options`         | `IgcChatOptions \| undefined`                     | —       | The configuration object of the chat: behavior and appearance options, suggestions and custom renderers. |
 | `locale`          | `string`                                          | global  | The locale of the resource strings.                               |
 | `resourceStrings` | `IChatResourceStrings`                            | English | The resource strings of the component.                            |
 
@@ -333,14 +334,14 @@ global `registerI18n` mechanism, and both shapes are accepted by the property.
 
 | Event                  | Detail                        | Cancelable | Description                                                     |
 | ---------------------- | ----------------------------- | ---------- | --------------------------------------------------------------- |
-| `igcMessageCreated`    | `IgcChatMessage`              | yes        | A message was composed and sent.                                 |
-| `igcMessageReact`      | `IgcChatMessageReaction`      | no         | A message was reacted to.                                        |
-| `igcAttachmentAdded`   | `IgcChatMessageAttachment[]`  | yes        | Attachments were added, by the picker or by a drop.              |
-| `igcAttachmentRemoved` | `IgcChatMessageAttachment`    | yes        | An attachment was removed by the user.                           |
-| `igcAttachmentClick`   | `IgcChatMessageAttachment`    | no         | An attachment of a message was clicked.                          |
-| `igcAttachmentDrag`    | —                             | no         | A file is being dragged over the composer.                       |
-| `igcAttachmentDrop`    | —                             | no         | A file was dropped into the composer.                            |
-| `igcTypingChange`      | `boolean`                     | no         | The typing state of the local user changed.                      |
+| `igcMessageCreated`    | `IgcChatMessage`              | yes        | Dispatched when the user sends a message, also with a click on a suggestion. Cancelable: a canceled event does not add the message. |
+| `igcMessageReact`      | `IgcChatMessageReaction`      | no         | Dispatched when the user clicks an action button of a message, for example like or copy. |
+| `igcAttachmentAdded`   | `IgcChatMessageAttachment[]`  | yes        | Dispatched when the user adds attachments with drag and drop or with the default file input. Cancelable: a canceled event does not add them. |
+| `igcAttachmentRemoved` | `IgcChatMessageAttachment`    | yes        | Dispatched when the user removes an attachment from the input. Cancelable: a canceled event keeps the attachment. |
+| `igcAttachmentClick`   | `IgcChatMessageAttachment`    | no         | Dispatched when the user clicks the header of a message attachment. |
+| `igcAttachmentDrag`    | —                             | no         | Dispatched when the user drags files into the input area.        |
+| `igcAttachmentDrop`    | —                             | no         | Dispatched when the user drops files on the input area.          |
+| `igcTypingChange`      | `boolean`                     | no         | Dispatched when the user starts or stops typing. The detail is `true` while the user types. |
 | `igcInputFocus`        | —                             | no         | The composer received focus.                                     |
 | `igcInputBlur`         | —                             | no         | The composer lost focus.                                         |
 | `igcInputChange`       | `string`                      | no         | The content of the composer changed.                             |
