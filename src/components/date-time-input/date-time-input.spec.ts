@@ -1005,8 +1005,9 @@ describe('Date Time Input component', () => {
       element.stepDown();
       await elementUpdated(element);
 
-      // Spinning while focused is an uncommitted edit, so only the mask draft moves.
+      // A step from code updates the value at once, also while focused.
       expect(input.value).to.equal('2022/06/01');
+      expect(element.value.getFullYear()).to.eq(2022);
       expect(input.selectionStart).to.eq(start);
       expect(input.selectionEnd).to.eq(end);
 
@@ -1019,6 +1020,7 @@ describe('Date Time Input component', () => {
       await elementUpdated(element);
 
       expect(input.value).to.equal('2022/07/01');
+      expect(element.value.getMonth()).to.eq(6);
       expect(input.selectionStart).to.eq(start);
       expect(input.selectionEnd).to.eq(end);
 
@@ -1027,6 +1029,44 @@ describe('Date Time Input component', () => {
 
       expect(element.value.getFullYear()).to.eq(2022);
       expect(element.value.getMonth()).to.eq(6);
+    });
+
+    it('should commit a step from code over a keyboard draft', async () => {
+      element.inputFormat = 'yyyy/MM/dd';
+      element.value = new Date(2023, 5, 1);
+      element.focus();
+      await elementUpdated(element);
+      const eventSpy = spy(element, 'emitEvent');
+
+      element.setSelectionRange(5, 6);
+      simulateKeyboard(input, arrowDown);
+      await elementUpdated(element);
+      expect(input.value).to.equal('2023/05/01');
+
+      element.stepUp();
+      await elementUpdated(element);
+      expect(input.value).to.equal('2023/06/01');
+      expect(element.value.getMonth()).to.eq(5);
+
+      element.blur();
+      await elementUpdated(element);
+      expect(element.value.getMonth()).to.eq(5);
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    it('should keep a focused step of a part that is not in the input format', async () => {
+      element.inputFormat = 'yyyy/MM/dd';
+      element.value = new Date(2023, 5, 1, 10, 30);
+      element.focus();
+      await elementUpdated(element);
+
+      element.stepDown(DatePart.Minutes, 15);
+      await elementUpdated(element);
+      expect(element.value.getMinutes()).to.eq(15);
+
+      element.blur();
+      await elementUpdated(element);
+      expect(element.value.getMinutes()).to.eq(15);
     });
 
     it('ArrowLeft/Right should navigate to the beginning/end of date section', async () => {

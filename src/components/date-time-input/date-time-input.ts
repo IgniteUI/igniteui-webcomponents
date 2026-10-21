@@ -59,6 +59,16 @@ export interface IgcDateTimeInputComponentEventMap {
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
+ * @csspart prefixed - Added to the container and the input when an element that is not hidden is in the prefix slot.
+ * @csspart suffixed - Added to the container and the input when an element that is not hidden is in the suffix slot.
+ * @csspart filled - Added to the container and the input unless the focused input shows only the empty mask.
+ * @csspart labelled - Added to the container in the material theme when the control has a label.
+ * @csspart start - The wrapper of the prefix in the material theme.
+ * @csspart notch - The wrapper of the label in the material theme.
+ * @csspart filler - The outline segment between the notch and the end in the material theme.
+ * @csspart end - The wrapper of the suffix in the material theme.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   IgcDateTimeInputComponentEventMap,
@@ -234,6 +244,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   /**
    * Increments a date or time part by `delta`, or by its `spinDelta` value.
    * Without `datePart`, it changes the part at the cursor or a default part.
+   * The `value` updates at once.
    */
   public override stepUp(datePart?: DatePart, delta?: number): void {
     super.stepUp(datePart, delta);
@@ -242,6 +253,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   /**
    * Decrements a date or time part by `delta`, or by its `spinDelta` value.
    * Without `datePart`, it changes the part at the cursor or a default part.
+   * The `value` updates at once.
    */
   public override stepDown(datePart?: DatePart, delta?: number): void {
     super.stepDown(datePart, delta);

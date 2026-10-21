@@ -56,6 +56,7 @@
 |       3 | 2026-09-30 | Automatic error level, reactive label, `xlink:href` export           |
 |       4 | 2026-10-02 | Forward the host `aria-labelledby` and `aria-describedby` to the SVG |
 |       5 | 2026-10-20 | `copyToClipboard()`; exports read `size` after the pending render      |
+|       6 | 2026-10-21 | An invalid `version` falls back to the automatic version             |
 
 ## Overview
 
@@ -275,7 +276,7 @@ Not applicable. The component is presentational, is not part of the tab order an
 | Property      | Attribute      | Reflected | Type                                | Default | Description                                                              |
 | ------------- | -------------- | --------- | ----------------------------------- | ------- | ------------------------------------------------------------------------ |
 | `value`       | `value`        | no        | `string \| undefined`               | —       | The value encoded in the QR code.                                         |
-| `version`     | `version`      | no        | `number \| undefined`               | —       | The version, 1 to 40; the smallest fitting one when unset.                |
+| `version`     | `version`      | no        | `number \| undefined`               | —       | The version, 1 to 40; the smallest fitting one when unset or invalid.     |
 | `errorLevel`  | `error-level`  | no        | `"L" \| "M" \| "Q" \| "H"`          | `M`     | The error correction level.                                               |
 | `size`        | `size`         | no        | `number`                            | `128`   | The rendered width and height in pixels.                                  |
 | `margin`      | `margin`       | no        | `number`                            | `4`     | The quiet-zone margin, in modules.                                        |
@@ -399,8 +400,9 @@ None. The SVG is rendered entirely from the properties of the component.
     JPEG, a WebP and an SVG with scaled dimensions. A `size` set right after the call applies to the image.
 22. An existing matching extension in the file name is kept, and the download dialog opens only when requested.
 23. Both methods reject without a value, and `toImage()` rejects invalid options, also a `size` set right after the
-    call that makes the image larger than the maximum canvas size. A value that does not fit the pinned version, and
-    a version that is not a number, render nothing, warn once and make the export reject with the encoder error.
+    call that makes the image larger than the maximum canvas size. A value that does not fit the pinned version
+    renders nothing, warns once and makes the export reject with the encoder error. A version that is not an integer
+    from 1 to 40 falls back to the automatic version.
 
 ### Clipboard
 
@@ -439,9 +441,9 @@ None. The SVG is rendered entirely from the properties of the component.
 - `logoSize` is a ratio of the safe area of the resolved error correction level — at most about 9% of the area of
   the code — and not of the whole code.
 - Logo sources are validated for their scheme and their media type, not for their content.
-- The application owns a `version` that cannot hold the value or is not an integer from 1 to 40, and a value too long
-  for version 40. The component then renders nothing and warns, `toBlob()` and `toImage()` reject with the encoder
-  error, and `copyToClipboard()` rejects.
+- The application owns a `version` that cannot hold the value, and a value too long for version 40. The component
+  then renders nothing and warns, `toBlob()` and `toImage()` reject with the encoder error, and `copyToClipboard()`
+  rejects.
 - The colors deliberately do not follow the light and dark theme variants.
 - `toImage()` and `copyToClipboard()` are bounded by the maximum canvas size of the browser, so a very large size and
   scale combination is rejected.

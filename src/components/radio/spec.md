@@ -25,6 +25,7 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
   - [Test scenarios](#test-scenarios)
     - [Rendering and properties](#rendering-and-properties)
     - [Interactions and events](#interactions-and-events)
@@ -302,6 +303,12 @@ re-dispatches the native `focus`, `blur` and `invalid` events from the host elem
 | `ripple`  | The highlight around the circle on hover and focus. A disabled radio hides it. |
 | `checked` | Added to the base, control, label and ripple parts when the radio is checked. |
 | `focused` | Added to the base part when the radio has keyboard focus. |
+
+### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
 
 ## Test scenarios
 

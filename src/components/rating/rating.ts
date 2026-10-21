@@ -105,6 +105,8 @@ const Slots = setSlots('symbol', 'value-label');
  * @cssproperty --symbol-empty-color - The color of the empty symbol.
  * @cssproperty --symbol-full-filter - The filter(s) applied to projected full symbols, other than icons, when the rating is disabled.
  * @cssproperty --symbol-empty-filter - The filter(s) applied to projected empty symbols, other than icons, when the rating is disabled.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 export default class IgcRatingComponent extends FormAssociatedMixin(
   EventEmitterMixin<IgcRatingComponentEventMap>(LitElement)

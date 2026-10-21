@@ -732,6 +732,8 @@
       "cssParts": [
         "active",
         "dot",
+        "inactive",
+        "indicator",
         "indicators",
         "label",
         "navigation",
@@ -1084,7 +1086,9 @@
       ],
       "cssParts": [
         "base",
+        "counter",
         "fill",
+        "fraction",
         "gradient_end",
         "gradient_start",
         "indeterminate",
@@ -1440,8 +1444,10 @@
         "days-row",
         "days-view",
         "days-view-container",
+        "dialog-base",
         "disabled",
         "first",
+        "footer",
         "header",
         "header-date",
         "header-title",
@@ -1459,6 +1465,7 @@
         "navigation",
         "navigation-button",
         "navigation-buttons",
+        "overlay",
         "prefix",
         "preview",
         "range",
@@ -1466,6 +1473,7 @@
         "single",
         "special",
         "suffix",
+        "title",
         "week-number",
         "week-number-inner",
         "weekend",
@@ -1633,8 +1641,10 @@
         "days-row",
         "days-view",
         "days-view-container",
+        "dialog-base",
         "disabled",
         "first",
+        "footer",
         "header",
         "header-date",
         "header-title",
@@ -1653,6 +1663,7 @@
         "navigation",
         "navigation-button",
         "navigation-buttons",
+        "overlay",
         "prefix",
         "preview",
         "range",
@@ -1662,6 +1673,7 @@
         "single",
         "special",
         "suffix",
+        "title",
         "week-number",
         "week-number-inner",
         "weekend",
@@ -1757,11 +1769,19 @@
       ],
       "cssParts": [
         "container",
+        "end",
+        "filled",
+        "filler",
         "helper-text",
         "input",
         "label",
+        "labelled",
+        "notch",
         "prefix",
-        "suffix"
+        "prefixed",
+        "start",
+        "suffix",
+        "suffixed"
       ],
       "cssProperties": []
     },
@@ -2115,13 +2135,22 @@
       ],
       "cssParts": [
         "container",
+        "end",
         "file-names",
+        "file-parts",
         "file-selector-button",
+        "filled",
+        "filler",
         "helper-text",
         "input",
         "label",
+        "labelled",
+        "notch",
         "prefix",
-        "suffix"
+        "prefixed",
+        "start",
+        "suffix",
+        "suffixed"
       ],
       "cssProperties": []
     },
@@ -2339,11 +2368,19 @@
       ],
       "cssParts": [
         "container",
+        "end",
+        "filled",
+        "filler",
         "helper-text",
         "input",
         "label",
+        "labelled",
+        "notch",
         "prefix",
-        "suffix"
+        "prefixed",
+        "start",
+        "suffix",
+        "suffixed"
       ],
       "cssProperties": []
     },
@@ -2381,8 +2418,10 @@
       ],
       "cssParts": [
         "base",
+        "counter",
         "danger",
         "fill",
+        "fraction",
         "indeterminate",
         "info",
         "label",
@@ -2525,11 +2564,19 @@
       ],
       "cssParts": [
         "container",
+        "end",
+        "filled",
+        "filler",
         "helper-text",
         "input",
         "label",
+        "labelled",
+        "notch",
         "prefix",
-        "suffix"
+        "prefixed",
+        "start",
+        "suffix",
+        "suffixed"
       ],
       "cssProperties": []
     },
@@ -3643,8 +3690,11 @@
       "cssParts": [
         "end-scroll-button",
         "header",
+        "inner",
+        "scrollable",
         "selected-indicator",
-        "start-scroll-button"
+        "start-scroll-button",
+        "tabs"
       ],
       "cssProperties": []
     },
@@ -3728,11 +3778,20 @@
       ],
       "cssParts": [
         "container",
+        "end",
+        "filled",
+        "filler",
         "helper-text",
         "input",
         "label",
+        "labelled",
+        "notch",
+        "placeholder",
         "prefix",
-        "suffix"
+        "prefixed",
+        "start",
+        "suffix",
+        "suffixed"
       ],
       "cssProperties": []
     },

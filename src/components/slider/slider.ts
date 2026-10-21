@@ -45,6 +45,8 @@ export interface IgcSliderComponentEventMap {
  * @csspart steps - The track steps element.
  * @csspart inactive - The inactive element of the track.
  * @csspart fill - The filled part of the track.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 export default class IgcSliderComponent extends FormAssociatedMixin(
   EventEmitterMixin<IgcSliderComponentEventMap, typeof IgcSliderBaseComponent>(

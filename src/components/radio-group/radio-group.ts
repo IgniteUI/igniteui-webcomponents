@@ -25,6 +25,9 @@ import { styles as shared } from './themes/shared/radio-group.common.css.js';
  *
  * @slot - The radio controls of the group. They must be direct children of the group -
  * radios nested in a wrapper element are neither part of it, nor laid out by it.
+ *
+ * @cssstate disabled - Set when the group has radios and all of them are disabled.
+ * @cssstate label-before - Set when a radio in the group has its label before the control.
  */
 export default class IgcRadioGroupComponent extends LitElement {
   public static readonly tagName = 'igc-radio-group';

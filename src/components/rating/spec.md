@@ -25,6 +25,7 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
     - [CSS custom properties](#css-custom-properties)
   - [Test scenarios](#test-scenarios)
     - [Default](#default)
@@ -255,6 +256,12 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 | `igc-rating-symbol` | `symbol`      | The wrapper of the projected symbol.             |
 | `igc-rating-symbol` | `full`        | The wrapper of the full state.                   |
 | `igc-rating-symbol` | `empty`       | The wrapper of the empty state.                  |
+
+### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
 
 ### CSS custom properties
 

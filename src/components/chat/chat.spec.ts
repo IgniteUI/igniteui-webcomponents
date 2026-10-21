@@ -297,6 +297,12 @@ describe('Chat', () => {
       expect(getChatDOM(chat).suggestionsContainer).to.be.null;
     });
 
+    it('should keep the hidden suggestions container in the DOM without suggestions', () => {
+      expect(
+        chat.renderRoot.querySelector('[part="suggestions-container"]')
+      ).to.have.attribute('hidden');
+    });
+
     it('should render suggestions if provided', async () => {
       chat.options = { suggestions: ['Suggestion 1', 'Suggestion 2'] };
       await elementUpdated(chat);
@@ -475,6 +481,51 @@ describe('Chat', () => {
       expect(getSlottedElements('suggestion').map((e) => e.textContent)).to.eql(
         ['First', 'Second']
       );
+    });
+
+    it('should render the suggestions area for slotted suggestions alone', async () => {
+      chat = await fixture<IgcChatComponent>(html`
+        <igc-chat>
+          <span slot="suggestion">First</span>
+        </igc-chat>
+      `);
+
+      expect(getChatDOM(chat).suggestionsContainer).to.exist;
+      expect(getSlottedElements('suggestion').map((e) => e.textContent)).to.eql(
+        ['First']
+      );
+
+      chat = await fixture<IgcChatComponent>(html`
+        <igc-chat>
+          <div slot="suggestions">Custom list</div>
+        </igc-chat>
+      `);
+
+      expect(getChatDOM(chat).suggestionsContainer).to.exist;
+      expect(getSlottedElements('suggestions')).lengthOf(1);
+    });
+
+    it('should follow suggestions that are slotted and removed later', async () => {
+      chat = await fixture<IgcChatComponent>(html`
+        <igc-chat>
+          <h3 slot="suggestions-header">Get inspired</h3>
+        </igc-chat>
+      `);
+
+      expect(getChatDOM(chat).suggestionsContainer).to.be.null;
+
+      const suggestion = document.createElement('span');
+      chat.append(suggestion);
+      await elementUpdated(chat);
+      expect(getChatDOM(chat).suggestionsContainer).to.be.null;
+
+      suggestion.slot = 'suggestion';
+      await elementUpdated(chat);
+      expect(getChatDOM(chat).suggestionsContainer).to.exist;
+
+      suggestion.remove();
+      await elementUpdated(chat);
+      expect(getChatDOM(chat).suggestionsContainer).to.be.null;
     });
   });
 
@@ -2029,6 +2080,20 @@ describe('Chat', () => {
       expectAtBottom();
     });
 
+    it('follows slotted suggestions that appear while the list is at the bottom', async () => {
+      const suggestion = document.createElement('span');
+      suggestion.slot = 'suggestion';
+      suggestion.textContent = 'Yes';
+
+      chat.append(suggestion);
+      await elementUpdated(chat);
+      await nextFrame();
+      await nextFrame();
+
+      expect(getChatDOM(chat).suggestionsContainer).to.exist;
+      expectAtBottom();
+    });
+
     it('keeps the position after the user scrolls up', async () => {
       const { messageArea } = getChatDOM(chat);
       await simulateScroll(messageArea, { top: 0 });
@@ -2363,6 +2428,22 @@ describe('Chat', () => {
       expect(textarea()).to.exist;
     });
 
+    it('renders slotted suggestions after the chat hydrates a declarative shadow root', async () => {
+      container.setHTMLUnsafe(
+        '<igc-chat><template shadowrootmode="open"></template><h4 slot="title">Title</h4><span slot="suggestion">First</span></igc-chat>'
+      );
+      const chat = container.querySelector(IgcChatComponent.tagName)!;
+
+      // The first render matches the server render.
+      await chat.updateComplete;
+      expect(getChatDOM(chat).suggestionsContainer).to.be.null;
+      expect(getChatDOM(chat).header).to.have.attribute('hidden');
+
+      await elementUpdated(chat);
+      expect(getChatDOM(chat).suggestionsContainer).to.exist;
+      expect(getChatDOM(chat).header).not.to.have.attribute('hidden');
+    });
+
     it('renders the message after it hydrates a declarative shadow root', async () => {
       const message = parseDeclarative<IgcChatMessageComponent>(
         IgcChatMessageComponent.tagName
@@ -2432,8 +2513,11 @@ function getChatDOM(chat: IgcChatComponent) {
     get emptyState() {
       return root.querySelector<HTMLElement>('[part="empty-state"]')!;
     },
+    /** The suggestions container while it shows. It stays in the DOM, hidden, without suggestions. */
     get suggestionsContainer() {
-      return root.querySelector<HTMLElement>('[part="suggestions-container"]')!;
+      return root.querySelector<HTMLElement>(
+        '[part="suggestions-container"]:not([hidden])'
+      )!;
     },
   };
 }

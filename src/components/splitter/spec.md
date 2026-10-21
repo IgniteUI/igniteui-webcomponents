@@ -26,6 +26,7 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
   - [Test scenarios](#test-scenarios)
     - [Rendering](#rendering)
     - [Slotted content](#slotted-content)
@@ -373,6 +374,13 @@ interface IgcSplitterLayoutChangedEventArgs {
 | `end-collapse-btn`   | The button to collapse the end pane.                |
 | `start-expand-btn`   | The button to expand the start pane when collapsed. |
 | `end-expand-btn`     | The button to expand the end pane when collapsed.   |
+
+### CSS custom states
+
+| State             | Description                            |
+| ----------------- | -------------------------------------- |
+| `start-collapsed` | Set while the start pane is collapsed. |
+| `end-collapsed`   | Set while the end pane is collapsed.   |
 
 ## Test scenarios
 

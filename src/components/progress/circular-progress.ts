@@ -32,6 +32,8 @@ const nextId = createIdGenerator('circular-progress');
  * @csspart label - The circular progress label.
  * @csspart value - The circular progress label value.
  * @csspart indeterminate - Added to the SVG and track parts while the progress is indeterminate.
+ * @csspart counter - Added to the label value while it shows the default percentage text.
+ * @csspart fraction - Added to the label value when the percentage has a fractional part.
  */
 export default class IgcCircularProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-circular-progress';

@@ -566,11 +566,26 @@ export abstract class IgcDatePickerBaseComponent<
     }
   }
 
+  /** Emits `igcChange` and records the value as the last committed one. */
+  protected _emitChange(): void {
+    this.emitEvent('igcChange', { detail: this._value });
+    this._oldValue = this._value;
+  }
+
+  /**
+   * Commits a value from an editor. An editor also reports a value set from code while it is focused, so a value
+   * that equals the last committed one emits nothing.
+   */
+  protected _commitEditorValue(value: T | null): void {
+    this._setTouchedState();
+    this._value = value;
+    this._emitChangeIfDirty();
+  }
+
   /** Emits `igcChange` if the value has moved away from the last committed one. */
   protected _emitChangeIfDirty(): void {
     if (!equal(this._value, this._oldValue)) {
-      this.emitEvent('igcChange', { detail: this._value });
-      this._oldValue = this._value;
+      this._emitChange();
     }
   }
 
@@ -630,7 +645,7 @@ export abstract class IgcDatePickerBaseComponent<
     this._value = this._valueFromCalendarSelection(asArray(event.detail));
 
     if (this._commitsCalendarSelection()) {
-      this.emitEvent('igcChange', { detail: this._value });
+      this._emitChange();
       this._shouldCloseCalendarDropdown();
     }
   }

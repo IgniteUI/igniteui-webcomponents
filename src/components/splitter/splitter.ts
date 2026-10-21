@@ -101,6 +101,21 @@ const i18n = {
  * using the built-in collapse buttons or the programmatic `toggle()` API.
  * Nested splitters are supported for more complex layouts.
  *
+ * ## Keyboard interactions
+ *
+ * When the splitter bar is focused:
+ *
+ * | Key | Action |
+ * |---|---|
+ * | `Arrow Left` / `Arrow Right` | Resize panes (horizontal orientation) |
+ * | `Arrow Up` / `Arrow Down` | Resize panes (vertical orientation) |
+ * | `Home` | Snap start pane to its minimum size |
+ * | `End` | Snap start pane to its maximum size |
+ * | `Ctrl + Arrow Left` / `Ctrl + Arrow Up` | Expand the end pane if it is collapsed, else toggle the start pane |
+ * | `Ctrl + Arrow Right` / `Ctrl + Arrow Down` | Expand the start pane if it is collapsed, else toggle the end pane |
+ *
+ * In a right-to-left context, `Arrow Left` and `Arrow Right` swap their actions.
+ *
  * @example
  * ```html
  * <!-- Basic horizontal splitter -->
@@ -139,21 +154,6 @@ const i18n = {
  * splitter.toggle('start'); // expand start pane
  * ```
  *
- * ## Keyboard interactions
- *
- * When the splitter bar is focused:
- *
- * | Key | Action |
- * |---|---|
- * | `Arrow Left` / `Arrow Right` | Resize panes (horizontal orientation) |
- * | `Arrow Up` / `Arrow Down` | Resize panes (vertical orientation) |
- * | `Home` | Snap start pane to its minimum size |
- * | `End` | Snap start pane to its maximum size |
- * | `Ctrl + Arrow Left` / `Ctrl + Arrow Up` | Expand the end pane if it is collapsed, else toggle the start pane |
- * | `Ctrl + Arrow Right` / `Ctrl + Arrow Down` | Expand the start pane if it is collapsed, else toggle the end pane |
- *
- * In a right-to-left context, `Arrow Left` and `Arrow Right` swap their actions.
- *
  * @element igc-splitter
  *
  * @fires igcResizeStart - Emitted once when a resize operation begins (pointer drag or keyboard).
@@ -180,6 +180,9 @@ const i18n = {
  * and each carries whichever part name applies to the current collapsed state.
  * A part name is therefore not tied to a fixed side: with the end pane
  * collapsed, `end-expand-btn` lands on the *first* of the two.
+ *
+ * @cssstate start-collapsed - Set while the start pane is collapsed.
+ * @cssstate end-collapsed - Set while the end pane is collapsed.
  */
 export default class IgcSplitterComponent extends I18nMixin(
   EventEmitterMixin<IgcSplitterComponentEventMap>(HostAriaMixin(LitElement)),

@@ -31,6 +31,7 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
   - [Test scenarios](#test-scenarios)
     - [Rendering and initialization](#rendering-and-initialization)
     - [Attributes and properties](#attributes-and-properties)
@@ -60,6 +61,7 @@
 |       5 | 2026-10-02 | Forward the host `aria-describedby`; expose `required` as `aria-required` |
 |       6 | 2026-10-07 | Read the selection; `setRangeText()` without a range                      |
 |       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                                  |
+|       8 | 2026-10-21 | A value set from code is not reported; one `igcChange` per calendar pick  |
 
 ## Overview
 
@@ -610,6 +612,16 @@ The picker exposes its own parts and re-exports the parts of the calendar it com
 | `date` / `date-inner` / `month` / `month-inner` / `year` / `year-inner` | The calendar cell elements.                         |
 | `first` / `last` / `inactive` / `hidden` / `weekend` / `range` / `special` / `disabled` / `single` / `preview` | The calendar cell states. |
 | `selected` / `current`                                              | The selected and current state of a date, month or year. |
+| `dialog-base`                                                       | The base of the dialog in dialog mode.                  |
+| `title`                                                             | The title of the dialog in dialog mode.                 |
+| `footer`                                                            | The footer of the dialog in dialog mode. |
+| `overlay`                                                           | The backdrop of the dialog in dialog mode.              |
+
+### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
 
 ## Test scenarios
 
@@ -684,33 +696,38 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 34. <kbd>Escape</kbd> closes an open picker.
 35. <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> opens and <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> closes the picker, in both
     modes.
-36. `igcInput` is emitted according to the `nonEditable` property.
-37. Clicking the calendar icon opens the picker in both modes.
-38. Clicking the input opens the picker in dialog mode only; clicking the label likewise.
-39. Clicking the clear icon does not open the picker, in either mode.
-40. The calendar view follows the typed value, switching to another month.
-41. Issue #1710, and issue #1884 - `igcChange` is emitted in dialog mode after clearing the value and losing focus.
+36. A value set from code, also with `stepUp`, is not reported as a change on a later blur, in the editable,
+    non-editable, read-only and dialog modes.
+37. A user change renders at once: a calendar pick with `keepOpenOnSelect` updates the input, and `clear` removes the
+    clear icon.
+38. A calendar selection in a non-editable dropdown emits `igcChange` once, also after a later blur.
+39. `igcInput` is emitted according to the `nonEditable` property.
+40. Clicking the calendar icon opens the picker in both modes.
+41. Clicking the input opens the picker in dialog mode only; clicking the label likewise.
+42. Clicking the clear icon does not open the picker, in either mode.
+43. The calendar view follows the typed value, switching to another month.
+44. Issue #1710, and issue #1884 - `igcChange` is emitted in dialog mode after clearing the value and losing focus.
 
 ### Readonly state
 
-42. Dropdown mode - the picker does not open on a calendar icon click or a keyboard shortcut, and the value is not
+45. Dropdown mode - the picker does not open on a calendar icon click or a keyboard shortcut, and the value is not
     cleared by clicking the clear icon.
-43. Dialog mode - the dialog does not open on a calendar icon, label or input click, nor on a keyboard shortcut, and
+46. Dialog mode - the dialog does not open on a calendar icon, label or input click, nor on a keyboard shortcut, and
     the value is not cleared by clicking the clear icon.
 
 ### Form integration tests
 
-44. Clicking the calendar toggle part does not put the component in an invalid state.
-45. Is form associated, and does not participate in submission with an empty or invalid value.
-46. Participates in submission when the value adheres to the constraints.
-47. Resets to its default value on form reset, resets to a new default after a `setAttribute` call, and clears the
+47. Clicking the calendar toggle part does not put the component in an invalid state.
+48. Is form associated, and does not participate in submission with an empty or invalid value.
+49. Participates in submission when the value adheres to the constraints.
+50. Resets to its default value on form reset, resets to a new default after a `setAttribute` call, and clears the
     invalid styles of the inner editor on reset.
-48. Submits on <kbd>Enter</kbd> when valid, and does not when invalid.
-49. Reflects the disabled state of an ancestor `fieldset` or form.
-50. Enforces the required, min, max - as dates and as string properties - and custom constraints.
-51. Invalidates the component when a disabled date is typed in the input.
-52. Validates synchronously.
-53. `defaultValue` - correct initial state, submission and reset; and validation for required, min, max and the
+51. Submits on <kbd>Enter</kbd> when valid, and does not when invalid.
+52. Reflects the disabled state of an ancestor `fieldset` or form.
+53. Enforces the required, min, max - as dates and as string properties - and custom constraints.
+54. Invalidates the component when a disabled date is typed in the input.
+55. Validates synchronously.
+56. `defaultValue` - correct initial state, submission and reset; and validation for required, min, max and the
     range constraints.
 
 The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
@@ -720,21 +737,21 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 Generated by `runValidationContainerTests`.
 
-54. Each validation slot renders for its failing constraint.
-55. The projected messages are rendered on the first failed submission.
+57. Each validation slot renders for its failing constraint.
+58. The projected messages are rendered on the first failed submission.
 
 ### ARIA projection and external labels
 
 Generated by `runExternalLabelAssociationTests` and `runAriaProjectionTests`.
 
-56. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
+59. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
     element references, and clicking it focuses the control.
-57. The host semantics - role, `aria-haspopup`, `aria-expanded` and the relations - land on the native input of the
+60. The host semantics - role, `aria-haspopup`, `aria-expanded` and the relations - land on the native input of the
     composed editor.
 
 ### Host ARIA
 
-58. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+61. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal. `required` sets `aria-required` on the editor.
 
 ## Assumptions and limitations

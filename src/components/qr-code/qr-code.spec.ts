@@ -835,22 +835,25 @@ describe('IgcQrCodeComponent', () => {
         expect(getSvg(el)).to.exist;
       });
 
-      it('warns once for a version that is not a number', async () => {
+      it('uses the automatic version for a version that is not an integer from 1 to 40', async () => {
         const warn = stub(console, 'warn');
         const el = await fixture<IgcQrCodeComponent>(
           html`<igc-qr-code value="test" version="abc"></igc-qr-code>`
         );
 
-        el.size = 200;
-        await elementUpdated(el);
+        expect(el.version).to.be.undefined;
+        expect(getSvg(el)).to.exist;
 
-        expect(getSvg(el)).to.be.null;
-        expect(warn).calledOnce;
-        await expectRejection(
-          el.toBlob(),
-          Error,
-          'Requested version must be an integer between 1 and 40'
-        );
+        for (const version of [0, 1.5, 41]) {
+          el.version = version;
+          await elementUpdated(el);
+
+          expect(el.version).to.be.undefined;
+          expect(getSvg(el)).to.exist;
+        }
+
+        expect(warn).not.called;
+        expect((await el.toBlob()).type).to.include('image/svg+xml');
       });
 
       it('returns an SVG blob', async () => {

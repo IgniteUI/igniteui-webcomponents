@@ -27,6 +27,7 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
   - [Test scenarios](#test-scenarios)
     - [Defaults](#defaults)
     - [Setting value through attribute and projection](#setting-value-through-attribute-and-projection)
@@ -360,6 +361,21 @@ The component delegates focus to the inner native textarea, so all native text-e
 | `prefix`      | The prefix wrapper of the textarea.                               |
 | `suffix`      | The suffix wrapper of the textarea.                               |
 | `helper-text` | The helper text wrapper of the textarea.                          |
+| `prefixed`    | Added to the container when an element that is not hidden is in the prefix slot. |
+| `suffixed`    | Added to the container when an element that is not hidden is in the suffix slot. |
+| `filled`      | Added to the container when the textarea has a value.             |
+| `placeholder` | Added to the container in the material theme when the textarea has a placeholder. |
+| `labelled`    | Added to the container in the material theme when the control has a label. |
+| `start`       | The wrapper of the prefix in the material theme.                  |
+| `notch`       | The wrapper of the label in the material theme.                   |
+| `filler`      | The outline segment between the notch and the end in the material theme. |
+| `end`         | The wrapper of the suffix in the material theme.                  |
+
+### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
 
 ## Test scenarios
 

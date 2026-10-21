@@ -390,6 +390,12 @@ All of the above are skipped while the component is `disabled`.
 | `swatches`      | The container of the pre-defined color swatches.                                         |
 | `swatch`        | An individual color swatch button.                                                       |
 
+### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
+
 ### CSS custom properties
 
 The color picker has no public CSS custom properties. The `--_` variables in its styles, for example

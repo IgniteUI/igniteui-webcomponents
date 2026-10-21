@@ -283,6 +283,12 @@ A check box allowing single values to be selected/deselected.
 | `checked`   | Added to the base, control, label and indicator parts when the checkbox is checked. |
 | `focused`   | Added to the base part when the checkbox has keyboard focus. |
 
+#### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
+
 ### igc-switch
 
 Similar to a checkbox, a switch controls the state of a single setting on or off.
@@ -322,6 +328,12 @@ The switch exposes the same properties as the checkbox, with the exception of `i
 | `label`   | The switch label.                       |
 | `checked` | Added to the base, control, label and thumb parts when the switch is checked. |
 | `focused` | Added to the control part when the switch has keyboard focus. |
+
+#### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
 
 ### Shared methods
 

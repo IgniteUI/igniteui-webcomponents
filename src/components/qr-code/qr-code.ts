@@ -5,6 +5,7 @@ import {
   ariaBindings,
   hostAria,
 } from '#internals/controllers/aria-projection.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { bindIf } from '#internals/utils/lit.js';
@@ -13,6 +14,7 @@ import { createIdGenerator } from '#internals/utils/strings.js';
 import { all } from '#themes/qr-code/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
+import { isValidVersion } from './model/encode.js';
 import type { QRCodeMatrixResult } from './model/matrix.js';
 import { generateQRCodeMatrix } from './model/matrix.js';
 import {
@@ -112,13 +114,16 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
    * The version of the QR code to generate, which determines the size and data capacity of the QR code.
    * Valid values are integers from 1 to 40, where each version corresponds to a specific module size and data capacity.
    *
-   * When it is not set, the component selects the smallest version that holds the value.
-   * When the value does not fit the version, the component renders nothing.
+   * When it is not set, or it is not an integer from 1 to 40, the component selects the smallest
+   * version that holds the value. When the value does not fit the version, the component renders nothing.
    *
    * @attr version
    */
   @property({ type: Number })
-  public version?: number;
+  @coercedProperty<number | undefined>({
+    transform: ({ value }) => (isValidVersion(value) ? value : undefined),
+  })
+  public version?: number = undefined;
 
   /**
    * The error correction level for the QR code, which determines the QR code's ability to be read if it is partially obscured or damaged.
@@ -316,8 +321,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
       cached &&
       cached.value === value &&
       cached.errorLevel === errorLevel &&
-      // NaN-safe, so an invalid version warns once.
-      Object.is(cached.version, version)
+      cached.version === version
     ) {
       return cached.result;
     }

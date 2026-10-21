@@ -29,7 +29,7 @@ const metadata: Meta<IgcSplitterComponent> = {
     docs: {
       description: {
         component:
-          'A splitter component that provides a resizable split-pane layout, dividing the view\ninto two panels - *start* and *end* - separated by a draggable bar.\n\nPanels can be resized by dragging the bar, using keyboard shortcuts, or collapsed/expanded\nusing the built-in collapse buttons or the programmatic `toggle()` API.\nNested splitters are supported for more complex layouts.',
+          'A splitter component that provides a resizable split-pane layout, dividing the view\ninto two panels - *start* and *end* - separated by a draggable bar.\n\nPanels can be resized by dragging the bar, using keyboard shortcuts, or collapsed/expanded\nusing the built-in collapse buttons or the programmatic `toggle()` API.\nNested splitters are supported for more complex layouts.\n\n## Keyboard interactions\n\nWhen the splitter bar is focused:\n\n| Key | Action |\n|---|---|\n| `Arrow Left` / `Arrow Right` | Resize panes (horizontal orientation) |\n| `Arrow Up` / `Arrow Down` | Resize panes (vertical orientation) |\n| `Home` | Snap start pane to its minimum size |\n| `End` | Snap start pane to its maximum size |\n| `Ctrl + Arrow Left` / `Ctrl + Arrow Up` | Expand the end pane if it is collapsed, else toggle the start pane |\n| `Ctrl + Arrow Right` / `Ctrl + Arrow Down` | Expand the start pane if it is collapsed, else toggle the end pane |\n\nIn a right-to-left context, `Arrow Left` and `Arrow Right` swap their actions.',
       },
     },
     actions: {

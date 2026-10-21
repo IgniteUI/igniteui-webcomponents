@@ -27,6 +27,7 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
   - [Test scenarios](#test-scenarios)
     - [Properties](#properties)
     - [File type layout](#file-type-layout)
@@ -355,6 +356,21 @@ The browse button is excluded from the tab order, so the control is a single tab
 | `prefix`               | The prefix wrapper.                                  |
 | `suffix`               | The suffix wrapper.                                  |
 | `helper-text`          | The helper text wrapper.                             |
+| `prefixed`             | Added to the container and the input when an element that is not hidden is in the prefix slot. |
+| `suffixed`             | Added to the container and the input when an element that is not hidden is in the suffix slot. |
+| `filled`               | Added to the container and the input when the control has a value. |
+| `labelled`             | Added to the container in the material theme when the control has a label. |
+| `start`                | The wrapper of the prefix in the material theme.     |
+| `notch`                | The wrapper of the label in the material theme.      |
+| `filler`               | The outline segment between the notch and the end in the material theme. |
+| `end`                  | The wrapper of the suffix in the material theme.     |
+| `file-parts`           | The wrapper of the browse button and the file names. |
+
+### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
 
 ## Test scenarios
 

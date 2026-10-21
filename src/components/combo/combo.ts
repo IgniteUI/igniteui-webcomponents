@@ -123,6 +123,8 @@ const i18n = {
  * @csspart header - The container holding the header content of the combo.
  * @csspart footer - The container holding the footer content of the combo.
  * @csspart empty - The container holding the empty content of the combo.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 @blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
