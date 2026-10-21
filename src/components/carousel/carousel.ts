@@ -95,6 +95,8 @@ const i18n = {
  * @csspart label - The label container of the carousel indicators.
  * @csspart indicators - The wrapper of the indicators, or of the label that replaces them.
  * @csspart start - The wrapping container of all carousel indicators when indicators-orientation is set to start.
+ * @csspart indicator - Added to the two state wrappers of each default dot indicator, with `active` or `inactive`.
+ * @csspart inactive - The wrapper of the inactive state of each default dot indicator.
  */
 @shadowOptions({ delegatesFocus: true })
 export default class IgcCarouselComponent extends I18nMixin(

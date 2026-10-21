@@ -357,6 +357,12 @@ matching option is activated instead.
 | `filled`      | Added to the toggle-icon part when the select has a value. |
 | `helper-text` | The helper text wrapper of the select.                 |
 
+#### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
+
 ### igc-select-item
 
 Represents an item in a select list.
@@ -414,81 +420,82 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 1. The default structure renders the anchor, the label, the toggle icon and the list.
 2. Slotted content - prefix, suffix, header, footer, helper text and the toggle icons - is rendered.
 3. `autofocus` focuses the component on the first render.
+4. In forced colors, the indigo list has one frame: the border, without the theme outline.
 
 ### Initial selection and navigation
 
-4. An item marked `selected` in markup becomes the initial selection.
-5. Navigating from an initial selection established through each supported path continues from that item.
+5. An item marked `selected` in markup becomes the initial selection.
+6. Navigating from an initial selection established through each supported path continues from that item.
 
 ### Selection integrity
 
-6. The selection stays consistent across open and close cycles and programmatic changes.
-7. Selecting a disabled item is not possible.
+7. The selection stays consistent across open and close cycles and programmatic changes.
+8. Selecting a disabled item is not possible.
 
 ### Asynchronously rendered items
 
-8. Items added after the first render are picked up, and a pending value is applied to them.
+9. Items added after the first render are picked up, and a pending value is applied to them.
 
 ### Type-ahead
 
-9. Typing while closed selects the closest matching option.
-10. Typing while open activates the closest matching option.
+10. Typing while closed selects the closest matching option.
+11. Typing while open activates the closest matching option.
 
 ### Display value
 
-11. The display value is rendered from the selected item, and falls back to the placeholder when nothing is
+12. The display value is rendered from the selected item, and falls back to the placeholder when nothing is
     selected.
 
 ### Accessibility semantics
 
-12. The anchor, the list, the items and the groups expose their roles and states, and the component passes the
+13. The anchor, the list, the items and the groups expose their roles and states, and the component passes the
     accessibility audit.
 
 ### API tests
 
-13. `show`, `hide` and `toggle` transition the open state.
-14. `select` and `navigateTo` work by value and by index and return the item or `null`.
-15. `clearSelection` resets the value and the selection.
-16. `focus` and `blur` move focus to and from the component, and `reportValidity()` focuses an invalid select.
+14. `show`, `hide` and `toggle` transition the open state.
+15. `select` and `navigateTo` work by value and by index and return the item or `null`.
+16. `clearSelection` resets the value and the selection.
+17. `focus` and `blur` move focus to and from the component, and `reportValidity()` focuses an invalid select.
 
 ### Groups
 
-17. Grouped items are reported by the group and by the select.
-18. A disabled group disables all of its items.
+18. Grouped items are reported by the group and by the select.
+19. A disabled group disables all of its items.
 
 ### User interactions
 
-19. Clicking an item selects it and closes the list, unless `keepOpenOnSelect` is set.
-20. Clicking outside closes the list, unless `keepOpenOnOutsideClick` is set.
-21. The keyboard interactions behave as specified with the list closed and open.
+20. Clicking an item selects it and closes the list, unless `keepOpenOnSelect` is set.
+21. Clicking outside closes the list, unless `keepOpenOnOutsideClick` is set.
+22. The keyboard interactions behave as specified with the list closed and open.
 
 ### Events tests
 
-22. `igcChange` is emitted on a user-driven selection change.
-23. `igcOpening` and `igcClosing` are emitted and can be canceled; `igcOpened` and `igcClosed` follow the transition.
-24. Issue #1123.
+23. `igcChange` is emitted on a user-driven selection change.
+24. `igcOpening` and `igcClosing` are emitted and can be canceled; `igcOpened` and `igcClosed` follow the transition.
+25. Issue #1123.
 
 ### Scroll strategy tests
 
-25. `hide`, `scroll` and `close` behave as specified while an ancestor scrolls.
+26. `hide`, `scroll` and `close` behave as specified while an ancestor scrolls.
 
 ### Form integration tests
 
-26. Is form associated, submits its value, and does not submit when it has none.
-27. Is correctly reset on form reset, including after a `setAttribute` call.
-28. Reflects the disabled state of an ancestor `fieldset`.
-29. Fulfils the required and custom constraints.
-30. `defaultValue` - correct initial state, submission, reset and validation.
+27. Is form associated, submits its value, and does not submit when it has none.
+28. Is correctly reset on form reset, including after a `setAttribute` call.
+29. Reflects the disabled state of an ancestor `fieldset`.
+30. Fulfils the required and custom constraints.
+31. `defaultValue` - correct initial state, submission, reset and validation.
 
 ### Validation message slots
 
 Generated by `runValidationContainerTests`.
 
-31. The `value-missing`, `custom-error` and `invalid` slots render for their matching state.
+32. The `value-missing`, `custom-error` and `invalid` slots render for their matching state.
 
 ### Host ARIA
 
-32. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+33. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal.
 
 ## Assumptions and limitations

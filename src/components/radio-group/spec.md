@@ -234,8 +234,8 @@ None applicable. React to the `igcChange` event of the individual radios, or rea
 
 None applicable.
 
-The group exposes two custom states for styling: one that is active when every radio in the group is disabled, and
-one that is active when any radio places its label before its control.
+The group exposes two custom states for styling: `disabled`, which is active when the group has radios and all of
+them are disabled, and `label-before`, which is active when a radio in the group has its label before its control.
 
 ## Test scenarios
 

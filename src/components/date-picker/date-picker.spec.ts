@@ -1123,6 +1123,68 @@ describe('Date picker', () => {
       expect(eventSpy).not.calledWith('igcChange');
     });
 
+    it('should not report a value set from code on a later blur', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      const modes: Partial<IgcDatePickerComponent>[] = [
+        {},
+        { nonEditable: true },
+        { readOnly: true },
+        { mode: 'dialog' },
+      ];
+
+      for (const [index, mode] of modes.entries()) {
+        Object.assign(
+          picker,
+          { nonEditable: false, readOnly: false, mode: 'dropdown' },
+          mode
+        );
+        await elementUpdated(picker);
+
+        dateTimeInput.focus();
+        picker.value = new Date(2024, 0, 15 + index);
+        await elementUpdated(picker);
+        picker.stepUp(DatePart.Date);
+        await elementUpdated(picker);
+
+        dateTimeInput.blur();
+        await elementUpdated(picker);
+      }
+
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    it('should render a user change at once', async () => {
+      picker.keepOpenOnSelect = true;
+      picker.value = new Date(2020, 0, 1);
+      await picker.show();
+
+      selectCurrentDate(calendar);
+      await elementUpdated(picker);
+      checkDatesEqual(dateTimeInput.value!, CalendarDay.today);
+
+      picker.clear();
+      await elementUpdated(picker);
+      expect(getIcon(pickerClearIcon)).to.be.null;
+    });
+
+    it('should emit igcChange once for a calendar selection in a non-editable dropdown', async () => {
+      const today = CalendarDay.today;
+      picker.nonEditable = true;
+      picker.value = today.add('day', 1).native;
+      await picker.show();
+
+      const eventSpy = spy(picker, 'emitEvent');
+      dateTimeInput.focus();
+      selectCurrentDate(calendar);
+      await elementUpdated(picker);
+
+      dateTimeInput.blur();
+      await elementUpdated(picker);
+
+      expect(eventSpy.withArgs('igcChange')).calledOnce;
+      checkDatesEqual(picker.value!, today);
+    });
+
     it('should emit or not igcInput according to nonEditable property', async () => {
       const expectedValue = new Date();
       const eventSpy = spy(picker, 'emitEvent');

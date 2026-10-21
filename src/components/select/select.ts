@@ -119,6 +119,8 @@ const Slots = setSlots(
  * @csspart toggle-icon - The toggle icon wrapper of the select.
  * @csspart filled - Added to the toggle-icon part when the select has a value.
  * @csspart helper-text - The helper text wrapper of the select.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 @blazorAdditionalDependencies(
   'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'

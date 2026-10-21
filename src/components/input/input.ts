@@ -72,6 +72,16 @@ const Slots = setSlots(
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
+ * @csspart prefixed - Added to the container and the input when an element that is not hidden is in the prefix slot.
+ * @csspart suffixed - Added to the container and the input when an element that is not hidden is in the suffix slot.
+ * @csspart filled - Added to the container and the input when the control has a value.
+ * @csspart labelled - Added to the container in the material theme when the control has a label.
+ * @csspart start - The wrapper of the prefix in the material theme.
+ * @csspart notch - The wrapper of the label in the material theme.
+ * @csspart filler - The outline segment between the notch and the end in the material theme.
+ * @csspart end - The wrapper of the suffix in the material theme.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 export default class IgcInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-input';

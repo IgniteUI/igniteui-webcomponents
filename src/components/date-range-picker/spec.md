@@ -32,6 +32,7 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
   - [Test scenarios](#test-scenarios)
     - [Common suite](#common-suite)
     - [Single input suite](#single-input-suite)
@@ -59,6 +60,7 @@
 |       7 | 2026-10-02 | Forward the host `aria-describedby`; expose `required` as `aria-required` |
 |       8 | 2026-10-14 | An editor commit marks the picker touched; a reset resets the editors     |
 |       9 | 2026-10-21 | API descriptions aligned with the JSDoc.                                  |
+|      10 | 2026-10-21 | A value set from code, also with `select()`, is not reported on Done      |
 
 ## Overview
 
@@ -526,6 +528,16 @@ On top of the input and calendar parts it re-exports, the picker exposes:
 | `calendar-icon` / `calendar-icon-start` / `calendar-icon-end`            | The calendar icon wrappers for the closed state.        |
 | `calendar-icon-open` / `calendar-icon-open-start` / `calendar-icon-open-end` | The calendar icon wrappers for the open state.      |
 | `clear-icon` / `clear-icon-start` / `clear-icon-end`                     | The clear icon wrappers.                                |
+| `dialog-base`                                                            | The base of the dialog in dialog mode.                  |
+| `title`                                                                  | The title of the dialog in dialog mode.                 |
+| `footer`                                                                 | The footer of the dialog in dialog mode, which holds the Cancel and Done buttons. |
+| `overlay`                                                                | The backdrop of the dialog in dialog mode.              |
+
+### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
 
 ## Test scenarios
 
@@ -554,7 +566,8 @@ The suites reuse `createFormAssociatedTestBed`, `runValidationContainerTests`,
 2. Properties, including localization - formats, resource strings and the separator - and `keepOpenOnSelect`, which
    `mode` does not change.
 3. Methods - `show`, `hide`, `toggle`, `select` and `clear`.
-4. Interactions - selection through the calendar, keyboard navigation, and interactions with the show icon.
+4. Interactions - selection through the calendar, keyboard navigation, and interactions with the show icon. A value
+   set from code while the dialog is open, also with `select()`, is not reported when Done commits.
 5. Readonly state, in dropdown and in dialog mode.
 6. Predefined ranges - the built-in chips and the custom ranges.
 7. Locale week start - the calendar derives its week start from the locale when `week-start` is not set.
@@ -564,7 +577,8 @@ The suites reuse `createFormAssociatedTestBed`, `runValidationContainerTests`,
 8. Rendering and initialization, including the accessibility audit.
 9. Properties and localization.
 10. Scroll strategy - the `scroll`, `hide` and `close` behaviors of the anchored calendar.
-11. Methods.
+11. Methods. `stepUp` and `stepDown` of the range input update its value at once, also while it is focused and empty.
+    A value set from code while the input is focused is not reported on blur.
 12. Interactions - selection through the calendar, interactions with the input and the open and clear buttons, and
     the readonly state.
 13. Undo and redo of the masked range text.

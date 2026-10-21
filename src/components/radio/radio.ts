@@ -63,6 +63,8 @@ const nextId = createIdGenerator('radio');
  * @csspart ripple - The highlight around the circle on hover and focus. A disabled radio hides it.
  * @csspart checked - Added to the base, control, label and ripple parts when the radio is checked.
  * @csspart focused - Added to the base part when the radio has keyboard focus.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMixin(
   EventEmitterMixin<IgcRadioComponentEventMap>(LitElement)

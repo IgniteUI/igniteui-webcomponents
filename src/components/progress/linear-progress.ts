@@ -33,6 +33,8 @@ import { styles as shared } from './themes/linear/shared/linear.progress.common.
  * @csspart warning - Added to the fill parts when the variant is `warning`.
  * @csspart info - Added to the fill parts when the variant is `info`.
  * @csspart success - Added to the fill parts when the variant is `success`.
+ * @csspart counter - Added to the label value while it shows the default percentage text.
+ * @csspart fraction - Added to the label value when the percentage has a fractional part.
  */
 export default class IgcLinearProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-linear-progress';

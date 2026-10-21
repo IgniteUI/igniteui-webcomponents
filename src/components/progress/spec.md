@@ -228,7 +228,8 @@ None applicable.
 
 ### CSS Shadow parts
 
-Shared by both indicators: `base`, `track`, `fill`, `label`, `value` and `indeterminate`.
+Shared by both indicators: `base`, `track`, `fill`, `label`, `value` and `indeterminate`. The label value also gets
+`counter` while it shows the default percentage text, and `fraction` when the percentage has a fractional part.
 
 | Component               | Additional parts                                                                          |
 | ----------------------- | ----------------------------------------------------------------------------------------- |

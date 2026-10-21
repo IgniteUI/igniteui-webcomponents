@@ -135,6 +135,14 @@ export type EncodeResult = {
   ecLevelIndex: number;
 };
 
+/** Whether `version` is a QR code version: an integer from 1 to 40. */
+export function isValidVersion(version: unknown): version is number {
+  return (
+    Number.isInteger(version) &&
+    numberInRangeInclusive(version as number, 1, 40)
+  );
+}
+
 /**
  * Encodes a string into QR codewords (data + error correction), selecting the
  * smallest version that fits unless `requestedVersion` is specified.
@@ -160,10 +168,7 @@ export function encodeQR(
   let bits: number[];
 
   if (requestedVersion != null) {
-    if (
-      !Number.isInteger(requestedVersion) ||
-      !numberInRangeInclusive(requestedVersion, 1, 40)
-    ) {
+    if (!isValidVersion(requestedVersion)) {
       throw new Error('Requested version must be an integer between 1 and 40');
     }
     version = requestedVersion;

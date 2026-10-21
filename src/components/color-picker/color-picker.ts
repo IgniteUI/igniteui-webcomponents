@@ -157,6 +157,8 @@ function getEyeDropper(): EyeDropperConstructor | undefined {
  * @csspart format-select - The select control used to switch the color string format.
  * @csspart swatches - The container of the pre-defined color swatches.
  * @csspart swatch - An individual color swatch button.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 @shadowOptions({ delegatesFocus: true })
 export default class IgcColorPickerComponent extends I18nMixin(

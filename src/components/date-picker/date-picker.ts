@@ -153,6 +153,12 @@ const i18n: I18nMixinConfig<
  * @csspart year-inner - The calendar year inner element.
  * @csspart selected - The calendar selected state for element(s). Applies to date, month and year elements.
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
+ * @csspart dialog-base - The base of the dialog in dialog mode.
+ * @csspart title - The title of the dialog in dialog mode.
+ * @csspart footer - The footer of the dialog in dialog mode.
+ * @csspart overlay - The backdrop of the dialog in dialog mode.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent'
@@ -205,8 +211,11 @@ export default class IgcDatePickerComponent extends I18nMixin(
     return this.value;
   }
 
+  /** A user change. It stays uncommitted until the picker emits `igcChange`. */
   protected override set _value(value: Date | null) {
-    this.value = value;
+    const previous = this.value;
+    this._formValue.setValueAndFormState(value);
+    this.requestUpdate('value', previous);
   }
 
   protected override get _hasValue(): boolean {
@@ -292,7 +301,9 @@ export default class IgcDatePickerComponent extends I18nMixin(
    */
   @property({ converter: convertToDate })
   public set value(value: Date | string | null | undefined) {
-    this._formValue.setValueAndFormState(value as Date | null);
+    this._value = value as Date | null;
+    // A set from code is committed at once, so no later commit reports it.
+    this._oldValue = this.value;
   }
 
   public get value(): Date | null {
@@ -329,10 +340,7 @@ export default class IgcDatePickerComponent extends I18nMixin(
   protected _handleInputChangeEvent(event: CustomEvent<Date>): void {
     event.stopPropagation();
 
-    this._commitValue(
-      (event.target as IgcDateTimeInputComponent).value,
-      'igcChange'
-    );
+    this._commitEditorValue((event.target as IgcDateTimeInputComponent).value);
   }
 
   protected _handleInputEvent(event: CustomEvent<Date>): void {
@@ -353,19 +361,6 @@ export default class IgcDatePickerComponent extends I18nMixin(
 
   //#endregion
 
-  //#region Internal API
-
-  /**
-   * A focused editor keeps a step as a draft, so take the draft at once. A step from
-   * code is not a user change, so a later blur does not report it.
-   */
-  private _applyStep(): void {
-    this.value = this._input._uncommittedValue;
-    this._oldValue = this.value;
-  }
-
-  //#endregion
-
   //#region Public methods
 
   /**
@@ -374,7 +369,7 @@ export default class IgcDatePickerComponent extends I18nMixin(
    */
   public stepUp(datePart?: DatePart, delta?: number): void {
     this._input.stepUp(datePart, delta);
-    this._applyStep();
+    this.value = this._input.value;
   }
 
   /**
@@ -383,7 +378,7 @@ export default class IgcDatePickerComponent extends I18nMixin(
    */
   public stepDown(datePart?: DatePart, delta?: number): void {
     this._input.stepDown(datePart, delta);
-    this._applyStep();
+    this.value = this._input.value;
   }
 
   /** Selects the text in the input of the component. */

@@ -30,6 +30,7 @@
     "blazor",
     "cssproperty",
     "csspart",
+    "cssstate",
     "exportparts",
     "igniteui",
     "slotchange",

@@ -630,6 +630,30 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           expect(eventSpy).not.calledWith('igcChange');
         });
 
+        it('should not emit igcChange for a value set from code while the dialog is open (dialog)', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          picker.mode = 'dialog';
+          await picker.show();
+
+          picker.value = { start: today.native, end: tomorrow.native };
+          await elementUpdated(picker);
+
+          picker.select({ start: tomorrow.native, end: tomorrow.native });
+          await elementUpdated(picker);
+
+          const doneBtn = picker.renderRoot.querySelector<HTMLElement>(
+            'igc-button[slot="footer"]:last-of-type'
+          )!;
+          simulateClick(doneBtn);
+          await elementUpdated(picker);
+
+          expect(eventSpy).not.calledWith('igcChange');
+          expect(picker.value).to.deep.equal({
+            start: tomorrow.native,
+            end: tomorrow.native,
+          });
+        });
+
         it('clears the value when the range start is activated again in the calendar', async () => {
           const eventSpy = spy(picker, 'emitEvent');
           await picker.show();

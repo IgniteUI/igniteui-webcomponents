@@ -356,15 +356,27 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected _performStep(
     datePart: P | undefined,
     delta: number | undefined,
-    sign: 1 | -1
+    sign: 1 | -1,
+    commit = false
   ): boolean {
     const part = datePart || this._targetDatePart;
     if (!part) return false;
 
-    const { start, end } = this._inputSelection;
-    this._setDraftValue(this._calculateSpunValue(part, delta, sign));
-    this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
+    this._applyStep(this._calculateSpunValue(part, delta, sign), commit);
     return true;
+  }
+
+  /** Keeps the selection. With `commit`, a focused editor also updates `value`, not only the draft. */
+  protected _applyStep(value: T, commit: boolean): void {
+    const { start, end } = this._inputSelection;
+    this._setDraftValue(value);
+
+    // A focused editor holds the step as a draft. Commit the exact value: the mask can lack the stepped part.
+    if (commit && this._focused) {
+      this._applyDraft(value);
+    }
+
+    this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
   }
 
   /** Shows the editable mask when focused, else the display format. */
@@ -437,10 +449,10 @@ export abstract class IgcDateTimeInputBaseComponent<
       : undefined;
   }
 
-  /** Applies the masked text to the public value without emitting anything. */
-  protected _applyDraft(): void {
+  /** Applies the masked text, or `value`, to the public value without emitting anything. */
+  protected _applyDraft(value: T | null = this._parseMask(true)): void {
     this._isEditing = false;
-    this.value = this._parseMask(true);
+    this.value = value;
     this._updateMaskDisplay();
   }
 
@@ -548,18 +560,20 @@ export abstract class IgcDateTimeInputBaseComponent<
   /**
    * Increments a date or time part by `delta`, or by its `spinDelta` value.
    * Without `datePart`, it changes the part at the cursor or a default part.
+   * The `value` updates at once.
    */
   public stepUp(datePart?: P, delta?: number): void {
-    this._performStep(datePart, delta, 1);
+    this._performStep(datePart, delta, 1, true);
   }
 
   /* blazorSuppress */
   /**
    * Decrements a date or time part by `delta`, or by its `spinDelta` value.
    * Without `datePart`, it changes the part at the cursor or a default part.
+   * The `value` updates at once.
    */
   public stepDown(datePart?: P, delta?: number): void {
-    this._performStep(datePart, delta, -1);
+    this._performStep(datePart, delta, -1, true);
   }
 
   /* blazorSuppress */

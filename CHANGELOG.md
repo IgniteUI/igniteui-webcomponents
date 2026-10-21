@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### API documentation
+  - The manifest and the API documentation now list the custom states: `ig-invalid` of the form controls, `disabled` and `label-before` of the radio group, and `start-collapsed` and `end-collapsed` of the splitter. Style them with `:state()`, for example `igc-input:state(ig-invalid)`.
+  - They also list the parts that were not documented: `prefixed`, `suffixed`, `filled`, `labelled`, `start`, `notch`, `filler` and `end` of the input, mask input, file input, date time input and textarea, `placeholder` of the textarea, `file-parts` of the file input, `dialog-base`, `title`, `footer` and `overlay` of the date pickers in dialog mode, `tabs`, `inner` and `scrollable` of the tabs, `indicator` and `inactive` of the carousel, and `counter` and `fraction` of the progress indicators.
+  - The description of the splitter now includes its keyboard table.
 - #### Button, Icon button
   - A host `aria-pressed` now goes to the native button, so a button can be a toggle button. A link does not get it, also when it is disabled, because the link role does not allow it. [#2474](https://github.com/IgniteUI/igniteui-webcomponents/pull/2474)
 - #### Calendar, Date picker, Date range picker
@@ -96,6 +100,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - The text area, the attach button, the file input and the send button use `chat_input_label`, `chat_attach_files`, `chat_file_input_label` and `chat_send_message`. The attachments list uses `chat_attachments_list_label`.
     - The remove button of an attachment chip names the file with `chat_remove_attachment`, for example "Remove photo.png". Before, each remove button said "remove chip".
   - Elements in the `suggestion` slot now replace the default suggestions. Before, the chat rendered a `suggestion` slot for each suggestion, so only the first suggestion took the slotted elements.
+  - Content in the `suggestions` or `suggestion` slot now shows the suggestions area also without `options.suggestions`. Before, the area and its slots rendered only while `options.suggestions` had items. Without suggestions, the area now stays in the DOM, hidden.
 - #### Checkbox
   - The indicator icon is now hidden from assistive technologies. Before, each checkbox had an unnamed image next to it in the accessibility tree. [#2425](https://github.com/IgniteUI/igniteui-webcomponents/pull/2425)
 - #### Chip
@@ -114,6 +119,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The removal of the `locale` attribute no longer causes a `TypeError`. [#2475](https://github.com/IgniteUI/igniteui-webcomponents/pull/2475)
 - #### Date picker
   - `stepUp()` and `stepDown()` now update `value` and the form value at once, also while the input has the focus. Before, only the input showed the new date.
+  - A `value` that you set from code, also with `stepUp()` or `stepDown()`, no longer emits `igcChange` on a later blur, in any mode.
+  - In a non-editable dropdown, a selection in the calendar now emits one `igcChange`. Before, the blur after it emitted a second one.
 - #### Date range picker, Date time input, Mask input
   - A mask position holds one UTF-16 code unit. So the editors now reject an astral character, such as an emoji, as input and as a prompt. Before, it moved the positions after it or split into two halves. A mask or input format with an astral literal now edits at the correct positions. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
   - In the mask input, an empty value is no longer a bad input. Only `required` makes an empty control invalid. A value that fits no position of a letter mask, such as `12` for `LLL`, is now a bad input. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
@@ -123,6 +130,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - A `y` or `yyy` year format now widens to four characters in the mask and in the default placeholder, and keeps its case.
     - In the date range picker, a `min` or `max` that you set before the first render no longer causes a `TypeError`.
   - In the date range picker, a change of `mode` no longer sets `keepOpenOnSelect`. Before, the change to `dialog` set it to `true`, and it stayed `true` after a change back to `dropdown`, so the dropdown stayed open after a selection.
+  - In the date range picker, a `value` that you set from code no longer emits `igcChange` when the user clicks Done, also after `select()`, or on a blur of the input.
+  - In the date time input, `stepUp()` and `stepDown()` now update `value` at once, also while the input has the focus, as `setRangeText()` does. A step of a part that is not in the input format, such as the minutes of `yyyy/MM/dd`, now stays after blur. Before, `value` changed only on blur, and that step was lost. The arrow keys and the mouse wheel still change only the text until blur.
 - #### Dialog
   - An `aria-label` on the dialog is now its only accessible name. Before, the inner `<dialog>` also got `aria-labelledby` with the text of the label, which is not a valid ID reference. [#2429](https://github.com/IgniteUI/igniteui-webcomponents/pull/2429)
   - When the platform closes the dialog while `open` stays `true`, the dialog now opens again. An example is a second Escape when an `igcClosing` handler cancels the close. Before, only `keepOpenOnEscape` did this. In other cases, `open` stayed `true` with a closed dialog, the backdrop still covered the page, and `show()` did nothing. [#2441](https://github.com/IgniteUI/igniteui-webcomponents/pull/2441)
@@ -184,7 +193,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Without `error-level`, a logo larger than the safe area of level `M` now raises the error correction level to the smallest level that holds the logo, as documented. Before, the default `M` always applied, so the logo became smaller. An explicit `error-level`, `M` included, still limits the size of the logo. [#2414](https://github.com/IgniteUI/igniteui-webcomponents/pull/2414)
   - The logo in an exported SVG now also has `xlink:href`, so SVG 1.1 consumers show it, such as Illustrator, the Office import, Batik and older librsvg. Before, they left a blank area in the code. [#2414](https://github.com/IgniteUI/igniteui-webcomponents/pull/2414)
   - `toImage()` now reads `size` after pending property changes render, as it already did for the other properties. Before, a `size` set right after the call did not change the size of the image. [#2483](https://github.com/IgniteUI/igniteui-webcomponents/pull/2483)
-  - When the value does not fit the `version`, or does not fit version 40, the code now renders nothing and writes a warning to the console, and `toBlob()` and `toImage()` reject with the reason. A `version` that is not a whole number from 1 to 40 gives the same result. Before, the render threw an error, and the component still showed the previous code.
+  - When the value does not fit the `version`, or does not fit version 40, the code now renders nothing and writes a warning to the console, and `toBlob()` and `toImage()` reject with the reason. Before, the render threw an error, and the component still showed the previous code. A `version` that is not a whole number from 1 to 40 now selects the version automatically, as when it is not set.
 - #### Radio group
   - In the horizontal alignment, the helper text and the validation messages of the radios now show under the radios, each in a row of its own. Before, the messages of two radios showed on top of each other. With a `label` element in the group, they showed between the label and the radios. [#2442](https://github.com/IgniteUI/igniteui-webcomponents/pull/2442)
 - #### Range slider, Slider
@@ -200,7 +209,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The thumb label is now in the top layer, so a container that clips its overflow, such as a card or a dialog body, no longer cuts it off. The label also shows while a thumb has the keyboard focus, and Escape hides it, also while the focus is on a different element. A modifier key alone, such as Shift, no longer counts as keyboard focus. [#2438](https://github.com/IgniteUI/igniteui-webcomponents/pull/2438)
   - The box of the slider now holds the ticks and their labels, so a slider with tick labels is taller. Before, the labels went outside the box, by approximately 25 px for the `end` orientation and more for rotated labels, and the next element covered them. You can remove the space that you added for the labels. Each tick label is now next to its tick in the shadow DOM, not absolutely positioned, and stays on one line. Before, a label at the end of the track wrapped at each space, such as "1,000" and "GB" on two lines. Rotated labels at the start are 4 px nearer to the ticks, at the same distance as the other labels. [#2445](https://github.com/IgniteUI/igniteui-webcomponents/pull/2445)
 - #### Select
-  - In forced colors mode, the list now has a border. Before, the style applied to an element that does not exist.
+  - In forced colors mode, the list now has a border. Before, the style applied to an element that does not exist. In the indigo theme, the list has only this border, not also the outline of the theme.
 - #### Snackbar, Toast
   - `container` positioning now adds an anchor name to the inline `anchor-name` of the container while the component is open. It adds the name again when a new `style` attribute removes it. Before, the container was the `source` of the popover, so the browser moved the snackbar to the start of the container in the tab order. Some containers stay the `source` and keep their anchor names: a container with its own anchor names, also names added while the component is open, and a container in a different tree, such as the host of the shadow root that holds the component. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
   - A component that moves while it is open now shows again in its new place, with a full display time. Before, it stayed hidden with `open` set. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)

@@ -34,6 +34,8 @@ const nextId = createIdGenerator('checkbox');
  * @csspart indicator - The checkbox indicator icon.
  * @csspart checked - Added to the base, control, label and indicator parts when the checkbox is checked.
  * @csspart focused - Added to the base part when the checkbox has keyboard focus.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-checkbox';

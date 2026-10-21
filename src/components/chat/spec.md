@@ -55,6 +55,7 @@
 |       4 | 2026-10-19 | The list follows the newest message only from the bottom; `focusInput()`; image MIME types; the file picker applies `acceptedFiles`; keyboard access to attachments |
 |       5 | 2026-10-19 | Named message actions with a pressed state for like and dislike; localized composer labels; a remove name per attachment |
 |       6 | 2026-10-21 | API descriptions aligned with the JSDoc. |
+|       7 | 2026-10-21 | Slotted suggestions show the suggestions area, which stays in the DOM, hidden, without suggestions |
 
 ## Overview
 
@@ -222,7 +223,8 @@ emits `igcAttachmentDrag` and `igcAttachmentDrop`, and a click on an attachment 
 `options.suggestions` renders a list of quick replies. Clicking one sends it as a message immediately. Their
 position follows `suggestionsPosition`, either `below-messages`, the default, or `below-input`. The
 `suggestions`, `suggestions-header`, `suggestions-actions` and `suggestion` slots replace the rendered list:
-`suggestions` the whole list and `suggestion` its default items.
+`suggestions` the whole list and `suggestion` its default items. Content in the `suggestions` or `suggestion` slot
+also shows the area without `options.suggestions`. Without suggestions, the area stays in the DOM, hidden.
 
 #### Custom renderers
 
@@ -389,7 +391,7 @@ The component exposes a part for every region it renders. The main groups are:
 5. The send button is enabled and disabled according to the composed content.
 6. `disableInputAttachments` removes the attachment button, and `acceptedFiles` reaches the file input.
 7. The attachment chips render for the composed attachments.
-8. The suggestions container is rendered only when suggestions are provided, and follows
+8. The suggestions container shows only when suggestions are provided or slotted, else it is hidden, and follows
    `suggestionsPosition` for the empty state, below the messages and below the input.
 9. `isTyping` renders the typing indicator.
 
@@ -397,7 +399,8 @@ The component exposes a part for every region it renders. The main groups are:
 
 10. The `prefix`, `title` and `actions` slots of the header accept content.
 11. The `empty-state`, `suggestions-header`, `suggestions` and `suggestions-actions` slots accept content, and one
-    `suggestion` slot takes every slotted suggestion.
+    `suggestion` slot takes every slotted suggestion. Content in the `suggestions` or `suggestion` slot shows the
+    suggestions area alone, also when it is slotted later, and its removal hides the area. A header alone does not.
 
 ### Templates
 
@@ -442,7 +445,8 @@ The component exposes a part for every region it renders. The main groups are:
 28. An input that hydrates an empty declarative shadow root keeps its first render empty, to match the server
     render, and renders the composer on the next update.
 29. A message that hydrates an empty declarative shadow root keeps its first render empty, to match the server
-    render, and renders the message on the next update.
+    render, and renders the message on the next update. A chat that hydrates renders its slotted suggestions on the
+    next update.
 
 ### Attachments and focus
 
@@ -460,7 +464,8 @@ The component exposes a part for every region it renders. The main groups are:
     also when the user scrolls up before a queued scroll runs, and follows again after the user scrolls back to the
     bottom.
 35. A new message of the current user, also with a reply after it in the same update, and a new `messages` array
-    without the previous last message, scroll the list to the bottom.
+    without the previous last message, scroll the list to the bottom. So do slotted suggestions that appear while the
+    list is at the bottom.
 
 ### Names
 
@@ -489,7 +494,10 @@ The component exposes a part for every region it renders. The main groups are:
 - `adoptRootStyles` intentionally breaks shadow DOM encapsulation and is documented as a last resort.
 - Sanitization protects the rendered content, but an application that supplies its own renderers is responsible
   for what those render.
-- The suggestions area, and with it the four suggestion slots, renders only while `options.suggestions` has items.
+- The suggestions area shows only while `options.suggestions` has items or the `suggestions` or `suggestion` slot has
+  content. Content in the header or the actions slot alone does not show it. The area and its slots stay in the DOM,
+  hidden, so the chat can detect slotted content. The server cannot see the light DOM, so a hydrating chat shows the
+  slotted suggestions after its first update.
 - The input and the messages get their state from the chat, which is not available during server-side rendering.
   Their shadow roots render empty on the server. On the client, the first render also stays empty, to match the
   server render during hydration, and the content renders on the next update. Outside a chat, the input and the
