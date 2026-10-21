@@ -49,6 +49,7 @@ This directory hosts two public components: [`igc-stepper`](#igc-stepper) and [`
 |       1 | 2026-09-21 | Initial specification                                                   |
 |       2 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
 |       3 | 2026-10-07 | Only a header click opens a step; inert inactive panels; `aria-disabled` |
+|       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                |
 
 ## Overview
 
@@ -235,12 +236,12 @@ Disabled steps are skipped, and in linear mode the steps that are not reachable 
 | orientation         | orientation          | Yes       | `StepperOrientation`              | `horizontal` | The orientation of the stepper.                    |
 | stepType            | step-type            | Yes       | `StepperStepType`                 | `full`       | The visual type of the steps.                      |
 | titlePosition       | title-position       | No        | `StepperTitlePosition`            | `auto`       | The position of the step titles.                   |
-| contentTop          | content-top          | Yes       | `boolean`                         | false        | Whether the content is displayed above the steps.  |
+| contentTop          | content-top          | Yes       | `boolean`                         | false        | Whether the content is displayed above the steps. Applies only to the horizontal orientation. |
 | linear              | linear               | Yes       | `boolean`                         | false        | Whether the stepper is linear.                     |
 | verticalAnimation   | vertical-animation   | No        | `StepperVerticalAnimation`        | `grow`       | The animation type in vertical mode.               |
 | horizontalAnimation | horizontal-animation | No        | `HorizontalTransitionAnimation`   | `slide`      | The animation type in horizontal mode.             |
 | animationDuration   | animation-duration   | No        | `number`                          | 320          | The animation duration in milliseconds.            |
-| steps               | -                    | No        | `readonly IgcStepComponent[]`     | -            | Read-only. All steps of the stepper.               |
+| steps               | -                    | No        | `readonly IgcStepComponent[]`     | -            | Read-only. The steps of the stepper.               |
 
 #### Methods
 
@@ -249,7 +250,7 @@ Disabled steps are skipped, and in linear mode the steps that are not reachable 
 | navigateTo | `(index: number): void`   | Activates the step at the given index.                           |
 | next       | `(): void`                | Activates the next enabled step.                                 |
 | prev       | `(): void`                | Activates the previous enabled step.                             |
-| reset      | `(): void`                | Resets the stepper to its initial state, activating the first step. |
+| reset      | `(): void`                | Resets the stepper to its initial state and activates the first enabled step. |
 
 #### Events
 
@@ -276,8 +277,8 @@ A step used within a stepper to represent an individual step in a wizard-like wo
 | -------- | --------- | --------- | --------- | ------- | ----------------------------------------------------------------------------- |
 | active   | active    | Yes       | `boolean` | false   | Whether the step is active. The content of an active step is visible.       |
 | complete | complete  | Yes       | `boolean` | false   | Whether the step is completed.                                              |
-| invalid  | invalid   | Yes       | `boolean` | false   | Whether the step is invalid. Invalid steps are not interactive in linear mode. |
-| optional | optional  | Yes       | `boolean` | false   | Whether the step is optional. Its validity does not block linear navigation. |
+| invalid  | invalid   | Yes       | `boolean` | false   | Whether the step is invalid. A visited step that is not active shows an error state. In linear mode, the user cannot open the steps after an invalid step. |
+| optional | optional  | Yes       | `boolean` | false   | Whether the step is optional. In linear mode, an invalid optional step does not block the steps after it. |
 | disabled | disabled  | Yes       | `boolean` | false   | Whether the step is disabled and not interactive.                           |
 
 | Slot        | Description                                                                |
@@ -297,7 +298,7 @@ A step used within a stepper to represent an individual step in a wizard-like wo
 | `subtitle`         | The subtitle of the step.                                                             |
 | `body`             | Wrapper of the step content.                                                          |
 | `content`          | The content of the step.                                                              |
-| `empty`            | Indicates that no title and subtitle were provided. Applies to `text`.                |
+| `empty`            | Indicates that the step shows no title and subtitle. Applies to `text`.               |
 | `disabled` / `invalid` / `optional` | Indicate the matching state. Apply to `header-container`.            |
 | `complete-start` / `complete-end`   | Indicate the complete state of the current and the previous step.    |
 | `top` / `bottom` / `start` / `end`  | Indicate where the title sits relative to the indicator.             |

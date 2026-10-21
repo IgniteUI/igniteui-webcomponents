@@ -27,7 +27,8 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
   }
 
   /**
-   * Whether the item is active.
+   * Whether the item is active. The active item has the visual focus during
+   * keyboard navigation.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
@@ -53,7 +54,7 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
   }
 
   /**
-   * Whether the item is selected.
+   * Whether the item is selected. It also sets `active` to the same value.
    * @attr
    */
   @property({ type: Boolean, reflect: true })

@@ -34,7 +34,7 @@ const metadata: Meta<IgcRippleComponent> = {
     docs: {
       description: {
         component:
-          'A ripple can be applied to an element to represent\nan interactive surface.',
+          'Shows a ripple wave on a pointer press, to mark an element as an\ninteractive surface.',
       },
     },
   },

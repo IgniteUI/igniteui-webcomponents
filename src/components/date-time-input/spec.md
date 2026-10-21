@@ -57,6 +57,7 @@
 |       4 | 2026-10-02 | Focus after form checks; `invalid` only on checks                         |
 |       5 | 2026-10-02 | Forward the host `aria-describedby`; expose `required` as `aria-required` |
 |       6 | 2026-10-07 | Read-only `selectionStart` and `selectionEnd`                             |
+|       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                                  |
 
 ## Overview
 
@@ -545,28 +546,28 @@ example <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> - are ignored, so they stay availab
 | Property          | Attribute      | Reflected | Type                        | Default           | Description                                                                 |
 | ----------------- | -------------- | --------- | --------------------------- | ----------------- | --------------------------------------------------------------------------- |
 | value             | value          | No        | `Date \| null`              | -                 | The committed value of the input. Accepts a `Date`, an ISO string or `null`. |
-| inputFormat       | input-format   | No        | `string`                    | from the locale   | The date format to apply on the input.                                      |
-| displayFormat     | display-format | No        | `string`                    | `inputFormat`     | Format to display the value in when not editing.                            |
+| inputFormat       | input-format   | No        | `string`                    | from the locale   | The date format of the input while the user edits the value. Without it, the input uses the input format of the locale. |
+| displayFormat     | display-format | No        | `string`                    | -               | The format of the value while the input does not have focus. Without it, the input uses `inputFormat` when set, else the display format of the locale. |
 | min               | min            | No        | `Date \| null`              | -                 | The minimum value required for the input to remain valid.                   |
 | max               | max            | No        | `Date \| null`              | -                 | The maximum value required for the input to remain valid.                   |
 | prompt            | prompt         | No        | `string`                    | `_`               | The prompt symbol for the unfilled parts of the mask pattern.               |
-| spinDelta         | -              | No        | `DatePartDeltas \| undefined` | all parts `1`   | Delta values used to increment or decrement each part on step actions.      |
-| spinLoop          | spin-loop      | No        | `boolean`                   | true              | Whether to loop over the currently spun segment.                            |
+| spinDelta         | -              | No        | `DatePartDeltas \| undefined` | all parts `1`   | The amount by which a step action increments or decrements each date part.  |
+| spinLoop          | spin-loop      | No        | `boolean`                   | true              | Whether a spun date part wraps around at its limits. When false, the part stops at its minimum or maximum. |
 | label             | label          | No        | `string`                    | -                 | The label for the control.                                                  |
 | placeholder       | placeholder    | No        | `string`                    | the input format  | The placeholder text of the control.                                        |
-| outlined          | outlined       | Yes       | `boolean`                   | false             | Whether the control will have outlined appearance.                          |
-| readOnly          | readonly       | Yes       | `boolean`                   | false             | Makes the control a readonly field.                                         |
-| required          | required       | Yes       | `boolean`                   | false             | Makes the component a required field for validation.                        |
-| disabled          | disabled       | Yes       | `boolean`                   | false             | The disabled state of the component.                                        |
-| invalid           | invalid        | No        | `boolean`                   | false             | Sets the control into invalid state (visual state only).                    |
+| outlined          | outlined       | Yes       | `boolean`                   | false             | Whether the control has an outlined appearance.                             |
+| readOnly          | readonly       | Yes       | `boolean`                   | false             | Whether the control is read-only. The user cannot change its value.                                         |
+| required          | required       | Yes       | `boolean`                   | false             | Whether the control is required. A required control that has no value, or is not checked, fails validation.                        |
+| disabled          | disabled       | Yes       | `boolean`                   | false             | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                                        |
+| invalid           | invalid        | No        | `boolean`                   | false             | Whether the control shows the invalid state. It changes only the visual state, not the validity.                    |
 | name              | name           | Yes       | `string`                    | -                 | The name of the control, submitted with the form data.                      |
 | locale            | locale         | No        | `string`                    | the inherited or global locale | The locale used to format the display value.                                |
 | mask              | mask           | No        | `string`                    | from the format   | The mask pattern of the component. Inherited; set `inputFormat` instead.    |
-| defaultValue      | -              | No        | `Date \| null`              | -                 | The initial value of the control, restored on a form reset.                 |
-| form              | -              | No        | `HTMLFormElement \| null`   | -                 | Read-only. The form associated with this element.                           |
-| validity          | -              | No        | `ValidityState`             | -                 | Read-only. The validity state of the element.                               |
-| validationMessage | -              | No        | `string`                    | -                 | Read-only. The validation message of the element.                           |
-| willValidate      | -              | No        | `boolean`                   | -                 | Read-only. Whether the element is a candidate for constraint validation.    |
+| defaultValue      | -              | No        | `Date \| null`              | -                 | The default value of the control. A form reset restores the value to it. While the value is unchanged since the start or the last form reset, a new default also sets the value. The `value` attribute also sets it.                 |
+| form              | -              | No        | `HTMLFormElement \| null`   | -                 | Read-only. The form that the control is associated with, or `null`.                           |
+| validity          | -              | No        | `ValidityState`             | -                 | Read-only. The validity state of the control.                               |
+| validationMessage | -              | No        | `string`                    | -                 | Read-only. The validation message of the control. It is empty when the control is valid.                           |
+| willValidate      | -              | No        | `boolean`                   | -                 | Read-only. Whether the control is a candidate for constraint validation.    |
 | selectionStart    | -              | No        | `number`                    | 0                 | Read-only. The offset of the start of the text selection.                   |
 | selectionEnd      | -              | No        | `number`                    | 0                 | Read-only. The offset of the end of the text selection.                     |
 
@@ -574,19 +575,19 @@ example <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> - are ignored, so they stay availab
 
 | Name              | Type signature                                                                                | Description                                                             |
 | ----------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| stepUp            | `(datePart?: DatePart, delta?: number): void`                                                 | Increments a date/time portion.                                         |
-| stepDown          | `(datePart?: DatePart, delta?: number): void`                                                 | Decrements a date/time portion.                                         |
-| clear             | `(): void`                                                                                    | Clears the input element of user input.                                 |
-| hasDateParts      | `(): boolean`                                                                                 | Whether the current format holds a day, month or year part.             |
-| hasTimeParts      | `(): boolean`                                                                                 | Whether the current format holds an hours, minutes or seconds part.     |
+| stepUp            | `(datePart?: DatePart, delta?: number): void`                                                 | Increments a date or time part by `delta`, or by its `spinDelta` value. Without `datePart`, it changes the part at the cursor or a default part. |
+| stepDown          | `(datePart?: DatePart, delta?: number): void`                                                 | Decrements a date or time part by `delta`, or by its `spinDelta` value. Without `datePart`, it changes the part at the cursor or a default part. |
+| clear             | `(): void`                                                                                    | Clears the value and the text of the input.                             |
+| hasDateParts      | `(): boolean`                                                                                 | Returns whether the input format has a date part: day, month or year.   |
+| hasTimeParts      | `(): boolean`                                                                                 | Returns whether the input format has a time part: hours, minutes or seconds. |
 | select            | `(): void`                                                                                    | Selects all the text inside the input.                                  |
 | setSelectionRange | `(start?: number, end?: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range of the control.                           |
-| setRangeText      | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the selected text and re-applies the mask.                     |
+| setRangeText      | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the text from `start` to `end` in the input and re-applies the mask. Without `start` and `end`, replaces the selected text. The `value` updates at once. |
 | focus             | `(options?: FocusOptions): void`                                                              | Sets focus on the control.                                              |
 | blur              | `(): void`                                                                                    | Removes focus from the control.                                         |
-| checkValidity     | `(): boolean`                                                                                 | Checks validity and emits `invalid` when the control is invalid.        |
-| reportValidity    | `(): boolean`                                                                                 | Checks validity; when invalid, emits `invalid` and focuses the control. |
-| setCustomValidity | `(message: string): void`                                                                     | Sets a custom message. Invalid while `message` is not empty.            |
+| checkValidity     | `(): boolean`                                                                                 | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid.        |
+| reportValidity    | `(): boolean`                                                                                 | Checks validity. As for a native control, an invalid control emits `invalid` and takes the focus. It shows its own validation messages, not the message of the browser. Returns `true` when the control is valid. |
+| setCustomValidity | `(message: string): void`                                                                     | Sets a custom validation message. The control is invalid while the message is not empty. An empty string removes the custom error.            |
 
 ```typescript
 enum DatePart {
@@ -612,12 +613,12 @@ enum DatePart {
 | Name              | Description                                                                      |
 | ----------------- | --------------------------------------------------------------------------------- |
 | `prefix`          | Renders content before the input.                                                |
-| `suffix`          | Renders content after input.                                                     |
+| `suffix`          | Renders content after the input.                                                 |
 | `helper-text`     | Renders content below the input.                                                 |
 | `value-missing`   | Renders content when the required validation fails.                              |
 | `range-overflow`  | Renders content when the max validation fails.                                   |
 | `range-underflow` | Renders content when the min validation fails.                                   |
-| `custom-error`    | Renders content when setCustomValidity(message) is set.                          |
+| `custom-error`    | Renders content when a custom message is set with `setCustomValidity()`.         |
 | `invalid`         | Renders content when the component is in invalid state (validity.valid = false). |
 
 ### CSS Shadow parts

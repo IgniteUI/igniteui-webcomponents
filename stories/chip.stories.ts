@@ -47,31 +47,32 @@ const metadata: Meta<IgcChipComponent> = {
   argTypes: {
     disabled: {
       type: 'boolean',
-      description: 'Whether the chip is disabled or not.',
+      description: 'Whether the chip is disabled.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     removable: {
       type: 'boolean',
-      description: 'Whether the chip is removable or not.',
+      description:
+        'Whether the chip shows a remove control. A disabled chip hides it.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     outlined: {
       type: 'boolean',
-      description: 'Whether the chip is outlined or not.',
+      description: 'Whether the chip is outlined.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     selectable: {
       type: 'boolean',
-      description: 'Whether the chip is selectable or not.',
+      description: 'Whether the chip can be selected.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     selected: {
       type: 'boolean',
-      description: 'Whether the chip is selected or not.',
+      description: 'Whether the chip is selected.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -80,8 +81,7 @@ const metadata: Meta<IgcChipComponent> = {
         name: 'enum',
         value: ['primary', 'info', 'success', 'warning', 'danger'],
       },
-      description:
-        'A property that sets the color variant of the chip component.',
+      description: 'The color variant of the chip.',
       options: ['primary', 'info', 'success', 'warning', 'danger'],
       control: { type: 'select' },
     },
@@ -104,17 +104,17 @@ const metadata: Meta<IgcChipComponent> = {
 export default metadata;
 
 interface IgcChipArgs {
-  /** Whether the chip is disabled or not. */
+  /** Whether the chip is disabled. */
   disabled: boolean;
-  /** Whether the chip is removable or not. */
+  /** Whether the chip shows a remove control. A disabled chip hides it. */
   removable: boolean;
-  /** Whether the chip is outlined or not. */
+  /** Whether the chip is outlined. */
   outlined: boolean;
-  /** Whether the chip is selectable or not. */
+  /** Whether the chip can be selected. */
   selectable: boolean;
-  /** Whether the chip is selected or not. */
+  /** Whether the chip is selected. */
   selected: boolean;
-  /** A property that sets the color variant of the chip component. */
+  /** The color variant of the chip. */
   variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
   /**
    * The locale of the component. Without it, the component takes the locale

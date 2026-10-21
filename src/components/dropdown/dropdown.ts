@@ -59,15 +59,16 @@ export interface IgcDropdownComponentEventMap {
 const nextItemId = createIdGenerator('igc-dropdown-item');
 
 /**
- * Represents a Dropdown component.
+ * Shows a list of items in a popup next to a target element. The user
+ * selects one item from the list.
  *
  * @element igc-dropdown
  *
- * @fires igcChange - Emitted when the selected item changes.
- * @fires igcOpening - Emitted just before the dropdown is opened.
- * @fires igcOpened - Emitted after the dropdown is opened.
- * @fires igcClosing - Emitted just before the dropdown is closed.
- * @fires igcClosed - Emitted after closing the dropdown.
+ * @fires igcChange - Emitted when the user selects a different item. The detail is the item.
+ * @fires igcOpening - Emitted before the user opens the dropdown. Cancelable.
+ * @fires igcOpened - Emitted after the dropdown opens on a user action.
+ * @fires igcClosing - Emitted before the user closes the dropdown. Cancelable.
+ * @fires igcClosed - Emitted after the dropdown closes on a user action.
  *
  * @slot target - Renders the dropdown's target element.
  * @slot - Renders the dropdown list items.
@@ -137,8 +138,8 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   public placement: PopoverPlacement = 'bottom-start';
 
   /**
-   * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
-   * When true, once enough space is detected on its preferred side, it will flip back.
+   * Whether the dropdown flips to the opposite side of the target when it does not fit in the visible area.
+   * It flips back when its preferred side has enough space again.
    * @attr
    */
   @property({ type: Boolean })
@@ -152,7 +153,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   public distance = 0;
 
   /**
-   * Whether the dropdown's width should be the same as the target's one.
+   * Whether the dropdown has the same width as the target.
    * @attr same-width
    */
   @property({ type: Boolean, attribute: 'same-width' })
@@ -418,7 +419,12 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   //#region Public API
 
   /* blazorSuppress */
-  /** Shows the component. */
+  /**
+   * Opens the dropdown. It does not emit events. The optional `target` is the
+   * anchor element, or its ID. The promise resolves to `false` when the
+   * dropdown is already open or has no anchor, or when a later call replaces
+   * this one.
+   */
   public override async show(target?: HTMLElement | string): Promise<boolean> {
     if (target) {
       this._setExplicitTarget(target);
@@ -433,7 +439,12 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   }
 
   /* blazorSuppress */
-  /** Toggles the open state of the component. */
+  /**
+   * Opens the dropdown when it is closed, and closes it when it is open. It
+   * does not emit events. The optional `target` is the anchor element for
+   * the open, or its ID. The promise resolves to `true` when the state
+   * changes.
+   */
   public override async toggle(
     target?: HTMLElement | string
   ): Promise<boolean> {

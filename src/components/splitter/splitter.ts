@@ -160,9 +160,10 @@ const i18n = {
  * @fires igcLayoutChanged - Emitted after a user-driven resize or expansion change, with a full
  * snapshot of the current layout (pane sizes and collapsed states).
  *
- * @slot start - Content projected into the start (left/top) panel.
- * @slot end - Content projected into the end (right/bottom) panel.
+ * @slot start - Content projected into the start panel, at the inline start or the top.
+ * @slot end - Content projected into the end panel, at the inline end or the bottom.
  *
+ * @csspart base - The container of the panels and the splitter bar.
  * @csspart splitter-bar - The resizable bar element between the two panels.
  * @csspart drag-handle - The drag handle icon/element on the splitter bar.
  * @csspart start-pane - The container for the start panel content.
@@ -281,8 +282,8 @@ export default class IgcSplitterComponent extends I18nMixin(
   /**
    * Whether the expand/collapse buttons on the splitter bar are hidden.
    *
-   * Note that the buttons will also be hidden if `disable-collapse` is true or
-   * if a pane is currently collapsed.
+   * The buttons are also hidden when `disable-collapse` is true. While a pane
+   * is collapsed, only its expand button shows.
    * @attr hide-collapse-buttons
    * @default false
    */
@@ -296,7 +297,7 @@ export default class IgcSplitterComponent extends I18nMixin(
   /**
    * Whether the drag handle on the splitter bar is hidden.
    *
-   * Note that the drag handle will also be hidden if `disable-resize` is true.
+   * The drag handle is also hidden when `disable-resize` is true.
    * @attr hide-drag-handle
    * @default false
    */

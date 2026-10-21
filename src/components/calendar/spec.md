@@ -50,6 +50,7 @@
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-09-23 | Remove the default slot, which the calendar does not render |
 |       3 | 2026-10-01 | Descriptor labels; the initial active date is derived before the first render |
+|       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                      |
 
 ## Overview
 
@@ -316,23 +317,23 @@ by a year or by a page of years, and <kbd>Enter</kbd> or <kbd>Space</kbd> activa
 
 | Property         | Attribute          | Reflected | Type                                                     | Default                                 | Description                                                                 |
 | ---------------- | ------------------ | --------- | -------------------------------------------------------- | --------------------------------------- | --------------------------------------------------------------------------- |
-| value            | value              | No        | `Date \| null`                                           | -                                       | The current value of the calendar, used when selection is `single`.         |
-| values           | values             | No        | `Date[]`                                                 | `[]`                                    | The current values, used when selection is `multiple` or `range`.           |
-| activeDate       | active-date        | No        | `Date`                                                   | the current date                        | The date shown in view and highlighted.                                     |
-| selection        | selection          | No        | `CalendarSelection`                                      | `single`                                | The type of selection in the component.                                     |
-| activeView       | active-view        | No        | `CalendarActiveView`                                     | `days`                                  | The current active view of the component.                                   |
+| value            | value              | No        | `Date \| null`                                           | -                                       | The value of the calendar in `single` selection mode.                       |
+| values           | values             | No        | `Date[]`                                                 | `[]`                                    | The values of the calendar in `multiple` and `range` selection modes.       |
+| activeDate       | active-date        | No        | `Date`                                                   | the current date                        | The date that the calendar shows and highlights. It changes when the user navigates. Without it, the calendar starts at its value, or at the current date when there is no value. |
+| selection        | selection          | No        | `CalendarSelection`                                      | `single`                                | The selection mode of the calendar: `single`, `multiple` or `range`. A change after the first render clears the value and the values. |
+| activeView       | active-view        | No        | `CalendarActiveView`                                     | `days`                                  | The active view of the calendar: `days`, `months` or `years`.               |
 | visibleMonths    | visible-months     | No        | `number`                                                 | 1                                       | The number of months displayed in the days view.                            |
 | orientation      | orientation        | No        | `ContentOrientation`                                     | `horizontal`                            | The orientation of the months when more than one is shown.                  |
 | headerOrientation| header-orientation | Yes       | `CalendarHeaderOrientation`                              | `horizontal`                            | The orientation of the calendar header.                                     |
-| hideHeader       | hide-header        | Yes       | `boolean`                                                | false                                   | Whether to render the calendar header. Always hidden for `multiple`.        |
-| hideOutsideDays  | hide-outside-days  | Yes       | `boolean`                                                | false                                   | Whether to hide the dates that do not belong to the active month.           |
-| showWeekNumbers  | show-week-numbers  | Yes       | `boolean`                                                | false                                   | Whether to show the week numbers.                                           |
+| hideHeader       | hide-header        | Yes       | `boolean`                                                | false                                   | Whether the calendar hides its header. In `multiple` selection mode, the header is always hidden. |
+| hideOutsideDays  | hide-outside-days  | Yes       | `boolean`                                                | false                                   | Whether the calendar hides the dates that do not belong to the current month. |
+| showWeekNumbers  | show-week-numbers  | Yes       | `boolean`                                                | false                                   | Whether the calendar shows the week numbers.                                |
 | weekStart        | week-start         | No        | `WeekDays`                                               | from the locale                         | The first day of the week.                                                  |
 | formatOptions    | -                  | No        | `Pick<Intl.DateTimeFormatOptions, 'month' \| 'weekday'>` | `{ month: 'long', weekday: 'narrow' }`  | The options used to format the months and the weekdays.                     |
-| disabledDates    | -                  | No        | `DateRangeDescriptor[] \| undefined`                     | -                                       | The disabled dates of the component.                                        |
-| specialDates     | -                  | No        | `DateRangeDescriptor[] \| undefined`                     | -                                       | The special dates of the component.                                         |
+| disabledDates    | -                  | No        | `DateRangeDescriptor[] \| undefined`                     | -                                       | The date ranges that the user cannot select.                                |
+| specialDates     | -                  | No        | `DateRangeDescriptor[] \| undefined`                     | -                                       | The date ranges that the calendar marks as special.                         |
 | locale           | locale             | No        | `string`                                                 | the inherited or global locale         | The locale for the resource strings and the date formatting.                |
-| resourceStrings  | -                  | No        | `IgcCalendarResourceStrings`                             | EN                                      | The resource strings for localization.                                      |
+| resourceStrings  | -                  | No        | `IgcCalendarResourceStrings`                             | EN                                      | The texts of the component. The strings that you set replace the strings of the current locale. Reading returns all the strings, with your strings over the locale strings.                                      |
 
 `value`, `values` and `activeDate` accept `Date` objects and ISO date strings, including through their attributes.
 
@@ -344,7 +345,7 @@ None applicable. The component is driven entirely through its properties.
 
 | Name      | Cancellable | Detail            | Description                            |
 | --------- | ----------- | ----------------- | -------------------------------------- |
-| igcChange | false       | `Date \| Date[]`  | Emitted when the calendar changes its value. The detail is a single `Date` in `single` selection and a `Date[]` in `multiple` and `range` selection. |
+| igcChange | false       | `Date \| Date[]`  | Emitted when the user changes the value of the calendar. The detail is a single `Date` in `single` selection and a `Date[]` in `multiple` and `range` selection. |
 
 ### Slots
 
@@ -363,11 +364,13 @@ None applicable. The component is driven entirely through its properties.
 | `content`             | The content element which contains the views and navigation elements.       |
 | `content-vertical`    | The content element in vertical orientation.                                |
 | `navigation`          | The navigation container element of the calendar.                           |
+| `picker-dates`        | The container of the month and year navigation buttons, or of the years range. |
 | `months-navigation`   | The months navigation button element of the calendar.                       |
 | `years-navigation`    | The years navigation button element of the calendar.                        |
 | `years-range`         | The years range element of the calendar.                                    |
 | `navigation-buttons`  | The navigation buttons container of the calendar.                           |
 | `navigation-button`   | Previous/next navigation button of the calendar.                            |
+| `vertical`            | Added to the navigation-button part when the orientation is `vertical`.     |
 | `days-view-container` | The days view container element of the calendar.                            |
 | `days-view`           | Days view element of the calendar.                                          |
 | `months-view`         | The months view element of the calendar.                                    |

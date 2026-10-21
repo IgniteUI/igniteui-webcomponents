@@ -3,10 +3,10 @@ import { property } from 'lit/decorators.js';
 import { registerComponent } from '#internals/definitions/register.js';
 
 /**
- * Used for defining gradient stops in the circular progress component.
- * For each circular gradient, defined as `gradient` slot of the circular progress, would be created a SVG stop element.
- * The values passed as `color`, `offset` and `opacity` would be set as
- * `stop-color`, `offset` and `stop-opacity` of the SVG element without further validations.
+ * Defines a gradient stop for the fill of the circular progress.
+ * Put it in the `gradient` slot of the circular progress. Each one becomes an SVG `<stop>` element.
+ * The `color`, `offset` and `opacity` values go to the
+ * `stop-color`, `offset` and `stop-opacity` of that element without validation.
  *
  * @element igc-circular-gradient
  *
@@ -20,21 +20,21 @@ export default class IgcCircularGradientComponent extends LitElement {
   }
 
   /**
-   * Defines where the gradient stop is placed along the gradient vector
+   * Where the stop sits along the gradient vector.
    * @attr
    */
   @property()
   public offset = '0%';
 
   /**
-   * Defines the color of the gradient stop
+   * The color of the stop.
    * @attr
    */
   @property()
   public color = 'black';
 
   /**
-   * Defines the opacity of the gradient stop
+   * The opacity of the stop.
    * @attr
    */
   @property({ type: Number })

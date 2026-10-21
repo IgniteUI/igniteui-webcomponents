@@ -53,7 +53,7 @@ function drawerAria(drawer: IgcNavDrawerComponent): ARIABindings {
  * The component integrates with the
  * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):
  * an Ignite button or a native `<button>` with `command="--show"` / `"--hide"` / `"--toggle"`
- * and `commandfor` pointing to this element will call the corresponding method
+ * and `commandfor` pointing to this element calls the corresponding method
  * declaratively without any JavaScript.
  *
  * @element igc-nav-drawer
@@ -68,6 +68,7 @@ function drawerAria(drawer: IgcNavDrawerComponent): ARIABindings {
  * @csspart base - The base wrapper of the drawer.
  * @csspart main - The main content container of the drawer.
  * @csspart mini - The mini variant container of the drawer.
+ * @csspart hidden - Added to the mini part when the mini slot has no content.
  */
 export default class IgcNavDrawerComponent extends EventEmitterMixin<IgcNavDrawerComponentEventMap>(
   HostAriaMixin(LitElement)
@@ -121,7 +122,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<IgcNavDrawe
   //#region Public properties
 
   /**
-   * Sets the position of the drawer.
+   * The position of the drawer.
    *
    * - `start` - anchored to the inline-start edge (default).
    * - `end` - anchored to the inline-end edge.
@@ -155,8 +156,8 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<IgcNavDrawe
   public keepOpenOnEscape = false;
 
   /**
-   * Sets an accessible label for the `<dialog>`, or the `<nav>` landmark in the `relative`
-   * position, and for the mini variant. Give each navigation landmark on a page a distinct label.
+   * The accessible label of the `<dialog>`, or of the `<nav>` landmark in the `relative`
+   * position, and of the mini variant. Give each navigation landmark on a page a distinct label.
    *
    * @attr label
    */

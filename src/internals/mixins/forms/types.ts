@@ -24,14 +24,16 @@ export declare class BaseFormAssociatedElement {
   protected get __validators(): Validator[];
 
   /**
-   * The disabled state of the component.
+   * Whether the control is disabled. A disabled control is not validated, and
+   * the form does not submit its value.
    * @attr
    * @default false
    */
   public disabled: boolean;
 
   /**
-   * Sets the control into invalid state (visual state only).
+   * Whether the control shows the invalid state. It changes only the visual
+   * state, not the validity.
    * @attr
    * @default false
    */
@@ -43,18 +45,19 @@ export declare class BaseFormAssociatedElement {
    */
   public name: string;
 
-  /** Returns the HTMLFormElement associated with this element. */
+  /** The form that the control is associated with, or `null`. */
   public get form(): HTMLFormElement | null;
 
-  /** Returns a `ValidityState` object for the element. */
+  /** The validity state of the control. */
   public get validity(): ValidityState;
 
-  /** A string containing the validation message of this element. */
+  /**
+   * The validation message of the control. It is empty when the control is
+   * valid.
+   */
   public get validationMessage(): string;
 
-  /**
-   * Returns `true` when the element is a candidate for constraint validation.
-   */
+  /** Whether the control is a candidate for constraint validation. */
   public get willValidate(): boolean;
 
   //#endregion
@@ -118,24 +121,34 @@ export declare class BaseFormAssociatedElement {
    */
   protected formResetCallback(): void;
 
-  /** Checks validity and emits `invalid` when the control is invalid. */
+  /**
+   * Checks validity and emits `invalid` when the control is invalid. Returns
+   * `true` when the control is valid.
+   */
   public checkValidity(): boolean;
 
   /**
    * Checks validity. As for a native control, an invalid control emits
    * `invalid` and takes the focus. It shows its own validation messages, not
-   * the message of the browser.
+   * the message of the browser. Returns `true` when the control is valid.
    */
   public reportValidity(): boolean;
 
-  /** Sets a custom message. Invalid while `message` is not empty. */
+  /**
+   * Sets a custom validation message. The control is invalid while the message
+   * is not empty. An empty string removes the custom error.
+   */
   public setCustomValidity(message: string): void;
 
   //#endregion
 }
 
 export declare class FormAssociatedElementInterface extends BaseFormAssociatedElement {
-  /** The initial value of the component. */
+  /**
+   * The default value of the control. A form reset restores the value to it.
+   * While the value is unchanged since the start or the last form reset, a new
+   * default also sets the value. The `value` attribute also sets it.
+   */
   public set defaultValue(value: unknown);
   public get defaultValue(): unknown;
 
@@ -147,7 +160,12 @@ export declare class FormAssociatedElementInterface extends BaseFormAssociatedEl
 }
 
 export declare class FormAssociatedCheckboxElementInterface extends BaseFormAssociatedElement {
-  /** The initial checked state of the component. */
+  /**
+   * Whether the control is checked by default. A form reset restores the
+   * checked state to it. While the checked state is unchanged since the start
+   * or the last form reset, a new default also sets the checked state. The
+   * `checked` attribute also sets it.
+   */
   public set defaultChecked(value: boolean);
   public get defaultChecked(): boolean;
 }
@@ -156,7 +174,8 @@ export declare class FormRequiredInterface {
   protected _required: boolean;
 
   /**
-   * When set, makes the component a required field for validation.
+   * Whether the control is required. A required control that has no value, or
+   * is not checked, fails validation.
    * @attr
    * @default false
    */

@@ -55,6 +55,7 @@
 |       4 | 2026-10-02 | Forward the host `aria-describedby`                |
 |       5 | 2026-10-07 | Whitespace in the slot, selection, `spellcheck`    |
 |       6 | 2026-10-20 | CSS field sizing for `resize="auto"`               |
+|       7 | 2026-10-21 | API descriptions aligned with the JSDoc.           |
 
 ## Overview
 
@@ -243,7 +244,7 @@ and see the error message instead of being silently truncated. See the
 </form>
 ```
 
-- The value is submitted under `name`, wrapped according to the `wrap` property.
+- The value is submitted under `name`. The `wrap` property does not change the submitted value.
 - A form reset restores the value to `defaultValue`, taken from the `value` attribute or the projected text.
 - An invalid control blocks submission and fires the native `invalid` event.
 
@@ -291,27 +292,27 @@ The component delegates focus to the inner native textarea, so all native text-e
 | value             | value          | No        | `string`                    | `''`       | The value of the component.                                                 |
 | label             | label          | No        | `string`                    | -          | The label for the control.                                                  |
 | placeholder       | placeholder    | No        | `string`                    | -          | The placeholder text of the control.                                        |
-| rows              | rows           | No        | `number`                    | 3          | The number of visible text lines for the control.                           |
-| resize            | resize         | No        | `TextareaResize`            | `vertical` | Controls whether the control can be resized. `auto` fits the content.       |
-| wrap              | wrap           | No        | `'hard' \| 'soft' \| 'off'` | `soft`     | Indicates how the control should wrap the value for form submission.        |
-| outlined          | outlined       | Yes       | `boolean`                   | false      | Whether the control will have outlined appearance.                          |
-| readOnly          | readonly       | Yes       | `boolean`                   | false      | Makes the control a readonly field.                                         |
-| required          | required       | Yes       | `boolean`                   | false      | Makes the component a required field for validation.                        |
-| disabled          | disabled       | Yes       | `boolean`                   | false      | The disabled state of the component.                                        |
-| invalid           | invalid        | No        | `boolean`                   | false      | Sets the control into invalid state (visual state only).                    |
+| rows              | rows           | No        | `number`                    | 3          | The number of visible text lines of the control. As in the native textarea, a value less than 1 shows 2 lines. |
+| resize            | resize         | No        | `TextareaResize`            | `vertical` | How the user can resize the control. With `auto`, the height of the control fits its content and the resize handle is hidden. |
+| wrap              | wrap           | No        | `'hard' \| 'soft' \| 'off'` | `soft`     | How the control wraps long lines of text. With `off`, the lines do not wrap. It does not change the submitted value. |
+| outlined          | outlined       | Yes       | `boolean`                   | false      | Whether the control has an outlined appearance.                             |
+| readOnly          | readonly       | Yes       | `boolean`                   | false      | Whether the control is read-only.                                           |
+| required          | required       | Yes       | `boolean`                   | false      | Whether the control is required. A required control that has no value, or is not checked, fails validation.                        |
+| disabled          | disabled       | Yes       | `boolean`                   | false      | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                                        |
+| invalid           | invalid        | No        | `boolean`                   | false      | Whether the control shows the invalid state. It changes only the visual state, not the validity.                    |
 | name              | name           | Yes       | `string`                    | -          | The name of the control, submitted with the form data.                      |
-| minLength         | minlength      | No        | `number`                    | -          | The minimum number of characters required that the user should enter.       |
+| minLength         | minlength      | No        | `number`                    | -          | The minimum number of characters (UTF-16 code units) that the value must have. |
 | maxLength         | maxlength      | No        | `number`                    | -          | The maximum number of characters that the user can enter.                   |
-| validateOnly      | validate-only  | Yes       | `boolean`                   | false      | Evaluates `maxLength` without restricting user input.                       |
-| spellcheck        | spellcheck     | No        | `boolean`                   | true       | Controls spell checking. As for the native attribute, only `false` is off.  |
-| autocapitalize    | autocapitalize | No        | `string`                    | -          | Controls whether and how text input is automatically capitalized.           |
+| validateOnly      | validate-only  | Yes       | `boolean`                   | false      | Whether the validation rules apply without restricting user input. The user can type past `maxLength`. |
+| spellcheck        | spellcheck     | No        | `boolean`                   | true       | Whether the browser checks the spelling of the value. As for the native attribute, only the `"false"` attribute value turns the check off. |
+| autocapitalize    | autocapitalize | No        | `string`                    | -          | Whether and how the browser capitalizes the text that the user enters.      |
 | autocomplete      | autocomplete   | No        | `string`                    | -          | A hint for the browser on how to autofill the control.                      |
-| inputMode         | inputmode      | No        | `string`                    | -          | Hints at the type of data to be entered, for the virtual keyboard.          |
-| defaultValue      | -              | No        | `string`                    | `''`       | The initial value of the control, restored on a form reset.                 |
-| form              | -              | No        | `HTMLFormElement \| null`   | -          | Read-only. The form associated with this element.                           |
-| validity          | -              | No        | `ValidityState`             | -          | Read-only. The validity state of the element.                               |
-| validationMessage | -              | No        | `string`                    | -          | Read-only. The validation message of the element.                           |
-| willValidate      | -              | No        | `boolean`                   | -          | Read-only. Whether the element is a candidate for constraint validation.    |
+| inputMode         | inputmode      | No        | `string`                    | -          | A hint to the browser for which virtual keyboard layout to display.         |
+| defaultValue      | -              | No        | `string`                    | `''`       | The default value of the control. A form reset restores the value to it. While the value is unchanged since the start or the last form reset, a new default also sets the value. The `value` attribute also sets it.                 |
+| form              | -              | No        | `HTMLFormElement \| null`   | -          | Read-only. The form that the control is associated with, or `null`.                           |
+| validity          | -              | No        | `ValidityState`             | -          | Read-only. The validity state of the control.                               |
+| validationMessage | -              | No        | `string`                    | -          | Read-only. The validation message of the control. It is empty when the control is valid.                           |
+| willValidate      | -              | No        | `boolean`                   | -          | Read-only. Whether the control is a candidate for constraint validation.    |
 | selectionStart    | -              | No        | `number`                    | 0          | Read-only. The offset of the start of the text selection.                   |
 | selectionEnd      | -              | No        | `number`                    | 0          | Read-only. The offset of the end of the text selection.                     |
 
@@ -322,10 +323,10 @@ The component delegates focus to the inner native textarea, so all native text-e
 | select            | `(): void`                                                                                    | Selects all text within the control.                                        |
 | setSelectionRange | `(start: number, end: number, direction?: SelectionRangeDirection): void`                     | Sets the text selection range of the control.                               |
 | setRangeText      | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the text from `start` to `end`, or the selected text without them. |
-| scrollTo          | `(options?: ScrollToOptions): void` / `(x: number, y: number): void`                          | Scrolls the control to the given position.                                  |
-| checkValidity     | `(): boolean`                                                                                 | Checks validity and emits `invalid` when the control is invalid.            |
-| reportValidity    | `(): boolean`                                                                                 | Checks validity; when invalid, emits `invalid` and focuses the control.     |
-| setCustomValidity | `(message: string): void`                                                                     | Sets a custom message. Invalid while `message` is not empty.                |
+| scrollTo          | `(options?: ScrollToOptions): void` / `(x: number, y: number): void`                          | Scrolls the text of the control to the given position.                      |
+| checkValidity     | `(): boolean`                                                                                 | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid.            |
+| reportValidity    | `(): boolean`                                                                                 | Checks validity. As for a native control, an invalid control emits `invalid` and takes the focus. It shows its own validation messages, not the message of the browser. Returns `true` when the control is valid.     |
+| setCustomValidity | `(message: string): void`                                                                     | Sets a custom validation message. The control is invalid while the message is not empty. An empty string removes the custom error.                |
 
 ### Events
 
@@ -338,14 +339,14 @@ The component delegates focus to the inner native textarea, so all native text-e
 
 | Name            | Description                                                                      |
 | --------------- | --------------------------------------------------------------------------------- |
-| (default)       | Text content from the default slot will be used as the value of the component.   |
+| (default)       | The text content of the default slot sets the value of the component.            |
 | `prefix`        | Renders content before the input.                                                |
-| `suffix`        | Renders content after input.                                                     |
+| `suffix`        | Renders content after the input.                                                 |
 | `helper-text`   | Renders content below the input.                                                 |
 | `value-missing` | Renders content when the required validation fails.                              |
 | `too-long`      | Renders content when the maxlength validation fails.                             |
 | `too-short`     | Renders content when the minlength validation fails.                             |
-| `custom-error`  | Renders content when setCustomValidity(message) is set.                          |
+| `custom-error`  | Renders content when a custom message is set with `setCustomValidity()`.         |
 | `invalid`       | Renders content when the component is in invalid state (validity.valid = false). |
 
 ### CSS Shadow parts
@@ -353,7 +354,7 @@ The component delegates focus to the inner native textarea, so all native text-e
 | Part          | Description                                                       |
 | ------------- | ----------------------------------------------------------------- |
 | `container`   | The main wrapper that holds all main input elements of the textarea. |
-| `input`       | The native input element of the textarea.                         |
+| `input`       | The native textarea element.                                         |
 | `label`       | The native label element of the textarea.                         |
 | `prefix`      | The prefix wrapper of the textarea.                               |
 | `suffix`      | The suffix wrapper of the textarea.                               |

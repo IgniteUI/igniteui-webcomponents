@@ -112,6 +112,7 @@ export abstract class IgcDatePickerBaseComponent<
 > extends FormAssociatedRequiredMixin(IgcComboBoxBaseLikeComponent) {
   /* blazorSuppress */
   // Typing only: each picker applies `EventEmitterMixin` with its own event map.
+  /** @hidden @internal */
   declare public emitEvent: <
     K extends keyof IgcPickerBaseEventMap<Date | DateRangeValue>,
     D extends UnpackCustomEvent<
@@ -263,7 +264,8 @@ export abstract class IgcDatePickerBaseComponent<
   //#region Public properties and attributes
 
   /**
-   * Determines whether the calendar is opened in a dropdown or a modal dialog.
+   * Whether the calendar opens in a dropdown or in a modal dialog.
+   * In `dialog` mode, the user cannot type in the input.
    * @attr mode
    * @default dropdown
    */
@@ -271,7 +273,7 @@ export abstract class IgcDatePickerBaseComponent<
   public mode: PickerMode = 'dropdown';
 
   /**
-   * Makes the control a readonly field.
+   * Whether the control is read-only. The user cannot change the value or open the calendar.
    * @attr readonly
    * @default false
    */
@@ -279,7 +281,7 @@ export abstract class IgcDatePickerBaseComponent<
   public readOnly = false;
 
   /**
-   * Whether to allow typing in the input.
+   * Whether the user cannot type in the input. The user can still select a date in the calendar.
    * @attr non-editable
    * @default false
    */
@@ -287,7 +289,7 @@ export abstract class IgcDatePickerBaseComponent<
   public nonEditable = false;
 
   /**
-   * Whether the control will have outlined appearance.
+   * Whether the control has an outlined appearance.
    * @attr
    * @default false
    */
@@ -310,8 +312,8 @@ export abstract class IgcDatePickerBaseComponent<
   public prompt = '_';
 
   /**
-   * Format to display the value in when not editing.
-   * Defaults to the locale format if not set.
+   * The format of the value while the input does not have focus.
+   * Without it, the input uses `inputFormat` when set, else the display format of the locale.
    * @attr display-format
    */
   @property({ attribute: 'display-format' })
@@ -324,8 +326,8 @@ export abstract class IgcDatePickerBaseComponent<
   }
 
   /**
-   * The date format to apply on the input.
-   * Defaults to the current locale Intl.DateTimeFormat
+   * The date format of the input while the user edits the value.
+   * Without it, the input uses the input format of the locale.
    * @attr input-format
    */
   @property({ attribute: 'input-format' })
@@ -339,6 +341,7 @@ export abstract class IgcDatePickerBaseComponent<
 
   /**
    * The minimum value required for the picker to remain valid.
+   * The calendar disables the dates before it.
    * @attr
    */
   @property({ converter: convertToDate })
@@ -354,6 +357,7 @@ export abstract class IgcDatePickerBaseComponent<
 
   /**
    * The maximum value required for the picker to remain valid.
+   * The calendar disables the dates after it.
    * @attr
    */
   @property({ converter: convertToDate })
@@ -367,7 +371,10 @@ export abstract class IgcDatePickerBaseComponent<
     return this._max;
   }
 
-  /** Gets/sets disabled dates. */
+  /**
+   * The date ranges that the user cannot select in the calendar.
+   * A value that includes one of these dates is invalid.
+   */
   @property({ attribute: false })
   @coercedProperty<DateRangeDescriptor[], IgcDatePickerBaseComponent<T>>({
     onChange: ({ host }) => {
@@ -377,13 +384,13 @@ export abstract class IgcDatePickerBaseComponent<
   })
   public disabledDates: DateRangeDescriptor[] = [];
 
-  /** Gets/sets special dates. */
+  /** The date ranges that the calendar marks as special. */
   @property({ attribute: false })
   public specialDates!: DateRangeDescriptor[];
 
   /**
-   * Gets/Sets the date which is shown in the calendar picker and is highlighted.
-   * By default it is the current date.
+   * The date that the calendar shows and highlights.
+   * Without it, the calendar starts at the value, or at the current date when there is no value.
    */
   @property({ attribute: 'active-date', converter: convertToDate })
   public set activeDate(value: Date | string | null | undefined) {
@@ -409,7 +416,7 @@ export abstract class IgcDatePickerBaseComponent<
   }
 
   /**
-   * The orientation of the calendar header.
+   * The orientation of the calendar header. It applies only in `dialog` mode.
    * @attr header-orientation
    * @default horizontal
    */
@@ -425,7 +432,7 @@ export abstract class IgcDatePickerBaseComponent<
   public orientation: ContentOrientation = 'horizontal';
 
   /**
-   * Determines whether the calendar hides its header.
+   * Whether the calendar hides its header. In `dropdown` mode, the header is always hidden.
    * @attr hide-header
    * @default false
    */
@@ -433,7 +440,7 @@ export abstract class IgcDatePickerBaseComponent<
   public hideHeader = false;
 
   /**
-   * Controls the visibility of the dates that do not belong to the current month.
+   * Whether the calendar hides the dates that do not belong to the current month.
    * @attr hide-outside-days
    * @default false
    */
@@ -441,7 +448,7 @@ export abstract class IgcDatePickerBaseComponent<
   public hideOutsideDays = false;
 
   /**
-   * Whether to show the number of the week in the calendar.
+   * Whether the calendar shows the week numbers.
    * @attr show-week-numbers
    * @default false
    */
@@ -449,7 +456,7 @@ export abstract class IgcDatePickerBaseComponent<
   public showWeekNumbers = false;
 
   /**
-   * Sets the start day of the week for the calendar.
+   * The first day of the week in the calendar.
    *
    * @remarks
    * When not set, the week starts on the first day of the week of the current {@link locale}.
@@ -571,7 +578,7 @@ export abstract class IgcDatePickerBaseComponent<
 
   //#region Public methods
 
-  /** Clears the editor(s) of the picker of any user input. */
+  /** Clears the value and the input text of the picker. */
   public clear(): void {
     this._oldValue = this._value;
     this._value = null;

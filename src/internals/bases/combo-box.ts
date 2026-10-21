@@ -17,6 +17,7 @@ import { iterNodes } from '../utils/dom.js';
 /* omitModule */
 export class IgcBaseComboBoxComponent extends LitElement {
   /* blazorSuppress */
+  /** @hidden @internal */
   declare public emitEvent: <
     K extends keyof ToggleEventMap,
     D extends UnpackCustomEvent<ToggleEventMap[K]>,
@@ -30,7 +31,7 @@ export class IgcBaseComboBoxComponent extends LitElement {
   private readonly _toggleController = addToggleController(this);
 
   /**
-   * Sets the open state of the component.
+   * Whether the component is open.
    * @attr open
    * @default false
    */
@@ -38,7 +39,7 @@ export class IgcBaseComboBoxComponent extends LitElement {
   public open = false;
 
   /**
-   * Sets the behavior of the component when the parent container scrolls.
+   * The behavior of the component when a parent container scrolls.
    *
    * If the value is `hide`, the component hides while the anchor is fully out
    * of view. `hide` is the default value.
@@ -77,17 +78,29 @@ export class IgcBaseComboBoxComponent extends LitElement {
     return this._toggleController.show(emitEvent);
   }
 
-  /** Shows the component. */
+  /**
+   * Opens the component. It does not emit events. The promise resolves to
+   * `false` when the component is already open, or when a later call replaces
+   * this one.
+   */
   public async show(): Promise<boolean> {
     return this._show();
   }
 
-  /** Hides the component. */
+  /**
+   * Closes the component. It does not emit events. The promise resolves to
+   * `false` when the component is already closed, or when a later call
+   * replaces this one.
+   */
   public async hide(): Promise<boolean> {
     return this._hide();
   }
 
-  /** Toggles the open state of the component. */
+  /**
+   * Opens the component when it is closed, and closes it when it is open. It
+   * does not emit events. The promise resolves to `true` when the state
+   * changes.
+   */
   public async toggle(): Promise<boolean> {
     return this.open ? this.hide() : this.show();
   }
@@ -97,7 +110,7 @@ export class IgcBaseComboBoxComponent extends LitElement {
 /* omitModule */
 export class IgcComboBoxBaseLikeComponent extends IgcBaseComboBoxComponent {
   /**
-   * Keeps the dropdown of the component open after the user selects an item.
+   * Whether the component stays open after the user selects an item.
    * @attr keep-open-on-select
    * @default false
    */
@@ -105,8 +118,7 @@ export class IgcComboBoxBaseLikeComponent extends IgcBaseComboBoxComponent {
   public keepOpenOnSelect = false;
 
   /**
-   * Keeps the dropdown of the component open when the user clicks outside of
-   * it.
+   * Whether the component stays open when the user clicks outside of it.
    * @attr keep-open-on-outside-click
    * @default false
    */

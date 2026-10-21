@@ -26,12 +26,14 @@ const nextId = createIdGenerator('checkbox');
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcChange - Emitted when the control's checked state changes.
+ * @fires igcChange - Emitted when the checked state of the control changes by user interaction.
  *
  * @csspart base - The base wrapper of the checkbox.
- * @csspart control - The checkbox input element.
+ * @csspart control - The box of the checkbox. It holds the indicator.
  * @csspart label - The checkbox label.
  * @csspart indicator - The checkbox indicator icon.
+ * @csspart checked - Added to the base, control, label and indicator parts when the checkbox is checked.
+ * @csspart focused - Added to the base part when the checkbox has keyboard focus.
  */
 export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-checkbox';
@@ -48,7 +50,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   private readonly _labelId = `checkbox-label-${this._inputId}`;
 
   /**
-   * Draws the checkbox in indeterminate state.
+   * Whether the checkbox is in the indeterminate state. A user click clears it.
    * @attr
    */
   @property({ type: Boolean, reflect: true })

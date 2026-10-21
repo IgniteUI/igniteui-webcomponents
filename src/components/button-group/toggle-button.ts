@@ -26,14 +26,14 @@ import { styles as shared } from './themes/shared/button/button.common.css.js';
 
 /**
  * The toggle button wraps a native button element and exposes additional `value` and `selected` properties.
- * It is used in the context of a button group to facilitate the creation of group/toolbar like UX behaviors.
+ * Use it in a button group to make a toolbar or a set of options.
  *
  * @element igc-toggle-button
  *
  * @slot - Renders the label/content of the button.
  *
  * @csspart toggle - The native button element.
- * @csspart focused - The native button element when focused through a keyboard interaction.
+ * @csspart focused - Added to the toggle part when the button has keyboard focus.
  */
 @shadowOptions({ delegatesFocus: true })
 export default class IgcToggleButtonComponent extends HostAriaMixin(

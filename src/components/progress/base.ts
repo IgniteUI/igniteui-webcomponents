@@ -35,7 +35,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   };
 
   /**
-   * Maximum value of the control.
+   * The maximum value of the control.
    * @attr
    */
   @property({ type: Number })
@@ -56,21 +56,22 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   public variant: StyleVariant = 'primary';
 
   /**
-   * Animation duration in milliseconds.
+   * The duration of the fill animation in milliseconds.
    * @attr animation-duration
    */
   @property({ type: Number, attribute: 'animation-duration' })
   public animationDuration = 500;
 
   /**
-   * The indeterminate state of the control.
+   * Whether the progress is indeterminate. An indeterminate progress has no
+   * value and does not show the default label.
    * @attr
    */
   @property({ type: Boolean, reflect: false })
   public indeterminate = false;
 
   /**
-   * Shows/hides the label of the control.
+   * Whether the default label is hidden.
    * @attr hide-label
    */
   @property({ type: Boolean, attribute: 'hide-label', reflect: false })

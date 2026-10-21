@@ -20,9 +20,10 @@ const nextId = createIdGenerator('circular-progress');
  *
  * @element igc-circular-progress
  *
- * @slot - The text area container.
- * @slot gradient - Customize the progress bar in order to use a color gradient instead of a solid color. Accepts circular gradient elements.
+ * @slot - Custom label content. A slotted element replaces the default label.
+ * @slot gradient - The gradient stops of the fill. Accepts circular gradient elements.
  *
+ * @csspart base - The wrapper of the circular progress.
  * @csspart svg - The circular progress SVG element.
  * @csspart gradient_start - The circular progress linear-gradient start color.
  * @csspart gradient_end - The circular progress linear-gradient end color.
@@ -30,7 +31,7 @@ const nextId = createIdGenerator('circular-progress');
  * @csspart fill - The circular progress indicator area.
  * @csspart label - The circular progress label.
  * @csspart value - The circular progress label value.
- * @csspart indeterminate - The circular progress indeterminate state.
+ * @csspart indeterminate - Added to the SVG and track parts while the progress is indeterminate.
  */
 export default class IgcCircularProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-circular-progress';

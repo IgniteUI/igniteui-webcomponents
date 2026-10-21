@@ -44,7 +44,7 @@ const metadata: Meta<IgcNavDrawerComponent> = {
     docs: {
       description: {
         component:
-          'A side navigation container that provides\nquick access between views within an application.\n\nThe edge positions (`start`, `end`, `top`, `bottom`) render a modal `<dialog>`\nwith a focus trap and a backdrop. The `relative` position renders an inline\n`<nav>` landmark.\n\nContent in the `mini` slot renders a compact variant, which shows while the\ndrawer is closed.\n\nThe component integrates with the\n[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):\nan Ignite button or a native `<button>` with `command="--show"` / `"--hide"` / `"--toggle"`\nand `commandfor` pointing to this element will call the corresponding method\ndeclaratively without any JavaScript.',
+          'A side navigation container that provides\nquick access between views within an application.\n\nThe edge positions (`start`, `end`, `top`, `bottom`) render a modal `<dialog>`\nwith a focus trap and a backdrop. The `relative` position renders an inline\n`<nav>` landmark.\n\nContent in the `mini` slot renders a compact variant, which shows while the\ndrawer is closed.\n\nThe component integrates with the\n[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):\nan Ignite button or a native `<button>` with `command="--show"` / `"--hide"` / `"--toggle"`\nand `commandfor` pointing to this element calls the corresponding method\ndeclaratively without any JavaScript.',
       },
     },
     actions: { handles: ['igcClosing', 'igcClosed'] },
@@ -56,7 +56,7 @@ const metadata: Meta<IgcNavDrawerComponent> = {
         value: ['bottom', 'top', 'start', 'end', 'relative'],
       },
       description:
-        'Sets the position of the drawer.\n\n- `start` - anchored to the inline-start edge (default).\n- `end` - anchored to the inline-end edge.\n- `top` - anchored to the block-start edge.\n- `bottom` - anchored to the block-end edge.\n- `relative` - rendered inline within the page flow; no modal backdrop.',
+        'The position of the drawer.\n\n- `start` - anchored to the inline-start edge (default).\n- `end` - anchored to the inline-end edge.\n- `top` - anchored to the block-start edge.\n- `bottom` - anchored to the block-end edge.\n- `relative` - rendered inline within the page flow; no modal backdrop.',
       options: ['bottom', 'top', 'start', 'end', 'relative'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'start' } },
@@ -77,7 +77,7 @@ const metadata: Meta<IgcNavDrawerComponent> = {
     label: {
       type: 'string',
       description:
-        'Sets an accessible label for the `<dialog>`, or the `<nav>` landmark in the `relative`\nposition, and for the mini variant. Give each navigation landmark on a page a distinct label.',
+        'The accessible label of the `<dialog>`, or of the `<nav>` landmark in the `relative`\nposition, and of the mini variant. Give each navigation landmark on a page a distinct label.',
       control: 'text',
     },
   },
@@ -88,7 +88,7 @@ export default metadata;
 
 interface IgcNavDrawerArgs {
   /**
-   * Sets the position of the drawer.
+   * The position of the drawer.
    *
    * - `start` - anchored to the inline-start edge (default).
    * - `end` - anchored to the inline-end edge.
@@ -105,8 +105,8 @@ interface IgcNavDrawerArgs {
    */
   keepOpenOnEscape: boolean;
   /**
-   * Sets an accessible label for the `<dialog>`, or the `<nav>` landmark in the `relative`
-   * position, and for the mini variant. Give each navigation landmark on a page a distinct label.
+   * The accessible label of the `<dialog>`, or of the `<nav>` landmark in the `relative`
+   * position, and of the mini variant. Give each navigation landmark on a page a distinct label.
    */
   label: string;
 }

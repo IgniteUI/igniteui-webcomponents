@@ -59,6 +59,7 @@ This directory hosts four public components: [`igc-select`](#igc-select), [`igc-
 |       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
 |       3 | 2026-10-02 | Focus after form checks; `invalid` only on checks  |
 |       4 | 2026-10-02 | Forward the host `aria-describedby`                |
+|       5 | 2026-10-21 | API descriptions aligned with the JSDoc.           |
 
 ## Overview
 
@@ -276,54 +277,54 @@ matching option is activated instead.
 | Property               | Attribute                  | Reflected | Type                                | Default        | Description                                                     |
 | ---------------------- | -------------------------- | --------- | ----------------------------------- | -------------- | ---------------------------------------------------------------- |
 | value                  | value                      | No        | `string \| undefined`               | -              | The value of the control.                                       |
-| open                   | open                       | Yes       | `boolean`                           | false          | The open state of the component.                                |
+| open                   | open                       | Yes       | `boolean`                           | false          | Whether the component is open.                                |
 | label                  | label                      | No        | `string`                            | -              | The label of the control.                                       |
 | placeholder            | placeholder                | No        | `string`                            | -              | The placeholder text of the control.                            |
 | outlined               | outlined                   | Yes       | `boolean`                           | false          | Whether the control has an outlined appearance.                 |
 | placement              | placement                  | No        | `PopoverPlacement`                  | `bottom-start` | The preferred placement of the dropdown around the input.       |
 | distance               | distance                   | No        | `number`                            | 0              | The distance of the dropdown from its input.                    |
-| keepOpenOnSelect       | keep-open-on-select        | Yes       | `boolean`                           | false          | Keeps the dropdown open after the user selects an item.         |
-| keepOpenOnOutsideClick | keep-open-on-outside-click | Yes       | `boolean`                           | false          | Keeps the dropdown open when the user clicks outside of it.     |
+| keepOpenOnSelect       | keep-open-on-select        | Yes       | `boolean`                           | false          | Whether the component stays open after the user selects an item.         |
+| keepOpenOnOutsideClick | keep-open-on-outside-click | Yes       | `boolean`                           | false          | Whether the component stays open when the user clicks outside of it.     |
 | scrollStrategy         | scroll-strategy            | No        | `PopoverScrollStrategy`             | `hide`         | The behavior of the component when a parent container scrolls.  |
-| required               | required                   | Yes       | `boolean`                           | false          | Makes the component a required field for validation.            |
-| disabled               | disabled                   | Yes       | `boolean`                           | false          | The disabled state of the component.                            |
-| invalid                | invalid                    | No        | `boolean`                           | false          | Sets the control into invalid state (visual state only).        |
+| required               | required                   | Yes       | `boolean`                           | false          | Whether the control is required. A required control that has no value, or is not checked, fails validation.            |
+| disabled               | disabled                   | Yes       | `boolean`                           | false          | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                            |
+| invalid                | invalid                    | No        | `boolean`                           | false          | Whether the control shows the invalid state. It changes only the visual state, not the validity.        |
 | name                   | name                       | Yes       | `string`                            | -              | The name of the control, submitted with the form data.          |
-| autofocus              | autofocus                  | No        | `boolean`                           | false          | Whether the control should receive focus automatically.         |
+| autofocus              | autofocus                  | No        | `boolean`                           | false          | Whether the control takes the focus after its first render.     |
 | items                  | -                          | No        | `IgcSelectItemComponent[]`          | -              | Read-only. The items of the select component.                   |
 | groups                 | -                          | No        | `IgcSelectGroupComponent[]`         | -              | Read-only. The groups of the select component.                  |
 | selectedItem           | -                          | No        | `IgcSelectItemComponent \| null`    | `null`         | Read-only. The selected item, or `null`.                        |
-| defaultValue           | -                          | No        | `string`                            | -              | The initial value of the control, restored on a form reset.     |
-| form                   | -                          | No        | `HTMLFormElement \| null`           | -              | Read-only. The form associated with this element.               |
-| validity               | -                          | No        | `ValidityState`                     | -              | Read-only. The validity state of the element.                   |
-| validationMessage      | -                          | No        | `string`                            | -              | Read-only. The validation message of the element.               |
+| defaultValue           | -                          | No        | `string`                            | -              | The default value of the control. A form reset restores the value to it. While the value is unchanged since the start or the last form reset, a new default also sets the value. The `value` attribute also sets it.     |
+| form                   | -                          | No        | `HTMLFormElement \| null`           | -              | Read-only. The form that the control is associated with, or `null`.               |
+| validity               | -                          | No        | `ValidityState`                     | -              | Read-only. The validity state of the control.                   |
+| validationMessage      | -                          | No        | `string`                            | -              | Read-only. The validation message of the control. It is empty when the control is valid.               |
 | willValidate           | -                          | No        | `boolean`                           | -              | Read-only. Whether the element is a candidate for validation.   |
 
 #### Methods
 
 | Name              | Type signature                                              | Description                                                             |
 | ----------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`                                      | Shows the component.                                                    |
-| hide              | `(): Promise<boolean>`                                      | Hides the component.                                                    |
-| toggle            | `(): Promise<boolean>`                                      | Toggles the open state of the component.                                |
+| show              | `(): Promise<boolean>`                                      | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one.                                                    |
+| hide              | `(): Promise<boolean>`                                      | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                    |
+| toggle            | `(): Promise<boolean>`                                      | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes.                                |
 | select            | `(value: string \| number): IgcSelectItemComponent \| null` | Selects the item with the given value or index.                         |
 | navigateTo        | `(value: string \| number): IgcSelectItemComponent \| null` | Activates the item with the given value or index.                       |
 | clearSelection    | `(): void`                                                  | Resets the current value and selection of the component.                |
 | focus             | `(options?: FocusOptions): void`                            | Sets focus on the component.                                            |
 | blur              | `(): void`                                                  | Removes focus from the component.                                       |
-| checkValidity     | `(): boolean`                                               | Checks validity and emits `invalid` when the control is invalid.        |
-| reportValidity    | `(): boolean`                                               | Checks validity; when invalid, emits `invalid` and focuses the control. |
-| setCustomValidity | `(message: string): void`                                   | Sets a custom message. Invalid while `message` is not empty.            |
+| checkValidity     | `(): boolean`                                               | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid.        |
+| reportValidity    | `(): boolean`                                               | Checks validity. As for a native control, an invalid control emits `invalid` and takes the focus. It shows its own validation messages, not the message of the browser. Returns `true` when the control is valid. |
+| setCustomValidity | `(message: string): void`                                   | Sets a custom validation message. The control is invalid while the message is not empty. An empty string removes the custom error.            |
 
 #### Events
 
 | Name       | Cancellable | Description                                       |
 | ---------- | ----------- | ------------------------------------------------- |
-| igcChange  | false       | Emitted when the selection of the control changes. |
-| igcOpening | true        | Emitted just before the list of options is opened. |
-| igcOpened  | false       | Emitted after the list of options is opened.      |
-| igcClosing | true        | Emitted just before the list of options is closed. |
-| igcClosed  | false       | Emitted after the list of options is closed.      |
+| igcChange  | false       | Emitted when the user selects a different item. The detail is the item. |
+| igcOpening | true        | Emitted before the user opens the list of options. Cancelable. |
+| igcOpened  | false       | Emitted after the list of options opens on a user action. |
+| igcClosing | true        | Emitted before the user closes the list of options. Cancelable. |
+| igcClosed  | false       | Emitted after the list of options closes on a user action. |
 
 #### Slots
 
@@ -331,11 +332,11 @@ matching option is activated instead.
 | ---------------------- | --------------------------------------------------------------------------------- |
 | (default)              | Renders the list of select items.                                                |
 | `prefix`               | Renders content before the input.                                                |
-| `suffix`               | Renders content after input.                                                     |
+| `suffix`               | Renders content after the input.                                                 |
 | `header`               | Renders a container before the list of options.                                  |
 | `footer`               | Renders a container after the list of options.                                   |
 | `helper-text`          | Renders content below the input.                                                 |
-| `toggle-icon`          | Renders content inside the suffix container.                                     |
+| `toggle-icon`          | Renders content that replaces the default toggle icon.                           |
 | `toggle-icon-expanded` | Renders content for the toggle icon when the component is in open state.         |
 | `value-missing`        | Renders content when the required validation fails.                              |
 | `custom-error`         | Renders content when setCustomValidity(message) is set.                          |
@@ -345,12 +346,15 @@ matching option is activated instead.
 
 | Part          | Description                                            |
 | ------------- | ------------------------------------------------------ |
+| `base`        | The popup container of the list of options.            |
 | `list`        | The list wrapping container for the items of the select. |
 | `input`       | The encapsulated input of the select.                  |
+| `native-input` | The native input element of the encapsulated input.   |
 | `label`       | The encapsulated text label of the select.             |
 | `prefix`      | The prefix wrapper of the input of the select.         |
 | `suffix`      | The suffix wrapper of the input of the select.         |
 | `toggle-icon` | The toggle icon wrapper of the select.                 |
+| `filled`      | Added to the toggle-icon part when the select has a value. |
 | `helper-text` | The helper text wrapper of the select.                 |
 
 ### igc-select-item
@@ -360,8 +364,8 @@ Represents an item in a select list.
 | Property | Attribute | Reflected | Type      | Default | Description                                            |
 | -------- | --------- | --------- | --------- | ------- | -------------------------------------------------------- |
 | value    | value     | No        | `string`  | -       | The value of the item. Falls back to the text content. |
-| selected | selected  | Yes       | `boolean` | false   | Whether the item is selected.                          |
-| active   | active    | Yes       | `boolean` | false   | Whether the item is active.                            |
+| selected | selected  | Yes       | `boolean` | false   | Whether the item is selected. It also sets `active` to the same value.                          |
+| active   | active    | Yes       | `boolean` | false   | Whether the item is active. The active item is the target of keyboard navigation and the only item in the tab order. |
 | disabled | disabled  | Yes       | `boolean` | false   | Whether the item is disabled.                          |
 
 | Slot      | Description                                    |
@@ -388,7 +392,7 @@ A container for a group of select items.
 | Slot      | Description                          |
 | --------- | ------------------------------------ |
 | `label`   | Contains the label of the group.     |
-| (default) | The items belonging to this group.   |
+| (default) | Renders the items of the group.      |
 
 | Part    | Description               |
 | ------- | ------------------------- |

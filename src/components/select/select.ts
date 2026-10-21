@@ -93,28 +93,31 @@ const Slots = setSlots(
  *
  * @slot - Renders the list of select items.
  * @slot prefix - Renders content before the input.
- * @slot suffix - Renders content after input.
+ * @slot suffix - Renders content after the input.
  * @slot header - Renders a container before the list of options.
  * @slot footer - Renders a container after the list of options.
  * @slot helper-text - Renders content below the input.
- * @slot toggle-icon - Renders content inside the suffix container.
+ * @slot toggle-icon - Renders content that replaces the default toggle icon.
  * @slot toggle-icon-expanded - Renders content for the toggle icon when the component is in open state.
  * @slot value-missing - Renders content when the required validation fails.
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcChange - Emitted when the selection of the control changes.
- * @fires igcOpening - Emitted just before the list of options is opened.
- * @fires igcOpened - Emitted after the list of options is opened.
- * @fires igcClosing - Emitted just before the list of options is closed.
- * @fires igcClosed - Emitted after the list of options is closed.
+ * @fires igcChange - Emitted when the user selects a different item. The detail is the item.
+ * @fires igcOpening - Emitted before the user opens the list of options. Cancelable.
+ * @fires igcOpened - Emitted after the list of options opens on a user action.
+ * @fires igcClosing - Emitted before the user closes the list of options. Cancelable.
+ * @fires igcClosed - Emitted after the list of options closes on a user action.
  *
+ * @csspart base - The popup container of the list of options.
  * @csspart list - The list wrapping container for the items of the select.
  * @csspart input - The encapsulated input of the select.
+ * @csspart native-input - The native input element of the encapsulated input.
  * @csspart label - The encapsulated text label of the select.
  * @csspart prefix - The prefix wrapper of the input of the select.
  * @csspart suffix - The suffix wrapper of the input of the select.
  * @csspart toggle-icon - The toggle icon wrapper of the select.
+ * @csspart filled - Added to the toggle-icon part when the select has a value.
  * @csspart helper-text - The helper text wrapper of the select.
  */
 @blazorAdditionalDependencies(
@@ -203,7 +206,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   public outlined = false;
 
   /**
-   * Whether the control should receive focus automatically.
+   * Whether the control takes the focus after its first render.
    * @attr
    */
   @property({ type: Boolean })

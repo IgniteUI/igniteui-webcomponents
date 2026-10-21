@@ -53,47 +53,49 @@ type DefaultChatRenderers = {
  */
 export interface IgcChatComponentEventMap {
   /**
-   * Dispatched when a new chat message is created (sent).
+   * Dispatched when the user sends a message, also with a click on a suggestion.
+   * Cancelable: a canceled event does not add the message.
    */
   igcMessageCreated: CustomEvent<IgcChatMessage>;
 
   /**
-   * Dispatched when a message is reacted to.
+   * Dispatched when the user clicks an action button of a message, for example like or copy.
    */
   igcMessageReact: CustomEvent<IgcChatMessageReaction>;
 
   /**
-   * Dispatched when a chat message attachment is clicked.
+   * Dispatched when the user clicks the header of a message attachment.
    */
   igcAttachmentClick: CustomEvent<IgcChatMessageAttachment>;
 
   /* blazorSuppress */
   /**
-   * Dispatched when attachment(s) are added either through drag & drop or through
-   * the default file input.
+   * Dispatched when the user adds attachments with drag and drop or with the
+   * default file input. Cancelable: a canceled event does not add them.
    */
   igcAttachmentAdded: CustomEvent<IgcChatMessageAttachment[]>;
 
   /* blazorSuppress */
   /**
-   * Dispatched when an attachment is removed by the user.
+   * Dispatched when the user removes an attachment from the input.
+   * Cancelable: a canceled event keeps the attachment.
    */
   igcAttachmentRemoved: CustomEvent<IgcChatMessageAttachment>;
 
   /* blazorSuppress */
   /**
-   * Dispatched during an attachment drag operation.
+   * Dispatched when the user drags files into the input area.
    */
   igcAttachmentDrag: CustomEvent<void>;
 
   /* blazorSuppress */
   /**
-   * Dispatched when an attachment is dropped (e.g., in a drag-and-drop operation).
+   * Dispatched when the user drops files on the input area.
    */
   igcAttachmentDrop: CustomEvent<void>;
 
   /**
-   * Dispatched when the typing status changes (e.g., user starts or stops typing).
+   * Dispatched when the user starts or stops typing. The detail is `true` while the user types.
    */
   igcTypingChange: CustomEvent<boolean>;
 
@@ -140,27 +142,27 @@ const i18n: I18nMixinConfig<
  *
  * @element igc-chat
  *
- * @fires igcMessageCreated - Dispatched when a new chat message is created (sent).
- * @fires igcMessageReact - Dispatched when a message is reacted to.
- * @fires igcAttachmentClick - Dispatched when a chat message attachment is clicked.
- * @fires igcAttachmentAdded - Dispatched when attachment(s) are added either through drag & drop or through the default file input.
- * @fires igcAttachmentRemoved - Dispatched when an attachment is removed by the user.
- * @fires igcAttachmentDrag - Dispatched during an attachment drag operation.
- * @fires igcAttachmentDrop - Dispatched when an attachment is dropped (e.g., in a drag-and-drop operation).
- * @fires igcTypingChange - Dispatched when the typing status changes (e.g., user starts or stops typing).
+ * @fires igcMessageCreated - Dispatched when the user sends a message, also with a click on a suggestion. Cancelable: a canceled event does not add the message.
+ * @fires igcMessageReact - Dispatched when the user clicks an action button of a message, for example like or copy.
+ * @fires igcAttachmentClick - Dispatched when the user clicks the header of a message attachment.
+ * @fires igcAttachmentAdded - Dispatched when the user adds attachments with drag and drop or with the default file input. Cancelable: a canceled event does not add them.
+ * @fires igcAttachmentRemoved - Dispatched when the user removes an attachment from the input. Cancelable: a canceled event keeps the attachment.
+ * @fires igcAttachmentDrag - Dispatched when the user drags files into the input area.
+ * @fires igcAttachmentDrop - Dispatched when the user drops files on the input area.
+ * @fires igcTypingChange - Dispatched when the user starts or stops typing. The detail is `true` while the user types.
  * @fires igcInputFocus - Dispatched when the chat input field gains focus.
  * @fires igcInputBlur - Dispatched when the chat input field loses focus.
  * @fires igcInputChange - Dispatched when the content of the chat input changes.
  *
- * @slot prefix - Slot for injecting content (e.g., avatar or icon) before the chat title.
- * @slot title - Slot for overriding the chat title content.
- * @slot actions - Slot for injecting header actions (e.g., buttons, menus).
- * @slot suggestions-header - Slot for rendering a custom header for the suggestions list.
- * @slot suggestions - Slot for rendering a custom list of quick reply suggestions.
- * @slot suggestions-actions - Slot for rendering additional actions.
- * @slot suggestion - Slot for rendering a single suggestion item.
- * @slot empty-state - Slot shown when there are no messages.
- * @slot typing-indicator - Slot for the "is typing" indicator.
+ * @slot prefix - Content before the title, such as an avatar or an icon.
+ * @slot title - The title of the header.
+ * @slot actions - The actions of the header.
+ * @slot suggestions-header - The header of the suggestions list.
+ * @slot suggestions - The whole suggestions list.
+ * @slot suggestions-actions - Additional actions next to the suggestions.
+ * @slot suggestion - A single suggestion.
+ * @slot empty-state - The content shown while there are no messages.
+ * @slot typing-indicator - The typing indicator of the other side.
  *
  * @csspart chat-container - Styles the main chat container.
  * @csspart header - Styles the chat header container.
@@ -180,7 +182,7 @@ const i18n: I18nMixinConfig<
  * @csspart empty-state - Styles the empty state container when there are no messages.
  *
  * @csspart input-area-container - Styles the wrapper around the chat input area.
- * @csspart input-area - Styles the main text input area.
+ * @csspart input-area - Styles the input area: the attachments, the text input and the actions.
  * @csspart input-container - Styles the wrapper around the text input.
  * @csspart input-attachments-container - Styles the container for attachments in the input.
  * @csspart input-attachment-container - Styles a single attachment in the input area.
@@ -191,17 +193,17 @@ const i18n: I18nMixinConfig<
  * @csspart input-actions-start - Styles the group of actions at the start of the input after the default file upload.
  * @csspart input-actions-end - Styles the group of actions at the end of the input.
  * @csspart file-upload-container - Styles the container for the file upload input.
- * @csspart file-upload - Styles the file upload input itself.
+ * @csspart file-upload - Styles the label that holds the file upload button and the file input.
  * @csspart send-button-container - Styles the container around the send button.
  * @csspart send-button - Styles the send button.
  *
  * @csspart message-container - Styles the container of a single message.
- * @csspart message-header - Styles the header of a message (e.g., sender, timestamp).
+ * @csspart message-header - Styles the header of a message. The header is empty without a `messageHeader` renderer.
  * @csspart message-content - Styles the text content of a message.
  * @csspart message-attachments-container - Styles the container for message attachments.
  * @csspart message-attachment - Styles a single message attachment.
  * @csspart message-actions-container - Styles the container holding message actions.
- * @csspart message-sent - Styles messages marked as sent by the current user.
+ * @csspart message-sent - Added to the message container of a message from the current user.
  * @csspart attachment-header - Styles the header of an attachment block.
  * @csspart attachment-content - Styles the content of an attachment block.
  * @csspart attachment-icon - Styles the icon of an attachment.
@@ -301,8 +303,8 @@ export default class IgcChatComponent extends I18nMixin(
   }
 
   /**
-   * Controls the chat behavior and appearance through a configuration object.
-   * Use this to toggle UI options, provide suggestions, templates, etc.
+   * The configuration object of the chat: behavior and appearance options,
+   * suggestions and custom renderers.
    */
   @property({ attribute: false })
   public set options(value: IgcChatOptions) {

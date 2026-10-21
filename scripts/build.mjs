@@ -9,6 +9,7 @@ import {
   getVsCodeHtmlCustomData,
 } from 'custom-element-vs-code-integration';
 import customElements from '../custom-elements.json' with { type: 'json' };
+import { buildLlmsFiles } from './build-llms.mjs';
 import report from './report.mjs';
 import { buildAll } from './sass.mjs';
 import { buildThemeEntries } from './theme-entries.mjs';
@@ -118,6 +119,8 @@ async function runTask(tag, cmd) {
   await runTask('Copying skills directory', async () => {
     await cp('skills', DEST_DIR('skills'), { recursive: true });
   });
+
+  await runTask('llms.txt', () => buildLlmsFiles(customElements, DEST_DIR()));
 
   report.success('\n🎉 Done! 🎉');
 })();

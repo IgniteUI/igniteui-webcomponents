@@ -29,7 +29,7 @@ const metadata: Meta<IgcQrCodeComponent> = {
     docs: {
       description: {
         component:
-          '\nGenerates a QR code based on the provided value and options.\nThe component renders an SVG representation of the QR code, which can be customized using various properties.',
+          'Generates a QR code from a value and renders it as an SVG image.\nProperties set the size, the shapes, the error correction level and an optional logo.',
       },
     },
   },
@@ -37,13 +37,13 @@ const metadata: Meta<IgcQrCodeComponent> = {
     value: {
       type: 'string',
       description:
-        'The value to be encoded in the QR code. This can be any string, such as a URL, text, or other data.\nWhen this property is set, the component will generate a QR code representing the provided value.',
+        'The value to encode in the QR code. This can be any string, such as a URL, text, or other data.\nWithout a value, the component renders nothing.',
       control: 'text',
     },
     version: {
       type: 'number',
       description:
-        'The version of the QR code to generate, which determines the size and data capacity of the QR code.\nValid values are integers from 1 to 40, where each version corresponds to a specific module size and data capacity.\n\nIf not specified, the component will automatically select the smallest version that can accommodate the provided value.',
+        'The version of the QR code to generate, which determines the size and data capacity of the QR code.\nValid values are integers from 1 to 40, where each version corresponds to a specific module size and data capacity.\n\nWhen it is not set, the component selects the smallest version that holds the value.',
       control: 'number',
     },
     errorLevel: {
@@ -71,13 +71,13 @@ const metadata: Meta<IgcQrCodeComponent> = {
     logoSrc: {
       type: 'string',
       description:
-        'The source URL of an optional logo image to be displayed at the center of the QR code. The logo can help with branding and recognition.\nIf provided, the component will attempt to render the logo within the QR code while maintaining scannability.',
+        'The source URL of an optional logo image at the center of the QR code.\nThe component does not render a logo that fails to load, a `javascript:` or `vbscript:` URL,\nor a data URI that is not an image.',
       control: 'text',
     },
     logoSize: {
       type: 'number',
       description:
-        "The size of the logo, as a ratio of the maximum area that can safely be obscured by a logo\nwhile the QR code remains scannable (up to 9% of the code's area, at the highest error\ncorrection level). The value should be a number between 0 and 1, where 0 means no logo and 1\nmeans the logo will cover the full safe area (not the entire QR code).\nThe default value is 0.4, meaning the logo covers 40% of that safe area (~3.6% of the QR code).\n\nWhen `error-level` is not set and the logo is larger than the safe area of level 'M', the\ncomponent uses the smallest error correction level that holds the logo.",
+        "The size of the logo, as a ratio of the maximum area that can safely be obscured by a logo\nwhile the QR code remains scannable (up to 9% of the code's area, at the highest error\ncorrection level). The value is a number from 0 to 1, where 0 means no logo and 1\nmeans the logo covers the full safe area (not the entire QR code). Other values are clamped.\nThe default value is 0.4, meaning the logo covers 40% of that safe area (~3.6% of the QR code).\n\nWhen `error-level` is not set and the logo is larger than the safe area of level 'M', the\ncomponent uses the smallest error correction level that holds the logo. When `error-level`\nis set, the logo does not grow past the safe area of that level.",
       control: 'number',
       table: { defaultValue: { summary: '0.4' } },
     },
@@ -118,15 +118,15 @@ export default metadata;
 
 interface IgcQrCodeArgs {
   /**
-   * The value to be encoded in the QR code. This can be any string, such as a URL, text, or other data.
-   * When this property is set, the component will generate a QR code representing the provided value.
+   * The value to encode in the QR code. This can be any string, such as a URL, text, or other data.
+   * Without a value, the component renders nothing.
    */
   value: string;
   /**
    * The version of the QR code to generate, which determines the size and data capacity of the QR code.
    * Valid values are integers from 1 to 40, where each version corresponds to a specific module size and data capacity.
    *
-   * If not specified, the component will automatically select the smallest version that can accommodate the provided value.
+   * When it is not set, the component selects the smallest version that holds the value.
    */
   version: number;
   /**
@@ -147,19 +147,21 @@ interface IgcQrCodeArgs {
    */
   margin: number;
   /**
-   * The source URL of an optional logo image to be displayed at the center of the QR code. The logo can help with branding and recognition.
-   * If provided, the component will attempt to render the logo within the QR code while maintaining scannability.
+   * The source URL of an optional logo image at the center of the QR code.
+   * The component does not render a logo that fails to load, a `javascript:` or `vbscript:` URL,
+   * or a data URI that is not an image.
    */
   logoSrc: string;
   /**
    * The size of the logo, as a ratio of the maximum area that can safely be obscured by a logo
    * while the QR code remains scannable (up to 9% of the code's area, at the highest error
-   * correction level). The value should be a number between 0 and 1, where 0 means no logo and 1
-   * means the logo will cover the full safe area (not the entire QR code).
+   * correction level). The value is a number from 0 to 1, where 0 means no logo and 1
+   * means the logo covers the full safe area (not the entire QR code). Other values are clamped.
    * The default value is 0.4, meaning the logo covers 40% of that safe area (~3.6% of the QR code).
    *
    * When `error-level` is not set and the logo is larger than the safe area of level 'M', the
-   * component uses the smallest error correction level that holds the logo.
+   * component uses the smallest error correction level that holds the logo. When `error-level`
+   * is set, the logo does not grow past the safe area of that level.
    */
   logoSize: number;
   /**

@@ -53,6 +53,7 @@
 |       1 | 2026-09-21 | Initial specification                                           |
 |       2 | 2026-10-07 | Host ARIA names and describes the bar, no English state text    |
 |       3 | 2026-10-19 | Localize the default name of the bar                            |
+|       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                        |
 
 ## Overview
 
@@ -291,18 +292,18 @@ A host `aria-labelledby` or `aria-label` replaces the default name. All visual e
 | orientation         | orientation           | Yes       | `SplitterOrientation`       | `horizontal` | Orientation layout for the splitter panes.                                  |
 | disableCollapse     | disable-collapse      | Yes       | `boolean`                   | false        | Whether collapsing either pane is disabled. Also hides the collapse buttons. |
 | disableResize       | disable-resize        | Yes       | `boolean`                   | false        | Whether resizing is disabled. Also hides the drag handle.                   |
-| hideDragHandle      | hide-drag-handle      | Yes       | `boolean`                   | false        | Controls the visibility of the drag handle on the splitter bar.             |
-| hideCollapseButtons | hide-collapse-buttons | Yes       | `boolean`                   | false        | Controls the visibility of the expand/collapse buttons on the splitter bar. |
-| startSize           | start-size            | No        | `string \| undefined`       | -            | The initial display size of the start pane.                                 |
-| endSize             | end-size              | No        | `string \| undefined`       | -            | The initial display size of the end pane.                                   |
+| hideDragHandle      | hide-drag-handle      | Yes       | `boolean`                   | false        | Whether the drag handle on the splitter bar is hidden. |
+| hideCollapseButtons | hide-collapse-buttons | Yes       | `boolean`                   | false        | Whether the expand/collapse buttons on the splitter bar are hidden. |
+| startSize           | start-size            | No        | `string \| undefined`       | -            | The size of the start pane. |
+| endSize             | end-size              | No        | `string \| undefined`       | -            | The size of the end pane. |
 | startMinSize        | start-min-size        | No        | `string \| undefined`       | -            | The minimum display size for the start pane.                                |
 | startMaxSize        | start-max-size        | No        | `string \| undefined`       | -            | The maximum display size for the start pane.                                |
 | endMinSize          | end-min-size          | No        | `string \| undefined`       | -            | The minimum display size for the end pane.                                  |
 | endMaxSize          | end-max-size          | No        | `string \| undefined`       | -            | The maximum display size for the end pane.                                  |
-| startCollapsed      | start-collapsed       | Yes       | `boolean`                   | false        | Gets/sets the collapsed state of the start pane.                            |
-| endCollapsed        | end-collapsed         | Yes       | `boolean`                   | false        | Gets/sets the collapsed state of the end pane.                              |
+| startCollapsed      | start-collapsed       | Yes       | `boolean`                   | false        | Whether the start pane is currently collapsed. Set this property to collapse or expand the pane programmatically. |
+| endCollapsed        | end-collapsed         | Yes       | `boolean`                   | false        | Whether the end pane is currently collapsed. Set this property to collapse or expand the pane programmatically. |
 | locale              | locale                | No        | `string`                    | -            | The locale for the resource strings. Falls back to the inherited locale, then the global one.       |
-| resourceStrings     | -                     | No        | `ISplitterResourceStrings`  | EN           | The resource strings for localization.                                      |
+| resourceStrings     | -                     | No        | `ISplitterResourceStrings`  | EN           | The texts of the component. The strings that you set replace the strings of the current locale. Reading returns all the strings, with your strings over the locale strings.                                      |
 
 ### Methods
 
@@ -353,13 +354,14 @@ interface IgcSplitterLayoutChangedEventArgs {
 
 | Name    | Description                                                                                                        |
 | ------- | -------------------------------------------------------------------------------------------------------------------- |
-| `start` | The start pane of the splitter. In horizontal layout this is the leftmost pane, and in vertical layout the topmost.  |
-| `end`   | The end pane of the splitter. In horizontal layout this is the rightmost pane, and in vertical layout the bottom one. |
+| `start` | Content projected into the start panel, at the inline start or the top.                                              |
+| `end`   | Content projected into the end panel, at the inline end or the bottom.                                               |
 
 ### CSS Shadow parts
 
 | Part                 | Description                                         |
 | -------------------- | --------------------------------------------------- |
+| `base`               | The container of the panels and the splitter bar.   |
 | `splitter-bar`       | The resizable bar element between the two panes.    |
 | `drag-handle`        | The drag handle icon/element on the splitter bar.   |
 | `start-pane`         | The container for the start pane content.           |

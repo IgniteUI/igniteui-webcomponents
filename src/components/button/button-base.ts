@@ -130,7 +130,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<IgcButton
   public rel?: string;
 
   /**
-   * When set, the button will be disabled and non-interactive.
+   * Whether the button is disabled. A disabled button ignores user interaction.
    *
    * @attr disabled
    * @default false

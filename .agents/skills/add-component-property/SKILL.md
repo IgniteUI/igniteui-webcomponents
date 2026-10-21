@@ -1,6 +1,8 @@
 ---
 name: add-component-property
 description: Add a reactive property to an existing Lit web component with proper decorators, types, tests, specification updates, and documentation
+metadata:
+  internal: true
 ---
 
 # Add Component Property

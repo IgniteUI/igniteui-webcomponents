@@ -1,6 +1,8 @@
 ---
 name: review-component-pr
 description: Code review checklist for component pull requests covering structure, public API, specification accuracy, accessibility, behavior, styles, tests, and build hygiene
+metadata:
+  internal: true
 ---
 
 # Review Component PR

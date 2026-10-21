@@ -40,7 +40,7 @@ const metadata: Meta<IgcExpansionPanelComponent> = {
     docs: {
       description: {
         component:
-          'The Expansion Panel Component provides a way to display information in a toggleable way -\ncompact summary view containing title and description and expanded detail view containing\nadditional content to the summary header.',
+          'Shows a header with a title and a subtitle, and content that the user can\nexpand and collapse.',
       },
     },
     actions: {
@@ -50,15 +50,14 @@ const metadata: Meta<IgcExpansionPanelComponent> = {
   argTypes: {
     open: {
       type: 'boolean',
-      description:
-        'Indicates whether the contents of the control should be visible.',
+      description: 'Whether the panel is expanded and its content is visible.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     disabled: {
       type: 'boolean',
       description:
-        'Get/Set whether the expansion panel is disabled. Disabled panels are ignored for user interactions.',
+        'Whether the panel is disabled. A disabled panel does not respond to user\ninteraction.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -76,9 +75,12 @@ const metadata: Meta<IgcExpansionPanelComponent> = {
 export default metadata;
 
 interface IgcExpansionPanelArgs {
-  /** Indicates whether the contents of the control should be visible. */
+  /** Whether the panel is expanded and its content is visible. */
   open: boolean;
-  /** Get/Set whether the expansion panel is disabled. Disabled panels are ignored for user interactions. */
+  /**
+   * Whether the panel is disabled. A disabled panel does not respond to user
+   * interaction.
+   */
   disabled: boolean;
   /** The indicator position of the expansion panel. */
   indicatorPosition: 'none' | 'start' | 'end';

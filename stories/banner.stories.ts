@@ -48,7 +48,7 @@ const metadata: Meta<IgcBannerComponent> = {
     docs: {
       description: {
         component:
-          'A non-modal notification banner that displays important, concise messages\nrequiring user acknowledgement.\n\nThe banner slides into view with an animated grow transition and renders\ninline, pushing the surrounding page content rather than overlaying it.\n\nThe component integrates with the\n[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):\nan Ignite button or a native `<button>` with `command="--show"` / `"--hide"` /\n`"--toggle"` and `commandfor` pointing to this element will call the\ncorresponding method declaratively without any JavaScript.',
+          'A non-modal notification banner that displays important, concise messages\nrequiring user acknowledgement.\n\nThe banner slides into view with an animated grow transition and renders\ninline, pushing the surrounding page content rather than overlaying it.\n\nThe component supports the\n[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API).\nA button with `command="--show"`, `"--hide"` or `"--toggle"` and a\n`commandfor` that points to this element calls the matching method.',
       },
     },
     actions: { handles: ['igcClosing', 'igcClosed'] },
@@ -57,7 +57,7 @@ const metadata: Meta<IgcBannerComponent> = {
     open: {
       type: 'boolean',
       description:
-        'Whether the banner is open.\n\nSetting this property programmatically will immediately show or hide the\nbanner without animation and without emitting close events.\nPrefer the `show()`, `hide()`, and `toggle()` methods for animated\ntransitions.',
+        'Whether the banner is open.\n\nSetting it skips the animation and the close events. Use the `show()`,\n`hide()` and `toggle()` methods for an animated transition.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -71,10 +71,8 @@ interface IgcBannerArgs {
   /**
    * Whether the banner is open.
    *
-   * Setting this property programmatically will immediately show or hide the
-   * banner without animation and without emitting close events.
-   * Prefer the `show()`, `hide()`, and `toggle()` methods for animated
-   * transitions.
+   * Setting it skips the animation and the close events. Use the `show()`,
+   * `hide()` and `toggle()` methods for an animated transition.
    */
   open: boolean;
 }

@@ -75,11 +75,9 @@ const i18n = {
 
 /* blazorSupportsVisualChildren */
 /**
- * The Combo component is similar to the Select component in that it provides a list of options from which the user can make a selection.
- * In contrast to the Select component, the Combo component displays all options in a virtualized list of items,
- * meaning the combo box can simultaneously show thousands of options, where one or more options can be selected.
- * Additionally, users can create custom item templates, allowing for robust data visualization.
- * The Combo component features case-sensitive filtering, grouping, complex data binding, dynamic addition of values and more.
+ * The combo lets the user select one or more options from a list. Unlike the select, it shows the options in a
+ * virtualized list, so the list can hold thousands of options.
+ * The combo supports custom item templates, case-sensitive filtering, grouping and binding to complex data.
  *
  * @element igc-combo
  *
@@ -89,17 +87,17 @@ const i18n = {
  * @slot footer - Renders a container after the list of options of the combo.
  * @slot empty - Renders content when the combo dropdown list has no items/data.
  * @slot helper-text - Renders content below the input of the combo.
- * @slot toggle-icon - Renders content inside the suffix container of the combo.
- * @slot clear-icon - Renders content inside the suffix container of the combo.
+ * @slot toggle-icon - Renders content that replaces the default toggle icon.
+ * @slot clear-icon - Renders content that replaces the default clear icon.
  * @slot value-missing - Renders content when the required validation fails.
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcChange - Emitted before the control's selection changes. Cancel the event to keep the selection.
- * @fires igcOpening - Emitted just before the list of options is opened.
- * @fires igcOpened - Emitted after the list of options is opened.
- * @fires igcClosing - Emitted just before the list of options is closed.
- * @fires igcClosed - Emitted after the list of options is closed.
+ * @fires igcChange - Emitted before the user changes the selection. Cancel the event to keep the selection.
+ * @fires igcOpening - Emitted before the user opens the list of options. Cancelable.
+ * @fires igcOpened - Emitted after the list of options opens on a user action.
+ * @fires igcClosing - Emitted before the user closes the list of options. Cancelable.
+ * @fires igcClosed - Emitted after the list of options closes on a user action.
  *
  * @csspart label - The encapsulated text label of the combo.
  * @csspart input - The main input field of the combo.
@@ -107,19 +105,21 @@ const i18n = {
  * @csspart prefix - The prefix wrapper of the combo.
  * @csspart suffix - The suffix wrapper of the combo.
  * @csspart toggle-icon - The toggle icon wrapper of the combo.
+ * @csspart filled - Added to the toggle-icon part when the combo has a value.
  * @csspart clear-icon - The clear icon wrapper of the combo.
  * @csspart case-icon - The case icon wrapper of the combo.
  * @csspart helper-text - The helper text wrapper of the combo.
+ * @csspart filter-input - The wrapper of the search input.
  * @csspart search-input - The search input field of the combo.
  * @csspart list-wrapper - The list of options wrapper of the combo.
  * @csspart list - The list of options box of the combo.
- * @csspart item - Represents each item in the list of options of the combo.
- * @csspart group-header - Represents each header in the list of options of the combo.
- * @csspart active - Appended to the item parts list when the item is active of the combo.
- * @csspart selected - Appended to the item parts list when the item is selected of the combo.
- * @csspart checkbox - Represents each checkbox of each list item of the combo.
- * @csspart checkbox-indicator - Represents the checkbox indicator of each list item of the combo.
- * @csspart checked - Appended to checkbox parts list when checkbox is checked in the combo.
+ * @csspart item - Each item in the list of options.
+ * @csspart group-header - Each group header in the list of options.
+ * @csspart active - Added to the item part when the item is active, and to the case-icon part while case-sensitive filtering is on.
+ * @csspart selected - Added to the item part when the item is selected.
+ * @csspart checkbox - The checkbox of each item in the list.
+ * @csspart checkbox-indicator - The checkbox indicator of each item in the list.
+ * @csspart checked - Added to the checkbox and checkbox-indicator parts when the checkbox is checked.
  * @csspart header - The container holding the header content of the combo.
  * @csspart footer - The container holding the footer content of the combo.
  * @csspart empty - The container holding the empty content of the combo.
@@ -288,7 +288,8 @@ export default class IgcComboComponent<
   public outlined = false;
 
   /**
-   * Enables single selection mode and moves item filtering to the main input.
+   * Whether only one item can be selected. In this mode, the main input
+   * filters the list of options.
    * @attr single-select
    * @default false
    */
@@ -310,14 +311,15 @@ export default class IgcComboComponent<
   public singleSelect = false;
 
   /**
-   * Whether the control should receive focus automatically.
+   * Whether the control takes the focus automatically.
    * @attr autofocus
    */
   @property({ type: Boolean })
   public override autofocus!: boolean;
 
   /**
-   * Focuses the list of options when the menu opens.
+   * Whether the list of options, not the search input, takes the focus when
+   * the list opens. It has no effect in single selection mode.
    * @attr autofocus-list
    * @default false
    */
@@ -368,7 +370,8 @@ export default class IgcComboComponent<
   public valueKey?: Keys<T> = undefined;
 
   /**
-   * The key in the data source used to display items in the list.
+   * The key in the data source used to display items in the list. Falls back
+   * to `valueKey`.
    * @attr display-key
    */
   @property({ attribute: 'display-key' })
@@ -391,7 +394,8 @@ export default class IgcComboComponent<
   public groupKey?: Keys<T> | string;
 
   /**
-   * Sorts the items in each group by ascending or descending order.
+   * The sort order of the groups, by their group value. With `none`, the
+   * groups keep the order of the data source.
    * @attr group-sorting
    * @default "asc"
    * @type {"asc" | "desc" | "none"}
@@ -413,7 +417,8 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Enables the case sensitive search icon in the filtering input.
+   * Whether the search input shows the icon that toggles case-sensitive
+   * filtering.
    * @attr case-sensitive-icon
    * @default false
    */
@@ -421,7 +426,8 @@ export default class IgcComboComponent<
   public caseSensitiveIcon = false;
 
   /**
-   * Disables the filtering of the list of options.
+   * Whether the filtering of the list of options is disabled. In multiple
+   * selection mode, it also hides the search input.
    * @attr disable-filtering
    * @default false
    */
@@ -434,7 +440,7 @@ export default class IgcComboComponent<
   public disableFiltering = false;
 
   /**
-   * Hides the clear button.
+   * Whether the clear button is hidden.
    * @attr disable-clear
    * @default false
    */
@@ -460,9 +466,11 @@ export default class IgcComboComponent<
     html`${group.key}`;
 
   /**
-   * Sets the value (selected items). The passed value must be a valid JSON array.
-   * If the data source is an array of complex objects, the `valueKey` must be set.
-   * Note that when `displayKey` is not explicitly set, it falls back to the value of `valueKey`.
+   * The values of the selected items. With a `valueKey`, each value is that
+   * field of an item. Without it, each value is the item itself.
+   *
+   * The `value` attribute takes a JSON array. For a data source of objects,
+   * set `valueKey` to select items through the attribute.
    *
    * @attr value
    *
@@ -500,8 +508,8 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Returns the current selection as a list of comma separated values,
-   * represented by the value key, when provided.
+   * The values of the selected items. With a `valueKey`, each value is that
+   * field of an item. Without it, each value is the item itself.
    */
   public get value(): ComboValue<T>[] {
     return this._formValue.value;
@@ -931,14 +939,15 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Selects option(s) in the list by either reference or valueKey.
-   * If not argument is provided all items will be selected.
-   * @param { Item<T> | Item<T>[] } items - One or more items to be selected. Multiple items should be passed as an array.
-   * When valueKey is specified, the corresponding value should be used in place of the item reference.
+   * Selects options in the list by reference or by `valueKey` value. It does
+   * not emit `igcChange`. Without an argument, it selects all items, or
+   * clears the selection in single selection mode.
+   * @param { Item<T> | Item<T>[] } items - One or more items to select. Pass multiple items as an array.
+   * With a `valueKey`, pass the value of an item instead of its reference.
    *
    * @example
    * ```typescript
-   * const combo<IgcComboComponent<T>> = document.querySelector('igc-combo');
+   * const combo = document.querySelector('igc-combo')!;
    *
    * // Select one item at a time by reference when valueKey is not specified.
    * combo.select(combo.data[0]);
@@ -959,14 +968,14 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Deselects option(s) in the list by either reference or valueKey.
-   * If not argument is provided all items will be deselected.
-   * @param { Item<T> | Item<T>[] } items - One or more items to be deselected. Multiple items should be passed as an array.
-   * When valueKey is specified, the corresponding value should be used in place of the item reference.
+   * Deselects options in the list by reference or by `valueKey` value. It
+   * does not emit `igcChange`. Without an argument, it deselects all items.
+   * @param { Item<T> | Item<T>[] } items - One or more items to deselect. Pass multiple items as an array.
+   * With a `valueKey`, pass the value of an item instead of its reference.
    *
    * @example
    * ```typescript
-   * const combo<IgcComboComponent<T>> = document.querySelector('igc-combo');
+   * const combo = document.querySelector('igc-combo')!;
    *
    * // Deselect one item at a time by reference when valueKey is not specified.
    * combo.deselect(combo.data[0]);

@@ -37,7 +37,7 @@ const metadata: Meta<IgcBadgeComponent> = {
     docs: {
       description: {
         component:
-          'The badge is a component indicating a status on a related item or an area\nwhere some active indication is required.',
+          'Shows a status on a related item, or marks an area that needs attention.',
       },
     },
   },
@@ -54,7 +54,7 @@ const metadata: Meta<IgcBadgeComponent> = {
     },
     outlined: {
       type: 'boolean',
-      description: 'Sets whether to draw an outlined version of the badge.',
+      description: 'Whether the badge has an outline.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -67,8 +67,7 @@ const metadata: Meta<IgcBadgeComponent> = {
     },
     dot: {
       type: 'boolean',
-      description:
-        'Sets whether to render a dot type badge.\nWhen enabled, the badge appears as a small dot without any content.',
+      description: 'Whether the badge renders as a small dot without content.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -81,14 +80,11 @@ export default metadata;
 interface IgcBadgeArgs {
   /** The type (style variant) of the badge. */
   variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
-  /** Sets whether to draw an outlined version of the badge. */
+  /** Whether the badge has an outline. */
   outlined: boolean;
   /** The shape of the badge. */
   shape: 'square' | 'rounded';
-  /**
-   * Sets whether to render a dot type badge.
-   * When enabled, the badge appears as a small dot without any content.
-   */
+  /** Whether the badge renders as a small dot without content. */
   dot: boolean;
 }
 type Story = StoryObj<IgcBadgeArgs>;

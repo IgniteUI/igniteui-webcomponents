@@ -158,7 +158,8 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     public name!: string;
 
     /**
-     * The disabled state of the component.
+     * Whether the control is disabled. A disabled control is not validated,
+     * and the form does not submit its value.
      * @attr
      * @default false
      */
@@ -176,11 +177,13 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     }
 
     /**
-     * Sets the control into invalid state (visual state only).
+     * Whether the control shows the invalid state. It changes only the visual
+     * state, not the validity.
      *
      * @remarks
-     * Not reflected to the attribute. Reading returns the effective state, so
-     * a touched control that fails validation reads `true` after `false`.
+     * Not reflected to the attribute. Reading returns the visual state. A
+     * touched control that fails validation reads `true`, also after you set
+     * `false`.
      * @attr
      * @default false
      */
@@ -194,25 +197,25 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       return this._shouldApplyStyles;
     }
 
-    /** Returns the HTMLFormElement associated with this element. */
+    /** The form that the control is associated with, or `null`. */
     public get form(): HTMLFormElement | null {
       return this._internals.form;
     }
 
-    /** Returns a `ValidityState` object for the element. */
+    /** The validity state of the control. */
     public get validity(): ValidityState {
       return this._internals.validity;
     }
 
-    /** A string containing the validation message of this element. */
+    /**
+     * The validation message of the control. It is empty when the control is
+     * valid.
+     */
     public get validationMessage(): string {
       return this._internals.validationMessage;
     }
 
-    /**
-     * Returns `true` when the element is a candidate for constraint
-     * validation.
-     */
+    /** Whether the control is a candidate for constraint validation. */
     public get willValidate(): boolean {
       return this._internals.willValidate;
     }
@@ -485,7 +488,7 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     /**
      * Checks validity. As for a native control, an invalid control emits
      * `invalid` and takes the focus. It shows its own validation messages, not
-     * the message of the browser.
+     * the message of the browser. Returns `true` when the control is valid.
      */
     public reportValidity(): boolean {
       const state = this._reportValidity();
@@ -506,7 +509,10 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       return state;
     }
 
-    /** Checks validity and emits `invalid` when the control is invalid. */
+    /**
+     * Checks validity and emits `invalid` when the control is invalid. Returns
+     * `true` when the control is valid.
+     */
     public checkValidity(): boolean {
       this._isInternalValidation = true;
       const state = this._internals.checkValidity();
@@ -515,7 +521,10 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       return state;
     }
 
-    /** Sets a custom message. Invalid while `message` is not empty. */
+    /**
+     * Sets a custom validation message. The control is invalid while the
+     * message is not empty. An empty string removes the custom error.
+     */
     public setCustomValidity(message: string): void {
       this._validate(message);
       this.requestUpdate();
@@ -534,6 +543,11 @@ function BaseFormAssociated<T extends LitElementConstructor>(
 export function FormAssociatedMixin<T extends LitElementConstructor>(base: T) {
   class FormAssociatedElement extends BaseFormAssociated(base) {
     /* blazorCSSuppress */
+    /**
+     * The default value of the control. A form reset restores the value to it.
+     * While the value is unchanged since the start or the last form reset, a
+     * new default also sets the value. The `value` attribute also sets it.
+     */
     @property({ attribute: false })
     public set defaultValue(value: unknown) {
       this._applyDefault(value);
@@ -572,6 +586,12 @@ export function FormAssociatedCheckboxMixin<T extends LitElementConstructor>(
     'checked'
   ) {
     /* blazorCSSuppress */
+    /**
+     * Whether the control is checked by default. A form reset restores the
+     * checked state to it. While the checked state is unchanged since the
+     * start or the last form reset, a new default also sets the checked state.
+     * The `checked` attribute also sets it.
+     */
     @property({ attribute: false })
     public set defaultChecked(value: boolean) {
       this._applyDefault(value);

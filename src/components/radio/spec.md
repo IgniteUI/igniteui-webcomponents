@@ -48,6 +48,7 @@
 |       2 | 2026-09-24 | Label external `label` elements and host ARIA, activate from a label click |
 |       3 | 2026-10-02 | Focus after form checks; `invalid` only on checks                          |
 |       4 | 2026-10-02 | Forward the host `aria-describedby`                                        |
+|       5 | 2026-10-21 | API descriptions aligned with the JSDoc.                                   |
 
 ## Overview
 
@@ -239,18 +240,18 @@ The horizontal arrow keys follow the writing direction, so they are mirrored in 
 
 | Property          | Attribute      | Reflected | Type                      | Default | Description                                                              |
 | ----------------- | -------------- | --------- | ------------------------- | ------- | ------------------------------------------------------------------------ |
-| checked           | checked        | No        | `boolean`                 | false   | The checked state of the control.                                        |
+| checked           | checked        | No        | `boolean`                 | false   | Whether the control is checked. A checked radio clears the other radios of its group. |
 | value             | value          | No        | `string`                  | -       | The value of the control, submitted when the control is checked.         |
 | labelPosition     | label-position | Yes       | `ToggleLabelPosition`     | `after` | The label position of the radio control.                                 |
-| required          | required       | Yes       | `boolean`                 | false   | Makes the group of the control a required field for validation.          |
-| disabled          | disabled       | Yes       | `boolean`                 | false   | The disabled state of the component.                                     |
-| invalid           | invalid        | No        | `boolean`                 | false   | Sets the control into invalid state (visual state only).                 |
+| required          | required       | Yes       | `boolean`                 | false   | Whether the group of the radio is required. A required group fails validation while none of its radios is checked. |
+| disabled          | disabled       | Yes       | `boolean`                 | false   | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                                     |
+| invalid           | invalid        | No        | `boolean`                 | false   | Whether the control shows the invalid state. It changes only the visual state, not the validity.                 |
 | name              | name           | Yes       | `string`                  | -       | The name of the control, submitted with the form data, and the identity of its group. |
-| defaultChecked    | -              | No        | `boolean`                 | false   | The initial checked state, restored on a form reset.                     |
-| form              | -              | No        | `HTMLFormElement \| null` | -       | Read-only. The form associated with this element.                        |
-| validity          | -              | No        | `ValidityState`           | -       | Read-only. The validity state of the element.                            |
-| validationMessage | -              | No        | `string`                  | -       | Read-only. The validation message of the element.                        |
-| willValidate      | -              | No        | `boolean`                 | -       | Read-only. Whether the element is a candidate for constraint validation. |
+| defaultChecked    | -              | No        | `boolean`                 | false   | Whether the control is checked by default. A form reset restores the checked state to it. While the checked state is unchanged since the start or the last form reset, a new default also sets the checked state. The `checked` attribute also sets it.                     |
+| form              | -              | No        | `HTMLFormElement \| null` | -       | Read-only. The form that the control is associated with, or `null`.                        |
+| validity          | -              | No        | `ValidityState`           | -       | Read-only. The validity state of the control.                            |
+| validationMessage | -              | No        | `string`                  | -       | Read-only. The validation message of the control. It is empty when the control is valid.                        |
+| willValidate      | -              | No        | `boolean`                 | -       | Read-only. Whether the control is a candidate for constraint validation. |
 
 ### Methods
 
@@ -259,9 +260,9 @@ The horizontal arrow keys follow the writing direction, so they are mirrored in 
 | click             | `(): void`                       | Simulates a click on the radio control.                                                      |
 | focus             | `(options?: FocusOptions): void` | Sets focus on the radio control.                                                             |
 | blur              | `(): void`                       | Removes focus from the radio control.                                                        |
-| checkValidity     | `(): boolean`                    | Checks the validity of the whole group and emits `invalid` when the control is invalid.      |
+| checkValidity     | `(): boolean`                    | Checks the validity of the whole group. Each invalid radio of the group emits `invalid`.     |
 | reportValidity    | `(): boolean`                    | Checks the validity of the whole group; when invalid, emits `invalid` and focuses the radio. |
-| setCustomValidity | `(message: string): void`        | Sets a custom message on every radio of the group. Invalid while `message` is not empty.     |
+| setCustomValidity | `(message: string): void`        | Sets a custom validation message on every radio of the group. The radios are invalid while `message` is not empty. |
 
 ### Events
 
@@ -296,8 +297,11 @@ re-dispatches the native `focus`, `blur` and `invalid` events from the host elem
 | Part      | Description                     |
 | --------- | ------------------------------- |
 | `base`    | The radio control base wrapper. |
-| `control` | The radio input control.        |
+| `control` | The circle of the radio.        |
 | `label`   | The radio control label.        |
+| `ripple`  | The highlight around the circle on hover and focus. A disabled radio hides it. |
+| `checked` | Added to the base, control, label and ripple parts when the radio is checked. |
+| `focused` | Added to the base part when the radio has keyboard focus. |
 
 ## Test scenarios
 

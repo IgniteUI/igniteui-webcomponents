@@ -13,9 +13,9 @@ import { styles as shared } from './themes/button/shared/button.common.css.js';
  * Represents a clickable button, used to submit forms or anywhere in a
  * document for accessible, standard button functionality.
  *
- * The button supports multiple visual variants, can render as an anchor
- * (`<a>`) element when the `href` attribute is set, and is fully
- * form-associated, acting as a native `submit` or `reset` control.
+ * The button has several visual variants. It renders as an anchor (`<a>`)
+ * element when the `href` attribute is set. It is form-associated and can
+ * act as a native `submit` or `reset` control.
  *
  * @element igc-button
  *
@@ -23,7 +23,7 @@ import { styles as shared } from './themes/button/shared/button.common.css.js';
  * @slot prefix - Renders content before the label of the button.
  * @slot suffix - Renders content after the label of the button.
  *
- * @csspart base - The native button element of the button component.
+ * @csspart base - The native button or anchor element.
  */
 export default class IgcButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-button';

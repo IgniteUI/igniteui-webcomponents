@@ -62,7 +62,8 @@ const metadata: Meta<IgcSelectComponent> = {
     },
     autofocus: {
       type: 'boolean',
-      description: 'Whether the control should receive focus automatically.',
+      description:
+        'Whether the control takes the focus after its first render.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -122,7 +123,7 @@ const metadata: Meta<IgcSelectComponent> = {
     required: {
       type: 'boolean',
       description:
-        'When set, makes the component a required field for validation.',
+        'Whether the control is required. A required control that has no value,\nor is not checked, fails validation.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -133,40 +134,42 @@ const metadata: Meta<IgcSelectComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component.',
+      description:
+        'Whether the control is disabled. A disabled control is not validated,\nand the form does not submit its value.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
-      description: 'Sets the control into invalid state (visual state only).',
+      description:
+        'Whether the control shows the invalid state. It changes only the visual\nstate, not the validity.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     keepOpenOnSelect: {
       type: 'boolean',
       description:
-        'Keeps the dropdown of the component open after the user selects an item.',
+        'Whether the component stays open after the user selects an item.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     keepOpenOnOutsideClick: {
       type: 'boolean',
       description:
-        'Keeps the dropdown of the component open when the user clicks outside of\nit.',
+        'Whether the component stays open when the user clicks outside of it.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     open: {
       type: 'boolean',
-      description: 'Sets the open state of the component.',
+      description: 'Whether the component is open.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     scrollStrategy: {
       type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
       description:
-        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
+        'The behavior of the component when a parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
       options: ['scroll', 'hide', 'close'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'hide' } },
@@ -194,7 +197,7 @@ interface IgcSelectArgs {
   value: string;
   /** Whether the control has an outlined appearance. */
   outlined: boolean;
-  /** Whether the control should receive focus automatically. */
+  /** Whether the control takes the focus after its first render. */
   autofocus: boolean;
   /** The distance of the select dropdown from its input. */
   distance: number;
@@ -216,25 +219,31 @@ interface IgcSelectArgs {
     | 'right-end'
     | 'left-start'
     | 'left-end';
-  /** When set, makes the component a required field for validation. */
+  /**
+   * Whether the control is required. A required control that has no value,
+   * or is not checked, fails validation.
+   */
   required: boolean;
   /** The name of the control, submitted with the form data. */
   name: string;
-  /** The disabled state of the component. */
-  disabled: boolean;
-  /** Sets the control into invalid state (visual state only). */
-  invalid: boolean;
-  /** Keeps the dropdown of the component open after the user selects an item. */
-  keepOpenOnSelect: boolean;
   /**
-   * Keeps the dropdown of the component open when the user clicks outside of
-   * it.
+   * Whether the control is disabled. A disabled control is not validated,
+   * and the form does not submit its value.
    */
+  disabled: boolean;
+  /**
+   * Whether the control shows the invalid state. It changes only the visual
+   * state, not the validity.
+   */
+  invalid: boolean;
+  /** Whether the component stays open after the user selects an item. */
+  keepOpenOnSelect: boolean;
+  /** Whether the component stays open when the user clicks outside of it. */
   keepOpenOnOutsideClick: boolean;
-  /** Sets the open state of the component. */
+  /** Whether the component is open. */
   open: boolean;
   /**
-   * Sets the behavior of the component when the parent container scrolls.
+   * The behavior of the component when a parent container scrolls.
    *
    * If the value is `hide`, the component hides while the anchor is fully out
    * of view. `hide` is the default value.

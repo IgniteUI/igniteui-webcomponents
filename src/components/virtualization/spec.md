@@ -58,6 +58,7 @@
 |       5 | 2026-09-29 | `layoutComplete` waits for the measurements, so `scrollToIndex` aligns items of any size   |
 |       6 | 2026-09-29 | Compression maps the scroll ranges, and the content follows each scroll                   |
 |       7 | 2026-09-30 | A `data` change measures the rendered items again from the first changed index             |
+|       8 | 2026-10-21 | API descriptions aligned with the JSDoc.                                                   |
 |       8 | 2026-10-05 | The stylesheet comes back after other code replaces the sheets of the tree scope           |
 
 ## Overview
@@ -287,7 +288,7 @@ items belongs to the `itemTemplate`.
 
 | Event            | Detail                      | Cancelable | Description                                                                 |
 | ---------------- | --------------------------- | ---------- | --------------------------------------------------------------------------- |
-| `igcStateChange` | `VirtualScrollState`        | no         | The rendered window changed.                                                 |
+| `igcStateChange` | `VirtualScrollState`        | no         | Emitted when the rendered window, the viewport size or the total content size changes. |
 | `igcDataRequest` | `VirtualScrollDataRequest`  | no         | The window came within five items of the end of the loaded data.             |
 
 `VirtualScrollState`

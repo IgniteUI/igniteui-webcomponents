@@ -87,14 +87,14 @@ const Slots = setSlots('symbol', 'value-label');
  * @element igc-rating
  *
  * @slot symbol - Slot for projecting custom rating symbol elements. When used, the number of symbols determines the `max` value.
- * @slot value-label - Slot for custom content displayed alongside the rating value.
+ * @slot value-label - Renders content after the symbols, such as the value as text.
  *
- * @fires igcChange - Emitted when the value of the control changes.
- * @fires igcHover - Emitted when hover is enabled and the user mouses over a symbol of the rating.
+ * @fires igcChange - Emitted when the user changes the value.
+ * @fires igcHover - Emitted when the pointer moves to a new value over the symbols while `hoverPreview` is set.
  *
- * @csspart base - The main wrapper which holds all of the rating elements.
- * @csspart label - The label part.
- * @csspart value-label - The value label part.
+ * @csspart base - The main wrapper which holds the symbols and the value label.
+ * @csspart label - The label of the rating.
+ * @csspart value-label - The wrapper of the `value-label` slot.
  * @csspart symbols - A wrapper for all rating symbols.
  * @csspart symbol - The part of the encapsulated default symbol.
  * @csspart full - The part of the encapsulated full symbols.
@@ -168,8 +168,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   /**
    * The maximum value for the rating.
    *
-   * If there are projected symbols, the maximum value will be resolved
-   * based on the number of symbols.
+   * With projected symbols, the maximum value is the number of symbols. A
+   * maximum below the value also lowers the value.
    *
    * @attr max
    * @default 5
@@ -193,6 +193,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    *
    * Valid values are in the interval between 0.001 and 1 inclusive.
    * The component clamps a value outside of the interval to the closest bound.
+   * In single selection mode, the step is always 1.
    *
    * @attr step
    * @default 1
@@ -212,10 +213,10 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   public label?: string;
 
   /**
-   * A format string which sets aria-valuetext. Instances of '{0}' will be replaced
-   * with the current value of the control and instances of '{1}' with the maximum value for the control.
+   * The format of the `aria-valuetext` of the rating. `{0}` stands for the
+   * value and `{1}` for the maximum value.
    *
-   * Important for screen-readers and useful for localization.
+   * Use it for screen readers and for localization.
    * @attr value-format
    */
   @property({ attribute: 'value-format' })
@@ -223,7 +224,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
-   * The value of the component
+   * The value of the rating, clamped between 0 and `max`.
    *
    * @attr value
    * @default 0
@@ -250,7 +251,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   public hoverPreview = false;
 
   /**
-   * Makes the control a readonly field.
+   * Whether the rating is read-only. A read-only rating shows its value but
+   * ignores user input.
    *
    * @attr readonly
    * @default false
@@ -259,7 +261,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   public readOnly = false;
 
   /**
-   * Toggles single selection visual mode.
+   * Whether only the symbol at the value is full, instead of all symbols up
+   * to it. It also sets `step` to 1 and rounds the value up.
    *
    * @attr single
    * @default false

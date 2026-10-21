@@ -52,6 +52,7 @@
 |       4 | 2026-10-02 | Correct the `reportValidity` description                                             |
 |       5 | 2026-10-02 | Forward the host `aria-describedby`                                                  |
 |       6 | 2026-10-06 | `focus()` and `blur()` move the focus to the slider element                          |
+|       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                                             |
 
 ## Overview
 
@@ -192,17 +193,17 @@ value: `{0}` is replaced with the current value and `{1}` with the maximum.
 
 | Property       | Attribute       | Reflected | Type                  | Default | Description                                                     |
 | -------------- | --------------- | --------- | --------------------- | ------- | --------------------------------------------------------------- |
-| `value`        | `value`         | no        | `number`              | `0`     | The value of the control.                                        |
-| `max`          | `max`           | no        | `number`              | `5`     | The maximum value; derived from the projected symbols when there are any. |
-| `step`         | `step`          | no        | `number`              | `1`     | The smallest allowed change, clamped to `0.001`–`1`.              |
+| `value`        | `value`         | no        | `number`              | `0`     | The value of the rating, clamped between 0 and `max`.            |
+| `max`          | `max`           | no        | `number`              | `5`     | The maximum value for the rating. With projected symbols, the maximum value is the number of symbols. A maximum below the value also lowers the value. |
+| `step`         | `step`          | no        | `number`              | `1`     | The minimum value change allowed, clamped to `0.001`–`1`. In single selection mode, the step is always 1. |
 | `label`        | `label`         | no        | `string \| undefined` | —       | The label of the control.                                        |
-| `valueFormat`  | `value-format`  | no        | `string \| undefined` | —       | The format of the announced value text.                          |
+| `valueFormat`  | `value-format`  | no        | `string \| undefined` | —       | The format of the `aria-valuetext` of the rating. `{0}` stands for the value and `{1}` for the maximum value. |
 | `hoverPreview` | `hover-preview` | yes       | `boolean`             | `false` | Previews the value under the pointer.                            |
-| `single`       | `single`        | yes       | `boolean`             | `false` | Single selection mode; forces `step` to `1`.                     |
+| `single`       | `single`        | yes       | `boolean`             | `false` | Whether only the symbol at the value is full, instead of all symbols up to it. It also sets `step` to 1 and rounds the value up. |
 | `allowReset`   | `allow-reset`   | yes       | `boolean`             | `false` | Clicking the current value resets it to `0`.                     |
-| `readOnly`     | `readonly`      | yes       | `boolean`             | `false` | Makes the control read-only.                                     |
+| `readOnly`     | `readonly`      | yes       | `boolean`             | `false` | Whether the rating is read-only. A read-only rating shows its value but ignores user input. |
 | `name`         | `name`          | yes       | `string`              | —       | The name submitted with the form data.                           |
-| `disabled`     | `disabled`      | no        | `boolean`             | `false` | The disabled state of the component.                             |
+| `disabled`     | `disabled`      | no        | `boolean`             | `false` | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                             |
 | `invalid`      | `invalid`       | no        | `boolean`             | `false` | The invalid visual state of the component.                       |
 | `defaultValue` | —               | —         | `number`              | —       | The value restored on a form reset.                              |
 | `form`         | —               | —         | `HTMLFormElement \| null` | —   | The associated form. Read-only.                                  |
@@ -226,8 +227,8 @@ value: `{0}` is replaced with the current value and `{1}` with the maximum.
 
 | Event       | Detail   | Cancelable | Description                                                         |
 | ----------- | -------- | ---------- | ------------------------------------------------------------------- |
-| `igcChange` | `number` | no         | The value changed through user interaction.                          |
-| `igcHover`  | `number` | no         | A symbol was hovered while `hoverPreview` is on.                     |
+| `igcChange` | `number` | no         | Emitted when the user changes the value.                             |
+| `igcHover`  | `number` | no         | Emitted when the pointer moves to a new value over the symbols while `hoverPreview` is set. |
 
 Setting `value` from code does not emit `igcChange`, and neither does an interaction that leaves the value as it was.
 
@@ -236,17 +237,17 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 | Component           | Name          | Description                                                     |
 | ------------------- | ------------- | --------------------------------------------------------------- |
 | `igc-rating`        | `symbol`      | The custom rating symbols. Their number decides `max`.           |
-| `igc-rating`        | `value-label` | The content shown next to the value.                             |
+| `igc-rating`        | `value-label` | Renders content after the symbols, such as the value as text.    |
 | `igc-rating-symbol` | default       | The full state of the symbol.                                    |
-| `igc-rating-symbol` | `empty`       | The empty state of the symbol.                                   |
+| `igc-rating-symbol` | `empty`       | Renders the projected empty symbols/icons.                       |
 
 ### CSS Shadow parts
 
 | Component           | Part          | Description                                     |
 | ------------------- | ------------- | ----------------------------------------------- |
-| `igc-rating`        | `base`        | The wrapper of all rating elements.              |
-| `igc-rating`        | `label`       | The label of the control.                        |
-| `igc-rating`        | `value-label` | The value label of the control.                  |
+| `igc-rating`        | `base`        | The main wrapper which holds the symbols and the value label. |
+| `igc-rating`        | `label`       | The label of the rating.                         |
+| `igc-rating`        | `value-label` | The wrapper of the `value-label` slot.           |
 | `igc-rating`        | `symbols`     | The wrapper of all symbols.                      |
 | `igc-rating`        | `symbol`      | A default symbol.                                |
 | `igc-rating`        | `full`        | A full default symbol.                           |

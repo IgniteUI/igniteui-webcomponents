@@ -15,8 +15,8 @@ import { styles } from './themes/carousel-indicator.base.css.js';
  *
  * @element igc-carousel-indicator
  *
- * @slot - Default slot for projected inactive indicator.
- * @slot active - Default slot for projected active indicator.
+ * @slot - Renders the inactive state of the indicator.
+ * @slot active - Renders the active state of the indicator.
  *
  * @csspart indicator - The wrapping container of the carousel dot indicator.
  * @csspart inactive - The wrapping container of the inactive dot indicator.
@@ -39,10 +39,16 @@ export default class IgcCarouselIndicatorComponent extends LitElement {
   }
 
   /* blazorSuppress */
+  /**
+   * Whether the indicator is in its active state. The carousel sets this value.
+   */
   @property({ attribute: false })
   public active = false;
 
   /* blazorSuppress */
+  /**
+   * The zero-based position of the indicator in the set. The carousel sets this value.
+   */
   @property({ attribute: false })
   public index = 0;
 

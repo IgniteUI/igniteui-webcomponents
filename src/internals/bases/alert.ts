@@ -97,7 +97,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   }
 
   /**
-   * Sets the open state of the component.
+   * Whether the component is open.
    *
    * @attr open
    * @default false
@@ -106,9 +106,10 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   public open = false;
 
   /**
-   * Sets the time in milliseconds that the component stays visible.
-   * The time stops while the pointer or the keyboard focus is in the
-   * component, and starts again when both leave.
+   * The time in milliseconds that the component stays visible. The time
+   * stops while the pointer or the keyboard focus is in the component, and
+   * starts again from the full value when both leave. A value of 0 or less
+   * keeps the component open.
    *
    * @attr display-time
    * @default 4000
@@ -117,7 +118,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   public displayTime = 4000;
 
   /**
-   * Keeps the component open after the `displayTime` is over.
+   * Whether the component stays open after the `displayTime` is over.
    *
    * @attr keep-open
    * @default false
@@ -126,7 +127,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   public keepOpen = false;
 
   /**
-   * Sets the position of the component in the viewport or in the container.
+   * The position of the component in the viewport or in the container.
    *
    * @attr position
    * @default 'bottom'
@@ -135,7 +136,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   public position: AbsolutePosition = 'bottom';
 
   /**
-   * Sets the positioning strategy of the component.
+   * The positioning strategy of the component.
    *
    * `viewport` - positions against the viewport, ignoring every ancestor.
    * `container` - positions inside the bounding box of the closest visible
@@ -366,7 +367,10 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
     return this._isShown ? this._setOpenState(false) : false;
   }
 
-  /** Toggles the component. Resolves to `true` when the state changed. */
+  /**
+   * Opens the component when it is closed, and closes it when it is open.
+   * Resolves to `true` when the state changes.
+   */
   public async toggle(): Promise<boolean> {
     return this._isShown ? this.hide() : this.show();
   }

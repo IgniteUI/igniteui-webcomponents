@@ -78,7 +78,7 @@ const i18n = {
  *
  * @element igc-carousel
  *
- * @slot - Default slot for the carousel. Any carousel slides should be projected here.
+ * @slot - The slides of the carousel.
  * @slot indicator - Renders the custom indicators of the carousel. An indicator element sets this slot itself.
  * @slot previous-button - Renders content inside the previous button.
  * @slot next-button - Renders content inside the next button.
@@ -93,6 +93,7 @@ const i18n = {
  * @csspart dot - The carousel dot indicator container.
  * @csspart active - The carousel active dot indicator container.
  * @csspart label - The label container of the carousel indicators.
+ * @csspart indicators - The wrapper of the indicators, or of the label that replaces them.
  * @csspart start - The wrapping container of all carousel indicators when indicators-orientation is set to start.
  */
 @shadowOptions({ delegatesFocus: true })
@@ -183,7 +184,7 @@ export default class IgcCarouselComponent extends I18nMixin(
   //#region Public attributes and properties
 
   /**
-   * Whether the carousel should skip rotating to the first slide after it reaches the last.
+   * Whether the carousel stops at the first and the last slide instead of looping.
    *
    * @attr disable-loop
    * @default false
@@ -192,7 +193,8 @@ export default class IgcCarouselComponent extends I18nMixin(
   public disableLoop = false;
 
   /**
-   * Whether the carousel should ignore user interactions and not pause on them.
+   * Whether the carousel keeps playing when the user hovers over it or moves the
+   * focus into it.
    *
    * @attr disable-pause-on-interaction
    * @default false
@@ -205,7 +207,7 @@ export default class IgcCarouselComponent extends I18nMixin(
   public disablePauseOnInteraction = false;
 
   /**
-   * Whether the carousel should skip rendering of the default navigation buttons.
+   * Whether the navigation buttons are hidden.
    *
    * @attr hide-navigation
    * @default false
@@ -214,7 +216,7 @@ export default class IgcCarouselComponent extends I18nMixin(
   public hideNavigation = false;
 
   /**
-   * Whether the carousel should render the indicator controls (dots).
+   * Whether the indicator controls (dots) are hidden.
    *
    * @attr hide-indicators
    * @default false
@@ -232,7 +234,7 @@ export default class IgcCarouselComponent extends I18nMixin(
   public vertical = false;
 
   /**
-   * The orientation of the indicator controls (dots).
+   * The position of the indicator controls (dots).
    *
    * @attr indicators-orientation
    * @default end
@@ -241,8 +243,8 @@ export default class IgcCarouselComponent extends I18nMixin(
   public indicatorsOrientation: CarouselIndicatorsOrientation = 'end';
 
   /**
-   * The format used to set the aria-label on the carousel indicators.
-   * Instances of '{0}' will be replaced with the index of the corresponding slide.
+   * The format of the `aria-label` of the carousel indicators.
+   * Each `{0}` changes to the number of the corresponding slide.
    *
    * @attr indicators-label-format
    */
@@ -260,10 +262,9 @@ export default class IgcCarouselComponent extends I18nMixin(
   private _indicatorsLabelFormat: string | undefined;
 
   /**
-   * The format used to set the aria-label on the carousel slides and the text displayed
-   * when the number of indicators is greater than the maximum indicator count.
-   * Instances of '{0}' will be replaced with the index of the corresponding slide.
-   * Instances of '{1}' will be replaced with the total amount of slides.
+   * The format of the `aria-label` of the carousel slides, and of the label that
+   * shows when the number of slides is greater than `maximumIndicatorsCount`.
+   * Each `{0}` changes to the number of the slide, and each `{1}` to the total number of slides.
    *
    * @attr slides-label-format
    */
@@ -282,13 +283,15 @@ export default class IgcCarouselComponent extends I18nMixin(
 
   /**
    * The duration in milliseconds between changing the active slide.
+   * A positive value starts the automatic rotation.
    * @attr interval
    */
   @property({ type: Number })
   public interval: number | undefined;
 
   /**
-   * The maximum number of indicator controls (dots) that can be shown. Default value is `10`.
+   * The maximum number of indicator controls (dots) that can be shown. With more slides,
+   * a label shows instead of the dots.
    *
    * @attr maximum-indicators-count
    * @default 10
@@ -735,7 +738,8 @@ export default class IgcCarouselComponent extends I18nMixin(
   }
 
   /**
-   * Switches to the next slide, runs any animations, and returns if the operation was successful.
+   * Switches to the next slide, runs any animations, and returns whether the operation
+   * was successful.
    */
   public async next(): Promise<boolean> {
     if (this.disableLoop && this._nextIndex === 0) {
@@ -747,7 +751,8 @@ export default class IgcCarouselComponent extends I18nMixin(
   }
 
   /**
-   * Switches to the previous slide, runs any animations, and returns if the operation was successful.
+   * Switches to the previous slide, runs any animations, and returns whether the operation
+   * was successful.
    */
   public async prev(): Promise<boolean> {
     if (this.disableLoop && this._previousIndex === this.total - 1) {
@@ -760,19 +765,25 @@ export default class IgcCarouselComponent extends I18nMixin(
 
   /* blazorSuppress */
   /**
-   * Switches to the passed-in slide, runs any animations, and returns if the operation was successful.
+   * Switches to the passed-in slide, runs any animations, and returns whether the operation
+   * was successful.
    */
   public async select(
     slide: IgcCarouselSlideComponent,
     animationDirection?: 'next' | 'prev'
   ): Promise<boolean>;
   /**
-   * Switches to slide by index, runs any animations, and returns if the operation was successful.
+   * Switches to slide by index, runs any animations, and returns whether the operation
+   * was successful.
    */
   public async select(
     index: number,
     animationDirection?: 'next' | 'prev'
   ): Promise<boolean>;
+  /**
+   * Switches to the passed-in slide or to the slide at the given index, runs any animations,
+   * and returns whether the operation was successful.
+   */
   public async select(
     slideOrIndex: IgcCarouselSlideComponent | number,
     animationDirection?: 'next' | 'prev'

@@ -46,6 +46,7 @@
 | ------: | ---------- | ------------------------------------------------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                                                                       |
 |       2 | 2026-10-06 | Name the group with `aria-labelledby`; one row for each message in the horizontal alignment |
+|       3 | 2026-10-21 | API descriptions aligned with the JSDoc.                                                    |
 
 ## Overview
 
@@ -213,7 +214,7 @@ group is a single tab stop, and the arrow keys move and select within it.
 | alignment    | alignment | Yes       | `ContentOrientation` | `vertical` | Alignment of the radio controls inside this group.                                              |
 | name         | name      | Yes       | `string`             | -          | The name applied to all radio buttons in the group.                                             |
 | value        | value     | No        | `string`             | -          | The value of the group, reflecting the value of the currently checked radio. Setting it checks the matching radio. |
-| defaultValue | -         | No        | `string`             | -          | The value of the radio that is checked after a form reset.                                      |
+| defaultValue | -         | No        | `string`             | -          | The value of the radio that is checked by default. A form reset checks the radio with this value. |
 
 ### Methods
 

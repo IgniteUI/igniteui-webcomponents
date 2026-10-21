@@ -55,15 +55,14 @@ const MAX_DISABLED_DATE_SKIP = 1000;
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
 /**
- * Represents a calendar that lets users
- * to select a date value in a variety of different ways.
+ * A calendar that lets the user select a single date, multiple dates or a date range.
  *
  * @element igc-calendar
  *
  * @slot title - Renders the title of the calendar header.
  * @slot header-date - Renders content instead of the current date/range in the calendar header.
  *
- * @fires igcChange - Emitted when calendar changes its value.
+ * @fires igcChange - Emitted when the user changes the value of the calendar.
  *
  * @csspart header - The header element of the calendar.
  * @csspart header-title - The header title element of the calendar.
@@ -71,11 +70,13 @@ const MAX_DISABLED_DATE_SKIP = 1000;
  * @csspart content - The content element which contains the views and navigation elements of the calendar.
  * @csspart content-vertical - The content element which contains the views and navigation elements of the calendar in vertical orientation.
  * @csspart navigation - The navigation container element of the calendar.
+ * @csspart picker-dates - The container of the month and year navigation buttons, or of the years range.
  * @csspart months-navigation - The months navigation button element of the calendar.
  * @csspart years-navigation - The years navigation button element of the calendar.
  * @csspart years-range - The years range element of the calendar.
  * @csspart navigation-buttons - The navigation buttons container of the calendar.
  * @csspart navigation-button - Previous/next navigation button of the calendar.
+ * @csspart vertical - Added to the navigation-button part when the orientation is `vertical`.
  * @csspart days-view-container - The days view container element of the calendar.
  * @csspart days-view - Days view element of the calendar.
  * @csspart months-view - The months view element of the calendar.
@@ -191,7 +192,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   //#region Public attributes and properties
 
   /**
-   * Whether to hide the dates that do not belong to the current active month.
+   * Whether the calendar hides the dates that do not belong to the current month.
    * @attr hide-outside-days
    * @default false
    */
@@ -199,8 +200,8 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   public hideOutsideDays = false;
 
   /**
-   * Whether to render the calendar header part.
-   * When the calendar selection is set to `multiple` the header is always hidden.
+   * Whether the calendar hides its header.
+   * In `multiple` selection mode, the header is always hidden.
    *
    * @attr hide-header
    * @default false
@@ -234,7 +235,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   public visibleMonths = 1;
 
   /**
-   * The current active view of the component.
+   * The active view of the calendar: `days`, `months` or `years`.
    * @attr active-view
    * @default "days"
    */

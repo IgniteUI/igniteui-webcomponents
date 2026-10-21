@@ -66,7 +66,11 @@ export function I18nMixin<
       return this._i18nController.locale;
     }
 
-    /** The resource strings for localization. */
+    /**
+     * The texts of the component. The strings that you set replace the
+     * strings of the current locale. Reading returns all the strings, with
+     * your strings over the locale strings.
+     */
     @property({ attribute: false })
     public set resourceStrings(value: T) {
       this._i18nController.resourceStrings = value;

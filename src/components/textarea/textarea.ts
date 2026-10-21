@@ -64,27 +64,26 @@ const Slots = setSlots(
 );
 
 /**
- * Represents a multi-line plain-text editing control,
- * useful when you want to allow users to enter a sizeable amount of free-form text,
- * for example a comment on a review or feedback form.
+ * A multi-line plain-text field for a large amount of free-form text,
+ * for example a comment in a review or feedback form.
  *
  * @element igc-textarea
  *
- * @slot - Text content from the default slot will be used as the value of the component.
+ * @slot - The text content of the default slot sets the value of the component.
  * @slot prefix - Renders content before the input.
- * @slot suffix - Renders content after input.
+ * @slot suffix - Renders content after the input.
  * @slot helper-text - Renders content below the input.
  * @slot value-missing - Renders content when the required validation fails.
  * @slot too-long - Renders content when the maxlength validation fails.
  * @slot too-short - Renders content when the minlength validation fails.
- * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot custom-error - Renders content when a custom message is set with `setCustomValidity()`.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcInput - Emitted when the control receives user input.
  * @fires igcChange - Emitted when a change to the control value is committed by the user.
  *
  * @csspart container - The main wrapper that holds all main input elements of the textarea.
- * @csspart input - The native input element of the textarea.
+ * @csspart input - The native textarea element.
  * @csspart label - The native label element of the textarea.
  * @csspart prefix - The prefix wrapper of the textarea.
  * @csspart suffix - The suffix wrapper of the textarea.
@@ -146,8 +145,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   //#region Public properties and attributes
 
   /**
-   * Specifies what permission, if any, the browser has to provide automated assistance in filling out form field values,
-   * as well as guidance to the browser as to the type of information expected in the field.
+   * A hint for the browser on how to autofill the control.
    * Refer to [this page](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) for additional information.
    *
    * @attr
@@ -156,7 +154,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public autocomplete!: string;
 
   /**
-   * Controls whether and how text input is automatically capitalized as it is entered/edited by the user.
+   * Whether and how the browser capitalizes the text that the user enters.
    *
    * [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/autocapitalize).
    *
@@ -166,8 +164,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public override autocapitalize!: string;
 
   /**
-   * Hints at the type of data that might be entered by the user while editing the element or its contents.
-   * This allows a browser to display an appropriate virtual keyboard.
+   * A hint to the browser for which virtual keyboard layout to display.
    *
    * [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)
    *
@@ -201,7 +198,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   /**
-   * The minimum number of characters (UTF-16 code units) required that the user should enter.
+   * The minimum number of characters (UTF-16 code units) that the value must have.
    *
    * @attr minlength
    */
@@ -216,7 +213,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   /**
-   * Whether the control will have outlined appearance.
+   * Whether the control has an outlined appearance.
    * @attr
    */
   @property({ reflect: true, type: Boolean })
@@ -231,7 +228,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public placeholder!: string;
 
   /**
-   * Makes the control a readonly field.
+   * Whether the control is read-only.
    *
    * @attr readonly
    */
@@ -239,8 +236,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public readOnly = false;
 
   /**
-   * Controls whether the control can be resized.
-   * When `auto` is set, the control will try to expand and fit its content.
+   * How the user can resize the control.
+   * With `auto`, the height of the control fits its content and the resize handle is hidden.
    *
    * @attr
    */
@@ -248,8 +245,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public resize: TextareaResize = 'vertical';
 
   /**
-   * The number of visible text lines for the control. If it is specified, it must be a positive integer.
-   * If it is not specified, the default value is 3.
+   * The number of visible text lines of the control. As in the native textarea, a value
+   * less than 1 shows 2 lines.
    *
    * @attr
    */
@@ -258,7 +255,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
-   * The value of the component
+   * The value of the component.
    *
    * @attr
    */
@@ -272,7 +269,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   /**
-   * Controls whether the element may be checked for spelling errors.
+   * Whether the browser checks the spelling of the value. As for the native attribute,
+   * only the `"false"` attribute value turns the check off.
    *
    * @attr
    */
@@ -286,7 +284,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public override spellcheck = true;
 
   /**
-   * Indicates how the control should wrap the value for form submission.
+   * How the control wraps long lines of text. With `off`, the lines do not wrap.
+   * It does not change the submitted value.
    * Refer to [this page on MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea#attributes)
    * for explanation of the available values.
    *
@@ -296,8 +295,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public wrap: 'hard' | 'soft' | 'off' = 'soft';
 
   /**
-   * Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property
-   * when it is defined.
+   * Whether the validation rules apply without restricting user input. The user can type past `maxLength`.
    *
    * @attr validate-only
    */
@@ -423,7 +421,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   /* blazorSuppress */
-  /** Sets the text selection range of the control */
+  /** Sets the text selection range of the control. */
   public setSelectionRange(
     start: number,
     end: number,
@@ -453,9 +451,12 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   /* blazorSuppress */
+  /** Scrolls the text of the control to the given position. */
   public override scrollTo(options?: ScrollToOptions | undefined): void;
   /* blazorSuppress */
+  /** Scrolls the text of the control to the given `x` and `y` coordinates. */
   public override scrollTo(x: number, y: number): void;
+  /** Scrolls the text of the control to the given position. */
   public override scrollTo(x?: unknown, y?: unknown): void {
     x != null && y != null
       ? this._input?.scrollTo(x as number, y as number)

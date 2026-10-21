@@ -50,8 +50,8 @@ const STEPPER_SYNC_PROPERTIES: (keyof IgcStepperComponent)[] = [
  * It supports horizontal and vertical orientation, linear and non-linear navigation,
  * keyboard navigation, and provides API methods to control the active step.
  *
- * In linear mode, the user can only advance to the next step if the current step is valid
- * (not marked as `invalid`).
+ * In linear mode, the user can open a step only when all steps before it are valid
+ * or optional.
  *
  * @element igc-stepper
  *
@@ -120,7 +120,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<IgcStepperCom
 
   //#region Public attributes and properties
 
-  /** Returns all of the stepper's steps. */
+  /** The steps of the stepper. */
   public get steps(): readonly IgcStepComponent[] {
     return this._state.steps;
   }
@@ -147,7 +147,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<IgcStepperCom
    * Whether the stepper is linear.
    *
    * @remarks
-   * If the stepper is in linear mode and if the active step is valid only then the user is able to move forward.
+   * In linear mode, the user can open a step only when all steps before it are valid or optional.
    *
    * @attr linear
    * @default false
@@ -156,7 +156,8 @@ export default class IgcStepperComponent extends EventEmitterMixin<IgcStepperCom
   public linear = false;
 
   /**
-   * Whether the content is displayed above the steps.
+   * Whether the content is displayed above the steps. Applies only to the
+   * horizontal orientation.
    *
    * @attr content-top
    * @default false
@@ -195,8 +196,8 @@ export default class IgcStepperComponent extends EventEmitterMixin<IgcStepperCom
    * The position of the steps title.
    *
    * @remarks
-   * When the stepper is horizontally orientated the title is positioned below the indicator.
-   * When the stepper is vertically orientated the title is positioned on the right side of the indicator.
+   * With `auto`, the title is below the indicator in the horizontal orientation,
+   * and after the indicator in the vertical orientation.
    *
    * @attr title-position
    * @default 'auto'
@@ -378,10 +379,10 @@ export default class IgcStepperComponent extends EventEmitterMixin<IgcStepperCom
   }
 
   /**
-   * Resets the stepper to its initial state, i.e. activates the first step.
+   * Resets the stepper to its initial state and activates the first enabled step.
    *
    * @remarks
-   * The steps' content will not be automatically reset.
+   * The method does not reset the content of the steps.
    */
   public reset(): void {
     this._state.reset();

@@ -33,7 +33,7 @@ const metadata: Meta<IgcInputComponent> = {
     docs: {
       description: {
         component:
-          'A highly customizable single-line text field for entering and editing data,\nwith support for prefix/suffix content, helper text, form integration, and built-in validation.',
+          'A single-line text field to enter and edit data. It supports prefix and\nsuffix content, helper text, form integration and built-in validation.',
       },
     },
     actions: { handles: ['igcInput', 'igcChange'] },
@@ -56,7 +56,7 @@ const metadata: Meta<IgcInputComponent> = {
     },
     readOnly: {
       type: 'boolean',
-      description: 'Makes the control a readonly field.',
+      description: 'Whether the control is read-only.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -98,7 +98,7 @@ const metadata: Meta<IgcInputComponent> = {
     },
     autofocus: {
       type: 'boolean',
-      description: 'Whether the control should receive focus automatically.',
+      description: 'Whether the control receives focus automatically.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -110,14 +110,14 @@ const metadata: Meta<IgcInputComponent> = {
     validateOnly: {
       type: 'boolean',
       description:
-        'Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property for\nstring-type inputs or allows spin buttons to exceed the predefined `min/max` limits for number-type inputs.',
+        'Whether the validation rules apply without restricting user input. The user can type past `maxLength`,\nand the spin buttons of a `number` input can go past `min` and `max`.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     required: {
       type: 'boolean',
       description:
-        'When set, makes the component a required field for validation.',
+        'Whether the control is required. A required control that has no value,\nor is not checked, fails validation.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -128,19 +128,21 @@ const metadata: Meta<IgcInputComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component.',
+      description:
+        'Whether the control is disabled. A disabled control is not validated,\nand the form does not submit its value.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
-      description: 'Sets the control into invalid state (visual state only).',
+      description:
+        'Whether the control shows the invalid state. It changes only the visual\nstate, not the validity.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     outlined: {
       type: 'boolean',
-      description: 'Whether the control will have outlined appearance.',
+      description: 'Whether the control has an outlined appearance.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -174,7 +176,7 @@ interface IgcInputArgs {
   value: string;
   /** The type of the control. */
   type: 'number' | 'text' | 'email' | 'password' | 'search' | 'tel' | 'url';
-  /** Makes the control a readonly field. */
+  /** Whether the control is read-only. */
   readOnly: boolean;
   /**
    * A hint to the browser for which virtual keyboard layout to display.
@@ -193,24 +195,33 @@ interface IgcInputArgs {
   max: number;
   /** The granularity the value must adhere to. */
   step: number;
-  /** Whether the control should receive focus automatically. */
+  /** Whether the control receives focus automatically. */
   autofocus: boolean;
   /** A hint for the browser on how to autofill the control. */
   autocomplete: string;
   /**
-   * Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property for
-   * string-type inputs or allows spin buttons to exceed the predefined `min/max` limits for number-type inputs.
+   * Whether the validation rules apply without restricting user input. The user can type past `maxLength`,
+   * and the spin buttons of a `number` input can go past `min` and `max`.
    */
   validateOnly: boolean;
-  /** When set, makes the component a required field for validation. */
+  /**
+   * Whether the control is required. A required control that has no value,
+   * or is not checked, fails validation.
+   */
   required: boolean;
   /** The name of the control, submitted with the form data. */
   name: string;
-  /** The disabled state of the component. */
+  /**
+   * Whether the control is disabled. A disabled control is not validated,
+   * and the form does not submit its value.
+   */
   disabled: boolean;
-  /** Sets the control into invalid state (visual state only). */
+  /**
+   * Whether the control shows the invalid state. It changes only the visual
+   * state, not the validity.
+   */
   invalid: boolean;
-  /** Whether the control will have outlined appearance. */
+  /** Whether the control has an outlined appearance. */
   outlined: boolean;
   /** The placeholder text of the control. */
   placeholder: string;

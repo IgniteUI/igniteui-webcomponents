@@ -27,10 +27,9 @@ import { styles as shared } from './themes/icon-button/shared/icon-button.common
  *
  * @element igc-icon-button
  *
- * @slot - Optional label rendered alongside the icon, useful for
- *   accessibility or augmented layouts.
+ * @slot - Renders content after the icon, such as text or a ripple.
  *
- * @csspart base - The wrapping element of the icon button.
+ * @csspart base - The native button or anchor element.
  * @csspart icon - The icon element of the icon button.
  */
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
@@ -58,7 +57,8 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public collection?: string;
 
   /**
-   * Determines whether the icon should be mirrored in right-to-left contexts.
+   * Whether the icon is flipped horizontally. Use it for a directional icon
+   * in a right-to-left layout.
    * @attr mirrored
    * @default false
    */

@@ -18,15 +18,14 @@ import { styles } from './themes/badge.base.css.js';
 import { styles as shared } from './themes/shared/badge.common.css.js';
 
 /**
- * The badge is a component indicating a status on a related item or an area
- * where some active indication is required.
+ * Shows a status on a related item, or marks an area that needs attention.
  *
  * @element igc-badge
  *
- * @slot - Default slot for the badge content.
+ * @slot - The content of the badge.
  *
  * @csspart base - The base wrapper of the badge.
- * @csspart icon - The icon container, present when an `igc-icon` is the only slotted element.
+ * @csspart icon - Added to the base part when an icon is the only slotted element.
  *
  * @example
  * ```html
@@ -61,7 +60,7 @@ export default class IgcBadgeComponent extends LitElement {
   public variant: StyleVariant = 'primary';
 
   /**
-   * Sets whether to draw an outlined version of the badge.
+   * Whether the badge has an outline.
    *
    * @attr outlined
    * @default false
@@ -79,8 +78,7 @@ export default class IgcBadgeComponent extends LitElement {
   public shape: BadgeShape = 'rounded';
 
   /**
-   * Sets whether to render a dot type badge.
-   * When enabled, the badge appears as a small dot without any content.
+   * Whether the badge renders as a small dot without content.
    *
    * @attr dot
    * @default false

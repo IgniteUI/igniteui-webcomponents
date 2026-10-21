@@ -31,14 +31,19 @@ const metadata: Meta<IgcFileInputComponent> = {
   title: 'FileInput',
   component: 'igc-file-input',
   parameters: {
-    docs: { description: { component: '' } },
+    docs: {
+      description: {
+        component:
+          'A form control that lets the user select one or more files, or a folder.',
+      },
+    },
     actions: { handles: ['igcChange', 'igcCancel'] },
   },
   argTypes: {
     value: {
       type: 'string',
       description:
-        'The value of the control.\nSimilar to native file input, this property is read-only and cannot be set programmatically.',
+        'The value of the control: the name of the first selected file, as the native file input gives it.\nAs for the native file input, only an empty string can be set. It clears the selection.',
       control: 'text',
     },
     multiple: {
@@ -64,7 +69,7 @@ const metadata: Meta<IgcFileInputComponent> = {
     },
     autofocus: {
       type: 'boolean',
-      description: 'Whether the control should receive focus automatically.',
+      description: 'Whether the control receives focus automatically.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -77,7 +82,7 @@ const metadata: Meta<IgcFileInputComponent> = {
     required: {
       type: 'boolean',
       description:
-        'When set, makes the component a required field for validation.',
+        'Whether the control is required. A required control that has no value,\nor is not checked, fails validation.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -88,19 +93,21 @@ const metadata: Meta<IgcFileInputComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component.',
+      description:
+        'Whether the control is disabled. A disabled control is not validated,\nand the form does not submit its value.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
-      description: 'Sets the control into invalid state (visual state only).',
+      description:
+        'Whether the control shows the invalid state. It changes only the visual\nstate, not the validity.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     outlined: {
       type: 'boolean',
-      description: 'Whether the control will have outlined appearance.',
+      description: 'Whether the control has an outlined appearance.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -131,8 +138,8 @@ export default metadata;
 
 interface IgcFileInputArgs {
   /**
-   * The value of the control.
-   * Similar to native file input, this property is read-only and cannot be set programmatically.
+   * The value of the control: the name of the first selected file, as the native file input gives it.
+   * As for the native file input, only an empty string can be set. It clears the selection.
    */
   value: string;
   /** Whether the control allows the user to select more than one file. */
@@ -145,7 +152,7 @@ interface IgcFileInputArgs {
   directory: boolean;
   /** The file types the control accepts, as a comma-separated list. */
   accept: string;
-  /** Whether the control should receive focus automatically. */
+  /** Whether the control receives focus automatically. */
   autofocus: boolean;
   /**
    * The locale of the component. Without it, the component takes the locale
@@ -153,15 +160,24 @@ interface IgcFileInputArgs {
    * locale.
    */
   locale: string;
-  /** When set, makes the component a required field for validation. */
+  /**
+   * Whether the control is required. A required control that has no value,
+   * or is not checked, fails validation.
+   */
   required: boolean;
   /** The name of the control, submitted with the form data. */
   name: string;
-  /** The disabled state of the component. */
+  /**
+   * Whether the control is disabled. A disabled control is not validated,
+   * and the form does not submit its value.
+   */
   disabled: boolean;
-  /** Sets the control into invalid state (visual state only). */
+  /**
+   * Whether the control shows the invalid state. It changes only the visual
+   * state, not the validity.
+   */
   invalid: boolean;
-  /** Whether the control will have outlined appearance. */
+  /** Whether the control has an outlined appearance. */
   outlined: boolean;
   /** The placeholder text of the control. */
   placeholder: string;

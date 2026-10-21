@@ -48,28 +48,26 @@ const metadata: Meta<IgcCarouselComponent> = {
     disableLoop: {
       type: 'boolean',
       description:
-        'Whether the carousel should skip rotating to the first slide after it reaches the last.',
+        'Whether the carousel stops at the first and the last slide instead of looping.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     disablePauseOnInteraction: {
       type: 'boolean',
       description:
-        'Whether the carousel should ignore user interactions and not pause on them.',
+        'Whether the carousel keeps playing when the user hovers over it or moves the\nfocus into it.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     hideNavigation: {
       type: 'boolean',
-      description:
-        'Whether the carousel should skip rendering of the default navigation buttons.',
+      description: 'Whether the navigation buttons are hidden.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     hideIndicators: {
       type: 'boolean',
-      description:
-        'Whether the carousel should render the indicator controls (dots).',
+      description: 'Whether the indicator controls (dots) are hidden.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -81,7 +79,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     },
     indicatorsOrientation: {
       type: { name: 'enum', value: ['start', 'end'] },
-      description: 'The orientation of the indicator controls (dots).',
+      description: 'The position of the indicator controls (dots).',
       options: ['start', 'end'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'end' } },
@@ -89,25 +87,25 @@ const metadata: Meta<IgcCarouselComponent> = {
     indicatorsLabelFormat: {
       type: 'string',
       description:
-        "The format used to set the aria-label on the carousel indicators.\nInstances of '{0}' will be replaced with the index of the corresponding slide.",
+        'The format of the `aria-label` of the carousel indicators.\nEach `{0}` changes to the number of the corresponding slide.',
       control: 'text',
     },
     slidesLabelFormat: {
       type: 'string',
       description:
-        "The format used to set the aria-label on the carousel slides and the text displayed\nwhen the number of indicators is greater than the maximum indicator count.\nInstances of '{0}' will be replaced with the index of the corresponding slide.\nInstances of '{1}' will be replaced with the total amount of slides.",
+        'The format of the `aria-label` of the carousel slides, and of the label that\nshows when the number of slides is greater than `maximumIndicatorsCount`.\nEach `{0}` changes to the number of the slide, and each `{1}` to the total number of slides.',
       control: 'text',
     },
     interval: {
       type: 'number',
       description:
-        'The duration in milliseconds between changing the active slide.',
+        'The duration in milliseconds between changing the active slide.\nA positive value starts the automatic rotation.',
       control: 'number',
     },
     maximumIndicatorsCount: {
       type: 'number',
       description:
-        'The maximum number of indicator controls (dots) that can be shown. Default value is `10`.',
+        'The maximum number of indicator controls (dots) that can be shown. With more slides,\na label shows instead of the dots.',
       control: 'number',
       table: { defaultValue: { summary: '10' } },
     },
@@ -140,33 +138,41 @@ const metadata: Meta<IgcCarouselComponent> = {
 export default metadata;
 
 interface IgcCarouselArgs {
-  /** Whether the carousel should skip rotating to the first slide after it reaches the last. */
+  /** Whether the carousel stops at the first and the last slide instead of looping. */
   disableLoop: boolean;
-  /** Whether the carousel should ignore user interactions and not pause on them. */
+  /**
+   * Whether the carousel keeps playing when the user hovers over it or moves the
+   * focus into it.
+   */
   disablePauseOnInteraction: boolean;
-  /** Whether the carousel should skip rendering of the default navigation buttons. */
+  /** Whether the navigation buttons are hidden. */
   hideNavigation: boolean;
-  /** Whether the carousel should render the indicator controls (dots). */
+  /** Whether the indicator controls (dots) are hidden. */
   hideIndicators: boolean;
   /** Whether the carousel has vertical alignment. */
   vertical: boolean;
-  /** The orientation of the indicator controls (dots). */
+  /** The position of the indicator controls (dots). */
   indicatorsOrientation: 'start' | 'end';
   /**
-   * The format used to set the aria-label on the carousel indicators.
-   * Instances of '{0}' will be replaced with the index of the corresponding slide.
+   * The format of the `aria-label` of the carousel indicators.
+   * Each `{0}` changes to the number of the corresponding slide.
    */
   indicatorsLabelFormat: string;
   /**
-   * The format used to set the aria-label on the carousel slides and the text displayed
-   * when the number of indicators is greater than the maximum indicator count.
-   * Instances of '{0}' will be replaced with the index of the corresponding slide.
-   * Instances of '{1}' will be replaced with the total amount of slides.
+   * The format of the `aria-label` of the carousel slides, and of the label that
+   * shows when the number of slides is greater than `maximumIndicatorsCount`.
+   * Each `{0}` changes to the number of the slide, and each `{1}` to the total number of slides.
    */
   slidesLabelFormat: string;
-  /** The duration in milliseconds between changing the active slide. */
+  /**
+   * The duration in milliseconds between changing the active slide.
+   * A positive value starts the automatic rotation.
+   */
   interval: number;
-  /** The maximum number of indicator controls (dots) that can be shown. Default value is `10`. */
+  /**
+   * The maximum number of indicator controls (dots) that can be shown. With more slides,
+   * a label shows instead of the dots.
+   */
   maximumIndicatorsCount: number;
   /** The animation type. */
   animationType: 'slide' | 'fade' | 'none';

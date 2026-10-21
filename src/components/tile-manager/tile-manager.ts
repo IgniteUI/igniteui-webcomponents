@@ -36,7 +36,7 @@ import IgcTileComponent from './tile.js';
  *
  * @element igc-tile-manager
  *
- * @slot - Default slot for the tile manager. Only tile elements will be projected inside the CSS grid container.
+ * @slot - Default slot for the tile manager. Only tile elements are projected inside the CSS grid container.
  *
  * @csspart base - The tile manager CSS Grid container.
  * @csspart maximized-tile - Indicates that a tile is maximized. Applies to `base`.
@@ -178,7 +178,7 @@ export default class IgcTileManagerComponent extends LitElement {
   }
 
   /**
-   * Gets the tiles sorted by their position in the layout.
+   * The tiles, sorted by their position in the layout.
    * @property
    */
   public get tiles() {

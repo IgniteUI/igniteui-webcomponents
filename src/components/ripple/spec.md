@@ -21,6 +21,7 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom properties](#css-custom-properties)
   - [Test scenarios](#test-scenarios)
     - [Default](#default)
     - [Motion](#motion)
@@ -37,6 +38,7 @@
 | ------: | ---------- | ------------------------------------------------------ |
 |       1 | 2026-09-21 | Initial specification                                  |
 |       2 | 2026-10-14 | Respect `prefers-reduced-motion`; clean up on a cancel |
+|       3 | 2026-10-21 | API descriptions aligned with the JSDoc.               |
 
 ## Overview
 
@@ -140,6 +142,12 @@ None applicable.
 ### CSS Shadow parts
 
 None applicable.
+
+### CSS custom properties
+
+| Name      | Description                 |
+| --------- | --------------------------- |
+| `--color` | The color of the ripple wave. |
 
 ## Test scenarios
 

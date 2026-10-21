@@ -54,6 +54,7 @@
 |       6 | 2026-10-02 | Focus after form checks; `invalid` only on checks  |
 |       7 | 2026-10-02 | Forward the host `aria-describedby`                |
 |       8 | 2026-10-19 | Localize the labels through `igniteui-i18n-core`   |
+|       9 | 2026-10-21 | API descriptions aligned with the JSDoc.           |
 
 ## Overview
 
@@ -78,8 +79,7 @@ validation and validation message projection.
 - **Platform integrations**: the native `EyeDropper` API where available, and copy to clipboard.
 - **Form association**: submits under its name, supports reset, `required` and custom validation.
 - **Localization**: the accessible labels come from `igniteui-i18n-core` through `locale` and `resourceStrings`.
-- **Themeable**: shadow parts for every region, plus CSS custom properties for the slider tracks and the current
-  color.
+- **Themeable**: shadow parts for every region.
 
 ### Acceptance criteria
 
@@ -313,47 +313,47 @@ All of the above are skipped while the component is `disabled`.
 | Property          | Attribute       | Reflected | Type                      | Default   | Description                                                              |
 | ----------------- | --------------- | --------- | ------------------------- | --------- | ------------------------------------------------------------------------ |
 | value             | value           | No        | `string`                  | `''`      | The value as a CSS color string. Accepts hex, rgb(a), hsl(a) and named colors. |
-| format            | format          | No        | `ColorFormat`             | `hex`     | The color format of the string value.                                    |
+| format            | format          | No        | `ColorFormat`             | `hex`     | The color format of the string value. A format change renders `value` in the new notation. |
 | mode              | mode            | Yes       | `ColorPickerMode`         | `default` | Whether the anchor is a trigger button or an editable text field.        |
 | label             | label           | No        | `string \| undefined`     | -         | The label of the component.                                              |
-| swatches          | -               | No        | `string[]`                | `[]`      | Pre-defined color strings rendered as clickable swatches.                |
+| swatches          | -               | No        | `string[]`                | `[]`      | Pre-defined color strings. The component renders them as clickable swatches below the picker controls. A click on a swatch sets its color as the value. |
 | showAlpha         | show-alpha      | Yes       | `boolean`                 | false     | Whether to show the alpha slider and input.                              |
-| hideFormats       | hide-formats    | Yes       | `boolean`                 | false     | Whether to hide the format picker buttons.                               |
+| hideFormats       | hide-formats    | Yes       | `boolean`                 | false     | Whether the format select is hidden.                                     |
 | locale            | locale          | No        | `string`                  | -         | The locale for the resource strings. Falls back to the inherited locale, then the global one.    |
-| resourceStrings   | -               | No        | `IColorPickerResourceStrings` | EN    | The resource strings for localization.                                   |
-| open              | open            | Yes       | `boolean`                 | false     | The open state of the component.                                         |
+| resourceStrings   | -               | No        | `IColorPickerResourceStrings` | EN    | The texts of the component. The strings that you set replace the strings of the current locale. Reading returns all the strings, with your strings over the locale strings.                                   |
+| open              | open            | Yes       | `boolean`                 | false     | Whether the component is open.                                         |
 | scrollStrategy    | scroll-strategy | No        | `PopoverScrollStrategy`   | `hide`    | The behavior of the component when a parent container scrolls.           |
-| required          | required        | Yes       | `boolean`                 | false     | Makes the component a required field for validation.                     |
-| disabled          | disabled        | Yes       | `boolean`                 | false     | The disabled state of the component.                                     |
-| invalid           | invalid         | No        | `boolean`                 | false     | Sets the control into invalid state (visual state only).                 |
+| required          | required        | Yes       | `boolean`                 | false     | Whether the control is required. A required control that has no value, or is not checked, fails validation.                     |
+| disabled          | disabled        | Yes       | `boolean`                 | false     | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                                     |
+| invalid           | invalid         | No        | `boolean`                 | false     | Whether the control shows the invalid state. It changes only the visual state, not the validity.                 |
 | name              | name            | Yes       | `string`                  | -         | The name of the control, submitted with the form data.                   |
-| defaultValue      | -               | No        | `string`                  | `''`      | The initial value of the control, restored on a form reset.              |
-| form              | -               | No        | `HTMLFormElement \| null` | -         | Read-only. The form associated with this element.                        |
-| validity          | -               | No        | `ValidityState`           | -         | Read-only. The validity state of the element.                            |
-| validationMessage | -               | No        | `string`                  | -         | Read-only. The validation message of the element.                        |
-| willValidate      | -               | No        | `boolean`                 | -         | Read-only. Whether the element is a candidate for constraint validation. |
+| defaultValue      | -               | No        | `string`                  | `''`      | The default value of the control. A form reset restores the value to it. While the value is unchanged since the start or the last form reset, a new default also sets the value. The `value` attribute also sets it.              |
+| form              | -               | No        | `HTMLFormElement \| null` | -         | Read-only. The form that the control is associated with, or `null`.                        |
+| validity          | -               | No        | `ValidityState`           | -         | Read-only. The validity state of the control.                            |
+| validationMessage | -               | No        | `string`                  | -         | Read-only. The validation message of the control. It is empty when the control is valid.                        |
+| willValidate      | -               | No        | `boolean`                 | -         | Read-only. Whether the control is a candidate for constraint validation. |
 
 ### Methods
 
 | Name              | Type signature            | Description                                                             |
 | ----------------- | ------------------------- | ----------------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`    | Shows the component.                                                    |
-| hide              | `(): Promise<boolean>`    | Hides the component.                                                    |
-| toggle            | `(): Promise<boolean>`    | Toggles the open state of the component.                                |
-| checkValidity     | `(): boolean`             | Checks validity and emits `invalid` when the control is invalid.        |
-| reportValidity    | `(): boolean`             | Checks validity; when invalid, emits `invalid` and focuses the control. |
-| setCustomValidity | `(message: string): void` | Sets a custom message. Invalid while `message` is not empty.            |
+| show              | `(): Promise<boolean>`    | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one.                                                    |
+| hide              | `(): Promise<boolean>`    | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                    |
+| toggle            | `(): Promise<boolean>`    | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes.                                |
+| checkValidity     | `(): boolean`             | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid.        |
+| reportValidity    | `(): boolean`             | Checks validity. As for a native control, an invalid control emits `invalid` and takes the focus. It shows its own validation messages, not the message of the browser. Returns `true` when the control is valid. |
+| setCustomValidity | `(message: string): void` | Sets a custom validation message. The control is invalid while the message is not empty. An empty string removes the custom error.            |
 
 ### Events
 
 | Name       | Cancellable | Detail   | Description                                        |
 | ---------- | ----------- | -------- | -------------------------------------------------- |
-| igcOpening | true        | -        | Emitted just before the picker dropdown is open.    |
-| igcOpened  | false       | -        | Emitted after the picker dropdown is open.          |
-| igcClosing | true        | -        | Emitted just before the picker dropdown is closed.  |
-| igcClosed  | false       | -        | Emitted after closing the picker dropdown.          |
-| igcInput   | false       | `string` | Emitted when the value of the component is changed. |
-| igcChange  | false       | `string` | Emitted when the value of the component is committed. |
+| igcOpening | true        | -        | Emitted before the user opens the picker dropdown. Cancelable. |
+| igcOpened  | false       | -        | Emitted after the picker dropdown opens on a user action. |
+| igcClosing | true        | -        | Emitted before the user closes the picker dropdown. Cancelable. |
+| igcClosed  | false       | -        | Emitted after the picker dropdown closes on a user action. |
+| igcInput   | false       | `string` | Emitted when the user changes the color with the canvas, the sliders, the alpha input, a swatch or the eyedropper. |
+| igcChange  | false       | `string` | Emitted when the focus leaves the component after the user changed the color. |
 
 ### Slots
 
@@ -368,16 +368,22 @@ All of the above are skipped while the component is `disabled`.
 
 | Part            | Description                                                                              |
 | --------------- | ----------------------------------------------------------------------------------------- |
+| `color-picker`  | The wrapper of the anchor, the label and the helper text.                                |
 | `anchor`        | The trigger element that opens the picker - the button in default mode, or the swatch prefix in input mode. |
 | `empty`         | Applied alongside `anchor` when no color value is set, rendering a checkered background.  |
-| `label`         | The label rendered above the anchor in default mode.                                     |
+| `input-mode`    | Added to the anchor part in input mode.                                                  |
+| `label`         | The label rendered after the anchor in default mode.                                     |
 | `picker`        | The popover container holding the canvas, sliders, inputs and swatches.                  |
+| `picker-canvas` | The saturation and value canvas.                                                         |
+| `marker`        | The marker on the canvas that shows the saturation and value.                            |
+| `dragging`      | Added to the marker part while the user drags it.                                        |
 | `main-row`      | The row containing the hue slider and the copy and eye dropper buttons.                  |
 | `alpha-row`     | The row containing the alpha slider and input, rendered when `show-alpha` is set.        |
 | `inputs-row`    | The row containing the format select and the color value input.                          |
 | `buttons`       | The wrapper around the copy and eye dropper buttons.                                     |
 | `hue`           | The hue slider.                                                                          |
 | `alpha`         | The alpha slider.                                                                        |
+| `alpha-input`   | The input of the alpha value, rendered when `show-alpha` is set.                         |
 | `copy`          | The button that copies the current color value to the clipboard.                         |
 | `eye-dropper`   | The button that activates the EyeDropper API.                                            |
 | `format-select` | The select control used to switch the color string format.                               |
@@ -386,13 +392,8 @@ All of the above are skipped while the component is `disabled`.
 
 ### CSS custom properties
 
-| Variable                 | Description                                                                                 |
-| ------------------------ | ------------------------------------------------------------------------------------------- |
-| `--current-color`        | The current color, applied to the preview thumb and the slider thumbs. Updated on every change. |
-| `--hue-slider-track`     | The background gradient of the hue slider track.                                            |
-| `--alpha-slider-track`   | The layered background image of the alpha slider track - a gradient over a checkerboard.    |
-| `--alpha-track-position` | The `background-position` list applied to the alpha slider track layers.                    |
-| `--alpha-track-size`     | The `background-size` list applied to the alpha slider track layers.                        |
+The color picker has no public CSS custom properties. The `--_` variables in its styles, for example
+`--_current-color`, are internal.
 
 ### CSS custom states
 

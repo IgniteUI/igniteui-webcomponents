@@ -76,33 +76,33 @@ const i18n: I18nMixinConfig<
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
 /**
- * The date picker is a feature rich component used for entering a date through manual text input or
- * choosing date values from a calendar dialog that pops up.
+ * A date field where the user types a date or selects one in a calendar.
+ * The calendar opens in a dropdown or in a dialog.
  *
  * @element igc-date-picker
  *
  * @slot prefix - Renders content before the input.
  * @slot suffix - Renders content after the input.
  * @slot helper-text - Renders content below the input.
- * @slot bad-input - Renders content when the value is in the disabledDates ranges.
+ * @slot bad-input - Renders content when the value is in the `disabledDates` ranges.
  * @slot value-missing - Renders content when the required validation fails.
  * @slot range-overflow - Renders content when the max validation fails.
  * @slot range-underflow - Renders content when the min validation fails.
- * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot custom-error - Renders content when a custom message is set with `setCustomValidity()`.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
- * @slot title - Renders content in the calendar title.
- * @slot header-date - Renders content instead of the current date/range in the calendar header.
- * @slot clear-icon - Renders a clear icon template.
+ * @slot title - Renders content in the calendar title. It applies only in `dialog` mode.
+ * @slot header-date - Renders content instead of the current date in the calendar header. It applies only in `dialog` mode.
+ * @slot clear-icon - Renders the icon of the clear button.
  * @slot calendar-icon - Renders the icon/content for the calendar picker.
  * @slot calendar-icon-open - Renders the icon/content for the picker in open state.
  * @slot actions - Renders content in the action part of the picker in open state.
  *
- * @fires igcOpening - Emitted just before the calendar popover is shown.
- * @fires igcOpened - Emitted after the calendar popover is shown.
- * @fires igcClosing - Emitted just before the calendar popover is hidden.
- * @fires igcClosed - Emitted after the calendar popover is hidden.
- * @fires igcChange - Emitted when the user modifies and commits the element's value.
- * @fires igcInput - Emitted when the user types in the element.
+ * @fires igcOpening - Emitted before a user interaction opens the calendar. Cancelable.
+ * @fires igcOpened - Emitted after a user interaction opens the calendar.
+ * @fires igcClosing - Emitted before a user interaction closes the calendar. Cancelable.
+ * @fires igcClosed - Emitted after a user interaction closes the calendar.
+ * @fires igcChange - Emitted when the user commits a change to the value.
+ * @fires igcInput - Emitted when the user types in the input.
  *
  * @csspart label - The label wrapper that renders content above the target input.
  * @csspart container - The main wrapper that holds all main input elements.
@@ -129,7 +129,10 @@ const i18n: I18nMixinConfig<
  * @csspart months-view - The calendar months view element.
  * @csspart years-view - The calendar years view element.
  * @csspart days-row - The calendar days row element.
+ * @csspart months-row - The calendar months row element.
+ * @csspart years-row - The calendar years row element.
  * @csspart calendar-label - The calendar week header label element.
+ * @csspart calendar-label-inner - The calendar week header label inner element.
  * @csspart week-number - The calendar week number element.
  * @csspart week-number-inner - The calendar week number inner element.
  * @csspart date - The calendar date element.
@@ -352,23 +355,29 @@ export default class IgcDatePickerComponent extends I18nMixin(
 
   //#region Public methods
 
-  /** Increments the passed in date part */
+  /**
+   * Increments a date part by `delta`, or by 1. Without `datePart`, it changes the
+   * part at the cursor or a default part.
+   */
   public stepUp(datePart?: DatePart, delta?: number): void {
     this._input.stepUp(datePart, delta);
   }
 
-  /** Decrements the passed in date part */
+  /**
+   * Decrements a date part by `delta`, or by 1. Without `datePart`, it changes the
+   * part at the cursor or a default part.
+   */
   public stepDown(datePart?: DatePart, delta?: number): void {
     this._input.stepDown(datePart, delta);
   }
 
-  /** Selects the text in the input of the component */
+  /** Selects the text in the input of the component. */
   public select(): void {
     this._input.select();
   }
 
   /* blazorSuppress */
-  /** Sets the text selection range in the input of the component */
+  /** Sets the text selection range in the input of the component. */
   public setSelectionRange(
     start: number,
     end: number,

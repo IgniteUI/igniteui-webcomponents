@@ -57,6 +57,7 @@ This directory hosts two public components: [`igc-tile-manager`](#igc-tile-manag
 |       4 | 2026-10-08 | Nested managers: own placement of the inner tiles, swap transitions of an outer tile |
 |       5 | 2026-10-19 | Localize the names of the default tile actions               |
 |       6 | 2026-10-20 | Tile manager `locale`, which the tiles inherit               |
+|       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                     |
 
 ## Overview
 
@@ -291,8 +292,8 @@ Dragging and resizing are pointer interactions.
 | minColumnWidth | min-column-width  | No        | `string \| undefined`     | -       | The minimum width for a column unit.                                      |
 | minRowHeight   | min-row-height    | No        | `string \| undefined`     | -       | The minimum height for a row unit.                                        |
 | gap            | gap               | No        | `string \| undefined`     | -       | The gap size between the tiles.                                           |
-| dragMode       | drag-mode         | No        | `TileManagerDragMode`     | `none`  | Whether drag and drop operations are enabled.                             |
-| resizeMode     | resize-mode       | No        | `TileManagerResizeMode`   | `none`  | Whether resize operations are enabled.                                    |
+| dragMode       | drag-mode         | No        | `TileManagerDragMode`     | `none`  | The drag mode of the tiles. `none` turns drag and drop off. |
+| resizeMode     | resize-mode       | No        | `TileManagerResizeMode`   | `none`  | The resize mode of the tiles. `none` turns resizing off. |
 | locale         | locale            | No        | `string`                  | -       | The locale of the tiles without a `locale`. Falls back to the inherited locale, then the global one. |
 | tiles          | -                 | No        | `IgcTileComponent[]`      | -       | Read-only. The tiles, sorted by their position in the layout.              |
 
@@ -311,7 +312,7 @@ None applicable. The tiles emit the drag, resize, maximize and fullscreen events
 
 | Name      | Description                                                                                  |
 | --------- | ---------------------------------------------------------------------------------------------- |
-| (default) | Default slot for the tile manager. Only tile elements are projected inside the grid container. |
+| (default) | Default slot for the tile manager. Only tile elements are projected inside the CSS grid container. |
 
 #### CSS Shadow parts
 
@@ -348,7 +349,7 @@ A container within the tile manager for displaying various types of information.
 | disableMaximize   | disable-maximize    | Yes       | `boolean`         | false   | Disables the maximize action and its slot.                              |
 | disableFullscreen | disable-fullscreen  | Yes       | `boolean`         | false   | Disables the fullscreen action and its slot.                            |
 | locale            | locale              | No        | `string`          | -       | The locale for the resource strings. Falls back to the inherited locale, then the global one.     |
-| resourceStrings   | -                   | No        | `ITileResourceStrings` | EN      | The resource strings for localization.                                    |
+| resourceStrings   | -                   | No        | `ITileResourceStrings` | EN      | The texts of the component. The strings that you set replace the strings of the current locale. Reading returns all the strings, with your strings over the locale strings.                                    |
 
 #### Events
 
@@ -385,7 +386,7 @@ A container within the tile manager for displaying various types of information.
 | `title`             | The title container of the tile.                                |
 | `actions`           | The actions container of the tile header.                       |
 | `content-container` | The container wrapping the main content of the tile.            |
-| `tile-container`    | The wrapper around the tile content and its resize adorners.    |
+| `tile-container`    | The wrapper around the tile content and its resize adorners. Present only while the tile can resize. |
 | `trigger-side`      | The side resize handle of the tile.                             |
 | `trigger`           | The corner resize handle of the tile.                           |
 | `trigger-bottom`    | The bottom resize handle of the tile.                           |

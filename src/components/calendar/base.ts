@@ -85,8 +85,7 @@ export class IgcCalendarBaseComponent extends I18nMixin(LitElement, i18n) {
 
   /* blazorSuppress */
   /**
-   * The current value of the calendar.
-   * Used when selection is set to single
+   * The value of the calendar in `single` selection mode.
    *
    * @attr value
    */
@@ -101,8 +100,7 @@ export class IgcCalendarBaseComponent extends I18nMixin(LitElement, i18n) {
 
   /* blazorSuppress */
   /**
-   * The current values of the calendar.
-   * Used when selection is set to multiple or range.
+   * The values of the calendar in `multiple` and `range` selection modes.
    *
    * @attr values
    */
@@ -117,7 +115,10 @@ export class IgcCalendarBaseComponent extends I18nMixin(LitElement, i18n) {
   }
 
   /* blazorSuppress */
-  /** Get/Set the date which is shown in view and is highlighted. By default it is the current date. */
+  /**
+   * The date that the calendar shows and highlights. It changes when the user navigates.
+   * Without it, the calendar starts at its value, or at the current date when there is no value.
+   */
   @property({
     attribute: 'active-date',
     converter: convertToDate,
@@ -134,7 +135,8 @@ export class IgcCalendarBaseComponent extends I18nMixin(LitElement, i18n) {
   }
 
   /**
-   * Sets the type of selection in the component.
+   * The selection mode of the calendar: `single`, `multiple` or `range`.
+   * A change after the first render clears the value and the values.
    * @attr selection
    * @default single
    */
@@ -142,7 +144,7 @@ export class IgcCalendarBaseComponent extends I18nMixin(LitElement, i18n) {
   public selection: CalendarSelection = 'single';
 
   /**
-   * Whether to show the week numbers.
+   * Whether the calendar shows the week numbers.
    * @attr show-week-numbers
    * @default false
    */
@@ -150,7 +152,7 @@ export class IgcCalendarBaseComponent extends I18nMixin(LitElement, i18n) {
   public showWeekNumbers = false;
 
   /**
-   * Gets/Sets the first day of the week.
+   * The first day of the week.
    *
    * @remarks
    * When not set, the week starts on the first day of the week of the current {@link locale}.
@@ -167,7 +169,7 @@ export class IgcCalendarBaseComponent extends I18nMixin(LitElement, i18n) {
   }
 
   /**
-   * Gets/Sets the special dates for the component.
+   * The date ranges that the calendar marks as special.
    *
    * @remarks
    * Returns `undefined` when no dates are set, which the setter accepts as well so that
@@ -183,7 +185,7 @@ export class IgcCalendarBaseComponent extends I18nMixin(LitElement, i18n) {
   }
 
   /**
-   * Gets/Sets the disabled dates for the component.
+   * The date ranges that the user cannot select.
    *
    * @remarks
    * Returns `undefined` when no dates are set, which the setter accepts as well so that

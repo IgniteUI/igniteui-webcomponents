@@ -55,22 +55,23 @@ const i18n = {
 };
 
 /**
- * Provides a way to display supplementary information related to an element when a user interacts with it (e.g., hover, focus).
- * It offers features such as placement customization, delays, sticky mode, and animations.
+ * Shows supplementary information about an element when the user interacts with it, for example on hover or focus.
+ * It supports custom placement, delays, a sticky mode and animations.
  *
  * @element igc-tooltip
  *
- * @slot - Default slot of the tooltip component.
+ * @slot - The content of the tooltip. Replaces the `message` text.
  * @slot close-button - Slot for custom sticky-mode close action (e.g., an icon/button).
  *
  * @csspart base - The wrapping container of the tooltip content.
- * @csspart simple-text - The container where the message property of the tooltip is rendered.
+ * @csspart simple-text - Added to the base part when the tooltip shows the `message` text, not slotted content.
  * @csspart close-button - The default sticky-mode close button.
  *
- * @fires igcOpening - Emitted before the tooltip begins to open. Can be canceled to prevent opening.
- * @fires igcOpened - Emitted after the tooltip has successfully opened and is visible.
- * @fires igcClosing - Emitted before the tooltip begins to close. Can be canceled to prevent closing.
- * @fires igcClosed - Emitted after the tooltip has been fully removed from view.
+ * @fires igcOpening - Emitted before the tooltip opens on a user interaction. Can be canceled to prevent opening.
+ * @fires igcOpened - Emitted after the tooltip opens on a user interaction and is visible.
+ * @fires igcClosing - Emitted before the tooltip closes on a user interaction. Can be canceled to prevent closing.
+ *   Not emitted for the `Escape` key.
+ * @fires igcClosed - Emitted after the tooltip closes on a user interaction and is no longer visible.
  */
 export default class IgcTooltipComponent extends I18nMixin(
   EventEmitterMixin<IgcTooltipComponentEventMap>(LitElement),
@@ -216,16 +217,15 @@ export default class IgcTooltipComponent extends I18nMixin(
   public placement: PopoverPlacement = 'bottom';
 
   /**
-   * Sets the behavior of the tooltip when the parent container scrolls.
+   * The behavior of the tooltip when an ancestor scroll container scrolls.
    *
    * If the value is `hide`, the tooltip hides while the anchor is fully out
    * of view. `hide` is the default value.
    *
    * If the value is `scroll`, the tooltip stays visible and anchored.
    *
-   * If the value is `close`, the tooltip closes on each scroll. The tooltip
-   * also closes if you set the `sticky` property. The Escape key behaves the
-   * same way.
+   * If the value is `close`, the tooltip closes on each scroll, also in
+   * sticky mode. The `Escape` key also closes a sticky tooltip.
    * @attr scroll-strategy
    */
   @property({ attribute: 'scroll-strategy' })
@@ -235,8 +235,8 @@ export default class IgcTooltipComponent extends I18nMixin(
    * An element instance or an IDREF to use as the anchor for the tooltip.
    *
    * @remarks
-   * Trying to bind to an IDREF that does not exist in the current DOM root will not work.
-   * In such scenarios, it is better to get a DOM reference and pass it to the tooltip instance.
+   * An IDREF must point to an element in the DOM root of the tooltip.
+   * For an element in another root, pass the element reference instead.
    *
    * @attr anchor
    */
@@ -244,8 +244,8 @@ export default class IgcTooltipComponent extends I18nMixin(
   public anchor?: Element | string;
 
   /**
-   * Which event triggers will show the tooltip.
-   * Expects a comma separated string of different event triggers.
+   * The anchor events that show the tooltip.
+   * A list of event names, separated by commas or spaces.
    *
    * @attr show-triggers
    * @default pointerenter,focusin
@@ -260,8 +260,8 @@ export default class IgcTooltipComponent extends I18nMixin(
   }
 
   /**
-   * Which event triggers will hide the tooltip.
-   * Expects a comma separated string of different event triggers.
+   * The anchor events that hide the tooltip.
+   * A list of event names, separated by commas or spaces.
    *
    * @attr hide-triggers
    * @default pointerleave,click,focusout
@@ -276,7 +276,8 @@ export default class IgcTooltipComponent extends I18nMixin(
   }
 
   /**
-   * Specifies the number of milliseconds that should pass before showing the tooltip.
+   * The time in milliseconds before a show trigger opens the tooltip.
+   * A negative value is the same as 0.
    *
    * @attr show-delay
    * @default 200
@@ -286,7 +287,8 @@ export default class IgcTooltipComponent extends I18nMixin(
   public showDelay = 200;
 
   /**
-   * Specifies the number of milliseconds that should pass before hiding the tooltip.
+   * The time in milliseconds before a hide trigger closes the tooltip.
+   * A negative value is the same as 0.
    *
    * @attr hide-delay
    * @default 300
@@ -296,7 +298,7 @@ export default class IgcTooltipComponent extends I18nMixin(
   public hideDelay = 300;
 
   /**
-   * Specifies plain text as the tooltip content.
+   * The plain-text content of the tooltip. Slotted content replaces it.
    *
    * @attr message
    */
@@ -304,7 +306,7 @@ export default class IgcTooltipComponent extends I18nMixin(
   public message = '';
 
   /**
-   * Specifies if the tooltip remains visible until the user closes it via the close button or Esc key.
+   * Whether the tooltip stays visible until the user closes it with the close button or the `Escape` key.
    *
    * @attr sticky
    * @default false

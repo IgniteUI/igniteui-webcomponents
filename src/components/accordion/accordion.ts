@@ -63,7 +63,8 @@ export default class IgcAccordionComponent extends LitElement {
   //#region Public attributes and properties
 
   /**
-   * Allows only one panel to be expanded at a time.
+   * Whether only one panel can be expanded at a time. When the user expands a
+   * panel, the other panels collapse.
    * @attr single-expand
    * @default false
    */
@@ -71,7 +72,7 @@ export default class IgcAccordionComponent extends LitElement {
   public singleExpand = false;
 
   /* blazorSuppress */
-  /** Returns all of the direct expansion panel children of the accordion. */
+  /** The direct expansion panel children of the accordion. */
   public get panels(): IgcExpansionPanelComponent[] {
     return Array.from(this._panels);
   }

@@ -84,8 +84,8 @@ export default class IgcBreadcrumbComponent extends LitElement {
   //#region Public properties
 
   /**
-   * Marks this breadcrumb as representing the current page.
-   * Sets `aria-current="page"` on the element when active.
+   * Whether the breadcrumb represents the current page.
+   * Sets `aria-current="page"` on the element when true.
    *
    * @attr current
    * @default false
@@ -94,9 +94,9 @@ export default class IgcBreadcrumbComponent extends LitElement {
   public current = false;
 
   /**
-   * Sets the disabled state of the breadcrumb.
+   * Whether the breadcrumb is disabled.
    * Sets `aria-disabled="true"` on the element and removes the slotted
-   * content from the tab sequence while active.
+   * content from the tab sequence while true.
    *
    * @attr disabled
    * @default false

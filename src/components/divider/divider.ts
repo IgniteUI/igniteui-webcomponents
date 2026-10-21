@@ -10,13 +10,12 @@ import { styles } from './themes/divider.base.css.js';
 import { styles as shared } from './themes/shared/divider.common.css.js';
 
 /**
- * The divider allows the content author to easily create a horizontal/vertical
- * rule as a break between content, to better organize information on a page.
+ * Shows a horizontal or vertical rule as a break between content on a page.
  *
  * @element igc-divider
  *
- * @cssproperty --color - Sets the color of the divider.
- * @cssproperty --inset - Shrinks the divider by the given amount from the start. If `middle` is set it will shrink from both sides.
+ * @cssproperty --color - The color of the divider.
+ * @cssproperty --inset - The amount by which the line shrinks from the start. When `middle` is set, the line shrinks from both sides.
  *
  */
 export default class IgcDividerComponent extends LitElement {
@@ -37,7 +36,7 @@ export default class IgcDividerComponent extends LitElement {
   public vertical = false;
 
   /**
-   * When set and inset is provided, it will shrink the divider line from both sides.
+   * Whether the `--inset` value shrinks the line from both sides, not only from the start.
    * @attr
    * @default false
    */
@@ -46,7 +45,7 @@ export default class IgcDividerComponent extends LitElement {
 
   /* alternateName: lineType */
   /**
-   * Whether to render a solid or a dashed divider line.
+   * The style of the divider line: solid or dashed.
    * @attr type
    * @default 'solid'
    */

@@ -51,6 +51,7 @@
 |       1 | 2026-09-21 | Initial specification                                                        |
 |       2 | 2026-10-02 | The toggle button follows a change of `aria-label`                           |
 |       3 | 2026-10-02 | The toggle button forwards the host `aria-labelledby` and `aria-describedby` |
+|       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                     |
 
 ## Overview
 
@@ -189,10 +190,10 @@ Disabled buttons are skipped, and the direction of the arrow keys follows the wr
 
 | Property        | Attribute       | Reflected | Type                                                | Default      | Description                                      |
 | --------------- | --------------- | --------- | ---------------------------------------------------- | ------------ | ------------------------------------------------ |
-| `selection`     | `selection`     | no        | `"single" \| "single-required" \| "multiple"`        | `single`     | The selection mode of the group.                  |
+| `selection`     | `selection`     | no        | `"single" \| "single-required" \| "multiple"`        | `single`     | The selection mode of the group. A change of the mode clears the selection. |
 | `alignment`     | `alignment`     | yes       | `"horizontal" \| "vertical"`                         | `horizontal` | The orientation of the buttons.                   |
-| `disabled`      | `disabled`      | yes       | `boolean`                                            | `false`      | Disables every button of the group.               |
-| `selectedItems` | `selectedItems` | no        | `string[]`                                           | `[]`         | The values of the selected buttons.               |
+| `disabled`      | `disabled`      | yes       | `boolean`                                            | `false`      | Whether all buttons in the group are disabled.    |
+| `selectedItems` | `selected-items` | no       | `string[]`                                           | `[]`         | The values of the selected buttons. A button without a value is not in the list. When set, selects the buttons with these values. A single selection mode selects only the first matching button. |
 
 `igc-toggle-button`
 
@@ -218,8 +219,8 @@ Emitted by `igc-button-group`, for user interaction only.
 
 | Event        | Detail   | Cancelable | Description                                       |
 | ------------ | -------- | ---------- | ------------------------------------------------- |
-| `igcSelect`  | `string` | no         | A button was selected by the user.                 |
-| `igcDeselect`| `string` | no         | A button was deselected by the user.               |
+| `igcSelect`  | `string \| undefined` | no         | A button was selected by the user.                 |
+| `igcDeselect`| `string \| undefined` | no         | A button was deselected by the user.               |
 
 ### Slots
 
@@ -234,7 +235,7 @@ Emitted by `igc-button-group`, for user interaction only.
 | ------------------- | --------- | -------------------------------------------------------------- |
 | `igc-button-group`  | `group`   | The container of the group.                                     |
 | `igc-toggle-button` | `toggle`  | The native button element.                                      |
-| `igc-toggle-button` | `focused` | The native button while it is focused through the keyboard.      |
+| `igc-toggle-button` | `focused` | Added to the toggle part when the button has keyboard focus.     |
 
 ## Test scenarios
 

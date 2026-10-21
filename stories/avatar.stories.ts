@@ -45,7 +45,7 @@ const metadata: Meta<IgcAvatarComponent> = {
     docs: {
       description: {
         component:
-          'An avatar component is used as a representation of a user identity\ntypically in a user profile.',
+          'Shows the identity of a user, for example in a user profile.',
       },
     },
   },

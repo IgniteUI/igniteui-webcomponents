@@ -1,6 +1,8 @@
 ---
 name: create-new-component
 description: Create a new Lit web component following project conventions, including specification, component class, styles, tests, Storybook story, and exports
+metadata:
+  internal: true
 ---
 
 # Create New Component

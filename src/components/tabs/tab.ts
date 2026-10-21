@@ -26,6 +26,7 @@ const nextId = createIdGenerator('igc-tab');
  * @slot suffix - Renders the tab header's suffix.
  *
  * @csspart tab-header - The header of a single tab.
+ * @csspart base - The wrapper of the prefix, the label and the suffix in the tab header.
  * @csspart prefix - Tab header's label prefix.
  * @csspart content - Tab header's label slot container.
  * @csspart suffix - Tab header's label suffix.
@@ -67,7 +68,7 @@ export default class IgcTabComponent extends HostAriaMixin(LitElement) {
   public label = '';
 
   /**
-   * Determines whether the tab is selected.
+   * Whether the tab is selected.
    *
    * @attr selected
    * @default false
@@ -76,7 +77,7 @@ export default class IgcTabComponent extends HostAriaMixin(LitElement) {
   public selected = false;
 
   /**
-   * Determines whether the tab is disabled.
+   * Whether the tab is disabled.
    *
    * @attr disabled
    * @default false

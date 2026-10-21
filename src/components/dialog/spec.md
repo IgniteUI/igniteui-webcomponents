@@ -50,6 +50,7 @@
 |       3 | 2026-10-02 | Forward the host `aria-labelledby` and `aria-describedby` |
 |       4 | 2026-10-06 | Open the dialog again after a close that it cannot cancel |
 |       5 | 2026-10-19 | Localize the default action through `igniteui-i18n-core`  |
+|       6 | 2026-10-21 | API descriptions aligned with the JSDoc.                  |
 
 ## Overview
 
@@ -231,12 +232,12 @@ The title, the message, the content and any custom actions come from the applica
 | ------------------- | ----------------------- | --------- | --------------------- | ------- | ------------------------------------------------------------------------ |
 | open                | open                    | Yes       | `boolean`             | false   | Whether the dialog is open. Setting it skips the animation and the close events. |
 | title               | title                   | No        | `string`              | -       | The title displayed in the dialog header. Overridden by the `title` slot. |
-| keepOpenOnEscape    | keep-open-on-escape     | No        | `boolean`             | false   | When set, pressing <kbd>Escape</kbd> will not close the dialog.          |
-| closeOnOutsideClick | close-on-outside-click  | No        | `boolean`             | false   | When set, clicking the backdrop closes the dialog.                       |
-| hideDefaultAction   | hide-default-action     | No        | `boolean`             | false   | When set, the built-in OK button is not rendered.                        |
+| keepOpenOnEscape    | keep-open-on-escape     | No        | `boolean`             | false   | Whether the dialog stays open when the user presses the `Escape` key.    |
+| closeOnOutsideClick | close-on-outside-click  | No        | `boolean`             | false   | Whether a click on the backdrop, outside the dialog surface, closes the dialog. The close emits the close events. |
+| hideDefaultAction   | hide-default-action     | No        | `boolean`             | false   | Whether the default action button in the footer is hidden.               |
 | returnValue         | -                       | No        | `string \| undefined` | -       | The return value of the dialog.                                          |
 | locale              | locale                  | No        | `string`              | -       | The locale for the resource strings. Falls back to the inherited locale, then the global one.    |
-| resourceStrings     | -                       | No        | `IDialogResourceStrings` | EN      | The resource strings for localization.                                   |
+| resourceStrings     | -                       | No        | `IDialogResourceStrings` | EN      | The texts of the component. The strings that you set replace the strings of the current locale. Reading returns all the strings, with your strings over the locale strings.                                   |
 
 ### Methods
 
@@ -253,14 +254,14 @@ or the transition was superseded by a newer one.
 
 | Name       | Cancellable | Description                                                                     |
 | ---------- | ----------- | --------------------------------------------------------------------------------- |
-| igcClosing | true        | Emitted just before the dialog closes. Call `preventDefault()` to abort the sequence. |
-| igcClosed  | false       | Emitted after the dialog has fully closed and its exit animation has completed. |
+| igcClosing | true        | Emitted before the dialog closes on a user action. Call `preventDefault()` to abort the sequence. |
+| igcClosed  | false       | Emitted after the dialog closes on a user action and its exit animation completes. |
 
 ### Slots
 
 | Name      | Description                                                                                    |
 | --------- | ------------------------------------------------------------------------------------------------ |
-| (default) | General-purpose content area. Also the target for a `form[method="dialog"]` inside the dialog.  |
+| (default) | General-purpose content area. A `<form method="dialog">` in this slot closes the dialog on submit. |
 | `title`   | Content rendered in the dialog header. Falls back to the `title` attribute when empty.          |
 | `message` | A dedicated message area rendered above the default slot. Hidden when no content is assigned.   |
 | `footer`  | Content rendered in the dialog footer. When empty, a default OK close button is shown.          |
@@ -270,6 +271,8 @@ or the transition was superseded by a newer one.
 | Part        | Description                                                |
 | ----------- | ---------------------------------------------------------- |
 | `base`      | The native `dialog` element.                               |
+| `titled`    | Added to the base part when the dialog has a title.        |
+| `footed`    | Added to the base part when the footer has slotted content or a default action. |
 | `title`     | The header element wrapping the title slot.                |
 | `content`   | The section element wrapping the message and default slots. |
 | `footer`    | The footer element wrapping the footer slot.               |

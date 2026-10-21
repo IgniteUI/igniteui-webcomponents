@@ -46,6 +46,7 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
 |       2 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
 |       3 | 2026-10-05 | `header` shadow part, painted with the `header-background` theme token; `alignment` applies in every theme, and `justify` gives every tab the same width; a tab selected through `selected` is scrolled into view, confined to the header strip; the scroll buttons are shown by the width of the tab headers |
 |       4 | 2026-10-06 | The selection follows the state of the tabs after each change: an added or new selected tab wins, also when the selected tab is deselected or removed in the same task; a selected tab that moves keeps the selection; of several tabs selected at once, the last one in document order wins |
+|       5 | 2026-10-21 | API descriptions aligned with the JSDoc.                                 |
 
 ## Overview
 
@@ -207,17 +208,17 @@ keys follow the writing direction.
 
 | Property    | Attribute  | Reflected | Type                        | Default | Description                                                          |
 | ----------- | ---------- | --------- | --------------------------- | ------- | ---------------------------------------------------------------------- |
-| alignment   | alignment  | Yes       | `TabsAlignment`             | `start` | Determines the alignment of the tabs header strip.                   |
-| activation  | activation | No        | `TabsActivation`            | `auto`  | Whether a tab is selected when its header receives focus.            |
-| tabs        | -          | No        | `IgcTabComponent[]`         | -       | Read-only. The direct tab children of this element.                  |
-| selected    | -          | No        | `string`                    | `''`    | Read-only. The label of the selected tab, or its IDREF when unlabelled. |
-| selectedTab | -          | No        | `IgcTabComponent \| null`   | `null`  | Read-only. The currently selected tab, if any.                       |
+| alignment   | alignment  | Yes       | `TabsAlignment`             | `start` | The alignment of the tab headers in the header strip.                |
+| activation  | activation | No        | `TabsActivation`            | `auto`  | The activation behavior of the tabs. With `auto`, a tab is selected when it receives keyboard focus. With `manual`, a tab is selected only on click, or on Enter or Space. |
+| tabs        | -          | No        | `IgcTabComponent[]`         | -       | Read-only. The tab children of the component.                        |
+| selected    | -          | No        | `string`                    | `''`    | Read-only. The label of the selected tab, or its `id` when the tab has no label. An empty string when no tab is selected. |
+| selectedTab | -          | No        | `IgcTabComponent \| null`   | `null`  | Read-only. The selected tab, or `null` when no tab is selected.      |
 
 #### Methods
 
 | Name   | Type signature                                  | Description                                                                  |
 | ------ | ----------------------------------------------- | ----------------------------------------------------------------------------- |
-| select | `(ref: IgcTabComponent \| string): void`        | Selects the tab matching the passed reference, IDREF or label. Disabled tabs and values matching no tab are ignored. |
+| select | `(ref: IgcTabComponent \| string): void`        | Selects a tab by reference, IDREF or label, and displays the corresponding panel. Disabled tabs and values not matching any tab are ignored. |
 
 #### Events
 
@@ -247,8 +248,8 @@ A tab nested in a tabs component.
 | Property | Attribute | Reflected | Type      | Default | Description                              |
 | -------- | --------- | --------- | --------- | ------- | ------------------------------------------ |
 | label    | label     | No        | `string`  | `''`    | The tab item label.                      |
-| selected | selected  | Yes       | `boolean` | false   | Determines whether the tab is selected.  |
-| disabled | disabled  | Yes       | `boolean` | false   | Determines whether the tab is disabled.  |
+| selected | selected  | Yes       | `boolean` | false   | Whether the tab is selected.             |
+| disabled | disabled  | Yes       | `boolean` | false   | Whether the tab is disabled.             |
 
 | Slot      | Description                          |
 | --------- | ------------------------------------ |
@@ -260,6 +261,7 @@ A tab nested in a tabs component.
 | Part         | Description                                                                       |
 | ------------ | --------------------------------------------------------------------------------- |
 | `tab-header` | The header of a single tab.                                                       |
+| `base`       | The wrapper of the prefix, the label and the suffix in the tab header.            |
 | `prefix`     | The label prefix of the tab header.                                               |
 | `content`    | The label slot container of the tab header.                                       |
 | `suffix`     | The label suffix of the tab header.                                               |

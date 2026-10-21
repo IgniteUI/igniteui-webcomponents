@@ -10,8 +10,7 @@ import { styles } from './themes/avatar.base.css.js';
 import { styles as shared } from './themes/shared/avatar.common.css.js';
 
 /**
- * An avatar component is used as a representation of a user identity
- * typically in a user profile.
+ * Shows the identity of a user, for example in a user profile.
  *
  * @element igc-avatar
  *
@@ -19,7 +18,7 @@ import { styles as shared } from './themes/shared/avatar.common.css.js';
  *
  * @csspart base - The base wrapper of the avatar.
  * @csspart initials - The initials wrapper of the avatar.
- * @csspart image - The image wrapper of the avatar.
+ * @csspart image - The image element of the avatar.
  */
 export default class IgcAvatarComponent extends LitElement {
   public static readonly tagName = 'igc-avatar';
