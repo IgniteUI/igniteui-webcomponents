@@ -897,14 +897,7 @@
       "methods": {
         "static register": "() => void"
       },
-      "events": {
-        "igcAttachmentDrag": "unknown",
-        "igcAttachmentDrop": "unknown",
-        "igcInputBlur": "unknown",
-        "igcInputChange": "unknown",
-        "igcInputFocus": "unknown",
-        "igcTypingChange": "unknown"
-      },
+      "events": {},
       "slots": [],
       "cssParts": [
         "actions-container",

@@ -332,6 +332,26 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       );
       expect(picker.open).to.equal(true);
     });
+
+    it('should not change keepOpenOnSelect when the mode changes', async () => {
+      picker.mode = 'dialog';
+      await elementUpdated(picker);
+      expect(picker.keepOpenOnSelect).to.be.false;
+
+      await picker.show();
+      await selectDates(today, tomorrow, calendar);
+      expect(picker.open).to.be.true;
+
+      await picker.hide();
+      picker.mode = 'dropdown';
+      await elementUpdated(picker);
+
+      await picker.show();
+      await selectDates(today.add('day', 2), tomorrow.add('day', 2), calendar);
+      await elementUpdated(picker);
+      expect(picker.open).to.be.false;
+    });
+
     it('should set properties of the calendar correctly', async () => {
       const props = {
         activeDate: new Date(2025, 3, 9),

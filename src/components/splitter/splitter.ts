@@ -149,8 +149,10 @@ const i18n = {
  * | `Arrow Up` / `Arrow Down` | Resize panes (vertical orientation) |
  * | `Home` | Snap start pane to its minimum size |
  * | `End` | Snap start pane to its maximum size |
- * | `Ctrl + Arrow Left` / `Ctrl + Arrow Up` | Collapse or expand the start pane |
- * | `Ctrl + Arrow Right` / `Ctrl + Arrow Down` | Collapse or expand the end pane |
+ * | `Ctrl + Arrow Left` / `Ctrl + Arrow Up` | Expand the end pane if it is collapsed, else toggle the start pane |
+ * | `Ctrl + Arrow Right` / `Ctrl + Arrow Down` | Expand the start pane if it is collapsed, else toggle the end pane |
+ *
+ * In a right-to-left context, `Arrow Left` and `Arrow Right` swap their actions.
  *
  * @element igc-splitter
  *

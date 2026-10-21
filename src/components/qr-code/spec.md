@@ -399,7 +399,8 @@ None. The SVG is rendered entirely from the properties of the component.
     JPEG, a WebP and an SVG with scaled dimensions. A `size` set right after the call applies to the image.
 22. An existing matching extension in the file name is kept, and the download dialog opens only when requested.
 23. Both methods reject without a value, and `toImage()` rejects invalid options, also a `size` set right after the
-    call that makes the image larger than the maximum canvas size.
+    call that makes the image larger than the maximum canvas size. A value that does not fit the pinned version, and
+    a version that is not a number, render nothing, warn once and make the export reject with the encoder error.
 
 ### Clipboard
 
@@ -420,7 +421,7 @@ None. The SVG is rendered entirely from the properties of the component.
 29. Generated numeric, alphanumeric and byte data encodes into the smallest version that holds it, with the
     codeword count of that version, and the encoding mode matches the characters of the data.
 30. The matrix is square, with the side length of its version, and data over the capacity of a version throws the
-    capacity error.
+    capacity error. A requested version that is not an integer from 1 to 40 throws.
 
 ### Host ARIA
 
@@ -438,7 +439,9 @@ None. The SVG is rendered entirely from the properties of the component.
 - `logoSize` is a ratio of the safe area of the resolved error correction level — at most about 9% of the area of
   the code — and not of the whole code.
 - Logo sources are validated for their scheme and their media type, not for their content.
-- A pinned `version` that cannot hold the value is the responsibility of the application.
+- The application owns a `version` that cannot hold the value or is not an integer from 1 to 40, and a value too long
+  for version 40. The component then renders nothing and warns, `toBlob()` and `toImage()` reject with the encoder
+  error, and `copyToClipboard()` rejects.
 - The colors deliberately do not follow the light and dark theme variants.
 - `toImage()` and `copyToClipboard()` are bounded by the maximum canvas size of the browser, so a very large size and
   scale combination is rejected.

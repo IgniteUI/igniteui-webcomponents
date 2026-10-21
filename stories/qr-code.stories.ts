@@ -43,7 +43,7 @@ const metadata: Meta<IgcQrCodeComponent> = {
     version: {
       type: 'number',
       description:
-        'The version of the QR code to generate, which determines the size and data capacity of the QR code.\nValid values are integers from 1 to 40, where each version corresponds to a specific module size and data capacity.\n\nWhen it is not set, the component selects the smallest version that holds the value.',
+        'The version of the QR code to generate, which determines the size and data capacity of the QR code.\nValid values are integers from 1 to 40, where each version corresponds to a specific module size and data capacity.\n\nWhen it is not set, the component selects the smallest version that holds the value.\nWhen the value does not fit the version, the component renders nothing.',
       control: 'number',
     },
     errorLevel: {
@@ -127,6 +127,7 @@ interface IgcQrCodeArgs {
    * Valid values are integers from 1 to 40, where each version corresponds to a specific module size and data capacity.
    *
    * When it is not set, the component selects the smallest version that holds the value.
+   * When the value does not fit the version, the component renders nothing.
    */
   version: number;
   /**

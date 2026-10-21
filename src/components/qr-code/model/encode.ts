@@ -1,3 +1,4 @@
+import { numberInRangeInclusive } from '#internals/utils/math.js';
 import type { QrEncodingMode, QrErrorCorrectionLevel } from '../types.js';
 import { getDataCodewordsCount, interleaveBlocks } from './error-correction.js';
 
@@ -159,8 +160,11 @@ export function encodeQR(
   let bits: number[];
 
   if (requestedVersion != null) {
-    if (requestedVersion < 1 || requestedVersion > 40) {
-      throw new Error('Requested version must be between 1 and 40');
+    if (
+      !Number.isInteger(requestedVersion) ||
+      !numberInRangeInclusive(requestedVersion, 1, 40)
+    ) {
+      throw new Error('Requested version must be an integer between 1 and 40');
     }
     version = requestedVersion;
     bits = encodeData(data, mode, version);

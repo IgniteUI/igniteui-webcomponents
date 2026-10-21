@@ -228,6 +228,20 @@ describe('Chip', () => {
 
       expect(chip.renderRoot.querySelector('[part="remove"]')).to.be.null;
     });
+
+    it('renders the start and end slots outside the prefix and suffix slots', async () => {
+      const chip = await fixture<IgcChipComponent>(
+        html`<igc-chip>Chip</igc-chip>`
+      );
+      const slots = Array.from(
+        chip.renderRoot.querySelectorAll<HTMLSlotElement>(
+          '[part="action"] slot'
+        ),
+        ({ name }) => name
+      );
+
+      expect(slots).to.eql(['start', 'prefix', '', 'suffix', 'end']);
+    });
   });
 
   describe('Events', () => {

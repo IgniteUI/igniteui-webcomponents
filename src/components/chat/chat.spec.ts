@@ -460,6 +460,22 @@ describe('Chat', () => {
         `<h3 slot="suggestions-actions">Add more ...</h3>`
       );
     });
+
+    it('should slot every suggestion in place of the default items', async () => {
+      chat = await fixture<IgcChatComponent>(html`
+        <igc-chat .options=${{ suggestions }}>
+          <span slot="suggestion">First</span>
+          <span slot="suggestion">Second</span>
+        </igc-chat>
+      `);
+
+      expect(
+        chat.renderRoot.querySelectorAll('slot[name="suggestion"]').length
+      ).to.equal(1);
+      expect(getSlottedElements('suggestion').map((e) => e.textContent)).to.eql(
+        ['First', 'Second']
+      );
+    });
   });
 
   describe('Templates', () => {

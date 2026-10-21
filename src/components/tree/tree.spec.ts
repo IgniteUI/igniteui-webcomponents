@@ -546,6 +546,29 @@ describe('Tree', () => {
       await elementUpdated(item);
       expect(item.expanded).to.be.true;
     });
+
+    it('Should not render a select marker without a tree', async () => {
+      const item = await fixture<IgcTreeItemComponent>(
+        html`<igc-tree-item label="Standalone"></igc-tree-item>`
+      );
+
+      expect(item.renderRoot.querySelector(PARTS.select)).to.be.null;
+    });
+
+    it('Should render a select marker after a move into a selectable tree', async () => {
+      const item = await fixture<IgcTreeItemComponent>(
+        html`<igc-tree-item label="Standalone"></igc-tree-item>`
+      );
+      const tree = await TreeTestFunctions.createTreeElement(
+        '<igc-tree selection="multiple"></igc-tree>'
+      );
+
+      tree.append(item);
+      await elementUpdated(item);
+
+      expect(item.tree).to.equal(tree);
+      expect(item.renderRoot.querySelector(PARTS.select)).to.not.be.null;
+    });
   });
 
   describe('Expand/Collapse', async () => {

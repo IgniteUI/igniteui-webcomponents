@@ -440,7 +440,7 @@ apply.
 | hideOutsideDays        | hide-outside-days          | Yes       | `boolean`                   | false             | Whether the calendar hides the dates that do not belong to the current month. |
 | showWeekNumbers        | show-week-numbers          | Yes       | `boolean`                   | false             | Whether the calendar shows the week numbers.                             |
 | weekStart              | week-start                 | No        | `WeekDays`                  | from the locale   | The first day of the week in the calendar.                               |
-| keepOpenOnSelect       | keep-open-on-select        | Yes       | `boolean`                   | false             | Keeps the picker open after a selection.                                 |
+| keepOpenOnSelect       | keep-open-on-select        | Yes       | `boolean`                   | false             | Keeps the dropdown open after a selection. A selection never closes the dialog.        |
 | keepOpenOnOutsideClick | keep-open-on-outside-click | Yes       | `boolean`                   | false             | Whether the component stays open when the user clicks outside of it.                |
 | scrollStrategy         | scroll-strategy            | No        | `PopoverScrollStrategy`     | `hide`            | The behavior of the component when a parent container scrolls.           |
 | nonEditable            | non-editable               | Yes       | `boolean`                   | false             | Whether the user cannot type in the input. The user can still select a date in the calendar. |
@@ -551,7 +551,8 @@ The suites reuse `createFormAssociatedTestBed`, `runValidationContainerTests`,
 
 1. Rendering and initialization of the shared structure, including the exposed `ranges` part, and a value and bounds
    set before the first render.
-2. Properties, including localization - formats, resource strings and the separator.
+2. Properties, including localization - formats, resource strings and the separator - and `keepOpenOnSelect`, which
+   `mode` does not change.
 3. Methods - `show`, `hide`, `toggle`, `select` and `clear`.
 4. Interactions - selection through the calendar, keyboard navigation, and interactions with the show icon.
 5. Readonly state, in dropdown and in dialog mode.

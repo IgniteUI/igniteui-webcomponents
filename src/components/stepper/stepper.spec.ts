@@ -208,6 +208,17 @@ describe('Stepper', () => {
       expect(stepper.steps[0].active).to.be.true;
     });
 
+    it('should not activate a disabled step through `navigateTo`', async () => {
+      stepper.steps[1].disabled = true;
+      await elementUpdated(stepper);
+
+      stepper.navigateTo(1);
+      await elementUpdated(stepper);
+
+      expect(stepper.steps[0].active).to.be.true;
+      expect(stepper.steps[1].active).to.be.false;
+    });
+
     it('should activate steps through UI interaction - click', async () => {
       const [firstStep, secondStep] = stepper.steps;
 

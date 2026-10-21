@@ -813,6 +813,46 @@ describe('IgcQrCodeComponent', () => {
     });
 
     describe('toBlob()', () => {
+      it('rejects with the encoder error when the value does not fit the pinned version', async () => {
+        const warn = stub(console, 'warn');
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code value="test" version="1"></igc-qr-code>`
+        );
+
+        el.value = 'a'.repeat(200);
+        await elementUpdated(el);
+
+        expect(getSvg(el)).to.be.null;
+        expect(warn).calledOnce;
+        await expectRejection(
+          el.toBlob(),
+          Error,
+          'Data too long for version 1 and error correction level M'
+        );
+
+        el.version = undefined;
+        await elementUpdated(el);
+        expect(getSvg(el)).to.exist;
+      });
+
+      it('warns once for a version that is not a number', async () => {
+        const warn = stub(console, 'warn');
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code value="test" version="abc"></igc-qr-code>`
+        );
+
+        el.size = 200;
+        await elementUpdated(el);
+
+        expect(getSvg(el)).to.be.null;
+        expect(warn).calledOnce;
+        await expectRejection(
+          el.toBlob(),
+          Error,
+          'Requested version must be an integer between 1 and 40'
+        );
+      });
+
       it('returns an SVG blob', async () => {
         const el = await fixture<IgcQrCodeComponent>(
           html`<igc-qr-code value="https://example.com"></igc-qr-code>`
