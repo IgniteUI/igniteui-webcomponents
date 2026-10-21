@@ -186,8 +186,8 @@ const styles = html`
 
     /* The themed surface of a provider: its host is display: contents. */
     .tp-surface {
-      background: var(--ig-surface-500);
-      color: var(--ig-surface-500-contrast);
+      background: var(--ig-surface-base);
+      color: var(--ig-surface-base-contrast);
       font-family: var(--ig-font-family);
     }
 

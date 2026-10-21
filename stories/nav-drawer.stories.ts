@@ -194,7 +194,7 @@ const styles = html`
     /* The fullscreen layout of Storybook has no background of its own. */
     .dr-drive {
       min-height: 100vh;
-      background: var(--ig-surface-500);
+      background: var(--ig-surface-base);
       color: var(--ig-gray-900);
       box-sizing: border-box;
       padding: 1.5rem;

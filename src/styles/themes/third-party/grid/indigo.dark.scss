@@ -7,12 +7,12 @@
         --content-text-color: #{contrast-color(null, gray, 50)};
 
         // Header row
-        --header-background: #{color(null, surface, 500)};
-        --header-text-color: #{contrast-color(null, surface, 500)};
+        --header-background: #{color(null, surface, base)};
+        --header-text-color: #{contrast-color(null, surface, base)};
         --header-border-color: #{color(null, gray, 100, .24)};
 
         // Header cell
-        --sorted-header-icon-color: #{contrast-color(null, surface, 500)};
+        --sorted-header-icon-color: #{contrast-color(null, surface, base)};
 
         // Body row
         --row-hover-background: #{color(null, gray, 200)};
@@ -23,6 +23,6 @@
         --row-border-color: #{color(null, gray, 50, .24)};
 
         // Body cell
-        --cell-active-border-color: #{contrast-color(null, surface, 500)};
+        --cell-active-border-color: #{contrast-color(null, surface, base)};
     }
 }

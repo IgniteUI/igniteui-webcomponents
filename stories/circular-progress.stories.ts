@@ -413,7 +413,7 @@ export const Refresh: Story = {
           border-radius: 4px;
           background: color-mix(
             in srgb,
-            var(--ig-surface-500) 75%,
+            var(--ig-surface-base) 75%,
             transparent
           );
         }

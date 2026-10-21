@@ -378,7 +378,7 @@ export const Hero: Story = {
           inset-inline-end: 1rem;
           z-index: 11;
           border-radius: 50%;
-          background: var(--ig-surface-500);
+          background: var(--ig-surface-base);
         }
 
         .cr-hero-caption {
