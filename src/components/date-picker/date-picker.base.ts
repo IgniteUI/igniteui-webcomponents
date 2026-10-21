@@ -254,7 +254,7 @@ export abstract class IgcDatePickerBaseComponent<
   /** Invoked when the picker is toggled, before the update is awaited. */
   protected _syncCalendarOnToggle(): void {}
 
-  /** Whether a selection made in the calendar commits the value of the picker right away. */
+  /** Whether a calendar selection commits the value at once. Else the picker stays open. */
   protected _commitsCalendarSelection(): boolean {
     return true;
   }
@@ -631,9 +631,8 @@ export abstract class IgcDatePickerBaseComponent<
 
     if (this._commitsCalendarSelection()) {
       this.emitEvent('igcChange', { detail: this._value });
+      this._shouldCloseCalendarDropdown();
     }
-
-    this._shouldCloseCalendarDropdown();
   }
 
   protected _handleDialogClosing(event: Event): void {
@@ -796,7 +795,7 @@ export abstract class IgcDatePickerBaseComponent<
             hide-default-action
             @igcClosing=${this._handleDialogClosing}
             @igcClosed=${stopPropagation}
-            exportparts="base: dialog-base, title, footer, overlay"
+            exportparts="base: dialog-base, title, footer, backdrop: overlay"
           >
             ${this._renderPickerContent(id)}${this._renderDialogFooter()}
           </igc-dialog>

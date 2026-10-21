@@ -666,7 +666,8 @@ groups below mirror the `describe` blocks.
 
 26. `show`, `hide` and `toggle` open and close the picker without emitting events.
 27. `clear` clears the input.
-28. `stepUp` and `stepDown` are delegated to the composed date time input.
+28. `stepUp` and `stepDown` are delegated to the composed date time input and update the value at once, also while a
+    read-only input is focused, and a later blur does not report the step as a change.
 29. `select`, `setSelectionRange` and `setRangeText` act on the input, and `setRangeText` re-applies the mask.
 30. `setRangeText` without a range replaces the selection.
 31. `selectionStart` and `selectionEnd` report the selection in the input.

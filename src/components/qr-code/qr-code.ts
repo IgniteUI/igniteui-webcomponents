@@ -81,7 +81,8 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
     value: string;
     errorLevel: QrErrorCorrectionLevel;
     version?: number;
-    result: QRCodeMatrixResult;
+    result: QRCodeMatrixResult | null;
+    error?: unknown;
   };
 
   @state()
@@ -112,6 +113,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
    * Valid values are integers from 1 to 40, where each version corresponds to a specific module size and data capacity.
    *
    * When it is not set, the component selects the smallest version that holds the value.
+   * When the value does not fit the version, the component renders nothing.
    *
    * @attr version
    */
@@ -303,22 +305,35 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
     return { errorLevel: this._pickErrorLevel(targetArea), area: targetArea };
   }
 
+  /** Returns `null` when the value cannot be encoded. */
   private _getMatrix(
     value: string,
     errorLevel: QrErrorCorrectionLevel
-  ): QRCodeMatrixResult {
+  ): QRCodeMatrixResult | null {
+    const version = this.version;
     const cached = this._matrixCache;
     if (
       cached &&
       cached.value === value &&
       cached.errorLevel === errorLevel &&
-      cached.version === this.version
+      // NaN-safe, so an invalid version warns once.
+      Object.is(cached.version, version)
     ) {
       return cached.result;
     }
 
-    const result = generateQRCodeMatrix(value, errorLevel, this.version);
-    this._matrixCache = { value, errorLevel, version: this.version, result };
+    let result: QRCodeMatrixResult | null = null;
+    let error: unknown;
+
+    try {
+      result = generateQRCodeMatrix(value, errorLevel, version);
+    } catch (e) {
+      error = e;
+      // oxlint-disable-next-line no-console -- an empty render is the only other signal
+      console.warn(`<igc-qr-code> cannot encode its value. ${e}`);
+    }
+
+    this._matrixCache = { value, errorLevel, version, result, error };
     return result;
   }
 
@@ -333,10 +348,11 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
     await this._logoReady;
     await this.updateComplete;
 
-    // The SVG is rendered only when there is a value.
+    // The SVG is rendered only when there is a value that fits.
     const svg = this.renderRoot.querySelector('svg');
     if (!svg) {
-      throw new Error('Cannot export an igc-qr-code without a value.');
+      const error = this.value ? this._matrixCache?.error : undefined;
+      throw error ?? new Error('Cannot export an igc-qr-code without a value.');
     }
 
     return createSvgSnapshot(svg);
@@ -382,7 +398,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
    * is fetched and inlined, so the blob renders identically outside the component.
    * A logo that cannot be fetched (for example a cross-origin URL without CORS headers) is omitted.
    *
-   * Rejects when the component has no `value`.
+   * Rejects when there is no `value` or it does not fit the `version`.
    */
   public async toBlob(): Promise<Blob> {
     return serializeSvg(await this._createSnapshot());
@@ -396,8 +412,9 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
    * with `scale: 2` produces a 512x512 image. When `download` is `true` the browser
    * download dialog opens for the file.
    *
-   * Rejects when the component has no `value`, when `format` is not supported, when `scale`
-   * is not a positive finite number, or when the resulting image exceeds the maximum canvas size.
+   * Rejects when there is no `value` or it does not fit the `version`, when `format` is not
+   * supported, when `scale` is not a positive finite number, or when the resulting image
+   * exceeds the maximum canvas size.
    */
   public async toImage(options?: QrCodeExportOptions): Promise<File> {
     const { fileName, format = 'png', scale = 1, download } = options ?? {};
@@ -430,9 +447,9 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
    * Browsers accept a clipboard write only in a focused document during a user action, so call
    * the method directly from the event handler, with no `await` before it.
    *
-   * Rejects when the component has no `value`, when `format` is not supported, when `scale` is
-   * not a positive finite number, when the image exceeds the maximum canvas size, when the
-   * Clipboard API is not available, or when the browser refuses the write.
+   * Rejects when there is no `value` or it does not fit the `version`, when `format` is not
+   * supported, when `scale` is not a positive finite number, when the image exceeds the maximum
+   * canvas size, when the Clipboard API is not available, or when the browser refuses the write.
    */
   public async copyToClipboard(
     options?: QrCodeCopyOptions
@@ -485,7 +502,10 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
     const hasLogo = this._hasValidLogoSrc() && !this._logoLoadFailed;
     const { errorLevel, area } = this._getErrorLevelAndArea(hasLogo);
 
-    const { matrix, size } = this._getMatrix(this.value, errorLevel);
+    const encoded = this._getMatrix(this.value, errorLevel);
+    if (!encoded) return nothing;
+
+    const { matrix, size } = encoded;
 
     const totalModules = size + this.margin * 2;
     const moduleSize = size / totalModules;

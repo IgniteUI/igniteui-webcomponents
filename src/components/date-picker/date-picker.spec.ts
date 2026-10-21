@@ -33,6 +33,7 @@ import {
 } from '#internals/testing/simulate.spec.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { DateRangeType } from '../calendar/types.js';
+import { DatePart } from '../date-time-input/date-part.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDatePickerComponent from './date-picker.js';
 
@@ -861,6 +862,35 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       expect(stepDownSpy).called;
+    });
+
+    it('should update the value on stepUp and stepDown', async () => {
+      picker.value = new Date(2024, 0, 15);
+      await elementUpdated(picker);
+
+      picker.stepUp(DatePart.Date);
+      checkDatesEqual(picker.value!, new Date(2024, 0, 16));
+
+      picker.stepDown(DatePart.Date, 2);
+      checkDatesEqual(picker.value!, new Date(2024, 0, 14));
+    });
+
+    it('should apply a step at once while the read-only input is focused', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      picker.nonEditable = true;
+      picker.value = new Date(2024, 0, 15);
+      await elementUpdated(picker);
+
+      dateTimeInput.focus();
+      picker.stepUp(DatePart.Date);
+      checkDatesEqual(picker.value!, new Date(2024, 0, 16));
+
+      dateTimeInput.blur();
+      await elementUpdated(picker);
+
+      checkDatesEqual(picker.value!, new Date(2024, 0, 16));
+      checkDatesEqual(dateTimeInput.value!, new Date(2024, 0, 16));
+      expect(eventSpy).not.calledWith('igcChange');
     });
 
     it('should select the text in the input with the select method', async () => {

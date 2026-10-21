@@ -63,13 +63,13 @@ export function EventEmitterMixin<E, T extends Constructor<LitElement>>(
       type: K,
       eventInitDict?: CustomEventInit<D>
     ): boolean {
-      return this.dispatchEvent(
-        new CustomEvent<D>(type as string, {
-          detail: {} as D,
-          ...defaultEventInit,
-          ...eventInitDict,
-        })
-      );
+      // Inlined in `dispatchEvent`, the manifest analyzer records an unnamed event.
+      const event = new CustomEvent<D>(type as string, {
+        detail: {} as D,
+        ...defaultEventInit,
+        ...eventInitDict,
+      });
+      return this.dispatchEvent(event);
     }
   }
   return EventEmitterElement as Constructor<EventEmitterInterface<E>> & T;

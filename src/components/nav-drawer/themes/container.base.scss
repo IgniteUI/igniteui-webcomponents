@@ -13,6 +13,8 @@ $theme: $base;
     flex-shrink: 0;
     font-family: var(--ig-font-family);
 
+    // The exact `[part='mini']` match skips the empty mini variant (`mini hidden`),
+    // so it takes no space and has no transitions.
     [part='base'],
     [part='mini'] {
         --ig-scrollbar-size: rem(8px);

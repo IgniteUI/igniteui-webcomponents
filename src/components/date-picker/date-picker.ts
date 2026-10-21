@@ -353,6 +353,19 @@ export default class IgcDatePickerComponent extends I18nMixin(
 
   //#endregion
 
+  //#region Internal API
+
+  /**
+   * A focused editor keeps a step as a draft, so take the draft at once. A step from
+   * code is not a user change, so a later blur does not report it.
+   */
+  private _applyStep(): void {
+    this.value = this._input._uncommittedValue;
+    this._oldValue = this.value;
+  }
+
+  //#endregion
+
   //#region Public methods
 
   /**
@@ -361,6 +374,7 @@ export default class IgcDatePickerComponent extends I18nMixin(
    */
   public stepUp(datePart?: DatePart, delta?: number): void {
     this._input.stepUp(datePart, delta);
+    this._applyStep();
   }
 
   /**
@@ -369,6 +383,7 @@ export default class IgcDatePickerComponent extends I18nMixin(
    */
   public stepDown(datePart?: DatePart, delta?: number): void {
     this._input.stepDown(datePart, delta);
+    this._applyStep();
   }
 
   /** Selects the text in the input of the component. */

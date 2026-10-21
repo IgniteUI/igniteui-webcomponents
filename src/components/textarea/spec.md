@@ -40,6 +40,7 @@
     - [Host ARIA](#host-aria)
     - [Auto sizing](#auto-sizing)
     - [Not covered by the suite](#not-covered-by-the-suite)
+  - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
     - [Keyboard support](#keyboard-support)
@@ -476,6 +477,12 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 The following documented behaviors have no dedicated case yet: the `validateOnly` mode, and the forwarding of
 `autocapitalize`, `autocomplete` and `inputmode`.
+
+## Assumptions and limitations
+
+- `wrap="hard"` wraps the text as the native element does, but does not add line breaks to the submitted value. The
+  browser computes those line breaks from the layout, and only when it submits a native `textarea`.
+
 ## Accessibility
 
 ### ARIA roles and properties

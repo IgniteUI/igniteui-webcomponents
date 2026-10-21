@@ -221,7 +221,8 @@ emits `igcAttachmentDrag` and `igcAttachmentDrop`, and a click on an attachment 
 
 `options.suggestions` renders a list of quick replies. Clicking one sends it as a message immediately. Their
 position follows `suggestionsPosition`, either `below-messages`, the default, or `below-input`. The
-`suggestions`, `suggestions-header`, `suggestions-actions` and `suggestion` slots replace the rendered list.
+`suggestions`, `suggestions-header`, `suggestions-actions` and `suggestion` slots replace the rendered list:
+`suggestions` the whole list and `suggestion` its default items.
 
 #### Custom renderers
 
@@ -356,7 +357,7 @@ global `registerI18n` mechanism, and both shapes are accepted by the property.
 | `suggestions-header`  | The header of the suggestions list.                          |
 | `suggestions`         | The whole suggestions list.                                  |
 | `suggestions-actions` | Additional actions next to the suggestions.                  |
-| `suggestion`          | A single suggestion.                                         |
+| `suggestion`          | Suggestions that replace the default items.                  |
 | `empty-state`         | The content shown while there are no messages.               |
 | `typing-indicator`    | The typing indicator of the other side.                      |
 
@@ -395,7 +396,8 @@ The component exposes a part for every region it renders. The main groups are:
 ### Slots tests
 
 10. The `prefix`, `title` and `actions` slots of the header accept content.
-11. The `empty-state`, `suggestions-header`, `suggestions` and `suggestions-actions` slots accept content.
+11. The `empty-state`, `suggestions-header`, `suggestions` and `suggestions-actions` slots accept content, and one
+    `suggestion` slot takes every slotted suggestion.
 
 ### Templates
 
@@ -487,6 +489,7 @@ The component exposes a part for every region it renders. The main groups are:
 - `adoptRootStyles` intentionally breaks shadow DOM encapsulation and is documented as a last resort.
 - Sanitization protects the rendered content, but an application that supplies its own renderers is responsible
   for what those render.
+- The suggestions area, and with it the four suggestion slots, renders only while `options.suggestions` has items.
 - The input and the messages get their state from the chat, which is not available during server-side rendering.
   Their shadow roots render empty on the server. On the client, the first render also stays empty, to match the
   server render during hydration, and the content renders on the next update. Outside a chat, the input and the

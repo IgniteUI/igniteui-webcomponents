@@ -462,14 +462,6 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     });
   }
 
-  protected override willUpdate(changedProperties: PropertyValues<this>): void {
-    super.willUpdate(changedProperties);
-
-    if (changedProperties.has('mode') && !this._isDropDown) {
-      this.keepOpenOnSelect = true;
-    }
-  }
-
   protected override update(changedProperties: PropertyValues<this>): void {
     // The render swaps the editors, so the range and validity are re-applied after it.
     if (changedProperties.has('useTwoInputs')) {

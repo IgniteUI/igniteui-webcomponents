@@ -160,7 +160,7 @@ const i18n: I18nMixinConfig<
  * @slot suggestions-header - The header of the suggestions list.
  * @slot suggestions - The whole suggestions list.
  * @slot suggestions-actions - Additional actions next to the suggestions.
- * @slot suggestion - A single suggestion.
+ * @slot suggestion - Suggestions that replace the default items.
  * @slot empty-state - The content shown while there are no messages.
  * @slot typing-indicator - The typing indicator of the other side.
  *
@@ -531,9 +531,9 @@ export default class IgcChatComponent extends I18nMixin(
             <slot name="suggestions-header"></slot>
           </igc-list-header>
           <slot name="suggestions">
-            ${suggestions.map(
-              (suggestion) => html`
-                <slot name="suggestion">
+            <slot name="suggestion">
+              ${suggestions.map(
+                (suggestion) => html`
                   <igc-list-item
                     part="suggestion"
                     @click=${() => this._handleSuggestionClick(suggestion)}
@@ -545,9 +545,9 @@ export default class IgcChatComponent extends I18nMixin(
                       >${suggestion}</span
                     >
                   </igc-list-item>
-                </slot>
-              `
-            )}
+                `
+              )}
+            </slot>
           </slot>
           <slot name="suggestions-actions"></slot>
         </igc-list>

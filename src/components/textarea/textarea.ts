@@ -285,7 +285,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   /**
    * How the control wraps long lines of text. With `off`, the lines do not wrap.
-   * It does not change the submitted value.
+   * Unlike the native element, `hard` does not add line breaks to the submitted value.
    * Refer to [this page on MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea#attributes)
    * for explanation of the available values.
    *

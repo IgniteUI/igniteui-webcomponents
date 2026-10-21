@@ -359,11 +359,11 @@ export default class IgcStepperComponent extends EventEmitterMixin<IgcStepperCom
 
   //#region Public API
 
-  /** Activates the step at a given index. */
+  /** Activates the step at a given index. Does nothing for a disabled step. */
   public navigateTo(index: number): void {
     const step = this._state.steps[index];
 
-    if (step) {
+    if (step && !step.disabled) {
       this._activateStep(step, false);
     }
   }

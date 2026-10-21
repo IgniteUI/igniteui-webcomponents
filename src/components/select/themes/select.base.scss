@@ -53,7 +53,7 @@ igc-validator {
 }
 
 @media (forced-colors: active) {
-    [part~='list-wrapper'] {
+    [part~='base'] {
         border: rem(1px) solid CanvasText;
     }
 

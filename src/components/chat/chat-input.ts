@@ -53,16 +53,10 @@ type DefaultInputRenderers = {
  * - Sending messages on Enter key (with Shift+Enter for newlines)
  * - File attachments via file picker or drag-and-drop
  * - Customizable templates for send button, attachments, and text input
- * - Emits various chat-related events (typing, input focus/blur, attachment drop, etc.)
+ *
+ * Its events are dispatched on the parent chat.
  *
  * @element igc-chat-input
- *
- * @fires igcTypingChange - Fired when the user starts/stops typing
- * @fires igcInputFocus - Fired when the input area receives focus
- * @fires igcInputBlur - Fired when the input area loses focus
- * @fires igcAttachmentDrag - Fired when dragging a file over the input
- * @fires igcAttachmentDrop - Fired when a file is dropped into the input
- * @fires igcInputChange - Fired when the value of the text input changes
  *
  * @csspart input-container - Container for the input section
  * @csspart input-wrapper - Wrapper around the text input

@@ -177,7 +177,7 @@ the end-user from moving on.
 ```typescript
 const stepper = document.querySelector('igc-stepper')!;
 
-stepper.navigateTo(2);  // activate by index
+stepper.navigateTo(2);  // activate by index, unless the step is disabled
 stepper.next();         // the next enabled step
 stepper.prev();         // the previous enabled step
 stepper.reset();        // back to the first step
@@ -247,7 +247,7 @@ Disabled steps are skipped, and in linear mode the steps that are not reachable 
 
 | Name       | Type signature            | Description                                                      |
 | ---------- | ------------------------- | ---------------------------------------------------------------- |
-| navigateTo | `(index: number): void`   | Activates the step at the given index.                           |
+| navigateTo | `(index: number): void`   | Activates the step at the given index. Does nothing for a disabled step. |
 | next       | `(): void`                | Activates the next enabled step.                                 |
 | prev       | `(): void`                | Activates the previous enabled step.                             |
 | reset      | `(): void`                | Resets the stepper to its initial state and activates the first enabled step. |
@@ -331,7 +331,7 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 
 ### Navigation API tests
 
-13. `navigateTo` activates by index, and ignores an index that matches no step.
+13. `navigateTo` activates by index, and ignores an index that matches no step or a disabled step.
 14. `next` and `prev` move to the neighbouring enabled steps.
 15. `reset` returns the stepper to its first step.
 
