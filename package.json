@@ -123,7 +123,6 @@
   "peerDependencies": {
     "dompurify": "^3.4.17",
     "marked": "^18.1.1",
-    "marked-shiki": "^1.2.1",
     "shiki": "^4.5.0"
   },
   "browserslist": [
