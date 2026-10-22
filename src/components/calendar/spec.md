@@ -271,7 +271,8 @@ activated date; the calendar consumes these internally and surfaces a single pub
 The rendered strings and formats resolve through the library i18n mechanism and the `Intl` APIs:
 
 - `locale` selects the locale for the month names, the weekday labels and the header date. Without it, the calendar
-  takes the locale of the nearest ancestor component that sets one, and then the global locale of the library.
+  takes its own `lang`, else the locale of the nearest ancestor that has a `locale` (a component) or a `lang`, and then
+  the global locale of the library.
 - `resourceStrings` overrides the calendar resource strings, such as the labels of the navigation buttons.
 - The first day of the week is derived from the locale when `weekStart` is not set, falling back to Sunday in
   engines without `Intl.Locale.prototype.getWeekInfo()`. An explicit `weekStart` always wins.

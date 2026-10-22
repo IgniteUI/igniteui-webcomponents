@@ -272,10 +272,10 @@ picker.setCustomValidity('Pick a lighter shade');
 ### Localization
 
 The component takes its resource strings from the `igniteui-i18n-core` package through the `locale` and
-`resourceStrings` properties. Without an explicit `locale`, it takes the locale of the nearest ancestor component
-that sets one, and then the global locale of the library. A key
-that the strings of a locale do not have falls back to its English value. The strings are accessibility-only text:
-the component has no visible copy of its own, except the placeholders of the alpha input and the format select.
+`resourceStrings` properties. Without an explicit `locale`, it takes its own `lang`, else the locale of the nearest
+ancestor that has a `locale` (a component) or a `lang`, and then the global locale of the library. A key that the
+strings of a locale do not have falls back to its English value. The strings are accessibility-only text: the component
+has no visible copy of its own, except the placeholders of the alpha input and the format select.
 
 | Key                          | Default English value             | Used for                                                       |
 | ---------------------------- | --------------------------------- | -------------------------------------------------------------- |

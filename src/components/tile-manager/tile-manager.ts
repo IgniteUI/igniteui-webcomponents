@@ -163,8 +163,9 @@ export default class IgcTileManagerComponent extends LitElement {
 
   /**
    * The locale of the tiles. A tile without its own locale takes this one.
-   * Without it, the manager takes the locale of the nearest ancestor component
-   * that sets one, and then the global locale.
+   * Without it, the manager takes its own `lang`, else the locale of the
+   * nearest ancestor that has a `locale` (a component) or a `lang`, and then
+   * the global locale.
    *
    * @attr locale
    */

@@ -241,8 +241,8 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   /**
    * The locale used to format the display value. Without it, the input takes
-   * the locale of the nearest ancestor component that sets one, and then the
-   * global locale.
+   * its own `lang`, else the locale of the nearest ancestor that has a
+   * `locale` (a component) or a `lang`, and then the global locale.
    * @attr locale
    */
   @property()

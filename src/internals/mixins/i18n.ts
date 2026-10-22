@@ -51,9 +51,9 @@ export function I18nMixin<
     protected readonly _i18nController = addI18nController<T>(this, config);
 
     /**
-     * The locale of the component. Without it, the component takes the locale
-     * of the nearest ancestor component that sets one, and then the global
-     * locale.
+     * The locale of the component. Without it, the component takes its own
+     * `lang`, else the locale of the nearest ancestor that has a `locale` (a
+     * component) or a `lang`, and then the global locale.
      *
      * @attr locale
      */

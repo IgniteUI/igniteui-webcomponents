@@ -21,9 +21,15 @@ import { LitElement } from 'lit';
 import { spy } from 'sinon';
 import type { DateRangePickerResourceStringsType } from '../../components/date-range-picker/date-range-picker.js';
 import { I18nMixin } from '../mixins/i18n.js';
+import { catchListenerErrors } from '../testing/helpers.spec.js';
+import { setOrRemoveAttribute } from '../utils/dom.js';
 import { formatDisplayDate, getLocaleDateTimeFormats } from './date-formats.js';
 import type { IgcDateRangePickerResourceStrings } from './EN/date-range-picker.resources.js';
-import { addI18nController, type I18nController } from './i18n-controller.js';
+import {
+  addI18nController,
+  getHostLocale,
+  type I18nController,
+} from './i18n-controller.js';
 import { dateRangePickerResourcesMap } from './utils.js';
 
 class TestLocalizedClass<T extends object> extends LitElement {
@@ -689,6 +695,305 @@ describe('Localization', () => {
       await elementUpdated(child);
 
       expect(child.locale).to.equal('bg');
+    });
+
+    describe('lang', () => {
+      /** The `lang` observer runs in a microtask, before the update. */
+      const langApplied = async (element: Localized) => {
+        await Promise.resolve();
+        await elementUpdated(element);
+      };
+
+      it('takes the nearest of an ancestor locale and an ancestor lang', async () => {
+        const root = await fixture<HTMLElement>(html`
+          <div>
+            <${tag} locale="de">
+              <div lang="bg"><${tag} id="lang"></${tag}></div>
+            </${tag}>
+            <div lang="bg">
+              <${tag} locale="de"><${tag} id="locale"></${tag}></${tag}>
+            </div>
+          </div>
+        `);
+
+        const lang = get(root, '#lang');
+        await elementUpdated(lang);
+
+        expect(lang.locale).to.equal('bg');
+        expect(textOf(lang)).to.equal(BG);
+        expect(get(root, '#locale').locale).to.equal('de');
+      });
+
+      it('takes its own lang before the ancestors, and its own locale before its lang', async () => {
+        const root = await fixture<Localized>(html`
+          <${tag} locale="de">
+            <${tag} id="lang" lang="bg"><${tag} id="child"></${tag}></${tag}>
+            <${tag} id="both" locale="de" lang="bg"></${tag}>
+          </${tag}>
+        `);
+        const child = get(root, '#child');
+        await elementUpdated(child);
+
+        expect(get(root, '#lang').locale).to.equal('bg');
+        expect(child.locale).to.equal('bg');
+        expect(textOf(child)).to.equal(BG);
+        expect(get(root, '#both').locale).to.equal('de');
+      });
+
+      it('takes the lang across shadow roots', async () => {
+        const root = await fixture<HTMLElement>(html`
+          <div lang="bg"><${shadowHost}></${shadowHost}></div>
+        `);
+        const host = root.firstElementChild as LitElement;
+        await elementUpdated(host);
+
+        const inner = get(host.renderRoot, tagName);
+        await elementUpdated(inner);
+
+        expect(inner.locale).to.equal('bg');
+        expect(textOf(inner)).to.equal(BG);
+      });
+
+      it('follows a lang change in an application shadow root', async () => {
+        const root = await fixture<HTMLElement>(html`<div></div>`);
+        const shadow = root.attachShadow({ mode: 'open' });
+        shadow.innerHTML = `<section lang="de"><${tagName}></${tagName}></section>`;
+
+        const inner = get(shadow, tagName);
+        await elementUpdated(inner);
+
+        expect(inner.locale).to.equal('de');
+
+        shadow.querySelector('section')!.lang = 'bg';
+        await langApplied(inner);
+
+        expect(inner.locale).to.equal('bg');
+        expect(textOf(inner)).to.equal(BG);
+      });
+
+      it('follows a new, a changed and a removed lang', async () => {
+        const root = await fixture<Localized>(html`
+          <${tag} locale="de">
+            <div id="region"><${tag} id="child"></${tag}></div>
+          </${tag}>
+        `);
+        const region = root.querySelector('#region')!;
+        const child = get(root, '#child');
+
+        region.setAttribute('lang', 'bg');
+        await langApplied(child);
+
+        expect(child.locale).to.equal('bg');
+        expect(textOf(child)).to.equal(BG);
+
+        region.setAttribute('lang', 'en');
+        await langApplied(child);
+
+        expect(child.locale).to.equal('en');
+        expect(textOf(child)).to.equal(EN);
+
+        region.removeAttribute('lang');
+        await langApplied(child);
+
+        expect(child.locale).to.equal('de');
+      });
+
+      it('follows a change of its own lang', async () => {
+        const root = await fixture<Localized>(html`
+          <${tag} locale="de"><${tag} id="child"></${tag}></${tag}>
+        `);
+        const child = get(root, '#child');
+
+        child.lang = 'bg';
+        await langApplied(child);
+
+        expect(child.locale).to.equal('bg');
+        expect(textOf(child)).to.equal(BG);
+
+        child.removeAttribute('lang');
+        await langApplied(child);
+
+        expect(child.locale).to.equal('de');
+      });
+
+      it('reads a lang that changed while it was detached', async () => {
+        const root = await fixture<HTMLElement>(html`
+          <div><section lang="bg"><${tag}></${tag}></section></div>
+        `);
+        const section = root.querySelector('section')!;
+        const inner = get(root, tagName);
+
+        section.remove();
+        section.lang = 'de';
+        // The observer runs while the section is detached.
+        await Promise.resolve();
+        root.append(section);
+        await elementUpdated(inner);
+
+        expect(inner.locale).to.equal('de');
+      });
+
+      it('treats an empty or invalid lang as an unknown language', async () => {
+        const root = await fixture<Localized>(html`
+          <${tag} locale="bg">
+            <div lang=""><${tag} id="empty"></${tag}></div>
+            <div lang="xx_!!"><${tag} id="invalid"></${tag}></div>
+          </${tag}>
+        `);
+        const empty = get(root, '#empty');
+        const invalid = get(root, '#invalid');
+        await elementUpdated(empty);
+        await elementUpdated(invalid);
+
+        expect(empty.locale).to.equal('en');
+        expect(textOf(empty)).to.equal(EN);
+        expect(invalid.locale).to.equal('en');
+        expect(textOf(invalid)).to.equal(EN);
+      });
+
+      it('does not read the lang of the root element', async () => {
+        const documentElement = document.documentElement;
+        const original = documentElement.getAttribute('lang');
+        const root = await fixture<Localized>(html`<${tag}></${tag}>`);
+
+        try {
+          documentElement.lang = 'de';
+          await langApplied(root);
+          setCurrentI18n('bg');
+          await elementUpdated(root);
+
+          expect(root.locale).to.equal('bg');
+          expect(textOf(root)).to.equal(BG);
+        } finally {
+          setOrRemoveAttribute(documentElement, 'lang', original);
+          await langApplied(root);
+        }
+      });
+
+      it('keeps the lang of a region below an ancestor that upgrades after it', async () => {
+        const late = lateTag();
+        const root = await fixture<HTMLElement>(html`
+          <div>
+            <${unsafeStatic(late)} locale="de">
+              <div lang="bg"><${tag} id="child"></${tag}></div>
+            </${unsafeStatic(late)}>
+          </div>
+        `);
+        const child = get(root, '#child');
+
+        customElements.define(late, localizedClass());
+        await elementUpdated(child);
+
+        expect(child.locale).to.equal('bg');
+      });
+
+      it('gives the lang to a host without a locale controller', async () => {
+        const root = await fixture<HTMLElement>(html`
+          <div lang="bg"><span></span><span lang="de"></span></div>
+        `);
+        const [inherits, own] = root.querySelectorAll('span');
+
+        expect(getHostLocale(inherits)).to.equal('bg');
+        expect(getHostLocale(own)).to.equal('de');
+      });
+
+      it('follows a lang change in the shadow root of a host', async () => {
+        const regionTag = unsafeStatic(
+          defineCE(
+            class extends localizedClass() {
+              public static override properties = { region: {} };
+              declare public region: string;
+
+              protected override render() {
+                return html`<div lang=${this.region}><${tag}></${tag}></div>`;
+              }
+            }
+          )
+        );
+        const host = await fixture<Localized & { region: string }>(
+          html`<${regionTag} region="bg"></${regionTag}>`
+        );
+        const inner = get(host.renderRoot, tagName);
+        await elementUpdated(inner);
+
+        expect(inner.locale).to.equal('bg');
+
+        host.region = 'de';
+        await elementUpdated(host);
+        await langApplied(inner);
+
+        expect(inner.locale).to.equal('de');
+      });
+
+      it('updates the hosts of a lang that a new host reads first', async () => {
+        const root = await fixture<HTMLElement>(html`
+          <div><section lang="bg"><${tag} id="first"></${tag}></section></div>
+        `);
+        const section = root.querySelector('section')!;
+        const first = get(root, '#first');
+        await elementUpdated(first);
+
+        first.requestUpdate();
+        section.lang = 'de';
+        section.append(document.createElement(tagName));
+        section.lang = 'bg';
+        await langApplied(first);
+
+        expect(first.locale).to.equal('bg');
+        expect(langOf(first)).to.equal('bg');
+      });
+
+      it('keeps the lang of the disconnect, also after a change in the same task', async () => {
+        const root = await fixture<HTMLElement>(html`
+          <div>
+            <section lang="de"><${tag} id="inherits"></${tag}></section>
+            <${tag} id="own" lang="de"></${tag}>
+          </div>
+        `);
+        const section = root.querySelector('section')!;
+        const inherits = get(root, '#inherits');
+        const own = get(root, '#own');
+        await elementUpdated(inherits);
+        await elementUpdated(own);
+
+        section.lang = 'bg';
+        own.lang = 'bg';
+        section.remove();
+        own.remove();
+        await Promise.resolve();
+        inherits.requestUpdate();
+        own.requestUpdate();
+        await elementUpdated(inherits);
+        await elementUpdated(own);
+
+        expect(langOf(inherits)).to.equal('bg');
+        expect(langOf(own)).to.equal('bg');
+      });
+
+      it('goes up only from a document or a shadow root', async () => {
+        const remover = defineCE(
+          class extends HTMLElement {
+            public connectedCallback(): void {
+              this.firstElementChild!.remove();
+            }
+          }
+        );
+        const root = await fixture<HTMLElement>(html`<div></div>`);
+        const wrapper = document.createElement(remover);
+        const anchor = document.createElement('a');
+        anchor.href = 'https://example.com/';
+        anchor.append(document.createElement(tagName));
+        wrapper.append(anchor);
+
+        // A parentless anchor has a string `host`.
+        expect(catchListenerErrors(() => root.append(wrapper))).to.be.empty;
+
+        // A parentless form has its control named `host` as `host`.
+        const form = document.createElement('form');
+        form.innerHTML = '<input name="host" /><span></span>';
+
+        expect(getHostLocale(form.querySelector('span')!)).to.equal('en');
+      });
     });
   });
 
