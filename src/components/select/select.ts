@@ -120,6 +120,8 @@ const Slots = setSlots(
  * @csspart filled - Added to the toggle-icon part when the select has a value.
  * @csspart helper-text - The helper text wrapper of the select.
  *
+ * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
+ *
  * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 @blazorAdditionalDependencies(

@@ -1,0 +1,7 @@
+@use 'sass:list';
+@use 'sass:map';
+@use 'igniteui-theming/sass/themes/schemas/components/light/icon' as icon-schema;
+
+:host {
+    --_icon-size: #{list.nth(map.get(icon-schema.$indigo-icon, 'size', 'sizable'), 1)};
+}

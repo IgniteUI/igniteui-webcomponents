@@ -398,8 +398,11 @@ All of the above are skipped while the component is `disabled`.
 
 ### CSS custom properties
 
-The color picker has no public CSS custom properties. The `--_` variables in its styles, for example
-`--_current-color`, are internal.
+| Property                | Description                                                                                                                                                                                                                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ig-helper-min-lines` | The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`. |
+
+The `--_` variables in its styles, for example `--_current-color`, are internal.
 
 ### CSS custom states
 

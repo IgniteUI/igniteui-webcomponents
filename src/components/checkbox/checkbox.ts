@@ -35,6 +35,8 @@ const nextId = createIdGenerator('checkbox');
  * @csspart checked - Added to the base, control, label and indicator parts when the checkbox is checked.
  * @csspart focused - Added to the base part when the checkbox has keyboard focus.
  *
+ * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
+ *
  * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
