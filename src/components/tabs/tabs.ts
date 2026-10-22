@@ -58,6 +58,9 @@ export interface IgcTabsComponentEventMap {
  * @csspart start-scroll-button - The start scroll button displayed when the tabs overflow.
  * @csspart end-scroll-button - The end scroll button displayed when the tabs overflow.
  * @csspart selected-indicator - The indicator that shows which tab is selected.
+ * @csspart tabs - The scroll container of the tab headers.
+ * @csspart inner - The wrapper of the tab headers, the scroll buttons and the selected indicator.
+ * @csspart scrollable - Added to the inner part while the scroll buttons show.
  */
 export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponentEventMap>(
   LitElement

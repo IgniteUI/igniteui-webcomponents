@@ -1,3 +1,4 @@
+import { numberInRangeInclusive } from '#internals/utils/math.js';
 import type { QrEncodingMode, QrErrorCorrectionLevel } from '../types.js';
 import { getDataCodewordsCount, interleaveBlocks } from './error-correction.js';
 
@@ -134,6 +135,14 @@ export type EncodeResult = {
   ecLevelIndex: number;
 };
 
+/** Whether `version` is a QR code version: an integer from 1 to 40. */
+export function isValidVersion(version: unknown): version is number {
+  return (
+    Number.isInteger(version) &&
+    numberInRangeInclusive(version as number, 1, 40)
+  );
+}
+
 /**
  * Encodes a string into QR codewords (data + error correction), selecting the
  * smallest version that fits unless `requestedVersion` is specified.
@@ -159,8 +168,8 @@ export function encodeQR(
   let bits: number[];
 
   if (requestedVersion != null) {
-    if (requestedVersion < 1 || requestedVersion > 40) {
-      throw new Error('Requested version must be between 1 and 40');
+    if (!isValidVersion(requestedVersion)) {
+      throw new Error('Requested version must be an integer between 1 and 40');
     }
     version = requestedVersion;
     bits = encodeData(data, mode, version);

@@ -240,6 +240,9 @@ keys follow the writing direction.
 | `start-scroll-button`  | The start scroll button displayed when the tabs overflow. |
 | `end-scroll-button`    | The end scroll button displayed when the tabs overflow. |
 | `selected-indicator`   | The indicator that shows which tab is selected.         |
+| `tabs`                 | The scroll container of the tab headers.                |
+| `inner`                | The wrapper of the tab headers, the scroll buttons and the selected indicator. |
+| `scrollable`           | Added to the inner part while the scroll buttons show.  |
 
 ### igc-tab
 

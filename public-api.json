@@ -732,6 +732,8 @@
       "cssParts": [
         "active",
         "dot",
+        "inactive",
+        "indicator",
         "indicators",
         "label",
         "navigation",
@@ -897,14 +899,7 @@
       "methods": {
         "static register": "() => void"
       },
-      "events": {
-        "igcAttachmentDrag": "unknown",
-        "igcAttachmentDrop": "unknown",
-        "igcInputBlur": "unknown",
-        "igcInputChange": "unknown",
-        "igcInputFocus": "unknown",
-        "igcTypingChange": "unknown"
-      },
+      "events": {},
       "slots": [],
       "cssParts": [
         "actions-container",
@@ -989,7 +984,9 @@
         "indicator",
         "label"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-chip": {
       "class": "IgcChipComponent",
@@ -1091,7 +1088,9 @@
       ],
       "cssParts": [
         "base",
+        "counter",
         "fill",
+        "fraction",
         "gradient_end",
         "gradient_start",
         "indeterminate",
@@ -1189,7 +1188,9 @@
         "swatch",
         "swatches"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-combo": {
       "class": "IgcComboComponent",
@@ -1314,7 +1315,9 @@
         "suffix",
         "toggle-icon"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-date-picker": {
       "class": "IgcDatePickerComponent",
@@ -1447,8 +1450,10 @@
         "days-row",
         "days-view",
         "days-view-container",
+        "dialog-base",
         "disabled",
         "first",
+        "footer",
         "header",
         "header-date",
         "header-title",
@@ -1466,6 +1471,7 @@
         "navigation",
         "navigation-button",
         "navigation-buttons",
+        "overlay",
         "prefix",
         "preview",
         "range",
@@ -1473,6 +1479,7 @@
         "single",
         "special",
         "suffix",
+        "title",
         "week-number",
         "week-number-inner",
         "weekend",
@@ -1483,7 +1490,9 @@
         "years-row",
         "years-view"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-date-range-picker": {
       "class": "IgcDateRangePickerComponent",
@@ -1640,8 +1649,10 @@
         "days-row",
         "days-view",
         "days-view-container",
+        "dialog-base",
         "disabled",
         "first",
+        "footer",
         "header",
         "header-date",
         "header-title",
@@ -1660,6 +1671,7 @@
         "navigation",
         "navigation-button",
         "navigation-buttons",
+        "overlay",
         "prefix",
         "preview",
         "range",
@@ -1669,6 +1681,7 @@
         "single",
         "special",
         "suffix",
+        "title",
         "week-number",
         "week-number-inner",
         "weekend",
@@ -1679,7 +1692,9 @@
         "years-row",
         "years-view"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-date-time-input": {
       "class": "IgcDateTimeInputComponent",
@@ -1764,13 +1779,23 @@
       ],
       "cssParts": [
         "container",
+        "end",
+        "filled",
+        "filler",
         "helper-text",
         "input",
         "label",
+        "labelled",
+        "notch",
         "prefix",
-        "suffix"
+        "prefixed",
+        "start",
+        "suffix",
+        "suffixed"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-days-view": {
       "class": "IgcDaysViewComponent",
@@ -2122,15 +2147,26 @@
       ],
       "cssParts": [
         "container",
+        "end",
         "file-names",
+        "file-parts",
         "file-selector-button",
+        "filled",
+        "filler",
         "helper-text",
         "input",
         "label",
+        "labelled",
+        "notch",
         "prefix",
-        "suffix"
+        "prefixed",
+        "start",
+        "suffix",
+        "suffixed"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-focus-trap": {
       "class": "IgcFocusTrapComponent",
@@ -2346,13 +2382,23 @@
       ],
       "cssParts": [
         "container",
+        "end",
+        "filled",
+        "filler",
         "helper-text",
         "input",
         "label",
+        "labelled",
+        "notch",
         "prefix",
-        "suffix"
+        "prefixed",
+        "start",
+        "suffix",
+        "suffixed"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-linear-progress": {
       "class": "IgcLinearProgressComponent",
@@ -2388,8 +2434,10 @@
       ],
       "cssParts": [
         "base",
+        "counter",
         "danger",
         "fill",
+        "fraction",
         "indeterminate",
         "info",
         "label",
@@ -2532,13 +2580,23 @@
       ],
       "cssParts": [
         "container",
+        "end",
+        "filled",
+        "filler",
         "helper-text",
         "input",
         "label",
+        "labelled",
+        "notch",
         "prefix",
-        "suffix"
+        "prefixed",
+        "start",
+        "suffix",
+        "suffixed"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-months-view": {
       "class": "IgcMonthsViewComponent",
@@ -2865,7 +2923,9 @@
         "label",
         "ripple"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-radio-group": {
       "class": "IgcRadioGroupComponent",
@@ -3171,7 +3231,9 @@
         "suffix",
         "toggle-icon"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-select-group": {
       "class": "IgcSelectGroupComponent",
@@ -3650,8 +3712,11 @@
       "cssParts": [
         "end-scroll-button",
         "header",
+        "inner",
+        "scrollable",
         "selected-indicator",
-        "start-scroll-button"
+        "start-scroll-button",
+        "tabs"
       ],
       "cssProperties": []
     },
@@ -3735,13 +3800,24 @@
       ],
       "cssParts": [
         "container",
+        "end",
+        "filled",
+        "filler",
         "helper-text",
         "input",
         "label",
+        "labelled",
+        "notch",
+        "placeholder",
         "prefix",
-        "suffix"
+        "prefixed",
+        "start",
+        "suffix",
+        "suffixed"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-theme-provider": {
       "class": "IgcThemeProviderComponent",

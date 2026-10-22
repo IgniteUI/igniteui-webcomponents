@@ -26,6 +26,7 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
   - [Test scenarios](#test-scenarios)
     - [Rendering](#rendering)
     - [Slotted content](#slotted-content)
@@ -276,12 +277,15 @@ A host `aria-labelledby` or `aria-label` replaces the default name. All visual e
 | <kbd>Arrow Down</kbd>                    | In vertical orientation, increases the start pane size by 10px (decreases the end pane). |
 | <kbd>Arrow Left</kbd>                    | In horizontal orientation, decreases the start pane size by 10px (increases the end pane). |
 | <kbd>Arrow Right</kbd>                   | In horizontal orientation, increases the start pane size by 10px (decreases the end pane). |
-| <kbd>Ctrl</kbd> + <kbd>Arrow Up</kbd>    | In vertical orientation, collapses or expands the start pane (if collapse is enabled).  |
-| <kbd>Ctrl</kbd> + <kbd>Arrow Down</kbd>  | In vertical orientation, collapses or expands the end pane (if collapse is enabled).    |
-| <kbd>Ctrl</kbd> + <kbd>Arrow Left</kbd>  | In horizontal orientation, collapses or expands the start pane (if collapse is enabled). |
-| <kbd>Ctrl</kbd> + <kbd>Arrow Right</kbd> | In horizontal orientation, collapses or expands the end pane (if collapse is enabled).  |
+| <kbd>Ctrl</kbd> + <kbd>Arrow Up</kbd>    | In vertical orientation, expands the end pane if it is collapsed, else toggles the start pane (if collapse is enabled). |
+| <kbd>Ctrl</kbd> + <kbd>Arrow Down</kbd>  | In vertical orientation, expands the start pane if it is collapsed, else toggles the end pane (if collapse is enabled). |
+| <kbd>Ctrl</kbd> + <kbd>Arrow Left</kbd>  | In horizontal orientation, expands the end pane if it is collapsed, else toggles the start pane (if collapse is enabled). |
+| <kbd>Ctrl</kbd> + <kbd>Arrow Right</kbd> | In horizontal orientation, expands the start pane if it is collapsed, else toggles the end pane (if collapse is enabled). |
 | <kbd>Home</kbd>                          | Resizes to the minimum size of the start pane.                                          |
 | <kbd>End</kbd>                           | Resizes to the maximum size of the start pane.                                          |
+
+In a right-to-left context, <kbd>Arrow Left</kbd> and <kbd>Arrow Right</kbd> swap their actions, with and without
+<kbd>Ctrl</kbd>.
 
 ## API
 
@@ -370,6 +374,13 @@ interface IgcSplitterLayoutChangedEventArgs {
 | `end-collapse-btn`   | The button to collapse the end pane.                |
 | `start-expand-btn`   | The button to expand the start pane when collapsed. |
 | `end-expand-btn`     | The button to expand the end pane when collapsed.   |
+
+### CSS custom states
+
+| State             | Description                            |
+| ----------------- | -------------------------------------- |
+| `start-collapsed` | Set while the start pane is collapsed. |
+| `end-collapsed`   | Set while the end pane is collapsed.   |
 
 ## Test scenarios
 

@@ -320,6 +320,8 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 | `label`      | The label shown in place of the indicators.                             |
 | `indicators` | The wrapper of the indicators, or of the label that replaces them.      |
 | `start`      | The wrapper of the indicators while `indicators-orientation` is `start`. |
+| `indicator`  | Added to the two state wrappers of each default dot indicator, with `active` or `inactive`.                             |
+| `inactive`   | The wrapper of the inactive state of each default dot indicator.       |
 
 `igc-carousel-indicator`
 

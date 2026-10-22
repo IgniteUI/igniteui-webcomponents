@@ -27,6 +27,8 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
+    - [CSS custom properties](#css-custom-properties)
   - [Test scenarios](#test-scenarios)
     - [Generic properties](#generic-properties)
     - [Undo and redo](#undo-and-redo)
@@ -377,6 +379,26 @@ Both details follow the current `valueMode`.
 | `prefix`      | The prefix wrapper.                                  |
 | `suffix`      | The suffix wrapper.                                  |
 | `helper-text` | The helper text wrapper.                             |
+| `prefixed`    | Added to the container and the input when an element that is not hidden is in the prefix slot. |
+| `suffixed`    | Added to the container and the input when an element that is not hidden is in the suffix slot. |
+| `filled`      | Added to the container and the input when the control has a value. |
+| `labelled`    | Added to the container in the material theme when the control has a label. |
+| `start`       | The wrapper of the prefix in the material theme.     |
+| `notch`       | The wrapper of the label in the material theme.      |
+| `filler`      | The outline segment between the notch and the end in the material theme. |
+| `end`         | The wrapper of the suffix in the material theme.     |
+
+### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
+
+### CSS custom properties
+
+| Property                | Description                                                                                                                                                                                                                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ig-helper-min-lines` | The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`. |
 
 ## Test scenarios
 

@@ -9,11 +9,17 @@ import { guard } from 'lit/directives/guard.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { chatContext, chatUserInputContext } from '#internals/context.js';
 import { addContextProvider } from '#internals/controllers/context-provider.js';
-import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  addSlotController,
+  type InferSlotNames,
+  type SlotChangeCallbackParameters,
+  setSlots,
+} from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { IgcChatResourceStrings } from '#internals/i18n/EN/chat.resources.js';
 import { chatResourcesMap } from '#internals/i18n/utils.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { HydrationMixin } from '#internals/mixins/hydration.js';
 import { I18nMixin, type I18nMixinConfig } from '#internals/mixins/i18n.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { all } from '#themes/chat/themes/themes.js';
@@ -127,6 +133,11 @@ const Slots = setSlots(
   'typing-indicator'
 );
 
+type SlotName = InferSlotNames<typeof Slots>;
+
+/** The slots whose content shows the suggestions area. */
+const SuggestionSlots: readonly SlotName[] = ['suggestions', 'suggestion'];
+
 const i18n: I18nMixinConfig<
   IgcChatResourceStrings | IChatResourceStrings,
   IgcChatResourceStrings & IChatResourceStrings
@@ -160,7 +171,7 @@ const i18n: I18nMixinConfig<
  * @slot suggestions-header - The header of the suggestions list.
  * @slot suggestions - The whole suggestions list.
  * @slot suggestions-actions - Additional actions next to the suggestions.
- * @slot suggestion - A single suggestion.
+ * @slot suggestion - Suggestions that replace the default items.
  * @slot empty-state - The content shown while there are no messages.
  * @slot typing-indicator - The typing indicator of the other side.
  *
@@ -209,9 +220,8 @@ const i18n: I18nMixinConfig<
  * @csspart attachment-icon - Styles the icon of an attachment.
  * @csspart file-name - Styles the file name shown in an attachment.
  */
-export default class IgcChatComponent extends I18nMixin(
-  EventEmitterMixin<IgcChatComponentEventMap>(LitElement),
-  i18n
+export default class IgcChatComponent extends HydrationMixin(
+  I18nMixin(EventEmitterMixin<IgcChatComponentEventMap>(LitElement), i18n)
 ) {
   public static readonly tagName = 'igc-chat';
 
@@ -245,6 +255,7 @@ export default class IgcChatComponent extends I18nMixin(
 
   private readonly _slots = addSlotController(this, {
     slots: Slots,
+    onChange: this._handleSlotChange,
   });
 
   // The input and the messages read the labels through this context.
@@ -267,6 +278,8 @@ export default class IgcChatComponent extends I18nMixin(
 
   /** Whether the list follows the newest message. */
   private _followNewest = true;
+  /** Set when the suggestion slots change, so that `updated()` scrolls. */
+  private _suggestionSlotsChanged = false;
   private _lastScrollTop = 0;
   private _lastMessageId?: string;
 
@@ -337,6 +350,28 @@ export default class IgcChatComponent extends I18nMixin(
     addThemingController(this, all);
   }
 
+  /** The server render has no light DOM, so a hydrating render reports no slotted content either. */
+  private _hasSlotted(...slots: SlotName[]): boolean {
+    return (
+      !this._hydrating &&
+      slots.some((slot) => this._slots.hasAssignedElements(slot))
+    );
+  }
+
+  protected override _onHydrated(): void {
+    // Only the slotted content differs from the server render.
+    if (this.childElementCount) {
+      super._onHydrated();
+    }
+  }
+
+  /** Slotted suggestions scroll the list, as new `options.suggestions` do. */
+  private _handleSlotChange({
+    slot,
+  }: SlotChangeCallbackParameters<SlotName>): void {
+    this._suggestionSlotsChanged ||= SuggestionSlots.includes(slot);
+  }
+
   private _getRenderer<U extends keyof DefaultChatRenderers>(
     name: U
   ): DefaultChatRenderers[U] {
@@ -398,11 +433,18 @@ export default class IgcChatComponent extends I18nMixin(
   protected override updated(properties: PropertyValues<this>): void {
     this._updateFollowNewest();
 
+    const slotsChanged = this._suggestionSlotsChanged;
+    this._suggestionSlotsChanged = false;
+
     if (this._state.options?.disableAutoScroll || !this._followNewest) {
       return;
     }
 
-    if (properties.has('messages') || this._contentAdded(properties)) {
+    if (
+      properties.has('messages') ||
+      slotsChanged ||
+      this._contentAdded(properties)
+    ) {
       this._scrollToBottom();
     }
   }
@@ -437,18 +479,15 @@ export default class IgcChatComponent extends I18nMixin(
   }
 
   private _renderHeader() {
+    const hasPrefix = this._hasSlotted('prefix');
     const hasContent =
-      this._slots.hasAssignedElements('prefix') ||
-      this._slots.hasAssignedElements('title') ||
-      this._slots.hasAssignedElements('actions') ||
+      hasPrefix ||
+      this._hasSlotted('title', 'actions') ||
       this._state.options?.headerText;
 
     return html`
       <div part="header" ?hidden=${!hasContent}>
-        <slot
-          name="prefix"
-          ?hidden=${!this._slots.hasAssignedElements('prefix')}
-        ></slot>
+        <slot name="prefix" ?hidden=${!hasPrefix}></slot>
         <slot name="title">${this._state.options?.headerText}</slot>
         <slot name="actions"></slot>
       </div>
@@ -517,12 +556,15 @@ export default class IgcChatComponent extends I18nMixin(
   }
 
   private _renderSuggestions() {
-    const hasContent = this._slots.hasAssignedElements('suggestions-header');
+    const hasContent = this._hasSlotted('suggestions-header');
     const suggestions = this._state.options?.suggestions ?? [];
+    const hidden =
+      isEmpty(suggestions) && !this._hasSlotted(...SuggestionSlots);
     const ctx = { instance: this };
 
+    // Always rendered, so the slot controller sees the slotted suggestions.
     return html`
-      <div part="suggestions-container">
+      <div part="suggestions-container" ?hidden=${hidden}>
         <igc-list>
           <igc-list-header part="suggestions-header">
             <span ?hidden=${hasContent}>
@@ -531,9 +573,9 @@ export default class IgcChatComponent extends I18nMixin(
             <slot name="suggestions-header"></slot>
           </igc-list-header>
           <slot name="suggestions">
-            ${suggestions.map(
-              (suggestion) => html`
-                <slot name="suggestion">
+            <slot name="suggestion">
+              ${suggestions.map(
+                (suggestion) => html`
                   <igc-list-item
                     part="suggestion"
                     @click=${() => this._handleSuggestionClick(suggestion)}
@@ -545,9 +587,9 @@ export default class IgcChatComponent extends I18nMixin(
                       >${suggestion}</span
                     >
                   </igc-list-item>
-                </slot>
-              `
-            )}
+                `
+              )}
+            </slot>
           </slot>
           <slot name="suggestions-actions"></slot>
         </igc-list>
@@ -565,9 +607,7 @@ export default class IgcChatComponent extends I18nMixin(
 
   protected override render() {
     const hasMessages = !isEmpty(this.messages);
-    const suggestions = isEmpty(this._state.options?.suggestions ?? [])
-      ? nothing
-      : this._renderSuggestions();
+    const suggestions = this._renderSuggestions();
 
     return html`
       <div part="chat-container">

@@ -137,22 +137,19 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   protected override _performStep(
     datePart: DateRangePart | undefined,
     delta: number | undefined,
-    sign: 1 | -1
+    sign: 1 | -1,
+    commit = false
   ): boolean {
     // With no value, start from today.
     const current = this._uncommittedValue;
 
     if (!current?.start && !current?.end) {
       const today = CalendarDay.today.native;
-      this._setDraftValue({ start: today, end: today });
-      const { start, end } = this._inputSelection;
-      this.updateComplete.then(() =>
-        this._input?.setSelectionRange(start, end)
-      );
+      this._applyStep({ start: today, end: today }, commit);
       return true;
     }
 
-    return super._performStep(datePart, delta, sign);
+    return super._performStep(datePart, delta, sign, commit);
   }
 
   protected override _buildDisplayValue(): string {
@@ -240,12 +237,12 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
 
   // #region Public API Overrides
 
-  /** Increments a date/time portion. */
+  /** Increments a date/time portion. The `value` updates at once. */
   public override stepUp(datePart?: DateRangePart, delta?: number): void {
     super.stepUp(datePart, delta);
   }
 
-  /** Decrements a date/time portion. */
+  /** Decrements a date/time portion. The `value` updates at once. */
   public override stepDown(datePart?: DateRangePart, delta?: number): void {
     super.stepDown(datePart, delta);
   }

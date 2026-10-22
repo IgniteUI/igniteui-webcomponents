@@ -33,6 +33,7 @@ import {
 } from '#internals/testing/simulate.spec.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { DateRangeType } from '../calendar/types.js';
+import { DatePart } from '../date-time-input/date-part.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDatePickerComponent from './date-picker.js';
 
@@ -863,6 +864,35 @@ describe('Date picker', () => {
       expect(stepDownSpy).called;
     });
 
+    it('should update the value on stepUp and stepDown', async () => {
+      picker.value = new Date(2024, 0, 15);
+      await elementUpdated(picker);
+
+      picker.stepUp(DatePart.Date);
+      checkDatesEqual(picker.value!, new Date(2024, 0, 16));
+
+      picker.stepDown(DatePart.Date, 2);
+      checkDatesEqual(picker.value!, new Date(2024, 0, 14));
+    });
+
+    it('should apply a step at once while the read-only input is focused', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      picker.nonEditable = true;
+      picker.value = new Date(2024, 0, 15);
+      await elementUpdated(picker);
+
+      dateTimeInput.focus();
+      picker.stepUp(DatePart.Date);
+      checkDatesEqual(picker.value!, new Date(2024, 0, 16));
+
+      dateTimeInput.blur();
+      await elementUpdated(picker);
+
+      checkDatesEqual(picker.value!, new Date(2024, 0, 16));
+      checkDatesEqual(dateTimeInput.value!, new Date(2024, 0, 16));
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
     it('should select the text in the input with the select method', async () => {
       const selectSpy = spy(dateTimeInput, 'select');
       picker.value = new Date();
@@ -1091,6 +1121,68 @@ describe('Date picker', () => {
       expect(dialog.open).to.be.false;
       expect(eventSpy.firstCall).calledWith('igcClosing');
       expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    it('should not report a value set from code on a later blur', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      const modes: Partial<IgcDatePickerComponent>[] = [
+        {},
+        { nonEditable: true },
+        { readOnly: true },
+        { mode: 'dialog' },
+      ];
+
+      for (const [index, mode] of modes.entries()) {
+        Object.assign(
+          picker,
+          { nonEditable: false, readOnly: false, mode: 'dropdown' },
+          mode
+        );
+        await elementUpdated(picker);
+
+        dateTimeInput.focus();
+        picker.value = new Date(2024, 0, 15 + index);
+        await elementUpdated(picker);
+        picker.stepUp(DatePart.Date);
+        await elementUpdated(picker);
+
+        dateTimeInput.blur();
+        await elementUpdated(picker);
+      }
+
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    it('should render a user change at once', async () => {
+      picker.keepOpenOnSelect = true;
+      picker.value = new Date(2020, 0, 1);
+      await picker.show();
+
+      selectCurrentDate(calendar);
+      await elementUpdated(picker);
+      checkDatesEqual(dateTimeInput.value!, CalendarDay.today);
+
+      picker.clear();
+      await elementUpdated(picker);
+      expect(getIcon(pickerClearIcon)).to.be.null;
+    });
+
+    it('should emit igcChange once for a calendar selection in a non-editable dropdown', async () => {
+      const today = CalendarDay.today;
+      picker.nonEditable = true;
+      picker.value = today.add('day', 1).native;
+      await picker.show();
+
+      const eventSpy = spy(picker, 'emitEvent');
+      dateTimeInput.focus();
+      selectCurrentDate(calendar);
+      await elementUpdated(picker);
+
+      dateTimeInput.blur();
+      await elementUpdated(picker);
+
+      expect(eventSpy.withArgs('igcChange')).calledOnce;
+      checkDatesEqual(picker.value!, today);
     });
 
     it('should emit or not igcInput according to nonEditable property', async () => {

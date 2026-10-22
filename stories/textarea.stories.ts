@@ -121,7 +121,7 @@ const metadata: Meta<IgcTextareaComponent> = {
     wrap: {
       type: { name: 'enum', value: ['hard', 'soft', 'off'] },
       description:
-        'How the control wraps long lines of text. With `off`, the lines do not wrap.\nIt does not change the submitted value.\nRefer to [this page on MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea#attributes)\nfor explanation of the available values.',
+        'How the control wraps long lines of text. With `off`, the lines do not wrap.\nUnlike the native element, `hard` does not add line breaks to the submitted value.\nRefer to [this page on MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea#attributes)\nfor explanation of the available values.',
       options: ['hard', 'soft', 'off'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'soft' } },
@@ -228,7 +228,7 @@ interface IgcTextareaArgs {
   spellcheck: boolean;
   /**
    * How the control wraps long lines of text. With `off`, the lines do not wrap.
-   * It does not change the submitted value.
+   * Unlike the native element, `hard` does not add line breaks to the submitted value.
    * Refer to [this page on MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea#attributes)
    * for explanation of the available values.
    */

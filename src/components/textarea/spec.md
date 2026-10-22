@@ -27,6 +27,8 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
+    - [CSS custom properties](#css-custom-properties)
   - [Test scenarios](#test-scenarios)
     - [Defaults](#defaults)
     - [Setting value through attribute and projection](#setting-value-through-attribute-and-projection)
@@ -40,6 +42,7 @@
     - [Host ARIA](#host-aria)
     - [Auto sizing](#auto-sizing)
     - [Not covered by the suite](#not-covered-by-the-suite)
+  - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
     - [Keyboard support](#keyboard-support)
@@ -359,6 +362,27 @@ The component delegates focus to the inner native textarea, so all native text-e
 | `prefix`      | The prefix wrapper of the textarea.                               |
 | `suffix`      | The suffix wrapper of the textarea.                               |
 | `helper-text` | The helper text wrapper of the textarea.                          |
+| `prefixed`    | Added to the container when an element that is not hidden is in the prefix slot. |
+| `suffixed`    | Added to the container when an element that is not hidden is in the suffix slot. |
+| `filled`      | Added to the container when the textarea has a value.             |
+| `placeholder` | Added to the container in the material theme when the textarea has a placeholder. |
+| `labelled`    | Added to the container in the material theme when the control has a label. |
+| `start`       | The wrapper of the prefix in the material theme.                  |
+| `notch`       | The wrapper of the label in the material theme.                   |
+| `filler`      | The outline segment between the notch and the end in the material theme. |
+| `end`         | The wrapper of the suffix in the material theme.                  |
+
+### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
+
+### CSS custom properties
+
+| Property                | Description                                                                                                                                                                                                                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ig-helper-min-lines` | The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`. |
 
 ## Test scenarios
 
@@ -476,6 +500,12 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 The following documented behaviors have no dedicated case yet: the `validateOnly` mode, and the forwarding of
 `autocapitalize`, `autocomplete` and `inputmode`.
+
+## Assumptions and limitations
+
+- `wrap="hard"` wraps the text as the native element does, but does not add line breaks to the submitted value. The
+  browser computes those line breaks from the layout, and only when it submits a native `textarea`.
+
 ## Accessibility
 
 ### ARIA roles and properties

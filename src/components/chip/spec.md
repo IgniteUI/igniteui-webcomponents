@@ -235,27 +235,28 @@ The detail of `igcSelect` is the new `selected` state of the chip.
 7. The prefix stays hidden for a chip that is selected but not selectable.
 8. The suffix stays hidden when only the remove control is rendered.
 9. A disabled chip renders no remove control.
+10. The slots render in the order start, prefix, label, suffix, end.
 
 ### Events tests
 
-10. `igcRemove` is emitted when the remove control is activated, and `igcSelect` is not.
-11. A chip that is not removable does not intercept the activation keys.
-12. `igcSelect` is emitted from the action control.
+11. `igcRemove` is emitted when the remove control is activated, and `igcSelect` is not.
+12. A chip that is not removable does not intercept the activation keys.
+13. `igcSelect` is emitted from the action control.
 
 ### Focus tests
 
-13. `focus()` moves the focus to the action control, also when the chip is removable.
-14. `blur()` removes the focus.
-15. A disabled chip does not take the focus.
+14. `focus()` moves the focus to the action control, also when the chip is removable.
+15. `blur()` removes the focus.
+16. A disabled chip does not take the focus.
 
 ### Host ARIA
 
-16. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
+17. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
     target and follow a change, and an axe audit passes with a host label.
 
 ### Not covered by the suite
 
-- The `start`, `end` and `select` slots are not covered.
+- The `select` slot is not covered.
 - The `locale` and `resourceStrings` properties are not covered; the labels are asserted against their English
   defaults.
 

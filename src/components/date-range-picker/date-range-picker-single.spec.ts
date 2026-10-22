@@ -526,6 +526,43 @@ describe('Date range picker - single input', () => {
       expect(input.value).to.equal('1/15/2025 - 1/16/2025');
     });
 
+    it('should update the value on stepUp/stepDown while the input is focused', async () => {
+      picker.value = {
+        start: new Date(2025, 0, 15),
+        end: new Date(2025, 0, 16),
+      };
+      await elementUpdated(picker);
+
+      rangeInput.focus();
+      rangeInput.setSelectionRange(0, 0);
+      rangeInput.stepUp();
+      expect(rangeInput.value?.start?.getMonth()).to.equal(1);
+
+      rangeInput.stepDown();
+      expect(rangeInput.value?.start?.getMonth()).to.equal(0);
+
+      // An empty input starts from today, also committed at once.
+      rangeInput.clear();
+      rangeInput.stepUp();
+      expect(rangeInput.value?.start).to.exist;
+    });
+
+    it('should not report a value set from code while the input is focused', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+
+      rangeInput.focus();
+      picker.value = {
+        start: new Date(2025, 0, 15),
+        end: new Date(2025, 0, 16),
+      };
+      await elementUpdated(picker);
+
+      rangeInput.blur();
+      await elementUpdated(picker);
+
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
     it('does not step a date part that the input format does not have', async () => {
       const value = {
         start: new Date(2025, 0, 15),

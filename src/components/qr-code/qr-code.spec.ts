@@ -813,6 +813,49 @@ describe('IgcQrCodeComponent', () => {
     });
 
     describe('toBlob()', () => {
+      it('rejects with the encoder error when the value does not fit the pinned version', async () => {
+        const warn = stub(console, 'warn');
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code value="test" version="1"></igc-qr-code>`
+        );
+
+        el.value = 'a'.repeat(200);
+        await elementUpdated(el);
+
+        expect(getSvg(el)).to.be.null;
+        expect(warn).calledOnce;
+        await expectRejection(
+          el.toBlob(),
+          Error,
+          'Data too long for version 1 and error correction level M'
+        );
+
+        el.version = undefined;
+        await elementUpdated(el);
+        expect(getSvg(el)).to.exist;
+      });
+
+      it('uses the automatic version for a version that is not an integer from 1 to 40', async () => {
+        const warn = stub(console, 'warn');
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code value="test" version="abc"></igc-qr-code>`
+        );
+
+        expect(el.version).to.be.undefined;
+        expect(getSvg(el)).to.exist;
+
+        for (const version of [0, 1.5, 41]) {
+          el.version = version;
+          await elementUpdated(el);
+
+          expect(el.version).to.be.undefined;
+          expect(getSvg(el)).to.exist;
+        }
+
+        expect(warn).not.called;
+        expect((await el.toBlob()).type).to.include('image/svg+xml');
+      });
+
       it('returns an SVG blob', async () => {
         const el = await fixture<IgcQrCodeComponent>(
           html`<igc-qr-code value="https://example.com"></igc-qr-code>`

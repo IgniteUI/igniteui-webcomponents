@@ -29,6 +29,8 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
+    - [CSS custom properties](#css-custom-properties)
   - [Test scenarios](#test-scenarios)
     - [Rendering and formats](#rendering-and-formats)
     - [Uncommitted edits](#uncommitted-edits)
@@ -58,6 +60,7 @@
 |       5 | 2026-10-02 | Forward the host `aria-describedby`; expose `required` as `aria-required` |
 |       6 | 2026-10-07 | Read-only `selectionStart` and `selectionEnd`                             |
 |       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                                  |
+|       8 | 2026-10-21 | `stepUp` and `stepDown` update the value at once, also while focused      |
 
 ## Overview
 
@@ -447,7 +450,8 @@ const { selectionStart, selectionEnd } = input;
 ```
 
 Calling `stepUp` or `stepDown` on an empty editor initializes the value first. With no part argument, the part under
-the caret is spun.
+the caret is spun. Both update `value` at once, also while the editor is focused, as `setRangeText()` does. A
+keyboard or wheel spin stays in the masked text until blur.
 
 `selectionStart` and `selectionEnd` are read-only. They count in the text that the input shows: the input format
 while the input has focus, and the display format when it does not. After `setRangeText()`, they report the new
@@ -575,8 +579,8 @@ example <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> - are ignored, so they stay availab
 
 | Name              | Type signature                                                                                | Description                                                             |
 | ----------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| stepUp            | `(datePart?: DatePart, delta?: number): void`                                                 | Increments a date or time part by `delta`, or by its `spinDelta` value. Without `datePart`, it changes the part at the cursor or a default part. |
-| stepDown          | `(datePart?: DatePart, delta?: number): void`                                                 | Decrements a date or time part by `delta`, or by its `spinDelta` value. Without `datePart`, it changes the part at the cursor or a default part. |
+| stepUp            | `(datePart?: DatePart, delta?: number): void`                                                 | Increments a date or time part by `delta`, or by its `spinDelta` value. Without `datePart`, it changes the part at the cursor or a default part. The `value` updates at once. |
+| stepDown          | `(datePart?: DatePart, delta?: number): void`                                                 | Decrements a date or time part by `delta`, or by its `spinDelta` value. Without `datePart`, it changes the part at the cursor or a default part. The `value` updates at once. |
 | clear             | `(): void`                                                                                    | Clears the value and the text of the input.                             |
 | hasDateParts      | `(): boolean`                                                                                 | Returns whether the input format has a date part: day, month or year.   |
 | hasTimeParts      | `(): boolean`                                                                                 | Returns whether the input format has a time part: hours, minutes or seconds. |
@@ -631,6 +635,26 @@ enum DatePart {
 | `prefix`      | The prefix wrapper.                                  |
 | `suffix`      | The suffix wrapper.                                  |
 | `helper-text` | The helper text wrapper.                             |
+| `prefixed`    | Added to the container and the input when an element that is not hidden is in the prefix slot. |
+| `suffixed`    | Added to the container and the input when an element that is not hidden is in the suffix slot. |
+| `filled`      | Added to the container and the input unless the focused input shows only the empty mask. |
+| `labelled`    | Added to the container in the material theme when the control has a label. |
+| `start`       | The wrapper of the prefix in the material theme.     |
+| `notch`       | The wrapper of the label in the material theme.      |
+| `filler`      | The outline segment between the notch and the end in the material theme. |
+| `end`         | The wrapper of the suffix in the material theme.     |
+
+### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
+
+### CSS custom properties
+
+| Property                | Description                                                                                                                                                                                                                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ig-helper-min-lines` | The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`. |
 
 ## Test scenarios
 
@@ -692,7 +716,8 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 
 26. <kbd>Arrow Up</kbd> and <kbd>Arrow Down</kbd> spin the focused part, and are a no-op while read-only.
 27. <kbd>Alt</kbd> + arrow presses are a no-op.
-28. The caret does not move away from the focused part when `stepUp` or `stepDown` are invoked.
+28. The caret does not move away from the focused part when `stepUp` or `stepDown` are invoked, and the value
+    updates at once, also for a part that is not in the input format and over a keyboard draft.
 29. <kbd>Arrow Left</kbd> and <kbd>Arrow Right</kbd> navigate to the beginning and the end of a date section.
 30. <kbd>Ctrl</kbd> + <kbd>;</kbd> sets the current date.
 31. The mouse wheel spins the part under the caret, and is a no-op without focus and while read-only.

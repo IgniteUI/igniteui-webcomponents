@@ -88,6 +88,19 @@ const Slots = setSlots(
  * @csspart prefix - The prefix wrapper of the textarea.
  * @csspart suffix - The suffix wrapper of the textarea.
  * @csspart helper-text - The helper text wrapper of the textarea.
+ * @csspart prefixed - Added to the container when an element that is not hidden is in the prefix slot.
+ * @csspart suffixed - Added to the container when an element that is not hidden is in the suffix slot.
+ * @csspart filled - Added to the container when the textarea has a value.
+ * @csspart placeholder - Added to the container in the material theme when the textarea has a placeholder.
+ * @csspart labelled - Added to the container in the material theme when the control has a label.
+ * @csspart start - The wrapper of the prefix in the material theme.
+ * @csspart notch - The wrapper of the label in the material theme.
+ * @csspart filler - The outline segment between the notch and the end in the material theme.
+ * @csspart end - The wrapper of the suffix in the material theme.
+ *
+ * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 @shadowOptions({ delegatesFocus: true })
 export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
@@ -285,7 +298,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   /**
    * How the control wraps long lines of text. With `off`, the lines do not wrap.
-   * It does not change the submitted value.
+   * Unlike the native element, `hard` does not add line breaks to the submitted value.
    * Refer to [this page on MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea#attributes)
    * for explanation of the available values.
    *

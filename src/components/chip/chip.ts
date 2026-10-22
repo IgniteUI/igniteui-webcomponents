@@ -46,7 +46,7 @@ const i18n = {
  * @slot prefix - Renders content at the start of the chip, before the default content.
  * @slot start - Renders content at the start of the chip, before the prefix content.
  * @slot suffix - Renders content at the end of the chip after the default content.
- * @slot end - Renders content at the end of the chip, before the suffix content.
+ * @slot end - Renders content at the end of the chip, after the suffix content.
  * @slot select - Renders content while a selectable chip is selected. It replaces the default selected icon.
  * @slot remove - Renders content that replaces the default remove icon.
  *
@@ -180,8 +180,8 @@ export default class IgcChipComponent extends I18nMixin(
   protected _renderSuffix() {
     return html`
       <span part="suffix" ?hidden=${!this._hasSlotted('end', 'suffix')}>
-        <slot name="end"></slot>
         <slot name="suffix"></slot>
+        <slot name="end"></slot>
       </span>
     `;
   }

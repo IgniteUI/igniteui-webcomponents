@@ -85,6 +85,8 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
 
   private _animationPlayer = addAnimationController(this, this._groupRef);
 
+  // A move into another tree changes whether the item renders the select marker.
+  @state()
   private _tree?: IgcTreeComponent;
 
   /* blazorSuppress */
@@ -110,6 +112,10 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
 
   private get _navService(): IgcTreeNavigationService | undefined {
     return this.tree?.navService;
+  }
+
+  private get _isSelectable(): boolean {
+    return !!this.tree && this.tree.selection !== 'none';
   }
 
   private get _parts() {
@@ -381,7 +387,7 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
     setOrRemoveAttribute(
       target,
       'aria-selected',
-      this.tree && this.tree.selection !== 'none' ? String(this.selected) : null
+      this._isSelectable ? String(this.selected) : null
     );
     setOrRemoveAttribute(
       target,
@@ -545,7 +551,7 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
           }
         </div>
         ${
-          this.tree?.selection !== 'none'
+          this._isSelectable
             ? html`
                 <div part="select" aria-hidden="true">
                   <igc-checkbox

@@ -357,7 +357,8 @@ module with the fixtures, the selectors and the assertion helpers the other thre
 2. Several levels of nesting are supported, and each item computes its `path` and `level` from the hierarchy.
 3. The `value` and `label` properties are settable, and the label renders as text.
 4. The children of a collapsed item are not rendered, and an item with no children renders no expand indicator.
-5. With `selection` set to `none` no select marker is rendered.
+5. With `selection` set to `none`, or outside a tree, no select marker is rendered. An item moved into a selectable
+   tree renders one.
 6. The default expand indicator and the default select marker follow the state of the item.
 7. The `indicator`, `indentation`, `label` and `loading` slots accept custom content.
 8. `igcActiveItem` is emitted when the active item changes, and the last item marked active in the markup wins.

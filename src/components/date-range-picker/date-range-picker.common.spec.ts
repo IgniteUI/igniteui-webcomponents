@@ -332,6 +332,26 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       );
       expect(picker.open).to.equal(true);
     });
+
+    it('should not change keepOpenOnSelect when the mode changes', async () => {
+      picker.mode = 'dialog';
+      await elementUpdated(picker);
+      expect(picker.keepOpenOnSelect).to.be.false;
+
+      await picker.show();
+      await selectDates(today, tomorrow, calendar);
+      expect(picker.open).to.be.true;
+
+      await picker.hide();
+      picker.mode = 'dropdown';
+      await elementUpdated(picker);
+
+      await picker.show();
+      await selectDates(today.add('day', 2), tomorrow.add('day', 2), calendar);
+      await elementUpdated(picker);
+      expect(picker.open).to.be.false;
+    });
+
     it('should set properties of the calendar correctly', async () => {
       const props = {
         activeDate: new Date(2025, 3, 9),
@@ -608,6 +628,30 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           doneBtn?.click();
           await elementUpdated(picker);
           expect(eventSpy).not.calledWith('igcChange');
+        });
+
+        it('should not emit igcChange for a value set from code while the dialog is open (dialog)', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          picker.mode = 'dialog';
+          await picker.show();
+
+          picker.value = { start: today.native, end: tomorrow.native };
+          await elementUpdated(picker);
+
+          picker.select({ start: tomorrow.native, end: tomorrow.native });
+          await elementUpdated(picker);
+
+          const doneBtn = picker.renderRoot.querySelector<HTMLElement>(
+            'igc-button[slot="footer"]:last-of-type'
+          )!;
+          simulateClick(doneBtn);
+          await elementUpdated(picker);
+
+          expect(eventSpy).not.calledWith('igcChange');
+          expect(picker.value).to.deep.equal({
+            start: tomorrow.native,
+            end: tomorrow.native,
+          });
         });
 
         it('clears the value when the range start is activated again in the calendar', async () => {

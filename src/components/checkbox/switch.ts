@@ -27,6 +27,8 @@ const nextId = createIdGenerator('switch');
  * @csspart label - The switch label.
  * @csspart checked - Added to the base, control, label and thumb parts when the switch is checked.
  * @csspart focused - Added to the control part when the switch has keyboard focus.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-switch';

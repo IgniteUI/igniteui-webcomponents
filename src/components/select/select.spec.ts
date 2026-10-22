@@ -5,6 +5,7 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { emulateMedia } from '@web/test-runner-commands';
 import { spy, useFakeTimers } from 'sinon';
 import { internalsOf } from '#internals/controllers/internals.js';
 import {
@@ -27,6 +28,7 @@ import {
 import {
   axeReflectedRelationsOptions,
   isFocused,
+  withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
@@ -38,6 +40,8 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import { configureTheme } from '#theming/config.js';
+import { styles as indigo } from '../../styles/themes/light/indigo.css.js';
 import IgcInputComponent from '../input/input.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import type IgcSelectItemComponent from './select-item.js';
@@ -307,6 +311,27 @@ describe('Select', () => {
 
         expect(getSlot('toggle-icon')).to.have.attribute('hidden');
         expect(getSlot('toggle-icon-expanded')).to.not.have.attribute('hidden');
+      });
+
+      it('draws one frame around the list in forced colors', async () => {
+        // The theme sheet resolves the outline of the indigo list.
+        await withDocumentSheets([indigo.styleSheet!], async () => {
+          try {
+            configureTheme('indigo');
+            await emulateMedia({ forcedColors: 'active' });
+
+            select = await fixture<IgcSelectComponent>(createBasicSelect());
+            const base = getComputedStyle(
+              select.renderRoot.querySelector('[part~="base"]')!
+            );
+
+            expect(base.borderTopStyle).to.equal('solid');
+            expect(base.outlineStyle).to.equal('none');
+          } finally {
+            await emulateMedia({ forcedColors: 'none' });
+            configureTheme('bootstrap');
+          }
+        });
       });
     });
   });

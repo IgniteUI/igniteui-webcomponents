@@ -191,6 +191,14 @@ const Slots = setSlots(
  * @csspart year-inner - The calendar year inner element.
  * @csspart selected - The calendar selected state for element(s). Applies to date, month and year elements.
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
+ * @csspart dialog-base - The base of the dialog in dialog mode.
+ * @csspart title - The title of the dialog in dialog mode.
+ * @csspart footer - The footer of the dialog in dialog mode, which holds the Cancel and Done buttons.
+ * @csspart overlay - The backdrop of the dialog in dialog mode.
+ *
+ * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent, IgcChipComponent, IgcInputComponent'
@@ -265,8 +273,12 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     return this.value;
   }
 
+  /** A user change. It stays uncommitted until the picker emits `igcChange`. */
   protected override set _value(value: DateRangeValue | null) {
-    this.value = value;
+    const previous = this.value;
+    this._formValue.setValueAndFormState(value);
+    this._setCalendarRangeValues();
+    this.requestUpdate('value', previous);
   }
 
   protected override get _hasValue(): boolean {
@@ -351,8 +363,9 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
    */
   @property({ converter: convertToDateRange })
   public set value(value: DateRangeValue | string | null | undefined) {
-    this._formValue.setValueAndFormState(convertToDateRange(value));
-    this._setCalendarRangeValues();
+    this._value = convertToDateRange(value);
+    // A set from code is committed at once, so no later commit reports it.
+    this._oldValue = this.value;
   }
 
   public get value(): DateRangeValue | null {
@@ -462,14 +475,6 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     });
   }
 
-  protected override willUpdate(changedProperties: PropertyValues<this>): void {
-    super.willUpdate(changedProperties);
-
-    if (changedProperties.has('mode') && !this._isDropDown) {
-      this.keepOpenOnSelect = true;
-    }
-  }
-
   protected override update(changedProperties: PropertyValues<this>): void {
     // The render swaps the editors, so the range and validity are re-applied after it.
     if (changedProperties.has('useTwoInputs')) {
@@ -508,7 +513,8 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
 
   /** Sets the value of the picker to `value`. It does not emit events. */
   public select(value: DateRangeValue | null): void {
-    this._select(value);
+    this.value = value;
+    this._setCalendarActiveDate(this._firstDefinedInRange);
   }
 
   // #endregion
@@ -641,7 +647,7 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
       end: null,
     };
 
-    this._commitValue({ start, end }, 'igcChange');
+    this._commitEditorValue({ start, end });
   }
 
   private _swapDates(range: DateRangeValue): DateRangeValue {
@@ -651,13 +657,13 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
       : range;
   }
 
-  private _select(value: DateRangeValue | null, emitEvent = false) {
-    this.value = value;
+  /** Applies a predefined range. In dialog mode, Done commits it. */
+  private _select(value: DateRangeValue | null) {
+    this._value = value;
     this._setCalendarActiveDate(this._firstDefinedInRange);
 
-    if (emitEvent) {
-      this.emitEvent('igcChange', { detail: this.value });
-      this._oldValue = this.value;
+    if (this._isDropDown) {
+      this._emitChange();
       this._hide(true);
     }
   }
@@ -691,7 +697,7 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
             .customRanges=${this.customRanges}
             .resourceStrings=${this.resourceStrings}
             @igcRangeSelect=${({ detail }: CustomEvent<DateRangeValue>) =>
-              this._select(detail, this._isDropDown)}
+              this._select(detail)}
             exportparts="ranges"
           >
           </igc-predefined-ranges-area>

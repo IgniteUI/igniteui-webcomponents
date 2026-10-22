@@ -32,6 +32,8 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
+    - [CSS custom properties](#css-custom-properties)
   - [Test scenarios](#test-scenarios)
     - [Common suite](#common-suite)
     - [Single input suite](#single-input-suite)
@@ -59,6 +61,7 @@
 |       7 | 2026-10-02 | Forward the host `aria-describedby`; expose `required` as `aria-required` |
 |       8 | 2026-10-14 | An editor commit marks the picker touched; a reset resets the editors     |
 |       9 | 2026-10-21 | API descriptions aligned with the JSDoc.                                  |
+|      10 | 2026-10-21 | A value set from code, also with `select()`, is not reported on Done      |
 
 ## Overview
 
@@ -440,7 +443,7 @@ apply.
 | hideOutsideDays        | hide-outside-days          | Yes       | `boolean`                   | false             | Whether the calendar hides the dates that do not belong to the current month. |
 | showWeekNumbers        | show-week-numbers          | Yes       | `boolean`                   | false             | Whether the calendar shows the week numbers.                             |
 | weekStart              | week-start                 | No        | `WeekDays`                  | from the locale   | The first day of the week in the calendar.                               |
-| keepOpenOnSelect       | keep-open-on-select        | Yes       | `boolean`                   | false             | Keeps the picker open after a selection.                                 |
+| keepOpenOnSelect       | keep-open-on-select        | Yes       | `boolean`                   | false             | Keeps the dropdown open after a selection. A selection never closes the dialog.        |
 | keepOpenOnOutsideClick | keep-open-on-outside-click | Yes       | `boolean`                   | false             | Whether the component stays open when the user clicks outside of it.                |
 | scrollStrategy         | scroll-strategy            | No        | `PopoverScrollStrategy`     | `hide`            | The behavior of the component when a parent container scrolls.           |
 | nonEditable            | non-editable               | Yes       | `boolean`                   | false             | Whether the user cannot type in the input. The user can still select a date in the calendar. |
@@ -526,6 +529,22 @@ On top of the input and calendar parts it re-exports, the picker exposes:
 | `calendar-icon` / `calendar-icon-start` / `calendar-icon-end`            | The calendar icon wrappers for the closed state.        |
 | `calendar-icon-open` / `calendar-icon-open-start` / `calendar-icon-open-end` | The calendar icon wrappers for the open state.      |
 | `clear-icon` / `clear-icon-start` / `clear-icon-end`                     | The clear icon wrappers.                                |
+| `dialog-base`                                                            | The base of the dialog in dialog mode.                  |
+| `title`                                                                  | The title of the dialog in dialog mode.                 |
+| `footer`                                                                 | The footer of the dialog in dialog mode, which holds the Cancel and Done buttons. |
+| `overlay`                                                                | The backdrop of the dialog in dialog mode.              |
+
+### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
+
+### CSS custom properties
+
+| Property                | Description                                                                                                                                                                                                                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ig-helper-min-lines` | The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`. |
 
 ## Test scenarios
 
@@ -551,9 +570,11 @@ The suites reuse `createFormAssociatedTestBed`, `runValidationContainerTests`,
 
 1. Rendering and initialization of the shared structure, including the exposed `ranges` part, and a value and bounds
    set before the first render.
-2. Properties, including localization - formats, resource strings and the separator.
+2. Properties, including localization - formats, resource strings and the separator - and `keepOpenOnSelect`, which
+   `mode` does not change.
 3. Methods - `show`, `hide`, `toggle`, `select` and `clear`.
-4. Interactions - selection through the calendar, keyboard navigation, and interactions with the show icon.
+4. Interactions - selection through the calendar, keyboard navigation, and interactions with the show icon. A value
+   set from code while the dialog is open, also with `select()`, is not reported when Done commits.
 5. Readonly state, in dropdown and in dialog mode.
 6. Predefined ranges - the built-in chips and the custom ranges.
 7. Locale week start - the calendar derives its week start from the locale when `week-start` is not set.
@@ -563,7 +584,8 @@ The suites reuse `createFormAssociatedTestBed`, `runValidationContainerTests`,
 8. Rendering and initialization, including the accessibility audit.
 9. Properties and localization.
 10. Scroll strategy - the `scroll`, `hide` and `close` behaviors of the anchored calendar.
-11. Methods.
+11. Methods. `stepUp` and `stepDown` of the range input update its value at once, also while it is focused and empty.
+    A value set from code while the input is focused is not reported on blur.
 12. Interactions - selection through the calendar, interactions with the input and the open and clear buttons, and
     the readonly state.
 13. Undo and redo of the masked range text.

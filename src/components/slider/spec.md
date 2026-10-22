@@ -25,6 +25,7 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
   - [Test scenarios](#test-scenarios)
     - [Regular](#regular)
     - [Range](#range)
@@ -322,6 +323,12 @@ thumb and the tick labels.
 | `focused`           | Added to the thumb part when the thumb has keyboard focus. |
 | `thumb-label`       | The tooltip of a thumb.                         |
 | `thumb-label-inner` | The inner element of a thumb tooltip.           |
+
+### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
 
 ## Test scenarios
 

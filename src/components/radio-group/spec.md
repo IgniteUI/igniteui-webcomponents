@@ -172,6 +172,9 @@ Here `Phone` stays checked.
 In the horizontal alignment, the helper text and the validation messages of the radios show under the row of radios,
 each in a row of its own, in the order of the radios.
 
+With `--ig-helper-min-lines`, only the last radio of the group keeps space for message lines, because the group shows
+its message on its last radio. The group sets the variable to `0` on its other radios.
+
 #### Group label
 
 A `label` element in the default slot is the visible label of the group. The group does not count it as a radio. In
@@ -234,8 +237,8 @@ None applicable. React to the `igcChange` event of the individual radios, or rea
 
 None applicable.
 
-The group exposes two custom states for styling: one that is active when every radio in the group is disabled, and
-one that is active when any radio places its label before its control.
+The group exposes two custom states for styling: `disabled`, which is active when the group has radios and all of
+them are disabled, and `label-before`, which is active when a radio in the group has its label before its control.
 
 ## Test scenarios
 
