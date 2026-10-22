@@ -118,11 +118,17 @@ class TileResizeState {
     this._calculateTileStartPosition(grid, tileRect, computed);
   }
 
-  /** The column and row spans of the tile for the resized rectangle. */
+  /**
+   * The spans of the tile for the resized rectangle, on the axes where the
+   * rendered span changes. A span that the column count cuts keeps its value.
+   */
   public calculateResizedGridPosition({ width, height }: DOMRect) {
+    const colSpan = this._calculateResizedSpan('column', width);
+    const rowSpan = this._calculateResizedSpan('row', height);
+
     return {
-      colSpan: this._calculateResizedSpan('column', width),
-      rowSpan: this._calculateResizedSpan('row', height),
+      ...(colSpan !== this._position.column.span && { colSpan }),
+      ...(rowSpan !== this._position.row.span && { rowSpan }),
     };
   }
 

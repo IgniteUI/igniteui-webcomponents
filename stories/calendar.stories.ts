@@ -93,7 +93,7 @@ const metadata: Meta<IgcCalendarComponent> = {
     locale: {
       type: 'string',
       description:
-        'The locale of the component. Without it, the component takes the locale\nof the nearest ancestor component that sets one, and then the global\nlocale.',
+        'The locale of the component. Without it, the component takes its own\n`lang`, else the locale of the nearest ancestor that has a `locale` (a\ncomponent) or a `lang`, and then the global locale.',
       control: 'text',
     },
     value: {
@@ -181,9 +181,9 @@ interface IgcCalendarArgs {
   /** The active view of the calendar: `days`, `months` or `years`. */
   activeView: 'days' | 'months' | 'years';
   /**
-   * The locale of the component. Without it, the component takes the locale
-   * of the nearest ancestor component that sets one, and then the global
-   * locale.
+   * The locale of the component. Without it, the component takes its own
+   * `lang`, else the locale of the nearest ancestor that has a `locale` (a
+   * component) or a `lang`, and then the global locale.
    */
   locale: string;
   /** The value of the calendar in `single` selection mode. */

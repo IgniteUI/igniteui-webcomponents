@@ -6,14 +6,19 @@
 
     // The defaults stop a tile of a nested manager from inheriting the
     // placement of the tile that holds it. The properties set them inline.
-    --ig-col-start: auto;
+    --ig-col-start: initial;
     --ig-col-span: 1;
     --ig-row-start: auto;
     --ig-row-span: 1;
 
+    // Fit the start and the span into the column count. Without a start,
+    // `--_col-start` has no value and the fallbacks apply.
+    --_columns: var(--column-count, infinity);
+    --_col-start: min(var(--ig-col-start), var(--_columns));
+
     display: block;
     position: relative;
-    grid-column: var(--ig-col-start) / span var(--ig-col-span);
+    grid-column: var(--_col-start, auto) / span min(var(--ig-col-span), var(--_columns) + 1 - var(--_col-start, 1));
     grid-row: var(--ig-row-start) / span var(--ig-row-span);
 }
 
@@ -80,12 +85,17 @@
 }
 
 [part~='base'] {
+    display: flex;
+    flex-direction: column;
     width: 100%;
     height: 100%;
     overflow: hidden;
 }
 
+// Fills the tile under the header, so `block-size: 100%` content fills too.
 [part='content-container'] {
+    flex: 1;
+    min-block-size: 0;
     border-radius: inherit;
 
     ::slotted(*) {

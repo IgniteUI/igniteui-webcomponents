@@ -272,7 +272,8 @@ export default class IgcTileComponent extends I18nMixin(
 
   /**
    * The number of columns the tile spans. A value is truncated to a whole
-   * number, at least 1.
+   * number, at least 1. When the manager has a column count, the tile spans at
+   * most the columns from its start to the last column, and the value stays.
    *
    * @attr col-span
    * @default 1
@@ -294,6 +295,8 @@ export default class IgcTileComponent extends I18nMixin(
 
   /**
    * The start column of the tile. A value below 1 removes the explicit start.
+   * When the manager has a column count, a start after the last column places
+   * the tile in the last column, and the value stays.
    *
    * @attr col-start
    */
@@ -554,15 +557,11 @@ export default class IgcTileComponent extends I18nMixin(
   }
 
   private _handleResizeEnd = ({ state }: ResizeCallbackParams) => {
-    const { colSpan, rowSpan } = this._resizeState.calculateResizedGridPosition(
-      state.current
-    );
+    const spans = this._resizeState.calculateResizedGridPosition(state.current);
 
     state.commit = async () => {
-      await startSizeTransition(this, () => {
-        this.colSpan = colSpan;
-        this.rowSpan = rowSpan;
-      }).updateCallbackDone;
+      await startSizeTransition(this, () => Object.assign(this, spans))
+        .updateCallbackDone;
 
       this._setResizeState(false);
       this.emitEvent('igcTileResizeEnd', { detail: this });

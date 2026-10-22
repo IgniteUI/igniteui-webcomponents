@@ -73,7 +73,7 @@ export function calculateResizedSpan(props: ResizeSpanProps): number {
 
     const additionalSpan = Math.ceil(remainingSize / (minSize + gap));
     newSpan = sizesAfterStart.length + additionalSpan;
-    return isRow ? newSpan : Math.min(entries.length, newSpan);
+    return isRow ? newSpan : Math.min(sizesAfterStart.length, newSpan);
   }
 
   for (let i = tilePosition.start - 1; i < entries.length; i++) {

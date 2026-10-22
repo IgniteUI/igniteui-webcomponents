@@ -58,6 +58,7 @@ This directory hosts two public components: [`igc-tile-manager`](#igc-tile-manag
 |       5 | 2026-10-19 | Localize the names of the default tile actions               |
 |       6 | 2026-10-20 | Tile manager `locale`, which the tiles inherit               |
 |       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                     |
+|       8 | 2026-10-22 | Spans fit the column count, `--grid-padding`, the content fills the tile |
 
 ## Overview
 
@@ -163,6 +164,31 @@ the default transition, and so does a size change in a browser without view tran
 A `columnCount` of zero or less produces a responsive layout derived from `minColumnWidth`. A column is never wider
 than the manager, so in a manager that is narrower than `minColumnWidth` the column takes the width of the manager. Each
 of these properties is also exposed as a CSS custom property, so the grid can be driven from a stylesheet.
+`--grid-padding` sets the padding of the grid, `1.25rem` by default.
+
+To change the column count with the width, leave `column-count` unset and set `--column-count` in a media query. The
+attribute sets the variable on the grid, which wins over a value on the manager. The value must be a whole number,
+because the tiles fit their spans into it; `initial` gives the responsive layout. See
+[Spans and placement](#spans-and-placement) for how the tiles fit.
+
+```css
+igc-tile-manager {
+  --column-count: 4;
+  --grid-padding: 0;
+}
+
+@media (width < 60rem) {
+  igc-tile-manager {
+    --column-count: 2;
+  }
+}
+
+@media (width < 40rem) {
+  igc-tile-manager {
+    --column-count: 1;
+  }
+}
+```
 
 #### Spans and placement
 
@@ -172,6 +198,10 @@ of these properties is also exposed as a CSS custom property, so the grid can be
 
 `position` sets the visual order of a tile in the layout, corresponding to the CSS `order` property. The tiles of a
 nested manager do not take the spans or the starts of the tile that holds the manager.
+
+With a column count, a tile spans at most the columns from its start to the last column, and a tile that starts
+after the last column goes to the last column. So a tile adds no columns. `colStart` and `colSpan` keep their values,
+also after a resize that does not change them, so one layout works at every column count.
 
 #### Drag and drop
 
@@ -224,20 +254,15 @@ button.addEventListener('click', () => {
 });
 ```
 
-The content of a tile is clipped to its size. For content that can be taller than the tile, let the content container
-fill the tile and scroll an element of your own. Give a scrolling element `tabindex="0"` and a name, so that keyboard
-users can scroll it:
+The content container fills the tile under the header, so content with `block-size: 100%`, such as a chart, takes
+the free height. The content of a tile is clipped to its size. For content that can be taller than the tile, scroll an
+element of your own. Give a scrolling element `tabindex="0"` and a name, so that keyboard users can scroll it:
 
-```css
-igc-tile::part(base) {
-  display: flex;
-  flex-direction: column;
-}
-
-igc-tile::part(content-container) {
-  flex: 1;
-  min-height: 0;
-}
+```html
+<igc-tile>
+  <span slot="title">Orders</span>
+  <div tabindex="0" aria-label="Orders" style="block-size: 100%; overflow: auto">...</div>
+</igc-tile>
 ```
 
 #### Serialization
@@ -325,10 +350,11 @@ None applicable. The tiles emit the drag, resize, maximize and fullscreen events
 
 | Property           | Description                                                                 |
 | ------------------ | ----------------------------------------------------------------------------- |
-| `--column-count`   | The number of columns. The `column-count` attribute sets this variable.     |
+| `--column-count`   | The number of columns, a whole number. The `column-count` attribute sets this variable. Without the attribute, set it in a style sheet, for example in a media query. `initial` gives the responsive layout. |
 | `--min-col-width`  | The minimum size of the columns. The `min-column-width` attribute sets it.  |
 | `--min-row-height` | The minimum size of the rows. The `min-row-height` attribute sets it.       |
 | `--grid-gap`       | The gap of the underlying CSS grid. The `gap` attribute sets it.            |
+| `--grid-padding`   | The padding of the underlying CSS grid. Defaults to `1.25rem`.              |
 
 ### igc-tile
 
@@ -338,9 +364,9 @@ A container within the tile manager for displaying various types of information.
 
 | Property          | Attribute           | Reflected | Type              | Default | Description                                                             |
 | ----------------- | ------------------- | --------- | ----------------- | ------- | ------------------------------------------------------------------------- |
-| colSpan           | col-span            | No        | `number`          | 1       | The number of columns the tile spans.                                   |
+| colSpan           | col-span            | No        | `number`          | 1       | The number of columns the tile spans. With a column count, at most the columns from its start to the last column. |
 | rowSpan           | row-span            | No        | `number`          | 1       | The number of rows the tile spans.                                      |
-| colStart          | col-start           | No        | `number \| null`  | `null`  | The starting column for the tile.                                       |
+| colStart          | col-start           | No        | `number \| null`  | `null`  | The starting column for the tile. With a column count, a start after the last column places the tile in the last column. |
 | rowStart          | row-start           | No        | `number \| null`  | `null`  | The starting row for the tile.                                          |
 | position          | position            | No        | `number`          | -1      | The visual position of the tile in the layout, as the CSS `order`.      |
 | maximized         | maximized           | Yes       | `boolean`         | false   | Whether the tile occupies all available space within the layout.        |
@@ -425,7 +451,11 @@ The groups below mirror the `describe` blocks.
 
 4. `colSpan` and `rowSpan` size the tiles in the grid. A tile of a nested manager does not take the placement of the
    tile that holds the manager.
-5. A fixed `columnCount` and a responsive layout derived from `minColumnWidth` both lay the tiles out correctly.
+5. A fixed `columnCount` and a responsive layout derived from `minColumnWidth` both lay the tiles out correctly. With a
+   column count from the attribute or a style sheet, a tile does not span past the last column, and `colSpan` keeps
+   its value. A start after the last column moves the tile to the last column, and `colStart` keeps its value.
+   `--grid-padding` sets the padding of the grid, but not of a nested manager. The content of a tile fills the tile
+   under the header.
 
 ### Maximize
 
@@ -508,12 +538,13 @@ The groups below mirror the `describe` blocks.
     fractional position becomes a whole number. A value that applies to no tile changes no position.
 35. Escape after a drag that swaps a tile back and forth restores every tile. The positions stay whole when tiles
     leave or move to another manager during the drag, and when the next drag starts before the restore applies. A start
-    column that a smaller column count removed, and a layout from `loadLayout()`, stay. A swap with a tile that leaves
+    column after the last column of a smaller column count comes back, and a layout from `loadLayout()` stays. A swap with a tile that leaves
     before the swap applies does not happen.
 36. A tile that leaves the page during a drag or a resize cancels the operation, and so does `pointercancel`. The
     events of another pointer are ignored, and an error in the start callback ends the operation. A start listener that
     moves the tile cancels the operation.
-37. Resizing works with a grid placement from author CSS, and the spans and starts are whole numbers. A start from a
+37. Resizing works with a grid placement from author CSS, and the spans and starts are whole numbers. A resize keeps
+    a column span that the column count cuts, and does not widen a tile past the last column. A start from a
     negative or a named line comes from the place of the tile. A minimum row height in `rem` makes the same new rows as
     the same height in pixels.
 38. In nested tile managers, only the innermost tile drags, and it does not swap with an outer tile. A drag swaps with

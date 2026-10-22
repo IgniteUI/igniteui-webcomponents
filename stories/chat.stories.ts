@@ -81,7 +81,7 @@ const metadata: Meta<IgcChatComponent> = {
     locale: {
       type: 'string',
       description:
-        'The locale of the component. Without it, the component takes the locale\nof the nearest ancestor component that sets one, and then the global\nlocale.',
+        'The locale of the component. Without it, the component takes its own\n`lang`, else the locale of the nearest ancestor that has a `locale` (a\ncomponent) or a `lang`, and then the global locale.',
       control: 'text',
     },
   },
@@ -91,9 +91,9 @@ export default metadata;
 
 interface IgcChatArgs {
   /**
-   * The locale of the component. Without it, the component takes the locale
-   * of the nearest ancestor component that sets one, and then the global
-   * locale.
+   * The locale of the component. Without it, the component takes its own
+   * `lang`, else the locale of the nearest ancestor that has a `locale` (a
+   * component) or a `lang`, and then the global locale.
    */
   locale: string;
 }

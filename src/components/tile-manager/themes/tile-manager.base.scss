@@ -5,12 +5,13 @@
 
     --min-col-width: 200px;
     --min-row-height: 200px;
+    --grid-padding: #{rem(20px)};
 }
 
 [part~='base'] {
     display: grid;
     position: relative;
-    padding: rem(20px);
+    padding: var(--grid-padding);
     width: 100%;
     height: 100%;
     grid-template-columns: repeat(var(--column-count, auto-fit), minmax(min(var(--min-col-width), 100%), 1fr));

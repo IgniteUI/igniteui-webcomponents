@@ -87,27 +87,6 @@ class TilesState {
       }
     }
   }
-
-  /** Fits the column start and span of each tile into a fixed column count. */
-  public adjustTileGridPosition(): void {
-    const { columnCount } = this._manager;
-
-    if (columnCount < 1) {
-      return;
-    }
-
-    for (const tile of this._tiles) {
-      if ((tile.colStart ?? 0) > columnCount) {
-        tile.colStart = null;
-      }
-
-      const maxSpan = columnCount - (tile.colStart ?? 1) + 1;
-
-      if (tile.colSpan > maxSpan) {
-        tile.colSpan = maxSpan;
-      }
-    }
-  }
 }
 
 /** A recorded tile: its first position, and its parent and layout version then. */

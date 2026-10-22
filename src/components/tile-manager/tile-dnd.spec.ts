@@ -443,7 +443,7 @@ describe('Tile drag and drop', () => {
       ]);
     });
 
-    it('keeps the start column that a smaller column count removes during a drag', async () => {
+    it('restores a start column after the last column of a smaller column count during a drag', async () => {
       const [dragged, target] = [getTile(0), getTile(1)];
 
       tileManager.columnCount = 4;
@@ -463,7 +463,8 @@ describe('Tile drag and drop', () => {
       await getActiveViewTransition()?.finished;
 
       expect([dragged.position, target.position]).to.eql([0, 1]);
-      expect([dragged.colStart, target.colStart]).to.eql([null, null]);
+      expect([dragged.colStart, target.colStart]).to.eql([3, null]);
+      expect(getComputedStyle(dragged).gridColumn).to.equal('2 / span 1');
       expect(dragged.getBoundingClientRect().width).to.be.greaterThan(0);
     });
 

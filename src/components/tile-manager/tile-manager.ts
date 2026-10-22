@@ -1,4 +1,4 @@
-import { html, LitElement, type PropertyValues } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
@@ -41,10 +41,11 @@ import IgcTileComponent from './tile.js';
  * @csspart base - The tile manager CSS Grid container.
  * @csspart maximized-tile - Indicates that a tile is maximized. Applies to `base`.
  *
- * @cssproperty --column-count - The number of columns for the tile manager. The `column-count` attribute sets this variable.
+ * @cssproperty --column-count - The number of columns for the tile manager, a whole number. The `column-count` attribute sets this variable. Without the attribute, set it in a style sheet, for example in a media query. `initial` gives the responsive layout.
  * @cssproperty --min-col-width - The minimum size of the columns in the tile-manager. The `min-column-width` attribute sets this variable.
  * @cssproperty --min-row-height - The minimum size of the rows in the tile-manager. The `min-row-height` attribute sets this variable.
  * @cssproperty --grid-gap - The gap size of the underlying CSS grid container. The `gap` attribute sets this variable.
+ * @cssproperty --grid-padding - The padding of the underlying CSS grid container. Defaults to 1.25rem.
  *
  */
 @shadowOptions({ slotAssignment: 'manual' })
@@ -204,12 +205,6 @@ export default class IgcTileManagerComponent extends LitElement {
     });
   }
 
-  protected override updated(changed: PropertyValues<this>) {
-    if (changed.has('columnCount')) {
-      this._tilesState.adjustTileGridPosition();
-    }
-  }
-
   protected override firstUpdated() {
     this._tilesState.assignPositions();
     this._tilesState.assignTiles();
@@ -236,7 +231,6 @@ export default class IgcTileManagerComponent extends LitElement {
 
     this._tilesState.normalize(addedTiles);
     this._tilesState.assignTiles();
-    this._tilesState.adjustTileGridPosition();
     this._setMaximizedState();
   }
 
