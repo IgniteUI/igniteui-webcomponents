@@ -3951,6 +3951,7 @@
       "cssProperties": [
         "--column-count",
         "--grid-gap",
+        "--grid-padding",
         "--min-col-width",
         "--min-row-height"
       ]

@@ -96,7 +96,7 @@ const metadata: Meta<IgcTileManagerComponent> = {
     locale: {
       type: 'string',
       description:
-        'The locale of the tiles. A tile without its own locale takes this one.\nWithout it, the manager takes the locale of the nearest ancestor component\nthat sets one, and then the global locale.',
+        'The locale of the tiles. A tile without its own locale takes this one.\nWithout it, the manager takes its own `lang`, else the locale of the\nnearest ancestor that has a `locale` (a component) or a `lang`, and then\nthe global locale.',
       control: 'text',
     },
   },
@@ -120,8 +120,9 @@ interface IgcTileManagerArgs {
   gap: string;
   /**
    * The locale of the tiles. A tile without its own locale takes this one.
-   * Without it, the manager takes the locale of the nearest ancestor component
-   * that sets one, and then the global locale.
+   * Without it, the manager takes its own `lang`, else the locale of the
+   * nearest ancestor that has a `locale` (a component) or a `lang`, and then
+   * the global locale.
    */
   locale: string;
 }
@@ -145,17 +146,6 @@ registerMaterialIcons(
 const styles = html`
   ${storyStyles}
   <style>
-    /* The content of a tile fills the space under the header. */
-    igc-tile::part(base) {
-      display: flex;
-      flex-direction: column;
-    }
-
-    igc-tile::part(content-container) {
-      flex: 1;
-      min-height: 0;
-    }
-
     .tm-kpi {
       display: grid;
       align-content: center;
@@ -1623,8 +1613,8 @@ export const ProjectBoard: Story = {
         }
 
         /* The cards have no resize handles, so less space is enough. */
-        .tm-cards::part(base) {
-          padding: 0.5rem;
+        .tm-cards {
+          --grid-padding: 0.5rem;
         }
 
         /* The drop preview of a card from another column. */

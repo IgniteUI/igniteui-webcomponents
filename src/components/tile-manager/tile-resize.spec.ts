@@ -352,14 +352,58 @@ describe('Tile resize', () => {
       expect(getComputedStyle(firstTile).gridColumn).to.eql('5 / span 6');
     });
 
-    it('Should set colStart to 0(auto) and colSpan to columnCount when both are greater than columnCount', async () => {
+    it('moves a tile that starts after the last column to the last column and keeps its start and span', async () => {
       tileManager.columnCount = 10;
       firstTile.colStart = 11;
       firstTile.colSpan = 12;
       await elementUpdated(tileManager);
 
       expect(getColumns().length).to.eql(10);
-      expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 10');
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('10 / span 1');
+      expect([firstTile.colStart, firstTile.colSpan]).to.eql([11, 12]);
+    });
+
+    it('keeps a column span that the column count cuts after a vertical resize', async () => {
+      const DOM = getTileDOM(firstTile);
+
+      tileManager.columnCount = 2;
+      firstTile.colSpan = 3;
+      await elementUpdated(tileManager);
+
+      simulatePointerDown(DOM.adorners.bottom);
+      await elementUpdated(firstTile);
+
+      simulatePointerMove(DOM.adorners.bottom, { clientY: rowSize * 3 });
+      await elementUpdated(firstTile);
+
+      simulateLostPointerCapture(DOM.adorners.bottom);
+      await elementUpdated(firstTile);
+      await getActiveViewTransition()?.finished;
+
+      expect(firstTile.colSpan).to.equal(3);
+      expect(firstTile.rowSpan).to.be.greaterThan(1);
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 2');
+    });
+
+    it('does not widen a tile in the last column past the column count', async () => {
+      const DOM = getTileDOM(firstTile);
+
+      tileManager.columnCount = 4;
+      firstTile.colStart = 6;
+      await elementUpdated(tileManager);
+
+      simulatePointerDown(DOM.adorners.side);
+      await elementUpdated(firstTile);
+
+      simulatePointerMove(DOM.adorners.side, { clientX: columnSize * 20 });
+      await elementUpdated(firstTile);
+
+      simulateLostPointerCapture(DOM.adorners.side);
+      await elementUpdated(firstTile);
+      await getActiveViewTransition()?.finished;
+
+      expect(firstTile.colSpan).to.equal(1);
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('4 / span 1');
     });
 
     it('Should maintain column position on resize when colStart is set', async () => {

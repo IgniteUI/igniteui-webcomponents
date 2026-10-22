@@ -438,6 +438,107 @@ describe('Tile Manager component', () => {
         'auto / auto / span 1 / span 1'
       );
     });
+
+    it('fits the spans into a smaller column count and keeps them', async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager
+          column-count="4"
+          min-column-width="3rem"
+          style="inline-size: 20rem"
+        >
+          <igc-tile col-span="3"><p>A</p></igc-tile>
+          <igc-tile col-span="2"><p>B</p></igc-tile>
+        </igc-tile-manager>
+      `);
+      const grid = getTileManagerBase();
+      const tiles = tileManager.tiles;
+      const spans = () =>
+        tiles.map((tile) => getComputedStyle(tile).gridColumn);
+
+      tileManager.columnCount = 1;
+      await elementUpdated(tileManager);
+
+      expect(spans()).to.eql(['auto / span 1', 'auto / span 1']);
+      expect(getComputedStyle(grid).gridTemplateColumns.split(' ')).lengthOf(1);
+      expect(grid.scrollWidth).to.equal(grid.clientWidth);
+
+      tileManager.columnCount = 4;
+      await elementUpdated(tileManager);
+
+      expect(tiles.map(({ colSpan }) => colSpan)).to.eql([3, 2]);
+      expect(spans()).to.eql(['auto / span 3', 'auto / span 2']);
+    });
+
+    it('fits the tiles into a column count from a style sheet', async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager
+          min-column-width="3rem"
+          style="inline-size: 20rem; --column-count: 2"
+        >
+          <igc-tile col-span="3"><p>A</p></igc-tile>
+          <igc-tile col-start="4" col-span="2"><p>B</p></igc-tile>
+        </igc-tile-manager>
+      `);
+      const [wide, late] = tileManager.tiles;
+
+      expect(getComputedStyle(wide).gridColumn).to.equal('auto / span 2');
+      expect(getComputedStyle(late).gridColumn).to.equal('2 / span 1');
+      expect(
+        getComputedStyle(getTileManagerBase()).gridTemplateColumns.split(' ')
+      ).lengthOf(2);
+    });
+
+    it('sets the padding of the grid from `--grid-padding`', async () => {
+      const style = getComputedStyle(getTileManagerBase());
+
+      expect(style.padding).to.equal('20px');
+
+      tileManager.style.setProperty('--grid-padding', '0px');
+
+      expect(style.padding).to.equal('0px');
+    });
+
+    it('does not pass `--grid-padding` to a nested manager', async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager style="--grid-padding: 0px">
+          <igc-tile>
+            <igc-tile-manager id="inner">
+              <igc-tile><p>Inner</p></igc-tile>
+            </igc-tile-manager>
+          </igc-tile>
+        </igc-tile-manager>
+      `);
+      const inner =
+        tileManager.querySelector<IgcTileManagerComponent>('#inner')!;
+      await elementUpdated(inner);
+
+      expect(getComputedStyle(getTileManagerBase()).padding).to.equal('0px');
+      expect(
+        getComputedStyle(inner.renderRoot.querySelector('[part~="base"]')!)
+          .padding
+      ).to.equal('20px');
+    });
+
+    it('lets the content fill the tile under the header', async () => {
+      const manager = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager min-row-height="300px">
+          <igc-tile>
+            <span slot="title">Chart</span>
+            <div style="block-size: 100%"></div>
+          </igc-tile>
+        </igc-tile-manager>
+      `);
+      const [tile] = manager.tiles;
+      const [base, container, content] = [
+        tile.renderRoot.querySelector('[part~="base"]')!,
+        tile.renderRoot.querySelector('[part="content-container"]')!,
+        tile.querySelector('div')!,
+      ].map((element) => element.getBoundingClientRect());
+
+      expect(container.bottom).to.equal(base.bottom);
+      expect(content.height).to.equal(container.height);
+      expect(content.height).to.be.greaterThan(200);
+    });
   });
 
   describe('Maximize', () => {

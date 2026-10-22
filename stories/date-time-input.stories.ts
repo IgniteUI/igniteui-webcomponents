@@ -136,7 +136,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     locale: {
       type: 'string',
       description:
-        'The locale used to format the display value. Without it, the input takes\nthe locale of the nearest ancestor component that sets one, and then the\nglobal locale.',
+        'The locale used to format the display value. Without it, the input takes\nits own `lang`, else the locale of the nearest ancestor that has a\n`locale` (a component) or a `lang`, and then the global locale.',
       control: 'text',
     },
   },
@@ -204,8 +204,8 @@ interface IgcDateTimeInputArgs {
   spinLoop: boolean;
   /**
    * The locale used to format the display value. Without it, the input takes
-   * the locale of the nearest ancestor component that sets one, and then the
-   * global locale.
+   * its own `lang`, else the locale of the nearest ancestor that has a
+   * `locale` (a component) or a `lang`, and then the global locale.
    */
   locale: string;
 }
