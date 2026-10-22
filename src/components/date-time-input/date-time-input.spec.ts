@@ -1,5 +1,10 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { getI18nManager, setCurrentI18n } from 'igniteui-i18n-core';
+import {
+  getI18nManager,
+  registerI18n,
+  setCurrentI18n,
+} from 'igniteui-i18n-core';
+import { ValidationResourceStringsBG } from 'igniteui-i18n-resources';
 import { spy } from 'sinon';
 import {
   altKey,
@@ -27,6 +32,7 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import { formatString } from '#internals/utils/strings.js';
 import { DatePart } from './date-part.js';
 import IgcDateTimeInputComponent from './date-time-input.js';
 import { DateTimeMaskParser } from './datetime-mask-parser.js';
@@ -1670,6 +1676,30 @@ describe('Date Time Input component', () => {
       await runValidationContainerTests(
         IgcDateTimeInputComponent,
         testParameters
+      );
+    });
+  });
+
+  describe('Validation messages', () => {
+    before(() => registerI18n(ValidationResourceStringsBG, 'bg'));
+
+    it('formats a bound as the input displays it', async () => {
+      const min = new Date(2026, 9, 10);
+      const element = await fixture<IgcDateTimeInputComponent>(
+        html`<igc-date-time-input
+          locale="bg"
+          display-format="longDate"
+          .min=${min}
+          .value=${new Date(2026, 9, 1)}
+        ></igc-date-time-input>`
+      );
+      const date = new Intl.DateTimeFormat('bg', { dateStyle: 'long' });
+
+      expect(element.validationMessage).to.equal(
+        formatString(
+          ValidationResourceStringsBG.min_validation_error!,
+          date.format(min)
+        )
       );
     });
   });

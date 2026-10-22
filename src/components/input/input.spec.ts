@@ -5,6 +5,8 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { registerI18n, setCurrentI18n } from 'igniteui-i18n-core';
+import { ValidationResourceStringsBG } from 'igniteui-i18n-resources';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
@@ -19,6 +21,7 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import { formatString } from '#internals/utils/strings.js';
 import { configureTheme } from '#theming/config.js';
 import IgcInputComponent from './input.js';
 
@@ -1046,6 +1049,34 @@ describe('Input component', () => {
         ];
 
       await runValidationContainerTests(IgcInputComponent, testParameters);
+    });
+  });
+
+  describe('Validation messages', () => {
+    before(() => registerI18n(ValidationResourceStringsBG, 'bg'));
+    afterEach(() => setCurrentI18n('en'));
+
+    it('reports the type mismatch in the current locale', async () => {
+      setCurrentI18n('bg');
+      await createFixture(html`<igc-input type="email" value="a"></igc-input>`);
+
+      expect(element.validationMessage).to.equal(
+        ValidationResourceStringsBG.email_validation_error
+      );
+    });
+
+    it('formats a number bound in the current locale', async () => {
+      setCurrentI18n('bg');
+      await createFixture(
+        html`<igc-input type="number" min="1000.5" value="1"></igc-input>`
+      );
+
+      expect(element.validationMessage).to.equal(
+        formatString(
+          ValidationResourceStringsBG.min_validation_error!,
+          '1000,5'
+        )
+      );
     });
   });
 

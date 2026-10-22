@@ -5,9 +5,16 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
+import {
+  registerI18n,
+  setCurrentI18n,
+  ValidationResourceStringsEN,
+} from 'igniteui-i18n-core';
+import { ValidationResourceStringsBG } from 'igniteui-i18n-resources';
 import { LitElement } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { StaticValue } from 'lit/static-html.js';
+import { formatString } from '../utils/strings.js';
 import {
   maxLengthValidator,
   minLengthValidator,
@@ -22,6 +29,7 @@ import {
   type FormRequiredInterface,
   InternalInvalidEvent,
 } from './forms/types.js';
+import { I18nMixin } from './i18n.js';
 
 type FormAssociatedTestProps = {
   value?: string;
@@ -332,6 +340,151 @@ describe('Form associated mixin without a value property', () => {
     expect(committed).to.be.false;
     expect(events).to.be.empty;
     expect('value' in element).to.be.false;
+  });
+});
+
+describe('Form associated mixin validation messages', () => {
+  const BG = ValidationResourceStringsBG;
+  const EN = ValidationResourceStringsEN;
+
+  class ControlElement extends FormAssociatedRequiredMixin(LitElement) {
+    public minLength?: number;
+
+    protected override _formValue = createFormValueState(this, {
+      initialValue: '',
+    });
+
+    protected override get __validators(): Validator<this>[] {
+      return [requiredValidator, minLengthValidator];
+    }
+
+    public set value(value: string) {
+      this._formValue.setValueAndFormState(value);
+    }
+
+    public get value(): string {
+      return this._formValue.value;
+    }
+  }
+
+  type Control = ControlElement & { locale?: string };
+  type LocaleHost = LitElement & { locale: string };
+
+  let control: StaticValue;
+  let localeHost: StaticValue;
+  let localizedControl: StaticValue;
+
+  before(() => {
+    registerI18n(BG, 'bg');
+    control = unsafeStatic(defineCE(ControlElement));
+    localeHost = unsafeStatic(
+      defineCE(class extends I18nMixin(LitElement, { defaultEN: {} }) {})
+    );
+    localizedControl = unsafeStatic(
+      defineCE(class extends I18nMixin(ControlElement, { defaultEN: {} }) {})
+    );
+  });
+
+  afterEach(() => setCurrentI18n('en'));
+
+  it('takes the messages of the global locale', async () => {
+    setCurrentI18n('bg');
+    const element = await fixture<Control>(
+      html`<${control} required></${control}>`
+    );
+
+    expect(element.validationMessage).to.equal(BG.required_validation_error);
+
+    element.required = false;
+    element.minLength = 3;
+    element.value = 'ab';
+
+    expect(element.validationMessage).to.equal(
+      formatString(BG.min_length_validation_error!, 3)
+    );
+  });
+
+  it('follows a change of the global locale', async () => {
+    const element = await fixture<Control>(
+      html`<${control} required></${control}>`
+    );
+
+    expect(element.validationMessage).to.equal(EN.required_validation_error);
+
+    setCurrentI18n('bg');
+
+    expect(element.validationMessage).to.equal(BG.required_validation_error);
+  });
+
+  it('follows the strings registered for the current locale', async () => {
+    setCurrentI18n('de');
+    const element = await fixture<Control>(
+      html`<${control} required></${control}>`
+    );
+
+    expect(element.validationMessage).to.equal(EN.required_validation_error);
+
+    registerI18n({ required_validation_error: 'Pflichtfeld' }, 'de');
+
+    expect(element.validationMessage).to.equal('Pflichtfeld');
+  });
+
+  it('takes the locale of an ancestor component', async () => {
+    const host = await fixture<LocaleHost>(
+      html`<${localeHost} locale="bg">
+        <${control} required></${control}>
+      </${localeHost}>`
+    );
+    const element = host.firstElementChild as Control;
+
+    expect(element.validationMessage).to.equal(BG.required_validation_error);
+
+    host.locale = 'en';
+
+    expect(element.validationMessage).to.equal(EN.required_validation_error);
+  });
+
+  it('takes the own locale of a localized control', async () => {
+    setCurrentI18n('bg');
+    const element = await fixture<Control>(
+      html`<${localizedControl} required locale="en"></${localizedControl}>`
+    );
+
+    expect(element.validationMessage).to.equal(EN.required_validation_error);
+
+    element.locale = 'foo_bar';
+
+    expect(element.validationMessage).to.equal(BG.required_validation_error);
+  });
+
+  it('takes the English message for a key that the locale lacks', async () => {
+    registerI18n(
+      {
+        required_validation_error: 'Champ obligatoire',
+        min_length_validation_error: '',
+      },
+      'fr'
+    );
+    setCurrentI18n('fr');
+    const element = await fixture<Control>(html`<${control}></${control}>`);
+
+    element.minLength = 3;
+    element.value = 'ab';
+
+    expect(element.validationMessage).to.equal(
+      formatString(EN.min_length_validation_error!, 3)
+    );
+  });
+
+  it('keeps a custom message on a change of the locale', async () => {
+    const element = await fixture<Control>(
+      html`<${control} required></${control}>`
+    );
+
+    element.setCustomValidity('Custom');
+    setCurrentI18n('bg');
+
+    expect(element.validationMessage).to.equal('Custom');
   });
 });
 
