@@ -1,4 +1,6 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { registerI18n } from 'igniteui-i18n-core';
+import { ResourceStringsBG } from 'igniteui-i18n-resources';
 import type Sinon from 'sinon';
 import { spy } from 'sinon';
 import {
@@ -15,6 +17,7 @@ import {
   simulateClick,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
+import { formatString } from '#internals/utils/strings.js';
 import { configureTheme } from '#theming/config.js';
 import type IgcButtonComponent from '../button/button.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
@@ -1039,6 +1042,44 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       await elementUpdated(picker);
 
       expect(calendar.weekStart).to.equal('monday');
+    });
+  });
+
+  describe('Validation messages', () => {
+    const BG = ResourceStringsBG;
+
+    before(() => registerI18n(BG, 'bg'));
+
+    it('formats the dates as the picker displays them', async () => {
+      const start = new Date(2026, 9, 1);
+      const end = new Date(2026, 9, 5);
+      const date = new Intl.DateTimeFormat('bg', { dateStyle: 'long' });
+
+      picker = await fixture<IgcDateRangePickerComponent>(
+        html`<igc-date-range-picker
+          locale="bg"
+          display-format="long"
+          .value=${{ start, end }}
+        ></igc-date-range-picker>`
+      );
+      picker.disabledDates = [
+        { type: DateRangeType.Specific, dateRange: [start] },
+      ];
+      await elementUpdated(picker);
+
+      const range = `${date.format(start)} ${BG.date_range_picker_date_separator} ${date.format(end)}`;
+      expect(picker.validationMessage).to.equal(
+        formatString(BG.disabled_date_validation_error!, range)
+      );
+
+      const min = new Date(2026, 9, 3);
+      picker.disabledDates = [];
+      picker.min = min;
+      await elementUpdated(picker);
+
+      expect(picker.validationMessage).to.equal(
+        formatString(BG.min_validation_error!, date.format(min))
+      );
     });
   });
 });

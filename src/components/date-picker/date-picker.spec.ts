@@ -5,7 +5,8 @@ import {
   html,
   waitUntil,
 } from '@open-wc/testing';
-import { getI18nManager } from 'igniteui-i18n-core';
+import { getI18nManager, registerI18n } from 'igniteui-i18n-core';
+import { ValidationResourceStringsBG } from 'igniteui-i18n-resources';
 import { spy } from 'sinon';
 import {
   altKey,
@@ -31,6 +32,7 @@ import {
   simulateKeyboard,
   simulateScroll,
 } from '#internals/testing/simulate.spec.js';
+import { formatString } from '#internals/utils/strings.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { DateRangeType } from '../calendar/types.js';
 import { DatePart } from '../date-time-input/date-part.js';
@@ -1504,6 +1506,41 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       expect(calendar.weekStart).to.equal('monday');
+    });
+  });
+
+  describe('Validation messages', () => {
+    const BG = ValidationResourceStringsBG;
+
+    before(() => registerI18n(BG, 'bg'));
+
+    it('formats the dates as the picker displays them', async () => {
+      const min = new Date(2026, 9, 10);
+      const value = new Date(2026, 9, 1);
+      const date = new Intl.DateTimeFormat('bg', { dateStyle: 'long' });
+
+      picker = await fixture<IgcDatePickerComponent>(
+        html`<igc-date-picker
+          locale="bg"
+          display-format="long"
+          .min=${min}
+          .value=${value}
+        ></igc-date-picker>`
+      );
+
+      expect(picker.validationMessage).to.equal(
+        formatString(BG.min_validation_error!, date.format(min))
+      );
+
+      picker.min = null;
+      picker.disabledDates = [
+        { type: DateRangeType.Specific, dateRange: [value] },
+      ];
+      await elementUpdated(picker);
+
+      expect(picker.validationMessage).to.equal(
+        formatString(BG.disabled_date_validation_error!, date.format(value))
+      );
     });
   });
 });

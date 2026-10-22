@@ -1,5 +1,4 @@
 import {
-  disabledDateMessage,
   maxDateValidator,
   minDateValidator,
   requiredValidator,
@@ -14,7 +13,8 @@ export const datePickerValidators: Validator<IgcDatePickerComponent>[] = [
   maxDateValidator,
   {
     key: 'badInput',
-    message: ({ value }) => disabledDateMessage(value),
+    message: ({ value }, localize) =>
+      localize('disabled_date_validation_error', value),
     isValid: ({ value, disabledDates }) =>
       value && disabledDates ? !isDateInRanges(value, disabledDates) : true,
   },

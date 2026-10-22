@@ -29,10 +29,12 @@ export const stringValidators: Validator<IgcInputComponent>[] = [
           return true;
       }
     },
-    message: (host) =>
-      (host.type === 'email'
-        ? emailValidator.message
-        : urlValidator.message) as string,
+    message: (host, localize) =>
+      localize(
+        host.type === 'email'
+          ? 'email_validation_error'
+          : 'url_validation_error'
+      ),
   },
 ];
 
