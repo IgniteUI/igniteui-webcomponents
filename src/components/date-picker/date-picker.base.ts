@@ -13,6 +13,10 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { convertToDate } from '#internals/date/converters.js';
 import { coercedProperty } from '#internals/decorators/coerced-property.js';
+import {
+  formatDisplayDate,
+  getDateTimeFormat,
+} from '#internals/i18n/date-formats.js';
 import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.resources.js';
 import type { UnpackCustomEvent } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
@@ -527,6 +531,17 @@ export abstract class IgcDatePickerBaseComponent<
 
   protected _focusInput(): void {
     firstOf(this._editors)?.focus();
+  }
+
+  protected override _formatValidationValue(
+    value: unknown,
+    locale: string
+  ): string {
+    return formatDisplayDate(
+      value as Date,
+      locale,
+      getDateTimeFormat(this.displayFormat)
+    );
   }
 
   protected _setDateConstraints(): void {

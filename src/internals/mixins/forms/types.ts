@@ -97,6 +97,9 @@ export declare class BaseFormAssociatedElement {
   /** Resets the interaction and validity state, as a form reset does. */
   protected _resetValidationState(): void;
 
+  /** Formats a value for a validation message. */
+  protected _formatValidationValue(value: unknown, locale: string): string;
+
   /** Runs the validators and updates the internal validity state. */
   protected _validate(message?: string): void;
 

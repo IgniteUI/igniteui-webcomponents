@@ -309,6 +309,21 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     return getLocaleDateTimeFormats(this.locale).input;
   }
 
+  protected override _formatValidationValue(
+    value: unknown,
+    locale: string
+  ): string {
+    const range = value as DateRangeValue;
+
+    if (!isCompleteDateRange(range)) {
+      return super._formatValidationValue(value, locale);
+    }
+
+    return [range.start, range.end]
+      .map((date) => super._formatValidationValue(date, locale))
+      .join(` ${this.resourceStrings.date_range_picker_date_separator} `);
+  }
+
   protected override get _projectionTarget() {
     // The host's associated labels are projected only onto the start input.
     return this._input ?? this._inputs?.[0] ?? null;

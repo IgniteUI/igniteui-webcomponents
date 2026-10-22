@@ -3,10 +3,11 @@ import { property } from 'lit/decorators.js';
 import { trackLabels } from '../../controllers/aria-projection.js';
 import { addInternalsController } from '../../controllers/internals.js';
 import { enterKey, isKey } from '../../controllers/keys.js';
+import { getHostLocale } from '../../i18n/i18n-controller.js';
 import { addSafeEventListener, preventDefault } from '../../utils/events.js';
 import { getOrInsertComputed } from '../../utils/objects.js';
 import { isFunction, isString } from '../../utils/types.js';
-import type { Validator } from '../../validators.js';
+import { createLocalizeMessage, type Validator } from '../../validators.js';
 import type { Constructor, LitElementConstructor } from '../constructor.js';
 import { HostAriaMixin } from '../host-aria.js';
 import type { FormValue } from './form-value.js';
@@ -128,6 +129,8 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     private _isReportingValidity = false;
     private _touched = false;
     private _isExternalInvalid = false;
+    /** The message is built on read, so it follows the locale. */
+    private __failedValidator?: Validator;
 
     private get _shouldApplyStyles(): boolean {
       if (this._isExternalInvalid) {
@@ -212,7 +215,9 @@ function BaseFormAssociated<T extends LitElementConstructor>(
      * valid.
      */
     public get validationMessage(): string {
-      return this._internals.validationMessage;
+      return this.__failedValidator && !this.validity.customError
+        ? this.__messageOf(this.__failedValidator)
+        : this._internals.validationMessage;
     }
 
     /** Whether the control is a candidate for constraint validation. */
@@ -325,10 +330,10 @@ function BaseFormAssociated<T extends LitElementConstructor>(
 
     private __runValidators(): {
       validity: ValidityStateFlags;
-      message: string;
+      failed?: Validator;
     } {
       let validity: ValidityStateFlags = {};
-      let message = '';
+      let failed: Validator | undefined;
 
       for (const validator of this.__validators) {
         const isValid = validator.isValid(this);
@@ -336,9 +341,7 @@ function BaseFormAssociated<T extends LitElementConstructor>(
         validity[validator.key] = !isValid;
 
         if (!isValid) {
-          message = isFunction(validator.message)
-            ? validator.message(this)
-            : validator.message;
+          failed = validator;
 
           if (validator.key === 'valueMissing') {
             validity = { valueMissing: true };
@@ -347,21 +350,39 @@ function BaseFormAssociated<T extends LitElementConstructor>(
         }
       }
 
-      return { validity, message };
+      return { validity, failed };
+    }
+
+    private __messageOf(validator?: Validator): string {
+      const message = validator?.message ?? '';
+
+      return isFunction(message)
+        ? message(
+            this,
+            createLocalizeMessage(getHostLocale(this), (value, locale) =>
+              this._formatValidationValue(value, locale)
+            )
+          )
+        : message;
+    }
+
+    protected _formatValidationValue(value: unknown, _locale: string): string {
+      return `${value}`;
     }
 
     /** Runs the validators and updates the internal validity state. */
     protected _validate(userMessage?: string): void {
       if (isServer) return;
-      const { validity, message: validatorMessage } = this.__runValidators();
+      const { validity, failed } = this.__runValidators();
       const hasCustomError = this.validity.customError;
-      let message = validatorMessage;
+      let message: string | undefined;
+      this.__failedValidator = failed;
 
       if (hasCustomError && userMessage === undefined) {
         // Internal cycle after `setCustomValidity(message)`. Keep the
         // `customError` flag and the message.
         validity.customError = true;
-        message = this.validationMessage;
+        message = this._internals.validationMessage;
       } else if (hasCustomError && userMessage === '') {
         validity.customError = false;
       } else if (userMessage && userMessage !== '') {
@@ -369,7 +390,10 @@ function BaseFormAssociated<T extends LitElementConstructor>(
         message = userMessage;
       }
 
-      this._internals.setValidity(validity, message);
+      this._internals.setValidity(
+        validity,
+        message ?? this.__messageOf(failed)
+      );
 
       // `checkValidity()` would send `invalid`, which a native control does
       // not do while the user edits it.

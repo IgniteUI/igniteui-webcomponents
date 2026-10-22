@@ -16,7 +16,10 @@ import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { convertToDate } from '#internals/date/converters.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
-import { getLocaleDateTimeFormats } from '#internals/i18n/date-formats.js';
+import {
+  formatDisplayDate,
+  getLocaleDateTimeFormats,
+} from '#internals/i18n/date-formats.js';
 import { addLocaleController } from '#internals/i18n/i18n-controller.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import type { FormValue } from '#internals/mixins/forms/form-value.js';
@@ -522,6 +525,13 @@ export abstract class IgcDateTimeInputBaseComponent<
     if (!this.placeholder || previous === this.placeholder) {
       this.placeholder = this._parser.mask;
     }
+  }
+
+  protected override _formatValidationValue(
+    value: unknown,
+    locale: string
+  ): string {
+    return formatDisplayDate(value as Date, locale, this.displayFormat);
   }
 
   /** Applies the locale-default mask, unless an explicit input format is set. */

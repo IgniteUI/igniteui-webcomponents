@@ -51,6 +51,25 @@ function sameStrings(a: object, b: object): boolean {
 const controllers = new WeakMap<Node, LocaleController>();
 
 /**
+ * The connected controllers. One manager listener serves all of them, because
+ * a native listener add or remove scans the full listener list. Not a static
+ * field, so bundlers can drop the class where only `getHostLocale` is used.
+ */
+const connected = new Set<LocaleController>();
+
+/** The controller of `node` or of its nearest ancestor, across shadow roots. */
+function findController(start: Node | null): LocaleController | undefined {
+  let node = start;
+  let controller: LocaleController | undefined;
+
+  while (node && !(controller = controllers.get(node))) {
+    node = node.parentNode ?? (node as ShadowRoot).host;
+  }
+
+  return controller;
+}
+
+/**
  * Tracks the locale of a Lit web component. A change of the resolved locale,
  * also a global one, updates the host as a change of its `locale` property.
  *
@@ -62,14 +81,8 @@ const controllers = new WeakMap<Node, LocaleController>();
  * all its subscriptions again.
  */
 class LocaleController implements ReactiveController {
-  /**
-   * The connected controllers. One manager listener serves all of them,
-   * because a native listener add or remove scans the full listener list.
-   */
-  private static readonly _connected = new Set<LocaleController>();
-
   private static _refreshConnected(): void {
-    for (const controller of LocaleController._connected) {
+    for (const controller of connected) {
       controller._refresh();
     }
   }
@@ -128,16 +141,9 @@ class LocaleController implements ReactiveController {
       'onResourceChange',
       LocaleController._refreshConnected
     );
-    LocaleController._connected.add(this);
+    connected.add(this);
 
-    let parent: LocaleController | undefined;
-    let node = this._host.parentNode;
-
-    while (node && !(parent = controllers.get(node))) {
-      node = node.parentNode ?? (node as ShadowRoot).host;
-    }
-
-    this._setParent(parent);
+    this._setParent(findController(this._host.parentNode));
     this._detachedLocale = undefined;
 
     // Global changes are missed while disconnected.
@@ -150,7 +156,7 @@ class LocaleController implements ReactiveController {
 
   /** @internal */
   public hostDisconnected(): void {
-    LocaleController._connected.delete(this);
+    connected.delete(this);
     this._detachedLocale = this._parent?._validLocale;
     this._setParent(undefined);
   }
@@ -169,7 +175,7 @@ class LocaleController implements ReactiveController {
     this._refresh();
 
     // An upgrade sets the attributes before it connects the host.
-    if (!LocaleController._connected.has(this)) {
+    if (!connected.has(this)) {
       return;
     }
 
@@ -193,7 +199,7 @@ class LocaleController implements ReactiveController {
     for (const element of node.children) {
       const controller = controllers.get(element);
 
-      if (controller && LocaleController._connected.has(controller)) {
+      if (controller && connected.has(controller)) {
         controller._setParent(this);
       } else {
         this._adopt(element);
@@ -310,6 +316,11 @@ class I18nController<T extends object> extends LocaleController {
 /** Creates a `LocaleController`, and adds it to the host. */
 export function addLocaleController(host: ReactiveElement): LocaleController {
   return new LocaleController(host);
+}
+
+/** The locale of a host, also of a host without a locale controller. */
+export function getHostLocale(host: Node): string {
+  return resolveLocale(findController(host)?.locale ?? getCurrentI18n());
 }
 
 /** Creates an `I18nController`, and adds it to the host. */

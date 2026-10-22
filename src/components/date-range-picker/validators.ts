@@ -3,7 +3,6 @@ import { isEmpty } from '#internals/utils/arrays.js';
 import {
   createMaxDateTimeValidator,
   createMinDateTimeValidator,
-  disabledDateMessage,
   requiredValidator,
   type Validator,
 } from '#internals/validators.js';
@@ -32,7 +31,8 @@ const requiredDateRangeValidator: Validator<IgcDateRangePickerComponent> = {
 
 const badInputDateRangeValidator: Validator<IgcDateRangePickerComponent> = {
   key: 'badInput',
-  message: (host) => disabledDateMessage(host.value),
+  message: (host, localize) =>
+    localize('disabled_date_validation_error', host.value),
   isValid: (host) => {
     const { value, disabledDates } = host;
 
