@@ -85,6 +85,8 @@ const i18n = {
  * @csspart end - The wrapper of the suffix in the material theme.
  * @csspart file-parts - The wrapper of the browse button and the file names.
  *
+ * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
+ *
  * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 export default class IgcFileInputComponent extends I18nMixin(

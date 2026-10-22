@@ -93,6 +93,9 @@
     z-index: 1;
 
     igc-checkbox {
+        // The item does not adopt the component base, which resets this.
+        --ig-helper-min-lines: 0;
+
         &::part(label) {
             display: none;
         }

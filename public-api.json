@@ -984,7 +984,9 @@
         "indicator",
         "label"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-chip": {
       "class": "IgcChipComponent",
@@ -1186,7 +1188,9 @@
         "swatch",
         "swatches"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-combo": {
       "class": "IgcComboComponent",
@@ -1311,7 +1315,9 @@
         "suffix",
         "toggle-icon"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-date-picker": {
       "class": "IgcDatePickerComponent",
@@ -1484,7 +1490,9 @@
         "years-row",
         "years-view"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-date-range-picker": {
       "class": "IgcDateRangePickerComponent",
@@ -1684,7 +1692,9 @@
         "years-row",
         "years-view"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-date-time-input": {
       "class": "IgcDateTimeInputComponent",
@@ -1783,7 +1793,9 @@
         "suffix",
         "suffixed"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-days-view": {
       "class": "IgcDaysViewComponent",
@@ -2152,7 +2164,9 @@
         "suffix",
         "suffixed"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-focus-trap": {
       "class": "IgcFocusTrapComponent",
@@ -2382,7 +2396,9 @@
         "suffix",
         "suffixed"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-linear-progress": {
       "class": "IgcLinearProgressComponent",
@@ -2578,7 +2594,9 @@
         "suffix",
         "suffixed"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-months-view": {
       "class": "IgcMonthsViewComponent",
@@ -2905,7 +2923,9 @@
         "label",
         "ripple"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-radio-group": {
       "class": "IgcRadioGroupComponent",
@@ -3211,7 +3231,9 @@
         "suffix",
         "toggle-icon"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-select-group": {
       "class": "IgcSelectGroupComponent",
@@ -3793,7 +3815,9 @@
         "suffix",
         "suffixed"
       ],
-      "cssProperties": []
+      "cssProperties": [
+        "--ig-helper-min-lines"
+      ]
     },
     "igc-theme-provider": {
       "class": "IgcThemeProviderComponent",

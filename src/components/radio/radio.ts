@@ -64,6 +64,8 @@ const nextId = createIdGenerator('radio');
  * @csspart checked - Added to the base, control, label and ripple parts when the radio is checked.
  * @csspart focused - Added to the base part when the radio has keyboard focus.
  *
+ * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. In a radio group, only the last radio keeps the space. Default is `0`.
+ *
  * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMixin(
