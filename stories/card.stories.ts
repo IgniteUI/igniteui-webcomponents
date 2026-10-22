@@ -369,7 +369,7 @@ export const Tours: Story = {
           inset-inline-end: 0.5rem;
           z-index: 2;
           border-radius: 50%;
-          background: var(--ig-surface-500);
+          background: var(--ig-surface-base);
         }
       </style>
       <section class="cd-stack" aria-label="Tours" ${mount}></section>

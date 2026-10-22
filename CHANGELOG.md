@@ -51,6 +51,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - New runtime dependency `tslib`. The components import the TypeScript helpers from it, so a bundle has one copy of each helper. [#2461](https://github.com/IgniteUI/igniteui-webcomponents/pull/2461)
     - `igniteui-i18n-core` 2.0, with the new resource strings of the carousel, chat, color picker, dialog, splitter, tile and tooltip. If you register languages from `igniteui-i18n-resources`, update it to 2.0 too. [#2474](https://github.com/IgniteUI/igniteui-webcomponents/pull/2474) [#2477](https://github.com/IgniteUI/igniteui-webcomponents/pull/2477)
     - The minimum versions of the optional peer dependencies are now `dompurify` 3.4.16, `marked` 18.1.0 and `shiki` 4.5.0. [#2450](https://github.com/IgniteUI/igniteui-webcomponents/pull/2450)
+    - The themes are built with `igniteui-theming` 30.0.0. The built-in palettes still use the `legacy` generator, so the themes have the same colors as before. [#2487](https://github.com/IgniteUI/igniteui-webcomponents/pull/2487)
   - Bundle size:
     - The bundle of all components is approximately 6% smaller after gzip. The components share one copy of their common styles, and the dark theme styles have only the values that are different from the light theme. [#2461](https://github.com/IgniteUI/igniteui-webcomponents/pull/2461)
     - The carousel, chat, chip, combo, file input and tree no longer bundle the date formatter of `igniteui-i18n-core`, because they use only resource strings. The bundle of each of these components is approximately 7 KB smaller after minification. [#2475](https://github.com/IgniteUI/igniteui-webcomponents/pull/2475)
@@ -69,6 +70,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Theming
   - A theme change now updates only the components that render differently for each theme. A `configureTheme()` call with the active theme and variant updates no component. [#2461](https://github.com/IgniteUI/igniteui-webcomponents/pull/2461)
   - The component styles no longer declare `--ig-theme` and `--ig-theme-variant`. The library reads the two variables from the document root only. So `getComputedStyle()` on a component gives the inherited values, usually the values of the document root. [#2461](https://github.com/IgniteUI/igniteui-webcomponents/pull/2461)
+  - **Breaking change**: The components take their surface color from the `base` surface role, `--ig-surface-base`, not from `--ig-surface-500`. The themes now also define the other surface roles: `--ig-surface-raised`, `--ig-surface-overlay`, `--ig-surface-sunken` and `--ig-surface-container`. To change the surface at runtime, set the surface roles. Before, you set `--ig-surface-500`, which now has no effect on the components. [#2487](https://github.com/IgniteUI/igniteui-webcomponents/pull/2487)
 - #### Tile manager
   - The default actions of a tile now have names that tell what they do: "Maximize" or "Restore", and "Enter full screen" or "Exit full screen". Before, screen readers announced the icon names, such as "expand_content". [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456) [#2477](https://github.com/IgniteUI/igniteui-webcomponents/pull/2477)
   - A tile is now a region, and the content of its `title` slot gives its name. So screen reader users can move from tile to tile. An `aria-label` or `aria-labelledby` on the tile replaces the title as the name. Before, a tile had no role. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
@@ -78,6 +80,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Deprecated
 - #### Combo
   - The `item` of the group header template is deprecated, because it is not a data item. Use `key`. [#2462](https://github.com/IgniteUI/igniteui-webcomponents/issues/2462) [#2468](https://github.com/IgniteUI/igniteui-webcomponents/pull/2468)
+- #### Theming
+  - The numbered surface shades, such as `--ig-surface-500`, are deprecated, and a future release of `igniteui-theming` removes them. The themes still define them. Use the surface roles. [#2487](https://github.com/IgniteUI/igniteui-webcomponents/pull/2487)
 
 ### Fixed
 - #### Accordion

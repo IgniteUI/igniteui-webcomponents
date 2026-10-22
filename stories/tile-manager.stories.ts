@@ -1563,7 +1563,7 @@ export const ProjectBoard: Story = {
           --tm-column: color-mix(
             in srgb,
             var(--ig-gray-500) 10%,
-            var(--ig-surface-500)
+            var(--ig-surface-base)
           );
           --ig-tile-manager-background: transparent;
           --ig-tile-manager-tile-background: var(--tm-column);

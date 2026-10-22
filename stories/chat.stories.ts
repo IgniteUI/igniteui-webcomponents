@@ -964,7 +964,7 @@ export const SupportWidget: Story = {
           border: 1px solid var(--ig-gray-300);
           border-radius: 1rem;
           color: var(--ig-gray-900);
-          background: var(--ig-surface-500);
+          background: var(--ig-surface-base);
           box-shadow: var(--ig-elevation-16);
         }
       </style>

@@ -113,7 +113,7 @@ export const Default: Story = {
         padding: 1rem 0.5rem;
         border: 1px solid var(--ig-gray-300);
         border-radius: 12px;
-        background: var(--ig-surface-500);
+        background: var(--ig-surface-base);
       }
 
       .rp-action igc-icon {

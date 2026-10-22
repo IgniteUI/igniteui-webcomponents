@@ -6,7 +6,7 @@
 
 @function color(
     $color: primary,
-    $variant: 500,
+    $variant: null,
     $opacity: null) {
     @return theming.color(
         $palette: null,
@@ -16,7 +16,7 @@
     );
 }
 
-@function contrast-color($color: primary, $variant: 500, $opacity: null) {
+@function contrast-color($color: primary, $variant: null, $opacity: null) {
     @return theming.contrast-color(
         $palette: null,
         $color: $color,
