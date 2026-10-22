@@ -445,9 +445,10 @@ Everything locale-dependent is derived from the active locale:
   resources.
 - The calendar week start is derived from the locale when `week-start` is not set.
 
-The `locale` property overrides the locale for a single picker. When it is not set, the picker takes the locale of the
-nearest ancestor component that sets one, and then the global locale of the library. A runtime change of the global
-locale or of the localization resources re-resolves the default format and re-renders both the input and the calendar.
+The `locale` property overrides the locale for a single picker. When it is not set, the picker takes its own `lang`,
+else the locale of the nearest ancestor that has a `locale` (a component) or a `lang`, and then the global locale of the
+library. A runtime change of the global locale or of the localization resources re-resolves the default format and
+re-renders both the input and the calendar.
 
 ```html
 <igc-date-picker locale="ja"></igc-date-picker>

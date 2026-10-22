@@ -513,10 +513,10 @@ derived from the active locale:
 - `displayFormat` falls back to the default date-time format of the locale, and the predefined styles as well as the
   month, weekday and time period names are rendered through the data of the locale.
 
-The `locale` property overrides the locale for a single editor. When it is not set, the editor takes the locale of the
-nearest ancestor component that sets one, and then the global locale of the library. A runtime change of the global
-locale re-resolves the default mask and re-renders the displayed value, also when the editor is out of the document
-during the change.
+The `locale` property overrides the locale for a single editor. When it is not set, the editor takes its own `lang`,
+else the locale of the nearest ancestor that has a `locale` (a component) or a `lang`, and then the global locale of the
+library. A runtime change of the global locale re-resolves the default mask and re-renders the displayed value, also
+when the editor is out of the document during the change.
 
 ```html
 <igc-date-time-input locale="ja"></igc-date-time-input>

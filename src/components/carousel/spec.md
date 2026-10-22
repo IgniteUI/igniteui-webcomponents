@@ -205,9 +205,9 @@ for the two states. An indicator with no matching slide is not activated.
 
 ### Localization
 
-The carousel takes its resource strings from the `igniteui-i18n-core` package through the `locale` and
-`resourceStrings` properties. Without an explicit `locale`, it takes the locale of the nearest ancestor component
-that sets one, and then the global locale of the library.
+The carousel takes its resource strings from the `igniteui-i18n-core` package through the `locale` and `resourceStrings`
+properties. Without an explicit `locale`, it takes its own `lang`, else the locale of the nearest ancestor that has a
+`locale` (a component) or a `lang`, and then the global locale of the library.
 
 | Key                       | Default English value | Used for                                         |
 | ------------------------- | --------------------- | ------------------------------------------------ |
