@@ -110,7 +110,6 @@
     "dompurify": "^3.4.0",
     "igniteui-i18n-resources": "^2.0.0-rc.0",
     "marked": "^18.0.0",
-    "marked-shiki": "^1.2.0",
     "shiki": "^4.3.0"
   },
   "peerDependenciesMeta": {
@@ -121,9 +120,6 @@
       "optional": true
     },
     "marked": {
-      "optional": true
-    },
-    "marked-shiki": {
       "optional": true
     },
     "shiki": {

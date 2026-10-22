@@ -44,6 +44,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - #### Avatar, Badge, Carousel
   - The avatar, the badge and the carousel slide no longer have an `aria-roledescription`. Screen readers now announce the role ("image", "status" or "tab panel") in the language of the user. Before, they announced the English words "avatar", "badge" and "slide" in all languages. The carousel keeps its role description, which now comes from the `carousel_role_description` resource string. To set a role description, put an `aria-roledescription` attribute on the element. [#2472](https://github.com/IgniteUI/igniteui-webcomponents/pull/2472) [#2477](https://github.com/IgniteUI/igniteui-webcomponents/pull/2477)
+- #### Chat
+  - The Markdown renderer of `igniteui-webcomponents/extras` does less work:
+    - It loads shiki only when syntax highlighting is on. Before, a page that used `noHighlighter: true` still loaded shiki, about 128 KB (40 KB gzipped).
+    - It loads only the light and dark themes that it uses, not all 65 bundled themes. With one theme for both modes, it highlights each code block once, not twice.
+    - While a message streams, it no longer highlights the finished code blocks again for each chunk. `createMarkdownRenderer()` parses a message again only when its text changes.
+    - A code block of more than 2 KB that still streams shows as plain code until its closing fence arrives. Before, the renderer highlighted it again for each chunk, at about 12 ms per KB.
+    - Renderers with the same languages and themes share one highlighter. Before, each renderer created a highlighter that nothing freed, and shiki warned after ten renderers.
+  - `colorReplacements` of the Markdown renderer now applies to every theme. Before, it applied only to the GitHub themes.
+  - The Markdown renderer no longer uses `marked-shiki`, so it is no longer a peer dependency. You can remove it from your dependencies.
 - #### Chip
   - The `end` slot now renders after the `suffix` slot, at the end of the chip, as the `start` slot renders before the `prefix` slot. Before, it rendered before the `suffix` slot.
 - #### Library
@@ -108,6 +117,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - The remove button of an attachment chip names the file with `chat_remove_attachment`, for example "Remove photo.png". Before, each remove button said "remove chip".
   - Elements in the `suggestion` slot now replace the default suggestions. Before, the chat rendered a `suggestion` slot for each suggestion, so only the first suggestion took the slotted elements.
   - Content in the `suggestions` or `suggestion` slot now shows the suggestions area also without `options.suggestions`. Before, the area and its slots rendered only while `options.suggestions` had items. Without suggestions, the area now stays in the DOM, hidden.
+  - Fixes in the Markdown renderer of `igniteui-webcomponents/extras`:
+    - A `theme` object with only `light` or only `dark` now uses the default theme for the other mode.
+    - A `theme` object that pairs `none` with another theme now gives valid colors. Before, the code had no colors in either mode.
+    - Links now render the formatting in their text, and the renderer escapes their `href` and `title`. Before, `[**Docs**](…)` showed the asterisks, and a title with a quotation mark was cut off.
+    - With the default sanitizer, Markdown and HTML links now open in a new tab, with `rel="noopener noreferrer"`, also when the HTML sets other values. Before, DOMPurify removed `target`, so the links opened in the same tab.
+    - When a code block cannot be highlighted, for example because its language is not in `languages`, the code now shows as escaped text with a `language-*` class, the same as with `noHighlighter`. Before, the renderer read the code as HTML, so a tag such as `<b>` in the code rendered as an element.
 - #### Checkbox
   - The indicator icon is now hidden from assistive technologies. Before, each checkbox had an unnamed image next to it in the accessibility tree. [#2425](https://github.com/IgniteUI/igniteui-webcomponents/pull/2425)
 - #### Chip
