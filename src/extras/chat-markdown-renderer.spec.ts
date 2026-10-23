@@ -1,6 +1,6 @@
 import { expect, fixture, html } from '@open-wc/testing';
 import DOMPurify from 'dompurify';
-import { spy } from 'sinon';
+import { spy, stub } from 'sinon';
 import type { IgcChatMessage } from '../components/chat/types.js';
 import {
   createMarkdownRenderer,
@@ -96,12 +96,13 @@ describe('Chat Markdown renderer', () => {
             '[Top](#top)',
             '[Mail](mailto:info@example.com)',
             '<a href="/register">HTML</a>',
+            '<a href="http://[invalid">Invalid</a>',
             '<svg><a xlink:href="/register"><text>SVG</text></a></svg>',
           ].join(' ')
         )
       ).querySelectorAll('a');
 
-      expect(links).to.have.length(6);
+      expect(links).to.have.length(7);
       for (const link of links) {
         expect(link.hasAttribute('target')).to.be.false;
         expect(link.hasAttribute('rel')).to.be.false;
@@ -137,39 +138,21 @@ describe('Chat Markdown renderer', () => {
       expect(internal.hasAttribute('target')).to.be.false;
     });
 
-    it('compares the links of a srcdoc frame with the origin of the page', async () => {
-      const frame = document.createElement('iframe');
-      const loaded = new Promise((resolve) =>
-        frame.addEventListener('load', resolve, { once: true })
-      );
-      frame.srcdoc = '<!doctype html>';
-      document.body.append(frame);
-      await loaded;
-
+    it('compares links with the global origin', async () => {
+      // In a srcdoc frame, `location.origin` is "null", and the global `origin` is the page's.
+      const origin = stub(globalThis, 'origin').value('https://example.com');
       try {
-        // A second copy of the module, with the frame's globals: there `location.origin` is "null".
-        const frameWindow = frame.contentWindow as Window & typeof globalThis;
-        const url = new URL('./chat-markdown-renderer.ts', import.meta.url)
-          .href;
-        const frameModule = (await new frameWindow.Function(
-          'url',
-          'return import(url)'
-        )(url)) as { setupMarkdownRenderer: typeof setupMarkdownRenderer };
-        const framed = await frameModule.setupMarkdownRenderer({
-          noHighlighter: true,
-        });
-        const [internal, external] = (
+        const [docs, register] = (
           await parse(
-            framed,
-            '[Register](/register) [Docs](https://example.com)'
+            renderer,
+            '[Docs](https://example.com/docs) [Register](/register)'
           )
         ).querySelectorAll('a');
 
-        expect(frameWindow.location.origin).to.equal('null');
-        expect(internal.hasAttribute('target')).to.be.false;
-        expect(external.target).to.equal('_blank');
+        expect(docs.hasAttribute('target')).to.be.false;
+        expect(register.target).to.equal('_blank');
       } finally {
-        frame.remove();
+        origin.restore();
       }
     });
 
