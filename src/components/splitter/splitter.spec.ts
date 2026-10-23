@@ -19,7 +19,10 @@ import {
   homeKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { finishAnimationsFor } from '#internals/testing/helpers.spec.js';
+import {
+  finishAnimationsFor,
+  withDocumentSheets,
+} from '#internals/testing/helpers.spec.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
@@ -28,6 +31,8 @@ import {
   simulatePointerUp,
 } from '#internals/testing/simulate.spec.js';
 import { asPercent, roundPrecise } from '#internals/utils/math.js';
+import { configureTheme } from '#theming/config.js';
+import { styles as indigo } from '../../styles/themes/light/indigo.css.js';
 import IgcTreeItemComponent from '../tree/tree-item.js';
 import IgcTreeComponent from '../tree/tree.js';
 import type { SplitterOrientation } from '../types.js';
@@ -3464,6 +3469,33 @@ describe('Splitter', () => {
       );
     });
 
+    it('should collapse a pane from a button on the hovered bar in indigo', async () => {
+      // Indigo hides the bar buttons with `pointer-events: none` until the bar is hovered or focused.
+      await withDocumentSheets([indigo.styleSheet!], async () => {
+        try {
+          configureTheme('indigo');
+          await elementUpdated(splitter);
+
+          const bar = getSplitterPart(splitter, BAR_PART);
+          await sendMouse({ type: 'move', position: getCenter(bar) });
+          finishAnimationsFor(splitter.shadowRoot!);
+
+          const { startCollapseBtn } = getButtonParts(splitter);
+          await sendMouse({
+            type: 'move',
+            position: getCenter(startCollapseBtn),
+          });
+          await sendMouse({ type: 'down' });
+          await sendMouse({ type: 'up' });
+          await elementUpdated(splitter);
+
+          expect(splitter.startCollapsed).to.be.true;
+        } finally {
+          configureTheme('bootstrap');
+        }
+      });
+    });
+
     it('should ignore Home/End while resizing is disabled', async () => {
       splitter.disableResize = true;
       await elementUpdated(splitter);
@@ -3970,6 +4002,11 @@ function getButtonParts(splitter: IgcSplitterComponent) {
     startCollapseBtn: getSplitterPart(splitter, START_COLLAPSE_PART),
     endCollapseBtn: getSplitterPart(splitter, END_COLLAPSE_PART),
   };
+}
+
+function getCenter(element: Element): [number, number] {
+  const { left, top, width, height } = element.getBoundingClientRect();
+  return [Math.round(left + width / 2), Math.round(top + height / 2)];
 }
 
 async function resize(

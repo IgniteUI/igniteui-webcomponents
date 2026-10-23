@@ -50,6 +50,7 @@ $slim-splitter: calc( 1 / $splitter-size);
             [part*='expand-btn'] {
                 opacity: 1;
                 transition: opacity .15s ease;
+                pointer-events: auto;
             }
         }
     }
