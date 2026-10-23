@@ -12,7 +12,6 @@ import {
 } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-
 import { styleMap } from 'lit/directives/style-map.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import {
@@ -24,7 +23,7 @@ import { addRovingFocusController } from '#internals/controllers/roving-focus.js
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
-import { firstOf, isEmpty } from '#internals/utils/arrays.js';
+import { firstOf, sameItems } from '#internals/utils/arrays.js';
 import { getElementFromPath } from '#internals/utils/events.js';
 import { isString } from '#internals/utils/types.js';
 import { all } from '#themes/tabs/themes/tabs-themes.js';
@@ -32,7 +31,12 @@ import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import type { TabsActivation, TabsAlignment } from '../types.js';
-import { getTabHeader, TAB_HEADER, TabsHelpers } from './tab-dom.js';
+import {
+  getTabHeader,
+  opensElsewhere,
+  TAB_HEADER,
+  TabsHelpers,
+} from './tab-dom.js';
 import IgcTabComponent from './tab.js';
 import { styles as shared } from './themes/shared/tabs/tabs.common.css.js';
 import { styles } from './themes/tabs.base.css.js';
@@ -44,9 +48,6 @@ export interface IgcTabsComponentEventMap {
 /* blazorAdditionalDependency: IgcTabComponent */
 /**
  * Tabs organize and allow navigation between groups of content that are related and at the same level of hierarchy.
- *
- * The tabs component allows the user to navigate between multiple tab children.
- * It supports keyboard navigation and provides API methods to control the selected tab.
  *
  * @element igc-tabs
  *
@@ -79,29 +80,48 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
 
   //#region Private state & properties
 
+  /** Observes the scroll container, the direction probe and each tab header. */
   private readonly _resizeController = addResizeObserverController(this, {
-    callback: this._refreshLayout,
+    callback: this._handleResize,
     options: { box: 'border-box' },
     target: null,
     requestUpdate: false,
   });
 
-  /** The scroll container of the tab headers. */
-  private readonly _headerRef = createRef<HTMLElement>();
+  /** Observes the state of the tabs, also of tabs projected through another slot. */
+  private readonly _mutationController = createMutationController(this, {
+    callback: this._mutationCallback,
+    target: () => this._tabs,
+    config: { attributeFilter: ['selected', 'disabled'] },
+  });
+
+  private _containerWidth = -1;
+
+  /** The tabs at the last change of the slot. */
+  private _knownTabs: IgcTabComponent[] = [];
+
+  private readonly _containerRef = createRef<HTMLElement>();
 
   private readonly _indicatorRef = createRef<HTMLElement>();
 
   private readonly _domHelpers = new TabsHelpers(
     this,
-    this._headerRef,
+    this._containerRef,
     this._indicatorRef
   );
 
   @queryAssignedElements({ selector: IgcTabComponent.tagName, flatten: true })
   private _tabs!: IgcTabComponent[];
 
-  protected get _enabledTabs(): IgcTabComponent[] {
+  private get _enabledTabs(): IgcTabComponent[] {
     return this._tabs.filter((tab) => !tab.disabled);
+  }
+
+  /** Enabled tabs that render. A hidden tab cannot take the focus. */
+  private get _navigableTabs(): IgcTabComponent[] {
+    return this._enabledTabs.filter((tab) =>
+      getTabHeader(tab)?.checkVisibility({ visibilityProperty: true })
+    );
   }
 
   private _activeTab?: IgcTabComponent;
@@ -166,34 +186,29 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
     addThemingController(this, all);
 
     addRovingFocusController(this, {
-      keybindings: { ref: this._headerRef, skip: this._skipKeyboard },
-      items: () => this._enabledTabs,
-      focusItem: (tab) => this._keyboardActivateTab(tab),
-      activateItem: (tab) => this._keyboardActivateTab(tab, true),
+      keybindings: { ref: this._containerRef, skip: this._skipKeyboard },
+      items: () => this._navigableTabs,
+      // `activeElement` misses tabs slotted through another shadow root.
+      current: () => this._tabs.find((tab) => tab.matches(':focus-within')),
+      focusItem: this._keyboardActivateTab,
+      activateItem: this._activateTab,
       missingCurrent: 'wrap',
     });
+  }
 
-    createMutationController(this, {
-      callback: this._mutationCallback,
-      config: {
-        attributeFilter: ['selected', 'disabled'],
-        childList: true,
-        subtree: true,
-      },
-      filter: [IgcTabComponent.tagName],
-    });
+  /** @internal */
+  public override connectedCallback(): void {
+    super.connectedCallback();
+
+    // The mutation observer misses the changes made while detached.
+    if (this.hasUpdated) {
+      this._syncSelection();
+    }
   }
 
   protected override async firstUpdated(): Promise<void> {
     await this.updateComplete;
-
-    const selectedTab = this._resolveSelection(true);
-
-    // A selection measures the layout itself.
-    if (!selectedTab) {
-      this._domHelpers.updateLayout();
-    }
-    this._syncSelection(selectedTab);
+    this._syncTabs();
   }
 
   protected override update(props: PropertyValues<this>): void {
@@ -208,26 +223,139 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
 
   //#endregion
 
-  //#region Observers callbacks
+  //#region Event handlers
+
+  private _handleResize(entries: ResizeObserverEntry[]): void {
+    const container = this._containerRef.value;
+    let resized = false;
+    let replaced = false;
+
+    for (const { target, borderBoxSize } of entries) {
+      if (target === container) {
+        // The panels also size the container, so only its width counts.
+        const [{ inlineSize }] = borderBoxSize;
+        resized ||= inlineSize !== this._containerWidth;
+        this._containerWidth = inlineSize;
+      } else {
+        resized = true;
+        // A header that a render replaced reports a zero size on removal.
+        replaced ||= !target.isConnected;
+      }
+    }
+
+    if (replaced) {
+      this._observeHeaders();
+    }
+
+    if (resized) {
+      this._refreshLayout();
+    }
+  }
+
+  private _mutationCallback({
+    changes: { attributes },
+  }: MutationControllerParams<IgcTabComponent>): void {
+    // Skip the echo of a selection that the tabs reflect: every tab agrees with it.
+    const echo =
+      attributes.every(({ attributeName }) => attributeName === 'selected') &&
+      this._tabs.every((tab) => tab.selected === (tab === this._activeTab));
+
+    if (!echo) {
+      this._syncSelection();
+    }
+  }
+
+  /** Follows the tabs that the slot assigns, also while detached. */
+  private _syncTabs(): void {
+    const tabs = this._tabs;
+    const known = this._knownTabs;
+
+    // The mutation observer follows the state of the tabs.
+    if (sameItems(tabs, known)) {
+      return;
+    }
+
+    this._knownTabs = tabs;
+
+    // The controller observes only while connected; it starts again on connect.
+    if (this.isConnected) {
+      this._mutationController.disconnect();
+      this._mutationController.observe();
+    }
+
+    this._syncSelection(tabs.some((tab) => !known.includes(tab)));
+    this._observeHeaders();
+    this._refreshLayout();
+  }
+
+  protected _handleClick(event: MouseEvent): void {
+    if (!getElementFromPath(TAB_HEADER, event)) {
+      return;
+    }
+
+    const tab = getElementFromPath(IgcTabComponent.tagName, event);
+
+    if (!this._isSelectable(tab) || opensElsewhere(tab, event)) {
+      return;
+    }
+
+    getTabHeader(tab)?.focus({ preventScroll: true });
+    this._setSelectedTab(tab);
+
+    // Does not bubble, so a listener on an outer tab never gets a nested tab's event.
+    if (
+      tab.href != null &&
+      !event.defaultPrevented &&
+      !tab.emitEvent('igcNavigate', { bubbles: false, cancelable: true })
+    ) {
+      event.preventDefault();
+    }
+  }
+
+  @eventOptions({ passive: true })
+  protected _handleScroll(): void {
+    this._domHelpers.setScrollPositionState();
+  }
+
+  //#endregion
+
+  //#region Private API
 
   private _refreshLayout(): void {
     this._domHelpers.updateLayout();
     this._domHelpers.setIndicator(this._activeTab);
   }
 
-  private _mutationCallback({
-    changes,
-  }: MutationControllerParams<IgcTabComponent>): void {
-    const added = changes.added.some(({ node }) => this._tabs.includes(node));
+  /**
+   * Observes the container and the direction probe. A ref callback, because a ref
+   * gets no element while the host renders disconnected (#2416).
+   */
+  private _observeContainer(container?: Element): void {
+    if (container) {
+      this._resizeController.observe(container);
+      this._resizeController.observe(
+        container.querySelector('[data-direction-probe]')!
+      );
+    }
+  }
 
-    // Also without a selection change, for the positions of the tabs.
-    this._syncSelection(this._resolveSelection(added));
+  /** Observes the header of each tab once the tabs render, and stops for the old ones. */
+  private async _observeHeaders(): Promise<void> {
+    await Promise.all(this._tabs.map((tab) => tab.updateComplete));
 
-    // A selection change moves the indicator in `_setSelectedTab`.
-    if (!isEmpty(changes.added) || !isEmpty(changes.removed)) {
-      this._refreshLayout();
-    } else {
-      this._domHelpers.updateLayout();
+    const headers = new Set<Element | null>(this._tabs.map(getTabHeader));
+    const targets = this._resizeController.targets;
+
+    for (const target of targets) {
+      if (target.matches(TAB_HEADER) && !headers.has(target)) {
+        this._resizeController.unobserve(target);
+      }
+    }
+
+    for (const header of headers) {
+      if (header && !targets.has(header)) {
+        this._resizeController.observe(header);
+      }
     }
   }
 
@@ -256,65 +384,45 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
       : undefined;
   }
 
-  //#endregion
-
-  //#region Private API
-
-  /** A ref callback, so a header rendered while disconnected is observed on connect. */
-  private _observeHeader(header?: Element): void {
-    if (header) {
-      this._resizeController.observe(header);
-    }
-  }
-
   private _isSelectable(tab?: IgcTabComponent): tab is IgcTabComponent {
     return tab != null && !tab.disabled && this._tabs.includes(tab);
   }
 
-  private _updateTabsState(): void {
-    const tabs = this._tabs;
-    const tabStop = this._activeTab ?? firstOf(this._enabledTabs);
-
-    for (const [index, tab] of tabs.entries()) {
-      tab._setTabState(index + 1, tabs.length, tab === tabStop);
-    }
+  /** Selects the tab that the state of the tabs resolves to, without an event. */
+  private _syncSelection(added = false): void {
+    this._setSelectedTab(this._resolveSelection(added), false);
   }
 
-  private _syncSelection(tab?: IgcTabComponent): void {
-    this._setSelectedTab(tab, false);
-  }
-
+  /** `tab` is selectable or `undefined`, for no selection. */
   private _setSelectedTab(tab?: IgcTabComponent, emit = true): void {
-    const next =
-      tab === undefined || this._isSelectable(tab) ? tab : this._activeTab;
-    const changed = next !== this._activeTab;
+    const tabs = this._tabs;
+    const changed = tab !== this._activeTab;
+    const tabStop = tab ?? firstOf(this._enabledTabs);
 
-    // Also without a change, to reset a stale `selected` on the other tabs.
-    for (const each of this._tabs) {
-      each.selected = each === next;
+    this._activeTab = tab;
+
+    // Also without a change, to reset a stale `selected` and renumber the tabs.
+    for (const [index, each] of tabs.entries()) {
+      each.selected = each === tab;
+      each._setTabState(index + 1, tabs.length, each === tabStop);
     }
-
-    this._activeTab = next;
-    this._updateTabsState();
 
     if (!changed) {
       return;
     }
 
-    this._domHelpers.scrollTabIntoView(next);
-    this._domHelpers.setIndicator(next);
+    this._domHelpers.scrollTabIntoView(tab);
+    this._domHelpers.setIndicator(tab);
 
-    if (next && emit) {
-      this.emitEvent('igcChange', { detail: next });
+    if (tab && emit) {
+      this.emitEvent('igcChange', { detail: tab });
     }
   }
 
-  private _keyboardActivateTab(tab?: IgcTabComponent, activate = false): void {
-    if (!tab) {
-      return;
-    }
-
-    const select = activate || this.activation === 'auto';
+  private _keyboardActivateTab(tab: IgcTabComponent, activate = false): void {
+    // Focus never selects a tab whose link opens elsewhere.
+    const select =
+      activate || (this.activation === 'auto' && !opensElsewhere(tab));
 
     // A selection change scrolls the tab into view itself.
     if (!select || tab === this._activeTab) {
@@ -328,40 +436,26 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
     }
   }
 
+  /** Enter and Space click a link tab, so they follow its link. */
+  private _activateTab(tab: IgcTabComponent): void {
+    if (tab.href != null) {
+      getTabHeader(tab)?.click();
+    } else {
+      this._keyboardActivateTab(tab, true);
+    }
+  }
+
+  /**
+   * Only keys pressed on a tab header navigate, so a control slotted into a label
+   * keeps its keys. `node` is the target retargeted to the tab.
+   */
   private _skipKeyboard(node: Element, event: KeyboardEvent): boolean {
+    const tab = node as IgcTabComponent;
+
     return !(
-      this._isEventFromTabHeader(event) &&
-      this._tabs.includes(node.closest(IgcTabComponent.tagName)!)
+      this._tabs.includes(tab) &&
+      firstOf(event.composedPath()) === getTabHeader(tab)
     );
-  }
-
-  private _isEventFromTabHeader(event: Event): boolean {
-    return Boolean(getElementFromPath(TAB_HEADER, event));
-  }
-
-  //#endregion
-
-  //#region Event handlers
-
-  protected _handleClick(event: PointerEvent): void {
-    if (!this._isEventFromTabHeader(event)) {
-      return;
-    }
-
-    const tab = getElementFromPath(IgcTabComponent.tagName, event);
-
-    if (!this._isSelectable(tab)) {
-      return;
-    }
-
-    this._domHelpers.setScrollSnap();
-    getTabHeader(tab)?.focus({ preventScroll: true });
-    this._setSelectedTab(tab);
-  }
-
-  @eventOptions({ passive: true })
-  protected _handleScroll(): void {
-    this._domHelpers.setScrollPositionState();
   }
 
   //#endregion
@@ -393,7 +487,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
       : ref;
 
     if (this._isSelectable(tab)) {
-      this._syncSelection(tab);
+      this._setSelectedTab(tab, false);
     }
   }
 
@@ -424,12 +518,13 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
   protected override render(): TemplateResult {
     return html`
       <div
-        ${ref(this._headerRef)}
-        ${ref(this._observeHeader)}
+        ${ref(this._containerRef)}
+        ${ref(this._observeContainer)}
         part="tabs"
         style=${styleMap(this._domHelpers.styleProperties)}
         @scroll=${this._handleScroll}
       >
+        <span data-direction-probe></span>
         <div
           part=${partMap({
             inner: true,
@@ -438,7 +533,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
         >
           <div part="header"></div>
           ${this._renderScrollButton('start')}
-          <slot @click=${this._handleClick}></slot>
+          <slot
+            @click=${this._handleClick}
+            @slotchange=${this._syncTabs}
+          ></slot>
           ${this._renderScrollButton('end')}
           <div part="selected-indicator">
             <span ${ref(this._indicatorRef)}></span>

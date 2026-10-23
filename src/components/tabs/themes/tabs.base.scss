@@ -18,12 +18,21 @@
     scroll-padding-inline: var(--scroll-btn-size);
     scroll-behavior: smooth;
     overflow: scroll hidden;
-    scroll-snap-type: both proximity;
     scrollbar-width: none;
 
     &::-webkit-scrollbar {
         display: none;
     }
+}
+
+// Changes width with the direction, so the resize observer reports a change of direction.
+[data-direction-probe] {
+    position: absolute;
+    inline-size: 0;
+}
+
+:host(:dir(rtl)) [data-direction-probe] {
+    inline-size: 1px;
 }
 
 [part~='inner'] {
@@ -41,7 +50,6 @@
 }
 
 [part~='scrollable'] {
-    /* stylelint-disable-next-line max-line-length */
     grid-template-columns:
         var(--scroll-btn-size) repeat(
             var(--_tabs-count),
@@ -106,7 +114,6 @@
     --tab-max-width--justify: 100%;
 
     [part~='scrollable'] {
-        /* stylelint-disable-next-line max-line-length */
         grid-template-columns:
             var(--scroll-btn-size) repeat(
                 var(--_tabs-count),
@@ -128,7 +135,7 @@
 [part~='header'] {
     position: absolute;
     inset: 0;
-    grid-row: 1 / 2;
+    grid-row: 1;
 }
 
 [part~='start-scroll-button'],
@@ -140,8 +147,12 @@
     min-width: var(--scroll-btn-size);
     width: var(--scroll-btn-size);
     z-index: map.get($tabs-z-index, 'scroll-button');
-    transform: scaleX(direction($rtl: var(--ig-dir)));
     touch-action: none;
+}
+
+// The arrows of the scroll buttons follow the writing direction of the tabs.
+:host(:dir(rtl)) igc-icon-button {
+    transform: scaleX(-1);
 }
 
 [part~='start-scroll-button'] {
@@ -160,17 +171,15 @@ igc-icon-button::part(base) {
     transition: none;
 }
 
-[part='selected-indicator'] {
+[part~='selected-indicator'] {
     position: relative;
     grid-row: 2;
     grid-column: 1 / -1;
 
-    // A page `text-align` on the host would move the static position of the span.
-    text-align: initial;
-
+    // The transform moves the span from the start of the strip to the selected tab.
     span {
         position: absolute;
-        display: inline-block;
+        inset-inline-start: 0;
         transition:
             transform 0.3s $tabs-animation-function,
             width 0.2s $tabs-animation-function;

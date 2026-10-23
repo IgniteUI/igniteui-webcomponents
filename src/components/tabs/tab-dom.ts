@@ -21,8 +21,8 @@ type ScrollButtonsState = {
 
 export class TabsHelpers {
   private readonly _host: IgcTabsComponent;
-  private readonly _container: Ref<HTMLElement>;
-  private readonly _indicator: Ref<HTMLElement>;
+  private readonly _containerRef: Ref<HTMLElement>;
+  private readonly _indicatorRef: Ref<HTMLElement>;
 
   private _styleProperties: TabsStyleProperties = {
     '--_tabs-count': '',
@@ -37,12 +37,12 @@ export class TabsHelpers {
 
   private _isLeftToRight = false;
 
-  private get container(): HTMLElement | undefined {
-    return this._container.value;
+  private get _container(): HTMLElement | undefined {
+    return this._containerRef.value;
   }
 
-  private get indicator(): HTMLElement | undefined {
-    return this._indicator.value;
+  private get _indicator(): HTMLElement | undefined {
+    return this._indicatorRef.value;
   }
 
   public get styleProperties(): TabsStyleProperties {
@@ -63,27 +63,37 @@ export class TabsHelpers {
     indicator: Ref<HTMLElement>
   ) {
     this._host = host;
-    this._container = container;
-    this._indicator = indicator;
+    this._containerRef = container;
+    this._indicatorRef = indicator;
   }
 
+  /** Measures the strip and every tab header. On scroll, the cheaper `setScrollPositionState()` runs. */
   public updateLayout(): void {
-    this._setStyleProperties();
-    this._setScrollButtonState();
-  }
-
-  private _setStyleProperties(): void {
+    const tabs = this._host.tabs;
+    const container = this._container;
+    const width = container && getRect(container).width;
     const next = {
-      '--_tabs-count': String(this._host.tabs.length),
-      '--_ig-tabs-width': this.container
-        ? `${this.container.getBoundingClientRect().width}px`
-        : '',
+      '--_tabs-count': String(tabs.length),
+      '--_ig-tabs-width': width === undefined ? '' : `${width}px`,
     };
 
     if (!equal(this._styleProperties, next)) {
       this._styleProperties = next;
       this._host.requestUpdate();
     }
+
+    if (width === undefined) {
+      return;
+    }
+
+    // The tabs alone, because the scroll width includes the button columns. Subpixel
+    // widths, so that the rounding of many headers does not add up.
+    const tabsWidth = tabs.reduce((sum, tab) => {
+      const header = getTabHeader(tab);
+      return sum + (header ? getRect(header).width : 0);
+    }, 0);
+
+    this.setScrollPositionState(tabsWidth > width + EDGE_TOLERANCE);
   }
 
   public checkAndUpdateDirection(): boolean {
@@ -97,12 +107,6 @@ export class TabsHelpers {
     return false;
   }
 
-  public setScrollSnap(type?: 'start' | 'end'): void {
-    if (this.container) {
-      this.container.style.setProperty('--_ig-tab-snap', type || 'unset');
-    }
-  }
-
   /** The bounds of the strip without the sticky scroll buttons. */
   private _getVisibleBounds(container: HTMLElement): {
     min: number;
@@ -110,7 +114,7 @@ export class TabsHelpers {
   } {
     const { scrollPaddingInlineStart, scrollPaddingInlineEnd } =
       getComputedStyle(container);
-    const { left, right } = container.getBoundingClientRect();
+    const { left, right } = getRect(container);
 
     const start = asNumber(scrollPaddingInlineStart);
     const end = asNumber(scrollPaddingInlineEnd);
@@ -130,15 +134,15 @@ export class TabsHelpers {
     const useRightEdge = isEnd === isLTR(this._host);
 
     const isOutOfView = (header: HTMLElement): boolean => {
-      const { left, right } = header.getBoundingClientRect();
+      const { left, right } = getRect(header);
       return useRightEdge
         ? right > max + EDGE_TOLERANCE
         : left < min - EDGE_TOLERANCE;
     };
 
     const headers = this._host.tabs
-      .map((tab) => getTabHeader(tab))
-      .filter((header): header is HTMLElement => header !== null);
+      .map(getTabHeader)
+      .filter((header) => header !== null);
 
     // The first match past the edge is the closest one.
     const target = isEnd
@@ -149,12 +153,12 @@ export class TabsHelpers {
       return 0;
     }
 
-    const { left, right } = target.getBoundingClientRect();
+    const { left, right } = getRect(target);
     return useRightEdge ? right - max : left - min;
   }
 
   public scrollTabs(direction: 'start' | 'end'): void {
-    const container = this.container;
+    const container = this._container;
 
     if (!container) {
       return;
@@ -162,12 +166,9 @@ export class TabsHelpers {
 
     const offset = this._getScrollOffset(container, direction);
 
-    if (!offset) {
-      return;
+    if (offset) {
+      container.scrollBy({ left: offset, behavior: 'smooth' });
     }
-
-    this.setScrollSnap(direction);
-    container.scrollBy({ left: offset, behavior: 'smooth' });
   }
 
   /** Unlike `Element.scrollIntoView()`, it scrolls only the strip, never the page. */
@@ -179,7 +180,7 @@ export class TabsHelpers {
       await this._host.updateComplete;
     }
 
-    const container = this.container;
+    const container = this._container;
     const header = tab ? getTabHeader(tab) : null;
 
     if (!(container && header)) {
@@ -187,7 +188,7 @@ export class TabsHelpers {
     }
 
     const { min, max } = this._getVisibleBounds(container);
-    const { left, right } = header.getBoundingClientRect();
+    const { left, right } = getRect(header);
 
     let offset = 0;
 
@@ -197,41 +198,19 @@ export class TabsHelpers {
       offset = left - min;
     }
 
-    if (!offset) {
-      return;
+    if (offset) {
+      container.scrollBy({ left: offset });
     }
-
-    this.setScrollSnap();
-    container.scrollBy({ left: offset });
-  }
-
-  /** Reads every tab header, so the scroll handler uses `setScrollPositionState()`. */
-  private _setScrollButtonState(): void {
-    if (!this.container) {
-      return;
-    }
-
-    // The tabs alone, because the scroll width includes the button columns. Subpixel
-    // widths, so that the rounding of many headers does not add up.
-    const tabsWidth = this._host.tabs.reduce(
-      (width, tab) =>
-        width + (getTabHeader(tab)?.getBoundingClientRect().width ?? 0),
-      0
-    );
-    const hasScrollButtons =
-      tabsWidth > this.container.getBoundingClientRect().width + EDGE_TOLERANCE;
-
-    this.setScrollPositionState(hasScrollButtons);
   }
 
   public setScrollPositionState(
     hasScrollButtons = this._hasScrollButtons
   ): void {
-    if (!this.container) {
+    if (!this._container) {
       return;
     }
 
-    const { scrollLeft, scrollWidth, clientWidth } = this.container;
+    const { scrollLeft, scrollWidth, clientWidth } = this._container;
     const disabled = this._scrollButtonsDisabled;
 
     const start = Math.abs(scrollLeft) <= EDGE_TOLERANCE;
@@ -256,7 +235,8 @@ export class TabsHelpers {
   public async setIndicator(active?: IgcTabComponent): Promise<void> {
     await this._host.updateComplete;
 
-    const { container, indicator } = this;
+    const container = this._container;
+    const indicator = this._indicator;
 
     if (!(container && indicator)) {
       return;
@@ -264,29 +244,80 @@ export class TabsHelpers {
 
     const header = active ? getTabHeader(active) : null;
 
-    const styles = {
-      visibility: header ? 'visible' : 'hidden',
-    } satisfies Partial<CSSStyleDeclaration>;
-
-    if (header) {
-      const { offsetLeft: containerLeft, offsetWidth: containerWidth } =
-        container;
-      const width = header.offsetWidth;
-
-      const offset = isLTR(this._host)
-        ? header.offsetLeft - containerLeft
-        : header.offsetLeft + width - containerWidth;
-
-      Object.assign(styles, {
-        width: `${width}px`,
-        transform: `translateX(${offset}px)`,
-      });
+    if (!header) {
+      setStyles(indicator, { visibility: 'hidden' });
+      return;
     }
 
-    setStyles(indicator, styles);
+    const width = header.offsetWidth;
+    const offset = isLTR(this._host)
+      ? header.offsetLeft - container.offsetLeft
+      : header.offsetLeft + width - container.offsetWidth;
+
+    setStyles(indicator, {
+      visibility: 'visible',
+      width: `${width}px`,
+      transform: `translateX(${offset}px)`,
+    });
   }
+}
+
+/**
+ * The client rectangle in the CSS pixels of the element. An ancestor `zoom` scales
+ * the client rectangle, but not the scroll offsets and the computed styles.
+ */
+function getRect(element: Element): {
+  left: number;
+  right: number;
+  width: number;
+} {
+  const zoom = element.currentCSSZoom || 1;
+  const { left, right, width } = element.getBoundingClientRect();
+
+  return { left: left / zoom, right: right / zoom, width: width / zoom };
 }
 
 export function getTabHeader(tab: IgcTabComponent): HTMLElement | null {
   return tab.renderRoot.querySelector(TAB_HEADER);
+}
+
+/**
+ * Whether the browser opens the link of the tab in another browsing context:
+ * by its `target`, or by a click with another button or a modifier key.
+ */
+export function opensElsewhere(
+  tab: IgcTabComponent,
+  event?: MouseEvent
+): boolean {
+  if (tab.href == null) {
+    return false;
+  }
+
+  if (
+    event &&
+    (event.button !== 0 ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey)
+  ) {
+    return true;
+  }
+
+  const target = (
+    tab.target ?? getBaseTarget(tab.ownerDocument)
+  )?.toLowerCase();
+
+  return Boolean(target) && target !== '_self';
+}
+
+/** The target of the first `<base>` element that has one, as the browser uses it. */
+function getBaseTarget(document: Document): string | null {
+  for (const base of document.getElementsByTagName('base')) {
+    if (base.hasAttribute('target')) {
+      return base.getAttribute('target');
+    }
+  }
+
+  return null;
 }

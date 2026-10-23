@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html, nothing } from 'lit';
+import { html, nothing, render } from 'lit';
+import { ref } from 'lit/directives/ref.js';
 import { repeat } from 'lit/directives/repeat.js';
 
 import {
@@ -52,7 +53,7 @@ const metadata: Meta<IgcTabsComponent> = {
     docs: {
       description: {
         component:
-          'Tabs organize and allow navigation between groups of content that are related and at the same level of hierarchy.\n\nThe tabs component allows the user to navigate between multiple tab children.\nIt supports keyboard navigation and provides API methods to control the selected tab.',
+          'Tabs organize and allow navigation between groups of content that are related and at the same level of hierarchy.',
       },
     },
     actions: { handles: ['igcChange'] },
@@ -786,6 +787,119 @@ export const AccountSettings: Story = {
         @submit=${save}
         ${mount}
       ></form>
+    `;
+  },
+};
+
+const consoleSections = [
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'attendees', label: 'Attendees' },
+  { id: 'agenda', label: 'Agenda' },
+  { id: 'check-in', label: 'Check-in' },
+] as const;
+
+type ConsoleSection = (typeof consoleSections)[number]['id'];
+
+const consoleViews: Record<ConsoleSection, string[][]> = {
+  dashboard: [
+    ['Registered', '1,284'],
+    ['Checked in', '312'],
+    ['Sessions today', '24'],
+  ],
+  attendees: [
+    ['Maya Patel', 'Speaker'],
+    ['Daniel Okafor', 'Sponsor'],
+    ['Priya Shah', 'Attendee'],
+  ],
+  agenda: [
+    ['9:00 AM', 'Keynote: the next ten years of the web'],
+    ['10:30 AM', 'Design systems at scale'],
+    ['1:00 PM', 'Accessible components, in practice'],
+  ],
+  'check-in': [
+    ['Main entrance', 'Open'],
+    ['Hall B', 'Opens at 10:00 AM'],
+  ],
+};
+
+export const EventConsole: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The console of an event, with one URL for each section. Each tab has an `href`, so its header is a link: a middle click or Ctrl/Cmd+click opens the section in a new browser tab, the context menu copies the address, and the browser shows the URL on hover. These do not change the selection. A plain click, Enter or Space selects the tab and follows the link. The selected tab follows the URL fragment, so the back and forward buttons and a reload keep the section. The tabs use `activation="manual"`, so the arrow keys only move the focus. A client-side router can cancel the `igcNavigate` event of a tab and route itself; the tabs still select the tab.',
+      },
+    },
+  },
+  render: () => {
+    let root: HTMLElement | undefined;
+
+    const current = (): ConsoleSection => {
+      const id = location.hash.replace('#/event/', '');
+      return (
+        consoleSections.find((section) => section.id === id)?.id ?? 'dashboard'
+      );
+    };
+
+    const view = () => html`
+      <h3 id="tb-console-title">Northwind Summit 2026</h3>
+      <igc-tabs aria-labelledby="tb-console-title" activation="manual">
+        ${repeat(
+          consoleSections,
+          ({ id }) => id,
+          ({ id, label }) => html`
+            <igc-tab
+              label=${label}
+              href="#/event/${id}"
+              ?selected=${id === current()}
+            >
+              <dl class="tb-view">
+                ${consoleViews[id].map(
+                  ([term, detail]) =>
+                    html`<dt>${term}</dt>
+                      <dd>${detail}</dd>`
+                )}
+              </dl>
+            </igc-tab>
+          `
+        )}
+      </igc-tabs>
+      <p class="muted">Address: <code>${location.hash || '(none)'}</code></p>
+    `;
+
+    const update = () => {
+      if (root) {
+        render(view(), root);
+      }
+    };
+
+    const mount = (element?: Element) => {
+      if (element) {
+        root = element as HTMLElement;
+        window.addEventListener('hashchange', update);
+        update();
+      } else {
+        window.removeEventListener('hashchange', update);
+        root = undefined;
+      }
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .tb-view {
+          display: grid;
+          grid-template-columns: max-content 1fr;
+          gap: 0.5rem 2rem;
+          margin: 0;
+        }
+
+        .tb-view dd {
+          margin: 0;
+        }
+      </style>
+      <section class="tb-stack" ${ref(mount)}></section>
     `;
   },
 };

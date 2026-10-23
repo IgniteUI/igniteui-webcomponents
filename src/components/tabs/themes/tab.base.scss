@@ -6,10 +6,8 @@
     $transition: .3s $tabs-animation-function;
 
     display: flex;
-    scroll-snap-align: var(--_ig-tab-snap);
     flex-direction: column;
     align-items: center;
-    flex-shrink: 0;
     text-align: center;
     justify-content: center;
     pointer-events: all;
@@ -21,6 +19,9 @@
     z-index: map.get($tabs-z-index, 'header');
     grid-row: 1;
     overflow-wrap: anywhere;
+
+    // No underline on a link tab. The theme sheets set the color.
+    text-decoration: none;
     transition:
         background-color $transition,
         color $transition;
@@ -30,7 +31,7 @@
     }
 }
 
-[part='base'] {
+[part~='base'] {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -43,7 +44,6 @@
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    text-align: center;
     overflow: hidden;
     gap: rem(8px);
     flex: 1;
@@ -66,7 +66,6 @@
     grid-row: 3;
     grid-column: 1 / -1;
     max-width: var(--_ig-tabs-width);
-    transition: transform 250ms ease-in-out;
 }
 
 :host([selected]) {
@@ -77,9 +76,8 @@
 }
 
 :host([disabled]) {
-    [part='tab-header'] {
+    [part~='tab-header'] {
         pointer-events: none;
-        cursor: initial;
     }
 }
 

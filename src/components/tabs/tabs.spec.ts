@@ -22,6 +22,7 @@ import {
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
+import { preventDefault } from '#internals/utils/events.js';
 import { configureTheme } from '#theming/config.js';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcTabComponent from './tab.js';
@@ -552,6 +553,22 @@ describe('Tabs component', () => {
       `);
     });
 
+    it('skips a tab that does not render with the arrow keys', async () => {
+      const [first, second, third] = element.tabs;
+
+      element.select(first);
+      third.disabled = false;
+      second.hidden = true;
+      await elementUpdated(element);
+
+      getTabDOM(first).header.focus();
+      simulateKeyboard(getTabDOM(first).header, arrowRight);
+      await elementUpdated(element);
+
+      expect(document.activeElement).to.equal(third);
+      verifySelection(element, third);
+    });
+
     it('emits `igcChange` when activating a tab with `manual` activation', async () => {
       element.activation = 'manual';
       await elementUpdated(element);
@@ -814,6 +831,433 @@ describe('Tabs component', () => {
     });
   });
 
+  // The links point to fragments, so a click that the browser follows does not
+  // leave the test page. A click that would open a new browsing context is
+  // canceled on the document, after the tabs handled it.
+  describe('Link tabs', () => {
+    /** Dispatches a cancelable click and returns whether the tabs canceled it. */
+    function clickLink(node: Element, init?: MouseEventInit): boolean {
+      let canceledByTabs = false;
+      const record = (event: Event) => {
+        canceledByTabs = event.defaultPrevented;
+      };
+
+      element.addEventListener('click', record, { once: true });
+      document.addEventListener('click', preventDefault, { once: true });
+
+      node.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+          ...init,
+        })
+      );
+
+      return canceledByTabs;
+    }
+
+    /** Dispatches a cancelable key press and returns whether it was canceled. */
+    function pressKey(
+      node: Element,
+      key: string,
+      init?: KeyboardEventInit
+    ): boolean {
+      const options = { key, bubbles: true, composed: true, ...init };
+      const event = new KeyboardEvent('keydown', {
+        ...options,
+        cancelable: true,
+      });
+
+      node.dispatchEvent(event);
+      node.dispatchEvent(new KeyboardEvent('keyup', options));
+
+      return event.defaultPrevented;
+    }
+
+    beforeEach(async () => {
+      element = await fixture<IgcTabsComponent>(html`
+        <igc-tabs>
+          <igc-tab label="Tab 1" href="#link-tab-1">Content 1</igc-tab>
+          <igc-tab label="Tab 2" href="#link-tab-2">Content 2</igc-tab>
+          <igc-tab label="Tab 3" href="#link-tab-3" target="_blank">
+            Content 3
+          </igc-tab>
+          <igc-tab label="Tab 4">Content 4</igc-tab>
+          <igc-tab label="Tab 5" href="#link-tab-5" disabled>Content 5</igc-tab>
+        </igc-tabs>
+      `);
+    });
+
+    afterEach(() => {
+      history.replaceState(null, '', location.pathname + location.search);
+    });
+
+    it('selects the tab on a plain click and follows the link', async () => {
+      const eventSpy = spy(element, 'emitEvent');
+
+      simulateClick(getTabDOM(element.tabs[1]).header);
+      await elementUpdated(element);
+
+      verifySelection(element, element.tabs[1]);
+      expect(eventSpy).calledOnceWithExactly('igcChange', {
+        detail: element.tabs[1],
+      });
+      expect(location.hash).to.equal('#link-tab-2');
+    });
+
+    it('selects the tab but emits no `igcNavigate` when the application cancels the click', async () => {
+      const eventSpy = spy(element, 'emitEvent');
+      const second = element.tabs[1];
+      const route = spy();
+
+      second.addEventListener('click', preventDefault);
+      second.addEventListener('igcNavigate', route);
+      clickLink(getTabDOM(second).header);
+      await elementUpdated(element);
+
+      verifySelection(element, second);
+      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: second });
+      expect(route.callCount).to.equal(0);
+      expect(location.hash).to.be.empty;
+    });
+
+    it('leaves a click with a modifier key or another button to the browser', async () => {
+      const eventSpy = spy(element, 'emitEvent');
+      const route = spy();
+      const { header } = getTabDOM(element.tabs[1]);
+
+      // A capture listener also gets the events that do not bubble.
+      element.addEventListener('igcNavigate', route, { capture: true });
+
+      for (const init of [
+        { altKey: true },
+        { ctrlKey: true },
+        { metaKey: true },
+        { shiftKey: true },
+        { button: 1 },
+      ]) {
+        expect(clickLink(header, init)).to.be.false;
+        await elementUpdated(element);
+
+        verifySelection(element, element.tabs[0]);
+      }
+
+      expect(eventSpy.callCount).to.equal(0);
+      expect(route.callCount).to.equal(0);
+    });
+
+    it('follows the target of a base element, without regard to case', async () => {
+      const base = document.createElement('base');
+      base.target = '_BLANK';
+      document.head.append(base);
+
+      try {
+        expect(clickLink(getTabDOM(element.tabs[1]).header)).to.be.false;
+        await elementUpdated(element);
+
+        verifySelection(element, element.tabs[0]);
+      } finally {
+        base.remove();
+      }
+    });
+
+    it('does not select a tab whose link opens in another browsing context', async () => {
+      const eventSpy = spy(element, 'emitEvent');
+      const route = spy();
+
+      element.addEventListener('igcNavigate', route, { capture: true });
+
+      expect(clickLink(getTabDOM(element.tabs[2]).header)).to.be.false;
+      await elementUpdated(element);
+
+      verifySelection(element, element.tabs[0]);
+      expect(eventSpy.callCount).to.equal(0);
+      expect(route.callCount).to.equal(0);
+    });
+
+    it('follows the link of the focused tab on Enter and Space', async () => {
+      const [first, second] = element.tabs;
+      const eventSpy = spy(element, 'emitEvent');
+      const clicks = spy();
+      const navigate = spy();
+
+      second.addEventListener('click', clicks);
+      element.addEventListener('igcNavigate', navigate, { capture: true });
+      getTabDOM(second).header.focus();
+
+      expect(pressKey(getTabDOM(second).header, enterKey)).to.be.true;
+      await elementUpdated(element);
+
+      verifySelection(element, second);
+      expect(clicks).calledOnce;
+      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: second });
+      expect(location.hash).to.equal('#link-tab-2');
+
+      getTabDOM(first).header.focus();
+
+      expect(pressKey(getTabDOM(first).header, spaceBar)).to.be.true;
+      await elementUpdated(element);
+
+      verifySelection(element, first);
+      expect(location.hash).to.equal('#link-tab-1');
+      expect(navigate).calledTwice;
+    });
+
+    it('leaves Ctrl+Enter to the browser', async () => {
+      const second = element.tabs[1];
+      const clicks = spy();
+
+      second.addEventListener('click', clicks);
+      getTabDOM(second).header.focus();
+
+      expect(pressKey(getTabDOM(second).header, enterKey, { ctrlKey: true })).to
+        .be.false;
+      await elementUpdated(element);
+
+      verifySelection(element, element.tabs[0]);
+      expect(clicks.callCount).to.equal(0);
+    });
+
+    it('selects without a navigation on focus with `auto` activation', async () => {
+      const [first, second, third] = element.tabs;
+      const clicks = spy();
+
+      element.addEventListener('click', clicks);
+      getTabDOM(first).header.focus();
+
+      simulateKeyboard(getTabDOM(first).header, arrowRight);
+      await elementUpdated(element);
+
+      verifySelection(element, second);
+
+      // The link of the third tab opens elsewhere, so the focus does not select it.
+      simulateKeyboard(getTabDOM(second).header, arrowRight);
+      await elementUpdated(element);
+
+      expect(document.activeElement).to.equal(third);
+      verifySelection(element, second);
+      expect(clicks.callCount).to.equal(0);
+      expect(location.hash).to.be.empty;
+    });
+
+    it('navigates link and plain tabs alike and skips a disabled link tab', async () => {
+      const [first, , , fourth] = element.tabs;
+
+      getTabDOM(fourth).header.focus();
+
+      simulateKeyboard(getTabDOM(fourth).header, arrowRight);
+      await elementUpdated(element);
+
+      expect(document.activeElement).to.equal(first);
+
+      simulateKeyboard(getTabDOM(first).header, endKey);
+      await elementUpdated(element);
+
+      expect(document.activeElement).to.equal(fourth);
+      verifySelection(element, fourth);
+    });
+
+    it('leaves the keys of a control in a tab label to the control', async () => {
+      const second = element.tabs[1];
+      const button = document.createElement('button');
+
+      button.slot = 'suffix';
+      button.textContent = 'Pin';
+      second.append(button);
+      await elementUpdated(second);
+
+      button.focus();
+
+      for (const key of [enterKey, spaceBar, arrowRight, endKey]) {
+        expect(pressKey(button, key)).to.be.false;
+      }
+      await elementUpdated(element);
+
+      expect(document.activeElement).to.equal(button);
+      verifySelection(element, element.tabs[0]);
+      expect(location.hash).to.be.empty;
+    });
+
+    it('emits a cancelable `igcNavigate` that keeps the browser on the page', async () => {
+      const [first, second] = element.tabs;
+      const follow = spy();
+      const route = spy(preventDefault);
+
+      first.addEventListener('igcNavigate', follow);
+      second.addEventListener('igcNavigate', route);
+
+      expect(clickLink(getTabDOM(first).header)).to.be.false;
+      expect(clickLink(getTabDOM(second).header)).to.be.true;
+      // A click on the selected tab follows its link too.
+      expect(clickLink(getTabDOM(second).header)).to.be.true;
+      await elementUpdated(element);
+
+      verifySelection(element, second);
+      expect(follow).calledOnce;
+      expect(route).calledTwice;
+
+      const [event] = route.firstCall.args;
+      expect(event.target).to.equal(second);
+      expect(event.bubbles).to.be.false;
+    });
+
+    it('does not emit `igcNavigate` for a plain or a disabled tab', async () => {
+      const [, , , fourth, fifth] = element.tabs;
+      const route = spy();
+
+      element.addEventListener('igcNavigate', route, { capture: true });
+
+      clickLink(getTabDOM(fourth).header);
+      clickLink(getTabDOM(fifth).header);
+      await elementUpdated(element);
+
+      verifySelection(element, fourth);
+      expect(route.callCount).to.equal(0);
+    });
+
+    it('does not emit `igcNavigate` for a click in the panel', () => {
+      const first = element.tabs[0];
+      const link = document.createElement('a');
+      const route = spy(preventDefault);
+
+      link.href = '#panel-link';
+      first.append(link);
+      first.addEventListener('igcNavigate', route);
+
+      link.click();
+
+      expect(route.callCount).to.equal(0);
+      expect(location.hash).to.equal('#panel-link');
+    });
+  });
+
+  describe('Layout', () => {
+    /** Waits for the resize observations of the current layout. */
+    async function settle(): Promise<void> {
+      await nextFrame();
+      await nextFrame();
+    }
+
+    function indicatorFollows(tab: IgcTabComponent): Promise<void> {
+      return waitUntil(
+        () =>
+          getTabsDOM(element).indicator.style.width ===
+          `${getTabDOM(tab).header.offsetWidth}px`,
+        'The indicator did not follow the header'
+      );
+    }
+
+    beforeEach(async () => {
+      element = await fixture<IgcTabsComponent>(html`
+        <igc-tabs>
+          <igc-tab label="Tab 1">Content 1</igc-tab>
+          <igc-tab label="Tab 2">Content 2</igc-tab>
+        </igc-tabs>
+      `);
+      await settle();
+    });
+
+    it('does not measure the strip for changes inside a panel', async () => {
+      const layout = spy(element['_domHelpers'], 'updateLayout');
+      const content = document.createElement('div');
+
+      content.style.height = '400px';
+      element.tabs[0].append(content);
+      content.append(document.createElement('p'));
+      await settle();
+
+      expect(layout.callCount).to.equal(0);
+    });
+
+    it('handles a click once, without the echo of the reflected selection', async () => {
+      const resolve = spy(
+        element as unknown as { _resolveSelection(): unknown },
+        '_resolveSelection'
+      );
+
+      simulateClick(getTabDOM(element.tabs[1]).header);
+      await elementUpdated(element.tabs[1]);
+      await settle();
+
+      verifySelection(element, element.tabs[1]);
+      expect(resolve.callCount).to.equal(0);
+    });
+
+    it('clears the selection when the app deselects the tab that a click selected', async () => {
+      const [, second] = element.tabs;
+
+      element.addEventListener(
+        'igcChange',
+        ({ detail }) => {
+          detail.selected = false;
+        },
+        { once: true }
+      );
+
+      simulateClick(getTabDOM(second).header);
+      await elementUpdated(second);
+      await settle();
+
+      expect(element.selectedTab).to.be.null;
+      expect(element.tabs.some((tab) => tab.selected)).to.be.false;
+    });
+
+    it('moves the indicator when the direction of an ancestor changes', async () => {
+      const { indicator } = getTabsDOM(element);
+      const host = element.parentElement!;
+
+      element.select(element.tabs[1]);
+      await elementUpdated(element);
+      await settle();
+
+      const ltr = indicator.style.transform;
+
+      host.dir = 'rtl';
+      await waitUntil(
+        () => indicator.style.transform !== ltr,
+        'The indicator did not follow the direction'
+      );
+
+      // The same position as a full update in this direction gives.
+      const rtl = indicator.style.transform;
+      element.requestUpdate();
+      await elementUpdated(element);
+      await settle();
+
+      expect(indicator.style.transform).to.equal(rtl);
+
+      host.removeAttribute('dir');
+      await waitUntil(
+        () => indicator.style.transform === ltr,
+        'The indicator did not return'
+      );
+    });
+
+    it('follows a change of size of a tab header', async () => {
+      const [first] = element.tabs;
+
+      getTabDOM(first).header.style.padding = '24px 48px';
+      await indicatorFollows(first);
+
+      first.label = 'A much longer label';
+      await elementUpdated(first);
+      await indicatorFollows(first);
+    });
+
+    it('observes a header that a change of `href` replaced', async () => {
+      const [first] = element.tabs;
+
+      first.href = '#layout';
+      await elementUpdated(first);
+      await settle();
+
+      first.label = 'A much longer label';
+      await elementUpdated(first);
+      await indicatorFollows(first);
+    });
+  });
+
   describe('Scrolling', () => {
     beforeEach(async () => {
       element = await fixture<IgcTabsComponent>(html`
@@ -855,6 +1299,50 @@ describe('Tabs component', () => {
       await elementUpdated(element);
       expect(startScrollButton()).to.not.be.null;
       expect(endScrollButton()).to.not.be.null;
+    });
+
+    it('measures the strip in its own CSS pixels under an ancestor zoom', async () => {
+      const { container } = getTabsDOM(element);
+      const ownWidth = () =>
+        container.getBoundingClientRect().width / container.currentCSSZoom;
+
+      element.parentElement!.style.zoom = '2';
+      await waitUntil(
+        () =>
+          container.style.getPropertyValue('--_ig-tabs-width') ===
+          `${ownWidth()}px`,
+        'The strip width is not in CSS pixels'
+      );
+
+      element.select('18');
+      const header = getTabDOM(element.tabs[17]).header;
+
+      await waitUntil(() => {
+        const strip = container.getBoundingClientRect();
+        const { left, right } = header.getBoundingClientRect();
+        return left >= strip.left - 1 && right <= strip.right + 1;
+      }, 'The selected tab did not scroll into view');
+    });
+
+    it('points the scroll buttons along the writing direction', async () => {
+      const flipped = 'matrix(-1, 0, 0, 1, 0, 0)';
+      const transforms = () =>
+        [startScrollButton(), endScrollButton()].map(
+          (button) => getComputedStyle(button).transform
+        );
+
+      expect(transforms()).to.eql(['none', 'none']);
+
+      element.dir = 'rtl';
+      await elementUpdated(element);
+
+      expect(transforms()).to.eql([flipped, flipped]);
+
+      element.removeAttribute('dir');
+      element.parentElement!.dir = 'rtl';
+      await elementUpdated(element);
+
+      expect(transforms()).to.eql([flipped, flipped]);
     });
 
     it('does display scroll buttons if alignment is justify', async () => {
@@ -1297,6 +1785,107 @@ describe('Tabs component', () => {
 
       expect(tabs.tabs).lengthOf(2);
       expect(tabs.selectedTab).to.equal(tabs.tabs[0]);
+    });
+
+    it('navigates and activates tabs projected through an intermediate slot', async () => {
+      const wrapper = await fixture<HTMLElement>(html`
+        <tabs-wrapper>
+          <igc-tab label="Tab 1">Content 1</igc-tab>
+          <igc-tab label="Tab 2">Content 2</igc-tab>
+          <igc-tab label="Tab 3" href="#projected-tab-3">Content 3</igc-tab>
+        </tabs-wrapper>
+      `);
+
+      const tabs = wrapper.shadowRoot!.querySelector(IgcTabsComponent.tagName)!;
+      tabs.activation = 'manual';
+      await elementUpdated(tabs);
+
+      const [, second, third] = tabs.tabs;
+
+      getTabDOM(second).header.focus();
+      simulateKeyboard(getTabDOM(second).header, arrowRight);
+      await elementUpdated(tabs);
+
+      expect(document.activeElement).to.equal(third);
+
+      simulateKeyboard(getTabDOM(third).header, enterKey);
+      await elementUpdated(tabs);
+
+      verifySelection(tabs, third);
+      expect(location.hash).to.equal('#projected-tab-3');
+
+      history.replaceState(null, '', location.pathname + location.search);
+    });
+
+    it('follows the state and the children of tabs projected through an intermediate slot', async () => {
+      const wrapper = await fixture<HTMLElement>(html`
+        <tabs-wrapper>
+          <igc-tab label="Tab 1">Content 1</igc-tab>
+          <igc-tab label="Tab 2">Content 2</igc-tab>
+        </tabs-wrapper>
+      `);
+
+      const tabs = wrapper.shadowRoot!.querySelector(IgcTabsComponent.tagName)!;
+      await elementUpdated(tabs);
+
+      const [first, second] = tabs.tabs;
+
+      second.selected = true;
+      await elementUpdated(second);
+      await nextFrame();
+
+      verifySelection(tabs, second);
+      expect(first.selected).to.be.false;
+
+      const third = document.createElement(IgcTabComponent.tagName);
+      third.label = 'Tab 3';
+      wrapper.append(third);
+      await elementUpdated(third);
+      await nextFrame();
+
+      expect(tabs.tabs).lengthOf(3);
+      expect(getTabDOM(third).header.getAttribute('aria-setsize')).to.equal(
+        '3'
+      );
+      expect(
+        getTabsDOM(tabs).container.style.getPropertyValue('--_tabs-count')
+      ).to.equal('3');
+
+      second.remove();
+      await nextFrame();
+
+      verifySelection(tabs, first);
+    });
+
+    it('follows changes of the tabs made while detached', async () => {
+      const tabs = await fixture<IgcTabsComponent>(html`
+        <igc-tabs>
+          <igc-tab label="Tab 1">Content 1</igc-tab>
+          <igc-tab label="Tab 2">Content 2</igc-tab>
+          <igc-tab label="Tab 3">Content 3</igc-tab>
+        </igc-tabs>
+      `);
+      const parent = tabs.parentElement!;
+      const [first, second, third] = tabs.tabs;
+
+      tabs.remove();
+      first.remove();
+      parent.append(tabs);
+      await elementUpdated(tabs);
+      await nextFrame();
+
+      verifySelection(tabs, second);
+      expect(getTabDOM(second).header.tabIndex).to.equal(0);
+
+      tabs.remove();
+      third.selected = true;
+      await elementUpdated(third);
+      parent.append(tabs);
+      await elementUpdated(tabs);
+      await nextFrame();
+
+      verifySelection(tabs, third);
+      expect(second.selected).to.be.false;
     });
   });
 
