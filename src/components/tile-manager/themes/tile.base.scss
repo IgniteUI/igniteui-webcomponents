@@ -51,26 +51,44 @@
 [part~='trigger-bottom'] {
     --_size: #{rem(11px)};
 
+    // Half of a handle stands out of the tile, but not more than the grid
+    // padding: out of the grid, it makes the grid scroll. A `--grid-padding`
+    // that is not one length makes the margins invalid, so they are 0.
+    --_offset: calc(min(var(--_size) / 2, var(--grid-padding)) * -1);
+
     display: inline-flex;
     position: absolute;
 }
 
 // A tile grows toward the inline end, so the handles sit on that edge.
+[part~='trigger-side'],
+[part~='trigger'] {
+    inset-inline-end: 0;
+    margin-inline-end: var(--_offset);
+}
+
+[part~='trigger'],
+[part~='trigger-bottom'] {
+    bottom: 0;
+    margin-bottom: var(--_offset);
+}
+
+// Custom adorners sit flush with the tile edges. Keep this after the margins.
+[part~='custom'] {
+    margin: 0;
+}
+
 [part~='trigger-side'] {
     top: calc(50% - var(--_size));
-    inset-inline-end: calc(var(--_size) / 2 * -1);
     cursor: e-resize;
 }
 
 [part~='trigger'] {
-    bottom: calc(var(--_size) / 2 * -1);
-    inset-inline-end: calc(var(--_size) / 2 * -1);
     cursor: se-resize;
 }
 
 [part~='trigger-bottom'] {
     inset-inline-start: calc(50% - var(--_size));
-    bottom: calc(var(--_size) / 2 * -1);
     cursor: s-resize;
 }
 

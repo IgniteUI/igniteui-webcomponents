@@ -87,17 +87,7 @@ igc-divider {
     background-color: var-get($theme, 'ghost-border');
 }
 
-// Custom adorners have no indicator look and sit flush with the tile edges.
+// Custom adorners have no indicator look.
 [part~='custom'] {
     background-color: transparent;
-}
-
-[part~='trigger-side'][part~='custom'],
-[part~='trigger'][part~='custom'] {
-    inset-inline-end: 0;
-}
-
-[part~='trigger'][part~='custom'],
-[part~='trigger-bottom'][part~='custom'] {
-    bottom: 0;
 }

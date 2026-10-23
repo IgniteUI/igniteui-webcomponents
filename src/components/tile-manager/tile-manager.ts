@@ -45,7 +45,7 @@ import IgcTileComponent from './tile.js';
  * @cssproperty --min-col-width - The minimum size of the columns in the tile-manager. The `min-column-width` attribute sets this variable.
  * @cssproperty --min-row-height - The minimum size of the rows in the tile-manager. The `min-row-height` attribute sets this variable.
  * @cssproperty --grid-gap - The gap size of the underlying CSS grid container. The `gap` attribute sets this variable.
- * @cssproperty --grid-padding - The padding of the underlying CSS grid container. Defaults to 1.25rem.
+ * @cssproperty --grid-padding - The padding of the underlying CSS grid container. Defaults to 1.25rem. The default resize handles stand out of the tiles by at most this value, and stay inside with more than one value.
  *
  */
 @shadowOptions({ slotAssignment: 'manual' })

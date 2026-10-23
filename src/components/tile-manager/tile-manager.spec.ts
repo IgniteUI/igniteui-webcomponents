@@ -39,6 +39,31 @@ describe('Tile Manager component', () => {
     return tileManager.renderRoot.querySelector<HTMLElement>('[part="base"]')!;
   }
 
+  /** How far each resize handle stands out of `tile`, toward the inline end and the bottom. */
+  function getHandleOffsets(tile: IgcTileComponent) {
+    const rtl = getComputedStyle(tile).direction === 'rtl';
+    const box = tile.getBoundingClientRect();
+    const offset = (part: string) => {
+      const rect = tile.renderRoot
+        .querySelector(`[part~="${part}"]`)!
+        .getBoundingClientRect();
+      return {
+        x: rtl ? box.left - rect.left : rect.right - box.right,
+        y: rect.bottom - box.bottom,
+      };
+    };
+
+    return {
+      side: offset('trigger-side').x,
+      corner: offset('trigger'),
+      bottom: offset('trigger-bottom').y,
+    };
+  }
+
+  function handleOffsets(offset: number) {
+    return { side: offset, corner: { x: offset, y: offset }, bottom: offset };
+  }
+
   function getTileManagerSlot() {
     return tileManager.renderRoot.querySelector('slot')!;
   }
@@ -539,6 +564,64 @@ describe('Tile Manager component', () => {
       expect(container.bottom).to.equal(base.bottom);
       expect(content.height).to.equal(container.height);
       expect(content.height).to.be.greaterThan(200);
+    });
+  });
+
+  describe('Resize handles and `--grid-padding`', () => {
+    async function createManager(padding?: string) {
+      tileManager = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager column-count="2" resize-mode="always">
+          <igc-tile><p>A</p></igc-tile>
+          <igc-tile><p>B</p></igc-tile>
+        </igc-tile-manager>
+      `);
+      if (padding) {
+        tileManager.style.setProperty('--grid-padding', padding);
+      }
+      return tileManager.tiles[1];
+    }
+
+    function expectNoGridScroll() {
+      const grid = getTileManagerBase();
+
+      expect(grid.scrollWidth).to.equal(grid.clientWidth);
+      expect(grid.scrollHeight).to.equal(grid.clientHeight);
+    }
+
+    it('stand half out of the tile by default', async () => {
+      const tile = await createManager();
+
+      expect(getHandleOffsets(tile)).to.eql(handleOffsets(5.5));
+    });
+
+    it('stand half out of the tile in RTL', async () => {
+      const tile = await createManager();
+      tileManager.dir = 'rtl';
+
+      expect(getHandleOffsets(tile)).to.eql(handleOffsets(5.5));
+    });
+
+    ['0', '0px', '0 1rem'].forEach((padding) => {
+      it(`stay inside the tile with a padding of \`${padding}\``, async () => {
+        const tile = await createManager(padding);
+
+        expectNoGridScroll();
+        expect(getHandleOffsets(tile)).to.eql(handleOffsets(0));
+      });
+    });
+
+    it('stay inside a grid without padding in RTL', async () => {
+      const tile = await createManager('0');
+      tileManager.dir = 'rtl';
+
+      expectNoGridScroll();
+      expect(getHandleOffsets(tile)).to.eql(handleOffsets(0));
+    });
+
+    it('stand out of the tile by at most the padding', async () => {
+      const tile = await createManager('2px');
+
+      expect(getHandleOffsets(tile)).to.eql(handleOffsets(2));
     });
   });
 
@@ -1065,6 +1148,10 @@ describe('Tile Manager component', () => {
         ).to.be.true;
         expect(resizeSlot!.assignedNodes()).lengthOf(1);
       });
+    });
+
+    it('should keep a custom adorner flush with the tile edges', () => {
+      expect(getHandleOffsets(tileManager.tiles[0])).to.eql(handleOffsets(0));
     });
 
     it('should disable resize behavior when resize mode is "none"', async () => {
