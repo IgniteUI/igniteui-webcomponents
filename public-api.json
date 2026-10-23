@@ -175,6 +175,7 @@
     "IgcSwitchComponent",
     "IgcSwitchComponentEventMap",
     "IgcTabComponent",
+    "IgcTabComponentEventMap",
     "IgcTabsComponent",
     "IgcTabsComponentEventMap",
     "IgcTextareaComponent",
@@ -3656,19 +3657,27 @@
       "class": "IgcTabComponent",
       "attributes": {
         "disabled": "boolean",
+        "href": "string | undefined",
         "label": "string",
-        "selected": "boolean"
+        "rel": "string | undefined",
+        "selected": "boolean",
+        "target": "'_blank' | '_parent' | '_self' | '_top' | undefined"
       },
       "properties": {
         "disabled": "boolean",
+        "href": "string | undefined",
         "label": "string",
+        "rel": "string | undefined",
         "selected": "boolean",
-        "static tagName": "readonly string"
+        "static tagName": "readonly string",
+        "target": "'_blank' | '_parent' | '_self' | '_top' | undefined"
       },
       "methods": {
         "static register": "() => void"
       },
-      "events": {},
+      "events": {
+        "igcNavigate": "unknown"
+      },
       "slots": [
         "",
         "label",

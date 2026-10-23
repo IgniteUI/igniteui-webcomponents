@@ -178,6 +178,7 @@ export type { IgcRangeSliderComponentEventMap } from './components/slider/range-
 export type { IgcSnackbarComponentEventMap } from './components/snackbar/snackbar.js';
 export type { IgcSplitterComponentEventMap } from './components/splitter/splitter.js';
 export type { IgcStepperComponentEventMap } from './components/stepper/common/types.js';
+export type { IgcTabComponentEventMap } from './components/tabs/tab.js';
 export type { IgcTabsComponentEventMap } from './components/tabs/tabs.js';
 export type { IgcTextareaComponentEventMap } from './components/textarea/textarea.js';
 export type { IgcTileComponentEventMap } from './components/tile-manager/tile.js';
