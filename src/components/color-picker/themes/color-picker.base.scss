@@ -3,6 +3,9 @@
 :host {
     display: inline-block;
 
+    // Keeps the z-index of the parts inside the component.
+    isolation: isolate;
+
     [part='color-picker'] {
         display: inline-grid;
         grid-template-columns: auto auto 1fr;

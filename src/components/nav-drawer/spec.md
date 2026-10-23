@@ -50,6 +50,7 @@ This directory hosts three public components: [`igc-nav-drawer`](#igc-nav-drawer
 |       3 | 2026-10-05 | Return the focus to the mini variant; reopen a dialog closed early      |
 |       4 | 2026-10-06 | Keep the first opener when the dialog opens again                       |
 |       5 | 2026-10-21 | API descriptions aligned with the JSDoc.                                |
+|       6 | 2026-10-23 | A relative drawer makes a stacking context, so the z-index of the mini variant does not compete with the layers of the page; in the material theme an item makes a stacking context, so its highlight shows in front of the background of a relative drawer |
 
 ## Overview
 
@@ -294,7 +295,9 @@ The suite lives in [`nav-drawer.spec.ts`](./nav-drawer.spec.ts) and runs in a re
 ### DOM
 
 2. The drawer renders as a native dialog for the edge positions, and as a `nav` landmark for the relative position.
-3. The items, the header items, the item slots and the mini variant render in their containers.
+3. The items, the header items, the item slots and the mini variant render in their containers. The mini variant of a
+   relative drawer is painted under an earlier page layer with `z-index: 1`. In the material theme, an item keeps its
+   highlight in front of the background of the drawer.
 4. The label names the dialog and the mini variant.
 
 ### Host ARIA

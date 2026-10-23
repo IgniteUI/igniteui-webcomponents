@@ -59,6 +59,7 @@
 |       5 | 2026-10-07 | Whitespace in the slot, selection, `spellcheck`    |
 |       6 | 2026-10-20 | CSS field sizing for `resize="auto"`               |
 |       7 | 2026-10-21 | API descriptions aligned with the JSDoc.           |
+|       8 | 2026-10-23 | The textarea makes a stacking context, so the z-index of the textarea and the container does not compete with the layers of the page |
 
 ## Overview
 
@@ -404,7 +405,8 @@ The groups below mirror the `describe` blocks of the suite.
 ### Defaults
 
 1. Is accessible (axe audit).
-2. Renders the expected layout for the material variant.
+2. Renders the expected layout for the material variant. The textarea is painted under an earlier page layer with
+   `z-index: 1`.
 3. Auto sizing is applied when `resize="auto"`.
 4. Without CSS field sizing, the measured auto sizing height is released when `resize` changes away from `auto`.
 

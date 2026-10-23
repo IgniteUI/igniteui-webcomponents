@@ -4,6 +4,9 @@
     font-family: var(--ig-font-family);
     overflow: hidden;
 
+    // Keeps the z-index of the parts inside the component.
+    isolation: isolate;
+
     --body-padding: #{rem(16px)};
     --header-gap: #{rem(8px)};
     --header-padding: #{rem(8px)};

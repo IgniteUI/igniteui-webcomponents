@@ -50,6 +50,7 @@ This directory hosts two public components: [`igc-stepper`](#igc-stepper) and [`
 |       2 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
 |       3 | 2026-10-07 | Only a header click opens a step; inert inactive panels; `aria-disabled` |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                |
+|       5 | 2026-10-23 | The stepper makes a stacking context, so the z-index of the step headers and bodies does not compete with the layers of the page |
 
 ## Overview
 
@@ -310,7 +311,8 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 
 ### Initialization and rendering
 
-1. The component is initialized with its defaults, renders its steps and passes the accessibility audit.
+1. The component is initialized with its defaults, renders its steps and passes the accessibility audit. The body of
+   the active step is painted under an earlier page layer with `z-index: 1`.
 2. The default indicator renders the step index plus one, and the `indicator` slot replaces it.
 3. The header parts are applied for each step state.
 4. The header of a disabled step, and of a step that linear mode locks, has `aria-disabled`.

@@ -56,6 +56,7 @@
 |       6 | 2026-10-02 | Forward the host `aria-describedby`; expose `required` as `aria-required` |
 |       7 | 2026-10-07 | Read-only `selectionStart` and `selectionEnd`                             |
 |       8 | 2026-10-21 | API descriptions aligned with the JSDoc.                                  |
+|       9 | 2026-10-23 | The mask input makes a stacking context, so the z-index of the input and the container does not compete with the layers of the page |
 
 ## Overview
 

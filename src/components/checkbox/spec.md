@@ -51,6 +51,7 @@ This directory hosts two form-associated components that share the same base imp
 |       4 | 2026-10-02 | Focus after form checks; `invalid` only on checks                          |
 |       5 | 2026-10-02 | Forward the host `aria-describedby`                                        |
 |       6 | 2026-10-21 | API descriptions aligned with the JSDoc.                                   |
+|       7 | 2026-10-23 | The checkbox and the switch make a stacking context, so the z-index of the indicator and the control does not compete with the layers of the page |
 
 ## Overview
 
@@ -391,7 +392,8 @@ The groups below mirror the `describe` blocks of the two suites.
 Present in both suites unless noted.
 
 1. Initializes the component with its default values.
-2. Renders the component successfully, compared against a DOM snapshot.
+2. Renders the component successfully, compared against a DOM snapshot. In the material theme, the indicator of the
+   checkbox and the control of the switch are painted under an earlier page layer with `z-index: 1`.
 3. Renders the correct SVG in the indigo theme, and hides the indicator from assistive technologies in every theme
    (checkbox only).
 4. Sets the `name` property correctly.

@@ -38,6 +38,26 @@ export function scrolledIntoView(el: HTMLElement, view: HTMLElement): boolean {
     : bottom - viewBottom <= height;
 }
 
+/** Returns whether a `z-index: 1` layer put before `element` covers the visible center of `target`. */
+export function isUnderPageLayer(element: Element, target: Element): boolean {
+  const parent = element.parentElement!;
+  const layer = document.createElement('div');
+
+  parent.style.position = 'relative';
+  layer.style.cssText = 'position: absolute; inset: 0; z-index: 1';
+  parent.prepend(layer);
+
+  const { left, top, right, bottom } = target.getBoundingClientRect();
+  const hit = document.elementFromPoint(
+    (Math.max(left, 0) + Math.min(right, innerWidth)) / 2,
+    (Math.max(top, 0) + Math.min(bottom, innerHeight)) / 2
+  );
+
+  layer.remove();
+  parent.style.removeProperty('position');
+  return hit === layer;
+}
+
 export function isFocused(element?: Element): boolean {
   return element ? element.matches(':focus') : false;
 }

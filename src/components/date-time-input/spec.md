@@ -61,6 +61,7 @@
 |       6 | 2026-10-07 | Read-only `selectionStart` and `selectionEnd`                             |
 |       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                                  |
 |       8 | 2026-10-21 | `stepUp` and `stepDown` update the value at once, also while focused      |
+|       9 | 2026-10-23 | The date-time input makes a stacking context, so the z-index of the input and the container does not compete with the layers of the page |
 
 ## Overview
 

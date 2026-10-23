@@ -10,6 +10,9 @@
     overflow: hidden;
     height: 100%;
     text-align: initial;
+
+    // Keeps the z-index of the parts inside the component.
+    isolation: isolate;
 }
 
 [part~='tabs'] {

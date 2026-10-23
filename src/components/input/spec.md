@@ -61,6 +61,7 @@
 |       7 | 2026-10-02 | Forward the host `aria-describedby`                                                        |
 |       8 | 2026-10-07 | Read-only `selectionStart` and `selectionEnd`                                              |
 |       9 | 2026-10-21 | API descriptions aligned with the JSDoc.                                                   |
+|      10 | 2026-10-23 | The input makes a stacking context, so the z-index of the input and the container does not compete with the layers of the page |
 
 ## Overview
 
@@ -461,6 +462,7 @@ The groups below mirror the `describe` blocks of the suite.
 1. Is initialized with the proper default values.
 2. Is accessible (axe audit).
 3. Renders the expected layout for the material variant.
+4. The input is painted under an earlier page layer with `z-index: 1`.
 
 ### Properties
 

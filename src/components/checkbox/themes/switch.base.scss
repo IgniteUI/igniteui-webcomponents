@@ -4,6 +4,9 @@
     display: inline-flex;
     flex-direction: column;
     font-family: var(--ig-font-family);
+
+    // Keeps the z-index of the parts inside the component.
+    isolation: isolate;
 }
 
 input[type='checkbox'] {

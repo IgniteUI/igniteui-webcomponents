@@ -59,6 +59,7 @@ This directory hosts two public components: [`igc-tile-manager`](#igc-tile-manag
 |       6 | 2026-10-20 | Tile manager `locale`, which the tiles inherit               |
 |       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                     |
 |       8 | 2026-10-22 | Spans fit the column count, `--grid-padding`, the content fills the tile |
+|       9 | 2026-10-23 | The tile manager makes a stacking context, so the z-index of a maximized, dragged or resized tile does not compete with the layers of the page |
 
 ## Overview
 
@@ -459,7 +460,8 @@ The groups below mirror the `describe` blocks.
 
 ### Maximize
 
-6. `maximized` makes the tile occupy the layout, and restoring it returns the previous arrangement.
+6. `maximized` makes the tile occupy the layout, and restoring it returns the previous arrangement. A maximized tile
+   is painted under an earlier page layer with `z-index: 1`.
 7. `disableMaximize` removes the action and its slot.
 
 ### Slot assignment

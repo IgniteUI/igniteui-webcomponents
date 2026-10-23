@@ -8,6 +8,9 @@
     display: block;
     font-family: var(--ig-font-family);
 
+    // Keeps the z-index of the parts inside the component.
+    isolation: isolate;
+
     [part~='label'] {
         @include ellipsis();
     }

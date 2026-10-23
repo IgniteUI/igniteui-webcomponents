@@ -3,6 +3,9 @@
 :host {
     display: block;
 
+    // Keeps the z-index of the parts inside the component.
+    isolation: isolate;
+
     --min-col-width: 200px;
     --min-row-height: 200px;
     --grid-padding: #{rem(20px)};

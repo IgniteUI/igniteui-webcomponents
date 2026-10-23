@@ -1,6 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { isUnderPageLayer } from '#internals/testing/helpers.spec.js';
 import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import {
   simulateClick,
@@ -45,6 +46,12 @@ describe('Stepper', () => {
       expect(stepper.verticalAnimation).to.equal('grow');
       expect(stepper.horizontalAnimation).to.equal('slide');
       expect(stepper.animationDuration).to.equal(320);
+    });
+
+    it('paints the body of the active step under an earlier page layer', () => {
+      const { body } = getStepDOM(stepper.steps[0]).parts;
+
+      expect(isUnderPageLayer(stepper, body)).to.be.true;
     });
 
     it('should correctly render slotted content', async () => {

@@ -55,6 +55,7 @@
 |       7 | 2026-10-02 | Forward the host `aria-describedby`                |
 |       8 | 2026-10-19 | Localize the labels through `igniteui-i18n-core`   |
 |       9 | 2026-10-21 | API descriptions aligned with the JSDoc.           |
+|      10 | 2026-10-23 | The color picker makes a stacking context, so the z-index of the focus ring of the anchor does not compete with the layers of the page |
 
 ## Overview
 
@@ -430,7 +431,7 @@ The component suite reuses `createFormAssociatedTestBed`, `runValidationContaine
 
 ### Component suite
 
-1. Default state and rendering.
+1. Default state and rendering. The focus ring of the anchor is painted under an earlier page layer with `z-index: 1`.
 2. ARIA - the anchor semantics, the labels of the sliders and controls, and the described-by relation.
 3. Localization - the English defaults, the strings of `locale`, a global locale change, the input mode prefix and
    a single override through `resourceStrings`.

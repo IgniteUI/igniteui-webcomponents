@@ -9,10 +9,14 @@ import {
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { isFocused } from '#internals/testing/helpers.spec.js';
+import {
+  isFocused,
+  isUnderPageLayer,
+} from '#internals/testing/helpers.spec.js';
 import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import { isPopoverOpen } from '#internals/utils/dom.js';
+import { configureTheme } from '#theming/config.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcNavDrawerComponent from './nav-drawer.js';
@@ -106,6 +110,41 @@ describe('Navigation Drawer', () => {
           <slot name="mini"></slot>
         </nav>
       `);
+    });
+
+    it('paints the mini variant of a relative drawer under an earlier page layer', async () => {
+      navDrawer = await createNavDrawer(html`
+        <igc-nav-drawer position="relative">
+          <div slot="mini">
+            <igc-nav-drawer-item></igc-nav-drawer-item>
+          </div>
+        </igc-nav-drawer>
+      `);
+
+      const mini = navDrawer.renderRoot.querySelector('[part="mini"]')!;
+
+      expect(isUnderPageLayer(navDrawer, mini)).to.be.true;
+    });
+
+    it('keeps the highlight of an item in front of the background of the drawer', async () => {
+      try {
+        configureTheme('material');
+        navDrawer = await createNavDrawer(html`
+          <igc-nav-drawer position="relative" open>
+            <igc-nav-drawer-item active></igc-nav-drawer-item>
+          </igc-nav-drawer>
+        `);
+
+        const item = navDrawer.querySelector('igc-nav-drawer-item')!;
+        const base = item.renderRoot.querySelector('[part~="base"]')!;
+
+        // A negative z-index paints the highlight behind the drawer, unless
+        // the item makes a stacking context.
+        expect(getComputedStyle(base, '::after').zIndex).to.equal('-1');
+        expect(getComputedStyle(base).isolation).to.equal('isolate');
+      } finally {
+        configureTheme('bootstrap');
+      }
     });
 
     it('render navigation drawer item slots', async () => {

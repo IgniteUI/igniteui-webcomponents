@@ -23,6 +23,7 @@ import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   finishAnimationsFor,
   getAnimationsFor,
+  isUnderPageLayer,
 } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
@@ -117,6 +118,12 @@ describe('Carousel', () => {
     it('passes the a11y audit', async () => {
       await expect(carousel).to.be.accessible();
       await expect(carousel).shadowDom.to.be.accessible();
+    });
+
+    it('paints the slides, the indicators and the navigation under an earlier page layer', () => {
+      expect(isUnderPageLayer(carousel, slides[0])).to.be.true;
+      expect(isUnderPageLayer(carousel, defaultIndicators[0])).to.be.true;
+      expect(isUnderPageLayer(carousel, nextButton)).to.be.true;
     });
 
     it('sets a role description on the carousel and not on the slides', () => {
