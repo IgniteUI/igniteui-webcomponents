@@ -63,7 +63,9 @@ export interface MarkdownRendererOptions {
 
   /**
    * A custom HTML sanitization function.
-   * By default, DOMPurify sanitizes the HTML, and each link opens in a new tab.
+   * By default, DOMPurify sanitizes the HTML. An http or https link to another origin
+   * then opens in a new tab, with `rel="noopener noreferrer"`. Other links open in the
+   * same tab. A custom sanitizer gets these attributes on Markdown links only.
    */
   sanitizer?: (html: string) => string;
 
@@ -92,30 +94,70 @@ export interface MarkdownRenderer {
   readonly marked: Marked;
 }
 
+// The app follows or routes its own links, so only links to another origin open a new tab.
+function opensInNewTab(href: string): boolean {
+  const base = globalThis.document?.baseURI;
+
+  // Without a document, a relative link stays in the app.
+  if (!URL.canParse(href, base)) {
+    return false;
+  }
+
+  // The global `origin` is also the page's origin in a `srcdoc` frame,
+  // where `location.origin` is "null".
+  const { protocol, origin } = new URL(href, base);
+  return (
+    (protocol === 'http:' || protocol === 'https:') &&
+    origin !== globalThis.origin
+  );
+}
+
+let linkParser: HTMLTemplateElement | undefined;
+
+// Marked keeps character references in the href, such as `&#104;ttps:` for `https:`,
+// and the browser follows the decoded value.
+function renderedHref(html: string, fallback: string): string {
+  if (!globalThis.document) {
+    return fallback;
+  }
+
+  linkParser ??= document.createElement('template');
+  linkParser.innerHTML = html;
+  return linkParser.content.firstElementChild?.getAttribute('href') ?? fallback;
+}
+
 // Only link elements: the named controls of a form can replace its methods.
-function openLinksInNewTab(node: Element): void {
+function setLinkTarget(node: Element): void {
   const isLink =
     node instanceof HTMLAnchorElement ||
     node instanceof HTMLAreaElement ||
     node instanceof SVGAElement;
 
+  if (!isLink) {
+    return;
+  }
+
+  const href = node.getAttribute('href') ?? node.getAttribute('xlink:href');
+  if (href === null) {
+    return;
+  }
+
   // Constant values, so the HTML cannot choose the window.
-  if (
-    isLink &&
-    (node.hasAttribute('href') || node.hasAttribute('xlink:href'))
-  ) {
+  if (opensInNewTab(href)) {
     node.setAttribute('target', '_blank');
     node.setAttribute('rel', 'noopener noreferrer');
+  } else {
+    node.removeAttribute('target');
   }
 }
 
 // Hooked for this call only: the app's DOMPurify config applies, other callers are unaffected.
 function sanitizeHtml(html: string): string {
-  DOMPurify.addHook('afterSanitizeAttributes', openLinksInNewTab);
+  DOMPurify.addHook('afterSanitizeAttributes', setLinkTarget);
   try {
     return DOMPurify.sanitize(html);
   } finally {
-    DOMPurify.removeHook('afterSanitizeAttributes', openLinksInNewTab);
+    DOMPurify.removeHook('afterSanitizeAttributes', setLinkTarget);
   }
 }
 
@@ -279,11 +321,16 @@ export async function setupMarkdownRenderer(
     breaks: true,
     gfm: true,
     renderer: {
-      // The attributes also apply when a custom sanitizer replaces the default one.
+      // The default sanitizer sets the attributes of each link, a custom one gets them here.
       link(token) {
-        return Renderer.prototype.link
-          .call(this, token)
-          .replace(/^<a /, '<a target="_blank" rel="noopener noreferrer" ');
+        const html = Renderer.prototype.link.call(this, token);
+        return options?.sanitizer &&
+          opensInNewTab(renderedHref(html, token.href))
+          ? html.replace(
+              /^<a /,
+              '<a target="_blank" rel="noopener noreferrer" '
+            )
+          : html;
       },
     },
   });
