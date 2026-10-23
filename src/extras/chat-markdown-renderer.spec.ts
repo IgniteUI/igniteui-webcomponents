@@ -1,6 +1,6 @@
 import { expect, fixture, html } from '@open-wc/testing';
 import DOMPurify from 'dompurify';
-import { spy } from 'sinon';
+import { spy, stub } from 'sinon';
 import type { IgcChatMessage } from '../components/chat/types.js';
 import {
   createMarkdownRenderer,
@@ -61,7 +61,7 @@ describe('Chat Markdown renderer', () => {
       expect(result.querySelector('p br')).to.exist;
     });
 
-    it('opens links in a new tab without access to the opener', async () => {
+    it('opens links to another origin in a new tab without access to the opener', async () => {
       const links = (
         await parse(
           renderer,
@@ -83,6 +83,76 @@ describe('Chat Markdown renderer', () => {
       for (const link of links) {
         expect(link.getAttribute('target')).to.equal('_blank');
         expect(link.getAttribute('rel')).to.equal('noopener noreferrer');
+      }
+    });
+
+    it('opens other links in the same tab', async () => {
+      const links = (
+        await parse(
+          renderer,
+          [
+            '[Register](/register)',
+            `[Schedule](${location.origin}/schedule)`,
+            '[Top](#top)',
+            '[Mail](mailto:info@example.com)',
+            '<a href="/register">HTML</a>',
+            '<a href="http://[invalid">Invalid</a>',
+            '<svg><a xlink:href="/register"><text>SVG</text></a></svg>',
+          ].join(' ')
+        )
+      ).querySelectorAll('a');
+
+      expect(links).to.have.length(7);
+      for (const link of links) {
+        expect(link.hasAttribute('target')).to.be.false;
+        expect(link.hasAttribute('rel')).to.be.false;
+      }
+    });
+
+    it('removes the target of a link in the same origin', async () => {
+      DOMPurify.setConfig({ ADD_ATTR: ['target'] });
+      try {
+        const result = await parse(
+          renderer,
+          '<a href="/register" target="_top">Register</a>'
+        );
+        expect(result.querySelector('a')?.hasAttribute('target')).to.be.false;
+      } finally {
+        DOMPurify.clearConfig();
+      }
+    });
+
+    it('applies the rule to http links and image map areas', async () => {
+      const result = await parse(
+        renderer,
+        [
+          '[HTTP](http://example.com)',
+          '<map name="pages"><area href="https://example.com" alt="Docs"><area href="/register" alt="Register"></map>',
+        ].join(' ')
+      );
+      const [external, internal] = result.querySelectorAll('area');
+
+      expect(result.querySelector('a')?.target).to.equal('_blank');
+      expect(external.target).to.equal('_blank');
+      expect(external.rel).to.equal('noopener noreferrer');
+      expect(internal.hasAttribute('target')).to.be.false;
+    });
+
+    it('compares links with the global origin', async () => {
+      // In a srcdoc frame, `location.origin` is "null", and the global `origin` is the page's.
+      const origin = stub(globalThis, 'origin').value('https://example.com');
+      try {
+        const [docs, register] = (
+          await parse(
+            renderer,
+            '[Docs](https://example.com/docs) [Register](/register)'
+          )
+        ).querySelectorAll('a');
+
+        expect(docs.hasAttribute('target')).to.be.false;
+        expect(register.target).to.equal('_blank');
+      } finally {
+        origin.restore();
       }
     });
 
@@ -130,14 +200,41 @@ describe('Chat Markdown renderer', () => {
         sanitizer,
       });
 
-      expect(await custom.parse('[Docs](https://example.com)')).to.equal(
-        '<p>clean</p>'
-      );
+      expect(
+        await custom.parse('[Docs](https://example.com) [Register](/register)')
+      ).to.equal('<p>clean</p>');
       expect(sanitizer.calledOnce).to.be.true;
       // Without the default sanitizer, the link renderer opens the new tab.
       expect(sanitizer.firstCall.args[0]).to.contain(
-        'target="_blank" rel="noopener noreferrer"'
+        '<a target="_blank" rel="noopener noreferrer" href="https://example.com">'
       );
+      expect(sanitizer.firstCall.args[0]).to.contain('<a href="/register">');
+    });
+
+    it('decides for a custom sanitizer by the href that the browser follows', async () => {
+      const custom = await setupMarkdownRenderer({
+        noHighlighter: true,
+        sanitizer: (html) => html,
+      });
+      const [entity, backslash, fragment, mail] = (
+        await parse(
+          custom,
+          [
+            '[Docs](&#104;ttps://example.com)',
+            '[Home](/\\example.com)',
+            '[Top](#top)',
+            '[Mail](mailto:info@example.com)',
+          ].join(' ')
+        )
+      ).querySelectorAll('a');
+
+      expect(entity.getAttribute('href')).to.equal('https://example.com');
+      expect(entity.target).to.equal('_blank');
+      expect(entity.rel).to.equal('noopener noreferrer');
+      expect(backslash.getAttribute('href')).to.equal('/%5Cexample.com');
+      for (const link of [backslash, fragment, mail]) {
+        expect(link.hasAttribute('target')).to.be.false;
+      }
     });
 
     it('renders code blocks as plain code', async () => {

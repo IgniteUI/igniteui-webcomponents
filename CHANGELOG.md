@@ -55,6 +55,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - A code block of more than 2 KB that still streams shows as plain code until its closing fence arrives. Before, the renderer highlighted it again for each chunk, at about 12 ms per KB.
     - Renderers with the same languages and themes share one highlighter. Before, each renderer created a highlighter that nothing freed, and shiki warned after ten renderers.
   - `colorReplacements` of the Markdown renderer now applies to every theme. Before, it applied only to the GitHub themes.
+  - The Markdown renderer no longer opens links in the same origin, such as `/register` or `#top`, or links such as `mailto:`, in a new tab. Before, it gave each Markdown link `target="_blank"`, which a custom `sanitizer` or a DOMPurify configuration that allows `target` kept. With the default sanitizer, the renderer now also removes the `target` that the HTML sets on these links.
   - The Markdown renderer no longer uses `marked-shiki`, so it is no longer a peer dependency. You can remove it from your dependencies.
 - #### Chip
   - The `end` slot now renders after the `suffix` slot, at the end of the chip, as the `start` slot renders before the `prefix` slot. Before, it rendered before the `suffix` slot.
@@ -129,7 +130,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - A `theme` object with only `light` or only `dark` now uses the default theme for the other mode.
     - A `theme` object that pairs `none` with another theme now gives valid colors. Before, the code had no colors in either mode.
     - Links now render the formatting in their text, and the renderer escapes their `href` and `title`. Before, `[**Docs**](…)` showed the asterisks, and a title with a quotation mark was cut off.
-    - With the default sanitizer, Markdown and HTML links now open in a new tab, with `rel="noopener noreferrer"`, also when the HTML sets other values. Before, DOMPurify removed `target`, so the links opened in the same tab.
+    - With the default sanitizer, Markdown and HTML links to another origin now open in a new tab, with `rel="noopener noreferrer"`, also when the HTML sets other values. Before, DOMPurify removed `target`, so the links opened in the same tab. Links in the same origin, such as `/register` or `#top`, and links such as `mailto:` open in the same tab, so the app can route them.
     - When a code block cannot be highlighted, for example because its language is not in `languages`, the code now shows as escaped text with a `language-*` class, the same as with `noHighlighter`. Before, the renderer read the code as HTML, so a tag such as `<b>` in the code rendered as an element.
 - #### Checkbox
   - The indicator icon is now hidden from assistive technologies. Before, each checkbox had an unnamed image next to it in the accessibility tree. [#2425](https://github.com/IgniteUI/igniteui-webcomponents/pull/2425)
