@@ -60,6 +60,7 @@ This directory hosts two public components: [`igc-tile-manager`](#igc-tile-manag
 |       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                     |
 |       8 | 2026-10-22 | Spans fit the column count, `--grid-padding`, the content fills the tile |
 |       9 | 2026-10-23 | The tile manager makes a stacking context, so the z-index of a maximized, dragged or resized tile does not compete with the layers of the page |
+|      10 | 2026-10-23 | The resize handles stand out of a tile by at most `--grid-padding` |
 
 ## Overview
 
@@ -165,7 +166,10 @@ the default transition, and so does a size change in a browser without view tran
 A `columnCount` of zero or less produces a responsive layout derived from `minColumnWidth`. A column is never wider
 than the manager, so in a manager that is narrower than `minColumnWidth` the column takes the width of the manager. Each
 of these properties is also exposed as a CSS custom property, so the grid can be driven from a stylesheet.
-`--grid-padding` sets the padding of the grid, `1.25rem` by default.
+`--grid-padding` sets the padding of the grid, `1.25rem` by default. Half of a default resize handle stands out of
+the tile, but not more than the padding, so a smaller padding such as `0` does not make the grid scroll. Set the
+padding with `--grid-padding`: the handles do not follow a `padding` on the `base` part. With more than one value,
+such as `0 1rem`, the handles stay inside the tile.
 
 To change the column count with the width, leave `column-count` unset and set `--column-count` in a media query. The
 attribute sets the variable on the grid, which wins over a value on the manager. The value must be a whole number,
@@ -228,7 +232,9 @@ When tiles move in the DOM, for example when a framework reorders a list, they k
 ```
 
 Resizing is off by default. A tile can opt out with `disable-resize` regardless of the manager setting. The
-adorners are exposed as slots and parts, so they can be replaced and styled. A resize emits `igcTileResizeStart`,
+adorners are exposed as slots and parts, so they can be replaced and styled. The default handles stand out of the
+tile through a negative margin, so a part rule that moves them with `bottom` or `inset-inline-end` also sets
+`margin: 0`. A resize emits `igcTileResizeStart`,
 which is cancelable, and then either `igcTileResizeEnd` or `igcTileResizeCancel`. The spans and the starts are whole
 numbers. The drag and resize previews render in the closest top-layer element that holds the manager, such as a modal
 dialog or a fullscreen element, else in the document body.
@@ -355,7 +361,7 @@ None applicable. The tiles emit the drag, resize, maximize and fullscreen events
 | `--min-col-width`  | The minimum size of the columns. The `min-column-width` attribute sets it.  |
 | `--min-row-height` | The minimum size of the rows. The `min-row-height` attribute sets it.       |
 | `--grid-gap`       | The gap of the underlying CSS grid. The `gap` attribute sets it.            |
-| `--grid-padding`   | The padding of the underlying CSS grid. Defaults to `1.25rem`.              |
+| `--grid-padding`   | The padding of the underlying CSS grid. Defaults to `1.25rem`. The default resize handles stand out of the tiles by at most this value, and stay inside with more than one value. |
 
 ### igc-tile
 
@@ -468,7 +474,7 @@ The groups below mirror the `describe` blocks.
 
 8. Manual slot assignment places the tile content in the expected containers.
 9. The header slots - title, actions, maximize and fullscreen actions - render as expected.
-10. The resize adorner slots render the side, bottom and corner handles.
+10. The resize adorner slots render the side, bottom and corner handles. Custom adorners sit flush with the tile edges.
 
 ### Tile state changes
 
@@ -566,6 +572,12 @@ The groups below mirror the `describe` blocks.
     transition ends, also after two quick clicks. The view transition classes of the author stay, and an inline one
     returns when the transition ends. While a tile is maximized, the covered tiles have no view transition name. With a
     theme style sheet, the new content of a maximizing tile fades in, and the drag ghost has no animation in a swap.
+
+### Resize handles and `--grid-padding`
+
+46. The default side, corner and bottom handles stand half out of the tile, also in RTL. With a smaller
+    `--grid-padding`, they stand out only by the padding. With `0`, `0px` or a padding of more than one value, they
+    stay inside the tile, and the grid does not scroll.
 
 ## Assumptions and limitations
 
