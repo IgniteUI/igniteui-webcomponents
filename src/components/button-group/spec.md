@@ -52,6 +52,7 @@
 |       2 | 2026-10-02 | The toggle button follows a change of `aria-label`                           |
 |       3 | 2026-10-02 | The toggle button forwards the host `aria-labelledby` and `aria-describedby` |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                     |
+|       5 | 2026-10-23 | The group makes a stacking context, so the z-index of its buttons does not compete with the layers of the page |
 
 ## Overview
 
@@ -247,7 +248,8 @@ Emitted by `igc-button-group`, for user interaction only.
 ### Initialization
 
 1. The group passes the accessibility audit and is initialized with its toggle buttons and its default state.
-2. The group renders the correct role and attributes.
+2. The group renders the correct role and attributes. A selected button is painted under an earlier page layer with
+   `z-index: 1`.
 
 ### Properties tests
 

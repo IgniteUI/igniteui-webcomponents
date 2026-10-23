@@ -16,6 +16,7 @@ import { internalsOf } from '#internals/controllers/internals.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   isFocused,
+  isUnderPageLayer,
   viewTransitionComplete,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
@@ -544,6 +545,15 @@ describe('Tile Manager component', () => {
   describe('Maximize', () => {
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
+    });
+
+    it('paints a maximized tile under an earlier page layer', async () => {
+      const tile = tileManager.tiles[0];
+
+      tile.maximized = true;
+      await elementUpdated(tileManager);
+
+      expect(isUnderPageLayer(tileManager, tile)).to.be.true;
     });
 
     it('issue 2029 - preserves grid container height when maximizing the only tile with the maximum row-span', async () => {

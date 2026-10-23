@@ -14,7 +14,10 @@ import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
-import { isFocused } from '#internals/testing/helpers.spec.js';
+import {
+  isFocused,
+  isUnderPageLayer,
+} from '#internals/testing/helpers.spec.js';
 import { simulateInput } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
@@ -60,6 +63,12 @@ describe('Input component', () => {
 
         await expect(element).to.be.accessible();
         await expect(element).shadowDom.to.be.accessible();
+      });
+
+      it('paints the input under an earlier page layer', async () => {
+        await createFixture(html`<igc-input label="Label"></igc-input>`);
+
+        expect(isUnderPageLayer(element, input)).to.be.true;
       });
 
       it('material variant layout', async () => {

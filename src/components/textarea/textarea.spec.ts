@@ -14,6 +14,7 @@ import {
 } from '#internals/testing/form-testbed.spec.js';
 import {
   isFocused,
+  isUnderPageLayer,
   suppressResizeObserverLoopError,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
@@ -60,6 +61,12 @@ describe('Textarea component', () => {
 
       await expect(element).to.be.accessible();
       await expect(element).shadowDom.to.be.accessible();
+    });
+
+    it('paints the textarea under an earlier page layer', async () => {
+      await createFixture(html`<igc-textarea label="Label"></igc-textarea>`);
+
+      expect(isUnderPageLayer(element, textArea)).to.be.true;
     });
 
     it('material variant layout', async () => {

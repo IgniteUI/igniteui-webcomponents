@@ -5,6 +5,9 @@
     width: 100%;
     height: 100%;
 
+    // Keeps the z-index of the parts inside the component.
+    isolation: isolate;
+
     [part='base'] {
         width: 100%;
         height: 100%;

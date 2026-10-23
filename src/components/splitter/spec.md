@@ -55,6 +55,7 @@
 |       2 | 2026-10-07 | Host ARIA names and describes the bar, no English state text    |
 |       3 | 2026-10-19 | Localize the default name of the bar                            |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                        |
+|       5 | 2026-10-23 | The splitter makes a stacking context, so the z-index of the focused bar does not compete with the layers of the page |
 
 ## Overview
 
@@ -391,7 +392,8 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 
 1. The component renders with its default horizontal orientation, both panes, the splitter bar, the drag handle and
    the collapse buttons. It passes the accessibility audit, the bar is named "Resize panes" and has no description,
-   and its value text is 0% while the start pane is collapsed.
+   and its value text is 0% while the start pane is collapsed. The focused bar is painted under an earlier page layer
+   with `z-index: 1`.
 2. Changing the orientation updates the layout, and clears the sizes and constraints along with their attributes.
 3. The correct parts are applied for each orientation and state.
 

@@ -9,7 +9,11 @@ import {
   arrowUp,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { isFocused } from '#internals/testing/helpers.spec.js';
+import {
+  finishAnimationsFor,
+  isFocused,
+  isUnderPageLayer,
+} from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -46,6 +50,15 @@ describe('Button Group', () => {
       it('passes the a11y audit', async () => {
         await expect(buttonGroup).to.be.accessible();
         await expect(buttonGroup).shadowDom.to.be.accessible();
+      });
+
+      it('paints a selected button under an earlier page layer', async () => {
+        buttons[1].selected = true;
+        await elementUpdated(buttons[1]);
+        // The toggle transitions its z-index.
+        finishAnimationsFor(buttons[1].shadowRoot!);
+
+        expect(isUnderPageLayer(buttonGroup, buttons[1])).to.be.true;
       });
 
       it('should initialize a button group with toggle buttons', () => {

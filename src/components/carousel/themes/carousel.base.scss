@@ -6,6 +6,9 @@
     height: 100%;
     position: relative;
 
+    // Keeps the z-index of the parts inside the component.
+    isolation: isolate;
+
     section {
         display: block;
         position: relative;

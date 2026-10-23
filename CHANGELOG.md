@@ -218,6 +218,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Navigation drawer
   - When a drawer with a `mini` variant closes, the focus now goes back to the element that had the focus when the drawer opened, such as a menu button in the rail. Before, the drawer closed its dialog while the rail was still hidden, so the focus went to the page body. [#2440](https://github.com/IgniteUI/igniteui-webcomponents/pull/2440)
   - When the platform closes the dialog of a drawer that stays open, the drawer now opens the dialog again. An example is a second Escape after an `igcClosing` handler cancels the close. When the drawer then closes, the focus goes back to the element that had it when the drawer first opened. Before, `open` stayed `true` with a closed dialog, and `show()` did nothing. [#2440](https://github.com/IgniteUI/igniteui-webcomponents/pull/2440)
+  - In the Material theme, the hover and active highlight of an item now shows in a drawer with `position="relative"`. Before, the background of the drawer covered it.
 - #### QR code
   - Codes of versions 30 to 40 now agree with ISO/IEC 18004:
     - At the `M` error correction level, they use the correct data codeword counts. Before, they had the wrong block structure. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
@@ -249,6 +250,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The default action of the snackbar now shows the keyboard focus style of a flat button in every theme, also on hover. Before, it showed none in the Material and Fluent themes, and none in any theme when the `action-text` attribute was set. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
 - #### Splitter
   - The bar no longer has the English description "Start pane expanded and End pane expanded". Its value already tells which pane is collapsed: 0% for the start pane and 100% for the end pane. [#2449](https://github.com/IgniteUI/igniteui-webcomponents/pull/2449)
+- #### Stacking order
+  - The z-index values of the parts of a component now stay inside the component, so they no longer compete with the layers of the page. Before, a page element with a `z-index` that came before the component could show under its parts. For example, the tab labels showed through a sticky page header with `z-index: 1`. This applies to the button group, carousel, checkbox, color picker, date range picker, date time input, file input, input, mask input, navigation drawer with `position="relative"`, radio, splitter, stepper, switch, tabs, textarea and tile manager. Slotted content with a `z-index` now also stays inside these components.
 - #### Stepper
   - A click in the content of a step no longer activates that step. Before, the same click undid the change of a content button that called `next()`, `prev()`, `navigateTo()` or `reset()`, with an `igcActiveStepChanging` and `igcActiveStepChanged` pair. A click on a header of a nested stepper no longer changes the outer stepper. [#2453](https://github.com/IgniteUI/igniteui-webcomponents/pull/2453)
   - The content of the inactive steps is now `inert`. Before, it was only transparent, so Tab moved into the fields of hidden steps, and screen readers read every panel. [#2453](https://github.com/IgniteUI/igniteui-webcomponents/pull/2453)

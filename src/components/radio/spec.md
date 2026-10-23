@@ -51,6 +51,7 @@
 |       3 | 2026-10-02 | Focus after form checks; `invalid` only on checks                          |
 |       4 | 2026-10-02 | Forward the host `aria-describedby`                                        |
 |       5 | 2026-10-21 | API descriptions aligned with the JSDoc.                                   |
+|       6 | 2026-10-23 | The control makes a stacking context, also in a horizontal group, so its z-index does not compete with the layers of the page |
 
 ## Overview
 
@@ -336,7 +337,8 @@ The groups below mirror the `describe` blocks of the suite.
 ### Rendering and properties
 
 1. Is initialized with the proper default values.
-2. Renders a radio element successfully, compared against a DOM snapshot.
+2. Renders a radio element successfully, compared against a DOM snapshot. The control is painted under an earlier page
+   layer with `z-index: 1`, also in a horizontal radio group.
 3. Sets the `labelPosition` property properly.
 4. Sets the `name`, `value`, `disabled` and `required` properties successfully.
 5. Keeps correct focus states between light and shadow DOM.

@@ -2,6 +2,9 @@
 
 :host {
     max-width: 100%;
+
+    // Keeps the z-index of the parts inside the component.
+    isolation: isolate;
 }
 
 [part~='group'] {

@@ -55,6 +55,7 @@
 |       5 | 2026-10-20 | Add `directory`; a label click opens the picker    |
 |       6 | 2026-10-20 | `value = ''` also clears the form value            |
 |       7 | 2026-10-21 | API descriptions aligned with the JSDoc.           |
+|       8 | 2026-10-23 | The file input makes a stacking context, so the z-index of the input and the container does not compete with the layers of the page |
 
 ## Overview
 

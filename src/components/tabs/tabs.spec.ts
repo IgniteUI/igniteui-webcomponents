@@ -17,6 +17,7 @@ import {
   spaceBar,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { isUnderPageLayer } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -1255,6 +1256,12 @@ describe('Tabs component', () => {
       first.label = 'A much longer label';
       await elementUpdated(first);
       await indicatorFollows(first);
+    });
+
+    it('paints its headers under an earlier page layer', () => {
+      const { header } = getTabDOM(element.tabs[0]);
+
+      expect(isUnderPageLayer(element, header)).to.be.true;
     });
   });
 

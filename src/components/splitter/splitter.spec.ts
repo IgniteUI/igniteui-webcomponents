@@ -21,6 +21,7 @@ import {
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   finishAnimationsFor,
+  isUnderPageLayer,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import {
@@ -85,6 +86,15 @@ describe('Splitter', () => {
 
       expect(bar.getAttribute('aria-label')).to.equal('Resize panes');
       expect(bar.getAttribute('aria-valuetext')).to.equal('0%');
+    });
+
+    it('paints the focused bar under an earlier page layer', () => {
+      const bar = getSplitterPart(splitter, BAR_PART);
+
+      bar.focus();
+
+      expect(bar.matches(':focus-visible')).to.be.true;
+      expect(isUnderPageLayer(splitter, bar)).to.be.true;
     });
 
     it('should render both panes with equal sizes if no explicit sizes set', async () => {

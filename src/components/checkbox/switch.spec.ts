@@ -5,7 +5,11 @@ import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
-import { isFocused } from '#internals/testing/helpers.spec.js';
+import {
+  isFocused,
+  isUnderPageLayer,
+} from '#internals/testing/helpers.spec.js';
+import { configureTheme } from '#theming/config.js';
 import IgcSwitchComponent from './switch.js';
 
 describe('Switch', () => {
@@ -52,6 +56,20 @@ describe('Switch', () => {
     it('should render a switch component successfully', async () => {
       await expect(element).shadowDom.to.be.accessible();
       await expect(element).to.be.accessible();
+    });
+
+    it('paints the control under an earlier page layer', async () => {
+      try {
+        configureTheme('material');
+        element.checked = true;
+        await elementUpdated(element);
+
+        const control = element.renderRoot.querySelector('[part~="control"]')!;
+
+        expect(isUnderPageLayer(element, control)).to.be.true;
+      } finally {
+        configureTheme('bootstrap');
+      }
     });
 
     it('should set the switch name property correctly', async () => {

@@ -6,18 +6,22 @@ import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
-import { isFocused } from '#internals/testing/helpers.spec.js';
+import {
+  isFocused,
+  isUnderPageLayer,
+} from '#internals/testing/helpers.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
 } from '#internals/testing/validity-helpers.spec.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
+import IgcRadioGroupComponent from '../radio-group/radio-group.js';
 import IgcRadioComponent from './radio.js';
 
 describe('Radio Component', () => {
   before(() => {
-    defineComponents(IgcRadioComponent);
+    defineComponents(IgcRadioComponent, IgcRadioGroupComponent);
   });
 
   const label = 'Apple';
@@ -62,6 +66,22 @@ describe('Radio Component', () => {
 
     it('renders a radio element successfully', async () => {
       await expect(radio).shadowDom.to.be.accessible();
+    });
+
+    it('paints the control under an earlier page layer, also in a horizontal group', async () => {
+      const control = (el: IgcRadioComponent) =>
+        el.renderRoot.querySelector('[part~="control"]')!;
+
+      expect(isUnderPageLayer(radio, control(radio))).to.be.true;
+
+      const group = await fixture<IgcRadioGroupComponent>(
+        html`<igc-radio-group alignment="horizontal"
+          ><igc-radio>${label}</igc-radio></igc-radio-group
+        >`
+      );
+      const grouped = group.querySelector(IgcRadioComponent.tagName)!;
+
+      expect(isUnderPageLayer(group, control(grouped))).to.be.true;
     });
 
     it('sets label position properly', async () => {

@@ -5,7 +5,10 @@ import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
-import { isFocused } from '#internals/testing/helpers.spec.js';
+import {
+  isFocused,
+  isUnderPageLayer,
+} from '#internals/testing/helpers.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
@@ -59,6 +62,22 @@ describe('Checkbox', () => {
     it('should render a checkbox component successfully', async () => {
       await expect(element).shadowDom.to.be.accessible();
       await expect(element).to.be.accessible();
+    });
+
+    it('paints the indicator under an earlier page layer', async () => {
+      try {
+        configureTheme('material');
+        element.checked = true;
+        await elementUpdated(element);
+
+        const indicator = element.renderRoot.querySelector(
+          '[part~="indicator"]'
+        )!;
+
+        expect(isUnderPageLayer(element, indicator)).to.be.true;
+      } finally {
+        configureTheme('bootstrap');
+      }
     });
 
     it('should render the correct SVG in indigo theme', async () => {

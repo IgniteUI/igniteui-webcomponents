@@ -45,6 +45,9 @@ igc-validator {
     user-select: none;
     transition: background .15s ease-in;
 
+    // Not on the host, which is `display: contents` in a horizontal group.
+    isolation: isolate;
+
     &::before,
     &::after {
         position: absolute;

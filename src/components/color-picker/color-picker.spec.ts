@@ -29,6 +29,7 @@ import {
 } from '#internals/testing/form-testbed.spec.js';
 import {
   isFocused,
+  isUnderPageLayer,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import {
@@ -273,6 +274,15 @@ describe('Color picker', () => {
 
       await expect(picker).shadowDom.to.be.accessible(hiddenLabelOptions);
       await expect(picker).lightDom.to.be.accessible(hiddenLabelOptions);
+    });
+
+    it('paints the focus ring of the anchor under an earlier page layer', () => {
+      const anchor = getAnchor(picker);
+
+      anchor.focus();
+
+      expect(anchor.matches(':focus-visible')).to.be.true;
+      expect(isUnderPageLayer(picker, anchor)).to.be.true;
     });
   });
 

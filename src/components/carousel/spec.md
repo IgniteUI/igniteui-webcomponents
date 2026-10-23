@@ -52,6 +52,7 @@
 |       2 | 2026-10-14 | No role description on the slides |
 |       3 | 2026-10-19 | Role description from `carousel_role_description` |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.          |
+|       5 | 2026-10-23 | The carousel makes a stacking context, so the z-index of the slides, the indicators and the navigation buttons does not compete with the layers of the page |
 
 ## Overview
 
@@ -344,8 +345,9 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 
 1. The component passes the accessibility audit and is initialized with its default state. The carousel has a
    role description from the strings of its locale, and its slides have none.
-2. The carousel, its slides and its controls render correctly, and a slide renders correctly in both its active
-   and its inactive state.
+2. The carousel, its slides and its controls render correctly, and a slide renders correctly in both its active and
+   its inactive state. The slides, the indicators and the navigation buttons are painted under an earlier page layer
+   with `z-index: 1`.
 3. `hideIndicators` and `hideNavigation` skip rendering the respective controls.
 4. A label is rendered instead of the dots when the slides outnumber `maximumIndicatorsCount`, and is not
    rendered while `hideIndicators` is set.

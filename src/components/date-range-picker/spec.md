@@ -62,6 +62,7 @@
 |       8 | 2026-10-14 | An editor commit marks the picker touched; a reset resets the editors     |
 |       9 | 2026-10-21 | API descriptions aligned with the JSDoc.                                  |
 |      10 | 2026-10-21 | A value set from code, also with `select()`, is not reported on Done      |
+|      11 | 2026-10-23 | The date range input makes a stacking context, so the z-index of the input and the container does not compete with the layers of the page |
 
 ## Overview
 

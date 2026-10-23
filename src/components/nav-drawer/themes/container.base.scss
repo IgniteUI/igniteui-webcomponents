@@ -247,6 +247,9 @@ $theme: $base;
 }
 
 :host([position='relative']) {
+    // The other positions are in the top layer.
+    isolation: isolate;
+
     &:has([part='mini']) {
         --transition-duration: 0.2s;
     }
