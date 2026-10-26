@@ -309,14 +309,12 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     emit = true
   ): IgcDropdownItemComponent | null {
     if (!item) {
-      this._selection.select(null);
+      this._selection.commit(null);
       return null;
     }
 
     // Re-selecting the current item is not a change, but still a commit.
-    const changed = this._selection.selected !== item;
-
-    this._selection.select(item);
+    const changed = this._selection.commit(item);
 
     if (emit) {
       if (changed) {
@@ -484,7 +482,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
 
   /**  Clears the current selection of the dropdown. */
   public clearSelection(): void {
-    this._selection.select(null);
+    this._selection.commit(null);
   }
 
   //#endregion

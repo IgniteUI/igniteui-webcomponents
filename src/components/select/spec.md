@@ -60,6 +60,7 @@ This directory hosts four public components: [`igc-select`](#igc-select), [`igc-
 |       3 | 2026-10-02 | Focus after form checks; `invalid` only on checks  |
 |       4 | 2026-10-02 | Forward the host `aria-describedby`                |
 |       5 | 2026-10-21 | API descriptions aligned with the JSDoc.           |
+|       6 | 2026-10-26 | Setting the current `value` again keeps the active item |
 
 ## Overview
 
@@ -171,6 +172,11 @@ const item = select.selectedItem;
 
 An item without an explicit `value` falls back to its text content. The display value of the anchor is rendered from
 the selected item, so it can carry rich content while the submitted value stays a plain string.
+
+A new selection also becomes the active item. Setting `value` to the value that the select already has does not
+move the active item, so a framework that sets each property on each render keeps the keyboard position in an open
+list. A user selection, `select()` and `clearSelection()` move the active item, also when the selection does not
+change.
 
 #### Templating
 
@@ -435,7 +441,9 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 
 ### Selection integrity
 
-7. The selection stays consistent across open and close cycles and programmatic changes.
+7. The selection stays consistent across open and close cycles and programmatic changes. Setting the current
+   `value` again keeps the active item, while a user commit and `select()` with the selected item move it there. A
+   removed active item hands the navigation back to the selected item.
 8. Selecting a disabled item is not possible.
 
 ### Asynchronously rendered items

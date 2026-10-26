@@ -322,15 +322,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     const match = this.value ? this._selection.resolve(this.value) : undefined;
 
-    if (match) {
-      if (match !== this._selection.selected) {
-        this._selection.select(match);
-      }
-      return;
-    }
+    if (match) this._selection.select(match);
 
-    // Nothing resolves the value anymore - drop the stale element references
-    // but hold on to the value itself.
+    // An unmatched value stays; only the stale element references go.
     this._selection.prune();
   }
 
@@ -489,20 +483,17 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     emit = true
   ): IgcSelectItemComponent | null {
     if (!item) {
-      this._selection.select(null);
+      this._selection.commit(null);
       this._updateValue();
       return null;
     }
 
     const shouldFocus = emit && this.open;
     const shouldHide = emit && !this.keepOpenOnSelect;
+
     // Selecting the current item again is not a change, but the list still
     // closes and the input takes the focus.
-    const changed = this._selection.selected !== item;
-
-    this._selection.select(item);
-
-    if (changed) {
+    if (this._selection.commit(item)) {
       this._updateValue(item.value);
       if (emit) this._emitTouchedEvent('igcChange', { detail: item });
     }
@@ -594,7 +585,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   /**  Resets the current value and selection of the component. */
   public clearSelection(): void {
     this._updateValue();
-    this._selection.select(null);
+    this._selection.commit(null);
   }
 
   //#endregion

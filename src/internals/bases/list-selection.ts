@@ -17,8 +17,8 @@ type ListSelectionConfig = {
  * Keeps the selected item and the active item of a list of options.
  *
  * @remarks
- * Keyboard navigation moves from the active item. The active item follows the
- * selected item, unless navigation moved it without a selection.
+ * Keyboard navigation moves from the active item. A commit moves the active
+ * item to the committed item, and navigation moves it without a selection.
  */
 class ListSelection<T extends IgcBaseOptionLikeComponent> {
   private readonly _host: ListSelectionHost;
@@ -73,16 +73,33 @@ class ListSelection<T extends IgcBaseOptionLikeComponent> {
     }
   }
 
-  /** Selects `item`, which also becomes the active item. */
-  public select(item: T | null): void {
-    const changed = item !== this._selected;
+  /**
+   * Selects `item` to follow a property, such as `value`, which a framework
+   * can set again on each render. A new selection also becomes the active
+   * item; the selected item again changes nothing. Returns whether the
+   * selection changed.
+   */
+  public select(item: T | null): boolean {
+    if (item === this._selected) {
+      return false;
+    }
 
     moveFlag(this._selected, item, 'selected');
     this._selected = item;
+    this._setActive(item);
+    this._config.onChange?.();
+    return true;
+  }
 
-    if (this._setActive(item) || changed) {
-      this._config.onChange?.();
-    }
+  /**
+   * Selects `item` on a user action or a method call. It becomes the active
+   * item, also when it is already selected. Returns whether the selection
+   * changed.
+   */
+  public commit(item: T | null): boolean {
+    const changed = this.select(item);
+    this.activate(item);
+    return changed;
   }
 
   /** Activates `item` and, while the list is open, brings it into view. */

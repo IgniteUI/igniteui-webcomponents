@@ -53,6 +53,7 @@ This directory hosts four public components: [`igc-dropdown`](#igc-dropdown),
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-10-21 | API descriptions aligned with the JSDoc. |
 |       3 | 2026-10-26 | An `igc-button` target passes the popup state on to its native button. |
+|       4 | 2026-10-26 | A click or `select()` on the selected item moves the active item to it. |
 
 ## Overview
 
@@ -348,7 +349,8 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 ### User interactions
 
 15. Clicking an item selects it and closes the list.
-16. `keepOpenOnSelect` keeps the list open after a selection.
+16. `keepOpenOnSelect` keeps the list open after a selection. A click or `select()` on the selected item moves the
+    active item to it.
 17. Clicking outside closes the list, unless `keepOpenOnOutsideClick` is set.
 18. Disabled items cannot be selected and are skipped by the keyboard navigation.
 19. The arrow keys, <kbd>Home</kbd> and <kbd>End</kbd> move the active item; <kbd>Enter</kbd> selects it;
