@@ -191,8 +191,9 @@ By default this creates a horizontal splitter with equal-sized panes.
 ```
 
 > [!NOTE]
-> Changing the orientation after the initial render clears the pane sizes and their min and max constraints, along
-> with the corresponding attributes: a size authored for one axis rarely makes sense on the other.
+> Changing the orientation after the initial render returns the panes to the sizes set through `startSize` and
+> `endSize`, or to automatic sizing. The sizes from a drag, a key press or a collapse were measured on the other axis,
+> so they are dropped. The minimum and maximum sizes and the attributes stay.
 
 #### Setting size constraints
 
@@ -394,7 +395,10 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
    the collapse buttons. It passes the accessibility audit, the bar is named "Resize panes" and has no description,
    and its value text is 0% while the start pane is collapsed. The focused bar is painted under an earlier page layer
    with `z-index: 1`.
-2. Changing the orientation updates the layout, and clears the sizes and constraints along with their attributes.
+2. Changing the orientation updates the layout. The sizes, the constraints and their attributes stay, also a size set
+   in the same update. The sizes of a drag are dropped, and a pane that is collapsed during the change expands to its
+   authored size. An orientation that returns to the same axis in one update keeps the dragged sizes. The restored
+   sizes are reported as changed properties, and a drag in progress is cancelled.
 3. The correct parts are applied for each orientation and state.
 
 ### Slotted content
@@ -456,7 +460,8 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 ### Edge scenarios
 
 27. Rapid resize and collapse interactions settle in a consistent state.
-28. Conflicting constraints are resolved without breaking the layout.
+28. Conflicting constraints are resolved without breaking the layout. Minimums that do not fit do not limit a resize,
+    so no size becomes negative.
 
 ### Host ARIA
 
@@ -468,6 +473,14 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 ### Localization
 
 31. The bar takes its default name from the strings of `locale` and from `resourceStrings`.
+
+### Size properties
+
+[`splitter.property.spec.ts`](./splitter.property.spec.ts) runs these with fast-check.
+
+32. A size that the splitter accepts is a valid CSS `flex-basis`.
+33. Every non-negative length, and a percentage up to 100, is accepted.
+34. The minimum and maximum sizes accept the same values as the sizes.
 
 ## Accessibility
 

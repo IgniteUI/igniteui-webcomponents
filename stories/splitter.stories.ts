@@ -45,7 +45,7 @@ const metadata: Meta<IgcSplitterComponent> = {
     orientation: {
       type: { name: 'enum', value: ['horizontal', 'vertical'] },
       description:
-        'The orientation of the splitter, which determines the direction of resizing and collapsing.\n\nChanging the orientation after the initial render clears the pane sizes and\ntheir min/max constraints, along with the corresponding attributes - a size\nauthored for one axis rarely makes sense on the other.',
+        'The orientation of the splitter, which determines the direction of resizing and collapsing.\n\nChanging the orientation after the initial render returns the panes to the\nsizes set through `startSize` and `endSize`, or to automatic sizing. The\nsizes from a drag, a key press or a collapse were measured on the other\naxis, so they are dropped. The minimum and maximum sizes stay.',
       options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'horizontal' } },
@@ -152,9 +152,10 @@ interface IgcSplitterArgs {
   /**
    * The orientation of the splitter, which determines the direction of resizing and collapsing.
    *
-   * Changing the orientation after the initial render clears the pane sizes and
-   * their min/max constraints, along with the corresponding attributes - a size
-   * authored for one axis rarely makes sense on the other.
+   * Changing the orientation after the initial render returns the panes to the
+   * sizes set through `startSize` and `endSize`, or to automatic sizing. The
+   * sizes from a drag, a key press or a collapse were measured on the other
+   * axis, so they are dropped. The minimum and maximum sizes stay.
    */
   orientation: 'horizontal' | 'vertical';
   /**

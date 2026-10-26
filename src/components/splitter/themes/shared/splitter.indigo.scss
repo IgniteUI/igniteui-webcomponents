@@ -5,16 +5,13 @@
 @use '../light/themes' as *;
 
 $theme: $indigo;
-$base-font-size: 16;
 
-// splitter-size + padding (convert rem to px)
-$splitter-size: theming-math.unitless(map.get($theme, 'size')) * $base-font-size + 2;
-
-// calculate the value for the slim splitter
+// The bar size in pixels, with its 1px padding on each side.
+$splitter-size: theming-math.unitless(px(map.get($theme, 'size'))) + 2;
 $slim-splitter: calc( 1 / $splitter-size);
 
 %hide-controls {
-    [part='drag-handle'],
+    [part~='drag-handle'],
     [part*='collapse-btn'],
     [part*='expand-btn'] {
         opacity: 0;
@@ -24,7 +21,7 @@ $slim-splitter: calc( 1 / $splitter-size);
 }
 
 %show-controls {
-    [part='drag-handle'],
+    [part~='drag-handle'],
     [part*='collapse-btn'],
     [part*='expand-btn'] {
         opacity: 0.68;
@@ -34,7 +31,7 @@ $slim-splitter: calc( 1 / $splitter-size);
 }
 
 :host {
-    [part='splitter-bar'] {
+    [part~='splitter-bar'] {
         @extend %hide-controls;
 
         transition: all .25s .5s $in-out-quad;
@@ -45,7 +42,7 @@ $slim-splitter: calc( 1 / $splitter-size);
 
         &:hover,
         &:focus-visible:hover {
-            [part='drag-handle'],
+            [part~='drag-handle'],
             [part*='collapse-btn'],
             [part*='expand-btn'] {
                 opacity: 1;
@@ -56,40 +53,23 @@ $slim-splitter: calc( 1 / $splitter-size);
     }
 }
 
-:host([orientation='horizontal']) {
-    [part='splitter-bar'] {
-        transform: scaleX($slim-splitter);
+@each $orientation, $axis in (horizontal: X, vertical: Y) {
+    :host([orientation='#{$orientation}']) {
+        [part~='splitter-bar'] {
+            transform: scale#{$axis}($slim-splitter);
 
-        &:hover,
-        &:focus-visible {
-            transform: scaleX(1);
-            transition-delay: 0s;
+            &:hover,
+            &:focus-visible {
+                transform: scale#{$axis}(1);
+                transition-delay: 0s;
+            }
         }
     }
-}
 
-:host([orientation='horizontal'][disable-resize][disable-collapse]) {
-    [part='splitter-bar']:hover,
-    [part='splitter-bar']:focus-visible {
-        transform: scaleX($slim-splitter);
-    }
-}
-
-:host([orientation='vertical']) {
-    [part='splitter-bar'] {
-        transform: scaleY($slim-splitter);
-
-        &:hover,
-        &:focus-visible {
-            transform: scaleY(1);
-            transition-delay: 0s;
+    :host([orientation='#{$orientation}'][disable-resize][disable-collapse]) {
+        [part~='splitter-bar']:hover,
+        [part~='splitter-bar']:focus-visible {
+            transform: scale#{$axis}($slim-splitter);
         }
-    }
-}
-
-:host([orientation='vertical'][disable-resize][disable-collapse]) {
-    [part='splitter-bar']:hover,
-    [part='splitter-bar']:focus-visible {
-        transform: scaleY($slim-splitter);
     }
 }
