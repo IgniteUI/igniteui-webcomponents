@@ -184,7 +184,7 @@ declare global {
 - React to property changes in the lifecycle:
   - `willUpdate()` computes derived state before render.
   - `update()` runs side effects that need the DOM. Call `super.update()`.
-  - `@coercedProperty` coerces a value or runs a side effect on each set. See
+  - `@coercedProperty` coerces a value or runs a side effect on a change. See
     [Properties and Attributes](#properties-and-attributes).
   - Guard each branch with `changedProperties.has()`.
 - Export a new component from `src/index.ts`, in alphabetical order:
@@ -690,7 +690,7 @@ A parser, converter or serializer that takes user or stored input also gets prop
   public items: Array<Item> = [];
   ```
 
-- To coerce a value or run a side effect on each set, use `@coercedProperty` below `@property`.
+- To coerce a value or run a side effect on a change, use `@coercedProperty` below `@property`.
   Do not write a backing-field accessor pair:
 
   ```ts

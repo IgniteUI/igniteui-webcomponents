@@ -1,3 +1,6 @@
+import { notEqual } from 'lit';
+import { isObject } from '../utils/types.js';
+
 /** The argument object that the {@link coercedProperty} callbacks get. */
 export interface CoercedPropertyContext<T, H> {
   /** The raw value in `transform`, the coerced value in `onChange`. */
@@ -14,7 +17,11 @@ export interface CoercedPropertyConfig<T, H> {
   /** Coerces every incoming value, the field initializer included. */
   transform?: (context: CoercedPropertyContext<T, H>) => T;
 
-  /** Runs after the property stores a value, but not for the initializer. */
+  /**
+   * Runs after a set, but not for the initializer. An equal primitive, by
+   * Lit's `notEqual`, is not a change. The same object or array is, because
+   * it can hold an in-place change.
+   */
   onChange?: (context: CoercedPropertyContext<T, H>) => void;
 }
 
@@ -79,7 +86,7 @@ export function coercedProperty<T, H extends object = object>(
 
         write.call(this, next);
 
-        if (!initial) {
+        if (!initial && (isObject(next) || notEqual(next, previous))) {
           onChange?.({ value: next, host: this, previous });
         }
       },
