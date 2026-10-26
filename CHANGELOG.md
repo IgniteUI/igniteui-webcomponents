@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Calendar, Date picker, Date range picker
   - `DateRangeDescriptor` has an optional `label`. The calendar adds the labels of the matching `specialDates` and `disabledDates` descriptors to the accessible name of a date, for example "Thursday, October 8, 2026, Free delivery". Before, the special state was only visual. [#2423](https://github.com/IgniteUI/igniteui-webcomponents/pull/2423)
 - #### Chat
-  - `focusInput()` moves the focus to the text area, for example after the application sets `draftMessage`. It does nothing when a custom `input` renderer replaces the text area. [#2474](https://github.com/IgniteUI/igniteui-webcomponents/pull/2474)
+  - `focusInput()` moves the focus to the text area, for example after the application sets `draftMessage`. It returns a promise. In a new chat, it waits for the first render, and in a server-rendered chat, for the render after the hydration. It does nothing when a custom `input` renderer replaces the text area. [#2474](https://github.com/IgniteUI/igniteui-webcomponents/pull/2474)
 - #### Combo
   - The group header template gets `key`: the `groupKey` value that the items of the group share. The new `ComboGroupHeaderTemplate` and `ComboGroupHeaderContext` types describe the template and its context. Current templates continue to work. [#2462](https://github.com/IgniteUI/igniteui-webcomponents/issues/2462) [#2468](https://github.com/IgniteUI/igniteui-webcomponents/pull/2468)
 - #### File input

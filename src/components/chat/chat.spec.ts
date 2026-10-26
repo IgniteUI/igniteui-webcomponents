@@ -1364,8 +1364,42 @@ describe('Chat', () => {
       await elementUpdated(chat);
       await elementUpdated(getChatDOM(chat).input.self);
 
-      expect(() => chat.focusInput()).not.to.throw();
+      await chat.focusInput();
       expect(chat.matches(':focus-within')).to.be.false;
+    });
+
+    describe('`focusInput` in a new chat', () => {
+      let container: HTMLDivElement;
+      let newChat: IgcChatComponent;
+
+      beforeEach(async () => {
+        container = await fixture<HTMLDivElement>(html`<div></div>`);
+        newChat = document.createElement(IgcChatComponent.tagName);
+      });
+
+      it('waits for the first render of the text area', async () => {
+        container.append(newChat);
+        await newChat.updateComplete;
+        await newChat.focusInput();
+
+        expect(isFocused(getChatDOM(newChat).input.textarea)).to.be.true;
+      });
+
+      it('waits for the first render of the chat', async () => {
+        container.append(newChat);
+        await newChat.focusInput();
+
+        expect(isFocused(getChatDOM(newChat).input.textarea)).to.be.true;
+      });
+
+      it('does not wait while the chat is disconnected', async () => {
+        const focused = newChat.focusInput();
+
+        container.append(newChat);
+        await focused;
+
+        expect(newChat.matches(':focus-within')).to.be.false;
+      });
     });
 
     it('does not send a message on `Enter` when the input is empty', async () => {
@@ -2426,6 +2460,37 @@ describe('Chat', () => {
 
       await elementUpdated(input);
       expect(textarea()).to.exist;
+    });
+
+    it('`focusInput` waits for the render of a hydrating input', async () => {
+      // The empty state slot shows the input, so that it can take the focus.
+      container.setHTMLUnsafe(
+        '<igc-chat><igc-chat-input slot="empty-state"><template shadowrootmode="open"></template></igc-chat-input></igc-chat>'
+      );
+      const input = container.querySelector(IgcChatInputComponent.tagName)!;
+
+      await input.focusInput();
+
+      expect(
+        isFocused(input.renderRoot.querySelector(IgcTextareaComponent.tagName)!)
+      ).to.be.true;
+    });
+
+    it('`focusInput` waits for the render of an input between its hydration renders', async () => {
+      container.setHTMLUnsafe(
+        '<igc-chat><igc-chat-input slot="empty-state"><template shadowrootmode="open"></template></igc-chat-input></igc-chat>'
+      );
+      const input = container.querySelector(IgcChatInputComponent.tagName)!;
+
+      // Queued after the first render of the input, before the second, as the
+      // update of a parent that hydrates the input.
+      await new Promise<void>((resolve) =>
+        queueMicrotask(() => input.focusInput().then(resolve))
+      );
+
+      expect(
+        isFocused(input.renderRoot.querySelector(IgcTextareaComponent.tagName)!)
+      ).to.be.true;
     });
 
     it('renders slotted suggestions after the chat hydrates a declarative shadow root', async () => {

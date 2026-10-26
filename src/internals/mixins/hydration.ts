@@ -4,8 +4,9 @@ import type { Constructor } from './constructor.js';
 /** @internal */
 export declare class HydrationElementInterface {
   /**
-   * Set while a server-rendered host is hydrating. During that time `render()`
-   * withholds what the server did not render, so that both renders match.
+   * Set while a server-rendered host is hydrating, until `_onHydrated()`
+   * runs. During that time `render()` withholds what the server did not
+   * render, so that both renders match.
    * @internal
    */
   protected _hydrating: boolean;
@@ -39,9 +40,11 @@ export function HydrationMixin<T extends Constructor<LitElement>>(base: T) {
       super.firstUpdated(props);
 
       if (this._hydrating) {
-        this._hydrating = false;
         // Off the current update cycle - avoids Lit's change-in-update warning.
-        queueMicrotask(() => this._onHydrated());
+        queueMicrotask(() => {
+          this._hydrating = false;
+          this._onHydrated();
+        });
       }
     }
 
