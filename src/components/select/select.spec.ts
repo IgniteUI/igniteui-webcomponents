@@ -652,6 +652,66 @@ describe('Select', () => {
 
       expect(getActiveItem()?.value).to.equal('implementation');
     });
+
+    it('keeps the active item when the selected value is set again', async () => {
+      await openSelect();
+      simulateKeyboard(select, arrowDown, 2);
+      await elementUpdated(select);
+
+      // A framework that sets each property on each render does this.
+      select.value = 'implementation';
+      await elementUpdated(select);
+
+      expect(getActiveItem()?.value).to.equal('documentation');
+      expect(select.selectedItem?.value).to.equal('implementation');
+
+      // A method call is a commit.
+      select.select('implementation');
+      await elementUpdated(select);
+
+      expect(getActiveItem()?.value).to.equal('implementation');
+    });
+
+    it('keeps the active item when no value is set again', async () => {
+      select.clearSelection();
+      await openSelect();
+      simulateKeyboard(select, arrowDown, 2);
+      await elementUpdated(select);
+
+      select.value = undefined;
+      await elementUpdated(select);
+
+      expect(getActiveItem()?.value).to.equal('implementation');
+    });
+
+    it('drops a removed active item while the value still matches', async () => {
+      await openSelect();
+      simulateKeyboard(select, arrowDown);
+      await elementUpdated(select);
+
+      getActiveItem()!.remove();
+      await elementUpdated(select);
+
+      expect(getActiveItem()?.value).to.equal('implementation');
+
+      simulateKeyboard(select, enterKey);
+      await elementUpdated(select);
+
+      expect(select.value).to.equal('implementation');
+    });
+
+    it('moves the active item to a selected item that the user commits', async () => {
+      await openSelect();
+      simulateKeyboard(select, arrowUp);
+      simulateKeyboard(select, escapeKey);
+      await elementUpdated(select);
+
+      // Closed, ArrowDown commits the selected item again, then moves on.
+      simulateKeyboard(select, arrowDown, 2);
+      await elementUpdated(select);
+
+      expect(select.value).to.equal('samples');
+    });
   });
 
   describe('Asynchronously rendered items', () => {

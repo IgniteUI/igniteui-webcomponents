@@ -691,6 +691,27 @@ describe('Dropdown', () => {
       expect(dropDown.open).to.be.true;
     });
 
+    it('moves the active item to the selected item on a click or `select()`', async () => {
+      const targetItem = dropDown.items[1];
+
+      dropDown.keepOpenOnSelect = true;
+      dropDown.select(1);
+      await openDropdown();
+
+      for (const commit of [
+        () => simulateClick(targetItem),
+        () => dropDown.select(1),
+      ]) {
+        simulateKeyboard(dropDown, arrowDown, 2);
+        await elementUpdated(dropDown);
+        checkItemState(targetItem, { active: false });
+
+        commit();
+        await elementUpdated(dropDown);
+        checkItemState(targetItem, { active: true, selected: true });
+      }
+    });
+
     it('clicking on a disabled item is a no-op', async () => {
       const targetItem = dropDown.items[3];
       targetItem.disabled = true;
