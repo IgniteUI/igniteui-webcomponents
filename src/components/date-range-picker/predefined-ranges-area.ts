@@ -15,6 +15,11 @@ import {
 import { styles } from './predefined-ranges-area.base.css.js';
 import { styles as shared } from './themes/shared/predefined-ranges-area.common.css.js';
 
+type PredefinedRange = {
+  label: string;
+  getDateRange: (today: CalendarDay) => DateRangeValue;
+};
+
 /* blazorSuppress */
 /**
  * The predefined ranges area component is used within the date range picker and it
@@ -36,7 +41,7 @@ export default class IgcPredefinedRangesAreaComponent extends I18nMixin(
   }
 
   @state()
-  private _predefinedRanges: CustomDateRange[] = [];
+  private _predefinedRanges: PredefinedRange[] = [];
 
   /**
    * Whether the control will show chips with predefined ranges.
@@ -62,7 +67,12 @@ export default class IgcPredefinedRangesAreaComponent extends I18nMixin(
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     if (changedProperties.has('resourceStrings')) {
-      this._predefinedRanges = getPredefinedRanges(this.resourceStrings);
+      this._predefinedRanges = PREDEFINED_RANGES.map(
+        ({ resourceKey, getDateRange }) => ({
+          label: this.resourceStrings[resourceKey]!,
+          getDateRange,
+        })
+      );
     }
   }
 
@@ -70,17 +80,24 @@ export default class IgcPredefinedRangesAreaComponent extends I18nMixin(
     this.dispatchEvent(new CustomEvent('igcRangeSelect', { detail: range }));
   }
 
-  protected *_renderDateRanges() {
-    const ranges = this.usePredefinedRanges
-      ? [...this._predefinedRanges, ...this.customRanges]
-      : this.customRanges;
+  private _renderChip(label: string, getRange: () => DateRangeValue) {
+    return html`
+      <igc-chip @click=${() => this._handleRangeSelect(getRange())}>
+        ${label}
+      </igc-chip>
+    `;
+  }
 
-    for (const { label, dateRange } of ranges) {
-      yield html`
-        <igc-chip @click=${() => this._handleRangeSelect(dateRange)}>
-          ${label}
-        </igc-chip>
-      `;
+  protected *_renderDateRanges() {
+    if (this.usePredefinedRanges) {
+      for (const { label, getDateRange } of this._predefinedRanges) {
+        // The click reads today, so that a click after midnight selects the current dates.
+        yield this._renderChip(label, () => getDateRange(CalendarDay.today));
+      }
+    }
+
+    for (const { label, dateRange } of this.customRanges) {
+      yield this._renderChip(label, () => dateRange);
     }
   }
 
@@ -95,47 +112,36 @@ declare global {
   }
 }
 
-function getPredefinedRanges(
-  resourceStrings: DateRangePickerResourceStringsType
-): CustomDateRange[] {
-  const today = CalendarDay.today;
-
-  const ranges: {
-    resourceKey: keyof DateRangePickerResourceStringsType;
-    getDateRange: () => { start: Date; end: Date };
-  }[] = [
-    {
-      resourceKey: 'date_range_picker_last7Days',
-      getDateRange: () => ({
-        start: today.add('day', -7).native,
-        end: today.native,
-      }),
-    },
-    {
-      resourceKey: 'date_range_picker_currentMonth',
-      getDateRange: () => ({
-        start: today.set({ date: 1 }).native,
-        end: today.set({ date: 1 }).add('month', 1).add('day', -1).native,
-      }),
-    },
-    {
-      resourceKey: 'date_range_picker_last30Days',
-      getDateRange: () => ({
-        start: today.add('day', -29).native,
-        end: today.native,
-      }),
-    },
-    {
-      resourceKey: 'date_range_picker_yearToDate',
-      getDateRange: () => ({
-        start: today.set({ month: 0, date: 1 }).native,
-        end: today.native,
-      }),
-    },
-  ];
-
-  return ranges.map((range) => ({
-    label: resourceStrings[range.resourceKey]!,
-    dateRange: range.getDateRange(),
-  }));
-}
+const PREDEFINED_RANGES: {
+  resourceKey: keyof DateRangePickerResourceStringsType;
+  getDateRange: PredefinedRange['getDateRange'];
+}[] = [
+  {
+    resourceKey: 'date_range_picker_last7Days',
+    getDateRange: (today) => ({
+      start: today.add('day', -6).native,
+      end: today.native,
+    }),
+  },
+  {
+    resourceKey: 'date_range_picker_currentMonth',
+    getDateRange: (today) => ({
+      start: today.set({ date: 1 }).native,
+      end: today.set({ date: 1 }).add('month', 1).add('day', -1).native,
+    }),
+  },
+  {
+    resourceKey: 'date_range_picker_last30Days',
+    getDateRange: (today) => ({
+      start: today.add('day', -29).native,
+      end: today.native,
+    }),
+  },
+  {
+    resourceKey: 'date_range_picker_yearToDate',
+    getDateRange: (today) => ({
+      start: today.set({ month: 0, date: 1 }).native,
+      end: today.native,
+    }),
+  },
+];

@@ -63,6 +63,7 @@
 |       9 | 2026-10-21 | API descriptions aligned with the JSDoc.                                  |
 |      10 | 2026-10-21 | A value set from code, also with `select()`, is not reported on Done      |
 |      11 | 2026-10-23 | The date range input makes a stacking context, so the z-index of the input and the container does not compete with the layers of the page |
+|      12 | 2026-10-26 | Last 7 Days selects 7 days, counting today; the built-in ranges use the date of the click |
 
 ## Overview
 
@@ -242,7 +243,8 @@ picker.customRanges = [
 ```
 
 The chips are rendered by an internal `igc-predefined-ranges-area` component. The built-in set is Last 7 Days,
-Current Month, Last 30 Days and Year to Date, and its labels come from the resource strings.
+Current Month, Last 30 Days and Year to Date, and its labels come from the resource strings. Last 7 Days and
+Last 30 Days end today and count today as one of their days. The ranges use the date of the click.
 
 #### Display and input formats
 
@@ -623,6 +625,7 @@ The focus after the form checks and the `invalid` event rules come from the form
 ### Predefined ranges area
 
 26. The internal `igc-predefined-ranges-area` renders the built-in and the custom chips and emits its selection.
+    Built-in range dates: the day count and a click after midnight.
 
 ### Range mask parser
 
