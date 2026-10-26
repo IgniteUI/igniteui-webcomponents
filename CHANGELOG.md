@@ -159,6 +159,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `stepUp()` and `stepDown()` now update `value` and the form value at once, also while the input has the focus. Before, only the input showed the new date.
   - A `value` that you set from code, also with `stepUp()` or `stepDown()`, no longer emits `igcChange` on a later blur, in any mode.
   - In a non-editable dropdown, a selection in the calendar now emits one `igcChange`. Before, the blur after it emitted a second one.
+- #### Date range picker
+  - **Behavioral change:** The **Last 7 Days** predefined range selects 7 days: today and the 6 days before it. Before, it selected 8 days. [#2528](https://github.com/IgniteUI/igniteui-webcomponents/issues/2528)
+  - The predefined ranges now use the date of the click. Before, they used the date of the first render, so a page that stayed open past midnight selected old ranges.
 - #### Date range picker, Date time input, Mask input
   - A mask position holds one UTF-16 code unit. So the editors now reject an astral character, such as an emoji, as input and as a prompt. Before, it moved the positions after it or split into two halves. A mask or input format with an astral literal now edits at the correct positions. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
   - In the mask input, an empty value is no longer a bad input. Only `required` makes an empty control invalid. A value that fits no position of a letter mask, such as `12` for `LLL`, is now a bad input. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
