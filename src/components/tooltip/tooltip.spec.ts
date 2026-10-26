@@ -19,6 +19,7 @@ import {
   simulatePointerLeave,
   simulateScroll,
 } from '#internals/testing/simulate.spec.js';
+import { getCenterPoint } from '#internals/utils/dom.js';
 import IgcTooltipComponent from './tooltip.js';
 
 describe('Tooltip', () => {
@@ -780,6 +781,28 @@ describe('Tooltip', () => {
       await hideComplete();
 
       expect(tooltip.open).to.be.false;
+    });
+  });
+
+  describe('Arrow', () => {
+    it('is centered on the anchor on the first show', async () => {
+      const container = await fixture(html`
+        <div style="padding: 100px">
+          <button id="target">I have a tooltip</button>
+          <igc-tooltip anchor="target" with-arrow>It works!</igc-tooltip>
+        </div>
+      `);
+      tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
+
+      await tooltip.show();
+
+      const arrow = tooltip.renderRoot.querySelector('#arrow')!;
+
+      expect(arrow.getBoundingClientRect().width).to.be.greaterThan(0);
+      expect(getCenterPoint(arrow).x).to.be.closeTo(
+        getCenterPoint(container.querySelector('#target')!).x,
+        1
+      );
     });
   });
 

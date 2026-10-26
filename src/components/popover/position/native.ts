@@ -7,6 +7,7 @@ import {
   getPlacementSide,
   isBlockSide,
   OPPOSITE_SIDE,
+  setArrowSide,
 } from './arrow.js';
 import { PopoverPositionStrategy } from './strategy.js';
 import {
@@ -235,16 +236,20 @@ export class NativePositionStrategy extends PopoverPositionStrategy {
     const mainSize = block ? 'height' : 'width';
     const cross = block ? 'left' : 'top';
     const crossSize = block ? 'width' : 'height';
-    const arrowSize = block ? arrow.offsetWidth : arrow.offsetHeight;
-    const containerSize = block
-      ? container.clientWidth
-      : container.clientHeight;
 
     // Compare the centers to find the side after a flip. This works for any offset.
     const nearSide =
       containerRect[main] + containerRect[mainSize] / 2 <
       anchorRect[main] + anchorRect[mainSize] / 2;
     const side = nearSide ? main : OPPOSITE_SIDE[main];
+
+    // The part can give the arrow its size. Measure after the part is set.
+    setArrowSide(arrow, side);
+
+    const arrowSize = block ? arrow.offsetWidth : arrow.offsetHeight;
+    const containerSize = block
+      ? container.clientWidth
+      : container.clientHeight;
 
     // Center the arrow on the anchor. Keep the arrow inside the container.
     const distance = clamp(

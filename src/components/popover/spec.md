@@ -44,9 +44,10 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                   |
+| ------: | ---------- | ------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                   |
+|       2 | 2026-10-26 | The arrow gets its side part before it is measured      |
 
 ## Overview
 
@@ -172,7 +173,8 @@ popover.arrowOffset = 4;
 ```
 
 The arrow is an element the consumer owns and renders; the popover positions it against the resolved side and keeps
-it in place when the placement flips.
+it in place when the placement flips. The popover sets the side part (`top`, `right`, `bottom` or `left`) on the arrow
+before it measures the arrow, so the part can give the arrow its size, as in the tooltip.
 
 #### Matching the anchor width
 
@@ -312,21 +314,22 @@ the same expectations. The groups below mirror the `describe` blocks.
 16. The arrow is positioned against the resolved side of the placement.
 17. The arrow offset is applied.
 18. The arrow follows the placement when it flips.
+19. An arrow that its side part sizes is centered on the anchor on the first show and after a change of the axis.
 
 ### Anchor visibility
 
-19. The content hides when the anchor leaves the DOM, and shows again when a new anchor resolves.
-20. The content tracks the anchor as it scrolls into and out of view.
+20. The content hides when the anchor leaves the DOM, and shows again when a new anchor resolves.
+21. The content tracks the anchor as it scrolls into and out of view.
 
 ### Scroll strategy tests
 
-21. `hide` hides the content while the anchor is fully out of view, and shows it again afterwards.
-22. `scroll` keeps the content visible and anchored.
-23. `close` emits `igcPopoverScrollClose` on each scroll, without changing `open` itself.
+22. `hide` hides the content while the anchor is fully out of view, and shows it again afterwards.
+23. `scroll` keeps the content visible and anchored.
+24. `close` emits `igcPopoverScrollClose` on each scroll, without changing `open` itself.
 
 ### Fallback positioning strategy
 
-24. The whole positioning surface is re-run with the floating strategy forced, covering the browsers without native
+25. The whole positioning surface is re-run with the floating strategy forced, covering the browsers without native
     CSS anchor positioning.
 
 ## Assumptions and limitations

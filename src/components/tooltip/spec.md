@@ -34,6 +34,7 @@
     - [Properties](#properties)
     - [Methods tests](#methods-tests)
     - [Scroll strategy tests](#scroll-strategy-tests)
+    - [Arrow tests](#arrow-tests)
     - [Behaviors tests](#behaviors-tests)
     - [State transitions](#state-transitions)
     - [Events tests](#events-tests)
@@ -52,6 +53,7 @@
 |       2 | 2026-10-02 | An anchor that forwards its description passes the tooltip on |
 |       3 | 2026-10-19 | Localize the name of the default close button                 |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                      |
+|       5 | 2026-10-26 | The arrow is centered on the anchor also on the first show    |
 
 ## Overview
 
@@ -341,25 +343,29 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 14. `scroll` keeps the tooltip anchored.
 15. `close` closes the tooltip on scroll, including in sticky mode.
 
+### Arrow tests
+
+16. With `withArrow`, the arrow is centered on the anchor on the first show.
+
 ### Behaviors tests
 
-16. Moving the pointer from the anchor onto the tooltip keeps it open.
-17. A tooltip open on the first render stays shown until an interaction.
-18. Setting `open` transitions without delays and animations.
+17. Moving the pointer from the anchor onto the tooltip keeps it open.
+18. A tooltip open on the first render stays shown until an interaction.
+19. Setting `open` transitions without delays and animations.
 
 ### State transitions
 
-19. Interrupted show and hide transitions settle in the correct final state.
-20. The tooltip is inert while it is closed and during the animations.
+20. Interrupted show and hide transitions settle in the correct final state.
+21. The tooltip is inert while it is closed and during the animations.
 
 ### Events tests
 
-21. `igcOpening` and `igcClosing` are emitted and can be canceled to prevent the transition.
-22. `igcOpened` and `igcClosed` are emitted after the transition completes.
+22. `igcOpening` and `igcClosing` are emitted and can be canceled to prevent the transition.
+23. `igcOpened` and `igcClosed` are emitted after the transition completes.
 
 ### Keyboard interaction tests
 
-23. <kbd>Escape</kbd> closes the last shown tooltip, including in sticky mode.
+24. <kbd>Escape</kbd> closes the last shown tooltip, including in sticky mode.
 
 ## Assumptions and limitations
 
