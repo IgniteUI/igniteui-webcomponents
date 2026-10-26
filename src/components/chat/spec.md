@@ -56,6 +56,7 @@
 |       5 | 2026-10-19 | Named message actions with a pressed state for like and dislike; localized composer labels; a remove name per attachment |
 |       6 | 2026-10-21 | API descriptions aligned with the JSDoc. |
 |       7 | 2026-10-21 | Slotted suggestions show the suggestions area, which stays in the DOM, hidden, without suggestions |
+|       8 | 2026-10-26 | `focusInput()` waits for the first render of a new chat and returns a promise |
 
 ## Overview
 
@@ -331,7 +332,7 @@ global `registerI18n` mechanism, and both shapes are accepted by the property.
 | Method            | Signature                        | Description                               |
 | ----------------- | -------------------------------- | ----------------------------------------- |
 | `scrollToMessage` | `(messageId: string): void`      | Scrolls the list to the given message.     |
-| `focusInput`      | `(options?: FocusOptions): void` | Focuses the text area of the composer. Does nothing when a custom `input` renderer replaces it. |
+| `focusInput`      | `(options?: FocusOptions): Promise<void>` | Focuses the text area of the composer, after the first render of a new chat. Does nothing when a custom `input` renderer replaces it. |
 
 ### Events
 
@@ -456,7 +457,9 @@ The component exposes a part for every region it renders. The main groups are:
 32. The header of an attachment is in the tab order, and <kbd>Enter</kbd> and <kbd>Space</kbd> on it emit
     `igcAttachmentClick`. <kbd>Enter</kbd> and <kbd>Space</kbd> from inside a custom `attachmentHeader` do not
     activate the header.
-33. `focusInput()` focuses the text area, and does nothing when a custom `input` renderer replaces it.
+33. `focusInput()` focuses the text area, and does nothing when a custom `input` renderer replaces it. In a new chat,
+    it waits for the first render, and in a server-rendered chat, for the render after the hydration. A
+    disconnected chat does not wait.
 
 ### Automatic scrolling
 

@@ -820,7 +820,7 @@
         "static tagName": "readonly string"
       },
       "methods": {
-        "focusInput": "(options?: FocusOptions) => void",
+        "focusInput": "(options?: FocusOptions) => Promise<void>",
         "scrollToMessage": "(messageId: string) => void",
         "static register": "() => void"
       },

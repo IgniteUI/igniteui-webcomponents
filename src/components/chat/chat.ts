@@ -393,11 +393,18 @@ export default class IgcChatComponent extends HydrationMixin(
   }
 
   /**
-   * Moves the focus to the text area of the chat input. Does nothing when a
-   * custom `input` renderer replaces the text area.
+   * Moves the focus to the text area of the chat input, after the first render
+   * of a new chat. The promise resolves when the focus moves. A disconnected
+   * chat does not wait. Does nothing when a custom `input` renderer replaces
+   * the text area.
    */
-  public focusInput(options?: FocusOptions): void {
-    this._input?.focusInput(options);
+  public async focusInput(options?: FocusOptions): Promise<void> {
+    // A disconnected chat never renders.
+    if (this.isConnected && !this.hasUpdated) {
+      await this.updateComplete;
+    }
+
+    await this._input?.focusInput(options);
   }
 
   private _handleScroll(): void {

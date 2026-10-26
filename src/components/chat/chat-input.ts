@@ -137,8 +137,22 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
   }
 
   /** @internal */
-  public focusInput(options?: FocusOptions): void {
-    this._textInputElement?.focus(options);
+  public async focusInput(options?: FocusOptions): Promise<void> {
+    // A hydrating input adds the text area only in its second render.
+    while (
+      !this._textInputElement &&
+      (this.isUpdatePending || this._hydrating)
+    ) {
+      await this.updateComplete;
+    }
+
+    const textarea = this._textInputElement;
+
+    if (textarea && !textarea.hasUpdated) {
+      await textarea.updateComplete;
+    }
+
+    textarea?.focus(options);
   }
 
   private _getRenderer<U extends keyof DefaultInputRenderers>(
