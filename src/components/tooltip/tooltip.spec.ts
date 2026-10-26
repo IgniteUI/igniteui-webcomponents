@@ -783,6 +783,35 @@ describe('Tooltip', () => {
     });
   });
 
+  describe('Arrow', () => {
+    it('is centered on the anchor on the first show', async () => {
+      const container = await fixture(html`
+        <div style="padding: 100px">
+          <button id="target">I have a tooltip</button>
+          <igc-tooltip anchor="target" with-arrow>It works!</igc-tooltip>
+        </div>
+      `);
+      tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
+
+      await tooltip.show();
+      await showComplete();
+      await nextFrame();
+
+      const arrowRect = tooltip
+        .renderRoot!.querySelector('#arrow')!
+        .getBoundingClientRect();
+      const targetRect = container
+        .querySelector('#target')!
+        .getBoundingClientRect();
+
+      expect(arrowRect.width).to.be.greaterThan(0);
+      expect(arrowRect.left + arrowRect.width / 2).to.be.closeTo(
+        targetRect.left + targetRect.width / 2,
+        1
+      );
+    });
+  });
+
   describe('Behaviors', () => {
     beforeEach(async () => {
       clock = useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });

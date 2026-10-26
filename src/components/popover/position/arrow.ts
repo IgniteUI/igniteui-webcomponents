@@ -22,6 +22,17 @@ export function isBlockSide(side: PopoverSide): boolean {
 }
 
 /**
+ * Sets the side part of the arrow. The part can give the arrow its size, as
+ * in the tooltip, so set it before the arrow is measured.
+ */
+export function setArrowSide(element: HTMLElement, side: PopoverSide): void {
+  if (!element.part.contains(side)) {
+    element.part.remove(...SIDES);
+    element.part.add(side);
+  }
+}
+
+/**
  * Sets the part and the inline styles of the arrow for both strategies.
  * `side` is the container side that touches the anchor. `distance` is the
  * arrow position on the cross axis of that side.
@@ -34,10 +45,7 @@ export function applyArrowStyles(
 ): void {
   const staticSide = OPPOSITE_SIDE[side];
 
-  if (!element.part.contains(side)) {
-    element.part.remove(...SIDES);
-    element.part.add(side);
-  }
+  setArrowSide(element, side);
 
   // The part gives the arrow its size. Measure after the part changes.
   const block = isBlockSide(staticSide);

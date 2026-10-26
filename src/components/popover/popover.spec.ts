@@ -744,6 +744,50 @@ function definePositioningSuites(mode: PositionMode) {
     });
   });
 
+  describe('Arrow element sized by its side part', () => {
+    // Like the tooltip arrow: a border triangle that has no size until the
+    // popover sets its side part.
+    it('is centered on the anchor on the first show', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div style="padding: 200px">
+          <style>
+            #arrow {
+              position: absolute;
+              width: 0;
+              height: 0;
+            }
+
+            #arrow[part~='bottom'] {
+              border-left: 5px solid transparent;
+              border-right: 5px solid transparent;
+              border-bottom: 5px solid currentColor;
+            }
+          </style>
+          <button id="btn" type="button">Show message</button>
+          <igc-popover anchor="btn" placement="bottom">
+            <p style="width: 200px; margin: 0">Message</p>
+            <div id="arrow"></div>
+          </igc-popover>
+        </div>
+      `);
+      const popover = queryPopover(root);
+      const arrow = root.querySelector('#arrow') as HTMLElement;
+
+      popover.arrow = arrow;
+      popover.open = true;
+      await waitForPaint(popover);
+
+      const anchorRect = root.querySelector('#btn')!.getBoundingClientRect();
+      const arrowRect = arrow.getBoundingClientRect();
+
+      expect(arrowRect.width).to.equal(10);
+      expect(arrowRect.left + arrowRect.width / 2).to.be.closeTo(
+        anchorRect.left + anchorRect.width / 2,
+        1
+      );
+    });
+  });
+
   describe('Arrow element with flipping', () => {
     afterEach(() => {
       window.scrollTo(0, 0);
