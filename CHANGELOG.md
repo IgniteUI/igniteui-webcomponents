@@ -205,6 +205,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The SVG of an icon is now hidden from assistive technologies, because the host carries the name. Before, the SVG of an icon without a title was an unnamed image. A change of `aria-label` or `aria-labelledby` now updates the role of the icon. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
 - #### Input
   - `pattern` must now match the full value, as for a native input. Before, a match in a part of the value was sufficient, so `[0-9]{3}` accepted `1234`. The pattern also compiles with the `v` flag. An invalid pattern sets no constraint. Before, it caused an error in `checkValidity()`. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
+  - In the Material theme, the floated label of an outlined search field now stays inside the box, as in the filled search field. Before, the box cut off the top of the label when the field had a placeholder, a value or focus. The label of a read-only outlined search field also no longer moves up out of the box on focus.
 - #### Library
   - The custom elements manifest no longer lists an event without a name for each component that emits events. It also no longer lists the chat events on the chat input, which does not dispatch them.
 - #### List

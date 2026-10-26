@@ -15,8 +15,10 @@ import {
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
 import {
+  finishAnimationsFor,
   isFocused,
   isUnderPageLayer,
+  withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import { simulateInput } from '#internals/testing/simulate.spec.js';
 import {
@@ -26,6 +28,7 @@ import {
 } from '#internals/testing/validity-helpers.spec.js';
 import { formatString } from '#internals/utils/strings.js';
 import { configureTheme } from '#theming/config.js';
+import { styles as material } from '../../styles/themes/light/material.css.js';
 import IgcInputComponent from './input.js';
 
 describe('Input component', () => {
@@ -513,6 +516,74 @@ describe('Input component', () => {
       input.blur();
       expect(input.invalid).to.be.true;
     });
+  });
+
+  describe('Material search field', () => {
+    afterEach(() => configureTheme('bootstrap'));
+
+    function expectLabelInside(state: string): void {
+      const label = element.renderRoot.querySelector('[part="label"]')!;
+      const container = element.renderRoot.querySelector(
+        '[part~="container"]'
+      )!;
+
+      finishAnimationsFor(label);
+
+      const labelBox = label.getBoundingClientRect();
+      const containerBox = container.getBoundingClientRect();
+
+      expect(labelBox.top, `${state}: top`).to.be.at.least(containerBox.top);
+      expect(labelBox.bottom, `${state}: bottom`).to.be.at.most(
+        containerBox.bottom
+      );
+    }
+
+    for (const outlined of [false, true]) {
+      const variant = outlined ? 'outlined' : 'filled';
+
+      it(`keeps the floated label inside the ${variant} field`, async () => {
+        await withDocumentSheets([material.styleSheet!], async () => {
+          configureTheme('material');
+          await createFixture(html`
+            <igc-input
+              type="search"
+              ?outlined=${outlined}
+              label="Find a person"
+              placeholder="Name or email"
+            ></igc-input>
+          `);
+
+          expectLabelInside('placeholder');
+
+          element.focus();
+          expectLabelInside('focused');
+
+          element.value = 'Ada';
+          await elementUpdated(element);
+          expectLabelInside('focused with a value');
+
+          element.blur();
+          expectLabelInside('with a value');
+        });
+      });
+
+      it(`keeps the label inside the focused read-only ${variant} field`, async () => {
+        await withDocumentSheets([material.styleSheet!], async () => {
+          configureTheme('material');
+          await createFixture(html`
+            <igc-input
+              type="search"
+              ?outlined=${outlined}
+              label="Find a person"
+              readonly
+            ></igc-input>
+          `);
+
+          element.focus();
+          expectLabelInside('focused');
+        });
+      });
+    }
   });
 
   describe('Part names', () => {

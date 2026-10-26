@@ -391,8 +391,12 @@ $fs: rem(16px) !default;
     }
 }
 
-:host([outlined][type='search']:focus-within) {
-    [part='notch'] [part='label'] {
+// The search field is a raised box without a notch, so a floated label stays
+// inside the box, as in the filled search field.
+:host([outlined][type='search']) :is(input:placeholder-shown, [part~='filled']) + [part='notch'],
+:host([outlined][type='search']:not([readonly]):focus-within) [part='notch'] {
+    [part='label'] {
+        align-self: center;
         translate: 0 -73%;
     }
 }
