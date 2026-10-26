@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The description of the splitter now includes its keyboard table.
 - #### Button, Icon button
   - A host `aria-pressed` now goes to the native button, so a button can be a toggle button. A link does not get it, also when it is disabled, because the link role does not allow it. [#2474](https://github.com/IgniteUI/igniteui-webcomponents/pull/2474)
+  - A host `aria-expanded`, `aria-haspopup` and `aria-controls` now go to the native button and to the link, so a button that opens a menu, a panel or a drawer can tell its state to assistive technology. This also applies to the `aria-haspopup` and `aria-expanded` that the dropdown writes on a button target, and to the `aria-controls` of the carousel navigation buttons. [#2513](https://github.com/IgniteUI/igniteui-webcomponents/issues/2513)
 - #### Calendar, Date picker, Date range picker
   - `DateRangeDescriptor` has an optional `label`. The calendar adds the labels of the matching `specialDates` and `disabledDates` descriptors to the accessible name of a date, for example "Thursday, October 8, 2026, Free delivery". Before, the special state was only visual. [#2423](https://github.com/IgniteUI/igniteui-webcomponents/pull/2423)
 - #### Chat

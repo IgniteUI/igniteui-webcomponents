@@ -435,6 +435,32 @@ describe('Dropdown', () => {
       expect(target.getAttribute('aria-activedescendant')).to.be.null;
     });
 
+    it('exposes the popup state on the native button of the target', async () => {
+      const target = getTarget();
+      await elementUpdated(target);
+      const native = target.renderRoot.querySelector('button')!;
+
+      expect(native.getAttribute('aria-haspopup')).to.equal('listbox');
+      expect(native.getAttribute('aria-expanded')).to.equal('false');
+
+      await openDropdown();
+      await elementUpdated(target);
+
+      expect(native.getAttribute('aria-expanded')).to.equal('true');
+    });
+
+    it('does not render the target again while the active item moves', async () => {
+      await openDropdown();
+      const update = spy(getTarget(), 'requestUpdate');
+
+      simulateKeyboard(dropDown, arrowDown);
+      await elementUpdated(dropDown);
+      simulateKeyboard(dropDown, arrowDown);
+      await elementUpdated(dropDown);
+
+      expect(update).not.called;
+    });
+
     it('labels the list by the target element', async () => {
       const list = dropDown.renderRoot.querySelector('[role="listbox"]')!;
 

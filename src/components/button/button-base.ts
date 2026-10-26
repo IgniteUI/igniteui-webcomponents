@@ -18,9 +18,18 @@ import { partMap } from '#internals/part-map.js';
 import { getElementByIdFromRoot } from '#internals/utils/dom.js';
 import { bindIf } from '#internals/utils/lit.js';
 
-/** As for a native button, the host `aria-label` wins over a `<label>`. */
+/**
+ * As for a native button, the host `aria-label` wins over a `<label>`. The
+ * disclosure state of the host goes to the button and to the link alike.
+ */
 function nativeAria(host: Element): ARIABindings {
-  const aria = hostAria(host);
+  const controls = host.ariaControlsElements;
+  const aria: ARIABindings = {
+    ...hostAria(host),
+    expanded: host.getAttribute('aria-expanded') || undefined,
+    hasPopup: host.getAttribute('aria-haspopup') || undefined,
+    controls: controls?.length ? controls : null,
+  };
   const label = host.getAttribute('aria-label');
 
   return label && !host.ariaLabelledByElements?.length
@@ -50,7 +59,12 @@ export interface IgcButtonEventMap {
 @blazorDeepImport
 @shadowOptions({ delegatesFocus: true })
 export abstract class IgcButtonBaseComponent extends EventEmitterMixin<IgcButtonEventMap>(
-  HostAriaMixin(LitElement, ['aria-pressed'])
+  HostAriaMixin(LitElement, [
+    'aria-pressed',
+    'aria-expanded',
+    'aria-haspopup',
+    'aria-controls',
+  ])
 ) {
   public static readonly formAssociated = true;
 

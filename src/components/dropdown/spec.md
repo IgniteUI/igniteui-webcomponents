@@ -52,6 +52,7 @@ This directory hosts four public components: [`igc-dropdown`](#igc-dropdown),
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-10-21 | API descriptions aligned with the JSDoc. |
+|       3 | 2026-10-26 | An `igc-button` target passes the popup state on to its native button. |
 
 ## Overview
 
@@ -322,7 +323,8 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 ### Accessibility tests
 
 3. The component passes the accessibility audit in the closed and open states.
-4. The list, items and groups expose their expected roles and states.
+4. The list, items and groups expose their expected roles and states, and an `igc-button` target passes the popup
+   state on to its native button.
 
 ### Initial selection
 
@@ -386,7 +388,8 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 
 - The dropdown list has a `listbox` role, the items an `option` role, and the groups a `group` role.
 - The selected item carries `aria-selected`.
-- The target exposes the expanded state and the active descendant relation to the list.
+- The target exposes the expanded state and the active descendant relation to the list. An `igc-button` target
+  passes `aria-haspopup` and `aria-expanded` on to its native button.
 - The dropdown itself has no tab index and is not focusable, so the target keeps the focus.
 
 ### Keyboard support

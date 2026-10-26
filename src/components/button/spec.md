@@ -50,6 +50,7 @@
 |       5 | 2026-10-02 | Forward the host `aria-labelledby` and `aria-describedby`; a `<label>` names the button  |
 |       6 | 2026-10-19 | Forward the host `aria-pressed` to the native button, so a button can be a toggle         |
 |       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                                                 |
+|       8 | 2026-10-26 | Forward the host `aria-expanded`, `aria-haspopup` and `aria-controls`                    |
 
 ## Overview
 
@@ -315,6 +316,10 @@ button has no `name` and no `mirrored`. Slotted content takes the size of the ic
     and describe the native element, also as a link and a disabled link. A host `aria-label` wins over a `<label>`.
 22. The host `aria-pressed` reaches the native button, also after a change and a removal, and passes the
     accessibility audit. A link and a disabled link do not get it.
+23. The host `aria-expanded`, `aria-haspopup` and `aria-controls` reach the native button, also after a change, a
+    removal and each set of `ariaControlsElements`, and pass the accessibility audit. A link and a disabled link
+    keep them. An empty value and an `aria-controls` that references no element are not forwarded. The icon button
+    forwards `aria-expanded` and `aria-haspopup` too.
 
 ### Not covered by the suite
 
@@ -331,6 +336,8 @@ button has no `name` and no `mirrored`. Slotted content takes the size of the ic
 - The icon of `igc-icon-button` must exist in the registry. Its default slot takes other content, such as text.
 - The size of a button comes from the theming mechanism rather than from a property.
 - An icon button that shows only an icon needs an `aria-label` of its own.
+- The host `aria-controls`, `aria-labelledby` and `aria-describedby` resolve when the button renders. A referenced
+  element that is added after the host attribute takes effect at the next render.
 
 ## Accessibility
 
@@ -346,6 +353,9 @@ button has no `name` and no `mirrored`. Slotted content takes the size of the ic
   button names it, but a host `aria-label` wins, as for a native button.
 - A host `aria-pressed` reaches the native button, so a button can be a toggle button, such as the like action of
   a chat message. The link role does not allow `aria-pressed`, so a link and a disabled link do not get it.
+- A host `aria-expanded`, `aria-haspopup` and `aria-controls` reach the native element, also as a link and a
+  disabled link, so a button that opens a menu, a panel or a drawer exposes its state. `aria-controls` goes by
+  element reference.
 
 ### Keyboard support
 

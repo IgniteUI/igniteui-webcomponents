@@ -53,6 +53,7 @@
 |       3 | 2026-10-19 | Role description from `carousel_role_description` |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.          |
 |       5 | 2026-10-23 | The carousel makes a stacking context, so the z-index of the slides, the indicators and the navigation buttons does not compete with the layers of the page |
+|       6 | 2026-10-26 | The `aria-controls` of the navigation buttons reaches their native buttons |
 
 ## Overview
 
@@ -347,7 +348,7 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
    role description from the strings of its locale, and its slides have none.
 2. The carousel, its slides and its controls render correctly, and a slide renders correctly in both its active and
    its inactive state. The slides, the indicators and the navigation buttons are painted under an earlier page layer
-   with `z-index: 1`.
+   with `z-index: 1`. The native navigation buttons control the slides container.
 3. `hideIndicators` and `hideNavigation` skip rendering the respective controls.
 4. A label is rendered instead of the dots when the slides outnumber `maximumIndicatorsCount`, and is not
    rendered while `hideIndicators` is set.
@@ -443,7 +444,8 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
   WAI-ARIA APG tabbed carousel pattern, where slides with the tab panel role have none.
 - The indicator container has `role="tablist"`, and each indicator has `role="tab"`, `aria-selected` for its
   state, `aria-controls` pointing at its slide and a label composed from `indicatorsLabelFormat`.
-- The navigation buttons carry the localized previous and next labels and control the slides container.
+- The navigation buttons carry the localized previous and next labels and control the slides container. The
+  `aria-controls` relation reaches their native buttons.
 - The slides container is an `aria-live` region, polite while the carousel is not rotating and off while it is,
   so that an automatic rotation is not announced.
 
