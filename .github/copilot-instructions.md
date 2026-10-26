@@ -34,7 +34,7 @@ is a summary.
 - Use attributes only for primitive types (string, number, boolean). Boolean attributes
   default to `false`.
 - Compute derived state in `willUpdate()`. Run DOM side effects in `update()`. Use
-  `@coercedProperty` to coerce a value or to run a side effect on each set.
+  `@coercedProperty` to coerce a value or to run a side effect on a change.
 - Emit events only for user interaction, through `EventEmitterMixin` with a typed event map.
 - Set ARIA through `addInternalsController`. Composite components project ARIA with
   `addAriaProjector` / `addAriaTarget`. A component that forwards the host name or
