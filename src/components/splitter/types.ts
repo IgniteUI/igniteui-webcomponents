@@ -3,9 +3,9 @@ import type { StyleInfo } from 'lit/directives/style-map.js';
 type PanePosition = 'start' | 'end';
 
 interface SplitterPaneState {
-  size?: string;
-  minSize?: string;
-  maxSize?: string;
+  size: string;
+  /** The size that `startSize` or `endSize` set. A drag or a key press does not change it. */
+  authoredSize: string;
   savedSize?: string;
   styles: StyleInfo;
 }
@@ -25,6 +25,8 @@ interface SplitterResizeState {
   dragPointerId: number;
   /** The start pane size of the last drag move, for the bar ARIA. */
   draggedStartSize?: number;
+  /** Whether the minimum sizes did not apply at the start, because together they do not fit. */
+  minSizesDropped?: boolean;
 }
 
 /* jsonAPIPlainObject */

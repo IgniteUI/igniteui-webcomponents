@@ -8,7 +8,7 @@
     // Keeps the z-index of the parts inside the component.
     isolation: isolate;
 
-    [part='base'] {
+    [part~='base'] {
         width: 100%;
         height: 100%;
         display: flex;
@@ -34,11 +34,10 @@
         box-sizing: border-box;
     }
 
-    [part='splitter-bar'] {
+    [part~='splitter-bar'] {
         display: flex;
         flex-shrink: 0;
         justify-content: center;
-        cursor: var(--cursor, default);
         box-sizing: content-box;
 
         [part*='collapse-btn'],
@@ -51,39 +50,47 @@
 }
 
 :host([orientation='horizontal']) {
-    [part='base'] {
+    [part~='base'] {
         flex-direction: row;
     }
 
-    [part='splitter-bar'] {
+    [part~='splitter-bar'] {
         flex-direction: column;
         height: 100%;
+        cursor: col-resize;
     }
 
-    [part='drag-handle'] {
+    [part~='drag-handle'] {
         height: 25%;
         margin: rem(48px) 0;
     }
 }
 
 :host([orientation='vertical']) {
-    [part='base'] {
+    [part~='base'] {
         flex-direction: column;
     }
 
-    [part='splitter-bar'] {
+    [part~='splitter-bar'] {
         flex-direction: row;
         width: 100%;
+        cursor: row-resize;
     }
 
-    [part='drag-handle'] {
+    [part~='drag-handle'] {
         width: 25%;
         margin: 0 rem(48px);
     }
 }
 
+:host(:is([disable-resize], [start-collapsed], [end-collapsed])) {
+    [part~='splitter-bar'] {
+        cursor: default;
+    }
+}
+
 :host(:state(start-collapsed)) {
-    [part='start-pane'] {
+    [part~='start-pane'] {
         display: none;
     }
 }
@@ -96,20 +103,20 @@
 
 :host([disable-resize][orientation='horizontal']),
 :host([hide-drag-handle][orientation='horizontal']) {
-    [part='start-collapse-btn'] {
+    [part~='start-collapse-btn'] {
         margin-block-end: rem(48px);
     }
 }
 
 :host([disable-resize][orientation='vertical']),
 :host([hide-drag-handle][orientation='vertical']) {
-    [part='start-collapse-btn'] {
+    [part~='start-collapse-btn'] {
         margin-inline-end: rem(48px);
     }
 }
 
 @media (forced-colors: active) {
-    [part='splitter-bar'] {
+    [part~='splitter-bar'] {
         border: rem(1px) solid CanvasText;
 
         &:focus {
@@ -117,7 +124,7 @@
         }
     }
 
-    [part='drag-handle'] {
+    [part~='drag-handle'] {
         border: rem(2px) solid CanvasText;
     }
 }
