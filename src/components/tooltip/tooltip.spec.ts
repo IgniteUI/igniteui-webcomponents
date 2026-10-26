@@ -19,6 +19,7 @@ import {
   simulatePointerLeave,
   simulateScroll,
 } from '#internals/testing/simulate.spec.js';
+import { getCenterPoint } from '#internals/utils/dom.js';
 import IgcTooltipComponent from './tooltip.js';
 
 describe('Tooltip', () => {
@@ -794,19 +795,12 @@ describe('Tooltip', () => {
       tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
 
       await tooltip.show();
-      await showComplete();
-      await nextFrame();
 
-      const arrowRect = tooltip
-        .renderRoot!.querySelector('#arrow')!
-        .getBoundingClientRect();
-      const targetRect = container
-        .querySelector('#target')!
-        .getBoundingClientRect();
+      const arrow = tooltip.renderRoot.querySelector('#arrow')!;
 
-      expect(arrowRect.width).to.be.greaterThan(0);
-      expect(arrowRect.left + arrowRect.width / 2).to.be.closeTo(
-        targetRect.left + targetRect.width / 2,
+      expect(arrow.getBoundingClientRect().width).to.be.greaterThan(0);
+      expect(getCenterPoint(arrow).x).to.be.closeTo(
+        getCenterPoint(container.querySelector('#target')!).x,
         1
       );
     });

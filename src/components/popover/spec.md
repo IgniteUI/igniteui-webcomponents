@@ -314,7 +314,7 @@ the same expectations. The groups below mirror the `describe` blocks.
 16. The arrow is positioned against the resolved side of the placement.
 17. The arrow offset is applied.
 18. The arrow follows the placement when it flips.
-19. An arrow that its side part sizes is centered on the anchor on the first show.
+19. An arrow that its side part sizes is centered on the anchor on the first show and after a change of the axis.
 
 ### Anchor visibility
 

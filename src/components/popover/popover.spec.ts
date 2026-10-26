@@ -8,6 +8,7 @@ import {
 
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { simulateScroll } from '#internals/testing/simulate.spec.js';
+import { getCenterPoint } from '#internals/utils/dom.js';
 import IgcPopoverComponent, { type PopoverPlacement } from './popover.js';
 import { shouldUseNativeAnchorPositioning } from './position/native.js';
 import { setPopoverPositionStrategy } from './position/types.js';
@@ -745,9 +746,13 @@ function definePositioningSuites(mode: PositionMode) {
   });
 
   describe('Arrow element sized by its side part', () => {
+    let popover: IgcPopoverComponent;
+    let anchor: HTMLElement;
+    let arrow: HTMLElement;
+
     // Like the tooltip arrow: a border triangle that has no size until the
     // popover sets its side part.
-    it('is centered on the anchor on the first show', async () => {
+    beforeEach(async () => {
       const root = await fixture<HTMLElement>(html`
         <div style="padding: 200px">
           <style>
@@ -762,6 +767,12 @@ function definePositioningSuites(mode: PositionMode) {
               border-right: 5px solid transparent;
               border-bottom: 5px solid currentColor;
             }
+
+            #arrow[part~='right'] {
+              border-top: 5px solid transparent;
+              border-bottom: 5px solid transparent;
+              border-right: 5px solid currentColor;
+            }
           </style>
           <button id="btn" type="button">Show message</button>
           <igc-popover anchor="btn" placement="bottom">
@@ -770,21 +781,36 @@ function definePositioningSuites(mode: PositionMode) {
           </igc-popover>
         </div>
       `);
-      const popover = queryPopover(root);
-      const arrow = root.querySelector('#arrow') as HTMLElement;
-
+      popover = queryPopover(root);
+      anchor = root.querySelector('#btn') as HTMLElement;
+      arrow = root.querySelector('#arrow') as HTMLElement;
       popover.arrow = arrow;
+    });
+
+    function expectArrowCentered() {
+      expect(arrow.getBoundingClientRect().width).to.equal(10);
+      expect(getCenterPoint(arrow).x).to.be.closeTo(
+        getCenterPoint(anchor).x,
+        1
+      );
+    }
+
+    it('is centered on the anchor on the first show', async () => {
       popover.open = true;
       await waitForPaint(popover);
 
-      const anchorRect = root.querySelector('#btn')!.getBoundingClientRect();
-      const arrowRect = arrow.getBoundingClientRect();
+      expectArrowCentered();
+    });
 
-      expect(arrowRect.width).to.equal(10);
-      expect(arrowRect.left + arrowRect.width / 2).to.be.closeTo(
-        anchorRect.left + anchorRect.width / 2,
-        1
-      );
+    it('is centered on the anchor after a change of the axis', async () => {
+      popover.placement = 'right';
+      popover.open = true;
+      await waitForPaint(popover);
+
+      popover.placement = 'bottom';
+      await waitForPaint(popover);
+
+      expectArrowCentered();
     });
   });
 

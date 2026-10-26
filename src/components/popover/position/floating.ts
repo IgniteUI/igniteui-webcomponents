@@ -6,7 +6,12 @@ import {
   roundByDPR,
   setStyles,
 } from '#internals/utils/dom.js';
-import { applyArrowStyles, getPlacementSide } from './arrow.js';
+import {
+  applyArrowStyles,
+  getPlacementSide,
+  OPPOSITE_SIDE,
+  setArrowSide,
+} from './arrow.js';
 import { PopoverPositionStrategy } from './strategy.js';
 import { resolvePlacement } from './types.js';
 
@@ -206,12 +211,24 @@ export class FloatingPositionStrategy extends PopoverPositionStrategy {
 
     const positionId = ++this._positionId;
     const strategy = this._strategy;
+    const requested = resolvePlacement(this._host);
+    const { arrow, arrowOffset } = this._host;
+
+    // The part can give the arrow its size, and the `arrow` middleware measures
+    // it. `flip` keeps the axis, so a flipped side part can stay.
+    if (arrow) {
+      const side = getPlacementSide(requested);
+
+      if (!arrow.part.contains(OPPOSITE_SIDE[side])) {
+        setArrowSide(arrow, side);
+      }
+    }
 
     const { x, y, middlewareData, placement } = await floating.computePosition(
       this._target,
       container,
       {
-        placement: resolvePlacement(this._host),
+        placement: requested,
         middleware: (this._middleware ??= this._createMiddleware(floating)),
         strategy,
       }
@@ -228,8 +245,6 @@ export class FloatingPositionStrategy extends PopoverPositionStrategy {
       transform: `translate(${roundByDPR(x)}px,${roundByDPR(y)}px)`,
       visibility: middlewareData.hide?.referenceHidden ? 'hidden' : '',
     });
-
-    const { arrow, arrowOffset } = this._host;
 
     if (arrow && middlewareData.arrow) {
       const { x: arrowX, y: arrowY } = middlewareData.arrow;
