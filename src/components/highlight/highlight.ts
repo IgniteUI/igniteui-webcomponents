@@ -112,7 +112,7 @@ export default class IgcHighlightComponent extends LitElement {
 
   /**
    * The string to search and highlight in the DOM content of the component.
-   * Setting this property triggers a new search automatically.
+   * A change of this property starts a new search.
    * An empty string clears all highlights.
    *
    * @attr search-text

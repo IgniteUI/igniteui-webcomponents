@@ -82,7 +82,7 @@ If only the template uses the value, read it in `render()`. For other cases:
 | Need                                       | Use                                                    |
 | ------------------------------------------ | ------------------------------------------------------ |
 | Clamp, normalize or coerce incoming values | `@coercedProperty({ transform })` below `@property`    |
-| Side effect on every set (e.g. validation) | `@coercedProperty({ onChange })` below `@property`     |
+| Side effect on a change (e.g. validation)  | `@coercedProperty({ onChange })` below `@property`     |
 | Derived state before render                | `willUpdate()`, guarded by `changedProperties.has()`   |
 | Side effect that needs the DOM             | `update()`, guarded, and call `super.update()`         |
 

@@ -315,6 +315,31 @@ describe('Combo', () => {
       expect(items(combo)).lengthOf(cities.length - 1);
     });
 
+    it('picks up an item replaced in place when the same data array is set again', async () => {
+      const data = [...cities];
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${data}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>`
+      );
+
+      // Warm the value index
+      combo.select('BG01');
+
+      data[1] = {
+        id: 'BG04',
+        name: 'Burgas',
+        country: 'Bulgaria',
+        zip: '8000',
+      };
+      combo.data = data;
+      combo.select('BG04');
+
+      expect(combo.value).to.eql(['BG01', 'BG04']);
+    });
+
     it('is successfully created with default properties.', () => {
       expect(document.querySelector('igc-combo')).to.exist;
       expect(combo.data).to.equal(cities);
@@ -1157,6 +1182,36 @@ describe('Combo', () => {
 
       expect(items(combo)).lengthOf(1);
       expect(firstOf(items(combo)).innerText).to.equal('Sofia');
+    });
+
+    it('keeps the filter when `singleSelect` is set again to its value', async () => {
+      combo.singleSelect = true;
+      await elementUpdated(combo);
+      await openComboPopover(combo);
+      await filterCombo('sof');
+
+      combo.singleSelect = true;
+      await comboStable(combo);
+
+      expect(items(combo)).lengthOf(1);
+      expect(firstOf(items(combo)).active).to.be.true;
+
+      combo.singleSelect = false;
+      await comboStable(combo);
+
+      expect(items(combo)).lengthOf(cities.length);
+    });
+
+    it('keeps the search term when `disableFiltering` is set again to its value', async () => {
+      await openComboPopover(combo);
+      searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: 'sof' }));
+      await comboStable(combo);
+
+      combo.disableFiltering = false;
+      await comboStable(combo);
+
+      expect(searchInput.value).to.equal('sof');
+      expect(items(combo)).lengthOf(1);
     });
 
     it('should select the first matched item upon pressing enter after search', async () => {

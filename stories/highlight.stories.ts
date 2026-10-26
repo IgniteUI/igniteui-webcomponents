@@ -53,7 +53,7 @@ const metadata: Meta<IgcHighlightComponent> = {
     searchText: {
       type: 'string',
       description:
-        'The string to search and highlight in the DOM content of the component.\nSetting this property triggers a new search automatically.\nAn empty string clears all highlights.',
+        'The string to search and highlight in the DOM content of the component.\nA change of this property starts a new search.\nAn empty string clears all highlights.',
       control: 'text',
       table: { defaultValue: { summary: '' } },
     },
@@ -71,7 +71,7 @@ interface IgcHighlightArgs {
   caseSensitive: boolean;
   /**
    * The string to search and highlight in the DOM content of the component.
-   * Setting this property triggers a new search automatically.
+   * A change of this property starts a new search.
    * An empty string clears all highlights.
    */
   searchText: string;

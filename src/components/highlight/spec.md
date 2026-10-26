@@ -43,6 +43,7 @@
 |       1 | 2026-09-21 | Initial specification             |
 |       2 | 2026-10-02 | Whitespace matching               |
 |       3 | 2026-10-05 | Stylesheet kept on a theme change |
+|       4 | 2026-10-26 | The same search keeps the match   |
 
 ## Overview
 
@@ -138,6 +139,8 @@ highlight.setActive(3);
 
 The component does not observe the projected content. After it changes — lazily loaded or mutated from code —
 `search()` runs the matching again against the current DOM.
+Setting `searchText` or `caseSensitive` to its current value does not run the search again, so the active match
+stays when a framework sets each property on each render.
 
 #### Styling
 
@@ -239,6 +242,8 @@ None applicable.
 9. `next()` and `previous()` move the active match, and `previous()` wraps to the last one from the first.
 10. `setActive()` sets the active match to the given index.
 11. `search()` picks up content that was added or removed after the previous search.
+12. Setting `searchText` or `caseSensitive` again to its value keeps the active match, and a change runs the search
+    again.
 
 ### Not covered by the suite
 

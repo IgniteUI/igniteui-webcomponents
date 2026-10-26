@@ -213,6 +213,23 @@ describe('Highlight', () => {
       expect(highlight.current).to.equal(1);
     });
 
+    it('keeps the active match when the search is set again to its values', async () => {
+      highlight.searchText = 'e';
+      await elementUpdated(highlight);
+
+      highlight.next();
+      highlight.searchText = 'e';
+      highlight.caseSensitive = false;
+      await elementUpdated(highlight);
+
+      expect(highlight.current).to.equal(1);
+
+      highlight.caseSensitive = true;
+      await elementUpdated(highlight);
+
+      expect(highlight.current).to.equal(0);
+    });
+
     it('moves to the previous when `previous()` is invoked', async () => {
       highlight.searchText = 'e';
       await elementUpdated(highlight);

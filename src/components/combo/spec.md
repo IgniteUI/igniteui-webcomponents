@@ -57,6 +57,7 @@
 |       6 | 2026-10-05 | The list keeps its stylesheet on a theme change                                       |
 |       7 | 2026-10-12 | The group header template gets the group `key`; its `item` is deprecated              |
 |       8 | 2026-10-21 | API descriptions aligned with the JSDoc.                                              |
+|       9 | 2026-10-26 | Setting `singleSelect` or `disableFiltering` again keeps the search text              |
 
 ## Overview
 
@@ -201,6 +202,9 @@ combo.filteringOptions = {
 ```
 
 `caseSensitiveIcon` renders a toggle in the filtering input, and `disableFiltering` removes the filtering entirely.
+
+Setting `singleSelect` or `disableFiltering` to its current value keeps the search text, so a framework that sets
+each property on each render does not clear it.
 
 #### Grouping
 
@@ -454,10 +458,11 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 ### Component
 
 1. Rendering, the default state and the accessibility audit.
-2. Data binding through `data`, `valueKey`, `displayKey` and `groupKey`.
+2. Data binding through `data`, `valueKey`, `displayKey` and `groupKey`, also when the `data` array changes in place.
 3. Single and multiple selection, including `select` and `deselect` with and without arguments.
 4. `value` and `selection` report the values and the records.
-5. Filtering, including case sensitivity, diacritics matching and `disableFiltering`.
+5. Filtering, including case sensitivity, diacritics matching and `disableFiltering`. Setting `singleSelect` or
+   `disableFiltering` again to its value keeps the search text and the filter.
 6. Grouping, the `Other` group for unresolved keys, and the sort directions.
 7. Item and group header templating. The group header template gets the group `key` with its own type, also for
    number keys and the `Other` group, and a template that reads the deprecated `item` still renders.
