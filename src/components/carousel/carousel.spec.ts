@@ -240,6 +240,17 @@ describe('Carousel', () => {
       );
     });
 
+    it('lets the native navigation buttons control the slides container', async () => {
+      const container = carousel.renderRoot.querySelector('[aria-live]');
+
+      for (const button of [prevButton, nextButton]) {
+        await elementUpdated(button);
+        expect(
+          button.renderRoot.querySelector('button')!.ariaControlsElements
+        ).to.eql([container]);
+      }
+    });
+
     it('slide is correctly rendered both in active/inactive states', async () => {
       expect(slides[0]).dom.to.equal(
         `<igc-carousel-slide active>

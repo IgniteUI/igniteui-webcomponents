@@ -389,9 +389,13 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     }
 
     const active = this.open ? this._selection.active : null;
+    const expanded = `${this.open}`;
 
-    anchor.setAttribute('aria-haspopup', 'listbox');
-    anchor.setAttribute('aria-expanded', `${this.open}`);
+    // A button target renders again on each write, also of the same value.
+    if (anchor.getAttribute('aria-expanded') !== expanded) {
+      anchor.setAttribute('aria-haspopup', 'listbox');
+      anchor.setAttribute('aria-expanded', expanded);
+    }
 
     if (active) {
       active.id ||= nextItemId();

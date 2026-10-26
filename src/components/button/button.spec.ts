@@ -711,5 +711,81 @@ describe('Button tests', () => {
       expect(native().getAttribute('role')).to.equal('link');
       expect(native().hasAttribute('aria-pressed')).to.be.false;
     });
+
+    it('forwards the host disclosure state to the native button', async () => {
+      const hint = container.querySelector('#hint');
+
+      button.setAttribute('aria-expanded', 'true');
+      button.setAttribute('aria-haspopup', 'menu');
+      button.setAttribute('aria-controls', 'hint');
+      await elementUpdated(button);
+      expect(native().getAttribute('aria-expanded')).to.equal('true');
+      expect(native().getAttribute('aria-haspopup')).to.equal('menu');
+      expect(native().ariaControlsElements).to.eql([hint]);
+      await expect(button).to.be.accessible();
+
+      button.ariaExpanded = 'false';
+      await elementUpdated(button);
+      expect(native().getAttribute('aria-expanded')).to.equal('false');
+
+      button.removeAttribute('aria-expanded');
+      button.removeAttribute('aria-haspopup');
+      button.removeAttribute('aria-controls');
+      await elementUpdated(button);
+      expect(native().hasAttribute('aria-expanded')).to.be.false;
+      expect(native().hasAttribute('aria-haspopup')).to.be.false;
+      expect(native().hasAttribute('aria-controls')).to.be.false;
+    });
+
+    it('follows each set of the host `ariaControlsElements`', async () => {
+      const [name, hint] = [...container.querySelectorAll('span')];
+
+      button.ariaControlsElements = [name];
+      await elementUpdated(button);
+      expect(native().ariaControlsElements).to.eql([name]);
+
+      button.ariaControlsElements = [hint];
+      await elementUpdated(button);
+      expect(native().ariaControlsElements).to.eql([hint]);
+    });
+
+    it('does not forward an `aria-controls` that references no element', async () => {
+      button.setAttribute('aria-controls', 'missing');
+      await elementUpdated(button);
+
+      expect(native().hasAttribute('aria-controls')).to.be.false;
+    });
+
+    it('does not forward an empty disclosure state', async () => {
+      button.setAttribute('aria-expanded', '');
+      button.setAttribute('aria-haspopup', '');
+      await elementUpdated(button);
+
+      expect(native().hasAttribute('aria-expanded')).to.be.false;
+      expect(native().hasAttribute('aria-haspopup')).to.be.false;
+    });
+
+    it('keeps the disclosure state as a link and as a disabled link', async () => {
+      const hint = container.querySelector('#hint');
+
+      button.setAttribute('aria-expanded', 'false');
+      button.setAttribute('aria-haspopup', 'dialog');
+      button.setAttribute('aria-controls', 'hint');
+      button.href = '/';
+      await elementUpdated(button);
+
+      expect(native().localName).to.equal('a');
+      expect(native().getAttribute('aria-expanded')).to.equal('false');
+      expect(native().getAttribute('aria-haspopup')).to.equal('dialog');
+      expect(native().ariaControlsElements).to.eql([hint]);
+
+      button.disabled = true;
+      await elementUpdated(button);
+
+      expect(native().getAttribute('role')).to.equal('link');
+      expect(native().getAttribute('aria-expanded')).to.equal('false');
+      expect(native().getAttribute('aria-haspopup')).to.equal('dialog');
+      expect(native().ariaControlsElements).to.eql([hint]);
+    });
   });
 });
