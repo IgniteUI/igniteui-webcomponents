@@ -713,6 +713,22 @@ describe('Combo', () => {
       expect(newValue).to.eql(combo.value);
     });
 
+    it('lists the new items in newValue after the selected ones, as value does', async () => {
+      let newValue: unknown;
+      combo.addEventListener('igcChange', (event: CustomEvent) => {
+        newValue = event.detail.newValue;
+      });
+
+      combo.select(['BG02']);
+      await openComboPopover(combo);
+
+      firstOf(items(combo)).click();
+      await elementUpdated(combo);
+
+      expect(combo.value).to.eql(['BG02', 'BG01']);
+      expect(newValue).to.eql(combo.value);
+    });
+
     it('should fire igcChange deselection type event on mouse click', async () => {
       const eventSpy = spy(combo, 'emitEvent');
       const args = {

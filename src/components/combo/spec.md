@@ -73,6 +73,7 @@
 |      15 | 2026-10-27 | `totalItemCount` skeleton placeholders and the `loading` spinner                      |
 |      16 | 2026-10-27 | The select-all option (`showSelectAll`) and the `select-all` and `indeterminate` parts |
 |      17 | 2026-10-27 | The focus moves to the main input when the list closes around it                     |
+|      18 | 2026-10-27 | `igcChange.newValue` has the order of the `value` that follows                        |
 
 ## Overview
 
@@ -478,7 +479,7 @@ type ComboGroupHeaderTemplate<T extends object> = (props: {
 
 | Name       | Cancellable | Description                                       |
 | ---------- | ----------- | ------------------------------------------------- |
-| igcChange  | true        | Emitted before the user changes the selection. Cancel the event to keep the selection. |
+| igcChange  | true        | Emitted before the user changes the selection. Cancel the event to keep the selection. `newValue` is the `value` after the change, in the same order: the selected values first, then the new ones. |
 | igcOpening | true        | Emitted before the user opens the list of options. Cancelable. |
 | igcOpened  | false       | Emitted after the list of options opens on a user action. |
 | igcClosing | true        | Emitted before the user closes the list of options. Cancelable. The `trigger` of the detail is the user action that closes the list. |
