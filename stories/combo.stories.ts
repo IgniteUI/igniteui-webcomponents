@@ -9,11 +9,14 @@ import {
   IgcCircularProgressComponent,
   type IgcComboChangeEventArgs,
   IgcComboComponent,
-  type IgcComboSearchInputEventArgs,
   IgcInputComponent,
-  type VirtualScrollDataRequest,
   defineComponents,
 } from 'igniteui-webcomponents';
+import {
+  bindComboDataSource,
+  type ComboDataBinding,
+  type ComboDataSource,
+} from 'igniteui-webcomponents/extras';
 import { registerMaterialIcons } from './story-icons.js';
 import {
   delay,
@@ -958,18 +961,23 @@ const europeanCities: City[] = (
   ] as const
 ).map(([id, name, country]) => ({ id, name, country }));
 
-const cityPageSize = 10;
-
-/** A fake server. It returns one page of new objects, as parsed JSON does. */
-async function fetchCities(searchText: string, skip: number): Promise<City[]> {
+/** A fake server. It searches the names and returns new objects, as parsed JSON does. */
+async function fetchCities(
+  searchText: string,
+  skip: number,
+  top: number
+): Promise<{ items: City[]; total: number }> {
   await delay(400);
 
   const text = searchText.toLocaleLowerCase();
+  const results = europeanCities.filter(({ name }) =>
+    name.toLocaleLowerCase().includes(text)
+  );
 
-  return europeanCities
-    .filter(({ name }) => name.toLocaleLowerCase().includes(text))
-    .slice(skip, skip + cityPageSize)
-    .map((city) => ({ ...city }));
+  return {
+    items: results.slice(skip, skip + top).map((city) => ({ ...city })),
+    total: results.length,
+  };
 }
 
 export const RemoteData: Story = {
@@ -978,56 +986,46 @@ export const RemoteData: Story = {
     docs: {
       description: {
         story:
-          'A city picker that searches and pages on a server, ten cities at a time. With `filteringOptions.mode` set to `remote`, the combo does not filter the options. `igcOpening` loads the first page, `igcSearchInput` loads the first page of the search after a 300 ms pause in the typing, and `igcDataRequest` appends the next page when the list scrolls near its end. A newer search drops the answers to older requests. Select a few cities, then search for others: the selection stays, also for the cities that the new results do not hold. The log shows each request and answer.',
+          'A city picker that searches and pages on a server through `bindComboDataSource()` from `igniteui-webcomponents/extras`, ten cities at a time. Open the list, scroll to its end to load more, then type to search. Select a few cities and search for others: the selection stays, also for the cities that the new results do not hold. The log shows each request and answer.',
       },
     },
   },
   render: () => {
-    const combo = createRef<IgcComboComponent<City>>();
     const log = createRef<HTMLOListElement>();
-    let searchText = '';
-    let search = 0;
-    let timer: ReturnType<typeof setTimeout> | undefined;
+    let binding: ComboDataBinding | undefined;
 
     const write = (line: string) => {
       const item = document.createElement('li');
       item.textContent = line;
-      log.value!.prepend(item);
+      log.value?.prepend(item);
     };
 
-    // The server answers with one page, whatever `count` the combo asks for.
-    const load = async (skip: number) => {
-      const current = search;
-      write(`Request: "${searchText}" from item ${skip + 1}`);
+    const source: ComboDataSource<City> = {
+      load: async ({ searchText, startIndex, count }, signal) => {
+        write(`Request: "${searchText}", ${count} from item ${startIndex + 1}`);
 
-      const page = await fetchCities(searchText, skip);
+        const { items, total } = await fetchCities(
+          searchText,
+          startIndex,
+          count
+        );
 
-      const target = combo.value!;
-
-      // Drop the answer to an older search, or for a `data` that changed since.
-      if (current !== search || (skip && target.data.length !== skip)) {
-        return;
-      }
-
-      target.data = skip ? [...target.data, ...page] : page;
-      write(`Answer: ${page.length} cities, ${target.data.length} loaded`);
+        write(
+          signal.aborted
+            ? `Aborted: "${searchText}"`
+            : `Answer: ${items.length} of ${total} cities`
+        );
+        return { items, totalCount: total };
+      },
     };
 
-    const onOpening = () => {
-      if (!combo.value!.data.length) {
-        void load(0);
-      }
-    };
-
-    const onSearch = (event: CustomEvent<IgcComboSearchInputEventArgs>) => {
-      searchText = event.detail.searchText.trim();
-      search++;
-      clearTimeout(timer);
-      timer = setTimeout(() => load(0), 300);
-    };
-
-    const onRequest = (event: CustomEvent<VirtualScrollDataRequest>) => {
-      void load(event.detail.startIndex);
+    const bind = (element?: Element) => {
+      binding?.dispose();
+      binding = element
+        ? bindComboDataSource(element as IgcComboComponent<City>, source, {
+            pageSize: 10,
+          })
+        : undefined;
     };
 
     const onChange = (event: CustomEvent<IgcComboChangeEventArgs>) => {
@@ -1048,15 +1046,11 @@ export const RemoteData: Story = {
       <section class="cmb-stack cmb-panel" aria-labelledby="cmb-remote-title">
         <h3 id="cmb-remote-title">Cities from the server</h3>
         <igc-combo
-          ${ref(combo)}
+          ${ref(bind)}
           label="Cities"
           placeholder="Pick cities"
           value-key="id"
           display-key="name"
-          .filteringOptions=${{ mode: 'remote' }}
-          @igcOpening=${onOpening}
-          @igcSearchInput=${onSearch}
-          @igcDataRequest=${onRequest}
           @igcChange=${onChange}
         >
           <span slot="empty">No city matches your search.</span>
