@@ -8,7 +8,6 @@ import {
   IgcButtonComponent,
   IgcCircularProgressComponent,
   type IgcComboChangeEventArgs,
-  type IgcComboClosingEventArgs,
   IgcComboComponent,
   IgcInputComponent,
   defineComponents,
@@ -415,6 +414,27 @@ const styles = html`
     .cmb-list > li {
       display: flex;
       border-block-end: 1px solid var(--ig-gray-300);
+    }
+
+    .cmb-table {
+      overflow-x: auto;
+    }
+
+    .cmb-table table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    .cmb-table caption {
+      text-align: start;
+      padding-block-end: 0.5rem;
+    }
+
+    .cmb-table :is(th, td) {
+      padding: 0.5rem;
+      border-block-end: 1px solid var(--ig-gray-300);
+      text-align: start;
+      white-space: nowrap;
     }
   </style>
 `;
@@ -829,27 +849,6 @@ export const ColumnChooser: Story = {
         .cmb-columns igc-combo {
           flex: 1 1 18rem;
         }
-
-        .cmb-table {
-          overflow-x: auto;
-        }
-
-        .cmb-table table {
-          border-collapse: collapse;
-          width: 100%;
-        }
-
-        .cmb-table caption {
-          text-align: start;
-          padding-block-end: 0.5rem;
-        }
-
-        .cmb-table :is(th, td) {
-          padding: 0.5rem;
-          border-block-end: 1px solid var(--ig-gray-300);
-          text-align: start;
-          white-space: nowrap;
-        }
       </style>
       <section
         class="cmb-stack cmb-panel cmb-columns"
@@ -941,13 +940,12 @@ export const StagedFilter: Story = {
     docs: {
       description: {
         story:
-          'An issue list with a label filter that applies only on demand. Select labels, then press Apply, or Enter on an option: the list shows the issues with one of them. Cancel, Escape, Tab out of the list, or a click outside or on the input puts the applied labels back. `igcClosed` gives the user action that closes the list in `detail.trigger`, so the story applies the labels on `enter` and puts them back on the other triggers. The buttons call `hide()`, which sends no events, so they apply or put back the labels themselves. The focus then moves to the input of the combo. They are in the `footer` slot, and Tab moves to them from the search input and the list. With the list closed, the clear button and Escape clear the filter at once. `show-select-all` selects the labels that the search shows: type "e", then select all.',
+          'An issue list with a label filter that applies only on demand. With `selection-commit="confirm"`, the selected labels wait until you press Apply, or Enter in the list. Then one `igcChange` gives all of them in `newValue`, and the list shows the issues with one of them. Cancel, Escape, Tab out of the list, or a click outside or on the input drops the changes. While the list is open, the input keeps the applied labels. The clear button clears the filter at once, also while the list is open, and so does Escape with the list closed. `show-select-all` selects the labels that the search shows: type "e", then select all.',
       },
     },
   },
   render: () => {
     let applied: string[] = [];
-    const combo = createRef<IgcComboComponent>();
 
     const { mount, update } = renderInto(() => {
       const shown = applied.length
@@ -975,30 +973,10 @@ export const StagedFilter: Story = {
       `;
     });
 
-    const apply = () => {
-      applied = [...(combo.value!.value as string[])];
-      update();
-    };
-
-    const restore = () => {
-      combo.value!.value = [...applied];
-    };
-
-    const closed = ({ detail }: CustomEvent<IgcComboClosingEventArgs>) =>
-      detail.trigger === 'enter' ? apply() : restore();
-
-    // The clear button and Escape clear the labels also with the list closed,
-    // and then the change applies at once.
+    // Apply, Enter, the clear button, and Escape with the list closed.
     const changed = ({ detail }: CustomEvent<IgcComboChangeEventArgs>) => {
-      if (!combo.value!.open) {
-        applied = detail.newValue as string[];
-        update();
-      }
-    };
-
-    const button = (action: () => void) => () => {
-      action();
-      combo.value!.hide();
+      applied = detail.newValue as string[];
+      update();
     };
 
     return html`
@@ -1006,13 +984,6 @@ export const StagedFilter: Story = {
       <style>
         .cmb-filter {
           max-width: 40rem;
-        }
-
-        .cmb-filter-footer {
-          display: flex;
-          justify-content: end;
-          gap: 0.5rem;
-          padding: 0.5rem;
         }
 
         .cmb-issues {
@@ -1043,26 +1014,180 @@ export const StagedFilter: Story = {
       >
         <h3 id="cmb-filter-title">Issues</h3>
         <igc-combo
-          ${ref(combo)}
           label="Labels"
           placeholder="Filter by label"
           placeholder-search="Search labels"
+          selection-commit="confirm"
           show-select-all
           .data=${issueLabels}
           @igcChange=${changed}
-          @igcClosed=${closed}
         >
           <span slot="helper-text">
             Apply the labels with Apply, or with Enter in the list.
           </span>
-          <div slot="footer" class="cmb-filter-footer">
-            <igc-button variant="flat" @click=${button(restore)}>
-              Cancel
-            </igc-button>
-            <igc-button @click=${button(apply)}>Apply</igc-button>
-          </div>
         </igc-combo>
         <div ${mount}></div>
+      </section>
+    `;
+  },
+};
+
+interface Order {
+  id: number;
+  customer: string;
+  status: string;
+}
+
+const orderStatuses = [
+  'Pending',
+  'Paid',
+  'Shipped',
+  'Delivered',
+  'Returned',
+  'Canceled',
+];
+
+const statusOrders: Order[] = [
+  { id: 1041, customer: 'Ana Silva', status: 'Paid' },
+  { id: 1042, customer: 'Ben Okafor', status: 'Shipped' },
+  { id: 1043, customer: 'Chen Wei', status: 'Pending' },
+  { id: 1044, customer: 'Dana Novak', status: 'Delivered' },
+  { id: 1045, customer: 'Eli Cohen', status: 'Returned' },
+  { id: 1046, customer: 'Fatima Zahra', status: 'Paid' },
+  { id: 1047, customer: 'Goran Petrov', status: 'Canceled' },
+  { id: 1048, customer: 'Hana Sato', status: 'Shipped' },
+  { id: 1049, customer: 'Ivan Horvat', status: 'Delivered' },
+  { id: 1050, customer: 'Julia Rossi', status: 'Pending' },
+];
+
+export const StatusFilter: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'An order table with a status filter in confirm mode, whose `footer` slot content replaces the built-in Cancel and Apply. Clear calls `deselect()`, which changes the pending selection, not `value`. Apply calls `commitSelection()` and `hide()`. These methods send no events, so the story applies `value` itself; Enter in the list still applies with `igcChange`. The footer reads `pendingValue` when the list opens and after each `igcPendingChange`, and Apply is off while the pending statuses are the applied ones.',
+      },
+    },
+  },
+  render: () => {
+    const combo = createRef<IgcComboComponent>();
+    let applied: string[] = [];
+
+    const footer = renderInto(() => {
+      const pending = (combo.value?.pendingValue ?? []) as string[];
+      const dirty =
+        pending.length !== applied.length ||
+        pending.some((status) => !applied.includes(status));
+
+      return html`
+        <span class="muted">
+          ${
+            pending.length
+              ? `${pending.length} of ${orderStatuses.length} statuses`
+              : 'All statuses'
+          }
+        </span>
+        <igc-button variant="flat" ?disabled=${!pending.length} @click=${clear}>
+          Clear
+        </igc-button>
+        <igc-button ?disabled=${!dirty} @click=${apply}>Apply</igc-button>
+      `;
+    });
+
+    const table = renderInto(() => {
+      const shown = applied.length
+        ? statusOrders.filter(({ status }) => applied.includes(status))
+        : statusOrders;
+
+      return html`
+        <p class="muted" role="status">
+          ${
+            applied.length
+              ? `${shown.length} of ${statusOrders.length} orders: ${applied.join(', ')}`
+              : `All ${statusOrders.length} orders`
+          }
+        </p>
+        <table aria-labelledby="cmb-status-title">
+          <thead>
+            <tr>
+              <th scope="col">Order</th>
+              <th scope="col">Customer</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${shown.map(
+              ({ id, customer, status }) => html`
+                <tr>
+                  <th scope="row">#${id}</th>
+                  <td>${customer}</td>
+                  <td>${status}</td>
+                </tr>
+              `
+            )}
+          </tbody>
+        </table>
+      `;
+    });
+
+    // The combo changes the pending selection after the event, so read it
+    // after the update.
+    const refresh = async () => {
+      await combo.value!.updateComplete;
+      footer.update();
+    };
+
+    const changed = ({ detail }: CustomEvent<IgcComboChangeEventArgs>) => {
+      applied = detail.newValue as string[];
+      table.update();
+      void refresh();
+    };
+
+    // The methods change the pending selection at once, without events.
+    const clear = () => {
+      combo.value!.deselect();
+      footer.update();
+    };
+
+    const apply = () => {
+      combo.value!.commitSelection();
+      applied = [...(combo.value!.value as string[])];
+      table.update();
+      combo.value!.hide();
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .cmb-status-footer {
+          padding: 0.5rem;
+        }
+
+        .cmb-status-footer > span {
+          margin-inline-end: auto;
+        }
+      </style>
+      <section class="cmb-stack cmb-panel" aria-labelledby="cmb-status-title">
+        <h3 id="cmb-status-title">Orders</h3>
+        <igc-combo
+          ${ref(combo)}
+          label="Status"
+          placeholder="All statuses"
+          selection-commit="confirm"
+          disable-filtering
+          .data=${orderStatuses}
+          @igcOpening=${refresh}
+          @igcPendingChange=${refresh}
+          @igcChange=${changed}
+        >
+          <div
+            slot="footer"
+            class="cmb-row cmb-status-footer"
+            ${footer.mount}
+          ></div>
+        </igc-combo>
+        <div class="cmb-table" ${table.mount}></div>
       </section>
     `;
   },
