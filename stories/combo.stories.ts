@@ -8,6 +8,7 @@ import {
   IgcButtonComponent,
   IgcCircularProgressComponent,
   type IgcComboChangeEventArgs,
+  type IgcComboClosingEventArgs,
   IgcComboComponent,
   IgcInputComponent,
   defineComponents,
@@ -162,7 +163,7 @@ const metadata: Meta<IgcComboComponent> = {
     loading: {
       type: 'boolean',
       description:
-        'Whether the combo loads options. The list then shows a progress bar,\nwhich the `loading` slot can replace, and hides the empty message.',
+        'Whether the combo loads options. A spinner, which the `loading` slot can\nreplace, then takes the place of the toggle icon, and an empty list shows\na loading message instead of the empty message.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -295,8 +296,9 @@ interface IgcComboArgs {
    */
   totalItemCount: number;
   /**
-   * Whether the combo loads options. The list then shows a progress bar,
-   * which the `loading` slot can replace, and hides the empty message.
+   * Whether the combo loads options. A spinner, which the `loading` slot can
+   * replace, then takes the place of the toggle icon, and an empty list shows
+   * a loading message instead of the empty message.
    */
   loading: boolean;
   /**
@@ -390,6 +392,8 @@ const cities: City[] = [
 ];
 
 export const Default: Story = {
+  // The local data has no remote total.
+  argTypes: { totalItemCount: { table: { disable: true } } },
   parameters: {
     docs: {
       description: {
@@ -719,7 +723,7 @@ export const ColumnChooser: Story = {
     docs: {
       description: {
         story:
-          'A column chooser for a table of orders. The list is short, so `disable-filtering` removes the search input. The Order column always shows, and it is not in the list. `igcChange` gives `newValue`, and the story renders the table from it. The buttons use the methods: "Show all" calls `select()` with no argument, which selects all the options, and "Reset" sets `value` to the default columns. A method or a new `value` does not send `igcChange`, so the buttons render the table themselves.',
+          'A column chooser for a table of orders. The list is short, so `disable-filtering` removes the search input. The Order column always shows, and it is not in the list. `show-select-all` puts "Select all" first in the list: it shows all the columns, or hides them when all of them show, and its checkbox is indeterminate while only some of them show. `igcChange` gives `newValue`, and the story renders the table from it. "Reset" sets `value` to the default columns. A new `value` does not send `igcChange`, so the button renders the table itself.',
       },
     },
   },
@@ -757,12 +761,6 @@ export const ColumnChooser: Story = {
 
     const change = ({ detail }: CustomEvent<IgcComboChangeEventArgs>) => {
       visible = detail.newValue as string[];
-      update();
-    };
-
-    const showAll = () => {
-      combo.value!.select();
-      visible = combo.value!.value as string[];
       update();
     };
 
@@ -818,16 +816,214 @@ export const ColumnChooser: Story = {
             ${ref(combo)}
             label="Columns"
             disable-filtering
+            show-select-all
             value-key="key"
             display-key="label"
             .data=${columns}
             .value=${visible}
             @igcChange=${change}
           ></igc-combo>
-          <igc-button variant="outlined" @click=${showAll}>Show all</igc-button>
-          <igc-button variant="flat" @click=${reset}>Reset</igc-button>
+          <igc-button variant="outlined" @click=${reset}>Reset</igc-button>
         </div>
         <div class="cmb-table" ${mount}></div>
+      </section>
+    `;
+  },
+};
+
+const issueLabels = [
+  'accessibility',
+  'bug',
+  'design',
+  'documentation',
+  'feature',
+  'good first issue',
+  'help wanted',
+  'performance',
+  'question',
+  'security',
+  'testing',
+];
+
+const issues = [
+  {
+    id: 512,
+    title: 'Hidden focus ring in high contrast',
+    labels: ['accessibility', 'bug'],
+  },
+  {
+    id: 509,
+    title: 'A dark theme for the date picker',
+    labels: ['design', 'feature'],
+  },
+  {
+    id: 507,
+    title: 'Document the grid shortcuts',
+    labels: ['documentation', 'good first issue'],
+  },
+  {
+    id: 503,
+    title: 'Slow scroll of long lists on phones',
+    labels: ['bug', 'performance'],
+  },
+  {
+    id: 498,
+    title: 'Sanitize the HTML of chat messages',
+    labels: ['security'],
+  },
+  {
+    id: 495,
+    title: 'Screen readers read the price twice',
+    labels: ['accessibility', 'help wanted'],
+  },
+  {
+    id: 490,
+    title: 'How to load the options from a server?',
+    labels: ['question'],
+  },
+  {
+    id: 486,
+    title: 'End-to-end tests for the checkout',
+    labels: ['help wanted', 'testing'],
+  },
+  { id: 482, title: 'Fix the date format in exports', labels: ['bug'] },
+  { id: 478, title: 'Export the report as PDF', labels: ['feature'] },
+];
+
+export const StagedFilter: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'An issue list with a label filter that applies only on demand. Select labels, then press Apply, or Enter on an option: the list shows the issues with one of them. Cancel, Escape, Tab out of the list, or a click outside or on the input puts the applied labels back. `igcClosed` gives the user action that closes the list in `detail.trigger`, so the story applies the labels on `enter` and puts them back on the other triggers. The buttons call `hide()`, which sends no events, so they apply or put back the labels themselves. The focus then moves to the input of the combo. They are in the `footer` slot, and Tab moves to them from the search input and the list. With the list closed, the clear button and Escape clear the filter at once. `show-select-all` selects the labels that the search shows: type "e", then select all.',
+      },
+    },
+  },
+  render: () => {
+    let applied: string[] = [];
+    const combo = createRef<IgcComboComponent>();
+
+    const { mount, update } = renderInto(() => {
+      const shown = applied.length
+        ? issues.filter(({ labels }) => labels.some((l) => applied.includes(l)))
+        : issues;
+
+      return html`
+        <p class="muted" role="status">
+          ${
+            applied.length
+              ? `${shown.length} of ${issues.length} issues with ${applied.join(', ')}`
+              : `All ${issues.length} issues`
+          }
+        </p>
+        <ul class="cmb-issues">
+          ${shown.map(
+            ({ id, title, labels }) => html`
+              <li>
+                <span>#${id} ${title}</span>
+                ${labels.map((label) => html`<span class="cmb-label">${label}</span>`)}
+              </li>
+            `
+          )}
+        </ul>
+      `;
+    });
+
+    const apply = () => {
+      applied = [...(combo.value!.value as string[])];
+      update();
+    };
+
+    const restore = () => {
+      combo.value!.value = [...applied];
+    };
+
+    const closed = ({ detail }: CustomEvent<IgcComboClosingEventArgs>) =>
+      detail.trigger === 'enter' ? apply() : restore();
+
+    // The clear button and Escape clear the labels also with the list closed,
+    // and then the change applies at once.
+    const changed = ({ detail }: CustomEvent<IgcComboChangeEventArgs>) => {
+      if (!combo.value!.open) {
+        applied = detail.newValue as string[];
+        update();
+      }
+    };
+
+    const button = (action: () => void) => () => {
+      action();
+      combo.value!.hide();
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .cmb-filter {
+          max-width: 40rem;
+        }
+
+        .cmb-filter-footer {
+          display: flex;
+          justify-content: end;
+          gap: 0.5rem;
+          padding: 0.5rem;
+        }
+
+        .cmb-issues {
+          display: grid;
+          gap: 0.5rem;
+          margin: 0;
+          padding: 0;
+          list-style: none;
+        }
+
+        .cmb-issues li {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 0.375rem;
+          padding-block-end: 0.5rem;
+          border-block-end: 1px solid var(--ig-gray-300);
+        }
+
+        .cmb-issues li > span:first-child {
+          margin-inline-end: auto;
+        }
+
+        .cmb-label {
+          padding: 0 0.5rem;
+          border: 1px solid var(--ig-gray-400);
+          border-radius: 1rem;
+          font-size: 0.75rem;
+        }
+      </style>
+      <section
+        class="cmb-stack cmb-panel cmb-filter"
+        aria-labelledby="cmb-filter-title"
+      >
+        <h3 id="cmb-filter-title">Issues</h3>
+        <igc-combo
+          ${ref(combo)}
+          label="Labels"
+          placeholder="Filter by label"
+          placeholder-search="Search labels"
+          show-select-all
+          .data=${issueLabels}
+          @igcChange=${changed}
+          @igcClosed=${closed}
+        >
+          <span slot="helper-text">
+            Apply the labels with Apply, or with Enter in the list.
+          </span>
+          <div slot="footer" class="cmb-filter-footer">
+            <igc-button variant="flat" @click=${button(restore)}>
+              Cancel
+            </igc-button>
+            <igc-button @click=${button(apply)}>Apply</igc-button>
+          </div>
+        </igc-combo>
+        <div ${mount}></div>
       </section>
     `;
   },
@@ -881,7 +1077,7 @@ export const LazyLoading: Story = {
     docs: {
       description: {
         story:
-          'A flight search that loads the airports from the server when the list opens for the first time. `igcOpening` starts the request, and until the data comes, the `empty` slot shows a spinner and a loading message. After the load, the same slot tells that the search found nothing. `filteringOptions` sets `filterKey` to a key that joins the code, the city and the airport name, so "lhr", "london" and "heathrow" all find Heathrow. The status message tells a screen reader user when the airports load.',
+          'A flight search that loads the airports from the server when the list opens for the first time. `igcOpening` starts the request and sets `loading`, so the empty list shows "Loading", and a spinner takes the place of the toggle icon. The `loading` slot replaces the default spinner with a circular progress. After the load, the `empty` slot tells that the search found nothing. `filteringOptions` sets `filterKey` to a key that joins the code, the city and the airport name, so "lhr", "london" and "heathrow" all find Heathrow. The status message tells a screen reader user when the airports load.',
       },
     },
   },
@@ -896,32 +1092,29 @@ export const LazyLoading: Story = {
 
       const combo = event.target as IgcComboComponent<Airport>;
       const output = status.value!;
-      const empty = combo.querySelector('[slot="empty"]')!;
 
       requested = true;
+      combo.loading = true;
       output.textContent = 'Loading the airports…';
 
       await delay(1200);
 
       combo.data = airports;
-      empty.textContent = 'No airport matches your search.';
+      combo.loading = false;
       output.textContent = `${airports.length} airports loaded.`;
     };
 
     return html`
       ${styles}
       <style>
-        .cmb-loading {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-        }
-
-        .cmb-loading igc-circular-progress {
-          --ig-circular-bar-diameter: 1.5rem;
+        .cmb-flight igc-circular-progress {
+          --ig-circular-bar-diameter: 1.25rem;
         }
       </style>
-      <section class="cmb-stack cmb-panel" aria-labelledby="cmb-flight-title">
+      <section
+        class="cmb-stack cmb-panel cmb-flight"
+        aria-labelledby="cmb-flight-title"
+      >
         <h3 id="cmb-flight-title">Find a flight</h3>
         <igc-combo
           label="From"
@@ -934,15 +1127,12 @@ export const LazyLoading: Story = {
           .itemTemplate=${airportTemplate}
           @igcOpening=${load}
         >
-          <div slot="empty">
-            <span class="cmb-loading">
-              <igc-circular-progress
-                indeterminate
-                aria-label="Loading the airports"
-              ></igc-circular-progress>
-              Loading the airports…
-            </span>
-          </div>
+          <igc-circular-progress
+            slot="loading"
+            indeterminate
+            aria-label="Loading the airports"
+          ></igc-circular-progress>
+          <span slot="empty">No airport matches your search.</span>
         </igc-combo>
         <p class="muted" role="status" ${ref(status)}></p>
       </section>
@@ -1008,9 +1198,10 @@ const europeanCities: City[] = (
 async function fetchCities(
   searchText: string,
   skip: number,
-  top: number
+  top: number,
+  latency: number
 ): Promise<{ items: City[]; total: number }> {
-  await delay(400);
+  await delay(latency);
 
   const text = searchText.toLocaleLowerCase();
   const results = europeanCities.filter(({ name }) =>
@@ -1029,13 +1220,12 @@ export const RemoteData: Story = {
     docs: {
       description: {
         story:
-          'A city picker that searches and pages on a server through `bindComboDataSource()` from `igniteui-webcomponents/extras`, twenty cities at a time. Open the list, scroll to its end to load more, then type to search. The list has a placeholder row for each city to load, so the scrollbar shows all the results, and a progress bar shows while a search waits or a page loads. Press End to jump to the last city: one request loads all the cities up to it. Select a few cities and search for others: the selection stays, also for the cities that the new results do not hold. The log shows each request and answer.',
+          'A city picker that searches and pages on a server through `bindComboDataSource()` from `igniteui-webcomponents/extras`, twenty cities at a time. Open the list, scroll to its end to load more, then type to search. The list has a skeleton row for each city to load, so the scrollbar shows all the results, and a spinner takes the place of the toggle icon while a search waits or a page loads. Press End to jump to the last city: one request loads all the cities up to it. Select a few cities and search for others: the selection stays, also for the cities that the new results do not hold. The second combo has a slower server and styles its loading parts: `::part(loading)` sets the color and the width of the spinner, and `::part(placeholder)` sets the color of the skeleton rows. The server log shows each request and answer of both combos.',
       },
     },
   },
   render: () => {
     const log = createRef<HTMLOListElement>();
-    let binding: ComboDataBinding | undefined;
 
     const write = (line: string) => {
       const item = document.createElement('li');
@@ -1043,62 +1233,134 @@ export const RemoteData: Story = {
       log.value?.prepend(item);
     };
 
-    const source: ComboDataSource<City> = {
-      load: async ({ searchText, startIndex, count }, signal) => {
-        write(`Request: "${searchText}", ${count} from item ${startIndex + 1}`);
+    /** A ref callback that binds the combo, and disposes the binding when the combo goes. */
+    const binder = (name: string, latency: number) => {
+      let binding: ComboDataBinding | undefined;
 
-        const { items, total } = await fetchCities(
-          searchText,
-          startIndex,
-          count
-        );
+      const source: ComboDataSource<City> = {
+        load: async ({ searchText, startIndex, count }, signal) => {
+          const query = searchText ? `"${searchText}"` : 'all cities';
+          write(
+            `${name}: request ${startIndex + 1}–${startIndex + count} of ${query}`
+          );
 
-        write(
-          signal.aborted
-            ? `Aborted: "${searchText}"`
-            : `Answer: ${items.length} of ${total} cities`
-        );
-        return { items, totalCount: total };
-      },
+          const { items, total } = await fetchCities(
+            searchText,
+            startIndex,
+            count,
+            latency
+          );
+
+          write(
+            signal.aborted
+              ? `${name}: aborted the request of ${query}`
+              : `${name}: ${items.length} of ${total} cities`
+          );
+          return { items, totalCount: total };
+        },
+      };
+
+      return (element?: Element) => {
+        binding?.dispose();
+        binding = element
+          ? bindComboDataSource(element as IgcComboComponent<City>, source, {
+              pageSize: 20,
+            })
+          : undefined;
+      };
     };
 
-    const bind = (element?: Element) => {
-      binding?.dispose();
-      binding = element
-        ? bindComboDataSource(element as IgcComboComponent<City>, source, {
-            pageSize: 20,
-          })
-        : undefined;
-    };
-
-    const onChange = (event: CustomEvent<IgcComboChangeEventArgs>) => {
-      write(`Value: ${event.detail.newValue.join(', ') || 'none'}`);
-    };
+    const onChange =
+      (name: string) => (event: CustomEvent<IgcComboChangeEventArgs>) => {
+        write(`${name}: value ${event.detail.newValue.join(', ') || 'none'}`);
+      };
 
     return html`
       ${styles}
       <style>
+        .cmb-remote {
+          max-width: 52rem;
+        }
+
+        .cmb-remote-body {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+          align-items: start;
+          gap: 1rem;
+        }
+
+        .cmb-log-panel {
+          display: grid;
+          gap: 0.5rem;
+        }
+
+        .cmb-styled::part(loading),
+        .cmb-styled::part(placeholder) {
+          color: var(--ig-success-500);
+        }
+
+        .cmb-styled::part(loading) {
+          border-width: 3px;
+        }
+
+        .cmb-log-panel h4 {
+          margin: 0;
+          font-size: 0.875rem;
+        }
+
         .cmb-log {
-          max-block-size: 12rem;
+          block-size: 12rem;
           overflow: auto;
           margin: 0;
-          font-family: monospace;
+          padding-inline-start: 2.5rem;
           font-size: 0.8125rem;
+          font-variant-numeric: tabular-nums;
         }
       </style>
-      <section class="cmb-stack cmb-panel" aria-labelledby="cmb-remote-title">
+      <section
+        class="cmb-stack cmb-panel cmb-remote"
+        aria-labelledby="cmb-remote-title"
+      >
         <h3 id="cmb-remote-title">Cities from the server</h3>
-        <igc-combo
-          ${ref(bind)}
-          label="Cities"
-          placeholder="Pick cities"
-          value-key="id"
-          display-key="name"
-          @igcChange=${onChange}
-        >
-          <span slot="empty">No city matches your search.</span>
-        </igc-combo>
-        <ol class="cmb-log" aria-label="Server log" ${ref(log)}></ol>
+        <div class="cmb-remote-body">
+          <div class="cmb-stack">
+            <igc-combo
+              ${ref(binder('Cities', 400))}
+              label="Cities"
+              placeholder="Pick cities"
+              placeholder-search="Search cities"
+              value-key="id"
+              display-key="name"
+              @igcChange=${onChange('Cities')}
+            >
+              <span slot="empty">No city matches your search.</span>
+            </igc-combo>
+            <igc-combo
+              class="cmb-styled"
+              ${ref(binder('Styled', 1500))}
+              label="Cities with styled loading parts"
+              placeholder="Pick cities"
+              placeholder-search="Search cities"
+              value-key="id"
+              display-key="name"
+              @igcChange=${onChange('Styled')}
+            >
+              <span slot="empty">No city matches your search.</span>
+              <span slot="helper-text">
+                A slower server, so the loading state shows longer.
+              </span>
+            </igc-combo>
+          </div>
+          <div class="cmb-log-panel">
+            <h4 id="cmb-log-title">Server log</h4>
+            <ol
+              class="cmb-log"
+              reversed
+              aria-labelledby="cmb-log-title"
+              ${ref(log)}
+            ></ol>
+          </div>
+        </div>
       </section>
     `;
   },
