@@ -9,6 +9,7 @@ import { resetMouse, sendKeys, sendMouse } from '@web/test-runner-commands';
 import { setCurrentI18n } from 'igniteui-i18n-core';
 import { match, type SinonSpy, spy } from 'sinon';
 
+import { internalsOf } from '#internals/controllers/internals.js';
 import {
   altKey,
   arrowDown,
@@ -2784,6 +2785,25 @@ describe('Combo', () => {
         ]);
       });
 
+      it('leaves the select-all option out of the requests and the positions', async () => {
+        remote.showSelectAll = true;
+        remote.totalItemCount = 12;
+        await openComboPopover(remote);
+        list.scrollToIndex(list.data.length - 1);
+        await comboStable(remote);
+
+        expect(details('igcDataRequest')).to.eql([
+          { startIndex: 10, count: 2 },
+        ]);
+        expect(placeholders().at(-1)!.getAttribute('aria-posinset')).to.equal(
+          '12'
+        );
+
+        remote.selectAllItems();
+
+        expect(remote.value).to.eql(search('').map(({ id }) => id));
+      });
+
       it('requests the rendered placeholders, up to `totalItemCount`', async () => {
         remote.totalItemCount = 100;
         await openComboPopover(remote);
@@ -2956,6 +2976,190 @@ describe('Combo', () => {
 
       combo.deselectAllItems();
       expect(combo.value).to.be.empty;
+    });
+  });
+
+  describe('Select-all option', () => {
+    let eventSpy: SinonSpy;
+
+    const selectAll = () =>
+      list.querySelector<IgcComboItemComponent>('[part~="select-all"]');
+
+    const ariaOf = (item: Element) => ({
+      selected: internalsOf(item)?.getARIA('ariaSelected'),
+      checked: internalsOf(item)?.getARIA('ariaChecked') ?? null,
+    });
+
+    // The cities whose name has an "o".
+    const ids = ['BG01', 'BG02', 'US01', 'US02', 'US03'];
+
+    const changes = () =>
+      eventSpy.withArgs('igcChange').args.map(([, { detail }]) => ({
+        ...detail,
+        items: detail.items.map(({ id }: City) => id),
+      }));
+
+    async function search(text: string): Promise<void> {
+      searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: text }));
+      await comboStable(combo);
+    }
+
+    beforeEach(async () => {
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+          group-key="country"
+          show-select-all
+        ></igc-combo>`
+      );
+      searchInput = combo.renderRoot.querySelector('[part="search-input"]')!;
+      list = combo.renderRoot.querySelector('igc-virtual-scroll')!;
+      eventSpy = spy(combo, 'emitEvent');
+      await openComboPopover(combo);
+    });
+
+    it('comes first in multiple selection and does not count as an option', async () => {
+      const first = list.querySelector('[part~="item"], igc-combo-header');
+      const [, option] = items(combo);
+
+      expect(first).to.equal(selectAll());
+      expect(first!.textContent?.trim()).to.equal('Select all');
+      expect(ariaOf(first!)).to.eql({ selected: 'false', checked: null });
+      expect(first!.hasAttribute('aria-checked')).to.be.false;
+      expect(first!.hasAttribute('aria-setsize')).to.be.false;
+      expect(option.getAttribute('aria-posinset')).to.equal('1');
+      expect(option.getAttribute('aria-setsize')).to.equal(`${cities.length}`);
+
+      await expect(combo).shadowDom.to.be.accessible(
+        axeReflectedRelationsOptions
+      );
+
+      combo.singleSelect = true;
+      await comboStable(combo);
+
+      expect(selectAll()).to.be.null;
+    });
+
+    it('does not show when the list shows no items', async () => {
+      await search('xyz');
+
+      expect(selectAll()).to.be.null;
+      expect(
+        combo.renderRoot.querySelector('[part="empty"]')!.checkVisibility()
+      ).to.be.true;
+    });
+
+    it('selects the shown items, then deselects them, with one igcChange each', async () => {
+      await search('o');
+
+      simulateClick(selectAll()!);
+      await comboStable(combo);
+
+      expect(combo.value).to.eql(ids);
+      expect(ariaOf(selectAll()!).selected).to.equal('true');
+
+      simulateClick(selectAll()!);
+      await comboStable(combo);
+
+      expect(combo.value).to.be.empty;
+      expect(changes()).to.eql([
+        { newValue: ids, items: ids, type: 'selection' },
+        { newValue: [], items: ids, type: 'deselection' },
+      ]);
+    });
+
+    it('shows the mixed state and selects only the other shown items', async () => {
+      await search('o');
+      const [first, ...others] = ids;
+
+      combo.select(first);
+      await comboStable(combo);
+
+      const checkbox = selectAll()!.renderRoot.querySelector('igc-checkbox')!;
+      const marginOf = (item: Element, part: string) =>
+        getComputedStyle(
+          item
+            .shadowRoot!.querySelector('igc-checkbox')!
+            .renderRoot.querySelector(`[part~="${part}"]`)!
+        ).scrollMarginTop;
+      const style = document.createElement('style');
+      style.textContent =
+        'igc-combo::part(checkbox indeterminate), igc-combo::part(checkbox-indicator indeterminate) { scroll-margin-top: 7px; }';
+      document.head.append(style);
+
+      expect(ariaOf(selectAll()!).selected).to.equal('false');
+      expect(checkbox.indeterminate).to.be.true;
+      expect(marginOf(selectAll()!, 'control')).to.equal('7px');
+      expect(marginOf(selectAll()!, 'indicator')).to.equal('7px');
+      expect(marginOf(items(combo)[1], 'control')).to.equal('0px');
+
+      style.remove();
+
+      simulateClick(selectAll()!);
+      await comboStable(combo);
+
+      expect(changes().map(({ items }) => items)).to.eql([others]);
+      expect(ariaOf(selectAll()!).selected).to.equal('true');
+    });
+
+    it('follows a new value while the list is open', async () => {
+      combo.value = ['BG01'];
+      await comboStable(combo);
+
+      expect(
+        selectAll()!.renderRoot.querySelector('igc-checkbox')!.indeterminate
+      ).to.be.true;
+      expect(items(combo).filter((item) => item.selected)).lengthOf(1);
+    });
+
+    it('resets the active option when it shows or hides', async () => {
+      // The first city. Without the option, its index is the next city.
+      simulateKeyboard(list, homeKey);
+      simulateKeyboard(list, arrowDown);
+      await comboStable(combo);
+
+      expect(items(combo).filter((item) => item.active)).lengthOf(1);
+
+      combo.showSelectAll = false;
+      await comboStable(combo);
+
+      expect(items(combo).some((item) => item.active)).to.be.false;
+    });
+
+    it('selects only the clicked item when the item has no value', async () => {
+      combo.data = [{ name: 'Nowhere', country: 'Other' } as City, ...cities];
+      await comboStable(combo);
+
+      simulateClick(
+        items(combo).find((item) => item.textContent?.trim() === 'Nowhere')!
+      );
+      await comboStable(combo);
+
+      expect(combo.selection.map(({ name }) => name)).to.eql(['Nowhere']);
+    });
+
+    it('keeps the selection when igcChange is canceled', async () => {
+      combo.addEventListener('igcChange', (event) => event.preventDefault());
+
+      simulateClick(selectAll()!);
+      await comboStable(combo);
+
+      expect(combo.value).to.be.empty;
+    });
+
+    it('is a keyboard stop that Space toggles', async () => {
+      simulateKeyboard(list, homeKey);
+      simulateKeyboard(list, spaceBar);
+      await comboStable(combo);
+
+      expect(combo.value).lengthOf(cities.length);
+      expect(selectAll()!.active).to.be.true;
+
+      simulateKeyboard(list, arrowUp);
+
+      expect(isFocused(searchInput)).to.be.true;
     });
   });
 

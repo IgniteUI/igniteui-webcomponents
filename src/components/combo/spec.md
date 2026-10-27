@@ -45,6 +45,7 @@
     - [Remote data](#remote-data-1)
     - [Select all methods](#select-all-methods)
     - [Placeholders and loading](#placeholders-and-loading)
+    - [Select-all option](#select-all-option)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -70,6 +71,7 @@
 |      13 | 2026-10-26 | Remote data: `igcSearchInput`, `filteringOptions.mode`, `igcDataRequest`; a new `data` keeps the selection |
 |      14 | 2026-10-27 | `selectAllItems()` and `deselectAllItems()` act on the items that the list shows      |
 |      15 | 2026-10-27 | `totalItemCount` placeholders and `loading`                                           |
+|      16 | 2026-10-27 | The select-all option (`showSelectAll`) and the `select-all` and `indeterminate` parts |
 
 ## Overview
 
@@ -196,6 +198,16 @@ combo.deselect();              // everything
 
 combo.value;      // ComboValue<T>[] - the values
 combo.selection;  // T[] - the records from the data source
+```
+
+`selectAllItems()` and `deselectAllItems()` act on the items that the filtered list shows, without `igcChange`. In
+multiple selection, `show-select-all` puts a "Select all" option first in the list. A click or Space on it selects the
+shown items, or deselects them when all of them are selected, with one `igcChange` for the items that change. Its
+checkbox is checked when all the shown items are selected and indeterminate when only some are. It is not counted in
+`aria-setsize`, and the list shows it only while it shows items. With `totalItemCount`, it acts on the loaded items.
+
+```html
+<igc-combo show-select-all></igc-combo>
 ```
 
 #### Filtering
@@ -341,6 +353,7 @@ instance through `locale` and `resourceStrings`:
 | `combo_aria_label_options`          | Selected options        | The accessible name of the selection.       |
 | `combo_aria_label_no_options`       | No options selected     | The accessible name of an empty selection.  |
 | `combo_loading`                     | Loading                 | The accessible name of the progress bar and of the placeholder options. |
+| `combo_select_all`                  | Select all              | The text of the select-all option.          |
 
 ### Keyboard interactions
 
@@ -360,7 +373,7 @@ While the list of options **is** visible:
 | ------------------------------------------- | ------------------------------------------------------------------------------ |
 | <kbd>Arrow Down</kbd>                       | Activates the next option; at the last option it does nothing.                |
 | <kbd>Arrow Up</kbd>                         | Activates the previous option; from the first option it returns to the input. |
-| <kbd>Space</kbd>                            | Selects or deselects the active option.                                       |
+| <kbd>Space</kbd>                            | Selects or deselects the active option. On the select-all option, selects the shown items, or deselects them when all of them are selected. |
 | <kbd>Enter</kbd>                            | Selects the active option in single selection mode, and closes the list in all modes. On a placeholder of `totalItemCount`, it does nothing. |
 | <kbd>Home</kbd> / <kbd>End</kbd>            | Activates the first or the last option.                                       |
 | <kbd>Escape</kbd>                           | Closes the list. The combo stays focused.                                     |
@@ -388,6 +401,7 @@ Typing while the component is focused filters the list down to the closest match
 | disableClear           | disable-clear              | No        | `boolean`                           | false             | Whether the clear button is hidden.                             |
 | totalItemCount         | total-item-count           | No        | `number \| undefined`               | -                 | The number of all the items of a remote source, when the source knows it. In remote filtering mode, the list shows a placeholder for each item that `data` does not hold yet. |
 | loading                | loading                    | Yes       | `boolean`                           | false             | Whether the combo loads options. The list then shows a progress bar, which the `loading` slot can replace, and hides the empty message. |
+| showSelectAll          | show-select-all            | No        | `boolean`                           | false             | Whether the list starts with an option that selects all the items that it shows, or deselects them when all of them are selected. Only in multiple selection mode. |
 | itemTemplate           | -                          | No        | `ComboItemTemplate<T>`              | -                 | The template for the content of each combo item.                |
 | groupHeaderTemplate    | -                          | No        | `ComboGroupHeaderTemplate<T>`       | -                 | The template for the content of each group header.              |
 | open                   | open                       | Yes       | `boolean`                           | false             | Whether the component is open.                                |
@@ -544,6 +558,8 @@ trigger, and put the saved value back on the other triggers of `igcClosed`.
 | `checkbox`           | The checkbox of each item in the list.                         |
 | `checkbox-indicator` | The checkbox indicator of each item in the list.               |
 | `checked`            | Added to the checkbox and checkbox-indicator parts when the checkbox is checked. |
+| `indeterminate`      | Added to the checkbox and checkbox-indicator parts of the select-all option while only some of the shown items are selected. |
+| `select-all`         | Added to the item part of the select-all option.               |
 | `header` / `footer`  | The containers holding the header and footer content.          |
 | `empty`              | The container holding the empty content.                       |
 | `loading`            | The container of the progress bar that shows while `loading` is set. |
@@ -681,6 +697,20 @@ Generated by `runValidationContainerTests`.
 38. `loading` shows the named progress bar without moving the list, hides the empty message and passes the
     accessibility audit. The `loading` slot replaces the bar, and Tab reaches its content before the header content.
 
+### Select-all option
+
+39. The option comes first in multiple selection, before the group headers, with the "Select all" text and
+    `aria-selected`. It does not count in `aria-posinset` or `aria-setsize`, passes the accessibility audit, and does not
+    show in single selection or while the list shows no items.
+40. A click selects the shown items, and a second click deselects them, with one `igcChange` each. With some shown
+    items selected, the option is not selected, its checkbox is indeterminate with the `indeterminate` part, and a click
+    selects only the other shown items. A canceled `igcChange` keeps the selection. A new `value` while the list is
+    open updates the option and the items.
+41. Home reaches the option, Space toggles it, and Arrow Up from it moves to the search input. Showing or hiding the
+    option clears the active option. A click on an item without a value selects only that item.
+42. With `totalItemCount` in remote mode, the option does not change the requests or the positions of the
+    placeholders, and the selection methods select only the loaded items.
+
 ## Assumptions and limitations
 
 - The options come from the `data` array; projected item elements are not supported.
@@ -697,7 +727,10 @@ Generated by `runValidationContainerTests`.
 - The anchor exposes a `combobox` role with `aria-haspopup`, the expanded state, the relation to the list and the
   active descendant, all projected onto its native input as element references.
 - The list has a `listbox` role, the items an `option` role with their selected state, and the group headers a
-  `group` role. A placeholder of `totalItemCount` is a disabled option named "Loading". While `loading` is set, a
+  `group` role. The select-all option is selected while all the shown items are selected. It has no `aria-checked`,
+  because a listbox uses one of `aria-selected` and `aria-checked` for all its options, so its mixed state shows only on
+  its checkbox. A
+  placeholder of `totalItemCount` is a disabled option named "Loading". While `loading` is set, a
   `progressbar` named "Loading" shows above the list. The listbox has no `aria-busy`, so a screen reader continues to
   read the loaded options while the next page loads.
 - The current selection is announced through a label resolved from the resource strings, which also covers the empty

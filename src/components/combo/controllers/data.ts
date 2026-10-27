@@ -19,7 +19,15 @@ const PLACEHOLDER: ComboRecord<never> = Object.freeze({
   kind: 'placeholder',
 });
 
-/** Whether the record holds an item: not a group header or a placeholder. */
+/** The record of the select-all option. See `showSelectAll`. */
+const SELECT_ALL: ComboRecord<never> = Object.freeze({
+  value: undefined as never,
+  header: false,
+  position: -1,
+  kind: 'select-all',
+});
+
+/** Whether the record holds an item of `data`. */
 export function isItemRecord<T extends object>(
   record?: ComboRecord<T>
 ): boolean {
@@ -75,7 +83,7 @@ export class DataState<T extends object> implements ReactiveController {
       : Number.POSITIVE_INFINITY;
   }
 
-  /** The index of the first option in {@link dataState}, which can be a placeholder, or `-1`. */
+  /** The index of the first record that is not a group header, or `-1`. */
   public get firstItemIndex(): number {
     return this._dataState.findIndex((record) => !record.header);
   }
@@ -159,10 +167,10 @@ export class DataState<T extends object> implements ReactiveController {
 
   /**
    * Filters and groups the indexed source, then numbers the visible options,
-   * so `aria-posinset` and `aria-setsize` skip the group headers. Appends a
-   * placeholder for each item of {@link totalCount} that a non-empty `data`
-   * does not hold. Only this controller owns the records, so `position`
-   * changes in place.
+   * so `aria-posinset` and `aria-setsize` skip the group headers. Puts the
+   * select-all option first, and appends a placeholder for each item of
+   * {@link totalCount} that a non-empty `data` does not hold. Only this
+   * controller owns the records, so `position` changes in place.
    */
   private _apply(records: ComboRecord<T>[]): ComboRecord<T>[] {
     const result = this._grouping.apply(
@@ -183,17 +191,22 @@ export class DataState<T extends object> implements ReactiveController {
     const missing = records.length ? this.totalCount - records.length : 0;
     const placeholders = Number.isFinite(missing) && missing > 0 ? missing : 0;
 
-    this._itemCount = position + placeholders;
-    this._loadedLength = result.length;
+    const selectAll =
+      position > 0 && this._host.showSelectAll && !this._host.singleSelect;
 
-    if (!placeholders) {
+    const head: ComboRecord<T>[] = selectAll ? [SELECT_ALL] : [];
+
+    this._itemCount = position + placeholders;
+    this._loadedLength = head.length + result.length;
+
+    if (!(head.length || placeholders)) {
       return result;
     }
 
-    // `result` can be the indexed source, so pad a copy.
-    const padded = result.slice();
+    // `result` can be the indexed source, so build a new array.
+    const padded = head.concat(result);
     padded.length += placeholders;
-    return padded.fill(PLACEHOLDER, result.length);
+    return padded.fill(PLACEHOLDER, this._loadedLength);
   }
 
   //#endregion

@@ -11,14 +11,17 @@ export type ComboRecord<T extends object> = {
   value: T;
   header: boolean;
   /**
-   * 1-based position among the visible options. `-1` for group headers.
+   * 1-based position among the visible options. `-1` for the other records.
    * Each pipeline run sets it again.
    */
   position: number;
   /** The group value of a header record. Not set on the other records. */
   group?: unknown;
-  /** Set on a record with no item: a placeholder for an item to load. */
-  kind?: 'placeholder';
+  /**
+   * Set on a record with no item: a placeholder for an item to load, or the
+   * select-all option.
+   */
+  kind?: 'placeholder' | 'select-all';
 };
 
 export type ComboHost<T extends object> = ReactiveControllerHost &

@@ -134,6 +134,8 @@ const DATA_REQUEST_COUNT = 20;
  * @csspart checkbox - The checkbox of each item in the list.
  * @csspart checkbox-indicator - The checkbox indicator of each item in the list.
  * @csspart checked - Added to the checkbox and checkbox-indicator parts when the checkbox is checked.
+ * @csspart indeterminate - Added to the checkbox and checkbox-indicator parts of the select-all option while only some of the shown items are selected.
+ * @csspart select-all - Added to the item part of the select-all option.
  * @csspart header - The container holding the header content of the combo.
  * @csspart footer - The container holding the footer content of the combo.
  * @csspart empty - The container holding the empty content of the combo.
@@ -493,6 +495,16 @@ export default class IgcComboComponent<
   @property({ type: Boolean, reflect: true })
   public loading = false;
 
+  /**
+   * Whether the list starts with an option that selects all the items that it
+   * shows, or deselects them when all of them are selected. Only in multiple
+   * selection mode.
+   * @attr show-select-all
+   * @default false
+   */
+  @property({ type: Boolean, attribute: 'show-select-all' })
+  public showSelectAll = false;
+
   /* blazorSuppress */
   /**
    * The template used for the content of each combo item.
@@ -600,11 +612,18 @@ export default class IgcComboComponent<
       this._state.updateLocale();
     }
 
+    // The select-all option moves the other records by one.
+    if (props.has('showSelectAll') && this.hasUpdated) {
+      this._activeIndex = -1;
+    }
+
     if (
       props.has('groupKey') ||
       props.has('groupSorting') ||
       props.has('filteringOptions') ||
       props.has('totalItemCount') ||
+      props.has('showSelectAll') ||
+      props.has('singleSelect') ||
       props.has('data')
     ) {
       this._state.invalidate();
@@ -980,6 +999,8 @@ export default class IgcComboComponent<
     }
 
     this._projectSelection();
+    // The list does not update for a new `value` on its own.
+    this._listRef.value?.requestUpdate();
   }
 
   protected _syncValueFromSelection(): void {
@@ -989,7 +1010,7 @@ export default class IgcComboComponent<
     this._listRef.value?.requestUpdate();
   }
 
-  /** The items that the list shows, without the group headers and the placeholders. */
+  /** The items that the list shows. See {@link isItemRecord}. */
   private _shownItems(): T[] {
     // Applies a change of `data` or of the search text that no update has applied yet.
     this._state.hostUpdate();
@@ -1000,34 +1021,76 @@ export default class IgcComboComponent<
   }
 
   /**
-   * The item at `index`, or undefined for a group header or a placeholder.
-   * Guard on it: {@link _updateSelection} reads an empty collection as "select all".
-   */
-  private _recordAt(index: number): T | undefined {
-    const record = this._state.dataState[index];
-    return isItemRecord(record) ? record.value : undefined;
-  }
-
-  /**
    * Selects the record at `index`. With `toggle`, deselects a selected one.
-   * @returns Whether `index` holds an item.
+   * The select-all option toggles the shown items.
+   * @returns Whether `index` holds an item or the select-all option.
    */
   private _selectAt(index: number, toggle: boolean): boolean {
-    const record = this._recordAt(index);
+    const record = this._state.dataState[index];
 
-    if (!record) {
+    if (isItemRecord(record)) {
+      const item = record.value;
+
+      // The record itself, as an item without a value would select all.
+      this._applySelection(
+        [item],
+        toggle && this._selected.has(item) ? 'deselection' : 'selection',
+        true
+      );
+    } else if (record?.kind === 'select-all') {
+      this._toggleShownItems();
+    } else {
       return false;
     }
-
-    this._updateSelection(
-      this._resolveItemValue(record),
-      toggle && this._selected.has(record) ? 'deselection' : 'selection',
-      true
-    );
 
     this._activeIndex = index;
     this._syncValueFromSelection();
     return true;
+  }
+
+  /**
+   * Selects the shown items, or deselects them when all of them are selected,
+   * with one `igcChange` for the items that change.
+   */
+  private _toggleShownItems(): void {
+    const shown = this._shownItems();
+    const unselected = shown.filter((item) => !this._selected.has(item));
+
+    this._applySelection(
+      unselected.length ? unselected : shown,
+      unselected.length ? 'selection' : 'deselection',
+      true
+    );
+  }
+
+  /**
+   * Whether all (`true`), none (`false`) or some (`mixed`) of the shown items
+   * are selected. One pass that stops at the first mix, because the select-all
+   * row renders often.
+   */
+  private _shownSelection(): boolean | 'mixed' {
+    let some = false;
+    let every = true;
+
+    if (this._selected.size) {
+      for (const record of this._state.dataState) {
+        if (!isItemRecord(record)) {
+          continue;
+        }
+
+        if (this._selected.has(record.value)) {
+          some = true;
+        } else {
+          every = false;
+        }
+
+        if (some && !every) {
+          return 'mixed';
+        }
+      }
+    }
+
+    return some;
   }
 
   private _clearSelection(): void {
@@ -1285,6 +1348,11 @@ export default class IgcComboComponent<
     }
 
     const active = this._activeIndex === index;
+
+    if (item.kind === 'select-all') {
+      return this._renderSelectAll(index, active);
+    }
+
     const selected = this._selected.has(item.value);
     // One template for both, so a row keeps its element when its item loads.
     const placeholder = item.kind === 'placeholder';
@@ -1316,6 +1384,27 @@ export default class IgcComboComponent<
       </igc-combo-item>
     `;
   };
+
+  private _renderSelectAll(index: number, active: boolean): TemplateResult {
+    // Like the other options, it reports only `aria-selected`, so the mixed
+    // state shows only on its checkbox.
+    const state = this._shownSelection();
+    const all = state === true;
+
+    return html`
+      <igc-combo-item
+        id=${this._itemId(index)}
+        part=${partMap({ item: true, 'select-all': true, selected: all, active })}
+        exportparts="checkbox, checkbox-indicator, checked, indeterminate"
+        .index=${index}
+        ?active=${active}
+        ?selected=${all}
+        ?indeterminate=${state === 'mixed'}
+      >
+        ${this.resourceStrings.combo_select_all}
+      </igc-combo-item>
+    `;
+  }
 
   private _renderToggleIcon() {
     return html`

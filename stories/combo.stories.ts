@@ -61,6 +61,8 @@ const metadata: Meta<IgcComboComponent> = {
         'igcOpened',
         'igcClosing',
         'igcClosed',
+        'igcSearchInput',
+        'igcDataRequest',
       ],
     },
   },
@@ -151,6 +153,26 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    totalItemCount: {
+      type: 'number',
+      description:
+        'The number of all the items of a remote source, when the source knows it.\nIn remote filtering mode, the list shows a placeholder for each item that\n`data` does not hold yet, so the scrollbar shows the full list.',
+      control: 'number',
+    },
+    loading: {
+      type: 'boolean',
+      description:
+        'Whether the combo loads options. The list then shows a progress bar,\nwhich the `loading` slot can replace, and hides the empty message.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    showSelectAll: {
+      type: 'boolean',
+      description:
+        'Whether the list starts with an option that selects all the items that it\nshows, or deselects them when all of them are selected. Only in multiple\nselection mode.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
     locale: {
       type: 'string',
       description:
@@ -207,6 +229,8 @@ const metadata: Meta<IgcComboComponent> = {
     caseSensitiveIcon: false,
     disableFiltering: false,
     disableClear: false,
+    loading: false,
+    showSelectAll: false,
     required: false,
     disabled: false,
     invalid: false,
@@ -264,6 +288,23 @@ interface IgcComboArgs {
   disableFiltering: boolean;
   /** Whether the clear button is hidden. */
   disableClear: boolean;
+  /**
+   * The number of all the items of a remote source, when the source knows it.
+   * In remote filtering mode, the list shows a placeholder for each item that
+   * `data` does not hold yet, so the scrollbar shows the full list.
+   */
+  totalItemCount: number;
+  /**
+   * Whether the combo loads options. The list then shows a progress bar,
+   * which the `loading` slot can replace, and hides the empty message.
+   */
+  loading: boolean;
+  /**
+   * Whether the list starts with an option that selects all the items that it
+   * shows, or deselects them when all of them are selected. Only in multiple
+   * selection mode.
+   */
+  showSelectAll: boolean;
   /**
    * The locale of the component. Without it, the component takes its own
    * `lang`, else the locale of the nearest ancestor that has a `locale` (a
@@ -390,6 +431,8 @@ export const Default: Story = {
       ?disabled=${args.disabled}
       ?invalid=${args.invalid}
       ?single-select=${args.singleSelect}
+      ?show-select-all=${args.showSelectAll}
+      ?loading=${args.loading}
     >
       <igc-icon slot="prefix" name="location"></igc-icon>
       <span slot="helper-text">
