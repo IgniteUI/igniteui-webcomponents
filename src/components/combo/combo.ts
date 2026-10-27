@@ -48,11 +48,10 @@ import type {
   VirtualScrollItemContext,
   VirtualScrollState,
 } from '../virtualization/types.js';
-import IgcVirtualScrollComponent, {
-  REMOTE_SCROLLING_THRESHOLD,
-} from '../virtualization/virtualization.js';
+import IgcVirtualScrollComponent from '../virtualization/virtualization.js';
 import IgcComboHeaderComponent from './combo-header.js';
 import IgcComboItemComponent from './combo-item.js';
+import { ComboDataRequests } from './controllers/data-requests.js';
 import { DataState, isItemRecord } from './controllers/data.js';
 import { ComboNavigationController } from './controllers/navigation.js';
 import { styles } from './themes/combo.base.css.js';
@@ -93,8 +92,6 @@ const SLOTS = setSlots(
 const i18n = {
   defaultEN: ComboResourceStringsEN,
 };
-
-const DATA_REQUEST_COUNT = 20;
 
 /* blazorSupportsVisualChildren */
 /**
@@ -261,6 +258,11 @@ export default class IgcComboComponent<
       },
     }
   );
+  private readonly _dataRequests = new ComboDataRequests(
+    this,
+    this._state,
+    (detail) => this.emitEvent('igcDataRequest', { detail })
+  );
 
   private _index?: Map<Item<T>, number[]>;
   private _indexSize = 0;
@@ -269,10 +271,6 @@ export default class IgcComboComponent<
   private _selected: Set<T> = new Set();
   /** Read it through {@link _pendingSelection}. */
   private _pending?: Set<T>;
-  /** The length of `data` at the last `igcDataRequest`. */
-  private _lastDataRequest?: number;
-  /** The index of the last rendered option, from the list. */
-  private _lastRenderedIndex = -1;
   // The `displayKey` setter sets `filterKey`. Both keys are undefined here.
   private _filteringOptions: FilteringOptions<T> = {
     filterKey: undefined,
@@ -744,23 +742,7 @@ export default class IgcComboComponent<
   }
 
   protected override updated(props: PropertyValues<this>): void {
-    const opened = props.has('open') && this.open;
-    const replaced =
-      props.has('data') && props.get('data')?.[0] !== this.data[0];
-
-    // An opening, or a replaced `data` rather than an appended one, starts a
-    // new sequence of requests. Opening again also retries a failed request.
-    if (opened || replaced) {
-      this._lastDataRequest = undefined;
-    }
-
-    // The list reports a changed window after its own update, and an
-    // unchanged one not at all, so check against the window after it.
-    if (opened || props.has('data') || props.has('totalItemCount')) {
-      void this._listRef.value?.updateComplete.then(() =>
-        this._checkDataRequest()
-      );
-    }
+    this._dataRequests.afterUpdate(props, this._listRef.value);
   }
 
   //#endregion
@@ -824,41 +806,6 @@ export default class IgcComboComponent<
   /** Closes the list on a user action, which the close events report. */
   private _close(trigger: ComboCloseTrigger): Promise<boolean> {
     return this._hide(true, { trigger });
-  }
-
-  /**
-   * Requests more data while the open list renders near the end of `data`,
-   * or renders placeholders, up to `totalItemCount`. The `count` covers the
-   * rendered placeholders. An empty `data` waits for the first page from the
-   * application.
-   */
-  private _checkDataRequest(): void {
-    const { length } = this.data;
-    const { loadedLength, totalCount } = this._state;
-
-    if (
-      !this.open ||
-      !length ||
-      this.filteringOptions.mode !== 'remote' ||
-      this._lastDataRequest === length ||
-      length >= totalCount ||
-      this._lastRenderedIndex < loadedLength - REMOTE_SCROLLING_THRESHOLD
-    ) {
-      return;
-    }
-
-    const rendered = this._lastRenderedIndex - loadedLength + 1;
-
-    this._lastDataRequest = length;
-    this.emitEvent('igcDataRequest', {
-      detail: {
-        startIndex: length,
-        count: Math.min(
-          totalCount - length,
-          Math.max(DATA_REQUEST_COUNT, rendered)
-        ),
-      },
-    });
   }
 
   private _setSingleSelectionDisplayValue(value: string): void {
@@ -1428,14 +1375,13 @@ export default class IgcComboComponent<
 
   private _emitSearchInput(searchText: string): void {
     // A new search starts a new sequence of data requests.
-    this._lastDataRequest = undefined;
+    this._dataRequests.reset();
     this.emitEvent('igcSearchInput', { detail: { searchText } });
   }
 
   private _handleListStateChange(event: CustomEvent<VirtualScrollState>): void {
     event.stopPropagation();
-    this._lastRenderedIndex = event.detail.endIndex;
-    this._checkDataRequest();
+    this._dataRequests.rendered(event.detail.endIndex);
   }
 
   private async _itemClickHandler(event: PointerEvent): Promise<void> {
