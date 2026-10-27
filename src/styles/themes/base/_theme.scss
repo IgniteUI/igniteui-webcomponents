@@ -30,7 +30,8 @@
     @include elevations($elevations);
     @include typography(
         $font-family: $typeface,
-        $type-scale: $type-scale
+        $type-scale: $type-scale,
+        $allow-exclusion: true
     );
     @include sizing();
     @include spacing();
