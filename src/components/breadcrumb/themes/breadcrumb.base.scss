@@ -23,7 +23,7 @@
     align-items: center;
 
     igc-icon {
-        --component-size: var(--ig-size, var(--ig-size-medium));
+        --component-size: var(--ig-size, var(--ig-size-medium, 2));
     }
 
     &:dir(rtl) igc-icon,
@@ -44,7 +44,7 @@
 
     ::slotted([slot='prefix']),
     ::slotted([slot='suffix']) {
-        --component-size: var(--ig-size, var(--ig-size-medium));
+        --component-size: var(--ig-size, var(--ig-size-medium, 2));
         
         font-size: sizable(rem(14px), rem(16px), rem(24px));
     }

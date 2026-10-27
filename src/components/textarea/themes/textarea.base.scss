@@ -3,7 +3,7 @@
 @use 'igniteui-theming/sass/animations/easings' as *;
 
 :host {
-    --component-size: var(--ig-size, var(--ig-size-large));
+    --component-size: var(--ig-size, var(--ig-size-large, 3));
 
     display: block;
     font-family: var(--ig-font-family);
