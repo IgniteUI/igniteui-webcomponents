@@ -208,6 +208,7 @@ export default class IgcComboComponent<
       input: this._inputRef,
       search: this._searchRef,
       list: this._listRef,
+      slotted: (slot) => this._slots.getAssignedElements(slot),
       interactions: {
         show: () => this._show(true),
         hide: () => this._hide(true),

@@ -254,7 +254,7 @@ export function scrollIntoView(
 }
 
 const TABBABLE_SELECTOR =
-  'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
+  'a[href], button, input, textarea, select, details, summary, iframe, audio[controls], video[controls], [tabindex]:not([tabindex="-1"])';
 
 /**
  * Returns the focused element, also inside open shadow roots. The search starts in `root`, or in
@@ -278,6 +278,59 @@ export function getTabbables(root: HTMLElement): HTMLElement[] {
   return root.matches(TABBABLE_SELECTOR)
     ? [root, ...descendants]
     : [...descendants];
+}
+
+/** Whether `element` and its subtree are out of the focus order. */
+function isHiddenOrDisabled(element: Element): boolean {
+  return (
+    element.hasAttribute('hidden') ||
+    element.hasAttribute('inert') ||
+    element.hasAttribute('disabled') ||
+    (element.getAttribute('aria-hidden') ?? 'false') !== 'false'
+  );
+}
+
+function isFocusable(element: HTMLElement): boolean {
+  const editable =
+    (element.getAttribute('contenteditable') ?? 'false') !== 'false';
+
+  return (
+    (editable ||
+      (element.matches(TABBABLE_SELECTOR) &&
+        element.tabIndex > -1 &&
+        !element.matches(':disabled'))) &&
+    element.checkVisibility({ visibilityProperty: true })
+  );
+}
+
+/**
+ * Yields `root` and its descendants that Tab reaches, in flat-tree order.
+ * Unlike {@link getTabbables}, it enters open shadow roots and goes from a
+ * slot to its assigned elements.
+ */
+export function* getFocusableElements(root: Element): Generator<HTMLElement> {
+  if (isHiddenOrDisabled(root)) {
+    return;
+  }
+
+  // A host that delegates the focus is not a stop of its own.
+  if (
+    root instanceof HTMLElement &&
+    !root.shadowRoot?.delegatesFocus &&
+    isFocusable(root)
+  ) {
+    yield root;
+  }
+
+  const children =
+    root.shadowRoot?.children ??
+    (root instanceof HTMLSlotElement
+      ? root.assignedElements({ flatten: true })
+      : root.children);
+
+  for (const child of children) {
+    yield* getFocusableElements(child);
+  }
 }
 
 /**

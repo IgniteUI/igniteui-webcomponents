@@ -47,6 +47,7 @@ import {
 import { firstOf } from '#internals/utils/arrays.js';
 import { getCenterPoint } from '#internals/utils/dom.js';
 import { configureTheme } from '#theming/config.js';
+import IgcButtonComponent from '../button/button.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcVirtualScrollComponent from '../virtualization/virtualization.js';
 import type IgcComboHeaderComponent from './combo-header.js';
@@ -1950,6 +1951,221 @@ describe('Combo', () => {
         expect(listSpy).calledWithMatch({ type: 'igcDataRequest' });
         expect(comboSpy).not.called;
       });
+    });
+  });
+
+  describe('Header and footer slots', () => {
+    let header: HTMLButtonElement;
+    let cancel: IgcButtonComponent;
+    let apply: IgcButtonComponent;
+    let buttonBefore: HTMLButtonElement;
+    let buttonAfter: HTMLButtonElement;
+
+    const tab = () => sendKeys({ press: tabKey });
+    const shiftTab = () => sendKeys({ press: `${shiftKey}+${tabKey}` });
+
+    function expectFocus(element: Element, open = true): void {
+      expect(isFocused(element)).to.be.true;
+      expect(combo.open).to.equal(open);
+    }
+
+    async function openInSingleSelection(): Promise<void> {
+      await combo.hide();
+      combo.singleSelect = true;
+      input.focus();
+      await openComboPopover(combo);
+    }
+
+    before(() => {
+      defineComponents(IgcButtonComponent);
+    });
+
+    beforeEach(async () => {
+      const container = await fixture<HTMLDivElement>(html`
+        <div>
+          <button id="before">Before</button>
+          <igc-combo .data=${cities} value-key="id" display-key="name">
+            <button slot="header">Header</button>
+            <div slot="footer">
+              <igc-button id="cancel">Cancel</igc-button>
+              <igc-button id="apply">Apply</igc-button>
+            </div>
+          </igc-combo>
+          <button id="after">After</button>
+        </div>
+      `);
+
+      combo = container.querySelector<IgcComboComponent<City>>(
+        IgcComboComponent.tagName
+      )!;
+      header = container.querySelector('[slot="header"]')!;
+      cancel = container.querySelector('#cancel')!;
+      apply = container.querySelector('#apply')!;
+      buttonBefore = container.querySelector('#before')!;
+      buttonAfter = container.querySelector('#after')!;
+      input = combo.renderRoot.querySelector('igc-input#target')!;
+      searchInput = combo.renderRoot.querySelector('[part="search-input"]')!;
+      list = combo.renderRoot.querySelector('igc-virtual-scroll')!;
+
+      await openComboPopover(combo);
+    });
+
+    it('is accessible.', async () => {
+      await expect(combo).shadowDom.to.be.accessible(
+        axeReflectedRelationsOptions
+      );
+      await expect(combo).to.be.accessible(axeReflectedRelationsOptions);
+    });
+
+    it('moves with Tab from the search input through the header, the list and the footer', async () => {
+      expectFocus(searchInput);
+
+      await tab();
+      expectFocus(header);
+
+      await tab();
+      expectFocus(list);
+
+      await tab();
+      expectFocus(cancel);
+
+      await tab();
+      expectFocus(apply);
+    });
+
+    it('moves back with Shift+Tab from the footer to the search input', async () => {
+      apply.focus();
+
+      await shiftTab();
+      expectFocus(cancel);
+
+      await shiftTab();
+      expectFocus(list);
+
+      await shiftTab();
+      expectFocus(header);
+
+      await shiftTab();
+      expectFocus(searchInput);
+    });
+
+    it('closes the list and moves the focus on with Tab from the last footer control', async () => {
+      apply.focus();
+
+      await tab();
+      await elementUpdated(combo);
+
+      expectFocus(buttonAfter, false);
+    });
+
+    it('closes the list and moves the focus back with Shift+Tab from the search input', async () => {
+      await shiftTab();
+      await elementUpdated(combo);
+
+      expectFocus(buttonBefore, false);
+    });
+
+    it('starts from the main input in single selection', async () => {
+      await openInSingleSelection();
+      expectFocus(input);
+
+      await tab();
+      expectFocus(header);
+
+      await shiftTab();
+      expectFocus(input);
+    });
+
+    it('selects the active item when Tab leaves the list in single selection', async () => {
+      await openInSingleSelection();
+
+      simulateKeyboard(input, arrowDown);
+      await elementUpdated(combo);
+      apply.focus();
+
+      await tab();
+      await elementUpdated(combo);
+
+      expect(combo.value).to.eql(['BG01']);
+      expectFocus(buttonAfter, false);
+    });
+
+    it('reaches the content of the empty slot when the list is empty', async () => {
+      const create = document.createElement('button');
+      create.slot = 'empty';
+      create.textContent = 'Create';
+      combo.append(create);
+      combo.data = [];
+      await elementUpdated(combo);
+
+      await tab();
+      expectFocus(header);
+
+      await tab();
+      expectFocus(create);
+
+      await tab();
+      expectFocus(cancel);
+    });
+
+    it('moves out of a stop inside another stop', async () => {
+      const wrapper = document.createElement('div');
+      const inner = document.createElement('button');
+      wrapper.slot = 'header';
+      wrapper.tabIndex = 0;
+      wrapper.append(inner);
+      combo.prepend(wrapper);
+      await elementUpdated(combo);
+
+      inner.focus();
+
+      await tab();
+      expectFocus(header);
+
+      await shiftTab();
+      expectFocus(inner);
+
+      await shiftTab();
+      expectFocus(wrapper);
+    });
+
+    it('does not stop on a host that delegates the focus', async () => {
+      cancel.tabIndex = 0;
+      apply.focus();
+
+      await shiftTab();
+      expectFocus(cancel);
+
+      await shiftTab();
+      expectFocus(list);
+    });
+
+    it('skips a control with `visibility: hidden`', async () => {
+      header.style.visibility = 'hidden';
+      list.focus();
+
+      await shiftTab();
+      expectFocus(searchInput);
+    });
+
+    it('leaves a Tab that a slotted control handles to that control', async () => {
+      header.addEventListener('keydown', (event) => event.preventDefault());
+      header.focus();
+
+      await tab();
+      expectFocus(header);
+    });
+
+    it('closes the list with Tab from the search input when the slots have no focusable content', async () => {
+      header.remove();
+      cancel.disabled = true;
+      apply.hidden = true;
+      await elementUpdated(combo);
+
+      await tab();
+      await elementUpdated(combo);
+
+      expectFocus(buttonAfter, false);
     });
   });
 

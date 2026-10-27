@@ -13,6 +13,8 @@ import {
   spaceBar,
   tabKey,
 } from '#internals/controllers/key-bindings.js';
+import { isEmpty } from '#internals/utils/arrays.js';
+import { getFocusableElements } from '#internals/utils/dom.js';
 import type IgcInputComponent from '../../input/input.js';
 import type IgcVirtualScrollComponent from '../../virtualization/virtualization.js';
 import type { ComboHost } from '../types.js';
@@ -22,6 +24,8 @@ type ComboNavigationConfig = {
   input: Ref<IgcInputComponent>;
   search: Ref<IgcInputComponent>;
   list: Ref<IgcVirtualScrollComponent>;
+  /** The elements assigned to a slot of the list. */
+  slotted: (slot: 'header' | 'empty' | 'footer') => Element[];
   interactions: {
     show: () => Promise<boolean>;
     hide: () => Promise<boolean>;
@@ -42,8 +46,10 @@ export class ComboNavigationController<T extends object> {
     return this._config.input.value;
   }
 
+  /** The search input while it shows. */
   private get _searchInput(): IgcInputComponent | undefined {
-    return this._config.search.value;
+    const search = this._config.search.value;
+    return search?.checkVisibility() ? search : undefined;
   }
 
   private get _list(): IgcVirtualScrollComponent | undefined {
@@ -137,19 +143,39 @@ export class ComboNavigationController<T extends object> {
     }
   };
 
-  private _onTab = async ({ shiftKey }: KeyboardEvent): Promise<void> => {
-    if (this._host.open) {
-      if (shiftKey) {
-        // Focus the main input before the default Shift+Tab action.
-        this._host.focus();
-      }
-
-      if (this._host.singleSelect && this.active > -1) {
-        this._config.interactions.select(this.active);
-      }
-
-      await this._config.interactions.hide();
+  private _onTab = async (event: KeyboardEvent): Promise<void> => {
+    // A slotted control that handles Tab prevents the default action.
+    if (!this._host.open || event.defaultPrevented) {
+      return;
     }
+
+    const stops = this._tabStops();
+    // The innermost stop on the path, for a stop inside another stop.
+    const focused = event
+      .composedPath()
+      .find((node) => stops.includes(node as HTMLElement));
+    const current = stops.indexOf(focused as HTMLElement);
+    const next =
+      current > -1 ? stops[current + (event.shiftKey ? -1 : 1)] : undefined;
+
+    next?.focus();
+
+    // A stop that does not take the focus leaves Tab to the browser.
+    if (next?.matches(':focus')) {
+      event.preventDefault();
+      return;
+    }
+
+    if (event.shiftKey) {
+      // Focus the main input before the default Shift+Tab action.
+      this._host.focus();
+    }
+
+    if (this._host.singleSelect && this.active > -1) {
+      this._config.interactions.select(this.active);
+    }
+
+    await this._config.interactions.hide();
   };
 
   private _onEscape = async (): Promise<void> => {
@@ -190,9 +216,8 @@ export class ComboNavigationController<T extends object> {
   private _onArrowUp = (): void => {
     if (this.active === this._firstItem) {
       // Focus the search input when it shows. Otherwise, close the list.
-      this._searchInput?.checkVisibility()
-        ? this._searchInput?.focus()
-        : this._onEscape();
+      const search = this._searchInput;
+      search ? search.focus() : this._onEscape();
       return;
     }
 
@@ -208,6 +233,30 @@ export class ComboNavigationController<T extends object> {
   //#endregion
 
   //#region Internal helper methods
+
+  /**
+   * The Tab order of the open list: the filtering input, the header content,
+   * the list, the empty content and the footer content. Empty without
+   * focusable slot content, so Tab closes the list.
+   */
+  private _tabStops(): HTMLElement[] {
+    const [header, empty, footer] = (
+      ['header', 'empty', 'footer'] as const
+    ).map((slot) =>
+      Iterator.from(this._config.slotted(slot))
+        .flatMap(getFocusableElements)
+        .toArray()
+    );
+
+    if ([header, empty, footer].every(isEmpty)) {
+      return [];
+    }
+
+    const input = this._searchInput ?? this._input;
+    const list = this._list?.checkVisibility() ? [this._list] : [];
+
+    return [input!, ...header, ...list, ...empty, ...footer];
+  }
 
   /**
    * The only write path for the active index. The host mirrors it as
