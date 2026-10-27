@@ -24,6 +24,7 @@
     "ColorPickerMode",
     "ColorPickerResourceStringsEN",
     "ComboCloseTrigger",
+    "ComboFilteringMode",
     "ComboGroupHeaderContext",
     "ComboGroupHeaderTemplate",
     "ComboItemTemplate",
@@ -108,6 +109,7 @@
     "IgcComboClosingEventArgs",
     "IgcComboComponent",
     "IgcComboComponentEventMap",
+    "IgcComboSearchInputEventArgs",
     "IgcDatePickerComponent",
     "IgcDatePickerComponentEventMap",
     "IgcDateRangePickerComponent",
@@ -1276,8 +1278,10 @@
         "igcChange": "unknown",
         "igcClosed": "unknown",
         "igcClosing": "unknown",
+        "igcDataRequest": "unknown",
         "igcOpened": "unknown",
-        "igcOpening": "unknown"
+        "igcOpening": "unknown",
+        "igcSearchInput": "unknown"
       },
       "slots": [
         "clear-icon",

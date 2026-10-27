@@ -1,4 +1,5 @@
 import type { ReactiveControllerHost, TemplateResult } from 'lit';
+import type { VirtualScrollDataRequest } from '../virtualization/types.js';
 import type { VirtualScrollItemTemplate } from '../virtualization/virtualization.js';
 import type IgcComboComponent from './combo.js';
 
@@ -27,6 +28,7 @@ export type ComboRenderFunction<T extends object> = VirtualScrollItemTemplate<
   ComboRecord<T>
 >;
 export type ComboValue<T> = T | Values<T>;
+export type ComboFilteringMode = 'local' | 'remote';
 
 /* jsonAPIPlainObject */
 /** Filtering options for the combo component. */
@@ -37,6 +39,12 @@ export interface FilteringOptions<T extends object> {
   caseSensitive?: boolean;
   /** When true, the filter distinguishes between accented letters and their base letters. */
   matchDiacritics?: boolean;
+  /**
+   * Where the filtering runs. With `remote`, the combo does not filter the
+   * options: the application sets `data` on `igcSearchInput`, and appends to
+   * it on `igcDataRequest`. Default is `local`.
+   */
+  mode?: ComboFilteringMode;
 }
 
 export interface GroupingOptions<T extends object> {
@@ -53,6 +61,11 @@ export interface IgcComboChangeEventArgs<T extends object = any> {
   items: T[];
   /* blazorAlternateName: changeType */
   type: ComboChangeType;
+}
+
+export interface IgcComboSearchInputEventArgs {
+  /** The text of the search input, or of the main input in single selection mode. */
+  searchText: string;
 }
 
 /**
@@ -85,6 +98,8 @@ export interface IgcComboComponentEventMap {
   igcOpened: CustomEvent<void>;
   igcClosing: CustomEvent<IgcComboClosingEventArgs>;
   igcClosed: CustomEvent<IgcComboClosingEventArgs>;
+  igcSearchInput: CustomEvent<IgcComboSearchInputEventArgs>;
+  igcDataRequest: CustomEvent<VirtualScrollDataRequest>;
 }
 
 export type ComboItemTemplate<T extends object> = (

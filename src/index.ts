@@ -218,6 +218,7 @@ export type {
 export type { IgcTreeSelectionEventArgs } from './components/tree/tree.common.js';
 export type {
   ComboCloseTrigger,
+  ComboFilteringMode,
   ComboGroupHeaderContext,
   ComboGroupHeaderTemplate,
   ComboItemTemplate,
@@ -226,6 +227,7 @@ export type {
   GroupingDirection,
   IgcComboChangeEventArgs,
   IgcComboClosingEventArgs,
+  IgcComboSearchInputEventArgs,
 } from './components/combo/types.js';
 export type {
   IconMeta,

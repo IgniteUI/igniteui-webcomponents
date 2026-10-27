@@ -50,7 +50,11 @@ export class DataState<T extends object> implements ReactiveController {
   public set searchTerm(value: string) {
     if (this._searchTerm !== value) {
       this._searchTerm = value;
-      this.invalidate();
+
+      // In remote mode, the term does not change the records.
+      if (this.filteringOptions.mode !== 'remote') {
+        this.invalidate();
+      }
     }
   }
 

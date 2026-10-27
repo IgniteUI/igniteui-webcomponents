@@ -35,6 +35,7 @@ import {
 import {
   simulateBlur,
   simulateClick,
+  simulateInput,
   simulateKeyboard,
   simulatePointerDown,
   simulateScroll,
@@ -2309,6 +2310,386 @@ describe('Combo', () => {
 
       expect(combo.open).to.be.false;
       expect(eventSpy).not.called;
+    });
+  });
+
+  describe('Remote data', () => {
+    type Place = { id: string; name: string; letter: string };
+
+    const PLACES = [
+      ['AMS', 'Amsterdam'],
+      ['ATH', 'Athens'],
+      ['BAR', 'Barcelona'],
+      ['BEL', 'Belgrade'],
+      ['BRA', 'Bratislava'],
+      ['BRU', 'Brussels'],
+      ['BUC', 'Bucharest'],
+      ['BUD', 'Budapest'],
+      ['CPH', 'Copenhagen'],
+      ['DUB', 'Dublin'],
+      ['BER', 'Berlin'],
+      ['BRN', 'Bern'],
+      ['BGO', 'Bergen'],
+      ['ALB', 'Alberobello'],
+      ['HEL', 'Helsinki'],
+      ['LIS', 'Lisbon'],
+      ['LON', 'London'],
+      ['MAD', 'Madrid'],
+      ['OSL', 'Oslo'],
+      ['PAR', 'Paris'],
+    ] as const;
+
+    /** A fake server. Each response has new objects, as parsed JSON has. */
+    function search(text: string, skip = 0, top = 10): Place[] {
+      return PLACES.filter(([, name]) =>
+        name.toLowerCase().includes(text.toLowerCase())
+      )
+        .slice(skip, skip + top)
+        .map(([id, name]) => ({ id, name, letter: name[0] }));
+    }
+
+    let remote: IgcComboComponent<Place>;
+    let eventSpy: SinonSpy;
+    let searchNative: HTMLInputElement;
+    let mainNative: HTMLInputElement;
+
+    const checked = () =>
+      items(remote)
+        .filter((item) => item.selected)
+        .map((item) => item.textContent?.trim());
+
+    const itemFor = (name: string) =>
+      items(remote).find((item) => item.textContent?.trim() === name)!;
+
+    const details = (name: string) =>
+      eventSpy.withArgs(name).args.map(([, init]) => init.detail);
+
+    const searchEvents = () =>
+      details('igcSearchInput').map(({ searchText }) => searchText);
+
+    beforeEach(async () => {
+      remote = await fixture<IgcComboComponent<Place>>(
+        html`<igc-combo
+          .data=${search('')}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>`
+      );
+      remote.setAttribute('filtering-options', '{"mode": "remote"}');
+      await elementUpdated(remote);
+
+      input = remote.renderRoot.querySelector('igc-input#target')!;
+      searchInput = remote.renderRoot.querySelector('[part="search-input"]')!;
+      list = remote.renderRoot.querySelector('igc-virtual-scroll')!;
+      mainNative = input.renderRoot.querySelector('input')!;
+      searchNative = searchInput.renderRoot.querySelector('input')!;
+      eventSpy = spy(remote, 'emitEvent');
+    });
+
+    it('takes the mode from the `filtering-options` attribute', () => {
+      expect(remote.filteringOptions.mode).to.equal('remote');
+      expect(remote.filteringOptions.filterKey).to.equal('name');
+    });
+
+    it('emits igcSearchInput when the user changes the search text', async () => {
+      await openComboPopover(remote);
+
+      simulateInput(searchNative, { value: 'ber' });
+      simulateInput(searchNative, { value: '' });
+
+      expect(searchEvents()).to.eql(['ber', '']);
+    });
+
+    it('does not filter the options in remote mode', async () => {
+      await openComboPopover(remote);
+
+      simulateInput(searchNative, { value: 'ber' });
+      await comboStable(remote);
+
+      expect(items(remote)).lengthOf(10);
+      expect(searchInput.value).to.equal('ber');
+
+      remote.filteringOptions = { mode: 'local' };
+      await comboStable(remote);
+
+      expect(items(remote)).lengthOf(0);
+    });
+
+    it('emits igcSearchInput in local mode too', async () => {
+      remote.filteringOptions = { mode: 'local' };
+      await openComboPopover(remote);
+
+      simulateInput(searchNative, { value: 'bu' });
+
+      expect(searchEvents()).to.eql(['bu']);
+    });
+
+    it('emits igcSearchInput from the main input in single selection, also when it is cleared', async () => {
+      remote.singleSelect = true;
+      await elementUpdated(remote);
+
+      simulateInput(mainNative, { value: 'ber' });
+      await comboStable(remote);
+
+      expect(items(remote)).lengthOf(10);
+
+      simulateInput(mainNative, { value: '' });
+      await elementUpdated(remote);
+
+      expect(searchEvents()).to.eql(['ber', '']);
+    });
+
+    it('emits igcSearchInput when a user action clears the search text, not on a property change', async () => {
+      remote.singleSelect = true;
+      remote.filteringOptions = { mode: 'local' };
+      await elementUpdated(remote);
+
+      simulateInput(mainNative, { value: 'a' });
+      await comboStable(remote);
+
+      simulateKeyboard(list, enterKey);
+      await elementUpdated(remote);
+      expect(remote.value).to.eql(['AMS']);
+
+      simulateInput(mainNative, { value: 'b' });
+      await elementUpdated(remote);
+      remote.disableFiltering = true;
+      await elementUpdated(remote);
+
+      simulateInput(mainNative, { value: 'c' });
+      await elementUpdated(remote);
+
+      expect(searchEvents()).to.eql(['a', '', 'b']);
+    });
+
+    it('clears the search input and reports it when a blur clears the search text', async () => {
+      await openComboPopover(remote);
+
+      simulateInput(searchNative, { value: 'xyz' });
+      await elementUpdated(remote);
+
+      simulateBlur(remote);
+      await elementUpdated(remote);
+
+      expect(searchInput.value).to.equal('');
+      expect(searchEvents()).to.eql(['xyz', '']);
+    });
+
+    it('activates no option of the old results on input in single selection', async () => {
+      remote.singleSelect = true;
+      await elementUpdated(remote);
+
+      simulateInput(mainNative, { value: 'sof' });
+      await comboStable(remote);
+
+      simulateKeyboard(input, enterKey);
+      await elementUpdated(remote);
+
+      expect(items(remote).some((item) => item.active)).to.be.false;
+      expect(remote.value).to.be.empty;
+    });
+
+    it('hides the case-sensitive icon in remote mode', async () => {
+      remote.caseSensitiveIcon = true;
+      await elementUpdated(remote);
+
+      const icon = searchInput.querySelector('[part~="case-icon"]')!;
+      expect(icon.slot).to.be.empty;
+
+      remote.filteringOptions = { mode: 'local' };
+      await elementUpdated(remote);
+
+      expect(icon.slot).to.equal('suffix');
+    });
+
+    it('keeps the igcInput of the inputs inside', async () => {
+      const inputSpy = spy();
+      remote.addEventListener('igcInput', inputSpy);
+      await openComboPopover(remote);
+
+      simulateInput(searchNative, { value: 'ber' });
+
+      remote.singleSelect = true;
+      await elementUpdated(remote);
+      simulateInput(mainNative, { value: 'ber' });
+
+      expect(inputSpy).not.called;
+    });
+
+    it('keeps the selection when a search replaces the data (issue 2519)', async () => {
+      await openComboPopover(remote);
+
+      // 1. Check Amsterdam and Athens.
+      simulateClick(itemFor('Amsterdam'));
+      simulateClick(itemFor('Athens'));
+      await comboStable(remote);
+      expect(remote.value).to.eql(['AMS', 'ATH']);
+
+      // 2. A search for "ber" replaces the data.
+      remote.data = search('ber');
+      await comboStable(remote);
+
+      expect(remote.value).to.eql(['AMS', 'ATH']);
+      expect(remote.selection.map(({ id }) => id)).to.eql(['AMS', 'ATH']);
+      expect(input.value).to.equal('Amsterdam, Athens');
+
+      // 3. Check Berlin.
+      simulateClick(itemFor('Berlin'));
+      await comboStable(remote);
+      expect(remote.value).to.eql(['AMS', 'ATH', 'BER']);
+
+      // 4. Clearing the search loads the first page again.
+      remote.data = search('');
+      await comboStable(remote);
+
+      expect(remote.value).to.eql(['AMS', 'ATH', 'BER']);
+      expect(remote.selection.map(({ id }) => id)).to.eql([
+        'AMS',
+        'ATH',
+        'BER',
+      ]);
+      expect(remote.selection[0]).to.equal(remote.data[0]);
+      expect(checked()).to.eql(['Amsterdam', 'Athens']);
+      expect(input.value).to.equal('Amsterdam, Athens, Berlin');
+    });
+
+    it('deselects a selected item that the data does not hold', async () => {
+      remote.select(['AMS', 'ATH']);
+      remote.data = search('ber');
+      await elementUpdated(remote);
+
+      remote.deselect('AMS');
+      await elementUpdated(remote);
+
+      expect(remote.value).to.eql(['ATH']);
+      expect(input.value).to.equal('Athens');
+    });
+
+    it('selects an object that the data does not hold', async () => {
+      const oslo = { id: 'OSL', name: 'Oslo', letter: 'O' };
+
+      remote.select(oslo);
+      await elementUpdated(remote);
+
+      expect(remote.value).to.eql(['OSL']);
+      expect(remote.selection).to.eql([oslo]);
+      expect(input.value).to.equal('Oslo');
+
+      remote.data = search('oslo');
+      await openComboPopover(remote);
+
+      expect(remote.selection[0]).to.equal(remote.data[0]);
+      expect(checked()).to.eql(['Oslo']);
+    });
+
+    it('selects an object that the data does not hold without a value key', async () => {
+      const oslo = { id: 'OSL', name: 'Oslo', letter: 'O' };
+
+      remote.valueKey = undefined;
+      remote.select(oslo);
+      await elementUpdated(remote);
+
+      expect(remote.value).to.eql([oslo]);
+      expect(remote.selection).to.eql([oslo]);
+    });
+
+    it('selects all the data and keeps the other selected items with select()', async () => {
+      remote.select('AMS');
+      remote.data = search('ber');
+      await elementUpdated(remote);
+
+      remote.select();
+      await elementUpdated(remote);
+
+      expect(remote.value).to.eql(['BER', 'BRN', 'BGO', 'ALB', 'AMS']);
+    });
+
+    it('selects each value one time with select() before a new data syncs', async () => {
+      remote.data = search('ber');
+      remote.value = ['BER'];
+      remote.data = search('ber');
+      remote.select();
+      await elementUpdated(remote);
+
+      expect(remote.value).to.eql(['BER', 'BRN', 'BGO', 'ALB']);
+    });
+
+    it('emits igcDataRequest near the end of the data, in data coordinates', async () => {
+      remote.groupKey = 'letter';
+      await openComboPopover(remote);
+
+      expect(details('igcDataRequest')).to.eql([{ startIndex: 10, count: 20 }]);
+    });
+
+    it('does not repeat igcDataRequest until the data grows', async () => {
+      await openComboPopover(remote);
+
+      remote.data = [...remote.data];
+      await openComboPopover(remote);
+
+      expect(details('igcDataRequest')).lengthOf(1);
+
+      remote.data = [...remote.data, ...search('', 10, 5)];
+      await comboStable(remote);
+      list.scrollToIndex(14);
+      await comboStable(remote);
+
+      expect(details('igcDataRequest')).to.eql([
+        { startIndex: 10, count: 20 },
+        { startIndex: 15, count: 20 },
+      ]);
+    });
+
+    it('requests the next page of a new search with the same length', async () => {
+      await openComboPopover(remote);
+
+      simulateInput(searchNative, { value: 'b' });
+      remote.data = search('b');
+      await comboStable(remote);
+
+      expect(details('igcDataRequest')).to.eql([
+        { startIndex: 10, count: 20 },
+        { startIndex: 10, count: 20 },
+      ]);
+    });
+
+    it('requests the next page when the data is replaced without a search', async () => {
+      await openComboPopover(remote);
+
+      remote.data = search('');
+      await comboStable(remote);
+
+      expect(details('igcDataRequest')).to.eql([
+        { startIndex: 10, count: 20 },
+        { startIndex: 10, count: 20 },
+      ]);
+    });
+
+    it('requests the same page again when the list opens again', async () => {
+      await openComboPopover(remote);
+      await remote.hide();
+      await openComboPopover(remote);
+
+      expect(details('igcDataRequest')).to.eql([
+        { startIndex: 10, count: 20 },
+        { startIndex: 10, count: 20 },
+      ]);
+    });
+
+    it('does not emit igcDataRequest in local mode, while closed or without data', async () => {
+      await comboStable(remote);
+      expect(details('igcDataRequest')).to.be.empty;
+
+      remote.data = [];
+      await openComboPopover(remote);
+      expect(details('igcDataRequest')).to.be.empty;
+
+      await remote.hide();
+      remote.filteringOptions = { mode: 'local' };
+      remote.data = search('');
+      await openComboPopover(remote);
+
+      expect(details('igcDataRequest')).to.be.empty;
     });
   });
 

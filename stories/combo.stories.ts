@@ -9,7 +9,9 @@ import {
   IgcCircularProgressComponent,
   type IgcComboChangeEventArgs,
   IgcComboComponent,
+  type IgcComboSearchInputEventArgs,
   IgcInputComponent,
+  type VirtualScrollDataRequest,
   defineComponents,
 } from 'igniteui-webcomponents';
 import { registerMaterialIcons } from './story-icons.js';
@@ -897,6 +899,169 @@ export const LazyLoading: Story = {
           </div>
         </igc-combo>
         <p class="muted" role="status" ${ref(status)}></p>
+      </section>
+    `;
+  },
+};
+
+const europeanCities: City[] = (
+  [
+    ['AMS', 'Amsterdam', 'Netherlands'],
+    ['ATH', 'Athens', 'Greece'],
+    ['BAR', 'Barcelona', 'Spain'],
+    ['BEL', 'Belgrade', 'Serbia'],
+    ['BER', 'Berlin', 'Germany'],
+    ['BGO', 'Bergen', 'Norway'],
+    ['BRN', 'Bern', 'Switzerland'],
+    ['BOR', 'Bordeaux', 'France'],
+    ['BRA', 'Bratislava', 'Slovakia'],
+    ['BRU', 'Brussels', 'Belgium'],
+    ['BUC', 'Bucharest', 'Romania'],
+    ['BUD', 'Budapest', 'Hungary'],
+    ['CPH', 'Copenhagen', 'Denmark'],
+    ['DUB', 'Dublin', 'Ireland'],
+    ['EDI', 'Edinburgh', 'United Kingdom'],
+    ['FLO', 'Florence', 'Italy'],
+    ['FRA', 'Frankfurt', 'Germany'],
+    ['GDN', 'Gdańsk', 'Poland'],
+    ['GVA', 'Geneva', 'Switzerland'],
+    ['HAM', 'Hamburg', 'Germany'],
+    ['HEL', 'Helsinki', 'Finland'],
+    ['KRK', 'Kraków', 'Poland'],
+    ['LIS', 'Lisbon', 'Portugal'],
+    ['LJU', 'Ljubljana', 'Slovenia'],
+    ['LON', 'London', 'United Kingdom'],
+    ['LYS', 'Lyon', 'France'],
+    ['MAD', 'Madrid', 'Spain'],
+    ['MIL', 'Milan', 'Italy'],
+    ['MUC', 'Munich', 'Germany'],
+    ['NAP', 'Naples', 'Italy'],
+    ['OSL', 'Oslo', 'Norway'],
+    ['PAR', 'Paris', 'France'],
+    ['PLV', 'Plovdiv', 'Bulgaria'],
+    ['POR', 'Porto', 'Portugal'],
+    ['PRG', 'Prague', 'Czechia'],
+    ['RIG', 'Riga', 'Latvia'],
+    ['ROM', 'Rome', 'Italy'],
+    ['ROT', 'Rotterdam', 'Netherlands'],
+    ['SEV', 'Seville', 'Spain'],
+    ['SOF', 'Sofia', 'Bulgaria'],
+    ['STO', 'Stockholm', 'Sweden'],
+    ['TAL', 'Tallinn', 'Estonia'],
+    ['VAR', 'Varna', 'Bulgaria'],
+    ['VCE', 'Venice', 'Italy'],
+    ['VIE', 'Vienna', 'Austria'],
+    ['VNO', 'Vilnius', 'Lithuania'],
+    ['WAW', 'Warsaw', 'Poland'],
+    ['ZAG', 'Zagreb', 'Croatia'],
+    ['ZRH', 'Zürich', 'Switzerland'],
+  ] as const
+).map(([id, name, country]) => ({ id, name, country }));
+
+const cityPageSize = 10;
+
+/** A fake server. It returns one page of new objects, as parsed JSON does. */
+async function fetchCities(searchText: string, skip: number): Promise<City[]> {
+  await delay(400);
+
+  const text = searchText.toLocaleLowerCase();
+
+  return europeanCities
+    .filter(({ name }) => name.toLocaleLowerCase().includes(text))
+    .slice(skip, skip + cityPageSize)
+    .map((city) => ({ ...city }));
+}
+
+export const RemoteData: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A city picker that searches and pages on a server, ten cities at a time. With `filteringOptions.mode` set to `remote`, the combo does not filter the options. `igcOpening` loads the first page, `igcSearchInput` loads the first page of the search after a 300 ms pause in the typing, and `igcDataRequest` appends the next page when the list scrolls near its end. A newer search drops the answers to older requests. Select a few cities, then search for others: the selection stays, also for the cities that the new results do not hold. The log shows each request and answer.',
+      },
+    },
+  },
+  render: () => {
+    const combo = createRef<IgcComboComponent<City>>();
+    const log = createRef<HTMLOListElement>();
+    let searchText = '';
+    let search = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const write = (line: string) => {
+      const item = document.createElement('li');
+      item.textContent = line;
+      log.value!.prepend(item);
+    };
+
+    // The server answers with one page, whatever `count` the combo asks for.
+    const load = async (skip: number) => {
+      const current = search;
+      write(`Request: "${searchText}" from item ${skip + 1}`);
+
+      const page = await fetchCities(searchText, skip);
+
+      const target = combo.value!;
+
+      // Drop the answer to an older search, or for a `data` that changed since.
+      if (current !== search || (skip && target.data.length !== skip)) {
+        return;
+      }
+
+      target.data = skip ? [...target.data, ...page] : page;
+      write(`Answer: ${page.length} cities, ${target.data.length} loaded`);
+    };
+
+    const onOpening = () => {
+      if (!combo.value!.data.length) {
+        void load(0);
+      }
+    };
+
+    const onSearch = (event: CustomEvent<IgcComboSearchInputEventArgs>) => {
+      searchText = event.detail.searchText.trim();
+      search++;
+      clearTimeout(timer);
+      timer = setTimeout(() => load(0), 300);
+    };
+
+    const onRequest = (event: CustomEvent<VirtualScrollDataRequest>) => {
+      void load(event.detail.startIndex);
+    };
+
+    const onChange = (event: CustomEvent<IgcComboChangeEventArgs>) => {
+      write(`Value: ${event.detail.newValue.join(', ') || 'none'}`);
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .cmb-log {
+          max-block-size: 12rem;
+          overflow: auto;
+          margin: 0;
+          font-family: monospace;
+          font-size: 0.8125rem;
+        }
+      </style>
+      <section class="cmb-stack cmb-panel" aria-labelledby="cmb-remote-title">
+        <h3 id="cmb-remote-title">Cities from the server</h3>
+        <igc-combo
+          ${ref(combo)}
+          label="Cities"
+          placeholder="Pick cities"
+          value-key="id"
+          display-key="name"
+          .filteringOptions=${{ mode: 'remote' }}
+          @igcOpening=${onOpening}
+          @igcSearchInput=${onSearch}
+          @igcDataRequest=${onRequest}
+          @igcChange=${onChange}
+        >
+          <span slot="empty">No city matches your search.</span>
+        </igc-combo>
+        <ol class="cmb-log" aria-label="Server log" ${ref(log)}></ol>
       </section>
     `;
   },

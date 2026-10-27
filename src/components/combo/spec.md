@@ -20,6 +20,7 @@
       - [Validation](#validation)
       - [Labeling from the light DOM](#labeling-from-the-light-dom)
       - [Form integration](#form-integration)
+      - [Remote data](#remote-data)
     - [Localization](#localization)
     - [Keyboard interactions](#keyboard-interactions)
   - [API](#api)
@@ -61,6 +62,7 @@
 |      10 | 2026-10-26 | The inner `igcChange`, `igcStateChange` and `igcDataRequest` events stay inside       |
 |      11 | 2026-10-26 | Tab moves through the focusable content of the header, empty and footer slots         |
 |      12 | 2026-10-26 | `igcClosing` and `igcClosed` report the `trigger` that closes the list                |
+|      13 | 2026-10-26 | Remote data: `igcSearchInput`, `filteringOptions.mode`, `igcDataRequest`; a new `data` keeps the selection |
 
 ## Overview
 
@@ -261,6 +263,48 @@ the form, and `reportValidity()` moves it to the control when it is invalid. `fo
 `checkValidity()` do not move the focus. The `invalid` event comes only from these checks and from a failed submit,
 not while the user edits the control.
 
+#### Remote data
+
+A combo can show a large remote data source one page at a time. With `filteringOptions.mode` set to `remote`, the
+combo does not filter the options. It keeps the search input and reports the text, and the application sets `data` to
+the results of the server:
+
+```typescript
+combo.filteringOptions = { mode: 'remote' };
+
+combo.addEventListener('igcOpening', () => {
+  if (!combo.data.length) load(searchText, 0);
+});
+
+combo.addEventListener('igcSearchInput', ({ detail }) => {
+  searchText = detail.searchText;
+  load(searchText, 0); // replaces `data` with the first page; debounce it
+});
+
+combo.addEventListener('igcDataRequest', ({ detail }) => {
+  load(searchText, detail.startIndex, detail.count); // appends to `data`
+});
+```
+
+- `igcSearchInput` comes on each change of the text of the search input, and of the main input in single selection,
+  also when the user clears the text. It also comes, with an empty text, when a user action clears the text: a
+  selection in single selection mode, a blur with nothing selected, or the clear button. It does not come when a
+  property change clears the text (`singleSelect`, `disableFiltering`), or with `disableFiltering`. It comes in both
+  modes.
+- In remote mode, `igcDataRequest` comes when the open list renders one of the last five options of `data`. Its
+  `startIndex` is `data.length`, also with grouping, and `count` is the number of items to append. It does not come
+  again until the length of `data` changes, a new `data` replaces the first record, or a new search text comes, so a
+  source with no more items gets one request. An empty `data` gets no request: the first page of a search is the job
+  of the application. An answer is stale when `data.length` no longer equals its `startIndex`, for example after a
+  new search.
+- A new `data` keeps the selection. A selected item that the new data does not hold stays in `value`, in `selection`
+  and in the text of the input, and a later page or search that holds it again shows it checked. `select()` selects an
+  object that `data` does not hold as it is, so the application can select the records of a saved filter before
+  their page loads. With `valueKey`, an object resolves by its key first. Without an argument, `select()` selects all
+  the items of `data` and keeps the other selected items.
+- In remote mode, the search input has no case-sensitive icon, and in single selection the input activates no option
+  of the old results, so Enter does not select an option that the server did not return for the text.
+
 ### Localization
 
 The component renders several built-in strings, resolved through the library i18n mechanism and overridable per
@@ -306,7 +350,7 @@ Typing while the component is focused filters the list down to the closest match
 
 | Property               | Attribute                  | Reflected | Type                                | Default           | Description                                                     |
 | ---------------------- | -------------------------- | --------- | ----------------------------------- | ----------------- | ---------------------------------------------------------------- |
-| data                   | -                          | No        | `T[]`                               | `[]`              | The data source used to generate the list of options.           |
+| data                   | -                          | No        | `T[]`                               | `[]`              | The data source used to generate the list of options. A new data source keeps the selection, also the selected items that it does not hold. |
 | value                  | value                      | No        | `ComboValue<T>[]`                   | `[]`              | The values of the selected items. With a `valueKey`, each value is that field of an item. Without it, each value is the item itself. |
 | selection              | -                          | No        | `T[]`                               | `[]`              | Read-only. The current selection as records of the data source. |
 | valueKey               | value-key                  | No        | `Keys<T> \| undefined`              | -                 | The key in the data source used when selecting items.           |
@@ -348,6 +392,12 @@ interface FilteringOptions<T extends object> {
   caseSensitive?: boolean;
   /** When true, the filter distinguishes between accented letters and their base letters. */
   matchDiacritics?: boolean;
+  /**
+   * Where the filtering runs. With `remote`, the combo does not filter the
+   * options: the application sets `data` on `igcSearchInput`, and appends to
+   * it on `igcDataRequest`. Default is `local`.
+   */
+  mode?: 'local' | 'remote';
 }
 
 type ComboItemTemplate<T extends object> = (props: { item: T }) => TemplateResult;
@@ -370,7 +420,7 @@ type ComboGroupHeaderTemplate<T extends object> = (props: {
 | show              | `(): Promise<boolean>`                 | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one.                                                             |
 | hide              | `(): Promise<boolean>`                 | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                             |
 | toggle            | `(): Promise<boolean>`                 | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes.                                         |
-| select            | `(items?: Item<T> \| Item<T>[]): void` | Selects options in the list by reference or by `valueKey` value. It does not emit `igcChange`. Without an argument, it selects all items, or clears the selection in single selection mode. |
+| select            | `(items?: Item<T> \| Item<T>[]): void` | Selects options in the list by reference or by `valueKey` value. It does not emit `igcChange`. An object that `data` does not hold is selected as it is. Without an argument, it selects all the items of `data`, or clears the selection in single selection mode. |
 | deselect          | `(items?: Item<T> \| Item<T>[]): void` | Deselects options in the list by reference or by `valueKey` value. It does not emit `igcChange`. Without an argument, it deselects all items. |
 | focus             | `(options?: FocusOptions): void`       | Sets focus on the component.                                                     |
 | blur              | `(): void`                             | Removes focus from the component.                                                |
@@ -387,6 +437,8 @@ type ComboGroupHeaderTemplate<T extends object> = (props: {
 | igcOpened  | false       | Emitted after the list of options opens on a user action. |
 | igcClosing | true        | Emitted before the user closes the list of options. Cancelable. The `trigger` of the detail is the user action that closes the list. |
 | igcClosed  | false       | Emitted after the list of options closes on a user action. The `trigger` of the detail is the user action that closes the list. |
+| igcSearchInput | false   | Emitted when the user changes the text of the search input, or of the main input in single selection mode, and when a selection, a blur or the clear button clears the text. |
+| igcDataRequest | false   | Emitted in remote filtering mode when the user scrolls near the end of the options. Append the requested items to `data`. It is not emitted again until the length of `data` or the search text changes. |
 
 ```typescript
 interface IgcComboChangeEventArgs<T> {
@@ -397,6 +449,15 @@ interface IgcComboChangeEventArgs<T> {
 
 interface IgcComboClosingEventArgs {
   trigger: ComboCloseTrigger;
+}
+
+interface IgcComboSearchInputEventArgs {
+  searchText: string;
+}
+
+interface VirtualScrollDataRequest {
+  startIndex: number; // `data.length`
+  count: number;
 }
 
 type ComboCloseTrigger =
@@ -551,6 +612,24 @@ Generated by `runValidationContainerTests`.
     click in single selection, and a scroll with the `close` strategy. A second close while one is in progress does
     not change the trigger, and a close after a canceled one reports its own trigger.
 29. The open events keep an empty `detail`, and `hide()` emits no events.
+
+### Remote data
+
+30. The mode comes from the `filtering-options` attribute. In remote mode, the search input and the main input do not
+    filter the options; switching back to `local` filters them.
+31. `igcSearchInput` reports each change of the search text, in both modes, and of the main input in single selection,
+    also when it is cleared, and an empty text when a selection or a blur clears it; a blur also clears the search
+    input. It does not come on a property change or with `disableFiltering`. The `igcInput` of the inputs does not
+    leave the combo. In remote mode, the case-sensitive icon hides and an input in single selection activates no
+    option.
+32. The repro of issue 2519: a search that replaces `data` keeps the selected items in `value`, `selection` and the
+    input text, a later selection adds to them, and the first page shows them checked again with its own records.
+33. `deselect()` removes a selected item that `data` does not hold; `select()` selects an object that `data` does not
+    hold, with and without `valueKey`; `select()` without an argument keeps the other selected items, and selects
+    each value one time also before a new `data` syncs.
+34. `igcDataRequest` comes near the end of `data` with `startIndex` equal to `data.length`, also with grouping. It
+    does not repeat until `data` grows, and a new search, or a new `data` without a search, with a page of the same
+    length gets its own request. It does not come in local mode, while the list is closed, or with an empty `data`.
 
 ## Assumptions and limitations
 

@@ -24,6 +24,7 @@ import {
   stopPropagation,
 } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
+import { isObject } from '#internals/utils/types.js';
 import type { Validator } from '#internals/validators.js';
 import { all } from '#themes/combo/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -32,8 +33,13 @@ import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
-import type { VirtualScrollItemContext } from '../virtualization/types.js';
-import IgcVirtualScrollComponent from '../virtualization/virtualization.js';
+import type {
+  VirtualScrollItemContext,
+  VirtualScrollState,
+} from '../virtualization/types.js';
+import IgcVirtualScrollComponent, {
+  REMOTE_SCROLLING_THRESHOLD,
+} from '../virtualization/virtualization.js';
 import IgcComboHeaderComponent from './combo-header.js';
 import IgcComboItemComponent from './combo-item.js';
 import { DataState } from './controllers/data.js';
@@ -75,6 +81,8 @@ const i18n = {
   defaultEN: ComboResourceStringsEN,
 };
 
+const DATA_REQUEST_COUNT = 20;
+
 /* blazorSupportsVisualChildren */
 /**
  * The combo lets the user select one or more options from a list. Unlike the select, it shows the options in a
@@ -100,6 +108,8 @@ const i18n = {
  * @fires igcOpened - Emitted after the list of options opens on a user action.
  * @fires igcClosing - Emitted before the user closes the list of options. Cancelable. The `trigger` of the detail is the user action that closes the list.
  * @fires igcClosed - Emitted after the list of options closes on a user action. The `trigger` of the detail is the user action that closes the list.
+ * @fires igcSearchInput - Emitted when the user changes the text of the search input, or of the main input in single selection mode, and when a selection, a blur or the clear button clears the text.
+ * @fires igcDataRequest - Emitted in remote filtering mode when the user scrolls near the end of the options. Append the requested items to `data`. It is not emitted again until the length of `data` or the search text changes, or the list opens again.
  *
  * @csspart label - The encapsulated text label of the combo.
  * @csspart input - The main input field of the combo.
@@ -226,6 +236,10 @@ export default class IgcComboComponent<
   private _displayKey?: Keys<T>;
   private _placeholderSearch?: string;
   private _selected: Set<T> = new Set();
+  /** The length of `data` at the last `igcDataRequest`. */
+  private _lastDataRequest?: number;
+  /** The index of the last rendered option, from the list. */
+  private _lastRenderedIndex = -1;
   // The `displayKey` setter sets `filterKey`. Both keys are undefined here.
   private _filteringOptions: FilteringOptions<T> = {
     filterKey: undefined,
@@ -275,7 +289,10 @@ export default class IgcComboComponent<
 
   //#region Public attributes and properties
 
-  /** The data source used to generate the list of options. */
+  /**
+   * The data source used to generate the list of options. A new data source
+   * keeps the selection, also the selected items that it does not hold.
+   */
   /* treatAsRef */
   @property({ attribute: false })
   @coercedProperty<T[], IgcComboComponent<T>>({
@@ -579,6 +596,26 @@ export default class IgcComboComponent<
     }
   }
 
+  protected override updated(props: PropertyValues<this>): void {
+    const opened = props.has('open') && this.open;
+    const replaced =
+      props.has('data') && props.get('data')?.[0] !== this.data[0];
+
+    // An opening, or a replaced `data` rather than an appended one, starts a
+    // new sequence of requests. Opening again also retries a failed request.
+    if (opened || replaced) {
+      this._lastDataRequest = undefined;
+    }
+
+    // The list reports a changed window after its own update, and an
+    // unchanged one not at all, so check against the window after it.
+    if (opened || props.has('data')) {
+      void this._listRef.value?.updateComplete.then(() =>
+        this._checkDataRequest()
+      );
+    }
+  }
+
   //#endregion
 
   // #region Form Associated overrides
@@ -642,6 +679,30 @@ export default class IgcComboComponent<
     return this._hide(true, { trigger });
   }
 
+  /**
+   * Requests more data while the open list renders near the end of `data`.
+   * An empty `data` waits for the first page from the application.
+   */
+  private _checkDataRequest(): void {
+    const { length } = this.data;
+
+    if (
+      !this.open ||
+      !length ||
+      this.filteringOptions.mode !== 'remote' ||
+      this._lastDataRequest === length ||
+      this._lastRenderedIndex <
+        this._state.dataState.length - REMOTE_SCROLLING_THRESHOLD
+    ) {
+      return;
+    }
+
+    this._lastDataRequest = length;
+    this.emitEvent('igcDataRequest', {
+      detail: { startIndex: length, count: DATA_REQUEST_COUNT },
+    });
+  }
+
   private _setSingleSelectionDisplayValue(value: string): void {
     if (this.singleSelect && this._inputRef.value) {
       this._inputRef.value.value = value;
@@ -668,16 +729,65 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Resolves value keys or object references to data records, in data-source order.
-   * A repeated value resolves one time, so the change event has no duplicates.
+   * Resolves values or objects to records: the records of `data` in
+   * data-source order, then the selected records and the objects that `data`
+   * does not hold. A repeated value resolves one time, so the change event
+   * has no duplicates.
    */
   private _resolveItems(items: Item<T>[]): T[] {
     const index = this._dataIndex;
-    const positions = new Set(items.flatMap((item) => index.get(item) ?? []));
+    const positions = new Set<number>();
+    const others = new Set<T>();
+    let selected: Map<ComboValue<T>, T> | undefined;
 
-    return Array.from(positions)
-      .sort((a, b) => a - b)
-      .map((position) => this.data[position]);
+    for (const item of items) {
+      const value = isObject(item) ? this._valueOf(item as T) : item;
+      const found = index.get(value);
+
+      if (found) {
+        for (const position of found) {
+          positions.add(position);
+        }
+        continue;
+      }
+
+      selected ??= this._selectedByValue();
+      const record =
+        selected.get(value) ?? (isObject(item) ? (item as T) : undefined);
+
+      if (record) {
+        others.add(record);
+      }
+    }
+
+    return [
+      ...Array.from(positions)
+        .sort((a, b) => a - b)
+        .map((position) => this.data[position]),
+      ...others,
+    ];
+  }
+
+  /** The selected records whose values `data` does not hold. */
+  private _selectedOutsideData(): Set<T> {
+    const index = this._dataIndex;
+
+    return new Set(
+      Iterator.from(this._selected).filter(
+        (record) => !index.has(this._resolveItemValue(record))
+      )
+    );
+  }
+
+  private _selectedByValue(
+    selected: Set<T> = this._selected
+  ): Map<ComboValue<T>, T> {
+    return new Map(
+      Iterator.from(selected).map((record): [ComboValue<T>, T] => [
+        this._valueOf(record),
+        record,
+      ])
+    );
   }
 
   private _resolveItemValue(record: T): Item<T> {
@@ -744,7 +854,9 @@ export default class IgcComboComponent<
 
     if (isEmpty(collection) && selecting) {
       // Selects all items without an event, or clears a single selection.
-      this._selected = singleSelect ? new Set() : new Set(this.data);
+      this._selected = singleSelect
+        ? new Set()
+        : new Set(this.data).union(this._selectedOutsideData());
 
       if (singleSelect) {
         this._searchTerm = '';
@@ -773,7 +885,7 @@ export default class IgcComboComponent<
     // The change is committed, so drop the previous single selection and search term.
     if (selecting && singleSelect) {
       this._selected.clear();
-      this._searchTerm = '';
+      this._clearSearchTerm(emit);
     }
 
     for (const item of resolved) {
@@ -784,9 +896,14 @@ export default class IgcComboComponent<
     return true;
   }
 
-  /** One-way sync from `_formValue` to `_selected`. */
+  /**
+   * One-way sync from `_formValue` to `_selected`. A value that `data` does
+   * not hold keeps its selected record.
+   */
   private _syncSelectionFromValue(): void {
-    this._selected.clear();
+    const selected = this._selected;
+    let previous: Map<ComboValue<T>, T> | undefined;
+    this._selected = new Set();
 
     if (!isEmpty(this._formValue.value)) {
       const values = this.singleSelect
@@ -802,9 +919,13 @@ export default class IgcComboComponent<
       for (const value of values) {
         // First match only - mirrors resolving a value against the data source
         const position = index.get(value)?.[0];
+        const record =
+          position === undefined
+            ? (previous ??= this._selectedByValue(selected)).get(value)
+            : this.data[position];
 
-        if (position !== undefined) {
-          this._selected.add(this.data[position]);
+        if (record !== undefined) {
+          this._selected.add(record);
         }
       }
     }
@@ -848,7 +969,7 @@ export default class IgcComboComponent<
 
   private _clearSelection(): void {
     if (this.singleSelect) {
-      this._searchTerm = '';
+      this._clearSearchTerm(true);
       this._clearSingleSelection();
     } else {
       this._updateSelection([], 'deselection', true);
@@ -877,34 +998,59 @@ export default class IgcComboComponent<
 
   //#region Event handlers
 
-  protected async _handleMainInput({
-    detail,
-  }: CustomEvent<string>): Promise<void> {
+  protected async _handleMainInput(event: CustomEvent<string>): Promise<void> {
+    event.stopPropagation();
     this._setTouchedState();
     void this._show(true);
 
     // In single selection the main input filters, so honor `disableFiltering` here.
     if (!this.disableFiltering) {
-      this._searchTerm = detail;
+      this._searchTerm = event.detail;
+      this._emitSearchInput(event.detail);
     }
 
     // wait for the dataState to update after filtering
     await this.updateComplete;
 
-    this._activeIndex = this._state.firstItemIndex;
+    // Remote results come later, so no option of the old results becomes active.
+    this._activeIndex =
+      this.filteringOptions.mode === 'remote' ? -1 : this._state.firstItemIndex;
     this._clearSingleSelection();
   }
 
   protected override _handleBlur(): void {
     if (isEmpty(this._selected)) {
-      this._searchTerm = '';
+      this._clearSearchTerm(true);
       this._setSingleSelectionDisplayValue('');
     }
     super._handleBlur();
   }
 
-  protected _handleSearchInput({ detail }: CustomEvent<string>): void {
-    this._searchTerm = detail;
+  protected _handleSearchInput(event: CustomEvent<string>): void {
+    event.stopPropagation();
+    this._searchTerm = event.detail;
+    this._emitSearchInput(event.detail);
+  }
+
+  /** With `emit`, a user action clears the text, so `igcSearchInput` reports it. */
+  private _clearSearchTerm(emit: boolean): void {
+    if (emit && this._searchTerm) {
+      this._emitSearchInput('');
+    }
+
+    this._searchTerm = '';
+  }
+
+  private _emitSearchInput(searchText: string): void {
+    // A new search starts a new sequence of data requests.
+    this._lastDataRequest = undefined;
+    this.emitEvent('igcSearchInput', { detail: { searchText } });
+  }
+
+  private _handleListStateChange(event: CustomEvent<VirtualScrollState>): void {
+    event.stopPropagation();
+    this._lastRenderedIndex = event.detail.endIndex;
+    this._checkDataRequest();
   }
 
   private async _itemClickHandler(event: PointerEvent): Promise<void> {
@@ -967,8 +1113,9 @@ export default class IgcComboComponent<
 
   /**
    * Selects options in the list by reference or by `valueKey` value. It does
-   * not emit `igcChange`. Without an argument, it selects all items, or
-   * clears the selection in single selection mode.
+   * not emit `igcChange`. An object that `data` does not hold is selected as
+   * it is. Without an argument, it selects all the items of `data`, or clears
+   * the selection in single selection mode.
    * @param { Item<T> | Item<T>[] } items - One or more items to select. Pass multiple items as an array.
    * With a `valueKey`, pass the value of an item instead of its reference.
    *
@@ -1142,7 +1289,10 @@ export default class IgcComboComponent<
           @igcChange=${stopPropagation}
         >
           <igc-icon
-            slot=${bindIf(this.caseSensitiveIcon, 'suffix')}
+            slot=${bindIf(
+              this.caseSensitiveIcon && this.filteringOptions.mode !== 'remote',
+              'suffix'
+            )}
             name="case_sensitive"
             collection="default"
             part=${partMap({
@@ -1185,7 +1335,7 @@ export default class IgcComboComponent<
           .itemTemplate=${this._itemRenderer}
           ?hidden=${isEmpty(this._state.dataState)}
           @click=${this._itemClickHandler}
-          @igcStateChange=${stopPropagation}
+          @igcStateChange=${this._handleListStateChange}
           @igcDataRequest=${stopPropagation}
         >
         </igc-virtual-scroll>
