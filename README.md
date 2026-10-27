@@ -188,7 +188,7 @@ The condition names are `igc-theme-material`, `igc-theme-bootstrap`, `igc-theme-
 `igniteui-webcomponents/extras` has opt-in add-ons that build on the public API of the components. A bundle that does not import them does not contain them.
 
 - `createMarkdownRenderer()` renders the chat messages from Markdown, with syntax highlighting.
-- `bindComboDataSource()` binds a combo to a server that searches and pages.
+- `bindComboDataSource()` binds a combo to a server that searches and pages. It sets `totalItemCount` from the total of the server, so the list shows a placeholder row for each item to load, and `loading` while a search waits or a page loads.
 
 ```ts
 import { bindComboDataSource } from 'igniteui-webcomponents/extras';
@@ -202,7 +202,7 @@ const binding = bindComboDataSource(combo, {
   },
 });
 
-binding.dispose(); // removes the listeners and aborts the request in flight
+binding.dispose(); // removes the listeners, aborts the request in flight and clears `totalItemCount` and `loading`
 ```
 
 ## Browser support

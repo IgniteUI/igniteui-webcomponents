@@ -986,7 +986,7 @@ export const RemoteData: Story = {
     docs: {
       description: {
         story:
-          'A city picker that searches and pages on a server through `bindComboDataSource()` from `igniteui-webcomponents/extras`, ten cities at a time. Open the list, scroll to its end to load more, then type to search. Select a few cities and search for others: the selection stays, also for the cities that the new results do not hold. The log shows each request and answer.',
+          'A city picker that searches and pages on a server through `bindComboDataSource()` from `igniteui-webcomponents/extras`, twenty cities at a time. Open the list, scroll to its end to load more, then type to search. The list has a placeholder row for each city to load, so the scrollbar shows all the results, and a progress bar shows while a search waits or a page loads. Press End to jump to the last city: one request loads all the cities up to it. Select a few cities and search for others: the selection stays, also for the cities that the new results do not hold. The log shows each request and answer.',
       },
     },
   },
@@ -1023,7 +1023,7 @@ export const RemoteData: Story = {
       binding?.dispose();
       binding = element
         ? bindComboDataSource(element as IgcComboComponent<City>, source, {
-            pageSize: 10,
+            pageSize: 20,
           })
         : undefined;
     };

@@ -9,7 +9,11 @@ export interface ComboDataRequest {
   searchText: string;
   /** The index in the results of the first item to load. */
   startIndex: number;
-  /** The number of items to load. The source can return fewer. */
+  /**
+   * The number of items to load. It can be large after a jump, such as End.
+   * The source can return fewer, for example up to the page limit of the
+   * server, and the combo asks again for the rest.
+   */
   count: number;
 }
 
@@ -17,7 +21,12 @@ export interface ComboDataRequest {
 export interface ComboDataPage<T> {
   /** The items of the page. */
   items: T[];
-  /** The number of all the results, when the source knows it. No request goes past it. */
+  /**
+   * The number of all the results, when the source knows it. The combo shows a
+   * placeholder for each result to load, and no request starts after it. A
+   * next page without it keeps the current total, and a next page with no
+   * items ends the results.
+   */
   totalCount?: number;
 }
 
@@ -40,7 +49,11 @@ export interface ComboDataSource<T> {
 export interface ComboDataSourceOptions {
   /** The pause in the typing, in milliseconds, before a search loads. Default is `300`. */
   debounce?: number;
-  /** The number of items that each request loads. Default is `50`. */
+  /**
+   * The smallest number of items that a request loads. A request for the
+   * placeholders that the list renders after a jump, such as End, loads all
+   * the items up to them. Default is `50`.
+   */
   pageSize?: number;
   /**
    * Whether the first page loads when the user opens the list with no items.
@@ -55,8 +68,8 @@ export interface ComboDataBinding {
   /** Loads the first page of the current search text again. */
   refresh(): Promise<void>;
   /**
-   * Removes the listeners, aborts the requests in flight, and gives the combo
-   * back its filtering mode.
+   * Removes the listeners, aborts the requests in flight, gives the combo back
+   * its filtering mode, and clears its `totalItemCount` and `loading`.
    */
   dispose(): void;
 }
@@ -64,8 +77,9 @@ export interface ComboDataBinding {
 /**
  * Binds a combo to a remote source. The binding sets `filteringOptions.mode`
  * to `remote`. It loads the first page when the list opens with no items and
- * after a pause in the typing, and appends the next page on `igcDataRequest`,
- * up to the total count of the source. A newer search aborts the older
+ * after a pause in the typing, and appends the next page on `igcDataRequest`.
+ * It sets `totalItemCount` to the total count of the source, and `loading`
+ * while a search waits or a page loads. A newer search aborts the older
  * requests, and an answer for items that changed since is dropped.
  *
  * @example
@@ -97,25 +111,35 @@ export function bindComboDataSource<T extends object>(
   const requested = new Set<unknown>();
   // The search of the next first page, and the search of the items in `data`.
   let searchText = '';
-  let loaded = { searchText, totalCount: Number.POSITIVE_INFINITY };
+  let loadedSearchText = '';
   // Whether the search text changed while the list was closed.
   let stale = false;
   let request: AbortController | undefined;
 
   const busy = (): boolean => request !== undefined || search.active;
+  const showBusy = (): void => {
+    combo.loading = busy();
+  };
+
+  /** Aborts the request in flight, so its answer and its end do not apply. */
+  const cancel = (): void => {
+    request?.abort();
+    request = undefined;
+  };
 
   /** Loads a page. A newer load aborts it, so only the latest one applies. */
-  async function load(startIndex: number): Promise<void> {
+  async function load(startIndex: number, count = pageSize): Promise<void> {
     search.stop();
-    request?.abort();
+    cancel();
     const current = new AbortController();
     request = current;
+    showBusy();
     // A next page continues the search of the loaded items.
-    const text = startIndex ? loaded.searchText : searchText;
+    const text = startIndex ? loadedSearchText : searchText;
 
     try {
       const page = await source.load(
-        { searchText: text, startIndex, count: pageSize },
+        { searchText: text, startIndex, count },
         current.signal
       );
 
@@ -127,11 +151,15 @@ export function bindComboDataSource<T extends object>(
         return;
       }
 
-      loaded = {
-        searchText: text,
-        totalCount: page.totalCount ?? Number.POSITIVE_INFINITY,
-      };
+      loadedSearchText = text;
       combo.data = startIndex ? [...combo.data, ...page.items] : page.items;
+
+      if (!startIndex || page.totalCount != null) {
+        combo.totalItemCount = page.totalCount;
+      } else if (!page.items.length) {
+        // An empty next page ends the results.
+        combo.totalItemCount = startIndex;
+      }
     } catch (error) {
       if (!current.signal.aborted) {
         onError?.(error);
@@ -140,6 +168,7 @@ export function bindComboDataSource<T extends object>(
     } finally {
       if (request === current) {
         request = undefined;
+        showBusy();
       }
     }
 
@@ -213,7 +242,7 @@ export function bindComboDataSource<T extends object>(
     }
 
     searchText = text;
-    request?.abort();
+    cancel();
 
     // A search in a closed list waits for the next opening.
     if (combo.open) {
@@ -222,14 +251,16 @@ export function bindComboDataSource<T extends object>(
       search.stop();
       stale = true;
     }
+
+    showBusy();
   };
 
   const handleDataRequest = ({
     detail,
   }: CustomEvent<VirtualScrollDataRequest>): void => {
-    // A pending search replaces the items, and nothing comes after `totalCount`.
-    if (!busy() && detail.startIndex < loaded.totalCount) {
-      void load(detail.startIndex);
+    // A pending search replaces the items.
+    if (!busy()) {
+      void load(detail.startIndex, Math.max(pageSize, detail.count));
     }
   };
 
@@ -253,9 +284,11 @@ export function bindComboDataSource<T extends object>(
     refresh: () => (disposal.signal.aborted ? Promise.resolve() : load(0)),
     dispose() {
       search.stop();
-      request?.abort();
+      cancel();
       disposal.abort();
       combo.filteringOptions = { mode };
+      combo.totalItemCount = undefined;
+      combo.loading = false;
     },
   };
 }

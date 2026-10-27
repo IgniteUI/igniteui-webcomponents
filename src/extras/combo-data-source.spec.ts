@@ -8,6 +8,7 @@ import {
 } from '@open-wc/testing';
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { suppressResizeObserverLoopError } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateInput,
@@ -125,6 +126,7 @@ describe('Combo data source binding', () => {
 
   before(() => {
     defineComponents(IgcComboComponent);
+    suppressResizeObserverLoopError();
   });
 
   beforeEach(async () => {
@@ -179,17 +181,96 @@ describe('Combo data source binding', () => {
     await open();
     await answer(0);
     await answer(1);
-    list.scrollToIndex(19);
-    await settle();
-    await answer(2);
     list.scrollToIndex(PLACES.length - 1);
     await settle();
 
-    expect(requests.map(({ request }) => request.startIndex)).to.eql([
-      0, 10, 20,
+    // The second request loads all the placeholders that the list renders.
+    expect(
+      requests.map(({ request }) => [request.startIndex, request.count])
+    ).to.eql([
+      [0, 10],
+      [10, 14],
     ]);
-    expect(requests[1].request.count).to.equal(10);
     expect(ids(combo.data)).to.eql(ids(PLACES));
+  });
+
+  it('sets `totalItemCount` and `loading`, and clears them on dispose', async () => {
+    bind({ pageSize: 30 });
+    await open();
+
+    expect(combo.loading).to.be.true;
+
+    await answer(0);
+
+    expect(combo.loading).to.be.false;
+    expect(combo.totalItemCount).to.equal(PLACES.length);
+
+    void binding.refresh();
+    expect(combo.loading).to.be.true;
+
+    binding.dispose();
+
+    expect(combo.loading).to.be.false;
+    expect(combo.totalItemCount).to.be.undefined;
+  });
+
+  it('keeps the total of the first page for a next page without one', async () => {
+    source.load = async (request) => ({
+      items: page(request).items,
+      totalCount: request.startIndex ? undefined : PLACES.length,
+    });
+    bind();
+    await open();
+    await waitUntil(() => combo.data.length === PLACES.length);
+
+    expect(combo.totalItemCount).to.equal(PLACES.length);
+  });
+
+  it('pages without a total and ends the results on an empty page', async () => {
+    const load = source.load;
+    source.load = (request, signal) =>
+      load(request, signal).then(({ items }) => ({ items }));
+
+    bind();
+    await open();
+    await answer(0);
+    await answer(1);
+    await answer(2);
+
+    expect(
+      requests.map(({ request }) => [request.startIndex, request.count])
+    ).to.eql([
+      [0, 10],
+      [10, 20],
+      [24, 20],
+    ]);
+    expect(combo.totalItemCount).to.equal(PLACES.length);
+  });
+
+  it('loads at least `pageSize` items', async () => {
+    bind({ pageSize: 30 });
+    await open();
+    await answer(0);
+
+    combo.dispatchEvent(
+      new CustomEvent('igcDataRequest', {
+        detail: { startIndex: PLACES.length, count: 5 },
+      })
+    );
+
+    expect(requests.at(-1)!.request.count).to.equal(30);
+  });
+
+  it('keeps `loading` when an aborted request ends after a newer one starts', async () => {
+    bind();
+    await open();
+    void binding.refresh();
+
+    requests[0].answer();
+    await flush();
+
+    expect(requests[0].signal.aborted).to.be.true;
+    expect(combo.loading).to.be.true;
   });
 
   it('does not load on open with `loadOnOpen: false`', async () => {
@@ -272,6 +353,24 @@ describe('Combo data source binding', () => {
       expect(ids(combo.data)).to.eql(ids(PLACES.slice(0, 10)));
     });
 
+    it('shows `loading` while a search waits and loads', async () => {
+      bind({ debounce: 300, pageSize: 30 });
+      await open();
+      requests[0].answer();
+      await flush();
+
+      expect(combo.loading).to.be.false;
+
+      simulateInput(searchNative, { value: 'ber' });
+      expect(combo.loading).to.be.true;
+
+      clock.tick(300);
+      requests.at(-1)!.answer();
+      await flush();
+
+      expect(combo.loading).to.be.false;
+    });
+
     it('does not load again for the same trimmed text', async () => {
       bind({ debounce: 0 });
       await open();
@@ -307,7 +406,7 @@ describe('Combo data source binding', () => {
       expect(requests.at(-1)!.request).to.eql({
         searchText: '',
         startIndex: 10,
-        count: 10,
+        count: 20,
       });
     });
 
