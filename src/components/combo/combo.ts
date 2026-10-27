@@ -871,11 +871,26 @@ export default class IgcComboComponent<
       ? this.selection
       : this._resolveItems(collection);
 
+    return this._applySelection(resolved, type, emit);
+  }
+
+  /**
+   * Selects or deselects exactly `records`. With `emit`, `igcChange` can
+   * cancel the change.
+   * @returns Whether the change was committed.
+   */
+  private _applySelection(
+    records: T[],
+    type: 'selection' | 'deselection',
+    emit: boolean
+  ): boolean {
+    const selecting = type === 'selection';
+
     if (
       emit &&
       !this._emitSelectionChange({
-        newValue: this._previewValue(resolved, selecting),
-        items: resolved,
+        newValue: this._previewValue(records, selecting),
+        items: records,
         type,
       })
     ) {
@@ -883,12 +898,12 @@ export default class IgcComboComponent<
     }
 
     // The change is committed, so drop the previous single selection and search term.
-    if (selecting && singleSelect) {
+    if (selecting && this.singleSelect) {
       this._selected.clear();
       this._clearSearchTerm(emit);
     }
 
-    for (const item of resolved) {
+    for (const item of records) {
       selecting ? this._selected.add(item) : this._selected.delete(item);
     }
 
@@ -938,6 +953,16 @@ export default class IgcComboComponent<
     this._setSingleSelectionDisplayValue(this._displayValue);
     this._validate();
     this._listRef.value?.requestUpdate();
+  }
+
+  /** The items that the list shows, without the group headers. */
+  private _shownItems(): T[] {
+    // Applies a change of `data` or of the search text that no update has applied yet.
+    this._state.hostUpdate();
+
+    return this._state.dataState
+      .filter((record) => !record.header)
+      .map((record) => record.value);
   }
 
   /**
@@ -1166,6 +1191,39 @@ export default class IgcComboComponent<
    */
   public deselect(items?: Item<T> | Item<T>[]): void {
     this._updateSelection(items, 'deselection', false);
+    this._syncValueFromSelection();
+  }
+
+  /**
+   * Selects all the items that the list shows. It does not emit `igcChange`,
+   * and does nothing in single selection mode.
+   * @param {boolean} [ignoreFilter=false] - Whether to select all the items of `data`.
+   */
+  public selectAllItems(ignoreFilter = false): void {
+    if (this.singleSelect) {
+      return;
+    }
+
+    if (ignoreFilter) {
+      this.select();
+      return;
+    }
+
+    this._applySelection(this._shownItems(), 'selection', false);
+    this._syncValueFromSelection();
+  }
+
+  /**
+   * Deselects all the items that the list shows. It does not emit `igcChange`.
+   * @param {boolean} [ignoreFilter=false] - Whether to deselect all the items.
+   */
+  public deselectAllItems(ignoreFilter = false): void {
+    if (ignoreFilter) {
+      this.deselect();
+      return;
+    }
+
+    this._applySelection(this._shownItems(), 'deselection', false);
     this._syncValueFromSelection();
   }
 

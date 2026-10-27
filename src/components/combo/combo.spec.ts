@@ -2693,6 +2693,80 @@ describe('Combo', () => {
     });
   });
 
+  describe('Select all methods', () => {
+    async function search(text: string): Promise<void> {
+      searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: text }));
+      await elementUpdated(combo);
+    }
+
+    beforeEach(async () => {
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+          group-key="country"
+        ></igc-combo>`
+      );
+      searchInput = combo.renderRoot.querySelector('[part="search-input"]')!;
+    });
+
+    it('selects and deselects the items that the list shows', async () => {
+      const eventSpy = spy(combo, 'emitEvent');
+
+      await search('o');
+      combo.selectAllItems();
+
+      expect(combo.value).to.eql(['BG01', 'BG02', 'US01', 'US02', 'US03']);
+
+      await search('s');
+      combo.deselectAllItems();
+
+      expect(combo.value).to.eql(['BG02', 'US01']);
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    it('selects and deselects all the items with `ignoreFilter`', async () => {
+      await search('sof');
+      combo.selectAllItems(true);
+
+      expect(combo.value).lengthOf(cities.length);
+
+      combo.deselectAllItems(true);
+
+      expect(combo.value).to.be.empty;
+    });
+
+    it('changes nothing when the list shows no items', async () => {
+      combo.select('BG01');
+      await search('xyz');
+
+      combo.selectAllItems();
+      combo.deselectAllItems();
+
+      expect(combo.value).to.eql(['BG01']);
+    });
+
+    it('acts on a new data at once', () => {
+      combo.data = cities.slice(0, 2);
+      combo.selectAllItems();
+
+      expect(combo.value).to.eql(['BG01', 'BG02']);
+    });
+
+    it('selects nothing in single selection, and deselects a shown item', async () => {
+      combo.singleSelect = true;
+      combo.select('US02');
+      await elementUpdated(combo);
+
+      combo.selectAllItems();
+      expect(combo.value).to.eql(['US02']);
+
+      combo.deselectAllItems();
+      expect(combo.value).to.be.empty;
+    });
+  });
+
   describe('Scroll strategy', () => {
     let container: HTMLDivElement;
 
