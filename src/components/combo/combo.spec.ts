@@ -2802,7 +2802,7 @@ describe('Combo', () => {
         ]);
       });
 
-      it('leaves the select-all option out of the requests and the positions', async () => {
+      it('leaves the select-all option out of the requests and counts it in the positions', async () => {
         remote.showSelectAll = true;
         remote.totalItemCount = 12;
         await openComboPopover(remote);
@@ -2813,7 +2813,7 @@ describe('Combo', () => {
           { startIndex: 10, count: 2 },
         ]);
         expect(placeholders().at(-1)!.getAttribute('aria-posinset')).to.equal(
-          '12'
+          '13'
         );
 
         remote.selectAllItems();
@@ -3095,7 +3095,7 @@ describe('Combo', () => {
       await openComboPopover(combo);
     });
 
-    it('comes first in multiple selection and does not count as an option', async () => {
+    it('comes first in multiple selection and counts as the first option', async () => {
       const first = list.querySelector('[part~="item"], igc-combo-header');
       const [, option] = items(combo);
 
@@ -3103,9 +3103,11 @@ describe('Combo', () => {
       expect(first!.textContent?.trim()).to.equal('Select all');
       expect(ariaOf(first!)).to.eql({ selected: 'false', checked: null });
       expect(first!.hasAttribute('aria-checked')).to.be.false;
-      expect(first!.hasAttribute('aria-setsize')).to.be.false;
-      expect(option.getAttribute('aria-posinset')).to.equal('1');
-      expect(option.getAttribute('aria-setsize')).to.equal(`${cities.length}`);
+      expect(first!.getAttribute('aria-posinset')).to.equal('1');
+      expect(option.getAttribute('aria-posinset')).to.equal('2');
+      expect(option.getAttribute('aria-setsize')).to.equal(
+        `${cities.length + 1}`
+      );
 
       await expect(combo).shadowDom.to.be.accessible(
         axeReflectedRelationsOptions
@@ -3235,6 +3237,195 @@ describe('Combo', () => {
       simulateKeyboard(list, arrowUp);
 
       expect(isFocused(searchInput)).to.be.true;
+    });
+  });
+
+  describe('Group selection', () => {
+    let eventSpy: SinonSpy;
+
+    const headers = () => [
+      ...list.querySelectorAll<IgcComboItemComponent>('[part~="group-header"]'),
+    ];
+
+    const checkboxOf = (item: Element) =>
+      item.shadowRoot!.querySelector('igc-checkbox')!;
+
+    const changes = () =>
+      eventSpy.withArgs('igcChange').args.map(([, { detail }]) => ({
+        ...detail,
+        items: detail.items.map(({ id }: City) => id),
+      }));
+
+    async function search(text: string): Promise<void> {
+      searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: text }));
+      await comboStable(combo);
+    }
+
+    beforeEach(async () => {
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+          group-key="country"
+          group-selection
+        ></igc-combo>`
+      );
+      searchInput = combo.renderRoot.querySelector('[part="search-input"]')!;
+      list = combo.renderRoot.querySelector('igc-virtual-scroll')!;
+      eventSpy = spy(combo, 'emitEvent');
+      await openComboPopover(combo);
+    });
+
+    it('renders the group headers as options with a checkbox in multiple selection', async () => {
+      const [bulgaria] = headers();
+      const [first] = items(combo);
+
+      expect(headers()).lengthOf(2);
+      expect(bulgaria.localName).to.equal('igc-combo-item');
+      expect(bulgaria.textContent?.trim()).to.equal('Bulgaria');
+      expect(internalsOf(bulgaria)?.getARIA('ariaSelected')).to.equal('false');
+      expect(checkboxOf(bulgaria)).to.exist;
+      // The two headers count as options.
+      expect(bulgaria.getAttribute('aria-posinset')).to.equal('1');
+      expect(first.getAttribute('aria-posinset')).to.equal('2');
+      expect(first.getAttribute('aria-setsize')).to.equal(
+        `${cities.length + 2}`
+      );
+
+      await expect(combo).shadowDom.to.be.accessible(
+        axeReflectedRelationsOptions
+      );
+
+      combo.singleSelect = true;
+      await comboStable(combo);
+
+      expect(headers().map(({ localName }) => localName)).to.eql([
+        'igc-combo-header',
+        'igc-combo-header',
+      ]);
+      expect(items(combo)[0].getAttribute('aria-posinset')).to.equal('1');
+      expect(items(combo)[0].getAttribute('aria-setsize')).to.equal(
+        `${cities.length}`
+      );
+    });
+
+    it('selects the shown items of the group, then deselects them, with one igcChange each', async () => {
+      await search('o');
+
+      simulateClick(headers()[0]);
+      await comboStable(combo);
+
+      expect(combo.value).to.eql(['BG01', 'BG02']);
+      expect(internalsOf(headers()[0])?.getARIA('ariaSelected')).to.equal(
+        'true'
+      );
+      expect(combo.open).to.be.true;
+
+      simulateClick(headers()[0]);
+      await comboStable(combo);
+
+      expect(combo.value).to.be.empty;
+      expect(changes()).to.eql([
+        {
+          newValue: ['BG01', 'BG02'],
+          items: ['BG01', 'BG02'],
+          type: 'selection',
+        },
+        { newValue: [], items: ['BG01', 'BG02'], type: 'deselection' },
+      ]);
+    });
+
+    it('shows the mixed state and selects only the other items of the group', async () => {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(
+        'igc-combo::part(checkbox indeterminate) { scroll-margin-top: 7px; }'
+      );
+
+      combo.select('BG01');
+      await comboStable(combo);
+
+      const [bulgaria, unitedStates] = headers();
+
+      await withDocumentSheets([sheet], () => {
+        const control =
+          checkboxOf(bulgaria).renderRoot.querySelector('[part~="control"]')!;
+
+        expect(getComputedStyle(control).scrollMarginTop).to.equal('7px');
+      });
+
+      expect(checkboxOf(bulgaria).indeterminate).to.be.true;
+      expect(internalsOf(bulgaria)?.getARIA('ariaSelected')).to.equal('false');
+      expect(checkboxOf(unitedStates).indeterminate).to.be.false;
+
+      simulateClick(bulgaria);
+      await comboStable(combo);
+
+      expect(changes().map(({ items }) => items)).to.eql([['BG02', 'BG03']]);
+      expect(combo.value).to.eql(['BG01', 'BG02', 'BG03']);
+      expect(checkboxOf(headers()[0]).checked).to.be.true;
+    });
+
+    it('stops on the group headers with the arrow keys and Home, and Space toggles them', async () => {
+      simulateKeyboard(list, homeKey);
+      simulateKeyboard(list, spaceBar);
+      await comboStable(combo);
+
+      expect(headers()[0].active).to.be.true;
+      expect(combo.value).to.eql(['BG01', 'BG02', 'BG03']);
+
+      for (let i = 0; i < 4; i++) {
+        simulateKeyboard(list, arrowDown);
+      }
+      await comboStable(combo);
+
+      expect(headers()[1].active).to.be.true;
+
+      simulateKeyboard(list, enterKey);
+      await comboStable(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.value).to.eql(['BG01', 'BG02', 'BG03']);
+    });
+
+    it('works with the select-all option', async () => {
+      combo.showSelectAll = true;
+      await comboStable(combo);
+
+      simulateClick(list.querySelector('[part~="select-all"]')!);
+      await comboStable(combo);
+
+      expect(
+        headers().map((header) => internalsOf(header)?.getARIA('ariaSelected'))
+      ).to.eql(['true', 'true']);
+    });
+
+    it('lists an item that data holds twice one time in igcChange', async () => {
+      combo.data = [cities[0], ...cities];
+      await comboStable(combo);
+
+      simulateClick(headers()[0]);
+      await comboStable(combo);
+
+      expect(changes()[0].items).to.eql(['BG01', 'BG02', 'BG03']);
+    });
+
+    it('resets the active option when group selection turns off', async () => {
+      simulateKeyboard(list, homeKey);
+      await comboStable(combo);
+
+      expect(headers()[0].active).to.be.true;
+
+      combo.groupSelection = false;
+      await comboStable(combo);
+
+      expect(headers()[0].localName).to.equal('igc-combo-header');
+      expect(items(combo).some((item) => item.active)).to.be.false;
+
+      simulateKeyboard(list, homeKey);
+      await comboStable(combo);
+
+      expect(items(combo)[0].active).to.be.true;
     });
   });
 

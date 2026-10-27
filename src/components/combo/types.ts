@@ -11,8 +11,9 @@ export type ComboRecord<T extends object> = {
   value: T;
   header: boolean;
   /**
-   * 1-based position among the visible options. `-1` for the other records.
-   * Each pipeline run sets it again.
+   * 1-based position among the options, for `aria-posinset`. `-1` for the
+   * other records and for the shared select-all and placeholder records,
+   * whose positions come from their index. Each pipeline run sets it again.
    */
   position: number;
   /** The group value of a header record. Not set on the other records. */

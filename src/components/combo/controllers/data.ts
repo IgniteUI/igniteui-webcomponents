@@ -47,7 +47,7 @@ export class DataState<T extends object> implements ReactiveController {
   private _source?: T[];
 
   private _dataState: ComboRecord<T>[] = [];
-  private _itemCount = 0;
+  private _optionCount = 0;
   private _loadedLength = 0;
   private _searchTerm = '';
   private _dirty = true;
@@ -61,9 +61,9 @@ export class DataState<T extends object> implements ReactiveController {
     return this._dataState;
   }
 
-  /** The number of options in {@link dataState}, with the placeholders and without the group headers. */
-  public get itemCount(): number {
-    return this._itemCount;
+  /** The number of options in {@link dataState}: the `aria-setsize` of each option. See {@link isOption}. */
+  public get optionCount(): number {
+    return this._optionCount;
   }
 
   /** The number of records in {@link dataState} before the placeholders. */
@@ -83,9 +83,14 @@ export class DataState<T extends object> implements ReactiveController {
       : Number.POSITIVE_INFINITY;
   }
 
-  /** The index of the first record that is not a group header, or `-1`. */
-  public get firstItemIndex(): number {
-    return this._dataState.findIndex((record) => !record.header);
+  /** Whether the group headers are options. See `groupSelection`. */
+  private get _selectableGroups(): boolean {
+    return this._host.groupSelection && !this._host.singleSelect;
+  }
+
+  /** The index of the first option, or `-1`. See {@link isOption}. */
+  public get firstOptionIndex(): number {
+    return this._dataState.findIndex((record) => this.isOption(record));
   }
 
   public set searchTerm(value: string) {
@@ -166,11 +171,11 @@ export class DataState<T extends object> implements ReactiveController {
   }
 
   /**
-   * Filters and groups the indexed source, then numbers the visible options,
-   * so `aria-posinset` and `aria-setsize` skip the group headers. Puts the
-   * select-all option first, and appends a placeholder for each item of
-   * {@link totalCount} that a non-empty `data` does not hold. Only this
-   * controller owns the records, so `position` changes in place.
+   * Filters and groups the indexed source, then numbers the options for
+   * `aria-posinset`. Puts the select-all option first, and appends a
+   * placeholder for each item of {@link totalCount} that a non-empty `data`
+   * does not hold. Only this controller owns the records, so `position`
+   * changes in place.
    */
   private _apply(records: ComboRecord<T>[]): ComboRecord<T>[] {
     const result = this._grouping.apply(
@@ -178,12 +183,15 @@ export class DataState<T extends object> implements ReactiveController {
       this
     );
 
-    let position = 0;
+    // A group shows only with items, so a result shows items.
+    const selectAll =
+      result.length > 0 && this._host.showSelectAll && !this._host.singleSelect;
+
+    // The select-all option is the first option.
+    let position = selectAll ? 1 : 0;
 
     for (const record of result) {
-      if (!record.header) {
-        record.position = ++position;
-      }
+      record.position = this.isOption(record) ? ++position : -1;
     }
 
     // The application loads the first page, so an empty `data` shows the
@@ -191,12 +199,9 @@ export class DataState<T extends object> implements ReactiveController {
     const missing = records.length ? this.totalCount - records.length : 0;
     const placeholders = Number.isFinite(missing) && missing > 0 ? missing : 0;
 
-    const selectAll =
-      position > 0 && this._host.showSelectAll && !this._host.singleSelect;
-
     const head: ComboRecord<T>[] = selectAll ? [SELECT_ALL] : [];
 
-    this._itemCount = position + placeholders;
+    this._optionCount = position + placeholders;
     this._loadedLength = head.length + result.length;
 
     if (!(head.length || placeholders)) {
@@ -212,6 +217,39 @@ export class DataState<T extends object> implements ReactiveController {
   //#endregion
 
   //#region Public API for host component
+
+  /** Whether the record is an option: not a group header, unless {@link _selectableGroups}. */
+  public isOption(record: ComboRecord<T>): boolean {
+    return !record.header || this._selectableGroups;
+  }
+
+  /**
+   * Whether the record is an option that toggles the shown items after it:
+   * the select-all option, or a group header with {@link _selectableGroups}.
+   */
+  public isToggle(record: ComboRecord<T>): boolean {
+    return (
+      record.kind === 'select-all' || (record.header && this._selectableGroups)
+    );
+  }
+
+  /**
+   * The end of the records that the toggle option at `index` toggles: the
+   * next group header, or the end of the loaded records.
+   */
+  public endOf(index: number): number {
+    if (!this._dataState[index].header) {
+      return this._loadedLength;
+    }
+
+    let end = index + 1;
+
+    while (end < this._loadedLength && !this._dataState[end].header) {
+      end++;
+    }
+
+    return end;
+  }
 
   /** Only group sorting uses the collator, so the data changes only if it exists. */
   public updateLocale(): void {

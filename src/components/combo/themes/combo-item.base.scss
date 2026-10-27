@@ -1,5 +1,8 @@
 @use 'styles/utilities' as *;
 @use '../../dropdown/themes/dropdown-item.base' as *;
+@use '../../dropdown/themes/light/themes' as dropdown-theme;
+
+$dropdown-theme: dropdown-theme.$material;
 
 :host {
     // Overwrite dropdown-header default size.
@@ -16,6 +19,14 @@
         width: 100%;
         align-items: center;
     }
+}
+
+// A group header option keeps the text style of a group header. The item
+// theme comes after this sheet, so its active, hover and selected colors win.
+:host([part~='group-header']) {
+    @include type-style('overline');
+
+    color: var-get($dropdown-theme, 'header-text-color');
 }
 
 igc-checkbox {

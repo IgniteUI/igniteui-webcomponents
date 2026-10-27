@@ -174,6 +174,13 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    groupSelection: {
+      type: 'boolean',
+      description:
+        'Whether a group header is an option that selects the items of its group\nthat the list shows, or deselects them when all of them are selected.\nOnly in multiple selection mode with `groupKey`.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
     locale: {
       type: 'string',
       description:
@@ -232,6 +239,7 @@ const metadata: Meta<IgcComboComponent> = {
     disableClear: false,
     loading: false,
     showSelectAll: false,
+    groupSelection: false,
     required: false,
     disabled: false,
     invalid: false,
@@ -307,6 +315,12 @@ interface IgcComboArgs {
    * selection mode.
    */
   showSelectAll: boolean;
+  /**
+   * Whether a group header is an option that selects the items of its group
+   * that the list shows, or deselects them when all of them are selected.
+   * Only in multiple selection mode with `groupKey`.
+   */
+  groupSelection: boolean;
   /**
    * The locale of the component. Without it, the component takes its own
    * `lang`, else the locale of the nearest ancestor that has a `locale` (a
@@ -436,6 +450,7 @@ export const Default: Story = {
       ?invalid=${args.invalid}
       ?single-select=${args.singleSelect}
       ?show-select-all=${args.showSelectAll}
+      ?group-selection=${args.groupSelection}
       ?loading=${args.loading}
     >
       <igc-icon slot="prefix" name="location"></igc-icon>

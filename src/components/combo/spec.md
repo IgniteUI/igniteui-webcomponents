@@ -46,6 +46,7 @@
     - [Select all methods](#select-all-methods)
     - [Placeholders and loading](#placeholders-and-loading)
     - [Select-all option](#select-all-option)
+    - [Group selection](#group-selection)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -74,6 +75,8 @@
 |      16 | 2026-10-27 | The select-all option (`showSelectAll`) and the `select-all` and `indeterminate` parts |
 |      17 | 2026-10-27 | The focus moves to the main input when the list closes around it                     |
 |      18 | 2026-10-27 | `igcChange.newValue` has the order of the `value` that follows                        |
+|      19 | 2026-10-27 | Group selection (`groupSelection`); the group headers have no `group` role            |
+|      20 | 2026-10-27 | The select-all option and the group header options count in `aria-posinset` and `aria-setsize` |
 
 ## Overview
 
@@ -205,8 +208,9 @@ combo.selection;  // T[] - the records from the data source
 `selectAllItems()` and `deselectAllItems()` act on the items that the filtered list shows, without `igcChange`. In
 multiple selection, `show-select-all` puts a "Select all" option first in the list. A click or Space on it selects the
 shown items, or deselects them when all of them are selected, with one `igcChange` for the items that change. Its
-checkbox is checked when all the shown items are selected and indeterminate when only some are. It is not counted in
-`aria-setsize`, and the list shows it only while it shows items. With `totalItemCount`, it acts on the loaded items.
+checkbox is checked when all the shown items are selected and indeterminate when only some are. It is the first
+option in `aria-posinset` and `aria-setsize`, and the list shows it only while it shows items. With `totalItemCount`,
+it acts on the loaded items.
 
 ```html
 <igc-combo show-select-all></igc-combo>
@@ -237,6 +241,14 @@ each property on each render does not clear it.
 When a group key is set, the options are grouped by it. Items whose group key resolves to `null` or `undefined` are
 aggregated into an `Other` group. `groupSorting` controls the direction - `asc` by default, `desc`, or `none` - and
 the comparison uses the collation of `locale`, also after a change of the global locale.
+
+In multiple selection, `group-selection` makes each group header an option that works like the select-all option
+for the items of its group that the list shows. The header keeps the text style of a group header, and the arrow
+keys and Home stop on it.
+
+```html
+<igc-combo group-key="country" group-selection></igc-combo>
+```
 
 #### Templating
 
@@ -378,7 +390,7 @@ While the list of options **is** visible:
 | ------------------------------------------- | ------------------------------------------------------------------------------ |
 | <kbd>Arrow Down</kbd>                       | Activates the next option; at the last option it does nothing.                |
 | <kbd>Arrow Up</kbd>                         | Activates the previous option; from the first option it returns to the input. |
-| <kbd>Space</kbd>                            | Selects or deselects the active option. On the select-all option, selects the shown items, or deselects them when all of them are selected. |
+| <kbd>Space</kbd>                            | Selects or deselects the active option. On the select-all option, or on a group header of `groupSelection`, selects its shown items, or deselects them when all of them are selected. |
 | <kbd>Enter</kbd>                            | Selects the active option in single selection mode, and closes the list in all modes. On a placeholder of `totalItemCount`, it does nothing. |
 | <kbd>Home</kbd> / <kbd>End</kbd>            | Activates the first or the last option.                                       |
 | <kbd>Escape</kbd>                           | Closes the list. The combo stays focused.                                     |
@@ -407,6 +419,7 @@ Typing while the component is focused filters the list down to the closest match
 | totalItemCount         | total-item-count           | No        | `number \| undefined`               | -                 | The number of all the items of a remote source, when the source knows it. In remote filtering mode, the list shows a placeholder for each item that `data` does not hold yet. |
 | loading                | loading                    | Yes       | `boolean`                           | false             | Whether the combo loads options. A spinner, which the `loading` slot can replace, then takes the place of the toggle icon, and an empty list shows a loading message instead of the empty message. |
 | showSelectAll          | show-select-all            | No        | `boolean`                           | false             | Whether the list starts with an option that selects all the items that it shows, or deselects them when all of them are selected. Only in multiple selection mode. |
+| groupSelection         | group-selection            | No        | `boolean`                           | false             | Whether a group header is an option that selects the items of its group that the list shows, or deselects them when all of them are selected. Only in multiple selection mode with `groupKey`. |
 | itemTemplate           | -                          | No        | `ComboItemTemplate<T>`              | -                 | The template for the content of each combo item.                |
 | groupHeaderTemplate    | -                          | No        | `ComboGroupHeaderTemplate<T>`       | -                 | The template for the content of each group header.              |
 | open                   | open                       | Yes       | `boolean`                           | false             | Whether the component is open.                                |
@@ -559,12 +572,12 @@ it, also on `hide()` from such a button, the focus moves to the main input, beca
 | `list`               | The list of options box.                                       |
 | `item`               | Each item in the list of options.                              |
 | `group-header`       | Each group header in the list of options.                      |
-| `active`             | Added to the item part when the item is active, and to the case-icon part while case-sensitive filtering is on. |
-| `selected`           | Added to the item part when the item is selected.              |
+| `active`             | Added to the item part when the item is active, to the group-header part when the header is an active option of `groupSelection`, and to the case-icon part while case-sensitive filtering is on. |
+| `selected`           | Added to the item part when the item is selected, and to the group-header part of `groupSelection` when all the shown items of the group are selected. |
 | `checkbox`           | The checkbox of each item in the list.                         |
 | `checkbox-indicator` | The checkbox indicator of each item in the list.               |
 | `checked`            | Added to the checkbox and checkbox-indicator parts when the checkbox is checked. |
-| `indeterminate`      | Added to the checkbox and checkbox-indicator parts of the select-all option while only some of the shown items are selected. |
+| `indeterminate`      | Added to the checkbox and checkbox-indicator parts of the select-all option, or of a group header of `groupSelection`, while only some of its shown items are selected. |
 | `select-all`         | Added to the item part of the select-all option.               |
 | `header` / `footer`  | The containers holding the header and footer content.          |
 | `empty`              | The container holding the empty content.                       |
@@ -709,8 +722,8 @@ Generated by `runValidationContainerTests`.
 ### Select-all option
 
 39. The option comes first in multiple selection, before the group headers, with the "Select all" text and
-    `aria-selected`. It does not count in `aria-posinset` or `aria-setsize`, passes the accessibility audit, and does not
-    show in single selection or while the list shows no items.
+    `aria-selected`. It is the first option in `aria-posinset` and `aria-setsize`, passes the accessibility audit, and
+    does not show in single selection or while the list shows no items.
 40. A click selects the shown items, and a second click deselects them, with one `igcChange` each. With some shown
     items selected, the option is not selected, its checkbox is indeterminate with the `indeterminate` part, and a click
     selects only the other shown items. A canceled `igcChange` keeps the selection. A new `value` while the list is
@@ -719,6 +732,17 @@ Generated by `runValidationContainerTests`.
     option clears the active option. A click on an item without a value selects only that item.
 42. With `totalItemCount` in remote mode, the option does not change the requests or the positions of the
     placeholders, and the selection methods select only the loaded items.
+
+### Group selection
+
+43. In multiple selection, the group headers are options with a checkbox and `aria-selected`, they count in
+    `aria-posinset` and `aria-setsize`, and the accessibility audit passes. In single selection, they are headers
+    again, and the items take the positions back.
+44. A click on a header selects the shown items of its group, and a second click deselects them, with one
+    `igcChange` each, and the list stays open. With some of them selected, the checkbox is indeterminate with the
+    `indeterminate` part, and a click selects only the others.
+45. Home and the arrow keys stop on the headers, Space toggles them, and Enter closes the list. With the select-all
+    option, a click on it selects the headers too. Turning group selection off clears an active header.
 
 ## Assumptions and limitations
 
@@ -735,10 +759,11 @@ Generated by `runValidationContainerTests`.
 
 - The anchor exposes a `combobox` role with `aria-haspopup`, the expanded state, the relation to the list and the
   active descendant, all projected onto its native input as element references.
-- The list has a `listbox` role, the items an `option` role with their selected state, and the group headers a
-  `group` role. The select-all option is selected while all the shown items are selected. It has no `aria-checked`,
-  because a listbox uses one of `aria-selected` and `aria-checked` for all its options, so its mixed state shows only on
-  its checkbox. A
+- The list has a `listbox` role, and the items an `option` role with their selected state. The group headers have no
+  role, except with `groupSelection`, where they are options. The select-all option is selected while all the shown
+  items are selected, and a group header option while all the shown items of its group are. They have no
+  `aria-checked`, because a listbox uses one of `aria-selected` and `aria-checked` for all its options, so their mixed
+  state shows only on their checkbox. A
   placeholder of `totalItemCount` is a disabled option named "Loading". While `loading` is set, a
   `progressbar` named "Loading" takes the place of the toggle icon. The listbox has no `aria-busy`, so a screen reader continues to
   read the loaded options while the next page loads.

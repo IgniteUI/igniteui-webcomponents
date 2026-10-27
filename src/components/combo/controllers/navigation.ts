@@ -59,7 +59,7 @@ export class ComboNavigationController<T extends object> {
   }
 
   private get _firstItem(): number {
-    return this._state.firstItemIndex;
+    return this._state.firstOptionIndex;
   }
 
   private get _lastItem(): number {
@@ -289,7 +289,7 @@ export class ComboNavigationController<T extends object> {
     const items = this._state.dataState;
 
     for (let i = this.active + delta; i >= 0 && i < items.length; i += delta) {
-      if (!items[i].header) {
+      if (this._state.isOption(items[i])) {
         this._setActive(i);
         return;
       }

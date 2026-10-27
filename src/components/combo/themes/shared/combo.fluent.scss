@@ -70,3 +70,7 @@ $dropdown-theme: dropdown-theme.$fluent;
         background: transparent;
     }
 }
+
+igc-combo-item[part~='group-header'] {
+    @include type-style('subtitle-2');
+}

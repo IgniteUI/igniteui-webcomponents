@@ -130,12 +130,12 @@ const DATA_REQUEST_COUNT = 20;
  * @csspart list - The list of options box of the combo.
  * @csspart item - Each item in the list of options.
  * @csspart group-header - Each group header in the list of options.
- * @csspart active - Added to the item part when the item is active, and to the case-icon part while case-sensitive filtering is on.
- * @csspart selected - Added to the item part when the item is selected.
+ * @csspart active - Added to the item part when the item is active, to the group-header part when the header is an active option of `groupSelection`, and to the case-icon part while case-sensitive filtering is on.
+ * @csspart selected - Added to the item part when the item is selected, and to the group-header part of `groupSelection` when all the shown items of the group are selected.
  * @csspart checkbox - The checkbox of each item in the list.
  * @csspart checkbox-indicator - The checkbox indicator of each item in the list.
  * @csspart checked - Added to the checkbox and checkbox-indicator parts when the checkbox is checked.
- * @csspart indeterminate - Added to the checkbox and checkbox-indicator parts of the select-all option while only some of the shown items are selected.
+ * @csspart indeterminate - Added to the checkbox and checkbox-indicator parts of the select-all option, or of a group header of `groupSelection`, while only some of its shown items are selected.
  * @csspart select-all - Added to the item part of the select-all option.
  * @csspart header - The container holding the header content of the combo.
  * @csspart footer - The container holding the footer content of the combo.
@@ -507,6 +507,16 @@ export default class IgcComboComponent<
   @property({ type: Boolean, attribute: 'show-select-all' })
   public showSelectAll = false;
 
+  /**
+   * Whether a group header is an option that selects the items of its group
+   * that the list shows, or deselects them when all of them are selected.
+   * Only in multiple selection mode with `groupKey`.
+   * @attr group-selection
+   * @default false
+   */
+  @property({ type: Boolean, attribute: 'group-selection' })
+  public groupSelection = false;
+
   /* blazorSuppress */
   /**
    * The template used for the content of each combo item.
@@ -624,8 +634,12 @@ export default class IgcComboComponent<
       this.focus({ preventScroll: true });
     }
 
-    // The select-all option moves the other records by one.
-    if (props.has('showSelectAll') && this.hasUpdated) {
+    // The select-all option moves the other records by one, and an active
+    // group header can stop being an option.
+    if (
+      (props.has('showSelectAll') || props.has('groupSelection')) &&
+      this.hasUpdated
+    ) {
       this._activeIndex = -1;
     }
 
@@ -635,6 +649,7 @@ export default class IgcComboComponent<
       props.has('filteringOptions') ||
       props.has('totalItemCount') ||
       props.has('showSelectAll') ||
+      props.has('groupSelection') ||
       props.has('singleSelect') ||
       props.has('data')
     ) {
@@ -1022,20 +1037,35 @@ export default class IgcComboComponent<
     this._listRef.value?.requestUpdate();
   }
 
-  /** The items that the list shows. See {@link isItemRecord}. */
-  private _shownItems(): T[] {
-    // Applies a change of `data` or of the search text that no update has applied yet.
-    this._state.hostUpdate();
+  /** The items of the records from `start` to `end`, each one time. See {@link isItemRecord}. */
+  private _itemsIn(start: number, end: number): T[] {
+    const records = this._state.dataState;
+    const items = new Set<T>();
 
-    return this._state.dataState
-      .filter(isItemRecord)
-      .map((record) => record.value);
+    for (let i = start; i < end; i++) {
+      if (isItemRecord(records[i])) {
+        items.add(records[i].value);
+      }
+    }
+
+    return [...items];
+  }
+
+  /** The items that the list shows. */
+  private _shownItems(): T[] {
+    // Applies a change of `data` or of the search text that no update has
+    // applied yet. The update gives the new records to the list before it
+    // renders the selection.
+    this._state.hostUpdate();
+    this.requestUpdate();
+
+    return this._itemsIn(0, this._state.loadedLength);
   }
 
   /**
    * Selects the record at `index`. With `toggle`, deselects a selected one.
-   * The select-all option toggles the shown items.
-   * @returns Whether `index` holds an item or the select-all option.
+   * A toggle option toggles its items. See {@link DataState.isToggle}.
+   * @returns Whether `index` holds an item or a toggle option.
    */
   private _selectAt(index: number, toggle: boolean): boolean {
     const record = this._state.dataState[index];
@@ -1049,8 +1079,8 @@ export default class IgcComboComponent<
         toggle && this._selected.has(item) ? 'deselection' : 'selection',
         true
       );
-    } else if (record?.kind === 'select-all') {
-      this._toggleShownItems();
+    } else if (record && this._state.isToggle(record)) {
+      this._toggleItemsOf(index);
     } else {
       return false;
     }
@@ -1061,31 +1091,34 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Selects the shown items, or deselects them when all of them are selected,
-   * with one `igcChange` for the items that change.
+   * Selects the items of the toggle option at `index`, or deselects them when
+   * all of them are selected, with one `igcChange` for the items that change.
    */
-  private _toggleShownItems(): void {
-    const shown = this._shownItems();
-    const unselected = shown.filter((item) => !this._selected.has(item));
+  private _toggleItemsOf(index: number): void {
+    const items = this._itemsIn(index + 1, this._state.endOf(index));
+    const unselected = items.filter((item) => !this._selected.has(item));
 
     this._applySelection(
-      unselected.length ? unselected : shown,
+      unselected.length ? unselected : items,
       unselected.length ? 'selection' : 'deselection',
       true
     );
   }
 
   /**
-   * Whether all (`true`), none (`false`) or some (`mixed`) of the shown items
-   * are selected. One pass that stops at the first mix, because the select-all
-   * row renders often.
+   * Whether all (`true`), none (`false`) or some (`mixed`) of the items of the
+   * toggle option at `index` are selected. Stops at the first mix, because
+   * these options render often.
    */
-  private _shownSelection(): boolean | 'mixed' {
+  private _selectionOf(index: number): boolean | 'mixed' {
+    const records = this._state.dataState;
     let some = false;
     let every = true;
 
     if (this._selected.size) {
-      for (const record of this._state.dataState) {
+      for (let i = index + 1, end = this._state.endOf(index); i < end; i++) {
+        const record = records[i];
+
         if (!isItemRecord(record)) {
           continue;
         }
@@ -1152,7 +1185,9 @@ export default class IgcComboComponent<
 
     // Remote results come later, so no option of the old results becomes active.
     this._activeIndex =
-      this.filteringOptions.mode === 'remote' ? -1 : this._state.firstItemIndex;
+      this.filteringOptions.mode === 'remote'
+        ? -1
+        : this._state.firstOptionIndex;
     this._clearSingleSelection();
   }
 
@@ -1352,33 +1387,42 @@ export default class IgcComboComponent<
     const { value: item, index } = context;
 
     if (this.groupKey && item.header) {
-      return html`
-        <igc-combo-header part="group-header">
-          ${this.groupHeaderTemplate({ key: item.group, item: item.value })}
-        </igc-combo-header>
-      `;
+      const content = this.groupHeaderTemplate({
+        key: item.group,
+        item: item.value,
+      });
+
+      return this._state.isToggle(item)
+        ? this._renderToggleOption(item, index, content)
+        : html`<igc-combo-header part="group-header"
+            >${content}</igc-combo-header
+          >`;
+    }
+
+    if (item.kind === 'select-all') {
+      return this._renderToggleOption(
+        item,
+        index,
+        this.resourceStrings.combo_select_all
+      );
     }
 
     const active = this._activeIndex === index;
 
-    if (item.kind === 'select-all') {
-      return this._renderSelectAll(index, active);
-    }
-
     const selected = this._selected.has(item.value);
     // One template for both, so a row keeps its element when its item loads.
     const placeholder = item.kind === 'placeholder';
-    const { itemCount } = this._state;
+    const { optionCount } = this._state;
     // The placeholders are last and share one record, so the index gives their position.
     const position = placeholder
-      ? itemCount - context.count + index + 1
+      ? optionCount - context.count + index + 1
       : item.position;
 
     return html`
       <igc-combo-item
         id=${this._itemId(index)}
         part=${partMap({ item: true, placeholder, selected, active })}
-        aria-setsize=${itemCount}
+        aria-setsize=${optionCount}
         aria-posinset=${position}
         aria-disabled=${bindIf(placeholder, 'true')}
         aria-label=${bindIf(placeholder, this.resourceStrings.combo_loading)}
@@ -1400,23 +1444,39 @@ export default class IgcComboComponent<
     `;
   };
 
-  private _renderSelectAll(index: number, active: boolean): TemplateResult {
-    // Like the other options, it reports only `aria-selected`, so the mixed
-    // state shows only on its checkbox.
-    const state = this._shownSelection();
+  /**
+   * A toggle option: the select-all option or a group header option. Like the
+   * other options, it reports only `aria-selected`, so the mixed state of its
+   * items shows only on its checkbox.
+   */
+  private _renderToggleOption(
+    { header, position }: ComboRecord<T>,
+    index: number,
+    content: unknown
+  ): TemplateResult {
+    const state = this._selectionOf(index);
     const all = state === true;
+    const active = this._activeIndex === index;
 
     return html`
       <igc-combo-item
         id=${this._itemId(index)}
-        part=${partMap({ item: true, 'select-all': true, selected: all, active })}
+        part=${partMap({
+          item: !header,
+          'select-all': !header,
+          'group-header': header,
+          selected: all,
+          active,
+        })}
+        aria-setsize=${this._state.optionCount}
+        aria-posinset=${header ? position : 1 /* The select-all option is first. */}
         exportparts="checkbox, checkbox-indicator, checked, indeterminate"
         .index=${index}
         ?active=${active}
         ?selected=${all}
         ?indeterminate=${state === 'mixed'}
       >
-        ${this.resourceStrings.combo_select_all}
+        ${content}
       </igc-combo-item>
     `;
   }
