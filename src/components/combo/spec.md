@@ -81,6 +81,7 @@
 |      20 | 2026-10-27 | The select-all option and the group header options count in `aria-posinset` and `aria-setsize` |
 |      21 | 2026-10-27 | Confirm mode (`selectionCommit`): a pending selection, `igcPendingChange` and the `commit` change type |
 |      22 | 2026-10-27 | Confirm mode: Cancel and Apply as the default footer content, and the `cancel` and `apply` triggers |
+|      23 | 2026-10-27 | The `loading` spinner is an indeterminate `igc-circular-progress`                      |
 
 ## Overview
 
@@ -392,11 +393,12 @@ combo.addEventListener('igcDataRequest', ({ detail }) => {
   past `totalItemCount`, and no request comes when `data` holds `totalItemCount` items. A total that is not a finite
   number counts as unknown. `data` grows only at its end, so a jump far into the placeholders requests all the items up
   to the jump.
-- `loading` shows a spinner, named "Loading", in place of the toggle icon, so it shows also while the list is closed,
-  for example during a search in single selection. The spinner covers the box of the toggle icon, so the input does
-  not change its width. An empty list shows "Loading" instead of the empty message. Content in the `loading` slot
-  replaces the spinner. It is in the input, so a click on it toggles the list, as on the toggle icon, and Tab does not
-  reach it while the list is open. The busy state shows in the field, not in the list, so the list does not move.
+- `loading` shows a spinner, an indeterminate `igc-circular-progress` named "Loading", in place of the toggle icon,
+  so it shows also while the list is closed, for example during a search in single selection. The spinner covers the
+  box of the toggle icon, so the input does not change its width. An empty list shows "Loading" instead of the empty
+  message. Content in the `loading` slot replaces the spinner. It is in the input, so a click on it toggles the list,
+  as on the toggle icon, and Tab does not reach it while the list is open. The busy state shows in the field, not in
+  the list, so the list does not move.
 
 `bindComboDataSource()` from `igniteui-webcomponents/extras` implements this flow on the public API. See the
 `RemoteData` story.
@@ -637,7 +639,7 @@ footer button, the focus moves to the main input, because the closed list cannot
 | `cancel-button`      | The Cancel button of the confirm mode.                         |
 | `apply-button`       | The Apply button of the confirm mode.                          |
 | `empty`              | The container holding the empty content.                       |
-| `loading`            | The spinner that replaces the toggle icon while `loading` is set. It has the color of the text. |
+| `loading`            | The indeterminate circular progress that replaces the toggle icon while `loading` is set. It has the color of the text. |
 | `placeholder`        | Added to the item part of each item to load, which `totalItemCount` adds. Its skeleton has the color of the text. |
 
 ### CSS custom states

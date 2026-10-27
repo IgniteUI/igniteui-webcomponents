@@ -2898,7 +2898,7 @@ describe('Combo', () => {
 
         expect(x).to.be.closeTo(center.x, 0.5);
         expect(y).to.be.closeTo(center.y, 0.5);
-        expect(spinner.getAttribute('role')).to.equal('progressbar');
+        expect(internalsOf(spinner)?.getARIA('role')).to.equal('progressbar');
         expect(spinner.getAttribute('aria-label')).to.equal('Loading');
         expect(empty.innerText).to.equal('Loading');
 
@@ -2912,6 +2912,27 @@ describe('Combo', () => {
         expect(spinner.checkVisibility()).to.be.false;
         expect(icon.checkVisibility({ visibilityProperty: true })).to.be.true;
         expect(empty.innerText).to.equal('The list is empty');
+      });
+
+      it('centers the ring of the spinner on the toggle icon, and removes the spinner after loading', async () => {
+        const icon = remote.renderRoot.querySelector(
+          '[part~="toggle-icon"] igc-icon'
+        )!;
+
+        remote.loading = true;
+        await openComboPopover(remote);
+
+        const ring = loadingPart()!.shadowRoot!.querySelector('[part~="svg"]')!;
+        const center = getCenterPoint(icon);
+        const { x, y } = getCenterPoint(ring);
+
+        expect(x).to.be.closeTo(center.x, 0.5);
+        expect(y).to.be.closeTo(center.y, 0.5);
+
+        remote.loading = false;
+        await elementUpdated(remote);
+
+        expect(loadingPart()).to.be.null;
       });
 
       it('does not move the list when the spinner shows', async () => {
@@ -2948,9 +2969,11 @@ describe('Combo', () => {
             .querySelector('igc-checkbox')!
             .renderRoot.querySelector('[part~="control"]')!;
 
-          expect(
-            getComputedStyle(loadingPart()!).borderInlineEndColor
-          ).to.equal('rgb(1, 2, 3)');
+          const stop = loadingPart()!.shadowRoot!.querySelector(
+            '[part~="gradient_start"]'
+          )!;
+
+          expect(getComputedStyle(stop).stopColor).to.equal('rgb(1, 2, 3)');
           const { backgroundColor } = getComputedStyle(reference);
 
           expect(getComputedStyle(skeleton).backgroundColor).to.equal(

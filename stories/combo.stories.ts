@@ -1223,7 +1223,7 @@ export const LazyLoading: Story = {
     docs: {
       description: {
         story:
-          'A flight search that loads the airports from the server when the list opens for the first time. `igcOpening` starts the request and sets `loading`, so the empty list shows "Loading", and a spinner takes the place of the toggle icon. The `loading` slot replaces the default spinner with a circular progress. After the load, the `empty` slot tells that the search found nothing. `filteringOptions` sets `filterKey` to a key that joins the code, the city and the airport name, so "lhr", "london" and "heathrow" all find Heathrow. The status message tells a screen reader user when the airports load.',
+          'A flight search that loads the airports from the server when the list opens for the first time. `igcOpening` starts the request and sets `loading`, so the empty list shows "Loading", and a spinner takes the place of the toggle icon. The `loading` slot replaces the default spinner, which has the color of the text, with a larger circular progress in the primary color. After the load, the `empty` slot tells that the search found nothing. `filteringOptions` sets `filterKey` to a key that joins the code, the city and the airport name, so "lhr", "london" and "heathrow" all find Heathrow. The status message tells a screen reader user when the airports load.',
       },
     },
   },
@@ -1255,6 +1255,8 @@ export const LazyLoading: Story = {
       <style>
         .cmb-flight igc-circular-progress {
           --ig-circular-bar-diameter: 1.25rem;
+
+          display: flex;
         }
       </style>
       <section

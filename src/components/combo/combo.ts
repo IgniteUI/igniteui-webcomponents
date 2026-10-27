@@ -42,6 +42,7 @@ import IgcButtonComponent from '../button/button.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
+import IgcCircularProgressComponent from '../progress/circular-progress.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import type {
   VirtualScrollItemContext,
@@ -154,7 +155,7 @@ const DATA_REQUEST_COUNT = 20;
  * @csspart cancel-button - The Cancel button of the confirm mode.
  * @csspart apply-button - The Apply button of the confirm mode.
  * @csspart empty - The container holding the empty content of the combo.
- * @csspart loading - The spinner that replaces the toggle icon while `loading` is set. It has the color of the text.
+ * @csspart loading - The indeterminate circular progress that replaces the toggle icon while `loading` is set. It has the color of the text.
  * @csspart placeholder - Added to the item part of each item to load, which `totalItemCount` adds. Its skeleton has the color of the text.
  *
  * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
@@ -162,7 +163,7 @@ const DATA_REQUEST_COUNT = 20;
  * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 @blazorAdditionalDependencies(
-  'IgcIconComponent, IgcInputComponent, IgcButtonComponent'
+  'IgcIconComponent, IgcInputComponent, IgcButtonComponent, IgcCircularProgressComponent'
 )
 @blazorIndirectRender
 @shadowOptions({ delegatesFocus: true })
@@ -185,6 +186,7 @@ export default class IgcComboComponent<
     registerComponent(
       IgcComboComponent,
       IgcButtonComponent,
+      IgcCircularProgressComponent,
       IgcIconComponent,
       IgcVirtualScrollComponent,
       IgcComboItemComponent,
@@ -1740,11 +1742,15 @@ export default class IgcComboComponent<
           icon: this.open ? 'input_collapse' : 'input_expand',
         })}
         <slot name="loading" ?hidden=${!this.loading}>
-          <span
-            part="loading"
-            role="progressbar"
-            aria-label=${this.resourceStrings.combo_loading!}
-          ></span>
+          ${
+            this.loading
+              ? html`<igc-circular-progress
+                  part="loading"
+                  indeterminate
+                  aria-label=${this.resourceStrings.combo_loading!}
+                ></igc-circular-progress>`
+              : nothing
+          }
         </slot>
       </span>
     `;

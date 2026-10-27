@@ -117,25 +117,14 @@
     visibility: hidden;
 }
 
+// The size of the icon, in the color of the text. A flex box has no line box
+// around the ring, so the ring is on the center of the icon.
 [part~='loading'] {
-    display: block;
-    box-sizing: border-box;
-    inline-size: rem(16px);
-    block-size: rem(16px);
-    border: rem(2px) solid currentcolor;
-    border-block-start-color: transparent;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+    --ig-circular-bar-diameter: #{rem(16px)};
+    --ig-circular-bar-fill-color-default: currentcolor;
+    --ig-circular-bar-track-color: color-mix(in srgb, currentcolor 16%, transparent);
 
-    @media (prefers-reduced-motion: reduce) {
-        animation-duration: 2.4s;
-    }
-}
-
-@keyframes spin {
-    to {
-        rotate: 1turn;
-    }
+    display: flex;
 }
 
 [part~='group-header'],
@@ -232,12 +221,6 @@
 
     [part~='selected'] {
         color: Highlight;
-    }
-
-    [part~='loading'] {
-        forced-color-adjust: none;
-        border-color: CanvasText;
-        border-block-start-color: transparent;
     }
 
     [part~='placeholder'] span,
