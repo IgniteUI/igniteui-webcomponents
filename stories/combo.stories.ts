@@ -185,7 +185,7 @@ const metadata: Meta<IgcComboComponent> = {
     selectionCommit: {
       type: { name: 'enum', value: ['immediate', 'confirm'] },
       description:
-        "When the user's changes of the selection apply in multiple selection\nmode. With `confirm`, they change a pending selection while the list is\nopen, and Enter applies it with one `igcChange`. Any other close drops it.\nWhile it exists, the selection methods change it too.",
+        "When the user's changes of the selection apply in multiple selection\nmode. With `confirm`, they change a pending selection while the list is\nopen, and Enter or the Apply button applies it with one `igcChange`. Any\nother close drops it. While it exists, the selection methods change it too.",
       options: ['immediate', 'confirm'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'immediate' } },
@@ -334,8 +334,8 @@ interface IgcComboArgs {
   /**
    * When the user's changes of the selection apply in multiple selection
    * mode. With `confirm`, they change a pending selection while the list is
-   * open, and Enter applies it with one `igcChange`. Any other close drops it.
-   * While it exists, the selection methods change it too.
+   * open, and Enter or the Apply button applies it with one `igcChange`. Any
+   * other close drops it. While it exists, the selection methods change it too.
    */
   selectionCommit: 'immediate' | 'confirm';
   /**

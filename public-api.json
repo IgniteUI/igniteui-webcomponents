@@ -1315,7 +1315,10 @@
         "value-missing"
       ],
       "cssParts": [
+        "actions",
         "active",
+        "apply-button",
+        "cancel-button",
         "case-icon",
         "checkbox",
         "checkbox-indicator",

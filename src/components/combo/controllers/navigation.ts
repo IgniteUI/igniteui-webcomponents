@@ -26,7 +26,7 @@ type ComboNavigationConfig = {
   input: Ref<IgcInputComponent>;
   search: Ref<IgcInputComponent>;
   list: Ref<IgcVirtualScrollComponent>;
-  /** The elements assigned to a slot of the list. */
+  /** The elements assigned to a slot of the list, or its fallback content. */
   slotted: (slot: ListSlot) => Element[];
   interactions: {
     show: () => Promise<boolean>;
@@ -35,8 +35,8 @@ type ComboNavigationConfig = {
     select: (index: number) => void;
     /** Whether the confirm mode has a pending selection. */
     hasPending: () => boolean;
-    /** Applies the pending selection. Returns whether it is applied. */
-    commit: () => boolean;
+    /** Applies the pending selection, then closes the list. Returns whether the list closes. */
+    apply: (trigger: ComboCloseTrigger) => Promise<boolean>;
     clearSelection: () => void;
   };
 };
@@ -152,10 +152,7 @@ export class ComboNavigationController<T extends object> {
     if (this._host.singleSelect) {
       this._config.interactions.select(this.active);
     }
-    if (!this._config.interactions.commit()) {
-      return;
-    }
-    if (await this._config.interactions.hide('enter')) {
+    if (await this._config.interactions.apply('enter')) {
       this._input?.select();
       this._host.focus();
     }

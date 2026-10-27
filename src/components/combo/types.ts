@@ -82,7 +82,8 @@ export interface IgcComboSearchInputEventArgs {
 
 /**
  * The user action that closes the list of options. `toggle` is a click on the
- * input, and `selection` an item click in single selection mode.
+ * input, `selection` an item click in single selection mode, and `apply` and
+ * `cancel` the buttons of the confirm mode.
  */
 export type ComboCloseTrigger =
   | 'enter'
@@ -92,7 +93,9 @@ export type ComboCloseTrigger =
   | 'outside-click'
   | 'scroll'
   | 'toggle'
-  | 'selection';
+  | 'selection'
+  | 'apply'
+  | 'cancel';
 
 export interface IgcComboClosingEventArgs {
   /** The user action that closes the list. */

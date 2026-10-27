@@ -66,14 +66,25 @@
     }
 }
 
-[part='filter-input'] {
+[part='filter-input'],
+[part~='actions'] {
     padding-inline: pad-inline(rem(4px), rem(8px), rem(16px));
     padding-block: pad-block(rem(8px));
+}
+
+[part='filter-input'] {
     z-index: 26;
 
     igc-input::part(input) {
         cursor: text;
     }
+}
+
+[part~='actions'] {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: rem(8px);
 }
 
 [part='list'] {

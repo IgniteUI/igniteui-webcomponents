@@ -33,8 +33,12 @@ import { bindIf } from '#internals/utils/lit.js';
 import { isObject } from '#internals/utils/types.js';
 import type { Validator } from '#internals/validators.js';
 import { all } from '#themes/combo/themes/themes.js';
-import { addThemingController } from '#theming/theming-controller.js';
+import {
+  addThemingController,
+  type ThemingController,
+} from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
+import IgcButtonComponent from '../button/button.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
@@ -102,7 +106,7 @@ const DATA_REQUEST_COUNT = 20;
  * @slot prefix - Renders content before the input of the combo.
  * @slot suffix - Renders content after the input of the combo.
  * @slot header - Renders a container before the list of options of the combo.
- * @slot footer - Renders a container after the list of options of the combo.
+ * @slot footer - Renders a container after the list of options of the combo. In the confirm mode of `selectionCommit`, its default content is Cancel and Apply.
  * @slot empty - Renders content when the combo dropdown list has no items/data.
  * @slot loading - Renders content that replaces the default spinner while `loading` is set. It is in the input, so a click on it toggles the list, as on the toggle icon.
  * @slot helper-text - Renders content below the input of the combo.
@@ -146,6 +150,9 @@ const DATA_REQUEST_COUNT = 20;
  * @csspart select-all - Added to the item part of the select-all option.
  * @csspart header - The container holding the header content of the combo.
  * @csspart footer - The container holding the footer content of the combo.
+ * @csspart actions - The container of the Cancel and Apply buttons of the confirm mode.
+ * @csspart cancel-button - The Cancel button of the confirm mode.
+ * @csspart apply-button - The Apply button of the confirm mode.
  * @csspart empty - The container holding the empty content of the combo.
  * @csspart loading - The spinner that replaces the toggle icon while `loading` is set. It has the color of the text.
  * @csspart placeholder - Added to the item part of each item to load, which `totalItemCount` adds. Its skeleton has the color of the text.
@@ -154,7 +161,9 @@ const DATA_REQUEST_COUNT = 20;
  *
  * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
-@blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
+@blazorAdditionalDependencies(
+  'IgcIconComponent, IgcInputComponent, IgcButtonComponent'
+)
 @blazorIndirectRender
 @shadowOptions({ delegatesFocus: true })
 export default class IgcComboComponent<
@@ -175,6 +184,7 @@ export default class IgcComboComponent<
   public static register(): void {
     registerComponent(
       IgcComboComponent,
+      IgcButtonComponent,
       IgcIconComponent,
       IgcVirtualScrollComponent,
       IgcComboItemComponent,
@@ -192,6 +202,7 @@ export default class IgcComboComponent<
   }
 
   private readonly _slots = addSlotController(this, { slots: SLOTS });
+  private readonly _themes: ThemingController;
 
   protected override readonly _formValue = createFormValueState<
     ComboValue<T>[]
@@ -234,14 +245,16 @@ export default class IgcComboComponent<
       input: this._inputRef,
       search: this._searchRef,
       list: this._listRef,
-      slotted: (slot) => this._slots.getAssignedElements(slot),
+      // The flattened query also returns the default footer buttons.
+      slotted: (slot) =>
+        this._slots.getAssignedElements(slot, { flatten: true }),
       interactions: {
         show: () => this._show(true),
         hide: (trigger) => this._close(trigger),
         toggleSelection: (index: number) => this._selectAt(index, true),
         select: (index: number) => this._selectAt(index, false),
         hasPending: () => this._pendingSelection !== undefined,
-        commit: () => this._commitPending(true),
+        apply: (trigger) => this._applyAndClose(trigger),
         clearSelection: () => this._clearSelection(),
       },
     }
@@ -292,12 +305,16 @@ export default class IgcComboComponent<
    * mode of `selectionCommit`. It starts as a copy of `_selected`.
    */
   private get _pendingSelection(): Set<T> | undefined {
-    if (this.open && this.selectionCommit === 'confirm' && !this.singleSelect) {
+    if (this.open && this._confirmMode) {
       return (this._pending ??= new Set(this._selected));
     }
 
     this._pending = undefined;
     return undefined;
+  }
+
+  private get _confirmMode(): boolean {
+    return this.selectionCommit === 'confirm' && !this.singleSelect;
   }
 
   /** The selection that the list shows and the user changes. */
@@ -549,8 +566,8 @@ export default class IgcComboComponent<
   /**
    * When the user's changes of the selection apply in multiple selection
    * mode. With `confirm`, they change a pending selection while the list is
-   * open, and Enter applies it with one `igcChange`. Any other close drops it.
-   * While it exists, the selection methods change it too.
+   * open, and Enter or the Apply button applies it with one `igcChange`. Any
+   * other close drops it. While it exists, the selection methods change it too.
    * @attr selection-commit
    * @default 'immediate'
    */
@@ -641,8 +658,8 @@ export default class IgcComboComponent<
 
   /**
    * The values of the pending selection in the confirm mode of
-   * `selectionCommit`, which Enter or `commitSelection()` applies. Without a
-   * pending selection, the same as `value`.
+   * `selectionCommit`, which Enter, the Apply button or `commitSelection()`
+   * applies. Without a pending selection, the same as `value`.
    */
   public get pendingValue(): ComboValue<T>[] {
     const pending = this._pendingSelection;
@@ -656,7 +673,7 @@ export default class IgcComboComponent<
   constructor() {
     super();
 
-    addThemingController(this, all);
+    this._themes = addThemingController(this, all);
 
     // Projects combobox semantics onto the native input. `aria-activedescendant`
     // stays on the listbox, which has focus during list navigation.
@@ -682,10 +699,11 @@ export default class IgcComboComponent<
     }
 
     // The closed list is inert, so the focus in it would fall to the
-    // document. Move it to the input first.
+    // document. Move it to the input first. A server render has no render root.
     if (
       props.has('open') &&
       !this.open &&
+      this.hasUpdated &&
       this.renderRoot.querySelector('[part="list-wrapper"]:focus-within')
     ) {
       this.focus({ preventScroll: true });
@@ -1458,6 +1476,24 @@ export default class IgcComboComponent<
     this._activeIndex = -1;
   }
 
+  /**
+   * Applies the pending selection, then closes the list. A canceled
+   * `igcChange` keeps the list open.
+   * @returns Whether the list closes.
+   */
+  private async _applyAndClose(trigger: ComboCloseTrigger): Promise<boolean> {
+    return this._commitPending(true) ? this._close(trigger) : false;
+  }
+
+  private _handleApply(): void {
+    this._applyAndClose('apply');
+  }
+
+  private _handleCancel(): void {
+    this.cancelSelection();
+    this._close('cancel');
+  }
+
   private _handleCaseSensitivity(): void {
     this.filteringOptions = {
       caseSensitive: !this.filteringOptions.caseSensitive,
@@ -1837,8 +1873,33 @@ export default class IgcComboComponent<
         </igc-virtual-scroll>
         ${this._renderEmptyTemplate()}
         <div part="footer">
-          <slot name="footer"></slot>
+          <slot name="footer">
+            ${this.open && this._confirmMode ? this._renderActions() : nothing}
+          </slot>
         </div>
+      </div>
+    `;
+  }
+
+  private _renderActions(): TemplateResult {
+    const indigo = this._themes.theme === 'indigo';
+
+    return html`
+      <div part="actions">
+        <igc-button
+          part="cancel-button"
+          variant=${indigo ? 'outlined' : 'flat'}
+          @click=${this._handleCancel}
+        >
+          ${this.resourceStrings.combo_cancel}
+        </igc-button>
+        <igc-button
+          part="apply-button"
+          variant=${indigo ? 'contained' : 'flat'}
+          @click=${this._handleApply}
+        >
+          ${this.resourceStrings.combo_apply}
+        </igc-button>
       </div>
     `;
   }

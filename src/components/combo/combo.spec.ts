@@ -3449,6 +3449,12 @@ describe('Combo', () => {
       await comboStable(combo);
     }
 
+    const actions = () => [
+      ...combo.renderRoot.querySelectorAll<IgcButtonComponent>(
+        '[part="actions"] igc-button'
+      ),
+    ];
+
     beforeEach(async () => {
       combo = await fixture<IgcComboComponent<City>>(
         html`<igc-combo
@@ -3771,6 +3777,124 @@ describe('Combo', () => {
       ]);
     });
 
+    it('renders Cancel and Apply as the default footer content', async () => {
+      const [cancel, apply] = actions();
+
+      expect(cancel.textContent?.trim()).to.equal('Cancel');
+      expect(apply.textContent?.trim()).to.equal('Apply');
+      expect(cancel.getAttribute('part')).to.equal('cancel-button');
+      expect(apply.getAttribute('part')).to.equal('apply-button');
+      await expect(combo).shadowDom.to.be.accessible(
+        axeReflectedRelationsOptions
+      );
+
+      combo.resourceStrings = { combo_apply: 'OK' };
+      await comboStable(combo);
+
+      expect(apply.textContent?.trim()).to.equal('OK');
+
+      try {
+        configureTheme('indigo');
+        await comboStable(combo);
+
+        expect([cancel.variant, apply.variant]).to.eql([
+          'outlined',
+          'contained',
+        ]);
+      } finally {
+        configureTheme('bootstrap');
+      }
+
+      const footer = document.createElement('div');
+      footer.slot = 'footer';
+      combo.append(footer);
+      await comboStable(combo);
+
+      expect(apply.checkVisibility()).to.be.false;
+
+      footer.remove();
+      await comboStable(combo);
+
+      expect(apply.checkVisibility()).to.be.true;
+
+      await combo.hide();
+
+      expect(actions()).to.be.empty;
+
+      await openComboPopover(combo);
+      combo.selectionCommit = 'immediate';
+      await comboStable(combo);
+
+      expect(actions()).to.be.empty;
+    });
+
+    it('applies the pending selection with Apply and closes the list', async () => {
+      combo.addEventListener('igcChange', (event) => event.preventDefault(), {
+        once: true,
+      });
+
+      await click(1);
+      simulateClick(actions()[1]);
+      await comboStable(combo);
+
+      expect(combo.open).to.be.true;
+      expect(combo.value).to.eql(['BG01']);
+
+      simulateClick(actions()[1]);
+      await comboStable(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.value).to.eql(['BG01', 'BG02']);
+      expect(isFocused(input)).to.be.true;
+      expect(changes().map(({ type }) => type)).to.eql(['commit', 'commit']);
+      expect(eventSpy.withArgs('igcClosed')).calledOnceWith('igcClosed', {
+        detail: { trigger: 'apply' },
+      });
+    });
+
+    it('drops the pending selection with Cancel and closes the list', async () => {
+      combo.addEventListener('igcClosing', (event) => event.preventDefault(), {
+        once: true,
+      });
+
+      await click(1);
+      simulateClick(actions()[0]);
+      await comboStable(combo);
+
+      expect(combo.open).to.be.true;
+      expect(combo.pendingValue).to.eql(['BG01']);
+
+      await click(1);
+      eventSpy.resetHistory();
+      simulateClick(actions()[0]);
+      await comboStable(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.pendingValue).to.eql(['BG01']);
+      expect(changes()).to.be.empty;
+      expect(eventSpy.withArgs('igcClosed')).calledOnceWith('igcClosed', {
+        detail: { trigger: 'cancel' },
+      });
+    });
+
+    it('moves with Tab from the list to Cancel and Apply, and then closes the list', async () => {
+      const [cancel, apply] = actions();
+
+      list.focus();
+      await sendKeys({ press: tabKey });
+
+      expect(isFocused(cancel)).to.be.true;
+
+      await sendKeys({ press: tabKey });
+
+      expect(isFocused(apply)).to.be.true;
+
+      await sendKeys({ press: tabKey });
+      await comboStable(combo);
+
+      expect(combo.open).to.be.false;
+    });
+
     it('applies each change at once in single selection', async () => {
       combo.singleSelect = true;
       await comboStable(combo);
@@ -3780,6 +3904,7 @@ describe('Combo', () => {
       expect(combo.value).to.eql(['BG02']);
       expect(combo.pendingValue).to.eql(['BG02']);
       expect(changes().map(({ type }) => type)).to.eql(['selection']);
+      expect(actions()).to.be.empty;
     });
   });
 

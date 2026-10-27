@@ -80,6 +80,7 @@
 |      19 | 2026-10-27 | Group selection (`groupSelection`); the group headers have no `group` role            |
 |      20 | 2026-10-27 | The select-all option and the group header options count in `aria-posinset` and `aria-setsize` |
 |      21 | 2026-10-27 | Confirm mode (`selectionCommit`): a pending selection, `igcPendingChange` and the `commit` change type |
+|      22 | 2026-10-27 | Confirm mode: Cancel and Apply as the default footer content, and the `cancel` and `apply` triggers |
 
 ## Overview
 
@@ -233,10 +234,16 @@ selects or deselects, and then closes the list. A canceled `igcChange` keeps the
 also keeps it open, with the applied selection. Any other close drops the pending selection. The clear icon clears `value` at once,
 and the pending selection with it.
 
+The footer shows Cancel and Apply while the list is open, and Tab reaches them after the list. Apply applies the
+pending selection as Enter does, and Cancel drops it, also when an `igcClosing` handler keeps the list open. They
+close the list with the `apply` and `cancel` triggers. In Indigo, Cancel is `outlined` and Apply `contained`; in the
+other themes both are `flat`. Content in the `footer` slot replaces them.
+
 While the pending selection exists, `select()`, `deselect()`, `selectAllItems()` and `deselectAllItems()` change it,
 so the app controls in the header and footer slots stage too. A new `value` replaces it. `pendingValue` gives its
 values, `commitSelection()` applies it, and `cancelSelection()` puts `value` back in it. These methods emit no events
 and do not close the list, so an app that binds `value` through `igcChange` reads `value` after `commitSelection()`.
+A footer of the app uses them in place of the built-in buttons:
 
 ```html
 <igc-combo selection-commit="confirm">
@@ -408,6 +415,8 @@ instance through `locale` and `resourceStrings`:
 | `combo_aria_label_no_options`       | No options selected     | The accessible name of an empty selection.  |
 | `combo_loading`                     | Loading                 | The accessible name of the spinner and of the placeholder options, and the message of an empty list while loading. |
 | `combo_select_all`                  | Select all              | The text of the select-all option.          |
+| `combo_cancel`                      | Cancel                  | The text of the Cancel button of the confirm mode. |
+| `combo_apply`                       | Apply                   | The text of the Apply button of the confirm mode. |
 
 ### Keyboard interactions
 
@@ -431,7 +440,7 @@ While the list of options **is** visible:
 | <kbd>Enter</kbd>                            | Selects the active option in single selection mode, and closes the list in all modes. In confirm mode, it first applies the pending selection, also from the search input and without an active option, and a canceled `igcChange` keeps the list open. On a placeholder of `totalItemCount`, it does nothing. |
 | <kbd>Home</kbd> / <kbd>End</kbd>            | Activates the first or the last option.                                       |
 | <kbd>Escape</kbd>                           | Closes the list. The combo stays focused. In confirm mode, the pending selection is dropped. |
-| <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd> | Moves through the search input (the main input in single selection), the header content, the list, the empty content and the footer content. Past either end, or without focusable slot content, closes the list and moves the focus on. |
+| <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd> | Moves through the search input (the main input in single selection), the header content, the list, the empty content and the footer content, which is Cancel and Apply in confirm mode. Past either end, or without focusable slot content, closes the list and moves the focus on. |
 
 Typing while the component is focused filters the list down to the closest matches.
 
@@ -444,7 +453,7 @@ Typing while the component is focused filters the list down to the closest match
 | data                   | -                          | No        | `T[]`                               | `[]`              | The data source used to generate the list of options. A new data source keeps the selection, also the selected items that it does not hold. |
 | value                  | value                      | No        | `ComboValue<T>[]`                   | `[]`              | The values of the selected items. With a `valueKey`, each value is that field of an item. Without it, each value is the item itself. |
 | selection              | -                          | No        | `T[]`                               | `[]`              | Read-only. The current selection as records of the data source. |
-| pendingValue           | -                          | No        | `ComboValue<T>[]`                   | `[]`              | Read-only. The values of the pending selection in the confirm mode of `selectionCommit`, which Enter or `commitSelection()` applies. Without a pending selection, the same as `value`. |
+| pendingValue           | -                          | No        | `ComboValue<T>[]`                   | `[]`              | Read-only. The values of the pending selection in the confirm mode of `selectionCommit`, which Enter, the Apply button or `commitSelection()` applies. Without a pending selection, the same as `value`. |
 | valueKey               | value-key                  | No        | `Keys<T> \| undefined`              | -                 | The key in the data source used when selecting items.           |
 | displayKey             | display-key                | No        | `Keys<T> \| undefined`              | -                 | The key in the data source used to display items in the list. Falls back to `valueKey`. |
 | groupKey               | group-key                  | No        | `Keys<T> \| string \| undefined`    | -                 | The key in the data source used to group items in the list.     |
@@ -458,7 +467,7 @@ Typing while the component is focused filters the list down to the closest match
 | loading                | loading                    | Yes       | `boolean`                           | false             | Whether the combo loads options. A spinner, which the `loading` slot can replace, then takes the place of the toggle icon, and an empty list shows a loading message instead of the empty message. |
 | showSelectAll          | show-select-all            | No        | `boolean`                           | false             | Whether the list starts with an option that selects all the items that it shows, or deselects them when all of them are selected. Only in multiple selection mode. |
 | groupSelection         | group-selection            | No        | `boolean`                           | false             | Whether a group header is an option that selects the items of its group that the list shows, or deselects them when all of them are selected. Only in multiple selection mode with `groupKey`. |
-| selectionCommit        | selection-commit           | No        | `'immediate' \| 'confirm'`          | `immediate`       | When the user's changes of the selection apply in multiple selection mode. With `confirm`, they change a pending selection while the list is open, and Enter applies it with one `igcChange`. Any other close drops it. While it exists, the selection methods change it too. |
+| selectionCommit        | selection-commit           | No        | `'immediate' \| 'confirm'`          | `immediate`       | When the user's changes of the selection apply in multiple selection mode. With `confirm`, they change a pending selection while the list is open, and Enter or the Apply button applies it with one `igcChange`. Any other close drops it. While it exists, the selection methods change it too. |
 | itemTemplate           | -                          | No        | `ComboItemTemplate<T>`              | -                 | The template for the content of each combo item.                |
 | groupHeaderTemplate    | -                          | No        | `ComboGroupHeaderTemplate<T>`       | -                 | The template for the content of each group header.              |
 | open                   | open                       | Yes       | `boolean`                           | false             | Whether the component is open.                                |
@@ -571,7 +580,9 @@ type ComboCloseTrigger =
   | 'outside-click' // a click outside the combo
   | 'scroll' // a scroll of a container with the `close` scroll strategy
   | 'toggle' // a click on the input
-  | 'selection'; // an item click in single selection
+  | 'selection' // an item click in single selection
+  | 'apply' // the Apply button of the confirm mode
+  | 'cancel'; // the Cancel button of the confirm mode
 ```
 
 The open events keep an empty `detail`. `hide()`, `toggle()` and a change of `open` emit no events. To stage a
@@ -585,7 +596,7 @@ footer button, the focus moves to the main input, because the closed list cannot
 | `prefix`        | Renders content before the input of the combo.                                   |
 | `suffix`        | Renders content after the input of the combo.                                    |
 | `header`        | Renders a container before the list of options.                                  |
-| `footer`        | Renders a container after the list of options.                                   |
+| `footer`        | Renders a container after the list of options. In the confirm mode of `selectionCommit`, its default content is Cancel and Apply. |
 | `empty`         | Renders content when the list has no items or data.                              |
 | `loading`       | Renders content that replaces the default spinner while `loading` is set. It is in the input, so a click on it toggles the list, as on the toggle icon. |
 | `helper-text`   | Renders content below the input.                                                 |
@@ -622,6 +633,9 @@ footer button, the focus moves to the main input, because the closed list cannot
 | `indeterminate`      | Added to the checkbox and checkbox-indicator parts of the select-all option, or of a group header of `groupSelection`, while only some of its shown items are selected. |
 | `select-all`         | Added to the item part of the select-all option.               |
 | `header` / `footer`  | The containers holding the header and footer content.          |
+| `actions`            | The container of the Cancel and Apply buttons of the confirm mode. |
+| `cancel-button`      | The Cancel button of the confirm mode.                         |
+| `apply-button`       | The Apply button of the confirm mode.                          |
 | `empty`              | The container holding the empty content.                       |
 | `loading`            | The spinner that replaces the toggle icon while `loading` is set. It has the color of the text. |
 | `placeholder`        | Added to the item part of each item to load, which `totalItemCount` adds. Its skeleton has the color of the text. |
@@ -801,8 +815,14 @@ Generated by `runValidationContainerTests`.
     events and keeps the list open. `cancelSelection()` and a new `value` replace it, and the same `value` keeps it.
 50. The clear icon clears `value` and the pending selection with one `igcChange`. A new `data` keeps the pending
     selection by value, and adds the values of `value` that it gives a record. A value without a record stays in
-    `value` until a commit, and `select()` gives it a record in the input text. The select-all option and the group header options change the pending selection. In single
-    selection, each change applies at once.
+    `value` until a commit, and `select()` gives it a record in the input text. The select-all option and the group
+    header options change the pending selection. In single selection, each change applies at once.
+51. The footer shows Cancel and Apply with the `combo_cancel` and `combo_apply` texts, and the accessibility audit
+    passes. Footer content replaces them, and immediate mode and single selection do not show them.
+52. Apply applies the pending selection with one `igcChange` and closes the list with the `apply` trigger, and the
+    focus moves to the main input. A canceled `igcChange` keeps the list open. Cancel drops the pending selection and
+    closes the list with the `cancel` trigger.
+53. Tab moves from the list to Cancel and Apply, and from Apply closes the list.
 
 ## Assumptions and limitations
 
