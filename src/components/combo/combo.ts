@@ -1179,20 +1179,6 @@ export default class IgcComboComponent<
     return true;
   }
 
-  /** The items of the records from `start` to `end`, each one time. See {@link isItemRecord}. */
-  private _itemsIn(start: number, end: number): T[] {
-    const records = this._state.dataState;
-    const items = new Set<T>();
-
-    for (let i = start; i < end; i++) {
-      if (isItemRecord(records[i])) {
-        items.add(records[i].value);
-      }
-    }
-
-    return [...items];
-  }
-
   /** The items that the list shows. */
   private _shownItems(): T[] {
     // Applies a change of `data` or of the search text that no update has
@@ -1201,7 +1187,7 @@ export default class IgcComboComponent<
     this._state.hostUpdate();
     this.requestUpdate();
 
-    return this._itemsIn(0, this._state.loadedLength);
+    return this._state.shownItems();
   }
 
   /**
@@ -1237,7 +1223,7 @@ export default class IgcComboComponent<
    * all of them are selected, with one `igcChange` for the items that change.
    */
   private _toggleItemsOf(index: number): void {
-    const items = this._itemsIn(index + 1, this._state.endOf(index));
+    const items = this._state.itemsOf(index);
     const selected = this._listSelection;
     const unselected = items.filter((item) => !selected.has(item));
 
@@ -1246,40 +1232,6 @@ export default class IgcComboComponent<
       unselected.length ? 'selection' : 'deselection',
       true
     );
-  }
-
-  /**
-   * Whether all (`true`), none (`false`) or some (`mixed`) of the items of the
-   * toggle option at `index` are selected. Stops at the first mix, because
-   * these options render often.
-   */
-  private _selectionOf(index: number): boolean | 'mixed' {
-    const records = this._state.dataState;
-    const selected = this._listSelection;
-    let some = false;
-    let every = true;
-
-    if (selected.size) {
-      for (let i = index + 1, end = this._state.endOf(index); i < end; i++) {
-        const record = records[i];
-
-        if (!isItemRecord(record)) {
-          continue;
-        }
-
-        if (selected.has(record.value)) {
-          some = true;
-        } else {
-          every = false;
-        }
-
-        if (some && !every) {
-          return 'mixed';
-        }
-      }
-    }
-
-    return some;
   }
 
   private _clearSelection(): void {
@@ -1647,7 +1599,7 @@ export default class IgcComboComponent<
     index: number,
     content: unknown
   ): TemplateResult {
-    const state = this._selectionOf(index);
+    const state = this._state.selectionOf(index, this._listSelection);
     const all = state === true;
     const active = this._activeIndex === index;
 

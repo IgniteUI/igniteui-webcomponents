@@ -1,15 +1,33 @@
 import type { ReactiveController } from 'lit';
 import { resolveLocale } from '#internals/i18n/locale.js';
 
+import type IgcComboComponent from '../combo.js';
 import FilterDataOperation from '../operations/filter.js';
 import GroupDataOperation from '../operations/group.js';
 import type {
-  ComboHost,
   ComboRecord,
   FilteringOptions,
   GroupingOptions,
   Keys,
 } from '../types.js';
+
+/** The fields of the combo that the data state reads. */
+export type DataStateHost<T extends object> = Pick<
+  IgcComboComponent<T>,
+  | 'addController'
+  | 'requestUpdate'
+  | 'data'
+  | 'locale'
+  | 'filteringOptions'
+  | 'valueKey'
+  | 'displayKey'
+  | 'groupKey'
+  | 'groupSorting'
+  | 'totalItemCount'
+  | 'showSelectAll'
+  | 'groupSelection'
+  | 'singleSelect'
+>;
 
 /** The record of each item to load. See `totalItemCount`. */
 const PLACEHOLDER: ComboRecord<never> = Object.freeze({
@@ -37,7 +55,7 @@ export function isItemRecord<T extends object>(
 /* blazorSuppress */
 export class DataState<T extends object> implements ReactiveController {
   //#region Internal state
-  private readonly _host: ComboHost<T>;
+  private readonly _host: DataStateHost<T>;
   private readonly _filtering = new FilterDataOperation<T>();
   private readonly _grouping = new GroupDataOperation<T>();
   private _compareCollator?: Intl.Collator;
@@ -131,7 +149,7 @@ export class DataState<T extends object> implements ReactiveController {
 
   //#region Lifecycle and pipeline management
 
-  constructor(host: ComboHost<T>) {
+  constructor(host: DataStateHost<T>) {
     this._host = host;
     this._host.addController(this);
   }
@@ -237,7 +255,7 @@ export class DataState<T extends object> implements ReactiveController {
    * The end of the records that the toggle option at `index` toggles: the
    * next group header, or the end of the loaded records.
    */
-  public endOf(index: number): number {
+  private _endOf(index: number): number {
     if (!this._dataState[index].header) {
       return this._loadedLength;
     }
@@ -249,6 +267,63 @@ export class DataState<T extends object> implements ReactiveController {
     }
 
     return end;
+  }
+
+  /** The items of the records from `start` to `end`, each one time. See {@link isItemRecord}. */
+  private _itemsIn(start: number, end: number): T[] {
+    const records = this._dataState;
+    const items = new Set<T>();
+
+    for (let i = start; i < end; i++) {
+      if (isItemRecord(records[i])) {
+        items.add(records[i].value);
+      }
+    }
+
+    return [...items];
+  }
+
+  /** The items that the list shows. */
+  public shownItems(): T[] {
+    return this._itemsIn(0, this._loadedLength);
+  }
+
+  /** The items that the toggle option at `index` toggles. See {@link isToggle}. */
+  public itemsOf(index: number): T[] {
+    return this._itemsIn(index + 1, this._endOf(index));
+  }
+
+  /**
+   * Whether all (`true`), none (`false`) or some (`mixed`) of the items of the
+   * toggle option at `index` are in `selected`. Stops at the first mix,
+   * because these options render often.
+   */
+  public selectionOf(index: number, selected: Set<T>): boolean | 'mixed' {
+    const records = this._dataState;
+    let some = false;
+    let every = true;
+
+    if (selected.size) {
+      for (let i = index + 1, end = this._endOf(index); i < end; i++) {
+        const record = records[i];
+
+        if (!isItemRecord(record)) {
+          continue;
+        }
+
+        if (selected.has(record.value)) {
+          some = true;
+        } else {
+          every = false;
+        }
+
+        if (some && !every) {
+          return 'mixed';
+        }
+      }
+    }
+
+    return some;
   }
 
   /** Only group sorting uses the collator, so the data changes only if it exists. */
