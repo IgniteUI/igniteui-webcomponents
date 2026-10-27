@@ -3429,6 +3429,360 @@ describe('Combo', () => {
     });
   });
 
+  describe('Confirm mode', () => {
+    const other = { id: 'XX01', name: 'Elsewhere', country: '', zip: '' };
+    let eventSpy: SinonSpy;
+
+    const changes = (event: 'igcChange' | 'igcPendingChange' = 'igcChange') =>
+      eventSpy.withArgs(event).args.map(([, { detail }]) => ({
+        ...detail,
+        items: detail.items.map(({ id }: City) => id),
+      }));
+
+    const selectedNames = () =>
+      items(combo)
+        .filter((item) => item.selected)
+        .map((item) => item.textContent?.trim());
+
+    async function click(index: number): Promise<void> {
+      simulateClick(items(combo)[index]);
+      await comboStable(combo);
+    }
+
+    beforeEach(async () => {
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${cities}
+          .value=${['BG01']}
+          value-key="id"
+          display-key="name"
+          selection-commit="confirm"
+        ></igc-combo>`
+      );
+      input = combo.renderRoot.querySelector('igc-input#target')!;
+      searchInput = combo.renderRoot.querySelector('[part="search-input"]')!;
+      list = combo.renderRoot.querySelector('igc-virtual-scroll')!;
+      eventSpy = spy(combo, 'emitEvent');
+      await openComboPopover(combo);
+    });
+
+    it('stages the toggles in the open list and keeps the value', async () => {
+      await click(1);
+      await click(0);
+
+      expect(selectedNames()).to.eql(['Plovdiv']);
+      expect(combo.pendingValue).to.eql(['BG02']);
+      expect(combo.value).to.eql(['BG01']);
+      expect(combo.selection.map(({ id }) => id)).to.eql(['BG01']);
+      expect(input.value).to.equal('Sofia');
+      expect(changes()).to.be.empty;
+      expect(changes('igcPendingChange')).to.eql([
+        { newValue: ['BG01', 'BG02'], items: ['BG02'], type: 'selection' },
+        { newValue: ['BG02'], items: ['BG01'], type: 'deselection' },
+      ]);
+    });
+
+    it('applies the pending selection on Enter with one igcChange', async () => {
+      simulateKeyboard(list, arrowDown);
+      simulateKeyboard(list, spaceBar);
+      simulateKeyboard(list, arrowDown);
+      simulateKeyboard(list, spaceBar);
+      simulateKeyboard(list, enterKey);
+      await comboStable(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.value).to.eql(['BG02']);
+      expect(input.value).to.equal('Plovdiv');
+      expect(changes()).to.eql([
+        { newValue: ['BG02'], items: ['BG02', 'BG01'], type: 'commit' },
+      ]);
+      expect(eventSpy.withArgs('igcClosed')).calledOnceWith('igcClosed', {
+        detail: { trigger: 'enter' },
+      });
+    });
+
+    it('applies the pending selection on Enter in the search input and without an active option', async () => {
+      // A handler that changes `newValue` does not change `value`.
+      combo.addEventListener(
+        'igcChange',
+        ({ detail }) => detail.newValue.push('US01'),
+        { once: true }
+      );
+
+      await click(1);
+      simulateKeyboard(searchInput, enterKey);
+      await comboStable(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.value).to.eql(['BG01', 'BG02']);
+
+      await openComboPopover(combo);
+      combo.select('BG03');
+      simulateKeyboard(list, enterKey);
+      await comboStable(combo);
+
+      expect(combo.value).to.eql(['BG01', 'BG02', 'BG03']);
+      expect(changes().map(({ type }) => type)).to.eql(['commit', 'commit']);
+    });
+
+    it('closes on Enter without igcChange when nothing changes', async () => {
+      await click(1);
+      await click(1);
+      simulateKeyboard(list, enterKey);
+      await comboStable(combo);
+
+      expect(combo.open).to.be.false;
+      expect(changes()).to.be.empty;
+    });
+
+    it('keeps the list open with the pending selection when igcChange is canceled', async () => {
+      combo.addEventListener('igcChange', (event) => event.preventDefault(), {
+        once: true,
+      });
+
+      await click(1);
+      simulateKeyboard(list, enterKey);
+      await comboStable(combo);
+
+      expect(combo.open).to.be.true;
+      expect(combo.value).to.eql(['BG01']);
+      expect(combo.pendingValue).to.eql(['BG01', 'BG02']);
+    });
+
+    it('keeps the pending selection when igcPendingChange is canceled', async () => {
+      combo.addEventListener(
+        'igcPendingChange',
+        (event) => event.preventDefault(),
+        { once: true }
+      );
+
+      await click(1);
+
+      expect(combo.pendingValue).to.eql(['BG01']);
+      expect(selectedNames()).to.eql(['Sofia']);
+    });
+
+    it('drops the pending selection on the other closes', async () => {
+      const closes = [
+        () => simulateKeyboard(list, escapeKey),
+        () => simulateClick(input),
+        () => combo.hide(),
+      ];
+
+      for (const close of closes) {
+        await openComboPopover(combo);
+        await click(1);
+
+        expect(combo.pendingValue).to.eql(['BG01', 'BG02']);
+
+        await close();
+        await comboStable(combo);
+
+        expect(combo.open).to.be.false;
+        expect(combo.pendingValue).to.eql(['BG01']);
+      }
+
+      await openComboPopover(combo);
+
+      expect(selectedNames()).to.eql(['Sofia']);
+      expect(changes()).to.be.empty;
+
+      await click(1);
+      combo.open = false;
+      await comboStable(combo);
+      combo.open = true;
+      await comboStable(combo);
+
+      expect(combo.pendingValue).to.eql(['BG01']);
+    });
+
+    it('stages the selection methods, and commitSelection() applies them without events', async () => {
+      combo.select('BG02');
+      combo.deselect('BG01');
+      await comboStable(combo);
+
+      expect(selectedNames()).to.eql(['Plovdiv']);
+      expect(combo.pendingValue).to.eql(['BG02']);
+
+      combo.selectAllItems();
+      expect(combo.pendingValue).lengthOf(cities.length);
+
+      combo.deselect();
+      expect(combo.pendingValue).to.be.empty;
+
+      combo.select(other);
+      combo.select();
+      expect(combo.pendingValue).lengthOf(cities.length + 1);
+
+      combo.deselect('XX01');
+      expect(combo.pendingValue).lengthOf(cities.length);
+
+      combo.deselectAllItems();
+      combo.select(['BG03', other]);
+      expect(combo.value).to.eql(['BG01']);
+
+      combo.commitSelection();
+      await comboStable(combo);
+
+      expect(combo.value).to.eql(['BG03', 'XX01']);
+      expect(input.value).to.equal('Varna, Elsewhere');
+      expect(combo.open).to.be.true;
+      expect(selectedNames()).to.eql(['Varna']);
+      expect(eventSpy).not.calledWith('igcChange');
+      expect(eventSpy).not.calledWith('igcPendingChange');
+    });
+
+    it('keeps the pending selection on the same value, and puts the value back with cancelSelection() and a new value', async () => {
+      await click(1);
+      combo.value = ['BG01'];
+      await comboStable(combo);
+
+      expect(combo.pendingValue).to.eql(['BG01', 'BG02']);
+
+      combo.cancelSelection();
+      await comboStable(combo);
+
+      expect(combo.open).to.be.true;
+      expect(combo.pendingValue).to.eql(['BG01']);
+      expect(selectedNames()).to.eql(['Sofia']);
+
+      await click(1);
+      combo.value = ['US01'];
+      await comboStable(combo);
+
+      expect(combo.pendingValue).to.eql(['US01']);
+      expect(selectedNames()).to.eql(['New York']);
+    });
+
+    it('clears the value and the pending selection with the clear icon', async () => {
+      await click(1);
+      simulateClick(combo.renderRoot.querySelector('[part="clear-icon"]')!);
+      await comboStable(combo);
+
+      expect(combo.value).to.be.empty;
+      expect(combo.pendingValue).to.be.empty;
+      expect(selectedNames()).to.be.empty;
+      expect(changes()).to.eql([
+        { newValue: [], items: ['BG01'], type: 'deselection' },
+      ]);
+    });
+
+    it('gives the pending selection the records of its values in a new data', async () => {
+      await click(1);
+
+      combo.data = cities.map((city) => ({ ...city }));
+      await comboStable(combo);
+
+      expect(selectedNames()).to.eql(['Sofia', 'Plovdiv']);
+
+      await click(1);
+
+      expect(combo.pendingValue).to.eql(['BG01']);
+    });
+
+    it('keeps the values of value without a record, and resolves them with select()', async () => {
+      combo.value = ['BG01', 'XX01'];
+      await click(1);
+
+      expect(combo.value).to.eql(['BG01', 'XX01']);
+
+      combo.select(other);
+      await comboStable(combo);
+
+      expect(input.value).to.equal('Sofia, Elsewhere');
+      expect(combo.value).to.eql(['BG01', 'XX01']);
+      expect(combo.pendingValue).to.eql(['BG01', 'BG02', 'XX01']);
+
+      // A second record of the value does not join the selection.
+      combo.deselect('XX01');
+      combo.select({ ...other });
+      await comboStable(combo);
+
+      expect(input.value).to.equal('Sofia, Elsewhere');
+
+      simulateKeyboard(list, enterKey);
+      await comboStable(combo);
+
+      expect(changes().map(({ items }) => items)).to.eql([['BG02']]);
+      expect(combo.selection.map(({ id }) => id)).to.eql([
+        'BG01',
+        'BG02',
+        'XX01',
+      ]);
+    });
+
+    it('acts on the value right after a close, and on the pending selection right after an opening', async () => {
+      void combo.hide();
+      combo.deselect('BG01');
+
+      expect(combo.value).to.be.empty;
+
+      void combo.show();
+      combo.select('BG02');
+
+      expect(combo.value).to.be.empty;
+      expect(combo.pendingValue).to.eql(['BG02']);
+    });
+
+    it('gives the pending selection the records of a new data for the values of value', async () => {
+      const later = { id: 'XX02', name: 'Later', country: '', zip: '' };
+
+      combo.value = ['BG01', 'XX02'];
+      await click(1);
+
+      combo.data = [...cities, later];
+      await comboStable(combo);
+
+      expect(combo.pendingValue).to.eql(['BG01', 'BG02', 'XX02']);
+
+      await click(1);
+      simulateKeyboard(list, enterKey);
+      await comboStable(combo);
+
+      expect(combo.value).to.eql(['BG01', 'XX02']);
+      expect(changes()).to.be.empty;
+    });
+
+    it('stages the select-all option and the group header options', async () => {
+      combo.showSelectAll = true;
+      combo.groupKey = 'country';
+      combo.groupSelection = true;
+      await comboStable(combo);
+
+      const selectAll = list.querySelector<IgcComboItemComponent>(
+        '[part~="select-all"]'
+      )!;
+
+      simulateClick(selectAll);
+      await comboStable(combo);
+
+      expect(combo.pendingValue).to.have.members(cities.map(({ id }) => id));
+      expect(selectAll.selected).to.be.true;
+
+      simulateClick(list.querySelector('[part~="group-header"]')!);
+      await comboStable(combo);
+
+      expect(combo.pendingValue).to.have.members(['US01', 'US02', 'US03']);
+      expect(combo.value).to.eql(['BG01']);
+      expect(changes()).to.be.empty;
+      expect(changes('igcPendingChange').map(({ type }) => type)).to.eql([
+        'selection',
+        'deselection',
+      ]);
+    });
+
+    it('applies each change at once in single selection', async () => {
+      combo.singleSelect = true;
+      await comboStable(combo);
+
+      await click(1);
+
+      expect(combo.value).to.eql(['BG02']);
+      expect(combo.pendingValue).to.eql(['BG02']);
+      expect(changes().map(({ type }) => type)).to.eql(['selection']);
+    });
+  });
+
   describe('Scroll strategy', () => {
     let container: HTMLDivElement;
 

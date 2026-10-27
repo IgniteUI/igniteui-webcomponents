@@ -29,12 +29,18 @@ export type ComboHost<T extends object> = ReactiveControllerHost &
   IgcComboComponent<T>;
 
 export type GroupingDirection = 'asc' | 'desc' | 'none';
-export type ComboChangeType = 'selection' | 'deselection' | 'addition';
+/** `commit` applies the pending selection of the confirm mode. See `selectionCommit`. */
+export type ComboChangeType =
+  | 'selection'
+  | 'deselection'
+  | 'addition'
+  | 'commit';
 export type ComboRenderFunction<T extends object> = VirtualScrollItemTemplate<
   ComboRecord<T>
 >;
 export type ComboValue<T> = T | Values<T>;
 export type ComboFilteringMode = 'local' | 'remote';
+export type ComboSelectionCommit = 'immediate' | 'confirm';
 
 /* jsonAPIPlainObject */
 /** Filtering options for the combo component. */
@@ -95,6 +101,7 @@ export interface IgcComboClosingEventArgs {
 
 export interface IgcComboComponentEventMap {
   igcChange: CustomEvent<IgcComboChangeEventArgs>;
+  igcPendingChange: CustomEvent<IgcComboChangeEventArgs>;
   // For analyzer meta only:
   /* skipWCPrefix */
   focus: FocusEvent;

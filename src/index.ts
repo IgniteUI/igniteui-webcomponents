@@ -222,6 +222,7 @@ export type {
   ComboGroupHeaderContext,
   ComboGroupHeaderTemplate,
   ComboItemTemplate,
+  ComboSelectionCommit,
   ComboTemplateProps,
   FilteringOptions,
   GroupingDirection,

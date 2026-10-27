@@ -58,6 +58,7 @@ const metadata: Meta<IgcComboComponent> = {
     actions: {
       handles: [
         'igcChange',
+        'igcPendingChange',
         'igcOpening',
         'igcOpened',
         'igcClosing',
@@ -181,6 +182,14 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    selectionCommit: {
+      type: { name: 'enum', value: ['immediate', 'confirm'] },
+      description:
+        "When the user's changes of the selection apply in multiple selection\nmode. With `confirm`, they change a pending selection while the list is\nopen, and Enter applies it with one `igcChange`. Any other close drops it.\nWhile it exists, the selection methods change it too.",
+      options: ['immediate', 'confirm'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'immediate' } },
+    },
     locale: {
       type: 'string',
       description:
@@ -240,6 +249,7 @@ const metadata: Meta<IgcComboComponent> = {
     loading: false,
     showSelectAll: false,
     groupSelection: false,
+    selectionCommit: 'immediate',
     required: false,
     disabled: false,
     invalid: false,
@@ -321,6 +331,13 @@ interface IgcComboArgs {
    * Only in multiple selection mode with `groupKey`.
    */
   groupSelection: boolean;
+  /**
+   * When the user's changes of the selection apply in multiple selection
+   * mode. With `confirm`, they change a pending selection while the list is
+   * open, and Enter applies it with one `igcChange`. Any other close drops it.
+   * While it exists, the selection methods change it too.
+   */
+  selectionCommit: 'immediate' | 'confirm';
   /**
    * The locale of the component. Without it, the component takes its own
    * `lang`, else the locale of the nearest ancestor that has a `locale` (a
@@ -449,6 +466,7 @@ export const Default: Story = {
       .placeholderSearch=${args.placeholderSearch}
       .data=${cities}
       .groupSorting=${args.groupSorting}
+      .selectionCommit=${args.selectionCommit}
       .scrollStrategy=${args.scrollStrategy}
       ?case-sensitive-icon=${args.caseSensitiveIcon}
       ?disable-filtering=${args.disableFiltering}

@@ -14,6 +14,7 @@
       - [Basic initialization](#basic-initialization)
       - [Data binding keys](#data-binding-keys)
       - [Single and multiple selection](#single-and-multiple-selection)
+      - [Confirm mode](#confirm-mode)
       - [Filtering](#filtering)
       - [Grouping](#grouping)
       - [Templating](#templating)
@@ -47,6 +48,7 @@
     - [Placeholders and loading](#placeholders-and-loading)
     - [Select-all option](#select-all-option)
     - [Group selection](#group-selection)
+    - [Confirm mode](#confirm-mode-1)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -77,6 +79,7 @@
 |      18 | 2026-10-27 | `igcChange.newValue` has the order of the `value` that follows                        |
 |      19 | 2026-10-27 | Group selection (`groupSelection`); the group headers have no `group` role            |
 |      20 | 2026-10-27 | The select-all option and the group header options count in `aria-posinset` and `aria-setsize` |
+|      21 | 2026-10-27 | Confirm mode (`selectionCommit`): a pending selection, `igcPendingChange` and the `commit` change type |
 
 ## Overview
 
@@ -124,6 +127,8 @@ As an end-user, I expect to be able to:
 - clear my selection with a single action.
 - move through the options with the arrow keys and with <kbd>Home</kbd> and <kbd>End</kbd>.
 - select and deselect the active option with <kbd>Space</kbd>.
+- pick several options and apply them together with <kbd>Enter</kbd>, or drop them with <kbd>Escape</kbd>, when the
+  application asks for a confirmation.
 - close the list with <kbd>Escape</kbd> without losing my selection.
 - be told when the field is required and left empty.
 
@@ -141,6 +146,7 @@ As a developer, I expect to be able to:
 - localize the built-in strings of the component.
 - mark the control as required and provide my own validation messages.
 - be notified when the selection changes, and on each open and close transition.
+- hold the changes of the user while the list is open, and apply them with one change event.
 
 ## Functionality
 
@@ -214,6 +220,37 @@ it acts on the loaded items.
 
 ```html
 <igc-combo show-select-all></igc-combo>
+```
+
+#### Confirm mode
+
+In multiple selection, `selection-commit="confirm"` holds the changes of the user while the list is open. The list
+opens with a pending selection, a copy of the selection. A click, Space, the select-all option and a group header
+option change only the pending selection, with a cancelable `igcPendingChange` each. `value`, the form value, the
+input text and `selection` keep the selection. Enter, also in the search input and without an active option, applies
+the pending selection with one cancelable `igcChange` of the `commit` type, whose `items` are the items that it
+selects or deselects, and then closes the list. A canceled `igcChange` keeps the list open. A canceled `igcClosing`
+also keeps it open, with the applied selection. Any other close drops the pending selection. The clear icon clears `value` at once,
+and the pending selection with it.
+
+While the pending selection exists, `select()`, `deselect()`, `selectAllItems()` and `deselectAllItems()` change it,
+so the app controls in the header and footer slots stage too. A new `value` replaces it. `pendingValue` gives its
+values, `commitSelection()` applies it, and `cancelSelection()` puts `value` back in it. These methods emit no events
+and do not close the list, so an app that binds `value` through `igcChange` reads `value` after `commitSelection()`.
+
+```html
+<igc-combo selection-commit="confirm">
+  <div slot="footer">
+    <igc-button id="apply">Apply</igc-button>
+  </div>
+</igc-combo>
+```
+
+```typescript
+apply.addEventListener('click', () => {
+  combo.commitSelection();
+  combo.hide();
+});
 ```
 
 #### Filtering
@@ -391,9 +428,9 @@ While the list of options **is** visible:
 | <kbd>Arrow Down</kbd>                       | Activates the next option; at the last option it does nothing.                |
 | <kbd>Arrow Up</kbd>                         | Activates the previous option; from the first option it returns to the input. |
 | <kbd>Space</kbd>                            | Selects or deselects the active option. On the select-all option, or on a group header of `groupSelection`, selects its shown items, or deselects them when all of them are selected. |
-| <kbd>Enter</kbd>                            | Selects the active option in single selection mode, and closes the list in all modes. On a placeholder of `totalItemCount`, it does nothing. |
+| <kbd>Enter</kbd>                            | Selects the active option in single selection mode, and closes the list in all modes. In confirm mode, it first applies the pending selection, also from the search input and without an active option, and a canceled `igcChange` keeps the list open. On a placeholder of `totalItemCount`, it does nothing. |
 | <kbd>Home</kbd> / <kbd>End</kbd>            | Activates the first or the last option.                                       |
-| <kbd>Escape</kbd>                           | Closes the list. The combo stays focused.                                     |
+| <kbd>Escape</kbd>                           | Closes the list. The combo stays focused. In confirm mode, the pending selection is dropped. |
 | <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd> | Moves through the search input (the main input in single selection), the header content, the list, the empty content and the footer content. Past either end, or without focusable slot content, closes the list and moves the focus on. |
 
 Typing while the component is focused filters the list down to the closest matches.
@@ -407,6 +444,7 @@ Typing while the component is focused filters the list down to the closest match
 | data                   | -                          | No        | `T[]`                               | `[]`              | The data source used to generate the list of options. A new data source keeps the selection, also the selected items that it does not hold. |
 | value                  | value                      | No        | `ComboValue<T>[]`                   | `[]`              | The values of the selected items. With a `valueKey`, each value is that field of an item. Without it, each value is the item itself. |
 | selection              | -                          | No        | `T[]`                               | `[]`              | Read-only. The current selection as records of the data source. |
+| pendingValue           | -                          | No        | `ComboValue<T>[]`                   | `[]`              | Read-only. The values of the pending selection in the confirm mode of `selectionCommit`, which Enter or `commitSelection()` applies. Without a pending selection, the same as `value`. |
 | valueKey               | value-key                  | No        | `Keys<T> \| undefined`              | -                 | The key in the data source used when selecting items.           |
 | displayKey             | display-key                | No        | `Keys<T> \| undefined`              | -                 | The key in the data source used to display items in the list. Falls back to `valueKey`. |
 | groupKey               | group-key                  | No        | `Keys<T> \| string \| undefined`    | -                 | The key in the data source used to group items in the list.     |
@@ -420,6 +458,7 @@ Typing while the component is focused filters the list down to the closest match
 | loading                | loading                    | Yes       | `boolean`                           | false             | Whether the combo loads options. A spinner, which the `loading` slot can replace, then takes the place of the toggle icon, and an empty list shows a loading message instead of the empty message. |
 | showSelectAll          | show-select-all            | No        | `boolean`                           | false             | Whether the list starts with an option that selects all the items that it shows, or deselects them when all of them are selected. Only in multiple selection mode. |
 | groupSelection         | group-selection            | No        | `boolean`                           | false             | Whether a group header is an option that selects the items of its group that the list shows, or deselects them when all of them are selected. Only in multiple selection mode with `groupKey`. |
+| selectionCommit        | selection-commit           | No        | `'immediate' \| 'confirm'`          | `immediate`       | When the user's changes of the selection apply in multiple selection mode. With `confirm`, they change a pending selection while the list is open, and Enter applies it with one `igcChange`. Any other close drops it. While it exists, the selection methods change it too. |
 | itemTemplate           | -                          | No        | `ComboItemTemplate<T>`              | -                 | The template for the content of each combo item.                |
 | groupHeaderTemplate    | -                          | No        | `ComboGroupHeaderTemplate<T>`       | -                 | The template for the content of each group header.              |
 | open                   | open                       | Yes       | `boolean`                           | false             | Whether the component is open.                                |
@@ -482,6 +521,8 @@ type ComboGroupHeaderTemplate<T extends object> = (props: {
 | deselect          | `(items?: Item<T> \| Item<T>[]): void` | Deselects options in the list by reference or by `valueKey` value. It does not emit `igcChange`. Without an argument, it deselects all items. |
 | selectAllItems    | `(ignoreFilter?: boolean): void`       | Selects all the items that the list shows. It does not emit `igcChange`, and does nothing in single selection mode. With `ignoreFilter`, it selects all the items of `data`. |
 | deselectAllItems  | `(ignoreFilter?: boolean): void`       | Deselects all the items that the list shows. It does not emit `igcChange`. With `ignoreFilter`, it deselects all the items. |
+| commitSelection   | `(): void`                             | Applies the pending selection of the confirm mode to `value`. It does not emit `igcChange` or close the list. |
+| cancelSelection   | `(): void`                             | Puts `value` back as the pending selection of the confirm mode. It does not close the list. |
 | focus             | `(options?: FocusOptions): void`       | Sets focus on the component.                                                     |
 | blur              | `(): void`                             | Removes focus from the component.                                                |
 | checkValidity     | `(): boolean`                          | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid.                 |
@@ -492,7 +533,8 @@ type ComboGroupHeaderTemplate<T extends object> = (props: {
 
 | Name       | Cancellable | Description                                       |
 | ---------- | ----------- | ------------------------------------------------- |
-| igcChange  | true        | Emitted before the user changes the selection. Cancel the event to keep the selection. `newValue` is the `value` after the change, in the same order: the selected values first, then the new ones. |
+| igcChange  | true        | Emitted before the user changes the selection, or applies the pending selection of the confirm mode (`type: 'commit'`). Cancel the event to keep the selection. `newValue` is the `value` after the change, in the same order: the selected values first, then the new ones. |
+| igcPendingChange | true  | Emitted in the confirm mode of `selectionCommit` before the user changes the pending selection. Cancel the event to keep the pending selection. The detail is the `igcChange` detail for the pending selection. |
 | igcOpening | true        | Emitted before the user opens the list of options. Cancelable. |
 | igcOpened  | false       | Emitted after the list of options opens on a user action. |
 | igcClosing | true        | Emitted before the user closes the list of options. Cancelable. The `trigger` of the detail is the user action that closes the list. |
@@ -504,7 +546,8 @@ type ComboGroupHeaderTemplate<T extends object> = (props: {
 interface IgcComboChangeEventArgs<T> {
   newValue: ComboValue<T>[];
   items: T[];
-  type: 'selection' | 'deselection' | 'addition';
+  // `commit`: the items that the pending selection selects or deselects.
+  type: 'selection' | 'deselection' | 'addition' | 'commit';
 }
 
 interface IgcComboClosingEventArgs {
@@ -531,10 +574,9 @@ type ComboCloseTrigger =
   | 'selection'; // an item click in single selection
 ```
 
-The open events keep an empty `detail`. `hide()`, `toggle()` and a change of `open` emit no events. An app that
-stages a selection in its own footer can save `value` on `igcOpening`, commit on its Apply button or on the `enter`
-trigger, and put the saved value back on the other triggers of `igcClosed`. When the list closes while the focus is in
-it, also on `hide()` from such a button, the focus moves to the main input, because the closed list cannot keep it.
+The open events keep an empty `detail`. `hide()`, `toggle()` and a change of `open` emit no events. To stage a
+selection, see [Confirm mode](#confirm-mode). When the list closes while the focus is in it, also on `hide()` from a
+footer button, the focus moves to the main input, because the closed list cannot keep it.
 
 ### Slots
 
@@ -744,6 +786,24 @@ Generated by `runValidationContainerTests`.
 45. Home and the arrow keys stop on the headers, Space toggles them, and Enter closes the list. With the select-all
     option, a click on it selects the headers too. Turning group selection off clears an active header.
 
+### Confirm mode
+
+46. In confirm mode, a click and Space change the pending selection with `igcPendingChange`. The list and
+    `pendingValue` show it, and `value`, `selection` and the input text keep the selection. A canceled
+    `igcPendingChange` keeps the pending selection.
+47. Enter applies the pending selection with one `igcChange` of the `commit` type with the changed items, and closes
+    the list with the `enter` trigger, also in the search input and without an active option. Without a change, it
+    closes the list with no `igcChange`. A canceled `igcChange` keeps the list open with the pending selection. A
+    handler that changes `newValue` does not change `value`.
+48. Escape, a click on the input, `hide()` and `open` set to `false` drop the pending selection, with no `igcChange`.
+49. The selection methods change the pending selection, also with an item that `data` does not hold, from the moment
+    the list opens, and the value from the moment it closes. `commitSelection()` applies the pending selection without
+    events and keeps the list open. `cancelSelection()` and a new `value` replace it, and the same `value` keeps it.
+50. The clear icon clears `value` and the pending selection with one `igcChange`. A new `data` keeps the pending
+    selection by value, and adds the values of `value` that it gives a record. A value without a record stays in
+    `value` until a commit, and `select()` gives it a record in the input text. The select-all option and the group header options change the pending selection. In single
+    selection, each change applies at once.
+
 ## Assumptions and limitations
 
 - The options come from the `data` array; projected item elements are not supported.
@@ -752,6 +812,10 @@ Generated by `runValidationContainerTests`.
 - The list is virtualized, so an option that is not rendered has no DOM node; work with the data records rather than
   with the item elements.
 - Without a `valueKey`, the selection is reported as whole records rather than as primitive values.
+- A user change sets `value` from the selected records, also a commit of the confirm mode. So a value that has no
+  record in `data` leaves `value`. The `resolve` option of `bindComboDataSource()` gives such values their records.
+- `singleSelect` overrides `selectionCommit`: in single selection, each change applies at once. A change of
+  `selectionCommit` or `singleSelect` while the list is open drops the pending selection.
 
 ## Accessibility
 
@@ -763,7 +827,8 @@ Generated by `runValidationContainerTests`.
   role, except with `groupSelection`, where they are options. The select-all option is selected while all the shown
   items are selected, and a group header option while all the shown items of its group are. They have no
   `aria-checked`, because a listbox uses one of `aria-selected` and `aria-checked` for all its options, so their mixed
-  state shows only on their checkbox. A
+  state shows only on their checkbox. In confirm mode, the selected state of the options is the pending selection,
+  and the input shows `value`. A
   placeholder of `totalItemCount` is a disabled option named "Loading". While `loading` is set, a
   `progressbar` named "Loading" takes the place of the toggle icon. The listbox has no `aria-busy`, so a screen reader continues to
   read the loaded options while the next page loads.

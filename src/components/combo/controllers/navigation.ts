@@ -33,6 +33,10 @@ type ComboNavigationConfig = {
     hide: (trigger: ComboCloseTrigger) => Promise<boolean>;
     toggleSelection: (index: number) => void;
     select: (index: number) => void;
+    /** Whether the confirm mode has a pending selection. */
+    hasPending: () => boolean;
+    /** Applies the pending selection. Returns whether it is applied. */
+    commit: () => boolean;
     clearSelection: () => void;
   };
 };
@@ -106,7 +110,8 @@ export class ComboNavigationController<T extends object> {
       bindingDefaults,
     })
       .set(arrowUp, () => this._closeToInput('arrow-up'))
-      .set(arrowDown, this._onSearchArrowDown);
+      .set(arrowDown, this._onSearchArrowDown)
+      .set(enterKey, this._onSearchEnter);
 
     addKeybindings(this._host, {
       skip,
@@ -139,14 +144,26 @@ export class ComboNavigationController<T extends object> {
       return;
     }
 
-    if (this.active > -1) {
-      if (this._host.singleSelect) {
-        this._config.interactions.select(this.active);
-      }
-      if (await this._config.interactions.hide('enter')) {
-        this._input?.select();
-        this._host.focus();
-      }
+    // In confirm mode, Enter applies the pending selection also without an active option.
+    if (this.active < 0 && !this._config.interactions.hasPending()) {
+      return;
+    }
+
+    if (this._host.singleSelect) {
+      this._config.interactions.select(this.active);
+    }
+    if (!this._config.interactions.commit()) {
+      return;
+    }
+    if (await this._config.interactions.hide('enter')) {
+      this._input?.select();
+      this._host.focus();
+    }
+  };
+
+  private _onSearchEnter = async (): Promise<void> => {
+    if (this._config.interactions.hasPending()) {
+      await this._onEnter();
     }
   };
 

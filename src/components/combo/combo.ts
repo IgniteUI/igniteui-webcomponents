@@ -18,7 +18,12 @@ import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
-import { asArray, firstOf, isEmpty } from '#internals/utils/arrays.js';
+import {
+  asArray,
+  firstOf,
+  isEmpty,
+  sameItems,
+} from '#internals/utils/arrays.js';
 import {
   addSafeEventListener,
   getElementFromPath,
@@ -53,6 +58,7 @@ import type {
   ComboItemTemplate,
   ComboRecord,
   ComboRenderFunction,
+  ComboSelectionCommit,
   ComboValue,
   FilteringOptions,
   GroupingDirection,
@@ -106,7 +112,8 @@ const DATA_REQUEST_COUNT = 20;
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcChange - Emitted before the user changes the selection. Cancel the event to keep the selection.
+ * @fires igcChange - Emitted before the user changes the selection, or applies the pending selection of the confirm mode (`type: 'commit'`). Cancel the event to keep the selection.
+ * @fires igcPendingChange - Emitted in the confirm mode of `selectionCommit` before the user changes the pending selection. Cancel the event to keep the pending selection.
  * @fires igcOpening - Emitted before the user opens the list of options. Cancelable.
  * @fires igcOpened - Emitted after the list of options opens on a user action.
  * @fires igcClosing - Emitted before the user closes the list of options. Cancelable. The `trigger` of the detail is the user action that closes the list.
@@ -233,6 +240,8 @@ export default class IgcComboComponent<
         hide: (trigger) => this._close(trigger),
         toggleSelection: (index: number) => this._selectAt(index, true),
         select: (index: number) => this._selectAt(index, false),
+        hasPending: () => this._pendingSelection !== undefined,
+        commit: () => this._commitPending(true),
         clearSelection: () => this._clearSelection(),
       },
     }
@@ -243,6 +252,8 @@ export default class IgcComboComponent<
   private _displayKey?: Keys<T>;
   private _placeholderSearch?: string;
   private _selected: Set<T> = new Set();
+  /** Read it through {@link _pendingSelection}. */
+  private _pending?: Set<T>;
   /** The length of `data` at the last `igcDataRequest`. */
   private _lastDataRequest?: number;
   /** The index of the last rendered option, from the list. */
@@ -275,6 +286,24 @@ export default class IgcComboComponent<
 
   @state()
   private _displayValue = '';
+
+  /**
+   * The pending selection, which exists while the list is open in the confirm
+   * mode of `selectionCommit`. It starts as a copy of `_selected`.
+   */
+  private get _pendingSelection(): Set<T> | undefined {
+    if (this.open && this.selectionCommit === 'confirm' && !this.singleSelect) {
+      return (this._pending ??= new Set(this._selected));
+    }
+
+    this._pending = undefined;
+    return undefined;
+  }
+
+  /** The selection that the list shows and the user changes. */
+  private get _listSelection(): Set<T> {
+    return this._pendingSelection ?? this._selected;
+  }
 
   private _itemId(index: number): string {
     const position = index + 1;
@@ -517,6 +546,17 @@ export default class IgcComboComponent<
   @property({ type: Boolean, attribute: 'group-selection' })
   public groupSelection = false;
 
+  /**
+   * When the user's changes of the selection apply in multiple selection
+   * mode. With `confirm`, they change a pending selection while the list is
+   * open, and Enter applies it with one `igcChange`. Any other close drops it.
+   * While it exists, the selection methods change it too.
+   * @attr selection-commit
+   * @default 'immediate'
+   */
+  @property({ attribute: 'selection-commit' })
+  public selectionCommit: ComboSelectionCommit = 'immediate';
+
   /* blazorSuppress */
   /**
    * The template used for the content of each combo item.
@@ -569,8 +609,15 @@ export default class IgcComboComponent<
   /* @tsTwoWayProperty (true, "Change", "Detail.NewValue", false) */
   @property({ type: Array })
   public set value(items: ComboValue<T>[]) {
+    const previous = this.value;
     this._formValue.setValueAndFormState(items);
     this._syncSelectionFromValue();
+
+    // A new value replaces the pending selection. The same value, for example
+    // from a render of the parent, keeps it.
+    if (!sameItems(previous, this.value)) {
+      this._pending = undefined;
+    }
 
     if (this.hasUpdated) {
       this._validate();
@@ -590,6 +637,16 @@ export default class IgcComboComponent<
    */
   public get selection(): T[] {
     return Array.from(this._selected);
+  }
+
+  /**
+   * The values of the pending selection in the confirm mode of
+   * `selectionCommit`, which Enter or `commitSelection()` applies. Without a
+   * pending selection, the same as `value`.
+   */
+  public get pendingValue(): ComboValue<T>[] {
+    const pending = this._pendingSelection;
+    return pending ? this._toValues(pending) : this.value;
   }
 
   //#endregion
@@ -656,12 +713,13 @@ export default class IgcComboComponent<
       this._state.invalidate();
     }
 
-    // Sync the selection when `data` comes after `value`.
-    if (props.has('data') && !isEmpty(this.data) && !isEmpty(this.value)) {
-      this._withPristine(() => {
-        this._syncSelectionFromValue();
-        this._formValue.setValueAndFormState(this.value);
-      });
+    if (props.has('data')) {
+      this._syncSelectionFromData();
+    }
+
+    // The list can open again before anything reads the pending selection.
+    if (!this.open) {
+      this._pending = undefined;
     }
   }
 
@@ -831,7 +889,10 @@ export default class IgcComboComponent<
         continue;
       }
 
-      selected ??= this._selectedByValue();
+      // A pending record of the value comes before a committed one.
+      selected ??= this._selectedByValue(
+        this._selected.union(this._listSelection)
+      );
       const record =
         selected.get(value) ?? (isObject(item) ? (item as T) : undefined);
 
@@ -853,15 +914,13 @@ export default class IgcComboComponent<
     const index = this._dataIndex;
 
     return new Set(
-      Iterator.from(this._selected).filter(
+      Iterator.from(this._listSelection).filter(
         (record) => !index.has(this._resolveItemValue(record))
       )
     );
   }
 
-  private _selectedByValue(
-    selected: Set<T> = this._selected
-  ): Map<ComboValue<T>, T> {
+  private _selectedByValue(selected: Set<T>): Map<ComboValue<T>, T> {
     return new Map(
       Iterator.from(selected).map((record): [ComboValue<T>, T] => [
         this._valueOf(record),
@@ -898,22 +957,27 @@ export default class IgcComboComponent<
     return values;
   }
 
-  private _emitSelectionChange(detail: IgcComboChangeEventArgs): boolean {
-    return this.emitEvent('igcChange', { cancelable: true, detail });
+  private _emitSelectionChange(
+    detail: IgcComboChangeEventArgs,
+    event: 'igcChange' | 'igcPendingChange' = 'igcChange'
+  ): boolean {
+    return this.emitEvent(event, { cancelable: true, detail });
   }
 
-  /** The selection value after `resolved` applies: the `igcChange` `newValue`. */
+  /** The list selection value after `resolved` applies: the `newValue` of the change event. */
   private _previewValue(resolved: T[], selecting: boolean): ComboValue<T>[] {
+    const selected = this._listSelection;
+
     if (selecting) {
       return this._toValues(
-        this.singleSelect ? resolved : new Set([...this._selected, ...resolved])
+        this.singleSelect ? resolved : new Set([...selected, ...resolved])
       );
     }
 
     const removed = new Set(resolved);
 
     return this._toValues(
-      Iterator.from(this._selected).filter((item) => !removed.has(item))
+      Iterator.from(selected).filter((item) => !removed.has(item))
     );
   }
 
@@ -934,12 +998,13 @@ export default class IgcComboComponent<
 
     if (isEmpty(collection) && selecting) {
       // Selects all items without an event, or clears a single selection.
-      this._selected = singleSelect
-        ? new Set()
-        : new Set(this.data).union(this._selectedOutsideData());
-
       if (singleSelect) {
+        this._selected = new Set();
         this._searchTerm = '';
+      } else if (this._pendingSelection) {
+        this._pending = new Set(this.data).union(this._selectedOutsideData());
+      } else {
+        this._selected = new Set(this.data).union(this._selectedOutsideData());
       }
 
       this.requestUpdate();
@@ -948,7 +1013,7 @@ export default class IgcComboComponent<
 
     // An empty deselection deselects every selected item.
     const resolved = isEmpty(collection)
-      ? this.selection
+      ? Array.from(this._listSelection)
       : this._resolveItems(collection);
 
     return this._applySelection(resolved, type, emit);
@@ -968,11 +1033,14 @@ export default class IgcComboComponent<
 
     if (
       emit &&
-      !this._emitSelectionChange({
-        newValue: this._previewValue(records, selecting),
-        items: records,
-        type,
-      })
+      !this._emitSelectionChange(
+        {
+          newValue: this._previewValue(records, selecting),
+          items: records,
+          type,
+        },
+        this._pendingSelection ? 'igcPendingChange' : 'igcChange'
+      )
     ) {
       return false;
     }
@@ -983,8 +1051,14 @@ export default class IgcComboComponent<
       this._clearSearchTerm(emit);
     }
 
+    const selected = this._listSelection;
+
     for (const item of records) {
-      selecting ? this._selected.add(item) : this._selected.delete(item);
+      selecting ? selected.add(item) : selected.delete(item);
+    }
+
+    if (selecting && this._pendingSelection) {
+      this._resolveValues(records);
     }
 
     this.requestUpdate();
@@ -992,49 +1066,150 @@ export default class IgcComboComponent<
   }
 
   /**
+   * Adds the records of the values of `value` that have none to `_selected`,
+   * as a new `data` does. For example, a remote source gives them to
+   * `select()` while the list has a pending selection.
+   */
+  private _resolveValues(records: T[]): void {
+    // `_selected` has at most one record for each value.
+    if (this._selected.size < this.value.length) {
+      this._selected = this._recordsOf(
+        this.value,
+        new Set(records).union(this._selected)
+      );
+      this._projectSelection();
+    }
+  }
+
+  /**
    * One-way sync from `_formValue` to `_selected`. A value that `data` does
    * not hold keeps its selected record.
    */
   private _syncSelectionFromValue(): void {
-    const selected = this._selected;
-    let previous: Map<ComboValue<T>, T> | undefined;
-    this._selected = new Set();
+    let values = this._formValue.value;
 
-    if (!isEmpty(this._formValue.value)) {
-      const values = this.singleSelect
-        ? asArray(firstOf(this._formValue.value))
-        : this._formValue.value;
+    if (this.singleSelect && !isEmpty(values)) {
+      const first = asArray(firstOf(values));
 
-      if (this.singleSelect && values.length !== this._formValue.value.length) {
-        this._formValue.setValueAndFormState(values);
+      if (first.length !== values.length) {
+        this._formValue.setValueAndFormState(first);
       }
 
-      const index = this._dataIndex;
-
-      for (const value of values) {
-        // First match only - mirrors resolving a value against the data source
-        const position = index.get(value)?.[0];
-        const record =
-          position === undefined
-            ? (previous ??= this._selectedByValue(selected)).get(value)
-            : this.data[position];
-
-        if (record !== undefined) {
-          this._selected.add(record);
-        }
-      }
+      values = first;
     }
 
+    this._selected = this._recordsOf(values, this._selected);
     this._projectSelection();
     // The list does not update for a new `value` on its own.
     this._listRef.value?.requestUpdate();
   }
 
+  /**
+   * Gives the selection the records of a new `data`. The pending selection
+   * also gets the records that `data` gives to the values of `value` that had
+   * none, because the user could not deselect them.
+   */
+  private _syncSelectionFromData(): void {
+    const pending = this._pendingSelection;
+    // Only a value without a record can get a new record.
+    const known =
+      pending && this._selected.size < this.value.length
+        ? new Set(this._toValues(this._selected))
+        : undefined;
+
+    // Sync the selection when `data` comes after `value`.
+    if (!isEmpty(this.data) && !isEmpty(this.value)) {
+      this._withPristine(() => {
+        this._syncSelectionFromValue();
+        this._formValue.setValueAndFormState(this.value);
+      });
+    }
+
+    if (pending) {
+      const values = this._toValues(pending);
+
+      if (known) {
+        values.push(
+          ...this._toValues(this._selected).filter((value) => !known.has(value))
+        );
+      }
+
+      this._pending = this._recordsOf(values, pending);
+    }
+  }
+
+  /** The records of `values`. A value that `data` does not hold keeps its record in `previous`. */
+  private _recordsOf(values: ComboValue<T>[], previous: Set<T>): Set<T> {
+    const records = new Set<T>();
+
+    if (isEmpty(values)) {
+      return records;
+    }
+
+    const index = this._dataIndex;
+    let byValue: Map<ComboValue<T>, T> | undefined;
+
+    for (const value of values) {
+      // First match only - mirrors resolving a value against the data source
+      const position = index.get(value)?.[0];
+      const record =
+        position === undefined
+          ? (byValue ??= this._selectedByValue(previous)).get(value)
+          : this.data[position];
+
+      if (record !== undefined) {
+        records.add(record);
+      }
+    }
+
+    return records;
+  }
+
   protected _syncValueFromSelection(): void {
-    this._formValue.setValueAndFormState(this._projectSelection());
-    this._setSingleSelectionDisplayValue(this._displayValue);
-    this._validate();
+    // A pending selection does not change `value`, which can hold values
+    // without a record. See `_commitPending`.
+    if (!this._pendingSelection) {
+      this._formValue.setValueAndFormState(this._projectSelection());
+      this._setSingleSelectionDisplayValue(this._displayValue);
+      this._validate();
+    }
+
     this._listRef.value?.requestUpdate();
+  }
+
+  /**
+   * Applies the pending selection to `value`. With `emit`, one `igcChange` of
+   * the `commit` type can cancel it.
+   * @returns Whether the pending selection is applied.
+   */
+  private _commitPending(emit: boolean): boolean {
+    const pending = this._pendingSelection;
+
+    if (!pending) {
+      return true;
+    }
+
+    const items = [...pending.symmetricDifference(this._selected)];
+
+    if (isEmpty(items)) {
+      return true;
+    }
+
+    if (
+      emit &&
+      !this._emitSelectionChange({
+        newValue: this._toValues(pending),
+        items,
+        type: 'commit',
+      })
+    ) {
+      return false;
+    }
+
+    // The `value` setter finds the records that `data` does not hold here.
+    this._selected = pending;
+    this.value = this._toValues(pending);
+    return true;
   }
 
   /** The items of the records from `start` to `end`, each one time. See {@link isItemRecord}. */
@@ -1076,7 +1251,7 @@ export default class IgcComboComponent<
       // The record itself, as an item without a value would select all.
       this._applySelection(
         [item],
-        toggle && this._selected.has(item) ? 'deselection' : 'selection',
+        toggle && this._listSelection.has(item) ? 'deselection' : 'selection',
         true
       );
     } else if (record && this._state.isToggle(record)) {
@@ -1096,7 +1271,8 @@ export default class IgcComboComponent<
    */
   private _toggleItemsOf(index: number): void {
     const items = this._itemsIn(index + 1, this._state.endOf(index));
-    const unselected = items.filter((item) => !this._selected.has(item));
+    const selected = this._listSelection;
+    const unselected = items.filter((item) => !selected.has(item));
 
     this._applySelection(
       unselected.length ? unselected : items,
@@ -1112,10 +1288,11 @@ export default class IgcComboComponent<
    */
   private _selectionOf(index: number): boolean | 'mixed' {
     const records = this._state.dataState;
+    const selected = this._listSelection;
     let some = false;
     let every = true;
 
-    if (this._selected.size) {
+    if (selected.size) {
       for (let i = index + 1, end = this._state.endOf(index); i < end; i++) {
         const record = records[i];
 
@@ -1123,7 +1300,7 @@ export default class IgcComboComponent<
           continue;
         }
 
-        if (this._selected.has(record.value)) {
+        if (selected.has(record.value)) {
           some = true;
         } else {
           every = false;
@@ -1139,6 +1316,21 @@ export default class IgcComboComponent<
   }
 
   private _clearSelection(): void {
+    // The clear icon is on the input, which shows `value`, so it clears
+    // `value` at once, and the pending selection with it.
+    if (this._pendingSelection) {
+      if (
+        this._emitSelectionChange({
+          newValue: [],
+          items: this.selection,
+          type: 'deselection',
+        })
+      ) {
+        this.value = [];
+      }
+      return;
+    }
+
     if (this.singleSelect) {
       this._clearSearchTerm(true);
       this._clearSingleSelection();
@@ -1379,6 +1571,23 @@ export default class IgcComboComponent<
     this._syncValueFromSelection();
   }
 
+  /**
+   * Applies the pending selection of the confirm mode to `value`. It does not
+   * emit `igcChange` or close the list.
+   */
+  public commitSelection(): void {
+    this._commitPending(false);
+  }
+
+  /**
+   * Puts `value` back as the pending selection of the confirm mode. It does
+   * not close the list.
+   */
+  public cancelSelection(): void {
+    this._pending = undefined;
+    this._listRef.value?.requestUpdate();
+  }
+
   //#endregion
 
   protected _itemRenderer: ComboRenderFunction<T> = (
@@ -1409,7 +1618,7 @@ export default class IgcComboComponent<
 
     const active = this._activeIndex === index;
 
-    const selected = this._selected.has(item.value);
+    const selected = this._listSelection.has(item.value);
     // One template for both, so a row keeps its element when its item loads.
     const placeholder = item.kind === 'placeholder';
     const { optionCount } = this._state;
