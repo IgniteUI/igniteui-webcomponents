@@ -1116,6 +1116,7 @@ export default class IgcComboComponent<
           placeholder=${this.placeholderSearch}
           exportparts="input: search-input"
           @igcInput=${this._handleSearchInput}
+          @igcChange=${stopPropagation}
         >
           <igc-icon
             slot=${bindIf(this.caseSensitiveIcon, 'suffix')}
@@ -1161,6 +1162,8 @@ export default class IgcComboComponent<
           .itemTemplate=${this._itemRenderer}
           ?hidden=${isEmpty(this._state.dataState)}
           @click=${this._itemClickHandler}
+          @igcStateChange=${stopPropagation}
+          @igcDataRequest=${stopPropagation}
         >
         </igc-virtual-scroll>
         ${this._renderEmptyTemplate()}

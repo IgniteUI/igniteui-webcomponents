@@ -5,8 +5,9 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { resetMouse, sendKeys, sendMouse } from '@web/test-runner-commands';
 import { setCurrentI18n } from 'igniteui-i18n-core';
-import { spy } from 'sinon';
+import { match, spy } from 'sinon';
 
 import {
   altKey,
@@ -44,6 +45,7 @@ import {
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
 import { firstOf } from '#internals/utils/arrays.js';
+import { getCenterPoint } from '#internals/utils/dom.js';
 import { configureTheme } from '#theming/config.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcVirtualScrollComponent from '../virtualization/virtualization.js';
@@ -1878,6 +1880,76 @@ describe('Combo', () => {
 
       expect(combo.value).to.be.empty;
       expect(input.value).to.equal('');
+    });
+
+    describe('Inner events', () => {
+      async function clickAt(x: number, y: number): Promise<void> {
+        await sendMouse({
+          type: 'click',
+          position: [Math.round(x), Math.round(y)],
+        });
+      }
+
+      async function clickOn(element: Element): Promise<void> {
+        const { x, y } = getCenterPoint(element);
+        await clickAt(x, y);
+      }
+
+      // The name, the action that blurs the search input, and the number of
+      // selection changes that the action makes.
+      const blurActions: [string, () => Promise<void>, number][] = [
+        ['Tab', () => sendKeys({ press: tabKey }), 0],
+        ['Escape', () => sendKeys({ press: escapeKey }), 0],
+        ['Arrow Down', () => sendKeys({ press: arrowDown }), 0],
+        [
+          'a click outside',
+          () => clickAt(window.innerWidth - 5, window.innerHeight - 5),
+          0,
+        ],
+        ['an item click', () => clickOn(items(combo)[0]), 1],
+      ];
+
+      afterEach(async () => {
+        await resetMouse();
+      });
+
+      for (const [name, blur, changes] of blurActions) {
+        it(`keeps the igcChange of the search input inside on ${name}`, async () => {
+          const searchSpy = spy();
+          const comboSpy = spy();
+
+          searchInput.addEventListener('igcChange', searchSpy);
+          combo.addEventListener('igcChange', comboSpy);
+
+          await openComboPopover(combo);
+          expect(isFocused(searchInput)).to.be.true;
+
+          await sendKeys({ type: 'o' });
+          await comboStable(combo);
+          await blur();
+          await comboStable(combo);
+
+          expect(searchSpy).calledOnceWith(match({ detail: 'o' }));
+          expect(comboSpy.callCount).to.equal(changes);
+          expect(comboSpy).not.calledWithMatch({ detail: match.string });
+        });
+      }
+
+      it('keeps the events of the virtual scroll inside', async () => {
+        const listSpy = spy();
+        const comboSpy = spy();
+
+        for (const name of ['igcStateChange', 'igcDataRequest']) {
+          list.addEventListener(name, listSpy);
+          combo.addEventListener(name, comboSpy);
+        }
+
+        await openComboPopover(combo);
+
+        expect(listSpy).calledWithMatch({ type: 'igcStateChange' });
+        expect(listSpy).calledWithMatch({ type: 'igcDataRequest' });
+        expect(comboSpy).not.called;
+      });
     });
   });
 

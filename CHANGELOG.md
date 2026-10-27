@@ -60,6 +60,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The Markdown renderer no longer uses `marked-shiki`, so it is no longer a peer dependency. You can remove it from your dependencies.
 - #### Chip
   - The `end` slot now renders after the `suffix` slot, at the end of the chip, as the `start` slot renders before the `prefix` slot. Before, it rendered before the `suffix` slot.
+- #### Combo
+  - The `igcStateChange` and `igcDataRequest` events of the list inside the combo no longer leave the combo. A listener on the combo for these events no longer gets them. [#2530](https://github.com/IgniteUI/igniteui-webcomponents/issues/2530)
 - #### Highlight
   - Setting `searchText` or `caseSensitive` to its current value no longer runs the search again, so the active match stays. Before, a framework that sets each property on each render, such as React, moved the active match back to the first match on each render. After the content changes, call `search()` to search again. [#2516](https://github.com/IgniteUI/igniteui-webcomponents/issues/2516)
 - #### Library
@@ -155,6 +157,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The native input no longer has `aria-disabled`. Its native `disabled` state is sufficient. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
   - The removal of the `locale` attribute no longer causes a `TypeError`. [#2475](https://github.com/IgniteUI/igniteui-webcomponents/pull/2475)
   - Setting `singleSelect` or `disableFiltering` to the value that the combo already has no longer clears the search text and the filter. Before, a framework that sets each property on each render, such as React, cleared the search text after each key, and the list did not filter. [#2516](https://github.com/IgniteUI/igniteui-webcomponents/issues/2516)
+  - The `igcChange` of the search input no longer leaves the combo. Before, a listener on the combo got a second `igcChange` with the search text as its `detail` when the search input lost the focus. [#2530](https://github.com/IgniteUI/igniteui-webcomponents/issues/2530)
 - #### Date picker
   - `stepUp()` and `stepDown()` now update `value` and the form value at once, also while the input has the focus. Before, only the input showed the new date.
   - A `value` that you set from code, also with `stepUp()` or `stepDown()`, no longer emits `igcChange` on a later blur, in any mode.
