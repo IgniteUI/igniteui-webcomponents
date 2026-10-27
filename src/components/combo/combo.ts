@@ -1,8 +1,9 @@
 import { ComboResourceStringsEN } from 'igniteui-i18n-core';
-import { html, type PropertyValues, type TemplateResult } from 'lit';
+import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { IgcBaseComboBoxComponent } from '#internals/bases/combo-box.js';
 import { addAriaProjector } from '#internals/controllers/aria-projection.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
@@ -97,7 +98,7 @@ const DATA_REQUEST_COUNT = 20;
  * @slot header - Renders a container before the list of options of the combo.
  * @slot footer - Renders a container after the list of options of the combo.
  * @slot empty - Renders content when the combo dropdown list has no items/data.
- * @slot loading - Renders content that replaces the default progress bar while `loading` is set.
+ * @slot loading - Renders content that replaces the default spinner while `loading` is set. It is in the input, so a click on it toggles the list, as on the toggle icon.
  * @slot helper-text - Renders content below the input of the combo.
  * @slot toggle-icon - Renders content that replaces the default toggle icon.
  * @slot clear-icon - Renders content that replaces the default clear icon.
@@ -139,8 +140,8 @@ const DATA_REQUEST_COUNT = 20;
  * @csspart header - The container holding the header content of the combo.
  * @csspart footer - The container holding the footer content of the combo.
  * @csspart empty - The container holding the empty content of the combo.
- * @csspart loading - The container of the progress bar that shows while `loading` is set.
- * @csspart placeholder - Added to the item part of each item to load, which `totalItemCount` adds. Its bar has the color of the text.
+ * @csspart loading - The spinner that replaces the toggle icon while `loading` is set. It has the color of the text.
+ * @csspart placeholder - Added to the item part of each item to load, which `totalItemCount` adds. Its skeleton has the color of the text.
  *
  * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
  *
@@ -487,8 +488,9 @@ export default class IgcComboComponent<
   public totalItemCount?: number;
 
   /**
-   * Whether the combo loads options. The list then shows a progress bar,
-   * which the `loading` slot can replace, and hides the empty message.
+   * Whether the combo loads options. A spinner, which the `loading` slot can
+   * replace, then takes the place of the toggle icon, and an empty list shows
+   * a loading message instead of the empty message.
    * @attr loading
    * @default false
    */
@@ -610,6 +612,16 @@ export default class IgcComboComponent<
 
     if (props.has('locale')) {
       this._state.updateLocale();
+    }
+
+    // The closed list is inert, so the focus in it would fall to the
+    // document. Move it to the input first.
+    if (
+      props.has('open') &&
+      !this.open &&
+      this.renderRoot.querySelector('[part="list-wrapper"]:focus-within')
+    ) {
+      this.focus({ preventScroll: true });
     }
 
     // The select-all option moves the other records by one.
@@ -1374,11 +1386,14 @@ export default class IgcComboComponent<
         .index=${index}
         ?active=${active}
         ?selected=${selected}
-        ?hide-checkbox=${placeholder || this.singleSelect}
+        ?hide-checkbox=${this.singleSelect}
       >
         ${
           placeholder
-            ? html`<span></span>`
+            ? // Bars of three lengths look like text.
+              html`<span
+                style=${styleMap({ inlineSize: `${45 + (index % 3) * 15}%` })}
+              ></span>`
             : this.itemTemplate({ item: item.value })
         }
       </igc-combo-item>
@@ -1419,6 +1434,13 @@ export default class IgcComboComponent<
           slot: 'toggle-icon',
           icon: this.open ? 'input_collapse' : 'input_expand',
         })}
+        <slot name="loading" ?hidden=${!this.loading}>
+          <span
+            part="loading"
+            role="progressbar"
+            aria-label=${this.resourceStrings.combo_loading!}
+          ></span>
+        </slot>
       </span>
     `;
   }
@@ -1510,11 +1532,11 @@ export default class IgcComboComponent<
 
   private _renderEmptyTemplate() {
     return html`
-      <div
-        part="empty"
-        ?hidden=${this.loading || !isEmpty(this._state.dataState)}
-      >
-        <slot name="empty">${this.resourceStrings.combo_empty_message}</slot>
+      <div part="empty" ?hidden=${!isEmpty(this._state.dataState)}>
+        ${this.loading ? this.resourceStrings.combo_loading : nothing}
+        <slot name="empty" ?hidden=${this.loading}>
+          ${this.resourceStrings.combo_empty_message}
+        </slot>
       </div>
     `;
   }
@@ -1523,14 +1545,6 @@ export default class IgcComboComponent<
     return html`
       <div .inert=${!this.open} part="list-wrapper">
         ${this._renderSearchInput()}
-        <div part="loading" ?hidden=${!this.loading}>
-          <slot name="loading">
-            <span
-              role="progressbar"
-              aria-label=${this.resourceStrings.combo_loading!}
-            ></span>
-          </slot>
-        </div>
         <div part="header">
           <slot name="header"></slot>
         </div>

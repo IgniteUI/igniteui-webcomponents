@@ -70,8 +70,9 @@
 |      12 | 2026-10-26 | `igcClosing` and `igcClosed` report the `trigger` that closes the list                |
 |      13 | 2026-10-26 | Remote data: `igcSearchInput`, `filteringOptions.mode`, `igcDataRequest`; a new `data` keeps the selection |
 |      14 | 2026-10-27 | `selectAllItems()` and `deselectAllItems()` act on the items that the list shows      |
-|      15 | 2026-10-27 | `totalItemCount` placeholders and `loading`                                           |
+|      15 | 2026-10-27 | `totalItemCount` skeleton placeholders and the `loading` spinner                      |
 |      16 | 2026-10-27 | The select-all option (`showSelectAll`) and the `select-all` and `indeterminate` parts |
+|      17 | 2026-10-27 | The focus moves to the main input when the list closes around it                     |
 
 ## Overview
 
@@ -326,16 +327,19 @@ combo.addEventListener('igcDataRequest', ({ detail }) => {
 - `totalItemCount` is the number of all the results, when the server knows it. In remote mode, the list adds a
   placeholder option for each result that a non-empty `data` does not hold yet, after the groups, so the scrollbar
   shows the full list. An empty `data` shows the empty message, because the first page is the job of the application.
-  A placeholder has the `placeholder` part and the accessible name "Loading", is disabled, and counts in
-  `aria-setsize`. The keyboard can move to it, but Enter and Space on it do nothing, a click does not select it or
+  A placeholder is the skeleton of an item: the box of the checkbox in multiple selection, and a bar where the text
+  starts, with a wave that sweeps across it (none with reduced motion). It has the `placeholder` part and the
+  accessible name "Loading", is disabled, and counts in `aria-setsize`. The keyboard can move to it, but Enter and Space on it do nothing, a click does not select it or
   close the list, and the selection methods skip it. `igcDataRequest` then also comes when the list renders a
   placeholder, for example after End or a fast scroll. Its `count` covers the rendered placeholders and does not go
   past `totalItemCount`, and no request comes when `data` holds `totalItemCount` items. A total that is not a finite
   number counts as unknown. `data` grows only at its end, so a jump far into the placeholders requests all the items up
   to the jump.
-- `loading` shows an indeterminate progress bar, named "Loading", above the header. The default bar overlays the top
-  of the content below it, so it does not move the list. While `loading` is set, the empty message hides. Content in
-  the `loading` slot replaces the bar, and Tab reaches focusable content in the slot before the header content.
+- `loading` shows a spinner, named "Loading", in place of the toggle icon, so it shows also while the list is closed,
+  for example during a search in single selection. The spinner covers the box of the toggle icon, so the input does
+  not change its width. An empty list shows "Loading" instead of the empty message. Content in the `loading` slot
+  replaces the spinner. It is in the input, so a click on it toggles the list, as on the toggle icon, and Tab does not
+  reach it while the list is open. The busy state shows in the field, not in the list, so the list does not move.
 
 `bindComboDataSource()` from `igniteui-webcomponents/extras` implements this flow on the public API. See the
 `RemoteData` story.
@@ -352,7 +356,7 @@ instance through `locale` and `resourceStrings`:
 | `combo_clearItems_placeholder`      | Clear Selection         | The label of the clear action.              |
 | `combo_aria_label_options`          | Selected options        | The accessible name of the selection.       |
 | `combo_aria_label_no_options`       | No options selected     | The accessible name of an empty selection.  |
-| `combo_loading`                     | Loading                 | The accessible name of the progress bar and of the placeholder options. |
+| `combo_loading`                     | Loading                 | The accessible name of the spinner and of the placeholder options, and the message of an empty list while loading. |
 | `combo_select_all`                  | Select all              | The text of the select-all option.          |
 
 ### Keyboard interactions
@@ -377,7 +381,7 @@ While the list of options **is** visible:
 | <kbd>Enter</kbd>                            | Selects the active option in single selection mode, and closes the list in all modes. On a placeholder of `totalItemCount`, it does nothing. |
 | <kbd>Home</kbd> / <kbd>End</kbd>            | Activates the first or the last option.                                       |
 | <kbd>Escape</kbd>                           | Closes the list. The combo stays focused.                                     |
-| <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd> | Moves through the search input (the main input in single selection), the loading content, the header content, the list, the empty content and the footer content. Past either end, or without focusable slot content, closes the list and moves the focus on. |
+| <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd> | Moves through the search input (the main input in single selection), the header content, the list, the empty content and the footer content. Past either end, or without focusable slot content, closes the list and moves the focus on. |
 
 Typing while the component is focused filters the list down to the closest matches.
 
@@ -400,7 +404,7 @@ Typing while the component is focused filters the list down to the closest match
 | caseSensitiveIcon      | case-sensitive-icon        | No        | `boolean`                           | false             | Whether the search input shows the icon that toggles case-sensitive filtering. |
 | disableClear           | disable-clear              | No        | `boolean`                           | false             | Whether the clear button is hidden.                             |
 | totalItemCount         | total-item-count           | No        | `number \| undefined`               | -                 | The number of all the items of a remote source, when the source knows it. In remote filtering mode, the list shows a placeholder for each item that `data` does not hold yet. |
-| loading                | loading                    | Yes       | `boolean`                           | false             | Whether the combo loads options. The list then shows a progress bar, which the `loading` slot can replace, and hides the empty message. |
+| loading                | loading                    | Yes       | `boolean`                           | false             | Whether the combo loads options. A spinner, which the `loading` slot can replace, then takes the place of the toggle icon, and an empty list shows a loading message instead of the empty message. |
 | showSelectAll          | show-select-all            | No        | `boolean`                           | false             | Whether the list starts with an option that selects all the items that it shows, or deselects them when all of them are selected. Only in multiple selection mode. |
 | itemTemplate           | -                          | No        | `ComboItemTemplate<T>`              | -                 | The template for the content of each combo item.                |
 | groupHeaderTemplate    | -                          | No        | `ComboGroupHeaderTemplate<T>`       | -                 | The template for the content of each group header.              |
@@ -515,7 +519,8 @@ type ComboCloseTrigger =
 
 The open events keep an empty `detail`. `hide()`, `toggle()` and a change of `open` emit no events. An app that
 stages a selection in its own footer can save `value` on `igcOpening`, commit on its Apply button or on the `enter`
-trigger, and put the saved value back on the other triggers of `igcClosed`.
+trigger, and put the saved value back on the other triggers of `igcClosed`. When the list closes while the focus is in
+it, also on `hide()` from such a button, the focus moves to the main input, because the closed list cannot keep it.
 
 ### Slots
 
@@ -526,7 +531,7 @@ trigger, and put the saved value back on the other triggers of `igcClosed`.
 | `header`        | Renders a container before the list of options.                                  |
 | `footer`        | Renders a container after the list of options.                                   |
 | `empty`         | Renders content when the list has no items or data.                              |
-| `loading`       | Renders content that replaces the default progress bar while `loading` is set.   |
+| `loading`       | Renders content that replaces the default spinner while `loading` is set. It is in the input, so a click on it toggles the list, as on the toggle icon. |
 | `helper-text`   | Renders content below the input.                                                 |
 | `toggle-icon`   | Renders content that replaces the default toggle icon.                           |
 | `clear-icon`    | Renders content that replaces the default clear icon.                            |
@@ -562,8 +567,8 @@ trigger, and put the saved value back on the other triggers of `igcClosed`.
 | `select-all`         | Added to the item part of the select-all option.               |
 | `header` / `footer`  | The containers holding the header and footer content.          |
 | `empty`              | The container holding the empty content.                       |
-| `loading`            | The container of the progress bar that shows while `loading` is set. |
-| `placeholder`        | Added to the item part of each item to load, which `totalItemCount` adds. Its bar has the color of the text. |
+| `loading`            | The spinner that replaces the toggle icon while `loading` is set. It has the color of the text. |
+| `placeholder`        | Added to the item part of each item to load, which `totalItemCount` adds. Its skeleton has the color of the text. |
 
 ### CSS custom states
 
@@ -644,10 +649,12 @@ Generated by `runValidationContainerTests`.
 ### Header and footer slots
 
 24. Tab moves from the search input to the header content, the list and the footer content, and Shift+Tab moves
-    back. With an empty list, Tab reaches the content of the `empty` slot, and while `loading` is set, the content of
-    the `loading` slot before the header content. The accessibility audit passes with focusable slot content.
+    back. With an empty list, Tab reaches the content of the `empty` slot. The accessibility audit passes with
+    focusable slot content.
 25. Tab from the last footer control and Shift+Tab from the search input close the list and move the focus out of
     the combo. In single selection, the main input starts the order, and Tab selects the active item when it leaves.
+    `hide()` from a footer control, or `open` set to `false` with the focus in the search input, moves the focus to
+    the main input. A focus outside the list stays where it is.
 26. Without focusable slot content, Tab from the search input closes the list and moves the focus on.
 27. Tab moves out of a stop inside another stop, does not stop on a host that delegates the focus or on a control
     with `visibility: hidden`, and leaves a Tab that a slotted control handles to that control.
@@ -694,8 +701,9 @@ Generated by `runValidationContainerTests`.
     when `data` holds `totalItemCount` items, and comes when the total no longer stops it. Space, a click and
     `selectAllItems()` do not select a placeholder, and Enter or a click on one does not close the list in single
     selection.
-38. `loading` shows the named progress bar without moving the list, hides the empty message and passes the
-    accessibility audit. The `loading` slot replaces the bar, and Tab reaches its content before the header content.
+38. `loading` shows the named spinner over the hidden toggle icon, without a change of the toggle width or a move of
+    the list, and "Loading" in an empty list, and passes the accessibility audit. The `loading` slot replaces the spinner. The spinner and the skeletons
+    take their colors from the `loading` and `placeholder` parts.
 
 ### Select-all option
 
@@ -731,7 +739,7 @@ Generated by `runValidationContainerTests`.
   because a listbox uses one of `aria-selected` and `aria-checked` for all its options, so its mixed state shows only on
   its checkbox. A
   placeholder of `totalItemCount` is a disabled option named "Loading". While `loading` is set, a
-  `progressbar` named "Loading" shows above the list. The listbox has no `aria-busy`, so a screen reader continues to
+  `progressbar` named "Loading" takes the place of the toggle icon. The listbox has no `aria-busy`, so a screen reader continues to
   read the loaded options while the next page loads.
 - The current selection is announced through a label resolved from the resource strings, which also covers the empty
   case.

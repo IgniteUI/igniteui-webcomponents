@@ -32,6 +32,7 @@ import {
   axeReflectedRelationsOptions,
   isFocused,
   suppressResizeObserverLoopError,
+  withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import {
   simulateBlur,
@@ -2061,6 +2062,27 @@ describe('Combo', () => {
       expectFocus(buttonAfter, false);
     });
 
+    it('moves the focus to the input when the app closes the list from a footer control', async () => {
+      apply.focus();
+      await combo.hide();
+
+      expectFocus(input, false);
+    });
+
+    it('moves the focus to the input when `open` turns off with the focus in the search input', async () => {
+      combo.open = false;
+      await elementUpdated(combo);
+
+      expectFocus(input, false);
+    });
+
+    it('keeps the focus outside the list when the list closes', async () => {
+      buttonAfter.focus();
+      await combo.hide();
+
+      expectFocus(buttonAfter, false);
+    });
+
     it('closes the list and moves the focus back with Shift+Tab from the search input', async () => {
       await shiftTab();
       await elementUpdated(combo);
@@ -2109,27 +2131,6 @@ describe('Combo', () => {
 
       await tab();
       expectFocus(cancel);
-    });
-
-    it('reaches the content of the loading slot before the header while loading', async () => {
-      const stop = document.createElement('button');
-      stop.slot = 'loading';
-      stop.textContent = 'Stop';
-      combo.append(stop);
-      combo.loading = true;
-      await elementUpdated(combo);
-
-      await tab();
-      expectFocus(stop);
-
-      await tab();
-      expectFocus(header);
-
-      combo.loading = false;
-      await elementUpdated(combo);
-      await shiftTab();
-
-      expectFocus(searchInput);
     });
 
     it('moves out of a stop inside another stop', async () => {
@@ -2719,7 +2720,7 @@ describe('Combo', () => {
         items(remote).filter((item) => item.part.contains('placeholder'));
 
       const loadingPart = () =>
-        remote.renderRoot.querySelector<HTMLElement>('[part="loading"]')!;
+        remote.renderRoot.querySelector<HTMLElement>('[part="loading"]');
 
       it('pads the list to `totalItemCount` with placeholder options in remote mode', async () => {
         remote.totalItemCount = 12;
@@ -2856,18 +2857,34 @@ describe('Combo', () => {
         expect(remote.open).to.be.true;
       });
 
-      it('shows a progress bar and hides the empty message while loading', async () => {
-        const empty = remote.renderRoot.querySelector('[part="empty"]')!;
-        const bar = loadingPart().querySelector('[role="progressbar"]')!;
+      it('shows a spinner in place of the toggle icon and a loading message in an empty list', async () => {
+        const empty =
+          remote.renderRoot.querySelector<HTMLElement>('[part="empty"]')!;
+        const toggle = remote.renderRoot.querySelector(
+          '[part~="toggle-icon"]'
+        )!;
+        const icon = toggle.querySelector('igc-icon')!;
+        const { width } = toggle.getBoundingClientRect();
 
         remote.data = [];
         remote.loading = true;
         await openComboPopover(remote);
 
+        const spinner = loadingPart()!;
+
         expect(remote).to.have.attribute('loading');
-        expect(bar.checkVisibility()).to.be.true;
-        expect(bar.getAttribute('aria-label')).to.equal('Loading');
-        expect(empty.checkVisibility()).to.be.false;
+        expect(toggle.contains(spinner)).to.be.true;
+        expect(spinner.checkVisibility()).to.be.true;
+        expect(icon.checkVisibility({ visibilityProperty: true })).to.be.false;
+        expect(toggle.getBoundingClientRect().width).to.equal(width);
+        const center = getCenterPoint(icon);
+        const { x, y } = getCenterPoint(spinner);
+
+        expect(x).to.be.closeTo(center.x, 0.5);
+        expect(y).to.be.closeTo(center.y, 0.5);
+        expect(spinner.getAttribute('role')).to.equal('progressbar');
+        expect(spinner.getAttribute('aria-label')).to.equal('Loading');
+        expect(empty.innerText).to.equal('Loading');
 
         await expect(remote).shadowDom.to.be.accessible(
           axeReflectedRelationsOptions
@@ -2876,11 +2893,12 @@ describe('Combo', () => {
         remote.loading = false;
         await elementUpdated(remote);
 
-        expect(bar.checkVisibility()).to.be.false;
-        expect(empty.checkVisibility()).to.be.true;
+        expect(spinner.checkVisibility()).to.be.false;
+        expect(icon.checkVisibility({ visibilityProperty: true })).to.be.true;
+        expect(empty.innerText).to.equal('The list is empty');
       });
 
-      it('does not move the list when the default bar shows', async () => {
+      it('does not move the list when the spinner shows', async () => {
         await openComboPopover(remote);
         const { top } = list.getBoundingClientRect();
 
@@ -2890,17 +2908,58 @@ describe('Combo', () => {
         expect(list.getBoundingClientRect().top).to.equal(top);
       });
 
-      it('replaces the progress bar with the `loading` slot', async () => {
+      it('takes the colors of the spinner and the skeletons from their parts', async () => {
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(
+          'igc-combo::part(loading) { color: rgb(1, 2, 3); } igc-combo::part(placeholder) { color: rgb(4, 5, 6); }'
+        );
+        const reference = await fixture<HTMLDivElement>(
+          html`<div
+            style="background: color-mix(in srgb, rgb(4, 5, 6) 16%, transparent)"
+          ></div>`
+        );
+
+        await withDocumentSheets([sheet], async () => {
+          remote.totalItemCount = 12;
+          remote.loading = true;
+          await openComboPopover(remote);
+          list.scrollToIndex(11);
+          await comboStable(remote);
+
+          const placeholder = placeholders().at(-1)!;
+          const skeleton = placeholder.querySelector('span')!;
+          const box = placeholder.renderRoot
+            .querySelector('igc-checkbox')!
+            .renderRoot.querySelector('[part~="control"]')!;
+
+          expect(
+            getComputedStyle(loadingPart()!).borderInlineEndColor
+          ).to.equal('rgb(1, 2, 3)');
+          const { backgroundColor } = getComputedStyle(reference);
+
+          expect(getComputedStyle(skeleton).backgroundColor).to.equal(
+            backgroundColor
+          );
+          expect(getComputedStyle(box, '::after').backgroundColor).to.equal(
+            backgroundColor
+          );
+        });
+      });
+
+      it('replaces the spinner with the `loading` slot', async () => {
         const custom = document.createElement('span');
         custom.slot = 'loading';
         remote.append(custom);
         remote.loading = true;
         await openComboPopover(remote);
 
-        const slot = loadingPart().querySelector('slot')!;
+        const slot = remote.renderRoot.querySelector<HTMLSlotElement>(
+          'slot[name="loading"]'
+        )!;
 
         expect(slot.assignedElements()).to.eql([custom]);
         expect(custom.checkVisibility()).to.be.true;
+        expect(loadingPart()!.checkVisibility()).to.be.false;
       });
     });
   });

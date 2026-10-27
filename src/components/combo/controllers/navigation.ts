@@ -20,7 +20,7 @@ import type IgcVirtualScrollComponent from '../../virtualization/virtualization.
 import type { ComboCloseTrigger, ComboHost } from '../types.js';
 import type { DataState } from './data.js';
 
-type ListSlot = 'loading' | 'header' | 'empty' | 'footer';
+type ListSlot = 'header' | 'empty' | 'footer';
 
 type ComboNavigationConfig = {
   input: Ref<IgcInputComponent>;
@@ -246,9 +246,9 @@ export class ComboNavigationController<T extends object> {
   }
 
   /**
-   * The Tab order of the open list: the filtering input, the loading and
-   * header content, the list, and the empty and footer content. Empty without
-   * focusable slot content, so Tab closes the list.
+   * The Tab order of the open list: the filtering input, the header content,
+   * the list, and the empty and footer content. Empty without focusable slot
+   * content, so Tab closes the list.
    */
   private _tabStops(): HTMLElement[] {
     const focusable = (...slots: ListSlot[]) =>
@@ -257,7 +257,7 @@ export class ComboNavigationController<T extends object> {
           .flatMap(getFocusableElements)
           .toArray()
       );
-    const before = focusable('loading', 'header');
+    const before = focusable('header');
     const after = focusable('empty', 'footer');
 
     if (isEmpty(before) && isEmpty(after)) {
