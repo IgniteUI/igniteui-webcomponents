@@ -217,6 +217,7 @@ export type {
 } from './components/stepper/common/types.js';
 export type { IgcTreeSelectionEventArgs } from './components/tree/tree.common.js';
 export type {
+  ComboCloseTrigger,
   ComboGroupHeaderContext,
   ComboGroupHeaderTemplate,
   ComboItemTemplate,
@@ -224,6 +225,7 @@ export type {
   FilteringOptions,
   GroupingDirection,
   IgcComboChangeEventArgs,
+  IgcComboClosingEventArgs,
 } from './components/combo/types.js';
 export type {
   IconMeta,

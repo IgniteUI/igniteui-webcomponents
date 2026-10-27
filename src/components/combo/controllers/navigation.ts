@@ -17,7 +17,7 @@ import { isEmpty } from '#internals/utils/arrays.js';
 import { getFocusableElements } from '#internals/utils/dom.js';
 import type IgcInputComponent from '../../input/input.js';
 import type IgcVirtualScrollComponent from '../../virtualization/virtualization.js';
-import type { ComboHost } from '../types.js';
+import type { ComboCloseTrigger, ComboHost } from '../types.js';
 import type { DataState } from './data.js';
 
 type ComboNavigationConfig = {
@@ -28,7 +28,7 @@ type ComboNavigationConfig = {
   slotted: (slot: 'header' | 'empty' | 'footer') => Element[];
   interactions: {
     show: () => Promise<boolean>;
-    hide: () => Promise<boolean>;
+    hide: (trigger: ComboCloseTrigger) => Promise<boolean>;
     toggleSelection: (index: number) => void;
     select: (index: number) => void;
     clearSelection: () => void;
@@ -93,7 +93,7 @@ export class ComboNavigationController<T extends object> {
       ref: this._config.input,
       bindingDefaults,
     })
-      .set(arrowUp, this._config.interactions.hide)
+      .set(arrowUp, () => this._config.interactions.hide('arrow-up'))
       .set([altKey, arrowDown], this._onMainInputArrowDown)
       .set(arrowDown, this._onMainInputArrowDown)
       .set(enterKey, this._onEnter);
@@ -103,7 +103,7 @@ export class ComboNavigationController<T extends object> {
       ref: this._config.search,
       bindingDefaults,
     })
-      .set(arrowUp, this._onEscape)
+      .set(arrowUp, () => this._closeToInput('arrow-up'))
       .set(arrowDown, this._onSearchArrowDown);
 
     addKeybindings(this._host, {
@@ -136,7 +136,7 @@ export class ComboNavigationController<T extends object> {
       if (this._host.singleSelect) {
         this._config.interactions.select(this.active);
       }
-      if (await this._config.interactions.hide()) {
+      if (await this._config.interactions.hide('enter')) {
         this._input?.select();
         this._host.focus();
       }
@@ -175,17 +175,15 @@ export class ComboNavigationController<T extends object> {
       this._config.interactions.select(this.active);
     }
 
-    await this._config.interactions.hide();
+    await this._config.interactions.hide('tab');
   };
 
-  private _onEscape = async (): Promise<void> => {
+  private _onEscape = (): Promise<void> => {
     if (!this._host.open) {
       this._config.interactions.clearSelection();
     }
 
-    if (await this._config.interactions.hide()) {
-      this._input?.focus();
-    }
+    return this._closeToInput('escape');
   };
 
   private _onMainInputArrowDown = async (): Promise<void> => {
@@ -217,7 +215,7 @@ export class ComboNavigationController<T extends object> {
     if (this.active === this._firstItem) {
       // Focus the search input when it shows. Otherwise, close the list.
       const search = this._searchInput;
-      search ? search.focus() : this._onEscape();
+      search ? search.focus() : this._closeToInput('arrow-up');
       return;
     }
 
@@ -233,6 +231,12 @@ export class ComboNavigationController<T extends object> {
   //#endregion
 
   //#region Internal helper methods
+
+  private async _closeToInput(trigger: ComboCloseTrigger): Promise<void> {
+    if (await this._config.interactions.hide(trigger)) {
+      this._input?.focus();
+    }
+  }
 
   /**
    * The Tab order of the open list: the filtering input, the header content,

@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Chat
   - `focusInput()` moves the focus to the text area, for example after the application sets `draftMessage`. It returns a promise. In a new chat, it waits for the first render, and in a server-rendered chat, for the render after the hydration. It does nothing when a custom `input` renderer replaces the text area. [#2474](https://github.com/IgniteUI/igniteui-webcomponents/pull/2474)
 - #### Combo
+  - `igcClosing` and `igcClosed` have a `detail` with the `trigger` that closes the list: `enter`, `escape`, `tab`, `arrow-up`, `outside-click`, `scroll`, `toggle` (a click on the input) or `selection` (an item click in single selection). So an app that stages a selection can tell Apply (`enter`) from Cancel (`escape`). The new `IgcComboClosingEventArgs` and `ComboCloseTrigger` types describe the detail. [#2533](https://github.com/IgniteUI/igniteui-webcomponents/issues/2533)
   - The group header template gets `key`: the `groupKey` value that the items of the group share. The new `ComboGroupHeaderTemplate` and `ComboGroupHeaderContext` types describe the template and its context. Current templates continue to work. [#2462](https://github.com/IgniteUI/igniteui-webcomponents/issues/2462) [#2468](https://github.com/IgniteUI/igniteui-webcomponents/pull/2468)
 - #### File input
   - `directory` lets the user select a folder instead of files. The selection holds all files in the folder and its subfolders, and `webkitRelativePath` gives the path of each file from the folder. The control shows the folder name. In Chromium, a multipart form submission sends the relative path as the file name. [#2481](https://github.com/IgniteUI/igniteui-webcomponents/pull/2481)
@@ -61,6 +62,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Chip
   - The `end` slot now renders after the `suffix` slot, at the end of the chip, as the `start` slot renders before the `prefix` slot. Before, it rendered before the `suffix` slot.
 - #### Combo
+  - `igcClosing` and `igcClosed` are typed `CustomEvent<IgcComboClosingEventArgs>`, not `CustomEvent<void>`. In TypeScript, change a handler that declares its parameter as `CustomEvent<void>`. [#2533](https://github.com/IgniteUI/igniteui-webcomponents/issues/2533)
   - The `igcStateChange` and `igcDataRequest` events of the list inside the combo no longer leave the combo. A listener on the combo for these events no longer gets them. [#2530](https://github.com/IgniteUI/igniteui-webcomponents/issues/2530)
 - #### Highlight
   - Setting `searchText` or `caseSensitive` to its current value no longer runs the search again, so the active match stays. Before, a framework that sets each property on each render, such as React, moved the active match back to the first match on each render. After the content changes, call `search()` to search again. [#2516](https://github.com/IgniteUI/igniteui-webcomponents/issues/2516)

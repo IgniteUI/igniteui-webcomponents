@@ -41,6 +41,7 @@ import { ComboNavigationController } from './controllers/navigation.js';
 import { styles } from './themes/combo.base.css.js';
 import { styles as shared } from './themes/shared/combo.common.css.js';
 import type {
+  ComboCloseTrigger,
   ComboGroupHeaderTemplate,
   ComboItemTemplate,
   ComboRecord,
@@ -49,6 +50,7 @@ import type {
   FilteringOptions,
   GroupingDirection,
   IgcComboChangeEventArgs,
+  IgcComboClosingEventArgs,
   IgcComboComponentEventMap,
   Item,
   Keys,
@@ -96,8 +98,8 @@ const i18n = {
  * @fires igcChange - Emitted before the user changes the selection. Cancel the event to keep the selection.
  * @fires igcOpening - Emitted before the user opens the list of options. Cancelable.
  * @fires igcOpened - Emitted after the list of options opens on a user action.
- * @fires igcClosing - Emitted before the user closes the list of options. Cancelable.
- * @fires igcClosed - Emitted after the list of options closes on a user action.
+ * @fires igcClosing - Emitted before the user closes the list of options. Cancelable. The `trigger` of the detail is the user action that closes the list.
+ * @fires igcClosed - Emitted after the list of options closes on a user action. The `trigger` of the detail is the user action that closes the list.
  *
  * @csspart label - The encapsulated text label of the combo.
  * @csspart input - The main input field of the combo.
@@ -211,7 +213,7 @@ export default class IgcComboComponent<
       slotted: (slot) => this._slots.getAssignedElements(slot),
       interactions: {
         show: () => this._show(true),
-        hide: () => this._hide(true),
+        hide: (trigger) => this._close(trigger),
         toggleSelection: (index: number) => this._selectAt(index, true),
         select: (index: number) => this._selectAt(index, false),
         clearSelection: () => this._clearSelection(),
@@ -619,9 +621,12 @@ export default class IgcComboComponent<
     return canOpen;
   }
 
-  protected override async _hide(emitEvent = false): Promise<boolean> {
+  protected override async _hide(
+    emitEvent = false,
+    detail?: IgcComboClosingEventArgs
+  ): Promise<boolean> {
     const [canClose, _] = await Promise.all([
-      super._hide(emitEvent),
+      super._hide(emitEvent, detail),
       this.updateComplete,
     ]);
 
@@ -630,6 +635,11 @@ export default class IgcComboComponent<
     }
 
     return canClose;
+  }
+
+  /** Closes the list on a user action, which the close events report. */
+  private _close(trigger: ComboCloseTrigger): Promise<boolean> {
+    return this._hide(true, { trigger });
   }
 
   private _setSingleSelectionDisplayValue(value: string): void {
@@ -909,10 +919,22 @@ export default class IgcComboComponent<
 
     if (this.singleSelect) {
       this._inputRef.value?.focus();
-      await this._hide(true);
+      await this._close('selection');
     } else {
       this._searchRef.value?.focus();
     }
+  }
+
+  protected override _handleAnchorClick(): void {
+    this.open ? this._close('toggle') : this._show(true);
+  }
+
+  protected override _handleClosing(): void {
+    this._close('outside-click');
+  }
+
+  private _handleScrollClose(): void {
+    this._close('scroll');
   }
 
   private _handleClearIconClick(event: PointerEvent): void {
@@ -1189,7 +1211,7 @@ export default class IgcComboComponent<
         flip
         same-width
         .scrollStrategy=${this.scrollStrategy}
-        @igcPopoverScrollClose=${this._handleClosing}
+        @igcPopoverScrollClose=${this._handleScrollClose}
       >
         ${this._renderMainInput()} ${this._renderList()}
       </igc-popover>

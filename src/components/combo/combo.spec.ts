@@ -7,7 +7,7 @@ import {
 } from '@open-wc/testing';
 import { resetMouse, sendKeys, sendMouse } from '@web/test-runner-commands';
 import { setCurrentI18n } from 'igniteui-i18n-core';
-import { match, spy } from 'sinon';
+import { match, type SinonSpy, spy } from 'sinon';
 
 import {
   altKey,
@@ -53,7 +53,7 @@ import type IgcVirtualScrollComponent from '../virtualization/virtualization.js'
 import type IgcComboHeaderComponent from './combo-header.js';
 import type IgcComboItemComponent from './combo-item.js';
 import IgcComboComponent from './combo.js';
-import type { ComboItemTemplate } from './types.js';
+import type { ComboCloseTrigger, ComboItemTemplate } from './types.js';
 
 describe('Combo', () => {
   type City = {
@@ -482,6 +482,7 @@ describe('Combo', () => {
 
       expect(eventSpy).calledOnceWithExactly('igcClosing', {
         cancelable: true,
+        detail: { trigger: 'toggle' },
       });
       expect(eventSpy).not.calledWith('igcClosed');
     });
@@ -2169,6 +2170,148 @@ describe('Combo', () => {
     });
   });
 
+  describe('Close trigger', () => {
+    let eventSpy: SinonSpy;
+
+    function expectTrigger(trigger: ComboCloseTrigger): void {
+      expect(combo.open).to.be.false;
+      expect(eventSpy.withArgs('igcClosing')).calledOnceWith('igcClosing', {
+        cancelable: true,
+        detail: { trigger },
+      });
+      expect(eventSpy.withArgs('igcClosed')).calledOnceWith('igcClosed', {
+        detail: { trigger },
+      });
+    }
+
+    beforeEach(async () => {
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>`
+      );
+
+      input = combo.renderRoot.querySelector('igc-input#target')!;
+      searchInput = combo.renderRoot.querySelector('[part="search-input"]')!;
+      list = combo.renderRoot.querySelector('igc-virtual-scroll')!;
+      eventSpy = spy(combo, 'emitEvent');
+
+      await openComboPopover(combo);
+    });
+
+    const actions: [ComboCloseTrigger, string, () => unknown][] = [
+      [
+        'enter',
+        'Enter in the list',
+        () => {
+          simulateKeyboard(list, arrowDown);
+          simulateKeyboard(list, enterKey);
+        },
+      ],
+      ['escape', 'Escape in the list', () => simulateKeyboard(list, escapeKey)],
+      [
+        'enter',
+        'Enter in the main input',
+        () => {
+          simulateKeyboard(list, arrowDown);
+          simulateKeyboard(input, enterKey);
+        },
+      ],
+      ['tab', 'Tab in the list', () => simulateKeyboard(list, tabKey)],
+      [
+        'tab',
+        'Shift+Tab in the list',
+        () => simulateKeyboard(list, [shiftKey, tabKey]),
+      ],
+      [
+        'arrow-up',
+        'Arrow Up in the main input',
+        () => simulateKeyboard(input, arrowUp),
+      ],
+      [
+        'arrow-up',
+        'Arrow Up in the search input',
+        () => simulateKeyboard(searchInput, arrowUp),
+      ],
+      ['outside-click', 'a click outside', () => simulateClick(document.body)],
+      [
+        'arrow-up',
+        'Arrow Up at the first item without the search input',
+        async () => {
+          combo.disableFiltering = true;
+          await elementUpdated(combo);
+          simulateKeyboard(list, arrowDown);
+          simulateKeyboard(list, arrowUp);
+        },
+      ],
+      ['toggle', 'a click on the input', () => simulateClick(input)],
+      [
+        'selection',
+        'an item click in single selection',
+        async () => {
+          combo.singleSelect = true;
+          await comboStable(combo);
+          simulateClick(items(combo)[0]);
+        },
+      ],
+    ];
+
+    for (const [trigger, name, action] of actions) {
+      it(`reports \`${trigger}\` on ${name}`, async () => {
+        await action();
+        await elementUpdated(combo);
+
+        expectTrigger(trigger);
+      });
+    }
+
+    it('keeps the trigger of a close in progress', async () => {
+      simulateKeyboard(list, escapeKey);
+      simulateClick(document.body);
+      await elementUpdated(combo);
+
+      expectTrigger('escape');
+      expect(eventSpy).not.calledWithMatch('igcClosing', {
+        detail: { trigger: 'outside-click' },
+      });
+    });
+
+    it('reports the trigger of a later close after a canceled one', async () => {
+      combo.addEventListener('igcClosing', (event) => event.preventDefault(), {
+        once: true,
+      });
+
+      simulateKeyboard(list, escapeKey);
+      await elementUpdated(combo);
+      expect(combo.open).to.be.true;
+
+      eventSpy.resetHistory();
+      simulateClick(document.body);
+      await elementUpdated(combo);
+
+      expectTrigger('outside-click');
+    });
+
+    it('keeps the detail of the open events empty', async () => {
+      await combo.hide();
+      simulateClick(input);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.true;
+      expect(eventSpy).calledWith('igcOpening', { cancelable: true });
+      expect(eventSpy).calledWith('igcOpened', {});
+    });
+
+    it('emits no events on `hide()`', async () => {
+      await combo.hide();
+
+      expect(combo.open).to.be.false;
+      expect(eventSpy).not.called;
+    });
+  });
+
   describe('Scroll strategy', () => {
     let container: HTMLDivElement;
 
@@ -2205,6 +2348,22 @@ describe('Combo', () => {
       expect(combo.open).to.be.false;
       expect(eventSpy.firstCall).calledWith('igcClosing');
       expect(eventSpy.lastCall).calledWith('igcClosed');
+    });
+
+    it('reports the `scroll` trigger with the `close` strategy', async () => {
+      const eventSpy = spy(combo, 'emitEvent');
+
+      combo.scrollStrategy = 'close';
+      await openComboPopover(combo);
+      await simulateScroll(container, { top: 200 });
+
+      expect(eventSpy).calledWith('igcClosing', {
+        cancelable: true,
+        detail: { trigger: 'scroll' },
+      });
+      expect(eventSpy).calledWith('igcClosed', {
+        detail: { trigger: 'scroll' },
+      });
     });
   });
 

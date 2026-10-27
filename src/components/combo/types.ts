@@ -55,6 +55,25 @@ export interface IgcComboChangeEventArgs<T extends object = any> {
   type: ComboChangeType;
 }
 
+/**
+ * The user action that closes the list of options. `toggle` is a click on the
+ * input, and `selection` an item click in single selection mode.
+ */
+export type ComboCloseTrigger =
+  | 'enter'
+  | 'escape'
+  | 'tab'
+  | 'arrow-up'
+  | 'outside-click'
+  | 'scroll'
+  | 'toggle'
+  | 'selection';
+
+export interface IgcComboClosingEventArgs {
+  /** The user action that closes the list. */
+  trigger: ComboCloseTrigger;
+}
+
 export interface IgcComboComponentEventMap {
   igcChange: CustomEvent<IgcComboChangeEventArgs>;
   // For analyzer meta only:
@@ -64,8 +83,8 @@ export interface IgcComboComponentEventMap {
   blur: FocusEvent;
   igcOpening: CustomEvent<void>;
   igcOpened: CustomEvent<void>;
-  igcClosing: CustomEvent<void>;
-  igcClosed: CustomEvent<void>;
+  igcClosing: CustomEvent<IgcComboClosingEventArgs>;
+  igcClosed: CustomEvent<IgcComboClosingEventArgs>;
 }
 
 export type ComboItemTemplate<T extends object> = (
