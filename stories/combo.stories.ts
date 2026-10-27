@@ -371,7 +371,7 @@ const styles = html`
       max-width: 36rem;
     }
 
-    .cmb-stack :is(h3, p, table) {
+    .cmb-stack :is(h3, h4, p, table) {
       margin: 0;
     }
 
@@ -386,6 +386,18 @@ const styles = html`
       flex-wrap: wrap;
       align-items: center;
       gap: 0.5rem;
+    }
+
+    .cmb-list {
+      display: grid;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .cmb-list > li {
+      display: flex;
+      border-block-end: 1px solid var(--ig-gray-300);
     }
   </style>
 `;
@@ -932,7 +944,7 @@ export const StagedFilter: Story = {
               : `All ${issues.length} issues`
           }
         </p>
-        <ul class="cmb-issues">
+        <ul class="cmb-list cmb-issues" role="list">
           ${shown.map(
             ({ id, title, labels }) => html`
               <li>
@@ -986,20 +998,14 @@ export const StagedFilter: Story = {
         }
 
         .cmb-issues {
-          display: grid;
           gap: 0.5rem;
-          margin: 0;
-          padding: 0;
-          list-style: none;
         }
 
         .cmb-issues li {
-          display: flex;
           flex-wrap: wrap;
           align-items: center;
           gap: 0.375rem;
           padding-block-end: 0.5rem;
-          border-block-end: 1px solid var(--ig-gray-300);
         }
 
         .cmb-issues li > span:first-child {
@@ -1039,6 +1045,113 @@ export const StagedFilter: Story = {
           </div>
         </igc-combo>
         <div ${mount}></div>
+      </section>
+    `;
+  },
+};
+
+interface Permission {
+  id: string;
+  name: string;
+  area: string;
+}
+
+const permissions: Permission[] = [
+  { id: 'billing-view', name: 'View invoices', area: 'Billing' },
+  { id: 'billing-export', name: 'Export invoices', area: 'Billing' },
+  { id: 'billing-pay', name: 'Change the payment method', area: 'Billing' },
+  { id: 'members-view', name: 'View members', area: 'Members' },
+  { id: 'members-invite', name: 'Invite members', area: 'Members' },
+  { id: 'members-roles', name: 'Change member roles', area: 'Members' },
+  { id: 'projects-create', name: 'Create projects', area: 'Projects' },
+  { id: 'projects-archive', name: 'Archive projects', area: 'Projects' },
+  { id: 'projects-delete', name: 'Delete projects', area: 'Projects' },
+  { id: 'reports-view', name: 'View reports', area: 'Reports' },
+  { id: 'reports-export', name: 'Export reports', area: 'Reports' },
+];
+
+const areas = Map.groupBy(permissions, ({ area }) => area);
+
+/** The access of a role to an area with `total` permissions. */
+function accessTo(count: number, total: number): string {
+  if (count === total) {
+    return 'Full access';
+  }
+
+  return count ? `${count} of ${total} permissions` : 'No access';
+}
+
+export const RolePermissions: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The permissions of a role, grouped by area. `group-selection` makes each area header an option: a click or Space on it grants all the permissions of the area, or takes them away when the role has all of them, with one `igcChange`. The checkbox of the header is indeterminate while the role has only some of them. The arrow keys stop on the headers. A header acts on the permissions that the list shows: search "export", then click Billing, and only "Export invoices" changes. `show-select-all` adds "Select all" for all the shown permissions. The summary renders from `newValue` of `igcChange`.',
+      },
+    },
+  },
+  render: () => {
+    let granted = [
+      'billing-view',
+      'members-view',
+      'members-invite',
+      'members-roles',
+      'reports-view',
+    ];
+
+    const { mount, update } = renderInto(() =>
+      [...areas].map(([area, list]) => {
+        const count = list.filter(({ id }) => granted.includes(id)).length;
+
+        return html`
+          <li>
+            <span>${area}</span>
+            <span class="muted">${accessTo(count, list.length)}</span>
+          </li>
+        `;
+      })
+    );
+
+    const change = ({ detail }: CustomEvent<IgcComboChangeEventArgs>) => {
+      granted = detail.newValue as string[];
+      update();
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .cmb-areas li {
+          justify-content: space-between;
+          padding-block: 0.375rem;
+        }
+      </style>
+      <section class="cmb-stack cmb-panel" aria-labelledby="cmb-role-title">
+        <h3 id="cmb-role-title">Role: Project manager</h3>
+        <igc-combo
+          label="Permissions"
+          placeholder="Choose permissions"
+          placeholder-search="Search permissions"
+          value-key="id"
+          display-key="name"
+          group-key="area"
+          group-selection
+          show-select-all
+          .data=${permissions}
+          .value=${granted}
+          @igcChange=${change}
+        >
+          <span slot="helper-text">
+            Select an area to grant its shown permissions, or to take them away.
+          </span>
+        </igc-combo>
+        <h4 id="cmb-access-title">Access by area</h4>
+        <ul
+          class="cmb-list cmb-areas"
+          role="list"
+          aria-labelledby="cmb-access-title"
+          ${mount}
+        ></ul>
       </section>
     `;
   },
