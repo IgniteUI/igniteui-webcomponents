@@ -42,7 +42,7 @@ import IgcVirtualScrollComponent, {
 } from '../virtualization/virtualization.js';
 import IgcComboHeaderComponent from './combo-header.js';
 import IgcComboItemComponent from './combo-item.js';
-import { DataState } from './controllers/data.js';
+import { DataState, isItemRecord } from './controllers/data.js';
 import { ComboNavigationController } from './controllers/navigation.js';
 import { styles } from './themes/combo.base.css.js';
 import { styles as shared } from './themes/shared/combo.common.css.js';
@@ -69,6 +69,7 @@ const SLOTS = setSlots(
   'header',
   'footer',
   'empty',
+  'loading',
   'helper-text',
   'toggle-icon',
   'clear-icon',
@@ -96,6 +97,7 @@ const DATA_REQUEST_COUNT = 20;
  * @slot header - Renders a container before the list of options of the combo.
  * @slot footer - Renders a container after the list of options of the combo.
  * @slot empty - Renders content when the combo dropdown list has no items/data.
+ * @slot loading - Renders content that replaces the default progress bar while `loading` is set.
  * @slot helper-text - Renders content below the input of the combo.
  * @slot toggle-icon - Renders content that replaces the default toggle icon.
  * @slot clear-icon - Renders content that replaces the default clear icon.
@@ -109,7 +111,7 @@ const DATA_REQUEST_COUNT = 20;
  * @fires igcClosing - Emitted before the user closes the list of options. Cancelable. The `trigger` of the detail is the user action that closes the list.
  * @fires igcClosed - Emitted after the list of options closes on a user action. The `trigger` of the detail is the user action that closes the list.
  * @fires igcSearchInput - Emitted when the user changes the text of the search input, or of the main input in single selection mode, and when a selection, a blur or the clear button clears the text.
- * @fires igcDataRequest - Emitted in remote filtering mode when the user scrolls near the end of the options. Append the requested items to `data`. It is not emitted again until the length of `data` or the search text changes, or the list opens again.
+ * @fires igcDataRequest - Emitted in remote filtering mode when the user scrolls near the end of the options, or to a placeholder of `totalItemCount`. Append the requested items to `data`. It is not emitted again until the length of `data` or the search text changes, or the list opens again.
  *
  * @csspart label - The encapsulated text label of the combo.
  * @csspart input - The main input field of the combo.
@@ -135,6 +137,8 @@ const DATA_REQUEST_COUNT = 20;
  * @csspart header - The container holding the header content of the combo.
  * @csspart footer - The container holding the footer content of the combo.
  * @csspart empty - The container holding the empty content of the combo.
+ * @csspart loading - The container of the progress bar that shows while `loading` is set.
+ * @csspart placeholder - Added to the item part of each item to load, which `totalItemCount` adds. Its bar has the color of the text.
  *
  * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
  *
@@ -471,6 +475,24 @@ export default class IgcComboComponent<
   @property({ type: Boolean, attribute: 'disable-clear' })
   public disableClear = false;
 
+  /**
+   * The number of all the items of a remote source, when the source knows it.
+   * In remote filtering mode, the list shows a placeholder for each item that
+   * `data` does not hold yet, so the scrollbar shows the full list.
+   * @attr total-item-count
+   */
+  @property({ type: Number, attribute: 'total-item-count' })
+  public totalItemCount?: number;
+
+  /**
+   * Whether the combo loads options. The list then shows a progress bar,
+   * which the `loading` slot can replace, and hides the empty message.
+   * @attr loading
+   * @default false
+   */
+  @property({ type: Boolean, reflect: true })
+  public loading = false;
+
   /* blazorSuppress */
   /**
    * The template used for the content of each combo item.
@@ -582,6 +604,7 @@ export default class IgcComboComponent<
       props.has('groupKey') ||
       props.has('groupSorting') ||
       props.has('filteringOptions') ||
+      props.has('totalItemCount') ||
       props.has('data')
     ) {
       this._state.invalidate();
@@ -609,7 +632,7 @@ export default class IgcComboComponent<
 
     // The list reports a changed window after its own update, and an
     // unchanged one not at all, so check against the window after it.
-    if (opened || props.has('data')) {
+    if (opened || props.has('data') || props.has('totalItemCount')) {
       void this._listRef.value?.updateComplete.then(() =>
         this._checkDataRequest()
       );
@@ -680,26 +703,37 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Requests more data while the open list renders near the end of `data`.
-   * An empty `data` waits for the first page from the application.
+   * Requests more data while the open list renders near the end of `data`,
+   * or renders placeholders, up to `totalItemCount`. The `count` covers the
+   * rendered placeholders. An empty `data` waits for the first page from the
+   * application.
    */
   private _checkDataRequest(): void {
     const { length } = this.data;
+    const { loadedLength, totalCount } = this._state;
 
     if (
       !this.open ||
       !length ||
       this.filteringOptions.mode !== 'remote' ||
       this._lastDataRequest === length ||
-      this._lastRenderedIndex <
-        this._state.dataState.length - REMOTE_SCROLLING_THRESHOLD
+      length >= totalCount ||
+      this._lastRenderedIndex < loadedLength - REMOTE_SCROLLING_THRESHOLD
     ) {
       return;
     }
 
+    const rendered = this._lastRenderedIndex - loadedLength + 1;
+
     this._lastDataRequest = length;
     this.emitEvent('igcDataRequest', {
-      detail: { startIndex: length, count: DATA_REQUEST_COUNT },
+      detail: {
+        startIndex: length,
+        count: Math.min(
+          totalCount - length,
+          Math.max(DATA_REQUEST_COUNT, rendered)
+        ),
+      },
     });
   }
 
@@ -955,31 +989,34 @@ export default class IgcComboComponent<
     this._listRef.value?.requestUpdate();
   }
 
-  /** The items that the list shows, without the group headers. */
+  /** The items that the list shows, without the group headers and the placeholders. */
   private _shownItems(): T[] {
     // Applies a change of `data` or of the search text that no update has applied yet.
     this._state.hostUpdate();
 
     return this._state.dataState
-      .filter((record) => !record.header)
+      .filter(isItemRecord)
       .map((record) => record.value);
   }
 
   /**
-   * The record at `index`, or undefined for a group header.
+   * The item at `index`, or undefined for a group header or a placeholder.
    * Guard on it: {@link _updateSelection} reads an empty collection as "select all".
    */
   private _recordAt(index: number): T | undefined {
     const record = this._state.dataState[index];
-    return record && !record.header ? record.value : undefined;
+    return isItemRecord(record) ? record.value : undefined;
   }
 
-  /** Selects the record at `index`. With `toggle`, deselects a selected one. */
-  private _selectAt(index: number, toggle: boolean): void {
+  /**
+   * Selects the record at `index`. With `toggle`, deselects a selected one.
+   * @returns Whether `index` holds an item.
+   */
+  private _selectAt(index: number, toggle: boolean): boolean {
     const record = this._recordAt(index);
 
     if (!record) {
-      return;
+      return false;
     }
 
     this._updateSelection(
@@ -990,6 +1027,7 @@ export default class IgcComboComponent<
 
     this._activeIndex = index;
     this._syncValueFromSelection();
+    return true;
   }
 
   private _clearSelection(): void {
@@ -1086,7 +1124,11 @@ export default class IgcComboComponent<
     }
 
     this._setTouchedState();
-    this._selectAt(target.index, true);
+
+    // A placeholder selects nothing, so a click keeps the list open.
+    if (!this._selectAt(target.index, true)) {
+      return;
+    }
 
     if (this.singleSelect) {
       this._inputRef.value?.focus();
@@ -1244,20 +1286,33 @@ export default class IgcComboComponent<
 
     const active = this._activeIndex === index;
     const selected = this._selected.has(item.value);
+    // One template for both, so a row keeps its element when its item loads.
+    const placeholder = item.kind === 'placeholder';
+    const { itemCount } = this._state;
+    // The placeholders are last and share one record, so the index gives their position.
+    const position = placeholder
+      ? itemCount - context.count + index + 1
+      : item.position;
 
     return html`
       <igc-combo-item
         id=${this._itemId(index)}
-        part=${partMap({ item: true, selected, active })}
-        aria-setsize=${this._state.itemCount}
-        aria-posinset=${item.position}
+        part=${partMap({ item: true, placeholder, selected, active })}
+        aria-setsize=${itemCount}
+        aria-posinset=${position}
+        aria-disabled=${bindIf(placeholder, 'true')}
+        aria-label=${bindIf(placeholder, this.resourceStrings.combo_loading)}
         exportparts="checkbox, checkbox-indicator, checked"
         .index=${index}
         ?active=${active}
         ?selected=${selected}
-        ?hide-checkbox=${this.singleSelect}
+        ?hide-checkbox=${placeholder || this.singleSelect}
       >
-        ${this.itemTemplate({ item: item.value })}
+        ${
+          placeholder
+            ? html`<span></span>`
+            : this.itemTemplate({ item: item.value })
+        }
       </igc-combo-item>
     `;
   };
@@ -1366,7 +1421,10 @@ export default class IgcComboComponent<
 
   private _renderEmptyTemplate() {
     return html`
-      <div part="empty" ?hidden=${!isEmpty(this._state.dataState)}>
+      <div
+        part="empty"
+        ?hidden=${this.loading || !isEmpty(this._state.dataState)}
+      >
         <slot name="empty">${this.resourceStrings.combo_empty_message}</slot>
       </div>
     `;
@@ -1376,6 +1434,14 @@ export default class IgcComboComponent<
     return html`
       <div .inert=${!this.open} part="list-wrapper">
         ${this._renderSearchInput()}
+        <div part="loading" ?hidden=${!this.loading}>
+          <slot name="loading">
+            <span
+              role="progressbar"
+              aria-label=${this.resourceStrings.combo_loading!}
+            ></span>
+          </slot>
+        </div>
         <div part="header">
           <slot name="header"></slot>
         </div>

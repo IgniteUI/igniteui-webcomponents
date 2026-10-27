@@ -90,10 +90,63 @@
     font-size: rem(13px);
 }
 
+[part~='loading'] {
+    position: relative;
+
+    // The default bar overlays the content below it, so it does not move it.
+    [role='progressbar'] {
+        position: absolute;
+        inset-inline: 0;
+        z-index: 1;
+        block-size: rem(4px);
+        overflow: hidden;
+
+        &::before {
+            content: '';
+            display: block;
+            inline-size: 40%;
+            block-size: 100%;
+            background: color(primary, 500);
+            animation: loading 1.5s ease-in-out infinite;
+
+            @media (prefers-reduced-motion: reduce) {
+                inline-size: 100%;
+                animation: none;
+            }
+        }
+    }
+}
+
+:host(:dir(rtl)) [part~='loading'] [role='progressbar'] {
+    scale: -1 1;
+}
+
+@keyframes loading {
+    from {
+        translate: -100%;
+    }
+
+    to {
+        translate: 250%;
+    }
+}
+
 [part~='group-header'],
 [part~='item'] {
     // Fix a bug in safari: https://github.com/IgniteUI/igniteui-webcomponents/issues/892
     inset-inline-start: 0;
+}
+
+[part~='placeholder'] {
+    pointer-events: none;
+
+    span {
+        inline-size: 60%;
+        block-size: 0.75em;
+        border-radius: rem(4px);
+        background: currentcolor;
+        opacity: 0.2;
+    }
 }
 
 :host(:disabled),
@@ -138,5 +191,11 @@
 
     [part~='selected'] {
         color: Highlight;
+    }
+
+    [part~='loading'] [role='progressbar']::before,
+    [part~='placeholder'] span {
+        forced-color-adjust: none;
+        background: CanvasText;
     }
 }

@@ -11,6 +11,21 @@ import type {
   Keys,
 } from '../types.js';
 
+/** The record of each item to load. See `totalItemCount`. */
+const PLACEHOLDER: ComboRecord<never> = Object.freeze({
+  value: undefined as never,
+  header: false,
+  position: -1,
+  kind: 'placeholder',
+});
+
+/** Whether the record holds an item: not a group header or a placeholder. */
+export function isItemRecord<T extends object>(
+  record?: ComboRecord<T>
+): boolean {
+  return !!record && !record.header && !record.kind;
+}
+
 /* blazorSuppress */
 export class DataState<T extends object> implements ReactiveController {
   //#region Internal state
@@ -25,6 +40,7 @@ export class DataState<T extends object> implements ReactiveController {
 
   private _dataState: ComboRecord<T>[] = [];
   private _itemCount = 0;
+  private _loadedLength = 0;
   private _searchTerm = '';
   private _dirty = true;
 
@@ -37,12 +53,29 @@ export class DataState<T extends object> implements ReactiveController {
     return this._dataState;
   }
 
-  /** The number of selectable options in {@link dataState}, excluding group headers. */
+  /** The number of options in {@link dataState}, with the placeholders and without the group headers. */
   public get itemCount(): number {
     return this._itemCount;
   }
 
-  /** The index of the first selectable option in {@link dataState}, or `-1`. */
+  /** The number of records in {@link dataState} before the placeholders. */
+  public get loadedLength(): number {
+    return this._loadedLength;
+  }
+
+  /**
+   * `totalItemCount` as a whole number in remote mode. `Infinity` while it is
+   * not set or not a finite number, or in local mode.
+   */
+  public get totalCount(): number {
+    const total = Math.floor(this._host.totalItemCount ?? Number.NaN);
+
+    return this.filteringOptions.mode === 'remote' && Number.isFinite(total)
+      ? total
+      : Number.POSITIVE_INFINITY;
+  }
+
+  /** The index of the first option in {@link dataState}, which can be a placeholder, or `-1`. */
   public get firstItemIndex(): number {
     return this._dataState.findIndex((record) => !record.header);
   }
@@ -126,8 +159,10 @@ export class DataState<T extends object> implements ReactiveController {
 
   /**
    * Filters and groups the indexed source, then numbers the visible options,
-   * so `aria-posinset` and `aria-setsize` skip the group headers.
-   * Only this controller owns the records, so `position` changes in place.
+   * so `aria-posinset` and `aria-setsize` skip the group headers. Appends a
+   * placeholder for each item of {@link totalCount} that a non-empty `data`
+   * does not hold. Only this controller owns the records, so `position`
+   * changes in place.
    */
   private _apply(records: ComboRecord<T>[]): ComboRecord<T>[] {
     const result = this._grouping.apply(
@@ -143,9 +178,22 @@ export class DataState<T extends object> implements ReactiveController {
       }
     }
 
-    this._itemCount = position;
+    // The application loads the first page, so an empty `data` shows the
+    // empty message, not placeholders that no request fills.
+    const missing = records.length ? this.totalCount - records.length : 0;
+    const placeholders = Number.isFinite(missing) && missing > 0 ? missing : 0;
 
-    return result;
+    this._itemCount = position + placeholders;
+    this._loadedLength = result.length;
+
+    if (!placeholders) {
+      return result;
+    }
+
+    // `result` can be the indexed source, so pad a copy.
+    const padded = result.slice();
+    padded.length += placeholders;
+    return padded.fill(PLACEHOLDER, result.length);
   }
 
   //#endregion

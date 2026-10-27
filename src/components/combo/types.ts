@@ -17,6 +17,8 @@ export type ComboRecord<T extends object> = {
   position: number;
   /** The group value of a header record. Not set on the other records. */
   group?: unknown;
+  /** Set on a record with no item: a placeholder for an item to load. */
+  kind?: 'placeholder';
 };
 
 export type ComboHost<T extends object> = ReactiveControllerHost &

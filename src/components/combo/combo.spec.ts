@@ -2110,6 +2110,27 @@ describe('Combo', () => {
       expectFocus(cancel);
     });
 
+    it('reaches the content of the loading slot before the header while loading', async () => {
+      const stop = document.createElement('button');
+      stop.slot = 'loading';
+      stop.textContent = 'Stop';
+      combo.append(stop);
+      combo.loading = true;
+      await elementUpdated(combo);
+
+      await tab();
+      expectFocus(stop);
+
+      await tab();
+      expectFocus(header);
+
+      combo.loading = false;
+      await elementUpdated(combo);
+      await shiftTab();
+
+      expectFocus(searchInput);
+    });
+
     it('moves out of a stop inside another stop', async () => {
       const wrapper = document.createElement('div');
       const inner = document.createElement('button');
@@ -2690,6 +2711,177 @@ describe('Combo', () => {
       await openComboPopover(remote);
 
       expect(details('igcDataRequest')).to.be.empty;
+    });
+
+    describe('Placeholders and loading', () => {
+      const placeholders = () =>
+        items(remote).filter((item) => item.part.contains('placeholder'));
+
+      const loadingPart = () =>
+        remote.renderRoot.querySelector<HTMLElement>('[part="loading"]')!;
+
+      it('pads the list to `totalItemCount` with placeholder options in remote mode', async () => {
+        remote.totalItemCount = 12;
+        await openComboPopover(remote);
+        list.scrollToIndex(11);
+        await comboStable(remote);
+
+        const [first, second] = placeholders();
+
+        expect(items(remote)).lengthOf(12);
+        expect(placeholders()).lengthOf(2);
+        expect(items(remote)[0].getAttribute('aria-setsize')).to.equal('12');
+        expect(first.getAttribute('aria-posinset')).to.equal('11');
+        expect(second.getAttribute('aria-posinset')).to.equal('12');
+        expect(second.getAttribute('aria-setsize')).to.equal('12');
+        expect(second.getAttribute('aria-disabled')).to.equal('true');
+        expect(second.getAttribute('aria-label')).to.equal('Loading');
+        expect(details('igcDataRequest')).to.eql([
+          { startIndex: 10, count: 2 },
+        ]);
+
+        await expect(remote).shadowDom.to.be.accessible(
+          axeReflectedRelationsOptions
+        );
+
+        for (const total of [Number.POSITIVE_INFINITY, Number.NaN]) {
+          remote.totalItemCount = total;
+          await comboStable(remote);
+
+          expect(items(remote)).lengthOf(10);
+        }
+
+        remote.totalItemCount = 12;
+        remote.filteringOptions = { mode: 'local' };
+        await comboStable(remote);
+
+        expect(items(remote)).lengthOf(10);
+      });
+
+      it('shows the empty message, not placeholders, for an empty data', async () => {
+        remote.data = [];
+        remote.totalItemCount = 12;
+        await openComboPopover(remote);
+
+        expect(items(remote)).to.be.empty;
+        expect(
+          remote.renderRoot.querySelector('[part="empty"]')!.checkVisibility()
+        ).to.be.true;
+      });
+
+      it('requests more items when `totalItemCount` no longer stops them', async () => {
+        remote.totalItemCount = 10;
+        await openComboPopover(remote);
+
+        expect(details('igcDataRequest')).to.be.empty;
+
+        // No placeholders come, so the list reports no change.
+        remote.totalItemCount = undefined;
+        await comboStable(remote);
+
+        expect(details('igcDataRequest')).to.eql([
+          { startIndex: 10, count: 20 },
+        ]);
+      });
+
+      it('requests the rendered placeholders, up to `totalItemCount`', async () => {
+        remote.totalItemCount = 100;
+        await openComboPopover(remote);
+
+        simulateKeyboard(list, endKey);
+        await comboStable(remote);
+
+        remote.data = [...remote.data, ...search('', 10, 5)];
+        await comboStable(remote);
+
+        expect(details('igcDataRequest')).to.eql([
+          { startIndex: 10, count: 20 },
+          { startIndex: 15, count: 85 },
+        ]);
+
+        remote.totalItemCount = 20;
+        remote.data = [...remote.data, ...search('', 15, 5)];
+        await comboStable(remote);
+
+        expect(details('igcDataRequest')).lengthOf(2);
+      });
+
+      it('does not select a placeholder', async () => {
+        remote.totalItemCount = 12;
+        await openComboPopover(remote);
+
+        simulateKeyboard(list, endKey);
+        simulateKeyboard(list, spaceBar);
+        simulateClick(placeholders().at(-1)!);
+        await elementUpdated(remote);
+
+        expect(remote.value).to.be.empty;
+
+        remote.selectAllItems();
+
+        expect(remote.value).to.eql(search('').map(({ id }) => id));
+      });
+
+      it('keeps the single selection list open on Enter or a click on a placeholder', async () => {
+        remote.singleSelect = true;
+        remote.totalItemCount = 12;
+        await openComboPopover(remote);
+
+        simulateKeyboard(list, endKey);
+        simulateKeyboard(list, enterKey);
+        simulateClick(placeholders().at(-1)!);
+        await elementUpdated(remote);
+
+        expect(details('igcClosing')).to.be.empty;
+        expect(remote.open).to.be.true;
+      });
+
+      it('shows a progress bar and hides the empty message while loading', async () => {
+        const empty = remote.renderRoot.querySelector('[part="empty"]')!;
+        const bar = loadingPart().querySelector('[role="progressbar"]')!;
+
+        remote.data = [];
+        remote.loading = true;
+        await openComboPopover(remote);
+
+        expect(remote).to.have.attribute('loading');
+        expect(bar.checkVisibility()).to.be.true;
+        expect(bar.getAttribute('aria-label')).to.equal('Loading');
+        expect(empty.checkVisibility()).to.be.false;
+
+        await expect(remote).shadowDom.to.be.accessible(
+          axeReflectedRelationsOptions
+        );
+
+        remote.loading = false;
+        await elementUpdated(remote);
+
+        expect(bar.checkVisibility()).to.be.false;
+        expect(empty.checkVisibility()).to.be.true;
+      });
+
+      it('does not move the list when the default bar shows', async () => {
+        await openComboPopover(remote);
+        const { top } = list.getBoundingClientRect();
+
+        remote.loading = true;
+        await elementUpdated(remote);
+
+        expect(list.getBoundingClientRect().top).to.equal(top);
+      });
+
+      it('replaces the progress bar with the `loading` slot', async () => {
+        const custom = document.createElement('span');
+        custom.slot = 'loading';
+        remote.append(custom);
+        remote.loading = true;
+        await openComboPopover(remote);
+
+        const slot = loadingPart().querySelector('slot')!;
+
+        expect(slot.assignedElements()).to.eql([custom]);
+        expect(custom.checkVisibility()).to.be.true;
+      });
     });
   });
 

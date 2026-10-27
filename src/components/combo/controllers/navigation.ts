@@ -20,12 +20,14 @@ import type IgcVirtualScrollComponent from '../../virtualization/virtualization.
 import type { ComboCloseTrigger, ComboHost } from '../types.js';
 import type { DataState } from './data.js';
 
+type ListSlot = 'loading' | 'header' | 'empty' | 'footer';
+
 type ComboNavigationConfig = {
   input: Ref<IgcInputComponent>;
   search: Ref<IgcInputComponent>;
   list: Ref<IgcVirtualScrollComponent>;
   /** The elements assigned to a slot of the list. */
-  slotted: (slot: 'header' | 'empty' | 'footer') => Element[];
+  slotted: (slot: ListSlot) => Element[];
   interactions: {
     show: () => Promise<boolean>;
     hide: (trigger: ComboCloseTrigger) => Promise<boolean>;
@@ -132,6 +134,11 @@ export class ComboNavigationController<T extends object> {
   };
 
   private _onEnter = async (): Promise<void> => {
+    // A placeholder has no item, so Enter on it does nothing.
+    if (this._state.dataState[this.active]?.kind === 'placeholder') {
+      return;
+    }
+
     if (this.active > -1) {
       if (this._host.singleSelect) {
         this._config.interactions.select(this.active);
@@ -239,27 +246,28 @@ export class ComboNavigationController<T extends object> {
   }
 
   /**
-   * The Tab order of the open list: the filtering input, the header content,
-   * the list, the empty content and the footer content. Empty without
+   * The Tab order of the open list: the filtering input, the loading and
+   * header content, the list, and the empty and footer content. Empty without
    * focusable slot content, so Tab closes the list.
    */
   private _tabStops(): HTMLElement[] {
-    const [header, empty, footer] = (
-      ['header', 'empty', 'footer'] as const
-    ).map((slot) =>
-      Iterator.from(this._config.slotted(slot))
-        .flatMap(getFocusableElements)
-        .toArray()
-    );
+    const focusable = (...slots: ListSlot[]) =>
+      slots.flatMap((slot) =>
+        Iterator.from(this._config.slotted(slot))
+          .flatMap(getFocusableElements)
+          .toArray()
+      );
+    const before = focusable('loading', 'header');
+    const after = focusable('empty', 'footer');
 
-    if ([header, empty, footer].every(isEmpty)) {
+    if (isEmpty(before) && isEmpty(after)) {
       return [];
     }
 
     const input = this._searchInput ?? this._input;
     const list = this._list?.checkVisibility() ? [this._list] : [];
 
-    return [input!, ...header, ...list, ...empty, ...footer];
+    return [input!, ...before, ...list, ...after];
   }
 
   /**
