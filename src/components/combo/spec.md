@@ -656,10 +656,22 @@ footer button, the focus moves to the main input, because the closed list cannot
 
 ## Test scenarios
 
-The suite lives in [`combo.spec.ts`](./combo.spec.ts) and runs in a real browser through `@web/test-runner` with
-`@open-wc/testing` fixtures and assertions. It reuses `createFormAssociatedTestBed`,
-`runValidationContainerTests`, `runExternalLabelAssociationTests`, `runAriaProjectionTests` and the `simulate*`
-helpers from [`src/internals/testing`](../../internals/testing). The groups below mirror the `describe` blocks.
+The suite runs in a real browser through `@web/test-runner` with `@open-wc/testing` fixtures and assertions. It
+has four files:
+
+- [`combo.spec.ts`](./combo.spec.ts): the component, the header and footer slots, the close trigger, the scroll
+  strategy, theming, ARIA, and the shared suites for the external label and the host ARIA.
+- [`combo-remote.spec.ts`](./combo-remote.spec.ts): remote data, placeholders and loading.
+- [`combo-selection.spec.ts`](./combo-selection.spec.ts): the select-all methods and option, group selection and
+  the confirm mode.
+- [`combo-form.spec.ts`](./combo-form.spec.ts): form integration, `defaultValue` and the validation message slots.
+
+The files share their data and helpers through
+[`src/internals/testing/combo.spec.ts`](../../internals/testing/combo.spec.ts). They also reuse
+`createFormAssociatedTestBed`, `runValidationContainerTests`, `runExternalLabelAssociationTests`,
+`runAriaProjectionTests` and the `simulate*` helpers from [`src/internals/testing`](../../internals/testing). The
+unit specs of the controllers in [`controllers`](./controllers) test the data state, the data requests and the
+selection model without a browser fixture. The groups below mirror the `describe` blocks.
 
 ### Component
 
@@ -697,7 +709,8 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 
 17. Is form associated, submits its selection, and is reset with the form, including the single-selection input.
 18. Reflects the disabled state of an ancestor `fieldset`.
-19. Fulfils the required and custom constraints.
+19. Fulfils the required and custom constraints, and is accessible while a submit fails on the required
+    constraint.
 
 The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
 [input suite](../input/spec.md#form-validity-checks) covers them.
