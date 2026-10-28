@@ -53,7 +53,7 @@
     outline-style: none;
 
     igc-input {
-        --ig-size: var(--ig-size-small);
+        --ig-size: var(--ig-size-small, 1);
         --ig-theme: material;
     }
 
