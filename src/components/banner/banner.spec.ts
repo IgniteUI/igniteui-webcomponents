@@ -157,6 +157,35 @@ describe('Banner', () => {
     });
   });
 
+  describe('Layout', () => {
+    it('takes no space when closed in a column flex container', async () => {
+      const container = await fixture<HTMLDivElement>(html`
+        <div style="display: flex; flex-direction: column">
+          <igc-banner>Banner message</igc-banner>
+          <span>Content below</span>
+        </div>
+      `);
+      const closed = container.querySelector(IgcBannerComponent.tagName)!;
+
+      expect(closed.getBoundingClientRect().height).to.equal(0);
+    });
+
+    it('fits a container narrower than its minimum width', async () => {
+      const container = await fixture<HTMLDivElement>(html`
+        <div style="inline-size: 280px; overflow: auto">
+          <igc-banner open>
+            A message
+            <igc-button slot="actions">Action</igc-button>
+          </igc-banner>
+        </div>
+      `);
+      const narrow = container.querySelector(IgcBannerComponent.tagName)!;
+
+      expect(narrow.getBoundingClientRect().width).to.equal(280);
+      expect(container.scrollWidth).to.equal(container.clientWidth);
+    });
+  });
+
   describe('Methods` Tests', () => {
     it('calls `show` and `hide` methods successfully', async () => {
       expect(banner.open).to.be.false;

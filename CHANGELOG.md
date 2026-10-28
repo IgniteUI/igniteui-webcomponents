@@ -113,6 +113,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The arrow keys, `Home` and `End` now skip a panel that does not render, such as a panel with the `hidden` attribute or `display: none`. Before, the focus stayed on the current panel. [#2418](https://github.com/IgniteUI/igniteui-webcomponents/pull/2418)
 - #### AI-Assisted Development
   - The `igniteui-wc-migrate-grid-lite-to-premium` skill now shows a correct custom sort strategy for the Premium Grid: an object with a `sort()` method that reads the cell values through `valueResolver`. Before, the example extended `DefaultSortingStrategy`, which the grid package does not export. [#2407](https://github.com/IgniteUI/igniteui-webcomponents/pull/2407)
+- #### Banner
+  - A closed banner now takes no space in a column flex container. Before, its `flex-basis` of 320px kept 320px of empty space before the next element. In a row flex container, the banner now starts from the width of its content, as other block elements do. [#2543](https://github.com/IgniteUI/igniteui-webcomponents/issues/2543)
+  - The banner is now never wider than its container. Its minimum width is 320px or the width of the container, whichever is smaller. Before, in a container narrower than 320px, the banner overflowed and the container scrolled sideways.
 - #### Button, Icon button
   - A button with `href` now keeps the link role of its anchor. Before, the anchor had `role="button"`, so screen readers announced a link as a button. [#2421](https://github.com/IgniteUI/igniteui-webcomponents/pull/2421)
   - A disabled link now renders a disabled native `<button>` with `role="link"` in place of the anchor. So it leaves the tab order, cannot navigate and dispatches no click. Before, the link stayed in the tab order, and `Enter` still followed it. While the link is disabled, the `base` part is the `<button>`. [#2421](https://github.com/IgniteUI/igniteui-webcomponents/pull/2421)
