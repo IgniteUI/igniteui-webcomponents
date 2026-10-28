@@ -51,6 +51,7 @@ This directory hosts two public components: [`igc-stepper`](#igc-stepper) and [`
 |       3 | 2026-10-07 | Only a header click opens a step; inert inactive panels; `aria-disabled` |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                |
 |       5 | 2026-10-23 | The stepper makes a stacking context, so the z-index of the step headers and bodies does not compete with the layers of the page |
+|       6 | 2026-10-28 | `active` applies at once, so the last one set wins; navigation from an inaccessible active step; enabling a step of a fully disabled stepper; a step that an `igcActiveStepChanging` handler activates stays |
 
 ## Overview
 
@@ -218,13 +219,13 @@ The keys apply while a step header has focus.
 
 | Key combination                                | Result                                                             |
 | ---------------------------------------------- | -------------------------------------------------------------------- |
-| <kbd>Arrow Left</kbd> / <kbd>Arrow Right</kbd> | Moves focus to the previous or next enabled step header.           |
+| <kbd>Arrow Left</kbd> / <kbd>Arrow Right</kbd> | Moves focus to the previous or next step header that is enabled or active. |
 | <kbd>Arrow Up</kbd> / <kbd>Arrow Down</kbd>    | Moves focus in a vertical stepper.                                 |
-| <kbd>Home</kbd> / <kbd>End</kbd>               | Moves focus to the first or the last enabled step header.          |
+| <kbd>Home</kbd> / <kbd>End</kbd>               | Moves focus to the first or the last step header that is enabled or active. |
 | <kbd>Enter</kbd> / <kbd>Space</kbd>            | Activates the focused step.                                        |
 | <kbd>Tab</kbd>                                 | Moves focus out of the header strip and into the content.          |
 
-Disabled steps are skipped, and in linear mode the steps that are not reachable yet cannot be activated.
+Disabled steps are skipped, except the active step, and in linear mode the steps that are not reachable yet cannot be activated.
 
 ## API
 
@@ -276,7 +277,7 @@ A step used within a stepper to represent an individual step in a wizard-like wo
 
 | Property | Attribute | Reflected | Type      | Default | Description                                                                 |
 | -------- | --------- | --------- | --------- | ------- | ----------------------------------------------------------------------------- |
-| active   | active    | Yes       | `boolean` | false   | Whether the step is active. The content of an active step is visible.       |
+| active   | active    | Yes       | `boolean` | false   | Whether the step is active. The content of an active step is visible. Setting it activates the step at once, also a disabled step, so of several steps set in one task, the last one is active. |
 | complete | complete  | Yes       | `boolean` | false   | Whether the step is completed.                                              |
 | invalid  | invalid   | Yes       | `boolean` | false   | Whether the step is invalid. A visited step that is not active shows an error state. In linear mode, the user cannot open the steps after an invalid step. |
 | optional | optional  | Yes       | `boolean` | false   | Whether the step is optional. In linear mode, an invalid optional step does not block the steps after it. |
@@ -320,26 +321,33 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 
 ### Activation
 
-6. The first enabled step is active by default, and only the content of the active step is visible.
+6. The first enabled step is active by default, and only the content of the active step is visible. When all steps
+   are disabled and no step is active, enabling a step activates the first enabled step.
 7. Activating a step through the pointer moves the active state.
-8. Disabled steps cannot be activated.
+8. Disabled steps cannot be activated through the pointer or `navigateTo`, but `active` activates them. Another
+   step that becomes active through `active` takes over at once, also when the active step deactivates or changes in
+   the same task, so a later `active`, `navigateTo`, `next` or `reset` in that task starts from it.
 9. A click in the content of a step does not change the active step, so a step change from a button there stays.
 10. A click on a header of a nested stepper does not change the outer stepper.
 
 ### Events tests
 
-11. `igcActiveStepChanging` is emitted before the change and can be canceled.
+11. `igcActiveStepChanging` is emitted before the change and can be canceled. A step that a handler activates stays
+    active.
 12. `igcActiveStepChanged` is emitted after the change.
 
 ### Navigation API tests
 
 13. `navigateTo` activates by index, and ignores an index that matches no step or a disabled step.
-14. `next` and `prev` move to the neighbouring enabled steps.
+14. `next` and `prev` move to the neighbouring enabled steps, also from a disabled active step. From an active step
+    that linear mode locks, `prev` moves back.
 15. `reset` returns the stepper to its first step.
 
 ### Dynamic steps
 
-16. Steps added or removed at run time are picked up, and the active step is recalculated when it is removed.
+16. Steps added or removed at run time are picked up, and the active step is recalculated when it is removed. A step
+    that becomes active in the same task as the change stays active, unless a step added after it has `active`. A
+    step added with `active` also takes over when the active step deactivates in that task.
 
 ### Linear mode tests
 
@@ -357,8 +365,8 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 
 ### Keyboard navigation
 
-22. The arrow keys move focus between the enabled step headers, in both orientations.
-23. <kbd>Home</kbd> and <kbd>End</kbd> jump to the first and the last enabled step.
+22. The arrow keys move focus between the headers of the enabled steps and of the active step, in both orientations.
+23. <kbd>Home</kbd> and <kbd>End</kbd> jump to the first and the last step that is enabled or active.
 24. <kbd>Enter</kbd> and <kbd>Space</kbd> activate the focused step.
 
 ### Context binding
@@ -374,6 +382,10 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 ## Assumptions and limitations
 
 - One step is active at a time.
+- A step added with `active` counts as markup, also when `active` is set in the task that adds it. It takes over
+  only when, after the task, it comes after the active step or the active step is no longer active.
+- `active` activates a disabled step, as markup does, but the pointer and `navigateTo` do not. An active step that
+  becomes disabled stays active.
 - The stepper does not validate anything itself: `invalid` and `complete` are set by the application, typically from
   the `igcActiveStepChanging` handler.
 - Linear mode restricts navigation but does not prevent a programmatic `navigateTo` from the application.

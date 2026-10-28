@@ -229,7 +229,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<IgcStepperCom
 
     addRovingFocusController(this, {
       keybindings: { skip: this._skipKeyboard },
-      items: () => this._state.accessibleSteps,
+      items: () => this._state.navigableSteps,
       current: () => this._getActiveStepComponent(),
       vertical: () => !this._isHorizontal,
       focusItem: (step) => this._getStepHeader(step)?.focus(),
@@ -283,13 +283,11 @@ export default class IgcStepperComponent extends EventEmitterMixin<IgcStepperCom
   }
 
   private _handleSlotChange(): void {
-    this._state.setSteps(
+    this._state.stepsChanged(
       this._slots.getAssignedElements(DefaultSlot, {
         selector: IgcStepComponent.tagName,
       })
     );
-
-    this._state.stepsChanged();
     this.style.setProperty('--steps-count', this.steps.length.toString());
   }
 
@@ -323,14 +321,17 @@ export default class IgcStepperComponent extends EventEmitterMixin<IgcStepperCom
     }
 
     const steps = this._state.steps;
+    const current = this._state.activeStep;
     const index = steps.indexOf(step);
-    const oldIndex = steps.indexOf(this._state.activeStep!);
+    const oldIndex = steps.indexOf(current!);
 
+    // A handler that activates a step itself also stops this change.
     if (
       this.emitEvent('igcActiveStepChanging', {
         detail: { oldIndex, newIndex: index },
         cancelable: true,
-      })
+      }) &&
+      current === this._state.activeStep
     ) {
       this._transitionTo(step);
       this.emitEvent('igcActiveStepChanged', { detail: { index } });
