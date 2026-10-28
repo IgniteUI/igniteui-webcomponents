@@ -14,9 +14,10 @@
       - [Basic initialization](#basic-initialization)
       - [Data binding keys](#data-binding-keys)
       - [Single and multiple selection](#single-and-multiple-selection)
-      - [Confirm mode](#confirm-mode)
+      - [Select all](#select-all)
       - [Filtering](#filtering)
       - [Grouping](#grouping)
+      - [Confirm mode](#confirm-mode)
       - [Templating](#templating)
       - [Validation](#validation)
       - [Labeling from the light DOM](#labeling-from-the-light-dom)
@@ -34,21 +35,21 @@
     - [CSS custom properties](#css-custom-properties)
   - [Test scenarios](#test-scenarios)
     - [Component](#component)
-    - [ARIA](#aria)
-    - [Scroll strategy tests](#scroll-strategy-tests)
-    - [Theming](#theming)
-    - [Form integration tests](#form-integration-tests)
-    - [defaultValue](#defaultvalue)
-    - [Validation message slots](#validation-message-slots)
-    - [Host ARIA](#host-aria)
     - [Header and footer slots](#header-and-footer-slots)
     - [Close trigger](#close-trigger)
+    - [Scroll strategy tests](#scroll-strategy-tests)
+    - [Theming](#theming)
+    - [ARIA](#aria)
+    - [Host ARIA](#host-aria)
     - [Remote data](#remote-data-1)
-    - [Select all methods](#select-all-methods)
     - [Placeholders and loading](#placeholders-and-loading)
+    - [Select all methods](#select-all-methods)
     - [Select-all option](#select-all-option)
     - [Group selection](#group-selection)
     - [Confirm mode](#confirm-mode-1)
+    - [Form integration tests](#form-integration-tests)
+    - [defaultValue](#defaultvalue)
+    - [Validation message slots](#validation-message-slots)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -68,86 +69,86 @@
 |       7 | 2026-10-12 | The group header template gets the group `key`; its `item` is deprecated              |
 |       8 | 2026-10-21 | API descriptions aligned with the JSDoc.                                              |
 |       9 | 2026-10-26 | Setting `singleSelect` or `disableFiltering` again keeps the search text              |
-|      10 | 2026-10-26 | The inner `igcChange`, `igcStateChange` and `igcDataRequest` events stay inside       |
-|      11 | 2026-10-26 | Tab moves through the focusable content of the header, empty and footer slots         |
-|      12 | 2026-10-26 | `igcClosing` and `igcClosed` report the `trigger` that closes the list                |
-|      13 | 2026-10-26 | Remote data: `igcSearchInput`, `filteringOptions.mode`, `igcDataRequest`; a new `data` keeps the selection |
-|      14 | 2026-10-27 | `selectAllItems()` and `deselectAllItems()` act on the items that the list shows      |
-|      15 | 2026-10-27 | `totalItemCount` skeleton placeholders and the `loading` spinner                      |
-|      16 | 2026-10-27 | The select-all option (`showSelectAll`) and the `select-all` and `indeterminate` parts |
-|      17 | 2026-10-27 | The focus moves to the main input when the list closes around it                     |
-|      18 | 2026-10-27 | `igcChange.newValue` has the order of the `value` that follows                        |
-|      19 | 2026-10-27 | Group selection (`groupSelection`); the group headers have no `group` role            |
-|      20 | 2026-10-27 | The select-all option and the group header options count in `aria-posinset` and `aria-setsize` |
-|      21 | 2026-10-27 | Confirm mode (`selectionCommit`): a pending selection, `igcPendingChange` and the `commit` change type |
-|      22 | 2026-10-27 | Confirm mode: Cancel and Apply as the default footer content, and the `cancel` and `apply` triggers |
-|      23 | 2026-10-27 | The `loading` spinner is an indeterminate `igc-circular-progress`                      |
+|      10 | 2026-10-26 | The inner events stay inside; Tab moves through the slot content; `igcClosing` and `igcClosed` report the close `trigger` |
+|      11 | 2026-10-27 | Remote data: `filteringOptions.mode`, `igcSearchInput`, `igcDataRequest`, `totalItemCount` placeholders and `loading`; a new `data` keeps the selection |
+|      12 | 2026-10-27 | Select all (`selectAllItems()`, `deselectAllItems()`, `showSelectAll`) and group selection (`groupSelection`); these options count in `aria-posinset` and `aria-setsize`, and the group headers have no `group` role |
+|      13 | 2026-10-27 | Confirm mode (`selectionCommit`): a pending selection, `igcPendingChange`, the `commit` change type, and Cancel and Apply |
+|      14 | 2026-10-27 | The focus moves to the main input when the list closes around it; `igcChange.newValue` has the order of `value` |
+|      15 | 2026-10-28 | Text in STE; `aria-activedescendant` is on the listbox; the character keys filter only in single selection; the test scenarios follow the spec files |
 
 ## Overview
 
-The `igc-combo` provides a list of options from which the end-user makes a selection. In contrast to
-[`igc-select`](../select/spec.md), it renders its options in a virtualized list, so it can show thousands of options
-at once, and it supports selecting more than one of them.
+The `igc-combo` shows a list of options. The user selects one or more of them. Unlike
+[`igc-select`](../select/spec.md), the combo shows its options in a virtualized list, so the list can hold thousands
+of options.
 
-The component binds to an array of objects rather than to projected items, filters the options as the end-user
-types, groups them by a key, and lets the application template both the items and the group headers. It is a
-form-associated custom element with `required` and custom validation.
+The combo binds to an array of objects, not to child elements. It filters the options while the user types, and groups
+them by a key. The application can set templates for the items and the group headers. It is a form-associated custom
+element with `required` and custom validation.
 
 ### Key features
 
-- **Complex data binding**: an array of objects with a value key, a display key and a group key.
-- **Virtualized list**: thousands of options render without a performance cost.
-- **Single and multiple selection**, with checkboxes and a selection summary in the input.
-- **Filtering**: case sensitivity and diacritics matching are configurable, and filtering can be disabled.
-- **Grouping** by a key, with configurable sort direction and a locale aware comparison.
-- **Templating** of each item and each group header.
-- **Localization** of the built-in strings through the library resource strings.
-- **Form association and validation**, with declarative validation message slots.
+- **Data binding**: an array of objects, with a value key, a display key and a group key.
+- **Virtualized list**: thousands of options without a performance cost.
+- **Single and multiple selection**: checkboxes in the list, and a summary of the selection in the input.
+- **Select all and group selection**: one option selects all the items that the list shows, or the items of a group.
+- **Confirm mode**: the user changes a pending selection, and applies it with one change event.
+- **Filtering**: configurable case sensitivity and diacritics matching. The application can disable the filtering, or
+  filter on its server.
+- **Remote data**: page requests, placeholders for the items to load, and a loading state.
+- **Grouping** by a key, with a sort direction and a locale-aware comparison.
+- **Templates** for the items and the group headers.
+- **Localization** of the built-in strings.
+- **Form association and validation**, with validation message slots.
 
 ### Acceptance criteria
 
-- The component must bind to an array of objects and render its options from configurable keys.
-- It must support selecting one or many options, and expose both the raw values and the selected records.
-- It must filter the list as the end-user types, with configurable case sensitivity and diacritics matching.
+- The combo must bind to an array of objects and show its options from configurable keys.
+- It must let the user select one or more options, and give the selected values and the selected records.
+- It must filter the list while the user types, with configurable case sensitivity and diacritics matching.
 - It must group the options by a key, with a configurable sort direction.
-- It must render its options virtualized, so large data sources stay responsive.
-- It must let the application template the items and the group headers.
-- It must participate in form submission, reset and validation, and render the validation message slots.
-- It must provide full keyboard support for opening, filtering, navigating and selecting.
-- The element must be integrated and themeable with the theming mechanism of the library.
-- The element must be WAI-ARIA compliant and support RTL layouts without additional configuration.
+- It must virtualize the list, so a large data source stays responsive.
+- It must let the application load the options from a server, one page at a time.
+- It must let the application hold the changes of the user until the user applies them.
+- It must let the application set templates for the items and the group headers.
+- It must take part in form submission, reset and validation, and show the validation message slots.
+- It must give full keyboard support to open the list, filter, move through the options and select.
+- It must use the theming mechanism of the library.
+- It must obey WAI-ARIA and support RTL layouts without more configuration.
 
 ## User stories
 
 ### End-user stories
 
-As an end-user, I expect to be able to:
+As an end user, I want to:
 
-- open a list of options and see them grouped where that applies.
-- type to narrow the list down to the options I am looking for.
-- select one or several options, and see what I have selected in the field.
-- clear my selection with a single action.
-- move through the options with the arrow keys and with <kbd>Home</kbd> and <kbd>End</kbd>.
+- open the list of options and see the options in their groups.
+- type to make the list shorter.
+- select one or more options, and see my selection in the field.
+- clear my selection with one action.
+- move through the options with the arrow keys, <kbd>Home</kbd> and <kbd>End</kbd>.
 - select and deselect the active option with <kbd>Space</kbd>.
-- pick several options and apply them together with <kbd>Enter</kbd>, or drop them with <kbd>Escape</kbd>, when the
-  application asks for a confirmation.
-- close the list with <kbd>Escape</kbd> without losing my selection.
-- be told when the field is required and left empty.
+- select all the options that the list shows, or all the options of a group, with one action.
+- confirm a set of changes with <kbd>Enter</kbd> or Apply, or drop them with <kbd>Escape</kbd> or Cancel.
+- scroll through a long remote list and see which options still load.
+- close the list with <kbd>Escape</kbd> and keep my selection.
+- know when the field is required and empty.
 
 ### Developer stories
 
-As a developer, I expect to be able to:
+As a developer, I want to:
 
-- bind the component to an array of objects and pick the value, display and group keys.
+- bind the combo to an array of objects and select the value, display and group keys.
 - switch between single and multiple selection.
-- configure or disable the filtering, including case sensitivity and diacritics.
-- sort the groups ascending or descending.
-- template the items and the group headers.
-- select and deselect options programmatically, by reference or by value key.
-- read the selection both as values and as the original records.
-- localize the built-in strings of the component.
-- mark the control as required and provide my own validation messages.
-- be notified when the selection changes, and on each open and close transition.
+- configure or disable the filtering, with case sensitivity and diacritics.
+- sort the groups in ascending or descending order, or keep the order of the data.
+- set templates for the items and the group headers.
+- select and deselect options from code, by record or by value.
+- read the selection as values and as the records of the data source.
+- load the options from a server one page at a time, and keep the selection across the pages and the searches.
+- localize the built-in strings.
+- make the control required and give my own validation messages.
+- get an event when the selection changes, and on each open and close, with the user action that closes the list.
 - hold the changes of the user while the list is open, and apply them with one change event.
 
 ## Functionality
@@ -158,10 +159,10 @@ As a developer, I expect to be able to:
 
 [End-to-end user experience prototype](https://www.figma.com/proto/kJxlQPb78W2C4S2g0gDjbs/Combo-Design-Handoff?node-id=1%3A3209&scaling=min-zoom&page-id=0%3A1&starting-point-node-id=1%3A3209&show-proto-sidebar=1)
 
-The anchor renders like an input with the current selection, a clear icon and a toggle icon. Opening the list shows
-the options, each with a checkbox in multiple selection mode, grouped under their headers. A search input filters
-the list; in single selection mode the filtering happens in the main input instead. An empty result renders the
-empty message.
+The anchor looks like an input. It shows the selection, a clear icon and a toggle icon. The open list shows the
+options under their group headers. In multiple selection, each option has a checkbox, and a search input above the
+list filters the options. In single selection, the main input filters the options. When no option matches, the list
+shows the empty message.
 
 ### Developer experience
 
@@ -186,13 +187,13 @@ combo.groupKey = 'country';
 
 #### Data binding keys
 
-| Key          | Purpose                                                                          |
-| ------------ | -------------------------------------------------------------------------------- |
-| `valueKey`   | The key used when selecting items and when reporting `value`.                    |
-| `displayKey` | The key rendered in the list and in the input.                                   |
-| `groupKey`   | The key the options are grouped by.                                              |
+| Key          | Purpose                                                                             |
+| ------------ | ----------------------------------------------------------------------------------- |
+| `valueKey`   | The field of a record that `value` and the selection methods use.                  |
+| `displayKey` | The field of a record that the list and the input show. Without it, `valueKey`.    |
+| `groupKey`   | The field of a record that groups the options.                                     |
 
-Without a `valueKey`, the selection is reported as the records themselves.
+Without a `valueKey`, `value` contains the records.
 
 #### Single and multiple selection
 
@@ -200,65 +201,38 @@ Without a `valueKey`, the selection is reported as the records themselves.
 <igc-combo single-select></igc-combo>
 ```
 
-Multiple selection is the default: items carry checkboxes and the input summarizes the selection. `single-select`
-switches to one selection and moves the filtering into the main input.
+Multiple selection is the default. The items have checkboxes, and the input shows the text of all the selected items.
+`single-select` permits one selection, and the main input filters the options.
 
 ```typescript
-combo.select(['sof', 'plv']);  // by value key
-combo.select();                // everything
+combo.select(['sof', 'plv']); // by value
+combo.select(); // all the items of `data`
 combo.deselect(['sof']);
-combo.deselect();              // everything
+combo.deselect(); // all the selected items
 
-combo.value;      // ComboValue<T>[] - the values
-combo.selection;  // T[] - the records from the data source
+combo.value; // ComboValue<T>[]: the values
+combo.selection; // T[]: the records of the data source
 ```
 
-`selectAllItems()` and `deselectAllItems()` act on the items that the filtered list shows, without `igcChange`. In
-multiple selection, `show-select-all` puts a "Select all" option first in the list. A click or Space on it selects the
-shown items, or deselects them when all of them are selected, with one `igcChange` for the items that change. Its
-checkbox is checked when all the shown items are selected and indeterminate when only some are. It is the first
-option in `aria-posinset` and `aria-setsize`, and the list shows it only while it shows items. With `totalItemCount`,
-it acts on the loaded items.
+The selection methods send no `igcChange`. In single selection, `select()` without an argument clears the selection. A
+user action sends one cancelable `igcChange` before the selection changes. For the confirm mode, see
+[Confirm mode](#confirm-mode).
+
+#### Select all
+
+`selectAllItems()` and `deselectAllItems()` act on the items that the list shows, after the filter. They send no
+`igcChange`. With `ignoreFilter`, they act on all the items.
+
+In multiple selection, `show-select-all` adds a "Select all" option at the top of the list:
+
+- A click or Space on it selects the items that the list shows. When all of them are selected, it deselects them. One
+  `igcChange` reports the items that change.
+- Its checkbox is checked when all the shown items are selected, and indeterminate when only some of them are.
+- It is the first option in `aria-posinset` and `aria-setsize`. The list shows it only while the list shows items.
+- With `totalItemCount`, it acts only on the loaded items.
 
 ```html
 <igc-combo show-select-all></igc-combo>
-```
-
-#### Confirm mode
-
-In multiple selection, `selection-commit="confirm"` holds the changes of the user while the list is open. The list
-opens with a pending selection, a copy of the selection. A click, Space, the select-all option and a group header
-option change only the pending selection, with a cancelable `igcPendingChange` each. `value`, the form value, the
-input text and `selection` keep the selection. Enter, also in the search input and without an active option, applies
-the pending selection with one cancelable `igcChange` of the `commit` type, whose `items` are the items that it
-selects or deselects, and then closes the list. A canceled `igcChange` keeps the list open. A canceled `igcClosing`
-also keeps it open, with the applied selection. Any other close drops the pending selection. The clear icon clears `value` at once,
-and the pending selection with it.
-
-The footer shows Cancel and Apply while the list is open, and Tab reaches them after the list. Apply applies the
-pending selection as Enter does, and Cancel drops it, also when an `igcClosing` handler keeps the list open. They
-close the list with the `apply` and `cancel` triggers. In Indigo, Cancel is `outlined` and Apply `contained`; in the
-other themes both are `flat`. Content in the `footer` slot replaces them.
-
-While the pending selection exists, `select()`, `deselect()`, `selectAllItems()` and `deselectAllItems()` change it,
-so the app controls in the header and footer slots stage too. A new `value` replaces it. `pendingValue` gives its
-values, `commitSelection()` applies it, and `cancelSelection()` puts `value` back in it. These methods emit no events
-and do not close the list, so an app that binds `value` through `igcChange` reads `value` after `commitSelection()`.
-A footer of the app uses them in place of the built-in buttons:
-
-```html
-<igc-combo selection-commit="confirm">
-  <div slot="footer">
-    <igc-button id="apply">Apply</igc-button>
-  </div>
-</igc-combo>
-```
-
-```typescript
-apply.addEventListener('click', () => {
-  combo.commitSelection();
-  combo.hide();
-});
 ```
 
 #### Filtering
@@ -276,23 +250,63 @@ combo.filteringOptions = {
 <igc-combo disable-filtering></igc-combo>
 ```
 
-`caseSensitiveIcon` renders a toggle in the filtering input, and `disableFiltering` removes the filtering entirely.
+`caseSensitiveIcon` shows a toggle for case-sensitive filtering in the search input. `disableFiltering` stops the
+filtering, and in multiple selection it also hides the search input.
 
-Setting `singleSelect` or `disableFiltering` to its current value keeps the search text, so a framework that sets
-each property on each render does not clear it.
+A set of `singleSelect` or `disableFiltering` to its current value keeps the search text. So a framework that sets
+each property on each render does not clear the text. To filter on a server, see [Remote data](#remote-data).
 
 #### Grouping
 
-When a group key is set, the options are grouped by it. Items whose group key resolves to `null` or `undefined` are
-aggregated into an `Other` group. `groupSorting` controls the direction - `asc` by default, `desc`, or `none` - and
-the comparison uses the collation of `locale`, also after a change of the global locale.
+With a `groupKey`, the combo groups the options by that field. The items without a value in that field go into an
+`Other` group. `groupSorting` sets the order of the groups: `asc` (the default), `desc`, or `none` for the order of
+`data`. The comparison uses the collation of `locale`, also after a change of the global locale.
 
-In multiple selection, `group-selection` makes each group header an option that works like the select-all option
-for the items of its group that the list shows. The header keeps the text style of a group header, and the arrow
-keys and Home stop on it.
+In multiple selection, `group-selection` makes each group header an option. It works as the select-all option for the
+shown items of its group. The header keeps its text style, and the arrow keys and Home stop on it.
 
 ```html
 <igc-combo group-key="country" group-selection></igc-combo>
+```
+
+#### Confirm mode
+
+In multiple selection, `selection-commit="confirm"` holds the changes of the user while the list is open.
+
+- **Pending selection.** The list opens with a copy of the selection. A click, Space, the select-all option and a
+  group header option change only this copy, and each change sends a cancelable `igcPendingChange`. `value`, the form
+  value, the input text and `selection` do not change.
+- **Apply.** Enter applies the pending selection, also in the search input and without an active option. It sends one
+  cancelable `igcChange` of the `commit` type, with the items that it selects or deselects, and then closes the list.
+  A canceled `igcChange` keeps the list open with the pending selection. A canceled `igcClosing` keeps the list open
+  with the applied selection.
+- **Drop.** All other closes drop the pending selection. The clear icon clears `value` at once, and the pending
+  selection with it.
+- **Buttons.** While the list is open, the footer shows Cancel and Apply, and Tab reaches them after the list. Apply
+  works as Enter. Cancel drops the pending selection, also when an `igcClosing` handler keeps the list open. They
+  close the list with the `apply` and `cancel` triggers. In Indigo, Cancel is `outlined` and Apply is `contained`. In
+  the other themes, both are `flat`. Content in the `footer` slot replaces them.
+- **Methods.** While the pending selection exists, `select()`, `deselect()`, `selectAllItems()` and
+  `deselectAllItems()` change it. So the app controls in the header and footer slots also stage changes. A new `value`
+  replaces the pending selection. `pendingValue` gives its values, `commitSelection()` applies it, and
+  `cancelSelection()` puts `value` back into it. These methods send no events and do not close the list. So an app
+  that binds `value` through `igcChange` must read `value` after `commitSelection()`.
+
+An app footer can use these methods in place of the built-in buttons:
+
+```html
+<igc-combo selection-commit="confirm">
+  <div slot="footer">
+    <igc-button id="apply">Apply</igc-button>
+  </div>
+</igc-combo>
+```
+
+```typescript
+apply.addEventListener('click', () => {
+  combo.commitSelection();
+  combo.hide();
+});
 ```
 
 #### Templating
@@ -302,6 +316,9 @@ combo.itemTemplate = ({ item }) => html`<b>${item.name}</b> - ${item.country}`;
 combo.groupHeaderTemplate = (group) => html`<i>${group.key}</i>`;
 ```
 
+The item template gets the record. The group header template gets the group `key`, which is `Other` for the items
+without a group value. Its `item` property is deprecated.
+
 #### Validation
 
 ```html
@@ -310,18 +327,17 @@ combo.groupHeaderTemplate = (group) => html`<i>${group.key}</i>`;
 </igc-combo>
 ```
 
-See the [validation container specification](../validation-container/spec.md) for the message slot mechanism.
+For the message slots, see the [validation container specification](../validation-container/spec.md).
 
 #### Labeling from the light DOM
 
-Besides the `label` property, the control can be labelled by a `label` element in the light DOM, through `for` or by
-nesting it. An IDREF does not cross a shadow boundary, so the combo resolves its labels through `ElementInternals`
-and projects them - together with its `role`, `aria-haspopup`, `aria-expanded`, `aria-controls` and
-`aria-activedescendant` - onto the native input of its anchor, as element references.
+A `label` element in the light DOM can also label the control, through `for` or as a parent. An IDREF does not cross a
+shadow boundary. So the combo gets its labels through `ElementInternals`, and sets them on the native input of its
+anchor as element references. It also sets its `role`, `aria-haspopup`, `aria-expanded` and `aria-controls` there.
 
-The name follows the [naming order](../input/spec.md#naming-order), so the host `aria-labelledby` and `aria-label` also
-name the control. The selection status text names the input only while no `label` element, `label` property or host ARIA
-names it.
+The name follows the [naming order](../input/spec.md#naming-order), so the host `aria-labelledby` and `aria-label`
+also name the control. The text of the selection status names the input only when no `label` element, `label` property
+or host ARIA names it.
 
 #### Form integration
 
@@ -332,20 +348,20 @@ names it.
 </form>
 ```
 
-- The selection is submitted under `name`.
-- A form reset restores `defaultValue` and clears the invalid styles of the control and its input.
-- An invalid control blocks submission.
+- The form submits the selection under `name`.
+- A form reset restores `defaultValue`, and removes the invalid styles of the control and its input.
+- An invalid control stops the submission.
 
 As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
-the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
+the form. `reportValidity()` moves the focus to the control when it is invalid. `form.checkValidity()` and
 `checkValidity()` do not move the focus. The `invalid` event comes only from these checks and from a failed submit,
 not while the user edits the control.
 
 #### Remote data
 
-A combo can show a large remote data source one page at a time. With `filteringOptions.mode` set to `remote`, the
-combo does not filter the options. It keeps the search input and reports the text, and the application sets `data` to
-the results of the server:
+The combo can show a large remote source one page at a time. With `filteringOptions.mode` set to `remote`, the combo
+does not filter the options. It keeps the search input and reports the text. The application sets `data` to the
+results of the server:
 
 ```typescript
 combo.filteringOptions = { mode: 'remote' };
@@ -364,87 +380,99 @@ combo.addEventListener('igcDataRequest', ({ detail }) => {
 });
 ```
 
-- `igcSearchInput` comes on each change of the text of the search input, and of the main input in single selection,
-  also when the user clears the text. It also comes, with an empty text, when a user action clears the text: a
-  selection in single selection mode, a blur with nothing selected, or the clear button. It does not come when a
-  property change clears the text (`singleSelect`, `disableFiltering`), or with `disableFiltering`. It comes in both
-  modes.
-- In remote mode, `igcDataRequest` comes when the open list renders one of the last five options of `data`. Its
-  `startIndex` is `data.length`, also with grouping, and `count` is the number of items to append. It does not come
-  again until the length of `data` changes, a new `data` replaces the first record, a new search text comes, or the
-  list opens again, so a source with no more items gets one request per opening. An empty `data` gets no request: the first page of a search is the job
-  of the application. An answer is stale when `data.length` no longer equals its `startIndex`, for example after a
-  new search.
-- A new `data` keeps the selection. A selected item that the new data does not hold stays in `value`, in `selection`
-  and in the text of the input, and a later page or search that holds it again shows it checked. `select()` selects an
-  object that `data` does not hold as it is, so the application can select the records of a saved filter before
-  their page loads. With `valueKey`, an object resolves by its key first. Without an argument, `select()` selects all
-  the items of `data` and keeps the other selected items.
-- In remote mode, the search input has no case-sensitive icon, and in single selection the input activates no option
-  of the old results, so Enter does not select an option that the server did not return for the text.
-- `totalItemCount` is the number of all the results, when the server knows it. In remote mode, the list adds a
-  placeholder option for each result that a non-empty `data` does not hold yet, after the groups, so the scrollbar
-  shows the full list. An empty `data` shows the empty message, because the first page is the job of the application.
-  A placeholder is the skeleton of an item: the box of the checkbox in multiple selection, and a bar where the text
-  starts, with a wave that sweeps across it (none with reduced motion). It has the `placeholder` part and the
-  accessible name "Loading", is disabled, and counts in `aria-setsize`. The keyboard can move to it, but Enter and Space on it do nothing, a click does not select it or
-  close the list, and the selection methods skip it. `igcDataRequest` then also comes when the list renders a
-  placeholder, for example after End or a fast scroll. Its `count` covers the rendered placeholders and does not go
-  past `totalItemCount`, and no request comes when `data` holds `totalItemCount` items. A total that is not a finite
-  number counts as unknown. `data` grows only at its end, so a jump far into the placeholders requests all the items up
-  to the jump.
-- `loading` shows a spinner, an indeterminate `igc-circular-progress` named "Loading", in place of the toggle icon,
-  so it shows also while the list is closed, for example during a search in single selection. The spinner covers the
-  box of the toggle icon, so the input does not change its width. An empty list shows "Loading" instead of the empty
-  message. Content in the `loading` slot replaces the spinner. It is in the input, so a click on it toggles the list,
-  as on the toggle icon, and Tab does not reach it while the list is open. The busy state shows in the field, not in
-  the list, so the list does not move.
+**Search text.** `igcSearchInput` comes in both modes:
+- on each change of the text in the search input, or in the main input of single selection, also a clear;
+- with an empty text, when a selection in single selection, a blur with no selection or the clear button clears the
+  text.
 
-`bindComboDataSource()` from `igniteui-webcomponents/extras` implements this flow on the public API. See the
-`RemoteData` story.
+It does not come when a property change clears the text (`singleSelect`, `disableFiltering`), or with
+`disableFiltering`.
+
+In remote mode, the search input has no case-sensitive icon. In single selection, a text in the main input activates
+no option of the old results. So Enter does not select an option that the server did not return for the text.
+
+**Page requests.** In remote mode, `igcDataRequest` comes when the open list shows one of the last five options of
+`data`.
+- `startIndex` is `data.length`, also with groups. `count` is the number of items to append.
+- It comes again only after a change of the length of `data`, a new first record, a new search text or a new opening.
+  So a source with no more items gets one request for each opening.
+- An empty `data` gets no request, because the application loads the first page of a search.
+- An answer is stale when `data.length` is not equal to its `startIndex`, for example after a new search.
+  **Selection.** A new `data` keeps the selection. A selected item that the new `data` does not hold stays in `value`,
+  in `selection` and in the input text. A later page or search that holds it shows it as selected again. `select()`
+  selects an object that `data` does not hold as it is. So the application can select the records of a saved filter
+  before their page loads. With `valueKey`, the combo finds an object by its key first. Without an argument,
+  `select()` selects all the items of `data` and keeps the other selected items.
+
+**Placeholders.** `totalItemCount` is the number of all the results, when the server knows it. In remote mode, the
+list adds a placeholder option after the groups for each result that a non-empty `data` does not hold. So the
+scrollbar shows the full list. An empty `data` shows the empty message, because the application loads the first page.
+
+- A placeholder is the skeleton of an item: the box of the checkbox in multiple selection, and a bar where the text
+  starts. A wave moves across the bar, except with reduced motion.
+- It has the `placeholder` part and the accessible name "Loading". It is disabled and counts in `aria-setsize`.
+- The keyboard can move to it, but Enter and Space do nothing on it. A click does not select it or close the list, and
+  the selection methods skip it.
+- `igcDataRequest` also comes when the list shows a placeholder, for example after End or a fast scroll. Its `count`
+  covers the shown placeholders, up to `totalItemCount`. No request comes when `data` holds `totalItemCount` items.
+- A total that is not a finite number counts as unknown.
+- `data` grows only at its end, so a jump far into the placeholders requests all the items up to the jump.
+
+**Loading.** `loading` shows a spinner, an indeterminate `igc-circular-progress` named "Loading", in place of the
+toggle icon.
+
+- The spinner also shows while the list is closed, for example during a search in single selection.
+- It covers the box of the toggle icon, so the width of the input does not change.
+- An empty list shows "Loading" in place of the empty message.
+- Content in the `loading` slot replaces the spinner. The slot is in the input, so a click on it toggles the list, as
+  on the toggle icon. Tab does not reach it while the list is open.
+- The busy state shows in the field, not in the list, so the list does not move.
+
+`bindComboDataSource()` from `igniteui-webcomponents/extras` does this flow with the public API. See the `RemoteData`
+story.
 
 ### Localization
 
-The component renders several built-in strings, resolved through the library i18n mechanism and overridable per
-instance through `locale` and `resourceStrings`:
+The combo shows built-in strings from the i18n mechanism of the library. `locale` and `resourceStrings` change them
+for one instance:
 
-| Resource string                     | Default (`en`)          | Usage                                       |
-| ----------------------------------- | ----------------------- | ------------------------------------------- |
-| `combo_empty_message`               | The list is empty       | Shown when the list has no items.           |
-| `combo_filter_search_placeholder`   | Enter a Search Term     | The placeholder of the search input.        |
-| `combo_clearItems_placeholder`      | Clear Selection         | The label of the clear action.              |
-| `combo_aria_label_options`          | Selected options        | The accessible name of the selection.       |
-| `combo_aria_label_no_options`       | No options selected     | The accessible name of an empty selection.  |
-| `combo_loading`                     | Loading                 | The accessible name of the spinner and of the placeholder options, and the message of an empty list while loading. |
-| `combo_select_all`                  | Select all              | The text of the select-all option.          |
-| `combo_cancel`                      | Cancel                  | The text of the Cancel button of the confirm mode. |
-| `combo_apply`                       | Apply                   | The text of the Apply button of the confirm mode. |
+| Resource string                   | Default (`en`)      | Usage                                                                                 |
+| --------------------------------- | ------------------- | ------------------------------------------------------------------------------------- |
+| `combo_empty_message`             | The list is empty   | The text of an empty list.                                                            |
+| `combo_filter_search_placeholder` | Enter a Search Term | The placeholder of the search input.                                                  |
+| `combo_clearItems_placeholder`    | Clear Selection     | The label of the clear icon.                                                          |
+| `combo_aria_label_options`        | Selected options    | The accessible name of the selection.                                                 |
+| `combo_aria_label_no_options`     | No options selected | The accessible name of an empty selection.                                            |
+| `combo_loading`                   | Loading             | The accessible name of the spinner and of the placeholders, and the text of an empty list while loading. |
+| `combo_select_all`                | Select all          | The text of the select-all option.                                                    |
+| `combo_cancel`                    | Cancel              | The text of the Cancel button of the confirm mode.                                    |
+| `combo_apply`                     | Apply               | The text of the Apply button of the confirm mode.                                     |
 
 ### Keyboard interactions
 
-The component must be focused for any of the following to apply.
+These keys apply while the combo has the focus.
 
-While the list of options is **not** visible:
+While the list is closed:
 
-| Key combination                             | Result                                              |
-| ------------------------------------------- | ---------------------------------------------------- |
-| <kbd>Arrow Down</kbd> / <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> | Opens the list of options.        |
-| Any character key                           | Opens the list and starts filtering.                |
-| <kbd>Escape</kbd>                           | Clears the value. The combo stays focused.          |
+| Keys                                                            | Result                                                  |
+| --------------------------------------------------------------- | ------------------------------------------------------- |
+| <kbd>Arrow Down</kbd> / <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> | Opens the list.                                         |
+| A character key                                                 | In single selection, opens the list and filters it.    |
+| <kbd>Escape</kbd>                                               | Clears the value. The combo keeps the focus.            |
 
-While the list of options **is** visible:
+While the list is open:
 
-| Key combination                             | Result                                                                        |
-| ------------------------------------------- | ------------------------------------------------------------------------------ |
-| <kbd>Arrow Down</kbd>                       | Activates the next option; at the last option it does nothing.                |
-| <kbd>Arrow Up</kbd>                         | Activates the previous option; from the first option it returns to the input. |
-| <kbd>Space</kbd>                            | Selects or deselects the active option. On the select-all option, or on a group header of `groupSelection`, selects its shown items, or deselects them when all of them are selected. |
-| <kbd>Enter</kbd>                            | Selects the active option in single selection mode, and closes the list in all modes. In confirm mode, it first applies the pending selection, also from the search input and without an active option, and a canceled `igcChange` keeps the list open. On a placeholder of `totalItemCount`, it does nothing. |
-| <kbd>Home</kbd> / <kbd>End</kbd>            | Activates the first or the last option.                                       |
-| <kbd>Escape</kbd>                           | Closes the list. The combo stays focused. In confirm mode, the pending selection is dropped. |
-| <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd> | Moves through the search input (the main input in single selection), the header content, the list, the empty content and the footer content, which is Cancel and Apply in confirm mode. Past either end, or without focusable slot content, closes the list and moves the focus on. |
+| Keys                                                | Result |
+| --------------------------------------------------- | ------ |
+| <kbd>Arrow Down</kbd>                               | Activates the next option. At the last option, it does nothing. |
+| <kbd>Arrow Up</kbd>                                 | Activates the previous option. From the first option, it moves the focus to the search input, or closes the list when the search input does not show. |
+| <kbd>Space</kbd>                                    | Selects or deselects the active option. On the select-all option, or on a group header of `groupSelection`, it selects the shown items, or deselects them when all of them are selected. |
+| <kbd>Enter</kbd>                                    | On an active option, closes the list, and in single selection first selects the option. In confirm mode, it first applies the pending selection, also from the search input and without an active option, and a canceled `igcChange` keeps the list open. On a placeholder, it does nothing. |
+| <kbd>Home</kbd> / <kbd>End</kbd>                    | Activates the first or the last option. |
+| <kbd>Escape</kbd>                                   | Closes the list. The combo keeps the focus. In confirm mode, it drops the pending selection. |
+| <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd>  | Moves through the search input (the main input in single selection), the header content, the list, the empty content and the footer content. In confirm mode, the footer content is Cancel and Apply. Past the first or the last stop, or without focusable slot content, it closes the list and moves the focus on. |
 
-Typing while the component is focused filters the list down to the closest matches.
+In multiple selection, the search input filters the list while it has the focus.
 
 ## API
 
@@ -586,10 +614,9 @@ type ComboCloseTrigger =
   | 'apply' // the Apply button of the confirm mode
   | 'cancel'; // the Cancel button of the confirm mode
 ```
-
-The open events keep an empty `detail`. `hide()`, `toggle()` and a change of `open` emit no events. To stage a
-selection, see [Confirm mode](#confirm-mode). When the list closes while the focus is in it, also on `hide()` from a
-footer button, the focus moves to the main input, because the closed list cannot keep it.
+The open events have an empty `detail`. `hide()`, `toggle()` and a change of `open` send no events. To stage a
+selection, see [Confirm mode](#confirm-mode). When the list closes while it has the focus, also on `hide()` from a
+footer button, the focus moves to the main input. The closed list cannot keep the focus.
 
 ### Slots
 
@@ -656,197 +683,199 @@ footer button, the focus moves to the main input, because the closed list cannot
 
 ## Test scenarios
 
-The suite runs in a real browser through `@web/test-runner` with `@open-wc/testing` fixtures and assertions. It
-has four files:
+The suite runs in a real browser through `@web/test-runner`, with `@open-wc/testing` fixtures and assertions. It has
+four files, and the groups below follow them in this order:
 
 - [`combo.spec.ts`](./combo.spec.ts): the component, the header and footer slots, the close trigger, the scroll
   strategy, theming, ARIA, and the shared suites for the external label and the host ARIA.
 - [`combo-remote.spec.ts`](./combo-remote.spec.ts): remote data, placeholders and loading.
-- [`combo-selection.spec.ts`](./combo-selection.spec.ts): the select-all methods and option, group selection and
-  the confirm mode.
+- [`combo-selection.spec.ts`](./combo-selection.spec.ts): the select-all methods and option, group selection and the
+  confirm mode.
 - [`combo-form.spec.ts`](./combo-form.spec.ts): form integration, `defaultValue` and the validation message slots.
 
 The files share their data and helpers through
-[`src/internals/testing/combo.spec.ts`](../../internals/testing/combo.spec.ts). They also reuse
+[`src/internals/testing/combo.spec.ts`](../../internals/testing/combo.spec.ts). They also use
 `createFormAssociatedTestBed`, `runValidationContainerTests`, `runExternalLabelAssociationTests`,
-`runAriaProjectionTests` and the `simulate*` helpers from [`src/internals/testing`](../../internals/testing). The
-unit specs of the controllers in [`controllers`](./controllers) test the data state, the data requests and the
-selection model without a browser fixture. The groups below mirror the `describe` blocks.
+`runAriaProjectionTests` and the `simulate*` helpers from [`src/internals/testing`](../../internals/testing). The unit
+specs in [`controllers`](./controllers) test the data state, the data requests and the selection model without a
+browser fixture.
 
 ### Component
 
 1. Rendering, the default state and the accessibility audit.
 2. Data binding through `data`, `valueKey`, `displayKey` and `groupKey`, also when the `data` array changes in place.
-3. Single and multiple selection, including `select` and `deselect` with and without arguments.
-4. `value` and `selection` report the values and the records.
-5. Filtering, including case sensitivity, diacritics matching and `disableFiltering`. Setting `singleSelect` or
-   `disableFiltering` again to its value keeps the search text and the filter.
-6. Grouping, the `Other` group for unresolved keys, and the sort directions.
-7. Item and group header templating. The group header template gets the group `key` with its own type, also for
-   number keys and the `Other` group, and a template that reads the deprecated `item` still renders.
+3. Single and multiple selection, with `select` and `deselect` with and without arguments.
+4. `value` and `selection` give the values and the records.
+5. Filtering, with case sensitivity, diacritics matching and `disableFiltering`. A set of `singleSelect` or
+   `disableFiltering` to its current value keeps the search text and the filter.
+6. Grouping, the `Other` group for the items without a group value, and the sort directions.
+7. The item and group header templates. The group header template gets the group `key` with its own type, also for
+   number keys and the `Other` group. A template that reads the deprecated `item` still renders.
 8. The empty message and the `empty` slot.
 9. Localization through `locale` and `resourceStrings`.
-10. Opening, closing and the keyboard navigation of the list, including Arrow Down at the end of the matches.
-11. The clear action and `disableClear`.
-12. `igcChange` carries the new value, the items and the change type, and a cancel keeps the selection.
-13. The `igcChange` of the search input and the `igcStateChange` and `igcDataRequest` events of the list do not
-    leave the combo.
-
-### ARIA
-
-14. The anchor, the list, the items and the group headers expose their roles and states, and the selection summary
-    is announced.
-
-### Scroll strategy tests
-
-15. `hide`, `scroll` and `close` behave as specified while an ancestor scrolls.
-
-### Theming
-
-16. The list keeps its stylesheet in the shadow root when the theme changes.
-
-### Form integration tests
-
-17. Is form associated, submits its selection, and is reset with the form, including the single-selection input.
-18. Reflects the disabled state of an ancestor `fieldset`.
-19. Fulfils the required and custom constraints, and is accessible while a submit fails on the required
-    constraint.
-
-The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
-[input suite](../input/spec.md#form-validity-checks) covers them.
-
-### defaultValue
-
-20. Form integration in single selection mode, in multiple selection mode, and with data that arrives late.
-21. Validation against the default value.
-
-### Validation message slots
-
-Generated by `runValidationContainerTests`.
-
-22. The `value-missing`, `custom-error` and `invalid` slots render for their matching state.
-
-### Host ARIA
-
-23. The shared host description suite: the host `aria-describedby` describes the native control after the helper
-    text, and follows a change and a removal.
+10. Open, close and the keyboard navigation of the list, also Arrow Down at the end of the matches.
+11. The clear icon and `disableClear`.
+12. `igcChange` gives the new value, the items and the change type, and a cancel keeps the selection.
+13. The `igcChange` of the search input, and the `igcStateChange` and `igcDataRequest` events of the list, stay inside
+    the combo.
 
 ### Header and footer slots
 
-24. Tab moves from the search input to the header content, the list and the footer content, and Shift+Tab moves
-    back. With an empty list, Tab reaches the content of the `empty` slot. The accessibility audit passes with
-    focusable slot content.
-25. Tab from the last footer control and Shift+Tab from the search input close the list and move the focus out of
-    the combo. In single selection, the main input starts the order, and Tab selects the active item when it leaves.
+14. Tab moves from the search input to the header content, the list and the footer content, and Shift+Tab moves back.
+    With an empty list, Tab reaches the content of the `empty` slot. The accessibility audit passes with focusable
+    slot content.
+15. Tab from the last footer control and Shift+Tab from the search input close the list and move the focus out of the
+    combo. In single selection, the main input starts the order, and Tab selects the active item when it leaves.
     `hide()` from a footer control, or `open` set to `false` with the focus in the search input, moves the focus to
     the main input. A focus outside the list stays where it is.
-26. Without focusable slot content, Tab from the search input closes the list and moves the focus on.
-27. Tab moves out of a stop inside another stop, does not stop on a host that delegates the focus or on a control
-    with `visibility: hidden`, and leaves a Tab that a slotted control handles to that control.
+16. Without focusable slot content, Tab from the search input closes the list and moves the focus on.
+17. Tab moves out of a stop inside another stop. It does not stop on a host that delegates the focus or on a control
+    with `visibility: hidden`. A slotted control that handles Tab keeps it.
 
 ### Close trigger
 
-28. `igcClosing` and `igcClosed` report the same `trigger` once for Enter in the list and in the main input, Escape,
-    Tab and Shift+Tab, Arrow Up in each input and at the first item, a click outside, a click on the input, an item
-    click in single selection, and a scroll with the `close` strategy. A second close while one is in progress does
-    not change the trigger, and a close after a canceled one reports its own trigger.
-29. The open events keep an empty `detail`, and `hide()` emits no events.
+18. `igcClosing` and `igcClosed` report the same `trigger` one time for each of these actions: Enter in the list and
+    in the main input, Escape, Tab and Shift+Tab, Arrow Up in each input and at the first item, a click outside, a
+    click on the input, an item click in single selection, and a scroll with the `close` strategy. A second close
+    while one is in progress does not change the trigger, and a close after a canceled close reports its own trigger.
+19. The open events have an empty `detail`, and `hide()` sends no events.
+
+### Scroll strategy tests
+
+20. `hide`, `scroll` and `close` work as specified while an ancestor scrolls.
+
+### Theming
+
+21. The list keeps its stylesheet in the shadow root when the theme changes.
+
+### ARIA
+
+22. The anchor, the list, the items and the group headers have their roles and states, and the selection summary is
+    announced.
+
+### Host ARIA
+
+23. The shared host description suite: the host `aria-describedby` describes the native control after the helper text,
+    and follows a change and a removal.
 
 ### Remote data
 
-30. The mode comes from the `filtering-options` attribute. In remote mode, the search input and the main input do not
-    filter the options; switching back to `local` filters them.
-31. `igcSearchInput` reports each change of the search text, in both modes, and of the main input in single selection,
-    also when it is cleared, and an empty text when a selection or a blur clears it; a blur also clears the search
-    input. It does not come on a property change or with `disableFiltering`. The `igcInput` of the inputs does not
-    leave the combo. In remote mode, the case-sensitive icon hides and an input in single selection activates no
-    option.
-32. The repro of issue 2519: a search that replaces `data` keeps the selected items in `value`, `selection` and the
-    input text, a later selection adds to them, and the first page shows them checked again with its own records.
-33. `deselect()` removes a selected item that `data` does not hold; `select()` selects an object that `data` does not
-    hold, with and without `valueKey`; `select()` without an argument keeps the other selected items, and selects
-    each value one time also before a new `data` syncs.
-34. `igcDataRequest` comes near the end of `data` with `startIndex` equal to `data.length`, also with grouping. It
-    does not repeat until `data` grows, and a new search, or a new `data` without a search, with a page of the same
-    length gets its own request, and so does a new opening. It does not come in local mode, while the list is
-    closed, or with an empty `data`.
-
-### Select all methods
-
-35. `selectAllItems()` and `deselectAllItems()` change only the items that the filtered list shows, also right after
-    a change of `data` or of the search text, emit no `igcChange`, and change nothing when the list shows no items. With `ignoreFilter`, they act on all the items. In
-    single selection, `selectAllItems()` does nothing and `deselectAllItems()` deselects a shown item.
+24. The mode comes from the `filtering-options` attribute. In remote mode, the search input and the main input do not
+    filter the options. A change back to `local` filters them.
+25. `igcSearchInput` reports each change of the search text in both modes, and of the main input in single selection,
+    also when the text is cleared. It reports an empty text when a selection or a blur clears the text, and a blur
+    also clears the search input. It does not come on a property change or with `disableFiltering`. The `igcInput` of
+    the inputs stays inside the combo. In remote mode, the case-sensitive icon hides, and an input in single selection
+    activates no option.
+26. The repro of issue 2519: a search that replaces `data` keeps the selected items in `value`, `selection` and the
+    input text. A later selection adds to them, and the first page shows them as selected again with its own records.
+27. `deselect()` removes a selected item that `data` does not hold. `select()` selects an object that `data` does not
+    hold, with and without `valueKey`. `select()` without an argument keeps the other selected items, and selects each
+    value one time, also before a new `data` syncs.
+28. `igcDataRequest` comes near the end of `data` with `startIndex` equal to `data.length`, also with groups. It does
+    not come again until `data` grows. A new search, a new `data` without a search with a page of the same length, and
+    a new opening each get their own request. It does not come in local mode, while the list is closed, or with an
+    empty `data`.
 
 ### Placeholders and loading
 
-36. In remote mode, `totalItemCount` pads the list with placeholder options after the groups. They count in
-    `aria-setsize`, take the next positions, are disabled and named "Loading", and pass the accessibility audit. Local
-    mode, an empty `data` and a total that is not a finite number show no placeholders.
-37. `igcDataRequest` covers the rendered placeholders, for example after End, does not go past `totalItemCount`, stops
-    when `data` holds `totalItemCount` items, and comes when the total no longer stops it. Space, a click and
-    `selectAllItems()` do not select a placeholder, and Enter or a click on one does not close the list in single
-    selection.
-38. `loading` shows the named spinner over the hidden toggle icon, without a change of the toggle width or a move of
-    the list, and "Loading" in an empty list, and passes the accessibility audit. The `loading` slot replaces the spinner. The spinner and the skeletons
-    take their colors from the `loading` and `placeholder` parts.
+29. In remote mode, `totalItemCount` adds placeholder options after the groups. They count in `aria-setsize`, take the
+    next positions, are disabled, have the name "Loading", and pass the accessibility audit. Local mode, an empty
+    `data` and a total that is not a finite number show no placeholders.
+30. `igcDataRequest` covers the shown placeholders, for example after End, and does not go past `totalItemCount`. It
+    stops when `data` holds `totalItemCount` items, and comes again when the total no longer stops it. Space, a click
+    and `selectAllItems()` do not select a placeholder. In single selection, Enter or a click on a placeholder does
+    not close the list.
+31. `loading` shows the named spinner over the hidden toggle icon, and "Loading" in an empty list. The toggle width
+    does not change, and the list does not move. It passes the accessibility audit. The `loading` slot replaces the
+    spinner. The spinner and the skeletons get their colors from the `loading` and `placeholder` parts.
+
+### Select all methods
+
+32. `selectAllItems()` and `deselectAllItems()` change only the items that the filtered list shows, also right after a
+    change of `data` or of the search text. They send no `igcChange`, and change nothing when the list shows no items.
+    With `ignoreFilter`, they act on all the items. In single selection, `selectAllItems()` does nothing and
+    `deselectAllItems()` deselects a shown item.
 
 ### Select-all option
 
-39. The option comes first in multiple selection, before the group headers, with the "Select all" text and
-    `aria-selected`. It is the first option in `aria-posinset` and `aria-setsize`, passes the accessibility audit, and
-    does not show in single selection or while the list shows no items.
-40. A click selects the shown items, and a second click deselects them, with one `igcChange` each. With some shown
-    items selected, the option is not selected, its checkbox is indeterminate with the `indeterminate` part, and a click
-    selects only the other shown items. A canceled `igcChange` keeps the selection. A new `value` while the list is
-    open updates the option and the items.
-41. Home reaches the option, Space toggles it, and Arrow Up from it moves to the search input. Showing or hiding the
-    option clears the active option. A click on an item without a value selects only that item.
-42. With `totalItemCount` in remote mode, the option does not change the requests or the positions of the
-    placeholders, and the selection methods select only the loaded items.
+33. The option comes first in multiple selection, before the group headers, with the "Select all" text and
+    `aria-selected`. It is the first option in `aria-posinset` and `aria-setsize`, and it passes the accessibility
+    audit. It does not show in single selection or while the list shows no items.
+34. A click selects the shown items, and a second click deselects them, with one `igcChange` each. When only some
+    shown items are selected, the option is not selected, and its checkbox is indeterminate with the `indeterminate`
+    part. A click then selects only the other shown items. A canceled `igcChange` keeps the selection. A new `value`
+    while the list is open updates the option and the items.
+35. Home reaches the option, Space toggles it, and Arrow Up from it moves to the search input. A change of
+    `showSelectAll` clears the active option. A click on an item without a value selects only that item.
+36. With `totalItemCount` in remote mode, the option does not change the requests or the positions of the
+    placeholders. The selection methods select only the loaded items.
 
 ### Group selection
 
-43. In multiple selection, the group headers are options with a checkbox and `aria-selected`, they count in
+37. In multiple selection, the group headers are options with a checkbox and `aria-selected`. They count in
     `aria-posinset` and `aria-setsize`, and the accessibility audit passes. In single selection, they are headers
-    again, and the items take the positions back.
-44. A click on a header selects the shown items of its group, and a second click deselects them, with one
-    `igcChange` each, and the list stays open. With some of them selected, the checkbox is indeterminate with the
-    `indeterminate` part, and a click selects only the others.
-45. Home and the arrow keys stop on the headers, Space toggles them, and Enter closes the list. With the select-all
-    option, a click on it selects the headers too. Turning group selection off clears an active header.
+    again, and the items take their positions back.
+38. A click on a header selects the shown items of its group, and a second click deselects them, with one `igcChange`
+    each. The list stays open. With some of them selected, the checkbox is indeterminate with the `indeterminate`
+    part, and a click selects only the others.
+39. Home and the arrow keys stop on the headers, Space toggles them, and Enter closes the list. A click on the
+    select-all option also selects the headers. When group selection goes off, an active header stops being active.
 
 ### Confirm mode
 
-46. In confirm mode, a click and Space change the pending selection with `igcPendingChange`. The list and
-    `pendingValue` show it, and `value`, `selection` and the input text keep the selection. A canceled
-    `igcPendingChange` keeps the pending selection.
-47. Enter applies the pending selection with one `igcChange` of the `commit` type with the changed items, and closes
-    the list with the `enter` trigger, also in the search input and without an active option. Without a change, it
-    closes the list with no `igcChange`. A canceled `igcChange` keeps the list open with the pending selection. A
-    handler that changes `newValue` does not change `value`.
-48. Escape, a click on the input, `hide()` and `open` set to `false` drop the pending selection, with no `igcChange`.
-49. The selection methods change the pending selection, also with an item that `data` does not hold, from the moment
-    the list opens, and the value from the moment it closes. `commitSelection()` applies the pending selection without
-    events and keeps the list open. `cancelSelection()` and a new `value` replace it, and the same `value` keeps it.
-50. The clear icon clears `value` and the pending selection with one `igcChange`. A new `data` keeps the pending
+40. A click and Space change the pending selection with `igcPendingChange`. The list and `pendingValue` show it, and
+    `value`, `selection` and the input text keep the selection. A canceled `igcPendingChange` keeps the pending
+    selection.
+41. Enter applies the pending selection with one `igcChange` of the `commit` type with the changed items. Then it
+    closes the list with the `enter` trigger. This also occurs in the search input and without an active option.
+    Without a change, it closes the list with no `igcChange`. A canceled `igcChange` keeps the list open with the
+    pending selection. A handler that changes `newValue` does not change `value`.
+42. Escape, a click on the input, `hide()` and `open` set to `false` drop the pending selection, with no `igcChange`.
+43. From the moment the list opens, the selection methods change the pending selection, also with an item that `data`
+    does not hold. From the moment the list closes, they change the value. `commitSelection()` applies the pending
+    selection with no events and keeps the list open. `cancelSelection()` and a new `value` replace it, and the same
+    `value` keeps it.
+44. The clear icon clears `value` and the pending selection with one `igcChange`. A new `data` keeps the pending
     selection by value, and adds the values of `value` that it gives a record. A value without a record stays in
     `value` until a commit, and `select()` gives it a record in the input text. The select-all option and the group
     header options change the pending selection. In single selection, each change applies at once.
-51. The footer shows Cancel and Apply with the `combo_cancel` and `combo_apply` texts, and the accessibility audit
-    passes. Footer content replaces them, and immediate mode and single selection do not show them.
-52. Apply applies the pending selection with one `igcChange` and closes the list with the `apply` trigger, and the
-    focus moves to the main input. A canceled `igcChange` keeps the list open. Cancel drops the pending selection and
-    closes the list with the `cancel` trigger.
-53. Tab moves from the list to Cancel and Apply, and from Apply closes the list.
+45. The footer shows Cancel and Apply with the `combo_cancel` and `combo_apply` texts, and the accessibility audit
+    passes. Footer content replaces them, and the immediate mode and single selection do not show them.
+46. Apply applies the pending selection with one `igcChange`, closes the list with the `apply` trigger, and moves the
+    focus to the main input. A canceled `igcChange` keeps the list open. Cancel drops the pending selection and closes
+    the list with the `cancel` trigger.
+47. Tab moves from the list to Cancel and Apply, and Tab from Apply closes the list.
+
+### Form integration tests
+
+48. The combo is form associated, submits its selection, and resets with the form, also the input of single selection.
+49. It shows the disabled state of an ancestor `fieldset`.
+50. It obeys the required and custom constraints, and passes the accessibility audit while a submit fails on the
+    required constraint.
+
+The form-associated mixin gives the focus after the form checks and the rules of the `invalid` event. The
+[input suite](../input/spec.md#form-validity-checks) tests them.
+
+### defaultValue
+
+51. Form integration in single selection, in multiple selection, and with data that comes late.
+52. Validation against the default value.
+
+### Validation message slots
+
+`runValidationContainerTests` makes these tests.
+
+53. The `value-missing`, `custom-error` and `invalid` slots show for their state.
 
 ## Assumptions and limitations
 
-- The options come from the `data` array; projected item elements are not supported.
-- Adding custom values from the input is not exposed as a public property, although the change event type allows for
-  an `addition` kind.
-- The list is virtualized, so an option that is not rendered has no DOM node; work with the data records rather than
-  with the item elements.
-- Without a `valueKey`, the selection is reported as whole records rather than as primitive values.
+- The options come from the `data` array. The combo does not support child item elements.
+- The combo has no public property to add a custom value from the input, but the change event type has an `addition`
+  kind.
+- The list is virtualized, so an option that the list does not show has no DOM node. Use the data records, not the
+  item elements.
+- Without a `valueKey`, `value` contains whole records, not primitive values.
 - A user change sets `value` from the selected records, also a commit of the confirm mode. So a value that has no
   record in `data` leaves `value`. The `resolve` option of `bindComboDataSource()` gives such values their records.
 - `singleSelect` overrides `selectionCommit`: in single selection, each change applies at once. A change of
@@ -856,28 +885,27 @@ Generated by `runValidationContainerTests`.
 
 ### ARIA roles and properties
 
-- The anchor exposes a `combobox` role with `aria-haspopup`, the expanded state, the relation to the list and the
-  active descendant, all projected onto its native input as element references.
-- The list has a `listbox` role, and the items an `option` role with their selected state. The group headers have no
-  role, except with `groupSelection`, where they are options. The select-all option is selected while all the shown
-  items are selected, and a group header option while all the shown items of its group are. They have no
-  `aria-checked`, because a listbox uses one of `aria-selected` and `aria-checked` for all its options, so their mixed
-  state shows only on their checkbox. In confirm mode, the selected state of the options is the pending selection,
-  and the input shows `value`. A
-  placeholder of `totalItemCount` is a disabled option named "Loading". While `loading` is set, a
-  `progressbar` named "Loading" takes the place of the toggle icon. The listbox has no `aria-busy`, so a screen reader continues to
-  read the loaded options while the next page loads.
-- The current selection is announced through a label resolved from the resource strings, which also covers the empty
-  case.
-- The helper text and the validation messages are referenced through `aria-describedby`.
-- An external light DOM `label` is projected onto the native input of the anchor as an element reference.
+- The native input of the anchor has the `combobox` role, `aria-haspopup`, `aria-expanded` and `aria-controls`, as
+  element references. The listbox has `aria-activedescendant`, because it has the focus during list navigation.
+- The list has the `listbox` role, and the items have the `option` role with `aria-selected`.
+- The group headers have no role. With `groupSelection`, they are options.
+- The select-all option is selected while all the shown items are selected. A group header option is selected while
+  all the shown items of its group are selected. They have no `aria-checked`, because a listbox uses only one of
+  `aria-selected` and `aria-checked` for all its options. So their mixed state shows only on their checkbox.
+- In confirm mode, the selected state of the options is the pending selection, and the input shows `value`.
+- A placeholder of `totalItemCount` is a disabled option with the name "Loading".
+- While `loading` is set, a `progressbar` with the name "Loading" replaces the toggle icon. The listbox has no
+  `aria-busy`, so a screen reader continues to read the loaded options while the next page loads.
+- A label from the resource strings announces the selection, also when it is empty.
+- `aria-describedby` refers to the helper text and the validation messages.
+- An external light DOM `label` goes to the native input of the anchor as an element reference.
 - A host `aria-describedby` describes the native control after the helper text, by element reference.
 - The native input has no `aria-disabled`. Its native `disabled` state is enough.
 
 ### Keyboard support
 
-Already covered by the [relevant section of the specification](#keyboard-interactions).
+See [Keyboard interactions](#keyboard-interactions).
 
 ### Right to Left support
 
-The component works in a Right-to-Left context without additional setup or configuration.
+The combo works in a right-to-left context without more configuration.
