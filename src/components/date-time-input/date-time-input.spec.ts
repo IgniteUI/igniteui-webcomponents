@@ -20,6 +20,7 @@ import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
+  runHostComboboxTests,
 } from '#internals/testing/form-testbed.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
 import {
@@ -1705,6 +1706,12 @@ describe('Date Time Input component', () => {
   });
 
   runExternalLabelAssociationTests({
+    tagName: IgcDateTimeInputComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcDateTimeInputComponent).renderRoot.querySelector('input')!,
+  });
+
+  runHostComboboxTests({
     tagName: IgcDateTimeInputComponent.tagName,
     getNativeInput: (host) =>
       (host as IgcDateTimeInputComponent).renderRoot.querySelector('input')!,

@@ -13,6 +13,7 @@ import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
+  runHostComboboxTests,
 } from '#internals/testing/form-testbed.spec.js';
 import {
   finishAnimationsFor,
@@ -1161,6 +1162,12 @@ describe('Input component', () => {
   });
 
   runExternalLabelAssociationTests({
+    tagName: IgcInputComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcInputComponent).renderRoot.querySelector('input')!,
+  });
+
+  runHostComboboxTests({
     tagName: IgcInputComponent.tagName,
     getNativeInput: (host) =>
       (host as IgcInputComponent).renderRoot.querySelector('input')!,

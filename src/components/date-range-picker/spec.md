@@ -64,6 +64,7 @@
 |      10 | 2026-10-21 | A value set from code, also with `select()`, is not reported on Done      |
 |      11 | 2026-10-23 | The date range input makes a stacking context, so the z-index of the input and the container does not compete with the layers of the page |
 |      12 | 2026-10-26 | Last 7 Days selects 7 days, counting today; the built-in ranges use the date of the click |
+|      13 | 2026-10-28 | The picker projects only `aria-haspopup`, `aria-required` and labels onto the editor |
 
 ## Overview
 
@@ -320,8 +321,8 @@ picker.clear();
 
 Besides the `label`, `labelStart` and `labelEnd` properties, the picker can be labelled by a `label` element in the
 light DOM, through `for` or by nesting it. An IDREF does not cross a shadow boundary, so the picker resolves its
-labels through `ElementInternals` and projects them - together with its own `role`, `aria-haspopup`,
-`aria-expanded` and `aria-controls` - onto the native input of the editor it wraps, as element references. Clicking
+labels through `ElementInternals` and projects them - together with its own `aria-haspopup` and `aria-required` -
+onto the native input of the editor it wraps, as element references. Clicking
 the external label focuses the editor.
 
 The name follows the [naming order](../input/spec.md#naming-order), so the host `aria-labelledby` and `aria-label` also

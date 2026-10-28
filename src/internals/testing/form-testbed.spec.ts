@@ -7,6 +7,7 @@ import {
 } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
+import { HOST_COMBOBOX_ATTRIBUTES } from '../controllers/aria-projection.js';
 import type { IgcFormControl } from '../mixins/forms/types.js';
 import { isFocused } from './helpers.spec.js';
 import { simulateClick } from './simulate.spec.js';
@@ -522,5 +523,119 @@ export function runAriaProjectionTests(config: AriaProjectionTestConfig): void {
         expect(native.getAttribute('aria-expanded')).to.equal('false');
       });
     }
+  });
+}
+
+export interface HostComboboxConfig {
+  /** The host custom element tag name (e.g. `igc-input`). */
+  tagName: string;
+  /** Locates the native editor that gets the host state. */
+  getNativeInput: (host: HTMLElement) => HTMLElement;
+  /** The audited role, or `null` for an editor that allows none, such as a `textarea`. */
+  role?: string | null;
+}
+
+/**
+ * Tests that a text field forwards the host combobox state, so a page can
+ * point its native editor at a listbox of the page. The specs check the
+ * relations by element identity.
+ */
+export function runHostComboboxTests(config: HostComboboxConfig): void {
+  const { tagName, getNativeInput, role = 'combobox' } = config;
+  // A text box supports no `aria-expanded`, so only a role gets it.
+  const roleState = role ? `role="${role}" aria-expanded="true"` : '';
+
+  describe('Host combobox state', () => {
+    let container: HTMLElement;
+    let host: HTMLElement;
+    let native: HTMLElement;
+    let options: HTMLElement[];
+
+    beforeEach(async () => {
+      container = await fixture<HTMLElement>(html`<div></div>`);
+      container.innerHTML = `
+        <${tagName} label="Search" ${roleState} aria-autocomplete="list"
+          aria-controls="results" aria-activedescendant="result-2"></${tagName}>
+        <div id="results" role="listbox" aria-label="Results">
+          <div id="result-1" role="option">One</div>
+          <div id="result-2" role="option">Two</div>
+        </div>`;
+
+      host = container.querySelector<HTMLElement>(tagName)!;
+      await elementUpdated(host);
+      native = getNativeInput(host);
+      options = [...container.querySelectorAll<HTMLElement>('[role="option"]')];
+    });
+
+    it('points the native editor at a listbox of the page', async () => {
+      expect(native.getAttribute('role')).to.equal(role);
+      expect(native.getAttribute('aria-expanded')).to.equal(
+        role ? 'true' : null
+      );
+      expect(native.getAttribute('aria-autocomplete')).to.equal('list');
+      expect(native.ariaControlsElements).to.eql([
+        container.querySelector('#results'),
+      ]);
+      expect(native.ariaActiveDescendantElement).to.equal(options[1]);
+      await expect(container).to.be.accessible();
+    });
+
+    it('follows the host relations', async () => {
+      host.setAttribute('aria-activedescendant', 'result-1');
+      host.setAttribute('aria-controls', 'result-1');
+      await elementUpdated(host);
+      expect(native.ariaActiveDescendantElement).to.equal(options[0]);
+      expect(native.ariaControlsElements).to.eql([options[0]]);
+
+      host.setAttribute('aria-activedescendant', 'missing');
+      host.setAttribute('aria-controls', 'missing');
+      await elementUpdated(host);
+      expect(native.ariaActiveDescendantElement).to.be.null;
+      expect(native.hasAttribute('aria-controls')).to.be.false;
+    });
+
+    it('forwards only the combobox role, and `aria-expanded` only with it', async () => {
+      host.setAttribute('role', 'search');
+      host.setAttribute('aria-expanded', 'true');
+      await elementUpdated(host);
+
+      expect(native.hasAttribute('role')).to.be.false;
+      expect(native.hasAttribute('aria-expanded')).to.be.false;
+    });
+
+    it('follows each set of the host `ariaActiveDescendantElement`', async () => {
+      host.ariaActiveDescendantElement = options[0];
+      await elementUpdated(host);
+      expect(native.ariaActiveDescendantElement).to.equal(options[0]);
+
+      host.ariaActiveDescendantElement = options[1];
+      await elementUpdated(host);
+      expect(native.ariaActiveDescendantElement).to.equal(options[1]);
+    });
+
+    it('forwards each host attribute and removes it with the host attribute', async () => {
+      host.setAttribute('role', 'combobox');
+      host.setAttribute('aria-expanded', 'false');
+      host.setAttribute('aria-haspopup', 'dialog');
+      await elementUpdated(host);
+
+      expect(native.getAttribute('role')).to.equal('combobox');
+      expect(native.getAttribute('aria-expanded')).to.equal('false');
+      expect(native.getAttribute('aria-haspopup')).to.equal('dialog');
+
+      for (const name of HOST_COMBOBOX_ATTRIBUTES) {
+        host.removeAttribute(name);
+      }
+      await elementUpdated(host);
+
+      for (const name of HOST_COMBOBOX_ATTRIBUTES) {
+        expect(native.hasAttribute(name), name).to.be.false;
+      }
+    });
+
+    it('keeps the theme styling hooks off', () => {
+      expect(host.dataset.role).to.be.undefined;
+      expect(host.dataset.haspopup).to.be.undefined;
+    });
   });
 }

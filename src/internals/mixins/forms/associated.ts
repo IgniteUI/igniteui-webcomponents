@@ -110,12 +110,16 @@ function isInvalidControl(element: ListedElement): boolean {
   return !!element.willValidate && !element.validity?.valid;
 }
 
-/** `stateKey` names the state property, whose attribute sets the default. */
+/**
+ * `stateKey` names the state property, whose attribute sets the default.
+ * `hostAria` lists more host attributes to forward, see `HostAriaMixin`.
+ */
 function BaseFormAssociated<T extends LitElementConstructor>(
   base: T,
-  stateKey: 'value' | 'checked' = 'value'
+  stateKey: 'value' | 'checked' = 'value',
+  hostAria: readonly string[] = []
 ) {
-  class BaseFormAssociatedElement extends HostAriaMixin(base) {
+  class BaseFormAssociatedElement extends HostAriaMixin(base, hostAria) {
     public static readonly formAssociated = true;
 
     //#region Internal state and properties
@@ -562,10 +566,17 @@ function BaseFormAssociated<T extends LitElementConstructor>(
 
 /**
  * Turns the given class into a form-associated custom element with a
- * `defaultValue` property.
+ * `defaultValue` property. `hostAria` lists more host attributes to forward.
  */
-export function FormAssociatedMixin<T extends LitElementConstructor>(base: T) {
-  class FormAssociatedElement extends BaseFormAssociated(base) {
+export function FormAssociatedMixin<T extends LitElementConstructor>(
+  base: T,
+  hostAria: readonly string[] = []
+) {
+  class FormAssociatedElement extends BaseFormAssociated(
+    base,
+    'value',
+    hostAria
+  ) {
     /* blazorCSSuppress */
     /**
      * The default value of the control. A form reset restores the value to it.

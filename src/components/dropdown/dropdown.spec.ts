@@ -17,6 +17,7 @@ import {
   simulateScroll,
 } from '#internals/testing/simulate.spec.js';
 import IgcButtonComponent from '../button/button.js';
+import IgcInputComponent from '../input/input.js';
 import IgcDropdownHeaderComponent from './dropdown-header.js';
 import type IgcDropdownItemComponent from './dropdown-item.js';
 import IgcDropdownComponent from './dropdown.js';
@@ -28,7 +29,13 @@ type ItemState = {
 };
 
 describe('Dropdown', () => {
-  before(() => defineComponents(IgcDropdownComponent, IgcButtonComponent));
+  before(() =>
+    defineComponents(
+      IgcDropdownComponent,
+      IgcButtonComponent,
+      IgcInputComponent
+    )
+  );
 
   let dropDown: IgcDropdownComponent;
   const Items = [
@@ -48,8 +55,8 @@ describe('Dropdown', () => {
     await dropDown.hide();
   };
 
-  const getTarget = () =>
-    dropDown.querySelector('[slot="target"]') as IgcButtonComponent;
+  const getTarget = <T extends Element = IgcButtonComponent>() =>
+    dropDown.querySelector('[slot="target"]') as T;
 
   const getActiveItem = () => dropDown.items.find((item) => item.active);
 
@@ -66,9 +73,12 @@ describe('Dropdown', () => {
     }
   }
 
-  function createBasicDropdown(isOpen = false) {
+  function createBasicDropdown(
+    isOpen = false,
+    target = html`<igc-button slot="target">Open</igc-button>`
+  ) {
     return html`<igc-dropdown ?open=${isOpen}>
-      <igc-button slot="target">Open</igc-button>
+      ${target}
       ${Items.map(
         (item) =>
           html`<igc-dropdown-item value=${item}>${item}</igc-dropdown-item>`
@@ -503,6 +513,47 @@ describe('Dropdown', () => {
         'Pre development'
       );
       expect(internalsOf(second)?.getARIA('ariaLabel')).to.equal('Development');
+    });
+  });
+
+  describe('Input target', () => {
+    it('exposes the popup state and the active item on the native input', async () => {
+      dropDown = await fixture<IgcDropdownComponent>(
+        createBasicDropdown(
+          false,
+          html`<igc-input slot="target" label="Search"></igc-input>`
+        )
+      );
+      const target = getTarget<IgcInputComponent>();
+      const native = target.renderRoot.querySelector('input')!;
+
+      await openDropdown();
+      simulateKeyboard(dropDown, arrowDown);
+      await elementUpdated(dropDown);
+      await elementUpdated(target);
+
+      expect(native.getAttribute('aria-haspopup')).to.equal('listbox');
+      expect(native.hasAttribute('aria-expanded')).to.be.false;
+      const first = getActiveItem();
+      expect(native.ariaActiveDescendantElement).to.equal(first);
+      await expect(dropDown).to.be.accessible();
+
+      // An update that keeps the active item writes nothing on the target.
+      const update = spy(target, 'requestUpdate');
+      dropDown.requestUpdate();
+      await elementUpdated(dropDown);
+
+      expect(update).not.called;
+
+      simulateKeyboard(dropDown, arrowDown);
+      await elementUpdated(dropDown);
+      await elementUpdated(target);
+      expect(getActiveItem()).to.not.equal(first);
+      expect(native.ariaActiveDescendantElement).to.equal(getActiveItem());
+
+      await closeDropdown();
+      await elementUpdated(target);
+      expect(native.ariaActiveDescendantElement).to.be.null;
     });
   });
 

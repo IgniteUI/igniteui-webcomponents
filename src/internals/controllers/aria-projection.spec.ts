@@ -10,6 +10,7 @@ import {
 import { LitElement, render } from 'lit';
 import sinon from 'sinon';
 import IgcCheckboxComponent from '../../components/checkbox/checkbox.js';
+import IgcInputComponent from '../../components/input/input.js';
 import { defineComponents } from '../definitions/defineComponents.js';
 import {
   type ARIABindings,
@@ -61,6 +62,17 @@ describe('ARIA projection', () => {
 
       input = renderInput({});
       expect(input.hasAttribute('aria-labelledby')).to.be.false;
+    });
+
+    it('binds the active descendant by element reference', () => {
+      const option = document.createElement('div');
+      container.append(option);
+
+      let input = renderInput({ activeDescendant: option });
+      expect(input.ariaActiveDescendantElement).to.equal(option);
+
+      input = renderInput({ activeDescendant: null });
+      expect(input.ariaActiveDescendantElement).to.be.null;
     });
 
     it('leaves the attributes that its bindings never had', () => {
@@ -223,6 +235,58 @@ describe('ARIA projection', () => {
       expect(input.hasAttribute('aria-haspopup')).to.be.false;
       expect(element.hasAttribute('data-haspopup')).to.be.false;
       expect(element.dataset.role).to.equal('combobox');
+    });
+  });
+
+  describe('Target with host state', () => {
+    before(() => defineComponents(IgcInputComponent));
+
+    it('lets a projected value win over the host state', async () => {
+      let role: string | undefined = 'combobox';
+      const hostTag = unsafeStatic(
+        defineCE(
+          class extends LitElement {
+            constructor() {
+              super();
+              addAriaProjector(this, {
+                target: () => this.renderRoot.querySelector('igc-input'),
+                state: () => ({ role, expanded: 'false', controls: null }),
+                naming: false,
+              });
+            }
+
+            protected override render() {
+              return html`<igc-input
+                  role="combobox"
+                  aria-expanded="true"
+                  aria-autocomplete="list"
+                  aria-controls="list"
+                ></igc-input>
+                <div id="list" role="listbox"></div>`;
+            }
+          }
+        )
+      );
+
+      const host = await fixture<LitElement>(html`<${hostTag}></${hostTag}>`);
+      const element = host.renderRoot.querySelector(IgcInputComponent.tagName)!;
+      await elementUpdated(element);
+      const input = element.renderRoot.querySelector('input')!;
+
+      expect(input.getAttribute('role')).to.equal('combobox');
+      expect(input.getAttribute('aria-expanded')).to.equal('false');
+      expect(input.getAttribute('aria-autocomplete')).to.equal('list');
+      expect(input.hasAttribute('aria-controls')).to.be.false;
+      expect(element.dataset.role).to.equal('combobox');
+
+      // The host role keeps the bindings equal, but the theme hook follows.
+      role = undefined;
+      host.requestUpdate();
+      await elementUpdated(host);
+      await elementUpdated(element);
+
+      expect(input.getAttribute('role')).to.equal('combobox');
+      expect(element.dataset.role).to.be.undefined;
     });
   });
 });

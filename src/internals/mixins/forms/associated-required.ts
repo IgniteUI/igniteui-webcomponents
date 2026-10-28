@@ -40,13 +40,14 @@ function BaseFormAssociatedRequired<
 
 /**
  * Turns the given class into a form-associated custom element with a
- * `required` attribute.
+ * `required` attribute. `hostAria` lists more host attributes to forward.
  */
 export function FormAssociatedRequiredMixin<T extends LitElementConstructor>(
-  base: T
+  base: T,
+  hostAria: readonly string[] = []
 ) {
   class FormAssociatedRequiredElement extends BaseFormAssociatedRequired(
-    FormAssociatedMixin(base)
+    FormAssociatedMixin(base, hostAria)
   ) {}
 
   return FormAssociatedRequiredElement as unknown as Constructor<

@@ -56,6 +56,7 @@
 |       6 | 2026-10-20 | `value = ''` also clears the form value            |
 |       7 | 2026-10-21 | API descriptions aligned with the JSDoc.           |
 |       8 | 2026-10-23 | The file input makes a stacking context, so the z-index of the input and the container does not compete with the layers of the page |
+|       9 | 2026-10-28 | The host combobox state goes to the native input, as in the input |
 
 ## Overview
 
@@ -487,6 +488,8 @@ properties, the `outlined` and `autofocus` properties, and an axe audit of the c
   native input remains the single accessible control.
 - The helper text and the validation messages are referenced through `aria-describedby`.
 - A host `aria-describedby` describes the native control after the helper text, by element reference.
+- As in the [input](../input/spec.md#combobox-over-a-list-of-the-page), the host combobox state goes to the native
+  input. A file input has no use for it.
 
 ### Keyboard support
 

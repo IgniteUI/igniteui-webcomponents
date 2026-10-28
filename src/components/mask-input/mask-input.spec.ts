@@ -10,6 +10,7 @@ import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
+  runHostComboboxTests,
 } from '#internals/testing/form-testbed.spec.js';
 import {
   simulateInput,
@@ -1301,6 +1302,12 @@ describe('Masked input', () => {
   });
 
   runExternalLabelAssociationTests({
+    tagName: IgcMaskInputComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcMaskInputComponent).renderRoot.querySelector('input')!,
+  });
+
+  runHostComboboxTests({
     tagName: IgcMaskInputComponent.tagName,
     getNativeInput: (host) =>
       (host as IgcMaskInputComponent).renderRoot.querySelector('input')!,

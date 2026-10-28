@@ -16,6 +16,7 @@
       - [Prefix, suffix and helper text](#prefix-suffix-and-helper-text)
       - [Labeling from the light DOM](#labeling-from-the-light-dom)
       - [Naming order](#naming-order)
+      - [Combobox over a list of the page](#combobox-over-a-list-of-the-page)
       - [Constraint validation](#constraint-validation)
       - [Validation message slots](#validation-message-slots)
       - [Form integration](#form-integration)
@@ -42,6 +43,7 @@
     - [Validation message slots](#validation-message-slots)
     - [External label association](#external-label-association)
     - [Host ARIA](#host-aria)
+    - [Host combobox state](#host-combobox-state)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -62,6 +64,7 @@
 |       8 | 2026-10-07 | Read-only `selectionStart` and `selectionEnd`                                              |
 |       9 | 2026-10-21 | API descriptions aligned with the JSDoc.                                                   |
 |      10 | 2026-10-23 | The input makes a stacking context, so the z-index of the input and the container does not compete with the layers of the page |
+|      11 | 2026-10-28 | Forward the host combobox state, so a page can make the input a combobox over its own listbox |
 
 ## Overview
 
@@ -209,11 +212,11 @@ Clicking the external label focuses the control, exactly as for a native element
 Because a reflected relation blanks its content attribute, assert such a relation by identity
 (`input.ariaLabelledByElements[0] === label`) rather than by reading the attribute.
 
-The same channel carries the ARIA of a composite host. `igc-select`, `igc-combo` and `igc-color-picker` wrap an
-`igc-input` and project their own `role`, `aria-haspopup`, `aria-expanded`, `aria-controls`,
-`aria-activedescendant` and labels onto its native input. A projected label wins over the `label` property of the
-input, and the projected `role` and `aria-haspopup` are mirrored on the host as `data-role` and `data-haspopup`, so
-themes can style the anchor without reading ARIA that lives inside the shadow root.
+The same channel carries the ARIA of a composite host. `igc-select` and `igc-combo` wrap an `igc-input` and project
+their own `role`, `aria-haspopup`, `aria-expanded`, `aria-controls` and labels onto its native input. `igc-color-picker`
+projects its `aria-haspopup` and labels. A projected label wins over the `label` property of the input. The projected
+`role` and `aria-haspopup` are mirrored on the host as `data-role` and `data-haspopup`, so themes can style the anchor
+without reading ARIA that lives inside the shadow root.
 
 #### Naming order
 
@@ -231,6 +234,43 @@ focus enters it, so a `label` that is added after the first render names the con
 
 Chromium adds text from the shadow root of the component, for example the placeholder of the native editor, to the name
 from a wrapping `label`. A `label` bound through `for` does not have this limitation.
+
+#### Combobox over a list of the page
+
+A command palette or a search with suggestions uses the ARIA combobox pattern: the focus stays in the field, and the
+arrow keys move `aria-activedescendant` through the options of a listbox. Set the combobox state on the host:
+
+```html
+<igc-input
+  label="Search"
+  role="combobox"
+  aria-expanded="true"
+  aria-autocomplete="list"
+  aria-controls="results"
+  aria-activedescendant="result-2"
+></igc-input>
+<div id="results" role="listbox" aria-label="Results">
+  <div id="result-1" role="option">…</div>
+  <div id="result-2" role="option">…</div>
+</div>
+```
+
+The input forwards the host `aria-haspopup` and `aria-autocomplete` to the native input, and the host `aria-controls`
+and `aria-activedescendant` as element references, resolved in the tree of the host. A host `role="combobox"` goes to
+the native input with `aria-expanded`. Another role, such as `search`, stays on the host. Without the combobox role,
+`aria-expanded` also stays on the host, because a text box does not support it. The element-reflection properties
+work too, for example `ariaActiveDescendantElement`. The page handles the keys and moves `aria-activedescendant`; the
+input does not.
+
+When a composite component, for example `igc-select`, projects a value, that value wins over the host attribute. A value
+that it does not project comes from the host attribute. Only the projection sets `data-role` and `data-haspopup`.
+
+Limitations:
+
+- The host element keeps its own `role`, so the accessibility tree has an unfocusable combobox around the native one.
+  Assistive technology reads the focused native combobox.
+- The input resolves `aria-controls` and `aria-activedescendant` on a change of a host attribute and on each render.
+  When you add the listbox or replace the option elements later and keep the same ids, set the attribute again.
 
 #### Constraint validation
 
@@ -452,6 +492,7 @@ The suite lives in [`input.spec.ts`](./input.spec.ts). It runs in a real browser
 | `createFormAssociatedTestBed` | A `form` fixture around the control, exposing `formData`, `submit`, `reset` and `valid`. |
 | `runValidationContainerTests` | Generated cases asserting that each validation slot renders for its failing constraint. |
 | `runExternalLabelAssociationTests` | External `label` association through `for`, by nesting and after the first render, click-to-focus, an axe audit, and the host ARIA naming. |
+| `runHostComboboxTests` | The host combobox state on the native editor, with an axe audit. |
 | `simulateInput / simulateClick / simulateKeyboard` | User interaction driven without real device events. |
 | `ValidityHelpers` | Assertions for validity, invalid styling and validation slot presence and content. |
 
@@ -557,11 +598,25 @@ Generated by `runExternalLabelAssociationTests`.
 47. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal.
 
+### Host combobox state
+
+Generated by `runHostComboboxTests`, except the last case.
+
+48. A host `role`, `aria-expanded`, `aria-autocomplete`, `aria-controls` and `aria-activedescendant` make the native
+    input a combobox over a listbox of the page, and an axe audit passes.
+49. The native input follows a change of the host `aria-activedescendant` and `aria-controls`, and each set of the host
+    `ariaActiveDescendantElement`. A reference to no element forwards nothing.
+50. Each host attribute, also `aria-haspopup`, goes to the native input and goes away with the host attribute. A role
+    other than `combobox` and an `aria-expanded` without a role stay on the host. The host state sets no `data-role`
+    or `data-haspopup`.
+51. A projected value wins over the host state. A value that the projection removes comes from the host. `data-role`
+    follows the projection. In [`aria-projection.spec.ts`](../../internals/controllers/aria-projection.spec.ts).
+
 ### Material search field
 
-48. The floated label stays inside the filled and the outlined `type="search"` field - with a placeholder, focused,
+52. The floated label stays inside the filled and the outlined `type="search"` field - with a placeholder, focused,
     and with a value.
-49. The label stays inside the focused read-only filled and outlined search field.
+53. The label stays inside the focused read-only filled and outlined search field.
 
 ### Not covered by the suite
 
@@ -581,6 +636,8 @@ property, and the forwarding of `inputmode` and `autocomplete`.
 - The validation message region is announced politely through the validation container.
 - The required, disabled and read-only states come from the native attributes on the inner input.
 - A host `aria-describedby` describes the native control after the helper text, by element reference.
+- The host combobox state goes to the native input, so a page can make it a combobox over its own listbox. See
+  [Combobox over a list of the page](#combobox-over-a-list-of-the-page).
 
 ### Keyboard support
 

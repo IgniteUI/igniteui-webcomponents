@@ -6,6 +6,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import {
   addAriaTarget,
   ariaBindings,
+  HOST_COMBOBOX_ATTRIBUTES,
   helperText,
 } from '#internals/controllers/aria-projection.js';
 import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
@@ -104,7 +105,8 @@ const Slots = setSlots(
  */
 @shadowOptions({ delegatesFocus: true })
 export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
-  EventEmitterMixin<IgcTextareaComponentEventMap>(LitElement)
+  EventEmitterMixin<IgcTextareaComponentEventMap>(LitElement),
+  HOST_COMBOBOX_ATTRIBUTES
 ) {
   public static readonly tagName = 'igc-textarea';
   public static override styles = [componentBase, styles, shared];
@@ -131,7 +133,10 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     onChange: this._handleSlotChange,
   });
 
-  /** Names and describes the native textarea. See {@link addAriaTarget}. */
+  /**
+   * Names and describes the native textarea, and applies the host ARIA. See
+   * {@link addAriaTarget}.
+   */
   private readonly _ariaTarget = addAriaTarget(this, () =>
     helperText(this, this._slots)
   );
