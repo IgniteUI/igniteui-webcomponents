@@ -298,6 +298,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Whitespace in the default slot, such as the indentation around a slotted helper text, no longer clears the value. Before, it replaced the value from the `value` attribute or the property with an empty string, and whitespace added later cleared the text that the user typed. Projected text still sets the value, and its removal still clears the value. [#2451](https://github.com/IgniteUI/igniteui-webcomponents/pull/2451)
   - The `spellcheck` attribute now works as the native attribute: only `false` turns the spell check off. Before, an empty attribute, such as `<igc-textarea spellcheck>`, and a removed attribute turned it off. [#2451](https://github.com/IgniteUI/igniteui-webcomponents/pull/2451)
 - #### Theming
+  - The breadcrumbs, button and combo now fall back to their default sizes when `--ig-size-small`, `--ig-size-medium` and `--ig-size-large` are not registered, for example with a theme used only from a shadow root. Before, they could take the wrong size. [igniteui-theming#652](https://github.com/IgniteUI/igniteui-theming/issues/652)
   - A theme change now replaces only the theme style sheets of a component. It keeps the style sheets that other code adopted into the shadow root, after the theme style sheets. Before, a theme change removed them. [#2436](https://github.com/IgniteUI/igniteui-webcomponents/pull/2436)
 - #### Tile manager
   - Focus and accessibility: [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
