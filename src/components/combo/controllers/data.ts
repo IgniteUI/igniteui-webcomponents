@@ -298,7 +298,10 @@ export class DataState<T extends object> implements ReactiveController {
    * toggle option at `index` are in `selected`. Stops at the first mix,
    * because these options render often.
    */
-  public selectionOf(index: number, selected: Set<T>): boolean | 'mixed' {
+  public selectionOf(
+    index: number,
+    selected: ReadonlySet<T>
+  ): boolean | 'mixed' {
     const records = this._dataState;
     let some = false;
     let every = true;
