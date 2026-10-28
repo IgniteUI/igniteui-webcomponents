@@ -39,6 +39,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-10-28 | No `flex-basis` on the host; the minimum width is 320px or the container width, whichever is smaller |
 
 ## Overview
 
@@ -211,20 +212,25 @@ The suite lives in [`banner.spec.ts`](./banner.spec.ts) and runs in a real brows
 2. The default OK action is rendered when nothing is projected into `actions`.
 3. Content projected into `prefix` and `actions` is rendered in the expected containers.
 
+### Layout
+
+4. A closed banner takes no space in a column flex container.
+5. An open banner in a container narrower than 320px fits the container and does not make it scroll sideways.
+
 ### Methods tests
 
-4. `show`, `hide` and `toggle` transition the open state with animation and resolve with whether it changed.
-5. Setting `open` transitions without animation and without emitting the close events.
-6. The Invoker Commands integration calls `show`, `hide` and `toggle`.
+6. `show`, `hide` and `toggle` transition the open state with animation and resolve with whether it changed.
+7. Setting `open` transitions without animation and without emitting the close events.
+8. The Invoker Commands integration calls `show`, `hide` and `toggle`.
 
 ### Interrupted transitions
 
-7. A transition superseded by a newer one resolves `false` and settles in the correct final state.
+9. A transition superseded by a newer one resolves `false` and settles in the correct final state.
 
 ### Action tests
 
-8. Activating the default action closes the banner and emits `igcClosing` and `igcClosed`.
-9. Canceling `igcClosing` aborts the closing sequence and keeps the banner open.
+10. Activating the default action closes the banner and emits `igcClosing` and `igcClosed`.
+11. Canceling `igcClosing` aborts the closing sequence and keeps the banner open.
 
 ## Assumptions and limitations
 
