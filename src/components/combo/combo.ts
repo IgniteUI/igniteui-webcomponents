@@ -194,11 +194,7 @@ export default class IgcComboComponent<
     );
   }
 
-  // #region Internal state and controllers
-
-  protected override get __validators(): Validator<IgcComboComponent<T>>[] {
-    return comboValidators;
-  }
+  //#region Internal state and controllers
 
   private readonly _slots = addSlotController(this, { slots: SLOTS });
   private readonly _themes: ThemingController;
@@ -251,8 +247,8 @@ export default class IgcComboComponent<
       interactions: {
         show: () => this._show(true),
         hide: (trigger) => this._close(trigger),
-        toggleSelection: (index: number) => this._selectAt(index, true),
-        select: (index: number) => this._selectAt(index, false),
+        toggleSelection: (index) => this._selectAt(index, true),
+        select: (index) => this._selectAt(index, false),
         hasPending: () => this._selection.pending !== undefined,
         apply: (trigger) => this._applyAndClose(trigger),
         clearSelection: () => this._clearSelection(),
@@ -296,23 +292,13 @@ export default class IgcComboComponent<
   @state()
   private _displayValue = '';
 
-  private _itemId(index: number): string {
-    const position = index + 1;
-    return this.id ? `${this.id}-item-${position}` : `item-${position}`;
-  }
-
-  /** Derived from {@link _activeIndex}, so it cannot go stale. */
-  private get _activeDescendant(): string | undefined {
-    return this._activeIndex > -1 ? this._itemId(this._activeIndex) : undefined;
-  }
-
   private get _mainAriaLabel(): string {
     return isEmpty(this._selection.selected)
       ? this.resourceStrings.combo_aria_label_no_options
       : this.resourceStrings.combo_aria_label_options;
   }
 
-  // #endregion
+  //#endregion
 
   //#region Public attributes and properties
 
@@ -721,7 +707,11 @@ export default class IgcComboComponent<
 
   //#endregion
 
-  // #region Form Associated overrides
+  //#region Form Associated overrides
+
+  protected override get __validators(): Validator<IgcComboComponent<T>>[] {
+    return comboValidators;
+  }
 
   protected override _setDefaultValue(current: string | null): void {
     try {
@@ -738,9 +728,9 @@ export default class IgcComboComponent<
     this._inputRef.value?.['_resetValidationState']();
   }
 
-  // #endregion
+  //#endregion
 
-  //#region Overrides for combo box behavior
+  //#region Open and close
 
   protected override async _show(emitEvent = false): Promise<boolean> {
     const [canOpen, _] = await Promise.all([
@@ -782,22 +772,31 @@ export default class IgcComboComponent<
     return this._hide(true, { trigger });
   }
 
-  private _setSingleSelectionDisplayValue(value: string): void {
-    if (this.singleSelect && this._inputRef.value) {
-      this._inputRef.value.value = value;
-    }
+  /**
+   * Applies the pending selection, then closes the list. A canceled
+   * `igcChange` keeps the list open.
+   * @returns Whether the list closes.
+   */
+  private async _applyAndClose(trigger: ComboCloseTrigger): Promise<boolean> {
+    return this._commitPending(true) ? this._close(trigger) : false;
   }
 
   //#endregion
 
-  // #region Selection helpers
+  //#region Selection flow
 
-  /** Recomputes {@link _displayValue} and returns the selection values in one pass. */
+  /** Sets {@link _displayValue} and returns the values of the selection. */
   private _projectSelection(): ComboValue<T>[] {
     const { values, text } = this._selection.project();
 
     this._displayValue = text;
     return values;
+  }
+
+  private _setSingleSelectionDisplayValue(value: string): void {
+    if (this.singleSelect && this._inputRef.value) {
+      this._inputRef.value.value = value;
+    }
   }
 
   private _emitSelectionChange(
@@ -835,7 +834,6 @@ export default class IgcComboComponent<
       return true;
     }
 
-    // An empty deselection deselects every selected item.
     const resolved = isEmpty(collection)
       ? Array.from(this._selection.current)
       : this._selection.resolve(collection);
@@ -908,7 +906,6 @@ export default class IgcComboComponent<
     this._listRef.value?.requestUpdate();
   }
 
-  /** Gives the selection the records of a new `data`. */
   private _syncSelectionFromData(): void {
     const known = this._selection.knownValues();
 
@@ -970,7 +967,6 @@ export default class IgcComboComponent<
     return true;
   }
 
-  /** The items that the list shows. */
   private _shownItems(): T[] {
     // Applies a change of `data` or of the search text that no update has
     // applied yet. The update gives the new records to the list before it
@@ -1069,7 +1065,7 @@ export default class IgcComboComponent<
     }
   }
 
-  // #endregion
+  //#endregion
 
   //#region Event handlers
 
@@ -1084,7 +1080,8 @@ export default class IgcComboComponent<
       this._emitSearchInput(event.detail);
     }
 
-    // wait for the dataState to update after filtering
+    // The update applies a new search text to the records before the active
+    // option changes.
     await this.updateComplete;
 
     // Remote results come later, so no option of the old results becomes active.
@@ -1167,15 +1164,6 @@ export default class IgcComboComponent<
     event.stopPropagation();
     this._clearSelection();
     this._activeIndex = -1;
-  }
-
-  /**
-   * Applies the pending selection, then closes the list. A canceled
-   * `igcChange` keeps the list open.
-   * @returns Whether the list closes.
-   */
-  private async _applyAndClose(trigger: ComboCloseTrigger): Promise<boolean> {
-    return this._commitPending(true) ? this._close(trigger) : false;
   }
 
   private _handleApply(): void {
@@ -1318,6 +1306,18 @@ export default class IgcComboComponent<
   }
 
   //#endregion
+
+  //#region Rendering
+
+  private _itemId(index: number): string {
+    const position = index + 1;
+    return this.id ? `${this.id}-item-${position}` : `item-${position}`;
+  }
+
+  /** Derived from {@link _activeIndex}, so it cannot go stale. */
+  private get _activeDescendant(): string | undefined {
+    return this._activeIndex > -1 ? this._itemId(this._activeIndex) : undefined;
+  }
 
   protected _itemRenderer: ComboRenderFunction<T> = (
     context: VirtualScrollItemContext<ComboRecord<T>>
@@ -1622,6 +1622,8 @@ export default class IgcComboComponent<
       ${this._renderHelperText()}
     `;
   }
+
+  //#endregion
 }
 
 declare global {

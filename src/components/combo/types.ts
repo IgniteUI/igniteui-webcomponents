@@ -1,7 +1,6 @@
-import type { ReactiveControllerHost, TemplateResult } from 'lit';
+import type { TemplateResult } from 'lit';
 import type { VirtualScrollDataRequest } from '../virtualization/types.js';
 import type { VirtualScrollItemTemplate } from '../virtualization/virtualization.js';
-import type IgcComboComponent from './combo.js';
 
 export type Keys<T> = keyof T;
 export type Values<T> = T[keyof T];
@@ -24,9 +23,6 @@ export type ComboRecord<T extends object> = {
    */
   kind?: 'placeholder' | 'select-all';
 };
-
-export type ComboHost<T extends object> = ReactiveControllerHost &
-  IgcComboComponent<T>;
 
 export type GroupingDirection = 'asc' | 'desc' | 'none';
 /** `commit` applies the pending selection of the confirm mode. See `selectionCommit`. */

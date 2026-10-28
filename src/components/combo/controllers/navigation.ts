@@ -17,7 +17,8 @@ import { isEmpty } from '#internals/utils/arrays.js';
 import { getFocusableElements } from '#internals/utils/dom.js';
 import type IgcInputComponent from '../../input/input.js';
 import type IgcVirtualScrollComponent from '../../virtualization/virtualization.js';
-import type { ComboCloseTrigger, ComboHost } from '../types.js';
+import type IgcComboComponent from '../combo.js';
+import type { ComboCloseTrigger } from '../types.js';
 import type { DataState } from './data.js';
 
 type ListSlot = 'header' | 'empty' | 'footer';
@@ -44,7 +45,7 @@ type ComboNavigationConfig = {
 export class ComboNavigationController<T extends object> {
   //#region Internal state
 
-  private readonly _host: ComboHost<T>;
+  private readonly _host: IgcComboComponent<T>;
   private readonly _state: DataState<T>;
   private readonly _config: ComboNavigationConfig;
 
@@ -75,7 +76,7 @@ export class ComboNavigationController<T extends object> {
   public active = -1;
 
   constructor(
-    host: ComboHost<T>,
+    host: IgcComboComponent<T>,
     state: DataState<T>,
     config: ComboNavigationConfig
   ) {
@@ -285,7 +286,7 @@ export class ComboNavigationController<T extends object> {
   }
 
   /**
-   * The only write path for the active index. The host mirrors it as
+   * Sets the active index from the keyboard. The host mirrors it as
    * `_activeIndex`, so the update request carries the old value.
    */
   private _setActive(index: number): void {

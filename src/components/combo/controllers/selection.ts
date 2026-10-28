@@ -212,7 +212,7 @@ export class ComboSelection<T extends object> {
     }
   }
 
-  /** Clears the committed selection. */
+  /** Clears the committed selection. The pending selection does not change. */
   public clear(): void {
     this._selected = new Set();
   }
@@ -297,7 +297,7 @@ export class ComboSelection<T extends object> {
     let byValue: Map<ComboValue<T>, T> | undefined;
 
     for (const value of values) {
-      // First match only - mirrors resolving a value against the data source
+      // Only the first record of the value, unlike `resolve()`.
       const position = index.get(value)?.[0];
       const record =
         position === undefined
