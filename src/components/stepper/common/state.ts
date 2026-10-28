@@ -1,4 +1,3 @@
-import type { PropertyValues } from 'lit';
 import { moveFlag } from '#internals/utils/objects.js';
 import type IgcStepComponent from '../step.js';
 
@@ -26,9 +25,11 @@ class StepperState {
     return this._activeStep;
   }
 
-  /** Steps that are not disabled or linear-disabled. */
-  public get accessibleSteps(): IgcStepComponent[] {
-    return this._steps.filter((step) => this.isAccessible(step));
+  /** The active step and the steps that are not disabled or linear-disabled. */
+  public get navigableSteps(): IgcStepComponent[] {
+    return this._steps.filter(
+      (step) => step === this._activeStep || this.isAccessible(step)
+    );
   }
 
   //#endregion
@@ -74,19 +75,24 @@ class StepperState {
 
   //#region Active step management
 
-  public setSteps(steps: IgcStepComponent[]): void {
-    this._steps = steps;
+  /** Activates a connected step of the stepper that has `active`. */
+  public stepActivated(step: IgcStepComponent): void {
+    if (step.isConnected && this._steps.includes(step)) {
+      this.changeActiveStep(step);
+    }
   }
 
   /** Changes the active step, deactivating the previous one and marking the new one as visited. */
   public changeActiveStep(step: IgcStepComponent): void {
-    if (step === this._activeStep) {
+    const previous = this._activeStep;
+
+    if (step === previous) {
       return;
     }
 
-    moveFlag(this._activeStep, step, 'active');
-    this.set(step, { visited: true });
     this._activeStep = step;
+    moveFlag(previous, step, 'active');
+    this.set(step, { visited: true });
   }
 
   /** Activates the first non-disabled step. */
@@ -99,7 +105,7 @@ class StepperState {
 
   /** Returns the next or previous accessible step relative to the active step. */
   public getAdjacentStep(next = true): IgcStepComponent | undefined {
-    const steps = this.accessibleSteps;
+    const steps = this.navigableSteps;
     const activeIndex = steps.indexOf(this._activeStep!);
 
     if (activeIndex === -1) {
@@ -153,35 +159,39 @@ class StepperState {
     }
   }
 
-  /** Handles step property changes, updating active step tracking and re-syncing state. */
-  public onStepPropertyChanged(
-    step: IgcStepComponent,
-    changed: PropertyValues<IgcStepComponent>
-  ): void {
-    if (changed.has('active') && step.active) {
-      this.changeActiveStep(step);
+  /** Processes a change in the steps collection, resolving the active step and syncing state. */
+  public stepsChanged(steps: IgcStepComponent[]): void {
+    const added = steps.filter((step) => !this._steps.includes(step));
+
+    this._steps = steps;
+    this.syncActiveStep(added);
+
+    // A step renders its index, which a change of the collection can shift.
+    for (const step of steps) {
+      step.requestUpdate();
     }
-    this.syncState();
-    this.setLinearState();
   }
 
-  /** Processes a change in the steps collection, resolving the active step and syncing state. */
-  public stepsChanged(): void {
-    const lastActiveStep = this._steps.findLast((step) => step.active);
+  /**
+   * Resolves the active step and syncs the steps. As in markup, the last of the
+   * active step and the added steps that has `active` wins. Else the active step
+   * stays, also when its `active` was cleared.
+   */
+  public syncActiveStep(added: readonly IgcStepComponent[] = []): void {
+    const current = this._activeStep;
+    const step =
+      this._steps.findLast(
+        (each) => each.active && (each === current || added.includes(each))
+      ) ?? (this._steps.includes(current!) ? current : undefined);
 
-    if (lastActiveStep) {
-      this.changeActiveStep(lastActiveStep);
+    if (step) {
+      this.changeActiveStep(step);
     } else {
       this.activateFirstStep();
     }
 
     this.syncState();
     this.setLinearState();
-
-    // A step renders its index, which a change of the collection can shift.
-    for (const step of this._steps) {
-      step.requestUpdate();
-    }
   }
 
   /** Resets all step states and activates the first step. */
