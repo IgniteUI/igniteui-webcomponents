@@ -54,6 +54,7 @@ This directory hosts four public components: [`igc-dropdown`](#igc-dropdown),
 |       2 | 2026-10-21 | API descriptions aligned with the JSDoc. |
 |       3 | 2026-10-26 | An `igc-button` target passes the popup state on to its native button. |
 |       4 | 2026-10-26 | A click or `select()` on the selected item moves the active item to it. |
+|       5 | 2026-10-28 | An `igc-input` target gives `aria-haspopup` and the active item to its native input. |
 
 ## Overview
 
@@ -327,54 +328,60 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 4. The list, items and groups expose their expected roles and states, and an `igc-button` target passes the popup
    state on to its native button.
 
+### Input target
+
+5. An `igc-input` target gives `aria-haspopup` and the active item to its native input. The native input gets no
+   `aria-expanded`. An axe audit passes. An update that keeps the active item writes nothing on the target. The
+   native input follows a change of the active item and loses it on close.
+
 ### Initial selection
 
-5. An item marked `selected` in markup becomes the initial selection.
-6. The selection survives closing and reopening the list.
+6. An item marked `selected` in markup becomes the initial selection.
+7. The selection survives closing and reopening the list.
 
 ### API tests
 
-7. `show`, `hide` and `toggle` transition the open state and resolve with whether it changed.
-8. `show` and `toggle` accept a target element and an IDREF.
-9. `select` selects by value and by index, and returns the item or `null`.
-10. `navigateTo` activates by value and by index without changing the selection.
-11. `clearSelection` clears the current selection.
-12. `items`, `groups` and `selectedItem` report the current state.
+8. `show`, `hide` and `toggle` transition the open state and resolve with whether it changed.
+9. `show` and `toggle` accept a target element and an IDREF.
+10. `select` selects by value and by index, and returns the item or `null`.
+11. `navigateTo` activates by value and by index without changing the selection.
+12. `clearSelection` clears the current selection.
+13. `items`, `groups` and `selectedItem` report the current state.
 
 ### Groups and headers tests
 
-13. Grouped items are reported both by the group and by the dropdown.
-14. Headers are rendered and are not selectable or navigable.
+14. Grouped items are reported both by the group and by the dropdown.
+15. Headers are rendered and are not selectable or navigable.
 
 ### User interactions
 
-15. Clicking an item selects it and closes the list.
-16. `keepOpenOnSelect` keeps the list open after a selection. A click or `select()` on the selected item moves the
+16. Clicking an item selects it and closes the list.
+17. `keepOpenOnSelect` keeps the list open after a selection. A click or `select()` on the selected item moves the
     active item to it.
-17. Clicking outside closes the list, unless `keepOpenOnOutsideClick` is set.
-18. Disabled items cannot be selected and are skipped by the keyboard navigation.
-19. The arrow keys, <kbd>Home</kbd> and <kbd>End</kbd> move the active item; <kbd>Enter</kbd> selects it;
+18. Clicking outside closes the list, unless `keepOpenOnOutsideClick` is set.
+19. Disabled items cannot be selected and are skipped by the keyboard navigation.
+20. The arrow keys, <kbd>Home</kbd> and <kbd>End</kbd> move the active item; <kbd>Enter</kbd> selects it;
     <kbd>Escape</kbd> closes without changing the selection.
 
 ### Items collection changes
 
-20. Items added or removed at run time are picked up by the component.
-21. Removing the selected item updates the reported selection.
+21. Items added or removed at run time are picked up by the component.
+22. Removing the selected item updates the reported selection.
 
 ### Events tests
 
-22. `igcChange` is emitted when the selection changes through interaction.
-23. `igcOpening` and `igcClosing` are emitted and can be canceled.
-24. `igcOpened` and `igcClosed` are emitted after the transition.
-25. Issue #1123.
+23. `igcChange` is emitted when the selection changes through interaction.
+24. `igcOpening` and `igcClosing` are emitted and can be canceled.
+25. `igcOpened` and `igcClosed` are emitted after the transition.
+26. Issue #1123.
 
 ### Detached anchor
 
-26. A dropdown with a non-slotted anchor positions and behaves the same as one with a slotted target.
+27. A dropdown with a non-slotted anchor positions and behaves the same as one with a slotted target.
 
 ### Scroll strategy tests
 
-27. `hide`, `scroll` and `close` behave as specified while an ancestor scrolls.
+28. `hide`, `scroll` and `close` behave as specified while an ancestor scrolls.
 
 ## Assumptions and limitations
 
@@ -383,6 +390,10 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 - <kbd>Escape</kbd> closes the list but does not update the selection.
 - <kbd>Page Up</kbd> and <kbd>Page Down</kbd> are not handled.
 - The dropdown is not a form-associated element and submits nothing.
+- An `igc-input` or other text field target is not fully supported. The open state does not reach assistive
+  technology, because a text box does not support `aria-expanded`. While the list is open, the dropdown also takes
+  the arrow keys, <kbd>Home</kbd> and <kbd>End</kbd>, so the caret does not move. A click in the field toggles the
+  list.
 
 ## Accessibility
 
@@ -391,7 +402,8 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 - The dropdown list has a `listbox` role, the items an `option` role, and the groups a `group` role.
 - The selected item carries `aria-selected`.
 - The target exposes the expanded state and the active descendant relation to the list. An `igc-button` target
-  passes `aria-haspopup` and `aria-expanded` on to its native button.
+  passes `aria-haspopup` and `aria-expanded` on to its native button. On an `igc-input` target, `aria-haspopup`
+  and `aria-activedescendant` reach the native input. `aria-expanded` stays on the host.
 - The dropdown itself has no tab index and is not focusable, so the target keeps the focus.
 
 ### Keyboard support

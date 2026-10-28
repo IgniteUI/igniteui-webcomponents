@@ -11,6 +11,7 @@ import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
+  runHostComboboxTests,
 } from '#internals/testing/form-testbed.spec.js';
 import {
   isFocused,
@@ -725,6 +726,13 @@ describe('Textarea component', () => {
     tagName: IgcTextareaComponent.tagName,
     getNativeInput: (host) =>
       (host as IgcTextareaComponent).renderRoot.querySelector('textarea')!,
+  });
+
+  runHostComboboxTests({
+    tagName: IgcTextareaComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcTextareaComponent).renderRoot.querySelector('textarea')!,
+    role: null,
   });
 
   describe('Auto sizing', () => {
