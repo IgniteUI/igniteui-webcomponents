@@ -4,20 +4,33 @@
     display: block;
     width: 100%;
     height: 100%;
+
+    // A flex or grid parent can make the carousel shorter than its slides,
+    // but not shorter than the section.
+    min-height: rem(240px);
     position: relative;
 
     // Keeps the z-index of the parts inside the component.
     isolation: isolate;
 
     section {
-        display: block;
+        display: grid;
+        grid-template: minmax(0, 1fr) / minmax(0, 1fr);
         position: relative;
         width: 100%;
         height: inherit;
+        max-height: inherit;
         overflow: hidden;
         outline-style: none;
         min-height: rem(240px);
         min-width: rem(300px);
+    }
+
+    // The slides share one cell, so the tallest slide sets the height, but not the width.
+    section > div:not([part]) {
+        display: grid;
+        grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+        contain: inline-size;
     }
 }
 
