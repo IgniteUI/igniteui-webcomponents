@@ -71,6 +71,35 @@ describe('Animations Player', () => {
     expect(playbackEvent.type).to.equal('cancel');
   });
 
+  it('should cancel the animation when its signal aborts', async () => {
+    const abort = new AbortController();
+    const playing = el.player.play(fade, abort.signal);
+    abort.abort();
+
+    expect((await playing).type).to.equal('cancel');
+  });
+
+  it('should resolve `playExclusive` `false` when its signal aborts', async () => {
+    const abort = new AbortController();
+    const playing = el.player.playExclusive(fade, abort.signal);
+    el.getAnimations()[0].finish();
+    abort.abort();
+
+    expect(await playing).to.be.false;
+  });
+
+  it('should not play or cancel others with an aborted signal', async () => {
+    const running = el.player.play(fade);
+    const abort = new AbortController();
+    abort.abort();
+
+    expect(await el.player.playExclusive(fade, abort.signal)).to.be.false;
+    expect(el.getAnimations()).to.have.length(1);
+
+    el.getAnimations()[0].finish();
+    expect((await running).type).to.equal('finish');
+  });
+
   it('should error on infinite animations', async () => {
     for (const options of [
       { duration: Number.POSITIVE_INFINITY },

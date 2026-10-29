@@ -45,6 +45,7 @@
 |       1 | 2026-09-21 | Initial specification                                                   |
 |       2 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
 |       3 | 2026-10-21 | API descriptions aligned with the JSDoc.                                |
+|       4 | 2026-10-29 | A change of `open` against a running transition ends it                 |
 
 ## Overview
 
@@ -152,7 +153,8 @@ await panel.toggle();
 
 The three methods are asynchronous and resolve with `true` when the transition completed and changed the open
 state, and with `false` when it did not — the panel was already in the requested state, or a newer transition
-superseded this one.
+superseded this one. A change of `open` against a running transition also ends it: the method resolves `false`, the
+animation stops, and the panel sends no `igcOpened` or `igcClosed`.
 
 Setting the `open` property changes the state as well.
 
@@ -248,7 +250,8 @@ The suite lives in [`expansion-panel.spec.ts`](./expansion-panel.spec.ts) and ru
 
 ### Methods tests
 
-8. `show`, `hide` and `toggle` change the open state.
+8. `show`, `hide` and `toggle` change the open state. A change of `open` against a running transition ends it and
+   its trailing event, and the next `show()` works at once.
 
 ### User interactions
 

@@ -11,6 +11,7 @@ import {
 import { addToggleCommands } from '#internals/controllers/command.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { addToggleController } from '#internals/controllers/toggle.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
@@ -66,14 +67,12 @@ const i18n = {
  * @slot footer - Content rendered in the dialog footer. When empty, a
  *   default action button is shown (unless `hide-default-action` is set).
  *
- * @csspart base - The native `<dialog>` element.
+ * @csspart base - The native `<dialog>` element. Style the backdrop with `::part(base)::backdrop`.
  * @csspart titled - Added to the base part when the dialog has a title.
  * @csspart footed - Added to the base part when the footer has slotted content or a default action.
  * @csspart title - The `<header>` element wrapping the title slot.
  * @csspart content - The `<section>` element wrapping the message and default slots.
  * @csspart footer - The `<footer>` element wrapping the footer slot.
- * @csspart backdrop - The decorative backdrop overlay element.
- * @csspart animating - Applied to the backdrop while an animation is running.
  */
 export default class IgcDialogComponent extends I18nMixin(
   EventEmitterMixin<IgcDialogComponentEventMap>(HostAriaMixin(LitElement)),
@@ -99,19 +98,26 @@ export default class IgcDialogComponent extends I18nMixin(
   private readonly _player = addAnimationController(this, this._dialogRef);
 
   private readonly _toggleController = addToggleController(this, {
-    transition: async (open) => {
+    transition: async (open, signal) => {
       if (open) {
         this.open = true;
-        // A superseded exit also clears this, but too late for this render.
-        this._animating = false;
-        return this._player.playExclusive(fadeIn());
+        return this._player.playExclusive(fadeIn(), signal);
       }
 
-      this._animating = true;
-      const completed = await this._player.playExclusive(fadeOut());
-      this._animating = false;
+      this._closing = true;
+      // In the same task, so the render after the abort has the backdrop.
+      signal.addEventListener('abort', () => (this._closing = false), {
+        once: true,
+      });
+      const completed = await this._player.playExclusive(fadeOut(), signal);
 
-      // An interrupted exit animation means a newer `show()` took over.
+      // A newer request or a direct change of `open` took over.
+      if (signal.aborted) {
+        return false;
+      }
+
+      this._closing = false;
+
       if (completed) {
         this.open = false;
       }
@@ -121,7 +127,7 @@ export default class IgcDialogComponent extends I18nMixin(
   });
 
   @state()
-  private _animating = false;
+  private _closing = false;
 
   private get _dialog(): HTMLDialogElement | undefined {
     return this._dialogRef.value;
@@ -173,6 +179,9 @@ export default class IgcDialogComponent extends I18nMixin(
    * @default false
    */
   @property({ type: Boolean, reflect: true })
+  @coercedProperty<boolean, IgcDialogComponent>({
+    onChange: ({ host, value }) => host._toggleController.sync(value),
+  })
   public open = false;
 
   /**
@@ -272,7 +281,8 @@ export default class IgcDialogComponent extends I18nMixin(
    * Opens the dialog with an animated fade-in transition.
    *
    * Returns `true` when the dialog was successfully opened, or `false` if it
-   * was already open or the transition was superseded by a newer one.
+   * was already open or opening, the transition was superseded by a newer one,
+   * or `open` was set to `false` during it.
    */
   public async show(): Promise<boolean> {
     return this._toggleController.show();
@@ -282,7 +292,8 @@ export default class IgcDialogComponent extends I18nMixin(
    * Closes the dialog with an animated fade-out transition.
    *
    * Returns `true` when the dialog was successfully closed, or `false` if it
-   * was already closed or the transition was superseded by a newer one.
+   * was already closed or closing, the transition was superseded by a newer
+   * one, or `open` was set to `false` and then to `true` during it.
    */
   public async hide(): Promise<boolean> {
     return this._toggleController.hide();
@@ -292,7 +303,8 @@ export default class IgcDialogComponent extends I18nMixin(
    * Toggles the dialog open or closed depending on its current state.
    *
    * Equivalent to calling `show()` when closed and `hide()` when open.
-   * Returns `true` when the transition completed successfully.
+   * Returns `true` when the transition completed successfully, with the same
+   * `false` cases as these methods.
    */
   public async toggle(): Promise<boolean> {
     return this._toggleController.toggle();
@@ -301,15 +313,6 @@ export default class IgcDialogComponent extends I18nMixin(
   //#endregion
 
   //#region Render methods
-
-  protected _renderBackdrop() {
-    return html`
-      <div
-        aria-hidden=${!this.open}
-        part=${partMap({ backdrop: true, animating: this._animating })}
-      ></div>
-    `;
-  }
 
   protected _renderHeader() {
     return html`
@@ -355,10 +358,10 @@ export default class IgcDialogComponent extends I18nMixin(
       this._slots.hasAssignedElements('footer') || !this.hideDefaultAction;
 
     return html`
-      ${this._renderBackdrop()}
       <dialog
         ${ref(this._dialogRef)}
         part=${partMap({ base: true, titled: hasTitle, footed: hasFooter })}
+        ?data-closing=${this._closing}
         role="dialog"
         ${ariaBindings(hostAria(this, { ownLabel: !this.ariaLabel && this._titleId }))}
         @click=${this._handleClick}

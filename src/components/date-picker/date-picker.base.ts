@@ -825,7 +825,7 @@ export abstract class IgcDatePickerBaseComponent<
             hide-default-action
             @igcClosing=${this._handleDialogClosing}
             @igcClosed=${stopPropagation}
-            exportparts="base: dialog-base, title, footer, backdrop: overlay"
+            exportparts="base: dialog-base, title, footer"
           >
             ${this._renderPickerContent(id)}${this._renderDialogFooter()}
           </igc-dialog>
