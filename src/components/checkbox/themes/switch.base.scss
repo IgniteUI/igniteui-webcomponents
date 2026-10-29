@@ -36,7 +36,9 @@ input[type='checkbox'] {
 
 [part~='control'],
 [part~='thumb'] {
-    transition: all .2s ease-in-out;
+    transition-property: background, border-color, box-shadow, margin;
+    transition-duration: .2s;
+    transition-timing-function: ease-in-out;
 }
 
 [part~='thumb'][part~='checked'] {

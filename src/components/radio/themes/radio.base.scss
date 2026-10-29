@@ -57,7 +57,9 @@ igc-validator {
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
-        transition: all .15s ease-in;
+        transition-property: background, border-color, border-width, transform;
+        transition-duration: .15s;
+        transition-timing-function: ease-in;
     }
 
     &::before {

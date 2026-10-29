@@ -19,6 +19,7 @@ import {
   suppressResizeObserverLoopError,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { simulateInput } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
@@ -833,4 +834,6 @@ describe('Textarea component', () => {
       });
     }
   });
+
+  runHiddenAncestorTests(html`<igc-textarea label="Label"></igc-textarea>`);
 });

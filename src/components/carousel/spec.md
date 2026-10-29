@@ -38,6 +38,7 @@
     - [Slide and indicator integrity](#slide-and-indicator-integrity)
     - [Layout and theming](#layout-and-theming)
     - [Indicator container](#indicator-container)
+    - [Hidden ancestor](#hidden-ancestor)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -56,6 +57,7 @@
 |       5 | 2026-10-23 | The carousel makes a stacking context, so the z-index of the slides, the indicators and the navigation buttons does not compete with the layers of the page |
 |       6 | 2026-10-26 | The `aria-controls` of the navigation buttons reaches their native buttons |
 |       7 | 2026-10-29 | The carousel takes the height of its tallest slide; the arrow color tokens reach the navigation buttons |
+|       8 | 2026-10-29 | The navigation buttons have no transition, and the indicator dots transition only their border color; the active slide, the active indicator and its dot no longer set `visibility: visible`; so the carousel hides at the same time as a hidden ancestor |
 
 ## Overview
 
@@ -435,6 +437,11 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 
 38. The container is initialized correctly, applies the `focused` part on `keyup` and removes it on click and on
     `focusout`, but keeps it when the focus moves to another `igc-carousel-indicator`.
+
+### Hidden ancestor
+
+39. The carousel, also the active slide and the active indicator dot, hides at the same time as a hidden ancestor in
+    each theme, at rest and after a focus or a hover: no element transitions `visibility` or sets it to `visible`.
 
 ### Not covered by the suite
 

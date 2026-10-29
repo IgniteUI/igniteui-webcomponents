@@ -10,7 +10,9 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
 
 [part~='splitter-bar'] {
     background: hsla(from $splitter-color h s l / 68%);
-    transition: all .15s $out-quad;
+    transition-property: background, box-shadow;
+    transition-duration: .15s;
+    transition-timing-function: $out-quad;
 
     [part~='drag-handle'] {
         background: var-get($theme, 'handle-color');
@@ -27,7 +29,6 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
     &:focus-visible {
         outline: none;
         box-shadow: 0 0 0 rem(2px) var-get($theme, 'focus-color');
-        transition: box-shadow 0.15s $out-quad;
         z-index: 99;
     }
 }
@@ -36,7 +37,8 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
     [part~='splitter-bar']:hover,
     [part~='splitter-bar']:focus-visible:hover {
         background: $splitter-color;
-        transition: all 0.15s ease-out;
+        transition-duration: .15s;
+        transition-timing-function: ease-out;
 
         [part~='drag-handle'],
         [part*='collapse-btn'],

@@ -43,7 +43,6 @@ $theme: $indigo;
 
         &::after {
             border-block-end-color: var-get($theme, 'focused-bottom-line-color');
-            transition: all .25s $out-cubic;
         }
     }
 }
@@ -73,7 +72,7 @@ $theme: $indigo;
         bottom: 0%;
         width: 100%;
         border-block-end: rem(1px) solid var-get($theme, 'idle-bottom-line-color');
-        transition: all .25s $out-cubic;
+        transition: border-color .25s $out-cubic;
     }
 }
 

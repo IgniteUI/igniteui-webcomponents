@@ -42,6 +42,8 @@
     - [Edge scenarios](#edge-scenarios)
     - [Host ARIA](#host-aria)
     - [Localization](#localization-1)
+    - [Hidden ancestor](#hidden-ancestor)
+    - [Orientation change in a theme](#orientation-change-in-a-theme)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
     - [Keyboard support](#keyboard-support)
@@ -56,6 +58,7 @@
 |       3 | 2026-10-19 | Localize the default name of the bar                            |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                        |
 |       5 | 2026-10-23 | The splitter makes a stacking context, so the z-index of the focused bar does not compete with the layers of the page |
+|       6 | 2026-10-29 | Transition only the colors, the shadow and the scale of the bar, so the bar hides at the same time as a hidden ancestor and takes its new size, and in the Indigo theme its new scale, at once after an orientation change |
 
 ## Overview
 
@@ -481,6 +484,15 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 32. A size that the splitter accepts is a valid CSS `flex-basis`.
 33. Every non-negative length, and a percentage up to 100, is accepted.
 34. The minimum and maximum sizes accept the same values as the sizes.
+
+### Hidden ancestor
+
+35. The splitter hides at the same time as a hidden ancestor in each theme, at rest and after a focus or a hover: no
+    element transitions `visibility` or sets it to `visible`.
+
+### Orientation change in a theme
+
+36. In the Indigo theme, the bar takes the scale of a new orientation at once, with no transition.
 
 ## Accessibility
 

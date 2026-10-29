@@ -21,6 +21,7 @@ import {
   isUnderPageLayer,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { simulateInput } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
@@ -1172,4 +1173,11 @@ describe('Input component', () => {
     getNativeInput: (host) =>
       (host as IgcInputComponent).renderRoot.querySelector('input')!,
   });
+
+  runHiddenAncestorTests(html`
+    <igc-input label="Label">
+      <span slot="prefix">$</span>
+      <span slot="suffix">USD</span>
+    </igc-input>
+  `);
 });

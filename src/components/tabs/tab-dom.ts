@@ -255,7 +255,7 @@ export class TabsHelpers {
       : header.offsetLeft + width - container.offsetWidth;
 
     setStyles(indicator, {
-      visibility: 'visible',
+      visibility: '',
       width: `${width}px`,
       transform: `translateX(${offset}px)`,
     });

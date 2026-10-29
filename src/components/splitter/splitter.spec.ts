@@ -24,6 +24,7 @@ import {
   isUnderPageLayer,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
@@ -621,6 +622,21 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
 
       expect(splitter.startSize).to.equal(dragged);
+    });
+
+    it('should not animate the bar from the old orientation', async () => {
+      // The Indigo theme scales the bar on the axis of its orientation.
+      configureTheme('indigo');
+
+      try {
+        await nextFrame();
+        splitter.orientation = 'vertical';
+        await elementUpdated(splitter);
+
+        expect(getSplitterPart(splitter, BAR_PART).getAnimations()).to.be.empty;
+      } finally {
+        configureTheme('bootstrap');
+      }
     });
 
     it('should report the restored sizes as changed properties', async () => {
@@ -3997,6 +4013,13 @@ describe('Splitter', () => {
       expect(partialSplitter.startSize).to.equal('300px');
     });
   });
+
+  runHiddenAncestorTests(html`
+    <igc-splitter style="height: 200px">
+      <div slot="start">Start</div>
+      <div slot="end">End</div>
+    </igc-splitter>
+  `);
 });
 
 function createSplitter() {

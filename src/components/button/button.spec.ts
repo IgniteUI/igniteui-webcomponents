@@ -2,6 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import { isPopoverOpen } from '#internals/utils/dom.js';
 import IgcInputComponent from '../input/input.js';
@@ -788,4 +789,8 @@ describe('Button tests', () => {
       expect(native().ariaControlsElements).to.eql([hint]);
     });
   });
+
+  runHiddenAncestorTests(html`
+    <igc-button><igc-icon slot="prefix"></igc-icon>Click</igc-button>
+  `);
 });

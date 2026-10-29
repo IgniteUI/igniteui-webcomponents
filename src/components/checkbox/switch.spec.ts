@@ -9,6 +9,7 @@ import {
   isFocused,
   isUnderPageLayer,
 } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { configureTheme } from '#theming/config.js';
 import IgcSwitchComponent from './switch.js';
 
@@ -297,4 +298,9 @@ describe('Switch', () => {
       (host as IgcSwitchComponent).renderRoot.querySelector('input')!,
     checkable: true,
   });
+
+  runHiddenAncestorTests(html`
+    <igc-switch>Label</igc-switch>
+    <igc-switch checked>Label</igc-switch>
+  `);
 });

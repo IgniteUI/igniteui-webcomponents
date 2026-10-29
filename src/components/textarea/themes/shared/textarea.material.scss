@@ -97,7 +97,9 @@ textarea {
             bottom: 0%;
             width: 100%;
             border-block-end: rem(1px) solid var-get($theme, 'idle-bottom-line-color');
-            transition: all 0.25s $out-cubic;
+            transition:
+                border-color 0.25s $out-cubic,
+                border-width 0.25s $out-cubic;
         }
 
         textarea {
