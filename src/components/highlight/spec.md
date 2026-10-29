@@ -28,6 +28,7 @@
     - [Initial render](#initial-render)
     - [DOM](#dom)
     - [Highlight stylesheet tree scope](#highlight-stylesheet-tree-scope)
+    - [Highlight colors](#highlight-colors)
     - [API tests](#api-tests)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
@@ -44,6 +45,7 @@
 |       2 | 2026-10-02 | Whitespace matching               |
 |       3 | 2026-10-05 | Stylesheet kept on a theme change |
 |       4 | 2026-10-26 | The same search keeps the match   |
+|       5 | 2026-10-29 | Colors kept in other components   |
 
 ## Overview
 
@@ -157,6 +159,12 @@ The four custom properties are set on the host:
 </igc-highlight>
 ```
 
+A second stylesheet in the render root of the component resolves the four properties into names that are unique to
+the instance, and the `::highlight()` rules read only these names. So a component between the host and the matched
+text that sets `--background` or `--foreground` for its own colors, such as a list, a tree or a nested highlight,
+does not change the colors of the matches. A value that you set on an element inside the component has no effect on
+the matches.
+
 ### Localization
 
 None applicable. The component renders no text of its own.
@@ -207,12 +215,12 @@ None applicable.
 
 ### CSS custom properties
 
-| Property              | Description                                            |
-| --------------------- | ------------------------------------------------------ |
-| `--foreground`        | The text color of a highlighted text node.              |
-| `--background`        | The background color of a highlighted text node.        |
-| `--foreground-active` | The text color of the active highlighted text node.     |
-| `--background-active` | The background color of the active highlighted text node. |
+| Property              | Description                                                                    |
+| --------------------- | ------------------------------------------------------------------------------ |
+| `--foreground`        | The text color for a highlighted text node. Set it on the host.                |
+| `--background`        | The background color for a highlighted text node. Set it on the host.          |
+| `--foreground-active` | The text color for the active highlighted text node. Set it on the host.       |
+| `--background-active` | The background color for the active highlighted text node. Set it on the host. |
 
 ## Test scenarios
 
@@ -235,20 +243,29 @@ None applicable.
 5. The stylesheet stays in the shadow root of a themed component when the theme changes.
 6. The stylesheet is removed from its tree scope when the host disconnects.
 
+### Highlight colors
+
+7. With a theme palette, a match inside an element that sets the four custom property names has the same colors as a
+   match outside it.
+8. The matches take the colors of the four custom properties set on the host.
+9. The matches keep the host colors after a theme change.
+10. The matches of a highlight inside a nested highlight take the colors of their own host, and the matches of the
+    nested highlight take the colors of the nested host.
+11. A reconnect adopts the color sheet of the host only once.
+
 ### API tests
 
-7. Changing `searchText` produces the matching number of matches.
-8. `caseSensitive` restricts the matching to the exact case, and a space matches any run of whitespace.
-9. `next()` and `previous()` move the active match, and `previous()` wraps to the last one from the first.
-10. `setActive()` sets the active match to the given index.
-11. `search()` picks up content that was added or removed after the previous search.
-12. Setting `searchText` or `caseSensitive` again to its value keeps the active match, and a change runs the search
+12. Changing `searchText` produces the matching number of matches.
+13. `caseSensitive` restricts the matching to the exact case, and a space matches any run of whitespace.
+14. `next()` and `previous()` move the active match, and `previous()` wraps to the last one from the first.
+15. `setActive()` sets the active match to the given index.
+16. `search()` picks up content that was added or removed after the previous search.
+17. Setting `searchText` or `caseSensitive` again to its value keeps the active match, and a change runs the search
     again.
 
 ### Not covered by the suite
 
 - The scroll-into-view behavior and the `preventScroll` option are not covered.
-- The CSS custom properties are not covered.
 - Clearing `searchText` back to an empty string is not asserted on its own.
 
 ## Assumptions and limitations
@@ -259,6 +276,8 @@ None applicable.
   property are not.
 - Shadow roots are skipped while matching.
 - The component does not observe its content; `search()` has to be called after it changes.
+- The four custom properties apply only on the host. A value that you set on an element inside the component has no
+  effect on the matches.
 - The component relies on the CSS Custom Highlight API, so it needs a browser that implements it.
 
 ## Accessibility

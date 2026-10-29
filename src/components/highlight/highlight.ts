@@ -24,10 +24,10 @@ import { styles as shared } from './themes/shared/highlight.common.css.js';
  *
  * @slot - The content to search. Only content projected here takes part in the matching.
  *
- * @cssproperty --foreground - The text color for a highlighted text node.
- * @cssproperty --background - The background color for a highlighted text node.
- * @cssproperty --foreground-active - The text color for the active highlighted text node.
- * @cssproperty --background-active - The background color for the active highlighted text node.
+ * @cssproperty --foreground - The text color for a highlighted text node. Set it on the host.
+ * @cssproperty --background - The background color for a highlighted text node. Set it on the host.
+ * @cssproperty --foreground-active - The text color for the active highlighted text node. Set it on the host.
+ * @cssproperty --background-active - The background color for the active highlighted text node. Set it on the host.
  *
  * @example
  * Basic usage - wrap your text and set the `search-text` attribute:
