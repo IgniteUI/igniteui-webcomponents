@@ -17,7 +17,7 @@
     cursor: pointer;
     position: relative;
     z-index: map.get($tabs-z-index, 'header');
-    grid-row: 1;
+    grid-area: var(--_ig-tab-header-area);
     overflow-wrap: anywhere;
 
     // No underline on a link tab. The theme sheets set the color.
@@ -57,15 +57,19 @@
     }
 }
 
+// The tabs give the place of the panel. It sticks to the start of the scroll axis,
+// and in a column with a definite height it scrolls its own content.
 [part~='tab-body'] {
     display: none;
     position: sticky;
-    inset-inline-start: 0;
+    inset-block: var(--_ig-tab-panel-inset-block);
+    inset-inline: var(--_ig-tab-panel-inset-inline);
     width: 100%;
     height: 100%;
-    grid-row: 3;
-    grid-column: 1 / -1;
+    grid-area: var(--_ig-tab-panel-area);
     max-width: var(--_ig-tabs-width);
+    max-height: var(--_ig-tabs-height);
+    overflow: var(--_ig-tab-panel-overflow);
 }
 
 :host([selected]) {

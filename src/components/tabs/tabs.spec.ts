@@ -2207,6 +2207,265 @@ describe('Tabs component', () => {
 
       expect(change.called).to.be.false;
     });
+
+    describe('Column layout', () => {
+      /** Waits for the resize observations of the current layout. */
+      async function settle(): Promise<void> {
+        await nextFrame();
+        await nextFrame();
+      }
+
+      function rects(tabs: IgcTabsComponent) {
+        return {
+          host: tabs.getBoundingClientRect(),
+          headers: tabs.tabs.map((tab) =>
+            getTabDOM(tab).header.getBoundingClientRect()
+          ),
+          panel: getTabDOM(tabs.selectedTab!).body.getBoundingClientRect(),
+        };
+      }
+
+      function heightLimit(tabs: IgcTabsComponent): string {
+        return getTabsDOM(tabs).container.style.getPropertyValue(
+          '--_ig-tabs-height'
+        );
+      }
+
+      async function withHeightLimit(tabs: IgcTabsComponent, limit: string) {
+        await waitUntil(
+          () => heightLimit(tabs) === limit,
+          `The height limit is not "${limit}"`
+        );
+        await elementUpdated(tabs);
+      }
+
+      for (const dir of ['ltr', 'rtl'] as const) {
+        for (const position of ['start', 'end'] as const) {
+          it(`places the headers in a column on the ${position} side of the panels (${dir})`, async () => {
+            const tabs = await fixture<IgcTabsComponent>(html`
+              <igc-tabs header-position=${position} dir=${dir}>
+                <igc-tab label="Inbox">Inbox</igc-tab>
+                <igc-tab label="Sent">Sent</igc-tab>
+              </igc-tabs>
+            `);
+            await settle();
+
+            const {
+              host,
+              headers: [first, second],
+              panel,
+            } = rects(tabs);
+
+            expect(second.left).to.equal(first.left);
+            expect(second.top).to.equal(first.bottom);
+            expect(panel.top).to.equal(first.top);
+
+            if ((position === 'start') === (dir === 'ltr')) {
+              expect(first.left).to.equal(host.left);
+              expect(panel.left).to.be.at.least(first.right);
+              expect(panel.right).to.be.closeTo(host.right, 1);
+            } else {
+              expect(first.right).to.be.closeTo(host.right, 1);
+              expect(panel.right).to.be.at.most(first.left);
+              expect(panel.left).to.equal(host.left);
+            }
+          });
+        }
+      }
+
+      it('sizes the column from its widest header, within the width limit of a header', async () => {
+        const tabs = await fixture<IgcTabsComponent>(html`
+          <igc-tabs header-position="start">
+            <igc-tab label="A">A</igc-tab>
+            <igc-tab label="A longer label">B</igc-tab>
+          </igc-tabs>
+        `);
+        await settle();
+
+        const [short, long] = rects(tabs).headers;
+
+        expect(short.width).to.equal(long.width);
+        expect(long.width).to.be.above(90).and.below(360);
+
+        tabs.tabs[1].label =
+          'A label that is much longer than the widest header of a column may be';
+        await elementUpdated(tabs.tabs[1]);
+        await settle();
+
+        const { headers, panel } = rects(tabs);
+
+        expect(headers.map(({ width }) => width)).to.eql([360, 360]);
+        expect(panel.left).to.be.at.least(360);
+      });
+
+      for (const alignment of ['start', 'center', 'end', 'justify'] as const) {
+        it(`aligns the headers along a column with \`${alignment}\``, async () => {
+          const tabs = await fixture<IgcTabsComponent>(html`
+            <igc-tabs
+              header-position="start"
+              alignment=${alignment}
+              style="height: 300px"
+            >
+              <igc-tab label="One">One</igc-tab>
+              <igc-tab label="Two">Two</igc-tab>
+              <igc-tab label="Three">Three</igc-tab>
+            </igc-tabs>
+          `);
+          await settle();
+
+          const { host, headers } = rects(tabs);
+          const [first, , last] = headers;
+          const above = first.top - host.top;
+          const below = host.bottom - last.bottom;
+
+          switch (alignment) {
+            case 'start':
+              expect(above).to.equal(0);
+              expect(below).to.be.above(0);
+              break;
+            case 'center':
+              expect(above).to.be.above(0);
+              expect(above).to.be.closeTo(below, 1);
+              break;
+            case 'end':
+              expect(above).to.be.above(0);
+              expect(below).to.be.closeTo(0, 1);
+              break;
+            case 'justify':
+              for (const { height } of headers) {
+                expect(height).to.be.closeTo(100, 1);
+              }
+          }
+        });
+      }
+
+      it('keeps the width limit of a header with `justify`', async () => {
+        const tabs = await fixture<IgcTabsComponent>(html`
+          <igc-tabs header-position="start" alignment="justify">
+            <igc-tab
+              label="A label that is much longer than the widest header of a column may be"
+            ></igc-tab>
+            <igc-tab label="B"></igc-tab>
+          </igc-tabs>
+        `);
+        await settle();
+
+        expect(rects(tabs).headers.map(({ width }) => width)).to.eql([
+          360, 360,
+        ]);
+      });
+
+      it('grows with the panel when the height is auto, and limits the panel to a set height', async () => {
+        const tabs = await fixture<IgcTabsComponent>(html`
+          <igc-tabs header-position="start">
+            <igc-tab label="One"><div style="height: 600px"></div></igc-tab>
+            <igc-tab label="Two">Two</igc-tab>
+          </igc-tabs>
+        `);
+        const { container } = getTabsDOM(tabs);
+        const { body } = getTabDOM(tabs.tabs[0]);
+        await settle();
+
+        expect(heightLimit(tabs)).to.be.empty;
+        expect(rects(tabs).host.height).to.equal(600);
+        expect(rects(tabs).headers[0].height).to.be.below(100);
+
+        tabs.style.height = '200px';
+        await withHeightLimit(tabs, '200px');
+
+        expect(body.clientHeight).to.equal(200);
+        expect(body.scrollHeight).to.equal(600);
+        expect(container.scrollHeight).to.equal(container.clientHeight);
+
+        tabs.style.height = '';
+        await withHeightLimit(tabs, '');
+
+        expect(rects(tabs).host.height).to.equal(600);
+      });
+
+      it('limits the panel when a row with a set height changes to a column', async () => {
+        const tabs = await fixture<IgcTabsComponent>(html`
+          <igc-tabs style="height: 200px">
+            <igc-tab label="One"><div style="height: 600px"></div></igc-tab>
+          </igc-tabs>
+        `);
+        await settle();
+
+        expect(heightLimit(tabs)).to.be.empty;
+
+        tabs.headerPosition = 'end';
+        await withHeightLimit(tabs, '200px');
+
+        expect(getTabDOM(tabs.tabs[0]).body.clientHeight).to.equal(200);
+
+        tabs.headerPosition = 'top';
+        await withHeightLimit(tabs, '');
+      });
+
+      it('lays out a row of tabs in the panel of a column as a row', async () => {
+        const tabs = await fixture<IgcTabsComponent>(html`
+          <igc-tabs header-position="start" style="height: 300px">
+            <igc-tab label="Outer">
+              <igc-tabs>
+                <igc-tab label="One">One</igc-tab>
+                <igc-tab label="Two">Two</igc-tab>
+              </igc-tabs>
+            </igc-tab>
+          </igc-tabs>
+        `);
+        const nested = tabs.querySelector<IgcTabsComponent>(
+          `${IgcTabComponent.tagName} > ${IgcTabsComponent.tagName}`
+        )!;
+        await withHeightLimit(tabs, '300px');
+        await settle();
+
+        const {
+          headers: [first, second],
+          panel,
+        } = rects(nested);
+        const style = getComputedStyle(getTabDOM(nested.tabs[0]).body);
+
+        expect(second.top).to.equal(first.top);
+        expect(second.left).to.be.at.least(first.right);
+        expect(panel.top).to.be.at.least(first.bottom);
+        expect(style.maxHeight).to.equal('none');
+        expect(style.overflow).to.equal('visible');
+      });
+
+      for (const position of ['start', 'end'] as const) {
+        it(`is accessible with the headers on the ${position} side`, async () => {
+          const tabs = await fixture<IgcTabsComponent>(html`
+            <igc-tabs header-position=${position}>
+              <igc-tab label="Inbox">Inbox</igc-tab>
+              <igc-tab label="Sent">Sent</igc-tab>
+            </igc-tabs>
+          `);
+
+          await expect(tabs).to.be.accessible({
+            ignoredRules: ['aria-required-children'],
+          });
+        });
+      }
+
+      it('paints a column of headers under an earlier page layer', async () => {
+        const tabs = await fixture<IgcTabsComponent>(html`
+          <igc-tabs header-position="start">
+            <igc-tab label="Inbox">Inbox</igc-tab>
+          </igc-tabs>
+        `);
+        await settle();
+
+        expect(isUnderPageLayer(tabs, getTabDOM(tabs.tabs[0]).header)).to.be
+          .true;
+      });
+    });
+
+    runHiddenAncestorTests(html`
+      <igc-tabs header-position="start">
+        <igc-tab label="One">One</igc-tab>
+        <igc-tab label="Two">Two</igc-tab>
+      </igc-tabs>
+    `);
   });
 
   runHiddenAncestorTests(html`

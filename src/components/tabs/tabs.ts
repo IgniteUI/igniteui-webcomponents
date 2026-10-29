@@ -44,6 +44,7 @@ import type {
 } from '../types.js';
 import {
   getTabHeader,
+  isColumn,
   opensElsewhere,
   TAB_HEADER,
   TabsHelpers,
@@ -91,7 +92,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
 
   //#region Private state & properties
 
-  /** Observes the scroll container, the direction probe and each tab header. */
+  /** Observes the scroll container, the probes and each tab header. */
   private readonly _resizeController = addResizeObserverController(this, {
     callback: this._handleResize,
     options: { box: 'border-box' },
@@ -107,6 +108,9 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
   });
 
   private _containerWidth = -1;
+
+  /** The height of the tabs when it is definite, else 0. The height probe reports it. */
+  private _definiteHeight = 0;
 
   /** The tabs at the last change of the slot. */
   private _knownTabs: IgcTabComponent[] = [];
@@ -136,11 +140,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
   }
 
   private _activeTab?: IgcTabComponent;
-
-  /** Whether the headers form a column before or after the panels. */
-  private get _isColumn(): boolean {
-    return this.headerPosition === 'start' || this.headerPosition === 'end';
-  }
 
   //#endregion
 
@@ -211,7 +210,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
     addInternalsController(this, {
       initialARIA: { role: 'tablist' },
       aria: () => ({
-        ariaOrientation: this._isColumn ? 'vertical' : 'horizontal',
+        ariaOrientation: isColumn(this) ? 'vertical' : 'horizontal',
       }),
       reflectRole: true,
     });
@@ -253,6 +252,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
       this._domHelpers.setIndicator(this._activeTab);
     }
 
+    if (props.has('headerPosition') && this.hasUpdated) {
+      this._applyHeaderPosition();
+    }
+
     super.update(props);
   }
 
@@ -264,6 +267,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
     const container = this._containerRef.value;
     let resized = false;
     let replaced = false;
+    let heightChanged = false;
 
     for (const { target, borderBoxSize } of entries) {
       if (target === container) {
@@ -271,6 +275,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
         const [{ inlineSize }] = borderBoxSize;
         resized ||= inlineSize !== this._containerWidth;
         this._containerWidth = inlineSize;
+      } else if (target.matches('[data-height-probe]')) {
+        // Only a column limits the panels to the height of the tabs.
+        const [{ blockSize }] = borderBoxSize;
+        heightChanged ||= blockSize !== this._definiteHeight && isColumn(this);
+        this._definiteHeight = blockSize;
       } else {
         resized = true;
         // A header that a render replaced reports a zero size on removal.
@@ -282,7 +291,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
       this._observeHeaders();
     }
 
-    if (resized) {
+    if (heightChanged) {
+      // A new height limit of the panels can resize the container, which the
+      // observer reports as a loop when it happens in this frame.
+      requestAnimationFrame(() => this.isConnected && this._refreshLayout());
+    } else if (resized) {
       this._refreshLayout();
     }
   }
@@ -361,16 +374,25 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
     this._domHelpers.setIndicator(this._activeTab);
   }
 
+  /** Measures the tabs again once a change between a row and a column renders. */
+  private async _applyHeaderPosition(): Promise<void> {
+    await this.updateComplete;
+    this._refreshLayout();
+  }
+
   /**
-   * Observes the container and the direction probe. A ref callback, because a ref
-   * gets no element while the host renders disconnected (#2416).
+   * Observes the container and the probes. A ref callback, because a ref gets no
+   * element while the host renders disconnected (#2416).
    */
   private _observeContainer(container?: Element): void {
     if (container) {
       this._resizeController.observe(container);
-      this._resizeController.observe(
-        container.querySelector('[data-direction-probe]')!
-      );
+
+      for (const probe of container.querySelectorAll(
+        '[data-direction-probe], [data-height-probe]'
+      )) {
+        this._resizeController.observe(probe);
+      }
     }
   }
 
@@ -487,7 +509,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
    */
   private _skipKeyboard(node: Element, event: KeyboardEvent): boolean {
     const tab = node as IgcTabComponent;
-    const otherAxis = this._isColumn
+    const otherAxis = isColumn(this)
       ? [arrowLeft, arrowRight]
       : [arrowUp, arrowDown];
 
@@ -568,6 +590,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
         @scroll=${this._handleScroll}
       >
         <span data-direction-probe></span>
+        <span data-height-probe></span>
         <div
           part=${partMap({
             inner: true,

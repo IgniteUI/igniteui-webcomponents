@@ -12,6 +12,7 @@ export const TAB_HEADER = '[part~="tab-header"]';
 type TabsStyleProperties = {
   '--_tabs-count': string;
   '--_ig-tabs-width': string;
+  '--_ig-tabs-height': string;
 };
 
 type ScrollButtonsState = {
@@ -27,6 +28,7 @@ export class TabsHelpers {
   private _styleProperties: TabsStyleProperties = {
     '--_tabs-count': '',
     '--_ig-tabs-width': '',
+    '--_ig-tabs-height': '',
   };
 
   private _hasScrollButtons = false;
@@ -72,9 +74,11 @@ export class TabsHelpers {
     const tabs = this._host.tabs;
     const container = this._container;
     const width = container && getRect(container).width;
+    const height = this._getColumnHeight(container);
     const next = {
       '--_tabs-count': String(tabs.length),
       '--_ig-tabs-width': width === undefined ? '' : `${width}px`,
+      '--_ig-tabs-height': height ? `${height}px` : '',
     };
 
     if (!equal(this._styleProperties, next)) {
@@ -94,6 +98,15 @@ export class TabsHelpers {
     }, 0);
 
     this.setScrollPositionState(tabsWidth > width + EDGE_TOLERANCE);
+  }
+
+  /**
+   * The definite height of a column of headers, else 0. The height probe is 0 when
+   * the height of the tabs is auto, so that the panels can grow the tabs.
+   */
+  private _getColumnHeight(container?: HTMLElement): number {
+    const probe = container?.querySelector('[data-height-probe]');
+    return probe && isColumn(this._host) ? getRect(probe).height : 0;
   }
 
   public checkAndUpdateDirection(): boolean {
@@ -270,11 +283,22 @@ function getRect(element: Element): {
   left: number;
   right: number;
   width: number;
+  height: number;
 } {
   const zoom = element.currentCSSZoom || 1;
-  const { left, right, width } = element.getBoundingClientRect();
+  const { left, right, width, height } = element.getBoundingClientRect();
 
-  return { left: left / zoom, right: right / zoom, width: width / zoom };
+  return {
+    left: left / zoom,
+    right: right / zoom,
+    width: width / zoom,
+    height: height / zoom,
+  };
+}
+
+/** Whether the headers form a column before or after the panels. */
+export function isColumn(tabs: IgcTabsComponent): boolean {
+  return tabs.headerPosition === 'start' || tabs.headerPosition === 'end';
 }
 
 export function getTabHeader(tab: IgcTabComponent): HTMLElement | null {
