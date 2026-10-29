@@ -64,6 +64,7 @@
 |       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                                  |
 |       8 | 2026-10-21 | A value set from code is not reported; one `igcChange` per calendar pick  |
 |       9 | 2026-10-28 | The picker projects only `aria-haspopup`, `aria-required` and labels onto the editor |
+|      10 | 2026-10-29 | The `overlay` part is removed; the dialog backdrop is the native `::backdrop` of `dialog-base` |
 
 ## Overview
 
@@ -615,10 +616,9 @@ The picker exposes its own parts and re-exports the parts of the calendar it com
 | `date` / `date-inner` / `month` / `month-inner` / `year` / `year-inner` | The calendar cell elements.                         |
 | `first` / `last` / `inactive` / `hidden` / `weekend` / `range` / `special` / `disabled` / `single` / `preview` | The calendar cell states. |
 | `selected` / `current`                                              | The selected and current state of a date, month or year. |
-| `dialog-base`                                                       | The base of the dialog in dialog mode.                  |
+| `dialog-base`                                                       | The base of the dialog in dialog mode. Style the backdrop with `::part(dialog-base)::backdrop`. |
 | `title`                                                             | The title of the dialog in dialog mode.                 |
 | `footer`                                                            | The footer of the dialog in dialog mode. |
-| `overlay`                                                           | The backdrop of the dialog in dialog mode.              |
 
 ### CSS custom states
 

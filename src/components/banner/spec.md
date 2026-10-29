@@ -40,6 +40,7 @@
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-10-28 | No `flex-basis` on the host; the minimum width is 320px or the container width, whichever is smaller |
+|       3 | 2026-10-29 | A change of `open` against a running transition ends it |
 
 ## Overview
 
@@ -133,8 +134,8 @@ await banner.toggle();
 ```
 
 The three methods animate the transition and resolve with whether it completed - `false` when the banner was already
-in that state, or when a newer transition superseded this one. Setting the `open` property instead shows or hides
-the banner immediately, without animation and without emitting the close events.
+in that state, when a newer transition superseded this one, or when a change of `open` ended it. Setting the `open`
+property instead shows or hides the banner immediately, without animation and without emitting the close events.
 
 #### Invoker commands
 
@@ -173,6 +174,10 @@ standard button keys.
 
 Each resolves with `true` when the transition completed, and with `false` when the banner was already in that state
 or the transition was superseded by a newer one.
+
+A change of `open` against a running transition ends it, and the banner keeps the new state: `open = false` during
+`show()`, or `open = false` and then `open = true` during `hide()`, because `open` stays `true` during the exit. The
+method, and `toggle()`, then resolve `false`.
 
 ### Events
 
@@ -226,11 +231,14 @@ The suite lives in [`banner.spec.ts`](./banner.spec.ts) and runs in a real brows
 ### Interrupted transitions
 
 9. A transition superseded by a newer one resolves `false` and settles in the correct final state.
+10. A change of `open` against a running transition ends it: `open = false` and then `open = true` during the exit
+    keeps the banner open, also with reduced motion, and `open = false` during the entrance lets the next `show()`
+    open the banner.
 
 ### Action tests
 
-10. Activating the default action closes the banner and emits `igcClosing` and `igcClosed`.
-11. Canceling `igcClosing` aborts the closing sequence and keeps the banner open.
+11. Activating the default action closes the banner and emits `igcClosing` and `igcClosed`.
+12. Canceling `igcClosing` aborts the closing sequence and keeps the banner open.
 
 ## Assumptions and limitations
 

@@ -1,4 +1,5 @@
 import type { LitElement } from 'lit';
+import { createAbortHandle } from '../abort-handler.js';
 
 /**
  * The events that a {@link ToggleController} sends. Include them, or a subset
@@ -30,8 +31,14 @@ type ToggleHost = LitElement & {
  * `open`, plays the animations and awaits the updates. A resolved `false`
  * marks the transition as superseded, and the controller then sends no
  * trailing "-ed" event.
+ *
+ * The signal aborts when a newer request or a direct change of `open` takes
+ * over. The transition then stops its animations and changes no more state.
  */
-type ToggleTransitionFunction = (open: boolean) => Promise<boolean> | boolean;
+type ToggleTransitionFunction = (
+  open: boolean,
+  signal: AbortSignal
+) => Promise<boolean> | boolean;
 
 type ToggleControllerOptions = {
   /**
@@ -52,7 +59,9 @@ type ToggleControllerOptions = {
  * transition, awaits the host update, then sends `igcOpened` or `igcClosed`.
  * The events run only when the caller asks for them.
  *
- * The controller has no life cycle, so the host does not register it.
+ * The controller has no life cycle, so the host does not register it. A host
+ * whose transition outlives a task calls {@link ToggleController.sync} from
+ * its `open` setter.
  */
 class ToggleController {
   private readonly _host: ToggleHost;
@@ -66,6 +75,9 @@ class ToggleController {
 
   /** Incremented per operation. A superseded operation stops. */
   private _generation = 0;
+
+  /** Aborts the transition of the operation in flight. */
+  private readonly _abort = createAbortHandle();
 
   constructor(host: ToggleHost, options?: ToggleControllerOptions) {
     this._host = host;
@@ -87,6 +99,13 @@ class ToggleController {
     });
   }
 
+  /** Ends the operation in flight, if any, and starts a new generation. */
+  private _supersede(): number {
+    this._pending = undefined;
+    this._abort.abort();
+    return ++this._generation;
+  }
+
   private async _setOpenState(
     open: boolean,
     emitEvents: boolean
@@ -102,7 +121,7 @@ class ToggleController {
       return false;
     }
 
-    const generation = ++this._generation;
+    const generation = this._supersede();
     this._pending = open;
 
     // The default transition is synchronous, so the state change and the
@@ -110,7 +129,8 @@ class ToggleController {
     let completed = true;
     try {
       if (transition) {
-        completed = (await transition.call(host, open)) !== false;
+        completed =
+          (await transition.call(host, open, this._abort.signal)) !== false;
       } else {
         host.open = open;
       }
@@ -118,6 +138,7 @@ class ToggleController {
       // A newer operation owns the pending state from here on.
       if (generation === this._generation) {
         this._pending = undefined;
+        this._abort.reset();
       }
     }
 
@@ -167,6 +188,17 @@ class ToggleController {
   /** Opens the host, or closes it, based on its current state. */
   public toggle(emitEvents = false): Promise<boolean> {
     return this._host.open ? this.hide(emitEvents) : this.show(emitEvents);
+  }
+
+  /**
+   * Reports a change of `host.open`; call it from the `open` setter. A value
+   * against the request in flight means that the application took over: the
+   * request resolves `false`, and the signal of its transition aborts.
+   */
+  public sync(open: boolean): void {
+    if (this._pending !== undefined && open !== this._pending) {
+      this._supersede();
+    }
   }
 }
 

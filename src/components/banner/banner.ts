@@ -7,6 +7,7 @@ import { addToggleCommands } from '#internals/controllers/command.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { addToggleController } from '#internals/controllers/toggle.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { all } from '#themes/banner/themes/themes.js';
@@ -67,16 +68,16 @@ export default class IgcBannerComponent extends EventEmitterMixin<IgcBannerCompo
   private readonly _player = addAnimationController(this, this._bannerRef);
 
   private readonly _toggleController = addToggleController(this, {
-    transition: async (open) => {
+    transition: async (open, signal) => {
       if (open) {
         this.open = true;
-        return this._player.playExclusive(growVerIn());
+        return this._player.playExclusive(growVerIn(), signal);
       }
 
-      const completed = await this._player.playExclusive(growVerOut());
+      const completed = await this._player.playExclusive(growVerOut(), signal);
 
-      // An interrupted exit animation means a newer `show()` took over.
-      if (completed) {
+      // A newer request or a direct change of `open` took over.
+      if (completed && !signal.aborted) {
         this.open = false;
       }
 
@@ -93,6 +94,9 @@ export default class IgcBannerComponent extends EventEmitterMixin<IgcBannerCompo
    * @default false
    */
   @property({ type: Boolean, reflect: true })
+  @coercedProperty<boolean, IgcBannerComponent>({
+    onChange: ({ host, value }) => host._toggleController.sync(value),
+  })
   public open = false;
 
   constructor() {
@@ -117,7 +121,8 @@ export default class IgcBannerComponent extends EventEmitterMixin<IgcBannerCompo
    * Opens the banner with an animated grow-in transition.
    *
    * Returns `true` when the banner was successfully opened, or `false` if it
-   * was already open or the transition was superseded by a newer one.
+   * was already open or opening, the transition was superseded by a newer one,
+   * or `open` was set to `false` during it.
    */
   public async show(): Promise<boolean> {
     return this._toggleController.show();
@@ -127,7 +132,8 @@ export default class IgcBannerComponent extends EventEmitterMixin<IgcBannerCompo
    * Closes the banner with an animated grow-out transition.
    *
    * Returns `true` when the banner was successfully closed, or `false` if it
-   * was already closed or the transition was superseded by a newer one.
+   * was already closed or closing, the transition was superseded by a newer
+   * one, or `open` was set to `false` and then to `true` during it.
    */
   public async hide(): Promise<boolean> {
     return this._toggleController.hide();
@@ -137,7 +143,8 @@ export default class IgcBannerComponent extends EventEmitterMixin<IgcBannerCompo
    * Toggles the banner open or closed depending on its current state.
    *
    * Equivalent to calling `show()` when closed and `hide()` when open.
-   * Returns `true` when the transition completed successfully.
+   * Returns `true` when the transition completed successfully, with the same
+   * `false` cases as these methods.
    */
   public async toggle(): Promise<boolean> {
     return this._toggleController.toggle();

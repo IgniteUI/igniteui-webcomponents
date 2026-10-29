@@ -65,6 +65,7 @@
 |      11 | 2026-10-23 | The date range input makes a stacking context, so the z-index of the input and the container does not compete with the layers of the page |
 |      12 | 2026-10-26 | Last 7 Days selects 7 days, counting today; the built-in ranges use the date of the click |
 |      13 | 2026-10-28 | The picker projects only `aria-haspopup`, `aria-required` and labels onto the editor |
+|      14 | 2026-10-29 | The `overlay` part is removed; the dialog backdrop is the native `::backdrop` of `dialog-base` |
 
 ## Overview
 
@@ -533,10 +534,9 @@ On top of the input and calendar parts it re-exports, the picker exposes:
 | `calendar-icon` / `calendar-icon-start` / `calendar-icon-end`            | The calendar icon wrappers for the closed state.        |
 | `calendar-icon-open` / `calendar-icon-open-start` / `calendar-icon-open-end` | The calendar icon wrappers for the open state.      |
 | `clear-icon` / `clear-icon-start` / `clear-icon-end`                     | The clear icon wrappers.                                |
-| `dialog-base`                                                            | The base of the dialog in dialog mode.                  |
+| `dialog-base`                                                            | The base of the dialog in dialog mode. Style the backdrop with `::part(dialog-base)::backdrop`. |
 | `title`                                                                  | The title of the dialog in dialog mode.                 |
 | `footer`                                                                 | The footer of the dialog in dialog mode, which holds the Cancel and Done buttons. |
-| `overlay`                                                                | The backdrop of the dialog in dialog mode.              |
 
 ### CSS custom states
 

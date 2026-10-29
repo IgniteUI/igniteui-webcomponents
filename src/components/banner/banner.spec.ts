@@ -5,6 +5,7 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { emulateMedia } from '@web/test-runner-commands';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { finishAnimationsFor } from '#internals/testing/helpers.spec.js';
@@ -269,6 +270,47 @@ describe('Banner', () => {
       const reopening = banner.show();
 
       expect(await closing).to.be.false;
+      expect(await reopening).to.be.true;
+      expect(banner.open).to.be.true;
+    });
+
+    it('keeps the banner open when `open` is set to `false` and then to `true` during the exit', async () => {
+      banner.open = true;
+      await elementUpdated(banner);
+
+      const closing = banner.hide();
+      banner.open = false;
+      banner.open = true;
+      finishAnimationsFor(banner.shadowRoot!);
+
+      expect(await closing).to.be.false;
+      expect(banner.open).to.be.true;
+    });
+
+    it('keeps the banner open after a zero-duration exit that `open` takes over', async () => {
+      await emulateMedia({ reducedMotion: 'reduce' });
+
+      try {
+        await banner.show();
+
+        const closing = banner.hide();
+        banner.open = false;
+        banner.open = true;
+
+        expect(await closing).to.be.false;
+        expect(banner.open).to.be.true;
+      } finally {
+        await emulateMedia({ reducedMotion: 'no-preference' });
+      }
+    });
+
+    it('opens on a show right after `open` is set to `false` during the entrance', async () => {
+      const opening = banner.show();
+      banner.open = false;
+      const reopening = banner.show();
+      finishAnimationsFor(banner.shadowRoot!);
+
+      expect(await opening).to.be.false;
       expect(await reopening).to.be.true;
       expect(banner.open).to.be.true;
     });

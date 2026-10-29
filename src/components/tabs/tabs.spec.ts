@@ -1263,6 +1263,16 @@ describe('Tabs component', () => {
 
       expect(isUnderPageLayer(element, header)).to.be.true;
     });
+
+    it('places fixed content of the selected panel against the viewport', () => {
+      const fixed = document.createElement('div');
+      fixed.style.cssText = 'position: fixed; top: 0; left: 0';
+      element.tabs[0].append(fixed);
+
+      // An element that does not render has no client rects.
+      const [rect] = fixed.getClientRects();
+      expect([rect?.top, rect?.left]).to.eql([0, 0]);
+    });
   });
 
   describe('Scrolling', () => {

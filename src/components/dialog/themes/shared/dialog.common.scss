@@ -10,7 +10,7 @@ $theme: $material;
     border-radius: var-get($theme, 'border-radius');
 }
 
-[part~='backdrop'] {
+[part~='base']::backdrop {
     background: var-get($theme, 'backdrop');
 }
 

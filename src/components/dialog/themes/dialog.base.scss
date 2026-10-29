@@ -1,8 +1,7 @@
 @use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/animations/easings' as *;
 
 :host {
-    --transition-duration: 350ms;
-
     display: contents;
     border-style: none;
     padding: unset;
@@ -72,21 +71,20 @@ slot[name='title'] {
     display: inline-block;
 }
 
-dialog::backdrop {
-    opacity: 0;
-}
+[part~='base']::backdrop {
+    // The duration and easing of the surface fade (`fadeIn()` and `fadeOut()`).
+    transition: opacity 350ms $out-sine;
 
-[part~='backdrop'] {
-    position: fixed;
-    inset: 0;
-    z-index: 10005;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity var(--transition-duration) ease-out;
-}
-
-:host([open]) {
-    [part='backdrop'] {
-        opacity: 1;
+    @starting-style {
+        opacity: 0;
     }
+
+    @media (prefers-reduced-motion: reduce) {
+        transition: none;
+    }
+}
+
+// The dialog stays modal until the exit animation of the surface ends.
+[data-closing]::backdrop {
+    opacity: 0;
 }

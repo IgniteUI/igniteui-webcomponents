@@ -34,6 +34,7 @@
     - [Form](#form)
     - [Host ARIA](#host-aria)
     - [Localization](#localization-1)
+    - [Backdrop](#backdrop)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -51,6 +52,7 @@
 |       4 | 2026-10-06 | Open the dialog again after a close that it cannot cancel |
 |       5 | 2026-10-19 | Localize the default action through `igniteui-i18n-core`  |
 |       6 | 2026-10-21 | API descriptions aligned with the JSDoc.                  |
+|       7 | 2026-10-29 | The backdrop is the native `::backdrop`; the `backdrop` and `animating` parts are removed; a change of `open` against a running transition ends it |
 
 ## Overview
 
@@ -156,8 +158,8 @@ await dialog.toggle();
 ```
 
 The three methods animate the transition and resolve with whether it completed - `false` when the dialog was already
-in that state, or when a newer transition superseded this one. Setting the `open` property instead opens or closes
-the dialog immediately, without animation and without emitting the close events.
+in that state, when a newer transition superseded this one, or when a change of `open` ended it. Setting the `open`
+property instead opens or closes the dialog immediately, without animation and without emitting the close events.
 
 #### Invoker commands
 
@@ -250,6 +252,10 @@ The title, the message, the content and any custom actions come from the applica
 Each resolves with `true` when the transition completed, and with `false` when the dialog was already in that state
 or the transition was superseded by a newer one.
 
+A change of `open` against a running transition ends it, and the dialog keeps the new state: `open = false` during
+`show()`, or `open = false` and then `open = true` during `hide()`, because `open` stays `true` during the exit. The
+method, and `toggle()`, then resolve `false`, and a close by the user emits `igcClosing` but not `igcClosed`.
+
 ### Events
 
 | Name       | Cancellable | Description                                                                     |
@@ -270,14 +276,15 @@ or the transition was superseded by a newer one.
 
 | Part        | Description                                                |
 | ----------- | ---------------------------------------------------------- |
-| `base`      | The native `dialog` element.                               |
+| `base`      | The native `dialog` element. Style the backdrop with `::part(base)::backdrop`. |
 | `titled`    | Added to the base part when the dialog has a title.        |
 | `footed`    | Added to the base part when the footer has slotted content or a default action. |
 | `title`     | The header element wrapping the title slot.                |
 | `content`   | The section element wrapping the message and default slots. |
 | `footer`    | The footer element wrapping the footer slot.               |
-| `backdrop`  | The decorative backdrop overlay element.                   |
-| `animating` | Applied to the backdrop while an animation is running.     |
+
+The backdrop is the native `::backdrop` of the `base` part. It is in the top layer, so it covers the full page, also
+when an ancestor has a `transform`, a `filter` or a stacking context.
 
 ## Test scenarios
 
@@ -330,16 +337,29 @@ The suite lives in [`dialog.spec.ts`](./dialog.spec.ts) and runs in a real brows
 
 16. The default action renders in English, in the strings of `locale`, and from `resourceStrings`.
 
+### Backdrop
+
+17. The native backdrop has the theme color. It fades out while the dialog is still modal, shows again when a reopen
+    interrupts the exit, fades out when a hide follows an interrupted exit, and does not fade with reduced motion.
+18. A change of `open` against a running transition ends it: `open = false` and then `open = true` during the exit,
+    with an update after each or in one task, keeps the dialog modal with its backdrop, also with reduced motion;
+    `open = false` during the entrance lets the next `show()` open the dialog. A `hide()` right after, also in the
+    same task, closes the dialog, and the ended exit does not change the new one.
+
 ### Not covered by the suite
 
 Focus trapping and the two-step <kbd>Escape</kbd> behavior - where an open inner dropdown consumes the first press -
 are verified manually rather than by the suite.
+
+The suite does not check painting, so the full-page cover of the backdrop is not tested.
 
 ## Assumptions and limitations
 
 - The dialog is always modal; a non-modal presentation is not supported.
 - Setting `open` skips the animations and the close events by design; the methods are the animated path.
 - The backdrop is decorative; its click behavior is opt-in through `closeOnOutsideClick`.
+- The backdrop fades through its `opacity`. An `opacity` on `::part(base)::backdrop` replaces the fade, so set its
+  color instead.
 
 ## Accessibility
 
