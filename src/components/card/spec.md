@@ -46,6 +46,7 @@ This directory hosts five public components: [`igc-card`](#igc-card), [`igc-card
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-10-21 | API descriptions aligned with the JSDoc. |
+|       3 | 2026-10-29 | The header text stays next to the thumbnail. |
 
 ## Overview
 
@@ -97,7 +98,8 @@ As a developer, I expect to be able to:
 
 The card renders as a rectangular surface, outlined by default or raised with a shadow when elevated. Inside it, the
 areas stack in the order they appear in the markup: typically a header with a thumbnail, title and subtitle, a media
-area with an image or a video, the text content, and an action row.
+area with an image or a video, the text content, and an action row. In the header, the thumbnail and the text are
+vertically centered, and the text takes the width next to the thumbnail.
 
 ### Developer experience
 
@@ -243,30 +245,32 @@ The suite lives in [`card.spec.ts`](./card.spec.ts) and runs in a real browser t
 
 3. The thumbnail, title and subtitle slots render in their containers, and the parts are applied.
 4. Additional default slot content renders under the title and the subtitle.
+5. The thumbnail and the text center against each other, and wide text wraps next to the thumbnail.
 
 ### Card media
 
-5. Projected media content is rendered.
+6. Projected media content is rendered.
 
 ### Card content
 
-6. Projected text content is rendered.
+7. Projected text content is rendered.
 
 ### Card actions
 
-7. Content projected into the `start`, default and `end` slots is placed accordingly.
-8. `orientation` lays the actions out horizontally and vertically.
+8. Content projected into the `start`, default and `end` slots is placed accordingly.
+9. `orientation` lays the actions out horizontally and vertically.
 
 ### Integration
 
-9. A full composition of header, media, content and actions renders in the authored order.
-10. The composed card passes the accessibility audit.
+10. A full composition of header, media, content and actions renders in the authored order.
+11. The composed card passes the accessibility audit.
 
 ## Assumptions and limitations
 
 - The card is presentational: it is not focusable, not selectable, and emits no events.
 - Making the whole card activate a link or an action is the responsibility of the application.
 - The areas render in DOM order; the card does not reorder them.
+- The title and the subtitle clip a word that is wider than the space next to the thumbnail.
 
 ## Accessibility
 

@@ -131,6 +131,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A calendar without `activeDate` now gets the active date from its value before the first render, so it renders once. Before, it rendered a second time, and Lit in development mode warned that an update was scheduled after an update completed. [#2423](https://github.com/IgniteUI/igniteui-webcomponents/pull/2423)
 - #### Card
   - In the dark Bootstrap theme, the last card content now has its bottom padding. Before, the dark variant did not apply the Bootstrap layout styles of the card. [#2461](https://github.com/IgniteUI/igniteui-webcomponents/pull/2461)
+  - Header text that does not fit on one line now wraps next to the thumbnail. Before, the text moved to a line under the thumbnail. The text area also takes the full width next to the thumbnail, so block content in the default slot, such as a progress bar, fills it.
 - #### Carousel
   - The styles no longer set the icon color variables of the navigation buttons to uncompiled Sass text. The variables now get the arrow color tokens of the theme, so an icon in the `previous-button` or `next-button` slot uses these tokens directly, not only through inheritance.
 - #### Chat
