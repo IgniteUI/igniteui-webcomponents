@@ -4,8 +4,9 @@
 
 // `header-position` puts the headers in a row above the panels, or in a column before
 // (`start`) or after (`end`) them.
-$column: ":host([header-position='start']), :host([header-position='end'])";
-$row: ":not([header-position='start'], [header-position='end'])";
+$columns: "[header-position='start'], [header-position='end']";
+$column: ":is(#{$columns})";
+$row: ":not(#{$columns})";
 
 :host {
     --scroll-btn-size: #{rem(48px)};
@@ -98,42 +99,29 @@ $row: ":not([header-position='start'], [header-position='end'])";
     grid-area: var(--_ig-tab-header-area);
 }
 
-:host([alignment='start']),
-:host([alignment='center']) {
-    [part~='inner']:not([part~='scrollable'])::after {
-        @extend %filler;
-    }
-}
+// `alignment` puts `1fr` filler tracks before or after the tab tracks: columns in a
+// row, rows in a column.
+@each $alignment, $before, $after in (start null 1fr, center 1fr 1fr, end 1fr null) {
+    :host([alignment='#{$alignment}']) [part~='inner']:not([part~='scrollable']) {
+        @if $before {
+            &::before {
+                @extend %filler;
+            }
+        }
 
-:host([alignment='center']),
-:host([alignment='end']) {
-    [part~='inner']:not([part~='scrollable'])::before {
-        @extend %filler;
+        @if $after {
+            &::after {
+                @extend %filler;
+            }
+        }
     }
-}
 
-:host([alignment='start']#{$row}) {
-    [part~='inner']:not([part~='scrollable']) {
-        grid-template-columns:
-            repeat(var(--_tabs-count), minmax(max-content, auto))
-            1fr;
+    :host([alignment='#{$alignment}']#{$row}) [part~='inner']:not([part~='scrollable']) {
+        grid-template-columns: $before repeat(var(--_tabs-count), minmax(max-content, auto)) $after;
     }
-}
 
-:host([alignment='center']#{$row}) {
-    [part~='inner']:not([part~='scrollable']) {
-        grid-template-columns:
-            1fr repeat(var(--_tabs-count), minmax(max-content, auto))
-            1fr;
-    }
-}
-
-:host([alignment='end']#{$row}) {
-    [part~='inner']:not([part~='scrollable']) {
-        grid-template-columns: 1fr repeat(
-                var(--_tabs-count),
-                minmax(max-content, auto)
-            );
+    :host([alignment='#{$alignment}']#{$column}) [part~='inner']:not([part~='scrollable']) {
+        grid-template-rows: $before repeat(var(--_tabs-count), auto) $after;
     }
 }
 
@@ -157,6 +145,11 @@ $row: ":not([header-position='start'], [header-position='end'])";
     }
 }
 
+// An `fr` row has an `auto` minimum, so `justify` clips no header in a column.
+:host([alignment='justify']#{$column}) [part~='inner']:not([part~='scrollable']) {
+    grid-template-rows: repeat(var(--_tabs-count), 1fr);
+}
+
 // Behind the tab headers, so a translucent `item-background` composites over
 // `header-background`. Out of flow, so it does not move or size the headers. Out of
 // flow, an `auto` end line is the edge of the grid, so the strip spans one track.
@@ -178,16 +171,16 @@ $row: ":not([header-position='start'], [header-position='end'])";
     touch-action: none;
 }
 
-// The arrows of the scroll buttons follow the writing direction of the tabs.
-:host(:dir(rtl)) igc-icon-button {
+// The arrows of the scroll buttons follow the writing direction of a row.
+:host(:dir(rtl)#{$row}) igc-icon-button {
     transform: scaleX(-1);
 }
 
-[part~='start-scroll-button'] {
+:host(#{$row}) [part~='start-scroll-button'] {
     inset-inline-start: 0;
 }
 
-[part~='end-scroll-button'] {
+:host(#{$row}) [part~='end-scroll-button'] {
     inset-inline-end: 0;
 }
 
@@ -229,8 +222,8 @@ igc-icon-button::part(base) {
 
 // A column. Only the scroll buttons and the keyboard scroll it, so the wheel over a
 // panel scrolls the page and not the headers.
-#{$column} {
-    --_ig-tab-header-area: auto / 1;
+:host(#{$column}) {
+    --_ig-tab-header-area: auto / 1 / auto / span 1;
     --_ig-tab-panel-area: 1 / 3 / -1;
     --_ig-tab-panel-inset-block: 0 auto;
     --_ig-tab-panel-inset-inline: auto;
@@ -257,9 +250,9 @@ igc-icon-button::part(base) {
             var(--scroll-btn-size);
     }
 
+    // With explicit spans, as in a row.
     [part~='header'] {
-        grid-row: auto;
-        grid-column: 1 / span 1;
+        grid-area: var(--_ig-tab-header-area);
     }
 
     [part~='start-scroll-button'],
@@ -269,22 +262,13 @@ igc-icon-button::part(base) {
         width: 100%;
     }
 
-    [part~='start-scroll-button'] {
-        inset-inline-start: auto;
-    }
-
     [part~='end-scroll-button'] {
         top: auto;
-        inset-inline-end: auto;
         inset-block-end: 0;
     }
 
     // The arrows point up and down, also in a right-to-left column. Only the icon
     // turns, so the button keeps its box.
-    igc-icon-button {
-        transform: none;
-    }
-
     igc-icon-button::part(icon) {
         transform: rotate(90deg);
     }
@@ -314,37 +298,10 @@ igc-icon-button::part(base) {
 }
 
 :host([header-position='end']) {
-    --_ig-tab-header-area: auto / 3;
+    --_ig-tab-header-area: auto / 3 / auto / span 1;
     --_ig-tab-panel-area: 1 / 1 / -1;
 
     [part~='inner'] {
         grid-template-columns: minmax(0, 1fr) auto max-content;
-    }
-
-    [part~='header'] {
-        grid-column: 3 / span 1;
-    }
-}
-
-// `alignment` along a column. An `fr` row has an `auto` minimum, so `justify` clips
-// no header.
-:host([header-position='start'][alignment='center']),
-:host([header-position='end'][alignment='center']) {
-    [part~='inner']:not([part~='scrollable']) {
-        grid-template-rows: 1fr repeat(var(--_tabs-count), auto) 1fr;
-    }
-}
-
-:host([header-position='start'][alignment='end']),
-:host([header-position='end'][alignment='end']) {
-    [part~='inner']:not([part~='scrollable']) {
-        grid-template-rows: 1fr repeat(var(--_tabs-count), auto);
-    }
-}
-
-:host([header-position='start'][alignment='justify']),
-:host([header-position='end'][alignment='justify']) {
-    [part~='inner']:not([part~='scrollable']) {
-        grid-template-rows: repeat(var(--_tabs-count), 1fr);
     }
 }

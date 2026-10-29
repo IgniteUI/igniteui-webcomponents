@@ -1,19 +1,7 @@
 @use 'styles/utilities' as *;
-@use '../../light/themes' as *;
-
-$theme: $material;
 
 :host {
     --header-min-height: #{rem(48px)};
-}
-
-[part='selected-indicator'] {
-    --_indicator-size: #{rem(2px)};
-    --_indicator-overlap: #{rem(2px)};
-
-    span {
-        background: var-get($theme, 'indicator-color');
-    }
 }
 
 igc-icon-button:hover::part(icon) {

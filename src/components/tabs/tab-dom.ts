@@ -87,7 +87,10 @@ export class TabsHelpers {
     const container = this._container;
     const column = isColumn(this._host);
     const width = container && getRect(container).width;
-    const height = this._getColumnHeight(container);
+    // As tall as a column with a definite height, else 0, so that the panels can
+    // grow a column with an auto height.
+    const probe = column && container?.querySelector('[data-height-probe]');
+    const height = probe ? getRect(probe).height : 0;
     const next = {
       '--_tabs-count': String(tabs.length),
       '--_ig-tabs-width': width === undefined || column ? '' : `${width}px`,
@@ -116,15 +119,6 @@ export class TabsHelpers {
         ? height > 0 && tabsSize > height + EDGE_TOLERANCE
         : tabsSize > width + EDGE_TOLERANCE
     );
-  }
-
-  /**
-   * The definite height of a column of headers, else 0. The height probe is 0 when
-   * the height of the tabs is auto, so that the panels can grow the tabs.
-   */
-  private _getColumnHeight(container?: HTMLElement): number {
-    const probe = container?.querySelector('[data-height-probe]');
-    return probe && isColumn(this._host) ? getRect(probe).height : 0;
   }
 
   public checkAndUpdateDirection(): boolean {
@@ -287,11 +281,6 @@ export class TabsHelpers {
     this._host.requestUpdate();
   }
 
-  /** Scrolls the strip to its start on both axes, at once. */
-  public resetScroll(): void {
-    this._container?.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-  }
-
   /** Moves the indicator to the header of `active`. Without `animate`, it moves at once. */
   public async setIndicator(
     active?: IgcTabComponent,
@@ -313,26 +302,20 @@ export class TabsHelpers {
       return;
     }
 
-    if (isColumn(this._host)) {
-      setStyles(indicator, {
-        visibility: '',
-        width: '',
-        height: `${header.offsetHeight}px`,
-        transform: `translateY(${header.offsetTop - container.offsetTop}px)`,
-      });
-    } else {
-      const width = header.offsetWidth;
-      const offset = isLTR(this._host)
+    const column = isColumn(this._host);
+    const size = column ? header.offsetHeight : header.offsetWidth;
+    const offset = column
+      ? header.offsetTop - container.offsetTop
+      : isLTR(this._host)
         ? header.offsetLeft - container.offsetLeft
-        : header.offsetLeft + width - container.offsetWidth;
+        : header.offsetLeft + size - container.offsetWidth;
 
-      setStyles(indicator, {
-        visibility: '',
-        width: `${width}px`,
-        height: '',
-        transform: `translateX(${offset}px)`,
-      });
-    }
+    setStyles(indicator, {
+      visibility: '',
+      width: column ? '' : `${size}px`,
+      height: column ? `${size}px` : '',
+      transform: `translate${column ? 'Y' : 'X'}(${offset}px)`,
+    });
 
     if (!animate) {
       for (const animation of indicator.getAnimations()) {
@@ -346,26 +329,11 @@ export class TabsHelpers {
  * The client rectangle in the CSS pixels of the element. An ancestor `zoom` scales
  * the client rectangle, but not the scroll offsets and the computed styles.
  */
-function getRect(element: Element): {
-  left: number;
-  right: number;
-  top: number;
-  bottom: number;
-  width: number;
-  height: number;
-} {
+function getRect(element: Element): DOMRect {
   const zoom = element.currentCSSZoom || 1;
-  const { left, right, top, bottom, width, height } =
-    element.getBoundingClientRect();
+  const { x, y, width, height } = element.getBoundingClientRect();
 
-  return {
-    left: left / zoom,
-    right: right / zoom,
-    top: top / zoom,
-    bottom: bottom / zoom,
-    width: width / zoom,
-    height: height / zoom,
-  };
+  return new DOMRect(x / zoom, y / zoom, width / zoom, height / zoom);
 }
 
 /** Whether the headers form a column before or after the panels. */

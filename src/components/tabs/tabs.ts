@@ -273,20 +273,21 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
 
   private _handleResize(entries: ResizeObserverEntry[]): void {
     const container = this._containerRef.value;
+    const column = isColumn(this);
     let resized = false;
     let replaced = false;
-    let heightChanged = false;
 
     for (const { target, borderBoxSize } of entries) {
+      const [{ inlineSize, blockSize }] = borderBoxSize;
+
       if (target === container) {
-        // The panels also size the container, so only its width counts.
-        const [{ inlineSize }] = borderBoxSize;
-        resized ||= inlineSize !== this._containerWidth;
+        // The panels also size the container, so only its width counts, and only a
+        // row measures it.
+        resized ||= inlineSize !== this._containerWidth && !column;
         this._containerWidth = inlineSize;
       } else if (target.matches('[data-height-probe]')) {
         // Only a column limits the panels to the height of the tabs.
-        const [{ blockSize }] = borderBoxSize;
-        heightChanged ||= blockSize !== this._definiteHeight && isColumn(this);
+        resized ||= blockSize !== this._definiteHeight && column;
         this._definiteHeight = blockSize;
       } else {
         resized = true;
@@ -299,13 +300,13 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
       this._observeHeaders();
     }
 
-    if (!(resized || heightChanged)) {
+    if (!resized) {
       return;
     }
 
     // In a column, the height limit of the panels and the scroll buttons size the
     // container, which the observer reports as a loop when it happens in this frame.
-    if (isColumn(this)) {
+    if (column) {
       cancelAnimationFrame(this._layoutFrame);
       this._layoutFrame = requestAnimationFrame(
         () => this.isConnected && this._refreshLayout()
@@ -399,7 +400,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
 
     const focused = this._tabs.find((tab) => tab.matches(':focus-within'));
 
-    this._domHelpers.resetScroll();
+    this._containerRef.value?.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant',
+    });
     await this._domHelpers.scrollTabIntoView(focused ?? this._activeTab);
     this._domHelpers.setIndicator(this._activeTab, false);
   }

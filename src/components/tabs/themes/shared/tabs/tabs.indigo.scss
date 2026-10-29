@@ -12,10 +12,10 @@ $theme: $indigo;
 // The span lies outside the part, over the side of the headers that faces the panels.
 [part='selected-indicator'] {
     --_indicator-size: #{rem(1px)};
+    --_indicator-overlap: 0;
     --_indicator-span-size: #{rem(3px)};
 
     span {
-        background: var-get($theme, 'indicator-color');
         inset-block-end: 100%;
     }
 }
