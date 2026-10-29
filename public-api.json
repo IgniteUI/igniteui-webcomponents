@@ -224,6 +224,7 @@
     "StyleVariant",
     "TabsActivation",
     "TabsAlignment",
+    "TabsHeaderPosition",
     "TextareaResize",
     "Theme",
     "ThemeVariant",
@@ -3694,11 +3695,13 @@
       "class": "IgcTabsComponent",
       "attributes": {
         "activation": "TabsActivation ('auto' | 'manual')",
-        "alignment": "TabsAlignment ('center' | 'end' | 'justify' | 'start')"
+        "alignment": "TabsAlignment ('center' | 'end' | 'justify' | 'start')",
+        "header-position": "TabsHeaderPosition ('end' | 'start' | 'top')"
       },
       "properties": {
         "activation": "TabsActivation ('auto' | 'manual')",
         "alignment": "TabsAlignment ('center' | 'end' | 'justify' | 'start')",
+        "headerPosition": "TabsHeaderPosition ('end' | 'start' | 'top')",
         "selected": "readonly string",
         "selectedTab": "readonly IgcTabComponent | null",
         "static tagName": "readonly string",

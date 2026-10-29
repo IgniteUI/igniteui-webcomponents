@@ -15,6 +15,13 @@ import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import {
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+  isKey,
+} from '#internals/controllers/keys.js';
+import {
   createMutationController,
   type MutationControllerParams,
 } from '#internals/controllers/mutation-observer.js';
@@ -30,7 +37,11 @@ import { all } from '#themes/tabs/themes/tabs-themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
-import type { TabsActivation, TabsAlignment } from '../types.js';
+import type {
+  TabsActivation,
+  TabsAlignment,
+  TabsHeaderPosition,
+} from '../types.js';
 import {
   getTabHeader,
   opensElsewhere,
@@ -126,6 +137,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
 
   private _activeTab?: IgcTabComponent;
 
+  /** Whether the headers form a column before or after the panels. */
+  private get _isColumn(): boolean {
+    return this.headerPosition === 'start' || this.headerPosition === 'end';
+  }
+
   //#endregion
 
   //#region Public properties
@@ -138,6 +154,20 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
    */
   @property({ reflect: true })
   public alignment: TabsAlignment = 'start';
+
+  /**
+   * The side of the panels on which the tab headers are placed.
+   *
+   * With `top`, the headers form a row above the panels. With `start` and `end`, they
+   * form a column before or after the panels in the text direction, so `start` is on
+   * the right in a right-to-left layout. In a column, the Up and Down arrow keys move
+   * between the tabs.
+   *
+   * @attr header-position
+   * @default 'top'
+   */
+  @property({ attribute: 'header-position', reflect: true })
+  public headerPosition: TabsHeaderPosition = 'top';
 
   /**
    * The activation behavior of the tabs.
@@ -179,7 +209,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
     super();
 
     addInternalsController(this, {
-      initialARIA: { role: 'tablist', ariaOrientation: 'horizontal' },
+      initialARIA: { role: 'tablist' },
+      aria: () => ({
+        ariaOrientation: this._isColumn ? 'vertical' : 'horizontal',
+      }),
       reflectRole: true,
     });
 
@@ -192,6 +225,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
       current: () => this._tabs.find((tab) => tab.matches(':focus-within')),
       focusItem: this._keyboardActivateTab,
       activateItem: this._activateTab,
+      // `_skipKeyboard` leaves the arrow keys of the other axis to the browser.
+      vertical: true,
       missingCurrent: 'wrap',
     });
   }
@@ -447,10 +482,18 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
 
   /**
    * Only keys pressed on a tab header navigate, so a control slotted into a label
-   * keeps its keys. `node` is the target retargeted to the tab.
+   * keeps its keys. The arrow keys of the other axis stay with the browser, which
+   * can scroll the page with them. `node` is the target retargeted to the tab.
    */
   private _skipKeyboard(node: Element, event: KeyboardEvent): boolean {
     const tab = node as IgcTabComponent;
+    const otherAxis = this._isColumn
+      ? [arrowLeft, arrowRight]
+      : [arrowUp, arrowDown];
+
+    if (otherAxis.some((key) => isKey(event, key))) {
+      return true;
+    }
 
     return !(
       this._tabs.includes(tab) &&

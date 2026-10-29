@@ -8,9 +8,12 @@ import {
 } from '@open-wc/testing';
 import { range } from 'lit/directives/range.js';
 import { spy } from 'sinon';
+import { internalsOf } from '#internals/controllers/internals.js';
 import {
+  arrowDown,
   arrowLeft,
   arrowRight,
+  arrowUp,
   endKey,
   enterKey,
   homeKey,
@@ -2015,6 +2018,194 @@ describe('Tabs component', () => {
         'The layout did not follow the resize'
       );
       expect(reasons).to.be.empty;
+    });
+  });
+
+  describe('Header position', () => {
+    /** Presses `key` on the header of `tab`, and returns whether the tabs canceled it. */
+    function press(tab: IgcTabComponent, key: string): boolean {
+      const header = getTabDOM(tab).header;
+      const event = new KeyboardEvent('keydown', {
+        key,
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      });
+
+      header.dispatchEvent(event);
+      header.dispatchEvent(
+        new KeyboardEvent('keyup', { key, bubbles: true, composed: true })
+      );
+      return event.defaultPrevented;
+    }
+
+    function verifyFocus(tab: IgcTabComponent) {
+      expect(getTabDOM(tab).header.matches(':focus')).to.be.true;
+    }
+
+    beforeEach(async () => {
+      element = await fixture<IgcTabsComponent>(html`
+        <igc-tabs header-position="start">
+          <igc-tab label="Inbox">Inbox</igc-tab>
+          <igc-tab label="Sent" disabled>Sent</igc-tab>
+          <igc-tab label="Drafts">Drafts</igc-tab>
+          <igc-tab label="Spam" hidden>Spam</igc-tab>
+          <igc-tab label="Trash">Trash</igc-tab>
+        </igc-tabs>
+      `);
+    });
+
+    it('places the headers at the top by default', async () => {
+      const tabs = await fixture<IgcTabsComponent>(
+        html`<igc-tabs><igc-tab label="One">One</igc-tab></igc-tabs>`
+      );
+
+      expect(tabs.headerPosition).to.equal('top');
+      expect(tabs.getAttribute('header-position')).to.equal('top');
+      expect(internalsOf(tabs)?.getARIA('ariaOrientation')).to.equal(
+        'horizontal'
+      );
+    });
+
+    it('reflects the position and sets the orientation of the tab list', async () => {
+      const orientation = () =>
+        internalsOf(element)?.getARIA('ariaOrientation');
+
+      expect(element.headerPosition).to.equal('start');
+      expect(orientation()).to.equal('vertical');
+
+      element.headerPosition = 'end';
+      await elementUpdated(element);
+
+      expect(element.getAttribute('header-position')).to.equal('end');
+      expect(orientation()).to.equal('vertical');
+
+      element.headerPosition = 'top';
+      await elementUpdated(element);
+
+      expect(element.getAttribute('header-position')).to.equal('top');
+      expect(orientation()).to.equal('horizontal');
+    });
+
+    it('moves between the enabled tabs that render with Up and Down, and wraps', async () => {
+      const [inbox, , drafts, , trash] = element.tabs;
+      const change = spy();
+      element.addEventListener('igcChange', change);
+
+      getTabDOM(inbox).header.focus();
+
+      expect(press(inbox, arrowDown)).to.be.true;
+      await elementUpdated(element);
+      verifyFocus(drafts);
+      verifySelection(element, drafts);
+
+      press(drafts, arrowDown);
+      await elementUpdated(element);
+      verifyFocus(trash);
+      verifySelection(element, trash);
+
+      press(trash, arrowDown);
+      await elementUpdated(element);
+      verifyFocus(inbox);
+      verifySelection(element, inbox);
+
+      expect(press(inbox, arrowUp)).to.be.true;
+      await elementUpdated(element);
+      verifyFocus(trash);
+      verifySelection(element, trash);
+
+      expect(change.callCount).to.equal(4);
+    });
+
+    it('only moves the focus with Up and Down when activation is manual', async () => {
+      const [inbox, , drafts] = element.tabs;
+
+      element.activation = 'manual';
+      await elementUpdated(element);
+
+      getTabDOM(inbox).header.focus();
+      press(inbox, arrowDown);
+      await elementUpdated(element);
+
+      verifyFocus(drafts);
+      verifySelection(element, inbox);
+
+      press(drafts, enterKey);
+      await elementUpdated(element);
+
+      verifySelection(element, drafts);
+    });
+
+    it('does not mirror Up and Down in a right-to-left column', async () => {
+      const [inbox, , drafts] = element.tabs;
+
+      element.dir = 'rtl';
+      await elementUpdated(element);
+
+      getTabDOM(inbox).header.focus();
+      press(inbox, arrowDown);
+      await elementUpdated(element);
+
+      verifyFocus(drafts);
+      verifySelection(element, drafts);
+    });
+
+    it('leaves Left and Right to the browser in a column', async () => {
+      const [inbox] = element.tabs;
+
+      getTabDOM(inbox).header.focus();
+
+      expect(press(inbox, arrowRight)).to.be.false;
+      expect(press(inbox, arrowLeft)).to.be.false;
+      await elementUpdated(element);
+
+      verifyFocus(inbox);
+      verifySelection(element, inbox);
+    });
+
+    it('leaves Up and Down to the browser in a row', async () => {
+      const [inbox, , drafts] = element.tabs;
+
+      element.headerPosition = 'top';
+      await elementUpdated(element);
+
+      getTabDOM(inbox).header.focus();
+
+      expect(press(inbox, arrowDown)).to.be.false;
+      expect(press(inbox, arrowUp)).to.be.false;
+      await elementUpdated(element);
+
+      verifyFocus(inbox);
+      verifySelection(element, inbox);
+
+      expect(press(inbox, arrowRight)).to.be.true;
+      await elementUpdated(element);
+
+      verifyFocus(drafts);
+      verifySelection(element, drafts);
+    });
+
+    it('keeps the selection, the focus and the headers when the position changes', async () => {
+      const drafts = element.tabs[2];
+      const headers = element.tabs.map((tab) => getTabDOM(tab).header);
+      const change = spy();
+
+      simulateClick(getTabDOM(drafts).header);
+      await elementUpdated(element);
+      element.addEventListener('igcChange', change);
+
+      for (const position of ['end', 'top', 'start'] as const) {
+        element.headerPosition = position;
+        await elementUpdated(element);
+
+        verifySelection(element, drafts);
+        verifyFocus(drafts);
+        expect(element.tabs.map((tab) => getTabDOM(tab).header)).to.eql(
+          headers
+        );
+      }
+
+      expect(change.called).to.be.false;
     });
   });
 
