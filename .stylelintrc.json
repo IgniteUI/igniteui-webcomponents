@@ -69,6 +69,6 @@
     "scss/dollar-variable-colon-newline-after": null,
     "scss/dollar-variable-colon-space-after": "always",
     "scss/selector-no-redundant-nesting-selector": true,
-    "scss/dollar-variable-no-missing-interpolation": null
+    "scss/dollar-variable-no-missing-interpolation": true
   }
 }
