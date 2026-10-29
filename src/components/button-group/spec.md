@@ -37,6 +37,7 @@
     - [Arrow navigation](#arrow-navigation)
     - [Toggle button tests](#toggle-button-tests)
     - [Host ARIA](#host-aria)
+    - [Hidden ancestor](#hidden-ancestor)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -53,6 +54,7 @@
 |       3 | 2026-10-02 | The toggle button forwards the host `aria-labelledby` and `aria-describedby` |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                     |
 |       5 | 2026-10-23 | The group makes a stacking context, so the z-index of its buttons does not compete with the layers of the page |
+|       6 | 2026-10-29 | Transition only the properties that change, so the toggle buttons hide at the same time as a hidden ancestor |
 
 ## Overview
 
@@ -323,6 +325,11 @@ Emitted by `igc-button-group`, for user interaction only.
 ### Host ARIA
 
 35. The toggle button forwards the host `aria-labelledby` and `aria-describedby`.
+
+### Hidden ancestor
+
+36. The toggle buttons hide at the same time as a hidden ancestor in each theme, at rest and after a focus or a hover:
+    no element transitions `visibility` or sets it to `visible`.
 
 ### Not covered by the suite
 

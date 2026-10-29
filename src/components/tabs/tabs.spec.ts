@@ -18,6 +18,7 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { isUnderPageLayer } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -2016,6 +2017,13 @@ describe('Tabs component', () => {
       expect(reasons).to.be.empty;
     });
   });
+
+  runHiddenAncestorTests(html`
+    <igc-tabs>
+      <igc-tab label="One">One</igc-tab>
+      <igc-tab label="Two">Two</igc-tab>
+    </igc-tabs>
+  `);
 });
 
 function getTabsDOM(tabs: IgcTabsComponent) {

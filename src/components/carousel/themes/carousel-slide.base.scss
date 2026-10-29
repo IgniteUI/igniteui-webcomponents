@@ -3,7 +3,6 @@
 :host {
     grid-area: 1 / 1;
     z-index: -1;
-    visibility: hidden;
 
     // An image fills the box of the carousel and does not size it.
     ::slotted(img) {
@@ -19,12 +18,14 @@
     }
 }
 
+:host(:not([active], [previous])) {
+    visibility: hidden;
+}
+
 :host([active]) {
     z-index: 2;
-    visibility: visible;
 }
 
 :host([previous]) {
     z-index: 1;
-    visibility: visible;
 }

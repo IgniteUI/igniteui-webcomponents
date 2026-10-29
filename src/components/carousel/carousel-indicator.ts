@@ -79,8 +79,8 @@ export default class IgcCarouselIndicatorComponent extends LitElement {
   }
 
   protected override render() {
-    const forward = this.active ? 'visible' : 'hidden';
-    const backward = this.active ? 'hidden' : 'visible';
+    const forward = this.active ? undefined : 'hidden';
+    const backward = this.active ? 'hidden' : undefined;
 
     return html`
       <div

@@ -64,7 +64,7 @@
     height: rem(12px);
     text-indent: rem(-9999px);
     border-radius: border-radius(50%);
-    transition: all .05s ease-out;
+    transition: border-color .05s ease-out;
     padding: 0;
     background: initial;
     cursor: pointer;
@@ -80,7 +80,6 @@
 [part~='navigation'] {
     position: absolute;
     z-index: 3;
-    transition: all .15s ease-in;
 
     igc-icon {
         --ig-size: 1;

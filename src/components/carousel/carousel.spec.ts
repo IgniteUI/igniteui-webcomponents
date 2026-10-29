@@ -26,6 +26,7 @@ import {
   getAnimationsFor,
   isUnderPageLayer,
 } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -1882,4 +1883,11 @@ describe('Carousel', () => {
       el.remove();
     });
   });
+
+  runHiddenAncestorTests(html`
+    <igc-carousel>
+      <igc-carousel-slide>One</igc-carousel-slide>
+      <igc-carousel-slide>Two</igc-carousel-slide>
+    </igc-carousel>
+  `);
 });

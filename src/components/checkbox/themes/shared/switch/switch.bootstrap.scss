@@ -32,7 +32,6 @@ $theme: $bootstrap;
     height: rem(16px);
     border: var(--border-size) solid var-get($theme, 'border-color');
     background: var-get($theme, 'track-off-color');
-    transition: all .2s ease-in-out;
 }
 
 [part~='control'][part~='checked'] {

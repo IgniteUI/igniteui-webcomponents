@@ -10,6 +10,7 @@ import {
   isFocused,
   isUnderPageLayer,
 } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
@@ -677,4 +678,11 @@ describe('Radio Component', () => {
       (host as IgcRadioComponent).renderRoot.querySelector('input')!,
     checkable: true,
   });
+
+  runHiddenAncestorTests(html`
+    <igc-radio-group>
+      <igc-radio value="one">One</igc-radio>
+      <igc-radio value="two" checked>Two</igc-radio>
+    </igc-radio-group>
+  `);
 });

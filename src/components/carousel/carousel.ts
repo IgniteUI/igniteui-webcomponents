@@ -3,7 +3,6 @@ import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, queryAll, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-import { styleMap } from 'lit/directives/style-map.js';
 import { carouselContext } from '#internals/context.js';
 import { addContextProvider } from '#internals/controllers/context-provider.js';
 import {
@@ -849,25 +848,18 @@ export default class IgcCarouselComponent extends I18nMixin(
   }
 
   private _renderIndicators() {
-    return this._slides.map((slide, i) => {
-      const forward = slide.active ? 'visible' : 'hidden';
-      const backward = slide.active ? 'hidden' : 'visible';
-
-      return html`
+    return this._slides.map(
+      (slide, i) => html`
         <igc-carousel-indicator
           exportparts="indicator, active, inactive"
           .active=${slide.active}
           .index=${i}
         >
-          <div part="dot" style=${styleMap({ visibility: backward })}></div>
-          <div
-            part="dot active"
-            slot="active"
-            style=${styleMap({ visibility: forward })}
-          ></div>
+          <div part="dot"></div>
+          <div part="dot active" slot="active"></div>
         </igc-carousel-indicator>
-      `;
-    });
+      `
+    );
   }
 
   private _renderIndicatorContainer() {

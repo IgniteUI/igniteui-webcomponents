@@ -34,7 +34,10 @@ $slim-splitter: calc( 1 / $splitter-size);
     [part~='splitter-bar'] {
         @extend %hide-controls;
 
-        transition: all .25s .5s $in-out-quad;
+        transition:
+            background .25s .5s $in-out-quad,
+            box-shadow .25s .5s $in-out-quad,
+            transform .25s .5s $in-out-quad;
 
         &:focus-visible {
             @extend %show-controls;

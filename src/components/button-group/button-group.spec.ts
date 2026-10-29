@@ -14,6 +14,7 @@ import {
   isFocused,
   isUnderPageLayer,
 } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -1538,4 +1539,11 @@ describe('Button Group', () => {
       }`
     );
   }
+
+  runHiddenAncestorTests(html`
+    <igc-button-group>
+      <igc-toggle-button value="left">Left</igc-toggle-button>
+      <igc-toggle-button value="right" selected>Right</igc-toggle-button>
+    </igc-button-group>
+  `);
 });

@@ -32,6 +32,7 @@
     - [Form integration tests](#form-integration-tests)
     - [Icon button tests](#icon-button-tests)
     - [Host ARIA](#host-aria)
+    - [Hidden ancestor](#hidden-ancestor)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -51,6 +52,7 @@
 |       6 | 2026-10-19 | Forward the host `aria-pressed` to the native button, so a button can be a toggle         |
 |       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                                                 |
 |       8 | 2026-10-26 | Forward the host `aria-expanded`, `aria-haspopup` and `aria-controls`                    |
+|       9 | 2026-10-29 | Transition only the properties that change, so the button and a slotted icon hide at the same time as a hidden ancestor |
 
 ## Overview
 
@@ -320,6 +322,11 @@ button has no `name` and no `mirrored`. Slotted content takes the size of the ic
     removal and each set of `ariaControlsElements`, and pass the accessibility audit. A link and a disabled link
     keep them. An empty value and an `aria-controls` that references no element are not forwarded. The icon button
     forwards `aria-expanded` and `aria-haspopup` too.
+
+### Hidden ancestor
+
+24. The button and a slotted icon hide at the same time as a hidden ancestor in each theme, at rest and after a focus or
+    a hover: no element transitions `visibility` or sets it to `visible`.
 
 ### Not covered by the suite
 

@@ -23,7 +23,7 @@ $outlined-theme: $material-outlined;
 }
 
 [part~='base'] {
-    transition: all .1s ease-in-out;
+    transition-duration: .1s;
 }
 
 :host(:not([disabled])[variant='flat']) [part='base focused'],

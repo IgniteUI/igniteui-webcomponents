@@ -43,6 +43,7 @@
     - [Host ARIA](#host-aria)
     - [Host suggestion state](#host-suggestion-state)
     - [Auto sizing](#auto-sizing)
+    - [Hidden ancestor](#hidden-ancestor)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -63,6 +64,7 @@
 |       7 | 2026-10-21 | API descriptions aligned with the JSDoc.           |
 |       8 | 2026-10-23 | The textarea makes a stacking context, so the z-index of the textarea and the container does not compete with the layers of the page |
 |       9 | 2026-10-28 | Forward the host suggestion state                  |
+|      10 | 2026-10-29 | Transition only the color and the width of the bottom line in the Material theme, and only its color in the Indigo theme, so the line hides at the same time as a hidden ancestor |
 
 ## Overview
 
@@ -532,6 +534,11 @@ Each case runs with CSS field sizing and without it.
     from `auto`.
 45. Keeps the width of a shrink-to-fit layout while the content grows.
 46. Keeps a height from the resize handle until `resize` changes.
+
+### Hidden ancestor
+
+47. The textarea hides at the same time as a hidden ancestor in each theme, at rest and after a focus or a hover: no
+    element transitions `visibility` or sets it to `visible`.
 
 ### Not covered by the suite
 
