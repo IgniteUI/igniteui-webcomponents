@@ -8,13 +8,10 @@ $theme: $material;
 }
 
 [part='selected-indicator'] {
-    $indicator-height: rem(2px);
-
-    height: $indicator-height;
-    margin-block-start: calc(#{$indicator-height} * -1);
+    --_indicator-size: #{rem(2px)};
+    --_indicator-overlap: #{rem(2px)};
 
     span {
-        height: $indicator-height;
         background: var-get($theme, 'indicator-color');
     }
 }

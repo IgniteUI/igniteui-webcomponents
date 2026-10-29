@@ -58,10 +58,12 @@
 }
 
 // The tabs give the place of the panel. It sticks to the start of the scroll axis,
-// and in a column with a definite height it scrolls its own content.
+// and in a column with a definite height it scrolls its own content. In a column,
+// the area of the panel spans all the headers, so the panel starts at its top.
 [part~='tab-body'] {
     display: none;
     position: sticky;
+    align-self: start;
     inset-block: var(--_ig-tab-panel-inset-block);
     inset-inline: var(--_ig-tab-panel-inset-inline);
     width: 100%;

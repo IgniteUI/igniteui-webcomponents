@@ -9,16 +9,23 @@ $theme: $indigo;
     --nav-btn-border-color: #{var-get($theme, 'border-color')};
 }
 
+// The span lies outside the part, over the side of the headers that faces the panels.
 [part='selected-indicator'] {
-    $indicator-height: rem(1px);
-
-    height: $indicator-height;
+    --_indicator-size: #{rem(1px)};
+    --_indicator-span-size: #{rem(3px)};
 
     span {
         background: var-get($theme, 'indicator-color');
-        height: rem(3px);
         inset-block-end: 100%;
     }
+}
+
+:host([header-position='start']) [part='selected-indicator'] span {
+    inset-inline: auto 100%;
+}
+
+:host([header-position='end']) [part='selected-indicator'] span {
+    inset-inline: 100% auto;
 }
 
 [part='start-scroll-button'],
@@ -62,6 +69,14 @@ igc-icon-button[disabled]::part(base) {
     border-bottom: rem(1px) solid var(--nav-btn-border-color);
 }
 
+// A column has the line on the side of the panels.
+@each $side, $content in (start: end, end: start) {
+    :host([header-position='#{$side}']) igc-icon-button[disabled]::part(base) {
+        border-bottom: 0;
+        border-inline-#{$content}: rem(1px) solid var(--nav-btn-border-color);
+    }
+}
+
 igc-icon-button::part(icon) {
     --size: #{rem(16px)};
 
@@ -71,5 +86,11 @@ igc-icon-button::part(icon) {
 @media (forced-colors: active) {
     [part~='selected-indicator'] span {
         border-bottom: rem(3px) solid CanvasText;
+    }
+
+    :host([header-position='start']) [part~='selected-indicator'] span,
+    :host([header-position='end']) [part~='selected-indicator'] span {
+        border-bottom: 0;
+        border-inline-start: rem(3px) solid CanvasText;
     }
 }

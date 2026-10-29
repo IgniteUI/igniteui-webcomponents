@@ -158,11 +158,12 @@ $row: ":not([header-position='start'], [header-position='end'])";
 }
 
 // Behind the tab headers, so a translucent `item-background` composites over
-// `header-background`. Out of flow, so it does not move or size the headers.
+// `header-background`. Out of flow, so it does not move or size the headers. Out of
+// flow, an `auto` end line is the edge of the grid, so the strip spans one track.
 [part~='header'] {
     position: absolute;
     inset: 0;
-    grid-area: var(--_ig-tab-header-area);
+    grid-row: 1 / span 1;
 }
 
 [part~='start-scroll-button'],
@@ -198,15 +199,21 @@ igc-icon-button::part(base) {
     transition: none;
 }
 
+// The themes give `--_indicator-size`, the thickness of the part, and
+// `--_indicator-overlap`, how far it lies over the headers. `--_indicator-span-size`
+// is the thickness of the span, when it is not the thickness of the part.
 [part~='selected-indicator'] {
     position: relative;
     grid-row: 2;
     grid-column: 1 / -1;
+    height: var(--_indicator-size);
+    margin-block-start: calc(var(--_indicator-overlap) * -1);
 
     // The transform moves the span from the start of the strip to the selected tab.
     span {
         position: absolute;
         inset-inline-start: 0;
+        height: var(--_indicator-span-size, var(--_indicator-size));
         transition:
             transform 0.3s $tabs-animation-function,
             width 0.2s $tabs-animation-function;
@@ -250,6 +257,11 @@ igc-icon-button::part(base) {
             var(--scroll-btn-size);
     }
 
+    [part~='header'] {
+        grid-row: auto;
+        grid-column: 1 / span 1;
+    }
+
     [part~='start-scroll-button'],
     [part~='end-scroll-button'] {
         height: var(--scroll-btn-size);
@@ -282,13 +294,22 @@ igc-icon-button::part(base) {
         grid-row: 1 / -1;
         grid-column: 2;
         align-self: stretch;
+        width: var(--_indicator-size);
         height: auto;
         margin-block: 0;
 
         span {
             inset-block-start: 0;
+            width: var(--_indicator-span-size, var(--_indicator-size));
             transition-property: transform, height;
         }
+    }
+}
+
+// The indicator lies over the side of the headers that faces the panels.
+@each $side in (start, end) {
+    :host([header-position='#{$side}']) [part~='selected-indicator'] {
+        margin-inline-#{$side}: calc(var(--_indicator-overlap) * -1);
     }
 }
 
@@ -298,6 +319,10 @@ igc-icon-button::part(base) {
 
     [part~='inner'] {
         grid-template-columns: minmax(0, 1fr) auto max-content;
+    }
+
+    [part~='header'] {
+        grid-column: 3 / span 1;
     }
 }
 

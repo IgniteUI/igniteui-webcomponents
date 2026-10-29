@@ -257,6 +257,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
     }
 
     if (props.has('headerPosition') && this.hasUpdated) {
+      // Gives each tab the new position, without a change of selection.
+      this._setSelectedTab(this._activeTab, false);
       this._applyHeaderPosition();
     }
 
@@ -481,7 +483,12 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
     // Also without a change, to reset a stale `selected` and renumber the tabs.
     for (const [index, each] of tabs.entries()) {
       each.selected = each === tab;
-      each._setTabState(index + 1, tabs.length, each === tabStop);
+      each._setTabState(
+        index + 1,
+        tabs.length,
+        each === tabStop,
+        this.headerPosition
+      );
     }
 
     if (!changed) {

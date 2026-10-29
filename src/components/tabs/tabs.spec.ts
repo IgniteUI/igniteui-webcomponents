@@ -20,7 +20,10 @@ import {
   spaceBar,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { isUnderPageLayer } from '#internals/testing/helpers.spec.js';
+import {
+  isUnderPageLayer,
+  withDocumentSheets,
+} from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import {
   simulateClick,
@@ -29,6 +32,10 @@ import {
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import { preventDefault } from '#internals/utils/events.js';
 import { configureTheme } from '#theming/config.js';
+import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
+import { styles as fluent } from '../../styles/themes/light/fluent.css.js';
+import { styles as indigo } from '../../styles/themes/light/indigo.css.js';
+import { styles as material } from '../../styles/themes/light/material.css.js';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcTabComponent from './tab.js';
 import IgcTabsComponent from './tabs.js';
@@ -1262,6 +1269,19 @@ describe('Tabs component', () => {
       await indicatorFollows(first);
     });
 
+    it('paints the header strip behind the header row only', async () => {
+      const strip = element.renderRoot
+        .querySelector('[part~="header"]')!
+        .getBoundingClientRect();
+      const header = getTabDOM(element.tabs[0]).header.getBoundingClientRect();
+      const panel = getTabDOM(element.tabs[0]).body.getBoundingClientRect();
+
+      expect(strip.top).to.equal(header.top);
+      expect(strip.height).to.equal(header.height);
+      expect(strip.width).to.equal(element.getBoundingClientRect().width);
+      expect(panel.top).to.be.at.least(strip.bottom);
+    });
+
     it('paints its headers under an earlier page layer', () => {
       const { header } = getTabDOM(element.tabs[0]);
 
@@ -2273,6 +2293,27 @@ describe('Tabs component', () => {
         }
       }
 
+      it('paints the header strip behind the header column only', async () => {
+        for (const position of ['start', 'end'] as const) {
+          const tabs = await fixture<IgcTabsComponent>(html`
+            <igc-tabs header-position=${position}>
+              <igc-tab label="Inbox"><div style="height: 100px"></div></igc-tab>
+              <igc-tab label="Sent">Sent</igc-tab>
+            </igc-tabs>
+          `);
+          await settle();
+
+          const strip = tabs.renderRoot
+            .querySelector('[part~="header"]')!
+            .getBoundingClientRect();
+          const { host, headers } = rects(tabs);
+
+          expect(strip.left, position).to.equal(headers[0].left);
+          expect(strip.width, position).to.equal(headers[0].width);
+          expect(strip.height, position).to.equal(host.height);
+        }
+      });
+
       it('sizes the column from its widest header, within the width limit of a header', async () => {
         const tabs = await fixture<IgcTabsComponent>(html`
           <igc-tabs header-position="start">
@@ -2552,6 +2593,25 @@ describe('Tabs component', () => {
         expect(getComputedStyle(start!).transform).to.equal('none');
       });
 
+      it('keeps the panel at the top of the column while the headers scroll', async () => {
+        const { container } = getTabsDOM(element);
+        const panel = () =>
+          getTabDOM(element.tabs[0]).body.getBoundingClientRect();
+        const host = element.getBoundingClientRect();
+
+        expect(panel().top).to.equal(host.top);
+        expect(panel().height).to.equal(200);
+
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'instant',
+        });
+        await nextFrame();
+
+        expect(container.scrollTop).to.be.above(0);
+        expect(panel().top).to.equal(host.top);
+      });
+
       it('scrolls the column with the scroll buttons', async () => {
         const { container } = getTabsDOM(element);
         const { start, end } = scrollButtons(element);
@@ -2764,6 +2824,156 @@ describe('Tabs component', () => {
           configureTheme('bootstrap');
           await nextFrame();
         }
+      });
+    });
+
+    describe('Column themes', () => {
+      const sheets = { bootstrap, fluent, indigo, material };
+
+      after(() => configureTheme('bootstrap'));
+
+      /** The physical side of the headers that faces the panels. */
+      function panelSide(position: 'start' | 'end', dir: 'ltr' | 'rtl') {
+        return (position === 'start') === (dir === 'ltr') ? 'right' : 'left';
+      }
+
+      function opposite(side: 'right' | 'left') {
+        return side === 'right' ? 'left' : 'right';
+      }
+
+      function borderWidth(style: CSSStyleDeclaration, side: string): string {
+        return style.getPropertyValue(`border-${side}-width`);
+      }
+
+      async function column(
+        position: 'start' | 'end',
+        dir: 'ltr' | 'rtl'
+      ): Promise<IgcTabsComponent> {
+        const tabs = await fixture<IgcTabsComponent>(html`
+          <igc-tabs header-position=${position} dir=${dir}>
+            <igc-tab label="Inbox">Inbox</igc-tab>
+            <igc-tab label="Sent">Sent</igc-tab>
+          </igc-tabs>
+        `);
+        await elementUpdated(tabs);
+        await nextFrame();
+        await nextFrame();
+
+        for (const animation of tabs.shadowRoot!.getAnimations()) {
+          animation.finish();
+        }
+
+        return tabs;
+      }
+
+      for (const theme of ['material', 'fluent', 'indigo'] as const) {
+        it(`places the indicator on the side of the panels in the ${theme} theme`, () =>
+          withDocumentSheets([sheets[theme].styleSheet!], async () => {
+            configureTheme(theme);
+
+            for (const position of ['start', 'end'] as const) {
+              for (const dir of ['ltr', 'rtl'] as const) {
+                const tabs = await column(position, dir);
+                const header = getTabDOM(tabs.tabs[0]).header;
+                const { indicator } = getTabsDOM(tabs);
+                const box = header.getBoundingClientRect();
+                const span = indicator.getBoundingClientRect();
+                const side = panelSide(position, dir);
+                const context = `${position} ${dir}`;
+
+                expect(span.top, context).to.be.closeTo(box.top, 1);
+                expect(span.height, context).to.be.closeTo(box.height, 1);
+                expect(span.width, context).to.be.within(1, 4);
+                expect(span[side], context).to.be.closeTo(box[side], 1);
+              }
+            }
+          }));
+      }
+
+      it('draws the lines of the Bootstrap theme on the side of the panels', () =>
+        withDocumentSheets([bootstrap.styleSheet!], async () => {
+          configureTheme('bootstrap');
+
+          for (const position of ['start', 'end'] as const) {
+            for (const dir of ['ltr', 'rtl'] as const) {
+              const tabs = await column(position, dir);
+              const side = panelSide(position, dir);
+              const outer = opposite(side);
+              const strip = getComputedStyle(
+                tabs.renderRoot.querySelector('[part~="header"]')!
+              );
+              const [selected, other] = tabs.tabs.map((tab) =>
+                getComputedStyle(getTabDOM(tab).header, '::before')
+              );
+              const context = `${position} ${dir}`;
+
+              expect(borderWidth(strip, side), context).to.equal('1px');
+              expect(strip.boxShadow, context).to.equal('none');
+
+              // The selected tab is open on the side of the panels.
+              expect(borderWidth(selected, side), context).to.equal('0px');
+              for (const edge of ['top', 'bottom', outer]) {
+                expect(borderWidth(selected, edge), context).to.equal('1px');
+              }
+
+              expect(borderWidth(other, side), context).to.equal('1px');
+              for (const edge of ['top', 'bottom', outer]) {
+                expect(borderWidth(other, edge), context).to.equal('0px');
+              }
+            }
+          }
+        }));
+
+      it('draws the header lines of the Indigo theme on the side of the panels', () =>
+        withDocumentSheets([indigo.styleSheet!], async () => {
+          configureTheme('indigo');
+
+          for (const position of ['start', 'end'] as const) {
+            for (const dir of ['ltr', 'rtl'] as const) {
+              const tabs = await column(position, dir);
+              const side = panelSide(position, dir);
+              const context = `${position} ${dir}`;
+
+              for (const tab of tabs.tabs) {
+                const style = getComputedStyle(getTabDOM(tab).header);
+
+                expect(borderWidth(style, side), context).to.equal('1px');
+                expect(style.getPropertyValue(`border-${side}-style`)).to.equal(
+                  'solid'
+                );
+                expect(borderWidth(style, 'top'), context).to.equal('0px');
+                expect(borderWidth(style, 'bottom'), context).to.equal('0px');
+              }
+            }
+          }
+        }));
+
+      it('tells each tab the position, also a tab added later', async () => {
+        const states = () =>
+          element.tabs.map((tab) =>
+            ['header-start', 'header-end'].filter((state) =>
+              tab.matches(`:state(${state})`)
+            )
+          );
+
+        expect(states().flat()).to.eql(Array(5).fill('header-start'));
+
+        element.headerPosition = 'end';
+        await elementUpdated(element);
+
+        expect(states().flat()).to.eql(Array(5).fill('header-end'));
+
+        const added = document.createElement(IgcTabComponent.tagName);
+        element.append(added);
+        await elementUpdated(element);
+        await elementUpdated(added);
+
+        expect(added.matches(':state(header-end)')).to.be.true;
+
+        element.headerPosition = 'top';
+        await elementUpdated(element);
+
+        expect(states().flat()).to.be.empty;
       });
     });
 

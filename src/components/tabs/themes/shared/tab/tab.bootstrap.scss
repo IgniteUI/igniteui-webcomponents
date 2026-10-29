@@ -2,6 +2,17 @@
 @use '../../light/themes' as *;
 
 $theme: $bootstrap;
+$column-border: rem(1px) solid var-get($theme, 'border-color');
+$column-hover-border: rem(1px) solid var-get($theme, 'border-color--hover');
+
+// The corners of a header in a column: `$outer` away from the panels, `$inner` on the
+// side of the panels.
+@mixin column-corners($side, $content, $outer, $inner) {
+    border-start-#{$side}-radius: $outer;
+    border-end-#{$side}-radius: $outer;
+    border-start-#{$content}-radius: $inner;
+    border-end-#{$content}-radius: $inner;
+}
 
 :host {
     [part='tab-header'] {
@@ -140,5 +151,50 @@ $theme: $bootstrap;
 
     :host(:not([selected])) [part~='tab-header']:hover::before {
         border: rem(1px) solid CanvasText;
+    }
+}
+
+// A column draws the edges with borders, because the offsets of the shadows of a row
+// do not follow the direction. The side of the panels has the line of the strip,
+// which the selected tab leaves open.
+@each $side, $content in (start: end, end: start) {
+    :host(:state(header-#{$side})) [part='tab-header'] {
+        box-shadow: none;
+
+        &::before {
+            @include column-corners($side, $content, var-get($theme, 'border-radius'), 0);
+
+            height: auto;
+            box-shadow: none;
+            border: none;
+            border-inline-#{$content}: $column-border;
+        }
+
+        &:hover::before {
+            border-block: $column-hover-border;
+            border-inline-#{$side}: $column-hover-border;
+        }
+
+        &:hover:focus-within::before {
+            border-block: none;
+            border-inline-#{$side}: none;
+        }
+
+        &:focus-within::after {
+            @include column-corners($side, $content, var-get($theme, 'border-radius'), rem(4px));
+        }
+    }
+
+    :host([selected]:state(header-#{$side})) [part='tab-header'] {
+        &::before {
+            border: $column-border;
+            border-inline-#{$content}: none;
+        }
+
+        &:focus-within::before {
+            @include column-corners($side, $content, var-get($theme, 'border-radius'), rem(4px));
+
+            border: none;
+        }
     }
 }
