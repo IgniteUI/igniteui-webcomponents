@@ -7,6 +7,12 @@
 $columns: "[header-position='start'], [header-position='end']";
 $column: ":is(#{$columns})";
 $row: ":not(#{$columns})";
+$buttons: var(--scroll-btn-size);
+
+// The tracks of the tabs, with filler or button tracks before and after them.
+@function tracks($track, $before: null, $after: $before) {
+    @return $before repeat(var(--_tabs-count), $track) $after;
+}
 
 :host {
     --scroll-btn-size: #{rem(48px)};
@@ -15,11 +21,15 @@ $row: ":not(#{$columns})";
     // The places of the tab parts in the grid, which each tab reads. Every tabs sets
     // them, so the tabs in a panel do not get those of an outer column.
     --_ig-tab-header-area: 1 / auto;
+    --_ig-tab-header-min-height: auto;
     --_ig-tab-panel-area: 3 / 1 / auto / -1;
     --_ig-tab-panel-inset-block: auto;
     --_ig-tab-panel-inset-inline: 0 auto;
     --_ig-tab-panel-overflow: visible;
     --_ig-tabs-height: none;
+
+    // Set by a row with `justify`, so tabs in its panels must not inherit it.
+    --tab-max-width--justify: initial;
 
     display: block;
     overflow: hidden;
@@ -62,6 +72,23 @@ $row: ":not(#{$columns})";
     block-size: 100%;
 }
 
+// Take the `max-height` of the tabs in any unit that does not depend on the parent,
+// for a column with an auto height. The box clips the probe, so that it sizes and
+// scrolls nothing. Without a `max-height`, the probe is as tall as `NO_MAX_HEIGHT` in
+// tab-dom.ts.
+[data-max-height] {
+    block-size: 0;
+    overflow: hidden;
+    max-block-size: inherit;
+}
+
+[data-max-height-probe] {
+    display: block;
+    inline-size: 0;
+    block-size: 100000px;
+    max-block-size: inherit;
+}
+
 [part~='inner'] {
     display: grid;
     grid-template-rows: minmax(var(--header-min-height), auto) auto 1fr;
@@ -77,19 +104,11 @@ $row: ":not(#{$columns})";
 }
 
 [part~='scrollable'] {
-    grid-template-columns:
-        var(--scroll-btn-size) repeat(
-            var(--_tabs-count),
-            minmax(max-content, auto)
-        )
-        var(--scroll-btn-size);
+    grid-template-columns: tracks(minmax(max-content, auto), $buttons);
 }
 
 [part~='inner']:not([part~='scrollable']) {
-    grid-template-columns: repeat(
-        var(--_tabs-count),
-        minmax(auto, min-content)
-    );
+    grid-template-columns: tracks(minmax(auto, min-content));
     min-width: $tab-min-width;
 }
 
@@ -100,8 +119,14 @@ $row: ":not(#{$columns})";
 }
 
 // `alignment` puts `1fr` filler tracks before or after the tab tracks: columns in a
-// row, rows in a column.
-@each $alignment, $before, $after in (start null 1fr, center 1fr 1fr, end 1fr null) {
+// row, rows in a column. `justify` shares the room between the tabs. An `fr` row has
+// an `auto` minimum, so it clips no header of a column.
+@each $alignment, $before, $after, $row-track, $column-track in (
+    start null 1fr minmax(max-content, auto) auto,
+    center 1fr 1fr minmax(max-content, auto) auto,
+    end 1fr null minmax(max-content, auto) auto,
+    justify null null minmax($tab-min-width, 1fr) 1fr
+) {
     :host([alignment='#{$alignment}']) [part~='inner']:not([part~='scrollable']) {
         @if $before {
             &::before {
@@ -117,11 +142,11 @@ $row: ":not(#{$columns})";
     }
 
     :host([alignment='#{$alignment}']#{$row}) [part~='inner']:not([part~='scrollable']) {
-        grid-template-columns: $before repeat(var(--_tabs-count), minmax(max-content, auto)) $after;
+        grid-template-columns: tracks($row-track, $before, $after);
     }
 
     :host([alignment='#{$alignment}']#{$column}) [part~='inner']:not([part~='scrollable']) {
-        grid-template-rows: $before repeat(var(--_tabs-count), auto) $after;
+        grid-template-rows: tracks($column-track, $before, $after);
     }
 }
 
@@ -129,25 +154,8 @@ $row: ":not(#{$columns})";
     --tab-max-width--justify: 100%;
 
     [part~='scrollable'] {
-        grid-template-columns:
-            var(--scroll-btn-size) repeat(
-                var(--_tabs-count),
-                minmax($tab-min-width, 1fr)
-            )
-            var(--scroll-btn-size);
+        grid-template-columns: tracks(minmax($tab-min-width, 1fr), $buttons);
     }
-
-    [part~='inner']:not([part~='scrollable']) {
-        grid-template-columns: repeat(
-            var(--_tabs-count),
-            minmax($tab-min-width, 1fr)
-        );
-    }
-}
-
-// An `fr` row has an `auto` minimum, so `justify` clips no header in a column.
-:host([alignment='justify']#{$column}) [part~='inner']:not([part~='scrollable']) {
-    grid-template-rows: repeat(var(--_tabs-count), 1fr);
 }
 
 // Behind the tab headers, so a translucent `item-background` composites over
@@ -176,12 +184,10 @@ $row: ":not(#{$columns})";
     transform: scaleX(-1);
 }
 
-:host(#{$row}) [part~='start-scroll-button'] {
-    inset-inline-start: 0;
-}
-
-:host(#{$row}) [part~='end-scroll-button'] {
-    inset-inline-end: 0;
+@each $side in (start, end) {
+    :host(#{$row}) [part~='#{$side}-scroll-button'] {
+        inset-inline-#{$side}: 0;
+    }
 }
 
 igc-icon-button::part(base) {
@@ -224,6 +230,7 @@ igc-icon-button::part(base) {
 // panel scrolls the page and not the headers.
 :host(#{$column}) {
     --_ig-tab-header-area: auto / 1 / auto / span 1;
+    --_ig-tab-header-min-height: var(--header-min-height);
     --_ig-tab-panel-area: 1 / 3 / -1;
     --_ig-tab-panel-inset-block: 0 auto;
     --_ig-tab-panel-inset-inline: auto;
@@ -239,15 +246,13 @@ igc-icon-button::part(base) {
     // the headers, the indicator and the panels.
     [part~='inner'] {
         grid-template-columns: max-content auto minmax(0, 1fr);
-        grid-template-rows: repeat(var(--_tabs-count), auto) 1fr;
+        grid-template-rows: tracks(auto, null, 1fr);
         align-self: flex-start;
         min-height: 100%;
     }
 
     [part~='scrollable'] {
-        grid-template-rows:
-            var(--scroll-btn-size) repeat(var(--_tabs-count), auto)
-            var(--scroll-btn-size);
+        grid-template-rows: tracks(auto, $buttons);
     }
 
     // With explicit spans, as in a row.

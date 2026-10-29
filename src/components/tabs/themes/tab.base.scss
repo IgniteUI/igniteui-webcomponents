@@ -18,6 +18,9 @@
     position: relative;
     z-index: map.get($tabs-z-index, 'header');
     grid-area: var(--_ig-tab-header-area);
+
+    // A row gives the height to its header track, a column to each header.
+    min-height: var(--_ig-tab-header-min-height);
     overflow-wrap: anywhere;
 
     // No underline on a link tab. The theme sheets set the color.
@@ -31,21 +34,21 @@
     }
 }
 
-[part~='base'] {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: rem(8px);
-    user-select: none;
-}
-
+[part~='base'],
 [part~='content'] {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: rem(8px);
+}
+
+[part~='base'] {
+    user-select: none;
+}
+
+[part~='content'] {
     flex-direction: column;
     overflow: hidden;
-    gap: rem(8px);
     flex: 1;
 
     ::slotted(*) {

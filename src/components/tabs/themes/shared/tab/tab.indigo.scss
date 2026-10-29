@@ -33,7 +33,7 @@ $theme: $indigo;
 // A column has the line on the side of the panels. These rules outrank the hover
 // rules of a row, so a hover changes only the color of the line.
 @each $side, $content in (start: end, end: start) {
-    :host(:state(header-#{$side})) [part='tab-header'] {
+    :host(:state(header-#{$side})) [part~='tab-header'] {
         border-block: none;
         border-inline-#{$side}: rem(1px) solid transparent;
         border-inline-#{$content}: rem(1px) solid var-get($theme, 'border-color');

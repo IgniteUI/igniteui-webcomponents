@@ -17,8 +17,9 @@ import {
 type RovingFocusHost = ReactiveControllerHost & HTMLElement;
 
 /**
- * Whether an arrow axis navigates. A predicate keeps the keys bound and
- * gates only the navigation, for a host that changes orientation at runtime.
+ * Whether an arrow axis navigates. A predicate, for a host that changes
+ * orientation at runtime, binds the keys only while it returns `true`, so the
+ * browser keeps the keys of an inactive axis, for example to scroll the page.
  */
 type RovingFocusAxis = boolean | (() => boolean);
 
@@ -75,17 +76,23 @@ class RovingFocusController<T extends Element> {
     } = options;
 
     const bindings = addKeybindings(host, keybindings);
+    const gate = keybindings?.bindingDefaults?.when;
+    // The axis predicate keeps the `when` of the host's binding defaults.
+    const axis = (enabled: RovingFocusAxis) =>
+      isFunction(enabled)
+        ? { when: () => enabled.call(host) && (gate?.call(host) ?? true) }
+        : undefined;
 
     if (horizontal) {
       bindings
-        .set(arrowLeft, () => this._move(-1, horizontal, true))
-        .set(arrowRight, () => this._move(1, horizontal, true));
+        .set(arrowLeft, () => this._move(-1, true), axis(horizontal))
+        .set(arrowRight, () => this._move(1, true), axis(horizontal));
     }
 
     if (vertical) {
       bindings
-        .set(arrowUp, () => this._move(-1, vertical, false))
-        .set(arrowDown, () => this._move(1, vertical, false));
+        .set(arrowUp, () => this._move(-1, false), axis(vertical))
+        .set(arrowDown, () => this._move(1, false), axis(vertical));
     }
 
     if (homeEnd) {
@@ -105,11 +112,7 @@ class RovingFocusController<T extends Element> {
     }
   }
 
-  private _move(delta: -1 | 1, axis: RovingFocusAxis, rtlAware: boolean): void {
-    if (isFunction(axis) && !axis.call(this._host)) {
-      return;
-    }
-
+  private _move(delta: -1 | 1, rtlAware: boolean): void {
     const items = this._options.items();
     const current = this._current(items);
 

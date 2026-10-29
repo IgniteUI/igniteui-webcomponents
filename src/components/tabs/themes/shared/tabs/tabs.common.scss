@@ -27,8 +27,7 @@ $theme: $material;
     background: var-get($theme, 'header-background');
 }
 
-// The thickness of the indicator, and how far it lies over the headers. See the base
-// sheet.
+// The indicator of Material and Fluent. Indigo and Bootstrap change it.
 [part~='selected-indicator'] {
     --_indicator-size: #{rem(2px)};
     --_indicator-overlap: #{rem(2px)};

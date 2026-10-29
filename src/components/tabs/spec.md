@@ -58,6 +58,7 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
 |       8 | 2026-10-29 | The selected panel has no `transform`, so it is not the containing block of fixed content |
 |       9 | 2026-10-29 | In the Fluent theme, transition only the properties of a tab that change; the selected indicator no longer sets `visibility: visible`; so the tabs hide at the same time as a hidden ancestor |
 |      10 | 2026-10-29 | `headerPosition`: the headers form a row above the panels (`top`, the default) or a column on the `start` or `end` side, which follows the direction. In a column, Up and Down move between the tabs, the tab list has the vertical orientation, `alignment` applies along the column, the indicator is on the side of the panels, and scroll buttons above and below the headers show when the headers do not fit in a definite height. The header strip covers only the headers |
+|      11 | 2026-10-29 | In a column, each header has the minimum height of a header row, the indicator follows the headers that `alignment` moves, and a `max-height` on the tabs, without their padding and border, limits the column as a definite height does. A selection made in the same task as a change of position stays. A tab that leaves its tabs drops the position. With `justify`, a hidden tab leaves no gap, and tabs in a panel keep the width limit of a header. The scroll buttons and the selection of a hidden tab do not scroll the strip |
 
 ## Overview
 
@@ -203,10 +204,11 @@ In a column:
   panel takes the rest of the width.
 - The indicator is on the side of the headers that faces the panels. In the Bootstrap theme, which has no indicator,
   the selected tab is open on that side.
-- Without a definite height, the tabs are as tall as the selected panel or the headers, whichever is taller.
-- A definite height is a `height` on the tabs, or a height from the parent, for example in a flex or grid layout. With
-  a definite height, a panel that is taller than the tabs scrolls its content. When the headers do not fit, scroll
-  buttons above and below them scroll the column, and their arrows point up and down.
+- Each header is at least as tall as a header row.
+- Without a height limit, the tabs are as tall as the selected panel or the headers, whichever is taller.
+- A height limit is a `height` or a `max-height` on the tabs, or a height from the parent, for example in a flex or
+  grid layout. The padding and the border of the tabs are not part of the limit. A panel that is taller than the limit scrolls its content. When the headers do not fit, scroll buttons
+  above and below them scroll the column, and their arrows point up and down.
 - Only the scroll buttons and the keyboard scroll the headers. The wheel over the headers does not scroll them, so the
   wheel over a panel never moves the headers.
 
@@ -438,7 +440,7 @@ The groups below mirror the `describe` blocks.
 9. The scroll buttons appear when the headers overflow and scroll the strip. Their arrows point along the writing
    direction, also when `dir` is on the tabs or on an ancestor.
 10. Selecting a tab outside the visible area scrolls it into view. Under an ancestor `zoom`, the strip is measured in its
-    own CSS pixels.
+    own CSS pixels. A hidden tab does not move the strip, neither through the scroll buttons nor when it is selected.
 
 ### Composition
 
@@ -514,6 +516,7 @@ The groups below mirror the `describe` blocks.
     they select the tab. With `manual`, they only move the focus. They do not mirror in a right-to-left column.
 36. Left and Right in a column, and Up and Down in a row, do nothing and are not canceled.
 37. A change of position keeps the selected tab, the focused header and the header elements, and emits no `igcChange`.
+    A selection made in the same task as a change of position stays.
 
 #### Column layout
 
@@ -526,36 +529,47 @@ The groups below mirror the `describe` blocks.
     after a row with a set height changes to a column. The limit goes away with the set height.
 42. A row of tabs in the panel of a column lays out as a row.
 43. The accessibility audit passes on both sides. The headers of a column are painted under an earlier page layer.
+44. When a panel grows, the indicator follows the headers that `center` or `end` alignment moves. With `start`, the
+    indicator does not move.
+45. Each header of a column is as tall as a header row.
+46. With `justify`, a hidden tab leaves no gap, in a row and in a column. Tabs in a panel of a `justify` row keep the
+    width limit of a header.
+47. A `max-height` on the tabs is a height limit without their padding and border. A higher `max-height` applies also
+    while the limit caps the panel.
+48. A tab that leaves its tabs drops the position.
 
 #### Column scrolling
 
-44. With a set height, scroll buttons show above and below the headers when the headers do not fit. Their arrows point
+49. With a set height, scroll buttons show above and below the headers when the headers do not fit. Their arrows point
     up and down, also in a right-to-left column. The panel stays at the top of the column while the headers scroll.
-45. The scroll buttons scroll the column. A selected tab scrolls into view, and the page does not scroll. A header that
+50. The scroll buttons scroll the column. A selected tab scrolls into view, and the page does not scroll. A header that
     gets the focus with `manual` activation scrolls into view.
-46. The scroll offset stays in range when tabs are removed or the tabs get taller. The scroll buttons show and hide when
+51. The scroll offset stays in range when tabs are removed or the tabs get taller. The scroll buttons show and hide when
     a header changes height, and hide when the height limit goes away, with no ResizeObserver loop error.
-47. Under an ancestor `zoom`, the column is measured in its own CSS pixels. Changes inside a panel do not make the tabs
+52. Under an ancestor `zoom`, the column is measured in its own CSS pixels. Changes inside a panel do not make the tabs
     measure the column.
-48. The indicator moves along the column with the selected header. A change of position resets the scroll offsets,
+53. The indicator moves along the column with the selected header. A change of position resets the scroll offsets,
     keeps the focused header in view, and moves the indicator to the new axis without a transition.
+54. A `max-height` on the tabs limits the panel and scrolls the headers as a set height does, and a change of it
+    applies.
 
 #### Column themes
 
-49. In the Material, Fluent and Indigo themes, the indicator is on the side of the headers that faces the panels, for
+55. In the Material, Fluent and Indigo themes, the indicator is on the side of the headers that faces the panels, for
     both positions, in LTR and RTL. The lines of the Bootstrap theme and the header lines of the Indigo theme are on
     the side of the panels.
-50. Each tab gets the position, also a tab added later.
-51. A column hides at the same time as a hidden ancestor (the shared `runHiddenAncestorTests` suite).
+56. Each tab gets the position, also a tab added later.
+57. A column hides at the same time as a hidden ancestor (the shared `runHiddenAncestorTests` suite).
 
 ## Assumptions and limitations
 
 - A tab owns both its header and its body; the two cannot be declared separately.
 - Only one tab is selected at a time.
 - The headers can be above the panels or on the start or the end side of them. There is no `bottom` position.
-- A column scrolls its headers only when the tabs have a definite height. With `max-height` and no `height`, the
-  headers that do not fit are cut and do not scroll. See [Header position](#header-position).
-- In a column with a definite height, a panel that is taller than the tabs scrolls its content. A row does not change:
+- A column scrolls its headers only with a height limit on the tabs or from their parent. A `max-height` on another
+  ancestor does not limit the tabs. A `max-height` in percent limits a column only with the default `height`, not with
+  `height: auto`. See [Header position](#header-position).
+- In a column with a height limit, a panel that is taller than the limit scrolls its content. A row does not change:
   such a panel is cut.
 - The wheel and touch do not scroll the headers of a column. The scroll buttons and the keyboard scroll them.
 - The `label`, `prefix` and `suffix` slots take non-interactive content only. See

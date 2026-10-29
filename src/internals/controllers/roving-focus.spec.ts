@@ -111,6 +111,61 @@ describe('Roving focus controller', () => {
     expect(instance.focused).to.eql([{ id: 2 }, { id: 0 }]);
   });
 
+  it('should leave the keys of an inactive predicate axis to the browser', () => {
+    const press = (key: string) => {
+      const event = new KeyboardEvent('keydown', {
+        key,
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      });
+      instance.dispatchEvent(event);
+      instance.dispatchEvent(
+        new KeyboardEvent('keyup', { key, bubbles: true, composed: true })
+      );
+      return event.defaultPrevented;
+    };
+
+    expect(press('ArrowDown')).to.be.false;
+    expect(press('ArrowRight')).to.be.true;
+
+    instance.verticalEnabled = true;
+    expect(press('ArrowDown')).to.be.true;
+  });
+
+  it('should keep the `when` of the binding defaults on a predicate axis', async () => {
+    const gatedTag = defineCE(
+      class extends LitElement {
+        public enabled = false;
+        public focused: Item[] = [];
+        public items: Item[] = [{ id: 0 }, { id: 1 }];
+
+        constructor() {
+          super();
+
+          addRovingFocusController<Item & Element>(this, {
+            keybindings: { bindingDefaults: { when: () => this.enabled } },
+            items: () => this.items as unknown as (Item & Element)[],
+            current: () => this.items[0] as unknown as Item & Element,
+            horizontal: () => true,
+            focusItem: (item) => this.focused.push(item),
+          });
+        }
+      }
+    );
+    const tagName = unsafeStatic(gatedTag);
+    const gated = await fixture<
+      LitElement & { enabled: boolean; focused: Item[] }
+    >(html`<${tagName}></${tagName}>`);
+
+    simulateKeyboard(gated, 'ArrowRight');
+    expect(gated.focused).to.be.empty;
+
+    gated.enabled = true;
+    simulateKeyboard(gated, 'ArrowRight');
+    expect(gated.focused).to.eql([{ id: 1 }]);
+  });
+
   it('should not flip vertical arrows in RTL', () => {
     instance.dir = 'rtl';
     instance.verticalEnabled = true;

@@ -71,7 +71,10 @@ function getActiveModifiers(event: KeyboardEvent): string[] {
   );
 }
 
-function hasModifiers(event: KeyboardEvent): boolean {
+/** Whether Alt, Ctrl, Meta or Shift is held, for a keyboard or a pointer event. */
+export function hasModifiers(
+  event: Pick<KeyboardEvent, 'altKey' | 'ctrlKey' | 'metaKey' | 'shiftKey'>
+): boolean {
   return event.altKey || event.ctrlKey || event.metaKey || event.shiftKey;
 }
 
@@ -120,6 +123,12 @@ interface KeyBindingOptions {
   preventDefault?: boolean;
   /** Whether to call `stopPropagation` before the handler runs. */
   stopPropagation?: boolean;
+  /**
+   * Whether the binding applies, called with the host on each key press. While it
+   * returns `false`, the key is not bound: the controller neither cancels it nor
+   * runs the handler.
+   */
+  when?: () => boolean;
 }
 
 /** A registered binding. The key of the binding map holds the combination. */
@@ -318,7 +327,7 @@ class KeyBindingController implements ReactiveController {
       }
     }
 
-    if (binding) {
+    if (binding && binding.options.when?.call(this._host) !== false) {
       const { handler, options } = binding;
       const triggers = options.triggers ?? ['keydown'];
 

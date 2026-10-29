@@ -20,14 +20,6 @@ $theme: $indigo;
     }
 }
 
-:host([header-position='start']) [part='selected-indicator'] span {
-    inset-inline: auto 100%;
-}
-
-:host([header-position='end']) [part='selected-indicator'] span {
-    inset-inline: 100% auto;
-}
-
 [part='start-scroll-button'],
 [part='end-scroll-button'] {
     --hover-background: #{var-get($theme, 'button-background')};
@@ -69,11 +61,18 @@ igc-icon-button[disabled]::part(base) {
     border-bottom: rem(1px) solid var(--nav-btn-border-color);
 }
 
-// A column has the line on the side of the panels.
+// A column has the line on the side of the panels, and the span lies over it.
 @each $side, $content in (start: end, end: start) {
-    :host([header-position='#{$side}']) igc-icon-button[disabled]::part(base) {
-        border-bottom: 0;
-        border-inline-#{$content}: rem(1px) solid var(--nav-btn-border-color);
+    :host([header-position='#{$side}']) {
+        [part~='selected-indicator'] span {
+            inset-inline-#{$side}: auto;
+            inset-inline-#{$content}: 100%;
+        }
+
+        igc-icon-button[disabled]::part(base) {
+            border-bottom: 0;
+            border-inline-#{$content}: rem(1px) solid var(--nav-btn-border-color);
+        }
     }
 }
 
@@ -88,8 +87,7 @@ igc-icon-button::part(icon) {
         border-bottom: rem(3px) solid CanvasText;
     }
 
-    :host([header-position='start']) [part~='selected-indicator'] span,
-    :host([header-position='end']) [part~='selected-indicator'] span {
+    :host(:is([header-position='start'], [header-position='end'])) [part~='selected-indicator'] span {
         border-bottom: 0;
         border-inline-start: rem(3px) solid CanvasText;
     }
