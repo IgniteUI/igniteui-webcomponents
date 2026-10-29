@@ -151,6 +151,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
   /**
    * The alignment of the tab headers in the header strip.
    *
+   * In a column, `start` is the top and `end` is the bottom.
+   *
    * @attr alignment
    * @default 'start'
    */

@@ -61,10 +61,19 @@ const metadata: Meta<IgcTabsComponent> = {
   argTypes: {
     alignment: {
       type: { name: 'enum', value: ['start', 'end', 'center', 'justify'] },
-      description: 'The alignment of the tab headers in the header strip.',
+      description:
+        'The alignment of the tab headers in the header strip.\n\nIn a column, `start` is the top and `end` is the bottom.',
       options: ['start', 'end', 'center', 'justify'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'start' } },
+    },
+    headerPosition: {
+      type: { name: 'enum', value: ['top', 'start', 'end'] },
+      description:
+        'The side of the panels on which the tab headers are placed.\n\nWith `top`, the headers form a row above the panels. With `start` and `end`, they\nform a column before or after the panels in the text direction, so `start` is on\nthe right in a right-to-left layout. In a column, the Up and Down arrow keys move\nbetween the tabs. When the headers do not fit in the height of the tabs, scroll\nbuttons above and below them scroll the column.',
+      options: ['top', 'start', 'end'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'top' } },
     },
     activation: {
       type: { name: 'enum', value: ['manual', 'auto'] },
@@ -75,14 +84,28 @@ const metadata: Meta<IgcTabsComponent> = {
       table: { defaultValue: { summary: 'auto' } },
     },
   },
-  args: { alignment: 'start', activation: 'auto' },
+  args: { alignment: 'start', headerPosition: 'top', activation: 'auto' },
 };
 
 export default metadata;
 
 interface IgcTabsArgs {
-  /** The alignment of the tab headers in the header strip. */
+  /**
+   * The alignment of the tab headers in the header strip.
+   *
+   * In a column, `start` is the top and `end` is the bottom.
+   */
   alignment: 'start' | 'end' | 'center' | 'justify';
+  /**
+   * The side of the panels on which the tab headers are placed.
+   *
+   * With `top`, the headers form a row above the panels. With `start` and `end`, they
+   * form a column before or after the panels in the text direction, so `start` is on
+   * the right in a right-to-left layout. In a column, the Up and Down arrow keys move
+   * between the tabs. When the headers do not fit in the height of the tabs, scroll
+   * buttons above and below them scroll the column.
+   */
+  headerPosition: 'top' | 'start' | 'end';
   /**
    * The activation behavior of the tabs.
    *
@@ -137,11 +160,11 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          'The details of a product on a shop page. Each `igc-tab` holds a header and a panel: the `label` attribute gives the text of the header, and the content of the tab is the panel. The `selected` attribute selects the specifications when the page opens. The headers are one tab stop: the arrow keys, Home and End move between them, and Tab moves into the panel. Use the controls panel to change the `alignment` of the headers and the `activation`. With `manual`, the arrow keys only move the focus, and Enter or Space selects the tab.',
+          'The details of a product on a shop page. Each `igc-tab` holds a header and a panel: the `label` attribute gives the text of the header, and the content of the tab is the panel. The `selected` attribute selects the specifications when the page opens. The headers are one tab stop: the arrow keys, Home and End move between them, and Tab moves into the panel. Use the controls panel to change the `alignment` of the headers, the `headerPosition` and the `activation`. With `manual`, the arrow keys only move the focus, and Enter or Space selects the tab. With `start` or `end`, the headers form a column on that side of the panels, and Up and Down move between them. A frame gives the column a height. Drag its corner to make it shorter: a taller panel then scrolls its content, and scroll buttons show above and below the headers when they do not fit.',
       },
     },
   },
-  render: ({ alignment, activation }) => html`
+  render: ({ alignment, activation, headerPosition }) => html`
     ${styles}
     <style>
       .tb-specs {
@@ -163,51 +186,66 @@ export const Default: Story = {
         padding-inline-start: 1rem;
         border-inline-start: 3px solid var(--ig-gray-300);
       }
+
+      .tb-frame {
+        height: 18rem;
+        min-height: 8rem;
+        overflow: hidden;
+        resize: vertical;
+        border: 1px solid var(--ig-gray-300);
+      }
+
+      .tb-frame igc-tab::part(tab-body) {
+        padding-inline: 1.5rem;
+      }
     </style>
     <section class="tb-stack" aria-labelledby="tb-product-name">
       <h3 id="tb-product-name">Trailblazer 2 running shoe</h3>
-      <igc-tabs
-        alignment=${alignment}
-        activation=${activation}
-        aria-label="Product details"
-      >
-        <igc-tab label="Description">
-          <p>
-            A light trail shoe for long runs on dry paths. The grip of the sole
-            holds on loose gravel, and the cushion stays soft after hundreds of
-            miles.
-          </p>
-        </igc-tab>
-        <igc-tab label="Specifications" selected>
-          <dl class="tb-specs">
-            <dt>Weight</dt>
-            <dd>280 g in size EU 42</dd>
-            <dt>Heel-to-toe drop</dt>
-            <dd>6 mm</dd>
-            <dt>Upper</dt>
-            <dd>Recycled mesh</dd>
-            <dt>Sizes</dt>
-            <dd>EU 36 to 47</dd>
-          </dl>
-        </igc-tab>
-        <igc-tab label="Reviews">
-          <div class="tb-stack">
-            <p><strong>4.6 out of 5</strong> from 128 reviews</p>
-            <blockquote class="tb-review">
-              The grip is great on wet rocks, and my feet stay dry.
-            </blockquote>
-            <blockquote class="tb-review">
-              Order half a size up if you have wide feet.
-            </blockquote>
-          </div>
-        </igc-tab>
-        <igc-tab label="Shipping and returns">
-          <div class="tb-stack">
-            <p>Free delivery in 2 to 4 working days on orders over $50.</p>
-            <p>Return shoes that you did not wear within 30 days.</p>
-          </div>
-        </igc-tab>
-      </igc-tabs>
+      <div class=${headerPosition === 'top' ? nothing : 'tb-frame'}>
+        <igc-tabs
+          alignment=${alignment}
+          header-position=${headerPosition}
+          activation=${activation}
+          aria-label="Product details"
+        >
+          <igc-tab label="Description">
+            <p>
+              A light trail shoe for long runs on dry paths. The grip of the
+              sole holds on loose gravel, and the cushion stays soft after
+              hundreds of miles.
+            </p>
+          </igc-tab>
+          <igc-tab label="Specifications" selected>
+            <dl class="tb-specs">
+              <dt>Weight</dt>
+              <dd>280 g in size EU 42</dd>
+              <dt>Heel-to-toe drop</dt>
+              <dd>6 mm</dd>
+              <dt>Upper</dt>
+              <dd>Recycled mesh</dd>
+              <dt>Sizes</dt>
+              <dd>EU 36 to 47</dd>
+            </dl>
+          </igc-tab>
+          <igc-tab label="Reviews">
+            <div class="tb-stack">
+              <p><strong>4.6 out of 5</strong> from 128 reviews</p>
+              <blockquote class="tb-review">
+                The grip is great on wet rocks, and my feet stay dry.
+              </blockquote>
+              <blockquote class="tb-review">
+                Order half a size up if you have wide feet.
+              </blockquote>
+            </div>
+          </igc-tab>
+          <igc-tab label="Shipping and returns">
+            <div class="tb-stack">
+              <p>Free delivery in 2 to 4 working days on orders over $50.</p>
+              <p>Return shoes that you did not wear within 30 days.</p>
+            </div>
+          </igc-tab>
+        </igc-tabs>
+      </div>
     </section>
   `,
 };
@@ -639,7 +677,7 @@ export const AccountSettings: Story = {
     docs: {
       description: {
         story:
-          'The account settings of a web application, with one form over the tabs. Only the panel of the selected tab shows, so a field with an error can be in a hidden panel when the form is sent. An `invalid` listener in the capture phase selects the tab of the first field with an error and moves the focus to the field, and a warning icon marks each tab with an error until the error is fixed. To try it, clear the email address, open Security, and select Save. The Team tab is disabled, and its `aria-describedby` points to the reason, so assistive technologies read the reason on the tab. Save shows the form data.',
+          'The account settings of a web application, with one form over the tabs. Only the panel of the selected tab shows, so a field with an error can be in a hidden panel when the form is sent. An `invalid` listener in the capture phase selects the tab of the first field with an error and moves the focus to the field, and a warning icon marks each tab with an error until the error is fixed. To try it, clear the email address, open Security, and select Save. The Team tab is disabled, and its `aria-describedby` points to the reason, so assistive technologies read the reason on the tab. As on most settings pages, the headers form a column on the start side, with `header-position="start"`, and Up and Down move between them. The tabs have a set height, so the Save button does not move when a panel of another height opens. Save shows the form data.',
       },
     },
   },
@@ -699,7 +737,11 @@ export const AccountSettings: Story = {
     const { mount, update } = renderInto(
       () => html`
         <h3 id="tb-settings-title">Account settings</h3>
-        <igc-tabs aria-labelledby="tb-settings-title">
+        <igc-tabs
+          class="tb-settings"
+          header-position="start"
+          aria-labelledby="tb-settings-title"
+        >
           <igc-tab id="tb-settings-profile" label="Profile">
             <igc-icon slot="prefix" name="person"></igc-icon>
             ${errorIcon('tb-settings-profile')}
@@ -777,6 +819,14 @@ export const AccountSettings: Story = {
 
         .tb-error {
           color: var(--ig-error-500);
+        }
+
+        .tb-settings {
+          height: 20rem;
+        }
+
+        .tb-settings igc-tab::part(tab-body) {
+          padding-inline: 1.5rem;
         }
       </style>
       <form
