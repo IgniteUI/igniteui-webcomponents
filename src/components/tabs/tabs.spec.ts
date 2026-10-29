@@ -2460,6 +2460,313 @@ describe('Tabs component', () => {
       });
     });
 
+    describe('Column scrolling', () => {
+      function scrollButtons(tabs: IgcTabsComponent) {
+        const root = tabs.renderRoot;
+        return {
+          start: root.querySelector<IgcIconButtonComponent>(
+            '[part="start-scroll-button"]'
+          ),
+          end: root.querySelector<IgcIconButtonComponent>(
+            '[part="end-scroll-button"]'
+          ),
+        };
+      }
+
+      /** Whether the header of `tab` shows between the scroll buttons of the column. */
+      function isInView(tabs: IgcTabsComponent, tab: IgcTabComponent): boolean {
+        const { start, end } = scrollButtons(tabs);
+        const container = getTabsDOM(tabs).container.getBoundingClientRect();
+        const header = getTabDOM(tab).header.getBoundingClientRect();
+        const top = start?.getBoundingClientRect().bottom ?? container.top;
+        const bottom = end?.getBoundingClientRect().top ?? container.bottom;
+
+        return header.top >= top - 1 && header.bottom <= bottom + 1;
+      }
+
+      function inView(tab: IgcTabComponent): Promise<void> {
+        return waitUntil(
+          () => isInView(element, tab),
+          `${tab.label} did not scroll into view`
+        );
+      }
+
+      function buttonsShown(shown: boolean): Promise<void> {
+        return waitUntil(
+          () => Boolean(scrollButtons(element).start) === shown,
+          `The scroll buttons are not ${shown ? 'shown' : 'hidden'}`
+        );
+      }
+
+      beforeEach(async () => {
+        element = await fixture<IgcTabsComponent>(html`
+          <igc-tabs header-position="start" style="height: 200px">
+            ${Array.from(range(1, 21)).map(
+              (idx) => html`
+                <igc-tab id=${`tab-${idx}`} label=${`Item ${idx}`}>
+                  Content ${idx}
+                </igc-tab>
+              `
+            )}
+          </igc-tabs>
+        `);
+        await buttonsShown(true);
+      });
+
+      it('shows the scroll buttons above and below the headers', async () => {
+        const { start, end } = scrollButtons(element);
+        const host = element.getBoundingClientRect();
+        const header = getTabDOM(
+          element.tabs[0]
+        ).header.getBoundingClientRect();
+        const startRect = start!.getBoundingClientRect();
+        const endRect = end!.getBoundingClientRect();
+
+        expect(start!.disabled).to.be.true;
+        expect(end!.disabled).to.be.false;
+        expect(startRect.top).to.equal(host.top);
+        expect(endRect.bottom).to.be.closeTo(host.bottom, 1);
+        expect([startRect.width, endRect.width]).to.eql([
+          header.width,
+          header.width,
+        ]);
+        expect(header.top).to.be.at.least(startRect.bottom);
+        expect(
+          getTabsDOM(element).container.style.getPropertyValue(
+            '--_ig-tabs-width'
+          )
+        ).to.be.empty;
+      });
+
+      it('points the arrows of the scroll buttons up and down, also in a right-to-left column', async () => {
+        const { start } = scrollButtons(element);
+        const icon = start!.renderRoot.querySelector('[part~="icon"]')!;
+        const rotation = () => new DOMMatrix(getComputedStyle(icon).transform);
+
+        expect(rotation().b).to.be.closeTo(1, 0.001);
+
+        element.dir = 'rtl';
+        await elementUpdated(element);
+
+        expect(rotation().b).to.be.closeTo(1, 0.001);
+        expect(getComputedStyle(start!).transform).to.equal('none');
+      });
+
+      it('scrolls the column with the scroll buttons', async () => {
+        const { container } = getTabsDOM(element);
+        const { start, end } = scrollButtons(element);
+
+        end!.click();
+        await waitUntil(() => !start!.disabled, 'The column did not scroll');
+
+        expect(container.scrollLeft).to.equal(0);
+        expect(container.scrollTop).to.be.above(0);
+
+        element.select('tab-20');
+        await waitUntil(() => end!.disabled, 'The column is not at its end');
+        await inView(element.tabs[19]);
+
+        start!.click();
+        await waitUntil(() => !end!.disabled, 'The column did not scroll back');
+      });
+
+      it('scrolls a selected tab into view without scrolling the page', async () => {
+        const last = element.tabs[19];
+
+        expect(isInView(element, last)).to.be.false;
+
+        element.select(last);
+        await inView(last);
+
+        expect(document.scrollingElement!.scrollTop).to.equal(0);
+      });
+
+      it('scrolls a header focused with `manual` activation into view', async () => {
+        const [first] = element.tabs;
+        const last = element.tabs[19];
+
+        element.activation = 'manual';
+        await elementUpdated(element);
+
+        getTabDOM(first).header.focus();
+        simulateKeyboard(getTabDOM(first).header, endKey);
+        await inView(last);
+
+        expect(getTabDOM(last).header.matches(':focus')).to.be.true;
+        verifySelection(element, first);
+      });
+
+      it('keeps the scroll offset in range when tabs are removed or the tabs grow', async () => {
+        const { container } = getTabsDOM(element);
+        const scrollToEnd = async () => {
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: 'instant',
+          });
+          await waitUntil(
+            () => scrollButtons(element).end!.disabled,
+            'The column is not at its end'
+          );
+        };
+
+        await scrollToEnd();
+
+        element.style.height = '600px';
+        await buttonsShown(false);
+
+        expect(container.scrollTop).to.equal(0);
+
+        element.style.height = '200px';
+        await buttonsShown(true);
+        await scrollToEnd();
+
+        for (const tab of element.tabs.slice(3)) {
+          tab.remove();
+        }
+        await buttonsShown(false);
+
+        expect(container.scrollTop).to.equal(0);
+      });
+
+      it('shows and hides the scroll buttons when a header changes height', async () => {
+        element = await fixture<IgcTabsComponent>(html`
+          <igc-tabs header-position="start" style="height: 200px">
+            <igc-tab
+              ><span slot="label" style="display: block">One</span></igc-tab
+            >
+            <igc-tab label="Two"></igc-tab>
+          </igc-tabs>
+        `);
+        const label = element.querySelector<HTMLElement>('[slot="label"]')!;
+        await buttonsShown(false);
+
+        label.style.height = '300px';
+        await buttonsShown(true);
+
+        label.style.height = '';
+        await buttonsShown(false);
+      });
+
+      it('hides the scroll buttons when the height limit is removed', async () => {
+        element.style.height = '';
+        await buttonsShown(false);
+
+        expect(element.getBoundingClientRect().height).to.be.above(200);
+      });
+
+      it('measures a column in its own CSS pixels under an ancestor zoom', async () => {
+        const { container } = getTabsDOM(element);
+
+        element.parentElement!.style.zoom = '2';
+
+        await waitUntil(
+          () =>
+            container.style.getPropertyValue('--_ig-tabs-height') === '200px' &&
+            element.getBoundingClientRect().height === 400,
+          'The column was not measured in its own pixels'
+        );
+        await buttonsShown(true);
+      });
+
+      it('does not measure the column for changes inside a panel', async () => {
+        element.style.height = '';
+        await buttonsShown(false);
+        await nextFrame();
+        await nextFrame();
+
+        const layout = spy(element['_domHelpers'], 'updateLayout');
+        const content = document.createElement('div');
+
+        content.style.height = '800px';
+        element.tabs[0].append(content);
+        await nextFrame();
+        await nextFrame();
+
+        expect(layout.callCount).to.equal(0);
+      });
+
+      it('moves the indicator along the column with the selected header', async () => {
+        const { container, indicator } = getTabsDOM(element);
+        const follows = (tab: IgcTabComponent) => {
+          const { header } = getTabDOM(tab);
+
+          return waitUntil(
+            () =>
+              indicator.style.transform ===
+                `translateY(${header.offsetTop - container.offsetTop}px)` &&
+              indicator.style.height === `${header.offsetHeight}px` &&
+              indicator.style.width === '',
+            `The indicator did not follow ${tab.label}`
+          );
+        };
+
+        await follows(element.tabs[0]);
+
+        element.select('tab-3');
+        await follows(element.tabs[2]);
+
+        element.tabs[2].label = 'A label long enough to wrap to a second line';
+        await follows(element.tabs[2]);
+      });
+
+      it('resets the scroll offsets and keeps the focused header in view when the position changes', async () => {
+        const { container } = getTabsDOM(element);
+        const last = element.tabs[19];
+
+        simulateClick(getTabDOM(last).header);
+        await inView(last);
+
+        element.style.width = '400px';
+        element.headerPosition = 'top';
+        await waitUntil(() => {
+          const { start, end } = scrollButtons(element);
+          const header = getTabDOM(last).header.getBoundingClientRect();
+
+          return (
+            Boolean(start && end) &&
+            header.left >= start!.getBoundingClientRect().right - 1 &&
+            header.right <= end!.getBoundingClientRect().left + 1
+          );
+        }, 'The focused header is not in view in a row');
+
+        expect(container.scrollTop).to.equal(0);
+        expect(getTabDOM(last).header.matches(':focus')).to.be.true;
+
+        element.headerPosition = 'end';
+        await inView(last);
+
+        expect(container.scrollLeft).to.equal(0);
+        expect(getTabDOM(last).header.matches(':focus')).to.be.true;
+      });
+
+      it('moves the indicator to the new axis without a transition when the position changes', async () => {
+        // The Bootstrap theme shows no indicator.
+        configureTheme('material');
+
+        try {
+          const { indicator } = getTabsDOM(element);
+          await elementUpdated(element);
+
+          element.headerPosition = 'top';
+          await waitUntil(
+            () => indicator.style.transform.startsWith('translateX'),
+            'The indicator did not move to the row'
+          );
+
+          expect(indicator.getAnimations()).to.be.empty;
+
+          element.select('tab-2');
+          await waitUntil(
+            () => indicator.getAnimations().length > 0,
+            'The indicator does not animate a selection'
+          );
+        } finally {
+          configureTheme('bootstrap');
+          await nextFrame();
+        }
+      });
+    });
+
     runHiddenAncestorTests(html`
       <igc-tabs header-position="start">
         <igc-tab label="One">One</igc-tab>

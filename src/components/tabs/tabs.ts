@@ -112,6 +112,9 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
   /** The height of the tabs when it is definite, else 0. The height probe reports it. */
   private _definiteHeight = 0;
 
+  /** The frame request of a column layout, which waits for the next frame. */
+  private _layoutFrame = 0;
+
   /** The tabs at the last change of the slot. */
   private _knownTabs: IgcTabComponent[] = [];
 
@@ -160,7 +163,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
    * With `top`, the headers form a row above the panels. With `start` and `end`, they
    * form a column before or after the panels in the text direction, so `start` is on
    * the right in a right-to-left layout. In a column, the Up and Down arrow keys move
-   * between the tabs.
+   * between the tabs. When the headers do not fit in the height of the tabs, scroll
+   * buttons above and below them scroll the column.
    *
    * @attr header-position
    * @default 'top'
@@ -291,11 +295,18 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
       this._observeHeaders();
     }
 
-    if (heightChanged) {
-      // A new height limit of the panels can resize the container, which the
-      // observer reports as a loop when it happens in this frame.
-      requestAnimationFrame(() => this.isConnected && this._refreshLayout());
-    } else if (resized) {
+    if (!(resized || heightChanged)) {
+      return;
+    }
+
+    // In a column, the height limit of the panels and the scroll buttons size the
+    // container, which the observer reports as a loop when it happens in this frame.
+    if (isColumn(this)) {
+      cancelAnimationFrame(this._layoutFrame);
+      this._layoutFrame = requestAnimationFrame(
+        () => this.isConnected && this._refreshLayout()
+      );
+    } else {
       this._refreshLayout();
     }
   }
@@ -374,10 +385,19 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
     this._domHelpers.setIndicator(this._activeTab);
   }
 
-  /** Measures the tabs again once a change between a row and a column renders. */
+  /**
+   * Lays the tabs out again once a change between a row and a column renders. An
+   * axis with hidden overflow keeps its scroll offset, so both start over. The
+   * indicator changes axis at once.
+   */
   private async _applyHeaderPosition(): Promise<void> {
     await this.updateComplete;
-    this._refreshLayout();
+
+    const focused = this._tabs.find((tab) => tab.matches(':focus-within'));
+
+    this._domHelpers.resetScroll();
+    await this._domHelpers.scrollTabIntoView(focused ?? this._activeTab);
+    this._domHelpers.setIndicator(this._activeTab, false);
   }
 
   /**

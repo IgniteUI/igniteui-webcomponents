@@ -267,17 +267,28 @@ igc-icon-button::part(base) {
         inset-block-end: 0;
     }
 
-    // The arrows point up and down, also in a right-to-left column.
+    // The arrows point up and down, also in a right-to-left column. Only the icon
+    // turns, so the button keeps its box.
     igc-icon-button {
+        transform: none;
+    }
+
+    igc-icon-button::part(icon) {
         transform: rotate(90deg);
     }
 
+    // The transform moves the span from the top of the column to the selected tab.
     [part~='selected-indicator'] {
         grid-row: 1 / -1;
         grid-column: 2;
         align-self: stretch;
         height: auto;
         margin-block: 0;
+
+        span {
+            inset-block-start: 0;
+            transition-property: transform, height;
+        }
     }
 }
 

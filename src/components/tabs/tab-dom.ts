@@ -20,6 +20,13 @@ type ScrollButtonsState = {
   end: boolean;
 };
 
+/** A box on the scroll axis: the inline axis of a row, the block axis of a column. */
+type Extent = {
+  min: number;
+  max: number;
+  size: number;
+};
+
 export class TabsHelpers {
   private readonly _host: IgcTabsComponent;
   private readonly _containerRef: Ref<HTMLElement>;
@@ -45,6 +52,11 @@ export class TabsHelpers {
 
   private get _indicator(): HTMLElement | undefined {
     return this._indicatorRef.value;
+  }
+
+  /** Whether the end of the scroll axis is its larger coordinate. */
+  private get _endIsMax(): boolean {
+    return isColumn(this._host) || isLTR(this._host);
   }
 
   public get styleProperties(): TabsStyleProperties {
@@ -73,11 +85,12 @@ export class TabsHelpers {
   public updateLayout(): void {
     const tabs = this._host.tabs;
     const container = this._container;
+    const column = isColumn(this._host);
     const width = container && getRect(container).width;
     const height = this._getColumnHeight(container);
     const next = {
       '--_tabs-count': String(tabs.length),
-      '--_ig-tabs-width': width === undefined ? '' : `${width}px`,
+      '--_ig-tabs-width': width === undefined || column ? '' : `${width}px`,
       '--_ig-tabs-height': height ? `${height}px` : '',
     };
 
@@ -90,14 +103,19 @@ export class TabsHelpers {
       return;
     }
 
-    // The tabs alone, because the scroll width includes the button columns. Subpixel
-    // widths, so that the rounding of many headers does not add up.
-    const tabsWidth = tabs.reduce((sum, tab) => {
+    // The tabs alone, because the scroll size includes the scroll buttons. Subpixel
+    // sizes, so that the rounding of many headers does not add up.
+    const tabsSize = tabs.reduce((sum, tab) => {
       const header = getTabHeader(tab);
-      return sum + (header ? getRect(header).width : 0);
+      return sum + (header ? this._getExtent(header).size : 0);
     }, 0);
 
-    this.setScrollPositionState(tabsWidth > width + EDGE_TOLERANCE);
+    // A column scrolls only in a definite height.
+    this.setScrollPositionState(
+      column
+        ? height > 0 && tabsSize > height + EDGE_TOLERANCE
+        : tabsSize > width + EDGE_TOLERANCE
+    );
   }
 
   /**
@@ -120,21 +138,41 @@ export class TabsHelpers {
     return false;
   }
 
+  /** The extent of `element` on the scroll axis, in its own CSS pixels. */
+  private _getExtent(element: Element): Extent {
+    const { left, right, top, bottom, width, height } = getRect(element);
+
+    return isColumn(this._host)
+      ? { min: top, max: bottom, size: height }
+      : { min: left, max: right, size: width };
+  }
+
   /** The bounds of the strip without the sticky scroll buttons. */
   private _getVisibleBounds(container: HTMLElement): {
     min: number;
     max: number;
   } {
-    const { scrollPaddingInlineStart, scrollPaddingInlineEnd } =
-      getComputedStyle(container);
-    const { left, right } = getRect(container);
+    const style = getComputedStyle(container);
+    const { min, max } = this._getExtent(container);
+    const [start, end] = isColumn(this._host)
+      ? [style.scrollPaddingBlockStart, style.scrollPaddingBlockEnd]
+      : [style.scrollPaddingInlineStart, style.scrollPaddingInlineEnd];
+    const [low, high] = this._endIsMax ? [start, end] : [end, start];
 
-    const start = asNumber(scrollPaddingInlineStart);
-    const end = asNumber(scrollPaddingInlineEnd);
+    return { min: min + asNumber(low), max: max - asNumber(high) };
+  }
 
-    return isLTR(this._host)
-      ? { min: left + start, max: right - end }
-      : { min: left + end, max: right - start };
+  /** Scrolls the strip on its axis. */
+  private _scrollBy(
+    container: HTMLElement,
+    offset: number,
+    behavior?: ScrollBehavior
+  ): void {
+    container.scrollBy(
+      isColumn(this._host)
+        ? { top: offset, behavior }
+        : { left: offset, behavior }
+    );
   }
 
   private _getScrollOffset(
@@ -144,13 +182,13 @@ export class TabsHelpers {
     const isEnd = direction === 'end';
     const { min, max } = this._getVisibleBounds(container);
 
-    const useRightEdge = isEnd === isLTR(this._host);
+    const useMaxEdge = isEnd === this._endIsMax;
 
     const isOutOfView = (header: HTMLElement): boolean => {
-      const { left, right } = getRect(header);
-      return useRightEdge
-        ? right > max + EDGE_TOLERANCE
-        : left < min - EDGE_TOLERANCE;
+      const extent = this._getExtent(header);
+      return useMaxEdge
+        ? extent.max > max + EDGE_TOLERANCE
+        : extent.min < min - EDGE_TOLERANCE;
     };
 
     const headers = this._host.tabs
@@ -166,8 +204,8 @@ export class TabsHelpers {
       return 0;
     }
 
-    const { left, right } = getRect(target);
-    return useRightEdge ? right - max : left - min;
+    const extent = this._getExtent(target);
+    return useMaxEdge ? extent.max - max : extent.min - min;
   }
 
   public scrollTabs(direction: 'start' | 'end'): void {
@@ -180,7 +218,7 @@ export class TabsHelpers {
     const offset = this._getScrollOffset(container, direction);
 
     if (offset) {
-      container.scrollBy({ left: offset, behavior: 'smooth' });
+      this._scrollBy(container, offset, 'smooth');
     }
   }
 
@@ -201,35 +239,39 @@ export class TabsHelpers {
     }
 
     const { min, max } = this._getVisibleBounds(container);
-    const { left, right } = getRect(header);
+    const extent = this._getExtent(header);
 
     let offset = 0;
 
-    if (right > max + EDGE_TOLERANCE) {
-      offset = right - max;
-    } else if (left < min - EDGE_TOLERANCE) {
-      offset = left - min;
+    if (extent.max > max + EDGE_TOLERANCE) {
+      offset = extent.max - max;
+    } else if (extent.min < min - EDGE_TOLERANCE) {
+      offset = extent.min - min;
     }
 
     if (offset) {
-      container.scrollBy({ left: offset });
+      this._scrollBy(container, offset);
     }
   }
 
   public setScrollPositionState(
     hasScrollButtons = this._hasScrollButtons
   ): void {
-    if (!this._container) {
+    const container = this._container;
+
+    if (!container) {
       return;
     }
 
-    const { scrollLeft, scrollWidth, clientWidth } = this._container;
+    // A right-to-left row has a negative offset.
+    const [offset, scrollSize, clientSize] = isColumn(this._host)
+      ? [container.scrollTop, container.scrollHeight, container.clientHeight]
+      : [container.scrollLeft, container.scrollWidth, container.clientWidth];
     const disabled = this._scrollButtonsDisabled;
 
-    const start = Math.abs(scrollLeft) <= EDGE_TOLERANCE;
+    const start = Math.abs(offset) <= EDGE_TOLERANCE;
     const end =
-      Math.abs(Math.abs(scrollLeft) + clientWidth - scrollWidth) <=
-      EDGE_TOLERANCE;
+      Math.abs(Math.abs(offset) + clientSize - scrollSize) <= EDGE_TOLERANCE;
 
     if (
       this._hasScrollButtons === hasScrollButtons &&
@@ -245,7 +287,16 @@ export class TabsHelpers {
     this._host.requestUpdate();
   }
 
-  public async setIndicator(active?: IgcTabComponent): Promise<void> {
+  /** Scrolls the strip to its start on both axes, at once. */
+  public resetScroll(): void {
+    this._container?.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }
+
+  /** Moves the indicator to the header of `active`. Without `animate`, it moves at once. */
+  public async setIndicator(
+    active?: IgcTabComponent,
+    animate = true
+  ): Promise<void> {
     await this._host.updateComplete;
 
     const container = this._container;
@@ -262,16 +313,32 @@ export class TabsHelpers {
       return;
     }
 
-    const width = header.offsetWidth;
-    const offset = isLTR(this._host)
-      ? header.offsetLeft - container.offsetLeft
-      : header.offsetLeft + width - container.offsetWidth;
+    if (isColumn(this._host)) {
+      setStyles(indicator, {
+        visibility: '',
+        width: '',
+        height: `${header.offsetHeight}px`,
+        transform: `translateY(${header.offsetTop - container.offsetTop}px)`,
+      });
+    } else {
+      const width = header.offsetWidth;
+      const offset = isLTR(this._host)
+        ? header.offsetLeft - container.offsetLeft
+        : header.offsetLeft + width - container.offsetWidth;
 
-    setStyles(indicator, {
-      visibility: '',
-      width: `${width}px`,
-      transform: `translateX(${offset}px)`,
-    });
+      setStyles(indicator, {
+        visibility: '',
+        width: `${width}px`,
+        height: '',
+        transform: `translateX(${offset}px)`,
+      });
+    }
+
+    if (!animate) {
+      for (const animation of indicator.getAnimations()) {
+        animation.finish();
+      }
+    }
   }
 }
 
@@ -282,15 +349,20 @@ export class TabsHelpers {
 function getRect(element: Element): {
   left: number;
   right: number;
+  top: number;
+  bottom: number;
   width: number;
   height: number;
 } {
   const zoom = element.currentCSSZoom || 1;
-  const { left, right, width, height } = element.getBoundingClientRect();
+  const { left, right, top, bottom, width, height } =
+    element.getBoundingClientRect();
 
   return {
     left: left / zoom,
     right: right / zoom,
+    top: top / zoom,
+    bottom: bottom / zoom,
     width: width / zoom,
     height: height / zoom,
   };
