@@ -51,6 +51,7 @@ class HighlightService implements ReactiveController {
   private readonly _id: string;
   private readonly _activeId: string;
   private readonly _styleSheet?: CSSStyleSheet;
+  private readonly _hostStyleSheet?: CSSStyleSheet;
 
   private _attachedRoot: (DocumentOrShadowRoot & Node) | null = null;
 
@@ -86,17 +87,30 @@ class HighlightService implements ReactiveController {
     this._id = `igc-highlight-${nanoid()}`;
     this._activeId = `${this._id}-active`;
 
+    // The rules resolve on the matched text, where an inner component can set the public names.
+    const prefix = `--_${this._id}`;
+
+    const hostStyles = `
+      :host {
+        ${prefix}-background: var(--background);
+        ${prefix}-foreground: var(--foreground);
+        ${prefix}-background-active: var(--background-active);
+        ${prefix}-foreground-active: var(--foreground-active);
+      }`;
+
     const styles = `
       ::highlight(${this._id}) {
-        background-color: var(--background, var(--ig-secondary-700));
-        color: var(--foreground, var(--ig-secondary-700-contrast));
+        background-color: var(${prefix}-background, var(--ig-secondary-700));
+        color: var(${prefix}-foreground, var(--ig-secondary-700-contrast));
       }
       ::highlight(${this._activeId}) {
-        background-color: var(--background-active, var(--ig-primary-500));
-        color: var(--foreground-active, var(--ig-primary-500-contrast));
+        background-color: var(${prefix}-background-active, var(--ig-primary-500));
+        color: var(${prefix}-foreground-active, var(--ig-primary-500-contrast));
       }`;
 
     if (!isServer) {
+      this._hostStyleSheet = new CSSStyleSheet();
+      this._hostStyleSheet.replaceSync(hostStyles);
       this._styleSheet = new CSSStyleSheet();
       this._styleSheet.replaceSync(styles);
     }
@@ -107,6 +121,7 @@ class HighlightService implements ReactiveController {
   /** @internal */
   public hostConnected(): void {
     this._createHighlightEntries();
+    this._adoptHostStyleSheet();
     this.attachStylesheet();
     this.find(this._host.searchText);
   }
@@ -131,6 +146,16 @@ class HighlightService implements ReactiveController {
     }
 
     this._attachedRoot = null;
+  }
+
+  /** The theming controller keeps the sheet on a theme change. */
+  private _adoptHostStyleSheet(): void {
+    const root = this._host.shadowRoot!;
+    const sheet = this._hostStyleSheet!;
+
+    if (!root.adoptedStyleSheets.includes(sheet)) {
+      root.adoptedStyleSheets.push(sheet);
+    }
   }
 
   private _createHighlightEntries(): void {
