@@ -15,6 +15,7 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { addToggleController } from '#internals/controllers/toggle.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
@@ -82,9 +83,12 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<IgcExp
 
   private readonly _toggleController = addToggleController(this, {
     detail: () => this,
-    transition: (open) => {
+    transition: (open, signal) => {
       this.open = open;
-      return this._player.playExclusive(open ? growVerIn() : growVerOut());
+      return this._player.playExclusive(
+        open ? growVerIn() : growVerOut(),
+        signal
+      );
     },
   });
 
@@ -93,6 +97,9 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<IgcExp
    * @attr
    */
   @property({ type: Boolean, reflect: true })
+  @coercedProperty<boolean, IgcExpansionPanelComponent>({
+    onChange: ({ host, value }) => host._toggleController.sync(value),
+  })
   public open = false;
 
   /**
@@ -166,7 +173,8 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<IgcExp
   /**
    * Hides the panel content.
    * @returns `true` when the panel was successfully closed, or `false` if it was
-   * already closed or the transition was superseded by a newer one.
+   * already closed or closing, the transition was superseded by a newer one, or
+   * `open` was set to `true` during it.
    */
   public async hide(): Promise<boolean> {
     return this._toggleController.hide();
@@ -175,7 +183,8 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<IgcExp
   /**
    * Shows the panel content.
    * @returns `true` when the panel was successfully opened, or `false` if it was
-   * already open or the transition was superseded by a newer one.
+   * already open or opening, the transition was superseded by a newer one, or
+   * `open` was set to `false` during it.
    */
   public async show(): Promise<boolean> {
     return this._toggleController.show();

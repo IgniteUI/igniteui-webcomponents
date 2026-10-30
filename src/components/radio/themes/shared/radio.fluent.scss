@@ -45,7 +45,7 @@ $theme: $fluent;
     &::before {
         backface-visibility: hidden;
         transform: scale(0);
-        transition: all .2s ease-in;
+        transition-duration: .2s;
         z-index: 1;
     }
 

@@ -11,6 +11,7 @@ import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
+  runHostComboboxTests,
 } from '#internals/testing/form-testbed.spec.js';
 import {
   isFocused,
@@ -18,6 +19,7 @@ import {
   suppressResizeObserverLoopError,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { simulateInput } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
@@ -727,6 +729,13 @@ describe('Textarea component', () => {
       (host as IgcTextareaComponent).renderRoot.querySelector('textarea')!,
   });
 
+  runHostComboboxTests({
+    tagName: IgcTextareaComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcTextareaComponent).renderRoot.querySelector('textarea')!,
+    role: null,
+  });
+
   describe('Auto sizing', () => {
     const sixLines = [1, 2, 3, 4, 5, 6].join('\n');
 
@@ -825,4 +834,6 @@ describe('Textarea component', () => {
       });
     }
   });
+
+  runHiddenAncestorTests(html`<igc-textarea label="Label"></igc-textarea>`);
 });

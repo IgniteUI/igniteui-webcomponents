@@ -29,6 +29,7 @@ import {
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
@@ -47,6 +48,8 @@ import type { IgcSliderBaseComponent } from './slider-base.js';
 import IgcSliderComponent from './slider.js';
 
 describe('Slider component', () => {
+  before(() => defineComponents(IgcSliderComponent, IgcRangeSliderComponent));
+
   describe('Regular', () => {
     let slider: IgcSliderComponent;
 
@@ -2691,6 +2694,11 @@ describe('Slider component', () => {
       });
     });
   });
+
+  runHiddenAncestorTests(html`
+    <igc-slider value="40"></igc-slider>
+    <igc-range-slider lower="20" upper="60"></igc-range-slider>
+  `);
 });
 
 function getDOM<T = HTMLElement>(slider: IgcSliderBaseComponent) {

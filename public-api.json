@@ -1503,7 +1503,6 @@
         "navigation",
         "navigation-button",
         "navigation-buttons",
-        "overlay",
         "prefix",
         "preview",
         "range",
@@ -1703,7 +1702,6 @@
         "navigation",
         "navigation-button",
         "navigation-buttons",
-        "overlay",
         "prefix",
         "preview",
         "range",
@@ -1918,8 +1916,6 @@
         "title"
       ],
       "cssParts": [
-        "animating",
-        "backdrop",
         "base",
         "content",
         "footed",

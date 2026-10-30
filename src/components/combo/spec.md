@@ -75,6 +75,7 @@
 |      13 | 2026-10-27 | Confirm mode (`selectionCommit`): a pending selection, `igcPendingChange`, the `commit` change type, and Cancel and Apply |
 |      14 | 2026-10-27 | The focus moves to the main input when the list closes around it; `igcChange.newValue` has the order of `value` |
 |      15 | 2026-10-28 | Text in STE; `aria-activedescendant` is on the listbox; the character keys filter only in single selection; the test scenarios follow the spec files |
+|      16 | 2026-10-30 | A new item or group header template re-renders the open list |
 
 ## Overview
 
@@ -710,7 +711,8 @@ browser fixture.
    `disableFiltering` to its current value keeps the search text and the filter.
 6. Grouping, the `Other` group for the items without a group value, and the sort directions.
 7. The item and group header templates. The group header template gets the group `key` with its own type, also for
-   number keys and the `Other` group. A template that reads the deprecated `item` still renders.
+   number keys and the `Other` group. A template that reads the deprecated `item` still renders. A new item or group
+   header template re-renders the open list.
 8. The empty message and the `empty` slot.
 9. Localization through `locale` and `resourceStrings`.
 10. Open, close and the keyboard navigation of the list, also Arrow Down at the end of the matches.

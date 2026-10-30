@@ -5,6 +5,7 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { emulateMedia } from '@web/test-runner-commands';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { finishAnimationsFor } from '#internals/testing/helpers.spec.js';
@@ -157,6 +158,35 @@ describe('Banner', () => {
     });
   });
 
+  describe('Layout', () => {
+    it('takes no space when closed in a column flex container', async () => {
+      const container = await fixture<HTMLDivElement>(html`
+        <div style="display: flex; flex-direction: column">
+          <igc-banner>Banner message</igc-banner>
+          <span>Content below</span>
+        </div>
+      `);
+      const closed = container.querySelector(IgcBannerComponent.tagName)!;
+
+      expect(closed.getBoundingClientRect().height).to.equal(0);
+    });
+
+    it('fits a container narrower than its minimum width', async () => {
+      const container = await fixture<HTMLDivElement>(html`
+        <div style="inline-size: 280px; overflow: auto">
+          <igc-banner open>
+            A message
+            <igc-button slot="actions">Action</igc-button>
+          </igc-banner>
+        </div>
+      `);
+      const narrow = container.querySelector(IgcBannerComponent.tagName)!;
+
+      expect(narrow.getBoundingClientRect().width).to.equal(280);
+      expect(container.scrollWidth).to.equal(container.clientWidth);
+    });
+  });
+
   describe('Methods` Tests', () => {
     it('calls `show` and `hide` methods successfully', async () => {
       expect(banner.open).to.be.false;
@@ -240,6 +270,47 @@ describe('Banner', () => {
       const reopening = banner.show();
 
       expect(await closing).to.be.false;
+      expect(await reopening).to.be.true;
+      expect(banner.open).to.be.true;
+    });
+
+    it('keeps the banner open when `open` is set to `false` and then to `true` during the exit', async () => {
+      banner.open = true;
+      await elementUpdated(banner);
+
+      const closing = banner.hide();
+      banner.open = false;
+      banner.open = true;
+      finishAnimationsFor(banner.shadowRoot!);
+
+      expect(await closing).to.be.false;
+      expect(banner.open).to.be.true;
+    });
+
+    it('keeps the banner open after a zero-duration exit that `open` takes over', async () => {
+      await emulateMedia({ reducedMotion: 'reduce' });
+
+      try {
+        await banner.show();
+
+        const closing = banner.hide();
+        banner.open = false;
+        banner.open = true;
+
+        expect(await closing).to.be.false;
+        expect(banner.open).to.be.true;
+      } finally {
+        await emulateMedia({ reducedMotion: 'no-preference' });
+      }
+    });
+
+    it('opens on a show right after `open` is set to `false` during the entrance', async () => {
+      const opening = banner.show();
+      banner.open = false;
+      const reopening = banner.show();
+      finishAnimationsFor(banner.shadowRoot!);
+
+      expect(await opening).to.be.false;
       expect(await reopening).to.be.true;
       expect(banner.open).to.be.true;
     });

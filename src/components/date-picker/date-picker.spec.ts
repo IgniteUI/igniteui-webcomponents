@@ -25,7 +25,11 @@ import {
   runAriaProjectionTests,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
-import { checkDatesEqual, isFocused } from '#internals/testing/helpers.spec.js';
+import {
+  checkDatesEqual,
+  isFocused,
+  withDocumentSheets,
+} from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateInput,
@@ -382,6 +386,27 @@ describe('Date picker', () => {
       expect(dialog).not.to.be.undefined;
       expect(calendar).not.to.be.undefined;
       expect(calendar.parentElement).to.equal(dialog);
+    });
+
+    it('styles the dialog backdrop through `::part(dialog-base)::backdrop`', async () => {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(
+        'igc-date-picker::part(dialog-base)::backdrop { background: rgb(4, 5, 6) }'
+      );
+
+      await withDocumentSheets([sheet], async () => {
+        picker = await fixture<IgcDatePickerComponent>(
+          html`<igc-date-picker open mode="dialog"></igc-date-picker>`
+        );
+        const dialog = picker.renderRoot.querySelector('igc-dialog')!;
+        await elementUpdated(dialog);
+        const native = dialog.renderRoot.querySelector('dialog')!;
+
+        expect(native.matches(':modal')).to.be.true;
+        expect(getComputedStyle(native, '::backdrop').backgroundColor).to.equal(
+          'rgb(4, 5, 6)'
+        );
+      });
     });
   });
 

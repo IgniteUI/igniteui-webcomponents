@@ -198,6 +198,92 @@ describe('Stepper', () => {
       expect(secondStep.active).to.be.true;
     });
 
+    it('should move the active step when the active step deactivates in the same task', async () => {
+      const [firstStep, secondStep] = stepper.steps;
+
+      firstStep.active = false;
+      secondStep.active = true;
+      await elementUpdated(secondStep);
+
+      expect(firstStep.active).to.be.false;
+      expect(secondStep.active).to.be.true;
+
+      stepper.next();
+      await elementUpdated(stepper);
+
+      expect(stepper.steps[2].active).to.be.true;
+    });
+
+    it('should activate the step set last when several steps activate in one task', async () => {
+      const [firstStep, secondStep, thirdStep] = stepper.steps;
+
+      thirdStep.active = true;
+      secondStep.active = true;
+      await elementUpdated(thirdStep);
+
+      expect(firstStep.active).to.be.false;
+      expect(secondStep.active).to.be.true;
+      expect(thirdStep.active).to.be.false;
+    });
+
+    it('should start a later change in the same task from a step activated through `active`', async () => {
+      const [firstStep, secondStep, thirdStep] = stepper.steps;
+
+      thirdStep.active = true;
+      stepper.navigateTo(1);
+      await elementUpdated(thirdStep);
+      expect(secondStep.active).to.be.true;
+      expect(thirdStep.active).to.be.false;
+
+      thirdStep.active = true;
+      stepper.next();
+      await elementUpdated(thirdStep);
+      expect(stepper.steps[3].active).to.be.true;
+
+      secondStep.active = true;
+      stepper.reset();
+      await elementUpdated(secondStep);
+      expect(firstStep.active).to.be.true;
+      expect(secondStep.active).to.be.false;
+    });
+
+    it('should activate a disabled step through `active`, in either order', async () => {
+      const [firstStep, secondStep, thirdStep] = stepper.steps;
+
+      secondStep.disabled = true;
+      secondStep.active = true;
+      await elementUpdated(secondStep);
+
+      expect(firstStep.active).to.be.false;
+      expect(secondStep.active).to.be.true;
+
+      thirdStep.active = true;
+      thirdStep.disabled = true;
+      await elementUpdated(thirdStep);
+
+      expect(secondStep.active).to.be.false;
+      expect(thirdStep.active).to.be.true;
+    });
+
+    it('should activate the first enabled step when a step of a fully disabled stepper is enabled', async () => {
+      stepper = await fixture(html`
+        <igc-stepper>
+          <igc-step disabled></igc-step>
+          <igc-step disabled></igc-step>
+        </igc-stepper>
+      `);
+      const [firstStep, secondStep] = stepper.steps;
+
+      expect(firstStep.active).to.be.false;
+      expect(secondStep.active).to.be.false;
+
+      secondStep.disabled = false;
+      await elementUpdated(secondStep);
+
+      expect(firstStep.active).to.be.false;
+      expect(secondStep.active).to.be.true;
+    });
+
     it('should activate steps through `navigateTo`', async () => {
       const [firstStep, secondStep] = stepper.steps;
 
@@ -332,6 +418,27 @@ describe('Stepper', () => {
       expect(stepper.steps[0].active).to.be.true;
       expect(stepper.steps[1].active).to.be.false;
     });
+
+    it('should keep a step that an `igcActiveStepChanging` handler activates', async () => {
+      const [, secondStep, thirdStep] = stepper.steps;
+      const changed = spy();
+
+      stepper.addEventListener(
+        'igcActiveStepChanging',
+        () => {
+          thirdStep.active = true;
+        },
+        { once: true }
+      );
+      stepper.addEventListener('igcActiveStepChanged', changed);
+
+      simulateClick(getStepDOM(secondStep).parts.header);
+      await elementUpdated(thirdStep);
+
+      expect(secondStep.active).to.be.false;
+      expect(thirdStep.active).to.be.true;
+      expect(changed.called).to.be.false;
+    });
   });
 
   describe('Navigation API', () => {
@@ -379,6 +486,20 @@ describe('Stepper', () => {
       stepper.prev();
       await elementUpdated(stepper);
 
+      expect(stepper.steps[0].active).to.be.true;
+    });
+
+    it('should move from a disabled active step with `next()` and `prev()`', async () => {
+      stepper = await fixture(createDisabledStepper());
+      expect(stepper.steps[1].active).to.be.true;
+
+      stepper.next();
+      await elementUpdated(stepper);
+      expect(stepper.steps[2].active).to.be.true;
+
+      stepper = await fixture(createDisabledStepper());
+      stepper.prev();
+      await elementUpdated(stepper);
       expect(stepper.steps[0].active).to.be.true;
     });
 
@@ -450,6 +571,50 @@ describe('Stepper', () => {
       expect(stepper.steps[1].active).to.be.true;
     });
 
+    it('should activate a prepended active step when the active step deactivates in the same task', async () => {
+      const activeStep = stepper.steps[2];
+      const newStep = document.createElement(IgcStepComponent.tagName);
+
+      stepper.navigateTo(2);
+      await elementUpdated(stepper);
+
+      stepper.prepend(newStep);
+      newStep.active = true;
+      activeStep.active = false;
+      await elementUpdated(newStep);
+
+      expect(newStep.active).to.be.true;
+      expect(activeStep.active).to.be.false;
+    });
+
+    it('should activate a step that is added and then set active', async () => {
+      const newStep = document.createElement(IgcStepComponent.tagName);
+
+      stepper.append(newStep);
+      await stepper.updateComplete;
+
+      newStep.active = true;
+      await elementUpdated(newStep);
+      await elementUpdated(newStep);
+
+      expect(stepper.steps[0].active).to.be.false;
+      expect(newStep.active).to.be.true;
+    });
+
+    it('should ignore `active` on a step removed in the same task', async () => {
+      const lastStep = stepper.steps[4];
+
+      stepper.navigateTo(2);
+      await elementUpdated(stepper);
+
+      lastStep.remove();
+      lastStep.active = true;
+      await elementUpdated(stepper);
+      await elementUpdated(lastStep);
+
+      expect(stepper.steps[2].active).to.be.true;
+    });
+
     it('should activate a newly inserted active step if inserted after the current active', async () => {
       const newStep = document.createElement(IgcStepComponent.tagName);
       newStep.active = true;
@@ -459,6 +624,33 @@ describe('Stepper', () => {
 
       expect(newStep.active).to.be.true;
       expect(stepper.steps[1].active).to.be.false;
+    });
+
+    it('should keep a step that activates in the same task as a change of the steps', async () => {
+      const [firstStep, , thirdStep] = stepper.steps;
+
+      stepper.navigateTo(2);
+      await elementUpdated(stepper);
+
+      stepper.append(document.createElement(IgcStepComponent.tagName));
+      firstStep.active = true;
+      await elementUpdated(firstStep);
+
+      expect(firstStep.active).to.be.true;
+      expect(thirdStep.active).to.be.false;
+    });
+
+    it('should resolve a step added with `active` after the task', async () => {
+      const [, secondStep] = stepper.steps;
+      const newStep = document.createElement(IgcStepComponent.tagName);
+      newStep.active = true;
+
+      stepper.append(newStep);
+      secondStep.active = true;
+      await elementUpdated(newStep);
+
+      expect(secondStep.active).to.be.false;
+      expect(newStep.active).to.be.true;
     });
 
     it('should update `complete-end` part when adjacent steps are removed or their complete state changes', async () => {
@@ -574,6 +766,19 @@ describe('Stepper', () => {
       await elementUpdated(stepper);
 
       expect(isStepAccessible(stepper.steps[2])).to.be.true;
+    });
+
+    it('should move back with `prev()` from an active step that linear mode locks', async () => {
+      stepper.steps[2].active = true;
+      await elementUpdated(stepper.steps[2]);
+
+      expect(stepper.steps[2].active).to.be.true;
+      expect(isStepAccessible(stepper.steps[2])).to.be.false;
+
+      stepper.prev();
+      await elementUpdated(stepper);
+
+      expect(stepper.steps[1].active).to.be.true;
     });
 
     it('should not allow moving to the next step with `next()` if current is invalid and required', async () => {
@@ -1109,6 +1314,21 @@ describe('Stepper', () => {
       simulateKeyboard(step0Header, 'ArrowRight');
       expect(step1Header).to.equal(stepper.steps[1].shadowRoot!.activeElement);
 
+      simulateKeyboard(step1Header, 'ArrowLeft');
+      expect(step0Header).to.equal(stepper.steps[0].shadowRoot!.activeElement);
+    });
+
+    it('should move the focus from a disabled active step to its neighbours', async () => {
+      stepper = await fixture(createDisabledStepper());
+      const [step0Header, step1Header, step2Header] = stepper.steps
+        .slice(0, 3)
+        .map((step) => getStepDOM(step).parts.header);
+
+      step1Header.focus();
+      simulateKeyboard(step1Header, 'ArrowRight');
+      expect(step2Header).to.equal(stepper.steps[2].shadowRoot!.activeElement);
+
+      step1Header.focus();
       simulateKeyboard(step1Header, 'ArrowLeft');
       expect(step0Header).to.equal(stepper.steps[0].shadowRoot!.activeElement);
     });

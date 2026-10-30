@@ -25,6 +25,16 @@ describe('Breadcrumbs', () => {
   `;
 
   describe('Initialization', () => {
+    it('falls back to the medium size when the size properties are not registered', async () => {
+      const el = await fixture<IgcBreadcrumbsComponent>(
+        createDefaultBreadcrumbs()
+      );
+
+      expect(
+        getComputedStyle(el).getPropertyValue('--component-size').trim()
+      ).to.equal('2');
+    });
+
     it('passes the a11y audit', async () => {
       const el = await fixture<IgcBreadcrumbsComponent>(
         createDefaultBreadcrumbs()

@@ -11,7 +11,7 @@ $outlined-theme: $indigo-outlined;
     padding: 0 pad-inline(10px, 16px, 24px);
 
     ::slotted(igc-icon) {
-        --component-size: var(--ig-size-medium) !important;
+        --component-size: var(--ig-size-medium, 2) !important;
     }
 }
 

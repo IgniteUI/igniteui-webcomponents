@@ -51,7 +51,7 @@ $dropdown-theme: dropdown-theme.$indigo;
 
     igc-input {
         --ig-theme: indigo;
-        --ig-size: var(--ig-size-medium);
+        --ig-size: var(--ig-size-medium, 2);
     }
 
     igc-input::part(input) {

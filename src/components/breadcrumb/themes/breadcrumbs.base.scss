@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 
 :host {
-    --component-size: var(--ig-size, var(--ig-size-medium));
+    --component-size: var(--ig-size, var(--ig-size-medium, 2));
 
     display: flex;
     flex-wrap: wrap;

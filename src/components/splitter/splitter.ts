@@ -483,10 +483,17 @@ export default class IgcSplitterComponent extends I18nMixin(
     super.update(changed);
   }
 
-  protected override updated(): void {
+  protected override updated(changed: PropertyValues<this>): void {
     // Layout has just been committed; the `update()` measurements are stale.
     this._clearMeasurement();
     this._updateBarAria();
+
+    // A theme can scale the bar on its axis. The new axis takes effect at once.
+    if (changed.get('orientation')) {
+      for (const animation of this._separator?.getAnimations() ?? []) {
+        animation.finish();
+      }
+    }
   }
 
   public override disconnectedCallback(): void {

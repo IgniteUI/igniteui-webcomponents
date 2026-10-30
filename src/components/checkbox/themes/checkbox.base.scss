@@ -33,7 +33,9 @@ $mark-length: 24;
         transform: translate(-50%, -50%);
         width: var(--size);
         height: var(--size);
-        transition: all .15s ease-in;
+        transition-property: background, border-color, box-shadow;
+        transition-duration: .15s;
+        transition-timing-function: ease-in;
     }
 }
 
@@ -80,7 +82,9 @@ label {
 }
 
 [part='indicator checked'] {
-    transition: all .2s ease-out;
+    transition-property: opacity, stroke, stroke-dashoffset, transform;
+    transition-duration: .2s;
+    transition-timing-function: ease-out;
     stroke-dashoffset: 0;
     opacity: 1;
 }

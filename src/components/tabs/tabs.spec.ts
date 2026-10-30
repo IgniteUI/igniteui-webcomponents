@@ -18,6 +18,7 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { isUnderPageLayer } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -1263,6 +1264,16 @@ describe('Tabs component', () => {
 
       expect(isUnderPageLayer(element, header)).to.be.true;
     });
+
+    it('places fixed content of the selected panel against the viewport', () => {
+      const fixed = document.createElement('div');
+      fixed.style.cssText = 'position: fixed; top: 0; left: 0';
+      element.tabs[0].append(fixed);
+
+      // An element that does not render has no client rects.
+      const [rect] = fixed.getClientRects();
+      expect([rect?.top, rect?.left]).to.eql([0, 0]);
+    });
   });
 
   describe('Scrolling', () => {
@@ -2006,6 +2017,13 @@ describe('Tabs component', () => {
       expect(reasons).to.be.empty;
     });
   });
+
+  runHiddenAncestorTests(html`
+    <igc-tabs>
+      <igc-tab label="One">One</igc-tab>
+      <igc-tab label="Two">Two</igc-tab>
+    </igc-tabs>
+  `);
 });
 
 function getTabsDOM(tabs: IgcTabsComponent) {

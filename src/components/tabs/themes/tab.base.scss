@@ -71,7 +71,6 @@
 :host([selected]) {
     [part~='tab-body'] {
         display: block;
-        transform: translateX(0);
     }
 }
 

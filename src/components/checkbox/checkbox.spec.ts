@@ -9,6 +9,7 @@ import {
   isFocused,
   isUnderPageLayer,
 } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
@@ -432,4 +433,10 @@ describe('Checkbox', () => {
       (host as IgcCheckboxComponent).renderRoot.querySelector('input')!,
     checkable: true,
   });
+
+  runHiddenAncestorTests(html`
+    <igc-checkbox>Label</igc-checkbox>
+    <igc-checkbox checked>Label</igc-checkbox>
+    <igc-checkbox indeterminate>Label</igc-checkbox>
+  `);
 });

@@ -691,6 +691,11 @@ export default class IgcComboComponent<
       this._state.invalidate();
     }
 
+    // The list keeps the same `_itemRenderer`, so a new template must re-render it.
+    if (props.has('itemTemplate') || props.has('groupHeaderTemplate')) {
+      this._listRef.value?.requestUpdate();
+    }
+
     if (props.has('data')) {
       this._syncSelectionFromData();
     }

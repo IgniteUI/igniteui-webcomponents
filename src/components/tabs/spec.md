@@ -35,6 +35,7 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
     - [Host ARIA](#host-aria)
     - [Link tabs](#link-tabs-1)
     - [Layout](#layout)
+    - [Hidden ancestor](#hidden-ancestor)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -52,6 +53,8 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
 |       5 | 2026-10-21 | API descriptions aligned with the JSDoc.                                 |
 |       6 | 2026-10-23 | Link tabs: `href`, `target` and `rel` render the tab header as a link with the tab role, Enter and Space click it, the target of a `<base>` element applies, and the cancelable `igcNavigate` event of a link tab lets the application route on the client; only keys pressed on a tab header navigate; the header slots take non-interactive content; tabs projected through a slot, and changes made while detached, are followed; the arrow keys skip a tab that does not render; the strip is measured when a tab header or the strip width changes, in its own CSS pixels under an ancestor `zoom`; the indicator and the scroll-button arrows follow the direction; no scroll snap |
 |       7 | 2026-10-23 | The tabs make a stacking context, so the z-index of the headers, the indicator and the scroll buttons does not compete with the layers of the page |
+|       8 | 2026-10-29 | The selected panel has no `transform`, so it is not the containing block of fixed content |
+|       9 | 2026-10-29 | In the Fluent theme, transition only the properties of a tab that change; the selected indicator no longer sets `visibility: visible`; so the tabs hide at the same time as a hidden ancestor |
 
 ## Overview
 
@@ -445,6 +448,12 @@ The groups below mirror the `describe` blocks.
 29. A change of size of a tab header, also of a header that a change of `href` replaced, moves the selected
     indicator. So does a change of direction, also on an ancestor.
 30. The tab headers are painted under an earlier page layer with `z-index: 1`.
+31. An element with `position: fixed` in the selected panel is placed against the viewport.
+
+### Hidden ancestor
+
+32. The tabs, also the selected indicator, hide at the same time as a hidden ancestor in each theme, at rest and after a
+    focus or a hover: no element transitions `visibility` or sets it to `visible`.
 
 ## Assumptions and limitations
 

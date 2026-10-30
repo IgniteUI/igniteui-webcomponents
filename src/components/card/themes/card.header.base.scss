@@ -21,11 +21,15 @@
     --ig-size: 1;
 }
 
+section:last-of-type {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
 header {
     display: flex;
     flex-flow: column nowrap;
     overflow: hidden;
-    flex: 1 1 auto;
 }
 
 ::slotted([slot='title']) {
@@ -38,6 +42,5 @@ header {
 
 ::slotted([slot='thumbnail']) {
     display: flex;
-    align-self: flex-start;
     margin-inline-end: pad-inline(rem(16px));
 }

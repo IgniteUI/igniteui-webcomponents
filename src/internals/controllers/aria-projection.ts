@@ -141,18 +141,65 @@ function descriptionBindings(
  * The ARIA semantics that a composite host projects onto the native editor.
  *
  * Every relation is an element reference, because an IDREF does not cross a
- * shadow boundary.
+ * shadow boundary. For the host combobox state, an `undefined` value keeps the
+ * host value. A `null` `controls` or `activeDescendant` sets none.
  */
 export type ProjectedARIA = {
   role?: string;
   hasPopup?: string;
   expanded?: string;
+  autocomplete?: string;
   required?: string;
   label?: string;
   controls?: ReadonlyArray<Element> | null;
   describedBy?: ReadonlyArray<Element> | null;
   labelledBy?: ReadonlyArray<Element> | null;
+  activeDescendant?: Element | null;
 };
+
+/** The host attributes that {@link hostDisclosure} reads. @internal */
+export const HOST_DISCLOSURE_ATTRIBUTES: readonly string[] = [
+  'aria-expanded',
+  'aria-haspopup',
+  'aria-controls',
+];
+
+/**
+ * The host attributes that an {@link addAriaTarget} forwards, so a page can
+ * make the native editor a combobox, or a text box with suggestions, over its
+ * own listbox.
+ * @internal
+ */
+export const HOST_COMBOBOX_ATTRIBUTES: readonly string[] = [
+  'role',
+  ...HOST_DISCLOSURE_ATTRIBUTES,
+  'aria-autocomplete',
+  'aria-activedescendant',
+];
+
+/** Reads the disclosure state of the host. `controls` resolves in the host tree. */
+export function hostDisclosure(
+  host: Element
+): Pick<ProjectedARIA, 'expanded' | 'hasPopup' | 'controls'> {
+  return {
+    expanded: host.getAttribute('aria-expanded') || undefined,
+    hasPopup: host.getAttribute('aria-haspopup') || undefined,
+    controls: joinRelations(host.ariaControlsElements),
+  };
+}
+
+/**
+ * Reads {@link HOST_COMBOBOX_ATTRIBUTES}. Another host role, such as `search`,
+ * wraps the editor and stays on the host.
+ */
+function hostComboboxState(host: Element): ProjectedARIA {
+  return {
+    ...hostDisclosure(host),
+    role: host.getAttribute('role') === 'combobox' ? 'combobox' : undefined,
+    autocomplete: host.getAttribute('aria-autocomplete') || undefined,
+    activeDescendant: host.ariaActiveDescendantElement,
+  };
+}
 
 /** The id of the helper-text container of `IgcValidationContainerComponent`. */
 export const HELPER_TEXT_ID = 'helper-text';
@@ -174,7 +221,7 @@ export function helperText(
  */
 export type ResolvedARIABindings = Omit<
   ProjectedARIA,
-  'controls' | 'describedBy' | 'labelledBy'
+  'controls' | 'describedBy' | 'labelledBy' | 'activeDescendant'
 > & {
   /** The IDREF of the own description, bound while `describedBy` is null. */
   describedByRef?: string;
@@ -183,6 +230,7 @@ export type ResolvedARIABindings = Omit<
   labelledBy: ReadonlyArray<Element> | null;
   controls: ReadonlyArray<Element> | null;
   describedBy: ReadonlyArray<Element> | null;
+  activeDescendant: Element | null;
 };
 
 /** The ARIA target controller of each input-shaped component. */
@@ -217,32 +265,33 @@ class AriaTargetController {
    */
   public setProjected(state: ProjectedARIA): void {
     const previous = this._resolved;
-    this._projected = state;
+    const { role, hasPopup } = this._projected;
+    this._projected = Object.fromEntries(
+      Object.entries(state).filter(([, value]) => value !== undefined)
+    );
+
+    // The themes cannot see the editor ARIA, so mirror the projected role and
+    // popup on the host. Compare the projection: a host role can keep the
+    // bindings equal.
+    if (role !== state.role || hasPopup !== state.hasPopup) {
+      setOrRemoveAttribute(this._host, 'data-role', state.role || null);
+      setOrRemoveAttribute(this._host, 'data-haspopup', state.hasPopup || null);
+    }
 
     if (!bindingsEqual(previous, this.resolveBindings())) {
-      this._reflectStylingHooks();
       this._host.requestUpdate();
     }
   }
 
   /**
-   * Mirrors `role` and `hasPopup` onto `data-role` and `data-haspopup` for the
-   * themes. A `:host()` selector cannot see the ARIA of the editor.
-   */
-  private _reflectStylingHooks(): void {
-    const host = this._host;
-    const { role, hasPopup } = this._projected;
-
-    setOrRemoveAttribute(host, 'data-role', role || null);
-    setOrRemoveAttribute(host, 'data-haspopup', hasPopup || null);
-  }
-
-  /**
    * Resolves the binding values for the native editor element. A projected
-   * value wins over the own naming.
+   * value wins over the own naming and over the host state.
    */
   public resolveBindings(): ResolvedARIABindings {
-    const projected = this._projected;
+    const projected = {
+      ...hostComboboxState(this._host),
+      ...this._projected,
+    };
     const description = this._description();
     const naming = projected.labelledBy
       ? projected
@@ -251,11 +300,14 @@ class AriaTargetController {
     this._resolved = {
       role: projected.role,
       hasPopup: projected.hasPopup,
-      expanded: projected.expanded,
+      // Without a role, drop `aria-expanded`. A text box does not support it.
+      expanded: projected.role ? projected.expanded : undefined,
+      autocomplete: projected.autocomplete,
       required: projected.required,
       label: projected.label ?? naming.label,
       labelledBy: naming.labelledBy ?? null,
       controls: projected.controls ?? null,
+      activeDescendant: projected.activeDescendant ?? null,
       ...descriptionBindings(this._host, description, projected.describedBy),
     };
 
@@ -267,6 +319,7 @@ const scalarBindings = [
   ['role', 'role'],
   ['hasPopup', 'aria-haspopup'],
   ['expanded', 'aria-expanded'],
+  ['autocomplete', 'aria-autocomplete'],
   ['required', 'aria-required'],
   ['label', 'aria-label'],
 ] as const;
@@ -289,6 +342,7 @@ function bindingsEqual(
 ): boolean {
   return (
     a !== undefined &&
+    a.activeDescendant === b.activeDescendant &&
     scalarBindings.every(([key]) => a[key] === b[key]) &&
     relationBindings.every(
       ([key, refKey]) =>
@@ -342,6 +396,12 @@ class AriaBindingsDirective extends Directive {
       } else if (isString(prev) || !sameItems(prev, next)) {
         element[property] = next;
       }
+    }
+
+    const active = bindings.activeDescendant ?? null;
+
+    if (active !== (previous?.activeDescendant ?? null)) {
+      element.ariaActiveDescendantElement = active;
     }
 
     for (const [key, attribute] of scalarBindings) {
@@ -435,7 +495,11 @@ class AriaProjectorController implements ReactiveController {
   }
 }
 
-/** Makes the native editor of a component a target of {@link addAriaProjector}. */
+/**
+ * Makes the native editor of a component a target of {@link addAriaProjector}.
+ * The editor also takes {@link HOST_COMBOBOX_ATTRIBUTES} from the host, which
+ * must observe them through `HostAriaMixin`.
+ */
 export function addAriaTarget(
   host: ControllerHost,
   description: () => Element | null

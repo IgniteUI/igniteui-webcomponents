@@ -10,6 +10,7 @@ import {
 } from '#internals/controllers/aria-projection.js';
 import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
@@ -214,11 +215,20 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
    * Whether the step is active.
    *
    * Active steps are styled with an active state and their content is visible.
+   * Setting it activates the step at once, also a disabled step, so of several
+   * steps set in one task, the last one is active.
    *
    * @attr active
    * @default false
    */
   @property({ type: Boolean, reflect: true })
+  @coercedProperty<boolean, IgcStepComponent>({
+    onChange: ({ value, host }) => {
+      if (value) {
+        host._state?.stepActivated(host);
+      }
+    },
+  })
   public active = false;
 
   /**
@@ -264,6 +274,11 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
+    // The setter cannot apply `active` before the step has its context.
+    if (changed.has('active') && this.active) {
+      this._state?.stepActivated(this);
+    }
+
     if (
       changed.has('active') ||
       changed.has('complete') ||
@@ -271,7 +286,7 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
       changed.has('invalid') ||
       changed.has('optional')
     ) {
-      this._state?.onStepPropertyChanged(this, changed);
+      this._state?.syncActiveStep();
     }
   }
 

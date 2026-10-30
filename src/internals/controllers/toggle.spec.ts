@@ -3,6 +3,7 @@ import {
   expect,
   fixture,
   html,
+  nextFrame,
   unsafeStatic,
 } from '@open-wc/testing';
 import { LitElement } from 'lit';
@@ -34,6 +35,7 @@ describe('Toggle controller', () => {
   let defaultTag: string;
   let customTag: string;
   let supersedeTag: string;
+  let syncTag: string;
   let instance: ToggleTestElement;
 
   before(() => {
@@ -89,6 +91,44 @@ describe('Toggle controller', () => {
             return true;
           },
         });
+      }
+    );
+
+    // Mirrors the dialog/banner shape with `sync()`: the `open` setter reports
+    // each change, and the exit stops when its signal aborts.
+    syncTag = defineCE(
+      class extends ToggleTestBase {
+        private _open = false;
+        public readonly signals: AbortSignal[] = [];
+
+        public readonly toggleController = addToggleController(this, {
+          transition: async (open, signal) => {
+            this.signals.push(signal);
+
+            if (open) {
+              this.open = true;
+              return true;
+            }
+
+            await nextFrame();
+
+            if (signal.aborted) {
+              return false;
+            }
+
+            this.open = false;
+            return true;
+          },
+        });
+
+        public get open(): boolean {
+          return this._open;
+        }
+
+        public set open(value: boolean) {
+          this._open = value;
+          this.toggleController.sync(value);
+        }
       }
     );
   });
@@ -274,6 +314,61 @@ describe('Toggle controller', () => {
       expect(await host.toggleController.hide()).to.be.true;
       expect(host.open).to.be.false;
       expect(await host.toggleController.show()).to.be.true;
+    });
+  });
+
+  describe('Direct changes of `open`', () => {
+    type SyncHostElement = ToggleHostElement & { signals: AbortSignal[] };
+
+    let host: SyncHostElement;
+
+    beforeEach(async () => {
+      host = await createInstance<SyncHostElement>(syncTag);
+      host.open = true;
+    });
+
+    it('should end a request when `open` changes against it', async () => {
+      const closed = spy();
+      host.addEventListener('igcClosed', closed);
+
+      const closing = host.toggleController.hide(true);
+      host.open = false;
+      host.open = true;
+
+      expect(host.signals[0].aborted).to.be.true;
+      expect(await closing).to.be.false;
+      expect(host.open).to.be.true;
+      expect(closed.called).to.be.false;
+    });
+
+    it('should start the next request from `open` in the same task', async () => {
+      host.toggleController.hide();
+      host.open = false;
+      host.open = true;
+
+      expect(await host.toggleController.hide()).to.be.true;
+      expect(host.open).to.be.false;
+    });
+
+    it('should keep a request when `open` changes with it', async () => {
+      const closed = spy();
+      host.addEventListener('igcClosed', closed);
+
+      const closing = host.toggleController.hide(true);
+      host.open = false;
+
+      expect(host.signals[0].aborted).to.be.false;
+      expect(await closing).to.be.true;
+      expect(closed.calledOnce).to.be.true;
+    });
+
+    it('should abort the signal of a superseded request', async () => {
+      const closing = host.toggleController.hide();
+      const opening = host.toggleController.show();
+
+      expect(host.signals[0].aborted).to.be.true;
+      expect(host.signals[1].aborted).to.be.false;
+      await Promise.all([closing, opening]);
     });
   });
 });

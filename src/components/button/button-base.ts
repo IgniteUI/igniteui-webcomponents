@@ -4,7 +4,9 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   type ARIABindings,
   ariaBindings,
+  HOST_DISCLOSURE_ATTRIBUTES,
   hostAria,
+  hostDisclosure,
   trackLabels,
 } from '#internals/controllers/aria-projection.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
@@ -23,13 +25,7 @@ import { bindIf } from '#internals/utils/lit.js';
  * disclosure state of the host goes to the button and to the link alike.
  */
 function nativeAria(host: Element): ARIABindings {
-  const controls = host.ariaControlsElements;
-  const aria: ARIABindings = {
-    ...hostAria(host),
-    expanded: host.getAttribute('aria-expanded') || undefined,
-    hasPopup: host.getAttribute('aria-haspopup') || undefined,
-    controls: controls?.length ? controls : null,
-  };
+  const aria: ARIABindings = { ...hostAria(host), ...hostDisclosure(host) };
   const label = host.getAttribute('aria-label');
 
   return label && !host.ariaLabelledByElements?.length
@@ -59,12 +55,7 @@ export interface IgcButtonEventMap {
 @blazorDeepImport
 @shadowOptions({ delegatesFocus: true })
 export abstract class IgcButtonBaseComponent extends EventEmitterMixin<IgcButtonEventMap>(
-  HostAriaMixin(LitElement, [
-    'aria-pressed',
-    'aria-expanded',
-    'aria-haspopup',
-    'aria-controls',
-  ])
+  HostAriaMixin(LitElement, ['aria-pressed', ...HOST_DISCLOSURE_ATTRIBUTES])
 ) {
   public static readonly formAssociated = true;
 

@@ -12,7 +12,7 @@ igc-button::part(focused):hover {
 :host {
     igc-button::part(base) {
         &:active {
-            --active-foreground: var-get($theme, 'button-hover-arrow-color');
+            --active-foreground: #{var-get($theme, 'button-hover-arrow-color')};
         }
     }
 }

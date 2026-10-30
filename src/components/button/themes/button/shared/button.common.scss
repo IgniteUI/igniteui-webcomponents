@@ -35,11 +35,13 @@ $outlined-theme: $material-outlined;
 /* stylelint-enable */
 
 [part~='base'] {
-    transition: all .15s ease-in-out;
+    transition-property: color, background, border-color, border-width, box-shadow;
+    transition-duration: .15s;
+    transition-timing-function: ease-in-out;
 
     ::slotted(igc-icon) {
         color: var-get($flat-theme, 'icon-color');
-        transition: all .15s ease-in-out;
+        transition: color .15s ease-in-out;
     }
 }
 

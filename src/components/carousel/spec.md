@@ -36,7 +36,9 @@
     - [Swipe](#swipe)
     - [Autoplay lifecycle](#autoplay-lifecycle)
     - [Slide and indicator integrity](#slide-and-indicator-integrity)
+    - [Layout and theming](#layout-and-theming)
     - [Indicator container](#indicator-container)
+    - [Hidden ancestor](#hidden-ancestor)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -54,6 +56,8 @@
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.          |
 |       5 | 2026-10-23 | The carousel makes a stacking context, so the z-index of the slides, the indicators and the navigation buttons does not compete with the layers of the page |
 |       6 | 2026-10-26 | The `aria-controls` of the navigation buttons reaches their native buttons |
+|       7 | 2026-10-29 | The carousel takes the height of its tallest slide; the arrow color tokens reach the navigation buttons |
+|       8 | 2026-10-29 | The navigation buttons have no transition, and the indicator dots transition only their border color; the active slide, the active indicator and its dot no longer set `visibility: visible`; so the carousel hides at the same time as a hidden ancestor |
 
 ## Overview
 
@@ -204,6 +208,10 @@ for the two states. An indicator with no matching slide is not activated.
 - Removing the active slide moves the active state to another slide, and removing the last one leaves the
   carousel empty without throwing. A slide added to an empty carousel becomes the active one.
 - Detaching the carousel stops the rotation, and re-attaching a playing one resumes it.
+- The slides share one grid cell, so the carousel takes the height of its tallest slide, and at least 240px. A
+  `height` or `max-height` on the carousel, or a height from its parent, also in a flex or grid layout, sets the
+  height. The slides then get that height, and a taller slide is cut. The slides do not set the width. An image that
+  is a direct child of a slide fills the slide and does not size the carousel.
 
 ### Localization
 
@@ -414,10 +422,26 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 31. A programmatic change after a key press that did nothing does not steal the focus.
 32. `select()` before the first render does not throw.
 
+### Layout and theming
+
+33. The carousel takes the height of its tallest slide, and all its slides get that height.
+34. A `height`, a `max-height` and the height from a flex parent set the height of the carousel. The slides get
+    that height, and the indicators stay inside it.
+35. An image in a slide fills the carousel and does not size it, also with `width` and `height` attributes or the
+    `height: auto` of a CSS reset.
+36. The slides do not widen the carousel past its minimum width.
+37. The arrow color tokens of the theme reach the icon color variables of the navigation buttons, also while a
+    button has the keyboard focus.
+
 ### Indicator container
 
-33. The container is initialized correctly, applies the `focused` part on `keyup` and removes it on click and on
+38. The container is initialized correctly, applies the `focused` part on `keyup` and removes it on click and on
     `focusout`, but keeps it when the focus moves to another `igc-carousel-indicator`.
+
+### Hidden ancestor
+
+39. The carousel, also the active slide and the active indicator dot, hides at the same time as a hidden ancestor in
+    each theme, at rest and after a focus or a hover: no element transitions `visibility` or sets it to `visible`.
 
 ### Not covered by the suite
 

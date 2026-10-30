@@ -16,6 +16,18 @@
     "declaration-block-no-duplicate-properties": true,
     "declaration-block-no-shorthand-property-overrides": true,
     "declaration-block-single-line-max-declarations": 1,
+    "declaration-property-value-disallowed-list": [
+      {
+        "/^\\$[\\w-]*transition/": ["/(^|[\\s,])all(?![\\w-])/"],
+        "/^transition(-property)?$/": [
+          "/(^|[\\s,])all(?![\\w-])/",
+          "/^\\s*(\\.?\\d|\\$|var\\()/"
+        ]
+      },
+      {
+        "message": "Name the properties to transition. \"all\" and a shorthand without a property name also transition \"visibility\", so an element stays visible after a hidden ancestor hides it."
+      }
+    ],
     "font-family-no-duplicate-names": true,
     "font-family-no-missing-generic-family-keyword": true,
     "font-weight-notation": "numeric",
@@ -69,6 +81,6 @@
     "scss/dollar-variable-colon-newline-after": null,
     "scss/dollar-variable-colon-space-after": "always",
     "scss/selector-no-redundant-nesting-selector": true,
-    "scss/dollar-variable-no-missing-interpolation": null
+    "scss/dollar-variable-no-missing-interpolation": true
   }
 }

@@ -191,10 +191,9 @@ const Slots = setSlots(
  * @csspart year-inner - The calendar year inner element.
  * @csspart selected - The calendar selected state for element(s). Applies to date, month and year elements.
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
- * @csspart dialog-base - The base of the dialog in dialog mode.
+ * @csspart dialog-base - The base of the dialog in dialog mode. Style the backdrop with `::part(dialog-base)::backdrop`.
  * @csspart title - The title of the dialog in dialog mode.
  * @csspart footer - The footer of the dialog in dialog mode, which holds the Cancel and Done buttons.
- * @csspart overlay - The backdrop of the dialog in dialog mode.
  *
  * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
  *

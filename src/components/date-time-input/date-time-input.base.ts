@@ -2,6 +2,7 @@ import { LitElement, type PropertyValues, type TemplateResult } from 'lit';
 import { eventOptions, property, query } from 'lit/decorators.js';
 import {
   addAriaTarget,
+  HOST_COMBOBOX_ATTRIBUTES,
   helperText,
 } from '#internals/controllers/aria-projection.js';
 import {
@@ -65,7 +66,9 @@ const Slots = setSlots(
 export abstract class IgcDateTimeInputBaseComponent<
   T,
   P,
-> extends MaskBehaviorMixin(FormAssociatedRequiredMixin(LitElement)) {
+> extends MaskBehaviorMixin(
+  FormAssociatedRequiredMixin(LitElement, HOST_COMBOBOX_ATTRIBUTES)
+) {
   // #region Internal state and properties
 
   protected abstract readonly _themes: ThemingController;
@@ -83,8 +86,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected override readonly _input?: HTMLInputElement;
 
   /**
-   * Names and describes the native input, and applies the ARIA a composite host
-   * projects. See {@link addAriaTarget}.
+   * Names and describes the native input, and applies the projected and the
+   * host ARIA. See {@link addAriaTarget}.
    */
   protected readonly _ariaTarget = addAriaTarget(this, () =>
     helperText(this, this._slots)
