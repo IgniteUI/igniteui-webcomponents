@@ -4,7 +4,7 @@
     display: contents;
 }
 
-:popover-open {
+[part~='container']:popover-open {
     overflow: visible;
     isolation: isolate;
     height: fit-content;
@@ -15,6 +15,18 @@
     border: none;
     padding: 0;
     background: transparent;
+}
+
+// The proxy anchor of `anchorRect`. It has no `visibility: hidden`, because
+// `position-visibility: anchors-visible` can treat a hidden anchor as not
+// visible.
+[data-rect-anchor] {
+    inset: auto;
+    margin: 0;
+    border: none;
+    padding: 0;
+    background: transparent;
+    pointer-events: none;
 }
 
 // -----------------------------------------------------------------------------

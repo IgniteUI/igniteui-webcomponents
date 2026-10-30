@@ -7,7 +7,10 @@ import type IgcTooltipComponent from './tooltip.js';
 type TooltipHideCallback = () => unknown;
 
 class TooltipEscapeCallbacks {
-  private _collection = new Map<IgcTooltipComponent, TooltipHideCallback>();
+  private readonly _collection = new Map<
+    IgcTooltipComponent,
+    TooltipHideCallback
+  >();
 
   /** Keeps the global `keydown` listener bound while any tooltip is shown. */
   private _syncListener(): void {

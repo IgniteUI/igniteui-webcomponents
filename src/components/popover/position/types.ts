@@ -28,6 +28,14 @@ export function getForcedPopoverPositionStrategy():
   return forcedStrategy;
 }
 
+/** A rectangle in viewport coordinates. */
+export interface PopoverRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 /** The inputs that a position strategy reads from the popover component. */
 export interface PopoverPositionHost {
   /** The value is null or undefined at run time if the attribute is removed. */

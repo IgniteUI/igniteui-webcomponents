@@ -47,6 +47,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Four export conditions keep only one theme in your bundle: `igc-theme-material`, `igc-theme-bootstrap`, `igc-theme-indigo` and `igc-theme-fluent`. Set one in your bundler, or with `node --conditions`. The bundle then has only the light and dark styles of that theme, and is approximately 15–17% smaller after gzip. Without a condition, the bundle has all four themes. With a theme that is not in the bundle, `configureTheme()` gives only the structural styles. See "Bundling a single theme" in the README. [#2461](https://github.com/IgniteUI/igniteui-webcomponents/pull/2461)
 - #### Tile manager
   - `--grid-padding` sets the padding of the grid. The default is still `1.25rem`. For example, set it to `0` to align the tiles with the rest of the page. The resize handles then stay inside the tiles, so they do not make the grid scroll. With a smaller padding, they stand out of the tiles only by the padding. Set the padding with this variable, not on the `base` part. A padding of more than one value, such as `0 1rem`, also keeps the handles inside the tiles.
+- #### Tooltip
+  - `showAt()` shows the tooltip at a point or against a rectangle, in viewport coordinates. Use it for the pointer over a canvas, a chart or an SVG drawing, for example `tooltip.showAt({ x: event.clientX, y: event.clientY })`. A `DOMRect` also fits the new `TooltipRect` type. A call while the tooltip shows at a point moves it, with no animation and no events. `placement`, `offset`, `withArrow` and the flip at the viewport edges apply. The point binds no triggers and no `aria-describedby`, and the tooltip does not hide when the pointer leaves it, so the application shows and hides it. `Escape` still closes it. After it closes, the `anchor` applies again, also an `anchor` that changed while the tooltip showed at the point. The triggers of the `anchor` wait until then. The position is also correct inside an ancestor with `transform` or `zoom`. [#2538](https://github.com/IgniteUI/igniteui-webcomponents/issues/2538)
 
 ### Changed
 - #### Avatar, Badge, Carousel
@@ -159,6 +161,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Circular progress, Linear progress
   - The default `aria-valuetext` is now the percentage that the label shows. Before, it was the value with a percent sign: "50%" for 50 of 200, while the label showed 25%. [#2427](https://github.com/IgniteUI/igniteui-webcomponents/pull/2427)
   - The percentage is now correct. It rounds to two decimals: 12.996% shows as 13%, not "12.100%", and 1.005% shows as 1.01%, not 1%. A fractional `max` also works: 0.25 of 0.5 shows as 50%, not 25%. [#2427](https://github.com/IgniteUI/igniteui-webcomponents/pull/2427)
+- #### Color picker, Combo, Date picker, Date range picker, Dropdown, Select, Slider, Tooltip
+  - In browsers with CSS anchor positioning, a popup whose anchor changes while it shows now starts from its `placement`. The popup hides for one frame during the change. Before, it kept the side of a flip at the previous anchor, for example in the dropdown after `show(target)` with another target.
+  - In browsers without CSS anchor positioning, a popup inside an ancestor with CSS `zoom` is now placed at its anchor. Before, the zoom moved it away from the anchor, and its arrow was off center.
 - #### Color picker
   - The initial `value` is now in the notation of `format` when the `value` attribute comes before the `format` attribute. Before, `value` and the form data stayed in hex until the color changed. [#2413](https://github.com/IgniteUI/igniteui-webcomponents/pull/2413)
   - The HSL saturation no longer becomes infinite for a very small saturation at full value. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
@@ -365,6 +370,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - The drag and resize previews in the page body now cover the tile, also when the body is positioned or has a filter, and when the page scrolls during the operation. Before, the drag preview was off by the margin of the body. In a positioned body, both previews were off.
     - The maximize, restore and resize animations now keep the tile content sharp. The tile box grows or shrinks and shows the content at its real size. The new content fades in, and the tiles under a maximized tile fade in place. The drag preview stays on the pointer during a swap. Before, the animation stretched the tile images, so the text was blurred and out of shape, and the covered tiles moved. The animation rules are in the theme style sheets, such as `themes/light/bootstrap.css`. Your view transition classes stay on the tile. Browsers without view transition classes keep the default animation.
 - #### Tooltip
+  - An event in both `show-triggers` and `hide-triggers`, such as `click` with `show-triggers="click"`, is now handled one time. Before, the tooltip handled it two times and emitted `igcOpening` two times.
+  - `show()` with the configured anchor, after a show at another target, now binds the triggers of the anchor one time. Before, they were bound two times, so the anchor emitted each event two times.
+  - `show(target)` after a change of `anchor` in the same task now shows the tooltip at the target. Before, the new `anchor` replaced the target.
+  - An open tooltip that moves in the DOM now closes on Escape and hides when the pointer leaves it. Before, it ignored both.
+  - Removing the `placement` attribute no longer throws an error. The tooltip uses the default placement, `bottom`.
+  - With `with-arrow` and a `-start` or `-end` placement on a small anchor, the arrow now stays inside the tooltip. Before, the 8 px offset of these placements could move the arrow out.
   - With `with-arrow`, the arrow is now centered on the anchor also on the first show. Before, it was off center by half its width until the tooltip opened a second time, in browsers with CSS anchor positioning. In all browsers, it was also off center after a change of the placement from the top or bottom side to the left or right side, or back. [#2520](https://github.com/IgniteUI/igniteui-webcomponents/issues/2520)
 - #### Tree
   - A tree item outside a tree no longer renders a selection checkbox.

@@ -20,6 +20,7 @@
       - [Sticky mode](#sticky-mode)
       - [Scroll strategy](#scroll-strategy)
       - [Programmatic control](#programmatic-control)
+      - [At a point or a rectangle](#at-a-point-or-a-rectangle)
     - [Behaviors](#behaviors)
     - [Localization](#localization)
     - [Keyboard interactions](#keyboard-interactions)
@@ -33,6 +34,7 @@
     - [Initialization](#initialization)
     - [Properties](#properties)
     - [Methods tests](#methods-tests)
+    - [showAt tests](#showat-tests)
     - [Scroll strategy tests](#scroll-strategy-tests)
     - [Arrow tests](#arrow-tests)
     - [Behaviors tests](#behaviors-tests)
@@ -54,6 +56,8 @@
 |       3 | 2026-10-19 | Localize the name of the default close button                 |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                      |
 |       5 | 2026-10-26 | The arrow is centered on the anchor also on the first show    |
+|       6 | 2026-10-30 | `showAt()` shows the tooltip at a point or a rectangle        |
+|       7 | 2026-10-30 | Triggers bind once; a changed `anchor` resolves before `show` |
 
 ## Overview
 
@@ -68,6 +72,8 @@ top layer and is never clipped by a scrolling ancestor.
 
 - **Flexible anchoring**: an IDREF or an element reference, set declaratively or programmatically, plus a transient
   anchor passed to `show`.
+- **A point or a rectangle**: `showAt` places the tooltip at a point, such as the pointer over a chart, or against a
+  rectangle that the application computes, in viewport coordinates.
 - **Content or message**: a plain text `message` property, or arbitrary slotted content that takes precedence.
 - **Configurable triggers**: the events that show and hide the tooltip are declared as comma or space separated
   lists.
@@ -85,6 +91,7 @@ The `igc-tooltip` must:
 - support setting an anchor element, both declaratively and programmatically.
 - expose a declarative way to configure the end-user interactions that show and hide it.
 - expose an API to programmatically show, hide, toggle and position it.
+- show at a point or a rectangle in viewport coordinates, and move there with no animation.
 - keep the tooltip in view by repositioning when the content would be clipped.
 - be dismissible with <kbd>Escape</kbd> regardless of its configuration.
 - be WAI-ARIA compliant.
@@ -116,6 +123,8 @@ As a developer, I expect to be able to:
 - provide basic text content through a property, or a custom DOM structure through projection.
 - change the default close icon in sticky mode, through the icon service or by slotting one.
 - create and configure tooltips programmatically - anchors, positioning, open state.
+- show a tooltip at the pointer over a canvas, a chart or an SVG drawing, and move it with the pointer.
+- show rich content, such as the details of the data item under the pointer, in a tooltip at a point.
 - style the tooltip to match the application.
 
 ## Functionality
@@ -224,6 +233,86 @@ await tooltip.toggle();
 `show`, `hide` and `toggle` resolve once the corresponding animation completes, and resolve with whether the state
 changed. Setting `open` transitions the tooltip without delays and without animations.
 
+#### At a point or a rectangle
+
+A chart that draws on a canvas has no element for each data item, so the tooltip cannot use an anchor. `showAt`
+places the tooltip at the pointer, and the tooltip shows the details of the data item as slotted content:
+
+```html
+<canvas
+  id="chart"
+  role="img"
+  aria-label="Deployments per day: Monday 12, 1 failed; Tuesday 19, 0 failed; ..."
+></canvas>
+
+<igc-tooltip id="chart-tip" placement="bottom-start" offset="16"></igc-tooltip>
+
+<style>
+  /* The pointer does not leave the chart when it goes over the tooltip. */
+  #chart-tip {
+    pointer-events: none;
+  }
+</style>
+```
+
+```typescript
+import { html, render } from 'lit';
+
+const chart = document.querySelector('#chart')!;
+const tooltip = document.querySelector('igc-tooltip')!;
+let current: DeploymentDay | undefined;
+
+chart.addEventListener('pointermove', (event) => {
+  const item = itemAt(event);
+
+  // The tooltip announces each change of its content, so render only for a new item.
+  if (item !== current) {
+    current = item;
+    render(
+      html`
+        <div class="chart-tip">
+          <strong>${item.day}</strong>
+          <span>${item.count} deployments</span>
+          <span>${item.failed} failed</span>
+        </div>
+      `,
+      tooltip
+    );
+  }
+
+  tooltip.showAt({ x: event.clientX, y: event.clientY });
+});
+
+chart.addEventListener('pointerleave', () => {
+  current = undefined;
+  tooltip.hide();
+});
+
+// Against a rectangle, such as a bar. A DOMRect fits the type.
+tooltip.showAt(barRect);
+```
+
+`showAt` takes a `TooltipRect` in viewport coordinates. Without `width` and `height`, the rectangle is a point.
+`placement`, `offset`, `withArrow` and the flip at the viewport edges apply, as for an element anchor.
+
+- A call while the tooltip shows at a rectangle moves it. There is no animation and no event, and the call resolves
+  with `false`. A move during the show animation keeps the animation. A call during the hide animation shows the
+  tooltip again with the show animation and resolves with `true`, as `show` does.
+- A call while the tooltip shows at an element closes it and shows it again at the rectangle, as `show` with a new
+  target does. `show` with a target while the tooltip shows at a rectangle does the same.
+- The rectangle binds no triggers and writes no `aria-describedby`. The triggers of the configured `anchor` also wait
+  until the tooltip closes. The tooltip does not hide when the pointer leaves it. The application shows and hides it.
+  <kbd>Escape</kbd> still closes it.
+- After the tooltip closes, the configured `anchor` applies again. A new `anchor` while the tooltip shows at a
+  rectangle applies then too.
+- The tooltip keeps the rectangle when it moves in the DOM. A `showAt` before the tooltip connects shows it at the
+  rectangle when it connects.
+- Missing, `null` and non-finite values become 0, and a negative size becomes 0. The tooltip keeps a copy of the
+  values, not the object.
+- The slotted content replaces `message`, as for an element anchor. The example renders it with Lit, but any change
+  to the children of the tooltip works. When the content changes size, the tooltip keeps its placement. For
+  example, with `top`, its bottom edge stays `offset` px above the point.
+
 ### Behaviors
 
 - The tooltip respects its given placement, and repositions when the content would be clipped at a viewport edge.
@@ -239,6 +328,10 @@ changed. Setting `open` transitions the tooltip without delays and without anima
 - Setting `open` transitions the tooltip without delays and animations.
 - Calling `show` with a target treats it as a transient anchor: the triggers are attached to it and it acts as the
   anchor until the tooltip is dismissed, after which a previously set anchor is restored.
+- Calling `showAt` replaces the anchor with a rectangle until the tooltip closes. The rectangle has no triggers and
+  no ARIA relation, and the pointer on the tooltip does not hide it.
+- A changed `anchor` resolves before `show(target)`, so the target of the later call shows.
+- An event in both trigger lists, such as `click` with `show-triggers="click"`, is handled one time.
 
 ### Localization
 
@@ -284,6 +377,7 @@ The `message` property and the slotted content come from the application.
 | Name   | Type signature                                | Description                                                                          |
 | ------ | --------------------------------------------- | ------------------------------------------------------------------------------------ |
 | show   | `(target?: Element \| string): Promise<boolean>` | Shows the tooltip if not already showing. A target is used as a transient anchor. |
+| showAt | `(rect: TooltipRect): Promise<boolean>`       | Shows the tooltip at a point or against a rectangle in viewport coordinates. A call while it shows at a rectangle moves it. |
 | hide   | `(): Promise<boolean>`                        | Hides the tooltip if not already hidden.                                             |
 | toggle | `(): Promise<boolean>`                        | Toggles the tooltip between the shown and hidden state.                              |
 
@@ -336,36 +430,74 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 10. `show` with a target uses it as a transient anchor, restoring the previous anchor afterwards.
 11. `hide` and `toggle` transition the state and resolve with whether it changed.
 12. The methods ignore the configured delays.
+13. `show` with a target after an `anchor` change in the same task shows at the target. The new anchor applies after
+    `hide`.
+
+### showAt tests
+
+The group runs with each position strategy forced.
+
+14. `showAt` with a point shows the tooltip `offset` px from the point, on each side.
+15. `showAt` with a rectangle, or a `DOMRect`, places the tooltip against the rectangle.
+16. A second call while the tooltip shows moves it, with no animation and no events, and resolves with `false`.
+17. A second call during the show animation keeps the animation.
+18. No element is described while the tooltip shows at a point. The anchor gets its description back after `hide`.
+19. The pointer that enters and leaves the tooltip does not hide it.
+20. <kbd>Escape</kbd> closes the tooltip, and the configured anchor applies again.
+21. A point replaces an element target, and an element target replaces a point.
+22. With `withArrow`, the arrow points at the point.
+23. The tooltip flips at the bottom edge of the viewport.
+24. Inside a transformed ancestor, the tooltip is at the viewport coordinates.
+25. Non-finite, `null` and negative values become 0. A change to the argument after the call has no effect.
+26. The tooltip passes the accessibility audit while it shows at a point.
+27. A change of the slotted content size keeps the placement while the tooltip shows at a point.
+28. A new `anchor` while the tooltip shows at a point applies after `hide`. An `anchor` change in the same task
+    before `showAt` does not replace the point.
+29. The triggers of the configured anchor do not act while the tooltip shows at a point. They act again after `hide`.
+30. After a show at a point and a show at the configured anchor, the anchor emits each trigger event one time.
+31. A call during the hide animation shows the tooltip again and resolves with `true`. The `hide` call resolves with
+    `false`.
+32. A move in the DOM keeps the point, and <kbd>Escape</kbd> still closes the tooltip. A `showAt` before the tooltip
+    connects shows it at the point.
+33. A `showAt` and a removal in the same task do not throw.
+34. The tooltip shows at a point on the left edge of the viewport.
+35. The tooltip stays at the point while the page scrolls, also before the next position update.
+36. After a flip at an element near the viewport bottom, `showAt` starts from `placement`.
+37. With `withArrow` and an aligned placement, the arrow stays inside the tooltip. The fallback points it at the
+    point. The native strategy keeps it within half its width of the point.
+38. Inside a zoomed ancestor, the tooltip, its offset and its arrow are at the viewport coordinates.
+39. A tooltip with no `anchor` clears the point on `hide`, so a later `show` does not show it at the point.
 
 ### Scroll strategy tests
 
-13. `hide` hides the tooltip while the anchor is out of view.
-14. `scroll` keeps the tooltip anchored.
-15. `close` closes the tooltip on scroll, including in sticky mode.
+40. `hide` hides the tooltip while the anchor is out of view.
+41. `scroll` keeps the tooltip anchored.
+42. `close` closes the tooltip on scroll, including in sticky mode.
 
 ### Arrow tests
 
-16. With `withArrow`, the arrow is centered on the anchor on the first show.
+43. With `withArrow`, the arrow is centered on the anchor on the first show.
 
 ### Behaviors tests
 
-17. Moving the pointer from the anchor onto the tooltip keeps it open.
-18. A tooltip open on the first render stays shown until an interaction.
-19. Setting `open` transitions without delays and animations.
+44. Moving the pointer from the anchor onto the tooltip keeps it open.
+45. A tooltip open on the first render stays shown until an interaction.
+46. Setting `open` transitions without delays and animations.
+47. An event in both trigger lists is handled one time.
 
 ### State transitions
 
-20. Interrupted show and hide transitions settle in the correct final state.
-21. The tooltip is inert while it is closed and during the animations.
+48. Interrupted show and hide transitions settle in the correct final state.
+49. The tooltip is inert while it is closed and during the animations.
 
 ### Events tests
 
-22. `igcOpening` and `igcClosing` are emitted and can be canceled to prevent the transition.
-23. `igcOpened` and `igcClosed` are emitted after the transition completes.
+50. `igcOpening` and `igcClosing` are emitted and can be canceled to prevent the transition.
+51. `igcOpened` and `igcClosed` are emitted after the transition completes.
 
 ### Keyboard interaction tests
 
-24. <kbd>Escape</kbd> closes the last shown tooltip, including in sticky mode.
+52. <kbd>Escape</kbd> closes the last shown tooltip, including in sticky mode.
 
 ## Assumptions and limitations
 
@@ -373,6 +505,16 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
   application.
 - The delays apply only to end-user interaction; the imperative API is immediate.
 - One anchor is active at a time; a transient anchor passed to `show` replaces the configured one until dismissal.
+- The rectangle of `showAt` is in viewport coordinates. It stays at the same place in the viewport when the page
+  scrolls. Call `showAt` again, or hide the tooltip, on a scroll. For the same reason, the `hide` scroll strategy does
+  not hide a tooltip at a rectangle.
+- The rectangle is in viewport pixels, also inside an ancestor with `zoom`. The `offset` scales with the zoom, as the
+  content does.
+- With the native position strategy, a tooltip that flipped stays on the flipped side while it shows. A new target
+  and the next show start from `placement`. For a new target, the tooltip hides for one frame.
+- With an aligned placement (`-start`, `-end`) and a point, the point is at the edge of the tooltip. With the native
+  position strategy, the arrow stays inside the tooltip there, up to half its width from the point. The fallback
+  moves the tooltip, so the arrow points at the point.
 
 ## Accessibility
 
@@ -392,6 +534,9 @@ dismissed through `sticky`; the component itself is not focusable and manages no
 - While the tooltip is not shown, its internal popover is inert.
 - During the show and hide animations the tooltip is inert.
 - The animations respect `prefers-reduced-motion`: with the preference enabled they run with a duration of zero.
+- A tooltip at a point or a rectangle describes no element. The application must give another way to reach the same
+  information, such as a keyboard path through the chart data. The tooltip announces each change of its content
+  (`aria-live="polite"`), so change `message` only when the data item changes, not on each pointer move.
 
 **References**
 

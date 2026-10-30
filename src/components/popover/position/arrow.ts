@@ -1,4 +1,5 @@
-import { roundByDPR, setStyles } from '#internals/utils/dom.js';
+import { getCSSZoom, roundByDPR, setStyles } from '#internals/utils/dom.js';
+import { clamp } from '#internals/utils/math.js';
 
 export const OPPOSITE_SIDE = {
   top: 'bottom',
@@ -30,14 +31,15 @@ export function setArrowSide(element: HTMLElement, side: PopoverSide): void {
 }
 
 /**
- * Sets the part and the inline styles of the arrow for both strategies.
- * `side` is the container side that touches the anchor. `distance` is the
- * arrow position on the cross axis of that side.
+ * Sets the part and the inline styles of the arrow for both strategies. The
+ * arrow is centered on `anchor`, a client rectangle. `side` is the side of the
+ * anchor that the container is on.
  */
 export function applyArrowStyles(
   element: HTMLElement,
+  container: HTMLElement,
+  anchor: DOMRect,
   side: PopoverSide,
-  distance: number,
   offset: number
 ): void {
   const staticSide = OPPOSITE_SIDE[side];
@@ -47,17 +49,30 @@ export function applyArrowStyles(
   // The part gives the arrow its size. Measure after the part changes.
   const block = isBlockSide(staticSide);
   const inset = block ? element.offsetHeight : element.offsetWidth;
+  const size = block ? element.offsetWidth : element.offsetHeight;
+  const room = Math.max(
+    0,
+    (block ? container.clientWidth : container.clientHeight) - size
+  );
+
+  const cross = block ? 'left' : 'top';
+  const crossSize = block ? 'width' : 'height';
+  const center =
+    (anchor[cross] +
+      anchor[crossSize] / 2 -
+      container.getBoundingClientRect()[cross]) /
+    getCSSZoom(container);
+
+  // The offset can push an arrow at the container edge out of the container.
+  const position = clamp(center - size / 2 + offset, 0, room);
 
   // Reset all sides. A stale inset over-constrains the arrow.
-  const styles: Partial<CSSStyleDeclaration> = {
+  setStyles(element, {
     top: '',
     right: '',
     bottom: '',
     left: '',
-    [block ? 'left' : 'top']: `${roundByDPR(distance + offset)}px`,
-  };
-
-  styles[staticSide] = `${-inset}px`;
-
-  setStyles(element, styles);
+    [cross]: `${roundByDPR(position)}px`,
+    [staticSide]: `${-inset}px`,
+  });
 }

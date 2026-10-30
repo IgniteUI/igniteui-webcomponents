@@ -20,7 +20,7 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
-import { isElement, isLTR } from '#internals/utils/dom.js';
+import { isLTR } from '#internals/utils/dom.js';
 import { asNumber } from '#internals/utils/math.js';
 import { all } from '#themes/tooltip/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -29,7 +29,7 @@ import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
-import type { PopoverScrollStrategy } from '../types.js';
+import type { PopoverScrollStrategy, TooltipRect } from '../types.js';
 import { addTooltipController } from './controller.js';
 import { styles as shared } from './themes/shared/tooltip.common.css.js';
 import { styles } from './themes/tooltip.base.css.js';
@@ -121,6 +121,10 @@ export default class IgcTooltipComponent extends I18nMixin(
     easing: EaseOut.Sine,
   });
 
+  private _anchor?: Element | string;
+
+  private _anchorChanged = false;
+
   /** The queued, not yet committed transition, if a delay is in effect. */
   private _pending?: {
     timer: ReturnType<typeof setTimeout>;
@@ -144,8 +148,13 @@ export default class IgcTooltipComponent extends I18nMixin(
   @query('#arrow')
   private readonly _arrowElement!: HTMLElement;
 
+  /** Removing the `placement` attribute sets `null`. */
+  private get _placement(): PopoverPlacement {
+    return this.placement ?? 'bottom';
+  }
+
   private get _arrowOffset(): number {
-    const [side, alignment] = this.placement.split('-');
+    const [side, alignment] = this._placement.split('-');
 
     if (!alignment) {
       return 0;
@@ -163,14 +172,10 @@ export default class IgcTooltipComponent extends I18nMixin(
    * flattened query also reports the fallback `message`.
    */
   private get _hasProjectedContent(): boolean {
-    return this._slots
-      .getAssignedNodes(DefaultSlot)
-      .some(
-        (node) =>
-          isElement(node) ||
-          (node.nodeType === Node.TEXT_NODE &&
-            Boolean(node.textContent?.trim()))
-      );
+    return (
+      this._slots.hasAssignedElements(DefaultSlot) ||
+      this._slots.getAssignedText(DefaultSlot) !== ''
+    );
   }
 
   /**
@@ -241,7 +246,14 @@ export default class IgcTooltipComponent extends I18nMixin(
    * @attr anchor
    */
   @property()
-  public anchor?: Element | string;
+  public set anchor(value: Element | string | undefined) {
+    this._anchor = value;
+    this._anchorChanged = true;
+  }
+
+  public get anchor(): Element | string | undefined {
+    return this._anchor;
+  }
 
   /**
    * The anchor events that show the tooltip.
@@ -337,15 +349,20 @@ export default class IgcTooltipComponent extends I18nMixin(
   }
 
   protected override updated(changedProperties: PropertyValues<this>): void {
-    // The arrow is created by the render that just committed, so the popover
-    // can only be handed it afterwards.
+    // The render creates the arrow, so the popover gets it after the render.
     if (changedProperties.has('withArrow')) {
       this._popover.arrow = this.withArrow ? this._arrowElement : null;
     }
   }
 
-  protected override willUpdate(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has('anchor')) {
+  protected override willUpdate(): void {
+    this._resolveAnchor();
+  }
+
+  /** Resolves a changed `anchor`, so that a later `show(target)` wins over it. */
+  private _resolveAnchor(): void {
+    if (this._anchorChanged) {
+      this._anchorChanged = false;
       this._controller.resolveAnchor(this.anchor);
     }
   }
@@ -483,10 +500,37 @@ export default class IgcTooltipComponent extends I18nMixin(
    * Resolves with whether the tooltip transitioned to a shown state.
    */
   public async show(target?: Element | string): Promise<boolean> {
+    this._resolveAnchor();
+
     if (target) {
       this._cancelTransition();
       this._controller.setAnchor(target, true);
     }
+
+    return await this._applyTooltipState({ show: true });
+  }
+
+  /**
+   * Shows the tooltip at a point or against a rectangle, in viewport
+   * coordinates, for example at the `clientX` and `clientY` of a pointer event.
+   * Without `width` and `height`, the rectangle is a point.
+   *
+   * @remarks
+   * A call while the tooltip shows at a rectangle moves it, with no animation.
+   * The rectangle has no show or hide triggers and no ARIA relation, and the
+   * pointer on the tooltip does not hide it. `hide()`, the `Escape` key and the
+   * `close` scroll strategy close it. After it closes, the `anchor` applies
+   * again.
+   * Bypasses `showDelay` and does not emit `igcOpening`/`igcOpened`.
+   * Resolves with whether the tooltip transitioned to a shown state.
+   */
+  public async showAt(rect: TooltipRect): Promise<boolean> {
+    this._controller.setRect({
+      x: asNumber(rect.x),
+      y: asNumber(rect.y),
+      width: Math.max(0, asNumber(rect.width)),
+      height: Math.max(0, asNumber(rect.height)),
+    });
 
     return await this._applyTooltipState({ show: true });
   }
@@ -548,9 +592,10 @@ export default class IgcTooltipComponent extends I18nMixin(
     return html`
       <igc-popover
         .inert=${!this.open}
-        .placement=${this.placement}
+        .placement=${this._placement}
         .offset=${this.offset}
         .anchor=${this._controller.anchor ?? undefined}
+        .anchorRect=${this._controller.rect}
         .arrowOffset=${this._arrowOffset}
         .scrollStrategy=${this.scrollStrategy}
         ?open=${this.open}

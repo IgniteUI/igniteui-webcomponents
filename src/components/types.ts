@@ -62,4 +62,15 @@ export type TabsAlignment = 'start' | 'end' | 'center' | 'justify';
 export type TextareaResize = 'vertical' | 'auto' | 'none';
 export type TileManagerDragMode = 'none' | 'tile-header' | 'tile';
 export type TileManagerResizeMode = 'none' | 'hover' | 'always';
+/* jsonAPIPlainObject */
+/**
+ * A rectangle in viewport coordinates for the tooltip `showAt()` method.
+ * Without `width` and `height`, it is a point.
+ */
+export type TooltipRect = {
+  x: number;
+  y: number;
+  width?: number;
+  height?: number;
+};
 //#endregion
