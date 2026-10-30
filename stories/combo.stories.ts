@@ -12,6 +12,11 @@ import {
   IgcInputComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
+import {
+  bindComboDataSource,
+  type ComboDataBinding,
+  type ComboDataSource,
+} from 'igniteui-webcomponents/extras';
 import { registerMaterialIcons } from './story-icons.js';
 import {
   delay,
@@ -52,10 +57,13 @@ const metadata: Meta<IgcComboComponent> = {
     actions: {
       handles: [
         'igcChange',
+        'igcPendingChange',
         'igcOpening',
         'igcOpened',
         'igcClosing',
         'igcClosed',
+        'igcSearchInput',
+        'igcDataRequest',
       ],
     },
   },
@@ -146,6 +154,41 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    totalItemCount: {
+      type: 'number',
+      description:
+        'The number of all the items of a remote source, when the source knows it.\nIn remote filtering mode, the list shows a placeholder for each item that\n`data` does not hold yet, so the scrollbar shows the full list.',
+      control: 'number',
+    },
+    loading: {
+      type: 'boolean',
+      description:
+        'Whether the combo loads options. A spinner, which the `loading` slot can\nreplace, then takes the place of the toggle icon, and an empty list shows\na loading message instead of the empty message.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    showSelectAll: {
+      type: 'boolean',
+      description:
+        'Whether the list starts with an option that selects all the items that it\nshows, or deselects them when all of them are selected. Only in multiple\nselection mode.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    groupSelection: {
+      type: 'boolean',
+      description:
+        'Whether a group header is an option that selects the items of its group\nthat the list shows, or deselects them when all of them are selected.\nOnly in multiple selection mode with `groupKey`.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    selectionCommit: {
+      type: { name: 'enum', value: ['immediate', 'confirm'] },
+      description:
+        "When the user's changes of the selection apply in multiple selection\nmode. With `confirm`, they change a pending selection while the list is\nopen, and Enter or the Apply button applies it with one `igcChange`. Any\nother close drops it. While it exists, the selection methods change it too.",
+      options: ['immediate', 'confirm'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'immediate' } },
+    },
     locale: {
       type: 'string',
       description:
@@ -202,6 +245,10 @@ const metadata: Meta<IgcComboComponent> = {
     caseSensitiveIcon: false,
     disableFiltering: false,
     disableClear: false,
+    loading: false,
+    showSelectAll: false,
+    groupSelection: false,
+    selectionCommit: 'immediate',
     required: false,
     disabled: false,
     invalid: false,
@@ -260,6 +307,37 @@ interface IgcComboArgs {
   /** Whether the clear button is hidden. */
   disableClear: boolean;
   /**
+   * The number of all the items of a remote source, when the source knows it.
+   * In remote filtering mode, the list shows a placeholder for each item that
+   * `data` does not hold yet, so the scrollbar shows the full list.
+   */
+  totalItemCount: number;
+  /**
+   * Whether the combo loads options. A spinner, which the `loading` slot can
+   * replace, then takes the place of the toggle icon, and an empty list shows
+   * a loading message instead of the empty message.
+   */
+  loading: boolean;
+  /**
+   * Whether the list starts with an option that selects all the items that it
+   * shows, or deselects them when all of them are selected. Only in multiple
+   * selection mode.
+   */
+  showSelectAll: boolean;
+  /**
+   * Whether a group header is an option that selects the items of its group
+   * that the list shows, or deselects them when all of them are selected.
+   * Only in multiple selection mode with `groupKey`.
+   */
+  groupSelection: boolean;
+  /**
+   * When the user's changes of the selection apply in multiple selection
+   * mode. With `confirm`, they change a pending selection while the list is
+   * open, and Enter or the Apply button applies it with one `igcChange`. Any
+   * other close drops it. While it exists, the selection methods change it too.
+   */
+  selectionCommit: 'immediate' | 'confirm';
+  /**
    * The locale of the component. Without it, the component takes its own
    * `lang`, else the locale of the nearest ancestor that has a `locale` (a
    * component) or a `lang`, and then the global locale.
@@ -309,7 +387,7 @@ const styles = html`
       max-width: 36rem;
     }
 
-    .cmb-stack :is(h3, p, table) {
+    .cmb-stack :is(h3, h4, p, table) {
       margin: 0;
     }
 
@@ -324,6 +402,39 @@ const styles = html`
       flex-wrap: wrap;
       align-items: center;
       gap: 0.5rem;
+    }
+
+    .cmb-list {
+      display: grid;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .cmb-list > li {
+      display: flex;
+      border-block-end: 1px solid var(--ig-gray-300);
+    }
+
+    .cmb-table {
+      overflow-x: auto;
+    }
+
+    .cmb-table table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    .cmb-table caption {
+      text-align: start;
+      padding-block-end: 0.5rem;
+    }
+
+    .cmb-table :is(th, td) {
+      padding: 0.5rem;
+      border-block-end: 1px solid var(--ig-gray-300);
+      text-align: start;
+      white-space: nowrap;
     }
   </style>
 `;
@@ -344,6 +455,8 @@ const cities: City[] = [
 ];
 
 export const Default: Story = {
+  // The local data has no remote total.
+  argTypes: { totalItemCount: { table: { disable: true } } },
   parameters: {
     docs: {
       description: {
@@ -373,6 +486,7 @@ export const Default: Story = {
       .placeholderSearch=${args.placeholderSearch}
       .data=${cities}
       .groupSorting=${args.groupSorting}
+      .selectionCommit=${args.selectionCommit}
       .scrollStrategy=${args.scrollStrategy}
       ?case-sensitive-icon=${args.caseSensitiveIcon}
       ?disable-filtering=${args.disableFiltering}
@@ -385,6 +499,9 @@ export const Default: Story = {
       ?disabled=${args.disabled}
       ?invalid=${args.invalid}
       ?single-select=${args.singleSelect}
+      ?show-select-all=${args.showSelectAll}
+      ?group-selection=${args.groupSelection}
+      ?loading=${args.loading}
     >
       <igc-icon slot="prefix" name="location"></igc-icon>
       <span slot="helper-text">
@@ -671,7 +788,7 @@ export const ColumnChooser: Story = {
     docs: {
       description: {
         story:
-          'A column chooser for a table of orders. The list is short, so `disable-filtering` removes the search input. The Order column always shows, and it is not in the list. `igcChange` gives `newValue`, and the story renders the table from it. The buttons use the methods: "Show all" calls `select()` with no argument, which selects all the options, and "Reset" sets `value` to the default columns. A method or a new `value` does not send `igcChange`, so the buttons render the table themselves.',
+          'A column chooser for a table of orders. The list is short, so `disable-filtering` removes the search input. The Order column always shows, and it is not in the list. `show-select-all` puts "Select all" first in the list: it shows all the columns, or hides them when all of them show, and its checkbox is indeterminate while only some of them show. `igcChange` gives `newValue`, and the story renders the table from it. "Reset" sets `value` to the default columns. A new `value` does not send `igcChange`, so the button renders the table itself.',
       },
     },
   },
@@ -712,12 +829,6 @@ export const ColumnChooser: Story = {
       update();
     };
 
-    const showAll = () => {
-      combo.value!.select();
-      visible = combo.value!.value as string[];
-      update();
-    };
-
     const reset = () => {
       combo.value!.value = [...defaultColumns];
       visible = [...defaultColumns];
@@ -738,27 +849,6 @@ export const ColumnChooser: Story = {
         .cmb-columns igc-combo {
           flex: 1 1 18rem;
         }
-
-        .cmb-table {
-          overflow-x: auto;
-        }
-
-        .cmb-table table {
-          border-collapse: collapse;
-          width: 100%;
-        }
-
-        .cmb-table caption {
-          text-align: start;
-          padding-block-end: 0.5rem;
-        }
-
-        .cmb-table :is(th, td) {
-          padding: 0.5rem;
-          border-block-end: 1px solid var(--ig-gray-300);
-          text-align: start;
-          white-space: nowrap;
-        }
       </style>
       <section
         class="cmb-stack cmb-panel cmb-columns"
@@ -770,16 +860,441 @@ export const ColumnChooser: Story = {
             ${ref(combo)}
             label="Columns"
             disable-filtering
+            show-select-all
             value-key="key"
             display-key="label"
             .data=${columns}
             .value=${visible}
             @igcChange=${change}
           ></igc-combo>
-          <igc-button variant="outlined" @click=${showAll}>Show all</igc-button>
-          <igc-button variant="flat" @click=${reset}>Reset</igc-button>
+          <igc-button variant="outlined" @click=${reset}>Reset</igc-button>
         </div>
         <div class="cmb-table" ${mount}></div>
+      </section>
+    `;
+  },
+};
+
+const issueLabels = [
+  'accessibility',
+  'bug',
+  'design',
+  'documentation',
+  'feature',
+  'good first issue',
+  'help wanted',
+  'performance',
+  'question',
+  'security',
+  'testing',
+];
+
+const issues = [
+  {
+    id: 512,
+    title: 'Hidden focus ring in high contrast',
+    labels: ['accessibility', 'bug'],
+  },
+  {
+    id: 509,
+    title: 'A dark theme for the date picker',
+    labels: ['design', 'feature'],
+  },
+  {
+    id: 507,
+    title: 'Document the grid shortcuts',
+    labels: ['documentation', 'good first issue'],
+  },
+  {
+    id: 503,
+    title: 'Slow scroll of long lists on phones',
+    labels: ['bug', 'performance'],
+  },
+  {
+    id: 498,
+    title: 'Sanitize the HTML of chat messages',
+    labels: ['security'],
+  },
+  {
+    id: 495,
+    title: 'Screen readers read the price twice',
+    labels: ['accessibility', 'help wanted'],
+  },
+  {
+    id: 490,
+    title: 'How to load the options from a server?',
+    labels: ['question'],
+  },
+  {
+    id: 486,
+    title: 'End-to-end tests for the checkout',
+    labels: ['help wanted', 'testing'],
+  },
+  { id: 482, title: 'Fix the date format in exports', labels: ['bug'] },
+  { id: 478, title: 'Export the report as PDF', labels: ['feature'] },
+];
+
+export const StagedFilter: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'An issue list with a label filter that applies only on demand. With `selection-commit="confirm"`, the selected labels wait until you press Apply, or Enter in the list. Then one `igcChange` gives all of them in `newValue`, and the list shows the issues with one of them. Cancel, Escape, Tab out of the list, or a click outside or on the input drops the changes. While the list is open, the input keeps the applied labels. The clear button clears the filter at once, also while the list is open, and so does Escape with the list closed. `show-select-all` selects the labels that the search shows: type "e", then select all.',
+      },
+    },
+  },
+  render: () => {
+    let applied: string[] = [];
+
+    const { mount, update } = renderInto(() => {
+      const shown = applied.length
+        ? issues.filter(({ labels }) => labels.some((l) => applied.includes(l)))
+        : issues;
+
+      return html`
+        <p class="muted" role="status">
+          ${
+            applied.length
+              ? `${shown.length} of ${issues.length} issues with ${applied.join(', ')}`
+              : `All ${issues.length} issues`
+          }
+        </p>
+        <ul class="cmb-list cmb-issues" role="list">
+          ${shown.map(
+            ({ id, title, labels }) => html`
+              <li>
+                <span>#${id} ${title}</span>
+                ${labels.map((label) => html`<span class="cmb-label">${label}</span>`)}
+              </li>
+            `
+          )}
+        </ul>
+      `;
+    });
+
+    // Apply, Enter, the clear button, and Escape with the list closed.
+    const changed = ({ detail }: CustomEvent<IgcComboChangeEventArgs>) => {
+      applied = detail.newValue as string[];
+      update();
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .cmb-filter {
+          max-width: 40rem;
+        }
+
+        .cmb-issues {
+          gap: 0.5rem;
+        }
+
+        .cmb-issues li {
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 0.375rem;
+          padding-block-end: 0.5rem;
+        }
+
+        .cmb-issues li > span:first-child {
+          margin-inline-end: auto;
+        }
+
+        .cmb-label {
+          padding: 0 0.5rem;
+          border: 1px solid var(--ig-gray-400);
+          border-radius: 1rem;
+          font-size: 0.75rem;
+        }
+      </style>
+      <section
+        class="cmb-stack cmb-panel cmb-filter"
+        aria-labelledby="cmb-filter-title"
+      >
+        <h3 id="cmb-filter-title">Issues</h3>
+        <igc-combo
+          label="Labels"
+          placeholder="Filter by label"
+          placeholder-search="Search labels"
+          selection-commit="confirm"
+          show-select-all
+          .data=${issueLabels}
+          @igcChange=${changed}
+        >
+          <span slot="helper-text">
+            Apply the labels with Apply, or with Enter in the list.
+          </span>
+        </igc-combo>
+        <div ${mount}></div>
+      </section>
+    `;
+  },
+};
+
+interface Order {
+  id: number;
+  customer: string;
+  status: string;
+}
+
+const orderStatuses = [
+  'Pending',
+  'Paid',
+  'Shipped',
+  'Delivered',
+  'Returned',
+  'Canceled',
+];
+
+const statusOrders: Order[] = [
+  { id: 1041, customer: 'Ana Silva', status: 'Paid' },
+  { id: 1042, customer: 'Ben Okafor', status: 'Shipped' },
+  { id: 1043, customer: 'Chen Wei', status: 'Pending' },
+  { id: 1044, customer: 'Dana Novak', status: 'Delivered' },
+  { id: 1045, customer: 'Eli Cohen', status: 'Returned' },
+  { id: 1046, customer: 'Fatima Zahra', status: 'Paid' },
+  { id: 1047, customer: 'Goran Petrov', status: 'Canceled' },
+  { id: 1048, customer: 'Hana Sato', status: 'Shipped' },
+  { id: 1049, customer: 'Ivan Horvat', status: 'Delivered' },
+  { id: 1050, customer: 'Julia Rossi', status: 'Pending' },
+];
+
+export const StatusFilter: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'An order table with a status filter in confirm mode, whose `footer` slot content replaces the built-in Cancel and Apply. Clear calls `deselect()`, which changes the pending selection, not `value`. Apply calls `commitSelection()` and `hide()`. These methods send no events, so the story applies `value` itself; Enter in the list still applies with `igcChange`. The footer reads `pendingValue` when the list opens and after each `igcPendingChange`, and Apply is off while the pending statuses are the applied ones.',
+      },
+    },
+  },
+  render: () => {
+    const combo = createRef<IgcComboComponent>();
+    let applied: string[] = [];
+
+    const footer = renderInto(() => {
+      const pending = (combo.value?.pendingValue ?? []) as string[];
+      const dirty =
+        pending.length !== applied.length ||
+        pending.some((status) => !applied.includes(status));
+
+      return html`
+        <span class="muted">
+          ${
+            pending.length
+              ? `${pending.length} of ${orderStatuses.length} statuses`
+              : 'All statuses'
+          }
+        </span>
+        <igc-button variant="flat" ?disabled=${!pending.length} @click=${clear}>
+          Clear
+        </igc-button>
+        <igc-button ?disabled=${!dirty} @click=${apply}>Apply</igc-button>
+      `;
+    });
+
+    const table = renderInto(() => {
+      const shown = applied.length
+        ? statusOrders.filter(({ status }) => applied.includes(status))
+        : statusOrders;
+
+      return html`
+        <p class="muted" role="status">
+          ${
+            applied.length
+              ? `${shown.length} of ${statusOrders.length} orders: ${applied.join(', ')}`
+              : `All ${statusOrders.length} orders`
+          }
+        </p>
+        <table aria-labelledby="cmb-status-title">
+          <thead>
+            <tr>
+              <th scope="col">Order</th>
+              <th scope="col">Customer</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${shown.map(
+              ({ id, customer, status }) => html`
+                <tr>
+                  <th scope="row">#${id}</th>
+                  <td>${customer}</td>
+                  <td>${status}</td>
+                </tr>
+              `
+            )}
+          </tbody>
+        </table>
+      `;
+    });
+
+    // The combo changes the pending selection after the event, so read it
+    // after the update.
+    const refresh = async () => {
+      await combo.value!.updateComplete;
+      footer.update();
+    };
+
+    const changed = ({ detail }: CustomEvent<IgcComboChangeEventArgs>) => {
+      applied = detail.newValue as string[];
+      table.update();
+      void refresh();
+    };
+
+    // The methods change the pending selection at once, without events.
+    const clear = () => {
+      combo.value!.deselect();
+      footer.update();
+    };
+
+    const apply = () => {
+      combo.value!.commitSelection();
+      applied = [...(combo.value!.value as string[])];
+      table.update();
+      combo.value!.hide();
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .cmb-status-footer {
+          padding: 0.5rem;
+        }
+
+        .cmb-status-footer > span {
+          margin-inline-end: auto;
+        }
+      </style>
+      <section class="cmb-stack cmb-panel" aria-labelledby="cmb-status-title">
+        <h3 id="cmb-status-title">Orders</h3>
+        <igc-combo
+          ${ref(combo)}
+          label="Status"
+          placeholder="All statuses"
+          selection-commit="confirm"
+          disable-filtering
+          .data=${orderStatuses}
+          @igcOpening=${refresh}
+          @igcPendingChange=${refresh}
+          @igcChange=${changed}
+        >
+          <div
+            slot="footer"
+            class="cmb-row cmb-status-footer"
+            ${footer.mount}
+          ></div>
+        </igc-combo>
+        <div class="cmb-table" ${table.mount}></div>
+      </section>
+    `;
+  },
+};
+
+interface Permission {
+  id: string;
+  name: string;
+  area: string;
+}
+
+const permissions: Permission[] = [
+  { id: 'billing-view', name: 'View invoices', area: 'Billing' },
+  { id: 'billing-export', name: 'Export invoices', area: 'Billing' },
+  { id: 'billing-pay', name: 'Change the payment method', area: 'Billing' },
+  { id: 'members-view', name: 'View members', area: 'Members' },
+  { id: 'members-invite', name: 'Invite members', area: 'Members' },
+  { id: 'members-roles', name: 'Change member roles', area: 'Members' },
+  { id: 'projects-create', name: 'Create projects', area: 'Projects' },
+  { id: 'projects-archive', name: 'Archive projects', area: 'Projects' },
+  { id: 'projects-delete', name: 'Delete projects', area: 'Projects' },
+  { id: 'reports-view', name: 'View reports', area: 'Reports' },
+  { id: 'reports-export', name: 'Export reports', area: 'Reports' },
+];
+
+const areas = Map.groupBy(permissions, ({ area }) => area);
+
+/** The access of a role to an area with `total` permissions. */
+function accessTo(count: number, total: number): string {
+  if (count === total) {
+    return 'Full access';
+  }
+
+  return count ? `${count} of ${total} permissions` : 'No access';
+}
+
+export const RolePermissions: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The permissions of a role, grouped by area. `group-selection` makes each area header an option: a click or Space on it grants all the permissions of the area, or takes them away when the role has all of them, with one `igcChange`. The checkbox of the header is indeterminate while the role has only some of them. The arrow keys stop on the headers. A header acts on the permissions that the list shows: search "export", then click Billing, and only "Export invoices" changes. `show-select-all` adds "Select all" for all the shown permissions. The summary renders from `newValue` of `igcChange`.',
+      },
+    },
+  },
+  render: () => {
+    let granted = [
+      'billing-view',
+      'members-view',
+      'members-invite',
+      'members-roles',
+      'reports-view',
+    ];
+
+    const { mount, update } = renderInto(() =>
+      [...areas].map(([area, list]) => {
+        const count = list.filter(({ id }) => granted.includes(id)).length;
+
+        return html`
+          <li>
+            <span>${area}</span>
+            <span class="muted">${accessTo(count, list.length)}</span>
+          </li>
+        `;
+      })
+    );
+
+    const change = ({ detail }: CustomEvent<IgcComboChangeEventArgs>) => {
+      granted = detail.newValue as string[];
+      update();
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .cmb-areas li {
+          justify-content: space-between;
+          padding-block: 0.375rem;
+        }
+      </style>
+      <section class="cmb-stack cmb-panel" aria-labelledby="cmb-role-title">
+        <h3 id="cmb-role-title">Role: Project manager</h3>
+        <igc-combo
+          label="Permissions"
+          placeholder="Choose permissions"
+          placeholder-search="Search permissions"
+          value-key="id"
+          display-key="name"
+          group-key="area"
+          group-selection
+          show-select-all
+          .data=${permissions}
+          .value=${granted}
+          @igcChange=${change}
+        >
+          <span slot="helper-text">
+            Select an area to grant its shown permissions, or to take them away.
+          </span>
+        </igc-combo>
+        <h4 id="cmb-access-title">Access by area</h4>
+        <ul
+          class="cmb-list cmb-areas"
+          role="list"
+          aria-labelledby="cmb-access-title"
+          ${mount}
+        ></ul>
       </section>
     `;
   },
@@ -833,7 +1348,7 @@ export const LazyLoading: Story = {
     docs: {
       description: {
         story:
-          'A flight search that loads the airports from the server when the list opens for the first time. `igcOpening` starts the request, and until the data comes, the `empty` slot shows a spinner and a loading message. After the load, the same slot tells that the search found nothing. `filteringOptions` sets `filterKey` to a key that joins the code, the city and the airport name, so "lhr", "london" and "heathrow" all find Heathrow. The status message tells a screen reader user when the airports load.',
+          'A flight search that loads the airports from the server when the list opens for the first time. `igcOpening` starts the request and sets `loading`, so the empty list shows "Loading", and a spinner takes the place of the toggle icon. The `loading` slot replaces the default spinner, which has the color of the text, with a larger circular progress in the primary color. After the load, the `empty` slot tells that the search found nothing. `filteringOptions` sets `filterKey` to a key that joins the code, the city and the airport name, so "lhr", "london" and "heathrow" all find Heathrow. The status message tells a screen reader user when the airports load.',
       },
     },
   },
@@ -848,32 +1363,31 @@ export const LazyLoading: Story = {
 
       const combo = event.target as IgcComboComponent<Airport>;
       const output = status.value!;
-      const empty = combo.querySelector('[slot="empty"]')!;
 
       requested = true;
+      combo.loading = true;
       output.textContent = 'Loading the airports…';
 
       await delay(1200);
 
       combo.data = airports;
-      empty.textContent = 'No airport matches your search.';
+      combo.loading = false;
       output.textContent = `${airports.length} airports loaded.`;
     };
 
     return html`
       ${styles}
       <style>
-        .cmb-loading {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-        }
+        .cmb-flight igc-circular-progress {
+          --ig-circular-bar-diameter: 1.25rem;
 
-        .cmb-loading igc-circular-progress {
-          --ig-circular-bar-diameter: 1.5rem;
+          display: flex;
         }
       </style>
-      <section class="cmb-stack cmb-panel" aria-labelledby="cmb-flight-title">
+      <section
+        class="cmb-stack cmb-panel cmb-flight"
+        aria-labelledby="cmb-flight-title"
+      >
         <h3 id="cmb-flight-title">Find a flight</h3>
         <igc-combo
           label="From"
@@ -886,17 +1400,240 @@ export const LazyLoading: Story = {
           .itemTemplate=${airportTemplate}
           @igcOpening=${load}
         >
-          <div slot="empty">
-            <span class="cmb-loading">
-              <igc-circular-progress
-                indeterminate
-                aria-label="Loading the airports"
-              ></igc-circular-progress>
-              Loading the airports…
-            </span>
-          </div>
+          <igc-circular-progress
+            slot="loading"
+            indeterminate
+            aria-label="Loading the airports"
+          ></igc-circular-progress>
+          <span slot="empty">No airport matches your search.</span>
         </igc-combo>
         <p class="muted" role="status" ${ref(status)}></p>
+      </section>
+    `;
+  },
+};
+
+const europeanCities: City[] = (
+  [
+    ['AMS', 'Amsterdam', 'Netherlands'],
+    ['ATH', 'Athens', 'Greece'],
+    ['BAR', 'Barcelona', 'Spain'],
+    ['BEL', 'Belgrade', 'Serbia'],
+    ['BER', 'Berlin', 'Germany'],
+    ['BGO', 'Bergen', 'Norway'],
+    ['BRN', 'Bern', 'Switzerland'],
+    ['BOR', 'Bordeaux', 'France'],
+    ['BRA', 'Bratislava', 'Slovakia'],
+    ['BRU', 'Brussels', 'Belgium'],
+    ['BUC', 'Bucharest', 'Romania'],
+    ['BUD', 'Budapest', 'Hungary'],
+    ['CPH', 'Copenhagen', 'Denmark'],
+    ['DUB', 'Dublin', 'Ireland'],
+    ['EDI', 'Edinburgh', 'United Kingdom'],
+    ['FLO', 'Florence', 'Italy'],
+    ['FRA', 'Frankfurt', 'Germany'],
+    ['GDN', 'Gdańsk', 'Poland'],
+    ['GVA', 'Geneva', 'Switzerland'],
+    ['HAM', 'Hamburg', 'Germany'],
+    ['HEL', 'Helsinki', 'Finland'],
+    ['KRK', 'Kraków', 'Poland'],
+    ['LIS', 'Lisbon', 'Portugal'],
+    ['LJU', 'Ljubljana', 'Slovenia'],
+    ['LON', 'London', 'United Kingdom'],
+    ['LYS', 'Lyon', 'France'],
+    ['MAD', 'Madrid', 'Spain'],
+    ['MIL', 'Milan', 'Italy'],
+    ['MUC', 'Munich', 'Germany'],
+    ['NAP', 'Naples', 'Italy'],
+    ['OSL', 'Oslo', 'Norway'],
+    ['PAR', 'Paris', 'France'],
+    ['PLV', 'Plovdiv', 'Bulgaria'],
+    ['POR', 'Porto', 'Portugal'],
+    ['PRG', 'Prague', 'Czechia'],
+    ['RIG', 'Riga', 'Latvia'],
+    ['ROM', 'Rome', 'Italy'],
+    ['ROT', 'Rotterdam', 'Netherlands'],
+    ['SEV', 'Seville', 'Spain'],
+    ['SOF', 'Sofia', 'Bulgaria'],
+    ['STO', 'Stockholm', 'Sweden'],
+    ['TAL', 'Tallinn', 'Estonia'],
+    ['VAR', 'Varna', 'Bulgaria'],
+    ['VCE', 'Venice', 'Italy'],
+    ['VIE', 'Vienna', 'Austria'],
+    ['VNO', 'Vilnius', 'Lithuania'],
+    ['WAW', 'Warsaw', 'Poland'],
+    ['ZAG', 'Zagreb', 'Croatia'],
+    ['ZRH', 'Zürich', 'Switzerland'],
+  ] as const
+).map(([id, name, country]) => ({ id, name, country }));
+
+/** A fake server. It searches the names and returns new objects, as parsed JSON does. */
+async function fetchCities(
+  searchText: string,
+  skip: number,
+  top: number,
+  latency: number
+): Promise<{ items: City[]; total: number }> {
+  await delay(latency);
+
+  const text = searchText.toLocaleLowerCase();
+  const results = europeanCities.filter(({ name }) =>
+    name.toLocaleLowerCase().includes(text)
+  );
+
+  return {
+    items: results.slice(skip, skip + top).map((city) => ({ ...city })),
+    total: results.length,
+  };
+}
+
+export const RemoteData: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A city picker that searches and pages on a server through `bindComboDataSource()` from `igniteui-webcomponents/extras`, twenty cities at a time. Open the list, scroll to its end to load more, then type to search. The list has a skeleton row for each city to load, so the scrollbar shows all the results, and a spinner takes the place of the toggle icon while a search waits or a page loads. Press End to jump to the last city: one request loads all the cities up to it. Select a few cities and search for others: the selection stays, also for the cities that the new results do not hold. The second combo has a slower server and styles its loading parts: `::part(loading)` sets the color and the width of the spinner, and `::part(placeholder)` sets the color of the skeleton rows. The server log shows each request and answer of both combos.',
+      },
+    },
+  },
+  render: () => {
+    const log = createRef<HTMLOListElement>();
+
+    const write = (line: string) => {
+      const item = document.createElement('li');
+      item.textContent = line;
+      log.value?.prepend(item);
+    };
+
+    /** A ref callback that binds the combo, and disposes the binding when the combo goes. */
+    const binder = (name: string, latency: number) => {
+      let binding: ComboDataBinding | undefined;
+
+      const source: ComboDataSource<City> = {
+        load: async ({ searchText, startIndex, count }, signal) => {
+          const query = searchText ? `"${searchText}"` : 'all cities';
+          write(
+            `${name}: request ${startIndex + 1}–${startIndex + count} of ${query}`
+          );
+
+          const { items, total } = await fetchCities(
+            searchText,
+            startIndex,
+            count,
+            latency
+          );
+
+          write(
+            signal.aborted
+              ? `${name}: aborted the request of ${query}`
+              : `${name}: ${items.length} of ${total} cities`
+          );
+          return { items, totalCount: total };
+        },
+      };
+
+      return (element?: Element) => {
+        binding?.dispose();
+        binding = element
+          ? bindComboDataSource(element as IgcComboComponent<City>, source, {
+              pageSize: 20,
+            })
+          : undefined;
+      };
+    };
+
+    const onChange =
+      (name: string) => (event: CustomEvent<IgcComboChangeEventArgs>) => {
+        write(`${name}: value ${event.detail.newValue.join(', ') || 'none'}`);
+      };
+
+    return html`
+      ${styles}
+      <style>
+        .cmb-remote {
+          max-width: 52rem;
+        }
+
+        .cmb-remote-body {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+          align-items: start;
+          gap: 1rem;
+        }
+
+        .cmb-log-panel {
+          display: grid;
+          gap: 0.5rem;
+        }
+
+        .cmb-styled::part(loading),
+        .cmb-styled::part(placeholder) {
+          color: var(--ig-success-500);
+        }
+
+        .cmb-styled::part(loading) {
+          border-width: 3px;
+        }
+
+        .cmb-log-panel h4 {
+          margin: 0;
+          font-size: 0.875rem;
+        }
+
+        .cmb-log {
+          block-size: 12rem;
+          overflow: auto;
+          margin: 0;
+          padding-inline-start: 2.5rem;
+          font-size: 0.8125rem;
+          font-variant-numeric: tabular-nums;
+        }
+      </style>
+      <section
+        class="cmb-stack cmb-panel cmb-remote"
+        aria-labelledby="cmb-remote-title"
+      >
+        <h3 id="cmb-remote-title">Cities from the server</h3>
+        <div class="cmb-remote-body">
+          <div class="cmb-stack">
+            <igc-combo
+              ${ref(binder('Cities', 400))}
+              label="Cities"
+              placeholder="Pick cities"
+              placeholder-search="Search cities"
+              value-key="id"
+              display-key="name"
+              @igcChange=${onChange('Cities')}
+            >
+              <span slot="empty">No city matches your search.</span>
+            </igc-combo>
+            <igc-combo
+              class="cmb-styled"
+              ${ref(binder('Styled', 1500))}
+              label="Cities with styled loading parts"
+              placeholder="Pick cities"
+              placeholder-search="Search cities"
+              value-key="id"
+              display-key="name"
+              @igcChange=${onChange('Styled')}
+            >
+              <span slot="empty">No city matches your search.</span>
+              <span slot="helper-text">
+                A slower server, so the loading state shows longer.
+              </span>
+            </igc-combo>
+          </div>
+          <div class="cmb-log-panel">
+            <h4 id="cmb-log-title">Server log</h4>
+            <ol
+              class="cmb-log"
+              reversed
+              aria-labelledby="cmb-log-title"
+              ${ref(log)}
+            ></ol>
+          </div>
+        </div>
       </section>
     `;
   },

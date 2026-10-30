@@ -24,6 +24,7 @@
     - [Dock Manager - EXCLUSIVE FEATURE](#dock-manager---exclusive-feature)
 - [Quick start](#quick-start)
 - [Bundling a single theme](#bundling-a-single-theme)
+- [Extras](#extras)
 - [Browser support](#browser-support)
 - [Tooling](#tooling)
   - [Editor metadata](#editor-metadata)
@@ -181,6 +182,28 @@ The condition names are `igc-theme-material`, `igc-theme-bootstrap`, `igc-theme-
 - If you call `configureTheme()` with a theme that is not in the bundle, the components show only their structural styles.
 - Load the global theme style sheet as before, for example `igniteui-webcomponents/themes/light/bootstrap.css`.
 - Without a condition, the bundle contains all four themes, as before.
+
+## Extras
+
+`igniteui-webcomponents/extras` has opt-in add-ons that build on the public API of the components. A bundle that does not import them does not contain them.
+
+- `createMarkdownRenderer()` renders the chat messages from Markdown, with syntax highlighting.
+- `bindComboDataSource()` binds a combo to a server that searches and pages. It sets `totalItemCount` from the total of the server, so the list shows a placeholder row for each item to load, and `loading` while a search waits or a page loads.
+
+```ts
+import { bindComboDataSource } from 'igniteui-webcomponents/extras';
+
+const binding = bindComboDataSource(combo, {
+  load: async ({ searchText, startIndex, count }, signal) => {
+    const query = `q=${encodeURIComponent(searchText)}&skip=${startIndex}&top=${count}`;
+    const response = await fetch(`/api/cities?${query}`, { signal });
+    const { items, total } = await response.json();
+    return { items, totalCount: total };
+  },
+});
+
+binding.dispose(); // removes the listeners, aborts the request in flight and clears `totalItemCount` and `loading`
+```
 
 ## Browser support
 

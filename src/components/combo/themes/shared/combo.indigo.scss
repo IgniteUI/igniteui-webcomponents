@@ -69,7 +69,8 @@ $dropdown-theme: dropdown-theme.$indigo;
     min-height: calc(var(--size) * var(--item-count) + rem(16px)) !important;
 }
 
-[part='filter-input'] {
+[part='filter-input'],
+[part~='actions'] {
     padding-inline: pad-inline(rem(8px), rem(12px), rem(12px));
     padding-block: pad-block(rem(12px));
 }

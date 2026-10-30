@@ -66,14 +66,25 @@
     }
 }
 
-[part='filter-input'] {
+[part='filter-input'],
+[part~='actions'] {
     padding-inline: pad-inline(rem(4px), rem(8px), rem(16px));
     padding-block: pad-block(rem(8px));
+}
+
+[part='filter-input'] {
     z-index: 26;
 
     igc-input::part(input) {
         cursor: text;
     }
+}
+
+[part~='actions'] {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: rem(8px);
 }
 
 [part='list'] {
@@ -90,10 +101,82 @@
     font-size: rem(13px);
 }
 
+// The toggle icon keeps its box while loading, and the spinner covers it.
+[part~='toggle-icon'] {
+    display: grid;
+    place-items: center;
+
+    igc-icon,
+    slot::slotted(*),
+    [part~='loading'] {
+        grid-area: 1 / 1;
+    }
+}
+
+:host([loading]) slot[name='toggle-icon'] {
+    visibility: hidden;
+}
+
+// The size of the icon, in the color of the text. A flex box has no line box
+// around the ring, so the ring is on the center of the icon.
+[part~='loading'] {
+    --ig-circular-bar-diameter: #{rem(16px)};
+    --ig-circular-bar-fill-color-default: currentcolor;
+    --ig-circular-bar-track-color: color-mix(in srgb, currentcolor 16%, transparent);
+
+    display: flex;
+}
+
 [part~='group-header'],
 [part~='item'] {
     // Fix a bug in safari: https://github.com/IgniteUI/igniteui-webcomponents/issues/892
     inset-inline-start: 0;
+}
+
+// The skeleton of an item to load: the box of the checkbox and a bar.
+[part~='placeholder'] {
+    --_skeleton: color-mix(in srgb, currentcolor 16%, transparent);
+    --ig-checkbox-empty-color: transparent;
+    --ig-checkbox-empty-fill-color: transparent;
+
+    pointer-events: none;
+
+    // The pseudo-element is the box in all the themes.
+    &::part(checkbox)::after {
+        background: var(--_skeleton);
+        transition: none;
+    }
+
+    span {
+        position: relative;
+        overflow: hidden;
+        block-size: 0.75em;
+        border-radius: rem(4px);
+        background: var(--_skeleton);
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, var(--_skeleton), transparent);
+            translate: -100% 0;
+            animation: wave 1.6s ease-in-out infinite;
+
+            @media (prefers-reduced-motion: reduce) {
+                display: none;
+            }
+        }
+    }
+}
+
+:host(:dir(rtl)) [part~='placeholder'] span::after {
+    animation-direction: reverse;
+}
+
+@keyframes wave {
+    to {
+        translate: 100% 0;
+    }
 }
 
 :host(:disabled),
@@ -138,5 +221,11 @@
 
     [part~='selected'] {
         color: Highlight;
+    }
+
+    [part~='placeholder'] span,
+    [part~='placeholder']::part(checkbox)::after {
+        forced-color-adjust: none;
+        background: CanvasText;
     }
 }

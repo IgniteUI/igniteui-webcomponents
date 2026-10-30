@@ -1,13 +1,7 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  nextFrame,
-} from '@open-wc/testing';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { resetMouse, sendKeys, sendMouse } from '@web/test-runner-commands';
 import { setCurrentI18n } from 'igniteui-i18n-core';
-import { spy } from 'sinon';
-
+import { match, type SinonSpy, spy } from 'sinon';
 import {
   altKey,
   arrowDown,
@@ -22,7 +16,14 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
-  createFormAssociatedTestBed,
+  type City,
+  cities,
+  comboStable,
+  openComboPopover,
+  items,
+  layoutComplete,
+} from '#internals/testing/combo.spec.js';
+import {
   runAriaProjectionTests,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
@@ -38,69 +39,20 @@ import {
   simulatePointerDown,
   simulateScroll,
 } from '#internals/testing/simulate.spec.js';
-import {
-  runValidationContainerTests,
-  type ValidationContainerTestsParams,
-  ValidityHelpers,
-} from '#internals/testing/validity-helpers.spec.js';
+import { ValidityHelpers } from '#internals/testing/validity-helpers.spec.js';
 import { firstOf } from '#internals/utils/arrays.js';
+import { getCenterPoint } from '#internals/utils/dom.js';
 import { configureTheme } from '#theming/config.js';
+import IgcButtonComponent from '../button/button.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcVirtualScrollComponent from '../virtualization/virtualization.js';
 import type IgcComboHeaderComponent from './combo-header.js';
-import type IgcComboItemComponent from './combo-item.js';
 import IgcComboComponent from './combo.js';
-import type { ComboItemTemplate } from './types.js';
+import type { ComboCloseTrigger, ComboItemTemplate } from './types.js';
 
 describe('Combo', () => {
-  type City = {
-    id: string;
-    name: string;
-    country: string;
-    zip: string;
-  };
-
   let input: IgcInputComponent;
   let searchInput: IgcInputComponent;
-
-  const cities: City[] = [
-    {
-      id: 'BG01',
-      name: 'Sofia',
-      country: 'Bulgaria',
-      zip: '1000',
-    },
-    {
-      id: 'BG02',
-      name: 'Plovdiv',
-      country: 'Bulgaria',
-      zip: '4000',
-    },
-    {
-      id: 'BG03',
-      name: 'Varna',
-      country: 'Bulgaria',
-      zip: '9000',
-    },
-    {
-      id: 'US01',
-      name: 'New York',
-      country: 'United States',
-      zip: '10001',
-    },
-    {
-      id: 'US02',
-      name: 'Boston',
-      country: 'United States',
-      zip: '02108',
-    },
-    {
-      id: 'US03',
-      name: 'San Francisco',
-      country: 'United States',
-      zip: '94103',
-    },
-  ];
 
   const citiesWithDiacritics = [
     {
@@ -176,34 +128,6 @@ describe('Combo', () => {
   let combo: IgcComboComponent<City>;
   let list: IgcVirtualScrollComponent;
   let options: IgcVirtualScrollComponent;
-
-  async function comboStable<T extends object>(combo: IgcComboComponent<T>) {
-    await elementUpdated(combo);
-    await nextFrame();
-    await layoutComplete(combo);
-  }
-
-  async function openComboPopover<T extends object>(
-    combo: IgcComboComponent<T>
-  ) {
-    await combo.show();
-    await nextFrame();
-    await layoutComplete(combo);
-  }
-
-  const items = <T extends object>(combo: IgcComboComponent<T>) =>
-    [
-      ...combo.renderRoot
-        .querySelector('igc-virtual-scroll')!
-        .querySelectorAll('[part~="item"]'),
-    ] as IgcComboItemComponent[];
-
-  const layoutComplete = <T extends object>(combo: IgcComboComponent<T>) =>
-    (
-      combo.renderRoot.querySelector(
-        'igc-virtual-scroll'
-      ) as IgcVirtualScrollComponent
-    ).layoutComplete;
 
   const filterCombo = async (term: string) => {
     input.dispatchEvent(new CustomEvent('igcInput', { detail: term }));
@@ -479,6 +403,7 @@ describe('Combo', () => {
 
       expect(eventSpy).calledOnceWithExactly('igcClosing', {
         cancelable: true,
+        detail: { trigger: 'toggle' },
       });
       expect(eventSpy).not.calledWith('igcClosed');
     });
@@ -703,6 +628,22 @@ describe('Combo', () => {
       items(combo)[2].click();
       await elementUpdated(combo);
 
+      expect(newValue).to.eql(combo.value);
+    });
+
+    it('lists the new items in newValue after the selected ones, as value does', async () => {
+      let newValue: unknown;
+      combo.addEventListener('igcChange', (event: CustomEvent) => {
+        newValue = event.detail.newValue;
+      });
+
+      combo.select(['BG02']);
+      await openComboPopover(combo);
+
+      firstOf(items(combo)).click();
+      await elementUpdated(combo);
+
+      expect(combo.value).to.eql(['BG02', 'BG01']);
       expect(newValue).to.eql(combo.value);
     });
 
@@ -1896,6 +1837,454 @@ describe('Combo', () => {
       expect(combo.value).to.be.empty;
       expect(input.value).to.equal('');
     });
+
+    describe('Inner events', () => {
+      async function clickAt(x: number, y: number): Promise<void> {
+        await sendMouse({
+          type: 'click',
+          position: [Math.round(x), Math.round(y)],
+        });
+      }
+
+      async function clickOn(element: Element): Promise<void> {
+        const { x, y } = getCenterPoint(element);
+        await clickAt(x, y);
+      }
+
+      // The name, the action that blurs the search input, and the number of
+      // selection changes that the action makes.
+      const blurActions: [string, () => Promise<void>, number][] = [
+        ['Tab', () => sendKeys({ press: tabKey }), 0],
+        ['Escape', () => sendKeys({ press: escapeKey }), 0],
+        ['Arrow Down', () => sendKeys({ press: arrowDown }), 0],
+        [
+          'a click outside',
+          () => clickAt(window.innerWidth - 5, window.innerHeight - 5),
+          0,
+        ],
+        ['an item click', () => clickOn(items(combo)[0]), 1],
+      ];
+
+      afterEach(async () => {
+        await resetMouse();
+      });
+
+      for (const [name, blur, changes] of blurActions) {
+        it(`keeps the igcChange of the search input inside on ${name}`, async () => {
+          const searchSpy = spy();
+          const comboSpy = spy();
+
+          searchInput.addEventListener('igcChange', searchSpy);
+          combo.addEventListener('igcChange', comboSpy);
+
+          await openComboPopover(combo);
+          expect(isFocused(searchInput)).to.be.true;
+
+          await sendKeys({ type: 'o' });
+          await comboStable(combo);
+          await blur();
+          await comboStable(combo);
+
+          expect(searchSpy).calledOnceWith(match({ detail: 'o' }));
+          expect(comboSpy.callCount).to.equal(changes);
+          expect(comboSpy).not.calledWithMatch({ detail: match.string });
+        });
+      }
+
+      it('keeps the events of the virtual scroll inside', async () => {
+        const listSpy = spy();
+        const comboSpy = spy();
+
+        for (const name of ['igcStateChange', 'igcDataRequest']) {
+          list.addEventListener(name, listSpy);
+          combo.addEventListener(name, comboSpy);
+        }
+
+        await openComboPopover(combo);
+
+        expect(listSpy).calledWithMatch({ type: 'igcStateChange' });
+        expect(listSpy).calledWithMatch({ type: 'igcDataRequest' });
+        expect(comboSpy).not.called;
+      });
+    });
+  });
+
+  describe('Header and footer slots', () => {
+    let header: HTMLButtonElement;
+    let cancel: IgcButtonComponent;
+    let apply: IgcButtonComponent;
+    let buttonBefore: HTMLButtonElement;
+    let buttonAfter: HTMLButtonElement;
+
+    const tab = () => sendKeys({ press: tabKey });
+    const shiftTab = () => sendKeys({ press: `${shiftKey}+${tabKey}` });
+
+    function expectFocus(element: Element, open = true): void {
+      expect(isFocused(element)).to.be.true;
+      expect(combo.open).to.equal(open);
+    }
+
+    async function openInSingleSelection(): Promise<void> {
+      await combo.hide();
+      combo.singleSelect = true;
+      input.focus();
+      await openComboPopover(combo);
+    }
+
+    before(() => {
+      defineComponents(IgcButtonComponent);
+    });
+
+    beforeEach(async () => {
+      const container = await fixture<HTMLDivElement>(html`
+        <div>
+          <button id="before">Before</button>
+          <igc-combo .data=${cities} value-key="id" display-key="name">
+            <button slot="header">Header</button>
+            <div slot="footer">
+              <igc-button id="cancel">Cancel</igc-button>
+              <igc-button id="apply">Apply</igc-button>
+            </div>
+          </igc-combo>
+          <button id="after">After</button>
+        </div>
+      `);
+
+      combo = container.querySelector<IgcComboComponent<City>>(
+        IgcComboComponent.tagName
+      )!;
+      header = container.querySelector('[slot="header"]')!;
+      cancel = container.querySelector('#cancel')!;
+      apply = container.querySelector('#apply')!;
+      buttonBefore = container.querySelector('#before')!;
+      buttonAfter = container.querySelector('#after')!;
+      input = combo.renderRoot.querySelector('igc-input#target')!;
+      searchInput = combo.renderRoot.querySelector('[part="search-input"]')!;
+      list = combo.renderRoot.querySelector('igc-virtual-scroll')!;
+
+      await openComboPopover(combo);
+    });
+
+    it('is accessible.', async () => {
+      await expect(combo).shadowDom.to.be.accessible(
+        axeReflectedRelationsOptions
+      );
+      await expect(combo).to.be.accessible(axeReflectedRelationsOptions);
+    });
+
+    it('moves with Tab from the search input through the header, the list and the footer', async () => {
+      expectFocus(searchInput);
+
+      await tab();
+      expectFocus(header);
+
+      await tab();
+      expectFocus(list);
+
+      await tab();
+      expectFocus(cancel);
+
+      await tab();
+      expectFocus(apply);
+    });
+
+    it('moves back with Shift+Tab from the footer to the search input', async () => {
+      apply.focus();
+
+      await shiftTab();
+      expectFocus(cancel);
+
+      await shiftTab();
+      expectFocus(list);
+
+      await shiftTab();
+      expectFocus(header);
+
+      await shiftTab();
+      expectFocus(searchInput);
+    });
+
+    it('closes the list and moves the focus on with Tab from the last footer control', async () => {
+      apply.focus();
+
+      await tab();
+      await elementUpdated(combo);
+
+      expectFocus(buttonAfter, false);
+    });
+
+    it('moves the focus to the input when the app closes the list from a footer control', async () => {
+      apply.focus();
+      await combo.hide();
+
+      expectFocus(input, false);
+    });
+
+    it('moves the focus to the input when `open` turns off with the focus in the search input', async () => {
+      combo.open = false;
+      await elementUpdated(combo);
+
+      expectFocus(input, false);
+    });
+
+    it('keeps the focus outside the list when the list closes', async () => {
+      buttonAfter.focus();
+      await combo.hide();
+
+      expectFocus(buttonAfter, false);
+    });
+
+    it('closes the list and moves the focus back with Shift+Tab from the search input', async () => {
+      await shiftTab();
+      await elementUpdated(combo);
+
+      expectFocus(buttonBefore, false);
+    });
+
+    it('starts from the main input in single selection', async () => {
+      await openInSingleSelection();
+      expectFocus(input);
+
+      await tab();
+      expectFocus(header);
+
+      await shiftTab();
+      expectFocus(input);
+    });
+
+    it('selects the active item when Tab leaves the list in single selection', async () => {
+      await openInSingleSelection();
+
+      simulateKeyboard(input, arrowDown);
+      await elementUpdated(combo);
+      apply.focus();
+
+      await tab();
+      await elementUpdated(combo);
+
+      expect(combo.value).to.eql(['BG01']);
+      expectFocus(buttonAfter, false);
+    });
+
+    it('reaches the content of the empty slot when the list is empty', async () => {
+      const create = document.createElement('button');
+      create.slot = 'empty';
+      create.textContent = 'Create';
+      combo.append(create);
+      combo.data = [];
+      await elementUpdated(combo);
+
+      await tab();
+      expectFocus(header);
+
+      await tab();
+      expectFocus(create);
+
+      await tab();
+      expectFocus(cancel);
+    });
+
+    it('moves out of a stop inside another stop', async () => {
+      const wrapper = document.createElement('div');
+      const inner = document.createElement('button');
+      wrapper.slot = 'header';
+      wrapper.tabIndex = 0;
+      wrapper.append(inner);
+      combo.prepend(wrapper);
+      await elementUpdated(combo);
+
+      inner.focus();
+
+      await tab();
+      expectFocus(header);
+
+      await shiftTab();
+      expectFocus(inner);
+
+      await shiftTab();
+      expectFocus(wrapper);
+    });
+
+    it('does not stop on a host that delegates the focus', async () => {
+      cancel.tabIndex = 0;
+      apply.focus();
+
+      await shiftTab();
+      expectFocus(cancel);
+
+      await shiftTab();
+      expectFocus(list);
+    });
+
+    it('skips a control with `visibility: hidden`', async () => {
+      header.style.visibility = 'hidden';
+      list.focus();
+
+      await shiftTab();
+      expectFocus(searchInput);
+    });
+
+    it('leaves a Tab that a slotted control handles to that control', async () => {
+      header.addEventListener('keydown', (event) => event.preventDefault());
+      header.focus();
+
+      await tab();
+      expectFocus(header);
+    });
+
+    it('closes the list with Tab from the search input when the slots have no focusable content', async () => {
+      header.remove();
+      cancel.disabled = true;
+      apply.hidden = true;
+      await elementUpdated(combo);
+
+      await tab();
+      await elementUpdated(combo);
+
+      expectFocus(buttonAfter, false);
+    });
+  });
+
+  describe('Close trigger', () => {
+    let eventSpy: SinonSpy;
+
+    function expectTrigger(trigger: ComboCloseTrigger): void {
+      expect(combo.open).to.be.false;
+      expect(eventSpy.withArgs('igcClosing')).calledOnceWith('igcClosing', {
+        cancelable: true,
+        detail: { trigger },
+      });
+      expect(eventSpy.withArgs('igcClosed')).calledOnceWith('igcClosed', {
+        detail: { trigger },
+      });
+    }
+
+    beforeEach(async () => {
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>`
+      );
+
+      input = combo.renderRoot.querySelector('igc-input#target')!;
+      searchInput = combo.renderRoot.querySelector('[part="search-input"]')!;
+      list = combo.renderRoot.querySelector('igc-virtual-scroll')!;
+      eventSpy = spy(combo, 'emitEvent');
+
+      await openComboPopover(combo);
+    });
+
+    const actions: [ComboCloseTrigger, string, () => unknown][] = [
+      [
+        'enter',
+        'Enter in the list',
+        () => {
+          simulateKeyboard(list, arrowDown);
+          simulateKeyboard(list, enterKey);
+        },
+      ],
+      ['escape', 'Escape in the list', () => simulateKeyboard(list, escapeKey)],
+      [
+        'enter',
+        'Enter in the main input',
+        () => {
+          simulateKeyboard(list, arrowDown);
+          simulateKeyboard(input, enterKey);
+        },
+      ],
+      ['tab', 'Tab in the list', () => simulateKeyboard(list, tabKey)],
+      [
+        'tab',
+        'Shift+Tab in the list',
+        () => simulateKeyboard(list, [shiftKey, tabKey]),
+      ],
+      [
+        'arrow-up',
+        'Arrow Up in the main input',
+        () => simulateKeyboard(input, arrowUp),
+      ],
+      [
+        'arrow-up',
+        'Arrow Up in the search input',
+        () => simulateKeyboard(searchInput, arrowUp),
+      ],
+      ['outside-click', 'a click outside', () => simulateClick(document.body)],
+      [
+        'arrow-up',
+        'Arrow Up at the first item without the search input',
+        async () => {
+          combo.disableFiltering = true;
+          await elementUpdated(combo);
+          simulateKeyboard(list, arrowDown);
+          simulateKeyboard(list, arrowUp);
+        },
+      ],
+      ['toggle', 'a click on the input', () => simulateClick(input)],
+      [
+        'selection',
+        'an item click in single selection',
+        async () => {
+          combo.singleSelect = true;
+          await comboStable(combo);
+          simulateClick(items(combo)[0]);
+        },
+      ],
+    ];
+
+    for (const [trigger, name, action] of actions) {
+      it(`reports \`${trigger}\` on ${name}`, async () => {
+        await action();
+        await elementUpdated(combo);
+
+        expectTrigger(trigger);
+      });
+    }
+
+    it('keeps the trigger of a close in progress', async () => {
+      simulateKeyboard(list, escapeKey);
+      simulateClick(document.body);
+      await elementUpdated(combo);
+
+      expectTrigger('escape');
+      expect(eventSpy).not.calledWithMatch('igcClosing', {
+        detail: { trigger: 'outside-click' },
+      });
+    });
+
+    it('reports the trigger of a later close after a canceled one', async () => {
+      combo.addEventListener('igcClosing', (event) => event.preventDefault(), {
+        once: true,
+      });
+
+      simulateKeyboard(list, escapeKey);
+      await elementUpdated(combo);
+      expect(combo.open).to.be.true;
+
+      eventSpy.resetHistory();
+      simulateClick(document.body);
+      await elementUpdated(combo);
+
+      expectTrigger('outside-click');
+    });
+
+    it('keeps the detail of the open events empty', async () => {
+      await combo.hide();
+      simulateClick(input);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.true;
+      expect(eventSpy).calledWith('igcOpening', { cancelable: true });
+      expect(eventSpy).calledWith('igcOpened', {});
+    });
+
+    it('emits no events on `hide()`', async () => {
+      await combo.hide();
+
+      expect(combo.open).to.be.false;
+      expect(eventSpy).not.called;
+    });
   });
 
   describe('Scroll strategy', () => {
@@ -1934,6 +2323,22 @@ describe('Combo', () => {
       expect(combo.open).to.be.false;
       expect(eventSpy.firstCall).calledWith('igcClosing');
       expect(eventSpy.lastCall).calledWith('igcClosed');
+    });
+
+    it('reports the `scroll` trigger with the `close` strategy', async () => {
+      const eventSpy = spy(combo, 'emitEvent');
+
+      combo.scrollStrategy = 'close';
+      await openComboPopover(combo);
+      await simulateScroll(container, { top: 200 });
+
+      expect(eventSpy).calledWith('igcClosing', {
+        cancelable: true,
+        detail: { trigger: 'scroll' },
+      });
+      expect(eventSpy).calledWith('igcClosed', {
+        detail: { trigger: 'scroll' },
+      });
     });
   });
 
@@ -2068,332 +2473,6 @@ describe('Combo', () => {
       await elementUpdated(combo);
 
       expect(options.getAttribute('aria-activedescendant')).to.be.null;
-    });
-  });
-
-  describe('Form integration', () => {
-    const spec = createFormAssociatedTestBed<IgcComboComponent<City>>(
-      html`<igc-combo
-        name="combo"
-        .data=${cities}
-        value-key="id"
-        display-key="name"
-      ></igc-combo>`
-    );
-
-    beforeEach(async () => {
-      await spec.setup(IgcComboComponent.tagName);
-      spec.setAttributes({ value: JSON.stringify(['BG01', 'BG02']) });
-    });
-
-    it('is form associated', () => {
-      expect(spec.element.form).to.equal(spec.form);
-    });
-
-    it('is not associated on submit if no value', () => {
-      spec.setProperties({ value: [] });
-      spec.assertSubmitHasValue(null);
-    });
-
-    it('is associated on submit with value-key (single)', () => {
-      spec.setProperties({ singleSelect: true });
-      spec.setProperties({ value: ['BG01', 'BG02'] });
-      spec.assertSubmitHasValue('BG01');
-    });
-
-    it('is associated on submit with value-key (multiple)', () => {
-      spec.assertSubmitHasValue('BG01');
-      spec.assertSubmitHasValues(['BG01', 'BG02']);
-    });
-
-    it('is associated on submit without value-key (single)', () => {
-      const [first, second, _] = cities;
-
-      spec.setProperties({ valueKey: undefined, singleSelect: true });
-      spec.element.select([first, second]);
-
-      expect(spec.formData.getAll(spec.element.name)).lengthOf(1);
-      spec.assertSubmitPasses();
-    });
-
-    it('is associated on submit without value-key (multiple)', () => {
-      const [first, second, _] = cities;
-
-      spec.setProperties({ valueKey: undefined });
-      spec.element.select([first, second]);
-
-      expect(spec.formData.getAll(spec.element.name)).lengthOf(2);
-      spec.assertSubmitPasses();
-    });
-
-    it('is correctly reset on form reset (multiple)', () => {
-      const initial = spec.element.value;
-
-      spec.setAttributes({ value: JSON.stringify(['BG01', 'BG02']) });
-      spec.setProperties({ value: [] });
-
-      spec.reset();
-      expect(spec.element.value).to.eql(initial);
-    });
-
-    it('is correctly reset on form reset (single)', () => {
-      // Initial value is a multiple array. The combo defaults to the first item
-      const initial = [firstOf(spec.element.value)];
-
-      spec.setProperties({ singleSelect: true });
-      spec.setProperties({ value: ['US01'] });
-
-      expect(spec.element.value).to.eql(['US01']);
-
-      spec.reset();
-      expect(spec.element.value).to.eql(initial);
-    });
-
-    it('should reset to the new default value after setAttribute() call (multiple)', () => {
-      spec.setAttributes({ value: JSON.stringify(['US01', 'US02']) });
-      spec.setProperties({ value: [] });
-
-      spec.reset();
-      expect(spec.element.value).to.eql(['US01', 'US02']);
-      spec.assertSubmitHasValues(spec.element.value);
-    });
-
-    it('should reset to the new default value after setAttribute() call (single)', () => {
-      spec.setProperties({ singleSelect: true });
-      spec.setAttributes({ value: JSON.stringify(['US01']) });
-      spec.setProperties({ value: [] });
-
-      spec.reset();
-
-      expect(spec.element.value).to.eql(['US01']);
-      spec.assertSubmitHasValue('US01');
-    });
-
-    it('should handle invalid JSON in value attribute gracefully', () => {
-      const defaultValue = spec.element.defaultValue;
-
-      spec.setAttributes({ value: 'invalid' });
-      expect(spec.element.value).to.be.empty;
-      expect(spec.element.defaultValue).to.equal(defaultValue);
-    });
-
-    it('should handle empty string in value attribute gracefully', () => {
-      spec.setAttributes({ value: '' });
-      expect(spec.element.value).to.be.empty;
-      expect(spec.element.defaultValue).to.be.empty;
-    });
-
-    it('should handle null in value attribute gracefully', () => {
-      spec.setAttributes({ value: null as any });
-      expect(spec.element.value).to.be.empty;
-      expect(spec.element.defaultValue).to.be.empty;
-    });
-
-    it('reflects disabled ancestor state', () => {
-      spec.setAncestorDisabledState(true);
-      expect(spec.element.disabled).to.be.true;
-
-      spec.setAncestorDisabledState(false);
-      expect(spec.element.disabled).to.be.false;
-    });
-
-    it('fulfils required constraint', () => {
-      spec.setProperties({ value: [], required: true });
-      spec.assertSubmitFails();
-
-      spec.setProperties({ value: ['BG01', 'BG02'] });
-      spec.assertSubmitPasses();
-    });
-
-    it('fulfils custom constraint', () => {
-      spec.element.setCustomValidity('invalid');
-      spec.assertSubmitFails();
-
-      spec.element.setCustomValidity('');
-      spec.assertSubmitPasses();
-    });
-
-    it('clears the invalid styles of the single-select input on form reset', async () => {
-      spec.setAttributes({ value: '[]' });
-      spec.setProperties({ singleSelect: true, required: true });
-      await elementUpdated(spec.element);
-
-      const target =
-        spec.element.renderRoot.querySelector<IgcInputComponent>('#target')!;
-
-      simulateBlur(target.renderRoot.querySelector('input')!);
-      await elementUpdated(spec.element);
-      ValidityHelpers.hasInvalidStyles(target).to.be.true;
-
-      spec.reset();
-      await elementUpdated(spec.element);
-
-      ValidityHelpers.hasInvalidStyles(spec.element).to.be.false;
-      ValidityHelpers.hasInvalidStyles(target).to.be.false;
-    });
-
-    it('keeps the text of the single-select input on form reset', async () => {
-      spec.setProperties({ singleSelect: true });
-      await elementUpdated(spec.element);
-
-      const target =
-        spec.element.renderRoot.querySelector<IgcInputComponent>('#target')!;
-      expect(target.value).to.equal('Sofia');
-
-      spec.reset();
-      await elementUpdated(spec.element);
-
-      expect(target.value).to.equal('Sofia');
-    });
-  });
-
-  describe('defaultValue', () => {
-    const value = ['BG01', 'BG02'];
-
-    describe('Form integration (single)', () => {
-      const spec = createFormAssociatedTestBed<IgcComboComponent<City>>(html`
-        <igc-combo
-          name="combo"
-          .data=${cities}
-          .defaultValue=${value}
-          single-select
-          value-key="id"
-          display-key="name"
-        ></igc-combo>
-      `);
-
-      beforeEach(async () => {
-        await spec.setup(IgcComboComponent.tagName);
-      });
-
-      it('correct initial state', () => {
-        spec.assertIsPristine();
-        expect(spec.element.value).to.eql([firstOf(value)]);
-      });
-
-      it('is correctly submitted', () => {
-        spec.assertSubmitHasValue(firstOf(value));
-      });
-
-      it('is correctly reset', () => {
-        spec.setProperties({ value: [] });
-        spec.reset();
-
-        expect(spec.element.value).to.eql([firstOf(value)]);
-      });
-    });
-
-    describe('Form integration (multiple)', () => {
-      const spec = createFormAssociatedTestBed<IgcComboComponent<City>>(html`
-        <igc-combo
-          name="combo"
-          .data=${cities}
-          .defaultValue=${value}
-          value-key="id"
-          display-key="name"
-        ></igc-combo>
-      `);
-
-      beforeEach(async () => {
-        await spec.setup(IgcComboComponent.tagName);
-      });
-
-      it('correct initial state', () => {
-        spec.assertIsPristine();
-        expect(spec.element.value).to.eql(value);
-      });
-
-      it('is correctly submitted', () => {
-        spec.assertSubmitHasValues(value);
-      });
-
-      it('is correctly reset', () => {
-        spec.setProperties({ value: [] });
-        spec.reset();
-
-        expect(spec.element.value).to.eql(value);
-      });
-    });
-
-    describe('Form integration with delayed data', () => {
-      const spec = createFormAssociatedTestBed<IgcComboComponent<City>>(html`
-        <igc-combo name="combo" value-key="id" display-key="name"></igc-combo>
-      `);
-
-      function initDataDefaultValue(single = false) {
-        spec.element.singleSelect = single;
-        // assign data after init to simulate async data
-        spec.element.data = cities;
-        spec.element.defaultValue = value;
-      }
-
-      beforeEach(async () => {
-        await spec.setup(IgcComboComponent.tagName);
-      });
-
-      it('correct initial state (single)', () => {
-        initDataDefaultValue(true);
-        spec.assertIsPristine();
-        expect(spec.element.value).to.eql([firstOf(value)]);
-      });
-
-      it('correct initial state (multiple)', () => {
-        initDataDefaultValue();
-        spec.assertIsPristine();
-        expect(spec.element.value).to.eql(value);
-      });
-
-      it('is correctly submitted (single)', () => {
-        initDataDefaultValue(true);
-        spec.assertSubmitHasValue(firstOf(value));
-      });
-
-      it('is correctly submitted (multiple)', () => {
-        initDataDefaultValue();
-        spec.assertSubmitHasValues(value);
-      });
-    });
-
-    describe('Validation', () => {
-      const spec = createFormAssociatedTestBed<IgcComboComponent<City>>(html`
-        <igc-combo
-          name="combo"
-          .data=${cities}
-          .defaultValue=${[]}
-          required
-          value-key="id"
-          display-key="name"
-        ></igc-combo>
-      `);
-
-      beforeEach(async () => {
-        await spec.setup(IgcComboComponent.tagName);
-      });
-
-      it('fails required validation', () => {
-        spec.assertIsPristine();
-        spec.assertSubmitFails();
-      });
-
-      it('passes required validation', () => {
-        spec.setProperties({ defaultValue: value });
-        spec.assertIsPristine();
-
-        spec.assertSubmitHasValues(value);
-      });
-    });
-  });
-
-  describe('Validation message slots', () => {
-    it('', async () => {
-      const testParameters: ValidationContainerTestsParams<IgcComboComponent>[] =
-        [
-          { slots: ['valueMissing'], props: { required: true } },
-          { slots: ['customError'] },
-          { slots: ['invalid'], props: { required: true } },
-        ];
-
-      await runValidationContainerTests(IgcComboComponent, testParameters);
     });
   });
 

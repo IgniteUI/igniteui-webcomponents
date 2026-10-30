@@ -39,6 +39,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-10-26 | Flat-tree order; only rendered elements |
 
 ## Overview
 
@@ -112,8 +113,11 @@ The content is projected into the default slot. The trap is active unless `disab
 
 #### Collecting the focusable elements
 
-`focusableElements` returns the focusable content in document order, descending into shadow roots, so a projected
-custom element contributes what it renders. Content-editable elements are part of the set as well.
+`focusableElements` returns the focusable content in flat-tree order: it descends into shadow roots and goes from a
+slot to its assigned elements, so a projected custom element contributes what it renders. Content-editable elements
+are part of the set as well. A hidden, inert, disabled or `aria-hidden` element leaves out its subtree. An element
+that is not rendered or has `visibility: hidden` is left out, and so is a host that delegates the focus: its inner
+controls are in the set instead.
 
 #### Moving the focus
 

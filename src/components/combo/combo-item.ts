@@ -40,6 +40,15 @@ export default class IgcComboItemComponent extends LitElement {
   public active = false;
 
   /**
+   * Whether the checkbox of the item is indeterminate. The box and the
+   * indicator of the checkbox then also export the `indeterminate` part.
+   * @attr indeterminate
+   * @default false
+   */
+  @property({ type: Boolean })
+  public indeterminate = false;
+
+  /**
    * Determines whether the item hides its selection checkbox.
    * @attr hide-checkbox
    * @default false
@@ -59,12 +68,17 @@ export default class IgcComboItemComponent extends LitElement {
   }
 
   private _renderCheckbox() {
+    const parts = this.indeterminate
+      ? 'control: checkbox, control: indeterminate, indicator: checkbox-indicator, indicator: indeterminate, checked'
+      : 'control: checkbox, indicator: checkbox-indicator, checked';
+
     return html`
       <section part="prefix">
         <igc-checkbox
           .inert=${true}
           ?checked=${this.selected}
-          exportparts="control: checkbox, indicator: checkbox-indicator, checked"
+          ?indeterminate=${this.indeterminate}
+          exportparts=${parts}
         ></igc-checkbox>
       </section>
     `;

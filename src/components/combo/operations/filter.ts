@@ -59,7 +59,7 @@ export default class FilterDataOperation<T extends object> {
 
     this._syncCache(filteringOptions);
 
-    if (!searchTerm) {
+    if (!searchTerm || filteringOptions.mode === 'remote') {
       return data;
     }
 

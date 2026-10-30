@@ -88,9 +88,12 @@ class ToggleController {
    * Sends the event through the host `emitEvent`. Consumers and framework
    * wrappers observe that one method.
    */
-  private _emit(name: keyof ToggleEventMap, cancelable: boolean): boolean {
+  private _emit(
+    name: keyof ToggleEventMap,
+    cancelable: boolean,
+    detail: unknown = this._options.detail?.call(this._host)
+  ): boolean {
     const host = this._host;
-    const detail = this._options.detail?.call(host);
 
     // Omit the falsy keys, so `emitEvent` applies its own defaults.
     return host.emitEvent(name, {
@@ -108,7 +111,8 @@ class ToggleController {
 
   private async _setOpenState(
     open: boolean,
-    emitEvents: boolean
+    emitEvents: boolean,
+    detail?: unknown
   ): Promise<boolean> {
     const host = this._host;
     const { transition } = this._options;
@@ -117,7 +121,10 @@ class ToggleController {
       return false;
     }
 
-    if (emitEvents && !this._emit(open ? 'igcOpening' : 'igcClosing', true)) {
+    if (
+      emitEvents &&
+      !this._emit(open ? 'igcOpening' : 'igcClosing', true, detail)
+    ) {
       return false;
     }
 
@@ -154,7 +161,7 @@ class ToggleController {
         return false;
       }
 
-      this._emit(open ? 'igcOpened' : 'igcClosed', false);
+      this._emit(open ? 'igcOpened' : 'igcClosed', false, detail);
     }
 
     return completed;
@@ -177,12 +184,13 @@ class ToggleController {
 
   /**
    * Closes the host, and sends `igcClosing` and `igcClosed` when `emitEvents`
-   * is true. Returns `false` when the host is already closed or closing, the
+   * is true. A `detail` other than `undefined` replaces the one of the
+   * `detail` option in both events. Returns `false` when the host is already closed or closing, the
    * closing event is canceled, a later request supersedes this one, or the
    * transition is interrupted.
    */
-  public hide(emitEvents = false): Promise<boolean> {
-    return this._setOpenState(false, emitEvents);
+  public hide(emitEvents = false, detail?: unknown): Promise<boolean> {
+    return this._setOpenState(false, emitEvents, detail);
   }
 
   /** Opens the host, or closes it, based on its current state. */

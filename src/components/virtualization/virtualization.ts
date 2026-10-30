@@ -35,7 +35,8 @@ export interface IgcVirtualScrollComponentEventMap {
   igcDataRequest: CustomEvent<VirtualScrollDataRequest>;
 }
 
-const REMOTE_SCROLLING_THRESHOLD = 5;
+/** How close the rendered window comes to the end of the items before a data request. */
+export const REMOTE_SCROLLING_THRESHOLD = 5;
 const MAX_LAYOUT_SETTLE_PASSES = 20;
 const MAX_SCROLL_CORRECTION_PASSES = 5;
 const SCROLL_END_TIMEOUT_MS = 2000;
