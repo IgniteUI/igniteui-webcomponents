@@ -169,6 +169,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The native input no longer has `aria-disabled`. Its native `disabled` state is sufficient. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
   - The removal of the `locale` attribute no longer causes a `TypeError`. [#2475](https://github.com/IgniteUI/igniteui-webcomponents/pull/2475)
   - Setting `singleSelect` or `disableFiltering` to the value that the combo already has no longer clears the search text and the filter. Before, a framework that sets each property on each render, such as React, cleared the search text after each key, and the list did not filter. [#2516](https://github.com/IgniteUI/igniteui-webcomponents/issues/2516)
+  - A new `itemTemplate` or `groupHeaderTemplate` now re-renders the open list. Before, the items kept the old content until the list rendered again for another reason, such as a `data` change or a move of the active item. [#2555](https://github.com/IgniteUI/igniteui-webcomponents/issues/2555)
 - #### Date picker
   - `stepUp()` and `stepDown()` now update `value` and the form value at once, also while the input has the focus. Before, only the input showed the new date.
   - A `value` that you set from code, also with `stepUp()` or `stepDown()`, no longer emits `igcChange` on a later blur, in any mode.

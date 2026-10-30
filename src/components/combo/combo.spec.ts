@@ -1725,6 +1725,23 @@ describe('Combo', () => {
       });
     });
 
+    it('re-renders the open list when the templates change', async () => {
+      await openComboPopover(combo);
+
+      combo.itemTemplate = ({ item }) => html`New: ${item.name}`;
+      combo.groupHeaderTemplate = ({ key }) => html`Group: ${key}`;
+      await elementUpdated(combo);
+      await elementUpdated(list);
+
+      expect(items(combo).map((item) => item.innerText)).to.eql(
+        cities.map((city) => `New: ${city.name}`)
+      );
+      expect(headerItems(combo).map((header) => header.innerText)).to.eql([
+        'Group: Bulgaria',
+        'Group: United States',
+      ]);
+    });
+
     it('keeps the selection when the clear icon is clicked and igcChange is canceled', async () => {
       combo.select(['BG01', 'BG02']);
       await elementUpdated(combo);
