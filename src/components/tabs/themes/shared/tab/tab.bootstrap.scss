@@ -2,6 +2,24 @@
 @use '../../light/themes' as *;
 
 $theme: $bootstrap;
+$column-border: rem(1px) solid var-get($theme, 'border-color');
+$column-hover-border: rem(1px) solid var-get($theme, 'border-color--hover');
+
+// The top and side edges of a header in a row, as inset shadows.
+@function edge-shadows($color) {
+    @return inset 0 var(--_border-size) 0 0 $color,
+        inset calc(var(--_border-size) * -1) 0 0 0 $color,
+        inset var(--_border-size) 0 0 0 $color;
+}
+
+// The corners of a header in a column: `$outer` away from the panels, `$inner` on the
+// side of the panels.
+@mixin column-corners($side, $content, $outer, $inner) {
+    border-start-#{$side}-radius: $outer;
+    border-end-#{$side}-radius: $outer;
+    border-start-#{$content}-radius: $inner;
+    border-end-#{$content}-radius: $inner;
+}
 
 :host {
     [part='tab-header'] {
@@ -35,11 +53,7 @@ $theme: $bootstrap;
         background: var-get($theme, 'item-background');
 
         &::before {
-            box-shadow:
-                inset 0 var(--_border-size) 0 0 var-get($theme, 'border-color--hover'),  /* Top */
-                inset calc(var(--_border-size) * -1) 0 0 0 var-get($theme, 'border-color--hover'),  /* Left */
-                inset var(--_border-size) 0 0 0 var-get($theme, 'border-color--hover');  /* Right */
-
+            box-shadow: edge-shadows(var-get($theme, 'border-color--hover'));
             background: var-get($theme, 'item-hover-background');
         }
 
@@ -50,13 +64,10 @@ $theme: $bootstrap;
         }
     }
 
-    &:focus,
     &:focus-within {
         background: var-get($theme, 'item-hover-background');
         z-index: 1;
-    }
 
-    &:focus-within {
         &::after {
             content: '';
             pointer-events: none;
@@ -76,14 +87,8 @@ $theme: $bootstrap;
         background: var-get($theme, 'item-background');
 
         &::before {
-            box-shadow:
-                inset 0 var(--_border-size) 0 0 var-get($theme, 'border-color'),  /* Top */
-                inset calc(var(--_border-size) * -1) 0 0 0 var-get($theme, 'border-color'),  /* Left */
-                inset var(--_border-size) 0 0 0 var-get($theme, 'border-color');  /* Right */
-
+            box-shadow: edge-shadows(var-get($theme, 'border-color'));
             background: var-get($theme, 'item-active-background');
-            border-start-start-radius: var-get($theme, 'border-radius');
-            border-start-end-radius: var-get($theme, 'border-radius');
         }
 
         &:hover {
@@ -94,13 +99,10 @@ $theme: $bootstrap;
             }
         }
 
-        &:focus,
         &:focus-within {
             border: none;
             background: var-get($theme, 'item-background');
-        }
 
-        &:focus-within {
             &::before {
                 box-shadow: none;
                 border-bottom-left-radius: rem(4px);
@@ -127,11 +129,6 @@ $theme: $bootstrap;
         border-bottom: 0;
     }
 
-    :host([selected]) [part~='tab-header']:focus::before {
-        outline: rem(1px) solid Highlight;
-        outline-offset: rem(-1px);
-    }
-
     :host(:not([selected])) [part~='tab-header']::before {
         --_border-size: 0;
 
@@ -140,5 +137,50 @@ $theme: $bootstrap;
 
     :host(:not([selected])) [part~='tab-header']:hover::before {
         border: rem(1px) solid CanvasText;
+    }
+}
+
+// A column draws the edges with borders, because the offsets of the shadows of a row
+// do not follow the direction. The side of the panels has the line of the strip,
+// which the selected tab leaves open.
+@each $side, $content in (start: end, end: start) {
+    :host(:state(header-#{$side})) [part~='tab-header'] {
+        box-shadow: none;
+
+        &::before {
+            @include column-corners($side, $content, var-get($theme, 'border-radius'), 0);
+
+            height: auto;
+            box-shadow: none;
+            border: none;
+            border-inline-#{$content}: $column-border;
+        }
+
+        &:hover::before {
+            border-block: $column-hover-border;
+            border-inline-#{$side}: $column-hover-border;
+        }
+
+        &:hover:focus-within::before {
+            border-block: none;
+            border-inline-#{$side}: none;
+        }
+
+        &:focus-within::after {
+            @include column-corners($side, $content, var-get($theme, 'border-radius'), rem(4px));
+        }
+    }
+
+    :host([selected]:state(header-#{$side})) [part~='tab-header'] {
+        &::before {
+            border: $column-border;
+            border-inline-#{$content}: none;
+        }
+
+        &:focus-within::before {
+            @include column-corners($side, $content, var-get($theme, 'border-radius'), rem(4px));
+
+            border: none;
+        }
     }
 }

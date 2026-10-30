@@ -7,10 +7,13 @@ import {
 } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { tabsHeaderPositionContext } from '#internals/context.js';
 import {
   ariaBindings,
   hostAria,
 } from '#internals/controllers/aria-projection.js';
+import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
@@ -19,6 +22,7 @@ import { createIdGenerator } from '#internals/utils/strings.js';
 import { all } from '#themes/tabs/themes/tab-themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
+import type { TabsHeaderPosition } from '../types.js';
 import { getTabHeader } from './tab-dom.js';
 import { styles as shared } from './themes/shared/tab/tab.common.css.js';
 import { styles } from './themes/tab.base.css.js';
@@ -61,6 +65,8 @@ export default class IgcTabComponent extends EventEmitterMixin<IgcTabComponentEv
   }
 
   //#region Internal state & properties
+
+  private readonly _internals = addInternalsController(this);
 
   private readonly _tabId = nextId();
   private readonly _headerId = `${this._tabId}-header`;
@@ -140,12 +146,23 @@ export default class IgcTabComponent extends EventEmitterMixin<IgcTabComponentEv
   constructor() {
     super();
     addThemingController(this, all);
+
+    addAsyncContextConsumer(this, tabsHeaderPositionContext, (position) =>
+      this._setHeaderPosition(position)
+    );
   }
 
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
     this.id = this.id || this._tabId;
+  }
+
+  /** @internal */
+  public override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    // A tabs that holds the tab again gives the position again.
+    this._setHeaderPosition();
   }
 
   protected override update(props: PropertyValues<this>): void {
@@ -175,6 +192,12 @@ export default class IgcTabComponent extends EventEmitterMixin<IgcTabComponentEv
     this._posInSet = posInSet;
     this._setSize = setSize;
     this._isTabStop = isTabStop;
+  }
+
+  /** The theme sheets draw the borders of a column on the side of the panels. */
+  private _setHeaderPosition(position?: TabsHeaderPosition): void {
+    this._internals.setState('header-start', position === 'start');
+    this._internals.setState('header-end', position === 'end');
   }
 
   //#endregion

@@ -5,6 +5,7 @@ import type IgcToggleButtonComponent from '../components/button-group/toggle-but
 import type IgcCarouselComponent from '../components/carousel/carousel.js';
 import type { ChatState } from '../components/chat/chat-state.js';
 import type IgcTileManagerComponent from '../components/tile-manager/tile-manager.js';
+import type { TabsHeaderPosition } from '../components/types.js';
 
 export type ButtonGroupContext = {
   /** The `igc-button-group` instance. */
@@ -47,11 +48,17 @@ const chatUserInputContext = createContext<ChatState>(
 
 const breadcrumbsContext = createContext<string>(Symbol('breadcrumbs-context'));
 
+/** The `headerPosition` of the `igc-tabs` that holds a tab. */
+const tabsHeaderPositionContext = createContext<TabsHeaderPosition>(
+  Symbol('tabs-header-position-context')
+);
+
 export {
   breadcrumbsContext,
   buttonGroupContext,
   carouselContext,
   chatContext,
   chatUserInputContext,
+  tabsHeaderPositionContext,
   tileManagerContext,
 };

@@ -1,7 +1,4 @@
 @use 'styles/utilities' as *;
-@use '../../light/themes' as *;
-
-$theme: $fluent;
 
 :host {
     --header-min-height: #{rem(44px)};
@@ -9,18 +6,6 @@ $theme: $fluent;
 
 igc-icon-button[disabled]::part(base) {
     background: var(--disabled-background);
-}
-
-[part='selected-indicator'] {
-    $indicator-height: rem(2px);
-
-    height: $indicator-height;
-    margin-block-start: calc(#{$indicator-height} * -1);
-
-    span {
-        height: $indicator-height;
-        background: var-get($theme, 'indicator-color');
-    }
 }
 
 @media (forced-colors: active) {
