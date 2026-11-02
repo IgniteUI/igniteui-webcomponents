@@ -384,9 +384,6 @@ export default class IgcTileComponent extends I18nMixin(
     if (!this.id) {
       this.id = nextId();
     }
-    if (!this.style.viewTransitionName) {
-      this.style.viewTransitionName = `tile-transition-${this.id}`;
-    }
   }
 
   protected override willUpdate(): void {

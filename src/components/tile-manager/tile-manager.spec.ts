@@ -172,17 +172,11 @@ describe('Tile Manager component', () => {
     it('should render properly', () => {
       expect(tileManager).dom.to.equal(
         `<igc-tile-manager>
-          <igc-tile
-            style="view-transition-name: tile-transition-customId-1; order: 0;"
-            id="customId-1"
-          >
+          <igc-tile style="order: 0;" id="customId-1">
             <span slot="title">Tile Header 1</span>
             <p>Content 1</p>
           </igc-tile>
-          <igc-tile
-            style="view-transition-name: tile-transition-customId-2; order: 1;"
-            id="customId-2"
-          >
+          <igc-tile style="order: 1;" id="customId-2">
             <h1 slot="title">Tile Header 2</h1>
             <p>Content 2</p>
           </igc-tile>
@@ -210,7 +204,7 @@ describe('Tile Manager component', () => {
       );
 
       expect(tiles[0]).dom.to.equal(
-        `<igc-tile style="view-transition-name: tile-transition-customId-1; order: 0;" id="customId-1">
+        `<igc-tile style="order: 0;" id="customId-1">
             <span slot="title">Tile Header 1</span>
             <p>Content 1</p>
           </igc-tile>`
@@ -927,6 +921,59 @@ describe('Tile Manager component', () => {
     });
   });
 
+  describe('Stacking', () => {
+    function tileAt({ x, y }: { x: number; y: number }) {
+      return document.elementFromPoint(x, y)?.closest('igc-tile');
+    }
+
+    it('keeps the content of a tile under the next tile', async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager column-count="2">
+          <igc-tile>
+            <div style="position: fixed; inset: 0; z-index: 1"></div>
+          </igc-tile>
+          <igc-tile><p>B</p></igc-tile>
+        </igc-tile-manager>
+      `);
+      const next = tileManager.tiles[1];
+
+      expect(tileAt(getCenterPoint(next))).to.equal(next);
+    });
+
+    it('keeps the resize handles of a tile under the next tile', async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager column-count="2" gap="0" resize-mode="always">
+          <igc-tile><p>A</p></igc-tile>
+          <igc-tile><p>B</p></igc-tile>
+        </igc-tile-manager>
+      `);
+      const [tile, next] = tileManager.tiles;
+      const { right, top, bottom } = tile.renderRoot
+        .querySelector('[part~="trigger-side"]')!
+        .getBoundingClientRect();
+
+      expect(tileAt({ x: right - 1, y: (top + bottom) / 2 })).to.equal(next);
+    });
+
+    it('keeps the resize handles above content with any z-index', async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager resize-mode="always">
+          <igc-tile>
+            <div
+              style="position: relative; z-index: 100000; block-size: 100%"
+            ></div>
+          </igc-tile>
+        </igc-tile-manager>
+      `);
+      const tile = tileManager.tiles[0];
+      const { left, top } = tile.renderRoot
+        .querySelector('[part~="trigger"]')!
+        .getBoundingClientRect();
+
+      expect(document.elementFromPoint(left + 2, top + 2)).to.equal(tile);
+    });
+  });
+
   describe('Maximize', () => {
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
@@ -1178,6 +1225,10 @@ describe('Tile Manager component', () => {
       const names = () =>
         others.map((tile) => getComputedStyle(tile).viewTransitionName);
 
+      for (const tile of tileManager.tiles) {
+        tile.style.viewTransitionName = `card-${tile.id}`;
+      }
+
       first.maximized = true;
       await elementUpdated(tileManager);
 
@@ -1192,6 +1243,56 @@ describe('Tile Manager component', () => {
       expect(names()).to.eql(
         others.map((tile) => tile.style.viewTransitionName)
       );
+    });
+
+    it('names the tiles of the manager only while its transition runs', async () => {
+      const other = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager><igc-tile id="other"></igc-tile></igc-tile-manager>
+      `);
+      const names = (manager: IgcTileManagerComponent) =>
+        manager.tiles.map(({ style }) => style.viewTransitionName);
+
+      simulateClick(getActionButtons(tileManager.tiles[0])[0]);
+      const running = [names(tileManager), names(other)];
+
+      await getActiveViewTransition()?.finished;
+
+      expect(running).to.eql([
+        tileManager.tiles.map(({ id }) => `tile-transition-${id}`),
+        [''],
+      ]);
+      expect(names(tileManager).every((name) => name === '')).to.be.true;
+    });
+
+    it('keeps the names until the last of two quick maximize clicks applies', async () => {
+      const tile = tileManager.tiles[0];
+      const [maximize] = getActionButtons(tile);
+
+      simulateClick(maximize);
+      simulateClick(maximize);
+      // The second transition skips the first, which then finishes.
+      await viewTransitionComplete();
+
+      expect(tile.style.viewTransitionName).to.equal(
+        `tile-transition-${tile.id}`
+      );
+
+      await getActiveViewTransition()?.finished;
+
+      expect(tile.style.viewTransitionName).to.equal('');
+    });
+
+    it('keeps an inline view transition name of the author', async () => {
+      const tile = tileManager.tiles[0];
+
+      tile.style.viewTransitionName = 'chart';
+      simulateClick(getActionButtons(tile)[0]);
+
+      expect(tile.style.viewTransitionName).to.equal('chart');
+
+      await getActiveViewTransition()?.finished;
+
+      expect(tile.style.viewTransitionName).to.equal('chart');
     });
   });
 

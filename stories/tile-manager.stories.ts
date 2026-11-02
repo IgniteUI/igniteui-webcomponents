@@ -1154,14 +1154,21 @@ function itemIcon({ pull, status }: BoardItem) {
       };
 }
 
-/** Runs `update` in a view transition, unless the user prefers less motion. */
+/**
+ * Runs `update` in a view transition of the `board` type, unless the user
+ * prefers less motion or the browser has no transition types. The style sheet
+ * of the story names the cards for this type.
+ */
 function withTransition(update: () => void): Promise<void> {
-  if (!('startViewTransition' in document) || prefersReducedMotion()) {
+  if (
+    !('types' in (globalThis.ViewTransition?.prototype ?? {})) ||
+    prefersReducedMotion()
+  ) {
     update();
     return Promise.resolve();
   }
 
-  const transition = document.startViewTransition(update);
+  const transition = document.startViewTransition({ update, types: ['board'] });
   transition.ready.catch(() => {});
   return transition.updateCallbackDone;
 }
@@ -1172,7 +1179,7 @@ export const ProjectBoard: Story = {
     docs: {
       description: {
         story:
-          'A project board in the style of GitHub Projects. Each status column is a tile with its own tile manager for its cards. Drag a card to change its place in its column, or drop it in another column to change its status. A manager swaps only its own tiles, so the story builds the move to another column from `igcTileDragStart`, `igcTileDragEnd` and the pointer position: a drop preview, which is also a tile, shows where the card goes. Drag the header of a column to move the column. Point at a column to show its resize handles. When a column is two columns wide, its cards go into two columns. Maximize a column to see more of its cards, or show it in full screen for a meeting. Dragging is a pointer action, so the menu of a card also moves it to the top or the bottom of its column, or to another status. Each card has a fixed `id`, so it keeps its view transition name, and a view transition moves it to the other column. The In progress column has a limit of three items. Its count and the drop preview change color when it has more.',
+          'A project board in the style of GitHub Projects. Each status column is a tile with its own tile manager for its cards. Drag a card to change its place in its column, or drop it in another column to change its status. A manager swaps only its own tiles, so the story builds the move to another column from `igcTileDragStart`, `igcTileDragEnd` and the pointer position: a drop preview, which is also a tile, shows where the card goes. Drag the header of a column to move the column. Point at a column to show its resize handles. When a column is two columns wide, its cards go into two columns. Maximize a column to see more of its cards, or show it in full screen for a meeting. Dragging is a pointer action, so the menu of a card also moves it to the top or the bottom of its column, or to another status. A tile manager names its tiles only for its own view transitions, so the story starts its transitions with the `board` type, and a `:active-view-transition-type(board)` rule names the cards from their fixed `id`. A view transition then moves a card to the other column. The In progress column has a limit of three items. Its count and the drop preview change color when it has more.',
       },
     },
   },
@@ -1191,6 +1198,7 @@ export const ProjectBoard: Story = {
       disableFullscreen: true,
     });
     placeholder.setAttribute('aria-hidden', 'true');
+    placeholder.style.setProperty('--card-name', 'card-placeholder');
 
     const itemOf = (tile: IgcTileComponent) =>
       items.find((each) => itemId(each) === tile.dataset.item);
@@ -1398,6 +1406,7 @@ export const ProjectBoard: Story = {
         <igc-tile
           id="tm-item-${itemId(item)}"
           class="tm-card"
+          style=${styleMap({ '--card-name': `card-${itemId(item)}` })}
           data-item=${itemId(item)}
           disable-maximize
           disable-fullscreen
@@ -1618,6 +1627,14 @@ export const ProjectBoard: Story = {
         /* The cards have no resize handles, so less space is enough. */
         .tm-cards {
           --grid-padding: 0.5rem;
+        }
+
+        /*
+         * A manager names its tiles only for its own transitions. The board
+         * transitions name the cards by id, so a card moves to another column.
+         */
+        :root:active-view-transition-type(board) .tm-cards > igc-tile {
+          view-transition-name: var(--card-name);
         }
 
         /* The drop preview of a card from another column. */
