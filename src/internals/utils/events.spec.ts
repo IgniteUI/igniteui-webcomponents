@@ -1,8 +1,52 @@
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
-import { addWeakEventListener } from './events.js';
+import { addWeakEventListener, getEventOrigin } from './events.js';
 
 describe('Event utilities', () => {
+  describe('getEventOrigin', () => {
+    let host: HTMLElement;
+    let header: HTMLElement;
+    let button: HTMLButtonElement;
+    let origins: (Element | undefined)[];
+
+    beforeEach(() => {
+      host = document.createElement('div');
+      host.attachShadow({ mode: 'open' }).innerHTML =
+        '<div part="header"><slot></slot></div>';
+      header = host.shadowRoot!.querySelector('[part="header"]')!;
+      button = document.createElement('button');
+      host.append(button);
+      document.body.append(host);
+
+      origins = [];
+      host.addEventListener('custom', (event) =>
+        origins.push(getEventOrigin('[part~="header"]', event))
+      );
+    });
+
+    afterEach(() => {
+      host.remove();
+    });
+
+    it('returns the origin when it matches the selector', () => {
+      header.dispatchEvent(
+        new Event('custom', { bubbles: true, composed: true })
+      );
+      expect(origins).to.eql([header]);
+    });
+
+    it('ignores a match deeper in the composed path', () => {
+      button.dispatchEvent(
+        new Event('custom', { bubbles: true, composed: true })
+      );
+      expect(origins).to.eql([undefined]);
+    });
+
+    it('returns undefined for an origin that is not an element', () => {
+      expect(getEventOrigin('*', new Event('custom'))).to.be.undefined;
+    });
+  });
+
   describe('addWeakEventListener', () => {
     afterEach(() => {
       sinon.restore();
