@@ -121,8 +121,6 @@ export default class IgcTooltipComponent extends I18nMixin(
     easing: EaseOut.Sine,
   });
 
-  private _anchor?: Element | string;
-
   private _anchorChanged = false;
 
   /** The queued, not yet committed transition, if a delay is in effect. */
@@ -246,16 +244,15 @@ export default class IgcTooltipComponent extends I18nMixin(
    * @attr anchor
    */
   @property()
-  public set anchor(value: Element | string | undefined) {
-    if (value !== this._anchor) {
-      this._anchor = value;
-      this._anchorChanged = true;
-    }
-  }
-
-  public get anchor(): Element | string | undefined {
-    return this._anchor;
-  }
+  @coercedProperty<Element | string | undefined, IgcTooltipComponent>({
+    // `onChange` runs for each set of an object, so compare the identity.
+    onChange: ({ host, value, previous }) => {
+      if (value !== previous) {
+        host._anchorChanged = true;
+      }
+    },
+  })
+  public anchor?: Element | string = undefined;
 
   /**
    * The anchor events that show the tooltip.
