@@ -1,6 +1,8 @@
 import { elementUpdated, expect } from '@open-wc/testing';
+import { resetMouse, sendMouse } from '@web/test-runner-commands';
 import { spy } from 'sinon';
 
+import { getCenterPoint } from '#internals/utils/dom.js';
 import { defineComponents, type IgcCheckboxComponent } from '../../index.js';
 import IgcTreeItemComponent from './tree-item.js';
 import {
@@ -195,6 +197,35 @@ describe('Tree Selection', () => {
       item12.selected = true;
       await elementUpdated(tree);
       TreeTestFunctions.verifyItemSelection(item12, true);
+    });
+
+    it('keeps the igcChange of the checkbox inside on a real click', async () => {
+      const item = topLevelItems[0];
+      const checkbox = item.shadowRoot!.querySelector(PARTS.select)!
+        .children[0] as IgcCheckboxComponent;
+      const checkboxSpy = spy();
+      const treeSpy = spy();
+
+      checkbox.addEventListener('igcChange', checkboxSpy);
+      tree.addEventListener('igcChange', treeSpy);
+
+      const { x, y } = getCenterPoint(checkbox);
+
+      try {
+        await sendMouse({
+          type: 'click',
+          position: [Math.round(x), Math.round(y)],
+        });
+        await elementUpdated(tree);
+      } finally {
+        await resetMouse();
+      }
+
+      // The item cancels the click, so the checkbox sends no `igcChange`.
+      TreeTestFunctions.verifyItemSelection(item, false);
+      expect(eventSpy).calledWith('igcSelection');
+      expect(checkboxSpy).not.called;
+      expect(treeSpy).not.called;
     });
 
     it('Should select/deselect an item by clicking on the checkbox and emit igcSelection event with proper arguments', async () => {

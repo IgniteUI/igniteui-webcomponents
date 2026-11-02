@@ -416,6 +416,8 @@ export default class IgcColorPickerComponent extends I18nMixin(
   private _handleCanvasColorPicked(
     event: CustomEvent<PickerCanvasEventDetail>
   ): void {
+    stopPropagation(event);
+
     this._color.setSaturationAndValue(event.detail.x, 100 - event.detail.y);
     this._updateColor(true);
   }
@@ -804,6 +806,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
         @focusin=${this._handleAlphaInputCaret}
         @click=${this._handleAlphaInputCaret}
         @keyup=${this._handleAlphaInputCaret}
+        @igcInput=${stopPropagation}
         @igcChange=${this._handleAlphaInputChange}
       ></igc-input>
     `;
@@ -829,6 +832,10 @@ export default class IgcColorPickerComponent extends I18nMixin(
         outlined
         .value=${this.format}
         @igcChange=${this._handleFormatChange}
+        @igcOpening=${stopPropagation}
+        @igcOpened=${stopPropagation}
+        @igcClosing=${stopPropagation}
+        @igcClosed=${stopPropagation}
       >
         <igc-select-item value="hex">Hex</igc-select-item>
         <igc-select-item value="rgb">RGB</igc-select-item>
@@ -852,6 +859,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
         placeholder=${formatPlaceholders[this.format]}
         outlined
         .value=${live(this._color.asString(this.format))}
+        @igcInput=${stopPropagation}
         @igcChange=${this._handleColorInputChange}
       ></igc-input>
     `;
@@ -953,6 +961,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
         ?disabled=${this.disabled}
         .value=${live(this.value)}
         .invalid=${this.invalid}
+        @igcInput=${stopPropagation}
         @igcChange=${this._handleColorInputChange}
       >
         <div slot="prefix">

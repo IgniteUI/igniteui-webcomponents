@@ -57,6 +57,7 @@
 |       6 | 2026-10-21 | API descriptions aligned with the JSDoc. |
 |       7 | 2026-10-21 | Slotted suggestions show the suggestions area, which stays in the DOM, hidden, without suggestions |
 |       8 | 2026-10-26 | `focusInput()` waits for the first render of a new chat and returns a promise |
+|       9 | 2026-11-02 | The events of the inner text area and of the attachment chips stay inside the chat |
 
 ## Overview
 
@@ -350,6 +351,9 @@ global `registerI18n` mechanism, and both shapes are accepted by the property.
 | `igcInputBlur`         | —                             | no         | The composer lost focus.                                         |
 | `igcInputChange`       | `string`                      | no         | The content of the composer changed.                             |
 
+The `igcInput` and `igcChange` events of the inner text area and the `igcRemove` event of an attachment chip stay
+inside the chat. Use `igcInputChange` and `igcAttachmentRemoved`.
+
 ### Slots
 
 | Name                  | Description                                                 |
@@ -429,7 +433,8 @@ The component exposes a part for every region it renders. The main groups are:
 21. `igcAttachmentClick`, `igcInputFocus`, `igcInputBlur`, `igcInputChange` and `igcMessageReact` are emitted.
 22. `igcTypingChange` is emitted for the start and the stop of typing, is emitted after a message is sent, is not
     emitted for <kbd>Tab</kbd>, and its stop is deferred when `stopTypingDelay` grows while the timer runs.
-23. `igcMessageCreated` and the attachment change event can be canceled.
+23. `igcMessageCreated` and the attachment change event can be canceled. The `igcInput` and `igcChange` of the text
+    area (real typing and a blur) and the `igcRemove` of an attachment chip do not reach a listener on the chat.
 
 ### Adopted root styles
 

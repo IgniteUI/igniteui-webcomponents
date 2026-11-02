@@ -72,13 +72,16 @@ const fastCheck = JSON.stringify(fastCheckSettings());
  * subjects (sinon spies, DOM nodes) reportable. See the module itself for the
  * details.
  *
- * Also sets the {@link fastCheckSettings} for `fast-check-setup.spec.ts`.
+ * Also loads `inner-events.spec.ts`, which fails a test file when the event of
+ * an inner element reaches a component host, and sets the
+ * {@link fastCheckSettings} for `fast-check-setup.spec.ts`.
  */
 function testRunnerHtml(testFramework) {
   return `<!DOCTYPE html>
 <html>
   <body>
     <script type="module" src="/src/internals/testing/assertion-errors.spec.ts"></script>
+    <script type="module" src="/src/internals/testing/inner-events.spec.ts"></script>
     <script>globalThis.__FAST_CHECK__ = ${fastCheck};</script>
     <script type="module" src="${testFramework}"></script>
   </body>

@@ -1,5 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { spy } from 'sinon';
+import { type SinonSpy, spy } from 'sinon';
 import { CalendarDay, calendarRange } from '#internals/date/model.js';
 import {
   getCalendarDOM,
@@ -777,5 +777,50 @@ describe('Calendar interactions', () => {
     expect(getDOMDate(preview, daysView).part.contains('first')).to.be.true;
     expect(getDOMDate(start, daysView).part.contains('last')).to.be.true;
     expect(getDOMDate(start, daysView).part.contains('first')).to.be.false;
+  });
+
+  describe('Inner events', () => {
+    function listenOn(type: string): [SinonSpy, SinonSpy] {
+      const viewSpy = spy();
+      const calendarSpy = spy();
+
+      daysView.addEventListener(type, viewSpy);
+      calendar.addEventListener(type, calendarSpy);
+
+      return [viewSpy, calendarSpy];
+    }
+
+    it('keeps the igcActiveDateChange of the days view inside', async () => {
+      const [viewSpy, calendarSpy] = listenOn('igcActiveDateChange');
+      const date = CalendarDay.from(calendar.value!).set({ date: 28 });
+
+      simulateClick(getDOMDate(date, daysView));
+      await elementUpdated(calendar);
+
+      expect(viewSpy).calledOnce;
+      expect(calendarSpy).not.called;
+      expect(date.equalTo(calendar.activeDate)).to.be.true;
+    });
+
+    it('keeps the igcRangePreviewDateChange of the days view inside', async () => {
+      const [viewSpy, calendarSpy] = listenOn('igcRangePreviewDateChange');
+      const start = CalendarDay.from(calendar.value!).set({ date: 20 });
+      const end = start.set({ date: 24 });
+
+      calendar.selection = 'range';
+      await elementUpdated(calendar);
+
+      simulateClick(getDOMDate(start, daysView));
+      getDOMDate(end, daysView).focus();
+      await elementUpdated(calendar);
+
+      simulateClick(getDOMDate(end, daysView));
+      await elementUpdated(calendar);
+
+      // One call sets the preview, one clears it.
+      expect(viewSpy).calledTwice;
+      expect(calendarSpy).not.called;
+      expect(calendar.values).lengthOf(5);
+    });
   });
 });
