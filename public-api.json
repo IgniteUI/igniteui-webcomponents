@@ -3938,7 +3938,7 @@
         "minRowHeight": "string | undefined",
         "resizeMode": "TileManagerResizeMode ('always' | 'hover' | 'none')",
         "static tagName": "readonly string",
-        "tiles": "readonly unknown"
+        "tiles": "readonly IgcTileComponent[]"
       },
       "methods": {
         "loadLayout": "(data: string) => void",

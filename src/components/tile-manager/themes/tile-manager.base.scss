@@ -6,9 +6,13 @@
     // Keeps the z-index of the parts inside the component.
     isolation: isolate;
 
+    // A nested manager does not take the grid of the outer manager.
     --min-col-width: 200px;
     --min-row-height: 200px;
     --grid-padding: #{rem(20px)};
+    --column-count: initial;
+    --grid-gap: initial;
+    --_fit-columns: initial;
 }
 
 [part~='base'] {
@@ -18,8 +22,8 @@
     width: 100%;
     height: 100%;
     grid-template-columns: repeat(var(--column-count, auto-fit), minmax(min(var(--min-col-width), 100%), 1fr));
-    grid-auto-rows: var(--auto-rows, minmax(var(--min-row-height), var(--min-row-height)));
-    grid-auto-columns: var(--auto-columns, 0);
+    grid-auto-rows: minmax(var(--min-row-height), var(--min-row-height));
+    grid-auto-columns: 0;
     gap: var(--grid-gap, rem(10px));
     grid-auto-flow: dense;
     overflow: auto hidden;
@@ -27,6 +31,24 @@
     // `position` (CSS `order`) and dense packing move tiles away from DOM order.
     // Tab and assistive technology follow the layout rows where supported.
     reading-flow: grid-rows;
+}
+
+// A hidden copy of the columns for `_fitColumns`, with the content box, the
+// template and the column gap of the grid. The first cell keeps the `auto-fit`
+// tracks from collapsing, and the second has the width of one track.
+#track-probe {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    display: grid;
+    padding-inline: inherit;
+    grid-template-columns: inherit;
+    column-gap: inherit;
+    visibility: hidden;
+
+    > :first-child {
+        grid-column: 1 / -1;
+    }
 }
 
 [part~='maximized-tile'] {

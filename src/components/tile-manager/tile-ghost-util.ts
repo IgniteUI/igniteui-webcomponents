@@ -1,28 +1,36 @@
 import { setStyles } from '#internals/utils/dom.js';
 import type IgcTileComponent from './tile.js';
 
-/** Ghost styling shared between the drag and resize ghosts, themed from the tile's CSS variables. */
+/**
+ * The attributes that act again when the drag copy connects, with the elements
+ * that have them. A named radio joins and unchecks the group of the original,
+ * and a radio group names its radios again. `form` joins the form of the
+ * original. A frame loads its page again, and `autoplay` plays the media.
+ */
+const LIVE_ATTRIBUTES = {
+  name: 'input[type="radio"], igc-radio, igc-radio-group',
+  form: '[form]',
+  src: 'iframe, embed',
+  srcdoc: 'iframe',
+  data: 'object',
+  autoplay: 'audio, video',
+};
+
+/** The look of the drag and resize ghosts, themed from the CSS variables of the tile. */
 function getBaseGhostStyles(
-  { width, height }: DOMRect,
   computed: CSSStyleDeclaration,
   background: string,
   borderColor: string
 ): Partial<CSSStyleDeclaration> {
   return {
     contain: 'strict',
-    zIndex: '1000',
-    width: `${width}px`,
-    height: `${height}px`,
     background: computed.getPropertyValue(background),
     border: `1px solid ${computed.getPropertyValue(borderColor)}`,
     borderRadius: computed.getPropertyValue('--border-radius'),
   };
 }
 
-export function createTileDragGhost(
-  tile: IgcTileComponent,
-  rect: DOMRect
-): IgcTileComponent {
+export function createTileDragGhost(tile: IgcTileComponent): IgcTileComponent {
   const clone = tile.cloneNode(true) as IgcTileComponent;
   const computed = getComputedStyle(tile);
 
@@ -35,9 +43,14 @@ export function createTileDragGhost(
     element.style.viewTransitionName = 'none';
   }
 
+  for (const [attribute, selector] of Object.entries(LIVE_ATTRIBUTES)) {
+    for (const element of clone.querySelectorAll(selector)) {
+      element.removeAttribute(attribute);
+    }
+  }
+
   setStyles(clone, {
     ...getBaseGhostStyles(
-      rect,
       computed,
       '--tile-background',
       '--hover-border-color'
@@ -51,15 +64,11 @@ export function createTileDragGhost(
   return clone;
 }
 
-export function createTileGhost(
-  tile: IgcTileComponent,
-  rect: DOMRect
-): HTMLElement {
+export function createTileGhost(tile: IgcTileComponent): HTMLElement {
   const element = document.createElement('div');
 
   setStyles(element, {
     ...getBaseGhostStyles(
-      rect,
       getComputedStyle(tile),
       '--placeholder-background',
       '--ghost-border'

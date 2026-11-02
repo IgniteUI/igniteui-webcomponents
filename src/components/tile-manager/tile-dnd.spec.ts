@@ -20,13 +20,19 @@ import { getCenterPoint } from '#internals/utils/dom.js';
 import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcDialogComponent from '../dialog/dialog.js';
+import IgcRadioGroupComponent from '../radio-group/radio-group.js';
+import IgcRadioComponent from '../radio/radio.js';
 import type { TileManagerDragMode } from '../types.js';
 import IgcTileManagerComponent from './tile-manager.js';
 import IgcTileComponent from './tile.js';
 
 describe('Tile drag and drop', () => {
   before(() => {
-    defineComponents(IgcTileManagerComponent, IgcDialogComponent);
+    defineComponents(
+      IgcTileManagerComponent,
+      IgcDialogComponent,
+      IgcRadioGroupComponent
+    );
   });
 
   let tileManager: IgcTileManagerComponent;
@@ -166,6 +172,78 @@ describe('Tile drag and drop', () => {
       });
     });
 
+    it('keeps the radio that the user checked in a dragged tile', async () => {
+      const tile = getTile(0);
+      tile.insertAdjacentHTML(
+        'beforeend',
+        '<input type="radio" name="plan"><input type="radio" name="plan" checked>'
+      );
+      const [, checked] = tile.querySelectorAll('input');
+
+      simulatePointerDown(tile);
+      await elementUpdated(tile);
+
+      expect(document.querySelector('[data-drag-ghost]')).to.exist;
+      expect(checked.checked).to.be.true;
+
+      simulateKeyboard(tileManager, escapeKey);
+    });
+
+    it('keeps the radio that the user checked in a radio group of a dragged tile', async () => {
+      const tile = getTile(0);
+      tile.insertAdjacentHTML(
+        'beforeend',
+        `<igc-radio-group name="plan">
+          <igc-radio value="a" checked>A</igc-radio>
+          <igc-radio value="b">B</igc-radio>
+        </igc-radio-group>`
+      );
+      const [first, second] = tile.querySelectorAll<IgcRadioComponent>(
+        IgcRadioComponent.tagName
+      );
+      await elementUpdated(second);
+
+      second.checked = true;
+      await elementUpdated(second);
+
+      simulatePointerDown(tile);
+      await elementUpdated(tile);
+
+      const copies = document.querySelectorAll<IgcRadioComponent>(
+        `[data-drag-ghost] ${IgcRadioComponent.tagName}, [data-drag-ghost] ${IgcRadioGroupComponent.tagName}`
+      );
+      expect(copies).lengthOf(3);
+      await Promise.all(Array.from(copies, (copy) => copy.updateComplete));
+
+      expect([first.checked, second.checked]).to.eql([false, true]);
+
+      simulateKeyboard(tileManager, escapeKey);
+    });
+
+    it('keeps the copy of a dragged tile out of forms, and does not load its frames or play its media', async () => {
+      const tile = getTile(0);
+      const form = document.createElement('form');
+
+      form.id = 'tile-form';
+      tileManager.after(form);
+      tile.insertAdjacentHTML(
+        'beforeend',
+        `<input name="note" form="tile-form">
+        <iframe src="about:blank"></iframe>
+        <video autoplay muted></video>`
+      );
+
+      simulatePointerDown(tile);
+      await elementUpdated(tile);
+
+      const ghost = document.querySelector('[data-drag-ghost]')!;
+      expect(Array.from(new FormData(form).keys())).to.eql(['note']);
+      expect(ghost.querySelector('iframe')!.hasAttribute('src')).to.be.false;
+      expect(ghost.querySelector('video')!.autoplay).to.be.false;
+
+      simulateKeyboard(tileManager, escapeKey);
+    });
+
     it('should stop drag operation when `igcTileDragStart` is prevented', async () => {
       const [tile, target] = [getTile(0), getTile(4)];
       const eventSpy = spy(tile, 'emitEvent');
@@ -279,6 +357,31 @@ describe('Tile drag and drop', () => {
         0, 1, 2, 3, 4,
       ]);
       expect([dragged.position, target.position]).to.eql([0, 1]);
+    });
+
+    it('swaps back toward the inline start of a CSS `direction: rtl` manager', async () => {
+      tileManager.style.direction = 'rtl';
+      const [dragged, target] = [getTile(0), getTile(1)];
+      const { x, y } = getCenterPoint(target);
+
+      simulatePointerDown(dragged);
+      simulateTileDragOver(dragged, { x, y });
+      await viewTransitionComplete();
+      await getActiveViewTransition()?.finished;
+      expect([dragged.position, target.position]).to.eql([1, 0]);
+
+      // The target is first, on the right. Its right quarter swaps back.
+      const { right, width } = target.getBoundingClientRect();
+      simulatePointerMove(dragged, { clientX: right - width / 2, clientY: y });
+      simulatePointerMove(dragged, {
+        clientX: right - width * 0.1,
+        clientY: y,
+      });
+      await viewTransitionComplete();
+      expect([dragged.position, target.position]).to.eql([0, 1]);
+
+      simulateLostPointerCapture(dragged);
+      await getActiveViewTransition()?.finished;
     });
 
     it('keeps the positions whole when the dragged tile leaves after a swap', async () => {
