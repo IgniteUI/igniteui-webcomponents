@@ -16,6 +16,9 @@ const KNOWN_LEAKS = new Set([
   'igc-combo > igc-virtual-scroll: igcDataRequest',
 ]);
 
+/** The title of the root hooks that check for leaks. */
+export const INNER_EVENTS_HOOK = 'inner events guard';
+
 type GuardState = { pending: string[]; failures: string[] };
 
 // A spec that imports this module can get a second instance of it, so the
@@ -53,15 +56,12 @@ function libraryHostsOf(node: Node): Element[] {
 }
 
 /**
- * Mocha's BDD interface assigns `afterEach` and `after` to the global object
- * in `mocha.setup()`. The setter registers a root hook at that moment. When a
- * spec file imports this module, mocha has the globals already.
+ * Mocha's BDD interface assigns `before` to the global object in
+ * `mocha.setup()`. The setter registers a root hook at that moment. When a
+ * spec file imports this module, mocha has the global already.
  */
-function onMochaGlobal(
-  name: 'after' | 'afterEach',
-  register: (hook: Mocha.HookFunction) => void
-): void {
-  const current = globalThis[name] as Mocha.HookFunction | undefined;
+function onMochaBefore(register: (before: Mocha.HookFunction) => void): void {
+  const current = globalThis.before as Mocha.HookFunction | undefined;
 
   if (typeof current === 'function') {
     register(current);
@@ -71,7 +71,7 @@ function onMochaGlobal(
   let value: unknown;
   let registered = false;
 
-  Object.defineProperty(globalThis, name, {
+  Object.defineProperty(globalThis, 'before', {
     configurable: true,
     get: () => value,
     set(next: Mocha.HookFunction) {
@@ -125,28 +125,33 @@ function install(state: GuardState): void {
     }
   };
 
-  onMochaGlobal('afterEach', (afterEach) =>
-    afterEach(function () {
-      const title = this.currentTest?.fullTitle();
+  // Mocha runs the hooks of a suite in the order that they were added. The
+  // spec files add their root hooks after `mocha.setup()`, so the checks go
+  // in when the run starts, behind the teardown hooks of the specs.
+  onMochaBefore((before) =>
+    before(function () {
+      const root = this.test!.parent!;
 
-      for (const key of new Set(state.pending.splice(0))) {
-        state.failures.push(`${title}: ${key}`);
-      }
-    })
-  );
+      root.afterEach(INNER_EVENTS_HOOK, function () {
+        const title = this.currentTest?.fullTitle();
 
-  // A failing `afterEach` skips the remaining tests of its suite, so the
-  // failure waits for the end of the file.
-  onMochaGlobal('after', (after) =>
-    after(() => {
-      // Leaks after the last test, for example in an `after` hook.
-      state.failures.push(...new Set(state.pending.splice(0)));
+        for (const key of new Set(state.pending.splice(0))) {
+          state.failures.push(`${title}: ${key}`);
+        }
+      });
 
-      if (state.failures.length) {
-        throw new Error(
-          `An inner event reached a component host:\n${state.failures.join('\n')}`
-        );
-      }
+      // A failing `afterEach` skips the remaining tests of its suite, so the
+      // failure waits for the end of the file.
+      root.afterAll(INNER_EVENTS_HOOK, () => {
+        // Leaks after the last test, for example in an `after` hook.
+        state.failures.push(...new Set(state.pending.splice(0)));
+
+        if (state.failures.length) {
+          throw new Error(
+            `An inner event reached a component host:\n${state.failures.join('\n')}`
+          );
+        }
+      });
     })
   );
 }

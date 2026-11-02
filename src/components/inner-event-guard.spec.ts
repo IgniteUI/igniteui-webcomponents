@@ -1,6 +1,9 @@
 import { expect, fixture, html } from '@open-wc/testing';
 import { LitElement } from 'lit';
-import { takeInnerEventLeaks } from '#internals/testing/inner-events.spec.js';
+import {
+  INNER_EVENTS_HOOK,
+  takeInnerEventLeaks,
+} from '#internals/testing/inner-events.spec.js';
 import { stopPropagation } from '#internals/utils/events.js';
 
 /** A composite with an inner element that stops `igcPing`, and one that does not. */
@@ -12,6 +15,10 @@ class IgcInnerEventProbe extends LitElement {
     `;
   }
 }
+
+// Root teardown hooks of this file. The checks of the guard run after them.
+afterEach('spec teardown', () => {});
+after('spec teardown', () => {});
 
 describe('Inner event guard', () => {
   let probe: IgcInnerEventProbe;
@@ -69,5 +76,24 @@ describe('Inner event guard', () => {
     ping(inner('open'), { composed: false });
 
     expect(takeInnerEventLeaks()).to.be.empty;
+  });
+
+  it('checks after the root teardown hooks of the spec file', function () {
+    let root = this.test!.parent!;
+
+    while (root.parent) {
+      root = root.parent;
+    }
+
+    // `getHooks` is not in the typings of mocha.
+    const hooks = root as unknown as { getHooks(name: string): Mocha.Hook[] };
+
+    for (const name of ['afterEach', 'afterAll']) {
+      const [spec, guard] = hooks.getHooks(name).slice(-2);
+
+      // Mocha adds the suite to the title of a hook that has run.
+      expect(spec.title).to.include('hook: spec teardown');
+      expect(guard.title).to.include(`hook: ${INNER_EVENTS_HOOK}`);
+    }
   });
 });
