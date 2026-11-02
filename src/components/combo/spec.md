@@ -58,6 +58,7 @@
 |       7 | 2026-10-12 | The group header template gets the group `key`; its `item` is deprecated              |
 |       8 | 2026-10-21 | API descriptions aligned with the JSDoc.                                              |
 |       9 | 2026-10-26 | Setting `singleSelect` or `disableFiltering` again keeps the search text              |
+|      10 | 2026-10-30 | A new item or group header template re-renders the open list                          |
 
 ## Overview
 
@@ -465,7 +466,8 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
    `disableFiltering` again to its value keeps the search text and the filter.
 6. Grouping, the `Other` group for unresolved keys, and the sort directions.
 7. Item and group header templating. The group header template gets the group `key` with its own type, also for
-   number keys and the `Other` group, and a template that reads the deprecated `item` still renders.
+   number keys and the `Other` group, and a template that reads the deprecated `item` still renders. A new item or
+   group header template re-renders the open list.
 8. The empty message and the `empty` slot.
 9. Localization through `locale` and `resourceStrings`.
 10. Opening, closing and the keyboard navigation of the list, including Arrow Down at the end of the matches.
