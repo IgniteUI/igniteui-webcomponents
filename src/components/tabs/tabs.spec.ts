@@ -21,6 +21,7 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
+  finishAnimationsFor,
   isUnderPageLayer,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
@@ -1182,6 +1183,50 @@ describe('Tabs component', () => {
       expect(layout.callCount).to.equal(0);
     });
 
+    describe('Indicator', () => {
+      // The Bootstrap theme shows no indicator.
+      before(() => configureTheme('material'));
+      after(async () => {
+        configureTheme('bootstrap');
+        await nextFrame();
+      });
+
+      for (const [position, dir] of [
+        ['top', 'ltr'],
+        ['top', 'rtl'],
+        ['start', 'ltr'],
+      ] as const) {
+        it(`stays on its header with padding around the strip and the grid (${position}, ${dir})`, async () => {
+          const tabs = await fixture<IgcTabsComponent>(html`
+            <igc-tabs
+              header-position=${position}
+              dir=${dir}
+              style="padding: 16px"
+            >
+              <igc-tab label="Inbox">Inbox</igc-tab>
+              <igc-tab label="Sent">Sent</igc-tab>
+            </igc-tabs>
+          `);
+
+          // A positioned strip is the offset parent of the grid, but not of a header.
+          getTabsDOM(tabs).container.style.cssText =
+            'padding: 8px; position: relative';
+          tabs.renderRoot.querySelector<HTMLElement>(
+            '[part~="inner"]'
+          )!.style.padding = '4px';
+          await settle();
+          tabs.select(tabs.tabs[1]);
+          await elementUpdated(tabs);
+
+          await indicatorOnHeader(
+            tabs,
+            tabs.tabs[1],
+            position === 'start' ? 'top' : dir === 'ltr' ? 'left' : 'right'
+          );
+        });
+      }
+    });
+
     it('handles a click once, without the echo of the reflected selection', async () => {
       const resolve = spy(
         element as unknown as { _resolveSelection(): unknown },
@@ -1363,6 +1408,25 @@ describe('Tabs component', () => {
         const { left, right } = header.getBoundingClientRect();
         return left >= strip.left - 1 && right <= strip.right + 1;
       }, 'The selected tab did not scroll into view');
+    });
+
+    it('measures the strip in its own CSS pixels under an ancestor transform', async () => {
+      const { container } = getTabsDOM(element);
+
+      element.parentElement!.style.transform = 'scale(0.5)';
+      element.style.width = '500px';
+      await waitUntil(
+        () => container.style.getPropertyValue('--_ig-tabs-width') === '500px',
+        'The strip width is not in CSS pixels'
+      );
+
+      element.select('18');
+
+      await waitUntil(
+        () =>
+          isBetweenScrollButtons(element, getTabDOM(element.tabs[17]).header),
+        'The selected tab did not scroll into view'
+      );
     });
 
     it('points the scroll buttons along the writing direction', async () => {
@@ -1877,6 +1941,44 @@ describe('Tabs component', () => {
 
       expect(tabs.tabs).lengthOf(2);
       expect(tabs.selectedTab).to.equal(tabs.tabs[0]);
+    });
+
+    it('follows a projected header with the indicator and the scroll', async () => {
+      // The Bootstrap theme shows no indicator.
+      configureTheme('material');
+
+      try {
+        // The parts of the tabs are not offset parents of a projected header.
+        const wrapper = await fixture<HTMLElement>(html`
+          <tabs-wrapper
+            style="display: block; width: 400px; padding-left: 300px"
+          >
+            ${Array.from(range(1, 19)).map(
+              (idx) => html`
+                <igc-tab label=${`Item ${idx}`}>Content ${idx}</igc-tab>
+              `
+            )}
+          </tabs-wrapper>
+        `);
+        const tabs = wrapper.shadowRoot!.querySelector(
+          IgcTabsComponent.tagName
+        )!;
+        await elementUpdated(tabs);
+
+        for (const tab of [tabs.tabs[1], tabs.tabs[17]]) {
+          tabs.select(tab);
+          await elementUpdated(tabs);
+
+          await waitUntil(
+            () => isBetweenScrollButtons(tabs, getTabDOM(tab).header),
+            `${tab.label} is not in view`
+          );
+          await indicatorOnHeader(tabs, tab, 'left');
+        }
+      } finally {
+        configureTheme('bootstrap');
+        await nextFrame();
+      }
     });
 
     it('navigates and activates tabs projected through an intermediate slot', async () => {
@@ -2633,6 +2735,28 @@ describe('Tabs component', () => {
         ).to.equal(264);
       });
 
+      // `scale(0)` is the first frame of a scale-in animation.
+      for (const scale of ['0', '0.5']) {
+        for (const property of ['height', 'max-height']) {
+          it(`limits the panels to a ${property} under an ancestor scale(${scale})`, async () => {
+            const wrapper = await fixture<HTMLElement>(html`
+              <div style="transform: scale(${scale})">
+                <igc-tabs header-position="start" style=${`${property}: 200px`}>
+                  <igc-tab label="Inbox"
+                    ><div style="height: 600px"></div
+                  ></igc-tab>
+                </igc-tabs>
+              </div>
+            `);
+
+            await withHeightLimit(
+              wrapper.querySelector(IgcTabsComponent.tagName)!,
+              '200px'
+            );
+          });
+        }
+      }
+
       it('keeps the width limit of a header in tabs in the panel of a `justify` row', async () => {
         const outer = await fixture<IgcTabsComponent>(html`
           <igc-tabs alignment="justify">
@@ -3268,6 +3392,40 @@ describe('Tabs component', () => {
     </igc-tabs>
   `);
 });
+
+/** Waits until the indicator lies on the `side` edge of the header of `tab`. */
+function indicatorOnHeader(
+  tabs: IgcTabsComponent,
+  tab: IgcTabComponent,
+  side: 'top' | 'left' | 'right'
+): Promise<void> {
+  const { indicator } = getTabsDOM(tabs);
+  const { header } = getTabDOM(tab);
+
+  return waitUntil(() => {
+    finishAnimationsFor(indicator);
+    return (
+      Math.abs(
+        indicator.getBoundingClientRect()[side] -
+          header.getBoundingClientRect()[side]
+      ) <= 1
+    );
+  }, `The indicator is not on ${tab.label}`);
+}
+
+/** Whether `header` shows between the scroll buttons of a left-to-right row. */
+function isBetweenScrollButtons(
+  tabs: IgcTabsComponent,
+  header: HTMLElement
+): boolean {
+  const button = (side: 'start' | 'end') =>
+    tabs.renderRoot
+      .querySelector(`[part="${side}-scroll-button"]`)!
+      .getBoundingClientRect();
+  const { left, right } = header.getBoundingClientRect();
+
+  return left >= button('start').right - 1 && right <= button('end').left + 1;
+}
 
 function getTabsDOM(tabs: IgcTabsComponent) {
   const root = tabs.renderRoot;

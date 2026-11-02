@@ -631,6 +631,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
         <span data-direction-probe></span>
         <span data-height-probe ${ref(this._domHelpers.heightProbeRef)}></span>
         <div
+          ${ref(this._domHelpers.innerRef)}
           part=${partMap({
             inner: true,
             scrollable: this._domHelpers.hasScrollButtons,

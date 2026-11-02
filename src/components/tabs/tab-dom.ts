@@ -21,6 +21,38 @@ type Extent = {
   size: number;
 };
 
+/**
+ * The offset of `element` from the page on one axis. Unlike client rectangles, offsets
+ * ignore transforms. Each offset parent counts, because the parts of the tabs are not
+ * offset parents of a header.
+ */
+function getPageOffset(element: HTMLElement, vertical: boolean): number {
+  let offset = vertical ? element.offsetTop : element.offsetLeft;
+
+  for (
+    let parent = element.offsetParent;
+    parent instanceof HTMLElement;
+    parent = parent.offsetParent
+  ) {
+    offset += vertical
+      ? parent.offsetTop + parent.clientTop
+      : parent.offsetLeft + parent.clientLeft;
+  }
+
+  return offset;
+}
+
+/** The padding and the border of `style` on one axis. */
+function getFrame(style: CSSStyleDeclaration, vertical: boolean): number {
+  return (vertical ? ['top', 'bottom'] : ['left', 'right']).reduce(
+    (sum, side) =>
+      sum +
+      asNumber(style.getPropertyValue(`padding-${side}`)) +
+      asNumber(style.getPropertyValue(`border-${side}-width`)),
+    0
+  );
+}
+
 /** How far `extent` passes the `max` (or `min`) edge of `bounds`, else 0. */
 function pastEdge(
   extent: Extent,
@@ -28,7 +60,7 @@ function pastEdge(
   edge: 'min' | 'max'
 ): number {
   const offset = extent[edge] - bounds[edge];
-  // A header that does not render has an empty box at the origin of the viewport.
+  // A header that does not render has an empty box at the origin.
   return extent.size && (edge === 'max' ? offset : -offset) > EDGE_TOLERANCE
     ? offset
     : 0;
@@ -38,6 +70,7 @@ export class TabsHelpers {
   private readonly _host: IgcTabsComponent;
 
   public readonly containerRef = createRef<HTMLElement>();
+  public readonly innerRef = createRef<HTMLElement>();
   public readonly indicatorRef = createRef<HTMLElement>();
   public readonly heightProbeRef = createRef<HTMLElement>();
   public readonly maxHeightProbeRef = createRef<HTMLElement>();
@@ -71,11 +104,10 @@ export class TabsHelpers {
     const column = isColumn(this._host);
     // The probe is as tall as a column with a definite height, else 0, so that the
     // panels can grow a column with an auto height. A `max-height` also limits them.
-    const definite = column && probe ? this._getExtent(probe).size : 0;
+    const definite = column && probe ? this._getSize(probe) : 0;
     const limit = definite || (column ? this._getMaxHeight() : 0);
     // The room of the headers: the width of a row, or the height limit of a column.
-    const room =
-      container && (column ? limit : this._getExtent(container).size);
+    const room = container && (column ? limit : this._getSize(container));
     // A hidden tab gets no track, so `justify` leaves no gap for it.
     const rendered = headers.filter(
       (header) => header?.checkVisibility() ?? true
@@ -100,7 +132,7 @@ export class TabsHelpers {
     // The tabs alone, because the scroll size includes the scroll buttons. Subpixel
     // sizes, so that the rounding of many headers does not add up.
     const tabsSize = headers.reduce(
-      (sum, header) => sum + (header ? this._getExtent(header).size : 0),
+      (sum, header) => sum + (header ? this._getSize(header) : 0),
       0
     );
 
@@ -111,19 +143,31 @@ export class TabsHelpers {
   }
 
   /**
-   * The extent of `element` on the scroll axis, in its own CSS pixels. An ancestor
-   * `zoom` scales the client rectangle, but not the scroll offsets and the computed
-   * styles.
+   * The border-box size of `element` on the scroll axis, which transforms and `zoom`
+   * do not scale. 0 without a box, where the computed size is the specified one,
+   * such as `100%`.
    */
-  private _getExtent(element: Element): Extent {
-    const zoom = element.currentCSSZoom || 1;
-    const { left, right, top, bottom, width, height } =
-      element.getBoundingClientRect();
-    const [min, max, size] = isColumn(this._host)
-      ? [top, bottom, height]
-      : [left, right, width];
+  private _getSize(element: Element): number {
+    if (!element.checkVisibility()) {
+      return 0;
+    }
 
-    return { min: min / zoom, max: max / zoom, size: size / zoom };
+    const column = isColumn(this._host);
+    const style = getComputedStyle(element);
+    const size = asNumber(column ? style.height : style.width);
+
+    return style.boxSizing === 'border-box'
+      ? size
+      : size + getFrame(style, column);
+  }
+
+  /** The extent of `element` on the scroll axis, from the page. */
+  private _getExtent(element: HTMLElement): Extent {
+    const column = isColumn(this._host);
+    const min = getPageOffset(element, column);
+    const size = column ? element.offsetHeight : element.offsetWidth;
+
+    return { min, max: min + size, size };
   }
 
   /**
@@ -132,35 +176,40 @@ export class TabsHelpers {
    */
   private _getMaxHeight(): number {
     const probe = this.maxHeightProbeRef.value;
-    const max = probe ? this._getExtent(probe).size : 0;
+    const max = probe ? this._getSize(probe) : 0;
 
     if (!max || max >= NO_MAX_HEIGHT - EDGE_TOLERANCE) {
       return 0;
     }
 
     const style = getComputedStyle(this._host);
-    const frame =
-      style.boxSizing === 'border-box'
-        ? [
-            style.paddingTop,
-            style.paddingBottom,
-            style.borderTopWidth,
-            style.borderBottomWidth,
-          ].reduce((sum, value) => sum + asNumber(value), 0)
-        : 0;
+    const frame = style.boxSizing === 'border-box' ? getFrame(style, true) : 0;
 
     return Math.max(max - frame, 0);
   }
 
-  /** The bounds of the strip without the sticky scroll buttons. */
+  /**
+   * The bounds of the strip without the sticky scroll buttons, from the page. Offsets
+   * ignore the scroll of the strip, so the bounds move with it.
+   */
   private _getVisibleBounds(container: HTMLElement): Omit<Extent, 'size'> {
     const style = getComputedStyle(container);
-    const { min, max } = this._getExtent(container);
-    const [low, high] = isColumn(this._host)
-      ? [style.scrollPaddingTop, style.scrollPaddingBottom]
-      : [style.scrollPaddingLeft, style.scrollPaddingRight];
+    const [inset, size, low, high] = isColumn(this._host)
+      ? [
+          container.clientTop + container.scrollTop,
+          container.clientHeight,
+          asNumber(style.scrollPaddingTop),
+          asNumber(style.scrollPaddingBottom),
+        ]
+      : [
+          container.clientLeft + container.scrollLeft,
+          container.clientWidth,
+          asNumber(style.scrollPaddingLeft),
+          asNumber(style.scrollPaddingRight),
+        ];
+    const start = this._getExtent(container).min + inset;
 
-    return { min: min + asNumber(low), max: max - asNumber(high) };
+    return { min: start + low, max: start + size - high };
   }
 
   /** Scrolls the strip on its axis. */
@@ -263,10 +312,10 @@ export class TabsHelpers {
   ): Promise<void> {
     await this._host.updateComplete;
 
-    const container = this.containerRef.value;
+    const inner = this.innerRef.value;
     const indicator = this.indicatorRef.value;
 
-    if (!(container && indicator)) {
+    if (!(inner && indicator)) {
       return;
     }
 
@@ -277,13 +326,18 @@ export class TabsHelpers {
       return;
     }
 
+    // The span moves from the start of the content box of the grid.
     const column = isColumn(this._host);
-    const size = column ? header.offsetHeight : header.offsetWidth;
-    const offset = column
-      ? header.offsetTop - container.offsetTop
-      : isLTR(this._host)
-        ? header.offsetLeft - container.offsetLeft
-        : header.offsetLeft + size - container.offsetWidth;
+    const style = getComputedStyle(inner);
+    const inset = column
+      ? asNumber(style.borderTopWidth) + asNumber(style.paddingTop)
+      : asNumber(style.borderInlineStartWidth) +
+        asNumber(style.paddingInlineStart);
+    const grid = this._getExtent(inner);
+    const { min, max, size } = this._getExtent(header);
+    const offset = this._endIsMax
+      ? min - (grid.min + inset)
+      : max - (grid.max - inset);
 
     setStyles(indicator, {
       visibility: '',

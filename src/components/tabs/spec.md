@@ -25,6 +25,11 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
     - [Keyboard interactions](#keyboard-interactions)
   - [API](#api)
     - [igc-tabs](#igc-tabs)
+      - [Properties and attributes](#properties-and-attributes)
+      - [Methods](#methods)
+      - [Events](#events)
+      - [Slots](#slots)
+      - [CSS Shadow parts](#css-shadow-parts)
     - [igc-tab](#igc-tab)
   - [Test scenarios](#test-scenarios)
     - [Rendering and defaults](#rendering-and-defaults)
@@ -38,6 +43,9 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
     - [Layout](#layout)
     - [Hidden ancestor](#hidden-ancestor)
     - [Header position](#header-position-1)
+      - [Column layout](#column-layout)
+      - [Column scrolling](#column-scrolling)
+      - [Column themes](#column-themes)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -439,8 +447,9 @@ The groups below mirror the `describe` blocks.
 
 9. The scroll buttons appear when the headers overflow and scroll the strip. Their arrows point along the writing
    direction, also when `dir` is on the tabs or on an ancestor.
-10. Selecting a tab outside the visible area scrolls it into view. Under an ancestor `zoom`, the strip is measured in its
-    own CSS pixels. A hidden tab does not move the strip, neither through the scroll buttons nor when it is selected.
+10. Selecting a tab outside the visible area scrolls it into view. Under an ancestor `zoom` or `transform`, the strip is
+    measured in its own CSS pixels, and a selected tab scrolls into view between the scroll buttons. A hidden tab does not
+    move the strip, neither through the scroll buttons nor when it is selected.
 
 ### Composition
 
@@ -448,8 +457,9 @@ The groups below mirror the `describe` blocks.
     A tab added as selected takes the selection, also when the selected tab is deselected in the same task or the
     markup is replaced. A selected tab that moves keeps the selection, and of several tabs selected at once the last one
     in document order wins. Tabs projected through the slot of another component are picked up, work with the
-    keyboard, and are followed when their state changes or tabs are added or removed. Changes made while the tabs are
-    detached apply when they connect again.
+    keyboard, and are followed when their state changes or tabs are added or removed. The selected indicator stays on a
+    projected header, and a selected projected header scrolls into view. Changes made while the tabs are detached apply
+    when they connect again.
 12. Prefix, label and suffix content renders in the header.
 
 ### Tab component
@@ -502,64 +512,68 @@ The groups below mirror the `describe` blocks.
 30. The tab headers are painted under an earlier page layer with `z-index: 1`.
 31. An element with `position: fixed` in the selected panel is placed against the viewport.
 32. In a row, the header strip covers only the header row, not the panels.
+33. The selected indicator stays on its header with padding on the tabs, the `tabs` part and the `inner` part, and with
+    a positioned `tabs` part, in a row in LTR and RTL and in a column.
 
 ### Hidden ancestor
 
-33. The tabs, also the selected indicator, hide at the same time as a hidden ancestor in each theme, at rest and after a
+34. The tabs, also the selected indicator, hide at the same time as a hidden ancestor in each theme, at rest and after a
     focus or a hover: no element transitions `visibility` or sets it to `visible`.
 
 ### Header position
 
-34. The default position is `top`. The attribute reflects. The tab list has the horizontal orientation in a row and the
+35. The default position is `top`. The attribute reflects. The tab list has the horizontal orientation in a row and the
     vertical orientation in a column, also after a change.
-35. In a column, Up and Down move the focus between the enabled tabs that render, and wrap. With `activation="auto"`,
+36. In a column, Up and Down move the focus between the enabled tabs that render, and wrap. With `activation="auto"`,
     they select the tab. With `manual`, they only move the focus. They do not mirror in a right-to-left column.
-36. Left and Right in a column, and Up and Down in a row, do nothing and are not canceled.
-37. A change of position keeps the selected tab, the focused header and the header elements, and emits no `igcChange`.
+37. Left and Right in a column, and Up and Down in a row, do nothing and are not canceled.
+38. A change of position keeps the selected tab, the focused header and the header elements, and emits no `igcChange`.
     A selection made in the same task as a change of position stays.
 
 #### Column layout
 
-38. The headers form a column on the `start` or the `end` side of the panels, in LTR and RTL. The header strip covers
+39. The headers form a column on the `start` or the `end` side of the panels, in LTR and RTL. The header strip covers
     only the header column.
-39. The column is as wide as the widest header, up to the width limit of a header, also with `justify`. The panel
+40. The column is as wide as the widest header, up to the width limit of a header, also with `justify`. The panel
     takes the rest of the width.
-40. `alignment` `start`, `center`, `end` and `justify` place the headers along the column.
-41. With an auto height, the panel sizes the tabs. With a set height, the height of the tabs limits the panel, also
+41. `alignment` `start`, `center`, `end` and `justify` place the headers along the column.
+42. With an auto height, the panel sizes the tabs. With a set height, the height of the tabs limits the panel, also
     after a row with a set height changes to a column. The limit goes away with the set height.
-42. A row of tabs in the panel of a column lays out as a row.
-43. The accessibility audit passes on both sides. The headers of a column are painted under an earlier page layer.
-44. When a panel grows, the indicator follows the headers that `center` or `end` alignment moves. With `start`, the
+43. A row of tabs in the panel of a column lays out as a row.
+44. The accessibility audit passes on both sides. The headers of a column are painted under an earlier page layer.
+45. When a panel grows, the indicator follows the headers that `center` or `end` alignment moves. With `start`, the
     indicator does not move.
-45. Each header of a column is as tall as a header row.
-46. With `justify`, a hidden tab leaves no gap, in a row and in a column. Tabs in a panel of a `justify` row keep the
+46. Each header of a column is as tall as a header row.
+47. With `justify`, a hidden tab leaves no gap, in a row and in a column. Tabs in a panel of a `justify` row keep the
     width limit of a header.
-47. A `max-height` on the tabs is a height limit without their padding and border. A higher `max-height` applies also
+48. A `max-height` on the tabs is a height limit without their padding and border. A higher `max-height` applies also
     while the limit caps the panel.
-48. A tab that leaves its tabs drops the position.
+49. A tab that leaves its tabs drops the position.
+50. Under an ancestor `transform`, also `scale(0)`, the first frame of a scale-in animation, a set height or a
+    `max-height` limits the panels in CSS pixels.
 
 #### Column scrolling
 
-49. With a set height, scroll buttons show above and below the headers when the headers do not fit. Their arrows point
+51. With a set height, scroll buttons show above and below the headers when the headers do not fit. Their arrows point
     up and down, also in a right-to-left column. The panel stays at the top of the column while the headers scroll.
-50. The scroll buttons scroll the column. A selected tab scrolls into view, and the page does not scroll. A header that
+52. The scroll buttons scroll the column. A selected tab scrolls into view, and the page does not scroll. A header that
     gets the focus with `manual` activation scrolls into view.
-51. The scroll offset stays in range when tabs are removed or the tabs get taller. The scroll buttons show and hide when
+53. The scroll offset stays in range when tabs are removed or the tabs get taller. The scroll buttons show and hide when
     a header changes height, and hide when the height limit goes away, with no ResizeObserver loop error.
-52. Under an ancestor `zoom`, the column is measured in its own CSS pixels. Changes inside a panel do not make the tabs
+54. Under an ancestor `zoom`, the column is measured in its own CSS pixels. Changes inside a panel do not make the tabs
     measure the column.
-53. The indicator moves along the column with the selected header. A change of position resets the scroll offsets,
+55. The indicator moves along the column with the selected header. A change of position resets the scroll offsets,
     keeps the focused header in view, and moves the indicator to the new axis without a transition.
-54. A `max-height` on the tabs limits the panel and scrolls the headers as a set height does, and a change of it
+56. A `max-height` on the tabs limits the panel and scrolls the headers as a set height does, and a change of it
     applies.
 
 #### Column themes
 
-55. In the Material, Fluent and Indigo themes, the indicator is on the side of the headers that faces the panels, for
+57. In the Material, Fluent and Indigo themes, the indicator is on the side of the headers that faces the panels, for
     both positions, in LTR and RTL. The lines of the Bootstrap theme and the header lines of the Indigo theme are on
     the side of the panels.
-56. Each tab gets the position, also a tab added later.
-57. A column hides at the same time as a hidden ancestor (the shared `runHiddenAncestorTests` suite).
+58. Each tab gets the position, also a tab added later.
+59. A column hides at the same time as a hidden ancestor (the shared `runHiddenAncestorTests` suite).
 
 ## Assumptions and limitations
 
