@@ -567,6 +567,11 @@ export default class IgcComboComponent<
       this._state.invalidate();
     }
 
+    // The list keeps the same `_itemRenderer`, so a new template must re-render it.
+    if (props.has('itemTemplate') || props.has('groupHeaderTemplate')) {
+      this._listRef.value?.requestUpdate();
+    }
+
     // Sync the selection when `data` comes after `value`.
     if (props.has('data') && !isEmpty(this.data) && !isEmpty(this.value)) {
       this._withPristine(() => {
