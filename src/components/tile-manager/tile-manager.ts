@@ -31,6 +31,7 @@ import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { TileManagerDragMode, TileManagerResizeMode } from '../types.js';
 import { createTilesState } from './position.js';
+import { parseTrackSizes } from './resize-util.js';
 import { applyLayout, serializeTiles } from './serializer.js';
 import { styles as shared } from './themes/shared/tile-manager.common.css.js';
 import { styles } from './themes/tile-manager.base.css.js';
@@ -226,7 +227,9 @@ export default class IgcTileManagerComponent extends LitElement {
     this._tilesState.assignPositions();
     this._tilesState.assignTiles();
     this._updateMaximizedTile();
-    // A column cell resizes with the columns, the grid also with the tiles.
+    // The probe resizes with the width, and a column cell with the columns.
+    // The grid also resizes with the tiles.
+    this._columnObserver.observe(this._trackProbe.value!);
     this._columnObserver.observe(this._trackCell.value!);
     this._fitColumns();
   }
@@ -269,7 +272,7 @@ export default class IgcTileManagerComponent extends LitElement {
     }
 
     const { gridTemplateColumns } = getComputedStyle(this._trackProbe.value!);
-    const count = gridTemplateColumns.split(' ').length;
+    const count = parseTrackSizes(gridTemplateColumns).length;
     const { style } = this._grid.value!;
     const current = asNumber(style.getPropertyValue('--_fit-columns'));
 

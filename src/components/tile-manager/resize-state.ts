@@ -8,6 +8,7 @@ import {
   calculatePosition,
   calculateResizedSpan,
   calculateSnappedDimension,
+  parseTrackSizes,
 } from './resize-util.js';
 import type IgcTileComponent from './tile.js';
 import type {
@@ -79,14 +80,14 @@ function parseTileParentGrid(
   return {
     column: createAxisState(
       {
-        entries: gridTemplateColumns.split(' ').map(asNumber),
+        entries: parseTrackSizes(gridTemplateColumns),
         minSize: 0,
       },
       resolveCssLength(grid, columnGap, width)
     ),
     row: createAxisState(
       {
-        entries: gridTemplateRows.split(' ').map(asNumber),
+        entries: parseTrackSizes(gridTemplateRows),
         minSize: resolveCssLength(grid, minRowHeight),
       },
       resolveCssLength(grid, rowGap, height)

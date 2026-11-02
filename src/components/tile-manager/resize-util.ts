@@ -1,4 +1,14 @@
+import { asNumber } from '#internals/utils/math.js';
 import type { ResizeProps, ResizeSpanProps } from './types.js';
+
+/** The pixel sizes of a resolved track list, such as `[start] 200px 200px [end]`. */
+export function parseTrackSizes(tracks: string): number[] {
+  return tracks
+    .replace(/\[[^\]]*\]/g, ' ')
+    .trim()
+    .split(/\s+/)
+    .map(asNumber);
+}
 
 export function calculateSnappedDimension(props: ResizeProps): number {
   const {

@@ -683,6 +683,50 @@ describe('Tile Manager component', () => {
       );
     });
 
+    it('counts the columns of a template with line names', async () => {
+      const container = await fixture<HTMLElement>(html`
+        <div>
+          <style>
+            .named::part(base) {
+              grid-template-columns: [start] repeat(3, 1fr) [end];
+            }
+          </style>
+          <igc-tile-manager class="named" style="inline-size: 600px">
+            <igc-tile col-start="3" col-span="2"><p>A</p></igc-tile>
+          </igc-tile-manager>
+        </div>
+      `);
+      tileManager = container.querySelector(IgcTileManagerComponent.tagName)!;
+      await elementUpdated(tileManager);
+
+      expect(getComputedStyle(tileManager.tiles[0]).gridColumn).to.equal(
+        '3 / span 1'
+      );
+    });
+
+    it('counts again when the columns change but keep their width', async () => {
+      // 830px holds 4 columns of 200px with gaps of 10px, and 620px holds 3.
+      tileManager = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager
+          style="inline-size: 830px; --grid-padding: 0px; --grid-gap: 10px"
+        >
+          <igc-tile col-span="4"><p>A</p></igc-tile>
+        </igc-tile-manager>
+      `);
+      const [wide] = tileManager.tiles;
+      const span = () => getComputedStyle(wide).gridColumn;
+
+      expect(span()).to.equal('auto / span 4');
+
+      // Let the first observer callback and its count pass.
+      for (let frame = 0; frame < 3; frame++) {
+        await nextFrame();
+      }
+
+      tileManager.style.inlineSize = '620px';
+      await waitUntil(() => span() === 'auto / span 3');
+    });
+
     it('counts again when the width and the gap of the grid change by the same amount', async () => {
       tileManager = await fixture<IgcTileManagerComponent>(html`
         <igc-tile-manager

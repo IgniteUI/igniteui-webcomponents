@@ -244,6 +244,35 @@ describe('Tile drag and drop', () => {
       simulateKeyboard(tileManager, escapeKey);
     });
 
+    it('keeps the copy of a dragged tile out of a form around its top layer', async () => {
+      const form = await fixture<HTMLFormElement>(html`
+        <form>
+          <div popover="manual">
+            <igc-tile-manager drag-mode="tile">
+              <igc-tile>
+                <input name="plain" />
+                <input name="note" form="missing-form" />
+              </igc-tile>
+            </igc-tile-manager>
+          </div>
+        </form>
+      `);
+      const layer = form.querySelector<HTMLElement>('[popover]')!;
+
+      layer.showPopover();
+      tileManager = form.querySelector(IgcTileManagerComponent.tagName)!;
+      await elementUpdated(tileManager);
+
+      simulatePointerDown(getTile(0));
+      await elementUpdated(tileManager);
+
+      expect(layer.querySelector(':scope > [data-drag-ghost]')).to.exist;
+      expect(Array.from(new FormData(form).keys())).to.eql(['plain']);
+
+      simulateKeyboard(tileManager, escapeKey);
+      layer.hidePopover();
+    });
+
     it('should stop drag operation when `igcTileDragStart` is prevented', async () => {
       const [tile, target] = [getTile(0), getTile(4)];
       const eventSpy = spy(tile, 'emitEvent');

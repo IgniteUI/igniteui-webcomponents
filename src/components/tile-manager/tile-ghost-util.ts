@@ -4,12 +4,11 @@ import type IgcTileComponent from './tile.js';
 /**
  * The attributes that act again when the drag copy connects, with the elements
  * that have them. A named radio joins and unchecks the group of the original,
- * and a radio group names its radios again. `form` joins the form of the
- * original. A frame loads its page again, and `autoplay` plays the media.
+ * and a radio group names its radios again. A frame loads its page again, and
+ * `autoplay` plays the media.
  */
 const LIVE_ATTRIBUTES = {
   name: 'input[type="radio"], igc-radio, igc-radio-group',
-  form: '[form]',
   src: 'iframe, embed',
   srcdoc: 'iframe',
   data: 'object',
@@ -41,6 +40,12 @@ export function createTileDragGhost(tile: IgcTileComponent): IgcTileComponent {
   // tile in a nested manager, or the browser skips the swap transitions.
   for (const element of clone.querySelectorAll<HTMLElement>('*')) {
     element.style.viewTransitionName = 'none';
+
+    // A copied control joins the form of its `form` attribute, else a form
+    // around the ghost. An empty `form` joins no form.
+    if ('form' in element) {
+      element.setAttribute('form', '');
+    }
   }
 
   for (const [attribute, selector] of Object.entries(LIVE_ATTRIBUTES)) {
