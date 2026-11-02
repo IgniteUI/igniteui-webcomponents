@@ -22,6 +22,7 @@ import {
 import { getCenterPoint } from '#internals/utils/dom.js';
 import { shouldUseNativeAnchorPositioning } from '../popover/position/native.js';
 import { setPopoverPositionStrategy } from '../popover/position/types.js';
+import type { TooltipRect } from '../types.js';
 import IgcTooltipComponent from './tooltip.js';
 
 describe('Tooltip', () => {
@@ -718,6 +719,40 @@ describe('Tooltip', () => {
       expect(other.getAttribute('aria-describedby')).to.equal(tooltip.id);
     });
 
+    it('keeps a transient target when the same anchor is set again', async () => {
+      const [target, other] = Array.from(
+        tooltip.parentElement!.querySelectorAll('button')
+      );
+
+      await tooltip.show(other);
+
+      // A wrapper that sets all the properties on each render.
+      tooltip.anchor = 'target';
+      tooltip.message = 'Changed';
+      await elementUpdated(tooltip);
+
+      expect(other.getAttribute('aria-describedby')).to.equal(tooltip.id);
+      expect(target.hasAttribute('aria-describedby')).to.be.false;
+    });
+
+    it('binds the triggers once when the anchor is set to the transient target', async () => {
+      const eventSpy = spy(tooltip, 'emitEvent');
+      const [, other] = Array.from(
+        tooltip.parentElement!.querySelectorAll('button')
+      );
+
+      await tooltip.show(other);
+      tooltip.anchor = other;
+      await elementUpdated(tooltip);
+      await tooltip.hide();
+
+      simulatePointerEnter(other);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      await showComplete();
+
+      expect(eventSpy.withArgs('igcOpening').callCount).to.equal(1);
+    });
+
     it('should be able to pass and IDREF to `show` method', async () => {
       const eventSpy = spy(tooltip, 'emitEvent');
 
@@ -1002,6 +1037,12 @@ describe('Tooltip', () => {
         expect(rect.top).to.be.closeTo(tooltip.offset, 1);
         expect(rect.left).to.be.closeTo(0, 1);
 
+        // No rectangle at all, from a JavaScript caller.
+        await tooltip.hide();
+        expect(await tooltip.showAt(undefined as unknown as TooltipRect)).to.be
+          .true;
+        expect(baseRect().left).to.be.closeTo(0, 1);
+
         const point = { x: 200, y: 150 };
         await tooltip.showAt(point);
         await positioned();
@@ -1147,6 +1188,33 @@ describe('Tooltip', () => {
         expect(baseRect().top).to.be.closeTo(156, 1);
       });
 
+      it('does not take the Escape key while it is not connected', async () => {
+        const second = document.createElement(IgcTooltipComponent.tagName);
+        container.append(second);
+        await second.show();
+
+        // Removed during the show animation.
+        const shown = tooltip.showAt({ x: 200, y: 150 });
+        tooltip.remove();
+        await shown;
+
+        // Shown before it connects, and never connected.
+        await document
+          .createElement(IgcTooltipComponent.tagName)
+          .showAt({ x: 200, y: 150 });
+
+        document.documentElement.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: 'Escape',
+            bubbles: true,
+            composed: true,
+          })
+        );
+        await hideComplete(second);
+
+        expect(second.open).to.be.false;
+      });
+
       it('does not throw when it is removed in the same task', async () => {
         const popover = tooltip.renderRoot.querySelector('igc-popover')!;
 
@@ -1192,7 +1260,7 @@ describe('Tooltip', () => {
         }
       });
 
-      it('starts from the placement after a flip at an element', async () => {
+      it('starts from the placement on the next show after a flip', async () => {
         const bottom = document.createElement('button');
         bottom.textContent = 'Bottom';
         bottom.style.cssText = 'position: fixed; bottom: 0; left: 200px';
@@ -1206,6 +1274,11 @@ describe('Tooltip', () => {
           bottom.getBoundingClientRect().top + 1
         );
 
+        // A target change while it shows can keep the flip. A hide resets it
+        // when a rendering update finds the tooltip hidden.
+        await tooltip.hide();
+        await nextFrame();
+        await nextFrame();
         await tooltip.showAt({ x: 200, y: 150 });
         await positioned();
 
@@ -1228,10 +1301,28 @@ describe('Tooltip', () => {
 
         expect(arrow.left).to.be.at.least(base.left - 1);
         expect(arrow.right).to.be.at.most(base.right + 1);
-        // The fallback moves the tooltip so that the arrow points at the
-        // point. The native strategy keeps the arrow at the tooltip edge.
-        expect(miss).to.be.at.most(
-          mode === 'fallback' ? 1 : arrow.width / 2 + 1
+        // The point is at the tooltip edge, where the arrow stays inside.
+        expect(miss).to.be.at.most(arrow.width / 2 + 1);
+      });
+
+      it('keeps an aligned arrow at the point inside a zoomed ancestor', async () => {
+        container.style.zoom = '1.5';
+        tooltip.withArrow = true;
+        tooltip.placement = 'bottom-start';
+
+        await tooltip.showAt({ x: 200, y: 150 });
+        await positioned();
+        await nextFrame();
+
+        const arrow = tooltip.renderRoot
+          .querySelector('#arrow')!
+          .getBoundingClientRect();
+        const base = baseRect();
+
+        expect(base.left).to.be.closeTo(200, 1);
+        expect(arrow.left).to.be.at.least(base.left - 1);
+        expect(Math.abs(arrow.left + arrow.width / 2 - 200)).to.be.at.most(
+          arrow.width / 2 + 1
         );
       });
 
@@ -1337,6 +1428,32 @@ describe('Tooltip', () => {
   });
 
   describe('Arrow', () => {
+    it('keeps the offset of an aligned placement on a wide anchor', async () => {
+      const container = await fixture(html`
+        <div style="padding: 100px">
+          <button id="target" style="width: 400px">Wide anchor</button>
+          <igc-tooltip anchor="target" placement="bottom-start" with-arrow>
+            <div style="width: 100px">Hi</div>
+          </igc-tooltip>
+        </div>
+      `);
+      tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
+
+      await tooltip.show();
+      await nextFrame();
+
+      const arrow = tooltip.renderRoot
+        .querySelector('#arrow')!
+        .getBoundingClientRect();
+      const base = tooltip.renderRoot
+        .querySelector('[part~="base"]')!
+        .getBoundingClientRect();
+
+      // The anchor center is past the tooltip end, so the arrow is at the end,
+      // 8 px off the rounded corner.
+      expect(base.right - arrow.right).to.be.closeTo(8, 1);
+    });
+
     it('is centered on the anchor on the first show', async () => {
       const container = await fixture(html`
         <div style="padding: 100px">

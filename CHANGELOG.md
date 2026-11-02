@@ -162,8 +162,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The default `aria-valuetext` is now the percentage that the label shows. Before, it was the value with a percent sign: "50%" for 50 of 200, while the label showed 25%. [#2427](https://github.com/IgniteUI/igniteui-webcomponents/pull/2427)
   - The percentage is now correct. It rounds to two decimals: 12.996% shows as 13%, not "12.100%", and 1.005% shows as 1.01%, not 1%. A fractional `max` also works: 0.25 of 0.5 shows as 50%, not 25%. [#2427](https://github.com/IgniteUI/igniteui-webcomponents/pull/2427)
 - #### Color picker, Combo, Date picker, Date range picker, Dropdown, Select, Slider, Tooltip
-  - In browsers with CSS anchor positioning, a popup whose anchor changes while it shows now starts from its `placement`. The popup hides for one frame during the change. Before, it kept the side of a flip at the previous anchor, for example in the dropdown after `show(target)` with another target.
   - In browsers without CSS anchor positioning, a popup inside an ancestor with CSS `zoom` is now placed at its anchor. Before, the zoom moved it away from the anchor, and its arrow was off center.
+  - In browsers without CSS anchor positioning, a popup whose anchor is in a modal dialog or another top-layer element now stays at the anchor while the page scrolls. Before, it moved with the page for a frame.
 - #### Color picker
   - The initial `value` is now in the notation of `format` when the `value` attribute comes before the `format` attribute. Before, `value` and the form data stayed in hex until the color changed. [#2413](https://github.com/IgniteUI/igniteui-webcomponents/pull/2413)
   - The HSL saturation no longer becomes infinite for a very small saturation at full value. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
@@ -374,6 +374,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `show()` with the configured anchor, after a show at another target, now binds the triggers of the anchor one time. Before, they were bound two times, so the anchor emitted each event two times.
   - `show(target)` after a change of `anchor` in the same task now shows the tooltip at the target. Before, the new `anchor` replaced the target.
   - An open tooltip that moves in the DOM now closes on Escape and hides when the pointer leaves it. Before, it ignored both.
+  - A tooltip that is removed while it opens, or that opens before it is in the page, no longer takes the Escape key. Before, Escape could close that tooltip and not the visible one.
   - Removing the `placement` attribute no longer throws an error. The tooltip uses the default placement, `bottom`.
   - With `with-arrow` and a `-start` or `-end` placement on a small anchor, the arrow now stays inside the tooltip. Before, the 8 px offset of these placements could move the arrow out.
   - With `with-arrow`, the arrow is now centered on the anchor also on the first show. Before, it was off center by half its width until the tooltip opened a second time, in browsers with CSS anchor positioning. In all browsers, it was also off center after a change of the placement from the top or bottom side to the left or right side, or back. [#2520](https://github.com/IgniteUI/igniteui-webcomponents/issues/2520)

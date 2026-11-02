@@ -181,8 +181,16 @@ export default class IgcPopoverComponent extends LitElement {
       if (properties.has('open') || properties.has('anchor') || rectToggled) {
         this._setOpenState(this.open);
       } else if (this.open) {
-        this._placeRectAnchor();
-        this._positionStrategy?.update();
+        // A move of the rectangle needs no new position settings.
+        const moved = properties.size === 1 && properties.has('anchorRect');
+
+        if (properties.has('anchorRect')) {
+          this._placeRectAnchor();
+        }
+
+        moved
+          ? this._positionStrategy?.reposition()
+          : this._positionStrategy?.update();
       }
 
       if (properties.has('scrollStrategy')) {
@@ -198,8 +206,8 @@ export default class IgcPopoverComponent extends LitElement {
   }
 
   /**
-   * Waits also for the position strategy. Both strategies can position the
-   * container after Lit ends the update.
+   * Waits also for the fallback strategy, which positions the container after
+   * Lit ends the update.
    */
   protected override async getUpdateComplete(): Promise<boolean> {
     const complete = await super.getUpdateComplete();
@@ -268,8 +276,8 @@ export default class IgcPopoverComponent extends LitElement {
   };
 
   /**
-   * An IDREF that does not resolve keeps the current target, so the popover
-   * finds an anchor that renders later, at the next open.
+   * An IDREF that does not resolve keeps the current target. The next open
+   * resolves the IDREF again.
    */
   private _resolveTarget(): Element | undefined {
     if (this.anchorRect) {

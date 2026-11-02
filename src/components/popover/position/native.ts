@@ -92,10 +92,6 @@ export class NativePositionStrategy extends PopoverPositionStrategy {
   private _shownSource?: Element;
   private _arrowFrame = 0;
 
-  /** A show that waits for a new anchor, see `show()`. */
-  private _shown: Promise<void> = Promise.resolve();
-  private _resolveShown?: () => void;
-
   /**
    * Detects the removal of the anchor. It misses the removal of a shadow host
    * above the anchor root, as the fallback strategy does.
@@ -116,39 +112,25 @@ export class NativePositionStrategy extends PopoverPositionStrategy {
     });
   }
 
-  public override whenPositioned(): Promise<void> {
-    return this._shown;
-  }
-
   public show(): void {
     const container = this._container;
     const target = this._target;
 
-    if (!(container && target) || this._resolveShown) {
-      return;
-    }
-
-    const open = isPopoverOpen(container);
-
-    if (open && this._shownSource === target) {
-      this.update();
+    if (!(container && target)) {
       return;
     }
 
     // The browser binds the implicit anchor only in `showPopover`, so a new
-    // anchor needs a hide and a show. The browser keeps the flip of the
-    // previous anchor until a rendering update finds the container hidden, so
-    // that show waits two frames.
-    const replaced = open && this._shownSource !== undefined;
+    // anchor needs a hide and a show. The browser keeps a flip of the previous
+    // anchor until a rendering update finds the container hidden, so the
+    // container can start flipped at the new anchor.
+    if (!isPopoverOpen(container) || this._shownSource !== target) {
+      this.hide();
+      container.showPopover({ source: target as HTMLElement });
+      this._shownSource = target;
+    }
 
-    this.hide();
-    replaced ? this._showLater() : this._showNow(container, target);
-  }
-
-  public override hide(): void {
-    this._cancelShow();
-    this._shownSource = undefined;
-    super.hide();
+    this.update();
   }
 
   public update(): void {
@@ -159,53 +141,21 @@ export class NativePositionStrategy extends PopoverPositionStrategy {
     this._scheduleArrowUpdate();
   }
 
+  /** The browser moves the container with the anchor. The arrow follows. */
+  public reposition(): void {
+    this._scheduleArrowUpdate();
+  }
+
   public detach(): void {
     this._anchorObserver.disconnect();
     this._syncArrowListeners(false);
   }
 
   public clear(): void {
-    this._cancelShow();
-
     if (this._container) {
       this._container.toggleAttribute('data-anchored', false);
       this._container.style.removeProperty(OFFSET_PROPERTY);
     }
-  }
-
-  private _showNow(container: HTMLElement, target: Element): void {
-    container.showPopover({ source: target as HTMLElement });
-    this._shownSource = target;
-    this.update();
-  }
-
-  private _showLater(): void {
-    this._shown = new Promise((resolve) => {
-      this._resolveShown = resolve;
-
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => {
-          // A hide or a clear canceled this show.
-          if (this._resolveShown !== resolve) {
-            return;
-          }
-
-          const container = this._container;
-          const target = this._target;
-
-          this._cancelShow();
-
-          if (container && target && !isPopoverOpen(container)) {
-            this._showNow(container, target);
-          }
-        })
-      );
-    });
-  }
-
-  private _cancelShow(): void {
-    this._resolveShown?.();
-    this._resolveShown = undefined;
   }
 
   private _syncOffset(): void {
@@ -264,8 +214,7 @@ export class NativePositionStrategy extends PopoverPositionStrategy {
 
     const anchorRect = target.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
-    const placementSide = getPlacementSide(resolvePlacement(this._host));
-    const block = isBlockSide(placementSide);
+    const block = isBlockSide(getPlacementSide(resolvePlacement(this._host)));
 
     // The main axis carries the placement.
     const main = block ? 'top' : 'left';

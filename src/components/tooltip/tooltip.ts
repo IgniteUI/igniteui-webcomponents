@@ -247,8 +247,10 @@ export default class IgcTooltipComponent extends I18nMixin(
    */
   @property()
   public set anchor(value: Element | string | undefined) {
-    this._anchor = value;
-    this._anchorChanged = true;
+    if (value !== this._anchor) {
+      this._anchor = value;
+      this._anchorChanged = true;
+    }
   }
 
   public get anchor(): Element | string | undefined {
@@ -525,11 +527,12 @@ export default class IgcTooltipComponent extends I18nMixin(
    * Resolves with whether the tooltip transitioned to a shown state.
    */
   public async showAt(rect: TooltipRect): Promise<boolean> {
+    // A JavaScript caller can pass no rectangle. Show at 0,0, do not throw.
     this._controller.setRect({
-      x: asNumber(rect.x),
-      y: asNumber(rect.y),
-      width: Math.max(0, asNumber(rect.width)),
-      height: Math.max(0, asNumber(rect.height)),
+      x: asNumber(rect?.x),
+      y: asNumber(rect?.y),
+      width: Math.max(0, asNumber(rect?.width)),
+      height: Math.max(0, asNumber(rect?.height)),
     });
 
     return await this._applyTooltipState({ show: true });

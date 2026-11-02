@@ -47,6 +47,7 @@ export interface PopoverPositionHost {
   readonly arrowOffset: number;
   readonly open: boolean;
   readonly scrollStrategy: PopoverScrollStrategy;
+  readonly anchorRect: PopoverRect | null;
 }
 
 /** Returns the placement, or the default if the attribute is removed. */

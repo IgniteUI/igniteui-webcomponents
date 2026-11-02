@@ -51,7 +51,7 @@
 |       1 | 2026-09-21 | Initial specification                                   |
 |       2 | 2026-10-26 | The arrow gets its side part before it is measured      |
 |       3 | 2026-10-30 | `anchorRect` anchors the content to a viewport rectangle |
-|       4 | 2026-10-30 | A new anchor starts from the placement; `zoom` in the fallback |
+|       4 | 2026-10-30 | `zoom` in the fallback; the arrow stays inside the content    |
 
 ## Overview
 
@@ -359,11 +359,15 @@ the same expectations. The groups below mirror the `describe` blocks.
 31. `hide` hides the content while the anchor is fully out of view, and shows it again afterwards.
 32. `scroll` keeps the content visible and anchored.
 33. `close` emits `igcPopoverScrollClose` on each scroll, without changing `open` itself.
+34. `close` still emits after the anchor changes while the content shows.
 
 ### Fallback positioning strategy
 
-34. The whole positioning surface is re-run with the floating strategy forced, covering the browsers without native
+35. The whole positioning surface is re-run with the floating strategy forced, covering the browsers without native
     CSS anchor positioning.
+36. With the fallback forced, the content follows an anchor in the top layer that moves without a scroll or a
+    resize.
+37. With the fallback forced, the content stays at an anchor inside a top-layer element while the page scrolls.
 
 ## Assumptions and limitations
 
@@ -377,12 +381,11 @@ the same expectations. The groups below mirror the `describe` blocks.
   placements without them.
 - With the native strategy, content that flipped stays on the flipped side while it shows, also when the original
   side fits again. This is the "last successful position option" of CSS anchor positioning. The next open starts
-  from `placement`. A new anchor while the content shows also starts from `placement`, because the strategy hides
-  the content for one frame before it shows it at the new anchor. The fallback evaluates the placement again at
-  each update.
-- With an aligned placement (`-start`, `-end`) and a point, the point is at the edge of the content. The native
-  strategy keeps the arrow inside the content there. The fallback moves the content so the arrow points at the point.
-  In both strategies, the arrow stays inside the content also after `arrowOffset`.
+  from `placement`, if a rendering update finds the content hidden before it. A new anchor while the content shows
+  can keep the flip of the previous anchor. The fallback evaluates the placement again at each update.
+- With an aligned placement (`-start`, `-end`) and a point, the point is at the edge of the content. Both strategies
+  keep the arrow inside the content there, up to half its width from the point. `arrowOffset` moves an arrow at an
+  edge away from the corner, and the arrow stays inside the content.
 - A disconnected popover does not open. It opens when it connects again.
 - floating-ui measures the anchor in viewport pixels and the content in CSS pixels. The fallback measures all in
   viewport pixels, so that it places the content correctly inside an ancestor with `zoom`.

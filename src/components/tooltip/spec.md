@@ -307,8 +307,8 @@ tooltip.showAt(barRect);
   rectangle applies then too.
 - The tooltip keeps the rectangle when it moves in the DOM. A `showAt` before the tooltip connects shows it at the
   rectangle when it connects.
-- Missing, `null` and non-finite values become 0, and a negative size becomes 0. The tooltip keeps a copy of the
-  values, not the object.
+- Missing, `null` and non-finite values become 0, and a negative size becomes 0. A call with no rectangle shows the
+  tooltip at 0,0. The tooltip keeps a copy of the values, not the object.
 - The slotted content replaces `message`, as for an element anchor. The example renders it with Lit, but any change
   to the children of the tooltip works. When the content changes size, the tooltip keeps its placement. For
   example, with `top`, its bottom edge stays `offset` px above the point.
@@ -432,72 +432,80 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 12. The methods ignore the configured delays.
 13. `show` with a target after an `anchor` change in the same task shows at the target. The new anchor applies after
     `hide`.
+14. Setting the same `anchor` again keeps a transient target.
+15. An `anchor` set to the transient target binds its triggers one time.
 
 ### showAt tests
 
 The group runs with each position strategy forced.
 
-14. `showAt` with a point shows the tooltip `offset` px from the point, on each side.
-15. `showAt` with a rectangle, or a `DOMRect`, places the tooltip against the rectangle.
-16. A second call while the tooltip shows moves it, with no animation and no events, and resolves with `false`.
-17. A second call during the show animation keeps the animation.
-18. No element is described while the tooltip shows at a point. The anchor gets its description back after `hide`.
-19. The pointer that enters and leaves the tooltip does not hide it.
-20. <kbd>Escape</kbd> closes the tooltip, and the configured anchor applies again.
-21. A point replaces an element target, and an element target replaces a point.
-22. With `withArrow`, the arrow points at the point.
-23. The tooltip flips at the bottom edge of the viewport.
-24. Inside a transformed ancestor, the tooltip is at the viewport coordinates.
-25. Non-finite, `null` and negative values become 0. A change to the argument after the call has no effect.
-26. The tooltip passes the accessibility audit while it shows at a point.
-27. A change of the slotted content size keeps the placement while the tooltip shows at a point.
-28. A new `anchor` while the tooltip shows at a point applies after `hide`. An `anchor` change in the same task
+16. `showAt` with a point shows the tooltip `offset` px from the point, on each side.
+17. `showAt` with a rectangle, or a `DOMRect`, places the tooltip against the rectangle.
+18. A second call while the tooltip shows moves it, with no animation and no events, and resolves with `false`.
+19. A second call during the show animation keeps the animation.
+20. No element is described while the tooltip shows at a point. The anchor gets its description back after `hide`.
+21. The pointer that enters and leaves the tooltip does not hide it.
+22. <kbd>Escape</kbd> closes the tooltip, and the configured anchor applies again.
+23. A point replaces an element target, and an element target replaces a point.
+24. With `withArrow`, the arrow points at the point.
+25. The tooltip flips at the bottom edge of the viewport.
+26. Inside a transformed ancestor, the tooltip is at the viewport coordinates.
+27. Non-finite, `null` and negative values become 0, and no rectangle shows at 0,0. A change to the argument after
+    the call has no effect.
+28. The tooltip passes the accessibility audit while it shows at a point.
+29. A change of the slotted content size keeps the placement while the tooltip shows at a point.
+30. A new `anchor` while the tooltip shows at a point applies after `hide`. An `anchor` change in the same task
     before `showAt` does not replace the point.
-29. The triggers of the configured anchor do not act while the tooltip shows at a point. They act again after `hide`.
-30. After a show at a point and a show at the configured anchor, the anchor emits each trigger event one time.
-31. A call during the hide animation shows the tooltip again and resolves with `true`. The `hide` call resolves with
+31. The triggers of the configured anchor do not act while the tooltip shows at a point. They act again after `hide`.
+32. After a show at a point and a show at the configured anchor, the anchor emits each trigger event one time.
+33. A call during the hide animation shows the tooltip again and resolves with `true`. The `hide` call resolves with
     `false`.
-32. A move in the DOM keeps the point, and <kbd>Escape</kbd> still closes the tooltip. A `showAt` before the tooltip
+34. A move in the DOM keeps the point, and <kbd>Escape</kbd> still closes the tooltip. A `showAt` before the tooltip
     connects shows it at the point.
-33. A `showAt` and a removal in the same task do not throw.
-34. The tooltip shows at a point on the left edge of the viewport.
-35. The tooltip stays at the point while the page scrolls, also before the next position update.
-36. After a flip at an element near the viewport bottom, `showAt` starts from `placement`.
-37. With `withArrow` and an aligned placement, the arrow stays inside the tooltip. The fallback points it at the
-    point. The native strategy keeps it within half its width of the point.
-38. Inside a zoomed ancestor, the tooltip, its offset and its arrow are at the viewport coordinates.
-39. A tooltip with no `anchor` clears the point on `hide`, so a later `show` does not show it at the point.
+35. A tooltip that is removed during its show animation, or that never connects, does not take the
+    <kbd>Escape</kbd> key from a visible tooltip.
+36. A `showAt` and a removal in the same task do not throw.
+37. The tooltip shows at a point on the left edge of the viewport.
+38. The tooltip stays at the point while the page scrolls, also before the next position update.
+39. After a flip at an element near the viewport bottom and a hide of a frame, `showAt` starts from `placement`.
+40. With `withArrow` and an aligned placement, the arrow stays inside the tooltip, within half its width of the
+    point.
+41. Inside a zoomed ancestor, the tooltip, its offset and its arrow are at the viewport coordinates.
+42. Inside a zoomed ancestor, an aligned tooltip starts at the point, and its arrow stays within half its width of
+    the point.
+43. A tooltip with no `anchor` clears the point on `hide`, so a later `show` does not show it at the point.
 
 ### Scroll strategy tests
 
-40. `hide` hides the tooltip while the anchor is out of view.
-41. `scroll` keeps the tooltip anchored.
-42. `close` closes the tooltip on scroll, including in sticky mode.
+44. `hide` hides the tooltip while the anchor is out of view.
+45. `scroll` keeps the tooltip anchored.
+46. `close` closes the tooltip on scroll, including in sticky mode.
 
 ### Arrow tests
 
-43. With `withArrow`, the arrow is centered on the anchor on the first show.
+47. With `withArrow` and an aligned placement on an anchor wider than the tooltip, the arrow is 8 px from the end.
+48. With `withArrow`, the arrow is centered on the anchor on the first show.
 
 ### Behaviors tests
 
-44. Moving the pointer from the anchor onto the tooltip keeps it open.
-45. A tooltip open on the first render stays shown until an interaction.
-46. Setting `open` transitions without delays and animations.
-47. An event in both trigger lists is handled one time.
+49. Moving the pointer from the anchor onto the tooltip keeps it open.
+50. A tooltip open on the first render stays shown until an interaction.
+51. Setting `open` transitions without delays and animations.
+52. An event in both trigger lists is handled one time.
 
 ### State transitions
 
-48. Interrupted show and hide transitions settle in the correct final state.
-49. The tooltip is inert while it is closed and during the animations.
+53. Interrupted show and hide transitions settle in the correct final state.
+54. The tooltip is inert while it is closed and during the animations.
 
 ### Events tests
 
-50. `igcOpening` and `igcClosing` are emitted and can be canceled to prevent the transition.
-51. `igcOpened` and `igcClosed` are emitted after the transition completes.
+55. `igcOpening` and `igcClosing` are emitted and can be canceled to prevent the transition.
+56. `igcOpened` and `igcClosed` are emitted after the transition completes.
 
 ### Keyboard interaction tests
 
-52. <kbd>Escape</kbd> closes the last shown tooltip, including in sticky mode.
+57. <kbd>Escape</kbd> closes the last shown tooltip, including in sticky mode.
 
 ## Assumptions and limitations
 
@@ -511,10 +519,9 @@ The group runs with each position strategy forced.
 - The rectangle is in viewport pixels, also inside an ancestor with `zoom`. The `offset` scales with the zoom, as the
   content does.
 - With the native position strategy, a tooltip that flipped stays on the flipped side while it shows. A new target
-  and the next show start from `placement`. For a new target, the tooltip hides for one frame.
-- With an aligned placement (`-start`, `-end`) and a point, the point is at the edge of the tooltip. With the native
-  position strategy, the arrow stays inside the tooltip there, up to half its width from the point. The fallback
-  moves the tooltip, so the arrow points at the point.
+  while it shows can keep the flip. The next show starts from `placement`, if the tooltip was hidden for a frame.
+- With an aligned placement (`-start`, `-end`) and a point, the point is at the edge of the tooltip. The arrow stays
+  inside the tooltip there, up to half its width from the point.
 
 ## Accessibility
 

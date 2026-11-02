@@ -54,6 +54,10 @@ class TooltipController implements ReactiveController {
   }
 
   public set open(value: boolean) {
+    if (value === this._open) {
+      return;
+    }
+
     this._open = value;
 
     if (!value && this._isTransient) {
@@ -158,7 +162,9 @@ class TooltipController implements ReactiveController {
   private _syncOpenListeners(): void {
     this._hostAbortHandle.abort();
 
-    if (!this._open) {
+    // A removed tooltip can still open, at the end of its show animation.
+    // `hostConnected` binds the listeners when it connects again.
+    if (!(this._open && this._host.isConnected)) {
       service.remove(this._host);
       return;
     }
@@ -323,7 +329,6 @@ class TooltipController implements ReactiveController {
     }
   }
 
-  /** A rectangle has no triggers, and the pointer on the tooltip is ignored. */
   private _toggleRect(rect: PopoverRect | null): void {
     this._rect = rect;
     this._bindInitialAnchor();
@@ -338,11 +343,17 @@ class TooltipController implements ReactiveController {
   public resolveAnchor(value: TooltipAnchor | string): void {
     const resolvedElement = this._resolve(value);
 
+    // Both the connect and the first update resolve, for an IDREF that
+    // renders late. The same anchor needs no new bindings.
+    if ((resolvedElement ?? undefined) === this._initialAnchor?.deref()) {
+      return;
+    }
+
     this._initialAnchor = resolvedElement ? new WeakRef(resolvedElement) : null;
 
     if (!this._rect) {
-      this._bindInitialAnchor();
       this.setAnchor(resolvedElement);
+      this._bindAnchors();
     }
   }
 
@@ -353,7 +364,7 @@ class TooltipController implements ReactiveController {
   /** @internal */
   public hostConnected(): void {
     this.resolveAnchor(this._host.anchor);
-    // `_dispose` released them.
+    // Binds again the listeners that `_dispose` released.
     this._syncOpenListeners();
   }
 

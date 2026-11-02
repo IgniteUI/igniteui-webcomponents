@@ -23,7 +23,7 @@ export function isBlockSide(side: PopoverSide): boolean {
 }
 
 /** Sets the side part of the arrow. */
-export function setArrowSide(element: HTMLElement, side: PopoverSide): void {
+function setArrowSide(element: HTMLElement, side: PopoverSide): void {
   if (!element.part.contains(side)) {
     element.part.remove(...SIDES);
     element.part.add(side);
@@ -57,14 +57,16 @@ export function applyArrowStyles(
 
   const cross = block ? 'left' : 'top';
   const crossSize = block ? 'width' : 'height';
+  const zoom = getCSSZoom(container);
   const center =
     (anchor[cross] +
       anchor[crossSize] / 2 -
       container.getBoundingClientRect()[cross]) /
-    getCSSZoom(container);
+    zoom;
 
-  // The offset can push an arrow at the container edge out of the container.
-  const position = clamp(center - size / 2 + offset, 0, room);
+  // The first clamp lets the offset move an arrow at an edge off the rounded
+  // corner. The second one keeps the offset from moving it out.
+  const position = clamp(clamp(center - size / 2, 0, room) + offset, 0, room);
 
   // Reset all sides. A stale inset over-constrains the arrow.
   setStyles(element, {
@@ -72,7 +74,8 @@ export function applyArrowStyles(
     right: '',
     bottom: '',
     left: '',
-    [cross]: `${roundByDPR(position)}px`,
+    // Round on the device pixel grid, which the zoom scales.
+    [cross]: `${roundByDPR(position * zoom) / zoom}px`,
     [staticSide]: `${-inset}px`,
   });
 }

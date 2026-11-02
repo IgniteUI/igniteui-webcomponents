@@ -2,17 +2,13 @@ import type * as FloatingUi from '@floating-ui/dom';
 import type { Dimensions, Middleware, Platform } from '@floating-ui/dom';
 import {
   getCSSZoom,
+  getTopLayerAncestor,
   hasStickyAncestor,
   isPopoverOpen,
   roundByDPR,
   setStyles,
 } from '#internals/utils/dom.js';
-import {
-  applyArrowStyles,
-  getPlacementSide,
-  OPPOSITE_SIDE,
-  setArrowSide,
-} from './arrow.js';
+import { applyArrowStyles, getPlacementSide } from './arrow.js';
 import { PopoverPositionStrategy } from './strategy.js';
 import { resolvePlacement } from './types.js';
 
@@ -38,9 +34,9 @@ function loadFloatingUi(): Promise<FloatingUiModule> {
 let zoomedPlatform: Platform | undefined;
 
 /**
- * floating-ui measures the anchor in viewport pixels, but the floating element
- * and the arrow in CSS pixels. An ancestor `zoom` makes the two differ, so this
- * platform measures all in viewport pixels.
+ * floating-ui measures the anchor in viewport pixels and the floating element
+ * in CSS pixels. An ancestor `zoom` makes the two differ, so this platform
+ * measures both in viewport pixels.
  */
 function getZoomedPlatform({ platform }: FloatingUiModule): Platform {
   zoomedPlatform ??= {
@@ -80,15 +76,10 @@ export class FloatingPositionStrategy extends PopoverPositionStrategy {
   private _attachId = 0;
 
   /**
-   * `fixed` for an anchor in the top layer, such as the rectangle anchor of the
-   * popover, or if an ancestor of the anchor has `position: sticky`. Else
-   * `absolute`.
-   * It updates once per open cycle, as the check forces a style reflow.
+   * `fixed` for an anchor in the top layer, or with a sticky ancestor, else
+   * `absolute`. Set once per open cycle, because the check forces a reflow.
    */
   private _strategy: 'absolute' | 'fixed' = 'absolute';
-
-  /** Whether the anchor is an open popover, so in the top layer. */
-  private _topLayer = false;
 
   public override attach(target: Element, container: HTMLElement): void {
     super.attach(target, container);
@@ -107,9 +98,10 @@ export class FloatingPositionStrategy extends PopoverPositionStrategy {
 
     setStyles(container, reset);
 
-    this._topLayer = isPopoverOpen(target);
     this._strategy =
-      this._topLayer || hasStickyAncestor(target) ? 'fixed' : 'absolute';
+      getTopLayerAncestor(target) || hasStickyAncestor(target)
+        ? 'fixed'
+        : 'absolute';
 
     if (floatingUiModule) {
       this._startAutoUpdate(floatingUiModule, target, container);
@@ -146,7 +138,11 @@ export class FloatingPositionStrategy extends PopoverPositionStrategy {
       setStyles(this._container, { width: '' });
     }
 
-    this._updatePosition();
+    this.reposition();
+  }
+
+  public reposition(): void {
+    this._pendingPosition = this._computePosition();
   }
 
   public detach(): void {
@@ -174,15 +170,18 @@ export class FloatingPositionStrategy extends PopoverPositionStrategy {
     target: Element,
     container: HTMLElement
   ): void {
+    // The popover positions again after it moves its rectangle anchor, so the
+    // layout shift observer would only double the work.
     this._dispose = floating.autoUpdate(
       target,
       container,
-      this._updatePosition.bind(this)
+      () => this.reposition(),
+      { layoutShift: !this._host.anchorRect }
     );
   }
 
   private _createMiddleware(floating: FloatingUiModule): Middleware[] {
-    const { offset, flip, sameWidth, arrow, scrollStrategy } = this._host;
+    const { offset, flip, sameWidth, scrollStrategy } = this._host;
     const middleware: Middleware[] = [];
 
     // The positions are in viewport pixels and the styles in CSS pixels. Read
@@ -211,22 +210,14 @@ export class FloatingPositionStrategy extends PopoverPositionStrategy {
       );
     }
 
-    if (arrow) {
-      middleware.push(floating.arrow({ element: arrow }));
-    }
-
     // Matches the native `position-visibility`: `anchors-visible`, or `always`
-    // for the `scroll` strategy. An anchor in the top layer is never clipped.
-    if (scrollStrategy !== 'scroll' && !this._topLayer) {
+    // for the `scroll` strategy. floating-ui counts a 0x0 rectangle anchor at
+    // the viewport edge as clipped, which the native strategy does not.
+    if (scrollStrategy !== 'scroll' && !this._host.anchorRect) {
       middleware.push(floating.hide());
     }
 
     return middleware;
-  }
-
-  private _updatePosition(): Promise<void> {
-    this._pendingPosition = this._computePosition();
-    return this._pendingPosition;
   }
 
   private async _computePosition(): Promise<void> {
@@ -246,24 +237,13 @@ export class FloatingPositionStrategy extends PopoverPositionStrategy {
 
     const positionId = ++this._positionId;
     const strategy = this._strategy;
-    const requested = resolvePlacement(this._host);
     const { arrow, arrowOffset } = this._host;
-
-    // The part can give the arrow its size, and the `arrow` middleware measures
-    // it. `flip` keeps the axis, so a flipped side part can stay.
-    if (arrow) {
-      const side = getPlacementSide(requested);
-
-      if (!arrow.part.contains(OPPOSITE_SIDE[side])) {
-        setArrowSide(arrow, side);
-      }
-    }
 
     const { x, y, middlewareData, placement } = await floating.computePosition(
       this._target,
       container,
       {
-        placement: requested,
+        placement: resolvePlacement(this._host),
         middleware: (this._middleware ??= this._createMiddleware(floating)),
         platform: getZoomedPlatform(floating),
         strategy,
@@ -280,14 +260,13 @@ export class FloatingPositionStrategy extends PopoverPositionStrategy {
       position: strategy,
       left: '0',
       top: '0',
-      transform: `translate(${roundByDPR(x / zoom)}px,${roundByDPR(y / zoom)}px)`,
+      transform: `translate(${roundByDPR(x) / zoom}px,${roundByDPR(y) / zoom}px)`,
       visibility: middlewareData.hide?.referenceHidden ? 'hidden' : '',
     });
 
-    // The `arrow` middleware can shift the container for a small anchor. Its
-    // arrow data mixes the units under a `zoom`, so center the arrow from the
-    // client rectangles.
-    if (arrow && middlewareData.arrow) {
+    // Not the floating-ui `arrow` middleware, which mixes the units under a
+    // `zoom`.
+    if (arrow) {
       applyArrowStyles(
         arrow,
         container,
