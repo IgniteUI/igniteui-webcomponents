@@ -403,13 +403,8 @@ export class IgcSliderBaseComponent extends LitElement {
    * that has the focus keeps it. A disabled slider does not take the focus.
    */
   public override focus(options?: FocusOptions): void {
-    if (this.disabled || this._activeThumb) {
-      return;
-    }
-
-    if (this._thumb) {
-      this._thumb.focus(options);
-    } else {
+    if (!(this.disabled || this._activeThumb)) {
+      this._thumb?.focus(options);
       deferFocus(this, options);
     }
   }

@@ -2703,22 +2703,6 @@ describe('Slider component', () => {
 
   runFocusBeforeRenderTests(html`<igc-slider></igc-slider>`);
   runFocusBeforeRenderTests(html`<igc-range-slider></igc-range-slider>`);
-
-  it('does not cancel an earlier `focus()` call when disabled before the first render', async () => {
-    const container = await fixture<HTMLElement>(html`<div></div>`);
-    const [enabled, disabled] = [false, true].map((value) => {
-      const slider = document.createElement(IgcSliderComponent.tagName);
-      slider.disabled = value;
-      container.append(slider);
-      return slider;
-    });
-
-    enabled.focus();
-    disabled.focus();
-    await elementUpdated(enabled);
-
-    expect(enabled.matches(':focus-within')).to.be.true;
-  });
 });
 
 function getDOM<T = HTMLElement>(slider: IgcSliderBaseComponent) {

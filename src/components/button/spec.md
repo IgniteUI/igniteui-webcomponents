@@ -332,7 +332,10 @@ button has no `name` and no `mirrored`. Slotted content takes the size of the ic
     a hover: no element transitions `visibility` or sets it to `visible`.
 25. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
     the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
-    before the render cancel the call. The suite runs for the button and the icon button.
+    that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
+    takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
+    `disabled` set does not cancel an earlier call on another element. The suite runs for the button and the icon
+    button.
 
 ### Not covered by the suite
 

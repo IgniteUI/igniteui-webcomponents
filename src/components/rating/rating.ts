@@ -479,13 +479,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   /* alternateName: focusComponent */
   /** Sets focus on the rating. A disabled rating does not take the focus. */
   public override focus(options?: FocusOptions): void {
-    if (this.disabled) {
-      return;
-    }
-
-    if (this._base) {
-      this._base.focus(options);
-    } else {
+    if (!this.disabled) {
+      this._base?.focus(options);
       deferFocus(this, options);
     }
   }

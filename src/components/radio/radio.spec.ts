@@ -7,10 +7,7 @@ import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
-import {
-  isFocused,
-  isUnderPageLayer,
-} from '#internals/testing/helpers.spec.js';
+import { isUnderPageLayer } from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import {
@@ -155,25 +152,6 @@ describe('Radio Component', () => {
       await elementUpdated(radio);
 
       expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
-    });
-
-    it('should have correct focus states between Light/Shadow DOM', () => {
-      radio.focus();
-      expect(isFocused(radio)).to.be.true;
-      expect(isFocused(input)).to.be.true;
-
-      radio.blur();
-      expect(isFocused(radio)).to.be.false;
-      expect(isFocused(input)).to.be.false;
-    });
-
-    it('does not throw on `focus()` and `blur()` before the first render', async () => {
-      const container = await fixture<HTMLElement>(html`<div></div>`);
-      const unrendered = document.createElement(IgcRadioComponent.tagName);
-      container.append(unrendered);
-
-      expect(() => unrendered.focus()).not.to.throw();
-      expect(() => unrendered.blur()).not.to.throw();
     });
 
     it('should emit igcChange event when radio is checked', async () => {

@@ -939,11 +939,8 @@ export default class IgcComboComponent<
   /* alternateName: focusComponent */
   /** Sets focus on the component. */
   public override focus(options?: FocusOptions): void {
-    if (this._inputRef.value) {
-      this._inputRef.value.focus(options);
-    } else {
-      deferFocus(this, options);
-    }
+    this._inputRef.value?.focus(options);
+    deferFocus(this, options);
   }
 
   /* alternateName: blurComponent */

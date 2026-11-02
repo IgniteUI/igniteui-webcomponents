@@ -128,11 +128,8 @@ export default class IgcToggleButtonComponent extends HostAriaMixin(
   /* alternateName: focusComponent */
   /** Sets focus on the button. */
   public override focus(options?: FocusOptions): void {
-    if (this._nativeButton) {
-      this._nativeButton.focus(options);
-    } else {
-      deferFocus(this, options);
-    }
+    this._nativeButton?.focus(options);
+    deferFocus(this, options);
   }
 
   /* alternateName: blurComponent */

@@ -447,7 +447,9 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
     each theme, at rest and after a focus or a hover: no element transitions `visibility` or sets it to `visible`.
 40. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects moves
     the focus into the carousel, to a navigation button, because the indicators render after the carousel finds its
-    slides. `blur()`, a later `focus()` on another element and a removal before the render cancel the call.
+    slides. `blur()`, a later `focus()` on another element and a removal that lasts until the render cancel the
+    call, but a move in the same task keeps it. After the render, `focus()` takes the focus at once and `blur()`
+    removes it.
 
 ### Not covered by the suite
 

@@ -6,24 +6,12 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 import { render, type TemplateResult } from 'lit';
-
-/** The focused elements, from the document down through the shadow roots. */
-function focusPath(): Element[] {
-  const path: Element[] = [];
-  let active = document.activeElement;
-
-  while (active) {
-    path.push(active);
-    active = active.shadowRoot?.activeElement ?? null;
-  }
-
-  return path;
-}
+import { getDeepActiveElement } from '../utils/dom.js';
+import { isFocused } from './helpers.spec.js';
 
 /** Waits for the host and the components inside it to render. */
 async function settle(element: HTMLElement): Promise<void> {
   await elementUpdated(element);
-  await nextFrame();
   await nextFrame();
 }
 
@@ -40,13 +28,10 @@ export function runFocusBeforeRenderTests(
   describe('Focus before the first render', () => {
     let container: HTMLElement;
 
-    /**
-     * Renders `template` in the container. Its first element has not rendered
-     * yet, until the caller awaits.
-     */
-    function mount(): HTMLElement {
-      render(template, container);
-      return container.firstElementChild as HTMLElement;
+    /** Connects the first element of `template`. It renders when the caller awaits. */
+    function mount(target = container): HTMLElement {
+      render(template, target);
+      return target.firstElementChild as HTMLElement;
     }
 
     beforeEach(async () => {
@@ -59,16 +44,16 @@ export function runFocusBeforeRenderTests(
       element.focus();
       expect(element.matches(':focus-within')).to.be.false;
       await settle(element);
-      const deferred = focusPath();
+      expect(element.matches(':focus-within')).to.be.true;
+      const deferred = getDeepActiveElement();
 
       element.blur();
       expect(element.matches(':focus-within')).to.be.false;
 
       element.focus();
-      expect(deferred).to.include(element);
 
       if (sameElement) {
-        expect(deferred).to.have.ordered.members(focusPath());
+        expect(getDeepActiveElement()).to.equal(deferred);
       }
     });
 
@@ -94,7 +79,25 @@ export function runFocusBeforeRenderTests(
       expect(document.activeElement).to.equal(other);
     });
 
-    it('does not take the focus when it disconnects before the render', async () => {
+    it('does not cancel an earlier `focus()` call when disabled', async function () {
+      const element = mount();
+      const target = document.createElement('div');
+      container.append(target);
+      const disabled = mount(target);
+
+      if (!('disabled' in disabled)) {
+        this.skip();
+      }
+
+      disabled.disabled = true;
+      element.focus();
+      disabled.focus();
+      await settle(element);
+
+      expect(element.matches(':focus-within')).to.be.true;
+    });
+
+    it('does not take the focus when it is disconnected at the render', async () => {
       const element = mount();
 
       element.focus();
@@ -106,12 +109,29 @@ export function runFocusBeforeRenderTests(
       expect(element.matches(':focus-within')).to.be.false;
     });
 
-    it('takes the focus at once after the render', async () => {
+    // A native element loses the focus when it moves. The request stays, because
+    // the host is connected again when it renders.
+    it('takes the focus when it moves in the same task before the render', async () => {
+      const element = mount();
+      const target = document.createElement('div');
+      container.append(target);
+
+      element.focus();
+      target.append(element);
+      await settle(element);
+
+      expect(element.matches(':focus-within')).to.be.true;
+    });
+
+    it('takes the focus at once after the render, and `blur()` removes it', async () => {
       const element = mount();
       await settle(element);
 
       element.focus();
-      expect(element.matches(':focus-within')).to.be.true;
+      expect(isFocused(element)).to.be.true;
+
+      element.blur();
+      expect(element.matches(':focus-within')).to.be.false;
     });
   });
 }

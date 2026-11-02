@@ -347,6 +347,20 @@ describe('Select', () => {
     it('correctly applies autofocus on init', async () => {
       expect(document.activeElement).to.equal(select);
     });
+
+    // Native `autofocus` reads only an attribute that is present at insertion.
+    it('applies `autofocus` set as a property before the connection', async () => {
+      const container = await fixture<HTMLElement>(html`<div></div>`);
+      const element = document.createElement(IgcSelectComponent.tagName);
+      element.autofocus = true;
+      container.append(element);
+
+      await elementUpdated(element);
+      await nextFrame();
+
+      expect(element.hasAttribute('autofocus')).to.be.false;
+      expect(document.activeElement).to.equal(element);
+    });
   });
 
   describe('Scroll strategy', () => {
@@ -940,15 +954,6 @@ describe('Select', () => {
 
     it('`groups` returns the correct collection', async () => {
       expect(select.groups).to.be.empty;
-    });
-
-    it('does not throw on `focus()` and `blur()` before the first render', async () => {
-      const container = await fixture<HTMLElement>(html`<div></div>`);
-      const unrendered = document.createElement(IgcSelectComponent.tagName);
-      container.append(unrendered);
-
-      expect(() => unrendered.focus()).not.to.throw();
-      expect(() => unrendered.blur()).not.to.throw();
     });
 
     it('`value` works', async () => {

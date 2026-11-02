@@ -48,22 +48,6 @@ describe('Rating component', () => {
 
   runFocusBeforeRenderTests(html`<igc-rating></igc-rating>`);
 
-  it('does not cancel an earlier `focus()` call when disabled before the first render', async () => {
-    const container = await fixture<HTMLElement>(html`<div></div>`);
-    const [enabled, disabled] = [false, true].map((value) => {
-      const rating = document.createElement(IgcRatingComponent.tagName);
-      rating.disabled = value;
-      container.append(rating);
-      return rating;
-    });
-
-    enabled.focus();
-    disabled.focus();
-    await elementUpdated(enabled);
-
-    expect(enabled.matches(':focus-within')).to.be.true;
-  });
-
   let el: IgcRatingComponent;
 
   const getRatingSymbols = (el: IgcRatingComponent) =>

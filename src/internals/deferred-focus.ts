@@ -1,70 +1,58 @@
 import type { ReactiveElement } from 'lit';
 
 /*
- * Lit renders a component in a microtask after it connects. Until then, the
- * component has no inner control, so a `focus()` call does nothing. A native
- * control takes the focus at once. So the component stores the call, and this
- * module repeats it after the first update of the component.
- *
- * The document has one focus. So the module keeps one request: a new request
- * replaces it, and a focus change before the repeat cancels it.
+ * Lit renders a component in a microtask after it connects, so a `focus()`
+ * call before that finds no inner control. A native control takes the focus at
+ * once. The document has one focus, so the module keeps one request: a new
+ * request replaces it, and a focus change cancels it.
  */
 
-type FocusRequest = {
-  readonly host: ReactiveElement;
-  readonly options?: FocusOptions;
-};
-
-let pending: FocusRequest | null = null;
+let pendingHost: ReactiveElement | null = null;
+let pendingOptions: FocusOptions | undefined;
 
 function clearRequest(): void {
-  if (pending) {
-    pending.host.ownerDocument.removeEventListener(
-      'focusin',
-      clearRequest,
-      true
-    );
-    pending = null;
-  }
+  pendingHost?.ownerDocument.removeEventListener('focusin', clearRequest, true);
+  pendingHost = null;
 }
 
 /**
- * Stores a focus request for a connected `host` that has not rendered and
- * does not have the focus, and returns `true`. After the first update,
- * `host.focus(options)` runs again. A later request, a focus change or
- * `cancelDeferredFocus` cancels it. In other conditions, it returns `false`
- * and does nothing.
- *
- * A host with `delegatesFocus` calls it after `super.focus()`: with
- * Declarative Shadow DOM, the native focus works before the first update.
+ * Call it in `focus()`, after the component tries to move the focus. For a
+ * connected `host` that has not rendered, is not disabled and has no focus,
+ * `host.focus(options)` runs again after the first update.
  */
 export function deferFocus(
-  host: ReactiveElement,
+  host: ReactiveElement & { disabled?: boolean },
   options?: FocusOptions
-): boolean {
-  if (!host.isConnected || host.hasUpdated || host.matches(':focus-within')) {
-    return false;
+): void {
+  if (
+    host.hasUpdated ||
+    !host.isConnected ||
+    host.disabled ||
+    host.matches(':focus-within')
+  ) {
+    return;
   }
 
   clearRequest();
-
-  const request: FocusRequest = { host, options };
-  pending = request;
+  pendingHost = host;
+  pendingOptions = options;
   host.ownerDocument.addEventListener('focusin', clearRequest, true);
 
   host.updateComplete.then(() => {
-    if (pending === request) {
+    if (pendingHost === host) {
       clearRequest();
-      host.focus(options);
+
+      // A `shouldUpdate()` that returns `false` skips the render.
+      if (host.hasUpdated) {
+        host.focus(pendingOptions);
+      }
     }
   });
-
-  return true;
 }
 
 /** Cancels the stored focus request of `host`, if it has one. */
 export function cancelDeferredFocus(host: ReactiveElement): void {
-  if (pending?.host === host) {
+  if (pendingHost === host) {
     clearRequest();
   }
 }

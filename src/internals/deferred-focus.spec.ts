@@ -12,14 +12,11 @@ import { cancelDeferredFocus, deferFocus } from './deferred-focus.js';
 import { runFocusBeforeRenderTests } from './testing/focus-before-render.spec.js';
 
 class DeferredFocusTest extends LitElement {
-  public override focus(options?: FocusOptions): void {
-    const input = this.renderRoot?.querySelector('input');
+  public disabled = false;
 
-    if (input) {
-      input.focus(options);
-    } else {
-      deferFocus(this, options);
-    }
+  public override focus(options?: FocusOptions): void {
+    this.renderRoot?.querySelector('input')?.focus(options);
+    deferFocus(this, options);
   }
 
   public override blur(): void {
@@ -34,6 +31,14 @@ class DeferredFocusTest extends LitElement {
 
 const tagName = defineCE(DeferredFocusTest);
 const tag = unsafeStatic(tagName);
+
+const noRenderTagName = defineCE(
+  class extends DeferredFocusTest {
+    protected override shouldUpdate(): boolean {
+      return false;
+    }
+  }
+);
 
 describe('Deferred focus', () => {
   let container: HTMLElement;
@@ -52,7 +57,7 @@ describe('Deferred focus', () => {
     const element = create();
     const options = { preventScroll: true };
 
-    expect(deferFocus(element, options)).to.be.true;
+    deferFocus(element, options);
     const focusSpy = spy(element, 'focus');
     await elementUpdated(element);
 
@@ -76,25 +81,55 @@ describe('Deferred focus', () => {
     expect(document.activeElement).not.to.equal(autofocused);
   });
 
-  it('does nothing for a host that is not connected', () => {
-    const element = document.createElement(tagName) as DeferredFocusTest;
-    expect(deferFocus(element)).to.be.false;
+  it('keeps an earlier request when a host that is not connected calls it', async () => {
+    const element = create();
+
+    element.focus();
+    deferFocus(document.createElement(tagName) as DeferredFocusTest);
+    await elementUpdated(element);
+
+    expect(element.matches(':focus-within')).to.be.true;
   });
 
-  it('does nothing for a host that has rendered', async () => {
-    const element = await fixture<DeferredFocusTest>(
+  it('keeps an earlier request when a rendered host calls it', async () => {
+    const rendered = await fixture<DeferredFocusTest>(
       staticHtml`<${tag}></${tag}>`
     );
+    const element = create();
 
-    expect(deferFocus(element)).to.be.false;
+    element.focus();
+    deferFocus(rendered);
+    await elementUpdated(element);
+
+    expect(element.matches(':focus-within')).to.be.true;
   });
 
-  it('does nothing for a host that has the focus', () => {
+  it('does not repeat the call for a host that has the focus', async () => {
     const element = create();
     element.tabIndex = 0;
     HTMLElement.prototype.focus.call(element);
 
-    expect(deferFocus(element)).to.be.false;
+    deferFocus(element);
+    // A blur sends no `focusin`, so it does not cancel a stored request.
+    HTMLElement.prototype.blur.call(element);
+    await elementUpdated(element);
+
+    expect(element.matches(':focus-within')).to.be.false;
+  });
+
+  it('does not repeat the call for a host that skips its render', async () => {
+    const element = document.createElement(
+      noRenderTagName
+    ) as DeferredFocusTest;
+    container.append(element);
+
+    element.focus();
+    const focusSpy = spy(element, 'focus');
+    await elementUpdated(element);
+    await nextFrame();
+
+    expect(focusSpy).not.called;
+    expect(element.hasUpdated).to.be.false;
   });
 
   it('replaces a request with a later request', async () => {

@@ -6,10 +6,7 @@ import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
-import {
-  isFocused,
-  isUnderPageLayer,
-} from '#internals/testing/helpers.spec.js';
+import { isUnderPageLayer } from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { configureTheme } from '#theming/config.js';
 import IgcSwitchComponent from './switch.js';
@@ -141,25 +138,6 @@ describe('Switch', () => {
       await elementUpdated(element);
 
       expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
-    });
-
-    it('should have correct focus states between Light/Shadow DOM', () => {
-      element.focus();
-      expect(isFocused(element)).to.be.true;
-      expect(isFocused(input)).to.be.true;
-
-      element.blur();
-      expect(isFocused(element)).to.be.false;
-      expect(isFocused(input)).to.be.false;
-    });
-
-    it('does not throw on `focus()` and `blur()` before the first render', async () => {
-      const container = await fixture<HTMLElement>(html`<div></div>`);
-      const unrendered = document.createElement(IgcSwitchComponent.tagName);
-      container.append(unrendered);
-
-      expect(() => unrendered.focus()).not.to.throw();
-      expect(() => unrendered.blur()).not.to.throw();
     });
 
     it('should emit igcChange event when the switch checked state changes', async () => {

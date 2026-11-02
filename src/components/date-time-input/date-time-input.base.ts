@@ -561,11 +561,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   /* alternateName: focusComponent */
   /** Sets focus on the control. */
   public override focus(options?: FocusOptions): void {
-    if (this._input) {
-      this._input.focus(options);
-    } else {
-      deferFocus(this, options);
-    }
+    this._input?.focus(options);
+    deferFocus(this, options);
   }
 
   /* alternateName: blurComponent */
