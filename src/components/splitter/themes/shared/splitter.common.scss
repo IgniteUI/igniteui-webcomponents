@@ -29,7 +29,7 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
     &:focus-visible {
         outline: none;
         box-shadow: 0 0 0 rem(2px) var-get($theme, 'focus-color');
-        z-index: 99;
+        z-index: 1;
     }
 }
 
