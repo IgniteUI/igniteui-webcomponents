@@ -7,6 +7,7 @@ import {
   setSlots,
 } from '#internals/controllers/slot.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedCheckboxRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import { FormValueBooleanTransformers } from '#internals/mixins/forms/form-transformers.js';
@@ -99,12 +100,17 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   /* alternateName: focusComponent */
   /** Sets focus on the control. */
   public override focus(options?: FocusOptions): void {
-    this._input?.focus(options);
+    if (this._input) {
+      this._input.focus(options);
+    } else {
+      deferFocus(this, options);
+    }
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the control. */
   public override blur(): void {
+    cancelDeferredFocus(this);
     this._input?.blur();
   }
 

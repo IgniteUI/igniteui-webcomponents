@@ -20,6 +20,7 @@ import {
   tabKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runAriaProjectionTests,
@@ -2000,4 +2001,6 @@ describe('Select', () => {
     ],
     openProperty: 'open',
   });
+
+  runFocusBeforeRenderTests(createBasicSelect());
 });

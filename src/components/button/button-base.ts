@@ -14,6 +14,7 @@ import { addIdRefResolver } from '#internals/controllers/id-resolver.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
@@ -261,6 +262,20 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<IgcButton
   }
 
   //#region Public API
+
+  /* alternateName: focusComponent */
+  /** Sets focus on the button. */
+  public override focus(options?: FocusOptions): void {
+    super.focus(options);
+    deferFocus(this, options);
+  }
+
+  /* alternateName: blurComponent */
+  /** Removes focus from the button. */
+  public override blur(): void {
+    cancelDeferredFocus(this);
+    super.blur();
+  }
 
   /** Simulates a mouse click on the button, triggering its click handler and any associated form action. */
   public override click(): void {

@@ -1,6 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import IgcToggleButtonComponent from './toggle-button.js';
 
@@ -162,6 +163,8 @@ describe('Toggle Button', () => {
       expect(button.selected).to.be.true;
     });
   });
+
+  runFocusBeforeRenderTests(html`<igc-toggle-button>Click</igc-toggle-button>`);
 
   function createButtonComponent(template?: TemplateResult) {
     return fixture<IgcToggleButtonComponent>(

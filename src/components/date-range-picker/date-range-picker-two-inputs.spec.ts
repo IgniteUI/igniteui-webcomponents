@@ -14,6 +14,7 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { CalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   runAriaProjectionTests,
   runExternalLabelAssociationTests,
@@ -1200,4 +1201,8 @@ describe('Date range picker - two inputs', () => {
       }
     });
   });
+
+  runFocusBeforeRenderTests(
+    html`<igc-date-range-picker use-two-inputs></igc-date-range-picker>`
+  );
 });

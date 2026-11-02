@@ -29,6 +29,7 @@ import {
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
@@ -546,12 +547,17 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   /* alternateName: focusComponent */
   /** Sets focus on the component. */
   public override focus(options?: FocusOptions): void {
-    this._input?.focus(options);
+    if (this._input) {
+      this._input.focus(options);
+    } else {
+      deferFocus(this, options);
+    }
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the component. */
   public override blur(): void {
+    cancelDeferredFocus(this);
     this._input?.blur();
   }
 

@@ -17,6 +17,7 @@ import {
   homeKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
@@ -43,6 +44,24 @@ describe('Rating component', () => {
       (host as IgcRatingComponent).renderRoot.querySelector<HTMLElement>(
         '[part="base"]'
       )!,
+  });
+
+  runFocusBeforeRenderTests(html`<igc-rating></igc-rating>`);
+
+  it('does not cancel an earlier `focus()` call when disabled before the first render', async () => {
+    const container = await fixture<HTMLElement>(html`<div></div>`);
+    const [enabled, disabled] = [false, true].map((value) => {
+      const rating = document.createElement(IgcRatingComponent.tagName);
+      rating.disabled = value;
+      container.append(rating);
+      return rating;
+    });
+
+    enabled.focus();
+    disabled.focus();
+    await elementUpdated(enabled);
+
+    expect(enabled.matches(':focus-within')).to.be.true;
   });
 
   let el: IgcRatingComponent;

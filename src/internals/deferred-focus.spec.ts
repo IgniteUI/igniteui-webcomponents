@@ -1,4 +1,10 @@
-import { defineCE, elementUpdated, expect, fixture } from '@open-wc/testing';
+import {
+  defineCE,
+  elementUpdated,
+  expect,
+  fixture,
+  nextFrame,
+} from '@open-wc/testing';
 import { html, LitElement } from 'lit';
 import { html as staticHtml, unsafeStatic } from 'lit/static-html.js';
 import { spy } from 'sinon';
@@ -54,6 +60,22 @@ describe('Deferred focus', () => {
     expect(element.matches(':focus-within')).to.be.true;
   });
 
+  // The browser applies `autofocus` once per document, so no other test here uses it.
+  it('focuses the host before a native `autofocus` applies', async () => {
+    const autofocused = document.createElement('input');
+    autofocused.autofocus = true;
+    container.append(autofocused);
+    const element = create();
+
+    element.focus();
+    await elementUpdated(element);
+    await nextFrame();
+    await nextFrame();
+
+    expect(element.matches(':focus-within')).to.be.true;
+    expect(document.activeElement).not.to.equal(autofocused);
+  });
+
   it('does nothing for a host that is not connected', () => {
     const element = document.createElement(tagName) as DeferredFocusTest;
     expect(deferFocus(element)).to.be.false;
@@ -63,6 +85,14 @@ describe('Deferred focus', () => {
     const element = await fixture<DeferredFocusTest>(
       staticHtml`<${tag}></${tag}>`
     );
+
+    expect(deferFocus(element)).to.be.false;
+  });
+
+  it('does nothing for a host that has the focus', () => {
+    const element = create();
+    element.tabIndex = 0;
+    HTMLElement.prototype.focus.call(element);
 
     expect(deferFocus(element)).to.be.false;
   });

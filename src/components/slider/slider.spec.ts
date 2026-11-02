@@ -24,6 +24,7 @@ import {
   tabKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
@@ -2699,6 +2700,25 @@ describe('Slider component', () => {
     <igc-slider value="40"></igc-slider>
     <igc-range-slider lower="20" upper="60"></igc-range-slider>
   `);
+
+  runFocusBeforeRenderTests(html`<igc-slider></igc-slider>`);
+  runFocusBeforeRenderTests(html`<igc-range-slider></igc-range-slider>`);
+
+  it('does not cancel an earlier `focus()` call when disabled before the first render', async () => {
+    const container = await fixture<HTMLElement>(html`<div></div>`);
+    const [enabled, disabled] = [false, true].map((value) => {
+      const slider = document.createElement(IgcSliderComponent.tagName);
+      slider.disabled = value;
+      container.append(slider);
+      return slider;
+    });
+
+    enabled.focus();
+    disabled.focus();
+    await elementUpdated(enabled);
+
+    expect(enabled.matches(':focus-within')).to.be.true;
+  });
 });
 
 function getDOM<T = HTMLElement>(slider: IgcSliderBaseComponent) {

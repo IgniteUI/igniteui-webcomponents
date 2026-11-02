@@ -1,6 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
@@ -448,4 +449,6 @@ describe('Checkbox', () => {
     <igc-checkbox checked>Label</igc-checkbox>
     <igc-checkbox indeterminate>Label</igc-checkbox>
   `);
+
+  runFocusBeforeRenderTests(html`<igc-checkbox>Label</igc-checkbox>`);
 });

@@ -53,6 +53,7 @@
 |       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                                                 |
 |       8 | 2026-10-26 | Forward the host `aria-expanded`, `aria-haspopup` and `aria-controls`                    |
 |       9 | 2026-10-29 | Transition only the properties that change, so the button and a slotted icon hide at the same time as a hidden ancestor |
+|      10 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API                    |
 
 ## Overview
 
@@ -233,9 +234,11 @@ Shared by `igc-button` and `igc-icon-button`:
 
 ### Methods
 
-| Method  | Signature  | Description                                                                    |
-| ------- | ---------- | ------------------------------------------------------------------------------ |
-| `click` | `(): void` | Simulates a click, triggering the handler and any associated form action.       |
+| Method  | Signature                        | Description                                                               |
+| ------- | -------------------------------- | ------------------------------------------------------------------------- |
+| `focus` | `(options?: FocusOptions): void` | Sets focus on the button.                                                 |
+| `blur`  | `(): void`                       | Removes focus from the button.                                            |
+| `click` | `(): void`                       | Simulates a click, triggering the handler and any associated form action. |
 
 ### Events
 
@@ -327,6 +330,9 @@ button has no `name` and no `mirrored`. Slotted content takes the size of the ic
 
 24. The button and a slotted icon hide at the same time as a hidden ancestor in each theme, at rest and after a focus or
     a hover: no element transitions `visibility` or sets it to `visible`.
+25. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    before the render cancel the call. The suite runs for the button and the icon button.
 
 ### Not covered by the suite
 

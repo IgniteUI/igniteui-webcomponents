@@ -1,6 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
@@ -312,4 +313,6 @@ describe('Switch', () => {
     <igc-switch>Label</igc-switch>
     <igc-switch checked>Label</igc-switch>
   `);
+
+  runFocusBeforeRenderTests(html`<igc-switch>Label</igc-switch>`);
 });

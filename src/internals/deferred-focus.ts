@@ -29,16 +29,20 @@ function clearRequest(): void {
 }
 
 /**
- * Stores a focus request for a connected `host` that has not rendered, and
- * returns `true`. After the first update, `host.focus(options)` runs again.
- * A later request, a focus change or `cancelDeferredFocus` cancels it. In
- * other conditions, it returns `false` and does nothing.
+ * Stores a focus request for a connected `host` that has not rendered and
+ * does not have the focus, and returns `true`. After the first update,
+ * `host.focus(options)` runs again. A later request, a focus change or
+ * `cancelDeferredFocus` cancels it. In other conditions, it returns `false`
+ * and does nothing.
+ *
+ * A host with `delegatesFocus` calls it after `super.focus()`: with
+ * Declarative Shadow DOM, the native focus works before the first update.
  */
 export function deferFocus(
   host: ReactiveElement,
   options?: FocusOptions
 ): boolean {
-  if (!host.isConnected || host.hasUpdated) {
+  if (!host.isConnected || host.hasUpdated || host.matches(':focus-within')) {
     return false;
   }
 

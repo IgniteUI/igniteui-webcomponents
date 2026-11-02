@@ -21,6 +21,7 @@ import {
   tabKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   finishAnimationsFor,
   getAnimationsFor,
@@ -1890,4 +1891,14 @@ describe('Carousel', () => {
       <igc-carousel-slide>Two</igc-carousel-slide>
     </igc-carousel>
   `);
+
+  // The indicators render after the slides are found, so a focus before the
+  // render lands on the previous button.
+  runFocusBeforeRenderTests(
+    html`<igc-carousel>
+      <igc-carousel-slide>1</igc-carousel-slide>
+      <igc-carousel-slide>2</igc-carousel-slide>
+    </igc-carousel>`,
+    { sameElement: false }
+  );
 });

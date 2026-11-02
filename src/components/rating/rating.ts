@@ -23,6 +23,7 @@ import {
   setSlots,
 } from '#internals/controllers/slot.js';
 import { coercedProperty } from '#internals/decorators/coerced-property.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '#internals/mixins/forms/associated.js';
@@ -478,14 +479,21 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   /* alternateName: focusComponent */
   /** Sets focus on the rating. A disabled rating does not take the focus. */
   public override focus(options?: FocusOptions): void {
-    if (!this.disabled) {
-      this._base?.focus(options);
+    if (this.disabled) {
+      return;
+    }
+
+    if (this._base) {
+      this._base.focus(options);
+    } else {
+      deferFocus(this, options);
     }
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the rating. */
   public override blur(): void {
+    cancelDeferredFocus(this);
     this._base?.blur();
   }
 

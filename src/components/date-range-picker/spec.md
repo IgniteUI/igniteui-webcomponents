@@ -66,6 +66,7 @@
 |      12 | 2026-10-26 | Last 7 Days selects 7 days, counting today; the built-in ranges use the date of the click |
 |      13 | 2026-10-28 | The picker projects only `aria-haspopup`, `aria-required` and labels onto the editor |
 |      14 | 2026-10-29 | The `overlay` part is removed; the dialog backdrop is the native `::backdrop` of `dialog-base` |
+|      15 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
 
 ## Overview
 
@@ -470,6 +471,8 @@ apply.
 
 | Name              | Type signature                          | Description                                                             |
 | ----------------- | --------------------------------------- | ----------------------------------------------------------------------- |
+| focus             | `(options?: FocusOptions): void`        | Sets focus on the picker.                                               |
+| blur              | `(): void`                              | Removes focus from the picker.                                          |
 | show              | `(): Promise<boolean>`                  | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one.                                                    |
 | hide              | `(): Promise<boolean>`                  | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                    |
 | toggle            | `(): Promise<boolean>`                  | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes.                                |
@@ -642,6 +645,9 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 29. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal. `required` sets `aria-required` on each editor.
+30. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    before the render cancel the call. The suite runs for one input and for two inputs.
 
 ## Assumptions and limitations
 

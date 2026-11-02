@@ -2,6 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
@@ -694,4 +695,6 @@ describe('Radio Component', () => {
       <igc-radio value="two" checked>Two</igc-radio>
     </igc-radio-group>
   `);
+
+  runFocusBeforeRenderTests(html`<igc-radio>Label</igc-radio>`);
 });
