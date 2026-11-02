@@ -546,13 +546,13 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   /* alternateName: focusComponent */
   /** Sets focus on the component. */
   public override focus(options?: FocusOptions): void {
-    this._input.focus(options);
+    this._input?.focus(options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the component. */
   public override blur(): void {
-    this._input.blur();
+    this._input?.blur();
   }
 
   /* blazorSuppress */

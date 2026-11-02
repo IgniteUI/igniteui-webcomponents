@@ -941,6 +941,15 @@ describe('Select', () => {
       expect(select.groups).to.be.empty;
     });
 
+    it('does not throw on `focus()` and `blur()` before the first render', async () => {
+      const container = await fixture<HTMLElement>(html`<div></div>`);
+      const unrendered = document.createElement(IgcSelectComponent.tagName);
+      container.append(unrendered);
+
+      expect(() => unrendered.focus()).not.to.throw();
+      expect(() => unrendered.blur()).not.to.throw();
+    });
+
     it('`value` works', async () => {
       select.value = 'implementation';
       expect(select.selectedItem?.value).to.equal(select.value);

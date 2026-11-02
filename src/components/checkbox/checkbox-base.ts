@@ -99,13 +99,13 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   /* alternateName: focusComponent */
   /** Sets focus on the control. */
   public override focus(options?: FocusOptions): void {
-    this._input.focus(options);
+    this._input?.focus(options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the control. */
   public override blur(): void {
-    this._input.blur();
+    this._input?.blur();
   }
 
   /** Focuses and toggles the control, as a native checkbox label does. */

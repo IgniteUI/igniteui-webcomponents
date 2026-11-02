@@ -287,13 +287,13 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   /* alternateName: focusComponent */
   /** Sets focus on the radio control. */
   public override focus(options?: FocusOptions): void {
-    this._input.focus(options);
+    this._input?.focus(options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the radio control. */
   public override blur(): void {
-    this._input.blur();
+    this._input?.blur();
   }
 
   private _checkValidity(): boolean {

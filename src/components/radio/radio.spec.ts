@@ -166,6 +166,15 @@ describe('Radio Component', () => {
       expect(isFocused(input)).to.be.false;
     });
 
+    it('does not throw on `focus()` and `blur()` before the first render', async () => {
+      const container = await fixture<HTMLElement>(html`<div></div>`);
+      const unrendered = document.createElement(IgcRadioComponent.tagName);
+      container.append(unrendered);
+
+      expect(() => unrendered.focus()).not.to.throw();
+      expect(() => unrendered.blur()).not.to.throw();
+    });
+
     it('should emit igcChange event when radio is checked', async () => {
       const eventSpy = spy(radio, 'emitEvent');
       radio.click();

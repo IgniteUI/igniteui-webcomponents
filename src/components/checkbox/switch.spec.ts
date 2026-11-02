@@ -152,6 +152,15 @@ describe('Switch', () => {
       expect(isFocused(input)).to.be.false;
     });
 
+    it('does not throw on `focus()` and `blur()` before the first render', async () => {
+      const container = await fixture<HTMLElement>(html`<div></div>`);
+      const unrendered = document.createElement(IgcSwitchComponent.tagName);
+      container.append(unrendered);
+
+      expect(() => unrendered.focus()).not.to.throw();
+      expect(() => unrendered.blur()).not.to.throw();
+    });
+
     it('should emit igcChange event when the switch checked state changes', async () => {
       const eventSpy = spy(element, 'emitEvent');
       element.click();
