@@ -153,6 +153,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - The remove button of an attachment chip names the file with `chat_remove_attachment`, for example "Remove photo.png". Before, each remove button said "remove chip".
   - Elements in the `suggestion` slot now replace the default suggestions. Before, the chat rendered a `suggestion` slot for each suggestion, so only the first suggestion took the slotted elements.
   - Content in the `suggestions` or `suggestion` slot now shows the suggestions area also without `options.suggestions`. Before, the area and its slots rendered only while `options.suggestions` had items. Without suggestions, the area now stays in the DOM, hidden.
+  - **Behavioral change:** The `igcInput` and `igcChange` events of the text area and the `igcRemove` event of an attachment chip now stay inside the chat. Before, they reached the listeners on the chat and on the page. Use `igcInputChange` for the text and `igcAttachmentRemoved` for a removed attachment.
   - Fixes in the Markdown renderer of `igniteui-webcomponents/extras`:
     - A `theme` object with only `light` or only `dark` now uses the default theme for the other mode.
     - A `theme` object that pairs `none` with another theme now gives valid colors. Before, the code had no colors in either mode.

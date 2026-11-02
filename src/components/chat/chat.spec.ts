@@ -1,4 +1,5 @@
 import { elementUpdated, expect, fixture, nextFrame } from '@open-wc/testing';
+import { sendKeys } from '@web/test-runner-commands';
 import { html, nothing } from 'lit';
 import { restore, spy, stub, useFakeTimers } from 'sinon';
 import {
@@ -1179,6 +1180,50 @@ describe('Chat', () => {
       await elementUpdated(chat);
 
       expect(inputArea?.chips.length).to.equal(0);
+    });
+
+    describe('Inner events', () => {
+      it('keeps the igcInput and igcChange of the text area inside', async () => {
+        const textArea = getChatDOM(chat).input.textarea;
+        const textAreaSpy = spy();
+        const chatSpy = spy();
+        const inputChangeSpy = spy();
+
+        for (const type of ['igcInput', 'igcChange']) {
+          textArea.addEventListener(type, textAreaSpy);
+          chat.addEventListener(type, chatSpy);
+        }
+        chat.addEventListener('igcInputChange', inputChangeSpy);
+
+        textArea.focus();
+        await sendKeys({ type: 'Hi' });
+        await sendKeys({ press: tabKey });
+        await elementUpdated(chat);
+
+        expect(textAreaSpy).calledWithMatch({ type: 'igcInput' });
+        expect(textAreaSpy).calledWithMatch({ type: 'igcChange' });
+        expect(chatSpy).not.called;
+        expect(inputChangeSpy.lastCall).calledWithMatch({ detail: 'Hi' });
+      });
+
+      it('keeps the igcRemove of an attachment chip inside', async () => {
+        simulateFileUpload(getChatDOM(chat).input.fileInput, files);
+        await elementUpdated(chat);
+
+        const chip = getChatDOM(chat).input.chips[0];
+        const chipSpy = spy();
+        const chatSpy = spy();
+
+        chip.addEventListener('igcRemove', chipSpy);
+        chat.addEventListener('igcRemove', chatSpy);
+
+        simulateClick(chip.renderRoot.querySelector('igc-icon')!);
+        await elementUpdated(chat);
+
+        expect(chipSpy).calledOnce;
+        expect(chatSpy).not.called;
+        expect(getChatDOM(chat).input.chips).lengthOf(1);
+      });
     });
   });
 
