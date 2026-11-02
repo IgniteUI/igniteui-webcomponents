@@ -120,6 +120,24 @@ export async function withDocumentSheets(
   }
 }
 
+/** Runs `fn` as in a browser without `document.activeViewTransition`. */
+export async function withoutActiveViewTransition(
+  fn: () => unknown
+): Promise<void> {
+  const property = 'activeViewTransition';
+  const descriptor = Object.getOwnPropertyDescriptor(
+    Document.prototype,
+    property
+  )!;
+  Reflect.deleteProperty(Document.prototype, property);
+
+  try {
+    await fn();
+  } finally {
+    Object.defineProperty(Document.prototype, property, descriptor);
+  }
+}
+
 /**
  * Runs `fn` and returns the errors that event listeners threw during it. Such
  * an error goes to the page, not to the dispatcher: mocha fails the test from

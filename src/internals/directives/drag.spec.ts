@@ -2,8 +2,13 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { resetMouse, sendMouse } from '@web/test-runner-commands';
 import { render } from 'lit';
 import { type SinonSpy, spy } from 'sinon';
+import { startViewTransition } from '#animations/view-transition.js';
 import { escapeKey } from '../controllers/key-bindings.js';
-import { catchListenerErrors, compareStyles } from '../testing/helpers.spec.js';
+import {
+  catchListenerErrors,
+  compareStyles,
+  withoutActiveViewTransition,
+} from '../testing/helpers.spec.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
@@ -591,6 +596,83 @@ describe('Draggable directive', () => {
 
       expect(over.callCount).to.equal(2);
       expect(getCallbackArgs(over).state.element).to.equal(target);
+    });
+
+    /** Starts a drag that matches the `.target` element, and moves into it twice. */
+    function dragOverTarget(
+      accepts: (element: Element) => boolean = () => true
+    ) {
+      const target = document.querySelector<HTMLElement>('.target')!;
+      const over = spy();
+      const { x, y } = getCenterPoint(target);
+
+      renderDraggable({
+        matchTarget: (element) => element === target && accepts(element),
+        over,
+      });
+      simulatePointerDown(instance);
+      simulatePointerMove(instance, { clientX: x, clientY: y }, { x: 1 }, 2);
+
+      return { target, over, x, y };
+    }
+
+    it('should keep a match without a new hit test while the pointer stays inside it', async () => {
+      const hitTest = spy(document, 'elementsFromPoint');
+
+      try {
+        const { target, over, x, y } = dragOverTarget();
+        simulatePointerMove(instance, { clientX: x, clientY: y }, { x: 5 }, 2);
+        await elementUpdated(instance);
+
+        expect(hitTest.callCount).to.equal(1);
+        expect(over.callCount).to.equal(3);
+        expect(getCallbackArgs(over).state.element).to.equal(target);
+      } finally {
+        hitTest.restore();
+      }
+    });
+
+    it('should end a match during a view transition, where the hit test finds no match', async () => {
+      const { over, x, y } = dragOverTarget();
+      expect(over.callCount).to.equal(1);
+
+      const transition = document.startViewTransition(() => {});
+      await transition.ready;
+      simulatePointerMove(instance, { clientX: x + 5, clientY: y });
+      await transition.finished;
+
+      expect(over.callCount).to.equal(1);
+
+      // The first move after the transition only records the match again.
+      simulatePointerMove(instance, { clientX: x + 6, clientY: y });
+      expect(over.callCount).to.equal(1);
+
+      simulatePointerMove(instance, { clientX: x + 7, clientY: y });
+      expect(over.callCount).to.equal(2);
+    });
+
+    it('should end a match during a view transition of the library in a browser without `activeViewTransition`', async () => {
+      await withoutActiveViewTransition(async () => {
+        const { over, x, y } = dragOverTarget();
+
+        const transition = startViewTransition(() => {});
+        await transition.ready;
+        simulatePointerMove(instance, { clientX: x + 5, clientY: y });
+        await transition.finished;
+
+        expect(over.callCount).to.equal(1);
+      });
+    });
+
+    it('should end a match that `matchTarget` no longer accepts', async () => {
+      let accepts = true;
+      const { over, x, y } = dragOverTarget(() => accepts);
+      expect(over.callCount).to.equal(1);
+
+      accepts = false;
+      simulatePointerMove(instance, { clientX: x + 5, clientY: y });
+
+      expect(over.callCount).to.equal(1);
     });
 
     it('should cancel a touch and a native drag only where a drag can start', async () => {

@@ -1,5 +1,6 @@
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
+import { withoutActiveViewTransition } from '#internals/testing/helpers.spec.js';
 import {
   getActiveViewTransition,
   startViewTransition,
@@ -52,6 +53,35 @@ describe('View Transitions helpers', () => {
 
       startViewTransition(sinon.spy());
       expect(getActiveViewTransition()).to.be.instanceOf(ViewTransition);
+    });
+
+    it('should give the last started transition in a browser without `activeViewTransition`', async () => {
+      await withoutActiveViewTransition(async () => {
+        const first = startViewTransition(sinon.spy());
+        const last = startViewTransition(sinon.spy());
+
+        expect(getActiveViewTransition()).to.equal(last);
+
+        await first.finished;
+        expect(getActiveViewTransition()).to.equal(last);
+
+        await last.finished;
+        expect(getActiveViewTransition()).to.be.null;
+      });
+    });
+
+    it('should not give a transition that reduced motion skips', async () => {
+      matchMediaStub.withArgs('(prefers-reduced-motion: reduce)').returns({
+        matches: true,
+        media: '(prefers-reduced-motion: reduce)',
+      });
+
+      await withoutActiveViewTransition(async () => {
+        const transition = startViewTransition(sinon.spy());
+
+        expect(getActiveViewTransition()).to.be.null;
+        await transition.finished;
+      });
     });
   });
 });
