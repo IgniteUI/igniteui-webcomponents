@@ -74,7 +74,7 @@ const metadata: Meta<IgcTileManagerComponent> = {
     columnCount: {
       type: 'number',
       description:
-        'The number of columns. A value of 0 or less gives a responsive layout.',
+        'The number of columns, truncated to a whole number. A value of 0 or less\ngives a responsive layout.',
       control: 'number',
       table: { defaultValue: { summary: '0' } },
     },
@@ -110,7 +110,10 @@ interface IgcTileManagerArgs {
   resizeMode: 'none' | 'hover' | 'always';
   /** The drag mode of the tiles. `none` turns drag and drop off. */
   dragMode: 'none' | 'tile-header' | 'tile';
-  /** The number of columns. A value of 0 or less gives a responsive layout. */
+  /**
+   * The number of columns, truncated to a whole number. A value of 0 or less
+   * gives a responsive layout.
+   */
   columnCount: number;
   /** The minimum width of a column. */
   minColumnWidth: string;

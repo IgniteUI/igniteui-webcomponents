@@ -12,8 +12,8 @@ type FullscreenControllerConfiguration = {
 };
 
 class FullscreenController {
-  private _host: ReactiveControllerHost & HTMLElement;
-  private _options: FullscreenControllerConfiguration;
+  private readonly _host: ReactiveControllerHost & HTMLElement;
+  private readonly _onChange?: FullscreenControllerConfiguration['onChange'];
 
   private _fullscreen = false;
 
@@ -26,7 +26,7 @@ class FullscreenController {
     options?: FullscreenControllerConfiguration
   ) {
     this._host = host;
-    this._options = { ...options };
+    this._onChange = options?.onChange;
 
     addHostListeners(host, { events: ['fullscreenchange'], listener: this });
     host.addController(this);
@@ -43,17 +43,15 @@ class FullscreenController {
 
   /** Moves the host element into or out of fullscreen mode. */
   public setState(fullscreen: boolean): void {
-    const { onChange } = this._options;
-
-    if (onChange && !onChange.call(this._host, fullscreen, true)) {
+    if (this._onChange && !this._onChange.call(this._host, fullscreen, true)) {
       return;
     }
 
     this._fullscreen = fullscreen;
     this._host.requestUpdate();
 
-    // A change rejects, for example a request without user activation. The
-    // state of the browser then comes back.
+    // The request can reject, for example without user activation. Then sync
+    // back to the browser state.
     if (fullscreen) {
       this._host.requestFullscreen().catch(() => this._sync());
     } else if (document.fullscreenElement) {
@@ -76,7 +74,7 @@ class FullscreenController {
 
     if (fullscreen !== this._fullscreen) {
       this._fullscreen = fullscreen;
-      this._options.onChange?.call(this._host, fullscreen, false);
+      this._onChange?.call(this._host, fullscreen, false);
       this._host.requestUpdate();
     }
   }

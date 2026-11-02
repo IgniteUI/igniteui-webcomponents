@@ -14,6 +14,7 @@ import { getRoot } from '#internals/utils/dom.js';
 import {
   addSafeEventListener,
   getElementFromPath,
+  getEventOrigin,
 } from '#internals/utils/events.js';
 import { all } from '#themes/stepper/themes/stepper/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -262,7 +263,8 @@ export default class IgcStepperComponent extends EventEmitterMixin<IgcStepperCom
   //#region Keyboard navigation handlers
 
   private _skipKeyboard(_: Element, event: KeyboardEvent): boolean {
-    return !getElementFromPath('[data-step-header]', event);
+    // Only the header itself, so a control in the title keeps its keys.
+    return !getEventOrigin('[data-step-header]', event);
   }
 
   //#endregion

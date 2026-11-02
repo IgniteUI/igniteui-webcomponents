@@ -12,8 +12,6 @@ import { styles as indigoLight } from './light/tile-manager.indigo.css.js';
 import { styles as materialLight } from './light/tile-manager.material.css.js';
 import { styles as sharedLight } from './light/tile-manager.shared.css.js';
 
-// Shared Styles
-
 const light = {
   shared: sharedLight,
   bootstrap: bootstrapLight,

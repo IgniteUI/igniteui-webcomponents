@@ -27,7 +27,7 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { firstOf, sameItems } from '#internals/utils/arrays.js';
 import { isLTR } from '#internals/utils/dom.js';
-import { getElementFromPath } from '#internals/utils/events.js';
+import { getElementFromPath, getEventOrigin } from '#internals/utils/events.js';
 import { isString } from '#internals/utils/types.js';
 import { all } from '#themes/tabs/themes/tabs-themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -551,14 +551,13 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
 
   /**
    * Only keys pressed on a tab header navigate, so a control slotted into a label
-   * keeps its keys. `node` is the target retargeted to the tab.
+   * keeps its keys. `node` is the target retargeted to the tab, so a header
+   * origin is the header of that tab.
    */
   private _skipKeyboard(node: Element, event: KeyboardEvent): boolean {
-    const tab = node as IgcTabComponent;
-
     return !(
-      this._tabs.includes(tab) &&
-      firstOf(event.composedPath()) === getTabHeader(tab)
+      this._tabs.includes(node as IgcTabComponent) &&
+      getEventOrigin(TAB_HEADER, event)
     );
   }
 

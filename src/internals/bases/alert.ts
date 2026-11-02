@@ -12,6 +12,7 @@ import { addInternalsController } from '../controllers/internals.js';
 import { createMutationController } from '../controllers/mutation-observer.js';
 import { createTimer } from '../timing.js';
 import { getRoot, getVisibleAncestor, isPopoverOpen } from '../utils/dom.js';
+import { getEventOrigin } from '../utils/events.js';
 import { nanoid } from '../utils/strings.js';
 
 /** The names that open components add to the `anchor-name` of a container. */
@@ -223,7 +224,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
         break;
       case 'focusin':
         // A pointer click on the action does not hold the component open.
-        if ((event.composedPath()[0] as Element).matches(':focus-visible')) {
+        if (getEventOrigin(':focus-visible', event)) {
           this._holds.add('focus');
         }
         break;

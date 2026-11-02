@@ -1,4 +1,5 @@
 import { isServer } from 'lit';
+import { firstOf } from './arrays.js';
 import { isElement } from './dom.js';
 import { isEventListenerObject, isString } from './types.js';
 
@@ -45,6 +46,20 @@ export function getElementFromPath(
     .find((item) => isElement(item) && func(item));
 
   return match as Element | undefined;
+}
+
+/**
+ * Returns the element that started the event if it matches the selector.
+ * Unlike `getElementFromPath`, a match deeper in the composed path does not count.
+ */
+export function getEventOrigin<T extends Element = Element>(
+  selector: string,
+  event: Event
+): T | undefined {
+  const origin = firstOf(event.composedPath());
+  return isElement(origin) && origin.matches(selector)
+    ? (origin as T)
+    : undefined;
 }
 
 /** Reusable event listener that stops the propagation of the event. */
