@@ -38,6 +38,8 @@ Review in this order. The public API is hard to change after release, so review 
 - [ ] Events use `EventEmitterMixin` with a typed map. Names are `igc` + camelCase, cancelable
       events end in `-ing` and the code checks their return value.
 - [ ] Events come from user interaction, not from property sets or method calls
+- [ ] A composite stops the `igc*` events of the components in its shadow root, on the inner
+      element. The inner events guard of the test runner fails the spec file of a leak.
 - [ ] JSDoc tags come after the description. `@deprecated since [SemVer]. Use the \`[new]\`
       [type] instead.`
 - [ ] No `igc-` tag names in description prose. No "…attribute of…", no `Gets/Sets`. Booleans

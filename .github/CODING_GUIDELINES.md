@@ -743,6 +743,18 @@ A parser, converter or serializer that takes user or stored input also gets prop
   }
   ```
 
+- A composite stops the `igc*` events of the components in its shadow root. Otherwise they reach
+  the listeners on the host, with a detail that the host does not own. Stop them on the inner
+  element: call `event.stopPropagation()` in the handler, or bind `stopPropagation` from
+  `#internals/utils/events.js` when there is no handler. A listener on the host is not
+  sufficient, because the other listeners on the host still run. The test runner loads
+  `src/internals/testing/inner-events.spec.ts`, which fails a spec file when such an event
+  reaches a host.
+
+  ```ts
+  html`<igc-input @igcInput=${this._handleInput} @igcChange=${stopPropagation}></igc-input>`;
+  ```
+
 ## Form Integration
 
 Form controls extend a mixin from `#internals/mixins/forms/`:
