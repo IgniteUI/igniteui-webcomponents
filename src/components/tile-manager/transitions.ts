@@ -18,6 +18,7 @@ export function startSizeTransition(
   const inline =
     sizeTransitions.get(tile)?.inline ?? tile.style.viewTransitionClass;
 
+  // Read the computed class without the classes of a running size transition.
   tile.style.viewTransitionClass = inline;
 
   const { direction, viewTransitionClass } = getComputedStyle(tile);

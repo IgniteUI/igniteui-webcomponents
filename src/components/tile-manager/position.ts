@@ -1,5 +1,6 @@
 import { startViewTransition } from '#animations/view-transition.js';
 import { partition } from '#internals/utils/arrays.js';
+import { getOrInsertComputed } from '#internals/utils/objects.js';
 import type IgcTileManagerComponent from './tile-manager.js';
 import type IgcTileComponent from './tile.js';
 
@@ -82,9 +83,7 @@ class TilesState {
     }
 
     for (const [index, tile] of [...ordered, ...appended].entries()) {
-      if (tile.position !== index) {
-        tile.position = index;
-      }
+      tile.position = index;
     }
   }
 }
@@ -170,14 +169,15 @@ class TileDragRecord {
   }
 
   private _record(tile: IgcTileComponent): void {
-    if (!this._initial.has(tile)) {
-      const { position, parentElement: parent } = tile;
-      this._initial.set(tile, {
+    getOrInsertComputed(
+      this._initial,
+      tile,
+      ({ position, parentElement: parent }) => ({
         position,
         parent,
         version: getLayoutVersion(parent),
-      });
-    }
+      })
+    );
   }
 }
 

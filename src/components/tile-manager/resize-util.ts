@@ -1,4 +1,14 @@
+import { asNumber } from '#internals/utils/math.js';
 import type { ResizeProps, ResizeSpanProps } from './types.js';
+
+/** The pixel sizes of a resolved track list, such as `[start] 200px 200px [end]`. */
+export function parseTrackSizes(tracks: string): number[] {
+  return tracks
+    .replace(/\[[^\]]*\]/g, ' ')
+    .trim()
+    .split(/\s+/)
+    .map(asNumber);
+}
 
 export function calculateSnappedDimension(props: ResizeProps): number {
   const {
@@ -14,7 +24,7 @@ export function calculateSnappedDimension(props: ResizeProps): number {
   const effectiveDelta = currentDelta - prevDelta;
   let snappedSize = currentSize;
 
-  // If current size is below minimum, force to the size of the starting cell.
+  // Never smaller than the start track.
   if (Math.trunc(currentSize) < gridEntries[startIndex - 1]) {
     return gridEntries[startIndex - 1];
   }
@@ -29,18 +39,16 @@ export function calculateSnappedDimension(props: ResizeProps): number {
     const nextEntry = gridEntries[i + 1] ?? currentEntry;
     const prevEntry = i > 0 ? gridEntries[i - 1] : currentEntry;
 
-    // Thresholds for snapping to the next or previous tile boundary.
+    // Thresholds for snapping to the next or the previous track boundary.
     const halfwayExpand = accumulated + currentEntry + gap + nextEntry / 2;
     const halfwayShrink = accumulated + prevEntry / 2;
     const entryEnd = accumulated + currentEntry + gap;
 
     if (effectiveDelta > 0) {
-      // Expanding: snap when passing the halfway threshold.
       if (currentSize >= halfwayExpand && currentSize <= entryEnd + nextEntry) {
         snappedSize = entryEnd + nextEntry;
       }
     } else if (effectiveDelta < 0) {
-      // Shrinking: snap when falling below the halfway threshold.
       if (currentSize <= halfwayShrink && currentSize > accumulated - gap) {
         snappedSize = accumulated - gap;
       }
@@ -68,12 +76,13 @@ export function calculateResizedSpan(props: ResizeSpanProps): number {
     return 1;
   }
 
+  // Past the last track, a row span adds rows of the minimum size. A column
+  // span stops at the last column.
   if (Math.trunc(targetSize) > Math.trunc(availableSize)) {
-    const remainingSize = targetSize - availableSize;
-
-    const additionalSpan = Math.ceil(remainingSize / (minSize + gap));
-    newSpan = sizesAfterStart.length + additionalSpan;
-    return isRow ? newSpan : Math.min(sizesAfterStart.length, newSpan);
+    return isRow
+      ? sizesAfterStart.length +
+          Math.ceil((targetSize - availableSize) / (minSize + gap))
+      : sizesAfterStart.length;
   }
 
   for (let i = tilePosition.start - 1; i < entries.length; i++) {
