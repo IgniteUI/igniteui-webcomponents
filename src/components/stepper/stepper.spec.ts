@@ -1306,6 +1306,30 @@ describe('Stepper', () => {
       expect(stepper.steps[2].active).to.be.true;
     });
 
+    it('should leave the keys of a control in a step title to the control', async () => {
+      const button = document.createElement('button');
+      button.textContent = 'Edit';
+      stepper.steps[1].querySelector('[slot="title"]')!.append(button);
+      button.focus();
+
+      for (const key of ['Enter', ' ', 'ArrowRight', 'End']) {
+        const options = { key, bubbles: true, composed: true };
+        const event = new KeyboardEvent('keydown', {
+          ...options,
+          cancelable: true,
+        });
+
+        button.dispatchEvent(event);
+        button.dispatchEvent(new KeyboardEvent('keyup', options));
+        expect(event.defaultPrevented, key).to.be.false;
+      }
+      await elementUpdated(stepper);
+
+      expect(document.activeElement).to.equal(button);
+      expect(stepper.steps[0].active).to.be.true;
+      expect(stepper.steps[1].active).to.be.false;
+    });
+
     it('should navigate with ArrowRight/Left in horizontal orientation (LTR)', () => {
       const step0Header = getStepDOM(stepper.steps[0]).parts.header;
       const step1Header = getStepDOM(stepper.steps[1]).parts.header;

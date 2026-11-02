@@ -215,7 +215,7 @@ and content come from the application.
 
 ### Keyboard interactions
 
-The keys apply while a step header has focus.
+The keys apply while a step header has focus. A control in the title or the subtitle, such as a button, keeps its keys.
 
 | Key combination                                | Result                                                             |
 | ---------------------------------------------- | -------------------------------------------------------------------- |
@@ -368,15 +368,17 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 22. The arrow keys move focus between the headers of the enabled steps and of the active step, in both orientations.
 23. <kbd>Home</kbd> and <kbd>End</kbd> jump to the first and the last step that is enabled or active.
 24. <kbd>Enter</kbd> and <kbd>Space</kbd> activate the focused step.
+25. The stepper does not handle a key on a control in a step title: the key keeps its default action, the focus stays
+    on the control and the active step does not change.
 
 ### Context binding
 
-25. The steps receive their configuration - orientation, step type, title position and linear mode - from the
+26. The steps receive their configuration - orientation, step type, title position and linear mode - from the
     stepper through context, including for steps added later.
 
 ### Host ARIA
 
-26. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
+27. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
     target and follow a change, and an axe audit passes with a host label.
 
 ## Assumptions and limitations
