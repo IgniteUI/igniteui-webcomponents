@@ -3,6 +3,7 @@ import {
   elementUpdated,
   expect,
   fixture,
+  fixtureSync,
   nextFrame,
 } from '@open-wc/testing';
 import { html, LitElement } from 'lit';
@@ -40,6 +41,23 @@ const noRenderTagName = defineCE(
   }
 );
 
+const lateTargetTagName = defineCE(
+  class extends DeferredFocusTest {
+    private _ready = false;
+
+    protected override firstUpdated(): void {
+      queueMicrotask(() => {
+        this._ready = true;
+        this.requestUpdate();
+      });
+    }
+
+    protected override render() {
+      return this._ready ? html`<input />` : html``;
+    }
+  }
+);
+
 const twoInputsTag = unsafeStatic(
   defineCE(
     class extends LitElement {
@@ -53,14 +71,14 @@ const twoInputsTag = unsafeStatic(
 describe('Deferred focus', () => {
   let container: HTMLElement;
 
-  function create(): DeferredFocusTest {
-    const element = document.createElement(tagName) as DeferredFocusTest;
+  function create(name = tagName): DeferredFocusTest {
+    const element = document.createElement(name) as DeferredFocusTest;
     container.append(element);
     return element;
   }
 
-  beforeEach(async () => {
-    container = await fixture<HTMLElement>(html`<div></div>`);
+  beforeEach(() => {
+    container = fixtureSync<HTMLElement>(html`<div></div>`);
   });
 
   it('repeats the call with its options after the first update', async () => {
@@ -128,10 +146,7 @@ describe('Deferred focus', () => {
   });
 
   it('does not repeat the call for a host that skips its render', async () => {
-    const element = document.createElement(
-      noRenderTagName
-    ) as DeferredFocusTest;
-    container.append(element);
+    const element = create(noRenderTagName);
 
     element.focus();
     const focusSpy = spy(element, 'focus');
@@ -172,6 +187,50 @@ describe('Deferred focus', () => {
     expect(other.shadowRoot!.activeElement).to.equal(second);
   });
 
+  it('does not repeat the call after the focus leaves and comes back inside one shadow root', async () => {
+    const other = await fixture<LitElement>(
+      staticHtml`<${twoInputsTag}></${twoInputsTag}>`
+    );
+    const [first, second] = other.renderRoot.querySelectorAll('input');
+    first.focus();
+    const element = create();
+
+    element.focus();
+    second.focus();
+    first.focus();
+    await elementUpdated(element);
+    await nextFrame();
+
+    expect(element.matches(':focus-within')).to.be.false;
+    expect(other.shadowRoot!.activeElement).to.equal(first);
+  });
+
+  it('waits for an update after the first one that adds the element to focus', async () => {
+    const element = create(lateTargetTagName);
+
+    element.focus();
+    await elementUpdated(element);
+    await nextFrame();
+
+    expect(element.matches(':focus-within')).to.be.true;
+  });
+
+  it('cancels the request on a focus change in the document of the host', async () => {
+    const frame = document.createElement('iframe');
+    container.append(frame);
+    const doc = frame.contentDocument!;
+    const element = document.createElement(tagName) as DeferredFocusTest;
+    const button = doc.createElement('button');
+    doc.body.append(element, button);
+
+    element.focus();
+    button.focus();
+    await elementUpdated(element);
+    await nextFrame();
+
+    expect(doc.activeElement).to.equal(button);
+  });
+
   it('repeats the call after a `blur()` of the element that had the focus', async () => {
     const button = document.createElement('button');
     container.append(button);
@@ -183,6 +242,19 @@ describe('Deferred focus', () => {
     await elementUpdated(element);
 
     expect(element.matches(':focus-within')).to.be.true;
+  });
+
+  it('does not repeat the call after another element takes the focus and loses it', async () => {
+    const button = document.createElement('button');
+    container.append(button);
+    const element = create();
+
+    element.focus();
+    button.focus();
+    button.blur();
+    await elementUpdated(element);
+
+    expect(element.matches(':focus-within')).to.be.false;
   });
 
   it('keeps the request when another host cancels', async () => {

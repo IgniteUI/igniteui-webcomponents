@@ -1,7 +1,7 @@
 import {
   elementUpdated,
   expect,
-  fixture,
+  fixtureSync,
   html,
   nextFrame,
 } from '@open-wc/testing';
@@ -29,8 +29,8 @@ export function runFocusBeforeRenderTests(template: TemplateResult): void {
       return target.firstElementChild as HTMLElement;
     }
 
-    beforeEach(async () => {
-      container = await fixture<HTMLElement>(html`<div></div>`);
+    beforeEach(() => {
+      container = fixtureSync<HTMLElement>(html`<div></div>`);
     });
 
     it('focuses the same element as after the render', async () => {
@@ -39,7 +39,7 @@ export function runFocusBeforeRenderTests(template: TemplateResult): void {
       element.focus();
       expect(element.matches(':focus-within')).to.be.false;
       await settle(element);
-      expect(element.matches(':focus-within')).to.be.true;
+      expect(isFocused(element)).to.be.true;
       const deferred = getDeepActiveElement();
 
       element.blur();
@@ -113,17 +113,6 @@ export function runFocusBeforeRenderTests(template: TemplateResult): void {
       await settle(element);
 
       expect(element.matches(':focus-within')).to.be.true;
-    });
-
-    it('takes the focus at once after the render, and `blur()` removes it', async () => {
-      const element = mount();
-      await settle(element);
-
-      element.focus();
-      expect(isFocused(element)).to.be.true;
-
-      element.blur();
-      expect(element.matches(':focus-within')).to.be.false;
     });
   });
 }

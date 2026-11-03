@@ -5,16 +5,39 @@ import { getDeepActiveElement } from './utils/dom.js';
  * Lit renders a component in a microtask after it connects, so a `focus()`
  * call before that finds no inner control. A native control takes the focus at
  * once. The document has one focus, so the module keeps one request: a new
- * request replaces it, and a focus change cancels it.
+ * request replaces it, and another element that takes the focus cancels it.
  */
 
-let pendingHost: ReactiveElement | null = null;
-let pendingOptions: FocusOptions | undefined;
-let pendingActive: Element | null = null;
+type FocusRoot = Document | ShadowRoot;
+
+let pending: {
+  readonly host: ReactiveElement;
+  readonly roots: readonly FocusRoot[];
+} | null = null;
 
 function clearRequest(): void {
-  pendingHost?.ownerDocument.removeEventListener('focusin', clearRequest, true);
-  pendingHost = null;
+  for (const root of pending?.roots ?? []) {
+    root.removeEventListener('focusin', clearRequest, true);
+  }
+
+  pending = null;
+}
+
+/**
+ * Returns the document and each shadow root around its focused element. A
+ * `focusin` does not leave the shadow root that holds both the old and the new
+ * focus, so each of these roots needs a listener.
+ */
+function getFocusRoots(doc: Document): FocusRoot[] {
+  const roots: FocusRoot[] = [doc];
+  let root = getDeepActiveElement(doc)?.getRootNode();
+
+  while (root instanceof ShadowRoot) {
+    roots.push(root);
+    root = root.host.getRootNode();
+  }
+
+  return roots;
 }
 
 /**
@@ -36,33 +59,30 @@ export function deferFocus(
   }
 
   clearRequest();
-  pendingHost = host;
-  pendingOptions = options;
-  pendingActive = getDeepActiveElement();
-  host.ownerDocument.addEventListener('focusin', clearRequest, true);
+  const request = { host, roots: getFocusRoots(host.ownerDocument) };
+  pending = request;
+
+  for (const root of request.roots) {
+    root.addEventListener('focusin', clearRequest, true);
+  }
 
   const repeat = (): void => {
-    if (pendingHost !== host) {
+    if (pending !== request) {
       return;
     }
 
-    // An update that comes after the first one can add the element to focus,
-    // for example the carousel indicators after a `slotchange`.
+    // An update after the first one can add the element to focus, for
+    // example the carousel indicators after a `slotchange`.
     if (host.isUpdatePending) {
       host.updateComplete.then(repeat);
       return;
     }
 
-    const active = getDeepActiveElement();
     clearRequest();
 
-    // A `shouldUpdate()` that returns `false` skips the render. A focus change
-    // inside one shadow root sends no `focusin` to the document.
-    if (
-      host.hasUpdated &&
-      (active === pendingActive || active === host.ownerDocument.body)
-    ) {
-      host.focus(pendingOptions);
+    // A `shouldUpdate()` that returns `false` skips the render.
+    if (host.hasUpdated) {
+      host.focus(options);
     }
   };
 
@@ -71,7 +91,7 @@ export function deferFocus(
 
 /** Cancels the stored focus request of `host`, if it has one. */
 export function cancelDeferredFocus(host: ReactiveElement): void {
-  if (pendingHost === host) {
+  if (pending?.host === host) {
     clearRequest();
   }
 }
