@@ -63,6 +63,7 @@ This directory hosts two public components: [`igc-tile-manager`](#igc-tile-manag
 |      10 | 2026-10-23 | The resize handles stand out of a tile by at most `--grid-padding` |
 |      11 | 2026-11-02 | Tiles fit the responsive columns, a start after the last column moves back, nested managers keep their own column count and gap |
 |      12 | 2026-11-02 | Percentage gaps in a resize, CSS `direction` in a drag, a drag copy that does not act as a tile, no count loop with the page scrollbar |
+|      13 | 2026-11-02 | View transition names only during a transition of the manager, a stacking context for the content of a tile, a drag target that stays while the pointer is in it |
 
 ## Overview
 
@@ -137,7 +138,10 @@ the first 40% of the transition. The tiles that a maximized tile covers fade in 
 pointer during a swap. The view transition pseudo-elements belong to the document, so the theme style sheets
 (`themes/light/*.css` and `themes/dark/*.css`) hold their rules. They select the view transition classes
 `igc-tile-resize` and `igc-tile-rtl`, and the `dragged-tile-ghost` name. Without a theme style sheet, the tiles use
-the default transition, and so does a size change in a browser without view transition classes.
+the default transition, and so does a size change in a browser without view transition classes. Only during a
+transition, the tiles of its manager have a view transition name (`tile-transition-<id>`), so the transition captures
+only them. An application that runs its own view transition gives a name to the tiles that it moves. An inline name of
+the author stays.
 
 ### Developer experience
 
@@ -566,7 +570,8 @@ The groups below mirror the `describe` blocks.
     negative or a named line comes from the place of the tile. A minimum row height in `rem` makes the same new rows as
     the same height in pixels. A percentage gap snaps as the grid resolves it.
 38. In nested tile managers, only the innermost tile drags, and it does not swap with an outer tile. A drag swaps with
-    a tile that the pointer reaches straight from another tile. A swap of tiles that hold nested managers animates.
+    a tile that the pointer reaches straight from another tile. A swap of tiles that hold nested managers animates. The tile
+    under the pointer stays the target while the pointer is in it, with no new hit test, and a view transition ends it.
 39. The drag and resize ghosts render over the tile in the closest top-layer element, such as a modal dialog, also
     through slots. A ghost there is fixed, so the border, scroll and overflow of that element do not move or clip it.
     A translate or a scale on that element does not move the ghost off the tile. A rotation is not supported.
@@ -583,12 +588,19 @@ The groups below mirror the `describe` blocks.
     transition ends, also after two quick clicks. The view transition classes of the author stay, and an inline one
     returns when the transition ends. While a tile is maximized, the covered tiles have no view transition name. With a
     theme style sheet, the new content of a maximizing tile fades in, and the drag ghost has no animation in a swap.
+    The tiles of a manager have a view transition name only while its transition runs, also after two quick clicks. A
+    swap and a restore name only the tiles of their manager, and an inline name of the author stays.
 
 ### Resize handles and `--grid-padding`
 
 46. The default side, corner and bottom handles stand half out of the tile, also in RTL. With a smaller
     `--grid-padding`, they stand out only by the padding. With `0`, `0px` or a padding of more than one value, they
     stay inside the tile, and the grid does not scroll.
+
+### Stacking
+
+47. The content of a tile, also fixed content with a z-index, stays under the next tile, and so do the resize handles
+    of the tile. The resize handles stay above content with any z-index.
 
 ## Assumptions and limitations
 
@@ -602,6 +614,8 @@ The groups below mirror the `describe` blocks.
   the tiles in the order of their saved positions.
 - The content of a tile is clipped to its size. See [Maximize and fullscreen](#maximize-and-fullscreen) for a scroll
   recipe.
+- During a drag, the tile under the pointer stays the target while the pointer is in its box, also where an ancestor
+  clips the tile.
 - The manager counts the responsive columns in JavaScript. A change of the width, or of `--min-col-width` or
   `--grid-gap` in a style sheet, applies in the next frame. Without JavaScript, as in a server render, the tiles do not
   fit into the responsive columns. When a lower count removes the page scrollbar and so adds a column, the tiles keep

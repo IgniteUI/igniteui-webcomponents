@@ -21,6 +21,7 @@ import {
   getDayViewDOM,
   getDOMDate,
 } from '#internals/testing/calendar.spec.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   runAriaProjectionTests,
   runExternalLabelAssociationTests,
@@ -1568,4 +1569,8 @@ describe('Date picker', () => {
       );
     });
   });
+
+  runFocusBeforeRenderTests(
+    html`<igc-date-picker label="Label"></igc-date-picker>`
+  );
 });

@@ -442,7 +442,9 @@
         "variant": "ButtonVariant ('contained' | 'fab' | 'flat' | 'outlined')"
       },
       "methods": {
+        "blur": "() => void",
         "click": "() => void",
+        "focus": "(options?: FocusOptions) => void",
         "static register": "() => void"
       },
       "events": {},
@@ -713,6 +715,8 @@
         "vertical": "boolean"
       },
       "methods": {
+        "blur": "() => void",
+        "focus": "(options?: FocusOptions) => void",
         "next": "() => Promise<boolean>",
         "pause": "() => void",
         "play": "() => void",
@@ -1013,6 +1017,8 @@
         "variant": "StyleVariant | undefined ('danger' | 'info' | 'primary' | 'success' | 'warning' | undefined)"
       },
       "methods": {
+        "blur": "() => void",
+        "focus": "(options?: FocusOptions) => void",
         "static register": "() => void"
       },
       "events": {
@@ -1145,7 +1151,9 @@
         "willValidate": "readonly boolean"
       },
       "methods": {
+        "blur": "() => void",
         "checkValidity": "() => boolean",
+        "focus": "(options?: FocusOptions) => void",
         "hide": "() => Promise<boolean>",
         "reportValidity": "() => boolean",
         "setCustomValidity": "(message: string) => void",
@@ -1398,8 +1406,10 @@
         "willValidate": "readonly boolean"
       },
       "methods": {
+        "blur": "() => void",
         "checkValidity": "() => boolean",
         "clear": "() => void",
+        "focus": "(options?: FocusOptions) => void",
         "hide": "() => Promise<boolean>",
         "reportValidity": "() => boolean",
         "select": "() => void",
@@ -1584,8 +1594,10 @@
         "willValidate": "readonly boolean"
       },
       "methods": {
+        "blur": "() => void",
         "checkValidity": "() => boolean",
         "clear": "() => void",
+        "focus": "(options?: FocusOptions) => void",
         "hide": "() => Promise<boolean>",
         "reportValidity": "() => boolean",
         "select": "(value: DateRangeValue | null) => void",
@@ -2277,7 +2289,9 @@
         "variant": "IconButtonVariant ('contained' | 'flat' | 'outlined')"
       },
       "methods": {
+        "blur": "() => void",
         "click": "() => void",
+        "focus": "(options?: FocusOptions) => void",
         "static register": "() => void"
       },
       "events": {},
@@ -3782,7 +3796,9 @@
         "wrap": "'hard' | 'soft' | 'off'"
       },
       "methods": {
+        "blur": "() => void",
         "checkValidity": "() => boolean",
+        "focus": "(options?: FocusOptions) => void",
         "reportValidity": "() => boolean",
         "scrollTo": "(x?: unknown, y?: unknown) => void",
         "select": "() => void",

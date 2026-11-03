@@ -83,7 +83,6 @@ igc-divider {
     width: var(--_size);
     aspect-ratio: 1;
     border-radius: 50%;
-    z-index: 11111;
     background-color: var-get($theme, 'ghost-border');
 }
 

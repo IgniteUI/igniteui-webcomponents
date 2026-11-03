@@ -1,14 +1,12 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
-import {
-  isFocused,
-  isUnderPageLayer,
-} from '#internals/testing/helpers.spec.js';
+import { isUnderPageLayer } from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { configureTheme } from '#theming/config.js';
 import IgcSwitchComponent from './switch.js';
@@ -140,16 +138,6 @@ describe('Switch', () => {
       await elementUpdated(element);
 
       expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
-    });
-
-    it('should have correct focus states between Light/Shadow DOM', () => {
-      element.focus();
-      expect(isFocused(element)).to.be.true;
-      expect(isFocused(input)).to.be.true;
-
-      element.blur();
-      expect(isFocused(element)).to.be.false;
-      expect(isFocused(input)).to.be.false;
     });
 
     it('should emit igcChange event when the switch checked state changes', async () => {
@@ -303,4 +291,6 @@ describe('Switch', () => {
     <igc-switch>Label</igc-switch>
     <igc-switch checked>Label</igc-switch>
   `);
+
+  runFocusBeforeRenderTests(html`<igc-switch>Label</igc-switch>`);
 });

@@ -56,6 +56,8 @@
 |       8 | 2026-10-19 | Localize the labels through `igniteui-i18n-core`   |
 |       9 | 2026-10-21 | API descriptions aligned with the JSDoc.           |
 |      10 | 2026-10-23 | The color picker makes a stacking context, so the z-index of the focus ring of the anchor does not compete with the layers of the page |
+|      11 | 2026-11-02 | The events of the inner inputs, format select and canvas stay inside the picker |
+|      12 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
 
 ## Overview
 
@@ -336,14 +338,16 @@ All of the above are skipped while the component is `disabled`.
 
 ### Methods
 
-| Name              | Type signature            | Description                                                             |
-| ----------------- | ------------------------- | ----------------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`    | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one.                                                    |
-| hide              | `(): Promise<boolean>`    | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                    |
-| toggle            | `(): Promise<boolean>`    | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes.                                |
-| checkValidity     | `(): boolean`             | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid.        |
-| reportValidity    | `(): boolean`             | Checks validity. As for a native control, an invalid control emits `invalid` and takes the focus. It shows its own validation messages, not the message of the browser. Returns `true` when the control is valid. |
-| setCustomValidity | `(message: string): void` | Sets a custom validation message. The control is invalid while the message is not empty. An empty string removes the custom error.            |
+| Name              | Type signature                   | Description                                                             |
+| ----------------- | -------------------------------- | ----------------------------------------------------------------------- |
+| focus             | `(options?: FocusOptions): void` | Sets focus on the color picker.                                         |
+| blur              | `(): void`                       | Removes focus from the color picker.                                    |
+| show              | `(): Promise<boolean>`           | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one. |
+| hide              | `(): Promise<boolean>`           | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one. |
+| toggle            | `(): Promise<boolean>`           | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes. |
+| checkValidity     | `(): boolean`                    | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid. |
+| reportValidity    | `(): boolean`                    | Checks validity. As for a native control, an invalid control emits `invalid` and takes the focus. It shows its own validation messages, not the message of the browser. Returns `true` when the control is valid. |
+| setCustomValidity | `(message: string): void`        | Sets a custom validation message. The control is invalid while the message is not empty. An empty string removes the custom error. |
 
 ### Events
 
@@ -355,6 +359,9 @@ All of the above are skipped while the component is `disabled`.
 | igcClosed  | false       | -        | Emitted after the picker dropdown closes on a user action. |
 | igcInput   | false       | `string` | Emitted when the user changes the color with the canvas, the sliders, the alpha input, a swatch or the eyedropper. |
 | igcChange  | false       | `string` | Emitted when the focus leaves the component after the user changed the color. |
+
+The events of the inner inputs, format select and canvas stay inside the picker. Only the events in this table
+reach the listeners on the picker.
 
 ### Slots
 
@@ -441,14 +448,16 @@ The component suite reuses `createFormAssociatedTestBed`, `runValidationContaine
 7. Color value input - typing a color string, reverting an invalid one and clearing on an empty one.
 8. `igcChange` - emitted once when focus leaves the component and the value has changed.
 9. Color channels, including the alpha input.
-10. Swatches - rendering the grid and applying a swatch.
-11. Copy and eye dropper, in environments with and without platform support.
-12. Open and close - the pointer, keyboard and outside-click paths.
-13. Input mode - the anchor input, its label and its prefix.
-14. Rendering of the picker surface rows, and the direction of the slider tracks in LTR and RTL.
-15. Form association, the touched state, `defaultValue`, the initial format, and validation.
-16. Validation message slots, generated by `runValidationContainerTests`.
-17. External label association and ARIA projection, generated by `runExternalLabelAssociationTests` and
+10. Inner events - the `igcInput` of the alpha input, the color value input and the input anchor, the open and close
+    events of the format select, and the `igcColorPicked` of the canvas do not reach a listener on the picker.
+11. Swatches - rendering the grid and applying a swatch.
+12. Copy and eye dropper, in environments with and without platform support.
+13. Open and close - the pointer, keyboard and outside-click paths.
+14. Input mode - the anchor input, its label and its prefix.
+15. Rendering of the picker surface rows, and the direction of the slider tracks in LTR and RTL.
+16. Form association, the touched state, `defaultValue`, the initial format, and validation.
+17. Validation message slots, generated by `runValidationContainerTests`.
+18. External label association and ARIA projection, generated by `runExternalLabelAssociationTests` and
     `runAriaProjectionTests`.
 
 The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
@@ -486,6 +495,11 @@ The focus after the form checks and the `invalid` event rules come from the form
     text, and follows a change and a removal.
 29. In button mode, the anchor lists the helper text before the host description, also after the first
     render.
+30. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
+    takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
+    `disabled` set does not cancel an earlier call on another element.
 
 ## Assumptions and limitations
 

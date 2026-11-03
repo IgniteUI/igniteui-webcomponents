@@ -29,6 +29,7 @@ import {
   type SlotChangeCallbackParameters,
 } from '#internals/controllers/slot.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
@@ -720,6 +721,20 @@ export default class IgcCarouselComponent extends I18nMixin(
   //#endregion
 
   //#region Public API
+
+  /* alternateName: focusComponent */
+  /** Sets focus on the carousel. */
+  public override focus(options?: FocusOptions): void {
+    super.focus(options);
+    deferFocus(this, options);
+  }
+
+  /* alternateName: blurComponent */
+  /** Removes focus from the carousel. */
+  public override blur(): void {
+    cancelDeferredFocus(this);
+    super.blur();
+  }
 
   /**
    * Resumes playing of the carousel slides.

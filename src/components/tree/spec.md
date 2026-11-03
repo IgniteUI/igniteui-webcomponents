@@ -50,6 +50,7 @@
 |       2 | 2026-10-02 | A delegating item copies the host `aria-label`, `aria-labelledby` and `aria-describedby` |
 |       3 | 2026-10-12 | `items` is empty during server-side rendering                                            |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                                 |
+|       5 | 2026-11-02 | A real click on the checkbox of an item sends no `igcChange` out of the item              |
 
 ## Overview
 
@@ -400,7 +401,8 @@ module with the fixtures, the selectors and the assertion helpers the other thre
 29. `select()` and `deselect()` apply to all items or to the passed ones.
 30. Deleting an item keeps its selection state.
 31. In multiple mode, `selected` is settable, a click on the checkbox toggles the item and emits `igcSelection`
-    with the new selection, and the event can be canceled.
+    with the new selection, and the event can be canceled. A real click on the checkbox sends no `igcChange` to
+    the tree, because the item cancels the click.
 32. <kbd>Shift</kbd> + click selects the range, and in multiple mode does not select the children of the parents
     in it; with no previous selection it selects a single item.
 33. In cascade mode, selecting an item selects its children, and selecting or deselecting all children of a

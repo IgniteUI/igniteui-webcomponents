@@ -13,6 +13,7 @@ import { partMap } from '#internals/part-map.js';
 import { createTimer } from '#internals/timing.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { hasFiles, isPointInsideElement } from '#internals/utils/dom.js';
+import { stopPropagation } from '#internals/utils/events.js';
 import { bindIf, trimmedHtml } from '#internals/utils/lit.js';
 import { formatString } from '#internals/utils/strings.js';
 import { all } from '#themes/chat/themes/input.js';
@@ -253,7 +254,10 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
     }
   }
 
-  private _handleInput({ detail }: CustomEvent<string>): void {
+  private _handleInput(event: CustomEvent<string>): void {
+    event.stopPropagation();
+
+    const { detail } = event;
     this._state.inputValue = detail;
     this._state.emitEvent('igcInputChange', { detail });
   }
@@ -283,8 +287,10 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
                 ),
               })
             )}
-            @igcRemove=${() =>
-              this._state.removeAttachmentWithEvent(attachment)}
+            @igcRemove=${(event: CustomEvent) => {
+              event.stopPropagation();
+              this._state.removeAttachmentWithEvent(attachment);
+            }}
           >
             <igc-icon
               part="attachment-icon"
@@ -308,6 +314,7 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
         rows="1"
         .value=${this._userInputState?.inputValue}
         @igcInput=${this._handleInput}
+        @igcChange=${stopPropagation}
         @keydown=${this._handleKeydown}
         @focus=${this._handleFocusState}
         @blur=${this._handleFocusState}

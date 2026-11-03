@@ -58,6 +58,7 @@
 |       6 | 2026-10-26 | The `aria-controls` of the navigation buttons reaches their native buttons |
 |       7 | 2026-10-29 | The carousel takes the height of its tallest slide; the arrow color tokens reach the navigation buttons |
 |       8 | 2026-10-29 | The navigation buttons have no transition, and the indicator dots transition only their border color; the active slide, the active indicator and its dot no longer set `visibility: visible`; so the carousel hides at the same time as a hidden ancestor |
+|       9 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API                                                                                                                                                      |
 
 ## Overview
 
@@ -290,6 +291,8 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 
 | Method   | Signature                                                                                   | Description                                                      |
 | -------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `focus`  | `(options?: FocusOptions): void`                                                            | Sets focus on the carousel.                                      |
+| `blur`   | `(): void`                                                                                  | Removes focus from the carousel.                                 |
 | `play`   | `(): void`                                                                                  | Resumes the rotation of the slides.                               |
 | `pause`  | `(): void`                                                                                  | Pauses the rotation of the slides.                                |
 | `next`   | `(): Promise<boolean>`                                                                      | Switches to the next slide, runs any animations, and returns whether the operation was successful. |
@@ -442,6 +445,11 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 
 39. The carousel, also the active slide and the active indicator dot, hides at the same time as a hidden ancestor in
     each theme, at rest and after a focus or a hover: no element transitions `visibility` or sets it to `visible`.
+40. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. The call waits for the render after the `slotchange`, which
+    adds the indicators. `blur()`, a later `focus()` on another element and a removal that lasts until the render
+    cancel the call, but a move in the same task keeps it. After the render, `focus()` takes the focus at once and
+    `blur()` removes it. The suite runs with and without `hide-navigation`.
 
 ### Not covered by the suite
 

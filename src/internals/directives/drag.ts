@@ -1,5 +1,6 @@
 import { directive, type PartInfo } from 'lit/async-directive.js';
-import { getRoot } from '../utils/dom.js';
+import { getActiveViewTransition } from '#animations/view-transition.js';
+import { getRoot, isPointInsideElement } from '../utils/dom.js';
 import {
   type Point,
   PointerOperationDirective,
@@ -45,7 +46,8 @@ export interface DraggableOptions extends PointerOperationOptions<DragState> {
   skip?(event: Event): boolean;
   /**
    * A predicate for the elements under the pointer. The first match becomes
-   * `state.element`.
+   * `state.element`, and stays while the pointer is in its box, also where an
+   * ancestor clips it.
    */
   matchTarget?: (element: Element) => boolean;
   /** Runs on a pointer move that stays over the same matched element. */
@@ -184,11 +186,21 @@ class DraggableDirective extends PointerOperationDirective<
 
     const operation = this._operation!;
     const previous = operation.element;
+    const { clientX, clientY } = event;
 
-    operation.element =
-      getRoot(operation.target)
-        .elementsFromPoint(event.clientX, event.clientY)
-        .find(matchTarget) ?? null;
+    // The box check spares a hit test of the whole stack. During a view
+    // transition, the transition layer can take the hit test, so it decides.
+    const stays =
+      previous !== null &&
+      !getActiveViewTransition() &&
+      matchTarget(previous) &&
+      isPointInsideElement(previous, clientX, clientY);
+
+    operation.element = stays
+      ? previous
+      : (getRoot(operation.target)
+          .elementsFromPoint(clientX, clientY)
+          .find(matchTarget) ?? null);
 
     // The first move over a match, also straight from another match, only records it.
     if (operation.element && operation.element === previous) {

@@ -22,6 +22,7 @@ import {
   escapeKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runAriaProjectionTests,
@@ -998,6 +999,121 @@ describe('Color picker', () => {
     });
   });
 
+  describe('Inner events', () => {
+    /**
+     * Records the events of `types` that `inner` sends, and the ones of them
+     * that also reach a listener on the picker.
+     */
+    function trackInnerEvents(inner: Element, ...types: string[]) {
+      const sent: Event[] = [];
+      const leaked: Event[] = [];
+
+      for (const type of types) {
+        inner.addEventListener(type, (event) => sent.push(event));
+        picker.addEventListener(type, (event) => {
+          if (sent.includes(event)) leaked.push(event);
+        });
+      }
+
+      return { sent, leaked };
+    }
+
+    function typeInto(input: IgcInputComponent, value: string): void {
+      simulateInput(input.renderRoot.querySelector('input')!, { value });
+    }
+
+    beforeEach(async () => {
+      picker = await createDefaultColorPicker();
+      picker.value = '#ff0000';
+      picker.open = true;
+      await elementUpdated(picker);
+    });
+
+    it('keeps the igcInput of the alpha input inside', async () => {
+      picker.showAlpha = true;
+      picker.format = 'rgb';
+      await elementUpdated(picker);
+
+      const eventSpy = spy(picker, 'emitEvent');
+      const { sent, leaked } = trackInnerEvents(
+        getAlphaInput(picker),
+        'igcInput'
+      );
+
+      clearAlpha(picker);
+      typeIntoAlpha(picker, '25');
+      await elementUpdated(picker);
+
+      expect(sent).not.to.be.empty;
+      expect(leaked).to.be.empty;
+      expect(eventSpy).calledWith('igcInput', { detail: picker.value });
+    });
+
+    it('keeps the igcInput of the color value input inside', async () => {
+      const input = getColorInput(picker);
+      const { sent, leaked } = trackInnerEvents(input, 'igcInput');
+
+      typeInto(input, '#00ff00');
+      await elementUpdated(picker);
+
+      expect(sent).lengthOf(1);
+      expect(leaked).to.be.empty;
+    });
+
+    it('keeps the igcInput of the input anchor inside', async () => {
+      picker.mode = 'input';
+      await elementUpdated(picker);
+
+      const input = picker.renderRoot.querySelector<IgcInputComponent>(
+        'igc-input[slot="anchor"]'
+      )!;
+      const { sent, leaked } = trackInnerEvents(input, 'igcInput');
+
+      typeInto(input, '#00ff00');
+      await elementUpdated(picker);
+
+      expect(sent).lengthOf(1);
+      expect(leaked).to.be.empty;
+    });
+
+    it('keeps the open and close events of the format select inside', async () => {
+      const select = getFormatSelect(picker);
+      const { sent, leaked } = trackInnerEvents(
+        select,
+        'igcOpening',
+        'igcOpened',
+        'igcClosing',
+        'igcClosed'
+      );
+
+      simulateClick(select.renderRoot.querySelector('igc-input')!);
+      await elementUpdated(select);
+
+      simulateClick(select.items[1]);
+      await elementUpdated(select);
+
+      expect(sent.map(({ type }) => type)).to.deep.equal([
+        'igcOpening',
+        'igcOpened',
+        'igcClosing',
+        'igcClosed',
+      ]);
+      expect(leaked).to.be.empty;
+      expect(picker.format).to.equal('rgb');
+    });
+
+    it('keeps the igcColorPicked of the canvas inside', async () => {
+      const canvas = getCanvas(picker);
+      const { sent, leaked } = trackInnerEvents(canvas, 'igcColorPicked');
+
+      simulateKeyboard(canvas, arrowDown);
+      await elementUpdated(picker);
+
+      expect(sent).lengthOf(1);
+      expect(leaked).to.be.empty;
+    });
+  });
+
   describe('Swatches', () => {
     beforeEach(async () => {
       picker = await createDefaultColorPicker();
@@ -1668,4 +1784,6 @@ describe('Color picker', () => {
       )!,
     ],
   });
+
+  runFocusBeforeRenderTests(html`<igc-color-picker></igc-color-picker>`);
 });

@@ -51,6 +51,7 @@
 |       2 | 2026-09-23 | Remove the default slot, which the calendar does not render |
 |       3 | 2026-10-01 | Descriptor labels; the initial active date is derived before the first render |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                      |
+|       5 | 2026-11-02 | The events of the days view stay inside the calendar.                         |
 
 ## Overview
 
@@ -264,7 +265,8 @@ they define the structure and the parts that the calendar re-exports:
 
 Each view exposes a `focusActiveDate` method and keeps a single tab stop. The days view emits
 `igcActiveDateChange` and `igcRangePreviewDateChange`, and the month and year views emit an `igcChange` carrying the
-activated date; the calendar consumes these internally and surfaces a single public `igcChange`.
+activated date; the calendar consumes these internally and surfaces a single public `igcChange`. The calendar stops
+the view events, so they do not reach the listeners on the calendar.
 
 ### Localization
 
@@ -460,7 +462,7 @@ The groups below mirror the `describe` blocks of those suites.
 27. Multiple selection.
 28. Starting and cancelling a range selection, and starting and completing one.
 29. Emits `igcActiveDateChange` when the active date is selected, and `igcRangePreviewDateChange` during a range
-    preview.
+    preview. Neither event reaches a listener on the calendar.
 30. Switches to the month of the activated navigation button.
 31. Moves focus along when a date outside the rendered month is selected, and keeps it in place otherwise.
 32. Disables dates for every `DateRangeType` - Before, After, Between, Specific, Weekdays and Weekends - including

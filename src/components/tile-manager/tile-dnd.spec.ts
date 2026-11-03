@@ -484,6 +484,35 @@ describe('Tile drag and drop', () => {
       ]);
     });
 
+    it('names the tiles of the manager only while a swap or a restore runs', async () => {
+      const other = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager><igc-tile id="other"></igc-tile></igc-tile-manager>
+      `);
+      const [dragged, target] = [getTile(0), getTile(1)];
+      const tiles = [...tileManager.querySelectorAll(IgcTileComponent.tagName)];
+      const names = () => tiles.map(({ style }) => style.viewTransitionName);
+      const named = tiles.map(({ id }) => `tile-transition-${id}`);
+      const unnamed = tiles.map(() => '');
+
+      simulatePointerDown(dragged);
+      simulateTileDragOver(dragged, getCenterPoint(target));
+      const swapping = [names(), other.tiles[0].style.viewTransitionName];
+
+      await getActiveViewTransition()?.finished;
+      const swapped = names();
+
+      simulateKeyboard(tileManager, escapeKey);
+      const restoring = names();
+
+      await getActiveViewTransition()?.finished;
+
+      expect(swapping).to.eql([named, '']);
+      expect(swapped).to.eql(unnamed);
+      expect(restoring).to.eql(named);
+      expect(names()).to.eql(unnamed);
+      expect(dragged.position).to.equal(0);
+    });
+
     it('fires `igcTileDragCancel` after the start positions are back', async () => {
       const [dragged, target] = [getTile(0), getTile(4)];
       const { x, y } = getCenterPoint(target);

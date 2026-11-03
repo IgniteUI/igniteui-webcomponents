@@ -36,8 +36,8 @@ export function createTileDragGhost(tile: IgcTileComponent): IgcTileComponent {
   // An empty id gives the clone a new one when it connects.
   Object.assign(clone, { id: '', inert: true });
 
-  // A copy must not repeat a view transition name, such as the name of a
-  // tile in a nested manager, or the browser skips the swap transitions.
+  // A copy must not repeat a view transition name, or the browser skips the
+  // swap transitions.
   for (const element of clone.querySelectorAll<HTMLElement>('*')) {
     element.style.viewTransitionName = 'none';
 

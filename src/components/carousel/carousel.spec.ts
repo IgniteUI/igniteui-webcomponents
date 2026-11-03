@@ -21,6 +21,7 @@ import {
   tabKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   finishAnimationsFor,
   getAnimationsFor,
@@ -1890,4 +1891,20 @@ describe('Carousel', () => {
       <igc-carousel-slide>Two</igc-carousel-slide>
     </igc-carousel>
   `);
+
+  runFocusBeforeRenderTests(
+    html`<igc-carousel>
+      <igc-carousel-slide>1</igc-carousel-slide>
+      <igc-carousel-slide>2</igc-carousel-slide>
+    </igc-carousel>`
+  );
+
+  // The first render has no focusable element: the indicators come after the
+  // carousel finds its slides.
+  runFocusBeforeRenderTests(
+    html`<igc-carousel hide-navigation>
+      <igc-carousel-slide>1</igc-carousel-slide>
+      <igc-carousel-slide>2</igc-carousel-slide>
+    </igc-carousel>`
+  );
 });

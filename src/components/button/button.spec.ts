@@ -1,5 +1,6 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
@@ -793,4 +794,6 @@ describe('Button tests', () => {
   runHiddenAncestorTests(html`
     <igc-button><igc-icon slot="prefix"></igc-icon>Click</igc-button>
   `);
+
+  runFocusBeforeRenderTests(html`<igc-button>Label</igc-button>`);
 });

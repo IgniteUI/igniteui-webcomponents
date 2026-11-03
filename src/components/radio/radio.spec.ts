@@ -2,14 +2,12 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
-import {
-  isFocused,
-  isUnderPageLayer,
-} from '#internals/testing/helpers.spec.js';
+import { isUnderPageLayer } from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import {
@@ -154,16 +152,6 @@ describe('Radio Component', () => {
       await elementUpdated(radio);
 
       expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
-    });
-
-    it('should have correct focus states between Light/Shadow DOM', () => {
-      radio.focus();
-      expect(isFocused(radio)).to.be.true;
-      expect(isFocused(input)).to.be.true;
-
-      radio.blur();
-      expect(isFocused(radio)).to.be.false;
-      expect(isFocused(input)).to.be.false;
     });
 
     it('should emit igcChange event when radio is checked', async () => {
@@ -685,4 +673,6 @@ describe('Radio Component', () => {
       <igc-radio value="two" checked>Two</igc-radio>
     </igc-radio-group>
   `);
+
+  runFocusBeforeRenderTests(html`<igc-radio>Label</igc-radio>`);
 });
