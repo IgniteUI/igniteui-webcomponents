@@ -1,7 +1,7 @@
 import { createRef } from 'lit/directives/ref.js';
 import type { StyleInfo } from 'lit/directives/style-map.js';
 import { hasModifiers } from '#internals/controllers/key-bindings.js';
-import { isLTR, setStyles } from '#internals/utils/dom.js';
+import { isLTR, replaceStyles, setStyles } from '#internals/utils/dom.js';
 import { asNumber } from '#internals/utils/math.js';
 import { equal } from '#internals/utils/objects.js';
 import type IgcTabComponent from './tab.js';
@@ -86,6 +86,9 @@ export class TabsHelpers {
   public hasScrollButtons = false;
   public scrollButtonsDisabled = { start: true, end: false };
 
+  /** The height of the height probe at the last check, and whether it was definite. */
+  private _heightCheck = { probe: -1, definite: false };
+
   /** Whether the end of the scroll axis is its larger coordinate. */
   private get _endIsMax(): boolean {
     return isColumn(this._host) || isLTR(this._host);
@@ -102,32 +105,37 @@ export class TabsHelpers {
     const container = this.containerRef.value;
     const probe = this.heightProbeRef.value;
     const column = isColumn(this._host);
-    // The probe is as tall as a column with a definite height, else 0, so that the
-    // panels can grow a column with an auto height. A `max-height` also limits them.
-    const definite = column && probe ? this._getSize(probe) : 0;
-    const limit = definite || (column ? this._getMaxHeight() : 0);
-    // The room of the headers: the width of a row, or the height limit of a column.
-    const room = container && (column ? limit : this._getSize(container));
     // A hidden tab gets no track, so `justify` leaves no gap for it.
     const rendered = headers.filter(
       (header) => header?.checkVisibility() ?? true
     );
-    const next = {
-      '--_tabs-count': String(rendered.length || tabs.length),
-      '--_ig-tabs-width': room === undefined || column ? '' : `${room}px`,
+    const count = String(rendered.length || tabs.length);
+
+    // Hidden tabs measure nothing, so they keep the layout they showed with. Tabs
+    // that never showed get the tab count, so that their tracks exist when they show.
+    if (!container?.checkVisibility()) {
+      this._setStyleProperties({
+        ...this.styleProperties,
+        '--_tabs-count': this.styleProperties['--_tabs-count'] || count,
+      });
+      return;
+    }
+
+    // The probe is as tall as a column with a definite height, else 0, so that the
+    // panels can grow a column with an auto height. A `max-height` also limits them.
+    const definite =
+      column && probe ? this._getDefiniteHeight(container, probe) : 0;
+    const limit = definite || (column ? this._getMaxHeight() : 0);
+    // The room of the headers: the width of a row, or the height limit of a column.
+    const room = column ? limit : this._getSize(container);
+
+    this._setStyleProperties({
+      '--_tabs-count': count,
+      '--_ig-tabs-width': column ? '' : `${room}px`,
       '--_ig-tabs-height': limit ? `${limit}px` : '',
       // Only the limit of a `max-height`: the height probe is in the container.
       'max-height': limit && !definite ? `${limit}px` : '',
-    };
-
-    if (!equal(this.styleProperties, next)) {
-      this.styleProperties = next;
-      this._host.requestUpdate();
-    }
-
-    if (room === undefined) {
-      return;
-    }
+    });
 
     // The tabs alone, because the scroll size includes the scroll buttons. Subpixel
     // sizes, so that the rounding of many headers does not add up.
@@ -140,6 +148,37 @@ export class TabsHelpers {
     this.setScrollPositionState(
       (room > 0 || !column) && tabsSize > room + EDGE_TOLERANCE
     );
+  }
+
+  private _setStyleProperties(next: StyleInfo): void {
+    if (!equal(this.styleProperties, next)) {
+      this.styleProperties = next;
+      this._host.requestUpdate();
+    }
+  }
+
+  /**
+   * The height of the `probe`, else 0 when the parent sizes the tabs from their
+   * content, such as a grid row with an auto height, so that the panels grow them.
+   * Such a parent grows the container with a taller probe. The check runs again when
+   * the height of the probe changes.
+   */
+  private _getDefiniteHeight(
+    container: HTMLElement,
+    probe: HTMLElement
+  ): number {
+    const height = this._getSize(probe);
+
+    if (height && height !== this._heightCheck.probe) {
+      const before = this._getSize(container);
+      const restore = replaceStyles(probe, { 'block-size': `${2 * height}px` });
+      const definite = this._getSize(container) <= before + EDGE_TOLERANCE;
+      restore();
+
+      this._heightCheck = { probe: height, definite };
+    }
+
+    return this._heightCheck.definite ? height : 0;
   }
 
   /**
@@ -249,11 +288,20 @@ export class TabsHelpers {
 
   /** Unlike `Element.scrollIntoView()`, it scrolls only the strip, never the page. */
   public async scrollTabIntoView(tab?: IgcTabComponent): Promise<void> {
-    // Measures after the pending render, such as a new selection, and again after
-    // the render of what it measured, such as the scroll buttons, which move every tab.
+    // Measures after the pending render, such as a new selection, and again after each
+    // render of what it measured, such as a new tab count that brings in the scroll
+    // buttons, which move every tab.
     await this._host.updateComplete;
-    this.updateLayout();
-    await this._host.updateComplete;
+
+    for (let pass = 0; pass < 3; pass++) {
+      this.updateLayout();
+
+      if (!this._host.isUpdatePending) {
+        break;
+      }
+
+      await this._host.updateComplete;
+    }
 
     const container = this.containerRef.value;
     const header = getTabHeader(tab);
@@ -315,7 +363,8 @@ export class TabsHelpers {
     const inner = this.innerRef.value;
     const indicator = this.indicatorRef.value;
 
-    if (!(inner && indicator)) {
+    // Hidden tabs keep the indicator they showed with.
+    if (!(inner?.checkVisibility() && indicator)) {
       return;
     }
 

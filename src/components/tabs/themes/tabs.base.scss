@@ -9,6 +9,13 @@ $column: ":is(#{$columns})";
 $row: ":not(#{$columns})";
 $buttons: var(--scroll-btn-size);
 
+// The tracks of a column: the headers, the indicator and the panels. When the width
+// is short, the headers and the panels grow by the same amount up to their content,
+// so a long label wraps and the panels keep part of the width. The panels also take
+// the rest of the width.
+$header-column: minmax(auto, max-content);
+$panel-column: auto;
+
 // The tracks of the tabs, with filler or button tracks before and after them.
 @function tracks($track, $before: null, $after: $before) {
     @return $before repeat(var(--_tabs-count), $track) $after;
@@ -245,7 +252,7 @@ igc-icon-button::part(base) {
     // As tall as the tabs, or as its content when that is taller. The columns hold
     // the headers, the indicator and the panels.
     [part~='inner'] {
-        grid-template-columns: max-content auto minmax(0, 1fr);
+        grid-template-columns: $header-column max-content $panel-column;
         grid-template-rows: tracks(auto, null, 1fr);
         align-self: flex-start;
         min-height: 100%;
@@ -307,6 +314,6 @@ igc-icon-button::part(base) {
     --_ig-tab-panel-area: 1 / 1 / -1;
 
     [part~='inner'] {
-        grid-template-columns: minmax(0, 1fr) auto max-content;
+        grid-template-columns: $panel-column max-content $header-column;
     }
 }

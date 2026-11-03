@@ -109,8 +109,14 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
   /** The heights of the probes at the last resize, else 0. */
   private readonly _probeHeights = new WeakMap<Element, number>();
 
-  /** The frame request of a column layout, which waits for the next frame. */
+  /** The headers that the observer reported, so that a later report is a change of size. */
+  private readonly _reportedHeaders = new WeakSet<Element>();
+
+  /** The frame request of a layout that waits for the next frame. */
   private _layoutFrame = 0;
+
+  /** Whether the next layout scrolls the selected tab into view. */
+  private _scrollOnLayout = false;
 
   /** The tabs at the last change of the slot. */
   private _knownTabs: IgcTabComponent[] = [];
@@ -284,12 +290,16 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
     let resized = false;
     let moved = false;
     let replaced = false;
+    let headerResized = false;
 
     for (const { target, borderBoxSize } of entries) {
       const [{ inlineSize, blockSize }] = borderBoxSize;
 
       if (target === container) {
         const [width, height] = this._containerSize;
+
+        // Hidden tabs cannot scroll, so the selected tab scrolls into view when they show.
+        this._scrollOnLayout ||= width === 0 && inlineSize > 0;
 
         // The panels also size the container, so a row measures only its width.
         resized ||= !column && inlineSize !== width;
@@ -302,10 +312,15 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
         resized ||=
           column && blockSize !== (this._probeHeights.get(target) ?? 0);
         this._probeHeights.set(target, blockSize);
-      } else {
+      } else if (target.matches(TAB_HEADER)) {
         resized = true;
         // A header that a render replaced reports a zero size on removal.
         replaced ||= !target.isConnected;
+        headerResized ||= this._reportedHeaders.has(target);
+        this._reportedHeaders.add(target);
+      } else {
+        // The direction probe.
+        resized = true;
       }
     }
 
@@ -313,9 +328,12 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
       this._observeHeaders();
     }
 
-    // In a column, the height limit of the panels and the scroll buttons size the
-    // container, which the observer reports as a loop when it happens in this frame.
-    if (resized && column) {
+    // After a header changes size, such as a tab that hides or shows, the refresh can
+    // size the other headers through the tab count and the scroll buttons. In a column,
+    // the height limit of the panels and the scroll buttons also size the container.
+    // The observer reports a loop when that happens in this frame. The first report of
+    // a header comes before any change, so it refreshes at once.
+    if (resized && (column || headerResized)) {
       cancelAnimationFrame(this._layoutFrame);
       this._layoutFrame = requestAnimationFrame(
         () => this.isConnected && this._refreshLayout()
@@ -399,6 +417,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
   private _refreshLayout(): void {
     this._domHelpers.updateLayout();
     this._domHelpers.setIndicator(this._activeTab);
+
+    if (this._scrollOnLayout) {
+      this._scrollOnLayout = false;
+      this._domHelpers.scrollTabIntoView(this._activeTab);
+    }
   }
 
   /**

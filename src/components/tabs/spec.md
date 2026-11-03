@@ -209,13 +209,15 @@ In a column, `alignment` applies along the column: `start` puts the headers at t
 In a column:
 
 - The column is as wide as the widest header, up to the width limit of a header (360px). A longer label wraps. The
-  panel takes the rest of the width.
+  panel takes the rest of the width. When the width is too short for both, the header column and the panel grow by the
+  same amount up to their content, so a long label wraps and the panel keeps part of the width.
 - The indicator is on the side of the headers that faces the panels. In the Bootstrap theme, which has no indicator,
   the selected tab is open on that side.
 - Each header is at least as tall as a header row.
 - Without a height limit, the tabs are as tall as the selected panel or the headers, whichever is taller.
 - A height limit is a `height` or a `max-height` on the tabs, or a height from the parent, for example in a flex or
-  grid layout. The padding and the border of the tabs are not part of the limit. A panel that is taller than the limit scrolls its content. When the headers do not fit, scroll buttons
+  grid layout. A parent that sizes the tabs from their content, such as a grid row with an auto height, sets no limit:
+  the tabs grow with the selected panel, also when its content grows later. The padding and the border of the tabs are not part of the limit. A panel that is taller than the limit scrolls its content. When the headers do not fit, scroll buttons
   above and below them scroll the column, and their arrows point up and down.
 - Only the scroll buttons and the keyboard scroll the headers. The wheel over the headers does not scroll them, so the
   wheel over a panel never moves the headers.
@@ -449,7 +451,10 @@ The groups below mirror the `describe` blocks.
    direction, also when `dir` is on the tabs or on an ancestor.
 10. Selecting a tab outside the visible area scrolls it into view. Under an ancestor `zoom` or `transform`, the strip is
     measured in its own CSS pixels, and a selected tab scrolls into view between the scroll buttons. A hidden tab does not
-    move the strip, neither through the scroll buttons nor when it is selected.
+    move the strip, neither through the scroll buttons nor when it is selected. A tab selected in the initial markup
+    scrolls fully into view, also when the scroll buttons show only after the headers are measured again. A tab
+    selected while the tabs are hidden scrolls into view when they show again. Hidden tabs keep their layout, so they
+    show again with no frame of zero sizes.
 
 ### Composition
 
@@ -508,7 +513,7 @@ The groups below mirror the `describe` blocks.
 28. A click selection is handled once: the `selected` attribute that the tabs reflect does not run it again. An
     application that deselects the tab in the `igcChange` handler leaves no selection.
 29. A change of size of a tab header, also of a header that a change of `href` replaced, moves the selected
-    indicator. So does a change of direction, also on an ancestor.
+    indicator. So does a change of direction, also on an ancestor, in the frame of the change.
 30. The tab headers are painted under an earlier page layer with `z-index: 1`.
 31. An element with `position: fixed` in the selected panel is placed against the viewport.
 32. In a row, the header strip covers only the header row, not the panels.
@@ -535,17 +540,21 @@ The groups below mirror the `describe` blocks.
 39. The headers form a column on the `start` or the `end` side of the panels, in LTR and RTL. The header strip covers
     only the header column.
 40. The column is as wide as the widest header, up to the width limit of a header, also with `justify`. The panel
-    takes the rest of the width.
+    takes the rest of the width. In a narrow column, a long label wraps and the panel keeps part of the width. Tabs
+    that size to their content keep a label on one line.
 41. `alignment` `start`, `center`, `end` and `justify` place the headers along the column.
 42. With an auto height, the panel sizes the tabs. With a set height, the height of the tabs limits the panel, also
-    after a row with a set height changes to a column. The limit goes away with the set height.
+    after a row with a set height changes to a column. The limit goes away with the set height. In a grid or a flex
+    row that sizes the tabs from their content, the tabs grow with the panel, also with content added to it later. A
+    height that the grid or the flex row sets limits the panel. A change of the limit keeps the scroll offset of the
+    selected panel.
 43. A row of tabs in the panel of a column lays out as a row.
 44. The accessibility audit passes on both sides. The headers of a column are painted under an earlier page layer.
 45. When a panel grows, the indicator follows the headers that `center` or `end` alignment moves. With `start`, the
     indicator does not move.
 46. Each header of a column is as tall as a header row.
 47. With `justify`, a hidden tab leaves no gap, in a row and in a column. Tabs in a panel of a `justify` row keep the
-    width limit of a header.
+    width limit of a header. A tab that hides or shows gives no ResizeObserver loop error.
 48. A `max-height` on the tabs is a height limit without their padding and border. A higher `max-height` applies also
     while the limit caps the panel.
 49. A tab that leaves its tabs drops the position.
@@ -557,7 +566,8 @@ The groups below mirror the `describe` blocks.
 51. With a set height, scroll buttons show above and below the headers when the headers do not fit. Their arrows point
     up and down, also in a right-to-left column. The panel stays at the top of the column while the headers scroll.
 52. The scroll buttons scroll the column. A selected tab scrolls into view, and the page does not scroll. A header that
-    gets the focus with `manual` activation scrolls into view.
+    gets the focus with `manual` activation scrolls into view. A tab selected while the tabs are hidden scrolls into
+    view when they show again.
 53. The scroll offset stays in range when tabs are removed or the tabs get taller. The scroll buttons show and hide when
     a header changes height, and hide when the height limit goes away, with no ResizeObserver loop error.
 54. Under an ancestor `zoom`, the column is measured in its own CSS pixels. Changes inside a panel do not make the tabs
@@ -586,6 +596,8 @@ The groups below mirror the `describe` blocks.
 - In a column with a height limit, a panel that is taller than the limit scrolls its content. A row does not change:
   such a panel is cut.
 - The wheel and touch do not scroll the headers of a column. The scroll buttons and the keyboard scroll them.
+- In WebKit, under an ancestor `transform` that scales, the end scroll button of a row shows at the wrong place. This
+  is a fault of WebKit for sticky elements; the strip scrolls correctly.
 - The `label`, `prefix` and `suffix` slots take non-interactive content only. See
   [Prefix and suffix content](#prefix-and-suffix-content).
 - With `activation="auto"`, the arrow keys select a link tab but never follow its link.

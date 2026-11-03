@@ -31,7 +31,9 @@ import {
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
+import { getScaleFactor } from '#internals/utils/dom.js';
 import { preventDefault } from '#internals/utils/events.js';
+import { asNumber } from '#internals/utils/math.js';
 import { configureTheme } from '#theming/config.js';
 import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
 import { styles as fluent } from '../../styles/themes/light/fluent.css.js';
@@ -1291,6 +1293,23 @@ describe('Tabs component', () => {
       );
     });
 
+    it('moves the indicator in the frame that the direction changes in', async () => {
+      const { indicator } = getTabsDOM(element);
+
+      element.select(element.tabs[1]);
+      await elementUpdated(element);
+      await settle();
+
+      const ltr = indicator.style.transform;
+
+      // The observer reports the direction probe in this frame. A refresh that waits
+      // for the next frame comes after the frame callback of the spec.
+      element.parentElement!.dir = 'rtl';
+      await nextFrame();
+
+      expect(indicator.style.transform).to.not.equal(ltr);
+    });
+
     it('follows a change of size of a tab header', async () => {
       const [first] = element.tabs;
 
@@ -1313,6 +1332,19 @@ describe('Tabs component', () => {
       await elementUpdated(first);
       await indicatorFollows(first);
     });
+
+    // Mocha fails the spec on the window error of a ResizeObserver loop.
+    for (const alignment of ['start', 'justify'] as const) {
+      it(`hides and shows a tab with no ResizeObserver loop error (${alignment})`, async () => {
+        element.alignment = alignment;
+        await settle();
+
+        element.tabs[1].hidden = true;
+        await settle();
+        element.tabs[1].hidden = false;
+        await settle();
+      });
+    }
 
     it('paints the header strip behind the header row only', async () => {
       const strip = element.renderRoot
@@ -1704,6 +1736,57 @@ describe('Tabs component', () => {
       );
       expect(getTabsDOM(tabs).selected).to.deep.equal([target]);
       expect(window.scrollY, 'The page was scrolled').to.equal(0);
+    });
+
+    it('reveals a tab selected in the initial markup when the scroll buttons show after the first measure', async () => {
+      // The labels wrap and fit until the tab count renders, so the scroll buttons,
+      // which move every tab, show only after the headers are measured again.
+      const tabs = await fixture<IgcTabsComponent>(html`
+        <igc-tabs style="width: 400px">
+          <igc-tab label="Quarterly revenue report">1</igc-tab>
+          <igc-tab label="Customer satisfaction survey">2</igc-tab>
+          <igc-tab label="Marketing campaign results" selected>3</igc-tab>
+        </igc-tabs>
+      `);
+      const { container } = getTabsDOM(tabs);
+
+      await waitUntil(
+        () => isInView(container, getTabDOM(lastOf(tabs.tabs)!).header),
+        'The initially selected tab is not fully in view'
+      );
+    });
+
+    it('scrolls the selected tab into view when the tabs show again', async () => {
+      const { container } = getTabsDOM(element);
+      const last = element.tabs[17];
+
+      await selectWhileHidden(element, last);
+      await waitUntil(
+        () => isInView(container, getTabDOM(last).header),
+        'The selected tab did not scroll into view'
+      );
+    });
+
+    it('keeps its layout while hidden, so that it shows again without a frame of zero sizes', async () => {
+      const { container, indicator } = getTabsDOM(element);
+      const layout = () => [
+        container.getAttribute('style'),
+        indicator.getAttribute('style'),
+        Boolean(startScrollButton()),
+      ];
+      await nextFrame();
+      await nextFrame();
+
+      const shown = layout();
+
+      element.parentElement!.style.display = 'none';
+      await nextFrame();
+      element.select('9');
+      await elementUpdated(element);
+      await nextFrame();
+      await nextFrame();
+
+      expect(layout()).to.eql(shown);
     });
 
     it('scrolls the previous out of view tab into view', async () => {
@@ -2569,6 +2652,45 @@ describe('Tabs component', () => {
         ]);
       });
 
+      for (const position of ['start', 'end'] as const) {
+        it(`shares a short width between a long label and the panel (${position})`, async () => {
+          const tabs = await fixture<IgcTabsComponent>(html`
+            <igc-tabs header-position=${position} style="width: 360px">
+              <igc-tab
+                label="A label that is much longer than the widest header of a column may be"
+              >
+                The panel has a sentence that is longer than the width of the
+                tabs.
+              </igc-tab>
+              <igc-tab label="B">B</igc-tab>
+            </igc-tabs>
+          `);
+          await settle();
+
+          const { headers, panel } = rects(tabs);
+
+          expect(headers[0].width).to.be.below(260);
+          expect(panel.width).to.be.above(100);
+        });
+      }
+
+      it('keeps a label on one line when the tabs size to their content', async () => {
+        const wrapper = await fixture<HTMLElement>(html`
+          <div style="display: inline-block">
+            <igc-tabs header-position="start">
+              <igc-tab label="A label of a few words">Short</igc-tab>
+              <igc-tab label="B">B</igc-tab>
+            </igc-tabs>
+          </div>
+        `);
+        const tabs = wrapper.querySelector(IgcTabsComponent.tagName)!;
+        await settle();
+
+        const [long, short] = rects(tabs).headers;
+
+        expect(long.height).to.equal(short.height);
+      });
+
       it('grows with the panel when the height is auto, and limits the panel to a set height', async () => {
         const tabs = await fixture<IgcTabsComponent>(html`
           <igc-tabs header-position="start">
@@ -2595,6 +2717,95 @@ describe('Tabs component', () => {
         await withHeightLimit(tabs, '');
 
         expect(rects(tabs).host.height).to.equal(600);
+      });
+
+      for (const [scenario, parent, own, height] of [
+        ['grows with the panel in a grid', 'display: grid', '', 600],
+        [
+          'grows with the panel in a flex row',
+          'display: flex',
+          'height: auto',
+          600,
+        ],
+        [
+          'limits the panel to the height of a grid row',
+          'display: grid; grid-template-rows: 300px',
+          '',
+          300,
+        ],
+        [
+          'limits the panel to the height of a flex row',
+          'display: flex; height: 300px',
+          '',
+          300,
+        ],
+      ] as const) {
+        it(scenario, async () => {
+          const wrapper = await fixture<HTMLElement>(html`
+            <div style=${parent}>
+              <igc-tabs header-position="start" style=${own}>
+                <igc-tab label="One">One</igc-tab>
+                <igc-tab label="Two"
+                  ><div style="height: 600px">Two</div></igc-tab
+                >
+              </igc-tabs>
+            </div>
+          `);
+          const tabs = wrapper.querySelector(IgcTabsComponent.tagName)!;
+          const { body } = getTabDOM(tabs.tabs[1]);
+          const heights = () => [rects(tabs).host.height, body.clientHeight];
+          await settle();
+
+          tabs.select(tabs.tabs[1]);
+          await waitUntil(
+            () => heights().every((each) => each === height),
+            `The tabs and the panel are not ${height}px tall`
+          );
+          await settle();
+
+          expect(heights()).to.eql([height, height]);
+        });
+      }
+
+      it('grows with content added later to the panel in a grid', async () => {
+        const wrapper = await fixture<HTMLElement>(html`
+          <div style="display: grid">
+            <igc-tabs header-position="start">
+              <igc-tab label="One"><div style="height: 50px">One</div></igc-tab>
+              <igc-tab label="Two">Two</igc-tab>
+            </igc-tabs>
+          </div>
+        `);
+        const tabs = wrapper.querySelector(IgcTabsComponent.tagName)!;
+        const content = document.createElement('div');
+        await settle();
+
+        content.style.height = '600px';
+        content.textContent = 'More';
+        tabs.tabs[0].append(content);
+
+        await waitUntil(
+          () => rects(tabs).host.height === 650,
+          'The tabs did not grow with the content of the panel'
+        );
+      });
+
+      it('keeps the scroll offset of the selected panel when the height limit changes', async () => {
+        const tabs = await fixture<IgcTabsComponent>(html`
+          <igc-tabs header-position="start" style="height: 200px">
+            <igc-tab label="One"><div style="height: 600px">One</div></igc-tab>
+            <igc-tab label="Two">Two</igc-tab>
+          </igc-tabs>
+        `);
+        const { body } = getTabDOM(tabs.tabs[0]);
+        await withHeightLimit(tabs, '200px');
+
+        body.scrollTop = 300;
+        tabs.style.height = '210px';
+        await withHeightLimit(tabs, '210px');
+        await settle();
+
+        expect(body.scrollTop).to.equal(300);
       });
 
       it('limits the panel when a row with a set height changes to a column', async () => {
@@ -2988,6 +3199,13 @@ describe('Tabs component', () => {
         await inView(last);
 
         expect(document.scrollingElement!.scrollTop).to.equal(0);
+      });
+
+      it('scrolls the selected tab into view when the tabs show again', async () => {
+        const last = element.tabs[19];
+
+        await selectWhileHidden(element, last);
+        await inView(last);
       });
 
       it('scrolls a header focused with `manual` activation into view', async () => {
@@ -3413,18 +3631,38 @@ function indicatorOnHeader(
   }, `The indicator is not on ${tab.label}`);
 }
 
-/** Whether `header` shows between the scroll buttons of a left-to-right row. */
+/**
+ * Whether `header` shows between the scroll buttons of a row: in the strip, clear of
+ * the scroll padding that the buttons cover. Not from the rectangles of the buttons,
+ * because WebKit places a sticky end button wrong under an ancestor `scale()`.
+ */
 function isBetweenScrollButtons(
   tabs: IgcTabsComponent,
   header: HTMLElement
 ): boolean {
-  const button = (side: 'start' | 'end') =>
-    tabs.renderRoot
-      .querySelector(`[part="${side}-scroll-button"]`)!
-      .getBoundingClientRect();
+  const { container } = getTabsDOM(tabs);
+  const strip = container.getBoundingClientRect();
+  const padding =
+    asNumber(getComputedStyle(container).scrollPaddingInlineStart) /
+    getScaleFactor(container).x;
   const { left, right } = header.getBoundingClientRect();
 
-  return left >= button('start').right - 1 && right <= button('end').left + 1;
+  return left >= strip.left + padding - 1 && right <= strip.right - padding + 1;
+}
+
+/** Selects `tab` while a `display: none` parent hides the tabs, then shows them. */
+async function selectWhileHidden(
+  tabs: IgcTabsComponent,
+  tab: IgcTabComponent
+): Promise<void> {
+  const parent = tabs.parentElement!;
+
+  parent.style.display = 'none';
+  await nextFrame();
+  tabs.select(tab);
+  await elementUpdated(tabs);
+  await nextFrame();
+  parent.style.display = '';
 }
 
 function getTabsDOM(tabs: IgcTabsComponent) {
