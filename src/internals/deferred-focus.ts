@@ -24,20 +24,55 @@ function clearRequest(): void {
 }
 
 /**
- * Returns the document and each shadow root around its focused element. A
+ * Returns the document of `host`, each same-origin document that holds it in a
+ * frame, and each shadow root around the focused element of these documents. A
  * `focusin` does not leave the shadow root that holds both the old and the new
- * focus, so each of these roots needs a listener.
+ * focus, or the document of a frame, so each of these roots needs a listener.
  */
-function getFocusRoots(doc: Document): FocusRoot[] {
-  const roots: FocusRoot[] = [doc];
-  let root = getDeepActiveElement(doc)?.getRootNode();
+function getFocusRoots(host: Element): FocusRoot[] {
+  const roots: FocusRoot[] = [];
 
-  while (root instanceof ShadowRoot) {
-    roots.push(root);
-    root = root.host.getRootNode();
+  for (
+    let doc: Document | undefined = host.ownerDocument;
+    doc;
+    doc = doc.defaultView?.frameElement?.ownerDocument
+  ) {
+    roots.push(doc);
+    let root = getDeepActiveElement(doc)?.getRootNode();
+
+    while (root?.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+      roots.push(root as ShadowRoot);
+      root = (root as ShadowRoot).host.getRootNode();
+    }
   }
 
   return roots;
+}
+
+/**
+ * Returns the focused element, from the top same-origin document of `doc` down
+ * through open shadow roots and same-origin frames. A move into a frame or into
+ * the shadow root of the focused host sends no `focusin` to the roots above.
+ */
+function getFocusedElement(doc: Document): Element | null {
+  let top = doc;
+
+  while (top.defaultView?.frameElement) {
+    top = top.defaultView.frameElement.ownerDocument;
+  }
+
+  let active = top.activeElement;
+  let inner = active;
+
+  while (inner) {
+    active = inner;
+    inner =
+      active.shadowRoot?.activeElement ??
+      (active as HTMLIFrameElement).contentDocument?.activeElement ??
+      null;
+  }
+
+  return active;
 }
 
 /**
@@ -59,7 +94,8 @@ export function deferFocus(
   }
 
   clearRequest();
-  const request = { host, roots: getFocusRoots(host.ownerDocument) };
+  const request = { host, roots: getFocusRoots(host) };
+  const focused = getFocusedElement(host.ownerDocument);
   pending = request;
 
   for (const root of request.roots) {
@@ -79,9 +115,16 @@ export function deferFocus(
     }
 
     clearRequest();
+    const current = getFocusedElement(host.ownerDocument);
 
-    // A `shouldUpdate()` that returns `false` skips the render.
-    if (host.hasUpdated) {
+    // A `shouldUpdate()` that returns `false` skips the render. A blur moves
+    // the focus to a body and does not cancel.
+    if (
+      host.hasUpdated &&
+      (current === focused ||
+        !current ||
+        current === current.ownerDocument.body)
+    ) {
       host.focus(options);
     }
   };

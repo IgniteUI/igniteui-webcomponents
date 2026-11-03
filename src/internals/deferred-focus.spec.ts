@@ -68,6 +68,16 @@ const twoInputsTag = unsafeStatic(
   )
 );
 
+const nestedTag = unsafeStatic(
+  defineCE(
+    class extends LitElement {
+      protected override render() {
+        return staticHtml`<button></button><${twoInputsTag}></${twoInputsTag}>`;
+      }
+    }
+  )
+);
+
 describe('Deferred focus', () => {
   let container: HTMLElement;
 
@@ -229,6 +239,122 @@ describe('Deferred focus', () => {
     await nextFrame();
 
     expect(doc.activeElement).to.equal(button);
+  });
+
+  // The frame parses this shadow root, so it belongs to the window of the frame,
+  // and an `instanceof` check against this window fails for it.
+  it('cancels the request on a focus change inside a shadow root of a frame', async () => {
+    const frame = document.createElement('iframe');
+    container.append(frame);
+    const doc = frame.contentDocument!;
+    doc.body.setHTMLUnsafe(
+      '<div><template shadowrootmode="open"><input><input></template></div>'
+    );
+    const root = doc.body.firstElementChild!.shadowRoot!;
+    const [first, second] = root.querySelectorAll('input');
+    first.focus();
+    const element = document.createElement(tagName) as DeferredFocusTest;
+    doc.body.append(element);
+
+    element.focus();
+    second.focus();
+    await elementUpdated(element);
+    await nextFrame();
+
+    expect(element.matches(':focus-within')).to.be.false;
+    expect(root.activeElement).to.equal(second);
+  });
+
+  it('cancels the request of a host in a frame on a focus change in the page', async () => {
+    const frame = document.createElement('iframe');
+    const button = document.createElement('button');
+    container.append(frame, button);
+    const element = document.createElement(tagName) as DeferredFocusTest;
+    frame.contentDocument!.body.append(element);
+
+    element.focus();
+    button.focus();
+    await elementUpdated(element);
+    await nextFrame();
+
+    expect(document.activeElement).to.equal(button);
+  });
+
+  // A move into a frame sends no `focusin` to the document of the page.
+  it('cancels the request when the focus moves into a frame', async () => {
+    const frame = document.createElement('iframe');
+    container.append(frame);
+    const doc = frame.contentDocument!;
+    const input = doc.createElement('input');
+    doc.body.append(input);
+    const element = create();
+
+    element.focus();
+    input.focus();
+    await elementUpdated(element);
+    await nextFrame();
+
+    expect(element.matches(':focus-within')).to.be.false;
+    expect(doc.activeElement).to.equal(input);
+  });
+
+  // The `focusin` of such a move stops at the shadow root of the host.
+  it('cancels the request when the focus moves into the shadow root of the focused host', async () => {
+    const other = document.createElement('div');
+    const button = document.createElement('button');
+    other.tabIndex = 0;
+    other.attachShadow({ mode: 'open' }).append(button);
+    container.append(other);
+    other.focus();
+    const element = create();
+
+    element.focus();
+    button.focus();
+    await elementUpdated(element);
+    await nextFrame();
+
+    expect(element.matches(':focus-within')).to.be.false;
+    expect(other.shadowRoot!.activeElement).to.equal(button);
+  });
+
+  it('cancels the request when an element of an outer shadow root takes the focus and loses it', async () => {
+    const outer = await fixture<LitElement>(
+      staticHtml`<${nestedTag}></${nestedTag}>`
+    );
+    const button = outer.shadowRoot!.querySelector('button')!;
+    const inner = outer.shadowRoot!.lastElementChild as LitElement;
+    await inner.updateComplete;
+    inner.shadowRoot!.querySelector('input')!.focus();
+    const element = create();
+
+    element.focus();
+    button.focus();
+    button.blur();
+    await elementUpdated(element);
+    await nextFrame();
+
+    expect(element.matches(':focus-within')).to.be.false;
+  });
+
+  it('cancels the request of a host in a frame when the focus leaves and comes back in a shadow root of the page', async () => {
+    const other = await fixture<LitElement>(
+      staticHtml`<${twoInputsTag}></${twoInputsTag}>`
+    );
+    const [first, second] = other.renderRoot.querySelectorAll('input');
+    first.focus();
+    const frame = document.createElement('iframe');
+    container.append(frame);
+    const element = document.createElement(tagName) as DeferredFocusTest;
+    frame.contentDocument!.body.append(element);
+
+    element.focus();
+    second.focus();
+    first.focus();
+    await elementUpdated(element);
+    await nextFrame();
+
+    expect(document.activeElement).to.equal(other);
+    expect(other.shadowRoot!.activeElement).to.equal(first);
   });
 
   it('repeats the call after a `blur()` of the element that had the focus', async () => {
