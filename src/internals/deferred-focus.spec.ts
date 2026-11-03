@@ -40,6 +40,16 @@ const noRenderTagName = defineCE(
   }
 );
 
+const twoInputsTag = unsafeStatic(
+  defineCE(
+    class extends LitElement {
+      protected override render() {
+        return html`<input /><input />`;
+      }
+    }
+  )
+);
+
 describe('Deferred focus', () => {
   let container: HTMLElement;
 
@@ -142,6 +152,37 @@ describe('Deferred focus', () => {
 
     expect(first.matches(':focus-within')).to.be.false;
     expect(second.matches(':focus-within')).to.be.true;
+  });
+
+  // The `focusin` of such a change stops at the shadow root.
+  it('does not repeat the call after a focus change inside one shadow root', async () => {
+    const other = await fixture<LitElement>(
+      staticHtml`<${twoInputsTag}></${twoInputsTag}>`
+    );
+    const [first, second] = other.renderRoot.querySelectorAll('input');
+    first.focus();
+    const element = create();
+
+    element.focus();
+    second.focus();
+    await elementUpdated(element);
+    await nextFrame();
+
+    expect(element.matches(':focus-within')).to.be.false;
+    expect(other.shadowRoot!.activeElement).to.equal(second);
+  });
+
+  it('repeats the call after a `blur()` of the element that had the focus', async () => {
+    const button = document.createElement('button');
+    container.append(button);
+    button.focus();
+    const element = create();
+
+    element.focus();
+    button.blur();
+    await elementUpdated(element);
+
+    expect(element.matches(':focus-within')).to.be.true;
   });
 
   it('keeps the request when another host cancels', async () => {

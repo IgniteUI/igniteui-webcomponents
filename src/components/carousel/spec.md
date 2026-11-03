@@ -445,11 +445,11 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 
 39. The carousel, also the active slide and the active indicator dot, hides at the same time as a hidden ancestor in
     each theme, at rest and after a focus or a hover: no element transitions `visibility` or sets it to `visible`.
-40. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects moves
-    the focus into the carousel, to a navigation button, because the indicators render after the carousel finds its
-    slides. `blur()`, a later `focus()` on another element and a removal that lasts until the render cancel the
-    call, but a move in the same task keeps it. After the render, `focus()` takes the focus at once and `blur()`
-    removes it.
+40. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. The call waits for the render after the `slotchange`, which
+    adds the indicators. `blur()`, a later `focus()` on another element and a removal that lasts until the render
+    cancel the call, but a move in the same task keeps it. After the render, `focus()` takes the focus at once and
+    `blur()` removes it. The suite runs with and without `hide-navigation`.
 
 ### Not covered by the suite
 

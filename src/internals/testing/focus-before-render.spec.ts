@@ -18,13 +18,8 @@ async function settle(element: HTMLElement): Promise<void> {
 /**
  * Tests that the first element of `template` takes the focus from a `focus()`
  * call between its connection and its first render, as a native control does.
- * With `sameElement: false`, the first test checks only that the focus is in
- * the host, for a host whose first focusable element changes after the render.
  */
-export function runFocusBeforeRenderTests(
-  template: TemplateResult,
-  { sameElement = true } = {}
-): void {
+export function runFocusBeforeRenderTests(template: TemplateResult): void {
   describe('Focus before the first render', () => {
     let container: HTMLElement;
 
@@ -51,10 +46,7 @@ export function runFocusBeforeRenderTests(
       expect(element.matches(':focus-within')).to.be.false;
 
       element.focus();
-
-      if (sameElement) {
-        expect(getDeepActiveElement()).to.equal(deferred);
-      }
+      expect(getDeepActiveElement()).to.equal(deferred);
     });
 
     it('does not take the focus when `blur()` follows `focus()`', async () => {
