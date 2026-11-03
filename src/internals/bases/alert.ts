@@ -88,17 +88,9 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   /** Whether the pointer or the keyboard focus is in the component. */
   private readonly _holds = new Set<'pointer' | 'focus'>();
 
-  /** Whether `hide()` fades the component out. */
-  private _closing = false;
-
   private readonly _toggleController = addToggleController(this, {
     transition: async (open, signal) => {
       if (open) {
-        // During the fade-out, the popover is still open.
-        if (!this.open && !this._showPopover()) {
-          return false;
-        }
-
         this.open = true;
         const state = await this._player.playExclusive(fadeIn(), signal);
 
@@ -109,10 +101,6 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
         return state;
       }
 
-      this._closing = true;
-      signal.addEventListener('abort', () => (this._closing = false), {
-        once: true,
-      });
       this._autoHideTimer.stop();
       const state = await this._player.playExclusive(fadeOut(), signal);
 
@@ -121,7 +109,6 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
         return false;
       }
 
-      this._closing = false;
       this._hidePopover();
       this.open = false;
       return state;
@@ -130,12 +117,14 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
 
   /** Whether the component is open and does not fade out. */
   private get _isShown(): boolean {
-    return this.open && !this._closing;
+    return this.open && !this._toggleController.closing;
   }
 
   /**
    * Whether the component is open.
    *
+   * Setting it skips the fade. Use the `show()`, `hide()` and `toggle()`
+   * methods for a fade.
    * @attr open
    * @default false
    */
@@ -364,6 +353,12 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   public async show(): Promise<boolean> {
     if (this._isShown) {
       this._setAutoHideTimer();
+      return false;
+    }
+
+    // During the fade-out, the popover is still open. A refusal before the
+    // controller leaves no request in flight.
+    if (!this.open && !this._showPopover()) {
       return false;
     }
 

@@ -199,7 +199,7 @@ standard button keys. While the focus is on the action, the snackbar stays open.
 
 | Property    | Attribute    | Reflected | Type                       | Default    | Description                                                 |
 | ----------- | ------------ | --------- | -------------------------- | ---------- | ------------------------------------------------------------- |
-| open        | open         | Yes       | `boolean`                  | false      | Whether the component is open.                            |
+| open        | open         | Yes       | `boolean`                  | false      | Whether the component is open. Setting it skips the fade. Use the `show()`, `hide()` and `toggle()` methods for a fade. |
 | actionText  | action-text  | No        | `string \| undefined`      | -          | The text of the action button.                              |
 | displayTime | display-time | No        | `number`                   | 4000       | The time in milliseconds that the component stays visible. The time stops while the pointer or the keyboard focus is in the component, and starts again from the full value when both leave. A value of 0 or less keeps the component open.  |
 | keepOpen    | keep-open    | Yes       | `boolean`                  | false      | Whether the component stays open after the `displayTime` is over.    |

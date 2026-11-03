@@ -210,6 +210,24 @@ export function runAlertTests(tagName: string): void {
         expect(alert.open).to.be.false;
         expect(isPopoverOpen(alert)).to.be.false;
       });
+    });
+
+    describe('changes of `open` during the fade-out', () => {
+      beforeEach(async () => {
+        clock = useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        ({
+          alerts: [alert],
+        } = await createAlerts(tagName));
+        alert.displayTime = 400;
+
+        const showing = alert.show();
+        finishAnimationsFor(alert);
+        await showing;
+      });
+
+      afterEach(() => {
+        clock.restore();
+      });
 
       it('keeps the component open when `open` is set to `false` and then to `true`', async () => {
         const hiding = alert.hide();

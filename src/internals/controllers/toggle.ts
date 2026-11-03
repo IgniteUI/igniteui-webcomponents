@@ -34,6 +34,8 @@ type ToggleHost = LitElement & {
  *
  * The signal aborts when a newer request or a direct change of `open` takes
  * over. The transition then stops its animations and changes no more state.
+ * A transition that refuses without a change of `open` stays the request in
+ * flight until its promise settles.
  */
 type ToggleTransitionFunction = (
   open: boolean,
@@ -93,12 +95,10 @@ class ToggleController {
     const detail = this._options.detail?.call(host);
 
     // Omit the falsy keys, so `emitEvent` applies its own defaults.
-    return (
-      host.emitEvent?.(name, {
-        ...(cancelable && { cancelable }),
-        ...(detail !== undefined && { detail }),
-      }) ?? true
-    );
+    return host.emitEvent!(name, {
+      ...(cancelable && { cancelable }),
+      ...(detail !== undefined && { detail }),
+    });
   }
 
   /** Ends the operation in flight, if any, and starts a new generation. */
@@ -166,6 +166,11 @@ class ToggleController {
    * The methods below are not `async`. An `async` wrapper adds microtask
    * hops, which shift the timing of caller code against `updateComplete`.
    */
+
+  /** Whether a `hide()` is in flight. */
+  public get closing(): boolean {
+    return this._pending === false;
+  }
 
   /**
    * Opens the host, and sends `igcOpening` and `igcOpened` when `emitEvents`

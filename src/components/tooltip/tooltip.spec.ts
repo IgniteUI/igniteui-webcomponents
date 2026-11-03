@@ -1064,6 +1064,12 @@ describe('Tooltip', () => {
       clock.restore();
     });
 
+    /** Enters the anchor and waits half the show delay. */
+    async function queueShow(): Promise<void> {
+      simulatePointerEnter(anchor);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY / 2);
+    }
+
     /** Shows the tooltip from the anchor, then leaves it halfway into the hide delay. */
     async function queueHide(): Promise<void> {
       simulatePointerEnter(anchor);
@@ -1194,8 +1200,7 @@ describe('Tooltip', () => {
       const opened = spy();
       tooltip.addEventListener('igcOpened', opened);
 
-      simulatePointerEnter(anchor);
-      await clock.tickAsync(DEFAULT_SHOW_DELAY / 2);
+      await queueShow();
       tooltip.open = true;
       tooltip.open = false;
 
@@ -1206,12 +1211,85 @@ describe('Tooltip', () => {
       expect(opened).not.called;
     });
 
+    it('is not inert when `open` is set to `false` and then to `true` during the show animation of a queued hide', async () => {
+      simulatePointerEnter(anchor);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      simulatePointerLeave(anchor);
+
+      tooltip.open = false;
+      tooltip.open = true;
+      await showComplete();
+
+      expect(tooltip.open).to.be.true;
+      expect(tooltip.inert).to.be.false;
+    });
+
+    it('stays open when the pointer leaves the anchor during the show animation and enters the tooltip', async () => {
+      simulatePointerEnter(anchor);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      simulatePointerLeave(anchor);
+
+      expect(getAnimationsFor(tooltip.shadowRoot!)).to.be.empty;
+      expect(tooltip.inert).to.be.false;
+
+      simulatePointerEnter(tooltip);
+      await clock.tickAsync(DEFAULT_HIDE_DELAY);
+      await hideComplete();
+
+      expect(tooltip.open).to.be.true;
+    });
+
+    it('is not inert when the pointer leaves and enters the anchor again during the show animation', async () => {
+      simulatePointerEnter(anchor);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      simulatePointerLeave(anchor);
+      simulatePointerEnter(anchor);
+
+      await clock.tickAsync(DEFAULT_HIDE_DELAY);
+      await showComplete();
+
+      expect(tooltip.open).to.be.true;
+      expect(tooltip.inert).to.be.false;
+    });
+
+    it('ends a queued show when an `igcOpening` handler sets `open`', async () => {
+      const opened = spy();
+      tooltip.addEventListener('igcOpening', () => (tooltip.open = true), {
+        once: true,
+      });
+      tooltip.addEventListener('igcOpened', opened);
+
+      simulatePointerEnter(anchor);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+
+      expect(getAnimationsFor(tooltip.shadowRoot!)).to.be.empty;
+      expect(tooltip.inert).to.be.false;
+      expect(tooltip.open).to.be.true;
+      expect(opened).not.called;
+    });
+
+    it('closes when `open` is set to `undefined`', async () => {
+      tooltip.open = true;
+      await elementUpdated(tooltip);
+
+      tooltip.open = undefined as unknown as boolean;
+      await elementUpdated(tooltip);
+
+      expect(tooltip.open).to.be.false;
+    });
+
+    it('keeps an `inert` that the application sets when a show trigger fires', async () => {
+      tooltip.inert = true;
+      simulatePointerEnter(anchor);
+
+      expect(tooltip.inert).to.be.true;
+    });
+
     it('opens after the show delay when `open` is set to its current value', async () => {
       const opened = spy();
       tooltip.addEventListener('igcOpened', opened);
 
-      simulatePointerEnter(anchor);
-      await clock.tickAsync(DEFAULT_SHOW_DELAY / 2);
+      await queueShow();
       tooltip.open = false;
 
       await clock.tickAsync(DEFAULT_SHOW_DELAY);
@@ -1226,8 +1304,7 @@ describe('Tooltip', () => {
       const opened = spy();
       tooltip.addEventListener('igcOpened', opened);
 
-      simulatePointerEnter(anchor);
-      await clock.tickAsync(DEFAULT_SHOW_DELAY / 2);
+      await queueShow();
       tooltip.open = true;
       await clock.tickAsync(DEFAULT_SHOW_DELAY);
 

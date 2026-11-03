@@ -130,6 +130,7 @@ export default class IgcTooltipComponent extends I18nMixin(
   /** A commit that finishes with a stale id has been superseded. */
   private _transitionId = 0;
 
+  /** Whether a commit animates. The application can also set `inert`. */
   private _animating = false;
 
   /**
@@ -181,9 +182,11 @@ export default class IgcTooltipComponent extends I18nMixin(
    */
   @property({ type: Boolean, reflect: true })
   public set open(value: boolean) {
+    const state = Boolean(value);
+
     // Only a change ends a queued or running transition.
-    if (value !== this.open) {
-      this._cancelTransition(value);
+    if (state !== this.open) {
+      this._cancelTransition(state);
     }
   }
 
@@ -359,20 +362,21 @@ export default class IgcTooltipComponent extends I18nMixin(
   }
 
   /**
-   * Cancels the queued or running transition and resolves a delayed one with
-   * `false`. The caller settles the state. Returns whether it was animating.
+   * Cancels the queued or running transition, resolves a delayed one with
+   * `false` and stops its animation. The caller settles the state.
    */
-  private _abortTransition(): boolean {
-    const wasAnimating = this._animating;
-
+  private _abortTransition(): void {
     this._transitionId++;
-    this._animating = false;
 
     clearTimeout(this._pending?.timer);
     this._pending?.resolve(false);
     this._pending = undefined;
 
-    return wasAnimating;
+    if (this._animating) {
+      this._animating = false;
+      this._player.cancelAll();
+      this.inert = false;
+    }
   }
 
   /** Commits `open` without ending a transition. */
@@ -382,26 +386,17 @@ export default class IgcTooltipComponent extends I18nMixin(
     this.requestUpdate('open', previous);
   }
 
-  /** Lands the tooltip on `state` after its transition was aborted. */
-  private _settleState(state: boolean, wasAnimating: boolean): void {
-    this._requestedState = state;
-
-    if (wasAnimating) {
-      this._player.cancelAll();
-      this.inert = false;
-    }
-
-    if (this.open !== state) {
-      this._commitOpen(state);
-    }
-  }
-
   /**
    * Drops a queued or running transition and settles on `state`, by default
    * the committed state.
    */
   private _cancelTransition(state = this.open): void {
-    this._settleState(state, this._abortTransition());
+    this._abortTransition();
+    this._requestedState = state;
+
+    if (this.open !== state) {
+      this._commitOpen(state);
+    }
   }
 
   /** Animates to `show`. Gives `false` when a newer transition supersedes it. */
@@ -448,22 +443,29 @@ export default class IgcTooltipComponent extends I18nMixin(
       return false;
     }
 
-    const wasAnimating = this._abortTransition();
+    // A queued transition only delays a state that the tooltip already has.
+    if (show === this.open && this._pending) {
+      this._cancelTransition(show);
+      return false;
+    }
+
+    this._abortTransition();
     this._requestedState = show;
 
-    // A superseded transition that never animated leaves the tooltip already
-    // in the requested state.
-    if (show === this.open && !wasAnimating) {
+    const id = this._transitionId;
+    const allowed =
+      !withEvents || this._emitEvent(show ? 'igcOpening' : 'igcClosing');
+
+    // A handler that changed `open` took over.
+    if (id !== this._transitionId) {
       return false;
     }
 
     // Vetoed. The first guard proves the state was `!show`.
-    if (withEvents && !this._emitEvent(show ? 'igcOpening' : 'igcClosing')) {
-      this._settleState(!show, wasAnimating);
+    if (!allowed) {
+      this._cancelTransition(!show);
       return false;
     }
-
-    const id = this._transitionId;
 
     if (!withDelay) {
       return this._commitTransition(show, withEvents, id);
