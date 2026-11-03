@@ -57,6 +57,7 @@
 |       9 | 2026-10-21 | API descriptions aligned with the JSDoc.           |
 |      10 | 2026-10-23 | The color picker makes a stacking context, so the z-index of the focus ring of the anchor does not compete with the layers of the page |
 |      11 | 2026-11-02 | The events of the inner inputs, format select and canvas stay inside the picker |
+|      12 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
 
 ## Overview
 
@@ -337,14 +338,16 @@ All of the above are skipped while the component is `disabled`.
 
 ### Methods
 
-| Name              | Type signature            | Description                                                             |
-| ----------------- | ------------------------- | ----------------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`    | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one.                                                    |
-| hide              | `(): Promise<boolean>`    | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                    |
-| toggle            | `(): Promise<boolean>`    | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes.                                |
-| checkValidity     | `(): boolean`             | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid.        |
-| reportValidity    | `(): boolean`             | Checks validity. As for a native control, an invalid control emits `invalid` and takes the focus. It shows its own validation messages, not the message of the browser. Returns `true` when the control is valid. |
-| setCustomValidity | `(message: string): void` | Sets a custom validation message. The control is invalid while the message is not empty. An empty string removes the custom error.            |
+| Name              | Type signature                   | Description                                                             |
+| ----------------- | -------------------------------- | ----------------------------------------------------------------------- |
+| focus             | `(options?: FocusOptions): void` | Sets focus on the color picker.                                         |
+| blur              | `(): void`                       | Removes focus from the color picker.                                    |
+| show              | `(): Promise<boolean>`           | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one. |
+| hide              | `(): Promise<boolean>`           | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one. |
+| toggle            | `(): Promise<boolean>`           | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes. |
+| checkValidity     | `(): boolean`                    | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid. |
+| reportValidity    | `(): boolean`                    | Checks validity. As for a native control, an invalid control emits `invalid` and takes the focus. It shows its own validation messages, not the message of the browser. Returns `true` when the control is valid. |
+| setCustomValidity | `(message: string): void`        | Sets a custom validation message. The control is invalid while the message is not empty. An empty string removes the custom error. |
 
 ### Events
 
@@ -492,6 +495,11 @@ The focus after the form checks and the `invalid` event rules come from the form
     text, and follows a change and a removal.
 29. In button mode, the anchor lists the helper text before the host description, also after the first
     render.
+30. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
+    takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
+    `disabled` set does not cancel an earlier call on another element.
 
 ## Assumptions and limitations
 

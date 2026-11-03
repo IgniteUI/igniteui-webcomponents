@@ -46,6 +46,7 @@
 |       2 | 2026-10-01 | Delegate the focus                                                      |
 |       3 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                |
+|       5 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
 
 ## Overview
 
@@ -126,8 +127,9 @@ not intercept the activation keys.
 #### Focus
 
 The chip delegates the focus to its action control, so `focus()` and `blur()` work on the host, and the host
-matches `:focus` while the action control has the focus. A disabled chip takes no focus. After a removal, the chip
-that had the focus is gone, so the application moves the focus, for example to the next chip with `focus()`.
+matches `:focus` while the action control has the focus. A disabled chip takes no focus. A `focus()` call before
+the first render applies after the render. After a removal, the chip that had the focus is gone, so the application
+moves the focus, for example to the next chip with `focus()`.
 
 #### The content slots
 
@@ -178,7 +180,10 @@ properties. Without an explicit `locale`, it takes its own `lang`, else the loca
 
 ### Methods
 
-None applicable.
+| Name  | Type signature                   | Description                  |
+| ----- | -------------------------------- | ---------------------------- |
+| focus | `(options?: FocusOptions): void` | Sets focus on the chip.      |
+| blur  | `(): void`                       | Removes focus from the chip. |
 
 ### Events
 
@@ -253,6 +258,11 @@ The detail of `igcSelect` is the new `selected` state of the chip.
 
 17. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
     target and follow a change, and an axe audit passes with a host label.
+18. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
+    takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
+    `disabled` set does not cancel an earlier call on another element.
 
 ### Not covered by the suite
 

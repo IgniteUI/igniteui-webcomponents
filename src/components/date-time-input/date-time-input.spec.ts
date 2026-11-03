@@ -17,6 +17,7 @@ import {
 import { isValidDate } from '#internals/date/converters.js';
 import { CalendarDay, toCalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
@@ -1716,6 +1717,10 @@ describe('Date Time Input component', () => {
     getNativeInput: (host) =>
       (host as IgcDateTimeInputComponent).renderRoot.querySelector('input')!,
   });
+
+  runFocusBeforeRenderTests(
+    html`<igc-date-time-input label="Label"></igc-date-time-input>`
+  );
 });
 
 function checkDates(a: Date, b: Date) {

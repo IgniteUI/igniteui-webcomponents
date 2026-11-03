@@ -8,6 +8,7 @@ import {
 import type { TemplateResult } from 'lit';
 import { spy, stub } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
@@ -836,4 +837,6 @@ describe('Textarea component', () => {
   });
 
   runHiddenAncestorTests(html`<igc-textarea label="Label"></igc-textarea>`);
+
+  runFocusBeforeRenderTests(html`<igc-textarea label="Label"></igc-textarea>`);
 });

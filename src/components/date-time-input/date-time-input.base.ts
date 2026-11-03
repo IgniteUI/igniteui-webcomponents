@@ -17,6 +17,7 @@ import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { convertToDate } from '#internals/date/converters.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import {
   formatDisplayDate,
   getLocaleDateTimeFormats,
@@ -561,11 +562,13 @@ export abstract class IgcDateTimeInputBaseComponent<
   /** Sets focus on the control. */
   public override focus(options?: FocusOptions): void {
     this._input?.focus(options);
+    deferFocus(this, options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the control. */
   public override blur(): void {
+    cancelDeferredFocus(this);
     this._input?.blur();
   }
 

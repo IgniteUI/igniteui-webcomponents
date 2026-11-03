@@ -13,6 +13,7 @@ import {
   setSlots,
 } from '#internals/controllers/slot.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
@@ -156,6 +157,20 @@ export default class IgcChipComponent extends I18nMixin(
   protected _handleRemove(event: Event): void {
     event.stopPropagation();
     this.emitEvent('igcRemove');
+  }
+
+  /* alternateName: focusComponent */
+  /** Sets focus on the chip. */
+  public override focus(options?: FocusOptions): void {
+    super.focus(options);
+    deferFocus(this, options);
+  }
+
+  /* alternateName: blurComponent */
+  /** Removes focus from the chip. */
+  public override blur(): void {
+    cancelDeferredFocus(this);
+    super.blur();
   }
 
   protected _renderPrefix() {

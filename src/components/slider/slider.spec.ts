@@ -24,6 +24,7 @@ import {
   tabKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
@@ -2699,6 +2700,9 @@ describe('Slider component', () => {
     <igc-slider value="40"></igc-slider>
     <igc-range-slider lower="20" upper="60"></igc-range-slider>
   `);
+
+  runFocusBeforeRenderTests(html`<igc-slider></igc-slider>`);
+  runFocusBeforeRenderTests(html`<igc-range-slider></igc-range-slider>`);
 });
 
 function getDOM<T = HTMLElement>(slider: IgcSliderBaseComponent) {

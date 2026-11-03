@@ -20,6 +20,7 @@ import {
   tabKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runAriaProjectionTests,
@@ -345,6 +346,20 @@ describe('Select', () => {
 
     it('correctly applies autofocus on init', async () => {
       expect(document.activeElement).to.equal(select);
+    });
+
+    // Native `autofocus` reads only an attribute that is present at insertion.
+    it('applies `autofocus` set as a property before the connection', async () => {
+      const container = await fixture<HTMLElement>(html`<div></div>`);
+      const element = document.createElement(IgcSelectComponent.tagName);
+      element.autofocus = true;
+      container.append(element);
+
+      await elementUpdated(element);
+      await nextFrame();
+
+      expect(element.hasAttribute('autofocus')).to.be.false;
+      expect(document.activeElement).to.equal(element);
     });
   });
 
@@ -1991,4 +2006,6 @@ describe('Select', () => {
     ],
     openProperty: 'open',
   });
+
+  runFocusBeforeRenderTests(createBasicSelect());
 });
