@@ -378,6 +378,8 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   private _handleActiveDateChange(event: CustomEvent<Date>): void {
+    event.stopPropagation();
+
     const view = event.target as IgcDaysViewComponent;
     const index = Array.from(this._daysViews).indexOf(view);
 
@@ -398,6 +400,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   private _handleRangePreviewChange(event: CustomEvent<Date>): void {
+    event.stopPropagation();
     this._rangePreviewDate = event.detail
       ? CalendarDay.from(event.detail)
       : undefined;

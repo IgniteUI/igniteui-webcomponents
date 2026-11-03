@@ -13,6 +13,7 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { convertToDate } from '#internals/date/converters.js';
 import { coercedProperty } from '#internals/decorators/coerced-property.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import {
   formatDisplayDate,
   getDateTimeFormat,
@@ -607,6 +608,20 @@ export abstract class IgcDatePickerBaseComponent<
   //#endregion
 
   //#region Public methods
+
+  /* alternateName: focusComponent */
+  /** Sets focus on the picker. */
+  public override focus(options?: FocusOptions): void {
+    super.focus(options);
+    deferFocus(this, options);
+  }
+
+  /* alternateName: blurComponent */
+  /** Removes focus from the picker. */
+  public override blur(): void {
+    cancelDeferredFocus(this);
+    super.blur();
+  }
 
   /** Clears the value and the input text of the picker. */
   public clear(): void {

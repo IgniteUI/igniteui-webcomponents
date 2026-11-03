@@ -1,6 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
 import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import IgcChipComponent from './chip.js';
@@ -366,4 +367,6 @@ describe('Chip', () => {
       expect(isFocused(chip)).to.be.false;
     });
   });
+
+  runFocusBeforeRenderTests(html`<igc-chip>Label</igc-chip>`);
 });

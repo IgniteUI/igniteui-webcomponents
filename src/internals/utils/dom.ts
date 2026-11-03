@@ -15,6 +15,9 @@ const LENGTH_PROPERTY = '--igc-resolved-length';
 /** A plain pixel length, which needs no style resolution. */
 const PIXEL_LENGTH = /^\d*\.?\d+px$/;
 
+/** A percentage, such as the `5%` of `calc(5% + 10px)`. */
+const PERCENTAGE = /(-?\d*\.?\d+(?:e[+-]?\d+)?)%/gi;
+
 const SUPPORTS_REGISTERED_PROPERTIES =
   !isServer && typeof CSS !== 'undefined' && 'registerProperty' in CSS;
 
@@ -43,37 +46,40 @@ function canResolveLengths(): boolean {
 }
 
 /**
- * Resolves a CSS length to pixels in the context of `element`.
+ * Resolves a CSS length to pixels in the context of `element`. A percentage
+ * resolves against `basis`, the size that the property of the value uses.
  *
  * @remarks
  * Registration makes the property compute to an absolute length, so the
  * browser converts font, viewport and container relative units. Returns 0
- * for percentages, for invalid lengths, during SSR and in a browser without
- * registered custom properties. Resolve percentages against the basis of
- * the applicable property instead.
+ * for percentages without a `basis`, for invalid lengths, during SSR and in
+ * a browser without registered custom properties.
  */
-export function resolveCssLength(element: HTMLElement, value: string): number {
+export function resolveCssLength(
+  element: HTMLElement,
+  value: string,
+  basis?: number
+): number {
   if (!canResolveLengths()) {
     return 0;
   }
 
-  if (PIXEL_LENGTH.test(value)) {
-    return asNumber(value);
+  const length =
+    basis === undefined
+      ? value
+      : value.replace(
+          PERCENTAGE,
+          (_, percent) => `${(Number(percent) * basis) / 100}px`
+        );
+
+  if (PIXEL_LENGTH.test(length)) {
+    return asNumber(length);
   }
 
-  const { style } = element;
-  const previous = style.getPropertyValue(LENGTH_PROPERTY);
-  const priority = style.getPropertyPriority(LENGTH_PROPERTY);
-
-  style.setProperty(LENGTH_PROPERTY, value);
+  // Restore, not remove: the element can have its own inline value.
+  const restore = replaceStyles(element, { [LENGTH_PROPERTY]: length });
   const resolved = getComputedStyle(element).getPropertyValue(LENGTH_PROPERTY);
-
-  // Restore rather than remove: the caller may use the property itself.
-  if (previous) {
-    style.setProperty(LENGTH_PROPERTY, previous, priority);
-  } else {
-    style.removeProperty(LENGTH_PROPERTY);
-  }
+  restore();
 
   return asNumber(resolved);
 }
@@ -292,6 +298,36 @@ export function setStyles(
   styles: Partial<CSSStyleDeclaration>
 ): void {
   Object.assign(element.style, styles);
+}
+
+/**
+ * Sets the inline `styles` (property names, such as `user-select`) on
+ * `element`, and returns a function that restores the previous inline values
+ * and priorities.
+ */
+export function replaceStyles(
+  element: HTMLElement,
+  styles: Record<string, string>
+): () => void {
+  const { style } = element;
+  const previous = Object.keys(styles).map(
+    (name) =>
+      [
+        name,
+        style.getPropertyValue(name),
+        style.getPropertyPriority(name),
+      ] as const
+  );
+
+  for (const [name, value] of Object.entries(styles)) {
+    style.setProperty(name, value);
+  }
+
+  return () => {
+    for (const [name, value, priority] of previous) {
+      style.setProperty(name, value, priority);
+    }
+  };
 }
 
 /** Sets an attribute, or removes it when `value` is `null` or `undefined`. */

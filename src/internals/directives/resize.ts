@@ -7,8 +7,7 @@ import {
 } from './pointer-operation.js';
 
 export type ResizeDirection = 'horizontal' | 'vertical' | 'both';
-export type ResizeCallback = (params: ResizeCallbackParams) => unknown;
-export type ResizeCancelCallback = (state: ResizeState) => unknown;
+type ResizeCallback = (params: ResizeCallbackParams) => unknown;
 
 export type ResizeState = {
   /** The dimensions of the resize target at the start of the operation. */
@@ -19,11 +18,7 @@ export type ResizeState = {
   deltaX: number;
   /** The difference between the current and the initial height. */
   deltaY: number;
-  /** The ghost element when in deferred mode. */
-  ghost: HTMLElement | null;
-  /** The element that carries the directive. */
-  trigger: HTMLElement | null;
-  /** Aborts when the operation ends, also in a `start` listener. */
+  /** Aborts when the operation ends, also when it ends inside `start`. */
   signal: AbortSignal;
   /**
    * An optional commit function that the `end` callback sets. It runs in
@@ -39,52 +34,24 @@ export type ResizeCallbackParams = {
 
 /**
  * Options for the resizable directive. See {@link PointerOperationOptions}
- * for the shared ones. The mode defaults to `immediate`, which resizes the
- * target while the pointer moves.
+ * for the shared ones. A resize sizes a ghost element, and the target takes
+ * the final size when the operation ends.
  */
-export interface ResizableOptions extends PointerOperationOptions {
+export interface ResizableOptions extends PointerOperationOptions<ResizeState> {
   /** The direction in which the element can be resized. Defaults to `both`. */
   direction?: ResizeDirection;
-  /** The size bounds of the resizable element, in pixels. */
-  minWidth?: number;
-  maxWidth?: number;
-  minHeight?: number;
-  maxHeight?: number;
-  /** Whether the element keeps its initial aspect ratio during a resize. */
-  maintainAspectRatio?: boolean;
-  /** Runs when a resize starts. A `false` return aborts the operation. */
-  start?: ResizeCallback;
   /** Runs on each pointer move. The callback can change `state.current`. */
   resize?: ResizeCallback;
   /** Runs when a resize completes. The callback can set `state.commit`. */
   end?: ResizeCallback;
-  /** Runs when Escape, `pointercancel` or a disconnect cancels a resize operation. */
-  cancel?: ResizeCancelCallback;
 }
 
 type ResizeOperation = PointerOperationState & {
-  target: HTMLElement;
   initial: DOMRect;
   current: DOMRect;
   /** Whether the target is right-to-left. Its width then grows to the left. */
   rtl: boolean;
-  /** The inline size styles of the target, restored on an immediate cancel. */
-  targetStyles: { width: string; height: string };
 };
-
-function createDefaultGhost({ width, height }: DOMRect): HTMLElement {
-  const element = document.createElement('div');
-
-  setStyles(element, {
-    zIndex: '1000',
-    background: 'pink',
-    opacity: '0.85',
-    width: `${width}px`,
-    height: `${height}px`,
-  });
-
-  return element;
-}
 
 class ResizableDirective extends PointerOperationDirective<
   ResizableOptions,
@@ -92,151 +59,97 @@ class ResizableDirective extends PointerOperationDirective<
   ResizeState
 > {
   constructor(partInfo: PartInfo) {
-    super(partInfo, {
-      name: 'resizable',
-      ghostAttribute: 'data-resize-ghost',
-      defaultMode: 'immediate',
-      defaultGhost: createDefaultGhost,
-    });
-  }
-
-  protected override _cancelOperation(): void {
-    this._options.cancel?.(this._createState());
-
-    const { ghost, target, targetStyles } = this._operation!;
-
-    if (!ghost) {
-      setStyles(target, targetStyles);
-    }
+    super(partInfo, 'resizable', 'data-resize-ghost');
   }
 
   // #region Event handlers
 
-  private readonly _handlePointerDown = (event: PointerEvent): void => {
-    if (!this._enabled || event.button !== 0 || this._operation) {
-      return;
-    }
-
+  protected override _start(event: PointerEvent): void {
     const target = this._resolveTarget();
     if (!target) {
       return;
     }
 
     const initial = target.getBoundingClientRect();
-    const ghost = this._isDeferred ? this._createGhost(target, initial) : null;
+    // Not `isLTR`: `:dir()` misses a CSS `direction`.
+    const rtl = getComputedStyle(target).direction === 'rtl';
 
     this._operation = {
       pointerId: event.pointerId,
       target,
       initial,
       current: DOMRect.fromRect(initial),
-      // Not `isLTR`: `:dir()` misses a CSS `direction`.
-      rtl: getComputedStyle(target).direction === 'rtl',
-      ghost,
-      targetStyles: { width: target.style.width, height: target.style.height },
+      rtl,
+      ghost: this._createGhost(target, initial),
     };
 
-    if (ghost) {
-      this._placeGhost(ghost, initial);
-    }
+    this._placeGhost(initial);
 
-    if (
-      !this._runStart(() => this._options.start?.(this._createParams(event)))
-    ) {
+    if (!this._runStart(event)) {
       return;
     }
 
     this._startOperationListeners(
       this._host!,
-      event.pointerId,
       this._handlePointerMove,
       this._handlePointerEnd
     );
-  };
+  }
 
   private readonly _handlePointerMove = (event: PointerEvent): void => {
-    if (!this._operation) {
-      return;
-    }
-
-    const { ghost, target } = this._operation;
+    const operation = this._operation!;
+    const { ghost, target } = operation;
     // The page can scroll during the operation, so measure the target again.
     // The reads come before the writes below, which would force a layout.
     const edges = target.getBoundingClientRect();
-    const origin = ghost ? this._getGhostOrigin(ghost) : null;
+    const origin = this._getGhostOrigin(ghost);
 
     this._updateDimensions(event, edges);
 
     const params = this._createParams(event);
     this._options.resize?.(params);
-    this._operation.current = params.state.current;
+    operation.current = params.state.current;
 
-    this._applyDimensions(ghost ?? target);
-
-    if (ghost && origin) {
-      this._placeGhost(ghost, edges, origin);
-    }
+    this._applyDimensions(ghost);
+    this._placeGhost(edges, origin);
   };
 
   private readonly _handlePointerEnd = (event: PointerEvent): void => {
-    if (!this._operation) {
-      return;
-    }
-
+    const operation = this._operation!;
     const params = this._createParams(event);
+
     this._options.end?.(params);
-    this._operation.current = params.state.current;
+    operation.current = params.state.current;
 
     if (params.state.commit) {
       params.state.commit();
     } else {
-      this._applyDimensions(this._operation.target);
+      this._applyDimensions(operation.target);
     }
-
-    this._dispose();
   };
 
   // #endregion
 
   // #region Internal API
 
-  protected override _attachTriggerListeners(): void {
-    if (!this._host) {
-      return;
-    }
-
-    const { signal } = this._triggerAbort;
-
-    this._host.addEventListener('pointerdown', this._handlePointerDown, {
-      signal,
-    });
-    this._host.addEventListener('touchstart', this._preventNativeBehavior, {
-      passive: false,
-      signal,
-    });
-  }
-
   protected override _createState(): ResizeState {
-    const { initial, current, ghost } = this._operation!;
+    const { initial, current } = this._operation!;
 
     return {
       initial,
       current,
       deltaX: current.width - initial.width,
       deltaY: current.height - initial.height,
-      ghost,
-      trigger: this._host ?? null,
       signal: this._operationAbort.signal,
     };
   }
 
   /** Puts the ghost at the start edge of the target, which is the right edge in RTL. */
   private _placeGhost(
-    ghost: HTMLElement,
     edges: DOMRect,
-    origin = this._getGhostOrigin(ghost)
+    origin = this._getGhostOrigin(this._operation!.ghost)
   ): void {
-    const { current, rtl } = this._operation!;
+    const { ghost, current, rtl } = this._operation!;
 
     this._translate(ghost, {
       x: (rtl ? edges.right - current.width : edges.x) - origin.x,
@@ -250,42 +163,15 @@ class ResizableDirective extends PointerOperationDirective<
     edges: DOMRect
   ): void {
     const { initial, current, rtl } = this._operation!;
-    const {
-      direction = 'both',
-      maintainAspectRatio,
-      minWidth,
-      maxWidth,
-      minHeight,
-      maxHeight,
-    } = this._options;
-
-    const horizontal = direction !== 'vertical';
-    const vertical = direction !== 'horizontal';
+    const direction = this._options.direction ?? 'both';
 
     const inlineSize = rtl ? edges.right - clientX : clientX - edges.x;
-    let width = horizontal ? inlineSize : initial.width;
-    let height = vertical ? clientY - edges.y : initial.height;
 
-    if (maintainAspectRatio) {
-      const ratio = initial.width / initial.height;
-
-      if (horizontal) {
-        height = width / ratio;
-      } else {
-        width = height * ratio;
-      }
-    }
-
-    if (minWidth != null) width = Math.max(width, minWidth);
-    if (maxWidth != null) width = Math.min(width, maxWidth);
-    if (minHeight != null) height = Math.max(height, minHeight);
-    if (maxHeight != null) height = Math.min(height, maxHeight);
-
-    current.width = width;
-    current.height = height;
+    current.width = direction === 'vertical' ? initial.width : inlineSize;
+    current.height =
+      direction === 'horizontal' ? initial.height : clientY - edges.y;
   }
 
-  /** Applies the current dimensions to `element` as inline styles. */
   private _applyDimensions(element: HTMLElement): void {
     const { current } = this._operation!;
     setStyles(element, {
@@ -298,7 +184,7 @@ class ResizableDirective extends PointerOperationDirective<
 }
 
 /**
- * A directive that makes an element a resize trigger. It resizes the target
- * in place, or through a deferred ghost element.
+ * A directive that makes an element a resize trigger. It sizes a ghost of the
+ * target, and the target takes the final size.
  */
 export const resizable = directive(ResizableDirective);

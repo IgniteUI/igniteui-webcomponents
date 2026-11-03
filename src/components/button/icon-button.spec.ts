@@ -6,6 +6,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import { defineComponents, IgcIconButtonComponent } from '../../index.js';
 
@@ -247,4 +248,8 @@ describe('IconButton component', () => {
   ) => {
     return fixture<IgcIconButtonComponent>(html`${unsafeStatic(template)}`);
   };
+
+  runFocusBeforeRenderTests(
+    html`<igc-icon-button aria-label="Label"></igc-icon-button>`
+  );
 });

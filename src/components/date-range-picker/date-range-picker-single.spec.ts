@@ -17,6 +17,7 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { CalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   runAriaProjectionTests,
   runExternalLabelAssociationTests,
@@ -1448,4 +1449,8 @@ describe('Date range picker - single input', () => {
       }
     });
   });
+
+  runFocusBeforeRenderTests(
+    html`<igc-date-range-picker label="Label"></igc-date-range-picker>`
+  );
 });

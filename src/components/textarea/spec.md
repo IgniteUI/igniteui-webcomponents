@@ -65,6 +65,7 @@
 |       8 | 2026-10-23 | The textarea makes a stacking context, so the z-index of the textarea and the container does not compete with the layers of the page |
 |       9 | 2026-10-28 | Forward the host suggestion state                  |
 |      10 | 2026-10-29 | Transition only the color and the width of the bottom line in the Material theme, and only its color in the Indigo theme, so the line hides at the same time as a hidden ancestor |
+|      11 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API                                                                              |
 
 ## Overview
 
@@ -351,6 +352,8 @@ The component delegates focus to the inner native textarea, so all native text-e
 
 | Name              | Type signature                                                                                | Description                                                                 |
 | ----------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| focus             | `(options?: FocusOptions): void`                                                              | Sets focus on the control.                                                  |
+| blur              | `(): void`                                                                                    | Removes focus from the control.                                             |
 | select            | `(): void`                                                                                    | Selects all text within the control.                                        |
 | setSelectionRange | `(start: number, end: number, direction?: SelectionRangeDirection): void`                     | Sets the text selection range of the control.                               |
 | setRangeText      | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the text from `start` to `end`, or the selected text without them. |
@@ -539,6 +542,11 @@ Each case runs with CSS field sizing and without it.
 
 47. The textarea hides at the same time as a hidden ancestor in each theme, at rest and after a focus or a hover: no
     element transitions `visibility` or sets it to `visible`.
+48. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
+    takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
+    `disabled` set does not cancel an earlier call on another element.
 
 ### Not covered by the suite
 

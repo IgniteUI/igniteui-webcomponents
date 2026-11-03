@@ -837,8 +837,9 @@ describe('IgcQrCodeComponent', () => {
 
       it('uses the automatic version for a version that is not an integer from 1 to 40', async () => {
         const warn = stub(console, 'warn');
+        // A string fixture, because the template checks reject the invalid attribute.
         const el = await fixture<IgcQrCodeComponent>(
-          html`<igc-qr-code value="test" version="abc"></igc-qr-code>`
+          '<igc-qr-code value="test" version="abc"></igc-qr-code>'
         );
 
         expect(el.version).to.be.undefined;

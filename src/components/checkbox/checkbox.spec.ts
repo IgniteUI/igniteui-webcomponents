@@ -1,14 +1,12 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
-import {
-  isFocused,
-  isUnderPageLayer,
-} from '#internals/testing/helpers.spec.js';
+import { isUnderPageLayer } from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import {
   runValidationContainerTests,
@@ -181,16 +179,6 @@ describe('Checkbox', () => {
       await elementUpdated(element);
 
       expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
-    });
-
-    it('should have correct focus states between Light/Shadow DOM', () => {
-      element.focus();
-      expect(isFocused(element)).to.be.true;
-      expect(isFocused(input));
-
-      element.blur();
-      expect(isFocused(element)).to.be.false;
-      expect(isFocused(input)).to.be.false;
     });
 
     it('should emit click event only once', async () => {
@@ -439,4 +427,6 @@ describe('Checkbox', () => {
     <igc-checkbox checked>Label</igc-checkbox>
     <igc-checkbox indeterminate>Label</igc-checkbox>
   `);
+
+  runFocusBeforeRenderTests(html`<igc-checkbox>Label</igc-checkbox>`);
 });

@@ -98,6 +98,23 @@ describe('Splitter', () => {
       expect(isUnderPageLayer(splitter, bar)).to.be.true;
     });
 
+    it('keeps the focused bar above the positioned content of the panes', () => {
+      const bar = getSplitterPart(splitter, BAR_PART);
+
+      for (const content of splitter.querySelectorAll('div')) {
+        content.style.cssText = 'position: fixed; inset: 0; z-index: 100';
+      }
+      bar.focus();
+
+      const { left, top, width, height } = bar.getBoundingClientRect();
+      const hit = splitter.shadowRoot!.elementFromPoint(
+        left + width / 2,
+        top + height / 2
+      );
+
+      expect(bar.contains(hit)).to.be.true;
+    });
+
     it('should render both panes with equal sizes if no explicit sizes set', async () => {
       const startPart = getSplitterPart(splitter, START_PART);
       const endPart = getSplitterPart(splitter, END_PART);

@@ -13,6 +13,7 @@ import {
 import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
@@ -128,11 +129,13 @@ export default class IgcToggleButtonComponent extends HostAriaMixin(
   /** Sets focus on the button. */
   public override focus(options?: FocusOptions): void {
     this._nativeButton?.focus(options);
+    deferFocus(this, options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the button. */
   public override blur(): void {
+    cancelDeferredFocus(this);
     this._nativeButton?.blur();
   }
 

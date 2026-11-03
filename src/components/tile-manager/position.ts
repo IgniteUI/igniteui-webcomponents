@@ -1,7 +1,8 @@
-import { startViewTransition } from '#animations/view-transition.js';
 import { partition } from '#internals/utils/arrays.js';
+import { getOrInsertComputed } from '#internals/utils/objects.js';
 import type IgcTileManagerComponent from './tile-manager.js';
 import type IgcTileComponent from './tile.js';
+import { childTiles, startTileTransition } from './transitions.js';
 
 type Positioned = Pick<IgcTileComponent, 'position'>;
 
@@ -13,9 +14,7 @@ class TilesState {
   private readonly _manager: IgcTileManagerComponent;
 
   private get _tiles(): IgcTileComponent[] {
-    return Array.from(this._manager.children).filter(
-      (element): element is IgcTileComponent => element.localName === 'igc-tile'
-    );
+    return childTiles(this._manager);
   }
 
   /** The tiles sorted by their position. */
@@ -82,9 +81,7 @@ class TilesState {
     }
 
     for (const [index, tile] of [...ordered, ...appended].entries()) {
-      if (tile.position !== index) {
-        tile.position = index;
-      }
+      tile.position = index;
     }
   }
 }
@@ -112,6 +109,8 @@ class TileDragRecord {
   /** Settles when the last swap applies. */
   public swapped?: Promise<void>;
   private readonly _initial = new Map<IgcTileComponent, TileRecord>();
+  /** The parent of the swaps. A move to another parent cancels the drag. */
+  private _parent: Element | null = null;
 
   /**
    * Swaps the tiles in a view transition. The placements are recorded there,
@@ -122,7 +121,8 @@ class TileDragRecord {
     const parent = dragged.parentElement;
 
     this.last = match;
-    this.swapped = startViewTransition(() => {
+    this._parent = parent;
+    this.swapped = startTileTransition(parent, () => {
       if (dragged.parentElement !== parent || match.parentElement !== parent) {
         return;
       }
@@ -139,7 +139,8 @@ class TileDragRecord {
    */
   public restore(): Promise<void> | undefined {
     return this.swapped
-      ? startViewTransition(() => this._restore()).updateCallbackDone
+      ? startTileTransition(this._parent, () => this._restore())
+          .updateCallbackDone
       : undefined;
   }
 
@@ -170,14 +171,15 @@ class TileDragRecord {
   }
 
   private _record(tile: IgcTileComponent): void {
-    if (!this._initial.has(tile)) {
-      const { position, parentElement: parent } = tile;
-      this._initial.set(tile, {
+    getOrInsertComputed(
+      this._initial,
+      tile,
+      ({ position, parentElement: parent }) => ({
         position,
         parent,
         version: getLayoutVersion(parent),
-      });
-    }
+      })
+    );
   }
 }
 

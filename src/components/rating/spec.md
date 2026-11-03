@@ -54,6 +54,7 @@
 |       5 | 2026-10-02 | Forward the host `aria-describedby`                                                  |
 |       6 | 2026-10-06 | `focus()` and `blur()` move the focus to the slider element                          |
 |       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                                             |
+|       8 | 2026-11-02 | A `focus()` call before the first render applies after the render                    |
 
 ## Overview
 
@@ -167,6 +168,7 @@ a form reset restores it, clamping it into the range. It follows the disabled st
 supports `setCustomValidity`, `checkValidity` and `reportValidity`. Its validation behavior follows the
 [form-associated elements specification](../validation-container/spec.md). `focus()` moves the focus to the slider
 element, so a failed submit and `reportValidity()` focus an invalid rating. A disabled rating does not take the focus.
+A `focus()` call before the first render applies after the render.
 
 ### Localization
 
@@ -344,6 +346,11 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 26. `focus()` moves the focus to the slider element and `blur()` removes it. A disabled rating does not take the
     focus.
 27. An invalid rating takes the focus on a failed submit and on `reportValidity()`.
+28. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
+    takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
+    `disabled` set does not cancel an earlier call on another element.
 
 ### Not covered by the suite
 

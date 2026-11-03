@@ -8,6 +8,7 @@ import {
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
@@ -280,6 +281,10 @@ describe('File Input component', () => {
       expect(element.invalid).to.be.true;
     });
   });
+
+  runFocusBeforeRenderTests(
+    html`<igc-file-input label="Label"></igc-file-input>`
+  );
 });
 
 describe('Form Integration', () => {

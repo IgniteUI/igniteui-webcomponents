@@ -8,6 +8,7 @@ import {
 import type { SlotController } from '#internals/controllers/slot.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import {
@@ -98,11 +99,13 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   /** Sets focus on the control. */
   public override focus(options?: FocusOptions): void {
     this._input?.focus(options);
+    deferFocus(this, options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the control. */
   public override blur(): void {
+    cancelDeferredFocus(this);
     this._input?.blur();
   }
 
