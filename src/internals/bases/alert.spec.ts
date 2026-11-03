@@ -1,4 +1,5 @@
 import { defineCE, expect, fixture, html } from '@open-wc/testing';
+import { finishAnimationsFor } from '../testing/helpers.spec.js';
 import { isPopoverOpen } from '../utils/dom.js';
 import { IgcBaseAlertLikeComponent } from './alert.js';
 
@@ -15,6 +16,19 @@ describe('Alert-like base component', () => {
 
     // A detached component has no visible ancestor.
     expect(await alert.show()).to.be.false;
+    expect(alert.open).to.be.false;
+  });
+
+  it('resolves `hide()` to `false` during a `show()` that finds no visible ancestor', async () => {
+    const alert = document.createElement(tag) as IgcBaseAlertLikeComponent;
+    alert.positioning = 'container';
+
+    const showing = alert.show();
+    const hiding = alert.hide();
+    finishAnimationsFor(alert);
+
+    expect(await showing).to.be.false;
+    expect(await hiding).to.be.false;
     expect(alert.open).to.be.false;
   });
 

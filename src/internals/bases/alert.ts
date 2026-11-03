@@ -376,7 +376,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
    * fade-out.
    */
   public async hide(): Promise<boolean> {
-    return this._toggleController.hide();
+    return this._isShown ? this._toggleController.hide() : false;
   }
 
   /**
