@@ -181,8 +181,10 @@ export default class IgcTooltipComponent extends I18nMixin(
    */
   @property({ type: Boolean, reflect: true })
   public set open(value: boolean) {
-    this._requestedState = value;
-    this._controller.open = value;
+    // Only a change ends a queued or running transition.
+    if (value !== this.open) {
+      this._cancelTransition(value);
+    }
   }
 
   public get open(): boolean {
@@ -373,6 +375,13 @@ export default class IgcTooltipComponent extends I18nMixin(
     return wasAnimating;
   }
 
+  /** Commits `open` without ending a transition. */
+  private _commitOpen(value: boolean): void {
+    const previous = this.open;
+    this._controller.open = value;
+    this.requestUpdate('open', previous);
+  }
+
   /** Lands the tooltip on `state` after its transition was aborted. */
   private _settleState(state: boolean, wasAnimating: boolean): void {
     this._requestedState = state;
@@ -382,9 +391,8 @@ export default class IgcTooltipComponent extends I18nMixin(
       this.inert = false;
     }
 
-    // Via the accessor - it drives the reflection and the render.
     if (this.open !== state) {
-      this.open = state;
+      this._commitOpen(state);
     }
   }
 
@@ -403,7 +411,7 @@ export default class IgcTooltipComponent extends I18nMixin(
     id: number
   ): Promise<boolean> {
     if (show) {
-      this.open = true;
+      this._commitOpen(true);
     }
 
     // Ignore interactions during the animation. This stops a show/hide loop
@@ -422,7 +430,7 @@ export default class IgcTooltipComponent extends I18nMixin(
 
     this._animating = false;
     this.inert = false;
-    this.open = show;
+    this._commitOpen(show);
 
     if (animationComplete && withEvents) {
       this._emitEvent(show ? 'igcOpened' : 'igcClosed');

@@ -54,6 +54,7 @@
 |       3 | 2026-10-19 | Localize the name of the default close button                 |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                      |
 |       5 | 2026-10-26 | The arrow is centered on the anchor also on the first show    |
+|       6 | 2026-11-03 | A change of `open` ends a queued or running transition |
 
 ## Overview
 
@@ -224,6 +225,12 @@ await tooltip.toggle();
 `show`, `hide` and `toggle` resolve once the corresponding animation completes, and resolve with whether the state
 changed. Setting `open` transitions the tooltip without delays and without animations.
 
+A change of `open` ends a show or a hide that waits for its delay or animates, and the tooltip keeps the new state.
+For example, `open = true` during the show delay shows the tooltip at once, and `open = false` and then `open = true`
+during the hide delay keeps it open. The method then resolves `false`, and the tooltip sends no `igcOpened` or
+`igcClosed`. A set of the current value is not a change: `open = true` during the hide delay does not keep the tooltip
+open, and `open = false` during the show delay does not stop the show.
+
 ### Behaviors
 
 - The tooltip respects its given placement, and repositions when the content would be clipped at a viewport edge.
@@ -237,6 +244,7 @@ changed. Setting `open` transitions the tooltip without delays and without anima
 - The show and hide delays affect end-user interaction only; the API ignores them.
 - `show`, `hide` and `toggle` wait for the corresponding animation to complete.
 - Setting `open` transitions the tooltip without delays and animations.
+- A change of `open` ends a queued or running transition, and the tooltip keeps the new state.
 - Calling `show` with a target treats it as a transient anchor: the triggers are attached to it and it acts as the
   anchor until the tooltip is dismissed, after which a previously set anchor is restored.
 
@@ -355,7 +363,9 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 
 ### State transitions
 
-20. Interrupted show and hide transitions settle in the correct final state.
+20. Interrupted show and hide transitions settle in the correct final state. A change of `open` ends a queued or
+    running transition: the animation stops, the tooltip is not inert, the method resolves `false`, and no `igcOpened`
+    or `igcClosed` follows. A set of the current value does not end a queued show or hide.
 21. The tooltip is inert while it is closed and during the animations.
 
 ### Events tests

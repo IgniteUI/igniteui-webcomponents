@@ -296,6 +296,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A component that moves while it is open now shows again in its new place, with a full display time. Before, it stayed hidden with `open` set. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
   - `show()` and `toggle()` during the fade-out of `hide()` now keep the component open, and `hide()` during the fade-out resolves `false`. Before, `show()` resolved `false` and the component closed. `toggle()` or a second `hide()` closed the component immediately, without the remaining fade-out. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
   - The default action of the snackbar now shows the keyboard focus style of a flat button in every theme, also on hover. Before, it showed none in the Material and Fluent themes, and none in any theme when the `action-text` attribute was set. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
+  - A change of `open` against a running fade now ends it, and the component keeps the new state, as in the dialog. `open` stays `true` during the fade-out, so set it to `false` and then to `true` to keep the component open. The display time then starts again, and `hide()` resolves `false`. `open = false` during the fade-in of `show()` stops it, and `show()` resolves `false`. Before, the fade-out closed the component when it ended, also when `open` was set to `true` again.
 - #### Splitter
   - The bar no longer has the English description "Start pane expanded and End pane expanded". Its value already tells which pane is collapsed: 0% for the start pane and 100% for the end pane. [#2449](https://github.com/IgniteUI/igniteui-webcomponents/pull/2449)
 - #### Stacking order
@@ -385,6 +386,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A drag now reads the layout direction from the CSS `direction`, as a resize does. Before, with `direction: rtl` and no `dir` attribute, the drag read the pointer moves as left to right, so a tile did not swap back toward the start of the row.
 - #### Tooltip
   - With `with-arrow`, the arrow is now centered on the anchor also on the first show. Before, it was off center by half its width until the tooltip opened a second time, in browsers with CSS anchor positioning. In all browsers, it was also off center after a change of the placement from the top or bottom side to the left or right side, or back. [#2520](https://github.com/IgniteUI/igniteui-webcomponents/issues/2520)
+  - A change of `open` now ends a show or a hide that waits for its delay or animates, and the tooltip keeps the new state. The method then resolves `false`, and the tooltip sends no `igcOpened` or `igcClosed`. Before, the show or the hide ran at the end of the delay or the animation. It overwrote `open`, for example `open = false` during the show animation opened the tooltip again, or it played again over the new state, for example `open = true` during the show delay played the show animation again over the open tooltip.
 - #### Tree
   - A tree item outside a tree no longer renders a selection checkbox.
 - #### Virtual scroll

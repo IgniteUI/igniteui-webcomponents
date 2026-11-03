@@ -46,6 +46,7 @@
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-10-07 | The display time waits for the pointer and the keyboard focus and starts again on `show()`; `container` positioning keeps the tab order; the default action keeps its keyboard focus style; `show()` during the fade-out keeps the component open |
 |       3 | 2026-10-21 | API descriptions aligned with the JSDoc. |
+|       4 | 2026-11-03 | A change of `open` against a running fade ends it |
 
 ## Overview
 
@@ -145,6 +146,13 @@ leave. A pointer click on the action does not hold the component open, also when
 `show()` on an open component starts the display time again and resolves `false`. A component that moves while it is
 open shows again in its new place, with a full display time.
 
+#### Changes of `open` during a fade
+
+A change of `open` against a running fade ends it, and the component keeps the new state. `open` stays `true` during
+the fade-out of `hide()`, so set it to `false` and then to `true` to keep the component open. The display time then
+starts again, and `hide()` resolves `false`. `open = false` during the fade-in stops it, and `show()` resolves `false`.
+A set of the current value is not a change, so `open = true` during the fade-out does not keep the component open.
+
 #### Positioning
 
 ```html
@@ -202,8 +210,8 @@ standard button keys. While the focus is on the action, the snackbar stays open.
 
 | Name   | Type signature         | Description                                                                         |
 | ------ | ---------------------- | ------------------------------------------------------------------------------------- |
-| show   | `(): Promise<boolean>` | Opens the component, also during the fade-out of `hide()`. When it is already open, the display time starts again, and it resolves `false`. It also resolves `false` when `container` positioning finds no visible ancestor. |
-| hide   | `(): Promise<boolean>` | Closes the component. Resolves `false` when it is already closed or fades out.       |
+| show   | `(): Promise<boolean>` | Opens the component, also during the fade-out of `hide()`. When it is already open, the display time starts again, and it resolves `false`. It also resolves `false` when `container` positioning finds no visible ancestor, or when `open` is set to `false` during the fade-in. |
+| hide   | `(): Promise<boolean>` | Closes the component. Resolves `false` when it is already closed or fades out, or when `open` is set to `false` and then to `true` during the fade-out. |
 | toggle | `(): Promise<boolean>` | Opens the component when it is closed, and closes it when it is open. Resolves `true` when the state changes.                       |
 
 ### Events
@@ -274,7 +282,7 @@ suites from [`src/internals/testing`](../../internals/testing). The groups below
 
 ### Alert behavior tests
 
-17. The shared `runAlertTests` suite tests the display time, the fade-out and the `container` positioning, which the
+17. The shared `runAlertTests` suite tests the display time, the fades and the `container` positioning, which the
     snackbar shares with the toast. The [toast specification](../toast/spec.md#alert-behavior-tests) lists its cases.
 
 ### Not covered by the suite

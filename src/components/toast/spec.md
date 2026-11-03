@@ -43,6 +43,7 @@
 |       2 | 2026-09-23 | Remove the `base` part, which the toast does not render |
 |       3 | 2026-10-07 | The display time waits for the pointer and the keyboard focus and starts again on `show()`; `container` positioning uses an anchor name; an open component shows again after a move; `show()` during the fade-out keeps the component open |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc. |
+|       5 | 2026-11-03 | A change of `open` against a running fade ends it |
 
 ## Overview
 
@@ -127,6 +128,13 @@ toast.textContent = 'Link copied';
 await toast.show();
 ```
 
+#### Changes of `open` during a fade
+
+A change of `open` against a running fade ends it, and the component keeps the new state. `open` stays `true` during
+the fade-out of `hide()`, so set it to `false` and then to `true` to keep the component open. The display time then
+starts again, and `hide()` resolves `false`. `open = false` during the fade-in stops it, and `show()` resolves `false`.
+A set of the current value is not a change, so `open = true` during the fade-out does not keep the component open.
+
 #### Positioning
 
 ```html
@@ -181,8 +189,8 @@ None applicable. The toast is not interactive and is not reachable with the keyb
 
 | Name   | Type signature         | Description                                                                         |
 | ------ | ---------------------- | ------------------------------------------------------------------------------------- |
-| show   | `(): Promise<boolean>` | Opens the component, also during the fade-out of `hide()`. When it is already open, the display time starts again, and it resolves `false`. It also resolves `false` when `container` positioning finds no visible ancestor. |
-| hide   | `(): Promise<boolean>` | Closes the component. Resolves `false` when it is already closed or fades out.       |
+| show   | `(): Promise<boolean>` | Opens the component, also during the fade-out of `hide()`. When it is already open, the display time starts again, and it resolves `false`. It also resolves `false` when `container` positioning finds no visible ancestor, or when `open` is set to `false` during the fade-in. |
+| hide   | `(): Promise<boolean>` | Closes the component. Resolves `false` when it is already closed or fades out, or when `open` is set to `false` and then to `true` during the fade-out. |
 | toggle | `(): Promise<boolean>` | Opens the component when it is closed, and closes it when it is open. Resolves `true` when the state changes.                       |
 
 ### Events
@@ -234,20 +242,24 @@ The shared `runAlertTests` suite, which the snackbar also runs:
 13. A move while the pointer is in the component shows it again in the new place, with a full display time.
 14. A component removed during the fade-in does not close while it is detached, and its display time runs in full
     after it is back.
-15. `show()` during the fade-out keeps the component open and starts the display time again.
-16. `toggle()` during the fade-out keeps the component open.
-17. `hide()` after a `show()` during the fade-out fades the component out, and the first fade-out does not close it at
+15. `open = false` during the fade-in ends it, `show()` resolves `false`, and the next `show()` opens the component.
+16. `show()` during the fade-out keeps the component open and starts the display time again.
+17. `toggle()` during the fade-out keeps the component open.
+18. `hide()` after a `show()` during the fade-out fades the component out, and the first fade-out does not close it at
     once.
-18. `hide()` during the fade-out resolves `false` and does not start the fade-out again.
-19. `container` positioning adds an anchor name to the container and `position-anchor` to the component, and removes
+19. `hide()` during the fade-out resolves `false` and does not start the fade-out again.
+20. `open = false` and then `open = true` during the fade-out ends it and keeps the component open, with a full display
+    time, also when the update of `open = false` hides the popover first. `hide()` resolves `false`.
+21. `open = true` during the fade-out is not a change, and the component closes.
+22. `container` positioning adds an anchor name to the container and `position-anchor` to the component, and removes
     both on close.
-20. Two components in one container add their names to the same `anchor-name`, and each close removes only its own.
-21. A container with anchor names of its own keeps them and becomes the `source`.
-22. A container that gets anchor names of its own while two components are open keeps them, and both components
+23. Two components in one container add their names to the same `anchor-name`, and each close removes only its own.
+24. A container with anchor names of its own keeps them and becomes the `source`.
+25. A container that gets anchor names of its own while two components are open keeps them, and both components
     show again with it as the `source`.
-23. A new `style` attribute on the container or the component does not remove the anchor.
-24. `container` positioning places the component inside the container, at the bottom.
-25. In a shadow root without a wrapper, `container` positioning uses the host as the `source`, sets no anchor names,
+26. A new `style` attribute on the container or the component does not remove the anchor.
+27. `container` positioning places the component inside the container, at the bottom.
+28. In a shadow root without a wrapper, `container` positioning uses the host as the `source`, sets no anchor names,
     and places the component inside the host.
 
 ### Not covered by the suite

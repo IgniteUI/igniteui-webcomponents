@@ -17,13 +17,13 @@ export interface ToggleEventMap {
 }
 
 /**
- * A toggleable host must give the `emitEvent` method of the event-emitter
- * mixin. Extend {@link ../mixins/event-emitter.js#EventEmitterMixin | EventEmitterMixin}
+ * A host that asks for the events must give the `emitEvent` method of the
+ * event-emitter mixin. Extend {@link ../mixins/event-emitter.js#EventEmitterMixin | EventEmitterMixin}
  * with the {@link ToggleEventMap}, or with a subset of it.
  */
 type ToggleHost = LitElement & {
   open: boolean;
-  emitEvent(name: string, init?: CustomEventInit): boolean;
+  emitEvent?(name: string, init?: CustomEventInit): boolean;
 };
 
 /**
@@ -93,10 +93,12 @@ class ToggleController {
     const detail = this._options.detail?.call(host);
 
     // Omit the falsy keys, so `emitEvent` applies its own defaults.
-    return host.emitEvent(name, {
-      ...(cancelable && { cancelable }),
-      ...(detail !== undefined && { detail }),
-    });
+    return (
+      host.emitEvent?.(name, {
+        ...(cancelable && { cancelable }),
+        ...(detail !== undefined && { detail }),
+      }) ?? true
+    );
   }
 
   /** Ends the operation in flight, if any, and starts a new generation. */
