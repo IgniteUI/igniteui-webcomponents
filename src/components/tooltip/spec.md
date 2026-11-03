@@ -58,6 +58,7 @@
 |       5 | 2026-10-26 | The arrow is centered on the anchor also on the first show    |
 |       6 | 2026-10-30 | `showAt()` shows the tooltip at a point or a rectangle        |
 |       7 | 2026-10-30 | Triggers bind once; a changed `anchor` resolves before `show` |
+|       8 | 2026-11-03 | A change of `open` ends a queued or running transition; a hide trigger during the show animation ends the animation |
 
 ## Overview
 
@@ -233,6 +234,13 @@ await tooltip.toggle();
 `show`, `hide` and `toggle` resolve once the corresponding animation completes, and resolve with whether the state
 changed. Setting `open` transitions the tooltip without delays and without animations.
 
+A change of `open` ends a show or a hide that waits for its delay or animates, and the tooltip keeps the new state.
+For example, `open = true` during the show delay shows the tooltip at once, and `open = false` and then `open = true`
+during the hide delay keeps it open. The method then resolves `false`, and the tooltip sends no `igcOpened` or
+`igcClosed`. A set of the current value is not a change: `open = true` during the hide delay does not keep the tooltip
+open, and `open = false` during the show delay does not stop the show. `open = false` also drops a transient anchor, so
+call `show()` to keep the tooltip open on it during the hide delay.
+
 #### At a point or a rectangle
 
 A chart that draws on a canvas has no element for each data item, so the tooltip cannot use an anchor. `showAt`
@@ -326,6 +334,9 @@ tooltip.showAt(barRect);
 - The show and hide delays affect end-user interaction only; the API ignores them.
 - `show`, `hide` and `toggle` wait for the corresponding animation to complete.
 - Setting `open` transitions the tooltip without delays and animations.
+- A change of `open` ends a queued or running transition, and the tooltip keeps the new state.
+- A hide trigger during the show animation ends the animation at once, so the pointer can move onto the tooltip during
+  the hide delay.
 - Calling `show` with a target treats it as a transient anchor: the triggers are attached to it and it acts as the
   anchor until the tooltip is dismissed, after which a previously set anchor is restored.
 - Calling `showAt` replaces the anchor with a rectangle until the tooltip closes. The rectangle has no triggers and
@@ -495,8 +506,13 @@ The group runs with each position strategy forced.
 
 ### State transitions
 
-53. Interrupted show and hide transitions settle in the correct final state.
-54. The tooltip is inert while it is closed and during the animations.
+53. Interrupted show and hide transitions settle in the correct final state. A change of `open` ends a queued or
+    running transition: the animation stops, the tooltip is not inert, the method resolves `false`, and no `igcOpened`
+    or `igcClosed` follows. A change in an `igcOpening` handler also ends it, and `open = undefined` closes the
+    tooltip. A set of the current value does not end a queued show or hide.
+54. The tooltip is inert while it is closed and during the animations. A hide trigger during the show animation ends
+    the animation, and the tooltip is not inert during the hide delay, also after a change of `open` or a new show
+    trigger. A show trigger keeps an `inert` that the application set.
 
 ### Events tests
 

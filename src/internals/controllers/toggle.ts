@@ -17,13 +17,13 @@ export interface ToggleEventMap {
 }
 
 /**
- * A toggleable host must give the `emitEvent` method of the event-emitter
- * mixin. Extend {@link ../mixins/event-emitter.js#EventEmitterMixin | EventEmitterMixin}
+ * A host that asks for the events must give the `emitEvent` method of the
+ * event-emitter mixin. Extend {@link ../mixins/event-emitter.js#EventEmitterMixin | EventEmitterMixin}
  * with the {@link ToggleEventMap}, or with a subset of it.
  */
 type ToggleHost = LitElement & {
   open: boolean;
-  emitEvent(name: string, init?: CustomEventInit): boolean;
+  emitEvent?(name: string, init?: CustomEventInit): boolean;
 };
 
 /**
@@ -34,6 +34,8 @@ type ToggleHost = LitElement & {
  *
  * The signal aborts when a newer request or a direct change of `open` takes
  * over. The transition then stops its animations and changes no more state.
+ * A transition that refuses without a change of `open` stays the request in
+ * flight until its promise settles.
  */
 type ToggleTransitionFunction = (
   open: boolean,
@@ -93,7 +95,7 @@ class ToggleController {
     const detail = this._options.detail?.call(host);
 
     // Omit the falsy keys, so `emitEvent` applies its own defaults.
-    return host.emitEvent(name, {
+    return host.emitEvent!(name, {
       ...(cancelable && { cancelable }),
       ...(detail !== undefined && { detail }),
     });
@@ -164,6 +166,11 @@ class ToggleController {
    * The methods below are not `async`. An `async` wrapper adds microtask
    * hops, which shift the timing of caller code against `updateComplete`.
    */
+
+  /** Whether a `hide()` is in flight. */
+  public get closing(): boolean {
+    return this._pending === false;
+  }
 
   /**
    * Opens the host, and sends `igcOpening` and `igcOpened` when `emitEvents`
