@@ -73,12 +73,12 @@
             @each $side in top, bottom {
                 &[data-placement='#{$side}-start'] {
                     position-area: #{$side} span-#{$start};
-                    justify-self: if($start == right, left, right);
+                    justify-self: #{$end};
                 }
 
                 &[data-placement='#{$side}-end'] {
                     position-area: #{$side} span-#{$end};
-                    justify-self: if($end == right, left, right);
+                    justify-self: #{$start};
                 }
             }
         }

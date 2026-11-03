@@ -24,7 +24,6 @@ import {
 } from './position/native.js';
 import type { PopoverPositionStrategy } from './position/strategy.js';
 import {
-  type PopoverPositionStrategyMode,
   type PopoverRect,
   resolvePlacement,
   SCROLL_LISTENER_OPTIONS,
@@ -75,7 +74,6 @@ export default class IgcPopoverComponent extends LitElement {
 
   private _target?: Element;
   private _positionStrategy?: PopoverPositionStrategy;
-  private _positionMode?: PopoverPositionStrategyMode;
 
   /** The proxy anchor of `anchorRect`. */
   private _rectAnchor?: HTMLElement;
@@ -246,22 +244,17 @@ export default class IgcPopoverComponent extends LitElement {
   //#region Internal open state API
 
   private _getPositionStrategy(target: Element): PopoverPositionStrategy {
-    const mode = shouldUseNativeAnchorPositioning(target)
-      ? 'native'
-      : 'floating';
+    const Strategy = shouldUseNativeAnchorPositioning(target)
+      ? NativePositionStrategy
+      : FloatingPositionStrategy;
 
-    if (this._positionStrategy && this._positionMode === mode) {
+    if (this._positionStrategy instanceof Strategy) {
       return this._positionStrategy;
     }
 
     this._positionStrategy?.detach();
     this._positionStrategy?.clear();
-
-    this._positionMode = mode;
-    this._positionStrategy =
-      mode === 'native'
-        ? new NativePositionStrategy(this, this._handleAnchorRemoved)
-        : new FloatingPositionStrategy(this, this._handleAnchorRemoved);
+    this._positionStrategy = new Strategy(this, this._handleAnchorRemoved);
 
     return this._positionStrategy;
   }
@@ -336,11 +329,7 @@ export default class IgcPopoverComponent extends LitElement {
     }
   }
 
-  /**
-   * Binds one document `scroll` listener while the container shows and the
-   * scroll strategy is `close`. Reads the container, which can stay closed
-   * while `open` is true.
-   */
+  /** Reads the container, which can stay closed while `open` is true. */
   private _syncScrollStrategy(): void {
     toggleEventListener(
       document,

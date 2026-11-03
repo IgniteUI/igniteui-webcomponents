@@ -70,12 +70,6 @@ export class FloatingPositionStrategy extends PopoverPositionStrategy {
   private _pendingPosition?: Promise<void>;
 
   /**
-   * Identifies the open cycle, so a module load callback of a replaced cycle
-   * does not start an update.
-   */
-  private _attachId = 0;
-
-  /**
    * `fixed` for an anchor in the top layer, or with a sticky ancestor, else
    * `absolute`. Set once per open cycle, because the check forces a reflow.
    */
@@ -83,8 +77,6 @@ export class FloatingPositionStrategy extends PopoverPositionStrategy {
 
   public override attach(target: Element, container: HTMLElement): void {
     super.attach(target, container);
-
-    const attachId = ++this._attachId;
 
     this._middleware = undefined;
 
@@ -110,14 +102,17 @@ export class FloatingPositionStrategy extends PopoverPositionStrategy {
 
     // `autoUpdate` positions the container one time before it returns, so
     // the pending position of that call completes the load.
-    this._pendingLoad = loadFloatingUi().then((module) => {
-      if (attachId !== this._attachId) {
+    const load = loadFloatingUi().then((module) => {
+      // A detach or a later attach replaced this open cycle.
+      if (load !== this._pendingLoad) {
         return undefined;
       }
 
       this._startAutoUpdate(module, target, container);
       return this._pendingPosition;
     });
+
+    this._pendingLoad = load;
   }
 
   public override async whenPositioned(): Promise<void> {
@@ -146,7 +141,6 @@ export class FloatingPositionStrategy extends PopoverPositionStrategy {
   }
 
   public detach(): void {
-    this._attachId++;
     this._pendingLoad = undefined;
     this._dispose?.();
     this._dispose = undefined;

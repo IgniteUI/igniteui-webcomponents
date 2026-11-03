@@ -48,7 +48,6 @@ class TooltipController implements ReactiveController {
 
   //#region Public properties
 
-  /** Whether the tooltip is in shown state. */
   public get open(): boolean {
     return this._open;
   }
@@ -68,7 +67,6 @@ class TooltipController implements ReactiveController {
     this._syncOpenListeners();
   }
 
-  /** The current anchor target, if any. */
   public get anchor(): TooltipAnchor {
     return this._anchor?.deref();
   }
@@ -82,7 +80,6 @@ class TooltipController implements ReactiveController {
     return Array.from(this._hideTriggers).join();
   }
 
-  /** Sets the hide triggers and binds them again on the anchors. */
   public set hideTriggers(value: string) {
     this._hideTriggers = parseTriggers(value);
     this._bindAnchors();
@@ -93,7 +90,6 @@ class TooltipController implements ReactiveController {
     return Array.from(this._showTriggers).join();
   }
 
-  /** Sets the show triggers and binds them again on the anchors. */
   public set showTriggers(value: string) {
     this._showTriggers = parseTriggers(value);
     this._bindAnchors();
@@ -270,17 +266,6 @@ class TooltipController implements ReactiveController {
 
   //#endregion
 
-  private _dispose(): void {
-    this._initialAbortHandle.abort();
-    this._transientAbortHandle.abort();
-    this._hostAbortHandle.abort();
-    service.remove(this._host);
-    this._anchor = null;
-    this._initialAnchor = null;
-    this._syncAnchorARIA();
-  }
-
-  /** The element of an anchor id, or the anchor itself. */
   private _resolve(value: TooltipAnchor | string): TooltipAnchor | null {
     return isString(value) ? getElementByIdFromRoot(this._host, value) : value;
   }
@@ -364,13 +349,19 @@ class TooltipController implements ReactiveController {
   /** @internal */
   public hostConnected(): void {
     this.resolveAnchor(this._host.anchor);
-    // Binds again the listeners that `_dispose` released.
+    // Binds again the listeners that `hostDisconnected` released.
     this._syncOpenListeners();
   }
 
   /** @internal */
   public hostDisconnected(): void {
-    this._dispose();
+    this._initialAbortHandle.abort();
+    this._transientAbortHandle.abort();
+    this._hostAbortHandle.abort();
+    service.remove(this._host);
+    this._anchor = null;
+    this._initialAnchor = null;
+    this._syncAnchorARIA();
   }
 
   //#endregion

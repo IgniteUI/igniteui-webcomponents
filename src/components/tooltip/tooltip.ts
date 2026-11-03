@@ -44,6 +44,9 @@ export interface IgcTooltipComponentEventMap {
 /** Additional offset applied to the arrow element for aligned placements. */
 const ARROW_OFFSET = 8;
 
+const showAnimation = scaleInCenter({ duration: 150, easing: EaseOut.Quad });
+const hideAnimation = fadeOut({ duration: 75, easing: EaseOut.Sine });
+
 type TooltipStateOptions = {
   show: boolean;
   withDelay?: boolean;
@@ -109,16 +112,6 @@ export default class IgcTooltipComponent extends I18nMixin(
   private readonly _player = addAnimationController(this, this._containerRef);
   private readonly _slots = addSlotController(this, {
     slots: setSlots('close-button'),
-  });
-
-  private readonly _showAnimation = scaleInCenter({
-    duration: 150,
-    easing: EaseOut.Quad,
-  });
-
-  private readonly _hideAnimation = fadeOut({
-    duration: 75,
-    easing: EaseOut.Sine,
   });
 
   private _anchorChanged = false;
@@ -347,7 +340,7 @@ export default class IgcTooltipComponent extends I18nMixin(
   protected override firstUpdated(): void {
     if (this.open) {
       this.updateComplete.then(() => {
-        this._player.playExclusive(this._showAnimation);
+        this._player.playExclusive(showAnimation);
       });
     }
   }
@@ -359,12 +352,13 @@ export default class IgcTooltipComponent extends I18nMixin(
     }
   }
 
-  protected override willUpdate(): void {
-    this._resolveAnchor();
+  protected override update(changedProperties: PropertyValues<this>): void {
+    this._applyPendingAnchor();
+    super.update(changedProperties);
   }
 
-  /** Resolves a changed `anchor`, so that a later `show(target)` wins over it. */
-  private _resolveAnchor(): void {
+  /** Applies a pending `anchor` change, so that a later `show(target)` wins over it. */
+  private _applyPendingAnchor(): void {
     if (this._anchorChanged) {
       this._anchorChanged = false;
       this._controller.resolveAnchor(this.anchor);
@@ -431,7 +425,7 @@ export default class IgcTooltipComponent extends I18nMixin(
     this._animating = true;
 
     const animationComplete = await this._player.playExclusive(
-      show ? this._showAnimation : this._hideAnimation
+      show ? showAnimation : hideAnimation
     );
 
     // Superseded while animating - the newer transition owns the state now.
@@ -459,14 +453,15 @@ export default class IgcTooltipComponent extends I18nMixin(
       return false;
     }
 
-    // A queued transition only delays a state that the tooltip already has.
-    if (show === this.open && this._pending) {
-      this._cancelTransition(show);
-      return false;
-    }
+    const queued = this._pending;
 
     this._abortTransition();
     this._requestedState = show;
+
+    // A queued transition only delays a state that the tooltip already has.
+    if (queued && show === this.open) {
+      return false;
+    }
 
     const id = this._transitionId;
     const allowed =
@@ -509,7 +504,7 @@ export default class IgcTooltipComponent extends I18nMixin(
    * Resolves with whether the tooltip transitioned to a shown state.
    */
   public async show(target?: Element | string): Promise<boolean> {
-    this._resolveAnchor();
+    this._applyPendingAnchor();
 
     if (target) {
       this._cancelTransition();

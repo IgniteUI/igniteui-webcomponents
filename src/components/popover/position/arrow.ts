@@ -12,17 +12,14 @@ export type PopoverSide = keyof typeof OPPOSITE_SIDE;
 
 const SIDES = Object.keys(OPPOSITE_SIDE) as PopoverSide[];
 
-/** Returns the side of a placement, without the alignment. */
 export function getPlacementSide(placement: string): PopoverSide {
   return placement.split('-')[0] as PopoverSide;
 }
 
-/** True if `side` is on the block axis. */
 export function isBlockSide(side: PopoverSide): boolean {
   return side === 'top' || side === 'bottom';
 }
 
-/** Sets the side part of the arrow. */
 function setArrowSide(element: HTMLElement, side: PopoverSide): void {
   if (!element.part.contains(side)) {
     element.part.remove(...SIDES);

@@ -167,11 +167,8 @@ export class NativePositionStrategy extends PopoverPositionStrategy {
 
   //#region Arrow support
 
-  /** Keeps the invalidation listeners bound while an open popover has an arrow. */
   private _syncArrowListeners(
-    active = this._host.arrow != null &&
-      this._container != null &&
-      isPopoverOpen(this._container)
+    active = this._host.arrow != null && isPopoverOpen(this._container)
   ): void {
     toggleEventListener(
       window,
@@ -215,8 +212,6 @@ export class NativePositionStrategy extends PopoverPositionStrategy {
     const anchorRect = target.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
     const block = isBlockSide(getPlacementSide(resolvePlacement(this._host)));
-
-    // The main axis carries the placement.
     const main = block ? 'top' : 'left';
     const mainSize = block ? 'height' : 'width';
 
