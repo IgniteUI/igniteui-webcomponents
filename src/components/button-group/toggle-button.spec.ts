@@ -14,6 +14,7 @@ describe('Toggle Button', () => {
     tagName: 'igc-toggle-button',
     template: html`<igc-toggle-button>Bold</igc-toggle-button>`,
     getTarget: (host) => host.renderRoot.querySelector('button')!,
+    visibleText: 'Bold',
   });
 
   const DIFF_OPTIONS = {

@@ -584,6 +584,7 @@ describe('Button tests', () => {
     tagName: 'igc-button',
     template: html`<igc-button>Click</igc-button>`,
     getTarget: (host) => host.renderRoot.querySelector('[part~="base"]')!,
+    visibleText: 'Click',
   });
 
   describe('Naming', () => {
@@ -597,7 +598,7 @@ describe('Button tests', () => {
           <span id="name">Save</span>
           <span id="hint">Saves the draft</span>
           <label for="button">Save the file</label>
-          <igc-button id="button">Click</igc-button>
+          <igc-button id="button">Save</igc-button>
         </div>
       `);
       button = container.querySelector('igc-button')!;
