@@ -373,8 +373,9 @@ as touched, so an invalid value shows its invalid styles at once, also when the 
 
 **Opening and closing the dialog.** The dialog fades in on an open, and `igcOpened` follows the entrance. Cancel,
 Done, <kbd>Escape</kbd> and an outside click play the exit animation of the dialog, and `open` stays `true` until it
-ends; the calendar and the range chips ignore a selection then, and Done and Cancel do nothing. A canceled
-`igcClosing` keeps the dialog open and commits nothing, so Cancel still restores the range. The date picker suite
+ends; the calendar and the range chips ignore a selection then, and Done, Cancel and <kbd>Escape</kbd> do nothing.
+A canceled `igcClosing` keeps the dialog open. Done commits before `igcClosing`, but an outside click commits only
+when the close goes on, so after a canceled outside click, Cancel still restores the range. The date picker suite
 covers the shared behavior.
 
 **Readonly.** Keyboard navigation, toggling the calendar and clearing through the clear icon are all disabled, and
@@ -591,7 +592,7 @@ input and two inputs suites run with reduced motion, so the dialog does not fade
 4. Interactions - selection through the calendar, keyboard navigation, and interactions with the show icon. A value
    set from code while the dialog is open, also with `select()`, is not reported when Done commits. After a canceled
    close on an outside click, Cancel restores the range. <kbd>Escape</kbd> restores the range as the close starts, so
-   Done or a reopen during the exit keeps it. Done and Cancel do nothing during the exit of `hide()`.
+   Done or a reopen during the exit keeps it. Done, Cancel and <kbd>Escape</kbd> do nothing during the exit of `hide()`.
 5. Readonly state, in dropdown and in dialog mode.
 6. Predefined ranges - the built-in chips and the custom ranges, and a chip during the exit of the dialog.
 7. Locale week start - the calendar derives its week start from the locale when `week-start` is not set.

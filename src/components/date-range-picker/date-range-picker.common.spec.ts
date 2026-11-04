@@ -732,7 +732,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           expect(eventSpy).not.calledWith('igcChange');
         });
 
-        it('ignores Done and Cancel during the exit of `hide()` (dialog)', async () => {
+        it('ignores Done, Cancel and Escape during the exit of `hide()` (dialog)', async () => {
           const { eventSpy } = await selectDraftInDialog();
           const draft = picker.value;
 
@@ -742,6 +742,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           )) {
             simulateClick(button);
           }
+          simulateKeyboard(picker, escapeKey);
 
           expect(await closed).to.be.true;
           expect(picker.value).to.eql(draft);

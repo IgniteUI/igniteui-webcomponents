@@ -688,7 +688,8 @@ export abstract class IgcDatePickerBaseComponent<
   //#region Event handlers
 
   protected async _onEscapeKey(): Promise<void> {
-    if (!this.open) return;
+    // The running close decides the value.
+    if (!this.open || this._isClosing) return;
 
     const closed = this._hide(true);
     // Revert as the close starts, as Cancel does, so a reopen during the exit keeps the old value.
