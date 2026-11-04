@@ -421,6 +421,26 @@ describe('Tooltip', () => {
       expect(baseElement.part.contains('simple-text')).to.be.true;
     });
 
+    it('should render the message with whitespace-only slotted text', async () => {
+      const baseElement = (await setupSimpleTextTooltip()) as HTMLElement;
+
+      // A line break between the tags is slotted, and hides the slot fallback.
+      tooltip.append(document.createTextNode('\n  '));
+      await elementUpdated(tooltip);
+      await tooltip.show(tooltip.previousElementSibling!);
+
+      expect(baseElement.part.contains('simple-text')).to.be.true;
+      expect(baseElement.innerText.trim()).to.equal('Simple text tooltip');
+
+      // `innerText` reads the shadow tree, so it has no slotted content.
+      tooltip.append(document.createElement('span'));
+      await elementUpdated(tooltip);
+      await elementUpdated(tooltip);
+
+      expect(baseElement.part.contains('simple-text')).to.be.false;
+      expect(baseElement.innerText.trim()).to.equal('');
+    });
+
     it('should drop the simple-text part when content is projected later', async () => {
       const baseElement = await setupSimpleTextTooltip();
 

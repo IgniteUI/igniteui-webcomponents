@@ -59,6 +59,7 @@
 |       6 | 2026-10-30 | `showAt()` shows the tooltip at a point or a rectangle        |
 |       7 | 2026-10-30 | Triggers bind once; a changed `anchor` resolves before `show` |
 |       8 | 2026-11-03 | A change of `open` ends a queued or running transition; a hide trigger during the show animation ends the animation |
+|       9 | 2026-11-03 | White space between the tags no longer hides `message` |
 
 ## Overview
 
@@ -324,7 +325,8 @@ tooltip.showAt(barRect);
 ### Behaviors
 
 - The tooltip respects its given placement, and repositions when the content would be clipped at a viewport edge.
-- Slotted content in the default slot takes precedence over the `message` property.
+- Slotted content in the default slot takes precedence over the `message` property. Text that is only white space,
+  such as a line break between the tags, is not content, and the tooltip shows `message`.
 - Once shown, the tooltip stays open until a hide trigger fires, the end-user hovers in and out of the tooltip
   itself, or it is closed programmatically.
 - In sticky mode a shown tooltip ignores its hide triggers and the hover-out behavior; it is dismissed through the
@@ -429,7 +431,8 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 
 ### Properties
 
-4. `message` renders as plain text, and slotted content takes precedence over it.
+4. `message` renders as plain text, also with only white space between the tags, and slotted content takes
+   precedence over it.
 5. `placement`, `offset` and `withArrow` are applied to the positioning surface.
 6. `showTriggers` and `hideTriggers` accept comma separated, space separated and mixed lists.
 7. `showDelay` and `hideDelay` are honoured for end-user interaction.

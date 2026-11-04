@@ -589,9 +589,13 @@ export default class IgcTooltipComponent extends I18nMixin(
   }
 
   protected override render() {
+    const hasContent = this._hasProjectedContent;
+    // Whitespace text is slotted too, and hides the fallback `message`.
+    const whitespaceOnly =
+      !hasContent && this._slots.hasAssignedNodes(DefaultSlot);
     const parts = {
       base: true,
-      'simple-text': !this._hasProjectedContent,
+      'simple-text': !hasContent,
     };
 
     return html`
@@ -609,6 +613,7 @@ export default class IgcTooltipComponent extends I18nMixin(
       >
         <div ${ref(this._containerRef)} part=${partMap(parts)}>
           <slot>${this.message}</slot>
+          ${whitespaceOnly ? this.message : nothing}
           ${
             this.sticky
               ? html`
