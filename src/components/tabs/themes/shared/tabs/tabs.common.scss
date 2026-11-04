@@ -27,6 +27,16 @@ $theme: $material;
     background: var-get($theme, 'header-background');
 }
 
+// The indicator of Material and Fluent. Indigo and Bootstrap change it.
+[part~='selected-indicator'] {
+    --_indicator-size: #{rem(2px)};
+    --_indicator-overlap: #{rem(2px)};
+
+    span {
+        background: var-get($theme, 'indicator-color');
+    }
+}
+
 igc-icon-button::part(icon) {
     --size: #{rem(24px)};
 }

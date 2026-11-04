@@ -59,6 +59,7 @@ export type StepperTitlePosition = 'auto' | 'bottom' | 'top' | 'end' | 'start';
 export type StepperVerticalAnimation = 'grow' | 'fade' | 'none';
 export type TabsActivation = 'auto' | 'manual';
 export type TabsAlignment = 'start' | 'end' | 'center' | 'justify';
+export type TabsHeaderPosition = 'top' | 'start' | 'end';
 export type TextareaResize = 'vertical' | 'auto' | 'none';
 export type TileManagerDragMode = 'none' | 'tile-header' | 'tile';
 export type TileManagerResizeMode = 'none' | 'hover' | 'always';

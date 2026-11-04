@@ -239,9 +239,12 @@ class ElementInternalsController implements ReactiveController {
 
   /** Adds or removes a custom state, which CSS matches with `:state()`. */
   public setState(state: string, value: boolean): void {
-    value
-      ? this._internals.states.add(state)
-      : this._internals.states.delete(state);
+    const states = this._internals.states;
+
+    // Chromium restyles the host on each `add()`, also of a state that is set.
+    if (states.has(state) !== value) {
+      value ? states.add(state) : states.delete(state);
+    }
   }
 
   /**
