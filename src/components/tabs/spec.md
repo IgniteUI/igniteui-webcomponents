@@ -55,6 +55,7 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
 |       7 | 2026-10-23 | The tabs make a stacking context, so the z-index of the headers, the indicator and the scroll buttons does not compete with the layers of the page |
 |       8 | 2026-10-29 | The selected panel has no `transform`, so it is not the containing block of fixed content |
 |       9 | 2026-10-29 | In the Fluent theme, transition only the properties of a tab that change; the selected indicator no longer sets `visibility: visible`; so the tabs hide at the same time as a hidden ancestor |
+|      10 | 2026-11-04 | `igcNavigate` is not composed, so it does not reach a shadow host around the tabs; `_parent` and `_top` count as `_self` in a page that is not in a frame |
 
 ## Overview
 
@@ -223,13 +224,16 @@ keeps the anchor but has no URL.
 | <kbd>Ctrl</kbd> / <kbd>Cmd</kbd> + <kbd>Enter</kbd> | No change.                                   | The browser opens the link in a new tab.            |
 | Arrow keys with `activation="auto"`       | The tab is selected, except a tab whose `target` is not `_self`. | None.                                     |
 
+In a page that is not in a frame, `_parent` and `_top` open the link in the same tab, so they count as `_self`.
+
 Set `selected` from the current URL, so the selection survives a reload and the back and forward buttons. Use
 `activation="manual"` when each tab loads a page.
 
 To route on the client, listen to `igcNavigate` on the tab, call `preventDefault()` and route. The tab emits it when
 the browser is about to follow the link (see the table), after `igcChange`, also when the tab is already selected. A
 disabled tab and a click that is already canceled emit no event. The event does not bubble, so a listener on a tab
-never gets the event of a tab nested in its panel.
+never gets the event of a tab nested in its panel. It is not composed either, so a shadow host around the tabs does
+not get it.
 
 Do not route from `click` on the tab. The panel is a child of the tab, so the listener also gets the clicks in the
 panel, for example on a submit button or a link, and routes them to the URL of the tab.
@@ -437,8 +441,8 @@ The groups below mirror the `describe` blocks.
 25. A key pressed on an element other than a tab header, such as an element slotted into a label, is not canceled,
     and does not select or focus a tab.
 26. A plain click, Enter or Space on a link tab emits `igcNavigate` on the tab, also on the selected tab, and the
-    event does not bubble. When the application cancels it, the tabs cancel the click and the link is not followed.
-    A plain or disabled tab, and a click in the panel, emit no event.
+    event does not bubble or reach a shadow host around the tabs. When the application cancels it, the tabs cancel
+    the click and the link is not followed. A plain or disabled tab, and a click in the panel, emit no event.
 
 ### Layout
 

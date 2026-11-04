@@ -1,5 +1,6 @@
 import type { Ref } from 'lit/directives/ref.js';
 import { isLTR, setStyles } from '#internals/utils/dom.js';
+import { linkOpensElsewhere } from '#internals/utils/events.js';
 import { asNumber } from '#internals/utils/math.js';
 import { equal } from '#internals/utils/objects.js';
 import type IgcTabComponent from './tab.js';
@@ -289,35 +290,7 @@ export function opensElsewhere(
   tab: IgcTabComponent,
   event?: MouseEvent
 ): boolean {
-  if (tab.href == null) {
-    return false;
-  }
-
-  if (
-    event &&
-    (event.button !== 0 ||
-      event.altKey ||
-      event.ctrlKey ||
-      event.metaKey ||
-      event.shiftKey)
-  ) {
-    return true;
-  }
-
-  const target = (
-    tab.target ?? getBaseTarget(tab.ownerDocument)
-  )?.toLowerCase();
-
-  return Boolean(target) && target !== '_self';
-}
-
-/** The target of the first `<base>` element that has one, as the browser uses it. */
-function getBaseTarget(document: Document): string | null {
-  for (const base of document.getElementsByTagName('base')) {
-    if (base.hasAttribute('target')) {
-      return base.getAttribute('target');
-    }
-  }
-
-  return null;
+  return (
+    tab.href != null && linkOpensElsewhere(tab.target, tab.ownerDocument, event)
+  );
 }

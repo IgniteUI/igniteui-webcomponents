@@ -7,13 +7,4 @@ $theme: $base;
     color-scheme: light;
 
     @include css-vars-from-theme($theme);
-
-    igc-chat-message::part(message-container) {
-        --shiki-purple: #6f42c1;
-        --shiki-dark-blue: #032f62;
-        --shiki-red: #d73a49;
-        --shiki-blue: #005cc5;
-        --shiki-green: #22863a;
-        --shiki-orange: #e36209;
-    }
 }
