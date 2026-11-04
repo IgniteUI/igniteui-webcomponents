@@ -86,6 +86,9 @@ export class TabsHelpers {
   public hasScrollButtons = false;
   public scrollButtonsDisabled = { start: true, end: false };
 
+  /** Whether the next layout scrolls the selected tab into view. */
+  public scrollOnLayout = false;
+
   /** The height of the height probe at the last check, and whether it was definite. */
   private _heightCheck = { probe: -1, definite: false };
 
@@ -309,6 +312,10 @@ export class TabsHelpers {
     if (!(container && header)) {
       return;
     }
+
+    // A strip that does not render, such as in a closed `<details>`, keeps the layout
+    // it had, so the next layout scrolls again with the current scroll buttons.
+    this.scrollOnLayout ||= !container.checkVisibility();
 
     const bounds = this._getVisibleBounds(container);
     const extent = this._getExtent(header);

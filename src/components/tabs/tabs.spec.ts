@@ -1785,6 +1785,73 @@ describe('Tabs component', () => {
       );
     });
 
+    it('scrolls the selected tab into view when a closed details opens', async () => {
+      // A closed details skips its content, so the observer reports no size until it opens.
+      const details = await fixture<HTMLDetailsElement>(html`
+        <details>
+          <summary>More</summary>
+          <igc-tabs style="width: 400px">
+            ${Array.from(range(1, 21)).map(
+              (idx) => html`
+                <igc-tab .label=${`Item ${idx}`} ?selected=${idx === 20}>
+                  Content ${idx}
+                </igc-tab>
+              `
+            )}
+          </igc-tabs>
+        </details>
+      `);
+      const tabs = details.querySelector(IgcTabsComponent.tagName)!;
+      const last = lastOf(tabs.tabs)!;
+
+      await elementUpdated(tabs);
+      await nextFrame();
+      details.open = true;
+
+      await waitUntil(
+        () => isInView(getTabsDOM(tabs).container, getTabDOM(last).header),
+        'The selected tab did not scroll into view'
+      );
+    });
+
+    it('scrolls a tab selected in a closed details into view when the scroll buttons show on open', async () => {
+      // The container keeps its size, so the observer reports only the new headers.
+      const details = await fixture<HTMLDetailsElement>(html`
+        <details open>
+          <summary>More</summary>
+          <igc-tabs style="width: 400px">
+            <igc-tab label="Item 1">Content 1</igc-tab>
+            <igc-tab label="Item 2">Content 2</igc-tab>
+          </igc-tabs>
+        </details>
+      `);
+      const tabs = details.querySelector(IgcTabsComponent.tagName)!;
+
+      await elementUpdated(tabs);
+      await nextFrame();
+      details.open = false;
+      await nextFrame();
+
+      for (const idx of range(3, 21)) {
+        const tab = document.createElement(IgcTabComponent.tagName);
+        tab.label = `Item ${idx}`;
+        tab.selected = idx === 20;
+        tabs.append(tab);
+      }
+
+      await elementUpdated(tabs);
+      await nextFrame();
+      details.open = true;
+
+      const last = lastOf(tabs.tabs)!;
+
+      expect(last.selected).to.be.true;
+      await waitUntil(
+        () => isInView(getTabsDOM(tabs).container, getTabDOM(last).header),
+        'The selected tab did not scroll into view'
+      );
+    });
+
     it('keeps its layout while hidden, so that it shows again without a frame of zero sizes', async () => {
       const { container, indicator } = getTabsDOM(element);
       const layout = () => [

@@ -457,8 +457,9 @@ The groups below mirror the `describe` blocks.
     measured in its own CSS pixels, and a selected tab scrolls into view between the scroll buttons. A hidden tab does not
     move the strip, neither through the scroll buttons nor when it is selected. A tab selected in the initial markup
     scrolls fully into view, also when the scroll buttons show only after the headers are measured again. A tab
-    selected while the tabs are hidden scrolls into view when they show again. Hidden tabs keep their layout, so they
-    show again with no frame of zero sizes.
+    selected while the tabs are hidden scrolls into view when they show again, also in a closed `<details>` that
+    opens, when the scroll buttons show only on open. Hidden tabs keep their layout, so they show again with no frame
+    of zero sizes.
 
 ### Composition
 

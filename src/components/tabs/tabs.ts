@@ -115,9 +115,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
   /** The frame request of a layout that waits for the next frame. */
   private _layoutFrame = 0;
 
-  /** Whether the next layout scrolls the selected tab into view. */
-  private _scrollOnLayout = false;
-
   /** The tabs at the last change of the slot. */
   private _knownTabs: IgcTabComponent[] = [];
 
@@ -299,7 +296,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
         const [width, height] = this._containerSize;
 
         // Hidden tabs cannot scroll, so the selected tab scrolls into view when they show.
-        this._scrollOnLayout ||= width === 0 && inlineSize > 0;
+        this._domHelpers.scrollOnLayout ||= width === 0 && inlineSize > 0;
 
         // The panels also size the container, so a row measures only its width.
         resized ||= !column && inlineSize !== width;
@@ -418,8 +415,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
     this._domHelpers.updateLayout();
     this._domHelpers.setIndicator(this._activeTab);
 
-    if (this._scrollOnLayout) {
-      this._scrollOnLayout = false;
+    if (this._domHelpers.scrollOnLayout) {
+      this._domHelpers.scrollOnLayout = false;
       this._domHelpers.scrollTabIntoView(this._activeTab);
     }
   }
