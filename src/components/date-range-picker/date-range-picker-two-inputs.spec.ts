@@ -5,6 +5,7 @@ import {
   html,
   waitUntil,
 } from '@open-wc/testing';
+import { emulateMedia } from '@web/test-runner-commands';
 import { spy } from 'sinon';
 import {
   altKey,
@@ -40,6 +41,9 @@ describe('Date range picker - two inputs', () => {
   before(() =>
     defineComponents(IgcDateRangePickerComponent, IgcDateRangeInputComponent)
   );
+  // The dialog fades take 350 ms each; skip them in this file.
+  before(() => emulateMedia({ reducedMotion: 'reduce' }));
+  after(() => emulateMedia({ reducedMotion: 'no-preference' }));
 
   runExternalLabelAssociationTests({
     tagName: IgcDateRangePickerComponent.tagName,
@@ -489,6 +493,7 @@ describe('Date range picker - two inputs', () => {
           'igc-button[slot="footer"]:last-of-type'
         ) as HTMLButtonElement;
         doneBtn?.click();
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         expect(eventSpy).calledWith('igcChange');
         checkSelectedRange(picker, {
@@ -566,6 +571,7 @@ describe('Date range picker - two inputs', () => {
           'igc-button[slot="footer"]'
         ) as HTMLButtonElement;
         cancelBtn?.click();
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         expect(eventSpy).not.to.be.calledWith('igcChange');
         dialog = picker.renderRoot.querySelector('igc-dialog');
@@ -606,6 +612,7 @@ describe('Date range picker - two inputs', () => {
           'igc-button[slot="footer"]'
         ) as HTMLButtonElement;
         cancelBtn?.click();
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         expect(eventSpy).not.to.be.calledWith('igcChange');
         dialog = picker.renderRoot.querySelector('igc-dialog');
@@ -650,6 +657,7 @@ describe('Date range picker - two inputs', () => {
         checkSelectedRange(picker, { start: date1.native, end: date2.native });
 
         simulateKeyboard(picker, escapeKey);
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         await elementUpdated(dateTimeInputs[0]);
         await elementUpdated(dateTimeInputs[1]);

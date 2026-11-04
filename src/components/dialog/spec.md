@@ -53,6 +53,7 @@
 |       5 | 2026-10-19 | Localize the default action through `igniteui-i18n-core`  |
 |       6 | 2026-10-21 | API descriptions aligned with the JSDoc.                  |
 |       7 | 2026-10-29 | The backdrop is the native `::backdrop`; the `backdrop` and `animating` parts are removed; a change of `open` against a running transition ends it |
+|       8 | 2026-11-04 | A `hide()` in the task of `show()` closes the dialog at once |
 
 ## Overview
 
@@ -344,7 +345,8 @@ The suite lives in [`dialog.spec.ts`](./dialog.spec.ts) and runs in a real brows
 18. A change of `open` against a running transition ends it: `open = false` and then `open = true` during the exit,
     with an update after each or in one task, keeps the dialog modal with its backdrop, also with reduced motion;
     `open = false` during the entrance lets the next `show()` open the dialog. A `hide()` right after, also in the
-    same task, closes the dialog, and the ended exit does not change the new one.
+    same task, closes the dialog, and the ended exit does not change the new one. A `hide()` in the task of `show()`
+    shows no dialog.
 
 ### Not covered by the suite
 
