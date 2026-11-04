@@ -74,10 +74,7 @@ export class IgcBaseComboBoxComponent extends LitElement {
     this._hide(true);
   }
 
-  /**
-   * The open and close transition of a subclass. Declare it as a method: the
-   * controller reads it once, at construction.
-   */
+  /** The open and close transition of a subclass. Read once at construction, so declare it as a method. */
   protected _toggleTransition?(
     open: boolean,
     signal: AbortSignal

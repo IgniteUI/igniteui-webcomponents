@@ -560,43 +560,50 @@ export abstract class IgcDatePickerBaseComponent<
     open: boolean,
     signal: AbortSignal
   ): boolean | Promise<boolean> {
-    const dialog = this._isDropDown ? null : this._dialog;
+    const dialog = this._isDropDown ? undefined : this._dialog;
 
-    if (!dialog || !(open || dialog.open)) {
-      this.open = open;
+    if (!open && dialog?.open) {
+      // A newer open ends the exit at once, so a later close can play its own.
+      signal.addEventListener(
+        'abort',
+        () => {
+          if (this.open) keepDialogOpen(dialog);
+        },
+        { once: true }
+      );
+
+      const hidden = dialog.hide();
+      // A dialog that has not opened yet closes at once, so the first render must not open it.
+      if (!dialog.open) this.open = false;
+
+      return hidden.then((completed) => {
+        if (completed && !signal.aborted) this.open = false;
+        return completed;
+      });
+    }
+
+    this.open = open;
+
+    if (!open || !dialog) return true;
+
+    if (dialog.open) {
+      keepDialogOpen(dialog);
       return true;
     }
 
-    // When the transition ends early and `open` no longer matches it, the dialog
-    // takes the state of `open` at once. The `?open` binding misses a value
-    // that changes back before the next render.
+    // `open` set to `false` ends the entrance. `?open` skips a value equal to
+    // its last commit, so check after the render.
     signal.addEventListener(
       'abort',
       () => {
-        if (this.open === open) return;
-        if (this.open) keepDialogOpen(dialog);
-        else dialog.open = false;
+        this.updateComplete.then(() => {
+          if (!this.open) dialog.open = false;
+        });
       },
       { once: true }
     );
 
-    if (open) {
-      this.open = true;
-
-      // A dialog that is still open plays its exit.
-      if (dialog.open) {
-        keepDialogOpen(dialog);
-        return true;
-      }
-
-      return dialog.show();
-    }
-
-    return dialog.hide().then((completed) => {
-      const closed = completed && !signal.aborted;
-      if (closed) this.open = false;
-      return closed;
-    });
+    return dialog.show();
   }
 
   protected async _shouldCloseCalendarDropdown(): Promise<void> {
@@ -681,10 +688,12 @@ export abstract class IgcDatePickerBaseComponent<
   //#region Event handlers
 
   protected async _onEscapeKey(): Promise<void> {
-    if (await this._hide(true)) {
-      this._handleDismiss();
-      this._focusInput();
-    }
+    if (!this.open) return;
+
+    const closed = this._hide(true);
+    // Revert as the close starts, as Cancel does, so a reopen during the exit keeps the old value.
+    if (this._isClosing || !this.open) this._handleDismiss();
+    if (await closed) this._focusInput();
   }
 
   protected override async _handleAnchorClick(): Promise<void> {
@@ -713,7 +722,7 @@ export abstract class IgcDatePickerBaseComponent<
     event.stopPropagation();
     this._setTouchedState();
 
-    // A selection during the exit of the dialog would come after Done or Cancel.
+    // The running close decides the value.
     if (this.readOnly || this._isClosing) {
       await this._restoreCalendarSelection();
       return;
@@ -727,13 +736,11 @@ export abstract class IgcDatePickerBaseComponent<
     }
   }
 
-  /** The picker runs the close, so its `igcClosing` decides for the dialog. */
+  /** Runs the close through the picker; a canceled `igcClosing` keeps the dialog open and commits nothing. */
   protected _handleDialogClosing(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
     this._hide(true);
-
-    // A canceled `igcClosing` keeps the dialog open and commits nothing.
     if (this._isClosing) this._onDialogClosing();
   }
 
@@ -900,7 +907,7 @@ export abstract class IgcDatePickerBaseComponent<
   //#endregion
 }
 
-/** Ends a running exit of the dialog without an animation. An open dialog stays as it is. */
+/** Ends a running exit of the dialog without an animation. */
 function keepDialogOpen(dialog: IgcDialogComponent): void {
   dialog.open = false;
   dialog.open = true;

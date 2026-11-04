@@ -3,8 +3,10 @@ import {
   expect,
   fixture,
   html,
+  oneEvent,
   waitUntil,
 } from '@open-wc/testing';
+import { emulateMedia } from '@web/test-runner-commands';
 import { getI18nManager, registerI18n } from 'igniteui-i18n-core';
 import { ValidationResourceStringsBG } from 'igniteui-i18n-resources';
 import { spy } from 'sinon';
@@ -48,6 +50,9 @@ import IgcDatePickerComponent from './date-picker.js';
 
 describe('Date picker', () => {
   before(() => defineComponents(IgcDatePickerComponent));
+  // The dialog fades take 350 ms each; skip them outside the transition specs.
+  before(() => emulateMedia({ reducedMotion: 'reduce' }));
+  after(() => emulateMedia({ reducedMotion: 'no-preference' }));
 
   it('exposes `required` as `aria-required` on the native input', async () => {
     const picker = await fixture<IgcDatePickerComponent>(
@@ -1157,19 +1162,24 @@ describe('Date picker', () => {
     });
 
     describe('Dialog mode transitions', () => {
+      before(() => emulateMedia({ reducedMotion: 'no-preference' }));
+      after(() => emulateMedia({ reducedMotion: 'reduce' }));
+
       let dialog: IgcDialogComponent;
       let nativeDialog: HTMLDialogElement;
 
       const isAnimating = () => nativeDialog.getAnimations().length > 0;
+      const states = () => [picker.open, dialog.open, nativeDialog.open];
+
+      const settle = async () => {
+        await elementUpdated(picker);
+        await elementUpdated(dialog);
+      };
 
       const expectSteadyOpen = () => {
         expect(isAnimating()).to.be.false;
         expect(nativeDialog.hasAttribute('data-closing')).to.be.false;
-        expect([picker.open, dialog.open, nativeDialog.open]).to.eql([
-          true,
-          true,
-          true,
-        ]);
+        expect(states()).to.eql([true, true, true]);
       };
 
       beforeEach(async () => {
@@ -1182,6 +1192,7 @@ describe('Date picker', () => {
       describe('Open', () => {
         it('sends `igcOpened` after the entrance of the dialog ends', async () => {
           const eventSpy = spy(picker, 'emitEvent');
+          const opened = oneEvent(picker, 'igcOpened');
 
           picker.focus();
           simulateKeyboard(picker, [altKey, arrowDown]);
@@ -1193,7 +1204,7 @@ describe('Date picker', () => {
           expect(eventSpy).calledOnceWith('igcOpening');
 
           finishAnimationsFor(dialog.shadowRoot!);
-          await waitUntil(() => eventSpy.calledWith('igcOpened'));
+          await opened;
 
           expect(
             isFocused(
@@ -1221,26 +1232,44 @@ describe('Date picker', () => {
           await elementUpdated(dialog);
 
           picker.open = false;
-          await elementUpdated(picker);
-          await elementUpdated(dialog);
+          await settle();
 
           expect(nativeDialog.open).to.be.false;
           expect(isAnimating()).to.be.false;
           expect(await opened).to.be.false;
         });
 
+        it('shows no dialog when `hide()` follows `show()` in the same task', async () => {
+          const opened = picker.show();
+          const closed = picker.hide();
+          await settle();
+
+          expect(nativeDialog.open).to.be.false;
+          expect(await opened).to.be.false;
+          expect(await closed).to.be.true;
+          expect(states()).to.eql([false, false, false]);
+        });
+
         it('closes the dialog when `open` is set to `false` in the task of `show()`', async () => {
           const opened = picker.show();
           picker.open = false;
-          await elementUpdated(picker);
+          await settle();
+
+          expect(states()).to.eql([false, false, false]);
+          expect(await opened).to.be.false;
+        });
+
+        it('stays open when `open` is set to `false` and then `true` during the entrance', async () => {
+          const opened = picker.show();
           await elementUpdated(dialog);
 
-          expect([picker.open, dialog.open, nativeDialog.open]).to.eql([
-            false,
-            false,
-            false,
-          ]);
+          picker.open = false;
+          picker.open = true;
+          await settle();
+          finishAnimationsFor(dialog.shadowRoot!);
+
           expect(await opened).to.be.false;
+          expectSteadyOpen();
         });
       });
 
@@ -1252,12 +1281,12 @@ describe('Date picker', () => {
 
         beforeEach(async () => {
           picker.open = true;
-          await elementUpdated(picker);
-          await elementUpdated(dialog);
+          await settle();
         });
 
         it('keeps `open` until the exit of the dialog ends', async () => {
           const eventSpy = spy(picker, 'emitEvent');
+          const closed = oneEvent(picker, 'igcClosed');
 
           await startExit();
 
@@ -1267,11 +1296,9 @@ describe('Date picker', () => {
           expect(eventSpy).calledOnceWith('igcClosing');
 
           finishAnimationsFor(dialog.shadowRoot!);
-          await waitUntil(() => eventSpy.calledWith('igcClosed'));
+          await closed;
 
-          expect(picker.open).to.be.false;
-          expect(dialog.open).to.be.false;
-          expect(nativeDialog.open).to.be.false;
+          expect(states()).to.eql([false, false, false]);
         });
 
         it('keeps the dialog open when `igcClosing` is canceled on an outside click', async () => {
@@ -1335,8 +1362,7 @@ describe('Date picker', () => {
           await startExit();
           picker.open = false;
           picker.open = true;
-          await elementUpdated(picker);
-          await elementUpdated(dialog);
+          await settle();
 
           expectSteadyOpen();
           expect(eventSpy).not.calledWith('igcClosed');
@@ -1345,11 +1371,9 @@ describe('Date picker', () => {
         it('closes the dialog at once when `open` is set to `false` during the exit', async () => {
           await startExit();
           picker.open = false;
-          await elementUpdated(picker);
-          await elementUpdated(dialog);
+          await settle();
 
-          expect(dialog.open).to.be.false;
-          expect(nativeDialog.open).to.be.false;
+          expect(states()).to.eql([false, false, false]);
         });
       });
     });

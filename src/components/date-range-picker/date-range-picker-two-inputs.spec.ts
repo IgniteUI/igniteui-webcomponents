@@ -5,6 +5,7 @@ import {
   html,
   waitUntil,
 } from '@open-wc/testing';
+import { emulateMedia } from '@web/test-runner-commands';
 import { spy } from 'sinon';
 import {
   altKey,
@@ -40,6 +41,9 @@ describe('Date range picker - two inputs', () => {
   before(() =>
     defineComponents(IgcDateRangePickerComponent, IgcDateRangeInputComponent)
   );
+  // The dialog fades take 350 ms each; skip them in this file.
+  before(() => emulateMedia({ reducedMotion: 'reduce' }));
+  after(() => emulateMedia({ reducedMotion: 'no-preference' }));
 
   runExternalLabelAssociationTests({
     tagName: IgcDateRangePickerComponent.tagName,
