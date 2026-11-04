@@ -673,6 +673,8 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
 
   /** Applies a predefined range. In dialog mode, Done commits it. */
   private _select(value: DateRangeValue | null) {
+    if (this._isClosing) return;
+
     this._value = value;
     this._setCalendarActiveDate(this._firstDefinedInRange);
 

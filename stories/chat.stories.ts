@@ -66,6 +66,7 @@ const metadata: Meta<IgcChatComponent> = {
         'igcMessageCreated',
         'igcMessageReact',
         'igcAttachmentClick',
+        'igcNavigate',
         'igcAttachmentAdded',
         'igcAttachmentRemoved',
         'igcAttachmentDrag',

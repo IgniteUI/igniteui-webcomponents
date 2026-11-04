@@ -28,7 +28,7 @@ type ToggleHost = LitElement & {
 
 /**
  * Runs the visual transition of the host to the requested state: it sets
- * `open`, plays the animations and awaits the updates. A resolved `false`
+ * `open`, plays the animations and awaits the updates. A `false` result
  * marks the transition as superseded, and the controller then sends no
  * trailing "-ed" event.
  *
@@ -126,13 +126,14 @@ class ToggleController {
     const generation = this._supersede();
     this._pending = open;
 
-    // The default transition is synchronous, so the state change and the
-    // `updateComplete` subscription stay in the microtask of the caller.
+    // A synchronous transition, as the default one, keeps the state change and
+    // the `updateComplete` subscription in the microtask of the caller.
     let completed = true;
     try {
       if (transition) {
+        const result = transition.call(host, open, this._abort.signal);
         completed =
-          (await transition.call(host, open, this._abort.signal)) !== false;
+          (result instanceof Promise ? await result : result) !== false;
       } else {
         host.open = open;
       }

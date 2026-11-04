@@ -1,4 +1,11 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  waitUntil,
+} from '@open-wc/testing';
+import { emulateMedia } from '@web/test-runner-commands';
 import { registerI18n } from 'igniteui-i18n-core';
 import { ResourceStringsBG } from 'igniteui-i18n-resources';
 import type Sinon from 'sinon';
@@ -301,6 +308,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
 
       simulateClick(document.body);
       await elementUpdated(picker);
+      await waitUntil(() => !picker.open);
       expect(picker.open).to.equal(false);
     });
 
@@ -700,6 +708,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
 
           simulateKeyboard(picker, escapeKey);
           await elementUpdated(picker);
+          await waitUntil(() => eventSpy.calledWith('igcClosed'));
 
           expect(eventSpy).calledTwice;
           expect(eventSpy).calledWith('igcClosing');
@@ -737,6 +746,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
 
           simulateKeyboard(picker, [altKey, arrowDown]);
           await elementUpdated(picker);
+          await waitUntil(() => eventSpy.calledWith('igcOpened'));
 
           const dialog = picker.renderRoot.querySelector(
             IgcDialogComponent.tagName
@@ -749,6 +759,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
 
           simulateKeyboard(picker, [altKey, arrowUp]);
           await elementUpdated(picker);
+          await waitUntil(() => eventSpy.calledWith('igcClosed'));
 
           expect(picker.open).to.be.false;
           expect(eventSpy).calledWith('igcClosing');
@@ -960,37 +971,63 @@ describe('Date range picker - common tests for single and two inputs mode', () =
 
         const chipSpy = spy(getPredefinedArea()!, '_handleRangeSelect' as any);
 
-        for (const chip of getRangeChips()) {
-          await picker.show();
-          simulateClick(chip);
-          await elementUpdated(picker);
+        // Each chip opens and closes the dialog; without animations the loop
+        // fits the test timeout.
+        await emulateMedia({ reducedMotion: 'reduce' });
 
-          const range = chipSpy.firstCall.firstArg as DateRangeValue;
+        try {
+          for (const chip of getRangeChips()) {
+            await picker.show();
+            simulateClick(chip);
+            await elementUpdated(picker);
 
-          expect(picker.activeDate).to.eql(range.start);
-          checkSelectedRange(
-            picker,
-            {
-              start: range.start,
-              end: range.end,
-            },
-            false
-          );
+            const range = chipSpy.firstCall.firstArg as DateRangeValue;
 
-          expect(getDialog()?.open).to.be.true;
-          simulateClick(getDialogDoneButton());
-          await elementUpdated(picker);
+            expect(picker.activeDate).to.eql(range.start);
+            checkSelectedRange(
+              picker,
+              {
+                start: range.start,
+                end: range.end,
+              },
+              false
+            );
 
-          if (eventSpy.args.length > 2) {
-            expect(eventSpy).calledWith('igcChange');
+            expect(getDialog()?.open).to.be.true;
+            simulateClick(getDialogDoneButton());
+            await elementUpdated(picker);
+            await waitUntil(() => eventSpy.calledWith('igcClosed'));
+
+            if (eventSpy.args.length > 2) {
+              expect(eventSpy).calledWith('igcChange');
+            }
+            expect(eventSpy).calledWith('igcClosing');
+            expect(eventSpy).calledWith('igcClosed');
+
+            expect(getDialog()?.open).to.be.false;
+            chipSpy.resetHistory();
+            eventSpy.resetHistory();
           }
-          expect(eventSpy).calledWith('igcClosing');
-          expect(eventSpy).calledWith('igcClosed');
-
-          expect(getDialog()?.open).to.be.false;
-          chipSpy.resetHistory();
-          eventSpy.resetHistory();
+        } finally {
+          await emulateMedia({ reducedMotion: 'no-preference' });
         }
+      });
+
+      it('ignores a predefined range during the exit of the dialog', async () => {
+        picker.mode = 'dialog';
+        picker.usePredefinedRanges = true;
+        await elementUpdated(picker);
+
+        picker.open = true;
+        await elementUpdated(picker);
+
+        simulateClick(getDialogDoneButton());
+        const value = picker.value;
+        simulateClick(getRangeChips()[0]);
+        await elementUpdated(picker);
+
+        expect(picker.value).to.eql(value);
+        expect(eventSpy).not.calledWith('igcChange');
       });
 
       it('should render only custom chips, when usePredefinedRanges is false and emit igcChange when custom date is selected', async () => {

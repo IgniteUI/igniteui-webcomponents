@@ -664,6 +664,7 @@ describe('Date range picker - single input', () => {
           'igc-button[slot="footer"]:last-of-type'
         ) as HTMLButtonElement;
         doneBtn?.click();
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         expect(eventSpy).calledWith('igcChange');
         checkSelectedRange(
@@ -753,6 +754,7 @@ describe('Date range picker - single input', () => {
           'igc-button[slot="footer"]'
         ) as HTMLButtonElement;
         cancelBtn?.click();
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         expect(eventSpy).not.to.be.calledWith('igcChange');
         dialog = picker.renderRoot.querySelector('igc-dialog');
@@ -801,6 +803,7 @@ describe('Date range picker - single input', () => {
           'igc-button[slot="footer"]'
         ) as HTMLButtonElement;
         cancelBtn?.click();
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         expect(eventSpy).not.to.be.calledWith('igcChange');
         dialog = picker.renderRoot.querySelector('igc-dialog');
@@ -846,6 +849,7 @@ describe('Date range picker - single input', () => {
         );
 
         simulateKeyboard(picker, escapeKey);
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         await elementUpdated(input);
         expect(eventSpy).not.to.be.calledWith('igcChange');
