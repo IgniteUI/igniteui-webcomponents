@@ -18,7 +18,8 @@ import { styles as shared } from './themes/shared/highlight.common.css.js';
  * It uses the native CSS Custom Highlight API, so it does not change the DOM.
  *
  * The component supports case-sensitive matching and programmatic navigation between
- * matches. Navigation scrolls the active match into view.
+ * matches. Navigation scrolls the active match into view. When the content changes,
+ * the component searches it again and keeps the active match where it can.
  *
  * @element igc-highlight
  *
@@ -64,14 +65,6 @@ import { styles as shared } from './themes/shared/highlight.common.css.js';
  * ```typescript
  * const highlight = document.querySelector('igc-highlight');
  * highlight.next({ preventScroll: true });
- * ```
- *
- * @example
- * Re-run search after dynamic content changes (e.g. lazy-loaded text):
- * ```typescript
- * const highlight = document.querySelector('igc-highlight');
- * // After slotted content has been updated:
- * highlight.search();
  * ```
  */
 export default class IgcHighlightComponent extends LitElement {
@@ -172,16 +165,13 @@ export default class IgcHighlightComponent extends LitElement {
   }
 
   /**
-   * Re-runs the highlight search based on the current `searchText` and `caseSensitive` values.
+   * Re-runs the highlight search based on the current `searchText` and `caseSensitive` values,
+   * and makes the first match active.
    *
-   * Call this method after the slotted content changes dynamically (e.g. after lazy loading
-   * or programmatic DOM mutations) to ensure all matches are up to date.
+   * The component also searches again by itself after its content changes.
    */
   public search(): void {
-    if (this.hasUpdated) {
-      this._service.clear();
-      this._service.find(this.searchText);
-    }
+    this._service.search();
   }
 
   //#endregion

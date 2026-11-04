@@ -251,8 +251,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   /** Returns the groups of the select component. */
   public get groups(): IgcSelectGroupComponent[] {
-    return Array.from(
-      getItems<IgcSelectGroupComponent>(this, IgcSelectGroupComponent.tagName)
+    return getItems<IgcSelectGroupComponent>(
+      this,
+      IgcSelectGroupComponent.tagName
     );
   }
 

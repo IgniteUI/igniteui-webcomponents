@@ -1,4 +1,4 @@
-import { LitElement, type PropertyValues } from 'lit';
+import { isServer, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import type { PopoverScrollStrategy } from '../../components/types.js';
 import {
@@ -11,7 +11,6 @@ import {
 } from '../controllers/toggle.js';
 
 import type { UnpackCustomEvent } from '../mixins/event-emitter.js';
-import { iterNodes } from '../utils/dom.js';
 
 /* blazorIndirectRender */
 /* omitModule */
@@ -130,26 +129,23 @@ export class IgcComboBoxBaseLikeComponent extends IgcBaseComboBoxComponent {
   public keepOpenOnOutsideClick = false;
 }
 
-/** Returns the elements of `root` matching `tagName` and `predicate`. */
+/** Returns the elements of `root` that match `tagName`. */
 export function getItems<T extends HTMLElement>(
-  root: Node,
-  tagName: string,
-  predicate?: (item: T) => boolean
-): Generator<T> {
-  return iterNodes<T>(root, {
-    show: 'SHOW_ELEMENT',
-    filter: (item) =>
-      item.matches(tagName) && (predicate ? predicate(item) : true),
-  });
+  root: ParentNode,
+  tagName: string
+): T[] {
+  return isServer ? [] : Array.from(root.querySelectorAll<T>(tagName));
 }
 
+/** Keeps the last selected item, and makes it the only active item. */
 export function setInitialSelectionState<
-  T extends HTMLElement & { selected: boolean },
+  T extends HTMLElement & { selected: boolean; active: boolean },
 >(items: T[]): T | null {
   const lastSelected = items.findLast((item) => item.selected) ?? null;
 
   for (const item of items) {
     item.selected = item === lastSelected;
+    item.active = item === lastSelected;
   }
 
   return lastSelected;
