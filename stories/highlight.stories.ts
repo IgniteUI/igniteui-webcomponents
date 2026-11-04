@@ -495,7 +495,7 @@ export const SettingsSearch: Story = {
     docs: {
       description: {
         story:
-          'A search in the settings of an application. The list shows only the settings that contain the search text, and the highlight marks the text in each setting. The component does not observe its content: after a render, its ranges point to text that has changed. Lit sets the properties of an element before it updates the children, so a `searchText` binding searches the old list. That is why the story sets `searchText` after each render, or calls `search()` when the text stays the same. Turn on "Show advanced settings" to add settings to the list while the search text stays the same.',
+          'A search in the settings of an application. The list shows only the settings that contain the search text, and the highlight marks the text in each setting. The highlight searches again when the list changes, so the story only binds `searchText`. Turn on "Show advanced settings" to add settings to the list while the search text stays the same.',
       },
     },
   },
@@ -548,7 +548,7 @@ export const SettingsSearch: Story = {
                   : `No settings contain "${text}".`
               }
             </p>
-            <igc-highlight>
+            <igc-highlight search-text=${text}>
               <ul>
                 ${visible.map(
                   ({ name, section, description }) => html`
@@ -565,14 +565,6 @@ export const SettingsSearch: Story = {
         `,
         host
       );
-
-      const highlight = host.querySelector('igc-highlight')!;
-
-      if (highlight.searchText === text) {
-        highlight.search();
-      } else {
-        highlight.searchText = text;
-      }
     };
 
     const mount = (element?: Element) => {
