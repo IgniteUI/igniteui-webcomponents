@@ -38,7 +38,7 @@ const metadata: Meta<IgcHighlightComponent> = {
     docs: {
       description: {
         component:
-          'Searches the text projected into its default slot and highlights the matches.\nIt uses the native CSS Custom Highlight API, so it does not change the DOM.\n\nThe component supports case-sensitive matching and programmatic navigation between\nmatches. Navigation scrolls the active match into view.',
+          'Searches the text projected into its default slot and highlights the matches.\nIt uses the native CSS Custom Highlight API, so it does not change the DOM.\n\nThe component supports case-sensitive matching and programmatic navigation between\nmatches. Navigation scrolls the active match into view. When the content changes,\nthe component searches it again and keeps the active match where it can.',
       },
     },
   },
