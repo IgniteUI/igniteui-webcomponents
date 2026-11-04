@@ -62,6 +62,7 @@ This directory hosts four public components: [`igc-select`](#igc-select), [`igc-
 |       5 | 2026-10-21 | API descriptions aligned with the JSDoc.           |
 |       6 | 2026-10-26 | Setting the current `value` again keeps the active item |
 |       7 | 2026-11-02 | `focus()` and `blur()` before the first render do not throw, and a `focus()` call applies after it |
+|       8 | 2026-11-04 | Setting `selected` on an item again keeps the active item; only the selected item starts active |
 
 ## Overview
 
@@ -176,7 +177,7 @@ the selected item, so it can carry rich content while the submitted value stays 
 
 A new selection also becomes the active item. Setting `value` to the value that the select already has does not
 move the active item, so a framework that sets each property on each render keeps the keyboard position in an open
-list. A user selection, `select()` and `clearSelection()` move the active item, also when the selection does not
+list. Setting `selected` on an item to its current value does not move it either. A user selection, `select()` and `clearSelection()` move the active item, also when the selection does not
 change.
 
 #### Templating
@@ -383,7 +384,7 @@ Represents an item in a select list.
 | Property | Attribute | Reflected | Type      | Default | Description                                            |
 | -------- | --------- | --------- | --------- | ------- | -------------------------------------------------------- |
 | value    | value     | No        | `string`  | -       | The value of the item. Falls back to the text content. |
-| selected | selected  | Yes       | `boolean` | false   | Whether the item is selected. It also sets `active` to the same value.                          |
+| selected | selected  | Yes       | `boolean` | false   | Whether the item is selected. A change also sets `active` to the same value.                    |
 | active   | active    | Yes       | `boolean` | false   | Whether the item is active. The active item is the target of keyboard navigation and the only item in the tab order. |
 | disabled | disabled  | Yes       | `boolean` | false   | Whether the item is disabled.                          |
 
@@ -437,14 +438,15 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 
 ### Initial selection and navigation
 
-5. An item marked `selected` in markup becomes the initial selection.
+5. An item marked `selected` in markup becomes the initial selection and the only active item.
 6. Navigating from an initial selection established through each supported path continues from that item.
 
 ### Selection integrity
 
 7. The selection stays consistent across open and close cycles and programmatic changes. Setting the current
    `value` again keeps the active item, while a user commit and `select()` with the selected item move it there. A
-   removed active item hands the navigation back to the selected item.
+   removed active item hands the navigation back to the selected item. Setting `selected` on each item again keeps
+   the active item and its tab stop.
 8. Selecting a disabled item is not possible.
 
 ### Asynchronously rendered items

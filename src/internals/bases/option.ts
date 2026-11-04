@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedNodes } from 'lit/decorators.js';
 import { addInternalsController } from '../controllers/internals.js';
+import { coercedProperty } from '../decorators/coerced-property.js';
 import { normalizedTextContent } from '../utils/dom.js';
 
 /* omitModule */
@@ -16,7 +17,6 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
 
   protected _active = false;
   protected _disabled = false;
-  protected _selected = false;
   protected _value!: string;
 
   @queryAssignedNodes({ flatten: true })
@@ -54,18 +54,18 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
   }
 
   /**
-   * Whether the item is selected. It also sets `active` to the same value.
+   * Whether the item is selected. A change also sets `active` to the same
+   * value.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
-  public set selected(value: boolean) {
-    this._selected = Boolean(value);
-    this.active = this.selected;
-  }
-
-  public get selected(): boolean {
-    return this._selected;
-  }
+  @coercedProperty<boolean, IgcBaseOptionLikeComponent>({
+    transform: ({ value }) => Boolean(value),
+    onChange: ({ value, host }) => {
+      host.active = value;
+    },
+  })
+  public selected = false;
 
   /**
    * The value of the item. Falls back to the text content of the element.

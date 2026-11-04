@@ -411,6 +411,18 @@ describe('Select', () => {
       expect(select.selectedItem?.value).to.equal('3');
       expect(select.value).to.equal('3');
     });
+
+    it('makes only the selected item active', async () => {
+      select = await fixture<IgcSelectComponent>(html`
+        <igc-select>
+          <igc-select-item value="1" active>1</igc-select-item>
+          <igc-select-item value="2" selected>2</igc-select-item>
+        </igc-select>
+      `);
+
+      expect(select.items.map((item) => item.active)).to.eql([false, true]);
+      expect(select.items.map((item) => item.tabIndex)).to.eql([-1, 0]);
+    });
   });
 
   describe('Navigation from an initial selection', () => {
@@ -685,6 +697,24 @@ describe('Select', () => {
       await elementUpdated(select);
 
       expect(getActiveItem()?.value).to.equal('implementation');
+    });
+
+    it('keeps the active item when the items get their selected state again', async () => {
+      await openSelect();
+      simulateKeyboard(select, arrowDown, 2);
+      await elementUpdated(select);
+
+      // A framework that sets each property on each render does this.
+      for (const item of select.items) {
+        item.selected = item.value === select.value;
+      }
+      await elementUpdated(select);
+
+      const active = select.items.filter((item) => item.active);
+
+      expect(active.map((item) => item.value)).to.eql(['documentation']);
+      expect(active[0].tabIndex).to.equal(0);
+      expect(select.selectedItem?.tabIndex).to.equal(-1);
     });
 
     it('keeps the active item when no value is set again', async () => {

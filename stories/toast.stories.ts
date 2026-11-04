@@ -39,7 +39,8 @@ const metadata: Meta<IgcToastComponent> = {
   argTypes: {
     open: {
       type: 'boolean',
-      description: 'Whether the component is open.',
+      description:
+        'Whether the component is open.\n\nSetting it skips the fade. Use the `show()`, `hide()` and `toggle()`\nmethods for a fade.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -86,7 +87,12 @@ const metadata: Meta<IgcToastComponent> = {
 export default metadata;
 
 interface IgcToastArgs {
-  /** Whether the component is open. */
+  /**
+   * Whether the component is open.
+   *
+   * Setting it skips the fade. Use the `show()`, `hide()` and `toggle()`
+   * methods for a fade.
+   */
   open: boolean;
   /**
    * The time in milliseconds that the component stays visible. The time

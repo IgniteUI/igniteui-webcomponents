@@ -40,14 +40,12 @@ class ListSelection<T extends IgcBaseOptionLikeComponent> {
   }
 
   public get items(): T[] {
-    return Array.from(getItems<T>(this._host, this._config.itemTag));
+    return getItems<T>(this._host, this._config.itemTag);
   }
 
   /** The items that are not disabled. */
   public get activeItems(): T[] {
-    return Array.from(
-      getItems<T>(this._host, this._config.itemTag, (item) => !item.disabled)
-    );
+    return this.items.filter((item) => !item.disabled);
   }
 
   /** The first enabled item after the active item, else the active item. */
