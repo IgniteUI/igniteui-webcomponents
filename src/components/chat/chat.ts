@@ -43,6 +43,7 @@ import type {
   IgcChatDraftMessage,
   IgcChatMessage,
   IgcChatMessageAttachment,
+  IgcChatMessageLink,
   IgcChatMessageReaction,
   IgcChatOptions,
 } from './types.js';
@@ -73,6 +74,12 @@ export interface IgcChatComponentEventMap {
    * Dispatched when the user clicks the header of a message attachment.
    */
   igcAttachmentClick: CustomEvent<IgcChatMessageAttachment>;
+
+  /**
+   * Dispatched when a plain click or Enter opens a link in a message in the same tab, before the
+   * browser navigates. Cancel it to route on the client. Does not bubble.
+   */
+  igcNavigate: CustomEvent<IgcChatMessageLink>;
 
   /* blazorSuppress */
   /**
@@ -156,6 +163,7 @@ const i18n: I18nMixinConfig<
  * @fires igcMessageCreated - Dispatched when the user sends a message, also with a click on a suggestion. Cancelable: a canceled event does not add the message.
  * @fires igcMessageReact - Dispatched when the user clicks an action button of a message, for example like or copy.
  * @fires igcAttachmentClick - Dispatched when the user clicks the header of a message attachment.
+ * @fires igcNavigate - Dispatched when a plain click or Enter opens a link in a message in the same tab, before the browser navigates. Cancel it to route on the client. Does not bubble.
  * @fires igcAttachmentAdded - Dispatched when the user adds attachments with drag and drop or with the default file input. Cancelable: a canceled event does not add them.
  * @fires igcAttachmentRemoved - Dispatched when the user removes an attachment from the input. Cancelable: a canceled event keeps the attachment.
  * @fires igcAttachmentDrag - Dispatched when the user drags files into the input area.

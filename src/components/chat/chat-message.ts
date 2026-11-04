@@ -7,6 +7,11 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { HydrationMixin } from '#internals/mixins/hydration.js';
 import { partMap } from '#internals/part-map.js';
 import { isEmpty } from '#internals/utils/arrays.js';
+import { isElement } from '#internals/utils/dom.js';
+import {
+  getElementFromPath,
+  linkOpensElsewhere,
+} from '#internals/utils/events.js';
 import { trimmedHtml } from '#internals/utils/lit.js';
 import { all } from '#themes/chat/themes/message.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -29,6 +34,8 @@ const DISLIKE_INACTIVE = 'thumb_down_inactive';
 const DISLIKE_ACTIVE = 'thumb_down_active';
 const COPY_CONTENT = 'copy_content';
 const REGENERATE = 'regenerate';
+// `*|href` also matches the `xlink:href` of an SVG link.
+const LINK = 'a[*|href], area[href]';
 
 type DefaultMessageRenderers = {
   messageHeader: ChatTemplateRenderer<ChatMessageRenderContext>;
@@ -171,6 +178,47 @@ export default class IgcChatMessageComponent extends HydrationMixin(
     this.requestUpdate();
   }
 
+  private _handleLinkClick(event: MouseEvent): void {
+    // A link around the chat does not count.
+    const path = event.composedPath();
+    const link = path
+      .slice(0, path.indexOf(this))
+      .find((item): item is Element => isElement(item) && item.matches(LINK));
+    const href = link?.getAttribute('href') ?? link?.getAttribute('xlink:href');
+
+    if (
+      !link ||
+      href == null ||
+      !event.cancelable ||
+      event.defaultPrevented ||
+      link.hasAttribute('download') ||
+      // A link in a nested chat, also in its header, belongs to that chat.
+      getElementFromPath(this._state.host.localName, event) !==
+        this._state.host ||
+      linkOpensElsewhere(
+        link.getAttribute('target'),
+        link.ownerDocument,
+        event
+      ) ||
+      !URL.canParse(href, link.baseURI)
+    ) {
+      return;
+    }
+
+    const navigate = this._state.emitEvent('igcNavigate', {
+      bubbles: false,
+      cancelable: true,
+      detail: {
+        message: this.message,
+        href: new URL(href, link.baseURI).href,
+      },
+    });
+
+    if (!navigate) {
+      event.preventDefault();
+    }
+  }
+
   private _renderHeader() {
     return nothing;
   }
@@ -298,7 +346,7 @@ export default class IgcChatMessageComponent extends HydrationMixin(
       ${cache(
         this.message
           ? html`
-              <div part=${partMap(parts)}>
+              <div part=${partMap(parts)} @click=${this._handleLinkClick}>
                 ${cache(
                   messageRenderer
                     ? until(messageRenderer(ctx))

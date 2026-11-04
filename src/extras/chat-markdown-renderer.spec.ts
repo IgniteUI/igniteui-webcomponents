@@ -291,6 +291,78 @@ describe('Chat Markdown renderer', () => {
       expect(pre.textContent).to.equal(code);
     });
 
+    describe('GitHub color variables', () => {
+      // Has a token in each of the six colors, and a regular expression.
+      const colorsBlock = [
+        '```javascript',
+        '// note',
+        'const a = 1;',
+        'function f(x) { return "s" + x.match(/ab+c/); }',
+        '<div class="y"></div>',
+        '```',
+      ].join('\n');
+
+      /** Renders the block in a container with `style`, and returns the color of a keyword in a color scheme. */
+      async function keywordColor(
+        style: string
+      ): Promise<(scheme: string) => string> {
+        const result = await parse(renderer, colorsBlock);
+        const keyword = [...result.querySelectorAll('pre [style]')].find(
+          (span) => span.textContent === 'const'
+        )!;
+        const container = await fixture<HTMLDivElement>(
+          html`<div style=${style}></div>`
+        );
+        container.append(result);
+
+        return (scheme) => {
+          container.style.colorScheme = scheme;
+          return getComputedStyle(keyword).color;
+        };
+      }
+
+      it('uses the same variable in the light and the dark theme', async () => {
+        const result = await parse(renderer, colorsBlock);
+        const variables = new Set<string>();
+
+        for (const span of result.querySelectorAll('pre [style]')) {
+          const color = span
+            .getAttribute('style')!
+            .split(';')
+            .find((declaration) => declaration.startsWith('color:'))!;
+          const names = [...color.matchAll(/var\((--shiki-[a-z-]+),/g)].map(
+            ([, name]) => name
+          );
+
+          if (names.length) {
+            expect(names, span.textContent!).to.eql([names[0], names[0]]);
+            variables.add(names[0]);
+          }
+        }
+
+        expect([...variables]).to.include.members(
+          ['purple', 'dark-blue', 'red', 'blue', 'green', 'orange'].map(
+            (name) => `--shiki-${name}`
+          )
+        );
+      });
+
+      it('colors the code with a variable in light and dark mode', async () => {
+        const colorIn = await keywordColor('--shiki-red: rgb(1, 2, 3)');
+
+        for (const scheme of ['light', 'dark']) {
+          expect(colorIn(scheme), scheme).to.equal('rgb(1, 2, 3)');
+        }
+      });
+
+      it('keeps the GitHub colors without the variables', async () => {
+        const colorIn = await keywordColor('');
+
+        expect(colorIn('light')).to.equal('rgb(215, 58, 73)');
+        expect(colorIn('dark')).to.equal('rgb(249, 117, 131)');
+      });
+    });
+
     it('uses the default for a theme that is not set', async () => {
       const pre = await highlightedPre({ theme: { dark: 'github-dark' } });
 

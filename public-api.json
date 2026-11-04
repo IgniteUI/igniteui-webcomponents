@@ -90,6 +90,7 @@
     "IgcChatDraftMessage",
     "IgcChatMessage",
     "IgcChatMessageAttachment",
+    "IgcChatMessageLink",
     "IgcChatMessageReaction",
     "IgcChatOptions",
     "IgcChatResourceStringEN",
@@ -839,6 +840,7 @@
         "igcInputFocus": "unknown",
         "igcMessageCreated": "unknown",
         "igcMessageReact": "unknown",
+        "igcNavigate": "unknown",
         "igcTypingChange": "unknown"
       },
       "slots": [
