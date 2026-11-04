@@ -19,6 +19,7 @@ describe('Chip', () => {
     tagName: 'igc-chip',
     template: html`<igc-chip>Chip</igc-chip>`,
     getTarget: (host) => host.renderRoot.querySelector('[part="action"]')!,
+    visibleText: 'Chip',
   });
 
   it('passes the a11y audit', async () => {
