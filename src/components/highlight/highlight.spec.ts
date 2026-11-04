@@ -3,6 +3,7 @@ import {
   elementUpdated,
   expect,
   fixture,
+  fixtureSync,
   html,
   unsafeStatic,
 } from '@open-wc/testing';
@@ -448,6 +449,76 @@ describe('Highlight', () => {
       highlight.search();
 
       expect(highlight.size).to.equal(1);
+    });
+
+    it('searches when `searchText` is set before the first render', async () => {
+      const element = fixtureSync<IgcHighlightComponent>(
+        html`<igc-highlight>Lorem ipsum, lorem.</igc-highlight>`
+      );
+
+      element.searchText = 'lorem';
+
+      expect(element.hasUpdated).to.be.false;
+      expect(element.size).to.equal(2);
+
+      await elementUpdated(element);
+      expect(element.size).to.equal(2);
+    });
+
+    it('searches again when the content changes', async () => {
+      highlight.searchText = 'lorem';
+      await elementUpdated(highlight);
+
+      const node = document.createElement('div');
+      node.textContent = 'Lorem '.repeat(9);
+
+      highlight.append(node);
+      await elementUpdated(highlight);
+      expect(highlight.size).to.equal(10);
+
+      node.firstChild!.textContent = 'Lorem';
+      await elementUpdated(highlight);
+      expect(highlight.size).to.equal(2);
+
+      node.remove();
+      await elementUpdated(highlight);
+      expect(highlight.size).to.equal(1);
+    });
+
+    it('keeps the active match when the content around it changes', async () => {
+      highlight.searchText = 'e';
+      await elementUpdated(highlight);
+
+      highlight.setActive(3);
+
+      const node = document.createElement('p');
+      node.textContent = 'e e e';
+
+      highlight.prepend(node);
+      await elementUpdated(highlight);
+      expect(highlight.current).to.equal(6);
+
+      // The active match goes with its text, so the first match takes over.
+      highlight.replaceChildren(document.createTextNode('e e e'));
+      await elementUpdated(highlight);
+      expect(highlight.current).to.equal(0);
+    });
+
+    it('keeps the active match when its text node changes after it', async () => {
+      const text = document.createTextNode('e e e');
+
+      highlight.replaceChildren(text);
+      highlight.searchText = 'e';
+      await elementUpdated(highlight);
+
+      highlight.setActive(2);
+
+      // Frameworks replace the whole text of a node.
+      text.data = 'e e e e';
+      await elementUpdated(highlight);
+
+      expect(highlight.size).to.equal(4);
+      expect(highlight.current).to.equal(2);
     });
   });
 });

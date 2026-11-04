@@ -341,6 +341,15 @@ describe('Dialog', () => {
       expect(await closing).to.be.true;
       expect(dialog.open).to.be.false;
     });
+
+    it('does not show the dialog when a hide follows a show in the same task', async () => {
+      dialog.show();
+      const closing = dialog.hide();
+      await elementUpdated(dialog);
+
+      expect(dialog.renderRoot.querySelector('dialog')!.open).to.be.false;
+      expect(await closing).to.be.true;
+    });
   });
 
   describe('Events & Behaviors', () => {

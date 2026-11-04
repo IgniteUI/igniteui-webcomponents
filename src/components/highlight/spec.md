@@ -46,6 +46,7 @@
 |       3 | 2026-10-05 | Stylesheet kept on a theme change |
 |       4 | 2026-10-26 | The same search keeps the match   |
 |       5 | 2026-10-29 | Colors kept in other components   |
+|       6 | 2026-11-04 | Content observed; early search    |
 
 ## Overview
 
@@ -66,7 +67,7 @@ between the matches, and styling through CSS custom properties.
 - **Case-sensitive and case-insensitive** matching.
 - **An active match**, styled apart from the others, with wrapping navigation between the matches.
 - **Scroll into view** of the new active match, which can be turned off per call.
-- **Re-search on demand** for content that changes after the first search.
+- **A new search after a content change**, which keeps the active match where it can.
 - **Separate styling** of the resting and the active highlight through CSS custom properties.
 
 ### Acceptance criteria
@@ -76,7 +77,7 @@ between the matches, and styling through CSS custom properties.
 - It must distinguish the active match from the rest visually.
 - It must support case-sensitive and case-insensitive matching.
 - It must support navigation between the matches, wrapping at both ends.
-- It must be able to search again after the projected content changes.
+- It must search again when the projected content changes.
 - The resting and the active highlight must be stylable through CSS custom properties.
 - The element must be WAI-ARIA compliant and support RTL layouts without additional configuration.
 
@@ -139,10 +140,14 @@ highlight.setActive(3);
 
 #### Dynamic content
 
-The component does not observe the projected content. After it changes — lazily loaded or mutated from code —
-`search()` runs the matching again against the current DOM.
+The component observes the projected content. When a node is added, removed or edited, the component searches
+again in a microtask, once for all the changes since the last search. Until then, `size` and `current` give the
+result of the last search. The active match stays while its text node and its start in that node stay the same.
+Otherwise the first match becomes active. `search()` searches at once and makes the first match active.
+
 Setting `searchText` or `caseSensitive` to its current value does not run the search again, so the active match
-stays when a framework sets each property on each render.
+stays when a framework sets each property on each render. A `searchText` set while the component is connected
+searches at once, also before the first render.
 
 #### Styling
 
@@ -191,7 +196,7 @@ None applicable. The component is not focusable by default and takes no keyboard
 | `next`      | `(options?: HighlightNavigation): void`                  | Moves to the next match, wrapping to the first one.                 |
 | `previous`  | `(options?: HighlightNavigation): void`                  | Moves to the previous match, wrapping to the last one.              |
 | `setActive` | `(index: number, options?: HighlightNavigation): void`   | Moves to the match at the given zero-based index.                   |
-| `search`    | `(): void`                                               | Runs the search again against the current projected content.        |
+| `search`    | `(): void`                                               | Runs the search again and makes the first match active.             |
 
 `HighlightNavigation`
 
@@ -262,6 +267,10 @@ None applicable.
 16. `search()` picks up content that was added or removed after the previous search.
 17. Setting `searchText` or `caseSensitive` again to its value keeps the active match, and a change runs the search
     again.
+18. A `searchText` set after the host connects and before the first render produces its matches at once.
+19. An added, an edited and a removed node run the search again.
+20. A node added before the active match keeps that match active, and so does new text after it in its text node.
+    When the text of the active match goes, the first match becomes active.
 
 ### Not covered by the suite
 
@@ -275,7 +284,8 @@ None applicable.
 - Only DOM text nodes are matched. Values inside form controls and text produced through the CSS `content`
   property are not.
 - Shadow roots are skipped while matching.
-- The component does not observe its content; `search()` has to be called after it changes.
+- Each content change searches all the content again. Content that changes often, such as a live log, pays for a
+  full search each time.
 - The four custom properties apply only on the host. A value that you set on an element inside the component has no
   effect on the matches.
 - The component relies on the CSS Custom Highlight API, so it needs a browser that implements it.

@@ -1104,6 +1104,24 @@ describe('Tabs component', () => {
       expect(event.bubbles).to.be.false;
     });
 
+    it('keeps `igcNavigate` inside the root that holds the tabs', async () => {
+      const host = document.createElement('div');
+      element.replaceWith(host);
+      host.attachShadow({ mode: 'open' }).append(element);
+      await elementUpdated(element);
+
+      const [first] = element.tabs;
+      const onTab = spy();
+      const onHost = spy();
+
+      first.addEventListener('igcNavigate', onTab);
+      host.addEventListener('igcNavigate', onHost);
+      clickLink(getTabDOM(first).header);
+
+      expect(onTab).calledOnce;
+      expect(onHost).not.called;
+    });
+
     it('does not emit `igcNavigate` for a plain or a disabled tab', async () => {
       const [, , , fourth, fifth] = element.tabs;
       const route = spy();

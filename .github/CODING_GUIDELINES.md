@@ -734,8 +734,9 @@ A parser, converter or serializer that takes user or stored input also gets prop
   exports the class, export the map too, as `export type { IgcFooBarEventMap } from …`. The
   public API snapshot then records it.
 - Event names are camelCase with an `igc` prefix. Cancelable events usually end in `-ing`.
-- By default, `emitEvent` sends an event that bubbles, is composed and is not cancelable. For a
-  cancelable event, check the return value:
+- By default, `emitEvent` sends an event that bubbles, is composed and is not cancelable. An event
+  with `bubbles: false` is also not composed, because a composed event reaches the listeners on
+  each shadow host around the target. For a cancelable event, check the return value:
 
   ```ts
   if (!this.emitEvent('igcOpening', { cancelable: true, detail: data })) {

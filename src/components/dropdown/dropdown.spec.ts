@@ -575,6 +575,19 @@ describe('Dropdown', () => {
       expect(dropDown.items.filter((item) => item.selected).length).to.equal(1);
       expect(dropDown.selectedItem).to.equal(dropDown.items.at(-1)!);
     });
+
+    it('makes only the selected item active', async () => {
+      dropDown = await fixture<IgcDropdownComponent>(html`
+        <igc-dropdown>
+          <igc-button slot="target">Open</igc-button>
+          <igc-dropdown-item active>1</igc-dropdown-item>
+          <igc-dropdown-item selected>2</igc-dropdown-item>
+        </igc-dropdown>
+      `);
+
+      await elementUpdated(dropDown);
+      expect(dropDown.items.map((item) => item.active)).to.eql([false, true]);
+    });
   });
 
   describe('API', () => {
@@ -1035,6 +1048,24 @@ describe('Dropdown', () => {
 
       expect(getActiveItem()).to.equal(dropDown.items[1]);
       expect(dropDown.selectedItem).to.equal(dropDown.items[1]);
+    });
+
+    it('keeps the active item when the items get their selected state again', async () => {
+      dropDown.select(1);
+      await openDropdown();
+
+      simulateKeyboard(dropDown, arrowDown, 2);
+      await elementUpdated(dropDown);
+
+      // A framework that sets each property on each render does this.
+      for (const item of dropDown.items) {
+        item.selected = item === dropDown.selectedItem;
+      }
+      await elementUpdated(dropDown);
+
+      expect(dropDown.items.filter((item) => item.active)).to.eql([
+        dropDown.items[3],
+      ]);
     });
   });
 
