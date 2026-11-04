@@ -1,13 +1,11 @@
 import { isServer } from 'lit';
 import { getRoot, isPopoverOpen } from '#internals/utils/dom.js';
 import { toggleEventListener } from '#internals/utils/events.js';
-import { clamp } from '#internals/utils/math.js';
 import {
   applyArrowStyles,
   getPlacementSide,
   isBlockSide,
   OPPOSITE_SIDE,
-  setArrowSide,
 } from './arrow.js';
 import { PopoverPositionStrategy } from './strategy.js';
 import {
@@ -123,14 +121,11 @@ export class NativePositionStrategy extends PopoverPositionStrategy {
     }
 
     // The browser binds the implicit anchor only in `showPopover`, so a new
-    // anchor needs a hide and a show. The focus moves out and then back.
-    if (isPopoverOpen(container)) {
-      if (this._shownSource !== target) {
-        container.hidePopover();
-        container.showPopover({ source: target as HTMLElement });
-        this._shownSource = target;
-      }
-    } else {
+    // anchor needs a hide and a show. The browser keeps a flip of the previous
+    // anchor until a rendering update finds the container hidden, so the
+    // container can start flipped at the new anchor.
+    if (!isPopoverOpen(container) || this._shownSource !== target) {
+      this.hide();
       container.showPopover({ source: target as HTMLElement });
       this._shownSource = target;
     }
@@ -138,16 +133,16 @@ export class NativePositionStrategy extends PopoverPositionStrategy {
     this.update();
   }
 
-  public override hide(): void {
-    this._shownSource = undefined;
-    super.hide();
-  }
-
   public update(): void {
     this._syncOffset();
     this._syncArrowListeners();
     // The browser positions the container. The arrow follows in the next
     // frame, when the content has its final size.
+    this._scheduleArrowUpdate();
+  }
+
+  /** The browser moves the container with the anchor. The arrow follows. */
+  public reposition(): void {
     this._scheduleArrowUpdate();
   }
 
@@ -172,33 +167,17 @@ export class NativePositionStrategy extends PopoverPositionStrategy {
 
   //#region Arrow support
 
-  /**
-   * The arrow needs JavaScript: CSS gives no position-try signal, and a
-   * descendant of the container cannot reference the implicit anchor.
-   */
-  private readonly _handleArrowInvalidation = (): void => {
-    this._scheduleArrowUpdate();
-  };
-
-  /** Keeps the invalidation listeners bound while an open popover has an arrow. */
   private _syncArrowListeners(
-    active = this._host.arrow != null &&
-      this._container != null &&
-      isPopoverOpen(this._container)
+    active = this._host.arrow != null && isPopoverOpen(this._container)
   ): void {
     toggleEventListener(
       window,
       active,
       'scroll',
-      this._handleArrowInvalidation,
+      this._scheduleArrowUpdate,
       SCROLL_LISTENER_OPTIONS
     );
-    toggleEventListener(
-      window,
-      active,
-      'resize',
-      this._handleArrowInvalidation
-    );
+    toggleEventListener(window, active, 'resize', this._scheduleArrowUpdate);
 
     if (!active) {
       cancelAnimationFrame(this._arrowFrame);
@@ -206,7 +185,11 @@ export class NativePositionStrategy extends PopoverPositionStrategy {
     }
   }
 
-  private _scheduleArrowUpdate(): void {
+  /**
+   * The arrow needs JavaScript: CSS gives no position-try signal, and a
+   * descendant of the container cannot reference the implicit anchor.
+   */
+  private readonly _scheduleArrowUpdate = (): void => {
     if (this._arrowFrame || !this._host.arrow) {
       return;
     }
@@ -215,7 +198,7 @@ export class NativePositionStrategy extends PopoverPositionStrategy {
       this._arrowFrame = 0;
       this._updateArrow();
     });
-  }
+  };
 
   private _updateArrow(): void {
     const { arrow, arrowOffset } = this._host;
@@ -228,14 +211,9 @@ export class NativePositionStrategy extends PopoverPositionStrategy {
 
     const anchorRect = target.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
-    const placementSide = getPlacementSide(resolvePlacement(this._host));
-    const block = isBlockSide(placementSide);
-
-    // The main axis carries the placement. The cross axis centers the arrow.
+    const block = isBlockSide(getPlacementSide(resolvePlacement(this._host)));
     const main = block ? 'top' : 'left';
     const mainSize = block ? 'height' : 'width';
-    const cross = block ? 'left' : 'top';
-    const crossSize = block ? 'width' : 'height';
 
     // Compare the centers to find the side after a flip. This works for any offset.
     const nearSide =
@@ -243,25 +221,7 @@ export class NativePositionStrategy extends PopoverPositionStrategy {
       anchorRect[main] + anchorRect[mainSize] / 2;
     const side = nearSide ? main : OPPOSITE_SIDE[main];
 
-    // The part can give the arrow its size. Measure after the part is set.
-    setArrowSide(arrow, side);
-
-    const arrowSize = block ? arrow.offsetWidth : arrow.offsetHeight;
-    const containerSize = block
-      ? container.clientWidth
-      : container.clientHeight;
-
-    // Center the arrow on the anchor. Keep the arrow inside the container.
-    const distance = clamp(
-      anchorRect[cross] +
-        anchorRect[crossSize] / 2 -
-        containerRect[cross] -
-        arrowSize / 2,
-      0,
-      containerSize - arrowSize
-    );
-
-    applyArrowStyles(arrow, side, distance, arrowOffset);
+    applyArrowStyles(arrow, container, anchorRect, side, arrowOffset);
   }
 
   //#endregion

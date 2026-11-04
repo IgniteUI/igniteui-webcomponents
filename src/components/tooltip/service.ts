@@ -7,9 +7,11 @@ import type IgcTooltipComponent from './tooltip.js';
 type TooltipHideCallback = () => unknown;
 
 class TooltipEscapeCallbacks {
-  private _collection = new Map<IgcTooltipComponent, TooltipHideCallback>();
+  private readonly _collection = new Map<
+    IgcTooltipComponent,
+    TooltipHideCallback
+  >();
 
-  /** Keeps the global `keydown` listener bound while any tooltip is shown. */
   private _syncListener(): void {
     /* c8 ignore next 3 */
     if (isServer) {
@@ -43,13 +45,11 @@ class TooltipEscapeCallbacks {
   }
 
   /** @internal */
-  public async handleEvent(event: KeyboardEvent): Promise<void> {
-    if (!isKey(event, escapeKey)) {
-      return;
+  public handleEvent(event: KeyboardEvent): void {
+    if (isKey(event, escapeKey)) {
+      // The last registered tooltip is the last one shown.
+      lastOf(Array.from(this._collection.values()))?.();
     }
-
-    // The last registered tooltip is the last one shown.
-    await lastOf(Array.from(this._collection.values()))?.();
   }
 }
 

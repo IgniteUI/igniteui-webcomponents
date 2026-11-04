@@ -232,6 +232,7 @@
     "TileManagerResizeMode",
     "TileResourceStringsEN",
     "ToggleLabelPosition",
+    "TooltipRect",
     "TooltipResourceStringsEN",
     "TreeResourceStringsEN",
     "TreeSelection",
@@ -2786,6 +2787,7 @@
       },
       "properties": {
         "anchor": "Element | string | undefined",
+        "anchorRect": "PopoverRect | null",
         "arrow": "HTMLElement | null",
         "arrowOffset": "number",
         "flip": "boolean",
@@ -4075,6 +4077,7 @@
       "methods": {
         "hide": "() => Promise<boolean>",
         "show": "(target?: Element | string) => Promise<boolean>",
+        "showAt": "(rect: TooltipRect) => Promise<boolean>",
         "static register": "() => void",
         "toggle": "() => Promise<boolean>"
       },

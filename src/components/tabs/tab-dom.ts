@@ -1,5 +1,5 @@
 import type { Ref } from 'lit/directives/ref.js';
-import { isLTR, setStyles } from '#internals/utils/dom.js';
+import { getCSSZoom, isLTR, setStyles } from '#internals/utils/dom.js';
 import { linkOpensElsewhere } from '#internals/utils/events.js';
 import { asNumber } from '#internals/utils/math.js';
 import { equal } from '#internals/utils/objects.js';
@@ -272,7 +272,7 @@ function getRect(element: Element): {
   right: number;
   width: number;
 } {
-  const zoom = element.currentCSSZoom || 1;
+  const zoom = getCSSZoom(element);
   const { left, right, width } = element.getBoundingClientRect();
 
   return { left: left / zoom, right: right / zoom, width: width / zoom };
