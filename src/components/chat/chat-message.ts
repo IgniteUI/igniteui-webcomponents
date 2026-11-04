@@ -34,7 +34,8 @@ const DISLIKE_INACTIVE = 'thumb_down_inactive';
 const DISLIKE_ACTIVE = 'thumb_down_active';
 const COPY_CONTENT = 'copy_content';
 const REGENERATE = 'regenerate';
-const LINK = 'a[href], area[href]';
+// `*|href` also matches the `xlink:href` of an SVG link.
+const LINK = 'a[*|href], area[href]';
 
 type DefaultMessageRenderers = {
   messageHeader: ChatTemplateRenderer<ChatMessageRenderContext>;
@@ -183,7 +184,7 @@ export default class IgcChatMessageComponent extends HydrationMixin(
     const link = path
       .slice(0, path.indexOf(this))
       .find((item): item is Element => isElement(item) && item.matches(LINK));
-    const href = link?.getAttribute('href');
+    const href = link?.getAttribute('href') ?? link?.getAttribute('xlink:href');
 
     if (
       !link ||
@@ -191,8 +192,9 @@ export default class IgcChatMessageComponent extends HydrationMixin(
       !event.cancelable ||
       event.defaultPrevented ||
       link.hasAttribute('download') ||
-      // A link in a nested chat belongs to that chat.
-      getElementFromPath(IgcChatMessageComponent.tagName, event) !== this ||
+      // A link in a nested chat, also in its header, belongs to that chat.
+      getElementFromPath(this._state.host.localName, event) !==
+        this._state.host ||
       linkOpensElsewhere(
         link.getAttribute('target'),
         link.ownerDocument,

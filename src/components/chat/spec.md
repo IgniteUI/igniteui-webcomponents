@@ -284,8 +284,8 @@ own colors.
 
 #### Links in messages
 
-The chat emits `igcNavigate` when a plain click or <kbd>Enter</kbd> opens a link (`a` or `area` with `href`) in a
-message in the same tab, before the browser navigates. Cancel it to route on the client. The detail has the `message`
+The chat emits `igcNavigate` when a plain click or <kbd>Enter</kbd> opens a link (`a` or `area` with `href`, or an
+SVG `a` with `xlink:href`) in a message in the same tab, before the browser navigates. Cancel it to route on the client. The detail has the `message`
 and the absolute `href` that the browser follows.
 
 The chat emits no event when:
@@ -295,7 +295,7 @@ The chat emits no event when:
   in a frame, `_parent` and `_top` count as `_self`.
 - The link has `download`, or its URL does not parse.
 - The click cannot be canceled, or a listener in the message content already canceled it.
-- The link is in a chat in the message. That chat emits the event.
+- The link is in another chat in the message, also in its header. That chat emits the event for its messages.
 
 The event does not bubble and is not composed. Listen to it on the chat.
 
@@ -550,12 +550,12 @@ The component exposes a part for every region it renders. The main groups are:
 
 ### Links
 
-38. A plain click or <kbd>Enter</kbd> on a link in a message emits `igcNavigate` on the chat, with the message and
-    the absolute URL. The event does not bubble. When the application cancels it, the chat cancels the click.
+38. A plain click or <kbd>Enter</kbd> on a link in a message, also an SVG link with `xlink:href`, emits
+    `igcNavigate` on the chat, with the message and the absolute URL. The event does not bubble. When the application cancels it, the chat cancels the click.
 39. A click with a modifier key, a link with another target, `download` or a URL that does not parse, a click that
     cannot be canceled and a click that the content already canceled emit no event.
-40. A link outside the messages, a link around the chat and a link in a chat in a message emit no event on the
-    chat. The chat in the message emits the event of its own link.
+40. A link outside the messages, a link around the chat and a link in a chat in a message, also in its header, emit
+    no event on the chat. The chat in the message emits the event of its own message link.
 
 ### Not covered by the suite
 

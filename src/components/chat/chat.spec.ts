@@ -1292,6 +1292,23 @@ describe('Chat', () => {
         expect(clickLink(content.querySelector('a')!)).to.be.false;
       });
 
+      it('emits `igcNavigate` for an SVG link with `xlink:href`', async () => {
+        const navigate = spy();
+        const content = await renderContent(
+          html`<svg>
+            <a xlink:href="#docs"><text y="16">Docs</text></a>
+          </svg>`
+        );
+
+        chat.addEventListener('igcNavigate', navigate);
+
+        expect(clickLink(content.querySelector('text')!)).to.be.true;
+        expect(navigate).calledOnce;
+        expect(navigate.firstCall.args[0].detail.href).to.equal(
+          new URL('#docs', document.baseURI).href
+        );
+      });
+
       it('emits `igcNavigate` on `Enter` on the focused link', async () => {
         const navigate = spy();
         const content = await renderContent(html`<a href="#docs">Docs</a>`);
@@ -1347,7 +1364,7 @@ describe('Chat', () => {
         expect(navigate).not.called;
       });
 
-      it('leaves a link in a nested chat to that chat', async () => {
+      it('leaves a link in a nested chat, also in its header, to that chat', async () => {
         const inner = spy();
         const outer = spy();
         const nestedMessage = { id: 'nested', text: 'Nested', sender: 'bot' };
@@ -1360,7 +1377,9 @@ describe('Chat', () => {
               },
             }}
             @igcNavigate=${(event: Event) => inner(event)}
-          ></igc-chat>
+          >
+            <a slot="actions" href="#header">Header</a>
+          </igc-chat>
         `);
         const nested = await firstMessageContent(
           content.querySelector(IgcChatComponent.tagName)!
@@ -1368,6 +1387,7 @@ describe('Chat', () => {
 
         chat.addEventListener('igcNavigate', outer);
         clickLink(nested.querySelector('a')!);
+        clickLink(content.querySelector('[slot="actions"]')!);
 
         expect(inner).calledOnce;
         expect(inner.firstCall.args[0].detail.message).to.equal(nestedMessage);
