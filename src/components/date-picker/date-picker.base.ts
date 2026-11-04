@@ -255,7 +255,7 @@ export abstract class IgcDatePickerBaseComponent<
   /** Invoked when focus has left the picker for good. */
   protected _onBlur(): void {}
 
-  /** Invoked when the dialog of the picker is closing, before the picker is hidden. */
+  /** Invoked when the dialog asks to close and the picker accepts the close. */
   protected _onDialogClosing(): void {}
 
   /** Invoked when the picker is toggled, before the update is awaited. */
@@ -567,6 +567,19 @@ export abstract class IgcDatePickerBaseComponent<
       return true;
     }
 
+    // When the transition ends early and `open` no longer matches it, the dialog
+    // takes the state of `open` at once. The `?open` binding misses a value
+    // that changes back before the next render.
+    signal.addEventListener(
+      'abort',
+      () => {
+        if (this.open === open) return;
+        if (this.open) keepDialogOpen(dialog);
+        else dialog.open = false;
+      },
+      { once: true }
+    );
+
     if (open) {
       this.open = true;
 
@@ -578,15 +591,6 @@ export abstract class IgcDatePickerBaseComponent<
 
       return dialog.show();
     }
-
-    // A newer show, or `open` set to `false` and then `true`, ends the exit.
-    signal.addEventListener(
-      'abort',
-      () => {
-        if (this.open) keepDialogOpen(dialog);
-      },
-      { once: true }
-    );
 
     return dialog.hide().then((completed) => {
       const closed = completed && !signal.aborted;
@@ -727,8 +731,10 @@ export abstract class IgcDatePickerBaseComponent<
   protected _handleDialogClosing(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
-    this._onDialogClosing();
     this._hide(true);
+
+    // A canceled `igcClosing` keeps the dialog open and commits nothing.
+    if (this._isClosing) this._onDialogClosing();
   }
 
   //#endregion

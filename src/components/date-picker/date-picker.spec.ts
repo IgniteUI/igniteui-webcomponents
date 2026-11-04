@@ -1228,6 +1228,20 @@ describe('Date picker', () => {
           expect(isAnimating()).to.be.false;
           expect(await opened).to.be.false;
         });
+
+        it('closes the dialog when `open` is set to `false` in the task of `show()`', async () => {
+          const opened = picker.show();
+          picker.open = false;
+          await elementUpdated(picker);
+          await elementUpdated(dialog);
+
+          expect([picker.open, dialog.open, nativeDialog.open]).to.eql([
+            false,
+            false,
+            false,
+          ]);
+          expect(await opened).to.be.false;
+        });
       });
 
       describe('Close', () => {

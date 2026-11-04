@@ -191,7 +191,7 @@ As a developer, I expect to be able to:
 - Selecting a date closes the picker and returns focus to the input, unless `keepOpenOnSelect` is set.
 - In **dialog** mode, an open and a close play the animations of the dialog. `igcOpened` follows the entrance. On a
   close, `open` stays `true` until the exit ends, and the calendar ignores a selection. A canceled `igcClosing` keeps
-  the dialog open.
+  the dialog open. `open` set to `false` during the entrance or the exit closes the dialog at once.
 
 **Selecting**
 
@@ -725,7 +725,8 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 44. Issue #1710, and issue #1884 - `igcChange` is emitted in dialog mode after clearing the value and losing focus.
 45. In dialog mode, the open and the close play the dialog animations, `igcOpened` and `igcClosed` follow them, and
     `open` stays `true` during the exit. A canceled `igcClosing`, a `show()`, or `open` set to `false` and then `true`,
-    keeps the dialog open; `open` set to `false` closes it at once; the calendar ignores a selection during the exit.
+    keeps the dialog open; `open` set to `false` closes it at once, also in the task of `show()`; the calendar ignores
+    a selection during the exit.
 
 ### Readonly state
 

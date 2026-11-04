@@ -665,6 +665,48 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           });
         });
 
+        it('restores the range on Cancel after a canceled close on an outside click (dialog)', async () => {
+          const value = { start: today.native, end: tomorrow.native };
+          picker.value = value;
+          picker.mode = 'dialog';
+          await picker.show();
+          await elementUpdated(picker);
+
+          const eventSpy = spy(picker, 'emitEvent');
+          picker.addEventListener(
+            'igcClosing',
+            (event) => event.preventDefault(),
+            { once: true }
+          );
+
+          await selectDates(
+            new CalendarDay({ year: today.year, month: today.month, date: 10 }),
+            new CalendarDay({ year: today.year, month: today.month, date: 14 }),
+            picker.renderRoot.querySelector(IgcCalendarComponent.tagName)!
+          );
+
+          const dialog = picker.renderRoot.querySelector(
+            IgcDialogComponent.tagName
+          )!;
+          const { x, y } = dialog.getBoundingClientRect();
+          simulateClick(dialog.renderRoot.querySelector('dialog')!, {
+            clientX: x + 1,
+            clientY: y - 1,
+          });
+          await elementUpdated(picker);
+          expect(picker.open).to.be.true;
+
+          simulateClick(
+            picker.renderRoot.querySelector<HTMLElement>(
+              'igc-button[slot="footer"]'
+            )!
+          );
+          await elementUpdated(picker);
+
+          expect(picker.value).to.eql(value);
+          expect(eventSpy).not.calledWith('igcChange');
+        });
+
         it('clears the value when the range start is activated again in the calendar', async () => {
           const eventSpy = spy(picker, 'emitEvent');
           await picker.show();
