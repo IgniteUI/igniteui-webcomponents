@@ -45,6 +45,7 @@ describe('Expansion Panel', () => {
       ><span slot="title">Title</span></igc-expansion-panel
     >`,
     getTarget: (host) => host.renderRoot.querySelector('[part="header"]')!,
+    visibleText: 'Title',
   });
 
   let panel: IgcExpansionPanelComponent;

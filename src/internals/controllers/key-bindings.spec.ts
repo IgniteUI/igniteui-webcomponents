@@ -204,9 +204,7 @@ describe('Key bindings controller', () => {
       try {
         const tagName = unsafeStatic(multiTag);
         await fixture(
-          html`<div>
-          <${tagName}></${tagName}><${tagName}></${tagName}>
-        </div>`
+          html`<div><${tagName}></${tagName}><${tagName}></${tagName}></div>`
         );
 
         expect(add.callCount).to.equal(0);

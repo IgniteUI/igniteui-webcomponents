@@ -2,7 +2,11 @@
 @use 'igniteui-theming/sass/utils' as *;
 
 @function direction($rtl: false) {
-    $dir: if($rtl == true, -1, 1);
+    $dir: 1;
+
+    @if $rtl == true {
+        $dir: -1;
+    }
 
     @return calc(var(--ig-dir, 1) * #{$dir});
 }
@@ -27,5 +31,9 @@
     $result: diff($before, $dark-theme);
     $meta: map.get($dark-theme, '_meta');
 
-    @return if($meta, map.merge($result, ('_meta': $meta)), $result);
+    @if $meta {
+        @return map.merge($result, ('_meta': $meta));
+    }
+
+    @return $result;
 }
