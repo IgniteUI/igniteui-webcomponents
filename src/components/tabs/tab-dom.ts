@@ -1,7 +1,7 @@
 import { createRef } from 'lit/directives/ref.js';
 import type { StyleInfo } from 'lit/directives/style-map.js';
-import { hasModifiers } from '#internals/controllers/key-bindings.js';
 import { isLTR, replaceStyles, setStyles } from '#internals/utils/dom.js';
+import { linkOpensElsewhere } from '#internals/utils/events.js';
 import { asNumber } from '#internals/utils/math.js';
 import { equal } from '#internals/utils/objects.js';
 import type IgcTabComponent from './tab.js';
@@ -420,19 +420,7 @@ export function opensElsewhere(
   tab: IgcTabComponent,
   event?: MouseEvent
 ): boolean {
-  if (tab.href == null) {
-    return false;
-  }
-
-  if (event && (event.button !== 0 || hasModifiers(event))) {
-    return true;
-  }
-
-  // The browser uses the target of the first `<base>` element that has one.
-  const target = (
-    tab.target ??
-    tab.ownerDocument.querySelector('base[target]')?.getAttribute('target')
-  )?.toLowerCase();
-
-  return Boolean(target) && target !== '_self';
+  return (
+    tab.href != null && linkOpensElsewhere(tab.target, tab.ownerDocument, event)
+  );
 }

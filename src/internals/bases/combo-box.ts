@@ -9,7 +9,7 @@ import {
   addToggleController,
   type ToggleEventMap,
 } from '../controllers/toggle.js';
-
+import { coercedProperty } from '../decorators/coerced-property.js';
 import type { UnpackCustomEvent } from '../mixins/event-emitter.js';
 
 /* blazorIndirectRender */
@@ -27,7 +27,9 @@ export class IgcBaseComboBoxComponent extends LitElement {
 
   protected readonly _rootClickController: RootClickController =
     addRootClickController(this, { onHide: this._handleClosing });
-  private readonly _toggleController = addToggleController(this);
+  private readonly _toggleController = addToggleController(this, {
+    transition: this._toggleTransition,
+  });
 
   /**
    * Whether the component is open.
@@ -35,6 +37,9 @@ export class IgcBaseComboBoxComponent extends LitElement {
    * @default false
    */
   @property({ type: Boolean, reflect: true })
+  @coercedProperty<boolean, IgcBaseComboBoxComponent>({
+    onChange: ({ host, value }) => host._toggleController.sync(value),
+  })
   public open = false;
 
   /**
@@ -67,6 +72,17 @@ export class IgcBaseComboBoxComponent extends LitElement {
 
   protected _handleClosing(): void {
     this._hide(true);
+  }
+
+  /** The open and close transition of a subclass. Read once at construction, so declare it as a method. */
+  protected _toggleTransition?(
+    open: boolean,
+    signal: AbortSignal
+  ): boolean | Promise<boolean>;
+
+  /** Whether a close runs. */
+  protected get _isClosing(): boolean {
+    return this._toggleController.closing;
   }
 
   protected _hide(emitEvent = false): Promise<boolean> {

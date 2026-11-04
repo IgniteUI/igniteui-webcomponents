@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html, nothing } from 'lit';
+import { html, nothing, render } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { range } from 'lit/directives/range.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -264,6 +264,7 @@ for (const [name, path] of [
   ['mail', 'communication/svg/production/ic_email_24px.svg'],
   ['quote', 'editor/svg/production/ic_format_quote_24px.svg'],
   ['redo', 'content/svg/production/ic_redo_24px.svg'],
+  ['trending_down', 'action/svg/production/ic_trending_down_24px.svg'],
   ['trending_up', 'action/svg/production/ic_trending_up_24px.svg'],
   ['underline', 'editor/svg/production/ic_format_underlined_24px.svg'],
   ['undo', 'content/svg/production/ic_undo_24px.svg'],
@@ -845,6 +846,235 @@ export const TableCells: Story = {
         placement="top"
         show-delay="0"
         with-arrow
+      ></igc-tooltip>
+    `;
+  },
+};
+
+const weeklyDeployments = [
+  { day: 'Monday', count: 12, failed: 1 },
+  { day: 'Tuesday', count: 19, failed: 0 },
+  { day: 'Wednesday', count: 8, failed: 2 },
+  { day: 'Thursday', count: 23, failed: 3 },
+  { day: 'Friday', count: 15, failed: 1 },
+  { day: 'Saturday', count: 4, failed: 0 },
+  { day: 'Sunday', count: 2, failed: 0 },
+];
+
+type DeploymentDay = (typeof weeklyDeployments)[number];
+
+const dailyAverage = Math.round(
+  weeklyDeployments.reduce((sum, { count }) => sum + count, 0) /
+    weeklyDeployments.length
+);
+
+function trendOf(count: number) {
+  const delta = count - dailyAverage;
+
+  if (delta === 0) {
+    return html`At the daily average of ${dailyAverage}`;
+  }
+
+  return html`
+    <igc-icon
+      name=${delta > 0 ? 'trending_up' : 'trending_down'}
+      aria-hidden="true"
+    ></igc-icon>
+    ${Math.abs(delta)} ${delta > 0 ? 'over' : 'under'} the daily average of
+    ${dailyAverage}
+  `;
+}
+
+/** The slotted content of the chart tooltip for one day. */
+function deploymentDayTip({ day, count, failed }: DeploymentDay) {
+  return html`
+    <div class="tip chart-tip">
+      <strong>${day}</strong>
+      <span class="chart-tip-row">
+        <span class="chart-swatch"></span>
+        ${count} deployments
+      </span>
+      <span class="chart-tip-row">${trendOf(count)}</span>
+      ${
+        failed
+          ? html`
+              <span class="chart-tip-row">
+                <igc-icon name="error" aria-hidden="true"></igc-icon>
+                ${failed} failed
+              </span>
+            `
+          : nothing
+      }
+    </div>
+  `;
+}
+
+export const ChartPointer: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A canvas chart has no element for each bar, so the tooltip cannot use an anchor. `showAt()` places the tooltip at the pointer, in viewport coordinates. A new call on each `pointermove` moves it with no animation. Turn on "Snap to the bar" to place it against the rectangle of the bar. The tooltip shows rich content in its default slot: the day, the count, the trend against the daily average and the failures. Lit renders the content into the tooltip only when the bar changes, because the tooltip announces each change of its content. The tooltip has `pointer-events: none`, so the pointer does not leave the canvas when it goes over the tooltip. The canvas has a text alternative of the same data, because the tooltip describes no element.',
+      },
+    },
+  },
+  render: () => {
+    const tooltip = createRef<IgcTooltipComponent>();
+    const max = Math.max(...weeklyDeployments.map(({ count }) => count));
+    const width = 480;
+    const height = 240;
+    const gap = 12;
+    let snap = false;
+    let active = -1;
+
+    /** The bar of `index` in the coordinates of the canvas. */
+    function barOf(index: number) {
+      const slot = width / weeklyDeployments.length;
+      const barHeight = (weeklyDeployments[index].count / max) * (height - 16);
+
+      return {
+        x: index * slot + gap / 2,
+        y: height - barHeight,
+        width: slot - gap,
+        height: barHeight,
+      };
+    }
+
+    // Lit calls a ref callback before it inserts the canvas, when no styles
+    // apply. Draw in the next frame.
+    function onCanvas(canvas?: Element) {
+      requestAnimationFrame(() => draw(canvas));
+    }
+
+    function draw(canvas?: Element) {
+      if (!(canvas instanceof HTMLCanvasElement)) {
+        return;
+      }
+
+      const ratio = window.devicePixelRatio;
+      const context = canvas.getContext('2d')!;
+
+      canvas.width = width * ratio;
+      canvas.height = height * ratio;
+      context.scale(ratio, ratio);
+      // The theme color resolves through `color`. A canvas cannot read var().
+      context.fillStyle = getComputedStyle(canvas).color;
+
+      weeklyDeployments.forEach((_, index) => {
+        const bar = barOf(index);
+        context.fillRect(bar.x, bar.y, bar.width, bar.height);
+      });
+    }
+
+    function onPointerMove(event: PointerEvent) {
+      if (!tooltip.value) {
+        return;
+      }
+
+      const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      const index = Math.min(
+        weeklyDeployments.length - 1,
+        Math.floor(
+          ((event.clientX - box.left) / box.width) * weeklyDeployments.length
+        )
+      );
+
+      if (index !== active) {
+        active = index;
+        // The slotted content replaces the message.
+        render(deploymentDayTip(weeklyDeployments[index]), tooltip.value);
+      }
+
+      if (snap) {
+        const bar = barOf(index);
+        tooltip.value.showAt({
+          ...bar,
+          x: box.left + bar.x,
+          y: box.top + bar.y,
+        });
+      } else {
+        tooltip.value.showAt({ x: event.clientX, y: event.clientY });
+      }
+    }
+
+    function onPointerLeave() {
+      active = -1;
+      tooltip.value?.hide();
+    }
+
+    function toggleSnap({ detail }: CustomEvent<IgcCheckboxChangeEventArgs>) {
+      snap = detail.checked;
+
+      if (tooltip.value) {
+        tooltip.value.placement = snap ? 'top' : 'bottom-start';
+        tooltip.value.offset = snap ? 6 : 16;
+        tooltip.value.withArrow = snap;
+      }
+    }
+
+    const summary = weeklyDeployments
+      .map(({ day, count, failed }) => `${day} ${count}, ${failed} failed`)
+      .join('; ');
+
+    return html`
+      ${scenarioStyles}
+      <style>
+        .chart {
+          display: block;
+          width: ${width}px;
+          height: ${height}px;
+          color: var(--ig-primary-500, #09f);
+          cursor: crosshair;
+          border-bottom: 1px solid var(--ig-gray-400, #bdbdbd);
+        }
+
+        .chart-tooltip {
+          pointer-events: none;
+        }
+
+        .chart-tip {
+          gap: 0.25rem;
+        }
+
+        .chart-tip-row {
+          display: flex;
+          align-items: center;
+          gap: 0.375rem;
+        }
+
+        .chart-tip igc-icon {
+          --ig-icon-size: 1rem;
+        }
+
+        .chart-swatch {
+          width: 0.625rem;
+          height: 0.625rem;
+          border-radius: 2px;
+          background: var(--ig-primary-500, #09f);
+        }
+      </style>
+
+      <div class="scenario">
+        <p>Move the pointer over the bars.</p>
+
+        <igc-switch @igcChange=${toggleSnap}>Snap to the bar</igc-switch>
+
+        <canvas
+          class="chart"
+          role="img"
+          aria-label=${`Deployments per day: ${summary}.`}
+          ${ref(onCanvas)}
+          @pointermove=${onPointerMove}
+          @pointerleave=${onPointerLeave}
+        ></canvas>
+      </div>
+
+      <igc-tooltip
+        ${ref(tooltip)}
+        class="chart-tooltip"
+        placement="bottom-start"
+        offset="16"
       ></igc-tooltip>
     `;
   },

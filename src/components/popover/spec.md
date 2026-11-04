@@ -12,6 +12,7 @@
     - [End-user experience](#end-user-experience)
     - [Developer experience](#developer-experience)
       - [Anchoring](#anchoring)
+      - [Rectangle anchor](#rectangle-anchor)
       - [Placement and offset](#placement-and-offset)
       - [Flipping and shifting](#flipping-and-shifting)
       - [The arrow element](#the-arrow-element)
@@ -33,6 +34,7 @@
     - [Open state](#open-state)
     - [Placement and middleware](#placement-and-middleware)
     - [Arrow element tests](#arrow-element-tests)
+    - [Rectangle anchor tests](#rectangle-anchor-tests)
     - [Anchor visibility](#anchor-visibility)
     - [Scroll strategy tests](#scroll-strategy-tests)
     - [Fallback positioning strategy](#fallback-positioning-strategy)
@@ -48,6 +50,8 @@
 | ------: | ---------- | ------------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                                   |
 |       2 | 2026-10-26 | The arrow gets its side part before it is measured      |
+|       3 | 2026-10-30 | `anchorRect` anchors the content to a viewport rectangle |
+|       4 | 2026-10-30 | `zoom` in the fallback; the arrow stays inside the content    |
 
 ## Overview
 
@@ -147,6 +151,22 @@ An IDREF that does not resolve keeps the current target, so a popover finds an a
 next open. When the anchor leaves the DOM, the content hides while `open` keeps its value, so the popover shows
 again once a new anchor resolves.
 
+#### Rectangle anchor
+
+`anchorRect` anchors the content to a rectangle in viewport coordinates, for example the point of a pointer event.
+It takes precedence over `anchor` and the `anchor` slot. A rectangle with no width and height is a point.
+
+```typescript
+popover.anchorRect = { x: event.clientX, y: event.clientY, width: 0, height: 0 };
+```
+
+At the first use, the popover creates a hidden proxy element in its shadow root and uses it as the anchor of both
+strategies. The proxy is a `manual` popover in the top layer, so it is placed in viewport coordinates also inside an
+ancestor with `transform`, `filter` or `contain`. The rectangle is in viewport pixels also inside an ancestor with
+`zoom`. A new rectangle while the popover is open moves the proxy, and the content follows with no new show. The
+proxy shows before the content on each open and hides after it, because an anchor that enters the top layer after
+the content does not anchor it. An `anchor` IDREF that does not resolve never falls back to the proxy.
+
 #### Placement and offset
 
 ```html
@@ -233,6 +253,7 @@ component that owns it.
 | -------------- | --------------- | --------- | ----------------------------------- | ---------------- | -------------------------------------------------------------------- |
 | open           | open            | Yes       | `boolean`                           | false            | The visibility state of the popover component.                       |
 | anchor         | anchor          | No        | `Element \| string \| undefined`    | -                | An element reference or an IDREF to use as the anchor target.        |
+| anchorRect     | -               | No        | `PopoverRect \| null`               | `null`           | A rectangle in viewport coordinates to use as the anchor. It takes precedence over `anchor`. |
 | placement      | placement       | No        | `PopoverPlacement`                  | `bottom-start`   | Where to place the floating element relative to the anchor.          |
 | offset         | offset          | No        | `number`                            | 0                | Translates the floating element along the main axis.                 |
 | flip           | flip            | Yes       | `boolean`                           | false            | Changes the placement to keep the floating element in view.          |
@@ -316,21 +337,37 @@ the same expectations. The groups below mirror the `describe` blocks.
 18. The arrow follows the placement when it flips.
 19. An arrow that its side part sizes is centered on the anchor on the first show and after a change of the axis.
 
+### Rectangle anchor tests
+
+20. The content is placed against a point and against a rectangle, with the offset.
+21. A move of the rectangle repositions the content with no new show.
+22. Inside a transformed ancestor, the content is at the viewport coordinates. It flips at the viewport edge.
+23. The rectangle takes precedence over `anchor`. A set and a clear while open change the target.
+24. The proxy anchor hides on close and shows again on reconnect. A popover that never gets a rectangle has no proxy.
+25. A popover that opens and disconnects in the same task does not open, and opens on reconnect.
+26. An `anchor` IDREF that does not resolve does not reuse the proxy after the rectangle is cleared.
+27. Inside a zoomed ancestor, the content and its offset are at the viewport coordinates.
+28. The arrow points at the point.
+
 ### Anchor visibility
 
-20. The content hides when the anchor leaves the DOM, and shows again when a new anchor resolves.
-21. The content tracks the anchor as it scrolls into and out of view.
+29. The content hides when the anchor leaves the DOM, and shows again when a new anchor resolves.
+30. The content tracks the anchor as it scrolls into and out of view.
 
 ### Scroll strategy tests
 
-22. `hide` hides the content while the anchor is fully out of view, and shows it again afterwards.
-23. `scroll` keeps the content visible and anchored.
-24. `close` emits `igcPopoverScrollClose` on each scroll, without changing `open` itself.
+31. `hide` hides the content while the anchor is fully out of view, and shows it again afterwards.
+32. `scroll` keeps the content visible and anchored.
+33. `close` emits `igcPopoverScrollClose` on each scroll, without changing `open` itself.
+34. `close` still emits after the anchor changes while the content shows.
 
 ### Fallback positioning strategy
 
-25. The whole positioning surface is re-run with the floating strategy forced, covering the browsers without native
+35. The whole positioning surface is re-run with the floating strategy forced, covering the browsers without native
     CSS anchor positioning.
+36. With the fallback forced, the content follows an anchor in the top layer that moves without a scroll or a
+    resize.
+37. With the fallback forced, the content stays at an anchor inside a top-layer element while the page scrolls.
 
 ## Assumptions and limitations
 
@@ -342,6 +379,16 @@ the same expectations. The groups below mirror the `describe` blocks.
 - Native support is probed once per document and cached, so a change of the capability at run time has no effect.
 - The `*-self-*` `position-area` keywords are not implemented across browsers, so the native strategy resolves the
   placements without them.
+- With the native strategy, content that flipped stays on the flipped side while it shows, also when the original
+  side fits again. This is the "last successful position option" of CSS anchor positioning. The next open starts
+  from `placement`, if a rendering update finds the content hidden before it. A new anchor while the content shows
+  can keep the flip of the previous anchor. The fallback evaluates the placement again at each update.
+- With an aligned placement (`-start`, `-end`) and a point, the point is at the edge of the content. Both strategies
+  keep the arrow inside the content there, up to half its width from the point. `arrowOffset` moves an arrow at an
+  edge away from the corner, and the arrow stays inside the content.
+- A disconnected popover does not open. It opens when it connects again.
+- floating-ui measures the anchor in viewport pixels and the content in CSS pixels. The fallback measures all in
+  viewport pixels, so that it places the content correctly inside an ancestor with `zoom`.
 
 ## Accessibility
 

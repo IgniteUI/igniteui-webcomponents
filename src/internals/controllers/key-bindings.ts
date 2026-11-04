@@ -71,10 +71,7 @@ function getActiveModifiers(event: KeyboardEvent): string[] {
   );
 }
 
-/** Whether Alt, Ctrl, Meta or Shift is held, for a keyboard or a pointer event. */
-export function hasModifiers(
-  event: Pick<KeyboardEvent, 'altKey' | 'ctrlKey' | 'metaKey' | 'shiftKey'>
-): boolean {
+function hasModifiers(event: KeyboardEvent): boolean {
   return event.altKey || event.ctrlKey || event.metaKey || event.shiftKey;
 }
 

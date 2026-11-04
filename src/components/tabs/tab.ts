@@ -125,6 +125,7 @@ export default class IgcTabComponent extends EventEmitterMixin<IgcTabComponentEv
   /**
    * Where to open the URL when `href` is set. Without it, the target of the page's
    * `<base>` element applies. A target other than `_self` never changes the selection.
+   * In a page that is not in a frame, `_parent` and `_top` count as `_self`.
    *
    * @attr target
    */

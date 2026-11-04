@@ -67,6 +67,7 @@
 |      13 | 2026-10-28 | The picker projects only `aria-haspopup`, `aria-required` and labels onto the editor |
 |      14 | 2026-10-29 | The `overlay` part is removed; the dialog backdrop is the native `::backdrop` of `dialog-base` |
 |      15 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
+|      16 | 2026-11-04 | In dialog mode, an open and a close play the animations of the dialog; a canceled `igcClosing` keeps the dialog open |
 
 ## Overview
 
@@ -370,6 +371,13 @@ as touched, so an invalid value shows its invalid styles at once, also when the 
 
 **Range chips.** In dropdown mode, activating a chip closes the picker. In dialog mode the dialog stays open.
 
+**Opening and closing the dialog.** The dialog fades in on an open, and `igcOpened` follows the entrance. Cancel,
+Done, <kbd>Escape</kbd> and an outside click play the exit animation of the dialog, and `open` stays `true` until it
+ends; the calendar and the range chips ignore a selection then, and Done, Cancel and <kbd>Escape</kbd> do nothing.
+A canceled `igcClosing` keeps the dialog open. Done commits before `igcClosing`, but an outside click commits only
+when the close goes on, so after a canceled outside click, Cancel still restores the range. The date picker suite
+covers the shared behavior.
+
 **Readonly.** Keyboard navigation, toggling the calendar and clearing through the clear icon are all disabled, and
 the calendar and clear icons appear visually disabled.
 
@@ -571,7 +579,8 @@ The component is covered by eight suites in this directory, all running in a rea
 
 The suites reuse `createFormAssociatedTestBed`, `runValidationContainerTests`,
 `runExternalLabelAssociationTests` and the `simulate*` helpers from
-[`src/internals/testing`](../../internals/testing). The groups below mirror the `describe` blocks.
+[`src/internals/testing`](../../internals/testing). The groups below mirror the `describe` blocks. The common, single
+input and two inputs suites run with reduced motion, so the dialog does not fade.
 
 ### Common suite
 
@@ -581,9 +590,11 @@ The suites reuse `createFormAssociatedTestBed`, `runValidationContainerTests`,
    `mode` does not change.
 3. Methods - `show`, `hide`, `toggle`, `select` and `clear`.
 4. Interactions - selection through the calendar, keyboard navigation, and interactions with the show icon. A value
-   set from code while the dialog is open, also with `select()`, is not reported when Done commits.
+   set from code while the dialog is open, also with `select()`, is not reported when Done commits. After a canceled
+   close on an outside click, Cancel restores the range. <kbd>Escape</kbd> restores the range as the close starts, so
+   Done or a reopen during the exit keeps it. Done, Cancel and <kbd>Escape</kbd> do nothing during the exit of `hide()`.
 5. Readonly state, in dropdown and in dialog mode.
-6. Predefined ranges - the built-in chips and the custom ranges.
+6. Predefined ranges - the built-in chips and the custom ranges, and a chip during the exit of the dialog.
 7. Locale week start - the calendar derives its week start from the locale when `week-start` is not set.
 
 ### Single input suite

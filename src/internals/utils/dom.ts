@@ -364,6 +364,15 @@ export function getTopLayerAncestor(element: Element): HTMLElement | null {
 }
 
 /**
+ * The effective `zoom` of `element`, which an ancestor `zoom` sets. The client
+ * rectangles include it, but the styles and the offset and client sizes do not.
+ * A hidden element, and a browser without `currentCSSZoom`, give 1.
+ */
+export function getCSSZoom(element?: Element | null): number {
+  return element?.currentCSSZoom || 1;
+}
+
+/**
  * Returns whether the element, or an ancestor across shadow DOM boundaries,
  * has the `sticky` position.
  */
