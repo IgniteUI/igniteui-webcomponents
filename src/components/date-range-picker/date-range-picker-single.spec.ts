@@ -5,7 +5,6 @@ import {
   html,
   waitUntil,
 } from '@open-wc/testing';
-import { emulateMedia } from '@web/test-runner-commands';
 import sinon, { spy } from 'sinon';
 import {
   altKey,
@@ -45,9 +44,6 @@ import {
 
 describe('Date range picker - single input', () => {
   before(() => defineComponents(IgcDateRangePickerComponent));
-  // The dialog fades take 350 ms each; skip them in this file.
-  before(() => emulateMedia({ reducedMotion: 'reduce' }));
-  after(() => emulateMedia({ reducedMotion: 'no-preference' }));
 
   it('exposes `required` as `aria-required` on the native input', async () => {
     const picker = await fixture<IgcDateRangePickerComponent>(

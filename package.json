@@ -51,7 +51,7 @@
     "lint:oxlint": "oxlint",
     "lint:lit-analyzer": "lit-analyzer",
     "lint:oxfmt": "oxfmt --check",
-    "lint:styles": "stylelint \"src/**/*.scss\"",
+    "lint:styles": "stylelint \"src/**/*.scss\" --cache --cache-strategy content --cache-location node_modules/.cache/stylelint/",
     "format": "oxlint --fix && oxfmt",
     "release": "node scripts/gen-changelog.mjs",
     "test": "npm run build:styles && wtr --coverage",

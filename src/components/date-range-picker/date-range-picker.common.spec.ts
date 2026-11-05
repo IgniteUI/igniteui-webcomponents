@@ -5,7 +5,6 @@ import {
   html,
   waitUntil,
 } from '@open-wc/testing';
-import { emulateMedia } from '@web/test-runner-commands';
 import { registerI18n } from 'igniteui-i18n-core';
 import { ResourceStringsBG } from 'igniteui-i18n-resources';
 import type Sinon from 'sinon';
@@ -52,9 +51,6 @@ describe('Date range picker - common tests for single and two inputs mode', () =
   before(() =>
     defineComponents(IgcDateRangePickerComponent, IgcDateRangeInputComponent)
   );
-  // The dialog fades take 350 ms each; skip them in this file.
-  before(() => emulateMedia({ reducedMotion: 'reduce' }));
-  after(() => emulateMedia({ reducedMotion: 'no-preference' }));
 
   let picker: IgcDateRangePickerComponent;
   let calendar: IgcCalendarComponent;

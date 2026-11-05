@@ -1,4 +1,5 @@
 import { expect, nextFrame } from '@open-wc/testing';
+import { emulateMedia } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { type CalendarDay, toCalendarDay } from '../date/model.js';
 import { toKebabCase } from '../utils/strings.js';
@@ -20,6 +21,17 @@ export function finishAnimationsFor(
   for (const animation of animations) {
     animation.finish();
   }
+}
+
+/**
+ * Turns motion back on for the calling `describe` block, for tests that check animations.
+ * It resets motion before each test, so a test that switches to reduced motion needs no
+ * reset. `before` also covers the fixtures of outer `beforeEach` hooks.
+ */
+export function allowMotion(): void {
+  before(() => emulateMedia({ reducedMotion: 'no-preference' }));
+  beforeEach(() => emulateMedia({ reducedMotion: 'no-preference' }));
+  after(() => emulateMedia({ reducedMotion: 'reduce' }));
 }
 
 /** Returns the animations of the `::backdrop` of a dialog. */

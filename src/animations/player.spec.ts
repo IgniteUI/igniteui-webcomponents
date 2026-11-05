@@ -9,6 +9,7 @@ import { css, LitElement } from 'lit';
 import { createRef } from 'lit/directives/ref.js';
 import sinon from 'sinon';
 
+import { allowMotion } from '#internals/testing/helpers.spec.js';
 import { EaseOut } from './easings.js';
 import { addAnimationController, getPrefersReducedMotion } from './player.js';
 import { type AnimationReferenceMetadata, animation } from './types.js';
@@ -26,6 +27,8 @@ const animationOptions = {
 const fade: AnimationReferenceMetadata = animation(keyframes, animationOptions);
 
 describe('Animations Player', () => {
+  allowMotion();
+
   let tag: string;
   let el: HTMLElement & { player: ReturnType<typeof addAnimationController> };
 

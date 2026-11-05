@@ -13,6 +13,7 @@ import { DialogResourceStringsBG } from 'igniteui-i18n-resources';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
+  allowMotion,
   finishAnimationsFor,
   finishBackdrop,
   getBackdropAnimations,
@@ -300,6 +301,8 @@ describe('Dialog', () => {
   });
 
   describe('Interrupted transitions', () => {
+    allowMotion();
+
     beforeEach(async () => {
       dialog = await fixture<IgcDialogComponent>(
         html`<igc-dialog></igc-dialog>`
@@ -610,6 +613,8 @@ describe('Dialog', () => {
   });
 
   describe('Backdrop', () => {
+    allowMotion();
+
     beforeEach(async () => {
       dialog = await fixture<IgcDialogComponent>(
         html`<igc-dialog style="--backdrop: rgb(1, 2, 3)"></igc-dialog>`
@@ -744,19 +749,14 @@ describe('Dialog', () => {
 
     it('cancels a zero-duration exit when `open` is set to `false` and then to `true`', async () => {
       await emulateMedia({ reducedMotion: 'reduce' });
+      await openThroughProperty();
 
-      try {
-        await openThroughProperty();
+      const closing = dialog.hide();
+      dialog.open = false;
+      dialog.open = true;
 
-        const closing = dialog.hide();
-        dialog.open = false;
-        dialog.open = true;
-
-        expect(await closing).to.be.false;
-        expect(dialog.open).to.be.true;
-      } finally {
-        await emulateMedia({ reducedMotion: 'no-preference' });
-      }
+      expect(await closing).to.be.false;
+      expect(dialog.open).to.be.true;
     });
 
     it('cancels the entrance when `open` is set to `false` during it', async () => {
@@ -790,14 +790,12 @@ describe('Dialog', () => {
     it('does not animate the backdrop with reduced motion', async () => {
       await emulateMedia({ reducedMotion: 'reduce' });
 
-      try {
-        await dialog.show();
+      const showing = dialog.show();
+      await elementUpdated(dialog);
+      expect(getBackdropAnimations(nativeDialog)).to.be.empty;
 
-        expect(getBackdropAnimations(nativeDialog)).to.be.empty;
-        expect(finishBackdrop(nativeDialog).opacity).to.equal('1');
-      } finally {
-        await emulateMedia({ reducedMotion: 'no-preference' });
-      }
+      await showing;
+      expect(finishBackdrop(nativeDialog).opacity).to.equal('1');
     });
   });
 });

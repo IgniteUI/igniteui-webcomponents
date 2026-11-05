@@ -1,11 +1,14 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { allowMotion } from '#internals/testing/helpers.spec.js';
 import { simulatePointerDown } from '#internals/testing/simulate.spec.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcRippleComponent from './ripple.js';
 
 describe('Ripple', () => {
+  allowMotion();
+
   let ripple: IgcRippleComponent;
   let button: IgcButtonComponent;
 

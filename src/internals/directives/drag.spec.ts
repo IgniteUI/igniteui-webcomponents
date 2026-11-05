@@ -5,6 +5,7 @@ import { type SinonSpy, spy } from 'sinon';
 import { startViewTransition } from '#animations/view-transition.js';
 import { escapeKey } from '../controllers/key-bindings.js';
 import {
+  allowMotion,
   catchListenerErrors,
   compareStyles,
   withoutActiveViewTransition,
@@ -493,6 +494,8 @@ describe('Draggable directive', () => {
   });
 
   describe('Advanced element dragging', () => {
+    allowMotion();
+
     beforeEach(async () => {
       await createFixture({});
     });

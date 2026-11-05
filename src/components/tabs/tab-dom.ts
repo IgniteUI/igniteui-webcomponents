@@ -254,16 +254,10 @@ export class TabsHelpers {
     return { min: start + low, max: start + size - high };
   }
 
-  /** Scrolls the strip on its axis. */
-  private _scrollBy(
-    container: HTMLElement,
-    offset: number,
-    behavior?: ScrollBehavior
-  ): void {
+  /** Scrolls the strip on its axis, with the `scroll-behavior` of the strip. */
+  private _scrollBy(container: HTMLElement, offset: number): void {
     container.scrollBy(
-      isColumn(this._host)
-        ? { top: offset, behavior }
-        : { left: offset, behavior }
+      isColumn(this._host) ? { top: offset } : { left: offset }
     );
   }
 
@@ -285,7 +279,7 @@ export class TabsHelpers {
       direction === 'end' ? offsets.find(Boolean) : offsets.findLast(Boolean);
 
     if (offset) {
-      this._scrollBy(container, offset, 'smooth');
+      this._scrollBy(container, offset);
     }
   }
 

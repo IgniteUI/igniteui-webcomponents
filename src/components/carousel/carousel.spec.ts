@@ -23,6 +23,7 @@ import {
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
+  allowMotion,
   finishAnimationsFor,
   getAnimationsFor,
   isUnderPageLayer,
@@ -1686,6 +1687,8 @@ describe('Carousel', () => {
   });
 
   describe('Animations, labels and projected indicators', () => {
+    allowMotion();
+
     /** The keyframes of the animations the slide plays on its host. */
     function keyframesOf(slide: IgcCarouselSlideComponent) {
       return getAnimationsFor(slide).flatMap((animation) =>

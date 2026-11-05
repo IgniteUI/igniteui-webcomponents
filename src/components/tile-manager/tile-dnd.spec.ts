@@ -5,6 +5,7 @@ import { getActiveViewTransition } from '#animations/view-transition.js';
 import { escapeKey } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
+  allowMotion,
   expectCloseTo,
   viewTransitionComplete,
   withDocumentSheets,
@@ -153,6 +154,8 @@ describe('Tile drag and drop', () => {
   });
 
   describe('Tile drag', () => {
+    allowMotion();
+
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(
         createTileManager('tile')
