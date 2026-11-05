@@ -38,7 +38,7 @@ $theme: $material;
 }
 
 :host([part~='dragging']) {
-    background: var-get($theme, 'placeholder-background');
+    background: var-get($theme, 'overlay-background');
 
     // An outline, not a border, so that the dragged tile keeps its size.
     outline: rem(1px) solid var-get($theme, 'ghost-border');
