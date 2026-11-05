@@ -22,6 +22,23 @@ export function finishAnimationsFor(
   }
 }
 
+/** Returns the animations of the `::backdrop` of a dialog. */
+export function getBackdropAnimations(dialog: HTMLDialogElement): Animation[] {
+  // WebKit reports an empty `pseudoElement` for `::backdrop`.
+  return dialog.getAnimations({ subtree: true }).filter(({ effect }) => {
+    const { target, pseudoElement } = effect as KeyframeEffect;
+    return target === dialog && pseudoElement !== null;
+  });
+}
+
+/** Finishes the `::backdrop` animations of a dialog and returns the backdrop style. */
+export function finishBackdrop(dialog: HTMLDialogElement): CSSStyleDeclaration {
+  for (const animation of getBackdropAnimations(dialog)) {
+    animation.finish();
+  }
+  return getComputedStyle(dialog, '::backdrop');
+}
+
 /** Waits two animation frames, so a started view transition settles. */
 export async function viewTransitionComplete(): Promise<void> {
   await nextFrame();

@@ -15,6 +15,9 @@
     border-style: inherit;
     border-radius: inherit;
     min-width: inherit;
+
+    // The duration and easing of the surface fade (`fadeIn()` and `fadeOut()`).
+    @include modal-backdrop(350ms, $out-sine);
 }
 
 [part='content'] {
@@ -69,19 +72,6 @@ slot[name='title'] {
 [name='message']::slotted(*) {
     max-width: 40ch;
     display: inline-block;
-}
-
-[part~='base']::backdrop {
-    // The duration and easing of the surface fade (`fadeIn()` and `fadeOut()`).
-    transition: opacity 350ms $out-sine;
-
-    @starting-style {
-        opacity: 0;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        transition: none;
-    }
 }
 
 // The dialog stays modal until the exit animation of the surface ends.

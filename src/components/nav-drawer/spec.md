@@ -51,6 +51,7 @@ This directory hosts three public components: [`igc-nav-drawer`](#igc-nav-drawer
 |       4 | 2026-10-06 | Keep the first opener when the dialog opens again                       |
 |       5 | 2026-10-21 | API descriptions aligned with the JSDoc.                                |
 |       6 | 2026-10-23 | A relative drawer makes a stacking context, so the z-index of the mini variant does not compete with the layers of the page; in the material theme an item makes a stacking context, so its highlight shows in front of the background of a relative drawer |
+|       7 | 2026-11-05 | The dialog stays modal until the exit ends, so the exit runs in all browsers; `hide()` and `igcClosed` come after the exit; fixed content of the shown drawer and mini variant is placed against the viewport; no motion with reduced motion |
 
 ## Overview
 
@@ -112,7 +113,9 @@ As a developer, I expect to be able to:
 ### End-user experience
 
 For an edge position the drawer slides in over the page with a backdrop, and focus is trapped inside it until it is
-dismissed. Then the focus goes back to the element that had it before, also when that element is in the mini variant.
+dismissed. On a close, the drawer slides out and the backdrop fades out. The dialog stays modal until this exit ends.
+Then the focus goes back to the element that had it before, also when that element is in the mini variant. With reduced
+motion, the drawer, the mini variant and the backdrop change at once.
 For the relative position it takes its place in the layout and pushes the content next to it. When a mini variant is
 provided, the compact rail is shown whenever the drawer is closed.
 
@@ -230,7 +233,7 @@ The components render no strings of their own; the item content and the label co
 | Name   | Type signature         | Description                                                         |
 | ------ | ---------------------- | --------------------------------------------------------------------- |
 | show   | `(): Promise<boolean>` | Opens the drawer. Resolves `false` when it was already open.        |
-| hide   | `(): Promise<boolean>` | Closes the drawer. Resolves `false` when it was already closed.     |
+| hide   | `(): Promise<boolean>` | Closes the drawer. Resolves `true` after the exit, or `false` when it was already closed or a reopen ends the exit. |
 | toggle | `(): Promise<boolean>` | Toggles the open state, delegating to `show` or `hide`.             |
 
 #### Events
@@ -238,7 +241,7 @@ The components render no strings of their own; the item content and the label co
 | Name       | Cancellable | Description                                                                                 |
 | ---------- | ----------- | --------------------------------------------------------------------------------------------- |
 | igcClosing | true        | Emitted just before the drawer is closed by a user interaction. Call `preventDefault()` to abort. |
-| igcClosed  | false       | Emitted just after the drawer is closed by a user interaction.                              |
+| igcClosed  | false       | Emitted after a user interaction closes the drawer and the exit ends.                       |
 
 #### Slots
 
@@ -297,7 +300,8 @@ The suite lives in [`nav-drawer.spec.ts`](./nav-drawer.spec.ts) and runs in a re
 2. The drawer renders as a native dialog for the edge positions, and as a `nav` landmark for the relative position.
 3. The items, the header items, the item slots and the mini variant render in their containers. The mini variant of a
    relative drawer is painted under an earlier page layer with `z-index: 1`. In the material theme, an item keeps its
-   highlight in front of the background of the drawer.
+   highlight in front of the background of the drawer. Fixed content of an open edge drawer, and of the mini variant,
+   is placed against the viewport.
 4. The label names the dialog and the mini variant.
 
 ### Host ARIA
@@ -319,24 +323,34 @@ The suite lives in [`nav-drawer.spec.ts`](./nav-drawer.spec.ts) and runs in a re
 10. When the dialog closes while `open` stays `true`, the drawer opens the dialog again.
 11. `hide()` emits no events.
 
+### Exit and backdrop
+
+12. The backdrop takes the overlay color. During the exit, the dialog stays modal and the backdrop fades out; `hide()`
+    resolves and the dialog closes after the exit. A change of `open` to `false` also runs the exit, and `igcClosed`
+    comes after it.
+13. A `show()` during the exit keeps the dialog and ends the `hide()` with `false`. A change of `open` to `true` also
+    ends it. A close after such a reopen runs its own exit, also when a style read ends the earlier one. With reduced motion, the backdrop does not animate, and an edge drawer with a mini variant and a relative
+    drawer with a mini variant open and close with no transitions.
+
 ### Mini slot popover
 
-12. The mini rail shows while the drawer is closed and hides while it is open, but only after the dialog opens. It
+14. The mini rail shows while the drawer is closed and hides while it is open, but only after the dialog opens. It
     follows a change of the position and the mini content that is added or removed, also in the same task, and it
     does not show without content.
-13. When the drawer closes, the focus goes back to the control in the mini rail that had it before the drawer opened,
+15. When the drawer closes, the focus goes back to the control in the mini rail that had it before the drawer opened,
     also after the dialog opens again and when the drawer is in a closed shadow root. A drawer that becomes relative
     while open does not move the focus there, and the drawer does not move a focus that the dialog already gave back.
 
 ### Invoker commands
 
-14. The shared suite checks that `--show`, `--hide` and `--toggle` call `show`, `hide` and `toggle`.
+16. The shared suite checks that `--show`, `--hide` and `--toggle` call `show`, `hide` and `toggle`.
 
 ## Assumptions and limitations
 
 - The drawer holds no routing logic: the `active` state of an item is set by the application.
 - The modal positions rely on the native dialog, so the backdrop, the focus trap and the top layer behavior come
-  from the platform.
+  from the platform. The dialog closes when the CSS transitions of the drawer and its backdrop end. A drawer that
+  closes before its entrance starts has no exit.
 - A relative drawer is not modal and is not dismissed by <kbd>Escape</kbd> or by an outside click.
 
 ## Accessibility
