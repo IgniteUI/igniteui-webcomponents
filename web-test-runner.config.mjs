@@ -165,7 +165,10 @@ export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
   },
 
   coverageConfig: {
-    exclude: ['node_modules/**/*', '**/themes/**', 'src/internals/testing/**'],
+    // A shard does not exclude the spec files that it imports but does not run.
+    exclude: ['node_modules/**/*', '**/themes/**', SPEC_GLOB, NOT_SPECS_GLOB],
+    // CI merges the `json` reports of the shards. See `scripts/merge-coverage.mjs`.
+    reporters: ['lcov', 'json'],
   },
 
   testFramework: {

@@ -48,7 +48,6 @@ jobs:
       matrix:
         node-version: [24.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-        # Keep the `carryforward` flags of the `test` job in step with the shards.
         shard: ['1/3', '2/3', '3/3']
 
     steps:
@@ -67,13 +66,15 @@ jobs:
       env:
         TEST_SHARD: ${{ matrix.shard }}
 
-    - name: Publish to coveralls.io
-      uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
+    - name: Keep the coverage for the test job
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
-          github-token: ${{ github.token }}
-          flag-name: shard-${{ strategy.job-index }}
-          parallel: true
-          fail-on-error: false
+        name: coverage-${{ strategy.job-index }}
+        path: coverage/coverage-final.json
+        if-no-files-found: error
+        retention-days: 1
+        # A re-run of the shard replaces its coverage.
+        overwrite: true
 
   test:
     # The required status check. It also runs when a shard fails or is cancelled, and
@@ -84,16 +85,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Close the coveralls.io build
-      uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
-      with:
-          github-token: ${{ github.token }}
-          parallel-finished: true
-          carryforward: shard-0,shard-1,shard-2
-          fail-on-error: false
-
     - name: Check that every shard passed
       if: ${{ needs.test-shard.result != 'success' }}
       run: |
         echo "::error::A test shard ended with \"${{ needs.test-shard.result }}\"."
         exit 1
+
+    # Coveralls cannot merge the shards: see `scripts/merge-coverage.mjs`.
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: '24'
+        cache: 'npm'
+    - run: npm ci
+    - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        pattern: coverage-*
+        path: shard-coverage
+    - run: node scripts/merge-coverage.mjs shard-coverage/*/coverage-final.json
+
+    - name: Publish to coveralls.io
+      uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
+      with:
+          github-token: ${{ github.token }}
+          file: coverage/lcov.info
+          fail-on-error: false
