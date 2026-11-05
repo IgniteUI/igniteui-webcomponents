@@ -535,17 +535,12 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
 
   // #region Event handlers
 
-  // The running close decides the value.
   protected _dialogCancel() {
-    if (this._isClosing) return;
-    this._revertValue();
-    this._hide(true);
+    this._closeWith(() => this._revertValue());
   }
 
   protected _dialogDone() {
-    if (this._isClosing) return;
-    this._emitChangeIfDirty();
-    this._hide(true);
+    this._closeWith(() => this._emitChangeIfDirty());
   }
 
   protected _handleInput(event: CustomEvent<string>) {

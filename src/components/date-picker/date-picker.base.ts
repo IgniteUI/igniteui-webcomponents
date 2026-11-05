@@ -651,6 +651,20 @@ export abstract class IgcDatePickerBaseComponent<
     this._emitChangeIfDirty();
   }
 
+  /**
+   * Closes the picker with the close events. `apply` commits or reverts the value, and runs only when the close goes
+   * on, so a canceled `igcClosing` changes nothing. A running close already decided the value, so the call does nothing
+   * then.
+   */
+  protected _closeWith(apply: () => void): Promise<boolean> {
+    if (!this.open || this._isClosing) return Promise.resolve(false);
+
+    const closed = this._hide(true);
+    // The exit runs, or a close without one is done.
+    if (this._isClosing || !this.open) apply();
+    return closed;
+  }
+
   /** Emits `igcChange` if the value has moved away from the last committed one. */
   protected _emitChangeIfDirty(): void {
     if (!equal(this._value, this._oldValue)) {
@@ -688,13 +702,8 @@ export abstract class IgcDatePickerBaseComponent<
   //#region Event handlers
 
   protected async _onEscapeKey(): Promise<void> {
-    // The running close decides the value.
-    if (!this.open || this._isClosing) return;
-
-    const closed = this._hide(true);
     // Revert as the close starts, as Cancel does, so a reopen during the exit keeps the old value.
-    if (this._isClosing || !this.open) this._handleDismiss();
-    if (await closed) this._focusInput();
+    if (await this._closeWith(() => this._handleDismiss())) this._focusInput();
   }
 
   protected override async _handleAnchorClick(): Promise<void> {
@@ -741,8 +750,7 @@ export abstract class IgcDatePickerBaseComponent<
   protected _handleDialogClosing(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
-    this._hide(true);
-    if (this._isClosing) this._onDialogClosing();
+    this._closeWith(() => this._onDialogClosing());
   }
 
   //#endregion
