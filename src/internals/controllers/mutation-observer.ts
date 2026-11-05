@@ -184,3 +184,5 @@ export function createMutationController<T extends Node = Node>(
 ): MutationController<T> {
   return new MutationController(host, config);
 }
+
+export type { MutationController };

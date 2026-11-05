@@ -204,9 +204,7 @@ describe('Key bindings controller', () => {
       try {
         const tagName = unsafeStatic(multiTag);
         await fixture(
-          html`<div>
-          <${tagName}></${tagName}><${tagName}></${tagName}>
-        </div>`
+          html`<div><${tagName}></${tagName}><${tagName}></${tagName}></div>`
         );
 
         expect(add.callCount).to.equal(0);
@@ -338,6 +336,49 @@ describe('Key bindings controller', () => {
         dispatch(repeatInstance2, 'keydown', arrowDown);
         expect(repeatInstance2.downCount).to.equal(3);
       });
+    });
+  });
+  describe('when option', () => {
+    let whenTag: string;
+    let whenInstance: LitElement & { enabled: boolean; callCount: number };
+
+    before(() => {
+      whenTag = defineCE(
+        class extends LitElement {
+          public enabled = false;
+          public callCount = 0;
+
+          constructor() {
+            super();
+            addKeybindings(this).set('a', () => this.callCount++, {
+              when: () => this.enabled,
+            });
+          }
+        }
+      );
+    });
+
+    beforeEach(async () => {
+      const tagName = unsafeStatic(whenTag);
+      whenInstance = await fixture(html`<${tagName}></${tagName}>`);
+    });
+
+    it('should leave the key unbound while the predicate is false', () => {
+      const event = dispatch(whenInstance, 'keydown', 'a');
+      dispatch(whenInstance, 'keyup', 'a');
+
+      expect(event.defaultPrevented).to.be.false;
+      expect(whenInstance.callCount).to.equal(0);
+    });
+
+    it('should bind the key while the predicate is true', () => {
+      whenInstance.enabled = true;
+
+      const event = dispatch(whenInstance, 'keydown', 'a');
+      dispatch(whenInstance, 'keyup', 'a');
+
+      expect(event.defaultPrevented).to.be.true;
+      expect(whenInstance.callCount).to.equal(1);
     });
   });
 });

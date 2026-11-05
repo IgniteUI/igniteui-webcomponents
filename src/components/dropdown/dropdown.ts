@@ -166,11 +166,9 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
 
   /** Returns the group items of the dropdown. */
   public get groups(): IgcDropdownGroupComponent[] {
-    return Array.from(
-      getItems<IgcDropdownGroupComponent>(
-        this,
-        IgcDropdownGroupComponent.tagName
-      )
+    return getItems<IgcDropdownGroupComponent>(
+      this,
+      IgcDropdownGroupComponent.tagName
     );
   }
 

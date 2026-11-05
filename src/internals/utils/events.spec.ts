@@ -1,6 +1,10 @@
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
-import { addWeakEventListener, getEventOrigin } from './events.js';
+import {
+  addWeakEventListener,
+  getEventOrigin,
+  linkOpensElsewhere,
+} from './events.js';
 
 describe('Event utilities', () => {
   describe('getEventOrigin', () => {
@@ -44,6 +48,84 @@ describe('Event utilities', () => {
 
     it('returns undefined for an origin that is not an element', () => {
       expect(getEventOrigin('*', new Event('custom'))).to.be.undefined;
+    });
+  });
+
+  describe('linkOpensElsewhere', () => {
+    const click = (init?: MouseEventInit) => new MouseEvent('click', init);
+
+    it('keeps a link without a target or with `_self` in place', () => {
+      expect(linkOpensElsewhere(undefined, document)).to.be.false;
+      expect(linkOpensElsewhere(null, document, click())).to.be.false;
+      expect(linkOpensElsewhere('', document)).to.be.false;
+      expect(linkOpensElsewhere('_SELF', document)).to.be.false;
+    });
+
+    it('opens a link with another target elsewhere', () => {
+      expect(linkOpensElsewhere('_blank', document)).to.be.true;
+      expect(linkOpensElsewhere('preview', document, click())).to.be.true;
+    });
+
+    it('keeps `_parent` and `_top` in place in a page that is not in a frame', () => {
+      expect(window.top).to.equal(window);
+      expect(linkOpensElsewhere('_parent', document)).to.be.false;
+      expect(linkOpensElsewhere('_TOP', document)).to.be.false;
+    });
+
+    it('does not depend on a replaced `window.parent`', () => {
+      const parent = Object.getOwnPropertyDescriptor(window, 'parent')!;
+      (window as { parent: unknown }).parent = {};
+
+      try {
+        expect(linkOpensElsewhere('_parent', document)).to.be.false;
+      } finally {
+        Object.defineProperty(window, 'parent', parent);
+      }
+      expect(window.parent).to.equal(window);
+    });
+
+    it('opens `_parent` and `_top` elsewhere in a frame', () => {
+      const frame = document.createElement('iframe');
+      document.body.append(frame);
+
+      try {
+        const framed = frame.contentDocument!;
+        expect(linkOpensElsewhere('_parent', framed)).to.be.true;
+        expect(linkOpensElsewhere('_top', framed)).to.be.true;
+        expect(linkOpensElsewhere('_self', framed)).to.be.false;
+      } finally {
+        frame.remove();
+      }
+    });
+
+    it('opens a link elsewhere for another button or a modifier key', () => {
+      for (const init of [
+        { button: 1 },
+        { altKey: true },
+        { ctrlKey: true },
+        { metaKey: true },
+        { shiftKey: true },
+      ]) {
+        expect(
+          linkOpensElsewhere(null, document, click(init)),
+          JSON.stringify(init)
+        ).to.be.true;
+      }
+    });
+
+    it('uses the target of the first base element that has one', () => {
+      const empty = document.createElement('base');
+      const base = document.createElement('base');
+      base.target = '_Blank';
+      document.head.append(empty, base);
+
+      try {
+        expect(linkOpensElsewhere(null, document)).to.be.true;
+        expect(linkOpensElsewhere('_self', document)).to.be.false;
+      } finally {
+        empty.remove();
+        base.remove();
+      }
     });
   });
 

@@ -104,6 +104,12 @@ export default class IgcDialogComponent extends I18nMixin(
         return this._player.playExclusive(fadeIn(), signal);
       }
 
+      // A dialog that has not opened yet, as after a `show()` in this task, has no exit to play.
+      if (!this._dialog?.open) {
+        this.open = false;
+        return true;
+      }
+
       this._closing = true;
       // In the same task, so the render after the abort has the backdrop.
       signal.addEventListener('abort', () => (this._closing = false), {

@@ -5,6 +5,7 @@ import {
   html,
   waitUntil,
 } from '@open-wc/testing';
+import { emulateMedia } from '@web/test-runner-commands';
 import sinon, { spy } from 'sinon';
 import {
   altKey,
@@ -44,6 +45,9 @@ import {
 
 describe('Date range picker - single input', () => {
   before(() => defineComponents(IgcDateRangePickerComponent));
+  // The dialog fades take 350 ms each; skip them in this file.
+  before(() => emulateMedia({ reducedMotion: 'reduce' }));
+  after(() => emulateMedia({ reducedMotion: 'no-preference' }));
 
   it('exposes `required` as `aria-required` on the native input', async () => {
     const picker = await fixture<IgcDateRangePickerComponent>(
@@ -664,6 +668,7 @@ describe('Date range picker - single input', () => {
           'igc-button[slot="footer"]:last-of-type'
         ) as HTMLButtonElement;
         doneBtn?.click();
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         expect(eventSpy).calledWith('igcChange');
         checkSelectedRange(
@@ -753,6 +758,7 @@ describe('Date range picker - single input', () => {
           'igc-button[slot="footer"]'
         ) as HTMLButtonElement;
         cancelBtn?.click();
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         expect(eventSpy).not.to.be.calledWith('igcChange');
         dialog = picker.renderRoot.querySelector('igc-dialog');
@@ -801,6 +807,7 @@ describe('Date range picker - single input', () => {
           'igc-button[slot="footer"]'
         ) as HTMLButtonElement;
         cancelBtn?.click();
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         expect(eventSpy).not.to.be.calledWith('igcChange');
         dialog = picker.renderRoot.querySelector('igc-dialog');
@@ -846,6 +853,7 @@ describe('Date range picker - single input', () => {
         );
 
         simulateKeyboard(picker, escapeKey);
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         await elementUpdated(input);
         expect(eventSpy).not.to.be.calledWith('igcChange');

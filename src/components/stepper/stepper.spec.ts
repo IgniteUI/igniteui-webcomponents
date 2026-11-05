@@ -23,6 +23,8 @@ describe('Stepper', () => {
       ><igc-step><span slot="title">Step</span></igc-step></igc-stepper
     >`,
     getTarget: (host) => host.renderRoot.querySelector('[data-step-header]')!,
+    // The default indicator shows the step number before the title.
+    visibleText: '1 Step',
     // The stepper sets its `tablist` role through ElementInternals, which axe
     // does not read.
     ignoredRules: ['aria-required-parent'],

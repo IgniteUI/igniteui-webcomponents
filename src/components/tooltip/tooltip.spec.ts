@@ -23,6 +23,9 @@ import {
   simulateScroll,
 } from '#internals/testing/simulate.spec.js';
 import { getCenterPoint } from '#internals/utils/dom.js';
+import { shouldUseNativeAnchorPositioning } from '../popover/position/native.js';
+import { setPopoverPositionStrategy } from '../popover/position/types.js';
+import type { TooltipRect } from '../types.js';
 import IgcTooltipComponent from './tooltip.js';
 
 describe('Tooltip', () => {
@@ -418,6 +421,26 @@ describe('Tooltip', () => {
       expect(baseElement.part.contains('simple-text')).to.be.true;
     });
 
+    it('should render the message with whitespace-only slotted text', async () => {
+      const baseElement = (await setupSimpleTextTooltip()) as HTMLElement;
+
+      // A line break between the tags is slotted, and hides the slot fallback.
+      tooltip.append(document.createTextNode('\n  '));
+      await elementUpdated(tooltip);
+      await tooltip.show(tooltip.previousElementSibling!);
+
+      expect(baseElement.part.contains('simple-text')).to.be.true;
+      expect(baseElement.innerText.trim()).to.equal('Simple text tooltip');
+
+      // `innerText` reads the shadow tree, so it has no slotted content.
+      tooltip.append(document.createElement('span'));
+      await elementUpdated(tooltip);
+      await elementUpdated(tooltip);
+
+      expect(baseElement.part.contains('simple-text')).to.be.false;
+      expect(baseElement.innerText.trim()).to.equal('');
+    });
+
     it('should drop the simple-text part when content is projected later', async () => {
       const baseElement = await setupSimpleTextTooltip();
 
@@ -702,6 +725,57 @@ describe('Tooltip', () => {
       expect(tooltip.open).to.be.true;
     });
 
+    it('shows at the target after an anchor change in the same task', async () => {
+      const [target, other] = Array.from(
+        tooltip.parentElement!.querySelectorAll('button')
+      );
+
+      tooltip.anchor = other;
+      await tooltip.show(target);
+
+      expect(target.getAttribute('aria-describedby')).to.equal(tooltip.id);
+      expect(other.hasAttribute('aria-describedby')).to.be.false;
+
+      await tooltip.hide();
+
+      // The new anchor applies after the transient one closes.
+      expect(other.getAttribute('aria-describedby')).to.equal(tooltip.id);
+    });
+
+    it('keeps a transient target when the same anchor is set again', async () => {
+      const [target, other] = Array.from(
+        tooltip.parentElement!.querySelectorAll('button')
+      );
+
+      await tooltip.show(other);
+
+      // A wrapper that sets all the properties on each render.
+      tooltip.anchor = 'target';
+      tooltip.message = 'Changed';
+      await elementUpdated(tooltip);
+
+      expect(other.getAttribute('aria-describedby')).to.equal(tooltip.id);
+      expect(target.hasAttribute('aria-describedby')).to.be.false;
+    });
+
+    it('binds the triggers once when the anchor is set to the transient target', async () => {
+      const eventSpy = spy(tooltip, 'emitEvent');
+      const [, other] = Array.from(
+        tooltip.parentElement!.querySelectorAll('button')
+      );
+
+      await tooltip.show(other);
+      tooltip.anchor = other;
+      await elementUpdated(tooltip);
+      await tooltip.hide();
+
+      simulatePointerEnter(other);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      await showComplete();
+
+      expect(eventSpy.withArgs('igcOpening').callCount).to.equal(1);
+    });
+
     it('should be able to pass and IDREF to `show` method', async () => {
       const eventSpy = spy(tooltip, 'emitEvent');
 
@@ -740,6 +814,595 @@ describe('Tooltip', () => {
       expect(eventSpy).calledWith('igcOpened', { cancelable: false });
     });
   });
+
+  const canUseNative = shouldUseNativeAnchorPositioning(
+    document.createElement('div')
+  );
+
+  for (const mode of ['native', 'fallback'] as const) {
+    const describeMode =
+      mode === 'native' && !canUseNative ? describe.skip : describe;
+
+    describeMode(`showAt [${mode}]`, () => {
+      let container: HTMLElement;
+
+      before(() => {
+        setPopoverPositionStrategy(mode === 'fallback' ? 'floating' : 'native');
+      });
+
+      after(() => {
+        setPopoverPositionStrategy();
+      });
+
+      beforeEach(async () => {
+        container = await fixture(createTooltipWithTarget());
+        tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
+        anchor = container.querySelector('#target')!;
+      });
+
+      function getBase(): HTMLElement {
+        return tooltip.renderRoot.querySelector('[part~="base"]')!;
+      }
+
+      function baseRect(): DOMRect {
+        return getBase().getBoundingClientRect();
+      }
+
+      /** Waits for the popover, which positions asynchronously in the fallback. */
+      async function positioned(): Promise<void> {
+        await elementUpdated(tooltip);
+        await tooltip.renderRoot.querySelector('igc-popover')!.updateComplete;
+        await nextFrame();
+      }
+
+      it('shows the tooltip at a point, on each side', async () => {
+        const result = await tooltip.showAt({ x: 200, y: 150 });
+
+        expect(result).to.be.true;
+        expect(tooltip.open).to.be.true;
+
+        let rect = baseRect();
+        expect(rect.top).to.be.closeTo(156, 1);
+        expect(rect.left + rect.width / 2).to.be.closeTo(200, 1);
+
+        tooltip.placement = 'top';
+        await positioned();
+        rect = baseRect();
+        expect(rect.bottom).to.be.closeTo(144, 1);
+
+        tooltip.placement = 'left';
+        await positioned();
+        rect = baseRect();
+        expect(rect.right).to.be.closeTo(194, 1);
+        expect(rect.top + rect.height / 2).to.be.closeTo(150, 1);
+
+        tooltip.placement = 'right';
+        await positioned();
+        expect(baseRect().left).to.be.closeTo(206, 1);
+      });
+
+      it('shows the tooltip against a rectangle', async () => {
+        tooltip.placement = 'bottom-start';
+
+        await tooltip.showAt({ x: 200, y: 150, width: 80, height: 40 });
+
+        let rect = baseRect();
+        expect(rect.top).to.be.closeTo(196, 1);
+        expect(rect.left).to.be.closeTo(200, 1);
+
+        // A DOMRect fits the type.
+        await tooltip.showAt(new DOMRect(300, 250, 80, 40));
+        await positioned();
+
+        rect = baseRect();
+        expect(rect.top).to.be.closeTo(296, 1);
+        expect(rect.left).to.be.closeTo(300, 1);
+      });
+
+      it('moves while shown, with no animation and no events', async () => {
+        const eventSpy = spy(tooltip, 'emitEvent');
+
+        await tooltip.showAt({ x: 200, y: 150 });
+
+        const animate = spy(getBase(), 'animate');
+        const result = await tooltip.showAt({ x: 300, y: 250 });
+        await positioned();
+
+        const rect = baseRect();
+
+        expect(result).to.be.false;
+        expect(tooltip.open).to.be.true;
+        expect(animate).not.called;
+        expect(eventSpy).not.called;
+        expect(rect.top).to.be.closeTo(256, 1);
+        expect(rect.left + rect.width / 2).to.be.closeTo(300, 1);
+      });
+
+      it('keeps a running show animation when it moves', async () => {
+        const first = tooltip.showAt({ x: 200, y: 150 });
+        await elementUpdated(tooltip);
+
+        const second = await tooltip.showAt({ x: 300, y: 250 });
+
+        expect(second).to.be.false;
+        expect(await first).to.be.true;
+
+        await positioned();
+        expect(baseRect().top).to.be.closeTo(256, 1);
+      });
+
+      it('describes no element while it shows at a point', async () => {
+        expect(anchor.getAttribute('aria-describedby')).to.equal(tooltip.id);
+
+        await tooltip.showAt({ x: 200, y: 150 });
+
+        expect(container.querySelector('[aria-describedby]')).to.be.null;
+
+        await tooltip.hide();
+
+        expect(anchor.getAttribute('aria-describedby')).to.equal(tooltip.id);
+      });
+
+      it('ignores the pointer on the tooltip', async () => {
+        await tooltip.showAt({ x: 200, y: 150 });
+
+        clock = useFakeTimers({ toFake: ['setTimeout'] });
+
+        try {
+          simulatePointerEnter(tooltip);
+          simulatePointerLeave(tooltip);
+          await clock.tickAsync(DEFAULT_HIDE_DELAY);
+          await hideComplete();
+
+          expect(tooltip.open).to.be.true;
+        } finally {
+          clock.restore();
+        }
+      });
+
+      it('closes on Escape, and then the anchor applies again', async () => {
+        await tooltip.showAt({ x: 200, y: 150 });
+
+        document.documentElement.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: 'Escape',
+            bubbles: true,
+            composed: true,
+          })
+        );
+        await hideComplete();
+
+        expect(tooltip.open).to.be.false;
+
+        await tooltip.show();
+        await positioned();
+
+        expect(baseRect().top).to.be.closeTo(
+          anchor.getBoundingClientRect().bottom + tooltip.offset,
+          1
+        );
+      });
+
+      it('replaces an element target, and an element target replaces it', async () => {
+        const other = container.querySelectorAll('button')[1];
+
+        await tooltip.show();
+
+        expect(await tooltip.showAt({ x: 200, y: 150 })).to.be.true;
+        expect(baseRect().top).to.be.closeTo(156, 1);
+        expect(anchor.hasAttribute('aria-describedby')).to.be.false;
+
+        expect(await tooltip.show(other)).to.be.true;
+        await positioned();
+        expect(baseRect().top).to.be.closeTo(
+          other.getBoundingClientRect().bottom + tooltip.offset,
+          1
+        );
+        expect(getCenterPoint(getBase()).x).to.be.closeTo(
+          getCenterPoint(other).x,
+          1
+        );
+
+        await tooltip.hide();
+        await tooltip.show();
+        await positioned();
+        expect(baseRect().top).to.be.closeTo(
+          anchor.getBoundingClientRect().bottom + tooltip.offset,
+          1
+        );
+        expect(getCenterPoint(getBase()).x).to.be.closeTo(
+          getCenterPoint(anchor).x,
+          1
+        );
+      });
+
+      it('points the arrow at the point', async () => {
+        tooltip.withArrow = true;
+
+        await tooltip.showAt({ x: 200, y: 150 });
+        await positioned();
+
+        const arrow = tooltip.renderRoot.querySelector('#arrow')!;
+        expect(getCenterPoint(arrow).x).to.be.closeTo(200, 1);
+      });
+
+      it('flips at the bottom edge of the viewport', async () => {
+        const y = window.innerHeight - 5;
+
+        await tooltip.showAt({ x: 200, y });
+        await positioned();
+
+        expect(baseRect().bottom).to.be.closeTo(y - tooltip.offset, 1);
+      });
+
+      it('uses viewport coordinates inside a transformed ancestor', async () => {
+        container.style.transform = 'scale(1.5) translate(40px, 30px)';
+        tooltip.placement = 'bottom-start';
+
+        await tooltip.showAt({ x: 120, y: 80 });
+
+        const rect = baseRect();
+        expect(rect.top).to.be.closeTo(86, 1);
+        expect(rect.left).to.be.closeTo(120, 1);
+      });
+
+      it('coerces the values and keeps no reference to the argument', async () => {
+        tooltip.placement = 'bottom-start';
+
+        await tooltip.showAt({
+          x: Number.NaN,
+          y: null as unknown as number,
+          width: -10,
+          height: Number.POSITIVE_INFINITY,
+        });
+
+        let rect = baseRect();
+        expect(rect.top).to.be.closeTo(tooltip.offset, 1);
+        expect(rect.left).to.be.closeTo(0, 1);
+
+        // No rectangle at all, from a JavaScript caller.
+        await tooltip.hide();
+        expect(await tooltip.showAt(undefined as unknown as TooltipRect)).to.be
+          .true;
+        expect(baseRect().left).to.be.closeTo(0, 1);
+
+        const point = { x: 200, y: 150 };
+        await tooltip.showAt(point);
+        await positioned();
+
+        point.x = 400;
+        tooltip.offset = 10;
+        await positioned();
+
+        rect = baseRect();
+        expect(rect.left).to.be.closeTo(200, 1);
+        expect(rect.top).to.be.closeTo(160, 1);
+      });
+
+      it('is accessible while it shows at a point', async () => {
+        await tooltip.showAt({ x: 200, y: 150 });
+
+        await expect(tooltip).to.be.accessible();
+        await expect(tooltip).shadowDom.to.be.accessible();
+      });
+
+      it('keeps the point when the anchor changes, and uses the new anchor after it closes', async () => {
+        const other = container.querySelectorAll('button')[1];
+
+        await tooltip.showAt({ x: 200, y: 150 });
+
+        tooltip.anchor = other;
+        await positioned();
+
+        expect(baseRect().top).to.be.closeTo(156, 1);
+        expect(other.hasAttribute('aria-describedby')).to.be.false;
+
+        await tooltip.hide();
+
+        expect(other.getAttribute('aria-describedby')).to.equal(tooltip.id);
+        expect(anchor.hasAttribute('aria-describedby')).to.be.false;
+      });
+
+      it('shows at the point after an anchor change in the same task', async () => {
+        const other = container.querySelectorAll('button')[1];
+
+        tooltip.anchor = other;
+        await tooltip.showAt({ x: 200, y: 150 });
+        await positioned();
+
+        expect(baseRect().top).to.be.closeTo(156, 1);
+        expect(other.hasAttribute('aria-describedby')).to.be.false;
+      });
+
+      it('ignores the triggers of the configured anchor', async () => {
+        await tooltip.showAt({ x: 200, y: 150 });
+
+        clock = useFakeTimers({ toFake: ['setTimeout'] });
+
+        try {
+          simulateClick(anchor);
+          simulatePointerLeave(anchor);
+          await clock.tickAsync(DEFAULT_HIDE_DELAY);
+          await hideComplete();
+
+          expect(tooltip.open).to.be.true;
+
+          await tooltip.hide();
+
+          // The triggers come back after it closes.
+          simulatePointerEnter(anchor);
+          await clock.tickAsync(DEFAULT_SHOW_DELAY);
+          await showComplete();
+
+          expect(tooltip.open).to.be.true;
+        } finally {
+          clock.restore();
+        }
+      });
+
+      it('binds the triggers of the anchor once after it shows there again', async () => {
+        const eventSpy = spy(tooltip, 'emitEvent');
+
+        await tooltip.showAt({ x: 200, y: 150 });
+        await tooltip.show(anchor);
+        await tooltip.hide();
+
+        clock = useFakeTimers({ toFake: ['setTimeout'] });
+
+        try {
+          simulatePointerEnter(anchor);
+          await clock.tickAsync(DEFAULT_SHOW_DELAY);
+          await showComplete();
+
+          expect(eventSpy.withArgs('igcOpening').callCount).to.equal(1);
+        } finally {
+          clock.restore();
+        }
+      });
+
+      it('turns a running hide back into a show', async () => {
+        await tooltip.showAt({ x: 200, y: 150 });
+
+        const hidden = tooltip.hide();
+        const shown = await tooltip.showAt({ x: 300, y: 250 });
+
+        expect(shown).to.be.true;
+        expect(await hidden).to.be.false;
+        expect(tooltip.open).to.be.true;
+
+        await positioned();
+        expect(baseRect().top).to.be.closeTo(256, 1);
+      });
+
+      it('keeps the point when it moves in the DOM', async () => {
+        await tooltip.showAt({ x: 200, y: 150 });
+
+        container.append(tooltip);
+        await positioned();
+
+        expect(tooltip.open).to.be.true;
+        expect(baseRect().top).to.be.closeTo(156, 1);
+        expect(anchor.hasAttribute('aria-describedby')).to.be.false;
+
+        // The Escape key still closes it.
+        document.documentElement.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: 'Escape',
+            bubbles: true,
+            composed: true,
+          })
+        );
+        await hideComplete();
+
+        expect(tooltip.open).to.be.false;
+      });
+
+      it('shows at a point that is set before it connects', async () => {
+        tooltip.remove();
+        tooltip = document.createElement(IgcTooltipComponent.tagName);
+        tooltip.message = 'Detached';
+
+        const shown = tooltip.showAt({ x: 200, y: 150 });
+        container.append(tooltip);
+        await shown;
+        await positioned();
+
+        expect(tooltip.open).to.be.true;
+        expect(baseRect().top).to.be.closeTo(156, 1);
+      });
+
+      it('does not take the Escape key while it is not connected', async () => {
+        const second = document.createElement(IgcTooltipComponent.tagName);
+        container.append(second);
+        await second.show();
+
+        // Removed during the show animation.
+        const shown = tooltip.showAt({ x: 200, y: 150 });
+        tooltip.remove();
+        await shown;
+
+        // Shown before it connects, and never connected.
+        await document
+          .createElement(IgcTooltipComponent.tagName)
+          .showAt({ x: 200, y: 150 });
+
+        document.documentElement.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: 'Escape',
+            bubbles: true,
+            composed: true,
+          })
+        );
+        await hideComplete(second);
+
+        expect(second.open).to.be.false;
+      });
+
+      it('does not throw when it is removed in the same task', async () => {
+        const popover = tooltip.renderRoot.querySelector('igc-popover')!;
+
+        const shown = tooltip.showAt({ x: 200, y: 150 });
+        tooltip.remove();
+
+        await popover.updateComplete;
+        await shown;
+
+        const proxy = popover.renderRoot.querySelector('[data-rect-anchor]');
+        expect(proxy?.matches(':popover-open') ?? false).to.be.false;
+      });
+
+      it('shows at a point on the edge of the viewport', async () => {
+        tooltip.placement = 'bottom-start';
+
+        await tooltip.showAt({ x: 0, y: 150 });
+        await positioned();
+
+        const rect = baseRect();
+        const found = document.elementFromPoint(
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2
+        );
+
+        expect(found).to.equal(tooltip);
+      });
+
+      it('stays at the point while the page scrolls', async () => {
+        const spacer = document.createElement('div');
+        spacer.style.height = '3000px';
+        container.append(spacer);
+
+        await tooltip.showAt({ x: 200, y: 150 });
+        await positioned();
+
+        try {
+          window.scrollBy(0, 100);
+          // No position update has run yet.
+          expect(baseRect().top).to.be.closeTo(156, 1);
+        } finally {
+          window.scrollTo(0, 0);
+        }
+      });
+
+      it('starts from the placement on the next show after a flip', async () => {
+        const bottom = document.createElement('button');
+        bottom.textContent = 'Bottom';
+        bottom.style.cssText = 'position: fixed; bottom: 0; left: 200px';
+        container.append(bottom);
+
+        await tooltip.show(bottom);
+        await positioned();
+
+        // Flipped above the button.
+        expect(baseRect().bottom).to.be.at.most(
+          bottom.getBoundingClientRect().top + 1
+        );
+
+        // A target change while it shows can keep the flip. A hide resets it
+        // when a rendering update finds the tooltip hidden.
+        await tooltip.hide();
+        await nextFrame();
+        await nextFrame();
+        await tooltip.showAt({ x: 200, y: 150 });
+        await positioned();
+
+        expect(baseRect().top).to.be.closeTo(156, 1);
+      });
+
+      it('keeps the arrow inside the tooltip with an aligned placement', async () => {
+        tooltip.withArrow = true;
+        tooltip.placement = 'bottom-start';
+
+        await tooltip.showAt({ x: 200, y: 150 });
+        await positioned();
+        await nextFrame();
+
+        const arrow = tooltip.renderRoot
+          .querySelector('#arrow')!
+          .getBoundingClientRect();
+        const base = baseRect();
+        const miss = Math.abs(arrow.left + arrow.width / 2 - 200);
+
+        expect(arrow.left).to.be.at.least(base.left - 1);
+        expect(arrow.right).to.be.at.most(base.right + 1);
+        // The point is at the tooltip edge, where the arrow stays inside.
+        expect(miss).to.be.at.most(arrow.width / 2 + 1);
+      });
+
+      it('keeps an aligned arrow at the point inside a zoomed ancestor', async () => {
+        container.style.zoom = '1.5';
+        tooltip.withArrow = true;
+        tooltip.placement = 'bottom-start';
+
+        await tooltip.showAt({ x: 200, y: 150 });
+        await positioned();
+        await nextFrame();
+
+        const arrow = tooltip.renderRoot
+          .querySelector('#arrow')!
+          .getBoundingClientRect();
+        const base = baseRect();
+
+        expect(base.left).to.be.closeTo(200, 1);
+        expect(arrow.left).to.be.at.least(base.left - 1);
+        expect(Math.abs(arrow.left + arrow.width / 2 - 200)).to.be.at.most(
+          arrow.width / 2 + 1
+        );
+      });
+
+      it('uses viewport coordinates inside a zoomed ancestor', async () => {
+        container.style.zoom = '1.5';
+        tooltip.withArrow = true;
+
+        await tooltip.showAt({ x: 200, y: 150 });
+        await positioned();
+        await nextFrame();
+
+        const rect = baseRect();
+        const arrow = tooltip.renderRoot.querySelector('#arrow')!;
+
+        expect(rect.top).to.be.closeTo(150 + tooltip.offset * 1.5, 1);
+        expect(rect.left + rect.width / 2).to.be.closeTo(200, 1);
+        expect(getCenterPoint(arrow).x).to.be.closeTo(200, 1);
+      });
+
+      it('clears the point on hide when it has no anchor', async () => {
+        tooltip.removeAttribute('anchor');
+        await positioned();
+
+        await tooltip.showAt({ x: 200, y: 150 });
+        await tooltip.hide();
+        await tooltip.show();
+        await positioned();
+
+        // No anchor and no point, so the content does not show.
+        const floater = tooltip.renderRoot
+          .querySelector('igc-popover')!
+          .renderRoot.querySelector('#container')!;
+
+        expect(tooltip.open).to.be.true;
+        expect(floater.matches(':popover-open')).to.be.false;
+      });
+
+      it('keeps the placement when the slotted content changes size', async () => {
+        tooltip.placement = 'top';
+        await tooltip.showAt({ x: 200, y: 300 });
+
+        const content = document.createElement('div');
+        content.style.cssText = 'width: 160px; height: 80px';
+        tooltip.append(content);
+
+        // The fallback positions again from a resize observer.
+        await nextFrame();
+        await positioned();
+
+        const rect = baseRect();
+
+        expect(rect.height).to.be.at.least(80);
+        expect(rect.bottom).to.be.closeTo(300 - tooltip.offset, 1);
+        expect(rect.left + rect.width / 2).to.be.closeTo(200, 1);
+      });
+    });
+  }
 
   describe('Scroll strategy', () => {
     let container: HTMLElement;
@@ -788,6 +1451,32 @@ describe('Tooltip', () => {
   });
 
   describe('Arrow', () => {
+    it('keeps the offset of an aligned placement on a wide anchor', async () => {
+      const container = await fixture(html`
+        <div style="padding: 100px">
+          <button id="target" style="width: 400px">Wide anchor</button>
+          <igc-tooltip anchor="target" placement="bottom-start" with-arrow>
+            <div style="width: 100px">Hi</div>
+          </igc-tooltip>
+        </div>
+      `);
+      tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
+
+      await tooltip.show();
+      await nextFrame();
+
+      const arrow = tooltip.renderRoot
+        .querySelector('#arrow')!
+        .getBoundingClientRect();
+      const base = tooltip.renderRoot
+        .querySelector('[part~="base"]')!
+        .getBoundingClientRect();
+
+      // The anchor center is past the tooltip end, so the arrow is at the end,
+      // 8 px off the rounded corner.
+      expect(base.right - arrow.right).to.be.closeTo(8, 1);
+    });
+
     it('is centered on the anchor on the first show', async () => {
       const container = await fixture(html`
         <div style="padding: 100px">
@@ -819,6 +1508,19 @@ describe('Tooltip', () => {
 
     afterEach(() => {
       clock.restore();
+    });
+
+    it('handles an event in both trigger lists once', async () => {
+      const eventSpy = spy(tooltip, 'emitEvent');
+
+      // `click` is also a default hide trigger.
+      tooltip.showTriggers = 'click';
+      simulateClick(anchor);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      await showComplete();
+
+      expect(tooltip.open).to.be.true;
+      expect(eventSpy.withArgs('igcOpening').callCount).to.equal(1);
     });
 
     it('default triggers', async () => {

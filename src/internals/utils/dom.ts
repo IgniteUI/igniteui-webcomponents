@@ -84,17 +84,9 @@ export function resolveCssLength(
   return asNumber(resolved);
 }
 
-export type IterNodesOptions<T = Node> = {
+export type IterNodesOptions = {
   show?: keyof typeof NodeFilter;
-  filter?: (node: T) => boolean;
 };
-
-function createNodeFilter<T extends Node>(predicate: (node: T) => boolean) {
-  return {
-    acceptNode: (node: T): number =>
-      predicate(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP,
-  };
-}
 
 /**
  * Iterates over the DOM subtree of `root` in document order, and yields the
@@ -102,15 +94,12 @@ function createNodeFilter<T extends Node>(predicate: (node: T) => boolean) {
  *
  * @example
  * ```typescript
- * for (const button of iterNodes<HTMLButtonElement>(root, {
- *   show: 'SHOW_ELEMENT',
- *   filter: isButton,
- * })) { ... }
+ * for (const text of iterNodes<Text>(root, { show: 'SHOW_TEXT' })) { ... }
  * ```
  */
 export function* iterNodes<T extends Node>(
   root: Node,
-  options?: IterNodesOptions<T>
+  options?: IterNodesOptions
 ): Generator<T> {
   if (!isDefined(globalThis.document)) {
     return;
@@ -120,11 +109,7 @@ export function* iterNodes<T extends Node>(
     ? NodeFilter[options.show]
     : NodeFilter.SHOW_ALL;
 
-  const nodeFilter = options?.filter
-    ? createNodeFilter(options.filter)
-    : undefined;
-
-  const treeWalker = document.createTreeWalker(root, whatToShow, nodeFilter);
+  const treeWalker = document.createTreeWalker(root, whatToShow);
 
   while (treeWalker.nextNode()) {
     yield treeWalker.currentNode as T;
@@ -376,6 +361,15 @@ export function getTopLayerAncestor(element: Element): HTMLElement | null {
   }
 
   return null;
+}
+
+/**
+ * The effective `zoom` of `element`, which an ancestor `zoom` sets. The client
+ * rectangles include it, but the styles and the offset and client sizes do not.
+ * A hidden element, and a browser without `currentCSSZoom`, give 1.
+ */
+export function getCSSZoom(element?: Element | null): number {
+  return element?.currentCSSZoom || 1;
 }
 
 /**

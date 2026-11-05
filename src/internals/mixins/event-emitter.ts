@@ -63,10 +63,13 @@ export function EventEmitterMixin<E, T extends Constructor<LitElement>>(
       type: K,
       eventInitDict?: CustomEventInit<D>
     ): boolean {
+      const bubbles = eventInitDict?.bubbles ?? defaultEventInit.bubbles;
       // Inlined in `dispatchEvent`, the manifest analyzer records an unnamed event.
       const event = new CustomEvent<D>(type as string, {
         detail: {} as D,
         ...defaultEventInit,
+        // A composed event also reaches the listeners on each shadow host around the target.
+        composed: bubbles,
         ...eventInitDict,
       });
       return this.dispatchEvent(event);
