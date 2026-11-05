@@ -14,7 +14,8 @@ import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   finishAnimationsFor,
-  getAnimationsFor,
+  finishBackdrop,
+  getBackdropAnimations,
   isFocused,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
@@ -609,20 +610,6 @@ describe('Dialog', () => {
   });
 
   describe('Backdrop', () => {
-    function backdropAnimations(): Animation[] {
-      return getAnimationsFor(dialog.shadowRoot!).filter(
-        ({ effect }) =>
-          (effect as KeyframeEffect).pseudoElement === '::backdrop'
-      );
-    }
-
-    function finishBackdrop(): CSSStyleDeclaration {
-      for (const animation of backdropAnimations()) {
-        animation.finish();
-      }
-      return getComputedStyle(nativeDialog, '::backdrop');
-    }
-
     beforeEach(async () => {
       dialog = await fixture<IgcDialogComponent>(
         html`<igc-dialog style="--backdrop: rgb(1, 2, 3)"></igc-dialog>`
@@ -638,7 +625,7 @@ describe('Dialog', () => {
     it('paints the native backdrop with the theme color', async () => {
       await openThroughProperty();
 
-      const { backgroundColor, opacity } = finishBackdrop();
+      const { backgroundColor, opacity } = finishBackdrop(nativeDialog);
       expect(backgroundColor).to.equal('rgb(1, 2, 3)');
       expect(opacity).to.equal('1');
     });
@@ -649,7 +636,7 @@ describe('Dialog', () => {
       const closing = dialog.hide();
       await elementUpdated(dialog);
 
-      expect(finishBackdrop().opacity).to.equal('0');
+      expect(finishBackdrop(nativeDialog).opacity).to.equal('0');
       expect(nativeDialog.matches(':modal')).to.be.true;
 
       finishAnimationsFor(dialog.shadowRoot!);
@@ -666,7 +653,7 @@ describe('Dialog', () => {
       finishAnimationsFor(dialog.shadowRoot!);
 
       expect(await reopening).to.be.true;
-      expect(finishBackdrop().opacity).to.equal('1');
+      expect(finishBackdrop(nativeDialog).opacity).to.equal('1');
     });
 
     it('fades the backdrop out when a hide follows an interrupted exit', async () => {
@@ -678,7 +665,7 @@ describe('Dialog', () => {
       // The interrupted first exit settles on the next frame.
       await nextFrame();
 
-      expect(finishBackdrop().opacity).to.equal('0');
+      expect(finishBackdrop(nativeDialog).opacity).to.equal('0');
 
       finishAnimationsFor(dialog.shadowRoot!);
       expect(await closing).to.be.true;
@@ -703,7 +690,7 @@ describe('Dialog', () => {
       expect(await closing).to.be.false;
       expect(dialog.open).to.be.true;
       expect(nativeDialog.matches(':modal')).to.be.true;
-      expect(finishBackdrop().opacity).to.equal('1');
+      expect(finishBackdrop(nativeDialog).opacity).to.equal('1');
     });
 
     it('cancels the exit when `open` goes to `false` and back to `true` in one task', async () => {
@@ -718,7 +705,7 @@ describe('Dialog', () => {
       expect(await closing).to.be.false;
       expect(dialog.open).to.be.true;
       expect(nativeDialog.matches(':modal')).to.be.true;
-      expect(finishBackdrop().opacity).to.equal('1');
+      expect(finishBackdrop(nativeDialog).opacity).to.equal('1');
     });
 
     it('closes on a hide right after a direct `open` cancels the exit', async () => {
@@ -729,7 +716,7 @@ describe('Dialog', () => {
       // The canceled exit settles on the next frame and leaves this one alone.
       await nextFrame();
 
-      expect(finishBackdrop().opacity).to.equal('0');
+      expect(finishBackdrop(nativeDialog).opacity).to.equal('0');
 
       finishAnimationsFor(dialog.shadowRoot!);
       expect(await closing).to.be.false;
@@ -794,7 +781,9 @@ describe('Dialog', () => {
 
       await withDocumentSheets([sheet], async () => {
         await openThroughProperty();
-        expect(finishBackdrop().backgroundColor).to.equal('rgb(4, 5, 6)');
+        expect(finishBackdrop(nativeDialog).backgroundColor).to.equal(
+          'rgb(4, 5, 6)'
+        );
       });
     });
 
@@ -804,8 +793,8 @@ describe('Dialog', () => {
       try {
         await dialog.show();
 
-        expect(backdropAnimations()).to.be.empty;
-        expect(finishBackdrop().opacity).to.equal('1');
+        expect(getBackdropAnimations(nativeDialog)).to.be.empty;
+        expect(finishBackdrop(nativeDialog).opacity).to.equal('1');
       } finally {
         await emulateMedia({ reducedMotion: 'no-preference' });
       }
