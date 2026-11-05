@@ -34,18 +34,22 @@ jobs:
     - run: npm run lint
     # Components and stories import the style modules compiled from SCSS, so type
     # checking needs them on disk. `lint` does not, and runs before the wait.
+    - uses: ./.github/actions/restore-styles
     - run: npm run build:styles
     - run: npm run check
 
-  test:
+  test-shard:
+    name: test (${{ matrix.node-version }}, shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
 
     strategy:
-      # Report every version rather than cancelling the rest on the first failure.
+      # Report every shard rather than cancelling the rest on the first failure.
       fail-fast: false
       matrix:
         node-version: [24.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        # Keep the `carryforward` flags of the `test` job in step with the shards.
+        shard: ['1/3', '2/3', '3/3']
 
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -56,13 +60,40 @@ jobs:
         cache: 'npm'
     - run: npm ci
 
+    - uses: ./.github/actions/restore-styles
     - uses: ./.github/actions/setup-playwright
 
     - run: npm run test
+      env:
+        TEST_SHARD: ${{ matrix.shard }}
 
     - name: Publish to coveralls.io
-      if: matrix.node-version == '24.x'
       uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
       with:
           github-token: ${{ github.token }}
+          flag-name: shard-${{ strategy.job-index }}
+          parallel: true
           fail-on-error: false
+
+  test:
+    # The required status check. It also runs when a shard fails or is cancelled, and
+    # fails then, because a skipped required check counts as passed.
+    name: test (24.x)
+    needs: test-shard
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Close the coveralls.io build
+      uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
+      with:
+          github-token: ${{ github.token }}
+          parallel-finished: true
+          carryforward: shard-0,shard-1,shard-2
+          fail-on-error: false
+
+    - name: Check that every shard passed
+      if: ${{ needs.test-shard.result != 'success' }}
+      run: |
+        echo "::error::A test shard ended with \"${{ needs.test-shard.result }}\"."
+        exit 1

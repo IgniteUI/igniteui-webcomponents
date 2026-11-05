@@ -68,6 +68,7 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
 |      10 | 2026-10-29 | `headerPosition`: the headers form a row above the panels (`top`, the default) or a column on the `start` or `end` side, which follows the direction. In a column, Up and Down move between the tabs, the tab list has the vertical orientation, `alignment` applies along the column, the indicator is on the side of the panels, and scroll buttons above and below the headers show when the headers do not fit in a definite height. The header strip covers only the headers |
 |      11 | 2026-10-29 | In a column, each header has the minimum height of a header row, the indicator follows the headers that `alignment` moves, and a `max-height` on the tabs, without their padding and border, limits the column as a definite height does. A selection made in the same task as a change of position stays. A tab that leaves its tabs drops the position. With `justify`, a hidden tab leaves no gap, and tabs in a panel keep the width limit of a header. The scroll buttons and the selection of a hidden tab do not scroll the strip |
 |      12 | 2026-11-04 | `igcNavigate` is not composed, so it does not reach a shadow host around the tabs; `_parent` and `_top` count as `_self` in a page that is not in a frame |
+|      13 | 2026-11-05 | With `prefers-reduced-motion: reduce`, the scroll buttons and the selection scroll the header strip at once; the scroll buttons follow the `scroll-behavior` of the `tabs` part |
 
 ## Overview
 
@@ -257,6 +258,9 @@ tab. A click on such a control also selects the tab, moves the focus to the head
 Scroll buttons appear at the start and the end of the header strip when the headers overflow, and are exposed as
 shadow parts so they can be styled. In a column, they appear above and below the headers. See
 [Header position](#header-position).
+
+The scroll buttons and the selection follow the `scroll-behavior` of the `tabs` part: smooth by default, and at once
+with `prefers-reduced-motion: reduce`.
 
 #### Link tabs
 
@@ -452,7 +456,8 @@ The groups below mirror the `describe` blocks.
 ### Scrolling
 
 9. The scroll buttons appear when the headers overflow and scroll the strip. Their arrows point along the writing
-   direction, also when `dir` is on the tabs or on an ancestor.
+   direction, also when `dir` is on the tabs or on an ancestor. The scroll buttons and the selection scroll the strip
+   smoothly, and at once with reduced motion.
 10. Selecting a tab outside the visible area scrolls it into view. Under an ancestor `zoom` or `transform`, the strip is
     measured in its own CSS pixels, and a selected tab scrolls into view between the scroll buttons. A hidden tab does not
     move the strip, neither through the scroll buttons nor when it is selected. A tab selected in the initial markup

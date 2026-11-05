@@ -11,6 +11,7 @@ import { nothing } from 'lit';
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
+  allowMotion,
   finishAnimationsFor,
   getAnimationsFor,
 } from '#internals/testing/helpers.spec.js';
@@ -860,6 +861,7 @@ describe('Tooltip', () => {
 
         expect(result).to.be.true;
         expect(tooltip.open).to.be.true;
+        await positioned();
 
         let rect = baseRect();
         expect(rect.top).to.be.closeTo(156, 1);
@@ -885,6 +887,7 @@ describe('Tooltip', () => {
         tooltip.placement = 'bottom-start';
 
         await tooltip.showAt({ x: 200, y: 150, width: 80, height: 40 });
+        await positioned();
 
         let rect = baseRect();
         expect(rect.top).to.be.closeTo(196, 1);
@@ -916,19 +919,6 @@ describe('Tooltip', () => {
         expect(eventSpy).not.called;
         expect(rect.top).to.be.closeTo(256, 1);
         expect(rect.left + rect.width / 2).to.be.closeTo(300, 1);
-      });
-
-      it('keeps a running show animation when it moves', async () => {
-        const first = tooltip.showAt({ x: 200, y: 150 });
-        await elementUpdated(tooltip);
-
-        const second = await tooltip.showAt({ x: 300, y: 250 });
-
-        expect(second).to.be.false;
-        expect(await first).to.be.true;
-
-        await positioned();
-        expect(baseRect().top).to.be.closeTo(256, 1);
       });
 
       it('describes no element while it shows at a point', async () => {
@@ -989,6 +979,7 @@ describe('Tooltip', () => {
         await tooltip.show();
 
         expect(await tooltip.showAt({ x: 200, y: 150 })).to.be.true;
+        await positioned();
         expect(baseRect().top).to.be.closeTo(156, 1);
         expect(anchor.hasAttribute('aria-describedby')).to.be.false;
 
@@ -1040,6 +1031,7 @@ describe('Tooltip', () => {
         tooltip.placement = 'bottom-start';
 
         await tooltip.showAt({ x: 120, y: 80 });
+        await positioned();
 
         const rect = baseRect();
         expect(rect.top).to.be.closeTo(86, 1);
@@ -1055,6 +1047,7 @@ describe('Tooltip', () => {
           width: -10,
           height: Number.POSITIVE_INFINITY,
         });
+        await positioned();
 
         let rect = baseRect();
         expect(rect.top).to.be.closeTo(tooltip.offset, 1);
@@ -1064,6 +1057,7 @@ describe('Tooltip', () => {
         await tooltip.hide();
         expect(await tooltip.showAt(undefined as unknown as TooltipRect)).to.be
           .true;
+        await positioned();
         expect(baseRect().left).to.be.closeTo(0, 1);
 
         const point = { x: 200, y: 150 };
@@ -1160,20 +1154,6 @@ describe('Tooltip', () => {
         }
       });
 
-      it('turns a running hide back into a show', async () => {
-        await tooltip.showAt({ x: 200, y: 150 });
-
-        const hidden = tooltip.hide();
-        const shown = await tooltip.showAt({ x: 300, y: 250 });
-
-        expect(shown).to.be.true;
-        expect(await hidden).to.be.false;
-        expect(tooltip.open).to.be.true;
-
-        await positioned();
-        expect(baseRect().top).to.be.closeTo(256, 1);
-      });
-
       it('keeps the point when it moves in the DOM', async () => {
         await tooltip.showAt({ x: 200, y: 150 });
 
@@ -1209,33 +1189,6 @@ describe('Tooltip', () => {
 
         expect(tooltip.open).to.be.true;
         expect(baseRect().top).to.be.closeTo(156, 1);
-      });
-
-      it('does not take the Escape key while it is not connected', async () => {
-        const second = document.createElement(IgcTooltipComponent.tagName);
-        container.append(second);
-        await second.show();
-
-        // Removed during the show animation.
-        const shown = tooltip.showAt({ x: 200, y: 150 });
-        tooltip.remove();
-        await shown;
-
-        // Shown before it connects, and never connected.
-        await document
-          .createElement(IgcTooltipComponent.tagName)
-          .showAt({ x: 200, y: 150 });
-
-        document.documentElement.dispatchEvent(
-          new KeyboardEvent('keydown', {
-            key: 'Escape',
-            bubbles: true,
-            composed: true,
-          })
-        );
-        await hideComplete(second);
-
-        expect(second.open).to.be.false;
       });
 
       it('does not throw when it is removed in the same task', async () => {
@@ -1401,6 +1354,64 @@ describe('Tooltip', () => {
         expect(rect.bottom).to.be.closeTo(300 - tooltip.offset, 1);
         expect(rect.left + rect.width / 2).to.be.closeTo(200, 1);
       });
+
+      describe('with motion', () => {
+        allowMotion();
+
+        it('keeps a running show animation when it moves', async () => {
+          const first = tooltip.showAt({ x: 200, y: 150 });
+          await elementUpdated(tooltip);
+
+          const second = await tooltip.showAt({ x: 300, y: 250 });
+
+          expect(second).to.be.false;
+          expect(await first).to.be.true;
+
+          await positioned();
+          expect(baseRect().top).to.be.closeTo(256, 1);
+        });
+
+        it('turns a running hide back into a show', async () => {
+          await tooltip.showAt({ x: 200, y: 150 });
+
+          const hidden = tooltip.hide();
+          const shown = await tooltip.showAt({ x: 300, y: 250 });
+
+          expect(shown).to.be.true;
+          expect(await hidden).to.be.false;
+          expect(tooltip.open).to.be.true;
+
+          await positioned();
+          expect(baseRect().top).to.be.closeTo(256, 1);
+        });
+
+        it('does not take the Escape key while it is not connected', async () => {
+          const second = document.createElement(IgcTooltipComponent.tagName);
+          container.append(second);
+          await second.show();
+
+          // Removed during the show animation.
+          const shown = tooltip.showAt({ x: 200, y: 150 });
+          tooltip.remove();
+          await shown;
+
+          // Shown before it connects, and never connected.
+          await document
+            .createElement(IgcTooltipComponent.tagName)
+            .showAt({ x: 200, y: 150 });
+
+          document.documentElement.dispatchEvent(
+            new KeyboardEvent('keydown', {
+              key: 'Escape',
+              bubbles: true,
+              composed: true,
+            })
+          );
+          await hideComplete(second);
+
+          expect(second.open).to.be.false;
+        });
+      });
     });
   }
 
@@ -1451,6 +1462,8 @@ describe('Tooltip', () => {
   });
 
   describe('Arrow', () => {
+    allowMotion();
+
     it('keeps the offset of an aligned placement on a wide anchor', async () => {
       const container = await fixture(html`
         <div style="padding: 100px">
@@ -1755,6 +1768,8 @@ describe('Tooltip', () => {
   });
 
   describe('State transitions', () => {
+    allowMotion();
+
     beforeEach(async () => {
       clock = useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       const container = await fixture(createTooltipWithTarget());

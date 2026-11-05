@@ -6,7 +6,6 @@ import {
   oneEvent,
   waitUntil,
 } from '@open-wc/testing';
-import { emulateMedia } from '@web/test-runner-commands';
 import { getI18nManager, registerI18n } from 'igniteui-i18n-core';
 import { ValidationResourceStringsBG } from 'igniteui-i18n-resources';
 import { spy } from 'sinon';
@@ -29,6 +28,7 @@ import {
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
 import {
+  allowMotion,
   checkDatesEqual,
   finishAnimationsFor,
   isFocused,
@@ -50,9 +50,6 @@ import IgcDatePickerComponent from './date-picker.js';
 
 describe('Date picker', () => {
   before(() => defineComponents(IgcDatePickerComponent));
-  // The dialog fades take 350 ms each; skip them outside the transition specs.
-  before(() => emulateMedia({ reducedMotion: 'reduce' }));
-  after(() => emulateMedia({ reducedMotion: 'no-preference' }));
 
   it('exposes `required` as `aria-required` on the native input', async () => {
     const picker = await fixture<IgcDatePickerComponent>(
@@ -1162,8 +1159,7 @@ describe('Date picker', () => {
     });
 
     describe('Dialog mode transitions', () => {
-      before(() => emulateMedia({ reducedMotion: 'no-preference' }));
-      after(() => emulateMedia({ reducedMotion: 'reduce' }));
+      allowMotion();
 
       let dialog: IgcDialogComponent;
       let nativeDialog: HTMLDialogElement;

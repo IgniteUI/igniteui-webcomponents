@@ -12,6 +12,7 @@ import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
+  allowMotion,
   finishAnimationsFor,
   finishBackdrop,
   getAnimationsFor,
@@ -551,6 +552,8 @@ describe('Navigation Drawer', () => {
   });
 
   describe('Exit and backdrop', () => {
+    allowMotion();
+
     let nativeDialog: HTMLDialogElement;
 
     function settle(): void {
@@ -680,7 +683,6 @@ describe('Navigation Drawer', () => {
 
     describe('with reduced motion', () => {
       beforeEach(() => emulateMedia({ reducedMotion: 'reduce' }));
-      afterEach(() => emulateMedia({ reducedMotion: 'no-preference' }));
 
       it('does not animate the backdrop', async () => {
         await navDrawer.show();

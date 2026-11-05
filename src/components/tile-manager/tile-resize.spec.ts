@@ -10,7 +10,10 @@ import { spy } from 'sinon';
 import { getActiveViewTransition } from '#animations/view-transition.js';
 import { escapeKey } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { viewTransitionComplete } from '#internals/testing/helpers.spec.js';
+import {
+  allowMotion,
+  viewTransitionComplete,
+} from '#internals/testing/helpers.spec.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
@@ -70,6 +73,8 @@ describe('Tile resize', () => {
   }
 
   describe('Tile resize behavior', () => {
+    allowMotion();
+
     beforeEach(async () => {
       tileManager = (
         await fixture<IgcTileManagerComponent>(createTileManager())

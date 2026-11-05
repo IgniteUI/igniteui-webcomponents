@@ -17,6 +17,7 @@ import { getActiveViewTransition } from '#animations/view-transition.js';
 import { internalsOf } from '#internals/controllers/internals.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
+  allowMotion,
   isFocused,
   isUnderPageLayer,
   viewTransitionComplete,
@@ -975,6 +976,8 @@ describe('Tile Manager component', () => {
   });
 
   describe('Maximize', () => {
+    allowMotion();
+
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
     });

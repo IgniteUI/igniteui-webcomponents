@@ -1,7 +1,10 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { isUnderPageLayer } from '#internals/testing/helpers.spec.js';
+import {
+  allowMotion,
+  isUnderPageLayer,
+} from '#internals/testing/helpers.spec.js';
 import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import {
   simulateClick,
@@ -1165,6 +1168,8 @@ describe('Stepper', () => {
   });
 
   describe('Step animations', () => {
+    allowMotion();
+
     /** The keyframes the step plays on its body and on its content. */
     function getKeyframes(step: IgcStepComponent) {
       const { body } = getStepDOM(step).parts;
