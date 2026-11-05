@@ -719,6 +719,71 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           expect(eventSpy).not.calledWith('igcChange');
         });
 
+        const cancelButton = () =>
+          picker.renderRoot.querySelector<HTMLElement>(
+            'igc-button[slot="footer"]'
+          )!;
+        const doneButton = () =>
+          picker.renderRoot.querySelector<HTMLElement>(
+            'igc-button[slot="footer"]:last-of-type'
+          )!;
+        const cancelNextClose = () =>
+          picker.addEventListener(
+            'igcClosing',
+            (event) => event.preventDefault(),
+            { once: true }
+          );
+
+        it('commits nothing on Done when `igcClosing` is canceled (dialog)', async () => {
+          const { value, eventSpy } = await selectDraftInDialog();
+          const draft = picker.value;
+          cancelNextClose();
+
+          simulateClick(doneButton());
+          await elementUpdated(picker);
+
+          expect(picker.open).to.be.true;
+          expect(picker.value).to.eql(draft);
+          expect(eventSpy).not.calledWith('igcChange');
+
+          simulateClick(cancelButton());
+          await elementUpdated(picker);
+
+          expect(picker.value).to.eql(value);
+          expect(eventSpy).not.calledWith('igcChange');
+        });
+
+        it('keeps the draft on Cancel when `igcClosing` is canceled (dialog)', async () => {
+          const { eventSpy } = await selectDraftInDialog();
+          const draft = picker.value;
+          cancelNextClose();
+
+          simulateClick(cancelButton());
+          await elementUpdated(picker);
+
+          expect(picker.open).to.be.true;
+          expect(picker.value).to.eql(draft);
+
+          simulateClick(doneButton());
+          await elementUpdated(picker);
+
+          expect(eventSpy).calledWith('igcChange', { detail: draft });
+        });
+
+        it('emits `igcChange` after `igcClosing` on Done (dialog)', async () => {
+          const { eventSpy } = await selectDraftInDialog();
+          eventSpy.resetHistory();
+
+          simulateClick(doneButton());
+          await waitUntil(() => eventSpy.calledWith('igcClosed'));
+
+          expect(eventSpy.args.map(([name]) => name)).to.eql([
+            'igcClosing',
+            'igcChange',
+            'igcClosed',
+          ]);
+        });
+
         it('keeps the range of Escape when the dialog opens again during the exit (dialog)', async () => {
           const { value, eventSpy } = await selectDraftInDialog();
 

@@ -728,7 +728,9 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 45. In dialog mode, the open and the close play the dialog animations, `igcOpened` and `igcClosed` follow them, and
     `open` stays `true` during the exit. A canceled `igcClosing`, a `show()`, or `open` set to `false` and then `true`
     during the entrance or the exit, keeps the dialog open; `open` set to `false` closes it at once, also in the task
-    of `show()`; a `hide()` in the task of `show()` shows no dialog; the calendar ignores a selection during the exit.
+    of `show()`; a `hide()` in the task of `show()` shows no dialog; the calendar ignores a selection during the exit;
+    a picker removed during the exit opens a modal dialog again after an append, and a picker appended again and
+    shown during the exit stays open as a modal.
 
 ### Readonly state
 
