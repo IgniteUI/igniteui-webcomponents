@@ -220,6 +220,14 @@ export default class IgcDialogComponent extends I18nMixin(
     addToggleCommands(this);
   }
 
+  public override connectedCallback(): void {
+    super.connectedCallback();
+
+    if (this.hasUpdated) {
+      this._syncDialog();
+    }
+  }
+
   protected override updated(properties: PropertyValues<this>): void {
     if (properties.has('open')) {
       this._syncDialog();
@@ -271,12 +279,26 @@ export default class IgcDialogComponent extends I18nMixin(
   }
 
   /**
-   * Opens or closes the dialog to match `open`. It also runs on the `close`
-   * event, so a close that the component cannot cancel, such as a second
-   * Escape, does not leave it open with a closed dialog.
+   * Makes the dialog modal when `open` is set, and closes it otherwise. It runs
+   * on a change of `open`, on a reconnect, and on the `close` event, so a close
+   * that the component cannot cancel, such as a second Escape, does not leave
+   * it open with a closed dialog.
    */
   private _syncDialog(): void {
-    this.open ? this._dialog?.showModal() : this._dialog?.close();
+    // Not `_dialog`: Lit empties the ref while the host is out of the document.
+    const dialog = this.renderRoot.querySelector('dialog');
+
+    if (!dialog || (this.open ? dialog.matches(':modal') : !dialog.open)) {
+      return;
+    }
+
+    // A removal takes the dialog out of the top layer, so it can be open but
+    // not modal, and `showModal()` then throws. A dialog out of the document
+    // cannot be modal, so it waits for the reconnect.
+    dialog.close();
+    if (this.open && this.isConnected) {
+      dialog.showModal();
+    }
   }
 
   //#endregion

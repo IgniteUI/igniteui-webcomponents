@@ -350,6 +350,101 @@ describe('Dialog', () => {
       expect(dialog.renderRoot.querySelector('dialog')!.open).to.be.false;
       expect(await closing).to.be.true;
     });
+
+    /** Appends the dialog again and checks that `show()` opens it as a modal. */
+    const expectModalAfterAppend = async (parent: Element) => {
+      parent.append(dialog);
+      await elementUpdated(dialog);
+
+      const native = dialog.renderRoot.querySelector('dialog')!;
+      expect(dialog.open).to.be.false;
+      expect(native.open).to.be.false;
+
+      expect(await dialog.show()).to.be.true;
+      expect(native.matches(':modal')).to.be.true;
+    };
+
+    it('closes when it is removed during the exit', async () => {
+      await dialog.show();
+      const parent = dialog.parentElement!;
+
+      const closing = dialog.hide();
+      dialog.remove();
+
+      expect(await closing).to.be.true;
+      await elementUpdated(dialog);
+      await expectModalAfterAppend(parent);
+    });
+
+    it('closes when `open` is set to `false` while it is not in the document', async () => {
+      await dialog.show();
+      const parent = dialog.parentElement!;
+
+      dialog.remove();
+      dialog.open = false;
+      await elementUpdated(dialog);
+
+      await expectModalAfterAppend(parent);
+    });
+
+    it('opens as a modal on `open = false` out of the document, an append and `show()` in one task', async () => {
+      await dialog.show();
+      const native = dialog.renderRoot.querySelector('dialog')!;
+      const parent = dialog.parentElement!;
+
+      dialog.remove();
+      dialog.open = false;
+      parent.append(dialog);
+      expect(native.open).to.be.false;
+
+      expect(await dialog.show()).to.be.true;
+      expect(native.matches(':modal')).to.be.true;
+    });
+
+    it('stays modal when it is appended again during the exit', async () => {
+      await dialog.show();
+      const native = dialog.renderRoot.querySelector('dialog')!;
+      const parent = dialog.parentElement!;
+
+      const closing = dialog.hide();
+      dialog.remove();
+      parent.append(dialog);
+
+      expect(native.matches(':modal')).to.be.true;
+      expect(await dialog.show()).to.be.true;
+      expect(await closing).to.be.false;
+      expect(native.matches(':modal')).to.be.true;
+    });
+
+    it('stays modal when it moves while open', async () => {
+      await dialog.show();
+      const native = dialog.renderRoot.querySelector('dialog')!;
+
+      dialog.parentElement!.append(dialog);
+      expect(native.matches(':modal')).to.be.true;
+
+      dialog.open = false;
+      dialog.open = true;
+      await elementUpdated(dialog);
+      expect(native.matches(':modal')).to.be.true;
+
+      expect(await dialog.hide()).to.be.true;
+      expect(native.open).to.be.false;
+    });
+
+    it('opens as a modal on an append after `show()` while it is not in the document', async () => {
+      const native = dialog.renderRoot.querySelector('dialog')!;
+      const parent = dialog.parentElement!;
+
+      dialog.remove();
+      const opening = dialog.show();
+      await elementUpdated(dialog);
+      expect(native.open).to.be.false;
+
+      parent.append(dialog);
+      expect(native.matches(':modal')).to.be.true;
+      expect(await opening).to.be.true;
+    });
   });
 
   describe('Events & Behaviors', () => {

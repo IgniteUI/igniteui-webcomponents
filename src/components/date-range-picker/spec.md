@@ -68,6 +68,7 @@
 |      14 | 2026-10-29 | The `overlay` part is removed; the dialog backdrop is the native `::backdrop` of `dialog-base` |
 |      15 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
 |      16 | 2026-11-04 | In dialog mode, an open and a close play the animations of the dialog; a canceled `igcClosing` keeps the dialog open |
+|      17 | 2026-11-05 | Done and Cancel change the range only when the close goes on; Done emits `igcChange` after `igcClosing` |
 
 ## Overview
 
@@ -374,9 +375,10 @@ as touched, so an invalid value shows its invalid styles at once, also when the 
 **Opening and closing the dialog.** The dialog fades in on an open, and `igcOpened` follows the entrance. Cancel,
 Done, <kbd>Escape</kbd> and an outside click play the exit animation of the dialog, and `open` stays `true` until it
 ends; the calendar and the range chips ignore a selection then, and Done, Cancel and <kbd>Escape</kbd> do nothing.
-A canceled `igcClosing` keeps the dialog open. Done commits before `igcClosing`, but an outside click commits only
-when the close goes on, so after a canceled outside click, Cancel still restores the range. The date picker suite
-covers the shared behavior.
+Done, Cancel, <kbd>Escape</kbd> and an outside click emit `igcClosing` first, and commit or restore the range only
+when the close goes on. So a canceled `igcClosing` keeps the dialog open with the selected range, and Done emits
+`igcClosing`, `igcChange` and `igcClosed` in this order. A `hide()` after a canceled close does not commit or
+restore: the selected range stays the value, with no `igcChange`. The date picker suite covers the shared behavior.
 
 **Readonly.** Keyboard navigation, toggling the calendar and clearing through the clear icon are all disabled, and
 the calendar and clear icons appear visually disabled.
@@ -591,7 +593,8 @@ input and two inputs suites run with reduced motion, so the dialog does not fade
 3. Methods - `show`, `hide`, `toggle`, `select` and `clear`.
 4. Interactions - selection through the calendar, keyboard navigation, and interactions with the show icon. A value
    set from code while the dialog is open, also with `select()`, is not reported when Done commits. After a canceled
-   close on an outside click, Cancel restores the range. <kbd>Escape</kbd> restores the range as the close starts, so
+   close on an outside click or on Done, Cancel restores the range; after a canceled close on Cancel, Done commits it.
+   Done emits `igcChange` after `igcClosing`. <kbd>Escape</kbd> restores the range as the close starts, so
    Done or a reopen during the exit keeps it. Done, Cancel and <kbd>Escape</kbd> do nothing during the exit of `hide()`.
 5. Readonly state, in dropdown and in dialog mode.
 6. Predefined ranges - the built-in chips and the custom ranges, and a chip during the exit of the dialog.
@@ -673,6 +676,9 @@ The focus after the form checks and the `invalid` event rules come from the form
 - `min`, `max` and `disabledDates` restrict the calendar and drive validation, but they do not prevent an
   out-of-range date from being typed in; such a value invalidates the component instead.
 - `hideHeader`, `headerOrientation` and the `title` slot are only in effect in dialog mode.
+- In dialog mode, `hide()`, `toggle()` and a change of `open` do not commit or restore the selected range, also after
+  a canceled `igcClosing`. An application that cancels the close, for example to ask for a confirmation, restores the
+  range itself, through `value`.
 
 ## Accessibility
 

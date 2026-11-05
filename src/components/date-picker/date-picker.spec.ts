@@ -1375,6 +1375,36 @@ describe('Date picker', () => {
 
           expect(states()).to.eql([false, false, false]);
         });
+
+        it('opens a modal dialog again after it is removed during the exit', async () => {
+          const parent = picker.parentElement!;
+          const closed = oneEvent(picker, 'igcClosed');
+
+          await startExit();
+          picker.remove();
+          await closed;
+
+          parent.append(picker);
+          await settle();
+          expect(states()).to.eql([false, false, false]);
+
+          expect(await picker.show()).to.be.true;
+          expect(nativeDialog.matches(':modal')).to.be.true;
+        });
+
+        it('stays open as a modal when it is appended again and shown during the exit', async () => {
+          const parent = picker.parentElement!;
+
+          await startExit();
+          picker.remove();
+          parent.append(picker);
+
+          expect(await picker.show()).to.be.true;
+          await settle();
+
+          expectSteadyOpen();
+          expect(nativeDialog.matches(':modal')).to.be.true;
+        });
       });
     });
 
