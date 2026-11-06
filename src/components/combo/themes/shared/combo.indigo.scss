@@ -117,3 +117,8 @@ $dropdown-theme: dropdown-theme.$indigo;
         background: transparent;
     }
 }
+
+// The indent of the Indigo tree.
+[data-selectable-groups] [part~='item']:not([part~='select-all']) {
+    --_combo-item-indent: var(--ig-combo-item-indent, #{rem(24px)});
+}

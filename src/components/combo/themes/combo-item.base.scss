@@ -29,6 +29,11 @@ $dropdown-theme: dropdown-theme.$material;
     color: var-get($dropdown-theme, 'header-text-color');
 }
 
+// The combo sets the indent under a group header option.
+[part='prefix'] {
+    margin-inline-start: var(--_combo-item-indent, 0);
+}
+
 igc-checkbox {
     pointer-events: none;
 }

@@ -378,6 +378,40 @@ describe('Combo', () => {
       );
     });
 
+    it('indents the items one level under the group header options, by `--ig-combo-item-indent`', async () => {
+      const start = (item: Element) =>
+        checkboxOf(item).getBoundingClientRect().left;
+      const indent = (item: Element) =>
+        getComputedStyle(item).getPropertyValue('--_combo-item-indent');
+
+      combo.showSelectAll = true;
+      await comboStable(combo);
+
+      const [header] = headers();
+      const [selectAll, first] = items(combo);
+
+      expect(selectAll.part.contains('select-all')).to.be.true;
+      expect(start(selectAll)).to.equal(start(header));
+      expect(start(first) - start(header)).to.be.closeTo(16, 0.5);
+      expect(list.scrollWidth).to.equal(list.clientWidth);
+
+      combo.style.setProperty('--ig-combo-item-indent', '40px');
+
+      expect(start(first) - start(header)).to.be.closeTo(40, 0.5);
+      expect(start(selectAll)).to.equal(start(header));
+
+      combo.groupSelection = false;
+      await comboStable(combo);
+
+      expect(indent(items(combo)[1])).to.be.empty;
+
+      combo.groupSelection = true;
+      combo.groupKey = undefined;
+      await comboStable(combo);
+
+      expect(indent(items(combo)[1])).to.be.empty;
+    });
+
     it('selects the shown items of the group, then deselects them, with one igcChange each', async () => {
       await search('o');
 

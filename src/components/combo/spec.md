@@ -79,6 +79,7 @@
 |      17 | 2026-11-02 | A `focus()` call before the first render applies after the render |
 |      18 | 2026-11-06 | The select-all option sends one cancelable `igcChange`; a canceled one changes no item; a group has no entry in the selection; remote data: the application removes the selected items that the server deleted |
 |      19 | 2026-11-06 | Remote mode shows the case-sensitive icon; a case change reports the search text again |
+|      20 | 2026-11-06 | With group selection, the items are one level in under their header, as in the tree |
 
 ## Overview
 
@@ -269,7 +270,9 @@ With a `groupKey`, the combo groups the options by that field. The items without
 `data`. The comparison uses the collation of `locale`, also after a change of the global locale.
 
 In multiple selection, `group-selection` makes each group header an option. It works as the select-all option for the
-shown items of its group. The header keeps its text style, and the arrow keys and Home stop on it.
+shown items of its group. The header keeps its text style, and the arrow keys and Home stop on it. The items are one
+level in under their header, as in the tree: 12, 16 or 24 px by size, and 24 px in Indigo. `--ig-combo-item-indent`
+changes the indent. The select-all option stays at the level of the headers.
 
 A group has no entry in the selection: `value`, `selection`, the form value and `igcChange` hold only items. The header
 shows the state of its shown items at each render. So an item that the group shows later, after a change of `data` or
@@ -695,9 +698,10 @@ footer button, the focus moves to the main input. The closed list cannot keep th
 
 ### CSS custom properties
 
-| Property                | Description                                                                                                                                                                                                                                                                                                   |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--ig-helper-min-lines` | The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`. |
+| Property                 | Description                                                                                                                                                                                                                                                                                                   |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ig-combo-item-indent` | The indent of the items under a group header option of `groupSelection`. Default is the indent of the tree: 12, 16 or 24 px by size, and 24 px in Indigo. |
+| `--ig-helper-min-lines`  | The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`. |
 
 ## Test scenarios
 
@@ -842,42 +846,45 @@ state, the data requests and the selection model without a browser fixture.
 38. In multiple selection, the group headers are options with a checkbox and `aria-selected`. They count in
     `aria-posinset` and `aria-setsize`, and the accessibility audit passes. In single selection, they are headers
     again, and the items take their positions back.
-39. A click on a header selects the shown items of its group, and a second click deselects them, with one `igcChange`
+39. The items are one level in under the header options, and `--ig-combo-item-indent` changes the indent. The
+    select-all option is at the level of the headers, and the list does not scroll sideways. Without group selection
+    or `groupKey`, the items have no indent.
+40. A click on a header selects the shown items of its group, and a second click deselects them, with one `igcChange`
     each. The list stays open. With some of them selected, the checkbox is indeterminate with the `indeterminate`
     part, and a click selects only the others.
-40. Home and the arrow keys stop on the headers, Space toggles them, and Enter closes the list. A click on the
+41. Home and the arrow keys stop on the headers, Space toggles them, and Enter closes the list. A click on the
     select-all option also selects the headers. When group selection goes off, an active header stops being active.
 
 ### Confirm mode
 
-41. A click and Space change the pending selection with `igcPendingChange`. The list and `pendingValue` show it, and
+42. A click and Space change the pending selection with `igcPendingChange`. The list and `pendingValue` show it, and
     `value`, `selection` and the input text keep the selection. A canceled `igcPendingChange` keeps the pending
     selection.
-42. Enter applies the pending selection with one `igcChange` of the `commit` type with the changed items. Then it
+43. Enter applies the pending selection with one `igcChange` of the `commit` type with the changed items. Then it
     closes the list with the `enter` trigger. This also occurs in the search input and without an active option.
     Without a change, it closes the list with no `igcChange`. A canceled `igcChange` keeps the list open with the
     pending selection. A handler that changes `newValue` does not change `value`.
-43. Escape, a click on the input, `hide()` and `open` set to `false` drop the pending selection, with no `igcChange`.
-44. From the moment the list opens, the selection methods change the pending selection, also with an item that `data`
+44. Escape, a click on the input, `hide()` and `open` set to `false` drop the pending selection, with no `igcChange`.
+45. From the moment the list opens, the selection methods change the pending selection, also with an item that `data`
     does not hold. From the moment the list closes, they change the value. `commitSelection()` applies the pending
     selection with no events and keeps the list open. `cancelSelection()` and a new `value` replace it, and the same
     `value` keeps it.
-45. The clear icon clears `value` and the pending selection with one `igcChange`. A new `data` keeps the pending
+46. The clear icon clears `value` and the pending selection with one `igcChange`. A new `data` keeps the pending
     selection by value, and adds the values of `value` that it gives a record. A value without a record stays in
     `value` until a commit, and `select()` gives it a record in the input text. The select-all option and the group
     header options change the pending selection. In single selection, each change applies at once.
-46. The footer shows Cancel and Apply with the `combo_cancel` and `combo_apply` texts, and the accessibility audit
+47. The footer shows Cancel and Apply with the `combo_cancel` and `combo_apply` texts, and the accessibility audit
     passes. Footer content replaces them, and the immediate mode and single selection do not show them.
-47. Apply applies the pending selection with one `igcChange`, closes the list with the `apply` trigger, and moves the
+48. Apply applies the pending selection with one `igcChange`, closes the list with the `apply` trigger, and moves the
     focus to the main input. A canceled `igcChange` keeps the list open. Cancel drops the pending selection and closes
     the list with the `cancel` trigger.
-48. Tab moves from the list to Cancel and Apply, and Tab from Apply closes the list.
+49. Tab moves from the list to Cancel and Apply, and Tab from Apply closes the list.
 
 ### Form integration tests
 
-49. The combo is form associated, submits its selection, and resets with the form, also the input of single selection.
-50. It shows the disabled state of an ancestor `fieldset`.
-51. It obeys the required and custom constraints, and passes the accessibility audit while a submit fails on the
+50. The combo is form associated, submits its selection, and resets with the form, also the input of single selection.
+51. It shows the disabled state of an ancestor `fieldset`.
+52. It obeys the required and custom constraints, and passes the accessibility audit while a submit fails on the
     required constraint.
 
 The form-associated mixin gives the focus after the form checks and the rules of the `invalid` event. The
@@ -885,14 +892,14 @@ The form-associated mixin gives the focus after the form checks and the rules of
 
 ### defaultValue
 
-52. Form integration in single selection, in multiple selection, and with data that comes late.
-53. Validation against the default value.
+53. Form integration in single selection, in multiple selection, and with data that comes late.
+54. Validation against the default value.
 
 ### Validation message slots
 
 `runValidationContainerTests` makes these tests.
 
-54. The `value-missing`, `custom-error` and `invalid` slots show for their state.
+55. The `value-missing`, `custom-error` and `invalid` slots show for their state.
 
 ## Assumptions and limitations
 

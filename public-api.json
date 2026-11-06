@@ -1360,6 +1360,7 @@
         "toggle-icon"
       ],
       "cssProperties": [
+        "--ig-combo-item-indent",
         "--ig-helper-min-lines"
       ]
     },

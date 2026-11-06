@@ -102,8 +102,12 @@ export class DataState<T extends object> implements ReactiveController {
   }
 
   /** Whether the group headers are options. See `groupSelection`. */
-  private get _selectableGroups(): boolean {
-    return this._host.groupSelection && !this._host.singleSelect;
+  public get selectableGroups(): boolean {
+    return (
+      Boolean(this._host.groupKey) &&
+      this._host.groupSelection &&
+      !this._host.singleSelect
+    );
   }
 
   /** The index of the first option, or `-1`. See {@link isOption}. */
@@ -236,18 +240,18 @@ export class DataState<T extends object> implements ReactiveController {
 
   //#region Public API for host component
 
-  /** Whether the record is an option: not a group header, unless {@link _selectableGroups}. */
+  /** Whether the record is an option: not a group header, unless {@link selectableGroups}. */
   public isOption(record: ComboRecord<T>): boolean {
-    return !record.header || this._selectableGroups;
+    return !record.header || this.selectableGroups;
   }
 
   /**
    * Whether the record is an option that toggles the shown items after it:
-   * the select-all option, or a group header with {@link _selectableGroups}.
+   * the select-all option, or a group header with {@link selectableGroups}.
    */
   public isToggle(record: ComboRecord<T>): boolean {
     return (
-      record.kind === 'select-all' || (record.header && this._selectableGroups)
+      record.kind === 'select-all' || (record.header && this.selectableGroups)
     );
   }
 

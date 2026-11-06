@@ -138,7 +138,7 @@ const metadata: Meta<IgcComboComponent> = {
     caseSensitiveIcon: {
       type: 'boolean',
       description:
-        'Whether the search input shows the icon that toggles case-sensitive\nfiltering.',
+        'Whether the search input shows the icon that toggles case-sensitive\nfiltering. In remote filtering mode, read `filteringOptions.caseSensitive`\nwhen you send the search to the server.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -297,7 +297,8 @@ interface IgcComboArgs {
   groupSorting: 'none' | 'asc' | 'desc';
   /**
    * Whether the search input shows the icon that toggles case-sensitive
-   * filtering.
+   * filtering. In remote filtering mode, read `filteringOptions.caseSensitive`
+   * when you send the search to the server.
    */
   caseSensitiveIcon: boolean;
   /**

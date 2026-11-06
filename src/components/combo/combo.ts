@@ -156,6 +156,7 @@ const i18n = {
  * @csspart loading - The indeterminate circular progress that replaces the toggle icon while `loading` is set. It has the color of the text.
  * @csspart placeholder - Added to the item part of each item to load, which `totalItemCount` adds. Its skeleton has the color of the text.
  *
+ * @cssproperty --ig-combo-item-indent - The indent of the items under a group header option of `groupSelection`. Default is the indent of the tree: 12, 16 or 24 px by size, and 24 px in Indigo.
  * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
  *
  * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
@@ -1573,6 +1574,7 @@ export default class IgcComboComponent<
           aria-multiselectable=${!this.singleSelect}
           id="dropdown"
           part="list"
+          ?data-selectable-groups=${this._state.selectableGroups}
           role="listbox"
           tabindex="0"
           aria-labelledby="target"

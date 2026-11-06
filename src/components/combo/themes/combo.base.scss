@@ -133,6 +133,11 @@
     inset-inline-start: 0;
 }
 
+// Under group header options, the items are one level in, as in the tree.
+[data-selectable-groups] [part~='item']:not([part~='select-all']) {
+    --_combo-item-indent: var(--ig-combo-item-indent, #{sizable(rem(12px), rem(16px), rem(24px))});
+}
+
 // The skeleton of an item to load: the box of the checkbox and a bar.
 [part~='placeholder'] {
     --_skeleton: color-mix(in srgb, currentcolor 16%, transparent);
