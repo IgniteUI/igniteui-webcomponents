@@ -92,10 +92,6 @@ $dropdown-theme: dropdown-theme.$bootstrap;
     border-inline-end: rem(1px) solid var-get($input-theme, 'border-color');
 }
 
-[part='case-icon active'] {
-    color: color(primary, 500);
-}
-
 :host(:disabled),
 :host([disabled]) {
     [part~='clear-icon'] {

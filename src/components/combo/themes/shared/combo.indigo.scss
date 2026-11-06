@@ -27,14 +27,6 @@ $dropdown-theme: dropdown-theme.$indigo;
     }
 }
 
-[part='case-icon'] {
-    color: color(gray, 600);
-}
-
-[part='case-icon active'] {
-    color: color(gray, 900);
-}
-
 :host(:not([single-select])) {
     > igc-input::part(input) {
         &::selection {
@@ -58,10 +50,6 @@ $dropdown-theme: dropdown-theme.$indigo;
         &::selection {
             background: color(primary, 100);
         }
-    }
-
-    [part='case-icon active'] {
-        color: color(primary, 500);
     }
 }
 
