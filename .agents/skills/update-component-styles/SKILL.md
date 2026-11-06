@@ -1,6 +1,7 @@
 ---
+license: MIT
 name: update-component-styles
-description: Update component styling following the SCSS to Lit CSS workflow with proper theme support
+description: "Updates the styles of a component in this repository through the SCSS to Lit CSS build and the igniteui-theming schemas, for all themes and their light and dark variants. WHEN TO USE: changing the SCSS or theme files of a component, or adding or changing its CSS parts or CSS custom properties. WHEN NOT TO USE: scaffolding the theme files of a new component (use create-new-component), adding a reactive property (use add-component-property), reviewing a pull request (use review-component-pr), or theming an application that uses the components (use the public igniteui-wc-customize-component-theme skill)."
 metadata:
   internal: true
 ---

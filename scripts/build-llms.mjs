@@ -18,6 +18,9 @@ import { fileURLToPath } from 'node:url';
  * that they ship with. An element is public when `src/index.ts` exports its
  * class. A member without a description is left out: most of them are
  * plumbing, for example `emitEvent`.
+ *
+ * The repository keeps a copy of the pages in `api-reference/`, for tools that
+ * read only the repository (see `api-reference.mjs`).
  */
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -234,6 +237,20 @@ function publicElements(manifest) {
 }
 
 /**
+ * The page of each public element, by file name (`<tag>.md`).
+ *
+ * @param {Package} manifest
+ * @returns {Map<string, string>}
+ */
+export const renderPages = (manifest) =>
+  new Map(
+    publicElements(manifest).map((element) => [
+      `${element.tagName}.md`,
+      `${renderPage(element)}\n`,
+    ])
+  );
+
+/**
  * The name and the summary of each end-user skill, from its frontmatter: the
  * description up to its `WHEN TO USE:` marker.
  *
@@ -265,7 +282,7 @@ async function readSkills() {
 export async function buildLlmsFiles(manifest, destination) {
   const header = (await readFile(HEADER, 'utf8')).trim();
   const elements = publicElements(manifest);
-  const pages = elements.map(renderPage);
+  const pages = renderPages(manifest);
   const skills = await readSkills();
 
   const index = [
@@ -301,15 +318,11 @@ export async function buildLlmsFiles(manifest, destination) {
     ),
     writeFile(
       path.join(destination, 'llms-full.txt'),
-      `${[header, ...pages].join('\n\n')}\n`,
+      `${[header, ...Array.from(pages.values(), (page) => page.trimEnd())].join('\n\n')}\n`,
       'utf8'
     ),
-    ...elements.map((element, i) =>
-      writeFile(
-        path.join(destination, pagePath(element.tagName)),
-        `${pages[i]}\n`,
-        'utf8'
-      )
+    ...Array.from(pages, ([file, page]) =>
+      writeFile(path.join(destination, PAGES, file), page, 'utf8')
     ),
   ]);
 }

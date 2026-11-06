@@ -1179,7 +1179,7 @@ export const Basic: Story = {
 | `npm run test:ssr`              | Builds the package and renders every tag through Lit SSR; fails when a render throws       |
 | `npm run build:publish`         | Builds the package in `dist`, then writes and checks the single-theme aggregators          |
 | `npm run cem`                   | Regenerates `custom-elements.json`                                                         |
-| `npm run public-api:update`     | Rewrites `public-api.json` after an intended public API change                             |
+| `npm run public-api:update`     | Rewrites `public-api.json` and `api-reference/` after a public API or JSDoc change         |
 | `npm run report:spec-scenarios` | Lists `spec.md` test scenarios out of step with the specs, and specs without an a11y audit |
 | `npm run build:meta`            | Regenerates the story metadata regions                                                     |
 | `npm run storybook`             | Dev server with style, manifest and story watchers                                         |

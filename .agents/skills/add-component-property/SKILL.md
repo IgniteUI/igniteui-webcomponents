@@ -1,6 +1,7 @@
 ---
+license: MIT
 name: add-component-property
-description: Add a reactive property to an existing Lit web component with proper decorators, types, tests, specification updates, and documentation
+description: "Adds a reactive property to an existing component in this repository, with its JSDoc, change handling, tests, spec.md update, story metadata and public API snapshot. WHEN TO USE: adding a public property or attribute to a component, or changing the type, default value or reflection of one. WHEN NOT TO USE: scaffolding a new component (use create-new-component), changing SCSS, themes, CSS parts or CSS custom properties (use update-component-styles), reviewing a pull request (use review-component-pr), or using the components in an application (use the public igniteui-wc-* skills)."
 metadata:
   internal: true
 ---
@@ -145,14 +146,15 @@ templates.
 ### 7. Update the public API snapshot
 
 A new property is an addition to the public API. `npm run check` lists additions that are not
-in the committed `public-api.json`, and fails on a removal or a type change. Record the
-property:
+in the committed `public-api.json`, and fails on a removal or a type change. It also fails
+when a page in `api-reference/` differs from the manifest, and the property changes the page
+of the component. Record the property:
 
 ```bash
 npm run public-api:update
 ```
 
-Commit `public-api.json` with the property.
+Commit `public-api.json` and `api-reference/` with the property.
 
 ### 8. Verify
 
@@ -169,7 +171,7 @@ npm run check && npm run test
 - [ ] Tests cover the default, a change and, if the decorator allows, the attribute
 - [ ] `spec.md`: API row, test scenarios renumbered, revision history row
 - [ ] `cem` and `build:meta` run. The story template uses the property.
-- [ ] `public-api.json` updated with `npm run public-api:update`
+- [ ] `public-api.json` and `api-reference/` updated with `npm run public-api:update`
 - [ ] `check` and `test` pass. CHANGELOG updated if the property is user-visible.
 
 ## Common Pitfalls

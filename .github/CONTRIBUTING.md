@@ -67,7 +67,7 @@ This command runs every `check-*` script:
 - The component registration check.
 - The public API check.
 
-The public API check compares the custom elements manifest and the exports of `src/index.ts` with the committed `public-api.json`. It fails on a removal or a type change, and lists the additions. After an intended public API change, run `npm run public-api:update`. Then commit `public-api.json` with your change.
+The public API check compares the custom elements manifest and the exports of `src/index.ts` with the committed `public-api.json`. It fails on a removal or a type change, and lists the additions. It also compares the pages in `api-reference/` with the manifest, and fails on any difference. Context7 reads these pages from the repository. After an intended public API change, or a change to the JSDoc of the public API, run `npm run public-api:update`. Then commit `public-api.json` and `api-reference/` with your change.
 
 ### Testing with Web Test Runner
 
