@@ -177,7 +177,7 @@ All inputs are form-associated and integrate natively with `<form>`.
 |---|---|---|
 | Simple scrollable list | List | `<igc-list>` |
 | Hierarchical / tree data | Tree | `<igc-tree>` |
-| Tabular data (MIT, lightweight) | Grid Lite | `<igc-grid>` |
+| Tabular data (MIT, lightweight) | Grid Lite | `<igc-grid-lite>` |
 | Full-featured tabular data grid | Data Grid | `<igc-grid>` |
 | Nested / master-detail grid | Hierarchical Grid | `<igc-hierarchical-grid>` |
 | Parent-child relational tree grid | Tree Grid | `<igc-tree-grid>` |
@@ -316,7 +316,7 @@ defineComponents(IgcNavbarComponent, IgcNavDrawerComponent, IgcCardComponent, Ig
 ### Data Table / Admin List View
 - `<igc-input>` — search bar
 - `<igc-combo>` — filter dropdowns
-- `<igc-grid>` (Grid Lite) or Data Grid — tabular data
+- `<igc-grid-lite>` (Grid Lite) or `<igc-grid>` (Data Grid) — tabular data
 - `<igc-button>` / `<igc-icon-button>` — actions
 - `<igc-dialog>` — confirm delete modal
 - `<igc-badge>` — status indicators

@@ -339,7 +339,7 @@ The Grids, Dock Manager and other packages marked *Commercial* above are license
 [Dropdown Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/dropdown
 [Tree Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/tree
 [Expansion Panel Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/expansion-panel
-[Masked Input Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/input
+[Masked Input Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/mask-input
 [Accordion Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/accordion
 [Tabs Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/tabs
 [Date Time Input Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/date-time-input
