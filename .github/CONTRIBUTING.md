@@ -129,6 +129,7 @@ npm run storybook:build
 - **Commit Messages**: Write clear and concise commit messages that describe your changes.
 - **Testing**: Make sure that your contribution includes relevant tests. The tests verify the functionality and prevent regressions.
 - **Specifications**: Every public component has a specification at `src/components/[name]/spec.md`. See [Component Specifications](#component-specifications) below.
+- **Changelog**: Add an entry under `[Unreleased]` in [CHANGELOG.md](../CHANGELOG.md) for every user-visible change. The file follows [Keep a Changelog](https://keepachangelog.com/). Use the `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed` and `Security` categories. Put a fix for a vulnerability under `Security`. Add a link to the advisory after it is published.
 
 ## Component Specifications
 
@@ -143,7 +144,6 @@ Each component directory has a `spec.md` that describes the component. It contai
 Specifications do not have ownership, approval or sign-off sections. The revision history has no author column, because `git` already records who changed what. Put design hand-off links, such as Figma files, under `### End-user experience`. Keep these links when you update the specification.
 
 A pull request that changes behavior but does not update the affected specification is incomplete. Reviewers will ask for the update.
-- **Changelog**: Add an entry under `[Unreleased]` in [CHANGELOG.md](../CHANGELOG.md) for every user-visible change. The file follows [Keep a Changelog](https://keepachangelog.com/). Use the `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed` and `Security` categories. Put a fix for a vulnerability under `Security`. Add a link to the advisory after it is published.
 
 ## Accessibility
 
