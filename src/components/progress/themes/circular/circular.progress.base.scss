@@ -10,8 +10,6 @@
 }
 
 [part~='base'] {
-    --_motion-factor: 1;
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -19,14 +17,7 @@
     position: relative;
 }
 
-// Slow the indeterminate animation, but do not stop it, so it still shows
-// activity. !important overrides the inline duration from `animationDuration`.
-@media (prefers-reduced-motion: reduce) {
-    [part~='base'] {
-        --_motion-factor: 3;
-        --_transition-duration: 0ms !important;
-    }
-}
+@include reduced-motion();
 
 // Forced colors do not change SVG paint. `stop` also matches a custom gradient.
 @media (forced-colors: active) {

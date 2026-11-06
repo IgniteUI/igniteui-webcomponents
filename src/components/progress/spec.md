@@ -48,6 +48,7 @@
 |       3 | 2026-10-01 | Announce the shown percentage, round it to two decimals |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc. |
 |       5 | 2026-11-06 | The circular indicator: reduced motion, forced colors, the box of the ring |
+|       6 | 2026-11-06 | The linear indicator: reduced motion |
 
 ## Overview
 
@@ -281,8 +282,8 @@ Both suites are structured the same way, so the scenarios below apply to both in
 ### Styles
 
 14. The circular indicator takes the box of the ring, and as a block it follows `text-align`.
-15. With reduced motion, the indeterminate animation of the circular indicator runs at a third of its speed in each
-    theme, and a new value shows at once.
+15. With reduced motion, the indeterminate animation runs at a third of its speed in each theme, and a new value
+    shows at once.
 16. With motion, the same animations run at full speed, and a new value animates.
 17. In forced colors, the ring and a custom gradient of the circular indicator have the text color, and the track is
     `GrayText`.
@@ -332,8 +333,8 @@ Not applicable; the indicators are not interactive.
 
 ### Reduced motion and forced colors
 
-- With `prefers-reduced-motion: reduce`, the indeterminate animation of the circular indicator runs at a third of
-  its speed, so it still shows activity, and a new value shows at once.
+- With `prefers-reduced-motion: reduce`, the indeterminate animation of both indicators runs at a third of its
+  speed, so it still shows activity, and a new value shows at once.
 - Forced colors do not change SVG paint. So in forced colors, the ring of the circular indicator and a custom
   gradient take the text color, and the track is `GrayText`.
 

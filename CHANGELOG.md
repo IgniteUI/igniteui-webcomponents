@@ -189,8 +189,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Circular progress, Linear progress
   - The default `aria-valuetext` is now the percentage that the label shows. Before, it was the value with a percent sign: "50%" for 50 of 200, while the label showed 25%. [#2427](https://github.com/IgniteUI/igniteui-webcomponents/pull/2427)
   - The percentage is now correct. It rounds to two decimals: 12.996% shows as 13%, not "12.100%", and 1.005% shows as 1.01%, not 1%. A fractional `max` also works: 0.25 of 0.5 shows as 50%, not 25%. [#2427](https://github.com/IgniteUI/igniteui-webcomponents/pull/2427)
-- #### Circular progress
   - With `prefers-reduced-motion: reduce`, the indeterminate animation now runs at a third of its speed, and a new value shows at once. Before, the motion did not change.
+- #### Circular progress
   - In forced colors, the ring now has the text color and the track is `GrayText`, also with a custom gradient. Before, the ring kept the theme colors, so the track was almost invisible.
   - The element is now an inline block of the size of the ring. Before, a line box around the ring made the element taller than the ring, so a small ring sat above the center of its parent.
 - #### Color picker, Combo, Date picker, Date range picker, Dropdown, Select, Slider, Tooltip

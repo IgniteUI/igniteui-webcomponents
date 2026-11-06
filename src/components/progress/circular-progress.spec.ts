@@ -276,11 +276,6 @@ describe('Circular progress component', () => {
       return result;
     }
 
-    async function setIndeterminate(): Promise<void> {
-      progress.indeterminate = true;
-      await elementUpdated(progress);
-    }
-
     beforeEach(async () => {
       progress = await fixture<IgcCircularProgressComponent>(html`
         <igc-circular-progress
@@ -314,7 +309,7 @@ describe('Circular progress component', () => {
     });
 
     it('runs the indeterminate animation at a third of its speed with reduced motion', async () => {
-      await setIndeterminate();
+      await updateProgress('indeterminate', true);
 
       expect(durations()).to.eql({
         bootstrap: ['2.25s', '0s'],
@@ -331,7 +326,7 @@ describe('Circular progress component', () => {
       allowMotion();
 
       it('runs the indeterminate animation at full speed', async () => {
-        await setIndeterminate();
+        await updateProgress('indeterminate', true);
 
         expect(durations()).to.eql({
           bootstrap: ['0.75s', '0s'],
