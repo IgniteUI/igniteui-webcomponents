@@ -3,7 +3,9 @@ import { property, query, state } from 'lit/decorators.js';
 import {
   getItems,
   IgcComboBoxBaseLikeComponent,
+  isPopupContentEvent,
   setInitialSelectionState,
+  tabThroughPopup,
 } from '#internals/bases/combo-box.js';
 import { createListSelection } from '#internals/bases/list-selection.js';
 import { ariaBindings } from '#internals/controllers/aria-projection.js';
@@ -19,6 +21,7 @@ import {
   homeKey,
   type KeyBindingController,
   type KeyBindingObserverCleanup,
+  shiftKey,
   tabKey,
 } from '#internals/controllers/key-bindings.js';
 import {
@@ -31,6 +34,7 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
 import {
   getElementByIdFromRoot,
+  getFocusableElements,
   setOrRemoveAttribute,
 } from '#internals/utils/dom.js';
 import { getElementFromPath } from '#internals/utils/events.js';
@@ -72,6 +76,8 @@ const nextItemId = createIdGenerator('igc-dropdown-item');
  *
  * @slot target - Renders the dropdown's target element.
  * @slot - Renders the dropdown list items.
+ * @slot header - Renders content before the list items, such as a text field. The content is not part of the list and keeps its own keys.
+ * @slot footer - Renders content after the list items, such as action buttons. The content is not part of the list and keeps its own keys.
  *
  * @csspart base - The dropdown list wrapper container.
  * @csspart list - The dropdown list element.
@@ -120,6 +126,16 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
 
   @query('slot[name="target"]')
   private readonly _targetSlot!: HTMLSlotElement | null;
+
+  @query('[part="base"]', true)
+  private readonly _popup!: HTMLDivElement | null;
+
+  /** The target, or its first focusable element for a wrapper target. */
+  private get _focusTarget(): HTMLElement | undefined {
+    const target = this._target;
+    const [first] = target ? getFocusableElements(target) : [];
+    return first ?? target;
+  }
 
   private get _slottedTarget(): HTMLElement | undefined {
     const [target] =
@@ -187,12 +203,11 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     addThemingController(this, all);
 
     this._keyBindings = addKeybindings(this, {
-      skip: () => !this.open,
+      skip: (_, event) => !this.open || this._isContentEvent(event),
       bindingDefaults: { preventDefault: true, repeat: true },
     })
-      .set(tabKey, this._handleTab, {
-        preventDefault: false,
-      })
+      .set(tabKey, this._handleTab, { preventDefault: false })
+      .set([shiftKey, tabKey], this._handleTab, { preventDefault: false })
       .set(escapeKey, this._handleClosing)
       .set(arrowUp, this._handleArrowUp)
       .set(arrowLeft, this._handleArrowUp)
@@ -201,6 +216,17 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
       .set(enterKey, this._commitActiveItem)
       .set(homeKey, this._handleHome)
       .set(endKey, this._handleEnd);
+
+    // Tab and Escape from the content. A separate controller, because the one
+    // above ignores host keys while it observes an external target.
+    addKeybindings(this, {
+      skip: (_, event) =>
+        !this.open || event.defaultPrevented || !this._isContentEvent(event),
+      bindingDefaults: { repeat: true },
+    })
+      .set(tabKey, this._handleTab, { preventDefault: false })
+      .set([shiftKey, tabKey], this._handleTab, { preventDefault: false })
+      .set(escapeKey, this._handleClosing);
 
     createMutationController(this, {
       callback: this._handleItemsChange,
@@ -232,6 +258,14 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     }
   }
 
+  protected override _popupElement(): Element | null {
+    return this._popup;
+  }
+
+  protected override _returnFocus(): void {
+    this._focusTarget?.focus({ preventScroll: true });
+  }
+
   protected override updated(): void {
     this._syncAnchorARIA();
   }
@@ -239,6 +273,14 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   //#endregion
 
   //#region Event handlers
+
+  private _isContentEvent(event: Event): boolean {
+    return isPopupContentEvent(
+      event,
+      this._popup,
+      IgcDropdownItemComponent.tagName
+    );
+  }
 
   /**
    * Resolves the selection again when items enter or leave the light DOM, for
@@ -284,11 +326,20 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     this._selection.navigate(lastOf(this._selection.activeItems));
   }
 
-  private _handleTab(): void {
-    this._commitActiveItem();
+  private _handleTab(event: KeyboardEvent): void {
+    if (
+      tabThroughPopup(
+        event,
+        this._focusTarget,
+        this._popup,
+        IgcDropdownItemComponent.tagName
+      )
+    ) {
+      this._commitActiveItem();
 
-    // Tab commits and leaves, whatever `keepOpenOnSelect` says.
-    this._hide(true);
+      // Tab commits and leaves, whatever `keepOpenOnSelect` says.
+      this._hide(true);
+    }
   }
 
   //#endregion
@@ -504,6 +555,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
         @slotchange=${this._updateTarget}
       ></slot>
       <div part="base" @click=${this._handleListBoxClick} .inert=${!this.open}>
+        <slot name="header"></slot>
         <div
           id="dropdown-list"
           role="listbox"
@@ -512,6 +564,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
         >
           <slot></slot>
         </div>
+        <slot name="footer"></slot>
       </div>
     </igc-popover>`;
   }

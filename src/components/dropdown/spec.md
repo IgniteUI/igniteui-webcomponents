@@ -56,6 +56,7 @@ This directory hosts four public components: [`igc-dropdown`](#igc-dropdown),
 |       4 | 2026-10-26 | A click or `select()` on the selected item moves the active item to it. |
 |       5 | 2026-10-28 | An `igc-input` target gives `aria-haspopup` and the active item to its native input. |
 |       6 | 2026-11-04 | Setting `selected` on an item again keeps the active item; only the selected item starts active. |
+|       7 | 2026-11-06 | `header` and `footer` slots; content that is not an item keeps its keys; Tab moves through it. Space is not bound. |
 
 ## Overview
 
@@ -213,9 +214,10 @@ The dropdown itself is not focusable and has no tab index, so the target keeps t
 | <kbd>Arrow Up</kbd> / <kbd>Arrow Down</kbd>     | Activates the previous or next item, without changing the selection. |
 | <kbd>Arrow Left</kbd> / <kbd>Arrow Right</kbd>  | Activates the previous or next item, without changing the selection. |
 | <kbd>Home</kbd> / <kbd>End</kbd>                | Activates the first or the last item.                                |
-| <kbd>Enter</kbd> / <kbd>Space</kbd>             | Selects the active item and closes the list.                         |
+| <kbd>Enter</kbd>                                | Selects the active item and closes the list.                         |
 | <kbd>Escape</kbd>                               | Closes the list without changing the selection.                      |
-| <kbd>Tab</kbd>                                  | Closes the list and moves focus on.                                  |
+| <kbd>Tab</kbd>                                  | Selects the active item, closes the list and moves focus on.         |
+| <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd>, with focusable content | Moves through the target and the focusable content: header, default slot, footer. Past either end, selects the active item, closes the list and moves focus on. |
 
 ## API
 
@@ -264,6 +266,8 @@ The dropdown itself is not focusable and has no tab index, so the target keeps t
 | --------- | -------------------------------------- |
 | `target`  | Renders the target element of the dropdown. |
 | (default) | Renders the dropdown list items.       |
+| `header`  | Renders content before the list items, such as a text field. The content is not part of the list and keeps its own keys. |
+| `footer`  | Renders content after the list items, such as action buttons. The content is not part of the list and keeps its own keys. |
 
 #### CSS Shadow parts
 
@@ -388,12 +392,39 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 
 28. `hide`, `scroll` and `close` behave as specified while an ancestor scrolls.
 
+### Interactive content
+
+29. The `header` and `footer` slots are outside the listbox, and the accessibility audit passes with focusable
+    content in them.
+30. A text field in the header takes the typed text, the arrow keys, <kbd>Home</kbd> and <kbd>End</kbd>, a radio
+    group in the footer takes the arrow keys, and a button takes <kbd>Space</kbd> and <kbd>Enter</kbd>. The active
+    item and the selection do not change. A text field in the default slot keeps its keys too.
+31. Tab moves from the target through the header and the footer content, with a radio group as one stop, and
+    Shift+Tab moves back. Tab from the last footer control selects the active item, closes the dropdown and moves
+    the focus on. Shift+Tab from the target closes the dropdown and moves the focus back.
+32. <kbd>Escape</kbd> from the header content closes the dropdown and focuses the target, unless the content handled
+    the key.
+33. When the dropdown closes with the focus in the footer, the target gets the focus. A focus outside the dropdown
+    does not move.
+34. With an external target, Tab from the target moves into the content, and Tab from the last control closes the
+    dropdown and moves the focus on from the target. <kbd>Escape</kbd> from the content closes the dropdown and
+    focuses the target.
+35. Without focusable content, Shift+Tab is not bound.
+36. A control inside an item is not a Tab stop, and a held <kbd>Tab</kbd> from the content moves through it. With a
+    target that wraps a focusable element, Shift+Tab and <kbd>Escape</kbd> from the content focus that element.
+
 ## Assumptions and limitations
 
 - Only single selection is supported.
 - Keyboard navigation with the arrow keys does not change the selection; <kbd>Enter</kbd> commits it.
 - <kbd>Escape</kbd> closes the list but does not update the selection.
 - <kbd>Page Up</kbd> and <kbd>Page Down</kbd> are not handled.
+- <kbd>Space</kbd> is not bound: on a button target, it clicks the button, which toggles the dropdown.
+- Content that is not an item keeps its own keys, and only <kbd>Tab</kbd> and <kbd>Escape</kbd> from it reach the
+  dropdown. Put interactive content in the `header` and `footer` slots: in the default slot, it is inside the
+  listbox, and the accessibility audit fails.
+- The events of that content bubble through the dropdown, for example the `igcChange` of a checkbox or a radio. An
+  `igcChange` listener on the dropdown checks `event.target`, as the `ExportMenu` story does.
 - The dropdown is not a form-associated element and submits nothing.
 - An `igc-input` or other text field target is not fully supported. The open state does not reach assistive
   technology, because a text box does not support `aria-expanded`. While the list is open, the dropdown also takes

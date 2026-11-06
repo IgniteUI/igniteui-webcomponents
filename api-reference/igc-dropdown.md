@@ -90,6 +90,8 @@ defineComponents(IgcDropdownComponent);
 
 - `target`: Renders the dropdown's target element.
 - default: Renders the dropdown list items.
+- `header`: Renders content before the list items, such as a text field. The content is not part of the list and keeps its own keys.
+- `footer`: Renders content after the list items, such as action buttons. The content is not part of the list and keeps its own keys.
 
 ## CSS parts
 

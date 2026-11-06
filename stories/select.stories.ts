@@ -626,6 +626,110 @@ export const AssignTicket: Story = {
   },
 };
 
+const expenseCategories = [
+  'Travel',
+  'Meals',
+  'Lodging',
+  'Office supplies',
+  'Software',
+];
+
+export const ExpenseCategory: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The category of an expense. A category that is not in the list can be added from the `footer` slot of the select. The footer content is outside the list and keeps its own keys: the text field takes the typed text, Space and the arrow keys, so typing does not jump to an option, and the Add button takes Enter and Space. Tab moves from the select through the field and the Add button. The field and the button belong to a separate form through their `form` attribute, so Enter in the field adds the category and does not submit the expense. The new category is selected with `select()`, and `hide()` closes the list. The list closes with the focus in it, so the focus goes back to the select. Escape from the field also closes the list.',
+      },
+    },
+  },
+  render: () => {
+    const categories = [...expenseCategories];
+
+    const addCategory = (event: SubmitEvent) => {
+      event.preventDefault();
+
+      const form = event.target as HTMLFormElement;
+      const name = String(new FormData(form).get('name') ?? '').trim();
+
+      if (!name) {
+        return;
+      }
+
+      const existing = categories.find(
+        (category) => category.toLocaleLowerCase() === name.toLocaleLowerCase()
+      );
+
+      if (!existing) {
+        categories.push(name);
+        story.update();
+      }
+
+      form.reset();
+
+      const select =
+        story.host!.querySelector<IgcSelectComponent>('#se-category')!;
+      select.select(existing ?? name);
+      select.hide();
+    };
+
+    const story = renderInto(
+      () => html`
+        <form id="se-category-form" @submit=${addCategory}></form>
+        <form class="se-panel" @submit=${formSubmitHandler}>
+          <h3>New expense</h3>
+          <igc-input name="description" label="Description" required>
+          </igc-input>
+          <igc-input name="amount" label="Amount (USD)" required></igc-input>
+          <igc-select
+            id="se-category"
+            name="category"
+            label="Category"
+            required
+          >
+            ${categories.map(
+              (category) =>
+                html`<igc-select-item value=${category}
+                  >${category}</igc-select-item
+                >`
+            )}
+            <div slot="footer" class="se-new-category">
+              <igc-input
+                form="se-category-form"
+                name="name"
+                label="New category"
+              ></igc-input>
+              <igc-button type="submit" form="se-category-form">Add</igc-button>
+            </div>
+          </igc-select>
+          <div class="se-actions">
+            <igc-button type="submit">Save expense</igc-button>
+          </div>
+        </form>
+      `
+    );
+
+    return html`
+      ${styles}
+      <style>
+        .se-new-category {
+          display: flex;
+          align-items: flex-end;
+          gap: 0.5rem;
+          padding: 0.75rem 1rem;
+          border-block-start: 1px solid var(--ig-gray-300);
+        }
+
+        .se-new-category igc-input {
+          flex: 1;
+        }
+      </style>
+      <div ${story.mount}></div>
+    `;
+  },
+};
+
 const languages = [
   { code: 'en', name: 'English', greeting: 'Welcome back, Alex' },
   { code: 'de', name: 'Deutsch', greeting: 'Willkommen zurück, Alex' },

@@ -1978,6 +1978,8 @@
       },
       "slots": [
         "",
+        "footer",
+        "header",
         "target"
       ],
       "cssParts": [

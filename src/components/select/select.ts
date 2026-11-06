@@ -4,7 +4,9 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   getItems,
   IgcComboBoxBaseLikeComponent,
+  isPopupContentEvent,
   setInitialSelectionState,
+  tabThroughPopup,
 } from '#internals/bases/combo-box.js';
 import { createListSelection } from '#internals/bases/list-selection.js';
 import { addAriaProjector } from '#internals/controllers/aria-projection.js';
@@ -19,6 +21,7 @@ import {
   enterKey,
   escapeKey,
   homeKey,
+  shiftKey,
   spaceBar,
   tabKey,
 } from '#internals/controllers/key-bindings.js';
@@ -182,6 +185,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   @query('#dropdown')
   protected _list!: HTMLDivElement | null;
 
+  @query('[part="base"]', true)
+  private readonly _popup!: HTMLDivElement | null;
+
   //#endregion
 
   //#region Public attributes and properties
@@ -284,7 +290,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     });
 
     addKeybindings(this, {
-      skip: () => this.disabled,
+      skip: this._skipKeys,
       bindingDefaults: { preventDefault: true, repeat: true },
     })
       .set([altKey, arrowDown], this._handleAltArrowDown)
@@ -294,7 +300,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       .set(arrowLeft, this._handleArrowUp)
       .set(arrowRight, this._handleArrowDown)
       .set(tabKey, this._handleTab, { preventDefault: false })
-      .set(escapeKey, this._handleEscape)
+      .set([shiftKey, tabKey], this._handleTab, { preventDefault: false })
+      .set(escapeKey, this._handleEscape, { when: () => this.open })
       .set(homeKey, this._handleHome)
       .set(endKey, this._handleEnd)
       .set(spaceBar, this._handleSpace)
@@ -358,9 +365,37 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this._validate();
   }
 
+  protected override _popupElement(): Element | null {
+    return this._popup;
+  }
+
+  protected override _returnFocus(): void {
+    this._input.focus({ preventScroll: true });
+  }
+
   //#endregion
 
   //#region Keyboard event handlers
+
+  /** Tab and Escape apply unless the content handled them; other content keys are its own. */
+  private _skipKeys(_: Element, event: KeyboardEvent): boolean {
+    if (this.disabled) {
+      return true;
+    }
+
+    return event.key === tabKey || event.key === escapeKey
+      ? event.defaultPrevented
+      : this._isContentEvent(event);
+  }
+
+  // No `open` check: content that closes the list on a key still owns that key.
+  private _isContentEvent(event: Event): boolean {
+    return isPopupContentEvent(
+      event,
+      this._popup,
+      IgcSelectItemComponent.tagName
+    );
+  }
 
   private _handleSearch(event: KeyboardEvent): void {
     // A printable key held with a modifier is a shortcut, not type-ahead.
@@ -368,7 +403,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       return;
     }
 
-    if (!/^.$/u.test(event.key)) {
+    if (!/^.$/u.test(event.key) || this._isContentEvent(event)) {
       return;
     }
 
@@ -439,7 +474,15 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   private _handleTab(event: KeyboardEvent): void {
-    if (this.open) {
+    if (
+      this.open &&
+      tabThroughPopup(
+        event,
+        this._input,
+        this._popup,
+        IgcSelectItemComponent.tagName
+      )
+    ) {
       event.preventDefault();
       this._selectItem(this._selection.active ?? this._selection.selected);
       this._hide(true);
@@ -659,6 +702,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   protected _renderDropdown() {
     return html`
       <div part="base" .inert=${!this.open}>
+        <slot name="header"></slot>
         <div
           id="dropdown"
           role="listbox"
@@ -666,10 +710,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
           aria-labelledby="input"
           @click=${this._handleClick}
         >
-          <slot name="header"></slot>
           <slot></slot>
-          <slot name="footer"></slot>
         </div>
+        <slot name="footer"></slot>
       </div>
     `;
   }

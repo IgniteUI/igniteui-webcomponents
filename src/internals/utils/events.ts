@@ -49,6 +49,30 @@ export function getElementFromPath(
 }
 
 /**
+ * Focuses the stop after the innermost of `stops` on the path of a Tab `event`,
+ * or the one before it with Shift. Returns whether the focus moved: `false`
+ * past either end, or when that stop does not take the focus.
+ */
+export function focusTabStop(
+  event: KeyboardEvent,
+  stops: readonly HTMLElement[]
+): boolean {
+  const current = getElementFromPath<HTMLElement>(
+    (element) => stops.includes(element as HTMLElement),
+    event
+  );
+
+  if (!current) {
+    return false;
+  }
+
+  const next = stops[stops.indexOf(current) + (event.shiftKey ? -1 : 1)];
+
+  next?.focus();
+  return !!next?.matches(':focus');
+}
+
+/**
  * Returns the element that started the event if it matches the selector.
  * Unlike `getElementFromPath`, a match deeper in the composed path does not count.
  */
