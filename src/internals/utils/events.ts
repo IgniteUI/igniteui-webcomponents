@@ -86,6 +86,43 @@ export function getEventOrigin<T extends Element = Element>(
     : undefined;
 }
 
+/**
+ * Runs `action` like a native default action of `event`: after the listeners
+ * on its path, and only when none of them cancels the event. An event that
+ * stops on the way, or does not bubble, runs it in the next task.
+ */
+export function runDefaultAction(event: Event, action: () => void): void {
+  const end = event.composedPath().at(-1);
+  const controller = new AbortController();
+  const { signal } = controller;
+  const run = (): void => {
+    if (!signal.aborted) {
+      controller.abort();
+
+      if (!event.defaultPrevented) {
+        action();
+      }
+    }
+  };
+
+  // An event that is not in dispatch has no path.
+  if (!end) {
+    run();
+    return;
+  }
+
+  end.addEventListener(
+    event.type,
+    (other) => {
+      if (other === event) {
+        run();
+      }
+    },
+    { signal }
+  );
+  setTimeout(run);
+}
+
 /** Reusable event listener that stops the propagation of the event. */
 export function stopPropagation(event: Event): void {
   event.stopPropagation();

@@ -55,6 +55,7 @@
 |       6 | 2026-10-23 | The control makes a stacking context, also in a horizontal group, so its z-index does not compete with the layers of the page |
 |       7 | 2026-10-29 | Transition only the properties that change, so the radio hides at the same time as a hidden ancestor |
 |       8 | 2026-11-02 | `focus()` and `blur()` before the first render do not throw, and a `focus()` call applies after it   |
+|       9 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown` does not submit the form |
 
 ## Overview
 
@@ -363,7 +364,8 @@ Driven by `createFormAssociatedTestBed`.
     value.
 13. Is correctly reset on form reset, resets to a new default after a `setAttribute` call, and does not restore a
     checked state whose attribute was removed before the reset.
-14. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid.
+14. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid or when a listener on
+    the host cancels the `keydown`.
 15. Reflects the disabled state of an ancestor `fieldset`.
 16. Fulfils the required and custom constraints.
 17. Issue #1122 - the component validates synchronously.
