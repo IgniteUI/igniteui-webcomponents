@@ -526,9 +526,10 @@ export abstract class IgcDatePickerBaseComponent<
 
   //#region Internal API
 
+  /** The editors take the clear as a user edit and report it on blur. */
   protected _clearEditors(): void {
     for (const editor of this._editors) {
-      editor?.clear();
+      editor?._clearAsEdit();
     }
   }
 
@@ -641,10 +642,7 @@ export abstract class IgcDatePickerBaseComponent<
     this._oldValue = this._value;
   }
 
-  /**
-   * Commits a value from an editor. An editor also reports a value set from code while it is focused, so a value
-   * that equals the last committed one emits nothing.
-   */
+  /** Commits a value from an editor. An edit back to the last committed value emits nothing. */
   protected _commitEditorValue(value: T | null): void {
     this._setTouchedState();
     this._value = value;

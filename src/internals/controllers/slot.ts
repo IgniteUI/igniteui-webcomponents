@@ -54,12 +54,29 @@ class SlotController<T> implements ReactiveController {
   private readonly _slotCache = new Map<T | undefined, HTMLSlotElement>();
   private _initialized = false;
 
+  /**
+   * Set during the first update of a server-rendered host. The server render
+   * has no slotted content, so until the update ends the queries report none
+   * and `slotchange` waits; otherwise both renders differ.
+   */
+  private _hydrating = false;
+
+  /** Whether the hydration made a query report no slot. */
+  private _queryWithheld = false;
+
+  /** The `slotchange` callbacks that wait for the end of the hydration. */
+  private readonly _pendingChanges: SlotChangeCallbackParameters<T>[] = [];
+
   constructor(
     host: ReactiveControllerHost & LitElement,
     options?: SlotControllerOptions<T>
   ) {
     this._host = host;
     this._host.addController(this);
+
+    // Lit creates the shadow root on connect, so a root in the constructor is a
+    // declarative shadow root from the server. Create the controller there.
+    this._hydrating = !isServer && host.shadowRoot !== null;
 
     this._options = { ...options };
     this._slots = options?.slots ? new Set(options.slots) : undefined;
@@ -71,10 +88,15 @@ class SlotController<T> implements ReactiveController {
    * @remarks
    * The result is cached, because the accessors below run from `render`. The
    * cache serves only a connected slot. A query before the host creates its
-   * render root reports no slot and raises no error.
+   * render root, or during the hydration, reports no slot and raises no error.
    */
   private _getSlot(slotName?: T): HTMLSlotElement | null {
     if (isServer) return null;
+
+    if (this._hydrating) {
+      this._queryWithheld = true;
+      return null;
+    }
 
     const cached = this._slotCache.get(slotName);
 
@@ -153,23 +175,45 @@ class SlotController<T> implements ReactiveController {
   }
 
   public handleEvent(event: Event): void {
-    const slot = event.target as HTMLSlotElement;
-    const name = slot.name as T;
+    const name = (event.target as HTMLSlotElement).name as T;
     const isDefault = name === '';
     const observed = isDefault ? (DefaultSlot as T) : name;
 
-    if (!this._slots || this._slots.has(observed)) {
-      this._options.onChange?.call(this._host, {
-        slot: name,
-        isDefault,
-        isInitial: false,
-      });
+    if (this._slots && !this._slots.has(observed)) return;
+
+    const change = { slot: name, isDefault, isInitial: false };
+
+    if (this._hydrating) {
+      this._pendingChanges.push(change);
+    } else {
+      this._notifyChange(change);
+    }
+  }
+
+  private _notifyChange(change: SlotChangeCallbackParameters<T>): void {
+    this._options.onChange?.call(this._host, change);
+    this._host.requestUpdate();
+  }
+
+  /** Runs the waiting `slotchange` callbacks, and renders the slots a query missed. */
+  private _endHydration(): void {
+    for (const change of this._pendingChanges.splice(0)) {
+      this._notifyChange(change);
+    }
+
+    if (this._queryWithheld) {
       this._host.requestUpdate();
     }
   }
 
   /** @internal */
   public hostUpdated(): void {
+    if (this._hydrating) {
+      this._hydrating = false;
+      // Off the update cycle - avoids Lit's change-in-update warning.
+      queueMicrotask(() => this._endHydration());
+    }
+
     if (!this._initialized && this._options.initial) {
       this._initialized = true;
       this._options.onChange?.call(this._host, {
