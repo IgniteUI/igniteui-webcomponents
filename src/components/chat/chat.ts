@@ -19,7 +19,6 @@ import { registerComponent } from '#internals/definitions/register.js';
 import type { IgcChatResourceStrings } from '#internals/i18n/EN/chat.resources.js';
 import { chatResourcesMap } from '#internals/i18n/utils.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
-import { HydrationMixin } from '#internals/mixins/hydration.js';
 import { I18nMixin, type I18nMixinConfig } from '#internals/mixins/i18n.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { all } from '#themes/chat/themes/themes.js';
@@ -228,8 +227,9 @@ const i18n: I18nMixinConfig<
  * @csspart attachment-icon - Styles the icon of an attachment.
  * @csspart file-name - Styles the file name shown in an attachment.
  */
-export default class IgcChatComponent extends HydrationMixin(
-  I18nMixin(EventEmitterMixin<IgcChatComponentEventMap>(LitElement), i18n)
+export default class IgcChatComponent extends I18nMixin(
+  EventEmitterMixin<IgcChatComponentEventMap>(LitElement),
+  i18n
 ) {
   public static readonly tagName = 'igc-chat';
 
@@ -358,19 +358,8 @@ export default class IgcChatComponent extends HydrationMixin(
     addThemingController(this, all);
   }
 
-  /** The server render has no light DOM, so a hydrating render reports no slotted content either. */
   private _hasSlotted(...slots: SlotName[]): boolean {
-    return (
-      !this._hydrating &&
-      slots.some((slot) => this._slots.hasAssignedElements(slot))
-    );
-  }
-
-  protected override _onHydrated(): void {
-    // Only the slotted content differs from the server render.
-    if (this.childElementCount) {
-      super._onHydrated();
-    }
+    return slots.some((slot) => this._slots.hasAssignedElements(slot));
   }
 
   /** Slotted suggestions scroll the list, as new `options.suggestions` do. */
