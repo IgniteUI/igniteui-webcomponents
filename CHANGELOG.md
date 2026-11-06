@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Chat
   - `focusInput()` moves the focus to the text area, for example after the application sets `draftMessage`. It returns a promise. In a new chat, it waits for the first render, and in a server-rendered chat, for the render after the hydration. It does nothing when a custom `input` renderer replaces the text area. [#2474](https://github.com/IgniteUI/igniteui-webcomponents/pull/2474)
   - `igcNavigate` is emitted when a plain click or Enter opens a link in a message in the same tab, before the browser navigates. Cancel it to route on the client. The detail has the message and the absolute URL. The event does not bubble and is not composed, so listen to it on the chat.
+- #### Chip
+  - A host `aria-expanded`, `aria-haspopup` and `aria-controls` now go to the action button, so a chip that opens a menu or a filter panel can tell its state to assistive technology. A selectable chip keeps its `aria-pressed`.
 - #### Combo
   - The group header template gets `key`: the `groupKey` value that the items of the group share. The new `ComboGroupHeaderTemplate` and `ComboGroupHeaderContext` types describe the template and its context. Current templates continue to work. [#2462](https://github.com/IgniteUI/igniteui-webcomponents/issues/2462) [#2468](https://github.com/IgniteUI/igniteui-webcomponents/pull/2468)
 - #### Date time input, File input, Input, Mask input, Textarea
