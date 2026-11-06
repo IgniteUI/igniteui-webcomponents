@@ -15,6 +15,7 @@ import {
 import {
   bindComboDataSource,
   type ComboDataBinding,
+  type ComboDataRequest,
   type ComboDataSource,
 } from 'igniteui-webcomponents/extras';
 import { registerMaterialIcons } from './story-icons.js';
@@ -1469,20 +1470,22 @@ const europeanCities: City[] = (
 
 /** A fake server. It searches the names and returns new objects, as parsed JSON does. */
 async function fetchCities(
-  searchText: string,
-  skip: number,
-  top: number,
+  { searchText, caseSensitive, startIndex, count }: ComboDataRequest,
   latency: number
 ): Promise<{ items: City[]; total: number }> {
   await delay(latency);
 
-  const text = searchText.toLocaleLowerCase();
+  const fold = (text: string) =>
+    caseSensitive ? text : text.toLocaleLowerCase();
+  const text = fold(searchText);
   const results = europeanCities.filter(({ name }) =>
-    name.toLocaleLowerCase().includes(text)
+    fold(name).includes(text)
   );
 
   return {
-    items: results.slice(skip, skip + top).map((city) => ({ ...city })),
+    items: results
+      .slice(startIndex, startIndex + count)
+      .map((city) => ({ ...city })),
     total: results.length,
   };
 }
@@ -1493,7 +1496,7 @@ export const RemoteData: Story = {
     docs: {
       description: {
         story:
-          'A city picker that searches and pages on a server through `bindComboDataSource()` from `igniteui-webcomponents/extras`, twenty cities at a time. Open the list, scroll to its end to load more, then type to search. The list has a skeleton row for each city to load, so the scrollbar shows all the results, and a spinner takes the place of the toggle icon while a search waits or a page loads. Press End to jump to the last city: one request loads all the cities up to it. Select a few cities and search for others: the selection stays, also for the cities that the new results do not hold. The second combo has a slower server and styles its loading parts: `::part(loading)` sets the color and the width of the spinner, and `::part(placeholder)` sets the color of the skeleton rows. The server log shows each request and answer of both combos.',
+          'A city picker that searches and pages on a server through `bindComboDataSource()` from `igniteui-webcomponents/extras`, twenty cities at a time. Open the list, scroll to its end to load more, then type to search. The list has a skeleton row for each city to load, so the scrollbar shows all the results, and a spinner takes the place of the toggle icon while a search waits or a page loads. Press End to jump to the last city: one request loads all the cities up to it. Select a few cities and search for others: the selection stays, also for the cities that the new results do not hold. The case icon of the first combo makes the server search match the case, and loads the results again. The second combo has a slower server and styles its loading parts: `::part(loading)` sets the color and the width of the spinner, and `::part(placeholder)` sets the color of the skeleton rows. The server log shows each request and answer of both combos.',
       },
     },
   },
@@ -1511,18 +1514,16 @@ export const RemoteData: Story = {
       let binding: ComboDataBinding | undefined;
 
       const source: ComboDataSource<City> = {
-        load: async ({ searchText, startIndex, count }, signal) => {
-          const query = searchText ? `"${searchText}"` : 'all cities';
+        load: async (request, signal) => {
+          const { searchText, caseSensitive, startIndex, count } = request;
+          const query = searchText
+            ? `"${searchText}"${caseSensitive ? ' (match case)' : ''}`
+            : 'all cities';
           write(
             `${name}: request ${startIndex + 1}–${startIndex + count} of ${query}`
           );
 
-          const { items, total } = await fetchCities(
-            searchText,
-            startIndex,
-            count,
-            latency
-          );
+          const { items, total } = await fetchCities(request, latency);
 
           write(
             signal.aborted
@@ -1602,6 +1603,7 @@ export const RemoteData: Story = {
               label="Cities"
               placeholder="Pick cities"
               placeholder-search="Search cities"
+              case-sensitive-icon
               value-key="id"
               display-key="name"
               @igcChange=${onChange('Cities')}

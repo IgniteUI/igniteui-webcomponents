@@ -121,8 +121,8 @@ const i18n = {
  * @fires igcOpened - Emitted after the list of options opens on a user action.
  * @fires igcClosing - Emitted before the user closes the list of options. Cancelable. The `trigger` of the detail is the user action that closes the list.
  * @fires igcClosed - Emitted after the list of options closes on a user action. The `trigger` of the detail is the user action that closes the list.
- * @fires igcSearchInput - Emitted when the user changes the text of the search input, or of the main input in single selection mode, and when a selection, a blur or the clear button clears the text.
- * @fires igcDataRequest - Emitted in remote filtering mode when the user scrolls near the end of the options, or to a placeholder of `totalItemCount`. Append the requested items to `data`. It is not emitted again until the length of `data` or the search text changes, or the list opens again.
+ * @fires igcSearchInput - Emitted when the user changes the text of the search input, or of the main input in single selection mode, and when a selection, a blur or the clear button clears the text. Also emitted with the same text when the case-sensitive icon changes the case of a search text.
+ * @fires igcDataRequest - Emitted in remote filtering mode when the user scrolls near the end of the options, or to a placeholder of `totalItemCount`. Append the requested items to `data`. It is not emitted again until the length of `data`, the search text or its case changes, or the list opens again.
  *
  * @csspart label - The encapsulated text label of the combo.
  * @csspart input - The main input field of the combo.
@@ -456,7 +456,8 @@ export default class IgcComboComponent<
 
   /**
    * Whether the search input shows the icon that toggles case-sensitive
-   * filtering.
+   * filtering. In remote filtering mode, read `filteringOptions.caseSensitive`
+   * when you send the search to the server.
    * @attr case-sensitive-icon
    * @default false
    */
@@ -679,10 +680,16 @@ export default class IgcComboComponent<
       this._activeIndex = -1;
     }
 
+    // In remote mode, the filtering options do not change the records.
+    const filtering =
+      props.has('filteringOptions') &&
+      (this.filteringOptions.mode !== 'remote' ||
+        props.get('filteringOptions')?.mode !== 'remote');
+
     if (
       props.has('groupKey') ||
       props.has('groupSorting') ||
-      props.has('filteringOptions') ||
+      filtering ||
       props.has('totalItemCount') ||
       props.has('showSelectAll') ||
       props.has('groupSelection') ||
@@ -1185,6 +1192,12 @@ export default class IgcComboComponent<
     this.filteringOptions = {
       caseSensitive: !this.filteringOptions.caseSensitive,
     };
+
+    // Emit after the change, so a remote app reads the new case. An empty text
+    // matches all items in any case.
+    if (this._searchTerm) {
+      this._emitSearchInput(this._searchTerm);
+    }
   }
 
   //#endregion
@@ -1523,10 +1536,7 @@ export default class IgcComboComponent<
           @igcChange=${stopPropagation}
         >
           <igc-icon
-            slot=${bindIf(
-              this.caseSensitiveIcon && this.filteringOptions.mode !== 'remote',
-              'suffix'
-            )}
+            slot=${bindIf(this.caseSensitiveIcon, 'suffix')}
             name="case_sensitive"
             collection="default"
             part=${partMap({

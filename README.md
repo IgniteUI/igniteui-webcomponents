@@ -194,8 +194,8 @@ The condition names are `igc-theme-material`, `igc-theme-bootstrap`, `igc-theme-
 import { bindComboDataSource } from 'igniteui-webcomponents/extras';
 
 const binding = bindComboDataSource(combo, {
-  load: async ({ searchText, startIndex, count }, signal) => {
-    const query = `q=${encodeURIComponent(searchText)}&skip=${startIndex}&top=${count}`;
+  load: async ({ searchText, caseSensitive, startIndex, count }, signal) => {
+    const query = `q=${encodeURIComponent(searchText)}&case=${caseSensitive}&skip=${startIndex}&top=${count}`;
     const response = await fetch(`/api/cities?${query}`, { signal });
     const { items, total } = await response.json();
     return { items, totalCount: total };

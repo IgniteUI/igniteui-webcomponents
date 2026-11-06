@@ -77,6 +77,8 @@
 |      15 | 2026-10-28 | Text in STE; `aria-activedescendant` is on the listbox; the character keys filter only in single selection; the test scenarios follow the spec files |
 |      16 | 2026-10-30 | A new item or group header template re-renders the open list |
 |      17 | 2026-11-02 | A `focus()` call before the first render applies after the render |
+|      18 | 2026-11-06 | The select-all option sends one cancelable `igcChange`; a canceled one changes no item; a group has no entry in the selection; remote data: the application removes the selected items that the server deleted |
+|      19 | 2026-11-06 | Remote mode shows the case-sensitive icon; a case change reports the search text again |
 
 ## Overview
 
@@ -227,8 +229,10 @@ user action sends one cancelable `igcChange` before the selection changes. For t
 
 In multiple selection, `show-select-all` adds a "Select all" option at the top of the list:
 
-- A click or Space on it selects the items that the list shows. When all of them are selected, it deselects them. One
-  `igcChange` reports the items that change.
+- A click or Space on it selects the shown items that are not selected. When all the shown items are selected, it
+  deselects them. Before the change, it sends one cancelable `igcChange` with the items that change and the `selection`
+  or `deselection` type. When a handler cancels the event, no item changes. In confirm mode, it sends
+  `igcPendingChange` in place of `igcChange`.
 - Its checkbox is checked when all the shown items are selected, and indeterminate when only some of them are.
 - It is the first option in `aria-posinset` and `aria-setsize`. The list shows it only while the list shows items.
 - With `totalItemCount`, it acts only on the loaded items.
@@ -266,6 +270,10 @@ With a `groupKey`, the combo groups the options by that field. The items without
 
 In multiple selection, `group-selection` makes each group header an option. It works as the select-all option for the
 shown items of its group. The header keeps its text style, and the arrow keys and Home stop on it.
+
+A group has no entry in the selection: `value`, `selection`, the form value and `igcChange` hold only items. The header
+shows the state of its shown items at each render. So an item that the group shows later, after a change of `data` or
+of the search text, is not selected, and the header is no longer checked.
 
 ```html
 <igc-combo group-key="country" group-selection></igc-combo>
@@ -385,26 +393,33 @@ combo.addEventListener('igcDataRequest', ({ detail }) => {
 **Search text.** `igcSearchInput` comes in both modes:
 - on each change of the text in the search input, or in the main input of single selection, also a clear;
 - with an empty text, when a selection in single selection, a blur with no selection or the clear button clears the
-  text.
+  text;
+- with the same text, when the case-sensitive icon changes the case of a search text that is not empty.
 
 It does not come when a property change clears the text (`singleSelect`, `disableFiltering`), or with
 `disableFiltering`.
 
-In remote mode, the search input has no case-sensitive icon. In single selection, a text in the main input activates
-no option of the old results. So Enter does not select an option that the server did not return for the text.
+In remote mode, the server does the filtering, so the application reads `filteringOptions.caseSensitive` when it sends
+the search. The case-sensitive icon changes this option, and `igcSearchInput` then reports the text again. In single
+selection, a text in the main input activates no option of the old results. So Enter does not select an option that the
+server did not return for the text.
 
 **Page requests.** In remote mode, `igcDataRequest` comes when the open list shows one of the last five options of
 `data`.
 - `startIndex` is `data.length`, also with groups. `count` is the number of items to append.
-- It comes again only after a change of the length of `data`, a new first record, a new search text or a new opening.
-  So a source with no more items gets one request for each opening.
+- It comes again only after a change of the length of `data`, a new first record, a new search text or case, or a new
+  opening. So a source with no more items gets one request for each opening.
 - An empty `data` gets no request, because the application loads the first page of a search.
 - An answer is stale when `data.length` is not equal to its `startIndex`, for example after a new search.
-  **Selection.** A new `data` keeps the selection. A selected item that the new `data` does not hold stays in `value`,
-  in `selection` and in the input text. A later page or search that holds it shows it as selected again. `select()`
-  selects an object that `data` does not hold as it is. So the application can select the records of a saved filter
-  before their page loads. With `valueKey`, the combo finds an object by its key first. Without an argument,
-  `select()` selects all the items of `data` and keeps the other selected items.
+
+**Selection.** A new `data` keeps the selection. A selected item that the new `data` does not hold stays in `value`, in
+`selection` and in the input text. A later page or search that holds it shows it as selected again. The combo cannot
+know if the server deleted the item or only did not send its page. So when the application loads live data again, it
+must remove the selected items that the server no longer has, for example with `deselect()`.
+
+`select()` selects an object that `data` does not hold as it is. So the application can select the records of a saved
+filter before their page loads. With `valueKey`, the combo finds an object by its key first. Without an argument,
+`select()` selects all the items of `data` and keeps the other selected items.
 
 **Placeholders.** `totalItemCount` is the number of all the results, when the server knows it. In remote mode, the
 list adds a placeholder option after the groups for each result that a non-empty `data` does not hold. So the
@@ -430,8 +445,9 @@ toggle icon.
   on the toggle icon. Tab does not reach it while the list is open.
 - The busy state shows in the field, not in the list, so the list does not move.
 
-`bindComboDataSource()` from `igniteui-webcomponents/extras` does this flow with the public API. See the `RemoteData`
-story.
+`bindComboDataSource()` from `igniteui-webcomponents/extras` does this flow with the public API. Its `load()` gets the
+search text and `caseSensitive`. A new search text or a click on the case-sensitive icon loads the first page again.
+After a change of `filteringOptions.caseSensitive` in code, call `refresh()`. See the `RemoteData` story.
 
 ### Localization
 
@@ -493,7 +509,7 @@ In multiple selection, the search input filters the list while it has the focus.
 | singleSelect           | single-select              | Yes       | `boolean`                           | false             | Whether only one item can be selected. In this mode, the main input filters the list of options. |
 | filteringOptions       | filtering-options          | No        | `FilteringOptions<T>`               | -                 | Configures the filtering of the combo.                          |
 | disableFiltering       | disable-filtering          | No        | `boolean`                           | false             | Whether the filtering of the list of options is disabled. In multiple selection mode, it also hides the search input. |
-| caseSensitiveIcon      | case-sensitive-icon        | No        | `boolean`                           | false             | Whether the search input shows the icon that toggles case-sensitive filtering. |
+| caseSensitiveIcon      | case-sensitive-icon        | No        | `boolean`                           | false             | Whether the search input shows the icon that toggles case-sensitive filtering. In remote filtering mode, read `filteringOptions.caseSensitive` when you send the search to the server. |
 | disableClear           | disable-clear              | No        | `boolean`                           | false             | Whether the clear button is hidden.                             |
 | totalItemCount         | total-item-count           | No        | `number \| undefined`               | -                 | The number of all the items of a remote source, when the source knows it. In remote filtering mode, the list shows a placeholder for each item that `data` does not hold yet. |
 | loading                | loading                    | Yes       | `boolean`                           | false             | Whether the combo loads options. A spinner, which the `loading` slot can replace, then takes the place of the toggle icon, and an empty list shows a loading message instead of the empty message. |
@@ -580,8 +596,8 @@ type ComboGroupHeaderTemplate<T extends object> = (props: {
 | igcOpened  | false       | Emitted after the list of options opens on a user action. |
 | igcClosing | true        | Emitted before the user closes the list of options. Cancelable. The `trigger` of the detail is the user action that closes the list. |
 | igcClosed  | false       | Emitted after the list of options closes on a user action. The `trigger` of the detail is the user action that closes the list. |
-| igcSearchInput | false   | Emitted when the user changes the text of the search input, or of the main input in single selection mode, and when a selection, a blur or the clear button clears the text. |
-| igcDataRequest | false   | Emitted in remote filtering mode when the user scrolls near the end of the options, or to a placeholder of `totalItemCount`. Append the requested items to `data`. It is not emitted again until the length of `data` or the search text changes. |
+| igcSearchInput | false   | Emitted when the user changes the text of the search input, or of the main input in single selection mode, and when a selection, a blur or the clear button clears the text. Also emitted with the same text when the case-sensitive icon changes the case of a search text. |
+| igcDataRequest | false   | Emitted in remote filtering mode when the user scrolls near the end of the options, or to a placeholder of `totalItemCount`. Append the requested items to `data`. It is not emitted again until the length of `data`, the search text or its case changes, or the list opens again. |
 
 ```typescript
 interface IgcComboChangeEventArgs<T> {
@@ -774,8 +790,9 @@ state, the data requests and the selection model without a browser fixture.
 26. `igcSearchInput` reports each change of the search text in both modes, and of the main input in single selection,
     also when the text is cleared. It reports an empty text when a selection or a blur clears the text, and a blur
     also clears the search input. It does not come on a property change or with `disableFiltering`. The `igcInput` of
-    the inputs stays inside the combo. In remote mode, the case-sensitive icon hides, and an input in single selection
-    activates no option.
+    the inputs stays inside the combo. In remote mode, an input in single selection activates no option. The
+    case-sensitive icon shows in remote mode. In both modes, a click on it reports the search text again with the new
+    case, but does not report an empty text.
 27. The repro of issue 2519: a search that replaces `data` keeps the selected items in `value`, `selection` and the
     input text. A later selection adds to them, and the first page shows them as selected again with its own records.
 28. `deselect()` removes a selected item that `data` does not hold. `select()` selects an object that `data` does not

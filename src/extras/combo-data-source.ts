@@ -7,6 +7,8 @@ import type { VirtualScrollDataRequest } from '../components/virtualization/type
 export interface ComboDataRequest {
   /** The search text, trimmed. It is empty for all the items. */
   searchText: string;
+  /** Whether the search is case sensitive: `filteringOptions.caseSensitive` of the combo. */
+  caseSensitive: boolean;
   /** The index in the results of the first item to load. */
   startIndex: number;
   /**
@@ -16,6 +18,9 @@ export interface ComboDataRequest {
    */
   count: number;
 }
+
+/** A search, without its page. */
+type Search = Pick<ComboDataRequest, 'searchText' | 'caseSensitive'>;
 
 /** One page of the results of a search. */
 export interface ComboDataPage<T> {
@@ -85,8 +90,8 @@ export interface ComboDataBinding {
  * @example
  * ```ts
  * const binding = bindComboDataSource(combo, {
- *   load: async ({ searchText, startIndex, count }, signal) => {
- *     const query = `q=${encodeURIComponent(searchText)}&skip=${startIndex}&top=${count}`;
+ *   load: async ({ searchText, caseSensitive, startIndex, count }, signal) => {
+ *     const query = `q=${encodeURIComponent(searchText)}&case=${caseSensitive}&skip=${startIndex}&top=${count}`;
  *     const response = await fetch(`/api/cities?${query}`, { signal });
  *     const { items, total } = await response.json();
  *     return { items, totalCount: total };
@@ -109,10 +114,11 @@ export function bindComboDataSource<T extends object>(
   const { mode } = combo.filteringOptions;
   // The values asked for: in flight, or not found by the source.
   const requested = new Set<unknown>();
-  // The search of the next first page, and the search of the items in `data`.
-  let searchText = '';
-  let loadedSearchText = '';
-  // Whether the search text changed while the list was closed.
+  const caseOf = (): boolean => combo.filteringOptions.caseSensitive ?? false;
+  // The search of the latest first page, and the search of the items in `data`.
+  let latest: Search = { searchText: '', caseSensitive: caseOf() };
+  let loadedSearch = latest;
+  // Whether the search changed while the list was closed.
   let stale = false;
   let request: AbortController | undefined;
 
@@ -134,12 +140,16 @@ export function bindComboDataSource<T extends object>(
     const current = new AbortController();
     request = current;
     showBusy();
-    // A next page continues the search of the loaded items.
-    const text = startIndex ? loadedSearchText : searchText;
+    // A next page continues the loaded search. A first page reads the case now,
+    // so `refresh()` applies a case that the app set.
+    if (!startIndex) {
+      latest = { ...latest, caseSensitive: caseOf() };
+    }
+    const query = startIndex ? loadedSearch : latest;
 
     try {
       const page = await source.load(
-        { searchText: text, startIndex, count },
+        { ...query, startIndex, count },
         current.signal
       );
 
@@ -151,7 +161,7 @@ export function bindComboDataSource<T extends object>(
         return;
       }
 
-      loadedSearchText = text;
+      loadedSearch = query;
       combo.data = startIndex ? [...combo.data, ...page.items] : page.items;
 
       if (!startIndex || page.totalCount != null) {
@@ -235,13 +245,21 @@ export function bindComboDataSource<T extends object>(
   const handleSearchInput = ({
     detail,
   }: CustomEvent<IgcComboSearchInputEventArgs>): void => {
-    const text = detail.searchText.trim();
+    const next: Search = {
+      searchText: detail.searchText.trim(),
+      caseSensitive: caseOf(),
+    };
 
-    if (text === searchText) {
+    // The case-sensitive icon reports the same text with a new case. An empty
+    // text matches all items in any case.
+    if (
+      next.searchText === latest.searchText &&
+      (!next.searchText || next.caseSensitive === latest.caseSensitive)
+    ) {
       return;
     }
 
-    searchText = text;
+    latest = next;
     cancel();
 
     // A search in a closed list waits for the next opening.

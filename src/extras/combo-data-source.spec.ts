@@ -57,11 +57,13 @@ const PLACES: Place[] = [
 /** The results of a search, as new objects, as parsed JSON gives them. */
 function page({
   searchText,
+  caseSensitive,
   startIndex,
   count,
 }: ComboDataRequest): ComboDataPage<Place> {
+  const fold = (text: string) => (caseSensitive ? text : text.toLowerCase());
   const results = PLACES.filter(({ name }) =>
-    name.toLowerCase().includes(searchText.toLowerCase())
+    fold(name).includes(fold(searchText))
   );
 
   return {
@@ -163,7 +165,7 @@ describe('Combo data source binding', () => {
     await open();
 
     expect(requests.map(({ request }) => request)).to.eql([
-      { searchText: '', startIndex: 0, count: 10 },
+      { searchText: '', caseSensitive: false, startIndex: 0, count: 10 },
     ]);
 
     await answer(0);
@@ -307,6 +309,7 @@ describe('Combo data source binding', () => {
       clock.tick(1);
       expect(requests[1].request).to.eql({
         searchText: 'ber',
+        caseSensitive: false,
         startIndex: 0,
         count: 10,
       });
@@ -405,8 +408,125 @@ describe('Combo data source binding', () => {
 
       expect(requests.at(-1)!.request).to.eql({
         searchText: '',
+        caseSensitive: false,
         startIndex: 10,
         count: 20,
+      });
+    });
+
+    it('loads the first page again when the case-sensitive icon changes the case', async () => {
+      combo.caseSensitiveIcon = true;
+      bind({ debounce: 0 });
+      await open();
+      requests[0].answer();
+      await flush();
+
+      simulateInput(searchNative, { value: 'b' });
+      clock.tick(0);
+      requests.at(-1)!.answer();
+      await flush();
+
+      simulateClick(combo.renderRoot.querySelector('[part~="case-icon"]')!);
+      clock.tick(0);
+
+      expect(requests.at(-1)!.request).to.eql({
+        searchText: 'b',
+        caseSensitive: true,
+        startIndex: 0,
+        count: 10,
+      });
+
+      requests.at(-1)!.answer();
+      await flush();
+
+      expect(ids(combo.data)).to.eql(['DUB', 'ALB', 'LIS']);
+    });
+
+    it('pages with the case of the loaded search, and reads the case again on refresh', async () => {
+      combo.filteringOptions = { caseSensitive: true };
+      bind({ debounce: 0 });
+      await open();
+      requests[0].answer();
+      await flush();
+
+      combo.filteringOptions = { caseSensitive: false };
+      combo.dispatchEvent(
+        new CustomEvent('igcDataRequest', {
+          detail: { startIndex: 10, count: 20 },
+        })
+      );
+
+      expect(requests.at(-1)!.request.caseSensitive).to.be.true;
+
+      const refresh = binding.refresh();
+
+      expect(requests.at(-1)!.request.caseSensitive).to.be.false;
+
+      requests.at(-1)!.answer();
+      await refresh;
+    });
+
+    describe('after a load with a case that the app set', () => {
+      let icon: HTMLElement;
+
+      beforeEach(async () => {
+        combo.caseSensitiveIcon = true;
+        bind({ debounce: 0 });
+        await open();
+        requests[0].answer();
+        await flush();
+        icon = combo.renderRoot.querySelector('[part~="case-icon"]')!;
+      });
+
+      it('loads again when the icon gives back the case of refresh()', async () => {
+        simulateInput(searchNative, { value: 'b' });
+        clock.tick(0);
+        requests.at(-1)!.answer();
+        await flush();
+
+        combo.filteringOptions = { caseSensitive: true };
+        const refresh = binding.refresh();
+
+        expect(requests.at(-1)!.request.caseSensitive).to.be.true;
+
+        requests.at(-1)!.answer();
+        await refresh;
+        const before = requests.length;
+
+        simulateClick(icon);
+        clock.tick(0);
+
+        expect(requests).lengthOf(before + 1);
+        expect(requests.at(-1)!.request).to.include({
+          searchText: 'b',
+          caseSensitive: false,
+        });
+      });
+
+      it('loads again when the icon gives back the case of a debounced load', async () => {
+        simulateInput(searchNative, { value: 'b' });
+        combo.filteringOptions = { caseSensitive: true };
+        clock.tick(0);
+
+        expect(requests.at(-1)!.request.caseSensitive).to.be.true;
+
+        simulateClick(icon);
+        clock.tick(0);
+
+        expect(requests.at(-1)!.request).to.include({
+          searchText: 'b',
+          caseSensitive: false,
+        });
+      });
+
+      it('does not load again for a case change of a whitespace text', async () => {
+        const before = requests.length;
+
+        simulateInput(searchNative, { value: '  ' });
+        simulateClick(icon);
+        clock.tick(0);
+
+        expect(requests).lengthOf(before);
       });
     });
 
@@ -477,6 +597,7 @@ describe('Combo data source binding', () => {
 
     expect(requests.at(-1)!.request).to.eql({
       searchText: '',
+      caseSensitive: false,
       startIndex: 0,
       count: 10,
     });

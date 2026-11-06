@@ -215,17 +215,53 @@ describe('Combo', () => {
       expect(remote.value).to.be.empty;
     });
 
-    it('hides the case-sensitive icon in remote mode', async () => {
-      remote.caseSensitiveIcon = true;
-      await elementUpdated(remote);
+    describe('Case-sensitive icon', () => {
+      let icon: HTMLElement;
 
-      const icon = searchInput.querySelector('[part~="case-icon"]')!;
-      expect(icon.slot).to.be.empty;
+      beforeEach(async () => {
+        remote.caseSensitiveIcon = true;
+        await openComboPopover(remote);
+        icon = searchInput.querySelector('[part~="case-icon"]')!;
+      });
 
-      remote.filteringOptions = { mode: 'local' };
-      await elementUpdated(remote);
+      it('shows in remote mode', () => {
+        expect(icon.slot).to.equal('suffix');
+        expect(icon.checkVisibility()).to.be.true;
+      });
 
-      expect(icon.slot).to.equal('suffix');
+      it('reports the search text again with the new case', async () => {
+        simulateInput(searchNative, { value: 'ber' });
+        simulateClick(icon);
+        await comboStable(remote);
+
+        expect(remote.filteringOptions.caseSensitive).to.be.true;
+        expect(searchEvents()).to.eql(['ber', 'ber']);
+        // The server filters, so the options stay.
+        expect(items(remote)).lengthOf(10);
+
+        simulateClick(icon);
+        await elementUpdated(remote);
+
+        expect(remote.filteringOptions.caseSensitive).to.be.false;
+        expect(searchEvents()).to.eql(['ber', 'ber', 'ber']);
+      });
+
+      it('does not report an empty search text', async () => {
+        simulateClick(icon);
+        await elementUpdated(remote);
+
+        expect(remote.filteringOptions.caseSensitive).to.be.true;
+        expect(searchEvents()).to.be.empty;
+      });
+
+      it('reports the search text again in local mode', async () => {
+        remote.filteringOptions = { mode: 'local' };
+        simulateInput(searchNative, { value: 'ber' });
+        simulateClick(icon);
+        await elementUpdated(remote);
+
+        expect(searchEvents()).to.eql(['ber', 'ber']);
+      });
     });
 
     it('keeps the igcInput of the inputs inside', async () => {
