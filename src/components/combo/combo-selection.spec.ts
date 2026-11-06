@@ -1,7 +1,6 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { sendKeys } from '@web/test-runner-commands';
 import { type SinonSpy, spy } from 'sinon';
-import { internalsOf } from '#internals/controllers/internals.js';
 import {
   arrowDown,
   arrowUp,
@@ -13,6 +12,7 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
+  ariaOf,
   type City,
   cities,
   comboStable,
@@ -128,11 +128,6 @@ describe('Combo', () => {
     const selectAll = () =>
       list.querySelector<IgcComboItemComponent>('[part~="select-all"]');
 
-    const ariaOf = (item: Element) => ({
-      selected: internalsOf(item)?.getARIA('ariaSelected'),
-      checked: internalsOf(item)?.getARIA('ariaChecked') ?? null,
-    });
-
     // The cities whose name has an "o".
     const ids = ['BG01', 'BG02', 'US01', 'US02', 'US03'];
 
@@ -169,8 +164,7 @@ describe('Combo', () => {
 
       expect(first).to.equal(selectAll());
       expect(first!.textContent?.trim()).to.equal('Select all');
-      expect(ariaOf(first!)).to.eql({ selected: 'false', checked: null });
-      expect(first!.hasAttribute('aria-checked')).to.be.false;
+      expect(ariaOf(first!)).to.eql({ selected: null, checked: 'false' });
       expect(first!.getAttribute('aria-posinset')).to.equal('1');
       expect(option.getAttribute('aria-posinset')).to.equal('2');
       expect(option.getAttribute('aria-setsize')).to.equal(
@@ -203,12 +197,13 @@ describe('Combo', () => {
       await comboStable(combo);
 
       expect(combo.value).to.eql(ids);
-      expect(ariaOf(selectAll()!).selected).to.equal('true');
+      expect(ariaOf(selectAll()!).checked).to.equal('true');
 
       simulateClick(selectAll()!);
       await comboStable(combo);
 
       expect(combo.value).to.be.empty;
+      expect(ariaOf(selectAll()!).checked).to.equal('false');
       expect(changes()).to.eql([
         { newValue: ids, items: ids, type: 'selection' },
         { newValue: [], items: ids, type: 'deselection' },
@@ -234,7 +229,7 @@ describe('Combo', () => {
         'igc-combo::part(checkbox indeterminate), igc-combo::part(checkbox-indicator indeterminate) { scroll-margin-top: 7px; }';
       document.head.append(style);
 
-      expect(ariaOf(selectAll()!).selected).to.equal('false');
+      expect(ariaOf(selectAll()!).checked).to.equal('mixed');
       expect(checkbox.indeterminate).to.be.true;
       expect(marginOf(selectAll()!, 'control')).to.equal('7px');
       expect(marginOf(selectAll()!, 'indicator')).to.equal('7px');
@@ -246,7 +241,7 @@ describe('Combo', () => {
       await comboStable(combo);
 
       expect(changes().map(({ items }) => items)).to.eql([others]);
-      expect(ariaOf(selectAll()!).selected).to.equal('true');
+      expect(ariaOf(selectAll()!).checked).to.equal('true');
     });
 
     it('follows a new value while the list is open', async () => {
@@ -256,6 +251,7 @@ describe('Combo', () => {
       expect(
         selectAll()!.renderRoot.querySelector('igc-checkbox')!.indeterminate
       ).to.be.true;
+      expect(ariaOf(selectAll()!).checked).to.equal('mixed');
       expect(items(combo).filter((item) => item.selected)).lengthOf(1);
     });
 
@@ -352,7 +348,7 @@ describe('Combo', () => {
       expect(headers()).lengthOf(2);
       expect(bulgaria.localName).to.equal('igc-combo-item');
       expect(bulgaria.textContent?.trim()).to.equal('Bulgaria');
-      expect(internalsOf(bulgaria)?.getARIA('ariaSelected')).to.equal('false');
+      expect(ariaOf(bulgaria)).to.eql({ selected: null, checked: 'false' });
       expect(checkboxOf(bulgaria)).to.exist;
       // The two headers count as options.
       expect(bulgaria.getAttribute('aria-posinset')).to.equal('1');
@@ -419,9 +415,7 @@ describe('Combo', () => {
       await comboStable(combo);
 
       expect(combo.value).to.eql(['BG01', 'BG02']);
-      expect(internalsOf(headers()[0])?.getARIA('ariaSelected')).to.equal(
-        'true'
-      );
+      expect(ariaOf(headers()[0]).checked).to.equal('true');
       expect(combo.open).to.be.true;
 
       simulateClick(headers()[0]);
@@ -457,7 +451,7 @@ describe('Combo', () => {
       });
 
       expect(checkboxOf(bulgaria).indeterminate).to.be.true;
-      expect(internalsOf(bulgaria)?.getARIA('ariaSelected')).to.equal('false');
+      expect(ariaOf(bulgaria).checked).to.equal('mixed');
       expect(checkboxOf(unitedStates).indeterminate).to.be.false;
 
       simulateClick(bulgaria);
@@ -497,9 +491,10 @@ describe('Combo', () => {
       simulateClick(list.querySelector('[part~="select-all"]')!);
       await comboStable(combo);
 
-      expect(
-        headers().map((header) => internalsOf(header)?.getARIA('ariaSelected'))
-      ).to.eql(['true', 'true']);
+      expect(headers().map((header) => ariaOf(header).checked)).to.eql([
+        'true',
+        'true',
+      ]);
     });
 
     it('lists an item that data holds twice one time in igcChange', async () => {

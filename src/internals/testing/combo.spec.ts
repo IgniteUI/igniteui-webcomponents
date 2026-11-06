@@ -3,6 +3,7 @@ import { elementUpdated, nextFrame } from '@open-wc/testing';
 import type IgcComboItemComponent from '../../components/combo/combo-item.js';
 import type IgcComboComponent from '../../components/combo/combo.js';
 import type IgcVirtualScrollComponent from '../../components/virtualization/virtualization.js';
+import { internalsOf } from '../controllers/internals.js';
 
 /* The data and the helpers that the combo spec files share. */
 
@@ -74,6 +75,12 @@ export const items = <T extends object>(combo: IgcComboComponent<T>) =>
       .querySelector('igc-virtual-scroll')!
       .querySelectorAll('[part~="item"]'),
   ] as IgcComboItemComponent[];
+
+/** The selection state that an option reports to assistive technology. */
+export const ariaOf = (item: Element) => ({
+  selected: internalsOf(item)?.getARIA('ariaSelected'),
+  checked: internalsOf(item)?.getARIA('ariaChecked'),
+});
 
 export const layoutComplete = <T extends object>(combo: IgcComboComponent<T>) =>
   (

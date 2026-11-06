@@ -41,7 +41,8 @@ export default class IgcComboItemComponent extends LitElement {
 
   /**
    * Whether the checkbox of the item is indeterminate. The box and the
-   * indicator of the checkbox then also export the `indeterminate` part.
+   * indicator of the checkbox then also export the `indeterminate` part, and
+   * the item reports `aria-checked="mixed"` while it shows the checkbox.
    * @attr indeterminate
    * @default false
    */
@@ -49,7 +50,9 @@ export default class IgcComboItemComponent extends LitElement {
   public indeterminate = false;
 
   /**
-   * Determines whether the item hides its selection checkbox.
+   * Determines whether the item hides its selection checkbox. Without the
+   * checkbox, the item reports its selection in `aria-selected`, and with it,
+   * in `aria-checked`.
    * @attr hide-checkbox
    * @default false
    */
@@ -63,7 +66,14 @@ export default class IgcComboItemComponent extends LitElement {
     addInternalsController(this, {
       initialARIA: { role: 'option' },
       reflectRole: true,
-      aria: () => ({ ariaSelected: `${this.selected}` }),
+      // A listbox uses only one of the two states for all its options.
+      aria: () =>
+        this.hideCheckbox
+          ? { ariaSelected: `${this.selected}`, ariaChecked: null }
+          : {
+              ariaSelected: null,
+              ariaChecked: this.indeterminate ? 'mixed' : `${this.selected}`,
+            },
     });
   }
 

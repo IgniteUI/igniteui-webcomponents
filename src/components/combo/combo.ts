@@ -1404,11 +1404,7 @@ export default class IgcComboComponent<
     `;
   };
 
-  /**
-   * A toggle option: the select-all option or a group header option. Like the
-   * other options, it reports only `aria-selected`, so the mixed state of its
-   * items shows only on its checkbox.
-   */
+  /** A toggle option: the select-all option or a group header option. */
   private _renderToggleOption(
     { header, position }: ComboRecord<T>,
     index: number,

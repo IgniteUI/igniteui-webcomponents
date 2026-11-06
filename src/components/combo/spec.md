@@ -80,6 +80,7 @@
 |      18 | 2026-11-06 | The select-all option sends one cancelable `igcChange`; a canceled one changes no item; a group has no entry in the selection; remote data: the application removes the selected items that the server deleted |
 |      19 | 2026-11-06 | Remote mode shows the case-sensitive icon; a case change reports the search text again |
 |      20 | 2026-11-06 | With group selection, the items are one level in under their header, as in the tree |
+|      21 | 2026-11-06 | In multiple selection, the options report `aria-checked`; the select-all and group header options report `mixed` |
 
 ## Overview
 
@@ -775,7 +776,8 @@ state, the data requests and the selection model without a browser fixture.
 ### ARIA
 
 22. The anchor, the list, the items and the group headers have their roles and states, and the selection summary is
-    announced.
+    announced. The options report the selection in `aria-checked` in multiple selection and in `aria-selected` in
+    single selection.
 
 ### Host ARIA
 
@@ -830,11 +832,11 @@ state, the data requests and the selection model without a browser fixture.
 ### Select-all option
 
 34. The option comes first in multiple selection, before the group headers, with the "Select all" text and
-    `aria-selected`. It is the first option in `aria-posinset` and `aria-setsize`, and it passes the accessibility
+    `aria-checked`. It is the first option in `aria-posinset` and `aria-setsize`, and it passes the accessibility
     audit. It does not show in single selection or while the list shows no items.
 35. A click selects the shown items, and a second click deselects them, with one `igcChange` each. When only some
-    shown items are selected, the option is not selected, and its checkbox is indeterminate with the `indeterminate`
-    part. A click then selects only the other shown items. A canceled `igcChange` keeps the selection. A new `value`
+    shown items are selected, the option is not selected, its `aria-checked` is `mixed`, and its checkbox is
+    indeterminate with the `indeterminate` part. A click then selects only the other shown items. A canceled `igcChange` keeps the selection. A new `value`
     while the list is open updates the option and the items.
 36. Home reaches the option, Space toggles it, and Arrow Up from it moves to the search input. A change of
     `showSelectAll` clears the active option. A click on an item without a value selects only that item.
@@ -843,15 +845,15 @@ state, the data requests and the selection model without a browser fixture.
 
 ### Group selection
 
-38. In multiple selection, the group headers are options with a checkbox and `aria-selected`. They count in
+38. In multiple selection, the group headers are options with a checkbox and `aria-checked`. They count in
     `aria-posinset` and `aria-setsize`, and the accessibility audit passes. In single selection, they are headers
     again, and the items take their positions back.
 39. The items are one level in under the header options, and `--ig-combo-item-indent` changes the indent. The
     select-all option is at the level of the headers, and the list does not scroll sideways. Without group selection
     or `groupKey`, the items have no indent.
 40. A click on a header selects the shown items of its group, and a second click deselects them, with one `igcChange`
-    each. The list stays open. With some of them selected, the checkbox is indeterminate with the `indeterminate`
-    part, and a click selects only the others.
+    each. The list stays open. With some of them selected, `aria-checked` is `mixed`, the checkbox is
+    indeterminate with the `indeterminate` part, and a click selects only the others.
 41. Home and the arrow keys stop on the headers, Space toggles them, and Enter closes the list. A click on the
     select-all option also selects the headers. When group selection goes off, an active header stops being active.
 
@@ -920,11 +922,12 @@ The form-associated mixin gives the focus after the form checks and the rules of
 
 - The native input of the anchor has the `combobox` role, `aria-haspopup`, `aria-expanded` and `aria-controls`, as
   element references. The listbox has `aria-activedescendant`, because it has the focus during list navigation.
-- The list has the `listbox` role, and the items have the `option` role with `aria-selected`.
+- The list has the `listbox` role, and the items have the `option` role. In multiple selection, the options show a
+  checkbox and report its state in `aria-checked`. In single selection, they report `aria-selected`. A listbox uses
+  only one of the two states for all its options.
 - The group headers have no role. With `groupSelection`, they are options.
-- The select-all option is selected while all the shown items are selected. A group header option is selected while
-  all the shown items of its group are selected. They have no `aria-checked`, because a listbox uses only one of
-  `aria-selected` and `aria-checked` for all its options. So their mixed state shows only on their checkbox.
+- The `aria-checked` of the select-all option is `true` while all the shown items are selected, and `mixed` while
+  only some of them are selected. A group header option does the same for the shown items of its group.
 - In confirm mode, the selected state of the options is the pending selection, and the input shows `value`.
 - A placeholder of `totalItemCount` is a disabled option with the name "Loading".
 - While `loading` is set, a `progressbar` with the name "Loading" replaces the toggle icon. The listbox has no

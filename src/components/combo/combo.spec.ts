@@ -16,6 +16,7 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
+  ariaOf,
   type City,
   cities,
   comboStable,
@@ -2443,6 +2444,33 @@ describe('Combo', () => {
           `${rendered.length}`
         );
       }
+    });
+
+    it('reports the selection in aria-checked with checkboxes and in aria-selected without them', async () => {
+      const expectARIA = (checkboxes: boolean) => {
+        const rendered = items(combo);
+
+        expect(rendered.some((item) => item.selected)).to.be.true;
+        expect(rendered.map(ariaOf)).to.eql(
+          rendered.map(({ selected }) =>
+            checkboxes
+              ? { selected: null, checked: `${selected}` }
+              : { selected: `${selected}`, checked: null }
+          )
+        );
+      };
+
+      combo.value = ['BG01'];
+      await openComboPopover(combo);
+      expectARIA(true);
+
+      combo.singleSelect = true;
+      await comboStable(combo);
+      expectARIA(false);
+
+      combo.singleSelect = false;
+      await comboStable(combo);
+      expectARIA(true);
     });
 
     it('prefixes the option ids with the id of the combo', async () => {
