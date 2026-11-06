@@ -35,6 +35,7 @@ import {
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import {
+  simulateCancelableKeydown,
   simulateClick,
   simulateInput,
   simulateKeyboard,
@@ -1086,6 +1087,13 @@ describe('Date picker', () => {
       expect(eventSpy).calledTwice;
       expect(eventSpy).calledWith('igcClosing');
       expect(eventSpy).calledWith('igcClosed');
+    });
+
+    it('cancels Escape only while open', async () => {
+      expect(simulateCancelableKeydown(picker, escapeKey)).to.be.false;
+
+      await picker.show();
+      expect(simulateCancelableKeydown(picker, escapeKey)).to.be.true;
     });
 
     it('should open the calendar picker on Alt + ArrowDown and close it on Alt + ArrowUp - dropdown mode', async () => {

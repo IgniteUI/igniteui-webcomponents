@@ -181,6 +181,18 @@ export function simulateKeyboard(
   }
 }
 
+/** Dispatches a cancelable `keydown` of `key` and returns whether a listener canceled it. */
+export function simulateCancelableKeydown(node: Element, key: string): boolean {
+  return !node.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key,
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+    })
+  );
+}
+
 /** Simulates scrolling for a given element. */
 export async function simulateScroll(
   node: Element,
