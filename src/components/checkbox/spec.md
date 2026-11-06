@@ -55,6 +55,7 @@ This directory hosts two form-associated components that share the same base imp
 |       7 | 2026-10-23 | The checkbox and the switch make a stacking context, so the z-index of the indicator and the control does not compete with the layers of the page |
 |       8 | 2026-10-29 | Transition only the properties that change, so the checkbox and the switch hide at the same time as a hidden ancestor |
 |       9 | 2026-11-02 | `focus()` and `blur()` before the first render do not throw, and a `focus()` call applies after it                    |
+|      10 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown` does not submit the form |
 
 ## Overview
 
@@ -422,7 +423,8 @@ Driven by `createFormAssociatedTestBed`, in both suites.
 15. Is correctly reset on form reset, including after a `setAttribute` and after a `toggleAttribute` call
     (checkbox only).
 16. Syncs the native input checked state after a form reset (checkbox only).
-17. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid.
+17. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid or when a listener on
+    the host cancels the `keydown`.
 18. Reflects the disabled state of an ancestor `fieldset`.
 19. Fulfils the required constraint - including in combination with `indeterminate` for the checkbox - and a custom
     constraint.

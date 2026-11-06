@@ -1,4 +1,4 @@
-import { expect, fixture, html } from '@open-wc/testing';
+import { aTimeout, expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
 import { shiftKey, tabKey } from '../controllers/key-bindings.js';
 import { simulateKeyboard } from '../testing/simulate.spec.js';
@@ -7,6 +7,9 @@ import {
   focusTabStop,
   getEventOrigin,
   linkOpensElsewhere,
+  preventDefault,
+  runDefaultAction,
+  stopPropagation,
 } from './events.js';
 
 describe('Event utilities', () => {
@@ -129,6 +132,85 @@ describe('Event utilities', () => {
         empty.remove();
         base.remove();
       }
+    });
+  });
+
+  describe('runDefaultAction', () => {
+    let host: HTMLElement;
+    let inner: HTMLElement;
+    let calls: string[];
+
+    const dispatch = (init: EventInit): void => {
+      const event = new Event('custom', init);
+      inner.addEventListener(
+        'custom',
+        () => runDefaultAction(event, () => calls.push('action')),
+        { once: true }
+      );
+      inner.dispatchEvent(event);
+    };
+
+    beforeEach(() => {
+      host = document.createElement('div');
+      inner = document.createElement('span');
+      host.attachShadow({ mode: 'open' }).append(inner);
+      document.body.append(host);
+      calls = [];
+    });
+
+    afterEach(() => {
+      host.remove();
+    });
+
+    it('runs at once for an event that is not in dispatch', () => {
+      runDefaultAction(new Event('custom'), () => calls.push('action'));
+      expect(calls).to.eql(['action']);
+    });
+
+    it('runs after the listeners of the host and its ancestors, in the same dispatch', async () => {
+      host.addEventListener('custom', () => calls.push('host'));
+      document.body.addEventListener('custom', () => calls.push('body'), {
+        once: true,
+      });
+
+      dispatch({ bubbles: true, composed: true });
+      expect(calls).to.eql(['host', 'body', 'action']);
+
+      // The fallback timer is a no-op.
+      await aTimeout(0);
+      expect(calls).to.eql(['host', 'body', 'action']);
+    });
+
+    it('does not run when a listener cancels the event', async () => {
+      host.addEventListener('custom', preventDefault);
+
+      dispatch({ bubbles: true, composed: true, cancelable: true });
+      await aTimeout(0);
+      expect(calls).to.be.empty;
+    });
+
+    it('runs in the next task when a listener stops the event', async () => {
+      host.addEventListener('custom', stopPropagation, { once: true });
+
+      dispatch({ bubbles: true, composed: true });
+      expect(calls).to.be.empty;
+
+      // Only the same event runs it at the end of the path.
+      inner.dispatchEvent(
+        new Event('custom', { bubbles: true, composed: true })
+      );
+      expect(calls).to.be.empty;
+
+      await aTimeout(0);
+      expect(calls).to.eql(['action']);
+    });
+
+    it('runs in the next task for an event that does not bubble', async () => {
+      dispatch({ composed: true });
+      expect(calls).to.be.empty;
+
+      await aTimeout(0);
+      expect(calls).to.eql(['action']);
     });
   });
 

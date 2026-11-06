@@ -66,6 +66,7 @@
 |      10 | 2026-10-28 | Forward the host combobox state; the pickers project only `aria-haspopup`, `aria-required` and labels |
 |      11 | 2026-11-02 | A `focus()` call before the first render applies after the render                                     |
 |      12 | 2026-11-06 | A value set from code is not a user change, also while focused, so no `igcChange` reports it; `filled` only while the input shows more than the placeholder or the empty mask |
+|      13 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown`, or the <kbd>Enter</kbd> that commits an IME composition, does not submit the form |
 
 ## Overview
 
@@ -520,6 +521,8 @@ presses that the editor ignores, for example <kbd>Alt</kbd> + <kbd>Arrow Down</k
 - The value is submitted under `name`.
 - A form reset restores `defaultValue`, which is taken from the `value` attribute.
 - An invalid editor blocks submission, and pressing <kbd>Enter</kbd> submits the owning form only when it is valid.
+  A `keydown` listener on the host or an ancestor that calls `preventDefault()` stops the submission, as for a native
+  input. The <kbd>Enter</kbd> that commits an IME composition does not submit.
 
 As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
 the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and

@@ -6,7 +6,12 @@ import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { until } from 'lit/directives/until.js';
 import { chatUserInputContext } from '#internals/context.js';
-import { enterKey, isKey, tabKey } from '#internals/controllers/keys.js';
+import {
+  enterKey,
+  isComposingKey,
+  isKey,
+  tabKey,
+} from '#internals/controllers/keys.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HydrationMixin } from '#internals/mixins/hydration.js';
 import { partMap } from '#internals/part-map.js';
@@ -194,7 +199,7 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
       return;
     }
 
-    if (isKey(event, enterKey) && !event.shiftKey) {
+    if (isKey(event, enterKey) && !event.shiftKey && !isComposingKey(event)) {
       event.preventDefault();
       this._sendMessage();
 

@@ -67,6 +67,7 @@
 |      10 | 2026-10-29 | The `overlay` part is removed; the dialog backdrop is the native `::backdrop` of `dialog-base` |
 |      11 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
 |      12 | 2026-11-04 | In dialog mode, an open and a close play the animations of the dialog; a canceled `igcClosing` keeps the dialog open |
+|      13 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown`, or the <kbd>Enter</kbd> that commits an IME composition, does not submit the form |
 
 ## Overview
 
@@ -433,7 +434,9 @@ name the control.
 - The value is submitted under `name`.
 - A form reset restores `defaultValue`, taken from the `value` attribute, and clears the invalid styles of the inner
   editor.
-- An invalid picker blocks submission; pressing <kbd>Enter</kbd> submits the owning form only when it is valid.
+- An invalid picker blocks submission; pressing <kbd>Enter</kbd> submits the owning form only when it is valid. A
+  `keydown` listener on the host or an ancestor that calls `preventDefault()` stops the submission, as for a native
+  input. The <kbd>Enter</kbd> that commits an IME composition does not submit.
 
 As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
 the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
