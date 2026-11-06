@@ -1,6 +1,7 @@
 ---
+license: MIT
 name: create-new-component
-description: Create a new Lit web component following project conventions, including specification, component class, styles, tests, Storybook story, and exports
+description: "Scaffolds a new Lit web component in this repository by the project conventions: the spec.md specification, the component class, the SCSS themes, the tests, the Storybook story, the exports and the generated metadata. WHEN TO USE: adding a new igc- component to the library. WHEN NOT TO USE: adding a property to an existing component (use add-component-property), changing the styles or themes of an existing component (use update-component-styles), reviewing a pull request (use review-component-pr), or building an application with the components (use the public igniteui-wc-* skills)."
 metadata:
   internal: true
 ---
@@ -299,11 +300,11 @@ export { default as Igc[Name]Component } from './components/[name]/[name].js';
 Also add the component to the list in `src/internals/definitions/defineAllComponents.ts`.
 
 ```bash
-npm run public-api:update # custom-elements.json, and the new tag and export in public-api.json
+npm run public-api:update # custom-elements.json, the new tag and export in public-api.json, the new page in api-reference/
 npm run build:meta        # the story's `// region default` block
 ```
 
-Commit `public-api.json` with the component.
+Commit `public-api.json` and the new `api-reference/` page with the component.
 
 ### 9. Verify
 

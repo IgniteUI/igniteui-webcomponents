@@ -135,6 +135,20 @@ function* iterAncestors(node?: Node | null, flat = false): Generator<Element> {
   }
 }
 
+/** Returns `element` or its closest ancestor that matches `selector`, across shadow roots. */
+export function closestComposed(
+  element: Element,
+  selector: string
+): Element | null {
+  for (const ancestor of iterAncestors(element)) {
+    if (ancestor.matches(selector)) {
+      return ancestor;
+    }
+  }
+
+  return null;
+}
+
 /** Returns the root node (document or shadow root) of the given node. */
 export function getRoot(node: Node): Document | ShadowRoot {
   return node.getRootNode() as Document | ShadowRoot;
@@ -281,6 +295,30 @@ function isHiddenOrDisabled(element: Element): boolean {
   );
 }
 
+/**
+ * Whether Tab reaches `element` as a native radio button: the checked button
+ * of its group, or the first button when none is checked. Other elements pass.
+ */
+function isRadioGroupStop(element: HTMLElement): boolean {
+  if (
+    !(element instanceof HTMLInputElement) ||
+    element.type !== 'radio' ||
+    !element.name ||
+    element.checked
+  ) {
+    return true;
+  }
+
+  const root = element.getRootNode() as ParentNode;
+  const group = Array.from(
+    root.querySelectorAll<HTMLInputElement>(
+      `input[type="radio"][name="${CSS.escape(element.name)}"]`
+    )
+  ).filter((other) => other.form === element.form);
+
+  return group[0] === element && !group.some((other) => other.checked);
+}
+
 function isFocusable(element: HTMLElement): boolean {
   const editable =
     (element.getAttribute('contenteditable') ?? 'false') !== 'false';
@@ -289,7 +327,8 @@ function isFocusable(element: HTMLElement): boolean {
     (editable ||
       (element.matches(TABBABLE_SELECTOR) &&
         element.tabIndex > -1 &&
-        !element.matches(':disabled'))) &&
+        !element.matches(':disabled') &&
+        isRadioGroupStop(element))) &&
     element.checkVisibility({ visibilityProperty: true })
   );
 }

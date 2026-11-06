@@ -77,8 +77,9 @@ structural reference.
 - A parser, converter or serializer also gets property-based tests with fast-check in
   `[name].property.spec.ts`.
 - Run `npm run check`, `npm run lint` and `npm run test` before you open a PR. `npm run check`
-  also compares the public API with `public-api.json`. After an intended public API change,
-  run `npm run public-api:update` and commit the file.
+  also compares the public API with `public-api.json`, and the pages in `api-reference/` with
+  the manifest. After an intended public API change or a JSDoc change of the public API, run
+  `npm run public-api:update` and commit both.
 
 ## Resources
 

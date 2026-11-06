@@ -116,7 +116,7 @@ export abstract class IgcDateTimeInputBaseComponent<
    */
   protected _isEditing = false;
 
-  /** The value the input was focused with, used to detect a committed change. */
+  /** The `igcChange` baseline: the value at focus, at the last commit or from the last change from code. */
   protected _oldValue: T | null = null;
 
   /**
@@ -433,16 +433,39 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Applies a value assignment from code. Stops if the value is unchanged,
-   * cancels an edit, and renders the mask again from the new value.
+   * Applies a value set from code. A change becomes the `igcChange` baseline. An equal
+   * value keeps it, so a picker that renders its cleared value back still gets the clear.
    */
   protected _applyValue(value: T | null): void {
-    if (equal(this._formValue.value, value)) {
-      return;
+    if (this._setValue(value)) {
+      this._oldValue = value;
+    }
+  }
+
+  /** Sets the value, cancels an edit and renders the mask. Returns whether the value changed. */
+  private _setValue(value: T | null): boolean {
+    const previous = this._formValue.value;
+
+    if (equal(previous, value)) {
+      return false;
     }
 
     this._isEditing = false;
     this._formValue.setValueAndFormState(value);
+    this.requestUpdate('value', previous);
+    this._updateMaskDisplay();
+    return true;
+  }
+
+  /**
+   * Clears like `clear()`, but keeps the `igcChange` baseline, so the next commit reports the clear.
+   *
+   * @hidden @internal
+   */
+  public _clearAsEdit(): void {
+    this._isEditing = false;
+    this._maskedValue = '';
+    this._setValue(null);
     this._updateMaskDisplay();
   }
 
@@ -463,30 +486,19 @@ export abstract class IgcDateTimeInputBaseComponent<
     this._updateMaskDisplay();
   }
 
-  /**
-   * Commits the draft to the public value. Emits `igcChange` if the committed
-   * value differs from the value at focus.
-   */
+  /** Commits the draft to the public value. Emits `igcChange` if the value differs from `_oldValue`. */
   protected _commitEdit(): void {
     // Only a real edit is parsed again. A display-formatted mask parses wrong
     // under the input format.
     if (this._isEditing) {
       this._isEditing = false;
-
-      // A partial mask parses leniently. Only an empty result clears the value.
-      const parsed = this._parseMask(false);
-
-      if (parsed === null) {
-        this.clear();
-      } else {
-        this.value = parsed;
-      }
+      // A partial mask parses leniently; an empty one gives `null`.
+      this._setValue(this._parseMask(false));
     }
 
     // The assignments skip an unchanged value, so restore the display format here.
     this._updateMaskDisplay();
 
-    // `clear()` or a set while focused also moves the value. That is a commit too.
     if (!this.readOnly && !equal(this._oldValue, this.value)) {
       this._oldValue = this.value;
       this.emitEvent('igcChange', { detail: this.value });
@@ -609,10 +621,8 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   /** Clears the value and the text of the input. */
   public clear(): void {
-    this._isEditing = false;
-    this._maskedValue = '';
-    this.value = null;
-    this._updateMaskDisplay();
+    this._oldValue = null;
+    this._clearAsEdit();
   }
 
   //#endregion

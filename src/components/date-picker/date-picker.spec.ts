@@ -1690,6 +1690,22 @@ describe('Date picker', () => {
       });
     });
 
+    it('emits igcChange on blur after the clear icon and a render', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      picker.value = CalendarDay.today.native;
+      await elementUpdated(picker);
+
+      dateTimeInput.focus();
+      simulateClick(getIcon(pickerClearIcon));
+      // The render writes the cleared value back into the input.
+      await elementUpdated(picker);
+
+      dateTimeInput.blur();
+      await elementUpdated(picker);
+
+      expect(eventSpy).calledWith('igcChange', { detail: null });
+    });
+
     describe('Readonly state', () => {
       describe('Dropdown mode', () => {
         beforeEach(async () => {

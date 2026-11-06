@@ -68,6 +68,7 @@
 |      11 | 2026-10-28 | Forward the host combobox state, so a page can make the input a combobox over its own listbox |
 |      12 | 2026-10-29 | In the Indigo theme, the prefix and the suffix transition only their color and background, so a focused input hides at the same time as a hidden ancestor |
 |      13 | 2026-11-02 | A `focus()` call before the first render applies after the render                                                                                         |
+|      14 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown`, or the <kbd>Enter</kbd> that commits an IME composition, does not submit the form |
 
 ## Overview
 
@@ -334,7 +335,9 @@ validity flags and slot names.
   `form.checkValidity()` and `checkValidity()` do not move the focus.
 - As for a native control, the `invalid` event comes only from `checkValidity()`, `reportValidity()`, the same methods of
   the form, and a failed submit. The validation while the user edits the field or leaves it sends no event.
-- Pressing <kbd>Enter</kbd> inside the field submits the associated form.
+- Pressing <kbd>Enter</kbd> inside the field submits the associated form. A `keydown` listener on the host or an
+  ancestor that calls `preventDefault()` stops the submission, as for a native input. The <kbd>Enter</kbd> that commits
+  an IME composition does not submit.
 
 #### Text selection and numeric stepping
 
@@ -567,7 +570,10 @@ Driven by `createFormAssociatedTestBed`.
 ### defaultValue
 
 35. Form integration - correct initial state, correct submission, correct reset, submission on <kbd>Enter</kbd>, and
-    no submission on <kbd>Enter</kbd> while the value is invalid.
+    no submission on <kbd>Enter</kbd> while the value is invalid. A listener on the host or an ancestor that cancels the
+    `keydown` stops the submission, and a listener that stops the `keydown` delays it to the next task. The
+    <kbd>Enter</kbd> that commits an IME composition does not submit, also when it comes after `compositionend` with
+    the `keyCode` 229.
 36. Validation - a passing and a failing case for each of required, minlength, maxlength, pattern, email schema, url
     schema, min, max and step. A pattern that matches only a part of the value fails, a pattern compiles with the `v`
     flag, and an invalid pattern sets no constraint.

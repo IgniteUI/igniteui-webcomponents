@@ -96,6 +96,32 @@ describe('Date Time Input component', () => {
       expect(input.placeholder).to.equal('Pick a date');
     });
 
+    it('has the filled part only while the input shows more than the empty mask', async () => {
+      const isFilled = () =>
+        [element.renderRoot.querySelector('[part~="container"]')!, input].map(
+          (node) => node.part.contains('filled')
+        );
+
+      // Empty and unfocused: the input shows the placeholder.
+      expect(isFilled()).to.eql([false, false]);
+
+      element.focus();
+      await elementUpdated(element);
+      expect(isFilled()).to.eql([false, false]);
+
+      simulateInput(input, { value: '10', inputType: 'insertText' });
+      await elementUpdated(element);
+      expect(isFilled()).to.eql([true, true]);
+
+      element.blur();
+      await elementUpdated(element);
+      expect(isFilled()).to.eql([true, true]);
+
+      element.clear();
+      await elementUpdated(element);
+      expect(isFilled()).to.eql([false, false]);
+    });
+
     it('should update inputFormat with no value according to locale', async () => {
       element.locale = 'no';
       await elementUpdated(element);
@@ -401,6 +427,59 @@ describe('Date Time Input component', () => {
         await elementUpdated(element);
 
         expect(input.value).to.equal('01/02/1999');
+      });
+
+      it('does not report a value set from code while focused', async () => {
+        const eventSpy = spy(element, 'emitEvent');
+        element.focus();
+        await elementUpdated(element);
+
+        simulateInput(input, { value: '1010', inputType: 'insertText' });
+        element.value = new Date(1999, 0, 2);
+        await elementUpdated(element);
+
+        element.blur();
+        await elementUpdated(element);
+
+        expect(element.value?.getTime()).to.equal(
+          new Date(1999, 0, 2).getTime()
+        );
+        expect(eventSpy).not.calledWith('igcChange');
+      });
+
+      it('does not report clear() while focused', async () => {
+        const eventSpy = spy(element, 'emitEvent');
+        element.value = new Date(2020, 9, 10);
+        element.focus();
+        await elementUpdated(element);
+
+        element.clear();
+        element.blur();
+        await elementUpdated(element);
+
+        expect(element.value).to.be.null;
+        expect(eventSpy).not.calledWith('igcChange');
+      });
+
+      it('reports an edit against the last value set from code', async () => {
+        const eventSpy = spy(element, 'emitEvent');
+        element.focus();
+        element.value = new Date(1999, 0, 2);
+        await elementUpdated(element);
+
+        element.setSelectionRange(0, input.value.length);
+        simulateInput(input, { value: '10102020', inputType: 'insertText' });
+        await elementUpdated(element);
+
+        element.blur();
+        await elementUpdated(element);
+
+        const changes = eventSpy.withArgs('igcChange');
+
+        expect(changes).calledOnce;
+        expect(changes.firstCall.args[1]?.detail.getTime()).to.equal(
+          new Date(2020, 9, 10).getTime()
+        );
       });
 
       it('emptying the mask commits an empty value, not a defaults-filled date', async () => {

@@ -218,9 +218,9 @@ claude mcp add igniteui-theming -- npx -y igniteui-theming igniteui-theming-mcp
 
 ### Verifying Ignite UI Theming MCP
 
-Ask: *"Detect which Ignite UI platform my project uses."* Make sure that `detect_platform` analyzes `package.json` and returns `webcomponents`.
+Ask: *"Detect which Ignite UI platform my project uses."* Make sure that `theming_detect_platform` analyzes `package.json` and returns `webcomponents`.
 
-Tools that this skill uses: `detect_platform`, `create_palette`, `create_custom_palette`, `create_typography`, `create_elevations`, `create_theme`, `get_component_design_tokens`, `create_component_theme`, `get_color`, `get_chart_series_colors`, `set_size`, `set_spacing`, `set_roundness`, `read_resource`.
+Tools that this skill uses: `theming_detect_platform`, `theming_create_palette`, `theming_create_custom_palette`, `theming_create_typography`, `theming_create_elevations`, `theming_create_theme`, `theming_get_component_design_tokens`, `theming_create_component_theme`, `theming_get_color`, `theming_get_chart_series_colors`, `theming_set_size`, `theming_set_spacing`, `theming_set_roundness`, `theming_read_resource`.
 
 ---
 

@@ -1,4 +1,5 @@
 import {
+  aTimeout,
   elementUpdated,
   expect,
   fixture,
@@ -29,6 +30,7 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import { preventDefault, stopPropagation } from '#internals/utils/events.js';
 import { formatString } from '#internals/utils/strings.js';
 import { configureTheme } from '#theming/config.js';
 import { styles as material } from '../../styles/themes/light/material.css.js';
@@ -930,6 +932,36 @@ describe('Input component', () => {
         expect(
           spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
         ).to.be.false;
+      });
+
+      it('does not submit on Enter when a listener on the host or an ancestor cancels it', () => {
+        const input = spec.element.renderRoot.querySelector('input');
+
+        for (const target of [spec.element, spec.form]) {
+          target.addEventListener('keydown', preventDefault, { once: true });
+          expect(spec.submitWithEnter(input, { cancelable: true })).to.be.false;
+        }
+      });
+
+      it('submits on Enter in the next task when a listener stops it', async () => {
+        const submit = spy();
+        spec.form.addEventListener('submit', submit);
+        spec.element.addEventListener('keydown', stopPropagation);
+
+        expect(
+          spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+        ).to.be.false;
+
+        await aTimeout(0);
+        expect(submit.calledOnce).to.be.true;
+      });
+
+      it('does not submit on the Enter that commits an IME composition', () => {
+        const input = spec.element.renderRoot.querySelector('input');
+
+        for (const init of [{ isComposing: true }, { keyCode: 229 }]) {
+          expect(spec.submitWithEnter(input, init)).to.be.false;
+        }
       });
     });
 

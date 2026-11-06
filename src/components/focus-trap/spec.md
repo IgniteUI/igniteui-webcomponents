@@ -40,6 +40,7 @@
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-10-26 | Flat-tree order; only rendered elements |
+|       3 | 2026-11-06 | One element per native radio group      |
 
 ## Overview
 
@@ -117,7 +118,8 @@ The content is projected into the default slot. The trap is active unless `disab
 slot to its assigned elements, so a projected custom element contributes what it renders. Content-editable elements
 are part of the set as well. A hidden, inert, disabled or `aria-hidden` element leaves out its subtree. An element
 that is not rendered or has `visibility: hidden` is left out, and so is a host that delegates the focus: its inner
-controls are in the set instead.
+controls are in the set instead. From a group of native radio buttons, only the button that Tab reaches is in the
+set: the checked button, or the first button when none is checked.
 
 #### Moving the focus
 

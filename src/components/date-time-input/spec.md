@@ -65,6 +65,8 @@
 |       9 | 2026-10-23 | The date-time input makes a stacking context, so the z-index of the input and the container does not compete with the layers of the page |
 |      10 | 2026-10-28 | Forward the host combobox state; the pickers project only `aria-haspopup`, `aria-required` and labels |
 |      11 | 2026-11-02 | A `focus()` call before the first render applies after the render                                     |
+|      12 | 2026-11-06 | A value set from code is not a user change, also while focused, so no `igcChange` reports it; `filled` only while the input shows more than the placeholder or the empty mask |
+|      13 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown`, or the <kbd>Enter</kbd> that commits an IME composition, does not submit the form |
 
 ## Overview
 
@@ -92,7 +94,7 @@ Typical scenarios include:
 - **Locale awareness**: the default input and display formats are resolved from the active locale and follow runtime
   locale changes.
 - **Deferred value commit**: typing never mutates the public `value`; the edit is committed - and `igcChange`
-  emitted - when the editor is blurred.
+  emitted - when the editor is blurred. A value set from code emits nothing, also while the editor is focused.
 - **Partial input completion**: an incompletely filled mask is completed from defaults on commit, and a mask that
   cannot resolve to a date clears the value.
 - **Spinning**: increment or decrement the part under the caret through the keyboard, the mouse wheel, or the
@@ -116,7 +118,7 @@ Typical scenarios include:
 - The public `value` must only ever hold a committed value; intermediate editing state must not be observable
   through it.
 - The component must emit `igcInput` while the user is editing, and `igcChange` only when a committed value differs
-  from the value the editor was focused with.
+  from the value the editor was focused with or the last value set from code.
 - The component must complete partially entered dates on commit, and clear the value when the entered text cannot
   resolve to a valid date.
 - The component must correctly manage and report its validation state for `required`, `min`, `max` and custom
@@ -357,7 +359,7 @@ input.addEventListener('igcInput', ({ detail }) => {
 });
 
 // Observe committed values only. Fired on blur, and only when the committed
-// value differs from the one the editor was focused with.
+// value differs from the value at focus or the last value set from code.
 input.addEventListener('igcChange', ({ detail }) => {
   console.log('committed:', detail); // Date | null
 });
@@ -366,6 +368,10 @@ input.addEventListener('igcChange', ({ detail }) => {
 This is what makes the component safe to two-way bind: a host re-rendering with the value it last received from
 `igcChange` does not reset a half-typed mask. Assigning a genuinely different value while the user is typing still
 wins and replaces the mask.
+
+A value set from code is not a user change, so it emits no `igcChange`, also while the editor is focused. This
+applies to `value`, `clear()`, `stepUp()`, `stepDown()`, `setRangeText()` and a form reset. The next commit compares
+the edit of the user with that value.
 
 The value accepts a `Date`, an ISO string, or `null`:
 
@@ -384,7 +390,7 @@ Commit is lenient by design:
 - A **partially filled** mask is completed from defaults - year `2000`, month January, day `1` and zeroed time parts
   - so typing `07/__/____` commits as July 1st, 2000.
 - A mask that resolves to an **invalid** date - `02/30/2023`, `13/01/2023` - commits as `null`.
-- `clear()` empties the mask and sets the value to `null`.
+- `clear()` empties the mask and sets the value to `null`, with no `igcChange`.
 
 #### Constraint validation
 
@@ -515,6 +521,8 @@ presses that the editor ignores, for example <kbd>Alt</kbd> + <kbd>Arrow Down</k
 - The value is submitted under `name`.
 - A form reset restores `defaultValue`, which is taken from the `value` attribute.
 - An invalid editor blocks submission, and pressing <kbd>Enter</kbd> submits the owning form only when it is valid.
+  A `keydown` listener on the host or an ancestor that calls `preventDefault()` stops the submission, as for a native
+  input. The <kbd>Enter</kbd> that commits an IME composition does not submit.
 
 As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
 the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
@@ -635,7 +643,7 @@ enum DatePart {
 | Name      | Cancellable | Detail                | Description                                                |
 | --------- | ----------- | --------------------- | ---------------------------------------------------------- |
 | igcInput  | false       | `string \| undefined` | Emitted while the user edits. The detail is the typed date as an ISO string, or `undefined` while the mask is incomplete. |
-| igcChange | false       | `Date \| null`        | Emitted on blur, when the committed value differs from the one the editor was focused with. |
+| igcChange | false       | `Date \| null`        | Emitted on blur, when the committed value differs from the value at focus or the last value set from code. |
 
 ### Slots
 
@@ -662,7 +670,7 @@ enum DatePart {
 | `helper-text` | The helper text wrapper.                             |
 | `prefixed`    | Added to the container and the input when an element that is not hidden is in the prefix slot. |
 | `suffixed`    | Added to the container and the input when an element that is not hidden is in the suffix slot. |
-| `filled`      | Added to the container and the input unless the focused input shows only the empty mask. |
+| `filled`      | Added to the container and the input while the input shows more than the placeholder or the empty mask. |
 | `labelled`    | Added to the container in the material theme when the control has a label. |
 | `start`       | The wrapper of the prefix in the material theme.     |
 | `notch`       | The wrapper of the label in the material theme.      |
@@ -704,105 +712,109 @@ The component suite additionally reuses `createFormAssociatedTestBed`, `runValid
 3. Uses `inputFormat` when no `displayFormat` is defined - issue #1114 - and uses `displayFormat` when it is.
 4. Updates the mask according to the `inputFormat` on focus when a value is set - issue #1320.
 5. Switches correctly between the predefined date formats.
+6. Has the `filled` part only while the input shows more than the placeholder or the empty mask.
 
 ### Uncommitted edits
 
 Grouped as `Uncommitted edits - issue #1346` in the suite.
 
-6. Does not mutate `value` while typing, neither partially nor fully.
-7. Exposes the typed date through `igcInput` while `value` stays put.
-8. Re-applying an equal value while typing does not reset the mask.
-9. Emits a single `igcChange` on blur, carrying the committed value.
-10. A genuinely different value assigned while typing still wins.
-11. Emptying the mask commits an empty value, not a date filled from the defaults.
-12. Emits `igcChange` on blur after an incomplete mask has been parsed - issue #1695.
+7. Does not mutate `value` while typing, neither partially nor fully.
+8. Exposes the typed date through `igcInput` while `value` stays put.
+9. Re-applying an equal value while typing does not reset the mask.
+10. Emits a single `igcChange` on blur, carrying the committed value.
+11. A genuinely different value assigned while typing still wins.
+12. Does not report a value set from code while focused, also over a typed draft.
+13. Does not report `clear()` while focused.
+14. Reports an edit against the last value set from code.
+15. Emptying the mask commits an empty value, not a date filled from the defaults.
+16. Emits `igcChange` on blur after an incomplete mask has been parsed - issue #1695.
 
 ### Undo and redo
 
-13. Restores the mask without committing the value, and commits the restored draft on blur.
-14. Redoes a restored draft.
-15. Emits no `igcChange` when undone back to the value the editor was focused with.
-16. Keeps consecutive spins as separate steps.
-17. Emits `igcInput` when a step is restored.
-18. Does nothing while read-only, and drops the history when the input format changes.
+17. Restores the mask without committing the value, and commits the restored draft on blur.
+18. Redoes a restored draft.
+19. Emits no `igcChange` when undone back to the value the editor was focused with.
+20. Keeps consecutive spins as separate steps.
+21. Emits `igcInput` when a step is restored.
+22. Does nothing while read-only, and drops the history when the input format changes.
 
 ### Value and spinning
 
-19. Sets the value through the attribute, the property, a string property binding, and a time-only portion.
-20. `clear` empties the editor.
-21. `stepUp` and `stepDown` initialize a new date when the value is empty, and spin correctly otherwise.
-22. Respects `spinDelta` and `spinLoop`.
-23. `setRangeText` replaces the range and re-applies the mask.
-24. `selectionStart` and `selectionEnd` report the selection.
-25. Non-filled parts get their default value on blur; an invalid date sets a `null` value on blur; a complete input
+23. Sets the value through the attribute, the property, a string property binding, and a time-only portion.
+24. `clear` empties the editor.
+25. `stepUp` and `stepDown` initialize a new date when the value is empty, and spin correctly otherwise.
+26. Respects `spinDelta` and `spinLoop`.
+27. `setRangeText` replaces the range and re-applies the mask.
+28. `selectionStart` and `selectionEnd` report the selection.
+29. Non-filled parts get their default value on blur; an invalid date sets a `null` value on blur; a complete input
     commits its value.
 
 ### Keyboard, wheel and pointer
 
-26. <kbd>Arrow Up</kbd> and <kbd>Arrow Down</kbd> spin the focused part, and are a no-op while read-only.
-27. <kbd>Alt</kbd> + arrow presses are a no-op.
-28. The caret does not move away from the focused part when `stepUp` or `stepDown` are invoked, and the value
+30. <kbd>Arrow Up</kbd> and <kbd>Arrow Down</kbd> spin the focused part, and are a no-op while read-only.
+31. <kbd>Alt</kbd> + arrow presses are a no-op.
+32. The caret does not move away from the focused part when `stepUp` or `stepDown` are invoked, and the value
     updates at once, also for a part that is not in the input format and over a keyboard draft.
-29. <kbd>Arrow Left</kbd> and <kbd>Arrow Right</kbd> navigate to the beginning and the end of a date section.
-30. <kbd>Ctrl</kbd> + <kbd>;</kbd> sets the current date.
-31. The mouse wheel spins the part under the caret, and is a no-op without focus and while read-only.
-32. No change event is emitted while read-only.
-33. Drag enter, drag leave with and without focus, and drop behavior.
+33. <kbd>Arrow Left</kbd> and <kbd>Arrow Right</kbd> navigate to the beginning and the end of a date section.
+34. <kbd>Ctrl</kbd> + <kbd>;</kbd> sets the current date.
+35. The mouse wheel spins the part under the caret, and is a no-op without focus and while read-only.
+36. No change event is emitted while read-only.
+37. Drag enter, drag leave with and without focus, and drop behavior.
 
 ### Form integration
 
 Driven by `createFormAssociatedTestBed`.
 
-34. Is form associated, and is not associated on submit without a value.
-35. Is associated on submit.
-36. Is correctly reset on form reset, and resets to the new default after a `setAttribute` call.
-37. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid.
-38. Reflects the disabled state of an ancestor `fieldset`.
-39. Fulfils the required, min, max - both as dates and as string property bindings - and custom constraints.
+38. Is form associated, and is not associated on submit without a value.
+39. Is associated on submit.
+40. Is correctly reset on form reset, and resets to the new default after a `setAttribute` call.
+41. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid.
+42. Reflects the disabled state of an ancestor `fieldset`.
+43. Fulfils the required, min, max - both as dates and as string property bindings - and custom constraints.
 
 The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
 [input suite](../input/spec.md#form-validity-checks) covers them.
 
 ### defaultValue
 
-40. Form integration - correct initial state, correct submission and correct reset.
-41. Validation - fails and passes required validation, and fails and passes the min and max validation.
+44. Form integration - correct initial state, correct submission and correct reset.
+45. Validation - fails and passes required validation, and fails and passes the min and max validation.
 
 ### Validation message slots
 
 Generated by `runValidationContainerTests`.
 
-42. `value-missing`, `range-underflow`, `range-overflow`, `custom-error` and `invalid` render for their matching
+46. `value-missing`, `range-underflow`, `range-overflow`, `custom-error` and `invalid` render for their matching
     constraint.
 
 ### External label association
 
 Generated by `runExternalLabelAssociationTests`.
 
-43. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
+47. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
     `ariaLabelledByElements`, and clicking it focuses the control. A `label` added after the first render names the
     control from the first focus, an axe audit passes with only an external `label`, and the host `aria-labelledby` and
     `aria-label` follow the [naming order](../input/spec.md#naming-order).
 
 ### Date part and parser unit suites
 
-44. [`date-part.spec.ts`](./date-part.spec.ts) covers the part classes: the factory for every part type, `getValue`
+48. [`date-part.spec.ts`](./date-part.spec.ts) covers the part classes: the factory for every part type, `getValue`
     formatting per token, `validate` ranges - including the day validated against its month and year context - and
     `spin` for every part, with leap year adjustment, looping and clamping.
-45. [`datetime-mask-parser.spec.ts`](./datetime-mask-parser.spec.ts) covers the parser that turns a format into a
+49. [`datetime-mask-parser.spec.ts`](./datetime-mask-parser.spec.ts) covers the parser that turns a format into a
     mask and back, including the year format normalization with its case kept, a literal that is a mask flag, the
     century threshold, the calendar of years below 100, and UTF-16 part positions after an astral literal.
-46. [`datetime-mask-parser.property.spec.ts`](./datetime-mask-parser.property.spec.ts) checks, for generated formats:
+50. [`datetime-mask-parser.property.spec.ts`](./datetime-mask-parser.property.spec.ts) checks, for generated formats:
     the `formatDate` / `parseDate` round-trip for dates from year 0 to 9999, the two-digit year range, no throw or
     invalid date for any string, and the parts that tile the mask and agree with the format-level part queries.
 
 ### Host ARIA
 
-47. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+51. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal. `required` sets `aria-required`.
-48. The shared host combobox suite (`runHostComboboxTests`): the cases of the
+52. The shared host combobox suite (`runHostComboboxTests`): the cases of the
     [input](../input/spec.md#host-combobox-state), without the projection case.
-49. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+53. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
     the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with

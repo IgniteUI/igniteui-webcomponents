@@ -49,6 +49,30 @@ export function getElementFromPath(
 }
 
 /**
+ * Focuses the stop after the innermost of `stops` on the path of a Tab `event`,
+ * or the one before it with Shift. Returns whether the focus moved: `false`
+ * past either end, or when that stop does not take the focus.
+ */
+export function focusTabStop(
+  event: KeyboardEvent,
+  stops: readonly HTMLElement[]
+): boolean {
+  const current = getElementFromPath<HTMLElement>(
+    (element) => stops.includes(element as HTMLElement),
+    event
+  );
+
+  if (!current) {
+    return false;
+  }
+
+  const next = stops[stops.indexOf(current) + (event.shiftKey ? -1 : 1)];
+
+  next?.focus();
+  return !!next?.matches(':focus');
+}
+
+/**
  * Returns the element that started the event if it matches the selector.
  * Unlike `getElementFromPath`, a match deeper in the composed path does not count.
  */
@@ -60,6 +84,43 @@ export function getEventOrigin<T extends Element = Element>(
   return isElement(origin) && origin.matches(selector)
     ? (origin as T)
     : undefined;
+}
+
+/**
+ * Runs `action` like a native default action of `event`: after the listeners
+ * on its path, and only when none of them cancels the event. An event that
+ * stops on the way, or does not bubble, runs it in the next task.
+ */
+export function runDefaultAction(event: Event, action: () => void): void {
+  const end = event.composedPath().at(-1);
+  const controller = new AbortController();
+  const { signal } = controller;
+  const run = (): void => {
+    if (!signal.aborted) {
+      controller.abort();
+
+      if (!event.defaultPrevented) {
+        action();
+      }
+    }
+  };
+
+  // An event that is not in dispatch has no path.
+  if (!end) {
+    run();
+    return;
+  }
+
+  end.addEventListener(
+    event.type,
+    (other) => {
+      if (other === event) {
+        run();
+      }
+    },
+    { signal }
+  );
+  setTimeout(run);
 }
 
 /** Reusable event listener that stops the propagation of the event. */

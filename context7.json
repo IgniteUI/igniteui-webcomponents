@@ -1,0 +1,29 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "url": "https://context7.com/igniteui/igniteui-webcomponents",
+  "public_key": "pk_oQ3BIkeWQMfg8zpZvlx1J",
+  "projectTitle": "Ignite UI for Web Components",
+  "description": "Accessible, themable UI components built with Lit as standard custom elements. They work in any web framework or with no framework.",
+  "folders": ["api-reference", "skills", "src/components"],
+  "excludeFolders": ["skills/igniteui-wc-figma-to-app/references"],
+  "excludeFiles": [
+    "CHANGELOG.md",
+    "CODE_OF_CONDUCT.md",
+    "PRIVACY.md",
+    "ROADMAP.md",
+    "SECURITY.md",
+    "THREAT-MODEL.md"
+  ],
+  "rules": [
+    "Import the component classes from the igniteui-webcomponents package root and register them with defineComponents(), for example defineComponents(IgcButtonComponent). defineAllComponents() registers all components but makes the bundle larger.",
+    "Load one theme style sheet, for example igniteui-webcomponents/themes/light/bootstrap.css. The themes are material, bootstrap, indigo and fluent, each in light and dark. To change the theme at run time, call configureTheme('material', 'dark').",
+    "Tag names start with igc-, class names have the form Igc<Name>Component, and event names start with igc, for example igcChange. The Igc<Name>ComponentEventMap type gives the detail type of each event.",
+    "Set a property that has no attribute, such as an array or an object, in JavaScript. Only properties with an attribute can be set in HTML.",
+    "Form controls are form-associated custom elements. They submit their value with a form and support the Constraint Validation API, as native controls do.",
+    "Style a component through its CSS parts (::part()) and its CSS custom properties. Page selectors do not reach inside its shadow root.",
+    "In React, use the igniteui-react package, which wraps these components as React components with the Igr prefix, for example IgrButton.",
+    "In Angular, add CUSTOM_ELEMENTS_SCHEMA to the schemas of each standalone component or NgModule that uses igc- tags.",
+    "In Vue, set compilerOptions.isCustomElement to tag => tag.startsWith('igc-'), so that Vue does not resolve igc- tags as Vue components.",
+    "The charts are in igniteui-webcomponents-charts, the data grids in igniteui-webcomponents-grids and igniteui-grid-lite, and the dock manager in igniteui-dockmanager. They are not in igniteui-webcomponents."
+  ]
+}
