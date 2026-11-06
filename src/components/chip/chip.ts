@@ -4,7 +4,9 @@ import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import {
   ariaBindings,
+  HOST_DISCLOSURE_ATTRIBUTES,
   hostAria,
+  hostDisclosure,
 } from '#internals/controllers/aria-projection.js';
 import { addKeybindings } from '#internals/controllers/key-bindings.js';
 import {
@@ -63,7 +65,9 @@ const i18n = {
  */
 @shadowOptions({ delegatesFocus: true })
 export default class IgcChipComponent extends I18nMixin(
-  EventEmitterMixin<IgcChipComponentEventMap>(HostAriaMixin(LitElement)),
+  EventEmitterMixin<IgcChipComponentEventMap>(
+    HostAriaMixin(LitElement, HOST_DISCLOSURE_ATTRIBUTES)
+  ),
   i18n
 ) {
   public static readonly tagName = 'igc-chip';
@@ -231,7 +235,7 @@ export default class IgcChipComponent extends I18nMixin(
     return html`
       <div part="base">
         <button
-          ${ariaBindings(hostAria(this))}
+          ${ariaBindings({ ...hostAria(this), ...hostDisclosure(this) })}
           part="action"
           type="button"
           .ariaPressed=${ariaPressed}

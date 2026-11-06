@@ -196,6 +196,55 @@ describe('Chip', () => {
       await elementUpdated(chip);
       expect(action.hasAttribute('aria-pressed')).to.be.false;
     });
+
+    it('forwards the host disclosure state to the action control', async () => {
+      const container = await fixture<HTMLElement>(html`
+        <div>
+          <igc-chip selectable>Filters</igc-chip>
+          <div id="filters">Filter panel</div>
+        </div>
+      `);
+      const chip = container.querySelector<IgcChipComponent>('igc-chip')!;
+      const panel = container.querySelector('#filters');
+      const action = chip.renderRoot.querySelector('[part="action"]')!;
+
+      chip.setAttribute('aria-expanded', 'true');
+      chip.setAttribute('aria-haspopup', 'dialog');
+      chip.setAttribute('aria-controls', 'filters');
+      await elementUpdated(chip);
+      expect(action.getAttribute('aria-expanded')).to.equal('true');
+      expect(action.getAttribute('aria-haspopup')).to.equal('dialog');
+      expect(action.ariaControlsElements).to.eql([panel]);
+      expect(action.getAttribute('aria-pressed')).to.equal('false');
+      await expect(chip).to.be.accessible();
+
+      chip.ariaExpanded = 'false';
+      await elementUpdated(chip);
+      expect(action.getAttribute('aria-expanded')).to.equal('false');
+
+      chip.removeAttribute('aria-expanded');
+      chip.removeAttribute('aria-haspopup');
+      chip.removeAttribute('aria-controls');
+      await elementUpdated(chip);
+      expect(action.hasAttribute('aria-expanded')).to.be.false;
+      expect(action.hasAttribute('aria-haspopup')).to.be.false;
+      expect(action.hasAttribute('aria-controls')).to.be.false;
+    });
+
+    it('does not forward an empty disclosure state or an `aria-controls` without a target', async () => {
+      const chip = await fixture<IgcChipComponent>(
+        html`<igc-chip>Chip</igc-chip>`
+      );
+      const action = chip.renderRoot.querySelector('[part="action"]')!;
+
+      chip.setAttribute('aria-expanded', '');
+      chip.setAttribute('aria-haspopup', '');
+      chip.setAttribute('aria-controls', 'missing');
+      await elementUpdated(chip);
+      expect(action.hasAttribute('aria-expanded')).to.be.false;
+      expect(action.hasAttribute('aria-haspopup')).to.be.false;
+      expect(action.hasAttribute('aria-controls')).to.be.false;
+    });
   });
 
   describe('Rendering', () => {
