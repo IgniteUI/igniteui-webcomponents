@@ -17,7 +17,7 @@ $theme: $bootstrap;
 }
 
 [part~='svg'][part~='indeterminate']  {
-    animation-duration: .75s;
+    animation-duration: calc(.75s * var(--_motion-factor));
 
     [part~='fill'] {
         stroke-dashoffset: 60% !important;

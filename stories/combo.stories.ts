@@ -1382,8 +1382,6 @@ export const LazyLoading: Story = {
       <style>
         .cmb-flight igc-circular-progress {
           --ig-circular-bar-diameter: 1.25rem;
-
-          display: flex;
         }
       </style>
       <section

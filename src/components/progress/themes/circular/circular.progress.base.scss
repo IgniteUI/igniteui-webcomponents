@@ -2,12 +2,44 @@
 @use '../animations' as *;
 @use '../vars' as *;
 
+// With no line height, the box of the host is the ring. As a block, the ring
+// still follows text-align.
+:host {
+    display: inline-block;
+    line-height: 0;
+}
+
 [part~='base'] {
+    --_motion-factor: 1;
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-family: var(--ig-font-family), serif;
     position: relative;
+}
+
+// Slow the indeterminate animation, but do not stop it, so it still shows
+// activity. !important overrides the inline duration from `animationDuration`.
+@media (prefers-reduced-motion: reduce) {
+    [part~='base'] {
+        --_motion-factor: 3;
+        --_transition-duration: 0ms !important;
+    }
+}
+
+// Forced colors do not change SVG paint. `stop` also matches a custom gradient.
+@media (forced-colors: active) {
+    :host {
+        [part~='track'] {
+            stroke: GrayText;
+        }
+
+        stop {
+            stop-color: currentcolor;
+            stop-opacity: 1;
+        }
+    }
 }
 
 [part~='label'] {
@@ -85,11 +117,12 @@
 
 [part~='svg'][part~='indeterminate'] {
     transform-origin: 50% 50%;
-    animation: 3s linear 0s infinite $animation-direction none running igc-rotate-center;
+    animation: calc(3s * var(--_motion-factor)) linear 0s infinite $animation-direction none running igc-rotate-center;
 
     [part~='fill'] {
         stroke-dashoffset: calc(#{$circumference} * 2);
-        animation: igc-indeterminate-accordion 1.5s cubic-bezier(0, 0.085, 0.68, 0.53) $animation-direction infinite;
+        animation: igc-indeterminate-accordion calc(1.5s * var(--_motion-factor)) cubic-bezier(0, 0.085, 0.68, 0.53)
+            $animation-direction infinite;
     }
 }
 

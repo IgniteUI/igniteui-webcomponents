@@ -117,14 +117,11 @@
     visibility: hidden;
 }
 
-// The size of the icon, in the color of the text. A flex box has no line box
-// around the ring, so the ring is on the center of the icon.
+// The size of the icon, in the color of the text.
 [part~='loading'] {
     --ig-circular-bar-diameter: #{rem(16px)};
     --ig-circular-bar-fill-color-default: currentcolor;
     --ig-circular-bar-track-color: color-mix(in srgb, currentcolor 16%, transparent);
-
-    display: flex;
 }
 
 [part~='group-header'],
