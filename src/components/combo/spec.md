@@ -81,6 +81,7 @@
 |      19 | 2026-11-06 | Remote mode shows the case-sensitive icon; a case change reports the search text again |
 |      20 | 2026-11-06 | With group selection, the items are one level in under their header, as in the tree |
 |      21 | 2026-11-06 | In multiple selection, the options report `aria-checked`; the select-all and group header options report `mixed` |
+|      22 | 2026-11-06 | Escape from the slot content keeps the list open when the content handled the key |
 
 ## Overview
 
@@ -491,7 +492,7 @@ While the list is open:
 | <kbd>Space</kbd>                                    | Selects or deselects the active option. On the select-all option, or on a group header of `groupSelection`, it selects the shown items, or deselects them when all of them are selected. |
 | <kbd>Enter</kbd>                                    | On an active option, closes the list, and in single selection first selects the option. In confirm mode, it first applies the pending selection, also from the search input and without an active option, and a canceled `igcChange` keeps the list open. On a placeholder, it does nothing. |
 | <kbd>Home</kbd> / <kbd>End</kbd>                    | Activates the first or the last option. |
-| <kbd>Escape</kbd>                                   | Closes the list. The combo keeps the focus. In confirm mode, it drops the pending selection. |
+| <kbd>Escape</kbd>                                   | Closes the list. The combo keeps the focus. In confirm mode, it drops the pending selection. When a slotted control handled the key (`defaultPrevented`), the list stays open. |
 | <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd>  | Moves through the search input (the main input in single selection), the header content, the list, the empty content and the footer content. In confirm mode, the footer content is Cancel and Apply. Past the first or the last stop, or without focusable slot content, it closes the list and moves the focus on. |
 
 In multiple selection, the search input filters the list while it has the focus.
@@ -755,7 +756,8 @@ state, the data requests and the selection model without a browser fixture.
     the main input. A focus outside the list stays where it is.
 16. Without focusable slot content, Tab from the search input closes the list and moves the focus on.
 17. Tab moves out of a stop inside another stop. It does not stop on a host that delegates the focus or on a control
-    with `visibility: hidden`. A slotted control that handles Tab keeps it.
+    with `visibility: hidden`. A slotted control that handles Tab keeps it. Escape from a slotted control closes the
+    list and focuses the main input, unless the control handles the key.
 
 ### Close trigger
 

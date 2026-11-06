@@ -24,6 +24,7 @@ import {
 } from '#internals/testing/form-testbed.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
 import {
+  simulateCancelableKeydown,
   simulateClick,
   simulateInput,
   simulateKeyboard,
@@ -871,6 +872,13 @@ describe('Date range picker - single input', () => {
     });
 
     describe('Interactions with the inputs and the open and clear buttons', () => {
+      it('cancels Escape only while open', async () => {
+        expect(simulateCancelableKeydown(picker, escapeKey)).to.be.false;
+
+        await picker.show();
+        expect(simulateCancelableKeydown(picker, escapeKey)).to.be.true;
+      });
+
       it('should not open the picker when clicking the input in dropdown mode', async () => {
         const input = picker.renderRoot.querySelector(
           IgcDateRangeInputComponent.tagName

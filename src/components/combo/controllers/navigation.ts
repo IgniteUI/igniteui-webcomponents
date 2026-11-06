@@ -15,6 +15,7 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { getFocusableElements } from '#internals/utils/dom.js';
+import { focusTabStop } from '#internals/utils/events.js';
 import type IgcInputComponent from '../../input/input.js';
 import type IgcVirtualScrollComponent from '../../virtualization/virtualization.js';
 import type IgcComboComponent from '../combo.js';
@@ -88,7 +89,11 @@ export class ComboNavigationController<T extends object> {
     const bindingDefaults: KeyBindingOptions = { repeat: true };
     const skip = (): boolean => this._host.disabled;
 
-    addKeybindings(this._host, { skip, bindingDefaults })
+    // A slotted control that handles Tab or Escape keeps the key.
+    addKeybindings(this._host, {
+      skip: (_, event) => skip() || event.defaultPrevented,
+      bindingDefaults,
+    })
       .set(tabKey, this._onTab, { preventDefault: false })
       .set([shiftKey, tabKey], this._onTab, {
         preventDefault: false,
@@ -166,24 +171,11 @@ export class ComboNavigationController<T extends object> {
   };
 
   private _onTab = async (event: KeyboardEvent): Promise<void> => {
-    // A slotted control that handles Tab prevents the default action.
-    if (!this._host.open || event.defaultPrevented) {
+    if (!this._host.open) {
       return;
     }
 
-    const stops = this._tabStops();
-    // The innermost stop on the path, for a stop inside another stop.
-    const focused = event
-      .composedPath()
-      .find((node) => stops.includes(node as HTMLElement));
-    const current = stops.indexOf(focused as HTMLElement);
-    const next =
-      current > -1 ? stops[current + (event.shiftKey ? -1 : 1)] : undefined;
-
-    next?.focus();
-
-    // A stop that does not take the focus leaves Tab to the browser.
-    if (next?.matches(':focus')) {
+    if (focusTabStop(event, this._tabStops())) {
       event.preventDefault();
       return;
     }

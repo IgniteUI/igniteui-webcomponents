@@ -68,6 +68,7 @@
 |      11 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
 |      12 | 2026-11-04 | In dialog mode, an open and a close play the animations of the dialog; a canceled `igcClosing` keeps the dialog open |
 |      13 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown`, or the <kbd>Enter</kbd> that commits an IME composition, does not submit the form |
+|      14 | 2026-11-06 | A closed picker does not cancel <kbd>Escape</kbd> |
 
 ## Overview
 
@@ -484,7 +485,7 @@ As long as focus is within any part of the date picker:
 
 | Key combination   | Result                                                                                                 |
 | ----------------- | ------------------------------------------------------------------------------------------------------ |
-| <kbd>Escape</kbd> | If the picker is shown, closes it and returns focus to the input part. Otherwise it is a no-op.        |
+| <kbd>Escape</kbd> | If the picker is shown, closes it and returns focus to the input part. Otherwise it is a no-op and does not cancel the key. |
 
 When the input part of the component is focused:
 
@@ -714,7 +715,7 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 
 ### Interactions
 
-34. <kbd>Escape</kbd> closes an open picker.
+34. <kbd>Escape</kbd> closes an open picker. A closed picker does not cancel <kbd>Escape</kbd>.
 35. <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> opens and <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> closes the picker, in both
     modes.
 36. A value set from code, also with `stepUp`, is not reported as a change on a later blur, in the editable,

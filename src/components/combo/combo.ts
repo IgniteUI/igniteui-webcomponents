@@ -1,6 +1,6 @@
 import { ComboResourceStringsEN } from 'igniteui-i18n-core';
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -233,6 +233,9 @@ export default class IgcComboComponent<
   private readonly _searchRef = createRef<IgcInputComponent>();
 
   private readonly _listRef = createRef<IgcVirtualScrollComponent>();
+
+  @query('[part="list-wrapper"]', true)
+  private readonly _popup!: HTMLDivElement | null;
 
   private readonly _state = new DataState<T>(this);
   private readonly _selection = new ComboSelection<T>(this);
@@ -661,17 +664,6 @@ export default class IgcComboComponent<
       this._state.updateLocale();
     }
 
-    // The closed list is inert, so the focus in it would fall to the
-    // document. Move it to the input first. A server render has no render root.
-    if (
-      props.has('open') &&
-      !this.open &&
-      this.hasUpdated &&
-      this.renderRoot.querySelector('[part="list-wrapper"]:focus-within')
-    ) {
-      this.focus({ preventScroll: true });
-    }
-
     // The select-all option moves the other records by one, and an active
     // group header can stop being an option.
     if (
@@ -717,6 +709,10 @@ export default class IgcComboComponent<
 
   protected override updated(props: PropertyValues<this>): void {
     this._dataRequests.afterUpdate(props, this._listRef.value);
+  }
+
+  protected override _popupElement(): Element | null {
+    return this._popup;
   }
 
   //#endregion

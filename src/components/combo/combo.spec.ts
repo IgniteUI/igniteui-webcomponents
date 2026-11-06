@@ -2134,6 +2134,25 @@ describe('Combo', () => {
       expectFocus(header);
     });
 
+    it('closes the list with Escape from a slotted control and focuses the input', async () => {
+      header.focus();
+
+      await sendKeys({ press: escapeKey });
+      await elementUpdated(combo);
+
+      expectFocus(input, false);
+    });
+
+    it('leaves an Escape that a slotted control handles to that control', async () => {
+      header.addEventListener('keydown', (event) => event.preventDefault());
+      header.focus();
+
+      await sendKeys({ press: escapeKey });
+      await elementUpdated(combo);
+
+      expectFocus(header);
+    });
+
     it('closes the list with Tab from the search input when the slots have no focusable content', async () => {
       header.remove();
       cancel.disabled = true;
