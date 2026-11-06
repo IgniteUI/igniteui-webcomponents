@@ -55,6 +55,7 @@
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                     |
 |       5 | 2026-10-23 | The group makes a stacking context, so the z-index of its buttons does not compete with the layers of the page |
 |       6 | 2026-10-29 | Transition only the properties that change, so the toggle buttons hide at the same time as a hidden ancestor |
+|       7 | 2026-11-02 | A `focus()` call before the first render applies after the render                                            |
 
 ## Overview
 
@@ -163,8 +164,9 @@ disabled state of each button when it is lifted.
 
 #### The toggle button
 
-`igc-toggle-button` exposes `value`, `selected` and `disabled`, plus `focus()`, `blur()` and `click()`. It renders
-projected content, and takes its vertical sizing from the group or from a CSS variable set on it.
+`igc-toggle-button` exposes `value`, `selected` and `disabled`, plus `focus()`, `blur()` and `click()`. A `focus()`
+call before the first render applies after the render. It renders projected content, and takes its vertical sizing
+from the group or from a CSS variable set on it.
 
 ### Localization
 
@@ -330,6 +332,11 @@ Emitted by `igc-button-group`, for user interaction only.
 
 36. The toggle buttons hide at the same time as a hidden ancestor in each theme, at rest and after a focus or a hover:
     no element transitions `visibility` or sets it to `visible`.
+37. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after a toggle button connects
+    focuses the same element as a call after the first render. `blur()`, a later `focus()` on another element and a
+    removal that lasts until the render cancel the call, but a move in the same task keeps it. After the render,
+    `focus()` takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component
+    with `disabled` set does not cancel an earlier call on another element.
 
 ### Not covered by the suite
 

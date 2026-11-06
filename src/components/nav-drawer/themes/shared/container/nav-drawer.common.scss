@@ -34,7 +34,7 @@ $background: var-get($theme, 'background') !default;
 }
 
 :host(:not([position='relative'])) {
-    [part='base']:open {
+    [part='base'] {
         box-shadow: var-get($theme, 'elevation');
     }
 }

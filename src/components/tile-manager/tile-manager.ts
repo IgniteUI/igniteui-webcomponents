@@ -1,4 +1,9 @@
-import { html, LitElement } from 'lit';
+import {
+  html,
+  LitElement,
+  type PropertyValues,
+  type TemplateResult,
+} from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
@@ -11,6 +16,7 @@ import {
   createMutationController,
   type MutationControllerParams,
 } from '#internals/controllers/mutation-observer.js';
+import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
 import {
   coercedProperty,
   type CoercedPropertyConfig,
@@ -25,7 +31,8 @@ import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { TileManagerDragMode, TileManagerResizeMode } from '../types.js';
 import { createTilesState } from './position.js';
-import { createSerializer } from './serializer.js';
+import { parseTrackSizes } from './resize-util.js';
+import { applyLayout, serializeTiles } from './serializer.js';
 import { styles as shared } from './themes/shared/tile-manager.common.css.js';
 import { styles } from './themes/tile-manager.base.css.js';
 import IgcTileComponent from './tile.js';
@@ -42,11 +49,10 @@ import IgcTileComponent from './tile.js';
  * @csspart maximized-tile - Indicates that a tile is maximized. Applies to `base`.
  *
  * @cssproperty --column-count - The number of columns for the tile manager, a whole number. The `column-count` attribute sets this variable. Without the attribute, set it in a style sheet, for example in a media query. `initial` gives the responsive layout.
- * @cssproperty --min-col-width - The minimum size of the columns in the tile-manager. The `min-column-width` attribute sets this variable.
- * @cssproperty --min-row-height - The minimum size of the rows in the tile-manager. The `min-row-height` attribute sets this variable.
+ * @cssproperty --min-col-width - The minimum width of the columns. The `min-column-width` attribute sets this variable.
+ * @cssproperty --min-row-height - The minimum height of the rows. The `min-row-height` attribute sets this variable.
  * @cssproperty --grid-gap - The gap size of the underlying CSS grid container. The `gap` attribute sets this variable.
  * @cssproperty --grid-padding - The padding of the underlying CSS grid container. Defaults to 1.25rem. The default resize handles stand out of the tiles by at most this value, and stay inside with more than one value.
- *
  */
 @shadowOptions({ slotAssignment: 'manual' })
 export default class IgcTileManagerComponent extends LitElement {
@@ -54,13 +60,13 @@ export default class IgcTileManagerComponent extends LitElement {
   public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcTileManagerComponent, IgcTileComponent);
   }
 
   // #region Internal state
 
-  private _internalStyles: StyleInfo = {};
+  private readonly _internalStyles: StyleInfo = {};
 
   @state()
   private _hasMaximizedTile = false;
@@ -78,12 +84,28 @@ export default class IgcTileManagerComponent extends LitElement {
     };
   }
 
-  private _serializer = createSerializer(this);
-  private _tilesState = createTilesState(this);
+  private readonly _tilesState = createTilesState(this);
 
-  private _grid = createRef<HTMLElement>();
+  private readonly _grid = createRef<HTMLElement>();
+
+  /** A hidden grid with the columns of the grid, which `_fitColumns` counts. */
+  private readonly _trackProbe = createRef<HTMLElement>();
+
+  /** A cell of one column in the probe. It resizes when the columns change. */
+  private readonly _trackCell = createRef<HTMLElement>();
 
   private readonly _localeController = addLocaleController(this);
+
+  private readonly _columnObserver = addResizeObserverController(this, {
+    callback: this._scheduleFitColumns,
+    target: null,
+    requestUpdate: false,
+  });
+
+  private _fitFrame = 0;
+
+  /** The count that the last change replaced, until the frame of the change ends. */
+  private _replacedColumns = 0;
 
   // #endregion
 
@@ -94,12 +116,6 @@ export default class IgcTileManagerComponent extends LitElement {
     grid: this._grid,
     setMaximizedState: () => this._setMaximizedState(),
   };
-
-  private readonly _context = addContextProvider(this, {
-    context: tileManagerContext,
-    watch: ['dragMode', 'resizeMode'],
-    value: () => this._managerContext,
-  });
 
   // #endregion
 
@@ -124,7 +140,8 @@ export default class IgcTileManagerComponent extends LitElement {
   public dragMode: TileManagerDragMode = 'none';
 
   /**
-   * The number of columns. A value of 0 or less gives a responsive layout.
+   * The number of columns, truncated to a whole number. A value of 0 or less
+   * gives a responsive layout.
    *
    * @attr column-count
    * @default 0
@@ -132,7 +149,7 @@ export default class IgcTileManagerComponent extends LitElement {
   @property({ type: Number, attribute: 'column-count' })
   @coercedProperty(
     IgcTileManagerComponent._styleVariable<number>('--column-count', (value) =>
-      Math.max(0, asNumber(value))
+      Math.max(0, Math.trunc(asNumber(value)))
     )
   )
   public columnCount = 0;
@@ -179,22 +196,23 @@ export default class IgcTileManagerComponent extends LitElement {
     return this._localeController.locale;
   }
 
-  /**
-   * The tiles, sorted by their position in the layout.
-   * @property
-   */
-  public get tiles() {
+  /** The tiles, sorted by their position in the layout. */
+  public get tiles(): IgcTileComponent[] {
     return this._tilesState.tiles;
   }
 
   // #endregion
 
-  // #region Internal API
-
   constructor() {
     super();
 
     addThemingController(this, all);
+
+    addContextProvider(this, {
+      context: tileManagerContext,
+      watch: ['dragMode', 'resizeMode'],
+      value: () => this._managerContext,
+    });
 
     createMutationController(this, {
       callback: this._observerCallback,
@@ -205,11 +223,71 @@ export default class IgcTileManagerComponent extends LitElement {
     });
   }
 
-  protected override firstUpdated() {
+  protected override firstUpdated(): void {
     this._tilesState.assignPositions();
     this._tilesState.assignTiles();
     this._updateMaximizedTile();
-    this._context.publish();
+    // The probe resizes with the width, and a column cell with the columns.
+    // The grid also resizes with the tiles.
+    this._columnObserver.observe(this._trackProbe.value!);
+    this._columnObserver.observe(this._trackCell.value!);
+    this._fitColumns();
+  }
+
+  protected override updated(properties: PropertyValues<this>): void {
+    // The observer would count a frame later.
+    if (
+      properties.has('columnCount') ||
+      properties.has('minColumnWidth') ||
+      properties.has('gap')
+    ) {
+      this._fitColumns();
+    }
+  }
+
+  // #region Internal API
+
+  /**
+   * Counts the columns in the next frame. A new count can change the page
+   * height, and a page scrollbar then changes the width. A count in the
+   * observer callback would start a `ResizeObserver` loop.
+   */
+  private _scheduleFitColumns(): void {
+    // In the frame of a count change, a resize comes from that change.
+    const replaced = this._replacedColumns;
+
+    cancelAnimationFrame(this._fitFrame);
+    this._fitFrame = requestAnimationFrame(() => this._fitColumns(replaced));
+  }
+
+  /**
+   * Sets `--_fit-columns` to the column count of the grid, so the tiles fit
+   * their spans and starts into it. Else a span past the last column adds
+   * columns of 0px.
+   */
+  private _fitColumns(replaced = 0): void {
+    // A hidden grid has no layout. The observer counts again when it shows.
+    if (!this._trackCell.value?.getClientRects().length) {
+      return;
+    }
+
+    const { gridTemplateColumns } = getComputedStyle(this._trackProbe.value!);
+    const count = parseTrackSizes(gridTemplateColumns).length;
+    const { style } = this._grid.value!;
+    const current = asNumber(style.getPropertyValue('--_fit-columns'));
+
+    // A lower count can remove the page scrollbar, which adds a column. The old
+    // count then brings the scrollbar back, and the two alternate every frame.
+    // A count below the columns adds no columns of 0px, so it stays.
+    if (count === current || (count === replaced && count > current)) {
+      return;
+    }
+
+    style.setProperty('--_fit-columns', `${count}`);
+    this._replacedColumns = current;
+    requestAnimationFrame(() => {
+      this._replacedColumns = 0;
+    });
   }
 
   private _updateMaximizedTile(): void {
@@ -218,7 +296,7 @@ export default class IgcTileManagerComponent extends LitElement {
 
   private _observerCallback({
     changes: { added, removed },
-  }: MutationControllerParams<IgcTileComponent>) {
+  }: MutationControllerParams<IgcTileComponent>): void {
     if (!(added.length || removed.length)) {
       return;
     }
@@ -256,12 +334,12 @@ export default class IgcTileManagerComponent extends LitElement {
 
   /** Returns the tile properties as a JSON string. The content of the tiles is not saved. */
   public saveLayout(): string {
-    return this._serializer.saveAsJSON();
+    return serializeTiles(this.tiles);
   }
 
-  /** Applies a layout from `saveLayout` to the tiles with the same `id`. */
+  /** Applies a layout from `saveLayout` to the tiles with the same `id`. Invalid JSON throws. */
   public loadLayout(data: string): void {
-    if (this._serializer.loadFromJSON(data)) {
+    if (applyLayout(this.tiles, data)) {
       this._tilesState.normalize();
       this._tilesState.replaceLayout();
     }
@@ -271,7 +349,7 @@ export default class IgcTileManagerComponent extends LitElement {
 
   // #region Rendering
 
-  protected override render() {
+  protected override render(): TemplateResult {
     const parts = {
       base: true,
       'maximized-tile': this._hasMaximizedTile,
@@ -283,6 +361,10 @@ export default class IgcTileManagerComponent extends LitElement {
         style=${styleMap(this._internalStyles)}
         part=${partMap(parts)}
       >
+        <div ${ref(this._trackProbe)} id="track-probe">
+          <div></div>
+          <div ${ref(this._trackCell)}></div>
+        </div>
         <slot></slot>
       </div>
     `;

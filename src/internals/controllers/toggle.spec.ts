@@ -36,6 +36,7 @@ describe('Toggle controller', () => {
   let customTag: string;
   let supersedeTag: string;
   let syncTag: string;
+  let syncResultTag: string;
   let instance: ToggleTestElement;
 
   before(() => {
@@ -59,6 +60,20 @@ describe('Toggle controller', () => {
             this.open = open;
             await this.updateComplete;
             return this.transitionResult;
+          },
+        });
+      }
+    );
+
+    // Mirrors the date picker dropdown: a transition without an await.
+    syncResultTag = defineCE(
+      class extends ToggleTestBase {
+        public open = false;
+
+        public readonly toggleController = addToggleController(this, {
+          transition: (open) => {
+            this.open = open;
+            return true;
           },
         });
       }
@@ -266,6 +281,17 @@ describe('Toggle controller', () => {
 
       await instance.toggleController.show(true);
       expect(opening.firstCall.firstArg.detail).to.equal(instance);
+    });
+
+    it('should send the "-ed" event as the default transition does for a synchronous result', async () => {
+      const host = await createInstance<ToggleHostElement>(syncResultTag);
+      const opened = spy();
+      host.addEventListener('igcOpened', opened);
+
+      host.toggleController.show(true);
+      await host.updateComplete;
+
+      expect(opened.calledOnce).to.be.true;
     });
   });
 

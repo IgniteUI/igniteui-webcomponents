@@ -17,23 +17,25 @@ export interface ToggleEventMap {
 }
 
 /**
- * A toggleable host must give the `emitEvent` method of the event-emitter
- * mixin. Extend {@link ../mixins/event-emitter.js#EventEmitterMixin | EventEmitterMixin}
+ * A host that asks for the events must give the `emitEvent` method of the
+ * event-emitter mixin. Extend {@link ../mixins/event-emitter.js#EventEmitterMixin | EventEmitterMixin}
  * with the {@link ToggleEventMap}, or with a subset of it.
  */
 type ToggleHost = LitElement & {
   open: boolean;
-  emitEvent(name: string, init?: CustomEventInit): boolean;
+  emitEvent?(name: string, init?: CustomEventInit): boolean;
 };
 
 /**
  * Runs the visual transition of the host to the requested state: it sets
- * `open`, plays the animations and awaits the updates. A resolved `false`
+ * `open`, plays the animations and awaits the updates. A `false` result
  * marks the transition as superseded, and the controller then sends no
  * trailing "-ed" event.
  *
  * The signal aborts when a newer request or a direct change of `open` takes
  * over. The transition then stops its animations and changes no more state.
+ * A transition that refuses without a change of `open` stays the request in
+ * flight until its promise settles.
  */
 type ToggleTransitionFunction = (
   open: boolean,
@@ -96,7 +98,7 @@ class ToggleController {
     const host = this._host;
 
     // Omit the falsy keys, so `emitEvent` applies its own defaults.
-    return host.emitEvent(name, {
+    return host.emitEvent!(name, {
       ...(cancelable && { cancelable }),
       ...(detail !== undefined && { detail }),
     });
@@ -131,13 +133,14 @@ class ToggleController {
     const generation = this._supersede();
     this._pending = open;
 
-    // The default transition is synchronous, so the state change and the
-    // `updateComplete` subscription stay in the microtask of the caller.
+    // A synchronous transition, as the default one, keeps the state change and
+    // the `updateComplete` subscription in the microtask of the caller.
     let completed = true;
     try {
       if (transition) {
+        const result = transition.call(host, open, this._abort.signal);
         completed =
-          (await transition.call(host, open, this._abort.signal)) !== false;
+          (result instanceof Promise ? await result : result) !== false;
       } else {
         host.open = open;
       }
@@ -171,6 +174,11 @@ class ToggleController {
    * The methods below are not `async`. An `async` wrapper adds microtask
    * hops, which shift the timing of caller code against `updateComplete`.
    */
+
+  /** Whether a `hide()` is in flight. */
+  public get closing(): boolean {
+    return this._pending === false;
+  }
 
   /**
    * Opens the host, and sends `igcOpening` and `igcOpened` when `emitEvents`

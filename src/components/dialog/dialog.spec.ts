@@ -13,8 +13,10 @@ import { DialogResourceStringsBG } from 'igniteui-i18n-resources';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
+  allowMotion,
   finishAnimationsFor,
-  getAnimationsFor,
+  finishBackdrop,
+  getBackdropAnimations,
   isFocused,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
@@ -299,6 +301,8 @@ describe('Dialog', () => {
   });
 
   describe('Interrupted transitions', () => {
+    allowMotion();
+
     beforeEach(async () => {
       dialog = await fixture<IgcDialogComponent>(
         html`<igc-dialog></igc-dialog>`
@@ -340,6 +344,110 @@ describe('Dialog', () => {
       expect(await opening).to.be.false;
       expect(await closing).to.be.true;
       expect(dialog.open).to.be.false;
+    });
+
+    it('does not show the dialog when a hide follows a show in the same task', async () => {
+      dialog.show();
+      const closing = dialog.hide();
+      await elementUpdated(dialog);
+
+      expect(dialog.renderRoot.querySelector('dialog')!.open).to.be.false;
+      expect(await closing).to.be.true;
+    });
+
+    /** Appends the dialog again and checks that `show()` opens it as a modal. */
+    const expectModalAfterAppend = async (parent: Element) => {
+      parent.append(dialog);
+      await elementUpdated(dialog);
+
+      const native = dialog.renderRoot.querySelector('dialog')!;
+      expect(dialog.open).to.be.false;
+      expect(native.open).to.be.false;
+
+      expect(await dialog.show()).to.be.true;
+      expect(native.matches(':modal')).to.be.true;
+    };
+
+    it('closes when it is removed during the exit', async () => {
+      await dialog.show();
+      const parent = dialog.parentElement!;
+
+      const closing = dialog.hide();
+      dialog.remove();
+
+      expect(await closing).to.be.true;
+      await elementUpdated(dialog);
+      await expectModalAfterAppend(parent);
+    });
+
+    it('closes when `open` is set to `false` while it is not in the document', async () => {
+      await dialog.show();
+      const parent = dialog.parentElement!;
+
+      dialog.remove();
+      dialog.open = false;
+      await elementUpdated(dialog);
+
+      await expectModalAfterAppend(parent);
+    });
+
+    it('opens as a modal on `open = false` out of the document, an append and `show()` in one task', async () => {
+      await dialog.show();
+      const native = dialog.renderRoot.querySelector('dialog')!;
+      const parent = dialog.parentElement!;
+
+      dialog.remove();
+      dialog.open = false;
+      parent.append(dialog);
+      expect(native.open).to.be.false;
+
+      expect(await dialog.show()).to.be.true;
+      expect(native.matches(':modal')).to.be.true;
+    });
+
+    it('stays modal when it is appended again during the exit', async () => {
+      await dialog.show();
+      const native = dialog.renderRoot.querySelector('dialog')!;
+      const parent = dialog.parentElement!;
+
+      const closing = dialog.hide();
+      dialog.remove();
+      parent.append(dialog);
+
+      expect(native.matches(':modal')).to.be.true;
+      expect(await dialog.show()).to.be.true;
+      expect(await closing).to.be.false;
+      expect(native.matches(':modal')).to.be.true;
+    });
+
+    it('stays modal when it moves while open', async () => {
+      await dialog.show();
+      const native = dialog.renderRoot.querySelector('dialog')!;
+
+      dialog.parentElement!.append(dialog);
+      expect(native.matches(':modal')).to.be.true;
+
+      dialog.open = false;
+      dialog.open = true;
+      await elementUpdated(dialog);
+      expect(native.matches(':modal')).to.be.true;
+
+      expect(await dialog.hide()).to.be.true;
+      expect(native.open).to.be.false;
+    });
+
+    it('opens as a modal on an append after `show()` while it is not in the document', async () => {
+      const native = dialog.renderRoot.querySelector('dialog')!;
+      const parent = dialog.parentElement!;
+
+      dialog.remove();
+      const opening = dialog.show();
+      await elementUpdated(dialog);
+      expect(native.open).to.be.false;
+
+      parent.append(dialog);
+      expect(native.matches(':modal')).to.be.true;
+      expect(await opening).to.be.true;
     });
   });
 
@@ -505,19 +613,7 @@ describe('Dialog', () => {
   });
 
   describe('Backdrop', () => {
-    function backdropAnimations(): Animation[] {
-      return getAnimationsFor(dialog.shadowRoot!).filter(
-        ({ effect }) =>
-          (effect as KeyframeEffect).pseudoElement === '::backdrop'
-      );
-    }
-
-    function finishBackdrop(): CSSStyleDeclaration {
-      for (const animation of backdropAnimations()) {
-        animation.finish();
-      }
-      return getComputedStyle(nativeDialog, '::backdrop');
-    }
+    allowMotion();
 
     beforeEach(async () => {
       dialog = await fixture<IgcDialogComponent>(
@@ -534,7 +630,7 @@ describe('Dialog', () => {
     it('paints the native backdrop with the theme color', async () => {
       await openThroughProperty();
 
-      const { backgroundColor, opacity } = finishBackdrop();
+      const { backgroundColor, opacity } = finishBackdrop(nativeDialog);
       expect(backgroundColor).to.equal('rgb(1, 2, 3)');
       expect(opacity).to.equal('1');
     });
@@ -545,7 +641,7 @@ describe('Dialog', () => {
       const closing = dialog.hide();
       await elementUpdated(dialog);
 
-      expect(finishBackdrop().opacity).to.equal('0');
+      expect(finishBackdrop(nativeDialog).opacity).to.equal('0');
       expect(nativeDialog.matches(':modal')).to.be.true;
 
       finishAnimationsFor(dialog.shadowRoot!);
@@ -562,7 +658,7 @@ describe('Dialog', () => {
       finishAnimationsFor(dialog.shadowRoot!);
 
       expect(await reopening).to.be.true;
-      expect(finishBackdrop().opacity).to.equal('1');
+      expect(finishBackdrop(nativeDialog).opacity).to.equal('1');
     });
 
     it('fades the backdrop out when a hide follows an interrupted exit', async () => {
@@ -574,7 +670,7 @@ describe('Dialog', () => {
       // The interrupted first exit settles on the next frame.
       await nextFrame();
 
-      expect(finishBackdrop().opacity).to.equal('0');
+      expect(finishBackdrop(nativeDialog).opacity).to.equal('0');
 
       finishAnimationsFor(dialog.shadowRoot!);
       expect(await closing).to.be.true;
@@ -599,7 +695,7 @@ describe('Dialog', () => {
       expect(await closing).to.be.false;
       expect(dialog.open).to.be.true;
       expect(nativeDialog.matches(':modal')).to.be.true;
-      expect(finishBackdrop().opacity).to.equal('1');
+      expect(finishBackdrop(nativeDialog).opacity).to.equal('1');
     });
 
     it('cancels the exit when `open` goes to `false` and back to `true` in one task', async () => {
@@ -614,7 +710,7 @@ describe('Dialog', () => {
       expect(await closing).to.be.false;
       expect(dialog.open).to.be.true;
       expect(nativeDialog.matches(':modal')).to.be.true;
-      expect(finishBackdrop().opacity).to.equal('1');
+      expect(finishBackdrop(nativeDialog).opacity).to.equal('1');
     });
 
     it('closes on a hide right after a direct `open` cancels the exit', async () => {
@@ -625,7 +721,7 @@ describe('Dialog', () => {
       // The canceled exit settles on the next frame and leaves this one alone.
       await nextFrame();
 
-      expect(finishBackdrop().opacity).to.equal('0');
+      expect(finishBackdrop(nativeDialog).opacity).to.equal('0');
 
       finishAnimationsFor(dialog.shadowRoot!);
       expect(await closing).to.be.false;
@@ -653,19 +749,14 @@ describe('Dialog', () => {
 
     it('cancels a zero-duration exit when `open` is set to `false` and then to `true`', async () => {
       await emulateMedia({ reducedMotion: 'reduce' });
+      await openThroughProperty();
 
-      try {
-        await openThroughProperty();
+      const closing = dialog.hide();
+      dialog.open = false;
+      dialog.open = true;
 
-        const closing = dialog.hide();
-        dialog.open = false;
-        dialog.open = true;
-
-        expect(await closing).to.be.false;
-        expect(dialog.open).to.be.true;
-      } finally {
-        await emulateMedia({ reducedMotion: 'no-preference' });
-      }
+      expect(await closing).to.be.false;
+      expect(dialog.open).to.be.true;
     });
 
     it('cancels the entrance when `open` is set to `false` during it', async () => {
@@ -690,21 +781,21 @@ describe('Dialog', () => {
 
       await withDocumentSheets([sheet], async () => {
         await openThroughProperty();
-        expect(finishBackdrop().backgroundColor).to.equal('rgb(4, 5, 6)');
+        expect(finishBackdrop(nativeDialog).backgroundColor).to.equal(
+          'rgb(4, 5, 6)'
+        );
       });
     });
 
     it('does not animate the backdrop with reduced motion', async () => {
       await emulateMedia({ reducedMotion: 'reduce' });
 
-      try {
-        await dialog.show();
+      const showing = dialog.show();
+      await elementUpdated(dialog);
+      expect(getBackdropAnimations(nativeDialog)).to.be.empty;
 
-        expect(backdropAnimations()).to.be.empty;
-        expect(finishBackdrop().opacity).to.equal('1');
-      } finally {
-        await emulateMedia({ reducedMotion: 'no-preference' });
-      }
+      await showing;
+      expect(finishBackdrop(nativeDialog).opacity).to.equal('1');
     });
   });
 });

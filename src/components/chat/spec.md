@@ -19,6 +19,8 @@
       - [Suggestions](#suggestions)
       - [Custom renderers](#custom-renderers)
       - [Message content and sanitization](#message-content-and-sanitization)
+      - [Code highlighting](#code-highlighting)
+      - [Links in messages](#links-in-messages)
       - [Adopting the document styles](#adopting-the-document-styles)
     - [Localization](#localization)
     - [Keyboard interactions](#keyboard-interactions)
@@ -38,6 +40,7 @@
     - [Events tests](#events-tests)
     - [Adopted root styles](#adopted-root-styles)
     - [Hydration](#hydration)
+    - [Links](#links)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -57,6 +60,8 @@
 |       6 | 2026-10-21 | API descriptions aligned with the JSDoc. |
 |       7 | 2026-10-21 | Slotted suggestions show the suggestions area, which stays in the DOM, hidden, without suggestions |
 |       8 | 2026-10-26 | `focusInput()` waits for the first render of a new chat and returns a promise |
+|       9 | 2026-11-02 | The events of the inner text area and of the attachment chips stay inside the chat |
+|      10 | 2026-11-04 | The code color variables of the Markdown renderer have GitHub fallbacks and apply in light and dark mode; `igcNavigate` for links in messages |
 
 ## Overview
 
@@ -250,6 +255,67 @@ The available renderers are `message`, `messageHeader`, `messageContent`, `messa
 The text of a message is sanitized with DOMPurify before it is rendered, and can be rendered through a markdown
 renderer. Sanitization is not optional and applies to the default rendering path.
 
+#### Code highlighting
+
+The Markdown renderer of `igniteui-webcomponents/extras` highlights code blocks with shiki. With the default
+themes, `github-light` and `github-dark`, the code uses these CSS variables:
+
+| Variable | Use |
+| -------- | --- |
+| `--shiki-bg` | The background of a code block. The chat themes set it on each message from the `code-background` token. |
+| `--shiki-fg` | The text color of a code block. Without it, the code has the color of the message text. |
+| `--shiki-purple`, `--shiki-dark-blue`, `--shiki-red`, `--shiki-blue`, `--shiki-green`, `--shiki-orange` | The token colors. Without them, the tokens have the GitHub colors of the light or the dark mode. |
+
+Set a token color on the chat or on an element around it. It applies in light and dark mode. Set `--shiki-bg` on the
+`message-container` part:
+
+```css
+igc-chat {
+  --shiki-red: #b31d28;
+}
+
+igc-chat::part(message-container) {
+  --shiki-bg: #f6f8fa;
+}
+```
+
+Comments have a fixed color. With `colorReplacements`, the tokens use that map instead. Other shiki themes use their
+own colors.
+
+#### Links in messages
+
+The chat emits `igcNavigate` when a plain click or <kbd>Enter</kbd> opens a link (`a` or `area` with `href`, or an
+SVG `a` with `xlink:href`) in a message in the same tab, before the browser navigates. Cancel it to route on the client. The detail has the `message`
+and the absolute `href` that the browser follows.
+
+The chat emits no event when:
+
+- The click has a modifier key, or a button other than the primary one.
+- The `target` of the link, or else the target of the page's `<base>` element, is not `_self`. In a page that is not
+  in a frame, `_parent` and `_top` count as `_self`.
+- The link has `download`, or its URL does not parse.
+- The click cannot be canceled, or a listener in the message content already canceled it.
+- The link is in another chat in the message, also in its header. That chat emits the event for its messages.
+
+The event does not bubble and is not composed. Listen to it on the chat.
+
+With the default sanitizer, http and https links to another origin open in a new tab and emit no event. Other links,
+such as `mailto:` and `blob:` links and links from a custom renderer, can emit it. So check the protocol and the
+origin before you route:
+
+```ts
+chat.addEventListener('igcNavigate', (event) => {
+  const url = new URL(event.detail.href);
+
+  if (url.protocol.startsWith('http') && url.origin === location.origin) {
+    event.preventDefault();
+    router.push(url.pathname + url.search + url.hash);
+  }
+});
+```
+
+Use the route call of your router. If the router has a base path, remove it from the path first.
+
 #### Adopting the document styles
 
 `options.adoptRootStyles` copies the stylesheets of the document into the shadow root of the component, so that
@@ -343,12 +409,16 @@ global `registerI18n` mechanism, and both shapes are accepted by the property.
 | `igcAttachmentAdded`   | `IgcChatMessageAttachment[]`  | yes        | Dispatched when the user adds attachments with drag and drop or with the default file input. Cancelable: a canceled event does not add them. |
 | `igcAttachmentRemoved` | `IgcChatMessageAttachment`    | yes        | Dispatched when the user removes an attachment from the input. Cancelable: a canceled event keeps the attachment. |
 | `igcAttachmentClick`   | `IgcChatMessageAttachment`    | no         | Dispatched when the user clicks the header of a message attachment. |
+| `igcNavigate`          | `IgcChatMessageLink`          | yes        | Dispatched when a plain click or Enter opens a link in a message in the same tab, before the browser navigates. Cancel it to route on the client. Does not bubble. |
 | `igcAttachmentDrag`    | —                             | no         | Dispatched when the user drags files into the input area.        |
 | `igcAttachmentDrop`    | —                             | no         | Dispatched when the user drops files on the input area.          |
 | `igcTypingChange`      | `boolean`                     | no         | Dispatched when the user starts or stops typing. The detail is `true` while the user types. |
 | `igcInputFocus`        | —                             | no         | The composer received focus.                                     |
 | `igcInputBlur`         | —                             | no         | The composer lost focus.                                         |
 | `igcInputChange`       | `string`                      | no         | The content of the composer changed.                             |
+
+The `igcInput` and `igcChange` events of the inner text area and the `igcRemove` event of an attachment chip stay
+inside the chat. Use `igcInputChange` and `igcAttachmentRemoved`.
 
 ### Slots
 
@@ -429,7 +499,8 @@ The component exposes a part for every region it renders. The main groups are:
 21. `igcAttachmentClick`, `igcInputFocus`, `igcInputBlur`, `igcInputChange` and `igcMessageReact` are emitted.
 22. `igcTypingChange` is emitted for the start and the stop of typing, is emitted after a message is sent, is not
     emitted for <kbd>Tab</kbd>, and its stop is deferred when `stopTypingDelay` grows while the timer runs.
-23. `igcMessageCreated` and the attachment change event can be canceled.
+23. `igcMessageCreated` and the attachment change event can be canceled. The `igcInput` and `igcChange` of the text
+    area (real typing and a blur) and the `igcRemove` of an attachment chip do not reach a listener on the chat.
 
 ### Adopted root styles
 
@@ -477,6 +548,15 @@ The component exposes a part for every region it renders. The main groups are:
 37. The text area, the attach button, the file input, the send button, the attachments list and the remove button of
     an attachment chip are named by the resource strings, and a change of `resourceStrings` renames them.
 
+### Links
+
+38. A plain click or <kbd>Enter</kbd> on a link in a message, also an SVG link with `xlink:href`, emits
+    `igcNavigate` on the chat, with the message and the absolute URL. The event does not bubble. When the application cancels it, the chat cancels the click.
+39. A click with a modifier key, a link with another target, `download` or a URL that does not parse, a click that
+    cannot be canceled and a click that the content already canceled emit no event.
+40. A link outside the messages, a link around the chat and a link in a chat in a message, also in its header, emit
+    no event on the chat. The chat in the message emits the event of its own message link.
+
 ### Not covered by the suite
 
 - Scrolling with the wheel, touch or the keyboard is not covered. The tests set `scrollTop`.
@@ -497,6 +577,8 @@ The component exposes a part for every region it renders. The main groups are:
 - `adoptRootStyles` intentionally breaks shadow DOM encapsulation and is documented as a last resort.
 - Sanitization protects the rendered content, but an application that supplies its own renderers is responsible
   for what those render.
+- A click on a control inside a link in a message, such as a checkbox, also emits `igcNavigate`. HTML does not allow
+  interactive content inside a link.
 - The suggestions area shows only while `options.suggestions` has items or the `suggestions` or `suggestion` slot has
   content. Content in the header or the actions slot alone does not show it. The area and its slots stay in the DOM,
   hidden, so the chat can detect slotted content. The server cannot see the light DOM, so a hydrating chat shows the

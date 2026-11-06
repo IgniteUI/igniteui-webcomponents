@@ -7,6 +7,7 @@ import {
   shiftKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
@@ -1312,6 +1313,10 @@ describe('Masked input', () => {
     getNativeInput: (host) =>
       (host as IgcMaskInputComponent).renderRoot.querySelector('input')!,
   });
+
+  runFocusBeforeRenderTests(
+    html`<igc-mask-input label="Label"></igc-mask-input>`
+  );
 });
 
 type CompositionEventType = 'compositionstart' | 'compositionend';

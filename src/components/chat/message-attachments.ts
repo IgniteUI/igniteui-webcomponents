@@ -8,7 +8,7 @@ import { chatContext } from '#internals/context.js';
 import { addKeybindings } from '#internals/controllers/key-bindings.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
-import { getElementFromPath } from '#internals/utils/events.js';
+import { getEventOrigin } from '#internals/utils/events.js';
 import { trimmedHtml } from '#internals/utils/lit.js';
 import { all } from '#themes/chat/themes/attachments.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -33,12 +33,7 @@ import {
 
 /** Only the header itself, so a control in a custom header keeps its keys. */
 function getHeader(event: Event): HTMLElement | undefined {
-  const header = getElementFromPath<HTMLElement>(
-    '[part~="attachment-header"]',
-    event
-  );
-
-  return header === event.composedPath()[0] ? header : undefined;
+  return getEventOrigin<HTMLElement>('[part~="attachment-header"]', event);
 }
 
 type DefaultAttachmentRenderers = {

@@ -93,6 +93,7 @@
     "IgcChatDraftMessage",
     "IgcChatMessage",
     "IgcChatMessageAttachment",
+    "IgcChatMessageLink",
     "IgcChatMessageReaction",
     "IgcChatOptions",
     "IgcChatResourceStringEN",
@@ -229,6 +230,7 @@
     "StyleVariant",
     "TabsActivation",
     "TabsAlignment",
+    "TabsHeaderPosition",
     "TextareaResize",
     "Theme",
     "ThemeVariant",
@@ -236,6 +238,7 @@
     "TileManagerResizeMode",
     "TileResourceStringsEN",
     "ToggleLabelPosition",
+    "TooltipRect",
     "TooltipResourceStringsEN",
     "TreeResourceStringsEN",
     "TreeSelection",
@@ -446,7 +449,9 @@
         "variant": "ButtonVariant ('contained' | 'fab' | 'flat' | 'outlined')"
       },
       "methods": {
+        "blur": "() => void",
         "click": "() => void",
+        "focus": "(options?: FocusOptions) => void",
         "static register": "() => void"
       },
       "events": {},
@@ -717,6 +722,8 @@
         "vertical": "boolean"
       },
       "methods": {
+        "blur": "() => void",
+        "focus": "(options?: FocusOptions) => void",
         "next": "() => Promise<boolean>",
         "pause": "() => void",
         "play": "() => void",
@@ -840,6 +847,7 @@
         "igcInputFocus": "unknown",
         "igcMessageCreated": "unknown",
         "igcMessageReact": "unknown",
+        "igcNavigate": "unknown",
         "igcTypingChange": "unknown"
       },
       "slots": [
@@ -1017,6 +1025,8 @@
         "variant": "StyleVariant | undefined ('danger' | 'info' | 'primary' | 'success' | 'warning' | undefined)"
       },
       "methods": {
+        "blur": "() => void",
+        "focus": "(options?: FocusOptions) => void",
         "static register": "() => void"
       },
       "events": {
@@ -1149,7 +1159,9 @@
         "willValidate": "readonly boolean"
       },
       "methods": {
+        "blur": "() => void",
         "checkValidity": "() => boolean",
+        "focus": "(options?: FocusOptions) => void",
         "hide": "() => Promise<boolean>",
         "reportValidity": "() => boolean",
         "setCustomValidity": "(message: string) => void",
@@ -1428,8 +1440,10 @@
         "willValidate": "readonly boolean"
       },
       "methods": {
+        "blur": "() => void",
         "checkValidity": "() => boolean",
         "clear": "() => void",
+        "focus": "(options?: FocusOptions) => void",
         "hide": "() => Promise<boolean>",
         "reportValidity": "() => boolean",
         "select": "() => void",
@@ -1614,8 +1628,10 @@
         "willValidate": "readonly boolean"
       },
       "methods": {
+        "blur": "() => void",
         "checkValidity": "() => boolean",
         "clear": "() => void",
+        "focus": "(options?: FocusOptions) => void",
         "hide": "() => Promise<boolean>",
         "reportValidity": "() => boolean",
         "select": "(value: DateRangeValue | null) => void",
@@ -2307,7 +2323,9 @@
         "variant": "IconButtonVariant ('contained' | 'flat' | 'outlined')"
       },
       "methods": {
+        "blur": "() => void",
         "click": "() => void",
+        "focus": "(options?: FocusOptions) => void",
         "static register": "() => void"
       },
       "events": {},
@@ -2801,6 +2819,7 @@
       },
       "properties": {
         "anchor": "Element | string | undefined",
+        "anchorRect": "PopoverRect | null",
         "arrow": "HTMLElement | null",
         "arrowOffset": "number",
         "flip": "boolean",
@@ -3725,11 +3744,13 @@
       "class": "IgcTabsComponent",
       "attributes": {
         "activation": "TabsActivation ('auto' | 'manual')",
-        "alignment": "TabsAlignment ('center' | 'end' | 'justify' | 'start')"
+        "alignment": "TabsAlignment ('center' | 'end' | 'justify' | 'start')",
+        "header-position": "TabsHeaderPosition ('end' | 'start' | 'top')"
       },
       "properties": {
         "activation": "TabsActivation ('auto' | 'manual')",
         "alignment": "TabsAlignment ('center' | 'end' | 'justify' | 'start')",
+        "headerPosition": "TabsHeaderPosition ('end' | 'start' | 'top')",
         "selected": "readonly string",
         "selectedTab": "readonly IgcTabComponent | null",
         "static tagName": "readonly string",
@@ -3810,7 +3831,9 @@
         "wrap": "'hard' | 'soft' | 'off'"
       },
       "methods": {
+        "blur": "() => void",
         "checkValidity": "() => boolean",
+        "focus": "(options?: FocusOptions) => void",
         "reportValidity": "() => boolean",
         "scrollTo": "(x?: unknown, y?: unknown) => void",
         "select": "() => void",
@@ -3969,7 +3992,7 @@
         "minRowHeight": "string | undefined",
         "resizeMode": "TileManagerResizeMode ('always' | 'hover' | 'none')",
         "static tagName": "readonly string",
-        "tiles": "readonly unknown"
+        "tiles": "readonly IgcTileComponent[]"
       },
       "methods": {
         "loadLayout": "(data: string) => void",
@@ -4088,6 +4111,7 @@
       "methods": {
         "hide": "() => Promise<boolean>",
         "show": "(target?: Element | string) => Promise<boolean>",
+        "showAt": "(rect: TooltipRect) => Promise<boolean>",
         "static register": "() => void",
         "toggle": "() => Promise<boolean>"
       },

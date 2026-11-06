@@ -2,7 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { render } from 'lit';
 import { type SinonSpy, spy } from 'sinon';
 import { escapeKey } from '../controllers/key-bindings.js';
-import { catchListenerErrors } from '../testing/helpers.spec.js';
+import { catchListenerErrors, compareStyles } from '../testing/helpers.spec.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
@@ -33,6 +33,23 @@ describe('Resizable directive', () => {
 
   function getGhost() {
     return document.querySelector<HTMLElement>('[data-resize-ghost]');
+  }
+
+  /**
+   * Shows the fixture section as a popover, so that it is the top layer that
+   * gets the ghost. The popover UA styles that move or pad it are reset.
+   */
+  function showSectionPopover(styles: Partial<CSSStyleDeclaration> = {}) {
+    section.setAttribute('popover', 'manual');
+    Object.assign(section.style, {
+      inset: 'auto',
+      margin: '0',
+      padding: '0',
+      border: 'none',
+      overflow: 'visible',
+      ...styles,
+    });
+    section.showPopover();
   }
 
   function renderResizable(opts?: ResizableOptions) {
@@ -75,15 +92,20 @@ describe('Resizable directive', () => {
   afterEach(() => {
     resizeStart.resetHistory();
 
+    // Cancel the operations that a spec leaves running. A synthetic pointer
+    // capture never ends, and a running operation keeps its native input guard
+    // on the document body, which the next operation would then restore.
+    simulateKeyboard(document.body, escapeKey);
+
     // Remove ghost elements left behind by resize operations still active at test end.
     for (const ghost of document.querySelectorAll('[data-resize-ghost]')) {
       ghost.remove();
     }
   });
 
-  describe('Immediate mode - basic element resizing', () => {
+  describe('Basic element resizing', () => {
     beforeEach(async () => {
-      await createFixture({ mode: 'immediate' });
+      await createFixture({});
     });
 
     it('should not start a resize operation when disabled', async () => {
@@ -93,6 +115,7 @@ describe('Resizable directive', () => {
       await elementUpdated(instance);
 
       expect(resizeStart.called).is.false;
+      expect(getGhost()).is.null;
     });
 
     it('should not start a resize operation on a non-primary button interaction', async () => {
@@ -124,17 +147,12 @@ describe('Resizable directive', () => {
       expect(instance.getBoundingClientRect()).to.eql(initial);
     });
 
-    it('should not create a ghost element in "immediate" mode', async () => {
-      const ghostFactory = spy();
-      const layer = spy();
-      renderResizable({ start: resizeStart, ghostFactory, layer });
+    it('should remove the ghost element when `start` returns false', async () => {
+      renderResizable({ start: () => false });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(resizeStart.called).is.true;
-      expect(ghostFactory.called).is.false;
-      expect(layer.called).is.false;
       expect(getGhost()).is.null;
     });
 
@@ -150,326 +168,66 @@ describe('Resizable directive', () => {
       expect(state.initial).to.eql(rect);
       expect(state.current).to.eql(rect);
       expect([state.deltaX, state.deltaY]).to.eql([0, 0]);
-      expect(state.ghost).is.null;
-      expect(state.trigger).to.equal(instance);
     });
 
-    it('should not invoke `resize` unless an operation is started', async () => {
-      const resize = spy();
-      renderResizable({ start: resizeStart, resize });
-
-      simulatePointerMove(instance);
-      await elementUpdated(instance);
-
-      expect(resizeStart.called).is.false;
-      expect(resize.called).is.false;
-    });
-
-    it('should invoke `resize` on pointer moves and resize the element in place', async () => {
-      const resize = spy();
-      renderResizable({ resize });
-
-      let rect = instance.getBoundingClientRect();
+    it('should block touch scrolling and text selection while an operation runs', async () => {
+      renderResizable({ target: () => target });
+      target.style.touchAction = 'pan-y';
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      for (let i = 1, delta = 10; i <= 5; i++) {
-        simulatePointerMove(instance, {
-          clientX: rect.right + delta,
-          clientY: rect.bottom + delta,
-        });
-        await elementUpdated(instance);
+      expect(compareStyles(target, { touchAction: 'none', userSelect: 'none' }))
+        .is.true;
+      expect(compareStyles(document.body, { userSelect: 'none' })).is.true;
 
-        rect = instance.getBoundingClientRect();
-        const { state } = getCallbackParams(resize);
-
-        expect([state.deltaX, state.deltaY]).to.eql([delta * i, delta * i]);
-        expect([state.current.width, state.current.height]).to.eql([
-          rect.width,
-          rect.height,
-        ]);
-      }
-    });
-
-    it('should apply dimensions mutated from within the `resize` callback', async () => {
-      renderResizable({
-        resize: ({ state }) => {
-          state.current.width = 250;
-        },
-      });
-
-      const initial = instance.getBoundingClientRect();
-
-      simulatePointerDown(instance);
-      simulatePointerMove(instance, {
-        clientX: initial.right + 400,
-        clientY: initial.bottom,
-      });
-      await elementUpdated(instance);
-
-      const rect = instance.getBoundingClientRect();
-      expect([rect.width, rect.height]).to.eql([250, initial.height]);
-    });
-
-    it('should invoke `end` and apply the final dimensions when the operation completes', async () => {
-      const end = spy();
-      renderResizable({ end });
-
-      const initial = instance.getBoundingClientRect();
-
-      simulatePointerDown(instance);
-      simulatePointerMove(
-        instance,
-        { clientX: initial.right, clientY: initial.bottom },
-        { x: 10, y: 10 },
-        10
-      );
       simulateLostPointerCapture(instance);
       await elementUpdated(instance);
 
-      const rect = instance.getBoundingClientRect();
-      const { state } = getCallbackParams(end);
-
-      expect(end.callCount).to.equal(1);
-      expect([state.deltaX, state.deltaY]).to.eql([100, 100]);
-      expect([state.current.width, state.current.height]).to.eql([
-        rect.width,
-        rect.height,
-      ]);
+      expect(target.style.touchAction).to.equal('pan-y');
+      expect(target.style.userSelect).to.equal('');
+      expect(document.body.style.userSelect).to.equal('');
     });
 
-    it('should invoke `state.commit` instead of the default dimension application when assigned', async () => {
-      const commit = spy();
-      renderResizable({
-        end: ({ state }) => {
-          state.commit = commit;
-        },
-      });
-
-      simulatePointerDown(instance);
-      simulateLostPointerCapture(instance);
-      await elementUpdated(instance);
-
-      expect(commit.callCount).to.equal(1);
-    });
-
-    it('should invoke `cancel` and restore the initial dimensions when pressing Escape', async () => {
-      const cancel = spy();
-      renderResizable({ cancel });
-
-      const initial = instance.getBoundingClientRect();
-
-      simulatePointerDown(instance);
-      simulatePointerMove(instance, {
-        clientX: initial.right + 100,
-        clientY: initial.bottom + 100,
-      });
-      await elementUpdated(instance);
-
-      expect(instance.getBoundingClientRect().width).to.equal(
-        initial.width + 100
+    it('should restore the target only when the last of two overlapping operations ends', async () => {
+      const container = document.createElement('div');
+      section.append(container);
+      render(
+        html`<div ${resizable({ target: () => target })}></div>
+          <div ${resizable({ target: () => target })}></div>`,
+        container
       );
 
-      simulateKeyboard(instance, escapeKey);
-      await elementUpdated(instance);
+      const [first, second] = container.querySelectorAll('div');
+      // A second synthetic pointer cannot take a pointer capture.
+      second.setPointerCapture = () => {};
+      target.style.touchAction = 'pan-y';
 
-      const state = getCancelState(cancel);
+      simulatePointerDown(first);
+      simulatePointerDown(second, { pointerId: 2 });
+      simulateLostPointerCapture(first);
 
-      expect(cancel.callCount).to.equal(1);
-      expect([state.deltaX, state.deltaY]).to.eql([100, 100]);
-      expect(instance.getBoundingClientRect()).to.eql(initial);
+      expect(target.style.touchAction).to.equal('none');
+
+      simulateLostPointerCapture(second, { pointerId: 2 });
+
+      expect(target.style.touchAction).to.equal('pan-y');
     });
 
-    it('should not invoke `cancel` when pressing Escape outside of a resize operation', async () => {
-      // Sanity check since the Escape key handler is a root level dynamic listener.
-      const cancel = spy();
-      renderResizable({ cancel });
+    it('should cancel a touch and a native drag on its element while enabled', async () => {
+      const cancels = (type: string) => {
+        const event = new Event(type, { bubbles: true, cancelable: true });
+        instance.dispatchEvent(event);
+        return event.defaultPrevented;
+      };
 
-      simulateKeyboard(instance, escapeKey);
-      await elementUpdated(instance);
+      expect(cancels('touchstart')).to.be.true;
+      expect(cancels('dragstart')).to.be.true;
 
-      expect(cancel.called).is.false;
-    });
-  });
+      renderResizable({ enabled: false });
 
-  describe('Immediate mode - advanced element resizing', () => {
-    beforeEach(async () => {
-      await createFixture({ mode: 'immediate' });
-    });
-
-    it('should resize only horizontally when direction is "horizontal"', async () => {
-      const resize = spy();
-      renderResizable({ direction: 'horizontal', resize });
-
-      const initial = instance.getBoundingClientRect();
-
-      simulatePointerDown(instance);
-      simulatePointerMove(instance, {
-        clientX: initial.right + 100,
-        clientY: initial.bottom + 100,
-      });
-      await elementUpdated(instance);
-
-      const { state } = getCallbackParams(resize);
-
-      expect([state.current.width, state.current.height]).to.eql([
-        initial.width + 100,
-        initial.height,
-      ]);
-    });
-
-    it('should resize only vertically when direction is "vertical"', async () => {
-      const resize = spy();
-      renderResizable({ direction: 'vertical', resize });
-
-      const initial = instance.getBoundingClientRect();
-
-      simulatePointerDown(instance);
-      simulatePointerMove(instance, {
-        clientX: initial.right + 100,
-        clientY: initial.bottom + 100,
-      });
-      await elementUpdated(instance);
-
-      const { state } = getCallbackParams(resize);
-
-      expect([state.current.width, state.current.height]).to.eql([
-        initial.width,
-        initial.height + 100,
-      ]);
-    });
-
-    it('should clamp dimensions to the configured min/max constraints', async () => {
-      const resize = spy();
-      renderResizable({
-        minWidth: 150,
-        maxWidth: 300,
-        minHeight: 150,
-        maxHeight: 250,
-        resize,
-      });
-
-      const initial = instance.getBoundingClientRect();
-
-      simulatePointerDown(instance);
-
-      // Beyond the maximum constraints
-      simulatePointerMove(instance, {
-        clientX: initial.right + 500,
-        clientY: initial.bottom + 500,
-      });
-      await elementUpdated(instance);
-
-      let { state } = getCallbackParams(resize);
-      expect([state.current.width, state.current.height]).to.eql([300, 250]);
-
-      // Below the minimum constraints
-      simulatePointerMove(instance, {
-        clientX: initial.x - 50,
-        clientY: initial.y - 50,
-      });
-      await elementUpdated(instance);
-
-      state = getCallbackParams(resize).state;
-      expect([state.current.width, state.current.height]).to.eql([150, 150]);
-    });
-
-    it('should maintain the initial aspect ratio when `maintainAspectRatio` is set', async () => {
-      const resize = spy();
-      renderResizable({
-        target: () => target,
-        maintainAspectRatio: true,
-        resize,
-      });
-
-      // The target is 400x200 - an aspect ratio of 2
-      const initial = target.getBoundingClientRect();
-
-      simulatePointerDown(instance);
-      simulatePointerMove(instance, {
-        clientX: initial.x + 600,
-        clientY: initial.y + 10,
-      });
-      await elementUpdated(instance);
-
-      const { state } = getCallbackParams(resize);
-      expect([state.current.width, state.current.height]).to.eql([600, 300]);
-    });
-
-    it('should keep the aspect ratio from the height in the "vertical" direction', async () => {
-      const resize = spy();
-      renderResizable({
-        target: () => target,
-        direction: 'vertical',
-        maintainAspectRatio: true,
-        resize,
-      });
-
-      // The target is 400x200 - an aspect ratio of 2
-      const initial = target.getBoundingClientRect();
-
-      simulatePointerDown(instance);
-      simulatePointerMove(instance, {
-        clientX: initial.x + 10,
-        clientY: initial.y + 300,
-      });
-      await elementUpdated(instance);
-
-      const { state } = getCallbackParams(resize);
-      expect([state.current.width, state.current.height]).to.eql([600, 300]);
-    });
-
-    it('should resize the element resolved from the `target` option instead of the host', async () => {
-      renderResizable({ target: () => target, start: resizeStart });
-
-      const hostRect = instance.getBoundingClientRect();
-      const targetRect = target.getBoundingClientRect();
-
-      simulatePointerDown(instance);
-      await elementUpdated(instance);
-
-      const { state } = getCallbackParams(resizeStart);
-      expect(state.initial).to.eql(targetRect);
-
-      simulatePointerMove(instance, {
-        clientX: targetRect.right + 100,
-        clientY: targetRect.bottom + 50,
-      });
-      await elementUpdated(instance);
-
-      const rect = target.getBoundingClientRect();
-
-      expect([rect.width, rect.height]).to.eql([
-        targetRect.width + 100,
-        targetRect.height + 50,
-      ]);
-      expect(instance.getBoundingClientRect()).to.eql(hostRect);
-    });
-  });
-
-  describe('Deferred mode - basic element resizing', () => {
-    beforeEach(async () => {
-      await createFixture({ mode: 'deferred' });
-    });
-
-    it('should not start a resize operation when disabled', async () => {
-      renderResizable({ enabled: false, start: resizeStart });
-
-      simulatePointerDown(instance);
-      await elementUpdated(instance);
-
-      expect(resizeStart.called).is.false;
-      expect(getGhost()).is.null;
-    });
-
-    it('should remove the ghost element when `start` returns false', async () => {
-      renderResizable({ start: () => false });
-
-      simulatePointerDown(instance);
-      await elementUpdated(instance);
-
-      expect(getGhost()).is.null;
+      expect(cancels('touchstart')).to.be.false;
+      expect(cancels('dragstart')).to.be.false;
     });
 
     it('should create a default ghost element on the initial pointer interaction', async () => {
@@ -479,15 +237,21 @@ describe('Resizable directive', () => {
       await elementUpdated(instance);
 
       const ghost = getGhost()!;
-      const { state } = getCallbackParams(resizeStart);
 
       expect(ghost).to.exist;
-      expect(ghost.style.background).to.equal('pink');
+      expect(resizeStart.calledOnce).is.true;
       expect(ghost.parentElement).to.equal(document.body);
       expect(ghost.getBoundingClientRect()).to.eql(
         instance.getBoundingClientRect()
       );
-      expect(state.ghost).to.equal(ghost);
+
+      // It stacks above the page and has no background.
+      expect(
+        compareStyles(ghost, {
+          zIndex: '1000',
+          backgroundColor: 'rgba(0, 0, 0, 0)',
+        })
+      ).is.true;
     });
 
     it('should create a custom ghost element when a `ghostFactory` is passed', async () => {
@@ -501,30 +265,20 @@ describe('Resizable directive', () => {
       expect(getGhost()!.localName).to.equal('section');
     });
 
-    it('should place the ghost element in the configured `layer` container', async () => {
-      const layer = spy(() => instance.parentElement!);
-      renderResizable({ layer });
-
-      simulatePointerDown(instance);
-      await elementUpdated(instance);
-
-      expect(getGhost()!.parentElement).to.eql(instance.parentElement);
-    });
-
     it('should place the ghost over the target in a layer with a border and a scroll', async () => {
-      Object.assign(section.style, {
+      showSectionPopover({
         border: '10px solid',
         height: '300px',
         overflow: 'auto',
       });
       section.scrollTop = 100;
-      renderResizable({ layer: () => section });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
       const ghost = getGhost()!;
 
+      expect(section.scrollTop).to.equal(100);
       expect(ghost.parentElement).to.equal(section);
       expect(ghost.style.position).to.equal('fixed');
       expect(ghost.getBoundingClientRect()).to.eql(
@@ -533,20 +287,21 @@ describe('Resizable directive', () => {
     });
 
     it('should place the ghost over the target in a transformed layer', async () => {
-      section.style.transform = 'translate(30px, 40px)';
-      renderResizable({ layer: () => section });
+      showSectionPopover({ transform: 'translate(30px, 40px)' });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(getGhost()!.getBoundingClientRect()).to.eql(
+      const ghost = getGhost()!;
+
+      expect(ghost.parentElement).to.equal(section);
+      expect(ghost.getBoundingClientRect()).to.eql(
         instance.getBoundingClientRect()
       );
     });
 
     it('should size the ghost from the pointer in a scaled layer', async () => {
-      section.style.transform = 'scale(0.5)';
-      renderResizable({ layer: () => section });
+      showSectionPopover({ transform: 'scale(0.5)' });
 
       const { x, y, right, bottom } = instance.getBoundingClientRect();
 
@@ -557,8 +312,10 @@ describe('Resizable directive', () => {
       });
       await elementUpdated(instance);
 
-      const ghostRect = getGhost()!.getBoundingClientRect();
+      const ghost = getGhost()!;
+      const ghostRect = ghost.getBoundingClientRect();
 
+      expect(ghost.parentElement).to.equal(section);
       expect([
         ghostRect.x,
         ghostRect.y,
@@ -612,14 +369,62 @@ describe('Resizable directive', () => {
       }
     });
 
-    it('should correctly fallback to the document body as a container if the layer callbacks return falsy', async () => {
-      const layer = spy((): HTMLElement => null as unknown as HTMLElement);
-      renderResizable({ layer });
+    it('should not invoke `resize` unless an operation is started', async () => {
+      const resize = spy();
+      renderResizable({ start: resizeStart, resize });
+
+      simulatePointerMove(instance);
+      await elementUpdated(instance);
+
+      expect(resizeStart.called).is.false;
+      expect(resize.called).is.false;
+    });
+
+    it('should invoke `resize` on pointer moves and size the ghost', async () => {
+      const resize = spy();
+      renderResizable({ resize });
+
+      const initial = instance.getBoundingClientRect();
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(getGhost()!.parentElement).to.eql(document.body);
+      for (let i = 1, delta = 10; i <= 5; i++) {
+        simulatePointerMove(instance, {
+          clientX: initial.right + delta * i,
+          clientY: initial.bottom + delta * i,
+        });
+        await elementUpdated(instance);
+
+        const rect = getGhost()!.getBoundingClientRect();
+        const { state } = getCallbackParams(resize);
+
+        expect([state.deltaX, state.deltaY]).to.eql([delta * i, delta * i]);
+        expect([state.current.width, state.current.height]).to.eql([
+          rect.width,
+          rect.height,
+        ]);
+      }
+    });
+
+    it('should apply dimensions mutated from within the `resize` callback', async () => {
+      renderResizable({
+        resize: ({ state }) => {
+          state.current.width = 250;
+        },
+      });
+
+      const initial = instance.getBoundingClientRect();
+
+      simulatePointerDown(instance);
+      simulatePointerMove(instance, {
+        clientX: initial.right + 400,
+        clientY: initial.bottom,
+      });
+      await elementUpdated(instance);
+
+      const rect = getGhost()!.getBoundingClientRect();
+      expect([rect.width, rect.height]).to.eql([250, initial.height]);
     });
 
     it('should resize the ghost element and not the target on pointer moves', async () => {
@@ -726,9 +531,9 @@ describe('Resizable directive', () => {
     });
   });
 
-  describe('Deferred mode - advanced element resizing', () => {
+  describe('Advanced element resizing', () => {
     beforeEach(async () => {
-      await createFixture({ mode: 'deferred' });
+      await createFixture({});
     });
 
     it('should resize the ghost only in the configured direction', async () => {
@@ -748,6 +553,27 @@ describe('Resizable directive', () => {
       expect([ghostRect.width, ghostRect.height]).to.eql([
         initial.width + 100,
         initial.height,
+      ]);
+    });
+
+    it('should resize only vertically when direction is "vertical"', async () => {
+      const resize = spy();
+      renderResizable({ direction: 'vertical', resize });
+
+      const initial = instance.getBoundingClientRect();
+
+      simulatePointerDown(instance);
+      simulatePointerMove(instance, {
+        clientX: initial.right + 100,
+        clientY: initial.bottom + 100,
+      });
+      await elementUpdated(instance);
+
+      const { state } = getCallbackParams(resize);
+
+      expect([state.current.width, state.current.height]).to.eql([
+        initial.width,
+        initial.height + 100,
       ]);
     });
 
@@ -787,7 +613,7 @@ describe('Resizable directive', () => {
 
   describe('Right-to-left', () => {
     beforeEach(async () => {
-      await createFixture({ mode: 'immediate' });
+      await createFixture({});
       section.dir = 'rtl';
     });
 
@@ -804,17 +630,18 @@ describe('Resizable directive', () => {
       });
       await elementUpdated(instance);
 
-      const { state } = getCallbackParams(resize);
+      expect(getCallbackParams(resize).state.deltaX).to.equal(50);
+
+      simulateLostPointerCapture(instance);
+      await elementUpdated(instance);
+
       const rect = instance.getBoundingClientRect();
 
-      expect(state.deltaX).to.equal(50);
       expect(rect.width).to.equal(initial.width + 50);
       expect(rect.right).to.equal(initial.right);
     });
 
     it('keeps the inline-start edge of the ghost in place', async () => {
-      renderResizable({ mode: 'deferred' });
-
       const initial = instance.getBoundingClientRect();
 
       simulatePointerDown(instance);
@@ -832,7 +659,7 @@ describe('Resizable directive', () => {
   });
 
   it('follows a CSS direction without a `dir` attribute', async () => {
-    await createFixture({ mode: 'immediate' });
+    await createFixture({});
     section.style.direction = 'rtl';
 
     const resize = spy();
@@ -852,7 +679,7 @@ describe('Resizable directive', () => {
 
   describe('Interrupted operations', () => {
     beforeEach(async () => {
-      await createFixture({ mode: 'deferred' });
+      await createFixture({});
     });
 
     it('cancels the operation on pointercancel', async () => {
@@ -926,7 +753,7 @@ describe('Resizable directive', () => {
 
   describe('Directive life-cycle', () => {
     beforeEach(async () => {
-      await createFixture({ mode: 'immediate' });
+      await createFixture({});
     });
 
     it('throws outside an element expression', () => {

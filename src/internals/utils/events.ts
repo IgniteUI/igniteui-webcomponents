@@ -1,4 +1,5 @@
 import { isServer } from 'lit';
+import { firstOf } from './arrays.js';
 import { isElement } from './dom.js';
 import { isEventListenerObject, isString } from './types.js';
 
@@ -47,6 +48,20 @@ export function getElementFromPath(
   return match as Element | undefined;
 }
 
+/**
+ * Returns the element that started the event if it matches the selector.
+ * Unlike `getElementFromPath`, a match deeper in the composed path does not count.
+ */
+export function getEventOrigin<T extends Element = Element>(
+  selector: string,
+  event: Event
+): T | undefined {
+  const origin = firstOf(event.composedPath());
+  return isElement(origin) && origin.matches(selector)
+    ? (origin as T)
+    : undefined;
+}
+
 /** Reusable event listener that stops the propagation of the event. */
 export function stopPropagation(event: Event): void {
   event.stopPropagation();
@@ -55,6 +70,50 @@ export function stopPropagation(event: Event): void {
 /** Reusable event listener that prevents the default action of the event. */
 export function preventDefault(event: Event): void {
   event.preventDefault();
+}
+
+/**
+ * Whether the browser opens a link in another browsing context: by its `target`
+ * (or the target of the page's `<base>` element), or for a click with another
+ * button or a modifier key. In a page that is not in a frame, `_parent` and
+ * `_top` open the link in the same browsing context.
+ */
+export function linkOpensElsewhere(
+  target: string | null | undefined,
+  document: Document,
+  event?: MouseEvent
+): boolean {
+  if (
+    event &&
+    (event.button !== 0 ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey)
+  ) {
+    return true;
+  }
+
+  const resolved = (target ?? getBaseTarget(document))?.toLowerCase();
+
+  // `top`, because a page script can replace `parent`.
+  if (resolved === '_parent' || resolved === '_top') {
+    const view = document.defaultView;
+    return view?.top !== view;
+  }
+
+  return Boolean(resolved) && resolved !== '_self';
+}
+
+/** The target of the first `<base>` element that has one, as the browser uses it. */
+function getBaseTarget(document: Document): string | null {
+  for (const base of document.getElementsByTagName('base')) {
+    if (base.hasAttribute('target')) {
+      return base.getAttribute('target');
+    }
+  }
+
+  return null;
 }
 
 /**

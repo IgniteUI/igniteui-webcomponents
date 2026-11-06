@@ -31,10 +31,6 @@
     height: 0;
 }
 
-igc-popover::part(container) {
-    background-color: transparent;
-}
-
 slot[name='close-button'] {
     button {
         display: flex;

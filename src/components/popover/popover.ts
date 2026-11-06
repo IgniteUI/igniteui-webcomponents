@@ -7,7 +7,12 @@ import {
 } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { firstOf } from '#internals/utils/arrays.js';
-import { getElementByIdFromRoot, isPopoverOpen } from '#internals/utils/dom.js';
+import {
+  getCSSZoom,
+  getElementByIdFromRoot,
+  isPopoverOpen,
+  setStyles,
+} from '#internals/utils/dom.js';
 import { toggleEventListener } from '#internals/utils/events.js';
 import { isString } from '#internals/utils/types.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
@@ -19,7 +24,7 @@ import {
 } from './position/native.js';
 import type { PopoverPositionStrategy } from './position/strategy.js';
 import {
-  type PopoverPositionStrategyMode,
+  type PopoverRect,
   resolvePlacement,
   SCROLL_LISTENER_OPTIONS,
 } from './position/types.js';
@@ -69,7 +74,9 @@ export default class IgcPopoverComponent extends LitElement {
 
   private _target?: Element;
   private _positionStrategy?: PopoverPositionStrategy;
-  private _positionMode?: PopoverPositionStrategyMode;
+
+  /** The proxy anchor of `anchorRect`. */
+  private _rectAnchor?: HTMLElement;
 
   private readonly _slots = addSlotController(this, {
     slots: setSlots('anchor'),
@@ -89,6 +96,14 @@ export default class IgcPopoverComponent extends LitElement {
    */
   @property()
   public anchor?: Element | string;
+
+  /**
+   * A rectangle in viewport coordinates to use as the anchor, for example the
+   * point of a pointer event. It takes precedence over `anchor` and the
+   * `anchor` slot.
+   */
+  @property({ attribute: false })
+  public anchorRect: PopoverRect | null = null;
 
   /**
    * Element to render as an "arrow" element for the current popover.
@@ -155,10 +170,25 @@ export default class IgcPopoverComponent extends LitElement {
 
   protected override update(properties: PropertyValues<this>): void {
     if (this.hasUpdated) {
-      if (properties.has('open') || properties.has('anchor')) {
+      // A set or a clear of the rectangle changes the target. A move keeps
+      // the proxy anchor.
+      const rectToggled =
+        properties.has('anchorRect') &&
+        Boolean(properties.get('anchorRect')) !== Boolean(this.anchorRect);
+
+      if (properties.has('open') || properties.has('anchor') || rectToggled) {
         this._setOpenState(this.open);
       } else if (this.open) {
-        this._positionStrategy?.update();
+        // A move of the rectangle needs no new position settings.
+        const moved = properties.size === 1 && properties.has('anchorRect');
+
+        if (properties.has('anchorRect')) {
+          this._placeRectAnchor();
+        }
+
+        moved
+          ? this._positionStrategy?.reposition()
+          : this._positionStrategy?.update();
       }
 
       if (properties.has('scrollStrategy')) {
@@ -174,8 +204,8 @@ export default class IgcPopoverComponent extends LitElement {
   }
 
   /**
-   * Waits also for the position strategy. The fallback strategy positions
-   * asynchronously, so the container has no position when Lit ends the update.
+   * Waits also for the fallback strategy, which positions the container after
+   * Lit ends the update.
    */
   protected override async getUpdateComplete(): Promise<boolean> {
     const complete = await super.getUpdateComplete();
@@ -204,7 +234,7 @@ export default class IgcPopoverComponent extends LitElement {
   private _handleSlotChange({
     isDefault,
   }: SlotChangeCallbackParameters<unknown>): void {
-    if (isDefault || this.anchor) {
+    if (isDefault || this.anchor || this.anchorRect) {
       return;
     }
 
@@ -214,22 +244,17 @@ export default class IgcPopoverComponent extends LitElement {
   //#region Internal open state API
 
   private _getPositionStrategy(target: Element): PopoverPositionStrategy {
-    const mode = shouldUseNativeAnchorPositioning(target)
-      ? 'native'
-      : 'floating';
+    const Strategy = shouldUseNativeAnchorPositioning(target)
+      ? NativePositionStrategy
+      : FloatingPositionStrategy;
 
-    if (this._positionStrategy && this._positionMode === mode) {
+    if (this._positionStrategy instanceof Strategy) {
       return this._positionStrategy;
     }
 
     this._positionStrategy?.detach();
     this._positionStrategy?.clear();
-
-    this._positionMode = mode;
-    this._positionStrategy =
-      mode === 'native'
-        ? new NativePositionStrategy(this, this._handleAnchorRemoved)
-        : new FloatingPositionStrategy(this, this._handleAnchorRemoved);
+    this._positionStrategy = new Strategy(this, this._handleAnchorRemoved);
 
     return this._positionStrategy;
   }
@@ -244,12 +269,18 @@ export default class IgcPopoverComponent extends LitElement {
   };
 
   /**
-   * An IDREF that does not resolve keeps the current target, so the popover
-   * finds an anchor that renders later, at the next open.
+   * An IDREF that does not resolve keeps the current target. The next open
+   * resolves the IDREF again.
    */
   private _resolveTarget(): Element | undefined {
+    if (this.anchorRect) {
+      return (this._rectAnchor ??= this._createRectAnchor());
+    }
+
     if (isString(this.anchor)) {
-      return getElementByIdFromRoot(this, this.anchor) ?? this._target;
+      const previous =
+        this._target === this._rectAnchor ? undefined : this._target;
+      return getElementByIdFromRoot(this, this.anchor) ?? previous;
     }
 
     return (
@@ -258,29 +289,47 @@ export default class IgcPopoverComponent extends LitElement {
     );
   }
 
-  private _setOpenState(state: boolean): void {
+  private _setOpenState(open: boolean): void {
+    // Only a connected element can enter the top layer. `connectedCallback`
+    // opens the popover again.
+    const state = open && this.isConnected;
+
     if (state) {
       this._target = this._resolveTarget();
     }
 
-    if (state && this._target) {
-      // `attach` also detaches the previous open cycle.
-      this._getPositionStrategy(this._target).attach(
-        this._target,
-        this._container
-      );
-    } else {
-      this._positionStrategy?.detach();
+    // The proxy anchor shows before the container and hides after it. A proxy
+    // that enters the top layer after the container does not anchor it.
+    const rectAnchor = state && this.anchorRect ? this._rectAnchor : undefined;
+
+    if (rectAnchor) {
+      if (!isPopoverOpen(rectAnchor)) {
+        rectAnchor.showPopover();
+      }
+
+      // After the show, because a hidden element has no zoom.
+      this._placeRectAnchor();
     }
 
-    this._syncContainerState(state);
+    if (state && this._target) {
+      const strategy = this._getPositionStrategy(this._target);
+
+      // `attach` also detaches the previous open cycle.
+      strategy.attach(this._target, this._container);
+      strategy.show();
+    } else {
+      this._positionStrategy?.detach();
+      this._positionStrategy?.hide();
+    }
+
+    this._syncScrollStrategy();
+
+    if (!rectAnchor && isPopoverOpen(this._rectAnchor)) {
+      this._rectAnchor?.hidePopover();
+    }
   }
 
-  /**
-   * Binds one document `scroll` listener while the container shows and the
-   * scroll strategy is `close`. Reads the container, which can stay closed
-   * while `open` is true.
-   */
+  /** Reads the container, which can stay closed while `open` is true. */
   private _syncScrollStrategy(): void {
     toggleEventListener(
       document,
@@ -295,19 +344,41 @@ export default class IgcPopoverComponent extends LitElement {
     this.dispatchEvent(new CustomEvent('igcPopoverScrollClose'));
   };
 
-  /** Shows or hides the container and then syncs the scroll listener. */
-  private _syncContainerState(state: boolean): void {
-    if (!this._container) {
+  //#endregion
+
+  //#region Rectangle anchor
+
+  /**
+   * A `manual` popover, so it is in the top layer, where the transforms of
+   * the ancestors do not apply.
+   */
+  private _createRectAnchor(): HTMLElement {
+    const anchor = document.createElement('div');
+
+    anchor.popover = 'manual';
+    anchor.setAttribute('aria-hidden', 'true');
+    anchor.toggleAttribute('data-rect-anchor', true);
+
+    // Before the range that Lit renders, so a render never removes it.
+    this.renderRoot.prepend(anchor);
+    return anchor;
+  }
+
+  private _placeRectAnchor(): void {
+    if (!(this._rectAnchor && this.anchorRect)) {
       return;
     }
 
-    if (state && this._target) {
-      this._positionStrategy?.show();
-    } else {
-      this._positionStrategy?.hide();
-    }
+    const { x, y, width, height } = this.anchorRect;
+    // The rectangle is in viewport pixels. An ancestor `zoom` scales the styles.
+    const zoom = getCSSZoom(this._rectAnchor);
 
-    this._syncScrollStrategy();
+    setStyles(this._rectAnchor, {
+      left: `${x / zoom}px`,
+      top: `${y / zoom}px`,
+      width: `${width / zoom}px`,
+      height: `${height / zoom}px`,
+    });
   }
 
   //#endregion

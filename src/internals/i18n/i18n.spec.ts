@@ -818,7 +818,9 @@ describe('Localization', () => {
 
       it('reads a lang that changed while it was detached', async () => {
         const root = await fixture<HTMLElement>(html`
-          <div><section lang="bg"><${tag}></${tag}></section></div>
+          <div>
+            <section lang="bg"><${tag}></${tag}></section>
+          </div>
         `);
         const section = root.querySelector('section')!;
         const inner = get(root, tagName);
@@ -927,7 +929,9 @@ describe('Localization', () => {
 
       it('updates the hosts of a lang that a new host reads first', async () => {
         const root = await fixture<HTMLElement>(html`
-          <div><section lang="bg"><${tag} id="first"></${tag}></section></div>
+          <div>
+            <section lang="bg"><${tag} id="first"></${tag}></section>
+          </div>
         `);
         const section = root.querySelector('section')!;
         const first = get(root, '#first');

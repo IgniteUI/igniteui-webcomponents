@@ -13,6 +13,7 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { convertToDate } from '#internals/date/converters.js';
 import { coercedProperty } from '#internals/decorators/coerced-property.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import {
   formatDisplayDate,
   getDateTimeFormat,
@@ -27,7 +28,6 @@ import {
   focusLeftHost,
   getElementFromPath,
   preventDefault,
-  stopPropagation,
 } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { equal } from '#internals/utils/objects.js';
@@ -143,6 +143,9 @@ export abstract class IgcDatePickerBaseComponent<
   @query(IgcCalendarComponent.tagName)
   protected readonly _calendar!: IgcCalendarComponent;
 
+  @query(IgcDialogComponent.tagName)
+  private readonly _dialog?: IgcDialogComponent;
+
   protected get _isDropDown(): boolean {
     return this.mode === 'dropdown';
   }
@@ -252,7 +255,7 @@ export abstract class IgcDatePickerBaseComponent<
   /** Invoked when focus has left the picker for good. */
   protected _onBlur(): void {}
 
-  /** Invoked when the dialog of the picker is closing, before the picker is hidden. */
+  /** Invoked when the dialog asks to close and the picker accepts the close. */
   protected _onDialogClosing(): void {}
 
   /** Invoked when the picker is toggled, before the update is awaited. */
@@ -552,6 +555,57 @@ export abstract class IgcDatePickerBaseComponent<
     );
   }
 
+  /** In dialog mode, plays the dialog animations; a close keeps `open` true until the exit ends. */
+  protected override _toggleTransition(
+    open: boolean,
+    signal: AbortSignal
+  ): boolean | Promise<boolean> {
+    const dialog = this._isDropDown ? undefined : this._dialog;
+
+    if (!open && dialog?.open) {
+      // A newer open ends the exit at once, so a later close can play its own.
+      signal.addEventListener(
+        'abort',
+        () => {
+          if (this.open) keepDialogOpen(dialog);
+        },
+        { once: true }
+      );
+
+      const hidden = dialog.hide();
+      // A dialog that has not opened yet closes at once, so the first render must not open it.
+      if (!dialog.open) this.open = false;
+
+      return hidden.then((completed) => {
+        if (completed && !signal.aborted) this.open = false;
+        return completed;
+      });
+    }
+
+    this.open = open;
+
+    if (!open || !dialog) return true;
+
+    if (dialog.open) {
+      keepDialogOpen(dialog);
+      return true;
+    }
+
+    // `open` set to `false` ends the entrance. `?open` skips a value equal to
+    // its last commit, so check after the render.
+    signal.addEventListener(
+      'abort',
+      () => {
+        this.updateComplete.then(() => {
+          if (!this.open) dialog.open = false;
+        });
+      },
+      { once: true }
+    );
+
+    return dialog.show();
+  }
+
   protected async _shouldCloseCalendarDropdown(): Promise<void> {
     if (this.keepOpenOnSelect || !this._canCloseOnSelect()) {
       return;
@@ -597,6 +651,20 @@ export abstract class IgcDatePickerBaseComponent<
     this._emitChangeIfDirty();
   }
 
+  /**
+   * Closes the picker with the close events. `apply` commits or reverts the value, and runs only when the close goes
+   * on, so a canceled `igcClosing` changes nothing. A running close already decided the value, so the call does nothing
+   * then.
+   */
+  protected _closeWith(apply: () => void): Promise<boolean> {
+    if (!this.open || this._isClosing) return Promise.resolve(false);
+
+    const closed = this._hide(true);
+    // The exit runs, or a close without one is done.
+    if (this._isClosing || !this.open) apply();
+    return closed;
+  }
+
   /** Emits `igcChange` if the value has moved away from the last committed one. */
   protected _emitChangeIfDirty(): void {
     if (!equal(this._value, this._oldValue)) {
@@ -607,6 +675,20 @@ export abstract class IgcDatePickerBaseComponent<
   //#endregion
 
   //#region Public methods
+
+  /* alternateName: focusComponent */
+  /** Sets focus on the picker. */
+  public override focus(options?: FocusOptions): void {
+    super.focus(options);
+    deferFocus(this, options);
+  }
+
+  /* alternateName: blurComponent */
+  /** Removes focus from the picker. */
+  public override blur(): void {
+    cancelDeferredFocus(this);
+    super.blur();
+  }
 
   /** Clears the value and the input text of the picker. */
   public clear(): void {
@@ -620,10 +702,8 @@ export abstract class IgcDatePickerBaseComponent<
   //#region Event handlers
 
   protected async _onEscapeKey(): Promise<void> {
-    if (await this._hide(true)) {
-      this._handleDismiss();
-      this._focusInput();
-    }
+    // Revert as the close starts, as Cancel does, so a reopen during the exit keeps the old value.
+    if (await this._closeWith(() => this._handleDismiss())) this._focusInput();
   }
 
   protected override async _handleAnchorClick(): Promise<void> {
@@ -652,7 +732,8 @@ export abstract class IgcDatePickerBaseComponent<
     event.stopPropagation();
     this._setTouchedState();
 
-    if (this.readOnly) {
+    // The running close decides the value.
+    if (this.readOnly || this._isClosing) {
       await this._restoreCalendarSelection();
       return;
     }
@@ -665,10 +746,11 @@ export abstract class IgcDatePickerBaseComponent<
     }
   }
 
+  /** Runs the close through the picker; a canceled `igcClosing` keeps the dialog open and commits nothing. */
   protected _handleDialogClosing(event: Event): void {
+    event.preventDefault();
     event.stopPropagation();
-    this._onDialogClosing();
-    this._hide(true);
+    this._closeWith(() => this._onDialogClosing());
   }
 
   //#endregion
@@ -824,7 +906,6 @@ export abstract class IgcDatePickerBaseComponent<
             ?close-on-outside-click=${!this.keepOpenOnOutsideClick}
             hide-default-action
             @igcClosing=${this._handleDialogClosing}
-            @igcClosed=${stopPropagation}
             exportparts="base: dialog-base, title, footer"
           >
             ${this._renderPickerContent(id)}${this._renderDialogFooter()}
@@ -833,4 +914,10 @@ export abstract class IgcDatePickerBaseComponent<
   }
 
   //#endregion
+}
+
+/** Ends a running exit of the dialog without an animation. */
+function keepDialogOpen(dialog: IgcDialogComponent): void {
+  dialog.open = false;
+  dialog.open = true;
 }

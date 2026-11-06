@@ -127,7 +127,8 @@ describe('Form associated mixin tests', () => {
         ?required=${props?.required}
         value=${ifDefined(props?.value)}
         minlength=${ifDefined(props?.minLength)}
-        maxlength=${ifDefined(props?.maxLength)}>
+        maxlength=${ifDefined(props?.maxLength)}
+      >
       </${tagName}>`
     );
   }
@@ -142,7 +143,8 @@ describe('Form associated mixin tests', () => {
         <${tagName}
           name="test"
           ?required=${props?.required}
-          value=${ifDefined(props?.value)}>
+          value=${ifDefined(props?.value)}
+        >
         </${tagName}>
       </form>`
     );

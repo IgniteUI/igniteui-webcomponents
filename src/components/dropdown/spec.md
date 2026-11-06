@@ -55,6 +55,7 @@ This directory hosts four public components: [`igc-dropdown`](#igc-dropdown),
 |       3 | 2026-10-26 | An `igc-button` target passes the popup state on to its native button. |
 |       4 | 2026-10-26 | A click or `select()` on the selected item moves the active item to it. |
 |       5 | 2026-10-28 | An `igc-input` target gives `aria-haspopup` and the active item to its native input. |
+|       6 | 2026-11-04 | Setting `selected` on an item again keeps the active item; only the selected item starts active. |
 
 ## Overview
 
@@ -179,6 +180,9 @@ const current = dropdown.selectedItem;
 `select` and `navigateTo` return the matched item, or `null` when nothing matches. An item without an explicit
 `value` falls back to its text content.
 
+A change of `selected` on an item also sets its `active`. Setting `selected` to its current value does not, so a
+framework that sets each property on each render keeps the keyboard position in an open list.
+
 #### Positioning
 
 ```html
@@ -275,7 +279,7 @@ Represents an item in a dropdown list.
 | Property | Attribute | Reflected | Type      | Default | Description                                                   |
 | -------- | --------- | --------- | --------- | ------- | -------------------------------------------------------------- |
 | value    | value     | No        | `string`  | -       | The value of the item. Falls back to the text content.        |
-| selected | selected  | Yes       | `boolean` | false   | Whether the item is selected. It also sets `active` to the same value.                                 |
+| selected | selected  | Yes       | `boolean` | false   | Whether the item is selected. A change also sets `active` to the same value.                           |
 | active   | active    | Yes       | `boolean` | false   | Whether the item is active. The active item has the visual focus during keyboard navigation.                                   |
 | disabled | disabled  | Yes       | `boolean` | false   | Whether the item is disabled.                                 |
 
@@ -336,7 +340,7 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 
 ### Initial selection
 
-6. An item marked `selected` in markup becomes the initial selection.
+6. An item marked `selected` in markup becomes the initial selection and the only active item.
 7. The selection survives closing and reopening the list.
 
 ### API tests
@@ -366,7 +370,8 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 ### Items collection changes
 
 21. Items added or removed at run time are picked up by the component.
-22. Removing the selected item updates the reported selection.
+22. Removing the selected item updates the reported selection. Setting `selected` on each item again keeps the
+    active item.
 
 ### Events tests
 

@@ -10,14 +10,40 @@ const DEFAULT_THEME = {
   light: 'github-light',
   dark: 'github-dark',
 };
-const GITHUB_COLOR_REPLACEMENTS = {
-  '#6f42c1': 'var(--shiki-purple)',
-  '#032f62': 'var(--shiki-dark-blue)',
-  '#d73a49': 'var(--shiki-red)',
-  '#005cc5': 'var(--shiki-blue)',
-  '#22863a': 'var(--shiki-green)',
-  '#e36209': 'var(--shiki-orange)',
+// The token colors of the GitHub themes, by the `--shiki-*` variable that can replace them.
+const GITHUB_COLORS = {
+  'github-light': {
+    '#6f42c1': 'purple',
+    '#032f62': 'dark-blue',
+    '#d73a49': 'red',
+    '#005cc5': 'blue',
+    '#22863a': 'green',
+    '#e36209': 'orange',
+  },
+  'github-dark': {
+    '#b392f0': 'purple',
+    '#9ecbff': 'dark-blue',
+    // Regular expressions and link text, dark blue in the light theme.
+    '#dbedff': 'dark-blue',
+    '#f97583': 'red',
+    '#79b8ff': 'blue',
+    '#85e89d': 'green',
+    '#ffab70': 'orange',
+  },
 };
+
+// Without the variable, a token keeps its GitHub color.
+const GITHUB_COLOR_REPLACEMENTS = Object.fromEntries(
+  Object.entries(GITHUB_COLORS).map(([theme, colors]) => [
+    theme,
+    Object.fromEntries(
+      Object.entries(colors).map(([hex, name]) => [
+        hex,
+        `var(--shiki-${name}, ${hex})`,
+      ])
+    ),
+  ])
+);
 
 // Holds the finished code blocks of a message while each streamed chunk parses it again.
 const HIGHLIGHT_CACHE_SIZE = 32;
@@ -57,6 +83,7 @@ export interface MarkdownRendererOptions {
   /**
    * The theme(s) used by the syntax highlighter.
    * Can be a single theme name or separate themes for light and dark modes.
+   * With the default GitHub themes, the `--shiki-*` variables can replace the token colors.
    * @default { light: 'github-light', dark: 'github-dark' }
    */
   theme?: string | { light?: string; dark?: string };
@@ -216,7 +243,7 @@ async function addHighlighter(
 
   // Shiki applies a flat entry to every theme, and then the entries of the theme's own key.
   const githubColors = options?.colorReplacements
-    ? {}
+    ? undefined
     : GITHUB_COLOR_REPLACEMENTS;
   const shikiOptions = {
     // `themes` tokenizes the code once for each theme, so one theme goes as `theme`.
@@ -226,12 +253,12 @@ async function addHighlighter(
     colorReplacements: {
       ...options?.colorReplacements,
       'github-light': {
-        ...githubColors,
+        ...githubColors?.['github-light'],
         '#fff': 'var(--shiki-bg)',
         '#24292e': 'var(--shiki-fg)',
       },
       'github-dark': {
-        ...githubColors,
+        ...githubColors?.['github-dark'],
         '#24292e': 'var(--shiki-bg)',
         '#e1e4e8': 'var(--shiki-fg)',
       },

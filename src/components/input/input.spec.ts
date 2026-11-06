@@ -10,6 +10,7 @@ import { ValidationResourceStringsBG } from 'igniteui-i18n-resources';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
@@ -1180,4 +1181,6 @@ describe('Input component', () => {
       <span slot="suffix">USD</span>
     </igc-input>
   `);
+
+  runFocusBeforeRenderTests(html`<igc-input label="Label"></igc-input>`);
 });

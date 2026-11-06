@@ -1,3 +1,5 @@
+import { globSync, statSync } from 'node:fs';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { esbuildPlugin } from '@web/dev-server-esbuild';
 import { defaultReporter } from '@web/test-runner';
@@ -67,18 +69,81 @@ function fastCheckSettings() {
 const fastCheck = JSON.stringify(fastCheckSettings());
 
 /**
+ * The browser of the suite, also for configs that run it in another browser. Animations
+ * take no time: a test that checks one calls `allowMotion()`.
+ *
+ * @param {'chromium' | 'firefox' | 'webkit'} product
+ */
+export function launcher(product) {
+  return playwrightLauncher({
+    product,
+    headless: true,
+    createBrowserContext: ({ browser }) =>
+      browser.newContext({ reducedMotion: 'reduce' }),
+  });
+}
+
+/** The spec files. The helpers in `src/internals/testing` are not test files. */
+const SPEC_GLOB = 'src/**/*.spec.ts';
+const NOT_SPECS_GLOB = 'src/internals/testing/**';
+
+/**
+ * The spec files to run. `TEST_SHARD=<index>/<count>` (for example `2/3`) selects one
+ * part, for parallel CI jobs. The parts balance their bytes, which follow the run time
+ * more closely than the file count: each file, the largest first, goes to the lightest.
+ */
+function specFiles() {
+  const raw = process.env.TEST_SHARD?.trim();
+
+  if (!raw) {
+    return [SPEC_GLOB, `!${NOT_SPECS_GLOB}`];
+  }
+
+  const [, index, count] = /^(\d+)\/(\d+)$/.exec(raw)?.map(Number) ?? [];
+
+  if (!(index >= 1 && index <= count)) {
+    throw new Error(
+      `TEST_SHARD must be "<index>/<count>" with 1 <= index <= count, got "${raw}".`
+    );
+  }
+
+  const root = fileURLToPath(new URL('.', import.meta.url));
+  const files = globSync(SPEC_GLOB, { cwd: root, exclude: [NOT_SPECS_GLOB] })
+    .map((file) => ({
+      file: file.split(path.sep).join('/'),
+      bytes: statSync(path.join(root, file)).size,
+    }))
+    .sort((a, b) => b.bytes - a.bytes || (a.file < b.file ? -1 : 1));
+
+  const parts = Array.from({ length: count }, () => ({ bytes: 0, files: [] }));
+
+  for (const { file, bytes } of files) {
+    const part = parts.reduce((min, next) =>
+      next.bytes < min.bytes ? next : min
+    );
+    part.files.push(file);
+    part.bytes += bytes;
+  }
+
+  return parts[index - 1].files;
+}
+
+/**
  * Loads `assertion-errors.spec.ts` ahead of the test framework so that every
  * test file gets the chai patch that keeps failed assertions on non-cloneable
  * subjects (sinon spies, DOM nodes) reportable. See the module itself for the
  * details.
  *
- * Also sets the {@link fastCheckSettings} for `fast-check-setup.spec.ts`.
+ * Also loads `inner-events.spec.ts`, which fails a test file when the event of
+ * an inner element reaches a component host, and sets the
+ * {@link fastCheckSettings} for `fast-check-setup.spec.ts`.
  */
 function testRunnerHtml(testFramework) {
   return `<!DOCTYPE html>
 <html>
   <body>
     <script type="module" src="/src/internals/testing/assertion-errors.spec.ts"></script>
+    <script type="module" src="/src/internals/testing/inner-events.spec.ts"></script>
     <script>globalThis.__FAST_CHECK__ = ${fastCheck};</script>
     <script type="module" src="${testFramework}"></script>
   </body>
@@ -86,9 +151,8 @@ function testRunnerHtml(testFramework) {
 }
 
 export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
-  // The helpers in `src/internals/testing` are not test files.
-  files: ['src/**/*.spec.ts', '!src/internals/testing/**'],
-  browsers: [playwrightLauncher({ product: 'chromium', headless: true })],
+  files: specFiles(),
+  browsers: [launcher('chromium')],
 
   testRunnerHtml,
 
@@ -101,7 +165,10 @@ export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
   },
 
   coverageConfig: {
-    exclude: ['node_modules/**/*', '**/themes/**', 'src/internals/testing/**'],
+    // A shard does not exclude the spec files that it imports but does not run.
+    exclude: ['node_modules/**/*', '**/themes/**', SPEC_GLOB, NOT_SPECS_GLOB],
+    // CI merges the `json` reports of the shards. See `scripts/merge-coverage.mjs`.
+    reporters: ['lcov', 'json'],
   },
 
   testFramework: {

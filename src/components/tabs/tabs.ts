@@ -11,8 +11,10 @@ import {
   queryAssignedElements,
 } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
-import { createRef, ref } from 'lit/directives/ref.js';
+import { ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { tabsHeaderPositionContext } from '#internals/context.js';
+import { addContextProvider } from '#internals/controllers/context-provider.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import {
   createMutationController,
@@ -24,15 +26,21 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { firstOf, sameItems } from '#internals/utils/arrays.js';
-import { getElementFromPath } from '#internals/utils/events.js';
+import { isLTR } from '#internals/utils/dom.js';
+import { getElementFromPath, getEventOrigin } from '#internals/utils/events.js';
 import { isString } from '#internals/utils/types.js';
 import { all } from '#themes/tabs/themes/tabs-themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
-import type { TabsActivation, TabsAlignment } from '../types.js';
+import type {
+  TabsActivation,
+  TabsAlignment,
+  TabsHeaderPosition,
+} from '../types.js';
 import {
   getTabHeader,
+  isColumn,
   opensElsewhere,
   TAB_HEADER,
   TabsHelpers,
@@ -80,7 +88,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
 
   //#region Private state & properties
 
-  /** Observes the scroll container, the direction probe and each tab header. */
+  /** Observes the scroll container, the probes and each tab header. */
   private readonly _resizeController = addResizeObserverController(this, {
     callback: this._handleResize,
     options: { box: 'border-box' },
@@ -95,20 +103,25 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
     config: { attributeFilter: ['selected', 'disabled'] },
   });
 
-  private _containerWidth = -1;
+  /** The width and the height of the container at the last resize. */
+  private _containerSize = [-1, -1];
+
+  /** The heights of the probes at the last resize, else 0. */
+  private readonly _probeHeights = new WeakMap<Element, number>();
+
+  /** The headers that the observer reported, so that a later report is a change of size. */
+  private readonly _reportedHeaders = new WeakSet<Element>();
+
+  /** The frame request of a layout that waits for the next frame. */
+  private _layoutFrame = 0;
 
   /** The tabs at the last change of the slot. */
   private _knownTabs: IgcTabComponent[] = [];
 
-  private readonly _containerRef = createRef<HTMLElement>();
+  private readonly _domHelpers = new TabsHelpers(this);
 
-  private readonly _indicatorRef = createRef<HTMLElement>();
-
-  private readonly _domHelpers = new TabsHelpers(
-    this,
-    this._containerRef,
-    this._indicatorRef
-  );
+  /** The direction at the last update, to move the indicator when it changes. */
+  private _isLeftToRight = false;
 
   @queryAssignedElements({ selector: IgcTabComponent.tagName, flatten: true })
   private _tabs!: IgcTabComponent[];
@@ -124,6 +137,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
     );
   }
 
+  /** `activeElement` misses tabs slotted through another shadow root. */
+  private get _focusedTab(): IgcTabComponent | undefined {
+    return this._tabs.find((tab) => tab.matches(':focus-within'));
+  }
+
   private _activeTab?: IgcTabComponent;
 
   //#endregion
@@ -133,11 +151,28 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
   /**
    * The alignment of the tab headers in the header strip.
    *
+   * In a column, `start` is the top and `end` is the bottom.
+   *
    * @attr alignment
    * @default 'start'
    */
   @property({ reflect: true })
   public alignment: TabsAlignment = 'start';
+
+  /**
+   * The side of the panels on which the tab headers are placed.
+   *
+   * With `top`, the headers form a row above the panels. With `start` and `end`, they
+   * form a column before or after the panels in the text direction, so `start` is on
+   * the right in a right-to-left layout. In a column, the Up and Down arrow keys move
+   * between the tabs. When the headers do not fit in the height of the tabs, scroll
+   * buttons above and below them scroll the column.
+   *
+   * @attr header-position
+   * @default 'top'
+   */
+  @property({ attribute: 'header-position', reflect: true })
+  public headerPosition: TabsHeaderPosition = 'top';
 
   /**
    * The activation behavior of the tabs.
@@ -179,19 +214,32 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
     super();
 
     addInternalsController(this, {
-      initialARIA: { role: 'tablist', ariaOrientation: 'horizontal' },
+      initialARIA: { role: 'tablist' },
+      aria: () => ({
+        ariaOrientation: isColumn(this) ? 'vertical' : 'horizontal',
+      }),
       reflectRole: true,
     });
 
     addThemingController(this, all);
 
+    addContextProvider(this, {
+      context: tabsHeaderPositionContext,
+      watch: ['headerPosition'],
+      value: () => this.headerPosition,
+    });
+
     addRovingFocusController(this, {
-      keybindings: { ref: this._containerRef, skip: this._skipKeyboard },
+      keybindings: {
+        ref: this._domHelpers.containerRef,
+        skip: this._skipKeyboard,
+      },
       items: () => this._navigableTabs,
-      // `activeElement` misses tabs slotted through another shadow root.
-      current: () => this._tabs.find((tab) => tab.matches(':focus-within')),
+      current: () => this._focusedTab,
       focusItem: this._keyboardActivateTab,
       activateItem: this._activateTab,
+      horizontal: () => !isColumn(this),
+      vertical: () => isColumn(this),
       missingCurrent: 'wrap',
     });
   }
@@ -212,10 +260,15 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
   }
 
   protected override update(props: PropertyValues<this>): void {
-    const directionChanged = this._domHelpers.checkAndUpdateDirection();
+    const ltr = isLTR(this);
 
-    if (props.has('alignment') || directionChanged) {
+    if (props.has('alignment') || ltr !== this._isLeftToRight) {
+      this._isLeftToRight = ltr;
       this._domHelpers.setIndicator(this._activeTab);
+    }
+
+    if (props.has('headerPosition') && this.hasUpdated) {
+      this._applyHeaderPosition();
     }
 
     super.update(props);
@@ -226,20 +279,45 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
   //#region Event handlers
 
   private _handleResize(entries: ResizeObserverEntry[]): void {
-    const container = this._containerRef.value;
+    const container = this._domHelpers.containerRef.value;
+    const column = isColumn(this);
+    // The height of a column moves the headers that `alignment` centers or ends.
+    const moves =
+      column && (this.alignment === 'center' || this.alignment === 'end');
     let resized = false;
+    let moved = false;
     let replaced = false;
+    let headerResized = false;
 
     for (const { target, borderBoxSize } of entries) {
+      const [{ inlineSize, blockSize }] = borderBoxSize;
+
       if (target === container) {
-        // The panels also size the container, so only its width counts.
-        const [{ inlineSize }] = borderBoxSize;
-        resized ||= inlineSize !== this._containerWidth;
-        this._containerWidth = inlineSize;
-      } else {
+        const [width, height] = this._containerSize;
+
+        // Hidden tabs cannot scroll, so the selected tab scrolls into view when they show.
+        this._domHelpers.scrollOnLayout ||= width === 0 && inlineSize > 0;
+
+        // The panels also size the container, so a row measures only its width.
+        resized ||= !column && inlineSize !== width;
+        moved ||= moves && blockSize !== height;
+        this._containerSize = [inlineSize, blockSize];
+      } else if (
+        target.matches('[data-height-probe], [data-max-height-probe]')
+      ) {
+        // Only a column limits the panels, to a definite height or a `max-height`.
+        resized ||=
+          column && blockSize !== (this._probeHeights.get(target) ?? 0);
+        this._probeHeights.set(target, blockSize);
+      } else if (target.matches(TAB_HEADER)) {
         resized = true;
         // A header that a render replaced reports a zero size on removal.
         replaced ||= !target.isConnected;
+        headerResized ||= this._reportedHeaders.has(target);
+        this._reportedHeaders.add(target);
+      } else {
+        // The direction probe.
+        resized = true;
       }
     }
 
@@ -247,8 +325,20 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
       this._observeHeaders();
     }
 
-    if (resized) {
+    // After a header changes size, such as a tab that hides or shows, the refresh can
+    // size the other headers through the tab count and the scroll buttons. In a column,
+    // the height limit of the panels and the scroll buttons also size the container.
+    // The observer reports a loop when that happens in this frame. The first report of
+    // a header comes before any change, so it refreshes at once.
+    if (resized && (column || headerResized)) {
+      cancelAnimationFrame(this._layoutFrame);
+      this._layoutFrame = requestAnimationFrame(
+        () => this.isConnected && this._refreshLayout()
+      );
+    } else if (resized) {
       this._refreshLayout();
+    } else if (moved) {
+      this._domHelpers.setIndicator(this._activeTab);
     }
   }
 
@@ -324,18 +414,52 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
   private _refreshLayout(): void {
     this._domHelpers.updateLayout();
     this._domHelpers.setIndicator(this._activeTab);
+
+    if (this._domHelpers.scrollOnLayout) {
+      this._domHelpers.scrollOnLayout = false;
+      this._domHelpers.scrollTabIntoView(this._activeTab);
+    }
   }
 
   /**
-   * Observes the container and the direction probe. A ref callback, because a ref
-   * gets no element while the host renders disconnected (#2416).
+   * Lays the tabs out again once a change between a row and a column renders. An
+   * axis with hidden overflow keeps its scroll offset, so both start over. The
+   * indicator changes axis at once.
+   */
+  private async _applyHeaderPosition(): Promise<void> {
+    await this.updateComplete;
+
+    const focused = this._focusedTab;
+
+    this._domHelpers.containerRef.value?.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant',
+    });
+    await this._domHelpers.scrollTabIntoView(focused ?? this._activeTab);
+    this._domHelpers.setIndicator(this._activeTab, false);
+  }
+
+  /** Observes the `max-height` probe, which is outside the container. */
+  private _observeMaxHeight(probe?: Element): void {
+    if (probe) {
+      this._resizeController.observe(probe);
+    }
+  }
+
+  /**
+   * Observes the container and the probes. A ref callback, because a ref gets no
+   * element while the host renders disconnected (#2416).
    */
   private _observeContainer(container?: Element): void {
     if (container) {
       this._resizeController.observe(container);
-      this._resizeController.observe(
-        container.querySelector('[data-direction-probe]')!
-      );
+
+      for (const probe of container.querySelectorAll(
+        '[data-direction-probe], [data-height-probe]'
+      )) {
+        this._resizeController.observe(probe);
+      }
     }
   }
 
@@ -447,14 +571,13 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
 
   /**
    * Only keys pressed on a tab header navigate, so a control slotted into a label
-   * keeps its keys. `node` is the target retargeted to the tab.
+   * keeps its keys. `node` is the target retargeted to the tab, so a header
+   * origin is the header of that tab.
    */
   private _skipKeyboard(node: Element, event: KeyboardEvent): boolean {
-    const tab = node as IgcTabComponent;
-
     return !(
-      this._tabs.includes(tab) &&
-      firstOf(event.composedPath()) === getTabHeader(tab)
+      this._tabs.includes(node as IgcTabComponent) &&
+      getEventOrigin(TAB_HEADER, event)
     );
   }
 
@@ -518,14 +641,16 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
   protected override render(): TemplateResult {
     return html`
       <div
-        ${ref(this._containerRef)}
+        ${ref(this._domHelpers.containerRef)}
         ${ref(this._observeContainer)}
         part="tabs"
         style=${styleMap(this._domHelpers.styleProperties)}
         @scroll=${this._handleScroll}
       >
         <span data-direction-probe></span>
+        <span data-height-probe ${ref(this._domHelpers.heightProbeRef)}></span>
         <div
+          ${ref(this._domHelpers.innerRef)}
           part=${partMap({
             inner: true,
             scrollable: this._domHelpers.hasScrollButtons,
@@ -539,9 +664,16 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
           ></slot>
           ${this._renderScrollButton('end')}
           <div part="selected-indicator">
-            <span ${ref(this._indicatorRef)}></span>
+            <span ${ref(this._domHelpers.indicatorRef)}></span>
           </div>
         </div>
+      </div>
+      <div data-max-height>
+        <span
+          data-max-height-probe
+          ${ref(this._domHelpers.maxHeightProbeRef)}
+          ${ref(this._observeMaxHeight)}
+        ></span>
       </div>
     `;
   }

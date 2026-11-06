@@ -66,6 +66,9 @@
 |      12 | 2026-10-26 | Last 7 Days selects 7 days, counting today; the built-in ranges use the date of the click |
 |      13 | 2026-10-28 | The picker projects only `aria-haspopup`, `aria-required` and labels onto the editor |
 |      14 | 2026-10-29 | The `overlay` part is removed; the dialog backdrop is the native `::backdrop` of `dialog-base` |
+|      15 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
+|      16 | 2026-11-04 | In dialog mode, an open and a close play the animations of the dialog; a canceled `igcClosing` keeps the dialog open |
+|      17 | 2026-11-05 | Done and Cancel change the range only when the close goes on; Done emits `igcChange` after `igcClosing` |
 
 ## Overview
 
@@ -369,6 +372,14 @@ as touched, so an invalid value shows its invalid styles at once, also when the 
 
 **Range chips.** In dropdown mode, activating a chip closes the picker. In dialog mode the dialog stays open.
 
+**Opening and closing the dialog.** The dialog fades in on an open, and `igcOpened` follows the entrance. Cancel,
+Done, <kbd>Escape</kbd> and an outside click play the exit animation of the dialog, and `open` stays `true` until it
+ends; the calendar and the range chips ignore a selection then, and Done, Cancel and <kbd>Escape</kbd> do nothing.
+Done, Cancel, <kbd>Escape</kbd> and an outside click emit `igcClosing` first, and commit or restore the range only
+when the close goes on. So a canceled `igcClosing` keeps the dialog open with the selected range, and Done emits
+`igcClosing`, `igcChange` and `igcClosed` in this order. A `hide()` after a canceled close does not commit or
+restore: the selected range stays the value, with no `igcChange`. The date picker suite covers the shared behavior.
+
 **Readonly.** Keyboard navigation, toggling the calendar and clearing through the clear icon are all disabled, and
 the calendar and clear icons appear visually disabled.
 
@@ -470,6 +481,8 @@ apply.
 
 | Name              | Type signature                          | Description                                                             |
 | ----------------- | --------------------------------------- | ----------------------------------------------------------------------- |
+| focus             | `(options?: FocusOptions): void`        | Sets focus on the picker.                                               |
+| blur              | `(): void`                              | Removes focus from the picker.                                          |
 | show              | `(): Promise<boolean>`                  | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one.                                                    |
 | hide              | `(): Promise<boolean>`                  | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                    |
 | toggle            | `(): Promise<boolean>`                  | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes.                                |
@@ -568,7 +581,8 @@ The component is covered by eight suites in this directory, all running in a rea
 
 The suites reuse `createFormAssociatedTestBed`, `runValidationContainerTests`,
 `runExternalLabelAssociationTests` and the `simulate*` helpers from
-[`src/internals/testing`](../../internals/testing). The groups below mirror the `describe` blocks.
+[`src/internals/testing`](../../internals/testing). The groups below mirror the `describe` blocks. The common, single
+input and two inputs suites run with reduced motion, so the dialog does not fade.
 
 ### Common suite
 
@@ -578,9 +592,12 @@ The suites reuse `createFormAssociatedTestBed`, `runValidationContainerTests`,
    `mode` does not change.
 3. Methods - `show`, `hide`, `toggle`, `select` and `clear`.
 4. Interactions - selection through the calendar, keyboard navigation, and interactions with the show icon. A value
-   set from code while the dialog is open, also with `select()`, is not reported when Done commits.
+   set from code while the dialog is open, also with `select()`, is not reported when Done commits. After a canceled
+   close on an outside click or on Done, Cancel restores the range; after a canceled close on Cancel, Done commits it.
+   Done emits `igcChange` after `igcClosing`. <kbd>Escape</kbd> restores the range as the close starts, so
+   Done or a reopen during the exit keeps it. Done, Cancel and <kbd>Escape</kbd> do nothing during the exit of `hide()`.
 5. Readonly state, in dropdown and in dialog mode.
-6. Predefined ranges - the built-in chips and the custom ranges.
+6. Predefined ranges - the built-in chips and the custom ranges, and a chip during the exit of the dialog.
 7. Locale week start - the calendar derives its week start from the locale when `week-start` is not set.
 
 ### Single input suite
@@ -642,6 +659,12 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 29. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal. `required` sets `aria-required` on each editor.
+30. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
+    takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
+    `disabled` set does not cancel an earlier call on another element. The suite runs for one input and for two
+    inputs.
 
 ## Assumptions and limitations
 
@@ -653,6 +676,9 @@ The focus after the form checks and the `invalid` event rules come from the form
 - `min`, `max` and `disabledDates` restrict the calendar and drive validation, but they do not prevent an
   out-of-range date from being typed in; such a value invalidates the component instead.
 - `hideHeader`, `headerOrientation` and the `title` slot are only in effect in dialog mode.
+- In dialog mode, `hide()`, `toggle()` and a change of `open` do not commit or restore the selected range, also after
+  a canceled `igcClosing`. An application that cancels the close, for example to ask for a confirmation, restores the
+  range itself, through `value`.
 
 ## Accessibility
 

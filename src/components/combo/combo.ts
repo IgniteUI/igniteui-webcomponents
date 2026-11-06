@@ -11,6 +11,7 @@ import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditi
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
 import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
@@ -1194,11 +1195,13 @@ export default class IgcComboComponent<
   /** Sets focus on the component. */
   public override focus(options?: FocusOptions): void {
     this._inputRef.value?.focus(options);
+    deferFocus(this, options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the component. */
   public override blur(): void {
+    cancelDeferredFocus(this);
     this._inputRef.value?.blur();
   }
 

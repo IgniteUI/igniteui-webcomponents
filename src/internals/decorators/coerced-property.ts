@@ -1,4 +1,4 @@
-import { notEqual } from 'lit';
+import { notEqual, type PropertyDeclaration } from 'lit';
 import { isObject } from '../utils/types.js';
 
 /** The argument object that the {@link coercedProperty} callbacks get. */
@@ -18,11 +18,29 @@ export interface CoercedPropertyConfig<T, H> {
   transform?: (context: CoercedPropertyContext<T, H>) => T;
 
   /**
-   * Runs after a set, but not for the initializer. An equal primitive, by
-   * Lit's `notEqual`, is not a change. The same object or array is, because
-   * it can hold an in-place change.
+   * Runs after a set, but not for the initializer. The `hasChanged` of the
+   * property options decides what a change is. Without it, an equal
+   * primitive, by Lit's `notEqual`, is not a change. The same object or array
+   * is, because it can hold an in-place change.
    */
   onChange?: (context: CoercedPropertyContext<T, H>) => void;
+}
+
+function hasChanged(
+  host: object,
+  name: PropertyKey,
+  next: unknown,
+  previous: unknown
+): boolean {
+  const { elementProperties } = host.constructor as {
+    elementProperties?: Map<PropertyKey, PropertyDeclaration>;
+  };
+  // `@property()` without options stores Lit's default, `notEqual`.
+  const custom = elementProperties?.get(name)?.hasChanged;
+
+  return custom && custom !== notEqual
+    ? custom(next, previous)
+    : isObject(next) || notEqual(next, previous);
 }
 
 /**
@@ -86,8 +104,8 @@ export function coercedProperty<T, H extends object = object>(
 
         write.call(this, next);
 
-        if (!initial && (isObject(next) || notEqual(next, previous))) {
-          onChange?.({ value: next, host: this, previous });
+        if (!initial && onChange && hasChanged(this, name, next, previous)) {
+          onChange({ value: next, host: this, previous });
         }
       },
       configurable: true,

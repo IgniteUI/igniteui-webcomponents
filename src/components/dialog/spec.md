@@ -53,6 +53,8 @@
 |       5 | 2026-10-19 | Localize the default action through `igniteui-i18n-core`  |
 |       6 | 2026-10-21 | API descriptions aligned with the JSDoc.                  |
 |       7 | 2026-10-29 | The backdrop is the native `::backdrop`; the `backdrop` and `animating` parts are removed; a change of `open` against a running transition ends it |
+|       8 | 2026-11-04 | A `hide()` in the task of `show()` closes the dialog at once |
+|       9 | 2026-11-05 | A dialog out of the document closes when `open` changes to `false`; an append makes an open dialog modal again |
 
 ## Overview
 
@@ -160,6 +162,11 @@ await dialog.toggle();
 The three methods animate the transition and resolve with whether it completed - `false` when the dialog was already
 in that state, when a newer transition superseded this one, or when a change of `open` ended it. Setting the `open`
 property instead opens or closes the dialog immediately, without animation and without emitting the close events.
+
+The dialog keeps its state when it moves in the document, or when you remove it and append it again: an open
+dialog, also one in its exit, is modal again after the append, and a dialog that closed while it was out of the
+document stays closed. A dialog out of the document cannot be modal, so a `show()` there makes it modal when you
+append it.
 
 #### Invoker commands
 
@@ -314,7 +321,10 @@ The suite lives in [`dialog.spec.ts`](./dialog.spec.ts) and runs in a real brows
 
 ### Interrupted transitions
 
-9. A transition superseded by a newer one resolves `false` and settles in the correct final state.
+9. A transition superseded by a newer one resolves `false` and settles in the correct final state. A dialog removed
+   during its exit, or set to `open = false` out of the document, opens as a modal again after an append, also
+   with `show()` in the task of the append. A move while open, an append during the exit, and an append after a
+   `show()` out of the document keep the dialog modal.
 
 ### Events and behaviors
 
@@ -344,7 +354,8 @@ The suite lives in [`dialog.spec.ts`](./dialog.spec.ts) and runs in a real brows
 18. A change of `open` against a running transition ends it: `open = false` and then `open = true` during the exit,
     with an update after each or in one task, keeps the dialog modal with its backdrop, also with reduced motion;
     `open = false` during the entrance lets the next `show()` open the dialog. A `hide()` right after, also in the
-    same task, closes the dialog, and the ended exit does not change the new one.
+    same task, closes the dialog, and the ended exit does not change the new one. A `hide()` in the task of `show()`
+    shows no dialog.
 
 ### Not covered by the suite
 

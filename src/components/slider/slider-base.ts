@@ -33,6 +33,7 @@ import {
   pageUpKey,
 } from '#internals/controllers/key-bindings.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { createTimer } from '#internals/timing.js';
 import { isLTR, pointToFraction } from '#internals/utils/dom.js';
 import {
@@ -404,12 +405,14 @@ export class IgcSliderBaseComponent extends LitElement {
   public override focus(options?: FocusOptions): void {
     if (!(this.disabled || this._activeThumb)) {
       this._thumb?.focus(options);
+      deferFocus(this, options);
     }
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the thumb. */
   public override blur(): void {
+    cancelDeferredFocus(this);
     this._activeThumb?.blur();
   }
 

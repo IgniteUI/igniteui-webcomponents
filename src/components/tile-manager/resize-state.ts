@@ -1,10 +1,14 @@
-import type { ResizeState } from '#internals/directives/resize.js';
+import type {
+  ResizeDirection,
+  ResizeState,
+} from '#internals/directives/resize.js';
 import { resolveCssLength } from '#internals/utils/dom.js';
 import { asNumber } from '#internals/utils/math.js';
 import {
   calculatePosition,
   calculateResizedSpan,
   calculateSnappedDimension,
+  parseTrackSizes,
 } from './resize-util.js';
 import type IgcTileComponent from './tile.js';
 import type {
@@ -20,20 +24,22 @@ type ResizeAxis = 'column' | 'row';
 
 type ResizeAxisState = {
   dimension: TileGridDimension;
+  gap: number;
   prevDelta: number;
   prevSnapped: number;
 };
 
 function createAxisState(
-  dimension: TileGridDimension = { entries: [], minSize: 0 }
+  dimension: TileGridDimension,
+  gap: number
 ): ResizeAxisState {
-  return { dimension, prevDelta: 0, prevSnapped: 0 };
+  return { dimension, gap, prevDelta: 0, prevSnapped: 0 };
 }
 
 /**
- * Parses a computed `[start /] span n`. A start of `auto`, or no start, gives
- * -1, which the layout resolves later. Another form, as from author CSS, gives
- * start -1 and the span of the tile property.
+ * Parses a computed `[start /] span n`. A start of `auto`, no start, or another
+ * form, as from author CSS, gives start -1, which `updateState` measures from
+ * the tile offset. Another form also gives the span of the tile property.
  */
 export function parseGridTrack(value: string, span: number): TilePosition {
   const groups = value.match(CssValues)?.groups;
@@ -53,52 +59,67 @@ function parseTileGridRect(tile: IgcTileComponent): TileGridPosition {
   };
 }
 
-/** Reads the grid. The minimum sizes compute to their authored text, such as `10rem`. */
-function parseTileParentGrid(grid: HTMLElement, computed: CSSStyleDeclaration) {
-  const { gap, gridTemplateColumns, gridTemplateRows } = computed;
-  const minColumnWidth = computed.getPropertyValue('--min-col-width');
+/**
+ * Reads the axes of the grid, each with its own gap. A percentage gap resolves
+ * against the content box. Only rows need a minimum size, because a column
+ * span stops at the last column. `--min-row-height` computes to its authored
+ * text, such as `10rem`, so it is resolved to pixels.
+ */
+function parseTileParentGrid(
+  grid: HTMLElement,
+  computed: CSSStyleDeclaration
+): Record<ResizeAxis, ResizeAxisState> {
+  const { columnGap, rowGap, gridTemplateColumns, gridTemplateRows } = computed;
+  const { paddingLeft, paddingRight, paddingTop, paddingBottom } = computed;
   const minRowHeight = computed.getPropertyValue('--min-row-height');
+  const width =
+    grid.clientWidth - asNumber(paddingLeft) - asNumber(paddingRight);
+  const height =
+    grid.clientHeight - asNumber(paddingTop) - asNumber(paddingBottom);
 
   return {
-    gap: asNumber(gap),
-    columns: {
-      entries: gridTemplateColumns.split(' ').map(asNumber),
-      minSize: resolveCssLength(grid, minColumnWidth),
-    },
-    rows: {
-      entries: gridTemplateRows.split(' ').map(asNumber),
-      minSize: resolveCssLength(grid, minRowHeight),
-    },
+    column: createAxisState(
+      {
+        entries: parseTrackSizes(gridTemplateColumns),
+        minSize: 0,
+      },
+      resolveCssLength(grid, columnGap, width)
+    ),
+    row: createAxisState(
+      {
+        entries: parseTrackSizes(gridTemplateRows),
+        minSize: resolveCssLength(grid, minRowHeight),
+      },
+      resolveCssLength(grid, rowGap, height)
+    ),
   };
 }
 
 class TileResizeState {
-  private _gap = 0;
+  private _hasColStart = false;
 
-  private _position: TileGridPosition = {
-    column: { start: 0, span: 0 },
-    row: { start: 0, span: 0 },
-  };
+  private _position!: TileGridPosition;
+  private _axes!: Record<ResizeAxis, ResizeAxisState>;
 
-  private _axes: Record<ResizeAxis, ResizeAxisState> = {
-    column: createAxisState(),
-    row: createAxisState(),
-  };
+  /** Snaps `state.current` to the grid tracks on the axes of `direction`. */
+  public snap(state: ResizeState, direction: ResizeDirection): void {
+    const { current, deltaX, deltaY } = state;
 
-  public calculateSnappedWidth(state: ResizeState): number {
-    return this._calculateSnappedSize(
-      'column',
-      state.deltaX,
-      state.current.width
-    );
-  }
+    if (direction !== 'vertical') {
+      current.width = this._calculateSnappedSize(
+        'column',
+        deltaX,
+        current.width
+      );
+    }
 
-  public calculateSnappedHeight(state: ResizeState): number {
-    return this._calculateSnappedSize(
-      'row',
-      state.deltaY,
-      state.current.height
-    );
+    if (direction !== 'horizontal') {
+      current.height = this._calculateSnappedSize(
+        'row',
+        deltaY,
+        current.height
+      );
+    }
   }
 
   public updateState(
@@ -107,28 +128,34 @@ class TileResizeState {
     grid: HTMLElement
   ): void {
     const computed = getComputedStyle(grid);
-    const { gap, columns, rows } = parseTileParentGrid(grid, computed);
 
-    this._gap = gap;
+    this._hasColStart = tile.colStart !== null;
     this._position = parseTileGridRect(tile);
-    this._axes = {
-      column: createAxisState(columns),
-      row: createAxisState(rows),
-    };
+    this._axes = parseTileParentGrid(grid, computed);
     this._calculateTileStartPosition(grid, tileRect, computed);
   }
 
   /**
-   * The spans of the tile for the resized rectangle, on the axes where the
+   * The placement of the tile for the resized rectangle, on the axes where the
    * rendered span changes. A span that the column count cuts keeps its value.
+   * A start after the last column moves back so that the span fits, so a new
+   * column span also sets an explicit start to the rendered one.
    */
-  public calculateResizedGridPosition({ width, height }: DOMRect) {
+  public calculateResizedGridPosition({
+    width,
+    height,
+  }: DOMRect): Partial<
+    Pick<IgcTileComponent, 'colSpan' | 'rowSpan' | 'colStart'>
+  > {
+    const { column, row } = this._position;
     const colSpan = this._calculateResizedSpan('column', width);
     const rowSpan = this._calculateResizedSpan('row', height);
+    const columnChanged = colSpan !== column.span;
 
     return {
-      ...(colSpan !== this._position.column.span && { colSpan }),
-      ...(rowSpan !== this._position.row.span && { rowSpan }),
+      ...(columnChanged && { colSpan }),
+      ...(columnChanged && this._hasColStart && { colStart: column.start }),
+      ...(rowSpan !== row.span && { rowSpan }),
     };
   }
 
@@ -137,7 +164,7 @@ class TileResizeState {
       targetSize,
       tilePosition: this._position[axis],
       tileGridDimension: this._axes[axis].dimension,
-      gap: this._gap,
+      gap: this._axes[axis].gap,
       isRow: axis === 'row',
     });
   }
@@ -156,7 +183,7 @@ class TileResizeState {
       prevSnapped: axisState.prevSnapped,
       gridEntries: axisState.dimension.entries,
       startIndex: this._position[axis].start,
-      gap: this._gap,
+      gap: axisState.gap,
     });
 
     axisState.prevDelta = currentDelta;
@@ -191,7 +218,7 @@ class TileResizeState {
       column.start = calculatePosition(
         offset - asNumber(computed.paddingInlineStart),
         this._axes.column.dimension.entries,
-        this._gap
+        this._axes.column.gap
       );
     }
 
@@ -199,7 +226,7 @@ class TileResizeState {
       row.start = calculatePosition(
         tileRect.top - gridRect.top - asNumber(computed.paddingTop),
         this._axes.row.dimension.entries,
-        this._gap
+        this._axes.row.gap
       );
     }
   }

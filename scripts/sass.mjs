@@ -21,6 +21,14 @@ const toPosix = (p) => p.split(path.sep).join('/');
  */
 const toRelative = (absolute) => toPosix(path.relative(ROOT, absolute));
 
+/**
+ * The repo-relative path of a `file:` URL, or `undefined` for any other URL.
+ *
+ * @param {URL | undefined} url
+ */
+const fileUrlToRelative = (url) =>
+  url?.protocol === 'file:' ? toRelative(fileURLToPath(url)) : undefined;
+
 /** @param {string} relative */
 const toAbsolute = (relative) => path.join(ROOT, relative);
 
@@ -96,6 +104,7 @@ async function resolveEntryGlobs() {
   };
 }
 
+/** CI restores this file. See `.github/actions/restore-styles`. */
 const CACHE_FILE = 'node_modules/.cache/igniteui-webcomponents/styles.json';
 
 /** Bump to invalidate every cached entry after a change to the build itself. */
@@ -106,6 +115,12 @@ const CACHE_VERSION = 3;
  * file Sass loads, so a change to them invalidates the whole cache.
  */
 const TARGETS = autoprefixer().info().split('\n\n', 1)[0];
+
+/**
+ * The Sass host and compiler versions. A new compiler can emit different CSS from
+ * the same input, so a change invalidates the whole cache.
+ */
+const COMPILER = sass.info;
 
 /** @type {import('postcss').Plugin} */
 const stripComments = {
@@ -129,6 +144,7 @@ const postProcessor = postcss([autoprefixer, stripComments]);
  * @typedef {{
  *   version: number,
  *   targets: string,
+ *   compiler: string,
  *   files: string[],
  *   entries: Record<string, { output: string, deps: number[], digest: string }>,
  * }} SerializedCache
@@ -186,6 +202,82 @@ function createHasher() {
 }
 
 /** @typedef {ReturnType<typeof createHasher>} Hasher */
+
+/** @param {number} n */
+const formatCount = (n) => n.toLocaleString('en-US');
+
+/**
+ * Collects the Sass warnings of one build pass.
+ *
+ * Sass repeats a warning for every entry that loads the file it comes from, and
+ * the theming partials reach nearly every entry. A deprecation from a package
+ * under `node_modules` is only counted, because the fix belongs to that package.
+ * Every other warning, including an `@warn` from a package, prints once for each
+ * site, with the number of times it occurred.
+ *
+ * Sass's own `quietDeps` does not fit: it treats every file loaded through
+ * `loadPaths` as a dependency, and `src` is one of the load paths.
+ */
+function createWarningLog() {
+  /** @type {Set<string>} */
+  const hiddenIds = new Set();
+  let hiddenCount = 0;
+
+  /** @type {Map<string, { text: string, count: number }>} */
+  const shown = new Map();
+
+  /** @type {sass.Logger} */
+  const logger = {
+    warn(message, options) {
+      const { span, stack } = options;
+      const id = options.deprecation ? options.deprecationType.id : undefined;
+      const file = fileUrlToRelative(span?.url);
+
+      if (id && file?.startsWith('node_modules/')) {
+        hiddenIds.add(id);
+        hiddenCount++;
+        return;
+      }
+
+      const kind = id ? `Deprecation [${id}]` : 'Warning';
+      const site =
+        file && span
+          ? `${file}:${span.start.line + 1}:${span.start.column + 1}`
+          : (stack?.trim().split('\n', 1)[0] ?? 'unknown location');
+      const head = `${kind} at ${site}\n${message}`;
+      const record = shown.get(head);
+
+      if (record) {
+        record.count++;
+      } else {
+        shown.set(head, {
+          text: stack ? `${head}\n${stack.trimEnd()}` : head,
+          count: 1,
+        });
+      }
+    },
+  };
+
+  return {
+    logger,
+
+    report() {
+      for (const { text, count } of shown.values()) {
+        report.warn(
+          count > 1 ? `${text}\n(${formatCount(count)} times)` : text
+        );
+      }
+
+      if (hiddenCount) {
+        const ids = Array.from(hiddenIds).join(', ');
+
+        report.warn(
+          `Hid ${formatCount(hiddenCount)} deprecation warnings from dependencies (${ids}).`
+        );
+      }
+    },
+  };
+}
 
 /**
  * Compiles the SCSS entries, skipping the ones whose inputs are unchanged since
@@ -308,13 +400,19 @@ class StyleBuilder {
   /**
    * @param {Entry} entry
    * @param {Hasher} hasher
+   * @param {sass.Logger} logger
    */
-  async compile(entry, hasher) {
+  async compile(entry, hasher, logger) {
     const { css, loadedUrls } = await this.compiler.compileAsync(
       toAbsolute(entry.path),
       {
         style: 'compressed',
         loadPaths: [toAbsolute('node_modules'), toAbsolute('src')],
+        logger,
+        // Without it Sass stops after a few warnings of one kind in each
+        // compilation, and the dependency warnings come first, so the
+        // warnings of our own code could be lost.
+        verbose: true,
       }
     );
 
@@ -333,9 +431,7 @@ class StyleBuilder {
       encoding: 'utf-8',
     });
 
-    const deps = loadedUrls
-      .filter((url) => url.protocol === 'file:')
-      .map((url) => toRelative(fileURLToPath(url)));
+    const deps = loadedUrls.flatMap((url) => fileUrlToRelative(url) ?? []);
 
     this.records.set(entry.path, {
       output: file,
@@ -350,9 +446,12 @@ class StyleBuilder {
    * @returns {Promise<number>} The number of entries that failed.
    */
   async compileAll(entries, hasher) {
+    const warnings = createWarningLog();
     const results = await Promise.allSettled(
-      entries.map((entry) => this.compile(entry, hasher))
+      entries.map((entry) => this.compile(entry, hasher, warnings.logger))
     );
+
+    warnings.report();
 
     let failed = 0;
 
@@ -379,7 +478,11 @@ class StyleBuilder {
       /** @type {SerializedCache} */
       const cache = JSON.parse(await readFile(toAbsolute(CACHE_FILE), 'utf8'));
 
-      if (cache.version !== CACHE_VERSION || cache.targets !== TARGETS) {
+      if (
+        cache.version !== CACHE_VERSION ||
+        cache.targets !== TARGETS ||
+        cache.compiler !== COMPILER
+      ) {
         return;
       }
 
@@ -431,6 +534,7 @@ class StyleBuilder {
       JSON.stringify({
         version: CACHE_VERSION,
         targets: TARGETS,
+        compiler: COMPILER,
         files: Array.from(ids.keys()),
         entries,
       }),

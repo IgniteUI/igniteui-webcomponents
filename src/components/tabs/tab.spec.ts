@@ -13,6 +13,7 @@ describe('Tab component', () => {
     tagName: 'igc-tab',
     template: html`<igc-tabs><igc-tab label="One">Content</igc-tab></igc-tabs>`,
     getTarget: (host) => host.renderRoot.querySelector('[part="tab-header"]')!,
+    visibleText: 'One',
   });
 
   let element: IgcTabsComponent;
@@ -185,6 +186,7 @@ describe('Tab component', () => {
       </igc-tabs>`,
       getTarget: (host) =>
         host.renderRoot.querySelector('[part="tab-header"]')!,
+      visibleText: 'One',
     });
 
     beforeEach(async () => {

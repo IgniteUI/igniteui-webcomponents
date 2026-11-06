@@ -1,5 +1,6 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
@@ -583,6 +584,7 @@ describe('Button tests', () => {
     tagName: 'igc-button',
     template: html`<igc-button>Click</igc-button>`,
     getTarget: (host) => host.renderRoot.querySelector('[part~="base"]')!,
+    visibleText: 'Click',
   });
 
   describe('Naming', () => {
@@ -596,7 +598,7 @@ describe('Button tests', () => {
           <span id="name">Save</span>
           <span id="hint">Saves the draft</span>
           <label for="button">Save the file</label>
-          <igc-button id="button">Click</igc-button>
+          <igc-button id="button">Save</igc-button>
         </div>
       `);
       button = container.querySelector('igc-button')!;
@@ -793,4 +795,6 @@ describe('Button tests', () => {
   runHiddenAncestorTests(html`
     <igc-button><igc-icon slot="prefix"></igc-icon>Click</igc-button>
   `);
+
+  runFocusBeforeRenderTests(html`<igc-button>Label</igc-button>`);
 });

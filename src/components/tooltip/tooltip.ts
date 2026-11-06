@@ -20,7 +20,7 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
-import { isElement, isLTR } from '#internals/utils/dom.js';
+import { isLTR } from '#internals/utils/dom.js';
 import { asNumber } from '#internals/utils/math.js';
 import { all } from '#themes/tooltip/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -29,7 +29,7 @@ import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
-import type { PopoverScrollStrategy } from '../types.js';
+import type { PopoverScrollStrategy, TooltipRect } from '../types.js';
 import { addTooltipController } from './controller.js';
 import { styles as shared } from './themes/shared/tooltip.common.css.js';
 import { styles } from './themes/tooltip.base.css.js';
@@ -43,6 +43,9 @@ export interface IgcTooltipComponentEventMap {
 
 /** Additional offset applied to the arrow element for aligned placements. */
 const ARROW_OFFSET = 8;
+
+const showAnimation = scaleInCenter({ duration: 150, easing: EaseOut.Quad });
+const hideAnimation = fadeOut({ duration: 75, easing: EaseOut.Sine });
 
 type TooltipStateOptions = {
   show: boolean;
@@ -111,15 +114,7 @@ export default class IgcTooltipComponent extends I18nMixin(
     slots: setSlots('close-button'),
   });
 
-  private readonly _showAnimation = scaleInCenter({
-    duration: 150,
-    easing: EaseOut.Quad,
-  });
-
-  private readonly _hideAnimation = fadeOut({
-    duration: 75,
-    easing: EaseOut.Sine,
-  });
+  private _anchorChanged = false;
 
   /** The queued, not yet committed transition, if a delay is in effect. */
   private _pending?: {
@@ -130,6 +125,7 @@ export default class IgcTooltipComponent extends I18nMixin(
   /** A commit that finishes with a stale id has been superseded. */
   private _transitionId = 0;
 
+  /** Whether a commit animates. The application can also set `inert`. */
   private _animating = false;
 
   /**
@@ -144,8 +140,13 @@ export default class IgcTooltipComponent extends I18nMixin(
   @query('#arrow')
   private readonly _arrowElement!: HTMLElement;
 
+  /** Removing the `placement` attribute sets `null`. */
+  private get _placement(): PopoverPlacement {
+    return this.placement ?? 'bottom';
+  }
+
   private get _arrowOffset(): number {
-    const [side, alignment] = this.placement.split('-');
+    const [side, alignment] = this._placement.split('-');
 
     if (!alignment) {
       return 0;
@@ -163,14 +164,10 @@ export default class IgcTooltipComponent extends I18nMixin(
    * flattened query also reports the fallback `message`.
    */
   private get _hasProjectedContent(): boolean {
-    return this._slots
-      .getAssignedNodes(DefaultSlot)
-      .some(
-        (node) =>
-          isElement(node) ||
-          (node.nodeType === Node.TEXT_NODE &&
-            Boolean(node.textContent?.trim()))
-      );
+    return (
+      this._slots.hasAssignedElements(DefaultSlot) ||
+      this._slots.getAssignedText(DefaultSlot) !== ''
+    );
   }
 
   /**
@@ -181,8 +178,12 @@ export default class IgcTooltipComponent extends I18nMixin(
    */
   @property({ type: Boolean, reflect: true })
   public set open(value: boolean) {
-    this._requestedState = value;
-    this._controller.open = value;
+    const state = Boolean(value);
+
+    // Only a change ends a queued or running transition.
+    if (state !== this.open) {
+      this._cancelTransition(state);
+    }
   }
 
   public get open(): boolean {
@@ -241,7 +242,15 @@ export default class IgcTooltipComponent extends I18nMixin(
    * @attr anchor
    */
   @property()
-  public anchor?: Element | string;
+  @coercedProperty<Element | string | undefined, IgcTooltipComponent>({
+    // `onChange` runs for each set of an object, so compare the identity.
+    onChange: ({ host, value, previous }) => {
+      if (value !== previous) {
+        host._anchorChanged = true;
+      }
+    },
+  })
+  public anchor?: Element | string = undefined;
 
   /**
    * The anchor events that show the tooltip.
@@ -331,21 +340,27 @@ export default class IgcTooltipComponent extends I18nMixin(
   protected override firstUpdated(): void {
     if (this.open) {
       this.updateComplete.then(() => {
-        this._player.playExclusive(this._showAnimation);
+        this._player.playExclusive(showAnimation);
       });
     }
   }
 
   protected override updated(changedProperties: PropertyValues<this>): void {
-    // The arrow is created by the render that just committed, so the popover
-    // can only be handed it afterwards.
+    // The render creates the arrow, so the popover gets it after the render.
     if (changedProperties.has('withArrow')) {
       this._popover.arrow = this.withArrow ? this._arrowElement : null;
     }
   }
 
-  protected override willUpdate(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has('anchor')) {
+  protected override update(changedProperties: PropertyValues<this>): void {
+    this._applyPendingAnchor();
+    super.update(changedProperties);
+  }
+
+  /** Applies a pending `anchor` change, so that a later `show(target)` wins over it. */
+  private _applyPendingAnchor(): void {
+    if (this._anchorChanged) {
+      this._anchorChanged = false;
       this._controller.resolveAnchor(this.anchor);
     }
   }
@@ -357,35 +372,28 @@ export default class IgcTooltipComponent extends I18nMixin(
   }
 
   /**
-   * Cancels the queued or running transition and resolves a delayed one with
-   * `false`. The caller settles the state. Returns whether it was animating.
+   * Cancels the queued or running transition, resolves a delayed one with
+   * `false` and stops its animation. The caller settles the state.
    */
-  private _abortTransition(): boolean {
-    const wasAnimating = this._animating;
-
+  private _abortTransition(): void {
     this._transitionId++;
-    this._animating = false;
 
     clearTimeout(this._pending?.timer);
     this._pending?.resolve(false);
     this._pending = undefined;
 
-    return wasAnimating;
-  }
-
-  /** Lands the tooltip on `state` after its transition was aborted. */
-  private _settleState(state: boolean, wasAnimating: boolean): void {
-    this._requestedState = state;
-
-    if (wasAnimating) {
+    if (this._animating) {
+      this._animating = false;
       this._player.cancelAll();
       this.inert = false;
     }
+  }
 
-    // Via the accessor - it drives the reflection and the render.
-    if (this.open !== state) {
-      this.open = state;
-    }
+  /** Commits `open` without ending a transition. */
+  private _commitOpen(value: boolean): void {
+    const previous = this.open;
+    this._controller.open = value;
+    this.requestUpdate('open', previous);
   }
 
   /**
@@ -393,7 +401,12 @@ export default class IgcTooltipComponent extends I18nMixin(
    * the committed state.
    */
   private _cancelTransition(state = this.open): void {
-    this._settleState(state, this._abortTransition());
+    this._abortTransition();
+    this._requestedState = state;
+
+    if (this.open !== state) {
+      this._commitOpen(state);
+    }
   }
 
   /** Animates to `show`. Gives `false` when a newer transition supersedes it. */
@@ -403,7 +416,7 @@ export default class IgcTooltipComponent extends I18nMixin(
     id: number
   ): Promise<boolean> {
     if (show) {
-      this.open = true;
+      this._commitOpen(true);
     }
 
     // Ignore interactions during the animation. This stops a show/hide loop
@@ -412,7 +425,7 @@ export default class IgcTooltipComponent extends I18nMixin(
     this._animating = true;
 
     const animationComplete = await this._player.playExclusive(
-      show ? this._showAnimation : this._hideAnimation
+      show ? showAnimation : hideAnimation
     );
 
     // Superseded while animating - the newer transition owns the state now.
@@ -422,7 +435,7 @@ export default class IgcTooltipComponent extends I18nMixin(
 
     this._animating = false;
     this.inert = false;
-    this.open = show;
+    this._commitOpen(show);
 
     if (animationComplete && withEvents) {
       this._emitEvent(show ? 'igcOpened' : 'igcClosed');
@@ -440,22 +453,30 @@ export default class IgcTooltipComponent extends I18nMixin(
       return false;
     }
 
-    const wasAnimating = this._abortTransition();
+    const queued = this._pending;
+
+    this._abortTransition();
     this._requestedState = show;
 
-    // A superseded transition that never animated leaves the tooltip already
-    // in the requested state.
-    if (show === this.open && !wasAnimating) {
-      return false;
-    }
-
-    // Vetoed. The first guard proves the state was `!show`.
-    if (withEvents && !this._emitEvent(show ? 'igcOpening' : 'igcClosing')) {
-      this._settleState(!show, wasAnimating);
+    // A queued transition only delays a state that the tooltip already has.
+    if (queued && show === this.open) {
       return false;
     }
 
     const id = this._transitionId;
+    const allowed =
+      !withEvents || this._emitEvent(show ? 'igcOpening' : 'igcClosing');
+
+    // A handler that changed `open` took over.
+    if (id !== this._transitionId) {
+      return false;
+    }
+
+    // Vetoed. The first guard proves the state was `!show`.
+    if (!allowed) {
+      this._cancelTransition(!show);
+      return false;
+    }
 
     if (!withDelay) {
       return this._commitTransition(show, withEvents, id);
@@ -483,10 +504,38 @@ export default class IgcTooltipComponent extends I18nMixin(
    * Resolves with whether the tooltip transitioned to a shown state.
    */
   public async show(target?: Element | string): Promise<boolean> {
+    this._applyPendingAnchor();
+
     if (target) {
       this._cancelTransition();
       this._controller.setAnchor(target, true);
     }
+
+    return await this._applyTooltipState({ show: true });
+  }
+
+  /**
+   * Shows the tooltip at a point or against a rectangle, in viewport
+   * coordinates, for example at the `clientX` and `clientY` of a pointer event.
+   * Without `width` and `height`, the rectangle is a point.
+   *
+   * @remarks
+   * A call while the tooltip shows at a rectangle moves it, with no animation.
+   * The rectangle has no show or hide triggers and no ARIA relation, and the
+   * pointer on the tooltip does not hide it. `hide()`, the `Escape` key and the
+   * `close` scroll strategy close it. After it closes, the `anchor` applies
+   * again.
+   * Bypasses `showDelay` and does not emit `igcOpening`/`igcOpened`.
+   * Resolves with whether the tooltip transitioned to a shown state.
+   */
+  public async showAt(rect: TooltipRect): Promise<boolean> {
+    // A JavaScript caller can pass no rectangle. Show at 0,0, do not throw.
+    this._controller.setRect({
+      x: asNumber(rect?.x),
+      y: asNumber(rect?.y),
+      width: Math.max(0, asNumber(rect?.width)),
+      height: Math.max(0, asNumber(rect?.height)),
+    });
 
     return await this._applyTooltipState({ show: true });
   }
@@ -540,17 +589,22 @@ export default class IgcTooltipComponent extends I18nMixin(
   }
 
   protected override render() {
+    const hasContent = this._hasProjectedContent;
+    // Whitespace text is slotted too, and hides the fallback `message`.
+    const whitespaceOnly =
+      !hasContent && this._slots.hasAssignedNodes(DefaultSlot);
     const parts = {
       base: true,
-      'simple-text': !this._hasProjectedContent,
+      'simple-text': !hasContent,
     };
 
     return html`
       <igc-popover
         .inert=${!this.open}
-        .placement=${this.placement}
+        .placement=${this._placement}
         .offset=${this.offset}
         .anchor=${this._controller.anchor ?? undefined}
+        .anchorRect=${this._controller.rect}
         .arrowOffset=${this._arrowOffset}
         .scrollStrategy=${this.scrollStrategy}
         ?open=${this.open}
@@ -559,6 +613,7 @@ export default class IgcTooltipComponent extends I18nMixin(
       >
         <div ${ref(this._containerRef)} part=${partMap(parts)}>
           <slot>${this.message}</slot>
+          ${whitespaceOnly ? this.message : nothing}
           ${
             this.sticky
               ? html`

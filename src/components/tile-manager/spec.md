@@ -61,6 +61,9 @@ This directory hosts two public components: [`igc-tile-manager`](#igc-tile-manag
 |       8 | 2026-10-22 | Spans fit the column count, `--grid-padding`, the content fills the tile |
 |       9 | 2026-10-23 | The tile manager makes a stacking context, so the z-index of a maximized, dragged or resized tile does not compete with the layers of the page |
 |      10 | 2026-10-23 | The resize handles stand out of a tile by at most `--grid-padding` |
+|      11 | 2026-11-02 | Tiles fit the responsive columns, a start after the last column moves back, nested managers keep their own column count and gap |
+|      12 | 2026-11-02 | Percentage gaps in a resize, CSS `direction` in a drag, a drag copy that does not act as a tile, no count loop with the page scrollbar |
+|      13 | 2026-11-02 | View transition names only during a transition of the manager, a stacking context for the content of a tile, a drag target that stays while the pointer is in it |
 
 ## Overview
 
@@ -135,7 +138,10 @@ the first 40% of the transition. The tiles that a maximized tile covers fade in 
 pointer during a swap. The view transition pseudo-elements belong to the document, so the theme style sheets
 (`themes/light/*.css` and `themes/dark/*.css`) hold their rules. They select the view transition classes
 `igc-tile-resize` and `igc-tile-rtl`, and the `dragged-tile-ghost` name. Without a theme style sheet, the tiles use
-the default transition, and so does a size change in a browser without view transition classes.
+the default transition, and so does a size change in a browser without view transition classes. Only during a
+transition, the tiles of its manager have a view transition name (`tile-transition-<id>`), so the transition captures
+only them. An application that runs its own view transition gives a name to the tiles that it moves. An inline name of
+the author stays.
 
 ### Developer experience
 
@@ -172,7 +178,8 @@ padding with `--grid-padding`: the handles do not follow a `padding` on the `bas
 such as `0 1rem`, the handles stay inside the tile.
 
 To change the column count with the width, leave `column-count` unset and set `--column-count` in a media query. The
-attribute sets the variable on the grid, which wins over a value on the manager. The value must be a whole number,
+attribute sets the variable on the grid, which wins over a value on the manager. Set the variable on the manager itself: the
+manager does not inherit it, or `--grid-gap`, from an ancestor. The value must be a whole number,
 because the tiles fit their spans into it; `initial` gives the responsive layout. See
 [Spans and placement](#spans-and-placement) for how the tiles fit.
 
@@ -202,11 +209,15 @@ igc-tile-manager {
 ```
 
 `position` sets the visual order of a tile in the layout, corresponding to the CSS `order` property. The tiles of a
-nested manager do not take the spans or the starts of the tile that holds the manager.
+nested manager do not take the spans or the starts of the tile that holds the manager, and a nested manager does not
+take the column count or the gap of the outer manager.
 
-With a column count, a tile spans at most the columns from its start to the last column, and a tile that starts
-after the last column goes to the last column. So a tile adds no columns. `colStart` and `colSpan` keep their values,
-also after a resize that does not change them, so one layout works at every column count.
+A tile spans at most the columns from its start to the last column. A tile that starts after the last column moves
+back so that its span fits: `col-start="6" col-span="3"` in four columns takes columns 2 to 4. So a tile adds no
+columns. In the responsive layout, the manager counts the columns that fit, as `auto-fit` does, and the tiles fit into
+that count. `colStart` and `colSpan` keep their values, also after a resize that does not change them, so one layout
+works at every column count. A resize that changes the column span of a tile that moved back sets `colStart` to the
+column where the tile is, so the tile does not move.
 
 #### Drag and drop
 
@@ -320,7 +331,7 @@ Dragging and resizing are pointer interactions.
 
 | Property       | Attribute         | Reflected | Type                      | Default | Description                                                               |
 | -------------- | ----------------- | --------- | ------------------------- | ------- | --------------------------------------------------------------------------- |
-| columnCount    | column-count      | No        | `number`                  | 0       | The number of columns. A value of zero or less triggers a responsive layout. |
+| columnCount    | column-count      | No        | `number`                  | 0       | The number of columns, truncated to a whole number. A value of zero or less triggers a responsive layout. |
 | minColumnWidth | min-column-width  | No        | `string \| undefined`     | -       | The minimum width for a column unit.                                      |
 | minRowHeight   | min-row-height    | No        | `string \| undefined`     | -       | The minimum height for a row unit.                                        |
 | gap            | gap               | No        | `string \| undefined`     | -       | The gap size between the tiles.                                           |
@@ -371,9 +382,9 @@ A container within the tile manager for displaying various types of information.
 
 | Property          | Attribute           | Reflected | Type              | Default | Description                                                             |
 | ----------------- | ------------------- | --------- | ----------------- | ------- | ------------------------------------------------------------------------- |
-| colSpan           | col-span            | No        | `number`          | 1       | The number of columns the tile spans. With a column count, at most the columns from its start to the last column. |
+| colSpan           | col-span            | No        | `number`          | 1       | The number of columns the tile spans, at most the columns from its start to the last column. |
 | rowSpan           | row-span            | No        | `number`          | 1       | The number of rows the tile spans.                                      |
-| colStart          | col-start           | No        | `number \| null`  | `null`  | The starting column for the tile. With a column count, a start after the last column places the tile in the last column. |
+| colStart          | col-start           | No        | `number \| null`  | `null`  | The starting column for the tile. A start after the last column moves the tile back so that its span fits. |
 | rowStart          | row-start           | No        | `number \| null`  | `null`  | The starting row for the tile.                                          |
 | position          | position            | No        | `number`          | -1      | The visual position of the tile in the layout, as the CSS `order`.      |
 | maximized         | maximized           | Yes       | `boolean`         | false   | Whether the tile occupies all available space within the layout.        |
@@ -459,10 +470,11 @@ The groups below mirror the `describe` blocks.
 4. `colSpan` and `rowSpan` size the tiles in the grid. A tile of a nested manager does not take the placement of the
    tile that holds the manager.
 5. A fixed `columnCount` and a responsive layout derived from `minColumnWidth` both lay the tiles out correctly. With a
-   column count from the attribute or a style sheet, a tile does not span past the last column, and `colSpan` keeps
-   its value. A start after the last column moves the tile to the last column, and `colStart` keeps its value.
-   `--grid-padding` sets the padding of the grid, but not of a nested manager. The content of a tile fills the tile
-   under the header.
+   column count from the attribute or a style sheet, and in the responsive layout, a tile does not span past the last
+   column, and `colSpan` keeps its value. The responsive count follows the width, `minColumnWidth`, and a
+   `--min-col-width` or `--grid-gap` from a style sheet. A start after the last column moves the tile back so that its
+   span fits, and `colStart` keeps its value. A fractional column count is truncated. `--grid-padding` sets the padding of the grid, and a nested manager does not take the padding, the
+   column count or the gap of the outer manager. The content of a tile fills the tile under the header.
 
 ### Maximize
 
@@ -534,7 +546,8 @@ The groups below mirror the `describe` blocks.
 ### Right-to-left resize
 
 30. In RTL, from a `dir` attribute or a CSS `direction`, the side and corner handles sit on the inline-end edge, and
-    the tile and its ghost grow toward it. The `resizable` directive measures the width from the inline-start edge.
+    the tile and its ghost grow toward it. The `resizable` directive measures the width from the inline-start edge. A
+    drag swaps a tile back toward the inline start.
 
 ### Layout and input
 
@@ -552,11 +565,13 @@ The groups below mirror the `describe` blocks.
     events of another pointer are ignored, and an error in the start callback ends the operation. A start listener that
     moves the tile cancels the operation.
 37. Resizing works with a grid placement from author CSS, and the spans and starts are whole numbers. A resize keeps
-    a column span that the column count cuts, and does not widen a tile past the last column. A start from a
+    a column span that the column count cuts, and does not widen a tile past the last column. A tile that moved back
+    from a start after the last column stays in place when a resize changes its column span. A start from a
     negative or a named line comes from the place of the tile. A minimum row height in `rem` makes the same new rows as
-    the same height in pixels.
+    the same height in pixels. A percentage gap snaps as the grid resolves it.
 38. In nested tile managers, only the innermost tile drags, and it does not swap with an outer tile. A drag swaps with
-    a tile that the pointer reaches straight from another tile. A swap of tiles that hold nested managers animates.
+    a tile that the pointer reaches straight from another tile. A swap of tiles that hold nested managers animates. The tile
+    under the pointer stays the target while the pointer is in it, with no new hit test, and a view transition ends it.
 39. The drag and resize ghosts render over the tile in the closest top-layer element, such as a modal dialog, also
     through slots. A ghost there is fixed, so the border, scroll and overflow of that element do not move or clip it.
     A translate or a scale on that element does not move the ghost off the tile. A rotation is not supported.
@@ -565,19 +580,27 @@ The groups below mirror the `describe` blocks.
     to it, and a tile that moves to another manager takes its features.
 42. Two quick maximize clicks set the state that their events report.
 43. In the page body, the drag and resize ghosts cover the tile, also with a body margin, a positioned or filtered
-    body and a page scroll during the operation.
+    body and a page scroll during the operation. The drag ghost copies the tile, but the copy does not join a radio
+    group or a form, load a frame or play media.
 44. `igcTileDragEnd` and `igcTileDragCancel` fire after the view transition applies the positions, and before the
     start event of the next drag.
 45. A maximize, a restore or a resize marks the tile with `igc-tile-resize` (and `igc-tile-rtl` in RTL) until its view
     transition ends, also after two quick clicks. The view transition classes of the author stay, and an inline one
     returns when the transition ends. While a tile is maximized, the covered tiles have no view transition name. With a
     theme style sheet, the new content of a maximizing tile fades in, and the drag ghost has no animation in a swap.
+    The tiles of a manager have a view transition name only while its transition runs, also after two quick clicks. A
+    swap and a restore name only the tiles of their manager, and an inline name of the author stays.
 
 ### Resize handles and `--grid-padding`
 
 46. The default side, corner and bottom handles stand half out of the tile, also in RTL. With a smaller
     `--grid-padding`, they stand out only by the padding. With `0`, `0px` or a padding of more than one value, they
     stay inside the tile, and the grid does not scroll.
+
+### Stacking
+
+47. The content of a tile, also fixed content with a z-index, stays under the next tile, and so do the resize handles
+    of the tile. The resize handles stay above content with any z-index.
 
 ## Assumptions and limitations
 
@@ -591,6 +614,12 @@ The groups below mirror the `describe` blocks.
   the tiles in the order of their saved positions.
 - The content of a tile is clipped to its size. See [Maximize and fullscreen](#maximize-and-fullscreen) for a scroll
   recipe.
+- During a drag, the tile under the pointer stays the target while the pointer is in its box, also where an ancestor
+  clips the tile.
+- The manager counts the responsive columns in JavaScript. A change of the width, or of `--min-col-width` or
+  `--grid-gap` in a style sheet, applies in the next frame. Without JavaScript, as in a server render, the tiles do not
+  fit into the responsive columns. When a lower count removes the page scrollbar and so adds a column, the tiles keep
+  the lower count until the next size change.
 
 ## Accessibility
 
@@ -615,5 +644,5 @@ Already covered by the [relevant section of the specification](#keyboard-interac
 ### Right to Left support
 
 The components work in a Right-to-Left context without additional setup or configuration. The grid flow follows the
-inline direction. The side and corner adorners sit on the inline-end edge, and a resize grows the tile toward it. Both
-follow the computed `direction`, so a CSS `direction` without a `dir` attribute works too.
+inline direction. The side and corner adorners sit on the inline-end edge, and a resize grows the tile toward it. These
+and the drag swaps follow the computed `direction`, so a CSS `direction` without a `dir` attribute works too.

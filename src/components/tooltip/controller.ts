@@ -1,9 +1,13 @@
 import type { ReactiveController } from 'lit';
 import { createAbortHandle } from '#internals/abort-handler.js';
-import { getElementByIdFromRoot } from '#internals/utils/dom.js';
+import {
+  getElementByIdFromRoot,
+  setOrRemoveAttribute,
+} from '#internals/utils/dom.js';
 import { addWeakEventListener } from '#internals/utils/events.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { isString } from '#internals/utils/types.js';
+import type { PopoverRect } from '../popover/position/types.js';
 import service from './service.js';
 import type IgcTooltipComponent from './tooltip.js';
 
@@ -19,7 +23,8 @@ class TooltipController implements ReactiveController {
   private readonly _options: TooltipCallbacks;
 
   private readonly _hostAbortHandle = createAbortHandle();
-  private readonly _anchorAbortHandle = createAbortHandle();
+  private readonly _initialAbortHandle = createAbortHandle();
+  private readonly _transientAbortHandle = createAbortHandle();
 
   private _showTriggers = new Set(['pointerenter', 'focusin']);
   private _hideTriggers = new Set(['pointerleave', 'click', 'focusout']);
@@ -30,6 +35,12 @@ class TooltipController implements ReactiveController {
   /** The element currently describing itself with this tooltip. */
   private _describedElement: WeakRef<Element> | null = null;
 
+  /**
+   * The rectangle of `showAt()`. It replaces the anchor until the tooltip
+   * closes.
+   */
+  private _rect: PopoverRect | null = null;
+
   private _isTransient = false;
   private _open = false;
 
@@ -37,32 +48,31 @@ class TooltipController implements ReactiveController {
 
   //#region Public properties
 
-  /** Whether the tooltip is in shown state. */
   public get open(): boolean {
     return this._open;
   }
 
   public set open(value: boolean) {
+    if (value === this._open) {
+      return;
+    }
+
     this._open = value;
 
-    if (this._open) {
-      this._addTooltipListeners();
-      service.add(this._host, this._options.onEscape);
-    } else {
-      if (this._isTransient) {
-        this._isTransient = false;
-        this.setAnchor(this._initialAnchor?.deref());
-      }
-
-      this._hostAbortHandle.abort();
-      service.remove(this._host);
+    if (!value && this._isTransient) {
+      this._isTransient = false;
+      this.setAnchor(this._initialAnchor?.deref());
     }
+
+    this._syncOpenListeners();
   }
 
-  /** The current anchor target, if any. */
   public get anchor(): TooltipAnchor {
-    // `setAnchor` keeps this in sync with `_initialAnchor` unless transient.
     return this._anchor?.deref();
+  }
+
+  public get rect(): PopoverRect | null {
+    return this._rect;
   }
 
   /** The hide triggers as a comma-separated string. */
@@ -70,16 +80,9 @@ class TooltipController implements ReactiveController {
     return Array.from(this._hideTriggers).join();
   }
 
-  /**
-   * Sets the hide triggers from a comma-separated string.
-   *
-   * @remarks
-   * Rebinds the triggers on the current anchor.
-   */
   public set hideTriggers(value: string) {
     this._hideTriggers = parseTriggers(value);
-    this._anchorAbortHandle.abort();
-    this._addAnchorListeners();
+    this._bindAnchors();
   }
 
   /** The show triggers as a comma-separated string. */
@@ -87,16 +90,9 @@ class TooltipController implements ReactiveController {
     return Array.from(this._showTriggers).join();
   }
 
-  /**
-   * Sets the show triggers from a comma-separated string.
-   *
-   * @remarks
-   * Rebinds the triggers on the current anchor.
-   */
   public set showTriggers(value: string) {
     this._showTriggers = parseTriggers(value);
-    this._anchorAbortHandle.abort();
-    this._addAnchorListeners();
+    this._bindAnchors();
   }
 
   //#endregion
@@ -109,34 +105,75 @@ class TooltipController implements ReactiveController {
 
   //#region Internal event listeners state
 
-  private _addAnchorListeners(): void {
-    const anchor = this.anchor;
-
+  /** Binds one listener for each trigger event, and one for `click`. */
+  private _bindTriggers(anchor: TooltipAnchor, signal: AbortSignal): void {
     if (!anchor) {
       return;
     }
 
-    const { signal } = this._anchorAbortHandle;
+    const events = new Set([
+      ...this._showTriggers,
+      ...this._hideTriggers,
+      'click',
+    ]);
 
-    for (const each of this._showTriggers) {
-      addWeakEventListener(anchor, each, this, { passive: true, signal });
-    }
-
-    for (const each of this._hideTriggers) {
-      addWeakEventListener(anchor, each, this, { passive: true, signal });
-    }
-
-    if (!this._showTriggers.has('click') && !this._hideTriggers.has('click')) {
-      addWeakEventListener(anchor, 'click', this, { passive: true, signal });
+    for (const event of events) {
+      addWeakEventListener(anchor, event, this, { passive: true, signal });
     }
   }
 
-  private _addTooltipListeners(): void {
-    const { signal } = this._hostAbortHandle;
+  /**
+   * The configured anchor keeps its triggers while a transient anchor shows,
+   * so an interaction with it drops the transient one. A rectangle has no
+   * triggers, so it unbinds them.
+   */
+  private _bindInitialAnchor(): void {
+    this._initialAbortHandle.abort();
 
-    for (const event of TooltipController._listeners) {
-      this._host.addEventListener(event, this, { passive: true, signal });
+    if (!this._rect) {
+      this._bindTriggers(
+        this._initialAnchor?.deref(),
+        this._initialAbortHandle.signal
+      );
     }
+  }
+
+  private _bindTransientAnchor(): void {
+    this._transientAbortHandle.abort();
+
+    if (this.anchor !== this._initialAnchor?.deref()) {
+      this._bindTriggers(this.anchor, this._transientAbortHandle.signal);
+    }
+  }
+
+  private _bindAnchors(): void {
+    this._bindInitialAnchor();
+    this._bindTransientAnchor();
+  }
+
+  /**
+   * Binds the Escape key while the tooltip is open, and the pointer on the
+   * tooltip unless it shows at a rectangle.
+   */
+  private _syncOpenListeners(): void {
+    this._hostAbortHandle.abort();
+
+    // A removed tooltip can still open, at the end of its show animation.
+    // `hostConnected` binds the listeners when it connects again.
+    if (!(this._open && this._host.isConnected)) {
+      service.remove(this._host);
+      return;
+    }
+
+    if (!this._rect) {
+      const { signal } = this._hostAbortHandle;
+
+      for (const event of TooltipController._listeners) {
+        this._host.addEventListener(event, this, { passive: true, signal });
+      }
+    }
+
+    service.add(this._host, this._options.onEscape);
   }
 
   /**
@@ -172,9 +209,11 @@ class TooltipController implements ReactiveController {
 
     state ? tokens.add(id) : tokens.delete(id);
 
-    tokens.size > 0
-      ? element.setAttribute('aria-describedby', Array.from(tokens).join(' '))
-      : element.removeAttribute('aria-describedby');
+    setOrRemoveAttribute(
+      element,
+      'aria-describedby',
+      tokens.size > 0 ? Array.from(tokens).join(' ') : null
+    );
   }
 
   //#endregion
@@ -182,11 +221,9 @@ class TooltipController implements ReactiveController {
   //#region Event handlers
 
   private _handleTooltipEvent(event: Event): void {
-    if (event.type === 'pointerenter') {
-      this._options.onShow();
-    } else if (event.type === 'pointerleave') {
-      this._options.onHide();
-    }
+    event.type === 'pointerenter'
+      ? this._options.onShow()
+      : this._options.onHide();
   }
 
   private _handleAnchorEvent(event: Event): void {
@@ -196,9 +233,7 @@ class TooltipController implements ReactiveController {
     // Not a configured trigger, so this is the synthetic `click` listener.
     // Clicking the anchor cancels a queued show - see issue #1828.
     if (!(isShowTrigger || isHideTrigger)) {
-      if (event.type === 'click') {
-        this._options.onClick();
-      }
+      this._options.onClick();
       return;
     }
 
@@ -231,16 +266,6 @@ class TooltipController implements ReactiveController {
 
   //#endregion
 
-  private _dispose(): void {
-    this._anchorAbortHandle.abort();
-    this._hostAbortHandle.abort();
-    service.remove(this._host);
-    this._anchor = null;
-    this._initialAnchor = null;
-    this._syncAnchorARIA();
-  }
-
-  /** The element of an anchor id, or the anchor itself. */
   private _resolve(value: TooltipAnchor | string): TooltipAnchor | null {
     return isString(value) ? getElementByIdFromRoot(this._host, value) : value;
   }
@@ -251,7 +276,7 @@ class TooltipController implements ReactiveController {
   public setAnchor(value: TooltipAnchor | string, transient = false): void {
     const newAnchor = this._resolve(value);
 
-    if (this._anchor?.deref() === newAnchor) {
+    if (this._anchor?.deref() === newAnchor && !this._rect) {
       return;
     }
 
@@ -261,21 +286,60 @@ class TooltipController implements ReactiveController {
       this._options.onReset();
     }
 
-    if (this._anchor?.deref() !== this._initialAnchor?.deref()) {
-      this._anchorAbortHandle.abort();
-    }
-
     this._anchor = newAnchor ? new WeakRef(newAnchor) : null;
     this._isTransient = transient;
-    this._addAnchorListeners();
+
+    // Any new anchor, also none, ends a rectangle.
+    if (this._rect) {
+      this._toggleRect(null);
+    }
+
+    this._bindTransientAnchor();
     this._syncAnchorARIA();
   }
 
+  /**
+   * Anchors the tooltip to a rectangle until it closes. The first rectangle
+   * closes the tooltip and drops the anchor, as `show(target)` does. A later
+   * one only moves it.
+   */
+  public setRect(rect: PopoverRect): void {
+    if (!this._rect) {
+      this._options.onReset();
+      this.setAnchor(null, true);
+      this._toggleRect(rect);
+    } else if (!isSameRect(this._rect, rect)) {
+      this._rect = rect;
+      this._host.requestUpdate();
+    }
+  }
+
+  private _toggleRect(rect: PopoverRect | null): void {
+    this._rect = rect;
+    this._bindInitialAnchor();
+    this._syncOpenListeners();
+    this._host.requestUpdate();
+  }
+
+  /**
+   * Sets the configured anchor. A rectangle stays until the tooltip closes,
+   * and the new anchor applies then.
+   */
   public resolveAnchor(value: TooltipAnchor | string): void {
     const resolvedElement = this._resolve(value);
 
+    // Both the connect and the first update resolve, for an IDREF that
+    // renders late. The same anchor needs no new bindings.
+    if ((resolvedElement ?? undefined) === this._initialAnchor?.deref()) {
+      return;
+    }
+
     this._initialAnchor = resolvedElement ? new WeakRef(resolvedElement) : null;
-    this.setAnchor(resolvedElement);
+
+    if (!this._rect) {
+      this.setAnchor(resolvedElement);
+      this._bindAnchors();
+    }
   }
 
   //#endregion
@@ -285,11 +349,19 @@ class TooltipController implements ReactiveController {
   /** @internal */
   public hostConnected(): void {
     this.resolveAnchor(this._host.anchor);
+    // Binds again the listeners that `hostDisconnected` released.
+    this._syncOpenListeners();
   }
 
   /** @internal */
   public hostDisconnected(): void {
-    this._dispose();
+    this._initialAbortHandle.abort();
+    this._transientAbortHandle.abort();
+    this._hostAbortHandle.abort();
+    service.remove(this._host);
+    this._anchor = null;
+    this._initialAnchor = null;
+    this._syncAnchorARIA();
   }
 
   //#endregion
@@ -297,13 +369,16 @@ class TooltipController implements ReactiveController {
 
 const nextTooltipId = createIdGenerator('igc-tooltip');
 
-/** Splits the strings passed to the `show/hide-triggers` properties. */
 const triggersSeparator = /[,\s]+/;
 
 function parseTriggers(value: string): Set<string> {
   // Removing the attribute passes `null` through the property accessor.
-  return new Set(
-    (value ?? '').split(triggersSeparator).filter((trigger) => trigger.trim())
+  return new Set((value ?? '').split(triggersSeparator).filter(Boolean));
+}
+
+function isSameRect(a: PopoverRect, b: PopoverRect): boolean {
+  return (
+    a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height
   );
 }
 

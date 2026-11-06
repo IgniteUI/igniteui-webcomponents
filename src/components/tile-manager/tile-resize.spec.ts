@@ -10,7 +10,10 @@ import { spy } from 'sinon';
 import { getActiveViewTransition } from '#animations/view-transition.js';
 import { escapeKey } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { viewTransitionComplete } from '#internals/testing/helpers.spec.js';
+import {
+  allowMotion,
+  viewTransitionComplete,
+} from '#internals/testing/helpers.spec.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
@@ -70,6 +73,8 @@ describe('Tile resize', () => {
   }
 
   describe('Tile resize behavior', () => {
+    allowMotion();
+
     beforeEach(async () => {
       tileManager = (
         await fixture<IgcTileManagerComponent>(createTileManager())
@@ -352,15 +357,131 @@ describe('Tile resize', () => {
       expect(getComputedStyle(firstTile).gridColumn).to.eql('5 / span 6');
     });
 
-    it('moves a tile that starts after the last column to the last column and keeps its start and span', async () => {
+    it('moves a tile that starts after the last column back so that its span fits, and keeps its start and span', async () => {
       tileManager.columnCount = 10;
       firstTile.colStart = 11;
       firstTile.colSpan = 12;
       await elementUpdated(tileManager);
 
       expect(getColumns().length).to.eql(10);
-      expect(getComputedStyle(firstTile).gridColumn).to.eql('10 / span 1');
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('1 / span 10');
       expect([firstTile.colStart, firstTile.colSpan]).to.eql([11, 12]);
+    });
+
+    it('snaps a horizontal resize with the column gap, not the row gap', async () => {
+      const DOM = getTileDOM(firstTile);
+
+      tileManager.columnCount = 4;
+      tileManager.gap = '8px 40px';
+      await elementUpdated(tileManager);
+
+      const column = Number.parseFloat(firstOf(getColumns()));
+      const { left } = firstTile.getBoundingClientRect();
+
+      simulatePointerDown(DOM.adorners.side);
+      await elementUpdated(firstTile);
+
+      // Past the middle of the next column with an 8px gap, not with 40px.
+      simulatePointerMove(DOM.adorners.side, {
+        clientX: left + 1.5 * column + 24,
+      });
+      await elementUpdated(firstTile);
+
+      simulateLostPointerCapture(DOM.adorners.side);
+      await elementUpdated(firstTile);
+      await getActiveViewTransition()?.finished;
+
+      expect(firstTile.colSpan).to.equal(1);
+    });
+
+    it('snaps a resize with percentage gaps as the grid resolves them', async () => {
+      const DOM = getTileDOM(firstTile);
+
+      tileManager.columnCount = 2;
+      tileManager.gap = '5%';
+      await elementUpdated(tileManager);
+
+      const [first, second, third] = getTiles().map((tile) =>
+        tile.getBoundingClientRect()
+      );
+      const columnGap = second.left - first.right;
+      const rowGap = third.top - first.bottom;
+
+      // Short of the middle of the next track with the resolved gaps, and past
+      // it with the percentages read as pixels.
+      simulatePointerDown(DOM.adorners.corner);
+      await elementUpdated(firstTile);
+
+      simulatePointerMove(DOM.adorners.corner, {
+        clientX: first.left + 1.5 * first.width + columnGap / 2,
+        clientY: first.top + 1.5 * first.height + rowGap / 2,
+      });
+      await elementUpdated(firstTile);
+
+      simulateLostPointerCapture(DOM.adorners.corner);
+      await elementUpdated(firstTile);
+      await getActiveViewTransition()?.finished;
+
+      expect([columnGap, rowGap].every((gap) => gap > 10)).to.be.true;
+      expect([firstTile.colSpan, firstTile.rowSpan]).to.eql([1, 1]);
+    });
+
+    it('does not cancel a resize whose end listener removes the tile', async () => {
+      const DOM = getTileDOM(firstTile);
+      const canceled = spy();
+
+      firstTile.addEventListener('igcTileResizeCancel', canceled);
+      firstTile.addEventListener('igcTileResizeEnd', () => firstTile.remove());
+
+      simulatePointerDown(DOM.adorners.side);
+      await elementUpdated(firstTile);
+      simulateLostPointerCapture(DOM.adorners.side);
+
+      expect(firstTile.isConnected).to.be.false;
+      expect(canceled).not.called;
+    });
+
+    it('ends a resize that changes no span at once, without a view transition', async () => {
+      const DOM = getTileDOM(firstTile);
+      const ended = spy();
+
+      firstTile.addEventListener('igcTileResizeEnd', ended);
+
+      simulatePointerDown(DOM.adorners.side);
+      await elementUpdated(firstTile);
+      simulateLostPointerCapture(DOM.adorners.side);
+
+      expect(getActiveViewTransition()).to.be.null;
+      expect(ended).calledOnce;
+      expect(firstTile.part.contains('resizing')).to.be.false;
+    });
+
+    it('keeps a tile that moved back from after the last column in place on a resize', async () => {
+      const DOM = getTileDOM(firstTile);
+
+      tileManager.columnCount = 4;
+      Object.assign(firstTile, { colStart: 6, colSpan: 3 });
+      await elementUpdated(tileManager);
+
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('2 / span 3');
+
+      const column =
+        Number.parseFloat(firstOf(getColumns())) +
+        Number.parseFloat(tileManagerStyles.columnGap);
+      const { left } = firstTile.getBoundingClientRect();
+
+      simulatePointerDown(DOM.adorners.side);
+      await elementUpdated(firstTile);
+
+      simulatePointerMove(DOM.adorners.side, { clientX: left + 2 * column });
+      await elementUpdated(firstTile);
+
+      simulateLostPointerCapture(DOM.adorners.side);
+      await elementUpdated(firstTile);
+      await getActiveViewTransition()?.finished;
+
+      expect([firstTile.colStart, firstTile.colSpan]).to.eql([2, 2]);
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('2 / span 2');
     });
 
     it('keeps a column span that the column count cuts after a vertical resize', async () => {

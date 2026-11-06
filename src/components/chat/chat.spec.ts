@@ -1,4 +1,5 @@
 import { elementUpdated, expect, fixture, nextFrame } from '@open-wc/testing';
+import { sendKeys } from '@web/test-runner-commands';
 import { html, nothing } from 'lit';
 import { restore, spy, stub, useFakeTimers } from 'sinon';
 import {
@@ -23,6 +24,7 @@ import {
   simulateScroll,
 } from '#internals/testing/simulate.spec.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
+import { preventDefault } from '#internals/utils/events.js';
 import { configureTheme } from '#theming/config.js';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
@@ -1179,6 +1181,218 @@ describe('Chat', () => {
       await elementUpdated(chat);
 
       expect(inputArea?.chips.length).to.equal(0);
+    });
+
+    describe('Inner events', () => {
+      it('keeps the igcInput and igcChange of the text area inside', async () => {
+        const textArea = getChatDOM(chat).input.textarea;
+        const textAreaSpy = spy();
+        const chatSpy = spy();
+        const inputChangeSpy = spy();
+
+        for (const type of ['igcInput', 'igcChange']) {
+          textArea.addEventListener(type, textAreaSpy);
+          chat.addEventListener(type, chatSpy);
+        }
+        chat.addEventListener('igcInputChange', inputChangeSpy);
+
+        textArea.focus();
+        await sendKeys({ type: 'Hi' });
+        await sendKeys({ press: tabKey });
+        await elementUpdated(chat);
+
+        expect(textAreaSpy).calledWithMatch({ type: 'igcInput' });
+        expect(textAreaSpy).calledWithMatch({ type: 'igcChange' });
+        expect(chatSpy).not.called;
+        expect(inputChangeSpy.lastCall).calledWithMatch({ detail: 'Hi' });
+      });
+
+      it('keeps the igcRemove of an attachment chip inside', async () => {
+        simulateFileUpload(getChatDOM(chat).input.fileInput, files);
+        await elementUpdated(chat);
+
+        const chip = getChatDOM(chat).input.chips[0];
+        const chipSpy = spy();
+        const chatSpy = spy();
+
+        chip.addEventListener('igcRemove', chipSpy);
+        chat.addEventListener('igcRemove', chatSpy);
+
+        simulateClick(chip.renderRoot.querySelector('igc-icon')!);
+        await elementUpdated(chat);
+
+        expect(chipSpy).calledOnce;
+        expect(chatSpy).not.called;
+        expect(getChatDOM(chat).input.chips).lengthOf(1);
+      });
+    });
+
+    describe('Links in messages', () => {
+      /** Returns whether the browser follows the next click. The listener cancels it, so no test navigates. */
+      function nextClickFollowed(): () => boolean {
+        let followed = false;
+        document.addEventListener(
+          'click',
+          (event) => {
+            followed = !event.defaultPrevented;
+            event.preventDefault();
+          },
+          { once: true }
+        );
+        return () => followed;
+      }
+
+      /** Sends a cancelable click, as a user does, and returns whether the browser follows it. */
+      function clickLink(target: Element, init?: PointerEventInit): boolean {
+        const followed = nextClickFollowed();
+        simulateClick(target, { cancelable: true, ...init });
+        return followed();
+      }
+
+      async function firstMessageContent(
+        host: IgcChatComponent
+      ): Promise<HTMLElement> {
+        await elementUpdated(host);
+        const message = getChatDOM(host).messages[0];
+        await elementUpdated(message);
+        return getChatMessageDOM(message).content;
+      }
+
+      function renderContent(content: unknown): Promise<HTMLElement> {
+        chat.options = { renderers: { messageContent: () => content } };
+        chat.messages = [messages[0]];
+        return firstMessageContent(chat);
+      }
+
+      it('emits a non-bubbling `igcNavigate` with the message and the absolute URL', async () => {
+        const navigate = spy();
+        const parent = spy();
+        const content = await renderContent(
+          html`<a href="/docs/start?step=1#top"><strong>Start</strong></a>`
+        );
+
+        chat.addEventListener('igcNavigate', navigate);
+        chat.parentElement!.addEventListener('igcNavigate', parent);
+
+        expect(clickLink(content.querySelector('strong')!)).to.be.true;
+        expect(navigate).calledOnce;
+        expect(navigate.firstCall.args[0].detail).to.eql({
+          message: messages[0],
+          href: `${location.origin}/docs/start?step=1#top`,
+        });
+        expect(navigate.firstCall.args[0].cancelable).to.be.true;
+        expect(parent).not.called;
+      });
+
+      it('cancels the click when the application cancels `igcNavigate`', async () => {
+        const content = await renderContent(html`<a href="#docs">Docs</a>`);
+
+        chat.addEventListener('igcNavigate', preventDefault);
+
+        expect(clickLink(content.querySelector('a')!)).to.be.false;
+      });
+
+      it('emits `igcNavigate` for an SVG link with `xlink:href`', async () => {
+        const navigate = spy();
+        const content = await renderContent(
+          html`<svg>
+            <a xlink:href="#docs"><text y="16">Docs</text></a>
+          </svg>`
+        );
+
+        chat.addEventListener('igcNavigate', navigate);
+
+        expect(clickLink(content.querySelector('text')!)).to.be.true;
+        expect(navigate).calledOnce;
+        expect(navigate.firstCall.args[0].detail.href).to.equal(
+          new URL('#docs', document.baseURI).href
+        );
+      });
+
+      it('emits `igcNavigate` on `Enter` on the focused link', async () => {
+        const navigate = spy();
+        const content = await renderContent(html`<a href="#docs">Docs</a>`);
+        const followed = nextClickFollowed();
+
+        chat.addEventListener('igcNavigate', navigate);
+        content.querySelector('a')!.focus();
+        await sendKeys({ press: enterKey });
+
+        expect(navigate).calledOnce;
+        expect(followed()).to.be.true;
+      });
+
+      it('emits no `igcNavigate` for a link that the browser opens elsewhere or not at all', async () => {
+        const navigate = spy();
+        const content = await renderContent(html`
+          <a id="plain" href="#docs">Docs</a>
+          <a id="blank" href="#docs" target="_blank">Docs</a>
+          <a id="download" href="#docs" download>Docs</a>
+          <a id="invalid" href="http://[">Docs</a>
+          <a id="handled" href="#docs" @click=${preventDefault}>Docs</a>
+        `);
+        const link = (id: string) => content.querySelector(`#${id}`)!;
+
+        chat.addEventListener('igcNavigate', navigate);
+
+        clickLink(link('plain'), { ctrlKey: true });
+        for (const id of ['blank', 'download', 'invalid', 'handled']) {
+          clickLink(link(id));
+        }
+        // The browser follows a click that cannot be canceled, so no route can replace it.
+        simulateClick(link('plain'));
+
+        expect(navigate).not.called;
+      });
+
+      it('emits no `igcNavigate` for a link outside the messages', async () => {
+        const navigate = spy();
+        const link = document.createElement('a');
+        const around = document.createElement('a');
+        link.href = '#docs';
+        link.slot = 'actions';
+        around.href = '#around';
+        chat.append(link);
+        chat.replaceWith(around);
+        around.append(chat);
+        const content = await renderContent(html`<span>No link</span>`);
+
+        chat.addEventListener('igcNavigate', navigate);
+        clickLink(link);
+        clickLink(content.querySelector('span')!);
+
+        expect(navigate).not.called;
+      });
+
+      it('leaves a link in a nested chat, also in its header, to that chat', async () => {
+        const inner = spy();
+        const outer = spy();
+        const nestedMessage = { id: 'nested', text: 'Nested', sender: 'bot' };
+        const content = await renderContent(html`
+          <igc-chat
+            .messages=${[nestedMessage]}
+            .options=${{
+              renderers: {
+                messageContent: () => html`<a href="#docs">Docs</a>`,
+              },
+            }}
+            @igcNavigate=${(event: Event) => inner(event)}
+          >
+            <a slot="actions" href="#header">Header</a>
+          </igc-chat>
+        `);
+        const nested = await firstMessageContent(
+          content.querySelector(IgcChatComponent.tagName)!
+        );
+
+        chat.addEventListener('igcNavigate', outer);
+        clickLink(nested.querySelector('a')!);
+        clickLink(content.querySelector('[slot="actions"]')!);
+
+        expect(inner).calledOnce;
+        expect(inner.firstCall.args[0].detail.message).to.equal(nestedMessage);
+        expect(outer).not.called;
+      });
     });
   });
 

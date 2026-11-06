@@ -155,6 +155,11 @@ describe('DOM utilities', () => {
       expect(resolveCssLength(element, '50%')).to.equal(0);
     });
 
+    it('should resolve percentages against a basis', () => {
+      expect(resolveCssLength(element, '50%', 300)).to.equal(150);
+      expect(resolveCssLength(element, 'calc(10% + 1em)', 300)).to.equal(50);
+    });
+
     it('should return 0 for values that are not valid lengths', () => {
       expect(resolveCssLength(element, '200')).to.equal(0);
       expect(resolveCssLength(element, 'auto')).to.equal(0);

@@ -76,6 +76,7 @@
 |      14 | 2026-10-27 | The focus moves to the main input when the list closes around it; `igcChange.newValue` has the order of `value` |
 |      15 | 2026-10-28 | Text in STE; `aria-activedescendant` is on the listbox; the character keys filter only in single selection; the test scenarios follow the spec files |
 |      16 | 2026-10-30 | A new item or group header template re-renders the open list |
+|      17 | 2026-11-02 | A `focus()` call before the first render applies after the render |
 
 ## Overview
 
@@ -688,7 +689,8 @@ The suite runs in a real browser through `@web/test-runner`, with `@open-wc/test
 four files, and the groups below follow them in this order:
 
 - [`combo.spec.ts`](./combo.spec.ts): the component, the header and footer slots, the close trigger, the scroll
-  strategy, theming, ARIA, and the shared suites for the external label and the host ARIA.
+  strategy, theming, ARIA, and the shared suites for the external label, the host ARIA and the focus before the
+  first render.
 - [`combo-remote.spec.ts`](./combo-remote.spec.ts): remote data, placeholders and loading.
 - [`combo-selection.spec.ts`](./combo-selection.spec.ts): the select-all methods and option, group selection and the
   confirm mode.
@@ -697,9 +699,9 @@ four files, and the groups below follow them in this order:
 The files share their data and helpers through
 [`src/internals/testing/combo.spec.ts`](../../internals/testing/combo.spec.ts). They also use
 `createFormAssociatedTestBed`, `runValidationContainerTests`, `runExternalLabelAssociationTests`,
-`runAriaProjectionTests` and the `simulate*` helpers from [`src/internals/testing`](../../internals/testing). The unit
-specs in [`controllers`](./controllers) test the data state, the data requests and the selection model without a
-browser fixture.
+`runAriaProjectionTests`, `runFocusBeforeRenderTests` and the `simulate*` helpers from
+[`src/internals/testing`](../../internals/testing). The unit specs in [`controllers`](./controllers) test the data
+state, the data requests and the selection model without a browser fixture.
 
 ### Component
 
@@ -759,101 +761,106 @@ browser fixture.
 
 23. The shared host description suite: the host `aria-describedby` describes the native control after the helper text,
     and follows a change and a removal.
+24. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
+    takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
+    `disabled` set does not cancel an earlier call on another element.
 
 ### Remote data
 
-24. The mode comes from the `filtering-options` attribute. In remote mode, the search input and the main input do not
+25. The mode comes from the `filtering-options` attribute. In remote mode, the search input and the main input do not
     filter the options. A change back to `local` filters them.
-25. `igcSearchInput` reports each change of the search text in both modes, and of the main input in single selection,
+26. `igcSearchInput` reports each change of the search text in both modes, and of the main input in single selection,
     also when the text is cleared. It reports an empty text when a selection or a blur clears the text, and a blur
     also clears the search input. It does not come on a property change or with `disableFiltering`. The `igcInput` of
     the inputs stays inside the combo. In remote mode, the case-sensitive icon hides, and an input in single selection
     activates no option.
-26. The repro of issue 2519: a search that replaces `data` keeps the selected items in `value`, `selection` and the
+27. The repro of issue 2519: a search that replaces `data` keeps the selected items in `value`, `selection` and the
     input text. A later selection adds to them, and the first page shows them as selected again with its own records.
-27. `deselect()` removes a selected item that `data` does not hold. `select()` selects an object that `data` does not
+28. `deselect()` removes a selected item that `data` does not hold. `select()` selects an object that `data` does not
     hold, with and without `valueKey`. `select()` without an argument keeps the other selected items, and selects each
     value one time, also before a new `data` syncs.
-28. `igcDataRequest` comes near the end of `data` with `startIndex` equal to `data.length`, also with groups. It does
+29. `igcDataRequest` comes near the end of `data` with `startIndex` equal to `data.length`, also with groups. It does
     not come again until `data` grows. A new search, a new `data` without a search with a page of the same length, and
     a new opening each get their own request. It does not come in local mode, while the list is closed, or with an
     empty `data`.
 
 ### Placeholders and loading
 
-29. In remote mode, `totalItemCount` adds placeholder options after the groups. They count in `aria-setsize`, take the
+30. In remote mode, `totalItemCount` adds placeholder options after the groups. They count in `aria-setsize`, take the
     next positions, are disabled, have the name "Loading", and pass the accessibility audit. Local mode, an empty
     `data` and a total that is not a finite number show no placeholders.
-30. `igcDataRequest` covers the shown placeholders, for example after End, and does not go past `totalItemCount`. It
+31. `igcDataRequest` covers the shown placeholders, for example after End, and does not go past `totalItemCount`. It
     stops when `data` holds `totalItemCount` items, and comes again when the total no longer stops it. Space, a click
     and `selectAllItems()` do not select a placeholder. In single selection, Enter or a click on a placeholder does
     not close the list.
-31. `loading` shows the named spinner over the hidden toggle icon, and "Loading" in an empty list. The toggle width
+32. `loading` shows the named spinner over the hidden toggle icon, and "Loading" in an empty list. The toggle width
     does not change, and the list does not move. It passes the accessibility audit. The `loading` slot replaces the
     spinner. The spinner and the skeletons get their colors from the `loading` and `placeholder` parts.
 
 ### Select all methods
 
-32. `selectAllItems()` and `deselectAllItems()` change only the items that the filtered list shows, also right after a
+33. `selectAllItems()` and `deselectAllItems()` change only the items that the filtered list shows, also right after a
     change of `data` or of the search text. They send no `igcChange`, and change nothing when the list shows no items.
     With `ignoreFilter`, they act on all the items. In single selection, `selectAllItems()` does nothing and
     `deselectAllItems()` deselects a shown item.
 
 ### Select-all option
 
-33. The option comes first in multiple selection, before the group headers, with the "Select all" text and
+34. The option comes first in multiple selection, before the group headers, with the "Select all" text and
     `aria-selected`. It is the first option in `aria-posinset` and `aria-setsize`, and it passes the accessibility
     audit. It does not show in single selection or while the list shows no items.
-34. A click selects the shown items, and a second click deselects them, with one `igcChange` each. When only some
+35. A click selects the shown items, and a second click deselects them, with one `igcChange` each. When only some
     shown items are selected, the option is not selected, and its checkbox is indeterminate with the `indeterminate`
     part. A click then selects only the other shown items. A canceled `igcChange` keeps the selection. A new `value`
     while the list is open updates the option and the items.
-35. Home reaches the option, Space toggles it, and Arrow Up from it moves to the search input. A change of
+36. Home reaches the option, Space toggles it, and Arrow Up from it moves to the search input. A change of
     `showSelectAll` clears the active option. A click on an item without a value selects only that item.
-36. With `totalItemCount` in remote mode, the option does not change the requests or the positions of the
+37. With `totalItemCount` in remote mode, the option does not change the requests or the positions of the
     placeholders. The selection methods select only the loaded items.
 
 ### Group selection
 
-37. In multiple selection, the group headers are options with a checkbox and `aria-selected`. They count in
+38. In multiple selection, the group headers are options with a checkbox and `aria-selected`. They count in
     `aria-posinset` and `aria-setsize`, and the accessibility audit passes. In single selection, they are headers
     again, and the items take their positions back.
-38. A click on a header selects the shown items of its group, and a second click deselects them, with one `igcChange`
+39. A click on a header selects the shown items of its group, and a second click deselects them, with one `igcChange`
     each. The list stays open. With some of them selected, the checkbox is indeterminate with the `indeterminate`
     part, and a click selects only the others.
-39. Home and the arrow keys stop on the headers, Space toggles them, and Enter closes the list. A click on the
+40. Home and the arrow keys stop on the headers, Space toggles them, and Enter closes the list. A click on the
     select-all option also selects the headers. When group selection goes off, an active header stops being active.
 
 ### Confirm mode
 
-40. A click and Space change the pending selection with `igcPendingChange`. The list and `pendingValue` show it, and
+41. A click and Space change the pending selection with `igcPendingChange`. The list and `pendingValue` show it, and
     `value`, `selection` and the input text keep the selection. A canceled `igcPendingChange` keeps the pending
     selection.
-41. Enter applies the pending selection with one `igcChange` of the `commit` type with the changed items. Then it
+42. Enter applies the pending selection with one `igcChange` of the `commit` type with the changed items. Then it
     closes the list with the `enter` trigger. This also occurs in the search input and without an active option.
     Without a change, it closes the list with no `igcChange`. A canceled `igcChange` keeps the list open with the
     pending selection. A handler that changes `newValue` does not change `value`.
-42. Escape, a click on the input, `hide()` and `open` set to `false` drop the pending selection, with no `igcChange`.
-43. From the moment the list opens, the selection methods change the pending selection, also with an item that `data`
+43. Escape, a click on the input, `hide()` and `open` set to `false` drop the pending selection, with no `igcChange`.
+44. From the moment the list opens, the selection methods change the pending selection, also with an item that `data`
     does not hold. From the moment the list closes, they change the value. `commitSelection()` applies the pending
     selection with no events and keeps the list open. `cancelSelection()` and a new `value` replace it, and the same
     `value` keeps it.
-44. The clear icon clears `value` and the pending selection with one `igcChange`. A new `data` keeps the pending
+45. The clear icon clears `value` and the pending selection with one `igcChange`. A new `data` keeps the pending
     selection by value, and adds the values of `value` that it gives a record. A value without a record stays in
     `value` until a commit, and `select()` gives it a record in the input text. The select-all option and the group
     header options change the pending selection. In single selection, each change applies at once.
-45. The footer shows Cancel and Apply with the `combo_cancel` and `combo_apply` texts, and the accessibility audit
+46. The footer shows Cancel and Apply with the `combo_cancel` and `combo_apply` texts, and the accessibility audit
     passes. Footer content replaces them, and the immediate mode and single selection do not show them.
-46. Apply applies the pending selection with one `igcChange`, closes the list with the `apply` trigger, and moves the
+47. Apply applies the pending selection with one `igcChange`, closes the list with the `apply` trigger, and moves the
     focus to the main input. A canceled `igcChange` keeps the list open. Cancel drops the pending selection and closes
     the list with the `cancel` trigger.
-47. Tab moves from the list to Cancel and Apply, and Tab from Apply closes the list.
+48. Tab moves from the list to Cancel and Apply, and Tab from Apply closes the list.
 
 ### Form integration tests
 
-48. The combo is form associated, submits its selection, and resets with the form, also the input of single selection.
-49. It shows the disabled state of an ancestor `fieldset`.
-50. It obeys the required and custom constraints, and passes the accessibility audit while a submit fails on the
+49. The combo is form associated, submits its selection, and resets with the form, also the input of single selection.
+50. It shows the disabled state of an ancestor `fieldset`.
+51. It obeys the required and custom constraints, and passes the accessibility audit while a submit fails on the
     required constraint.
 
 The form-associated mixin gives the focus after the form checks and the rules of the `invalid` event. The
@@ -861,14 +868,14 @@ The form-associated mixin gives the focus after the form checks and the rules of
 
 ### defaultValue
 
-51. Form integration in single selection, in multiple selection, and with data that comes late.
-52. Validation against the default value.
+52. Form integration in single selection, in multiple selection, and with data that comes late.
+53. Validation against the default value.
 
 ### Validation message slots
 
 `runValidationContainerTests` makes these tests.
 
-53. The `value-missing`, `custom-error` and `invalid` slots show for their state.
+54. The `value-missing`, `custom-error` and `invalid` slots show for their state.
 
 ## Assumptions and limitations
 

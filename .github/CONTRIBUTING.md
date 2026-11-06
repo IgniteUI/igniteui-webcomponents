@@ -83,6 +83,14 @@ To run the tests in watch mode, run:
 npm run test:watch
 ```
 
+CI splits the spec files into parts and runs them in parallel jobs. To run the part of a failed job, set `TEST_SHARD` to the part from the job name:
+
+```sh
+TEST_SHARD=2/3 npm run test
+```
+
+The tests run with `prefers-reduced-motion: reduce`, so animations take no time. In a `describe` block whose tests check animations, call `allowMotion()` from `src/internals/testing/helpers.spec.ts`.
+
 ### Property-based tests
 
 Parsers, converters and serializers that take user or stored input also have property-based (fuzz) tests with [fast-check](https://fast-check.dev/), in `[module].property.spec.ts`. They run with the rest of the suite. fast-check shrinks a failure to a minimal counterexample.

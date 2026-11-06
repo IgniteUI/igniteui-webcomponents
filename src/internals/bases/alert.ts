@@ -10,8 +10,11 @@ import { addToggleCommands } from '../controllers/command.js';
 import { addHostListeners } from '../controllers/host-listeners.js';
 import { addInternalsController } from '../controllers/internals.js';
 import { createMutationController } from '../controllers/mutation-observer.js';
+import { addToggleController } from '../controllers/toggle.js';
+import { coercedProperty } from '../decorators/coerced-property.js';
 import { createTimer } from '../timing.js';
 import { getRoot, getVisibleAncestor, isPopoverOpen } from '../utils/dom.js';
+import { getEventOrigin } from '../utils/events.js';
 import { nanoid } from '../utils/strings.js';
 
 /** The names that open components add to the `anchor-name` of a container. */
@@ -85,24 +88,50 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   /** Whether the pointer or the keyboard focus is in the component. */
   private readonly _holds = new Set<'pointer' | 'focus'>();
 
-  /** Whether `hide()` fades the component out. */
-  private _closing = false;
+  private readonly _toggleController = addToggleController(this, {
+    transition: async (open, signal) => {
+      if (open) {
+        this.open = true;
+        const state = await this._player.playExclusive(fadeIn(), signal);
 
-  /** Counts the open state changes, so that only the last fade-out closes. */
-  private _transitions = 0;
+        if (!signal.aborted) {
+          this._setAutoHideTimer();
+        }
+
+        return state;
+      }
+
+      this._autoHideTimer.stop();
+      const state = await this._player.playExclusive(fadeOut(), signal);
+
+      // A newer `show()` or `open` change keeps the component open.
+      if (signal.aborted) {
+        return false;
+      }
+
+      this._hidePopover();
+      this.open = false;
+      return state;
+    },
+  });
 
   /** Whether the component is open and does not fade out. */
   private get _isShown(): boolean {
-    return this.open && !this._closing;
+    return this.open && !this._toggleController.closing;
   }
 
   /**
    * Whether the component is open.
    *
+   * Setting it skips the fade. Use the `show()`, `hide()` and `toggle()`
+   * methods for a fade.
    * @attr open
    * @default false
    */
   @property({ type: Boolean, reflect: true })
+  @coercedProperty<boolean, IgcBaseAlertLikeComponent>({
+    onChange: ({ host, value }) => host._toggleController.sync(value),
+  })
   public open = false;
 
   /**
@@ -223,7 +252,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
         break;
       case 'focusin':
         // A pointer click on the action does not hold the component open.
-        if ((event.composedPath()[0] as Element).matches(':focus-visible')) {
+        if (getEventOrigin(':focus-visible', event)) {
           this._holds.add('focus');
         }
         break;
@@ -302,35 +331,6 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
     }
   }
 
-  private async _setOpenState(open: boolean): Promise<boolean> {
-    const transition = ++this._transitions;
-    this._closing = !open;
-
-    if (open) {
-      // During the fade-out, the popover is still open.
-      if (!this.open && !this._showPopover()) {
-        return false;
-      }
-
-      this.open = true;
-      const state = await this._player.playExclusive(fadeIn());
-      this._setAutoHideTimer();
-      return state;
-    }
-
-    this._autoHideTimer.stop();
-    const state = await this._player.playExclusive(fadeOut());
-
-    // A `show()` during the fade-out keeps the component open.
-    if (transition === this._transitions) {
-      this._closing = false;
-      this._hidePopover();
-      this.open = false;
-    }
-
-    return state;
-  }
-
   private _setAutoHideTimer(): void {
     this._autoHideTimer.stop();
     if (
@@ -348,7 +348,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
    * Opens the component, also during the fade-out of `hide()`. When it is
    * already open, the display time starts again, and the promise resolves to
    * `false`. It also resolves to `false` when `container` positioning finds no
-   * visible ancestor.
+   * visible ancestor, or when `open` is set to `false` during the fade-in.
    */
   public async show(): Promise<boolean> {
     if (this._isShown) {
@@ -356,15 +356,22 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
       return false;
     }
 
-    return this._setOpenState(true);
+    // During the fade-out, the popover is still open. A refusal before the
+    // controller leaves no request in flight.
+    if (!this.open && !this._showPopover()) {
+      return false;
+    }
+
+    return this._toggleController.show();
   }
 
   /**
    * Closes the component. Resolves to `false` when it is already closed or
-   * fades out.
+   * fades out, or when `open` is set to `false` and then to `true` during the
+   * fade-out.
    */
   public async hide(): Promise<boolean> {
-    return this._isShown ? this._setOpenState(false) : false;
+    return this._isShown ? this._toggleController.hide() : false;
   }
 
   /**

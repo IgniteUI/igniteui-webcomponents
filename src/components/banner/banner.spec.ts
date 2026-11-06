@@ -8,7 +8,10 @@ import {
 import { emulateMedia } from '@web/test-runner-commands';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { finishAnimationsFor } from '#internals/testing/helpers.spec.js';
+import {
+  allowMotion,
+  finishAnimationsFor,
+} from '#internals/testing/helpers.spec.js';
 import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import IgcButtonComponent from '../button/button.js';
@@ -262,6 +265,8 @@ describe('Banner', () => {
   });
 
   describe('Interrupted Transitions', () => {
+    allowMotion();
+
     it('reopening during the exit animation keeps the banner open', async () => {
       await banner.show();
 
@@ -289,19 +294,14 @@ describe('Banner', () => {
 
     it('keeps the banner open after a zero-duration exit that `open` takes over', async () => {
       await emulateMedia({ reducedMotion: 'reduce' });
+      await banner.show();
 
-      try {
-        await banner.show();
+      const closing = banner.hide();
+      banner.open = false;
+      banner.open = true;
 
-        const closing = banner.hide();
-        banner.open = false;
-        banner.open = true;
-
-        expect(await closing).to.be.false;
-        expect(banner.open).to.be.true;
-      } finally {
-        await emulateMedia({ reducedMotion: 'no-preference' });
-      }
+      expect(await closing).to.be.false;
+      expect(banner.open).to.be.true;
     });
 
     it('opens on a show right after `open` is set to `false` during the entrance', async () => {

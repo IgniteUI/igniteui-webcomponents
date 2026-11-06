@@ -536,13 +536,11 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   // #region Event handlers
 
   protected _dialogCancel() {
-    this._revertValue();
-    this._hide(true);
+    this._closeWith(() => this._revertValue());
   }
 
   protected _dialogDone() {
-    this._emitChangeIfDirty();
-    this._hide(true);
+    this._closeWith(() => this._emitChangeIfDirty());
   }
 
   protected _handleInput(event: CustomEvent<string>) {
@@ -673,6 +671,8 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
 
   /** Applies a predefined range. In dialog mode, Done commits it. */
   private _select(value: DateRangeValue | null) {
+    if (this._isClosing) return;
+
     this._value = value;
     this._setCalendarActiveDate(this._firstDefinedInRange);
 

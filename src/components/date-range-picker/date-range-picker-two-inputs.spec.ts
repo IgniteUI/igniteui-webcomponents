@@ -14,6 +14,7 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { CalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   runAriaProjectionTests,
   runExternalLabelAssociationTests,
@@ -488,6 +489,7 @@ describe('Date range picker - two inputs', () => {
           'igc-button[slot="footer"]:last-of-type'
         ) as HTMLButtonElement;
         doneBtn?.click();
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         expect(eventSpy).calledWith('igcChange');
         checkSelectedRange(picker, {
@@ -565,6 +567,7 @@ describe('Date range picker - two inputs', () => {
           'igc-button[slot="footer"]'
         ) as HTMLButtonElement;
         cancelBtn?.click();
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         expect(eventSpy).not.to.be.calledWith('igcChange');
         dialog = picker.renderRoot.querySelector('igc-dialog');
@@ -605,6 +608,7 @@ describe('Date range picker - two inputs', () => {
           'igc-button[slot="footer"]'
         ) as HTMLButtonElement;
         cancelBtn?.click();
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         expect(eventSpy).not.to.be.calledWith('igcChange');
         dialog = picker.renderRoot.querySelector('igc-dialog');
@@ -649,6 +653,7 @@ describe('Date range picker - two inputs', () => {
         checkSelectedRange(picker, { start: date1.native, end: date2.native });
 
         simulateKeyboard(picker, escapeKey);
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         await elementUpdated(dateTimeInputs[0]);
         await elementUpdated(dateTimeInputs[1]);
@@ -1200,4 +1205,8 @@ describe('Date range picker - two inputs', () => {
       }
     });
   });
+
+  runFocusBeforeRenderTests(
+    html`<igc-date-range-picker use-two-inputs></igc-date-range-picker>`
+  );
 });

@@ -59,6 +59,7 @@
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                        |
 |       5 | 2026-10-23 | The splitter makes a stacking context, so the z-index of the focused bar does not compete with the layers of the page |
 |       6 | 2026-10-29 | Transition only the colors, the shadow and the scale of the bar, so the bar hides at the same time as a hidden ancestor and takes its new size, and in the Indigo theme its new scale, at once after an orientation change |
+|       7 | 2026-11-02 | Each pane makes a stacking context, so the focused bar stays above slotted content with any `z-index` |
 
 ## Overview
 
@@ -164,7 +165,8 @@ The splitter component presents users with a clear, intuitive interface for mana
 
 **Accessibility experience**
 
-- **Focus indicators**: the splitter bar displays a clear focus ring when it is reached from the keyboard.
+- **Focus indicators**: the splitter bar displays a clear focus ring when it is reached from the keyboard. Content in
+  the panes does not cover the ring, whatever its `z-index`.
 - **Screen reader announcements**: the bar announces its name and the size of the start pane in percent. The value
   0% tells that the start pane is collapsed, and 100% that the end pane is collapsed.
 - **Predictable navigation**: the tab order flows naturally and the keyboard shortcuts follow standard conventions.
@@ -397,7 +399,7 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 1. The component renders with its default horizontal orientation, both panes, the splitter bar, the drag handle and
    the collapse buttons. It passes the accessibility audit, the bar is named "Resize panes" and has no description,
    and its value text is 0% while the start pane is collapsed. The focused bar is painted under an earlier page layer
-   with `z-index: 1`.
+   with `z-index: 1`, and above content with `position: fixed` and `z-index: 100` in both panes.
 2. Changing the orientation updates the layout. The sizes, the constraints and their attributes stay, also a size set
    in the same update. The sizes of a drag are dropped, and a pane that is collapsed during the change expands to its
    authored size. An orientation that returns to the same axis in one update keeps the dragged sizes. The restored

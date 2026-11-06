@@ -16,6 +16,7 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
       - [Basic initialization](#basic-initialization)
       - [Selection](#selection)
       - [Alignment](#alignment)
+      - [Header position](#header-position)
       - [Activation mode](#activation-mode)
       - [Prefix and suffix content](#prefix-and-suffix-content)
       - [Overflow and scrolling](#overflow-and-scrolling)
@@ -24,6 +25,11 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
     - [Keyboard interactions](#keyboard-interactions)
   - [API](#api)
     - [igc-tabs](#igc-tabs)
+      - [Properties and attributes](#properties-and-attributes)
+      - [Methods](#methods)
+      - [Events](#events)
+      - [Slots](#slots)
+      - [CSS Shadow parts](#css-shadow-parts)
     - [igc-tab](#igc-tab)
   - [Test scenarios](#test-scenarios)
     - [Rendering and defaults](#rendering-and-defaults)
@@ -36,6 +42,10 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
     - [Link tabs](#link-tabs-1)
     - [Layout](#layout)
     - [Hidden ancestor](#hidden-ancestor)
+    - [Header position](#header-position-1)
+      - [Column layout](#column-layout)
+      - [Column scrolling](#column-scrolling)
+      - [Column themes](#column-themes)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -55,12 +65,16 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
 |       7 | 2026-10-23 | The tabs make a stacking context, so the z-index of the headers, the indicator and the scroll buttons does not compete with the layers of the page |
 |       8 | 2026-10-29 | The selected panel has no `transform`, so it is not the containing block of fixed content |
 |       9 | 2026-10-29 | In the Fluent theme, transition only the properties of a tab that change; the selected indicator no longer sets `visibility: visible`; so the tabs hide at the same time as a hidden ancestor |
+|      10 | 2026-10-29 | `headerPosition`: the headers form a row above the panels (`top`, the default) or a column on the `start` or `end` side, which follows the direction. In a column, Up and Down move between the tabs, the tab list has the vertical orientation, `alignment` applies along the column, the indicator is on the side of the panels, and scroll buttons above and below the headers show when the headers do not fit in a definite height. The header strip covers only the headers |
+|      11 | 2026-10-29 | In a column, each header has the minimum height of a header row, the indicator follows the headers that `alignment` moves, and a `max-height` on the tabs, without their padding and border, limits the column as a definite height does. A selection made in the same task as a change of position stays. A tab that leaves its tabs drops the position. With `justify`, a hidden tab leaves no gap, and tabs in a panel keep the width limit of a header. The scroll buttons and the selection of a hidden tab do not scroll the strip |
+|      12 | 2026-11-04 | `igcNavigate` is not composed, so it does not reach a shadow host around the tabs; `_parent` and `_top` count as `_self` in a page that is not in a frame |
+|      13 | 2026-11-05 | With `prefers-reduced-motion: reduce`, the scroll buttons and the selection scroll the header strip at once; the scroll buttons follow the `scroll-behavior` of the `tabs` part |
 
 ## Overview
 
 Tabs organize and allow navigation between groups of content that are related and at the same level of hierarchy.
 The `igc-tabs` component renders a header strip of tab headers and shows the body of the selected
-[`igc-tab`](#igc-tab) below it.
+[`igc-tab`](#igc-tab) below it, or beside it when the headers form a column.
 
 Each tab carries both its header and its body: the header content comes from the `label` property or the `label`
 slot, and the body from the default slot.
@@ -70,6 +84,7 @@ slot, and the body from the default slot.
 - **One element per tab**: the header and the body live together in a single `igc-tab`.
 - **Automatic or manual activation**: focusing a header can select it, or selection can require an explicit action.
 - **Alignment**: the header strip can be aligned in several ways.
+- **Header position**: the headers form a row above the panels, or a column on the start or the end side of them.
 - **Overflow scrolling**: scroll buttons appear when the headers do not fit.
 - **Prefix and suffix** content in a tab header.
 - **Programmatic selection** by reference, by IDREF, or by label.
@@ -82,6 +97,8 @@ slot, and the body from the default slot.
 - The activation behavior must be configurable between automatic and manual.
 - Disabled tabs must be skipped and must not be selectable.
 - Scroll buttons must appear when the headers overflow, and must scroll the strip.
+- The headers must be able to form a column on the start or the end side of the panels, with the arrow keys of that
+  axis.
 - The component must emit an event when the selected tab changes through interaction.
 - A tab with a URL must render its header as a link and keep the keyboard behavior and the tab stop of a tab.
 - The elements must be integrated and themeable with the theming mechanism of the library.
@@ -94,6 +111,7 @@ slot, and the body from the default slot.
 As an end-user, I expect to be able to:
 
 - see a row of tab headers and the content of the selected one.
+- see the tab headers in a column beside the content, and move between them with the Up and Down arrow keys.
 - switch tabs with the pointer or with the keyboard.
 - see which tab is selected from a clear indicator.
 - scroll the header strip when there are more tabs than fit.
@@ -108,6 +126,7 @@ As a developer, I expect to be able to:
 - select a tab programmatically, by reference, IDREF or label.
 - read which tab is currently selected.
 - align the header strip to match my design.
+- put the headers in a column on the side of the content, for example on a settings page.
 - choose whether moving focus selects a tab.
 - add icons or badges before and after a tab label.
 - be notified when the selection changes.
@@ -122,6 +141,10 @@ As a developer, I expect to be able to:
 The header strip renders the tab headers in a row with an indicator under the selected one. The body of the selected
 tab is shown below the strip. When the headers overflow the available width, scroll buttons appear at both ends of
 the strip.
+
+When the headers form a column, the column is on the start or the end side of the body. The indicator is on the side
+of the headers that faces the body. When the headers do not fit in the height of the tabs, scroll buttons appear above
+and below them.
 
 ### Developer experience
 
@@ -166,6 +189,43 @@ selection.
 <igc-tabs alignment="center">...</igc-tabs>
 ```
 
+In a column, `alignment` applies along the column: `start` puts the headers at the top, `end` at the bottom, and
+`justify` shares the height of the column between the headers.
+
+#### Header position
+
+```html
+<igc-tabs header-position="start" style="height: 24rem">
+  <igc-tab label="Profile">...</igc-tab>
+  <igc-tab label="Notifications">...</igc-tab>
+  <igc-tab label="Security">...</igc-tab>
+</igc-tabs>
+```
+
+| Value   | Layout                                                                                                     |
+| ------- | ---------------------------------------------------------------------------------------------------------- |
+| `top`   | The default. A row of headers above the panels.                                                            |
+| `start` | A column of headers before the panels in the text direction: on the left in a left-to-right layout, and on the right in a right-to-left layout. |
+| `end`   | A column of headers after the panels in the text direction.                                                |
+
+In a column:
+
+- The column is as wide as the widest header, up to the width limit of a header (360px). A longer label wraps. The
+  panel takes the rest of the width. When the width is too short for both, the header column and the panel grow by the
+  same amount up to their content, so a long label wraps and the panel keeps part of the width.
+- The indicator is on the side of the headers that faces the panels. In the Bootstrap theme, which has no indicator,
+  the selected tab is open on that side.
+- Each header is at least as tall as a header row.
+- Without a height limit, the tabs are as tall as the selected panel or the headers, whichever is taller.
+- A height limit is a `height` or a `max-height` on the tabs, or a height from the parent, for example in a flex or
+  grid layout. A parent that sizes the tabs from their content, such as a grid row with an auto height, sets no limit:
+  the tabs grow with the selected panel, also when its content grows later. The padding and the border of the tabs are not part of the limit. A panel that is taller than the limit scrolls its content. When the headers do not fit, scroll buttons
+  above and below them scroll the column, and their arrows point up and down.
+- Only the scroll buttons and the keyboard scroll the headers. The wheel over the headers does not scroll them, so the
+  wheel over a panel never moves the headers.
+
+A change of `headerPosition` keeps the selected tab and the focus, and emits no `igcChange`.
+
 #### Activation mode
 
 ```html
@@ -196,7 +256,11 @@ tab. A click on such a control also selects the tab, moves the focus to the head
 #### Overflow and scrolling
 
 Scroll buttons appear at the start and the end of the header strip when the headers overflow, and are exposed as
-shadow parts so they can be styled.
+shadow parts so they can be styled. In a column, they appear above and below the headers. See
+[Header position](#header-position).
+
+The scroll buttons and the selection follow the `scroll-behavior` of the `tabs` part: smooth by default, and at once
+with `prefers-reduced-motion: reduce`.
 
 #### Link tabs
 
@@ -223,13 +287,16 @@ keeps the anchor but has no URL.
 | <kbd>Ctrl</kbd> / <kbd>Cmd</kbd> + <kbd>Enter</kbd> | No change.                                   | The browser opens the link in a new tab.            |
 | Arrow keys with `activation="auto"`       | The tab is selected, except a tab whose `target` is not `_self`. | None.                                     |
 
+In a page that is not in a frame, `_parent` and `_top` open the link in the same tab, so they count as `_self`.
+
 Set `selected` from the current URL, so the selection survives a reload and the back and forward buttons. Use
 `activation="manual"` when each tab loads a page.
 
 To route on the client, listen to `igcNavigate` on the tab, call `preventDefault()` and route. The tab emits it when
 the browser is about to follow the link (see the table), after `igcChange`, also when the tab is already selected. A
 disabled tab and a click that is already canceled emit no event. The event does not bubble, so a listener on a tab
-never gets the event of a tab nested in its panel.
+never gets the event of a tab nested in its panel. It is not composed either, so a shadow host around the tabs does
+not get it.
 
 Do not route from `click` on the tab. The panel is a child of the tab, so the listener also gets the clicks in the
 panel, for example on a submit button or a link, and routes them to the URL of the tab.
@@ -269,7 +336,8 @@ The keys apply while a tab header has focus.
 
 | Key combination                                | Result                                                                   |
 | ---------------------------------------------- | -------------------------------------------------------------------------- |
-| <kbd>Arrow Left</kbd> / <kbd>Arrow Right</kbd> | Moves focus to the previous or next enabled tab header, wrapping at the ends. |
+| <kbd>Arrow Left</kbd> / <kbd>Arrow Right</kbd> | In a row, moves focus to the previous or next enabled tab header, wrapping at the ends. |
+| <kbd>Arrow Up</kbd> / <kbd>Arrow Down</kbd>    | In a column, moves focus to the previous or next enabled tab header, wrapping at the ends. |
 | <kbd>Home</kbd> / <kbd>End</kbd>               | Moves focus to the first or the last enabled tab header.                  |
 | <kbd>Enter</kbd> / <kbd>Space</kbd>            | Selects the focused tab. On a link tab, clicks the header, which also follows the link. |
 | <kbd>Ctrl</kbd> / <kbd>Cmd</kbd> + <kbd>Enter</kbd> | On a link tab, the browser opens the link in a new tab. The selection does not change. |
@@ -277,7 +345,8 @@ The keys apply while a tab header has focus.
 
 With `activation="auto"`, moving focus also selects the tab, except a link tab whose `target` is not `_self`.
 Disabled tabs and tabs that do not render, such as a tab with the `hidden` attribute, are skipped, and the horizontal
-arrow keys follow the writing direction. The keys apply only to the header itself.
+arrow keys follow the writing direction. The keys apply only to the header itself. The arrow keys of the other axis do
+nothing and are not canceled, so the browser keeps them, for example to scroll the page.
 
 ## API
 
@@ -287,7 +356,8 @@ arrow keys follow the writing direction. The keys apply only to the header itsel
 
 | Property    | Attribute  | Reflected | Type                        | Default | Description                                                          |
 | ----------- | ---------- | --------- | --------------------------- | ------- | ---------------------------------------------------------------------- |
-| alignment   | alignment  | Yes       | `TabsAlignment`             | `start` | The alignment of the tab headers in the header strip.                |
+| alignment   | alignment  | Yes       | `TabsAlignment`             | `start` | The alignment of the tab headers in the header strip. In a column, `start` is the top and `end` is the bottom. |
+| headerPosition | header-position | Yes | `TabsHeaderPosition`     | `top`   | The side of the panels on which the tab headers are placed. With `top`, the headers form a row above the panels. With `start` and `end`, they form a column before or after the panels in the text direction. |
 | activation  | activation | No        | `TabsActivation`            | `auto`  | The activation behavior of the tabs. With `auto`, a tab is selected when it receives keyboard focus. With `manual`, a tab is selected only on click, or on Enter or Space. |
 | tabs        | -          | No        | `IgcTabComponent[]`         | -       | Read-only. The tab children of the component.                        |
 | selected    | -          | No        | `string`                    | `''`    | Read-only. The label of the selected tab, or its `id` when the tab has no label. An empty string when no tab is selected. |
@@ -386,9 +456,15 @@ The groups below mirror the `describe` blocks.
 ### Scrolling
 
 9. The scroll buttons appear when the headers overflow and scroll the strip. Their arrows point along the writing
-   direction, also when `dir` is on the tabs or on an ancestor.
-10. Selecting a tab outside the visible area scrolls it into view. Under an ancestor `zoom`, the strip is measured in its
-    own CSS pixels.
+   direction, also when `dir` is on the tabs or on an ancestor. The scroll buttons and the selection scroll the strip
+   smoothly, and at once with reduced motion.
+10. Selecting a tab outside the visible area scrolls it into view. Under an ancestor `zoom` or `transform`, the strip is
+    measured in its own CSS pixels, and a selected tab scrolls into view between the scroll buttons. A hidden tab does not
+    move the strip, neither through the scroll buttons nor when it is selected. A tab selected in the initial markup
+    scrolls fully into view, also when the scroll buttons show only after the headers are measured again. A tab
+    selected while the tabs are hidden scrolls into view when they show again, also in a closed `<details>` that
+    opens, when the scroll buttons show only on open. Hidden tabs keep their layout, so they show again with no frame
+    of zero sizes.
 
 ### Composition
 
@@ -396,8 +472,9 @@ The groups below mirror the `describe` blocks.
     A tab added as selected takes the selection, also when the selected tab is deselected in the same task or the
     markup is replaced. A selected tab that moves keeps the selection, and of several tabs selected at once the last one
     in document order wins. Tabs projected through the slot of another component are picked up, work with the
-    keyboard, and are followed when their state changes or tabs are added or removed. Changes made while the tabs are
-    detached apply when they connect again.
+    keyboard, and are followed when their state changes or tabs are added or removed. The selected indicator stays on a
+    projected header, and a selected projected header scrolls into view. Changes made while the tabs are detached apply
+    when they connect again.
 12. Prefix, label and suffix content renders in the header.
 
 ### Tab component
@@ -437,8 +514,8 @@ The groups below mirror the `describe` blocks.
 25. A key pressed on an element other than a tab header, such as an element slotted into a label, is not canceled,
     and does not select or focus a tab.
 26. A plain click, Enter or Space on a link tab emits `igcNavigate` on the tab, also on the selected tab, and the
-    event does not bubble. When the application cancels it, the tabs cancel the click and the link is not followed.
-    A plain or disabled tab, and a click in the panel, emit no event.
+    event does not bubble or reach a shadow host around the tabs. When the application cancels it, the tabs cancel
+    the click and the link is not followed. A plain or disabled tab, and a click in the panel, emit no event.
 
 ### Layout
 
@@ -446,20 +523,91 @@ The groups below mirror the `describe` blocks.
 28. A click selection is handled once: the `selected` attribute that the tabs reflect does not run it again. An
     application that deselects the tab in the `igcChange` handler leaves no selection.
 29. A change of size of a tab header, also of a header that a change of `href` replaced, moves the selected
-    indicator. So does a change of direction, also on an ancestor.
+    indicator. So does a change of direction, also on an ancestor, in the frame of the change.
 30. The tab headers are painted under an earlier page layer with `z-index: 1`.
 31. An element with `position: fixed` in the selected panel is placed against the viewport.
+32. In a row, the header strip covers only the header row, not the panels.
+33. The selected indicator stays on its header with padding on the tabs, the `tabs` part and the `inner` part, and with
+    a positioned `tabs` part, in a row in LTR and RTL and in a column.
 
 ### Hidden ancestor
 
-32. The tabs, also the selected indicator, hide at the same time as a hidden ancestor in each theme, at rest and after a
+34. The tabs, also the selected indicator, hide at the same time as a hidden ancestor in each theme, at rest and after a
     focus or a hover: no element transitions `visibility` or sets it to `visible`.
+
+### Header position
+
+35. The default position is `top`. The attribute reflects. The tab list has the horizontal orientation in a row and the
+    vertical orientation in a column, also after a change.
+36. In a column, Up and Down move the focus between the enabled tabs that render, and wrap. With `activation="auto"`,
+    they select the tab. With `manual`, they only move the focus. They do not mirror in a right-to-left column.
+37. Left and Right in a column, and Up and Down in a row, do nothing and are not canceled.
+38. A change of position keeps the selected tab, the focused header and the header elements, and emits no `igcChange`.
+    A selection made in the same task as a change of position stays.
+
+#### Column layout
+
+39. The headers form a column on the `start` or the `end` side of the panels, in LTR and RTL. The header strip covers
+    only the header column.
+40. The column is as wide as the widest header, up to the width limit of a header, also with `justify`. The panel
+    takes the rest of the width. In a narrow column, a long label wraps and the panel keeps part of the width. Tabs
+    that size to their content keep a label on one line.
+41. `alignment` `start`, `center`, `end` and `justify` place the headers along the column.
+42. With an auto height, the panel sizes the tabs. With a set height, the height of the tabs limits the panel, also
+    after a row with a set height changes to a column. The limit goes away with the set height. In a grid or a flex
+    row that sizes the tabs from their content, the tabs grow with the panel, also with content added to it later. A
+    height that the grid or the flex row sets limits the panel. A change of the limit keeps the scroll offset of the
+    selected panel.
+43. A row of tabs in the panel of a column lays out as a row.
+44. The accessibility audit passes on both sides. The headers of a column are painted under an earlier page layer.
+45. When a panel grows, the indicator follows the headers that `center` or `end` alignment moves. With `start`, the
+    indicator does not move.
+46. Each header of a column is as tall as a header row.
+47. With `justify`, a hidden tab leaves no gap, in a row and in a column. Tabs in a panel of a `justify` row keep the
+    width limit of a header. A tab that hides or shows gives no ResizeObserver loop error.
+48. A `max-height` on the tabs is a height limit without their padding and border. A higher `max-height` applies also
+    while the limit caps the panel.
+49. A tab that leaves its tabs drops the position.
+50. Under an ancestor `transform`, also `scale(0)`, the first frame of a scale-in animation, a set height or a
+    `max-height` limits the panels in CSS pixels.
+
+#### Column scrolling
+
+51. With a set height, scroll buttons show above and below the headers when the headers do not fit. Their arrows point
+    up and down, also in a right-to-left column. The panel stays at the top of the column while the headers scroll.
+52. The scroll buttons scroll the column. A selected tab scrolls into view, and the page does not scroll. A header that
+    gets the focus with `manual` activation scrolls into view. A tab selected while the tabs are hidden scrolls into
+    view when they show again.
+53. The scroll offset stays in range when tabs are removed or the tabs get taller. The scroll buttons show and hide when
+    a header changes height, and hide when the height limit goes away, with no ResizeObserver loop error.
+54. Under an ancestor `zoom`, the column is measured in its own CSS pixels. Changes inside a panel do not make the tabs
+    measure the column.
+55. The indicator moves along the column with the selected header. A change of position resets the scroll offsets,
+    keeps the focused header in view, and moves the indicator to the new axis without a transition.
+56. A `max-height` on the tabs limits the panel and scrolls the headers as a set height does, and a change of it
+    applies.
+
+#### Column themes
+
+57. In the Material, Fluent and Indigo themes, the indicator is on the side of the headers that faces the panels, for
+    both positions, in LTR and RTL. The lines of the Bootstrap theme and the header lines of the Indigo theme are on
+    the side of the panels.
+58. Each tab gets the position, also a tab added later.
+59. A column hides at the same time as a hidden ancestor (the shared `runHiddenAncestorTests` suite).
 
 ## Assumptions and limitations
 
 - A tab owns both its header and its body; the two cannot be declared separately.
 - Only one tab is selected at a time.
-- The header strip is horizontal; a vertical arrangement is not supported.
+- The headers can be above the panels or on the start or the end side of them. There is no `bottom` position.
+- A column scrolls its headers only with a height limit on the tabs or from their parent. A `max-height` on another
+  ancestor does not limit the tabs. A `max-height` in percent limits a column only with the default `height`, not with
+  `height: auto`. See [Header position](#header-position).
+- In a column with a height limit, a panel that is taller than the limit scrolls its content. A row does not change:
+  such a panel is cut.
+- The wheel and touch do not scroll the headers of a column. The scroll buttons and the keyboard scroll them.
+- In WebKit, under an ancestor `transform` that scales, the end scroll button of a row shows at the wrong place. This
+  is a fault of WebKit for sticky elements; the strip scrolls correctly.
 - The `label`, `prefix` and `suffix` slots take non-interactive content only. See
   [Prefix and suffix content](#prefix-and-suffix-content).
 - With `activation="auto"`, the arrow keys select a link tab but never follow its link.
@@ -473,6 +621,8 @@ The groups below mirror the `describe` blocks.
   following the WAI-ARIA tabs pattern.
 - The header strip is a single tab stop: the selected header carries the tab index and the arrow keys move within
   the strip.
+- The tab list has `aria-orientation="horizontal"` in a row and `aria-orientation="vertical"` in a column, so screen
+  readers tell the arrow keys that move between the tabs.
 - Disabled tabs expose their disabled state and are skipped by the navigation.
 - The scroll buttons are presentational affordances and are not part of the tab order.
 - The host `aria-label`, `aria-labelledby` and `aria-describedby` of a tab name and describe its `role="tab"`
@@ -488,4 +638,5 @@ Already covered by the [relevant section of the specification](#keyboard-interac
 
 The components work in a Right-to-Left context without additional setup or configuration. The header strip order,
 the scroll buttons and the horizontal arrow navigation follow the inline direction, which `dir` sets on the tabs or on
-any ancestor.
+any ancestor. A `start` column is on the right side of the panels in a right-to-left layout, and an `end` column on the
+left side. Up and Down, and the arrows of the column scroll buttons, do not mirror.

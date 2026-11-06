@@ -23,6 +23,7 @@ import {
   items,
   layoutComplete,
 } from '#internals/testing/combo.spec.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   runAriaProjectionTests,
   runExternalLabelAssociationTests,
@@ -2501,4 +2502,6 @@ describe('Combo', () => {
     ],
     openProperty: 'open',
   });
+
+  runFocusBeforeRenderTests(html`<igc-combo label="Label"></igc-combo>`);
 });

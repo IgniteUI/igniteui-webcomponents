@@ -11,14 +11,21 @@
     --ig-row-start: auto;
     --ig-row-span: 1;
 
-    // Fit the start and the span into the column count. Without a start,
+    // Fit the start and the span into the column count, or into the columns
+    // that the manager counts for the responsive layout. A start after the
+    // last column moves back so that the span fits. Without a start,
     // `--_col-start` has no value and the fallbacks apply.
-    --_columns: var(--column-count, infinity);
-    --_col-start: min(var(--ig-col-start), var(--_columns));
+    --_columns: var(--column-count, var(--_fit-columns, infinity));
+    --_col-span: min(var(--ig-col-span), var(--_columns));
+    --_past-end: min(1, max(0, var(--ig-col-start) - var(--_columns)));
+    --_col-start: calc(min(var(--ig-col-start), var(--_columns)) - var(--_past-end) * (var(--_col-span) - 1));
 
     display: block;
     position: relative;
-    grid-column: var(--_col-start, auto) / span min(var(--ig-col-span), var(--_columns) + 1 - var(--_col-start, 1));
+
+    // Keeps the content and the resize handles under the next tile.
+    isolation: isolate;
+    grid-column: var(--_col-start, auto) / span min(var(--_col-span), var(--_columns) + 1 - var(--_col-start, 1));
     grid-row: var(--ig-row-start) / span var(--ig-row-span);
 }
 
@@ -33,6 +40,30 @@
     [part~='active']::after {
         border: none;
     }
+}
+
+// A dragged tile is a placeholder that the hit tests skip. A resized tile
+// stays above the tiles that it covers.
+:host([part~='dragging']) {
+    pointer-events: none;
+
+    [part~='base'] {
+        opacity: 0;
+    }
+}
+
+:host([part~='resizing']) {
+    z-index: 1;
+}
+
+// Only the host reads the column variables, so a new count does not restyle
+// the content of the tile.
+#tile-container {
+    --_fit-columns: initial;
+    --_columns: initial;
+    --_col-span: initial;
+    --_past-end: initial;
+    --_col-start: initial;
 }
 
 // Without resizing, the wrapper of the content and the adorners has no box.
@@ -58,6 +89,9 @@
 
     display: inline-flex;
     position: absolute;
+
+    // Above `base` and the border of the `active` part.
+    z-index: 1;
 }
 
 // A tile grows toward the inline end, so the handles sit on that edge.
@@ -108,6 +142,9 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
+
+    // Keeps the z-index of the content under the resize handles.
+    isolation: isolate;
 }
 
 // Fills the tile under the header, so `block-size: 100%` content fills too.
