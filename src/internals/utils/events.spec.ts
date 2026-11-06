@@ -1,7 +1,10 @@
-import { expect } from '@open-wc/testing';
+import { expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
+import { shiftKey, tabKey } from '../controllers/key-bindings.js';
+import { simulateKeyboard } from '../testing/simulate.spec.js';
 import {
   addWeakEventListener,
+  focusTabStop,
   getEventOrigin,
   linkOpensElsewhere,
 } from './events.js';
@@ -179,6 +182,57 @@ describe('Event utilities', () => {
       expect(remove.calledOnce).to.be.true;
       expect(remove.firstCall.args[0]).to.equal('custom');
       expect(remove.firstCall.args[2]).to.eql({ capture: true });
+    });
+  });
+
+  describe('focusTabStop', () => {
+    let stops: HTMLButtonElement[];
+
+    const tab = (target: HTMLElement, shift = false) => {
+      let moved = false;
+      target.addEventListener(
+        'keydown',
+        (event) => {
+          moved = focusTabStop(event, stops);
+        },
+        { once: true }
+      );
+      simulateKeyboard(target, shift ? [shiftKey, tabKey] : tabKey);
+      return moved;
+    };
+
+    beforeEach(async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <button id="a">A</button>
+          <button id="b">B</button>
+          <button id="c" disabled>C</button>
+        </div>
+      `);
+      stops = Array.from(root.querySelectorAll('button'));
+    });
+
+    it('focuses the next stop, or the previous one with Shift', () => {
+      expect(tab(stops[0])).to.be.true;
+      expect(document.activeElement).to.equal(stops[1]);
+
+      expect(tab(stops[1], true)).to.be.true;
+      expect(document.activeElement).to.equal(stops[0]);
+    });
+
+    it('returns false past either end', () => {
+      expect(tab(stops[0], true)).to.be.false;
+    });
+
+    it('returns false for a stop that does not take the focus', () => {
+      expect(tab(stops[1])).to.be.false;
+    });
+
+    it('returns false for an event from outside the stops', async () => {
+      const outside = await fixture<HTMLButtonElement>(
+        html`<button>Out</button>`
+      );
+      expect(tab(outside)).to.be.false;
     });
   });
 });
