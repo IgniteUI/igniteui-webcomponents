@@ -2,6 +2,7 @@ import { expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
 import {
   getDeepActiveElement,
+  getFocusableElements,
   getScaleFactor,
   getVisibleAncestor,
   hasNegativeTabIndex,
@@ -304,6 +305,47 @@ describe('DOM utilities', () => {
       } finally {
         outside.remove();
       }
+    });
+  });
+
+  describe('getFocusableElements', () => {
+    const ids = (root: Element) =>
+      Array.from(getFocusableElements(root), (element) => element.id);
+
+    it('keeps only the checked radio button of a group', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <input type="radio" id="a" name="group" />
+          <input type="radio" id="b" name="group" checked />
+          <input type="radio" id="c" name="group" />
+          <button id="next">Next</button>
+        </div>
+      `);
+
+      expect(ids(root)).to.eql(['b', 'next']);
+    });
+
+    it('keeps the first radio button of a group without a checked one', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <input type="radio" id="a" name="group" />
+          <input type="radio" id="b" name="group" />
+          <input type="radio" id="single" />
+        </div>
+      `);
+
+      expect(ids(root)).to.eql(['a', 'single']);
+    });
+
+    it('separates radio groups of different forms', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <form><input type="radio" id="a" name="group" checked /></form>
+          <form><input type="radio" id="b" name="group" /></form>
+        </div>
+      `);
+
+      expect(ids(root)).to.eql(['a', 'b']);
     });
   });
 

@@ -172,7 +172,7 @@ playwright_browser_evaluate({
 })
 ```
 
-Compare the result with the variant that you detected in Phase 1d. If the design uses border-style inputs everywhere, every control should report `outlined === count`.
+Compare the result with the variant that you detected in Phase 1d. The result has one entry for each tag. If the design uses border-style inputs everywhere, `outlined` must equal `count` in every entry.
 
 ### Property-binding audit (collection-bound charts, grids, combos)
 
@@ -273,7 +273,7 @@ FIGMA:    series = #9DE772, #6DB1FF
 RENDERED: brushes = null
 SEVERITY: Major
 FIX:      chart.brushes = ['#9DE772', '#6DB1FF'] assigned as a property after validating
-          with get_chart_series_colors({ customBrushes: [...] }).
+          with theming_get_chart_series_colors({ customBrushes: [...] }).
 ```
 
 ---
@@ -317,7 +317,7 @@ After `playwright_browser_snapshot()`, verify:
 
 ### Style correction — in order of preference
 
-1. **Component design token** — `get_component_design_tokens` → `create_component_theme`
+1. **Component design token** — `theming_get_component_design_tokens` → `theming_create_component_theme`
 2. **Documented `::part(...)`** — for details with no token
 3. **Slotted content you own** — style it in your own CSS
 4. Never use internal class names. Never try to reach into a shadow root from page CSS
@@ -325,9 +325,9 @@ After `playwright_browser_snapshot()`, verify:
 ### Density and spacing
 
 ```
-set_size({ component: "calendar", size: "small", platform: "webcomponents" })
-set_spacing({ component: "calendar", spacing: 0.75, platform: "webcomponents" })
-set_size({ scope: ".compact-toolbar", size: "small", platform: "webcomponents" })
+theming_set_size({ component: "calendar", size: "small", platform: "webcomponents" })
+theming_set_spacing({ component: "calendar", spacing: 0.75, platform: "webcomponents" })
+theming_set_size({ scope: ".compact-toolbar", size: "small", platform: "webcomponents" })
 ```
 
 Or set the custom properties directly:
@@ -365,7 +365,7 @@ background: var(--ig-primary-500);
 color: var(--ig-primary-500-contrast);
 ```
 
-If you are not sure of the exact variable name, use `get_color({ color: "primary", variant: "500", contrast: true })`.
+If you are not sure of the exact variable name, use `theming_get_color({ color: "primary", variant: "500", contrast: true })`.
 
 ### Missing element
 

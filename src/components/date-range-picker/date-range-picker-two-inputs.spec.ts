@@ -5,7 +5,6 @@ import {
   html,
   waitUntil,
 } from '@open-wc/testing';
-import { emulateMedia } from '@web/test-runner-commands';
 import { spy } from 'sinon';
 import {
   altKey,
@@ -41,9 +40,6 @@ describe('Date range picker - two inputs', () => {
   before(() =>
     defineComponents(IgcDateRangePickerComponent, IgcDateRangeInputComponent)
   );
-  // The dialog fades take 350 ms each; skip them in this file.
-  before(() => emulateMedia({ reducedMotion: 'reduce' }));
-  after(() => emulateMedia({ reducedMotion: 'no-preference' }));
 
   runExternalLabelAssociationTests({
     tagName: IgcDateRangePickerComponent.tagName,
@@ -761,6 +757,25 @@ describe('Date range picker - two inputs', () => {
         expect(dateTimeInputs[1].value).to.be.null;
       });
 
+      it('emits igcChange on blur after the clear icon and a render', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        picker.value = { start: today.native, end: tomorrow.native };
+        await elementUpdated(picker);
+
+        dateTimeInputs[0].focus();
+        simulateClick(getIcon(picker, clearIcon));
+        // The render writes the cleared value back into the inputs.
+        await elementUpdated(picker);
+
+        dateTimeInputs[0].blur();
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcChange', {
+          detail: { start: null, end: null },
+        });
+        expect(picker.value).to.deep.equal({ start: null, end: null });
+      });
+
       it('should emit igcInput and igcChange on input value change', async () => {
         const eventSpy = spy(picker, 'emitEvent');
         const now = new CalendarDay({ year: 2026, month: 3, date: 1 });
@@ -800,7 +815,10 @@ describe('Date range picker - two inputs', () => {
         dateTimeInputs[0].focus();
         expect(isFocused(dateTimeInputs[0])).to.be.true;
 
-        dateTimeInputs[0].value = now.native;
+        simulateInput(dateTimeInputs[0].renderRoot.querySelector('input')!, {
+          value: '04/01/2026',
+          inputType: 'insertText',
+        });
         await elementUpdated(picker);
 
         dateTimeInputs[0].setSelectionRange(0, 1); // make sure caret is on the month part (MM/dd/yyyy)

@@ -2,9 +2,13 @@ import { isServer, type LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { trackLabels } from '../../controllers/aria-projection.js';
 import { addInternalsController } from '../../controllers/internals.js';
-import { enterKey, isKey } from '../../controllers/keys.js';
+import { enterKey, isComposingKey, isKey } from '../../controllers/keys.js';
 import { getHostLocale } from '../../i18n/i18n-controller.js';
-import { addSafeEventListener, preventDefault } from '../../utils/events.js';
+import {
+  addSafeEventListener,
+  preventDefault,
+  runDefaultAction,
+} from '../../utils/events.js';
 import { getOrInsertComputed } from '../../utils/objects.js';
 import { isFunction, isString } from '../../utils/types.js';
 import { createLocalizeMessage, type Validator } from '../../validators.js';
@@ -283,11 +287,17 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     //#region Enter key submission handling
 
     protected _handleEnterKeydown(event: KeyboardEvent): void {
-      if (!isKey(event, enterKey) || event.repeat) {
+      if (
+        !this.form ||
+        !isKey(event, enterKey) ||
+        event.repeat ||
+        isComposingKey(event)
+      ) {
         return;
       }
 
-      this.form?.requestSubmit();
+      // Host and ancestor listeners can cancel the submit, as for a native input.
+      runDefaultAction(event, () => this.form?.requestSubmit());
     }
 
     //#endregion

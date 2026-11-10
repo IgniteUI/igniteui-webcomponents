@@ -67,7 +67,7 @@ This command runs every `check-*` script:
 - The component registration check.
 - The public API check.
 
-The public API check compares the custom elements manifest and the exports of `src/index.ts` with the committed `public-api.json`. It fails on a removal or a type change, and lists the additions. After an intended public API change, run `npm run public-api:update`. Then commit `public-api.json` with your change.
+The public API check compares the custom elements manifest and the exports of `src/index.ts` with the committed `public-api.json`. It fails on a removal or a type change, and lists the additions. It also compares the pages in `api-reference/` with the manifest, and fails on any difference. Context7 reads these pages from the repository. After an intended public API change, or a change to the JSDoc of the public API, run `npm run public-api:update`. Then commit `public-api.json` and `api-reference/` with your change.
 
 ### Testing with Web Test Runner
 
@@ -82,6 +82,14 @@ To run the tests in watch mode, run:
 ```sh
 npm run test:watch
 ```
+
+CI splits the spec files into parts and runs them in parallel jobs. To run the part of a failed job, set `TEST_SHARD` to the part from the job name:
+
+```sh
+TEST_SHARD=2/3 npm run test
+```
+
+The tests run with `prefers-reduced-motion: reduce`, so animations take no time. In a `describe` block whose tests check animations, call `allowMotion()` from `src/internals/testing/helpers.spec.ts`.
 
 ### Property-based tests
 
@@ -121,6 +129,7 @@ npm run storybook:build
 - **Commit Messages**: Write clear and concise commit messages that describe your changes.
 - **Testing**: Make sure that your contribution includes relevant tests. The tests verify the functionality and prevent regressions.
 - **Specifications**: Every public component has a specification at `src/components/[name]/spec.md`. See [Component Specifications](#component-specifications) below.
+- **Changelog**: Add an entry under `[Unreleased]` in [CHANGELOG.md](../CHANGELOG.md) for every user-visible change. The file follows [Keep a Changelog](https://keepachangelog.com/). Use the `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed` and `Security` categories. Put a fix for a vulnerability under `Security`. Add a link to the advisory after it is published.
 
 ## Component Specifications
 
@@ -135,7 +144,6 @@ Each component directory has a `spec.md` that describes the component. It contai
 Specifications do not have ownership, approval or sign-off sections. The revision history has no author column, because `git` already records who changed what. Put design hand-off links, such as Figma files, under `### End-user experience`. Keep these links when you update the specification.
 
 A pull request that changes behavior but does not update the affected specification is incomplete. Reviewers will ask for the update.
-- **Changelog**: Add an entry under `[Unreleased]` in [CHANGELOG.md](../CHANGELOG.md) for every user-visible change. The file follows [Keep a Changelog](https://keepachangelog.com/). Use the `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed` and `Security` categories. Put a fix for a vulnerability under `Security`. Add a link to the advisory after it is published.
 
 ## Accessibility
 

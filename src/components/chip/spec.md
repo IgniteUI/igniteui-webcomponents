@@ -47,6 +47,7 @@
 |       3 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                |
 |       5 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
+|       6 | 2026-11-06 | Forward the host `aria-expanded`, `aria-haspopup` and `aria-controls`   |
 
 ## Overview
 
@@ -263,6 +264,9 @@ The detail of `igcSelect` is the new `selected` state of the chip.
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
     `disabled` set does not cancel an earlier call on another element.
+19. The host `aria-expanded`, `aria-haspopup` and `aria-controls` reach the action button, also after a change and
+    a removal, next to the `aria-pressed` of a selectable chip, and pass the accessibility audit.
+20. An empty `aria-expanded` or `aria-haspopup` and an `aria-controls` that references no element are not forwarded.
 
 ### Not covered by the suite
 
@@ -278,6 +282,8 @@ The detail of `igcSelect` is the new `selected` state of the chip.
   application.
 - The chip does not remove itself from the DOM when its remove control is activated.
 - A `selected` chip that is not `selectable` keeps the state but offers no affordance to change it.
+- The host `aria-controls`, `aria-labelledby` and `aria-describedby` resolve when the chip renders. A referenced
+  element that is added after the host attribute takes effect at the next render.
 
 ## Accessibility
 
@@ -288,6 +294,8 @@ The detail of `igcSelect` is the new `selected` state of the chip.
   separate targets for both the pointer and assistive technology.
 - The selection indicator is kept out of the accessible name, so that the name is the label of the chip alone.
 - The host `aria-label`, `aria-labelledby` and `aria-describedby` name and describe the action button.
+- A host `aria-expanded`, `aria-haspopup` and `aria-controls` reach the action button, so a chip that opens a menu or
+  a filter panel exposes its state. `aria-controls` goes by element reference.
 
 ### Keyboard support
 

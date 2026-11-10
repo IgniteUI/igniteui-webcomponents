@@ -72,11 +72,14 @@ structural reference.
 
 - Write tests with `@open-wc/testing` in `[name].spec.ts`. The a11y audit is mandatory.
 - Use the shared helpers in `src/internals/testing/`.
+- The tests run with `prefers-reduced-motion: reduce`. A `describe` block whose tests check animations calls
+  `allowMotion()`.
 - A parser, converter or serializer also gets property-based tests with fast-check in
   `[name].property.spec.ts`.
 - Run `npm run check`, `npm run lint` and `npm run test` before you open a PR. `npm run check`
-  also compares the public API with `public-api.json`. After an intended public API change,
-  run `npm run public-api:update` and commit the file.
+  also compares the public API with `public-api.json`, and the pages in `api-reference/` with
+  the manifest. After an intended public API change or a JSDoc change of the public API, run
+  `npm run public-api:update` and commit both.
 
 ## Resources
 

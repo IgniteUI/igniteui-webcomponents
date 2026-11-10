@@ -16,7 +16,10 @@ import {
   spaceBar,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { getAnimationsFor } from '#internals/testing/helpers.spec.js';
+import {
+  allowMotion,
+  getAnimationsFor,
+} from '#internals/testing/helpers.spec.js';
 import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import {
   simulateClick,
@@ -297,34 +300,6 @@ describe('Expansion Panel', () => {
       expect(await panel.show()).to.be.false;
     });
 
-    it('`hide()` returns false when superseded by a newer `show()`', async () => {
-      await panel.show();
-
-      const closing = panel.hide();
-      await nextFrame(); // Let the exit animation run before superseding it.
-      const reopening = panel.show();
-
-      expect(await closing).to.be.false;
-      expect(await reopening).to.be.true;
-      expect(panel.open).to.be.true;
-    });
-
-    it('ends the collapse and its `igcClosed` when `open` is set to `true` during it', async () => {
-      panel.open = true;
-      await elementUpdated(panel);
-      const closed = spy();
-      panel.addEventListener('igcClosed', closed);
-
-      const closing = panel._hide();
-      expect(getAnimationsFor(panel.shadowRoot!)).not.to.be.empty;
-      panel.open = true;
-      expect(getAnimationsFor(panel.shadowRoot!)).to.be.empty;
-
-      expect(await closing).to.be.false;
-      expect(panel.open).to.be.true;
-      expect(closed.called).to.be.false;
-    });
-
     it('opens on a show right after `open` is set to `false` during the expand', async () => {
       const opening = panel.show();
       panel.open = false;
@@ -333,6 +308,38 @@ describe('Expansion Panel', () => {
       expect(await opening).to.be.false;
       expect(await reopening).to.be.true;
       expect(panel.open).to.be.true;
+    });
+
+    describe('with motion', () => {
+      allowMotion();
+
+      it('`hide()` returns false when superseded by a newer `show()`', async () => {
+        await panel.show();
+
+        const closing = panel.hide();
+        await nextFrame(); // Let the exit animation run before superseding it.
+        const reopening = panel.show();
+
+        expect(await closing).to.be.false;
+        expect(await reopening).to.be.true;
+        expect(panel.open).to.be.true;
+      });
+
+      it('ends the collapse and its `igcClosed` when `open` is set to `true` during it', async () => {
+        panel.open = true;
+        await elementUpdated(panel);
+        const closed = spy();
+        panel.addEventListener('igcClosed', closed);
+
+        const closing = panel._hide();
+        expect(getAnimationsFor(panel.shadowRoot!)).not.to.be.empty;
+        panel.open = true;
+        expect(getAnimationsFor(panel.shadowRoot!)).to.be.empty;
+
+        expect(await closing).to.be.false;
+        expect(panel.open).to.be.true;
+        expect(closed.called).to.be.false;
+      });
     });
   });
 

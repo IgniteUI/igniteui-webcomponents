@@ -142,7 +142,7 @@ Licensed projects use the same names with the prefix `@infragistics/` (for examp
 | `_Masked Input`                | `<igc-mask-input>`        | `IgcMaskInputComponent`         | `igniteui-webcomponents` | `mask-input`        | `mask`, `prompt`, `value-mode`                                         |
 | `_File Upload`                 | `<igc-file-input>`        | `IgcFileInputComponent`         | `igniteui-webcomponents` | `file-input`        | `multiple`, `accept`, `label`                                               |
 | `_Combo` / `_ComboBox`         | `<igc-combo>`             | `IgcComboComponent`             | `igniteui-webcomponents` | `combo` → `overview` | `.data`, `display-key`, `value-key`, `group-key`, `single-select`, `outlined` |
-| `_Simple Combo`                | `<igc-combo single-select>` | `IgcComboComponent`           | `igniteui-webcomponents` | `single-selection`  | `single-select` — theme key is `simple-combo`                               |
+| `_Simple Combo`                | `<igc-combo single-select>` | `IgcComboComponent`           | `igniteui-webcomponents` | `single-selection`  | `single-select` — theme key `combo` with `selector: "igc-combo[single-select]"` |
 | `_Select` / `_Dropdown`        | `<igc-select>`            | `IgcSelectComponent`            | `igniteui-webcomponents` | `select`            | `<igc-select-item>` / `igc-select-group` / `igc-select-header` children      |
 | `_Dropdown` (menu, not a field) | `<igc-dropdown>`         | `IgcDropdownComponent`          | `igniteui-webcomponents` | `dropdown`          | `open`, `placement`; `<igc-dropdown-item>` children                         |
 | `_Checkbox`                    | `<igc-checkbox>`          | `IgcCheckboxComponent`          | `igniteui-webcomponents` | `checkbox`          | `checked`, `indeterminate`, `label-position`, `disabled`                     |
@@ -164,7 +164,7 @@ Licensed projects use the same names with the prefix `@infragistics/` (for examp
 | `_Time Picker`       | `<igc-date-time-input>`     | `IgcDateTimeInputComponent`     | `igniteui-webcomponents` | `date-time-input`   | **No dedicated time picker in Web Components** — use a time `input-format` |
 | `_Calendar`          | `<igc-calendar>`            | `IgcCalendarComponent`          | `igniteui-webcomponents` | `calendar`          | `selection` (`single\|multiple\|range`), `value`, `values`, `visible-months`, `week-start`, `show-week-numbers`, `header-orientation` |
 
-> The date pickers are **compound** components. Their dropdown and calendar surfaces use separate themes. Follow the related-theme chain from `get_component_design_tokens`.
+> The date pickers are **compound** components. Their dropdown and calendar surfaces use separate themes. For `igc-date-range-picker`, follow the related-theme chain from `theming_get_component_design_tokens({ component: "date-range-picker" })`. `igc-date-picker` has no theme key: theme its related themes `input-group`, `calendar` and `flat-button` with `selector: "igc-date-picker"`.
 
 ---
 
@@ -180,7 +180,7 @@ Licensed projects use the same names with the prefix `@infragistics/` (for examp
 | `_Breadcrumbs`                     | `<igc-breadcrumbs>` | `IgcBreadcrumbsComponent` | `igniteui-webcomponents` | confirm via `list_components` | `separator`; default slot contains `<igc-breadcrumb>` children; wrap in `<nav aria-label="…">` |
 | `_Breadcrumb`                      | `<igc-breadcrumb>`  | `IgcBreadcrumbComponent`  | `igniteui-webcomponents` | confirm via `list_components` | `current`, `disabled`; slots `prefix`, `suffix`, `separator` |
 
-> If a design shows a persistent sidebar that is always visible, map it to `<igc-nav-drawer position="relative" open>`, not to the modal default. The `navdrawer` design tokens `size` and `size--mini` set the drawer width. They are available as `--ig-nav-drawer-size` (default 15rem) and `--ig-nav-drawer-size--mini`. Set them through `create_component_theme`, as you do for other tokens.
+> If a design shows a persistent sidebar that is always visible, map it to `<igc-nav-drawer position="relative" open>`, not to the modal default. The `navdrawer` design tokens `size` and `size--mini` set the drawer width. They are available as `--ig-nav-drawer-size` (default 15rem) and `--ig-nav-drawer-size--mini`. Set them through `theming_create_component_theme`, as you do for other tokens.
 
 ---
 
@@ -251,7 +251,7 @@ Grid rules that differ from Angular:
 
 ## Charts, Gauges, and Maps
 
-> These are DV components. They have **no design tokens**. Do not call `get_component_design_tokens` for them. Configure all settings through properties. Take series colors from `theming_get_chart_series_colors` and the Figma values that you recorded in Phase 1d.
+> These are DV components. They have **no design tokens**. Do not call `theming_get_component_design_tokens` for them. Configure all settings through properties. Take series colors from `theming_get_chart_series_colors` and the Figma values that you recorded in Phase 1d.
 >
 > To register components from all three packages, use `ModuleManager.register(IgcXxxModule, …)` from `igniteui-webcomponents-core`. You must **assign array and function values as properties**, never as attributes.
 

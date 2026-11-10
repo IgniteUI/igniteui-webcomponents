@@ -3,15 +3,23 @@ import {
   expect,
   fixture,
   html,
+  nextFrame,
   oneEvent,
   waitUntil,
 } from '@open-wc/testing';
+import { emulateMedia } from '@web/test-runner-commands';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
+  allowMotion,
+  finishAnimationsFor,
+  finishBackdrop,
+  getAnimationsFor,
+  getBackdropAnimations,
   isFocused,
   isUnderPageLayer,
+  withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
@@ -124,6 +132,45 @@ describe('Navigation Drawer', () => {
       const mini = navDrawer.renderRoot.querySelector('[part="mini"]')!;
 
       expect(isUnderPageLayer(navDrawer, mini)).to.be.true;
+    });
+
+    it('places fixed content of an open edge drawer against the viewport', async () => {
+      navDrawer = await createNavDrawer(html`
+        <igc-nav-drawer open>
+          <div
+            style="position: fixed; right: 0; bottom: 0; width: 1px; height: 1px"
+          ></div>
+        </igc-nav-drawer>
+      `);
+      const fixed = navDrawer.querySelector('div')!;
+      const { clientWidth, clientHeight } = document.documentElement;
+
+      for (const position of ['start', 'end', 'top', 'bottom'] as const) {
+        navDrawer.position = position;
+        await elementUpdated(navDrawer);
+        finishAnimationsFor(navDrawer.shadowRoot!);
+
+        const { right, bottom } = fixed.getBoundingClientRect();
+        expect([right, bottom], position).to.eql([clientWidth, clientHeight]);
+      }
+    });
+
+    it('places fixed content of the mini variant against the viewport', async () => {
+      navDrawer = await createNavDrawer(html`
+        <igc-nav-drawer>
+          <div
+            slot="mini"
+            style="position: fixed; right: 0; bottom: 0; width: 1px; height: 1px"
+          ></div>
+        </igc-nav-drawer>
+      `);
+      finishAnimationsFor(navDrawer.shadowRoot!);
+
+      const { right, bottom } = navDrawer
+        .querySelector('div')!
+        .getBoundingClientRect();
+      const { clientWidth, clientHeight } = document.documentElement;
+      expect([right, bottom]).to.eql([clientWidth, clientHeight]);
     });
 
     it('keeps the highlight of an item in front of the background of the drawer', async () => {
@@ -366,8 +413,9 @@ describe('Navigation Drawer', () => {
 
       nativeDialog.dispatchEvent(new Event('cancel'));
       await elementUpdated(navDrawer);
-      await waitUntil(() => !navDrawer.open);
+      await waitUntil(() => eventSpy.calledWith('igcClosed'));
 
+      expect(navDrawer.open).to.be.false;
       expect(eventSpy.getCalls()).lengthOf(2);
       expect(eventSpy.firstCall).calledWith('igcClosing');
       expect(eventSpy.secondCall).calledWith('igcClosed');
@@ -500,6 +548,178 @@ describe('Navigation Drawer', () => {
       await navDrawer.hide();
 
       expect(eventSpy.getCalls()).is.empty;
+    });
+  });
+
+  describe('Exit and backdrop', () => {
+    allowMotion();
+
+    let nativeDialog: HTMLDialogElement;
+
+    function settle(): void {
+      finishAnimationsFor(navDrawer.shadowRoot!);
+    }
+
+    async function showSettled(): Promise<void> {
+      await navDrawer.show();
+      settle();
+    }
+
+    beforeEach(async () => {
+      navDrawer = await createNavDrawer(html`
+        <igc-nav-drawer style="--background-color: rgb(1, 2, 3)">
+          <igc-nav-drawer-item></igc-nav-drawer-item>
+        </igc-nav-drawer>
+      `);
+      nativeDialog = navDrawer.renderRoot.querySelector('dialog')!;
+    });
+
+    it('paints the backdrop with the overlay color', async () => {
+      await navDrawer.show();
+
+      const { backgroundColor, opacity } = finishBackdrop(nativeDialog);
+      expect(backgroundColor).to.equal('rgb(1, 2, 3)');
+      expect(opacity).to.equal('1');
+    });
+
+    it('keeps the dialog modal and fades the backdrop out until the exit ends', async () => {
+      await showSettled();
+
+      const hiding = navDrawer.hide();
+      await elementUpdated(navDrawer);
+
+      expect(navDrawer.open).to.be.false;
+      expect(nativeDialog.matches(':modal')).to.be.true;
+      expect(finishBackdrop(nativeDialog).opacity).to.equal('0');
+
+      settle();
+      expect(await hiding).to.be.true;
+      expect(nativeDialog.open).to.be.false;
+    });
+
+    it('runs the exit when `open` is set to false', async () => {
+      await showSettled();
+
+      navDrawer.open = false;
+      await elementUpdated(navDrawer);
+      expect(nativeDialog.matches(':modal')).to.be.true;
+
+      settle();
+      await waitUntil(() => !nativeDialog.open);
+    });
+
+    it('emits `igcClosed` after the exit ends', async () => {
+      await showSettled();
+      const eventSpy = spy(navDrawer, 'emitEvent');
+
+      nativeDialog.dispatchEvent(new Event('cancel'));
+      await elementUpdated(navDrawer);
+      await nextFrame();
+      expect(eventSpy).calledOnceWith('igcClosing');
+
+      settle();
+      await waitUntil(() => eventSpy.calledWith('igcClosed'));
+      expect(nativeDialog.open).to.be.false;
+    });
+
+    it('keeps the dialog when the drawer opens again during the exit', async () => {
+      await showSettled();
+
+      const hiding = navDrawer.hide();
+      await elementUpdated(navDrawer);
+
+      expect(await navDrawer.show()).to.be.true;
+      expect(await hiding).to.be.false;
+
+      settle();
+      expect(nativeDialog.matches(':modal')).to.be.true;
+      expect(finishBackdrop(nativeDialog).opacity).to.equal('1');
+    });
+
+    it('runs the exit of a close that follows a reopen during the exit', async () => {
+      await showSettled();
+
+      const hiding = navDrawer.hide();
+      await elementUpdated(navDrawer);
+      await navDrawer.show();
+
+      // A style read replaces the exit transitions before the next close.
+      nativeDialog.getBoundingClientRect();
+      const closing = navDrawer.hide();
+      await elementUpdated(navDrawer);
+      expect(nativeDialog.matches(':modal')).to.be.true;
+
+      settle();
+      expect(await hiding).to.be.false;
+      expect(await closing).to.be.true;
+      expect(nativeDialog.open).to.be.false;
+    });
+
+    it('ends a running `hide()` when `open` is set to true', async () => {
+      await showSettled();
+
+      const hiding = navDrawer.hide();
+      await elementUpdated(navDrawer);
+
+      navDrawer.open = true;
+      expect(await hiding).to.be.false;
+
+      settle();
+      expect(nativeDialog.matches(':modal')).to.be.true;
+    });
+
+    it('takes `--transition-duration` from `::part(base)`', async () => {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(
+        'igc-nav-drawer::part(base) { --transition-duration: 1s }'
+      );
+
+      await withDocumentSheets([sheet], () => {
+        expect(getComputedStyle(nativeDialog).transitionDuration).to.equal(
+          '1s'
+        );
+      });
+    });
+
+    describe('with reduced motion', () => {
+      beforeEach(() => emulateMedia({ reducedMotion: 'reduce' }));
+
+      it('does not animate the backdrop', async () => {
+        await navDrawer.show();
+
+        expect(getBackdropAnimations(nativeDialog)).to.be.empty;
+        expect(finishBackdrop(nativeDialog).opacity).to.equal('1');
+      });
+
+      it('opens and closes at once', async () => {
+        navDrawer = await createNavDrawerWithMini();
+        nativeDialog = navDrawer.renderRoot.querySelector('dialog')!;
+
+        await navDrawer.show();
+        expect(getAnimationsFor(navDrawer.shadowRoot!)).to.be.empty;
+
+        const hiding = navDrawer.hide();
+        await elementUpdated(navDrawer);
+        expect(getAnimationsFor(navDrawer.shadowRoot!)).to.be.empty;
+
+        expect(await hiding).to.be.true;
+        expect(nativeDialog.open).to.be.false;
+      });
+
+      it('opens and closes a relative drawer at once', async () => {
+        navDrawer = await createNavDrawer(html`
+          <igc-nav-drawer position="relative">
+            <igc-nav-drawer-item></igc-nav-drawer-item>
+            <igc-nav-drawer-item slot="mini"></igc-nav-drawer-item>
+          </igc-nav-drawer>
+        `);
+
+        await navDrawer.show();
+        expect(getAnimationsFor(navDrawer.shadowRoot!)).to.be.empty;
+
+        await navDrawer.hide();
+        expect(getAnimationsFor(navDrawer.shadowRoot!)).to.be.empty;
+      });
     });
   });
 

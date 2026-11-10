@@ -26,9 +26,10 @@ The skill also covers component-level theming, layout controls (spacing, sizing,
 >
 > Before you use any theming tools, you MUST make sure that the MCP server is available.
 > To do this, call `detect_platform`. If the tool is not available or the call fails,
-> you MUST configure the server automatically. Follow the setup steps below.
+> you MUST configure the server automatically. Write the MCP configuration file of the editor,
+> for example `.vscode/mcp.json`, as [references/mcp-setup.md](references/mcp-setup.md) shows.
 >
-> After you write the file, tell the user that the MCP server is configured.
+> After you write the configuration file, tell the user that the MCP server is configured.
 > Also tell the user that it can be necessary to reload the editor to activate the tools.
 > Start the MCP server. Wait until the MCP server starts, then continue the theming work.
 > Do NOT skip this step. Do NOT ask the user to do it manually.

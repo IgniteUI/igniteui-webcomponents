@@ -227,8 +227,9 @@ export function MaskBehaviorMixin<
       };
     }
 
+    /** Whether the input shows no text of its own: nothing, or only the empty mask. */
     protected get _isEmptyMask(): boolean {
-      return this._maskedValue === this._parser.emptyMask;
+      return !this._maskedValue || this._maskedValue === this._parser.emptyMask;
     }
 
     /**

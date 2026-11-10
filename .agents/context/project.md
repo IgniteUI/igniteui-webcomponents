@@ -31,6 +31,8 @@ Read them before making changes; if they disagree with this file, they win.
   is the published manifest
 - `public-api.json`: the committed snapshot of the public API that `npm run check` compares
   against
+- `api-reference/`: the committed API page of each element, generated from the manifest for
+  Context7; `npm run check` fails when a page differs from the manifest
 - `skills/`: public, user-facing skills that ship with the package
 - `.agents/`: contributor-facing skills and this context
 
@@ -57,4 +59,5 @@ component or a bug fix, update `CHANGELOG.md`.
   `custom-elements.json`, `dist/`
 - `public-api.json` by hand; regenerate it with `npm run public-api:update`, and only for an
   intended public API change
+- `api-reference/` by hand; `npm run public-api:update` regenerates it from the JSDoc
 - A new import alias goes into both `package.json` and `scripts/_package.json`, never one only

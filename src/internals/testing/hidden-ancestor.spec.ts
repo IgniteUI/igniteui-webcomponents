@@ -3,6 +3,7 @@ import { resetMouse, sendMouse } from '@web/test-runner-commands';
 import type { TemplateResult } from 'lit';
 import { configureTheme } from '#theming/config.js';
 import { THEMES } from '#theming/types.js';
+import { allowMotion } from './helpers.spec.js';
 
 const STATES = ['idle', 'focused', 'hovered'] as const;
 
@@ -63,6 +64,8 @@ function visibleElementsIn(container: HTMLElement): string[] {
  */
 export function runHiddenAncestorTests(template: TemplateResult): void {
   describe('Hidden ancestor', () => {
+    allowMotion();
+
     afterEach(() => resetMouse());
     after(() => configureTheme('bootstrap'));
 

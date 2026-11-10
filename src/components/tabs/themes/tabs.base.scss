@@ -58,6 +58,11 @@ $panel-column: auto;
     &::-webkit-scrollbar {
         display: none;
     }
+
+    // The scroll buttons and the selection use this behavior.
+    @media (prefers-reduced-motion: reduce) {
+        scroll-behavior: auto;
+    }
 }
 
 // Changes width with the direction, so the resize observer reports a change of direction.

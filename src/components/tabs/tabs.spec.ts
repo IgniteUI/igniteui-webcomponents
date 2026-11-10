@@ -21,6 +21,7 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
+  allowMotion,
   finishAnimationsFor,
   isUnderPageLayer,
   withDocumentSheets,
@@ -2075,6 +2076,39 @@ describe('Tabs component', () => {
 
       expect(container.scrollLeft).to.equal(before);
     });
+
+    it('scrolls the strip at once with reduced motion', async () => {
+      const { container } = getTabsDOM(element);
+      const header = getTabDOM(element.tabs[17]).header;
+
+      endScrollButton().click();
+      expect(container.scrollLeft).to.be.greaterThan(0);
+
+      // The first change of the scroll offset is the last one.
+      const left = container.scrollLeft;
+      element.select('18');
+      await waitUntil(
+        () => container.scrollLeft !== left,
+        'The strip did not scroll'
+      );
+      expect(isBetweenScrollButtons(element, header)).to.be.true;
+    });
+
+    describe('with motion', () => {
+      allowMotion();
+
+      it('scrolls the strip smoothly', async () => {
+        const { container } = getTabsDOM(element);
+
+        endScrollButton().click();
+        expect(container.scrollLeft).to.equal(0);
+
+        await waitUntil(
+          () => container.scrollLeft > 0,
+          'The strip did not scroll'
+        );
+      });
+    });
   });
 
   describe('Composition', () => {
@@ -3451,33 +3485,6 @@ describe('Tabs component', () => {
         expect(getTabDOM(last).header.matches(':focus')).to.be.true;
       });
 
-      it('moves the indicator to the new axis without a transition when the position changes', async () => {
-        // The Bootstrap theme shows no indicator.
-        configureTheme('material');
-
-        try {
-          const { indicator } = getTabsDOM(element);
-          await elementUpdated(element);
-
-          element.headerPosition = 'top';
-          await waitUntil(
-            () => indicator.style.transform.startsWith('translateX'),
-            'The indicator did not move to the row'
-          );
-
-          expect(indicator.getAnimations()).to.be.empty;
-
-          element.select('tab-2');
-          await waitUntil(
-            () => indicator.getAnimations().length > 0,
-            'The indicator does not animate a selection'
-          );
-        } finally {
-          configureTheme('bootstrap');
-          await nextFrame();
-        }
-      });
-
       it('scrolls a column under a max-height, and follows a change of it', async () => {
         const heightLimit = (tabs: IgcTabsComponent) =>
           getTabsDOM(tabs).container.style.getPropertyValue(
@@ -3527,6 +3534,37 @@ describe('Tabs component', () => {
           () => !hasScrollButtons(tabs) && heightLimit(tabs) === '',
           'The scroll buttons and the height limit did not go away'
         );
+      });
+
+      describe('with motion', () => {
+        allowMotion();
+
+        it('moves the indicator to the new axis without a transition when the position changes', async () => {
+          // The Bootstrap theme shows no indicator.
+          configureTheme('material');
+
+          try {
+            const { indicator } = getTabsDOM(element);
+            await elementUpdated(element);
+
+            element.headerPosition = 'top';
+            await waitUntil(
+              () => indicator.style.transform.startsWith('translateX'),
+              'The indicator did not move to the row'
+            );
+
+            expect(indicator.getAnimations()).to.be.empty;
+
+            element.select('tab-2');
+            await waitUntil(
+              () => indicator.getAnimations().length > 0,
+              'The indicator does not animate a selection'
+            );
+          } finally {
+            configureTheme('bootstrap');
+            await nextFrame();
+          }
+        });
       });
     });
 

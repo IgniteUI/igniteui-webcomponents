@@ -1,4 +1,4 @@
-import { elementUpdated, expect } from '@open-wc/testing';
+import { elementUpdated, expect, waitUntil } from '@open-wc/testing';
 import { resetMouse, sendMouse } from '@web/test-runner-commands';
 import { spy } from 'sinon';
 
@@ -208,6 +208,16 @@ describe('Tree Selection', () => {
 
       checkbox.addEventListener('igcChange', checkboxSpy);
       tree.addEventListener('igcChange', treeSpy);
+
+      // The tree smoothly scrolls its active last item into view after the first render,
+      // and this item out of it. Let the scroll end, then scroll the checkbox back in.
+      let top = Number.NaN;
+      await waitUntil(() => {
+        const previous = top;
+        top = checkbox.getBoundingClientRect().top;
+        return top === previous;
+      }, 'The tree did not stop scrolling');
+      checkbox.scrollIntoView({ block: 'nearest', behavior: 'instant' });
 
       const { x, y } = getCenterPoint(checkbox);
 

@@ -53,10 +53,6 @@ igc-validator {
 }
 
 @media (forced-colors: active) {
-    [part~='base'] {
-        border: rem(1px) solid CanvasText;
-    }
-
     :host(:disabled) igc-validator::part(helper-text),
     :host([disabled]) igc-validator::part(helper-text) {
         color: GrayText;

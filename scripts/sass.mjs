@@ -104,6 +104,7 @@ async function resolveEntryGlobs() {
   };
 }
 
+/** CI restores this file. See `.github/actions/restore-styles`. */
 const CACHE_FILE = 'node_modules/.cache/igniteui-webcomponents/styles.json';
 
 /** Bump to invalidate every cached entry after a change to the build itself. */

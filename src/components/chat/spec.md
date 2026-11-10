@@ -62,6 +62,7 @@
 |       8 | 2026-10-26 | `focusInput()` waits for the first render of a new chat and returns a promise |
 |       9 | 2026-11-02 | The events of the inner text area and of the attachment chips stay inside the chat |
 |      10 | 2026-11-04 | The code color variables of the Markdown renderer have GitHub fallbacks and apply in light and dark mode; `igcNavigate` for links in messages |
+|      11 | 2026-11-06 | The <kbd>Enter</kbd> that commits an IME composition does not send the message |
 
 ## Overview
 
@@ -357,7 +358,7 @@ global `registerI18n` mechanism, and both shapes are accepted by the property.
 | Keys                                  | Context           | Description                                                 |
 | ------------------------------------- | ----------------- | ----------------------------------------------------------- |
 | <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd> | anywhere | Moves between the header actions, the message list, the attachments of the messages, the file picker, the text area, the send button and the attachment chips. |
-| <kbd>Enter</kbd>                      | text area         | Sends the composed message.                                  |
+| <kbd>Enter</kbd>                      | text area         | Sends the composed message. The <kbd>Enter</kbd> that commits an IME composition does not send. |
 | <kbd>Shift</kbd> + <kbd>Enter</kbd>   | text area         | Inserts a new line instead of sending.                        |
 | <kbd>Enter</kbd> / <kbd>Space</kbd>   | suggestion, send button, message action | Activates the control.                 |
 | <kbd>Enter</kbd> / <kbd>Space</kbd>   | attachment of a message | Emits `igcAttachmentClick`.                                  |
@@ -492,7 +493,8 @@ The component exposes a part for every region it renders. The main groups are:
 
 ### Keyboard
 
-20. <kbd>Enter</kbd> in the focused text area sends the composed message.
+20. <kbd>Enter</kbd> in the focused text area sends the composed message. The <kbd>Enter</kbd> that commits an IME
+    composition, also after `compositionend` with the `keyCode` 229, does not send and is not canceled.
 
 ### Events tests
 

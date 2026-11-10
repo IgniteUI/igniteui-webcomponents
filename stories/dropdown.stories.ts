@@ -6,23 +6,29 @@ import { createRef, ref } from 'lit/directives/ref.js';
 import {
   IgcAvatarComponent,
   IgcButtonComponent,
+  IgcCheckboxComponent,
   IgcDropdownComponent,
   type IgcDropdownItemComponent,
   IgcIconButtonComponent,
   IgcIconComponent,
   IgcInputComponent,
+  IgcRadioComponent,
+  IgcRadioGroupComponent,
   defineComponents,
   registerIcon,
 } from 'igniteui-webcomponents';
-import { disableStoryControls, dollars } from './story.js';
+import { disableStoryControls, dollars, renderInto } from './story.js';
 
 defineComponents(
   IgcAvatarComponent,
   IgcButtonComponent,
+  IgcCheckboxComponent,
   IgcDropdownComponent,
   IgcIconButtonComponent,
   IgcIconComponent,
-  IgcInputComponent
+  IgcInputComponent,
+  IgcRadioComponent,
+  IgcRadioGroupComponent
 );
 
 const materialIcons = 'https://unpkg.com/material-design-icons@3.0.1';
@@ -796,6 +802,157 @@ export const LanguagePicker: Story = {
           </igc-dropdown>
         </div>
       </div>
+    `;
+  },
+};
+
+const exportFormats = [
+  { value: 'pdf', label: 'PDF document', icon: 'file_pdf' },
+  { value: 'xlsx', label: 'Excel workbook', icon: 'file_xls' },
+  { value: 'csv', label: 'CSV file', icon: 'file_csv' },
+];
+
+export const ExportMenu: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The export menu of a dashboard. The items pick the file format, and `keep-open-on-select` keeps the menu open after the pick. The `header` slot holds the file name, and the `footer` slot holds the data range, a filter option and the Download button. This content is outside the list and keeps its own keys: the text field takes the typed text, Home, End and the arrow keys, the radio group takes the arrow keys, and the button takes Enter and Space. Tab moves from the Export button through the file name and the footer controls, and Tab past the last control closes the menu. Escape from any control in the menu, or a click outside, closes the menu without a download. When the menu closes with the focus in it, the focus goes back to the Export button. The `igcChange` events of the checkbox and the radios bubble through the dropdown, so the `igcChange` listener of the dropdown checks `event.target`.',
+      },
+    },
+  },
+  render: () => {
+    const menu = createRef<IgcDropdownComponent>();
+    const state = {
+      format: 'pdf',
+      fileName: 'Q3 sales dashboard',
+      message: '',
+    };
+
+    const exportFile = () => {
+      const host = story.host!;
+      const dataRange =
+        host.querySelector<IgcRadioGroupComponent>('#ex-range')!;
+      const filters = host.querySelector<IgcCheckboxComponent>('#ex-filters')!;
+      const name = state.fileName.trim() || 'Export';
+
+      state.message = `Exported "${name}.${state.format}": ${
+        dataRange.value === 'all' ? 'all data' : 'current view'
+      }, ${filters.checked ? 'with' : 'without'} the applied filters.`;
+      story.update();
+      menu.value?.hide();
+    };
+
+    const story = renderInto(
+      () => html`
+        <div class="scenario">
+          <div class="app-bar">
+            <strong>Q3 sales dashboard</strong>
+
+            <igc-dropdown
+              ${ref(menu)}
+              class="export-menu"
+              placement="bottom-end"
+              distance="4"
+              keep-open-on-select
+              @igcChange=${(event: CustomEvent<IgcDropdownItemComponent>) => {
+                // The checkbox and the radios in the footer send their own
+                // igcChange, which bubbles through the dropdown.
+                if (event.target === menu.value) {
+                  state.format = event.detail.value;
+                  story.update();
+                }
+              }}
+            >
+              <igc-button slot="target">
+                <igc-icon slot="prefix" name="download"></igc-icon>
+                Export
+              </igc-button>
+
+              <div slot="header" class="export-section">
+                <igc-input
+                  label="File name"
+                  .value=${state.fileName}
+                  @igcInput=${({ detail }: CustomEvent<string>) => {
+                    state.fileName = detail;
+                  }}
+                >
+                  <span slot="suffix">.${state.format}</span>
+                </igc-input>
+              </div>
+
+              <igc-dropdown-header>Format</igc-dropdown-header>
+              ${exportFormats.map(
+                ({ value, label, icon }) => html`
+                  <igc-dropdown-item
+                    value=${value}
+                    ?selected=${state.format === value}
+                  >
+                    <igc-icon
+                      slot="prefix"
+                      collection="internal"
+                      name=${icon}
+                    ></igc-icon>
+                    ${label}
+                  </igc-dropdown-item>
+                `
+              )}
+
+              <div slot="footer" class="export-section export-options">
+                <igc-radio-group
+                  id="ex-range"
+                  name="range"
+                  value="view"
+                  aria-labelledby="ex-range-label"
+                >
+                  <label id="ex-range-label">Data</label>
+                  <igc-radio value="view">Current view</igc-radio>
+                  <igc-radio value="all">All data</igc-radio>
+                </igc-radio-group>
+                <igc-checkbox id="ex-filters" checked
+                  >Include the applied filters</igc-checkbox
+                >
+                <div class="export-actions">
+                  <igc-button @click=${exportFile}>Download</igc-button>
+                </div>
+              </div>
+            </igc-dropdown>
+          </div>
+
+          <p class="log" role="status">${state.message}</p>
+        </div>
+      `
+    );
+
+    return html`
+      ${scenarioStyles}
+      <style>
+        .export-menu::part(base) {
+          min-width: 18rem;
+        }
+
+        .export-section {
+          display: grid;
+          gap: 0.75rem;
+          padding: 0.75rem 1rem;
+        }
+
+        .export-options {
+          border-block-start: 1px solid var(--ig-gray-300, #e0e0e0);
+        }
+
+        .export-options label {
+          font-weight: 600;
+        }
+
+        .export-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 0.5rem;
+        }
+      </style>
+      <div ${story.mount}></div>
     `;
   },
 };
