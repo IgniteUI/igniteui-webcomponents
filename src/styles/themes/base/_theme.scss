@@ -17,8 +17,8 @@
     }
 
     :root {
-        --ig-theme: #{map.get($palette, '_meta', 'variant')};
-        --ig-theme-variant: #{$variant};
+        @include theme-markers(map.get($palette, '_meta', 'variant'), $variant);
+
         --ig-scrollbar-size: #{rem(16px)};
     }
 
