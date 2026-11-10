@@ -1,9 +1,15 @@
-import { expect } from '@open-wc/testing';
+import { aTimeout, expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
+import { shiftKey, tabKey } from '../controllers/key-bindings.js';
+import { simulateKeyboard } from '../testing/simulate.spec.js';
 import {
   addWeakEventListener,
+  focusTabStop,
   getEventOrigin,
   linkOpensElsewhere,
+  preventDefault,
+  runDefaultAction,
+  stopPropagation,
 } from './events.js';
 
 describe('Event utilities', () => {
@@ -129,6 +135,85 @@ describe('Event utilities', () => {
     });
   });
 
+  describe('runDefaultAction', () => {
+    let host: HTMLElement;
+    let inner: HTMLElement;
+    let calls: string[];
+
+    const dispatch = (init: EventInit): void => {
+      const event = new Event('custom', init);
+      inner.addEventListener(
+        'custom',
+        () => runDefaultAction(event, () => calls.push('action')),
+        { once: true }
+      );
+      inner.dispatchEvent(event);
+    };
+
+    beforeEach(() => {
+      host = document.createElement('div');
+      inner = document.createElement('span');
+      host.attachShadow({ mode: 'open' }).append(inner);
+      document.body.append(host);
+      calls = [];
+    });
+
+    afterEach(() => {
+      host.remove();
+    });
+
+    it('runs at once for an event that is not in dispatch', () => {
+      runDefaultAction(new Event('custom'), () => calls.push('action'));
+      expect(calls).to.eql(['action']);
+    });
+
+    it('runs after the listeners of the host and its ancestors, in the same dispatch', async () => {
+      host.addEventListener('custom', () => calls.push('host'));
+      document.body.addEventListener('custom', () => calls.push('body'), {
+        once: true,
+      });
+
+      dispatch({ bubbles: true, composed: true });
+      expect(calls).to.eql(['host', 'body', 'action']);
+
+      // The fallback timer is a no-op.
+      await aTimeout(0);
+      expect(calls).to.eql(['host', 'body', 'action']);
+    });
+
+    it('does not run when a listener cancels the event', async () => {
+      host.addEventListener('custom', preventDefault);
+
+      dispatch({ bubbles: true, composed: true, cancelable: true });
+      await aTimeout(0);
+      expect(calls).to.be.empty;
+    });
+
+    it('runs in the next task when a listener stops the event', async () => {
+      host.addEventListener('custom', stopPropagation, { once: true });
+
+      dispatch({ bubbles: true, composed: true });
+      expect(calls).to.be.empty;
+
+      // Only the same event runs it at the end of the path.
+      inner.dispatchEvent(
+        new Event('custom', { bubbles: true, composed: true })
+      );
+      expect(calls).to.be.empty;
+
+      await aTimeout(0);
+      expect(calls).to.eql(['action']);
+    });
+
+    it('runs in the next task for an event that does not bubble', async () => {
+      dispatch({ composed: true });
+      expect(calls).to.be.empty;
+
+      await aTimeout(0);
+      expect(calls).to.eql(['action']);
+    });
+  });
+
   describe('addWeakEventListener', () => {
     afterEach(() => {
       sinon.restore();
@@ -179,6 +264,57 @@ describe('Event utilities', () => {
       expect(remove.calledOnce).to.be.true;
       expect(remove.firstCall.args[0]).to.equal('custom');
       expect(remove.firstCall.args[2]).to.eql({ capture: true });
+    });
+  });
+
+  describe('focusTabStop', () => {
+    let stops: HTMLButtonElement[];
+
+    const tab = (target: HTMLElement, shift = false) => {
+      let moved = false;
+      target.addEventListener(
+        'keydown',
+        (event) => {
+          moved = focusTabStop(event, stops);
+        },
+        { once: true }
+      );
+      simulateKeyboard(target, shift ? [shiftKey, tabKey] : tabKey);
+      return moved;
+    };
+
+    beforeEach(async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <button id="a">A</button>
+          <button id="b">B</button>
+          <button id="c" disabled>C</button>
+        </div>
+      `);
+      stops = Array.from(root.querySelectorAll('button'));
+    });
+
+    it('focuses the next stop, or the previous one with Shift', () => {
+      expect(tab(stops[0])).to.be.true;
+      expect(document.activeElement).to.equal(stops[1]);
+
+      expect(tab(stops[1], true)).to.be.true;
+      expect(document.activeElement).to.equal(stops[0]);
+    });
+
+    it('returns false past either end', () => {
+      expect(tab(stops[0], true)).to.be.false;
+    });
+
+    it('returns false for a stop that does not take the focus', () => {
+      expect(tab(stops[1])).to.be.false;
+    });
+
+    it('returns false for an event from outside the stops', async () => {
+      const outside = await fixture<HTMLButtonElement>(
+        html`<button>Out</button>`
+      );
+      expect(tab(outside)).to.be.false;
     });
   });
 });

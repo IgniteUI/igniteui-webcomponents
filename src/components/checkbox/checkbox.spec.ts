@@ -12,6 +12,7 @@ import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
 } from '#internals/testing/validity-helpers.spec.js';
+import { preventDefault } from '#internals/utils/events.js';
 import { configureTheme } from '#theming/config.js';
 import IgcCheckboxComponent from './checkbox.js';
 
@@ -279,6 +280,15 @@ describe('Checkbox', () => {
       spec.setProperties({ required: true, checked: false });
       expect(
         spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.false;
+    });
+
+    it('does not submit when a listener cancels the Enter key press', () => {
+      spec.element.addEventListener('keydown', preventDefault);
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'), {
+          cancelable: true,
+        })
       ).to.be.false;
     });
 

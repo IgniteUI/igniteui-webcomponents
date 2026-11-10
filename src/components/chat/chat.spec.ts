@@ -949,6 +949,34 @@ describe('Chat', () => {
 
         expect(isFocused(textArea)).to.be.true;
       });
+
+      for (const [name, init] of [
+        ['commits an IME composition', { isComposing: true }],
+        ['comes after the end of an IME composition', { keyCode: 229 }],
+      ] as const) {
+        it(`does not send a message on the \`Enter\` that ${name}`, async () => {
+          const textArea = getChatDOM(chat).input.textarea;
+          const event = new KeyboardEvent('keydown', {
+            key: enterKey,
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+            ...init,
+          });
+
+          textArea.setAttribute('value', '日本');
+          textArea.dispatchEvent(
+            new CustomEvent('igcInput', { detail: '日本' })
+          );
+          await elementUpdated(chat);
+          simulateFocus(textArea);
+          textArea.dispatchEvent(event);
+          await elementUpdated(chat);
+
+          expect(event.defaultPrevented).to.be.false;
+          expect(chat.messages).to.be.empty;
+        });
+      }
     });
   });
 

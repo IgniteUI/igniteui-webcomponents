@@ -86,7 +86,10 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
    * Sends an `Enter` keydown to `target`, or to the component. Returns whether
    * the form submits.
    */
-  public submitWithEnter(target?: HTMLElement | null): boolean {
+  public submitWithEnter(
+    target?: HTMLElement | null,
+    init?: KeyboardEventInit
+  ): boolean {
     let called = false;
     const element = target ?? this.element;
     const handler = (event: SubmitEvent) => {
@@ -100,6 +103,7 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
         key: 'Enter',
         bubbles: true,
         composed: true,
+        ...init,
       })
     );
     return called;
