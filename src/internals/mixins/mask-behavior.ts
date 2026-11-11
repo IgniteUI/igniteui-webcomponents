@@ -35,6 +35,7 @@ type MaskInputBindings = Pick<
   | 'onBlur'
   | 'onClick'
   | 'onSetMaskSelection'
+  | 'onEnterKey'
   | 'onCompositionStart'
   | 'onCompositionEnd'
   | 'onDragLeave'
@@ -225,6 +226,10 @@ export function MaskBehaviorMixin<
         start: this._input?.selectionStart || 0,
         end: this._input?.selectionEnd || 0,
       };
+    }
+
+    protected override get _blocksImplicitSubmission(): boolean {
+      return true;
     }
 
     /** Whether the input shows no text of its own: nothing, or only the empty mask. */
@@ -471,7 +476,7 @@ export function MaskBehaviorMixin<
     protected _setMaskSelection(event: Event): void {
       this._maskSelection = this._inputSelection;
       if (event instanceof KeyboardEvent) {
-        this._handleEnterKeydown(event);
+        this._handleEnterKey(event);
       }
     }
 
@@ -539,6 +544,7 @@ export function MaskBehaviorMixin<
         onBlur: this._handleBlur,
         onClick: this._handleClick,
         onSetMaskSelection: this._setMaskSelection,
+        onEnterKey: this._handleEnterKey,
         onCompositionStart: this._handleCompositionStart,
         onCompositionEnd: this._handleCompositionEnd,
         onDragLeave: this._handleDragLeave,

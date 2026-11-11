@@ -59,6 +59,7 @@
 |       9 | 2026-10-23 | The mask input makes a stacking context, so the z-index of the input and the container does not compete with the layers of the page |
 |      10 | 2026-10-28 | Forward the host combobox state, as the input does                        |
 |      11 | 2026-11-02 | A `focus()` call before the first render applies after the render         |
+|      12 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form, after the `keypress`         |
 
 ## Overview
 
@@ -281,6 +282,10 @@ The component applies two validators:
 The value submitted with the form follows `valueMode`: the raw input in `raw` mode, the formatted string in
 `withFormatting` mode. A form reset restores the default value taken from the `value` attribute.
 
+<kbd>Enter</kbd> submits the form as in a native text field (see the
+[input specification](../input/spec.md#form-integration)): through the default button, or from the only text field of
+a form with no submit button. A `keydown` or `keypress` listener that calls `preventDefault()` stops the submission.
+
 As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
 the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
 `checkValidity()` do not move the focus. The `invalid` event comes only from these checks and from a failed submit,
@@ -299,7 +304,7 @@ the UI. The `label`, `placeholder` and helper text are provided by the applicati
 | <kbd>Tab</kbd>                                        | Moves focus to the control and selects its text.                      |
 | <kbd>Backspace</kbd>                                  | Clears the previous non-literal position and restores its prompt.     |
 | <kbd>Delete</kbd>                                     | Clears the next non-literal position and restores its prompt.         |
-| <kbd>Enter</kbd>                                      | Submits the associated form, if any.                                  |
+| <kbd>Enter</kbd>                                      | Submits the associated form, if any, as a native text field does.     |
 | <kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>Cmd</kbd> + <kbd>Z</kbd> | Undoes the last edit step.                                   |
 | <kbd>Ctrl</kbd> + <kbd>Y</kbd>                        | Redoes the last undone step.                                          |
 | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd> / <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd> | Redoes the last undone step. |
@@ -469,7 +474,8 @@ Driven by `createFormAssociatedTestBed`.
 30. Is associated on submit, including with value formatting enabled.
 31. Is correctly reset on form reset, with and without value formatting, after a `setAttribute` call, and refreshes
     the rendered masked value and placeholder afterwards.
-32. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid.
+32. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid. A real <kbd>Enter</kbd>
+    submits once.
 33. Reflects the disabled state of an ancestor `fieldset`.
 34. Fulfils the required constraint, including with value formatting, the mask pattern constraint and a custom
     constraint.

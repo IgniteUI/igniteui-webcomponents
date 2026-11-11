@@ -1,4 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
@@ -6,6 +7,7 @@ import { isFocused } from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import { isPopoverOpen } from '#internals/utils/dom.js';
+import { preventDefault } from '#internals/utils/events.js';
 import IgcInputComponent from '../input/input.js';
 import IgcTooltipComponent from '../tooltip/tooltip.js';
 import IgcButtonComponent from './button.js';
@@ -567,6 +569,76 @@ describe('Button tests', () => {
 
       button.click();
       expect(spec.element.value).to.equal('John Doe');
+    });
+
+    it('submits after the click listeners on the host', () => {
+      const events: string[] = [];
+      spec.form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        events.push('submit');
+      });
+      button.addEventListener('click', () => events.push('click'));
+
+      button.click();
+      expect(events).to.eql(['click', 'submit']);
+    });
+
+    it('does not submit or reset when a listener cancels the click', () => {
+      const submit = spy(preventDefault);
+      spec.form.addEventListener('submit', submit);
+      button.addEventListener('click', preventDefault);
+
+      button.click();
+      expect(submit.called).to.be.false;
+
+      spec.setProperties({ value: 'Jane Doe' });
+      button.type = 'reset';
+
+      button.click();
+      expect(spec.element.value).to.equal('Jane Doe');
+    });
+
+    it('does not submit when a click listener disables the button', () => {
+      const submit = spy(preventDefault);
+      spec.form.addEventListener('submit', submit);
+      button.addEventListener('click', () => {
+        button.disabled = true;
+      });
+
+      button.click();
+      expect(submit.called).to.be.false;
+    });
+
+    it('is the default button for Enter in a field', () => {
+      const click = spy();
+      button.addEventListener('click', click);
+      // With two text fields, only a default button submits on Enter.
+      spec.form.append(document.createElement('input'));
+
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.true;
+      expect(click.calledOnce).to.be.true;
+    });
+
+    it('blocks Enter submission while it is the disabled default button', () => {
+      button.disabled = true;
+
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.false;
+    });
+
+    it('is not the default button as a link', () => {
+      const click = spy();
+      button.addEventListener('click', click);
+      button.href = '#';
+
+      // One text field and no submit button, so Enter submits the form.
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.true;
+      expect(click.called).to.be.false;
     });
 
     it('reflects disabled ancestor state', () => {

@@ -114,6 +114,74 @@ function isInvalidControl(element: ListedElement): boolean {
   return !!element.willValidate && !element.validity?.valid;
 }
 
+//#region Implicit submission
+
+/** The `<input>` types that block implicit submission. */
+const textFieldTypes = new Set([
+  'date',
+  'datetime-local',
+  'email',
+  'month',
+  'number',
+  'password',
+  'search',
+  'tel',
+  'text',
+  'time',
+  'url',
+  'week',
+]);
+
+type SubmissionElement = Element & {
+  type?: unknown;
+  href?: unknown;
+  _blocksImplicitSubmission?: boolean;
+};
+
+function blocksImplicitSubmission(element: SubmissionElement): boolean {
+  return element instanceof HTMLInputElement
+    ? textFieldTypes.has(element.type)
+    : !!element._blocksImplicitSubmission;
+}
+
+/** A link button has no form action. */
+function isSubmitButton(
+  element: SubmissionElement
+): element is SubmissionElement & HTMLElement {
+  return element.type === 'submit' && element.href == null;
+}
+
+/** `form.elements` has no image buttons, so query them separately. */
+function defaultButtonOf(form: HTMLFormElement): HTMLElement | undefined {
+  const button = Iterator.from(form.elements).find(isSubmitButton);
+  const image = form.querySelector<HTMLInputElement>('input[type="image" i]');
+
+  return image?.form === form &&
+    (!button ||
+      image.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING)
+    ? image
+    : button;
+}
+
+/** As in HTML, a disabled default button blocks the submission. */
+function submitImplicitly(form: HTMLFormElement, fromTextField: boolean): void {
+  const button = defaultButtonOf(form);
+
+  if (button) {
+    if (!button.matches(':disabled')) {
+      button.click();
+    }
+  } else if (
+    fromTextField &&
+    Iterator.from(form.elements).filter(blocksImplicitSubmission).toArray()
+      .length === 1
+  ) {
+    form.requestSubmit();
+  }
+}
+
+//#endregion
+
 /**
  * `stateKey` names the state property, whose attribute sets the default.
  * `hostAria` lists more host attributes to forward, see `HostAriaMixin`.
@@ -155,6 +223,11 @@ function BaseFormAssociated<T extends LitElementConstructor>(
 
     protected get __validators(): Validator[] {
       return [];
+    }
+
+    /** Whether the control counts as a text field for implicit submission. */
+    protected get _blocksImplicitSubmission(): boolean {
+      return false;
     }
 
     //#endregion
@@ -286,8 +359,16 @@ function BaseFormAssociated<T extends LitElementConstructor>(
 
     //#region Enter key submission handling
 
-    protected _handleEnterKeydown(event: KeyboardEvent): void {
+    /**
+     * Bind to `keydown` and `keypress` on the element that gets the key. A
+     * real Enter submits on `keypress`, so listeners can cancel both. A
+     * synthetic Enter submits on `keydown`, which may have no `keypress`.
+     */
+    protected _handleEnterKey(event: KeyboardEvent): void {
       if (
+        (event.type === 'keypress') !== event.isTrusted ||
+        // A key from slotted content belongs to that content.
+        event.target !== event.currentTarget ||
         !this.form ||
         !isKey(event, enterKey) ||
         event.repeat ||
@@ -296,8 +377,12 @@ function BaseFormAssociated<T extends LitElementConstructor>(
         return;
       }
 
-      // Host and ancestor listeners can cancel the submit, as for a native input.
-      runDefaultAction(event, () => this.form?.requestSubmit());
+      // A listener that disables the control also stops the submit.
+      runDefaultAction(event, () => {
+        if (this.form && !this.disabled) {
+          submitImplicitly(this.form, this._blocksImplicitSubmission);
+        }
+      });
     }
 
     //#endregion

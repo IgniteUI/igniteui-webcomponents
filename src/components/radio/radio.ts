@@ -409,7 +409,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
         tabindex: this._tabIndex,
         description: helperText(this, this._slots),
         onClick: this._handleClick,
-        onKeyDown: this._handleEnterKeydown,
+        onEnterKey: this._handleEnterKey,
       })}
       ${IgcValidationContainerComponent.create(this)}
     `;

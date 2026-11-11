@@ -776,7 +776,8 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
         ?invalid=${live(this.invalid)}
         @igcChange=${this._handleInputChange}
         @igcInput=${this._handleInput}
-        @keydown=${this._handleEnterKeydown}
+        @keydown=${this._handleEnterKey}
+        @keypress=${this._handleEnterKey}
         @click=${bindIf(this._opensOnClick, this._handleInputClick)}
         exportparts="input, label, prefix, suffix"
       >
@@ -819,7 +820,8 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
         .prompt=${this.prompt}
         @igcInput=${this._handleDateRangeInput}
         @igcChange=${this._handleDateRangeInputChange}
-        @keydown=${this._handleEnterKeydown}
+        @keydown=${this._handleEnterKey}
+        @keypress=${this._handleEnterKey}
         @click=${bindIf(this._opensOnClick, this._handleInputClick)}
         exportparts="input, label, prefix, suffix"
       >
