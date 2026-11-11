@@ -45,7 +45,7 @@ $theme: $material;
     }
 
     [part~='value-label'] {
-        color: var-get($theme, 'disabled-label-color');
+        color: var-get($theme, 'disabled-value-label');
     }
 
     [part~='symbols'] {
