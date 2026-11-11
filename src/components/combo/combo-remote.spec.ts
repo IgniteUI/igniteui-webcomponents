@@ -2,6 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { type SinonSpy, spy } from 'sinon';
 import { internalsOf } from '#internals/controllers/internals.js';
 import {
+  arrowDown,
   endKey,
   enterKey,
   spaceBar,
@@ -376,6 +377,110 @@ describe('Combo', () => {
       expect(remote.value).to.eql(['BER', 'BRN', 'BGO', 'ALB']);
     });
 
+    describe('A value without a record', () => {
+      const clearIcon = () =>
+        remote.renderRoot.querySelector<HTMLElement>('[part="clear-icon"]')!;
+
+      beforeEach(() => {
+        remote.value = ['AMS', 'XXX'];
+      });
+
+      it('stays in value through a click and the selection methods', async () => {
+        await openComboPopover(remote);
+        simulateClick(itemFor('Athens'));
+        await elementUpdated(remote);
+
+        expect(details('igcChange')[0].newValue).to.eql(['AMS', 'XXX', 'ATH']);
+        expect(remote.value).to.eql(['AMS', 'XXX', 'ATH']);
+
+        remote.select('BAR');
+        remote.deselect('AMS');
+        remote.selectAllItems();
+        remote.deselectAllItems();
+
+        expect(remote.value).to.eql(['XXX']);
+        expect(remote.selection).to.be.empty;
+      });
+
+      it('leaves value when a deselection names it, and on the clear icon', async () => {
+        remote.deselect('XXX');
+
+        expect(remote.value).to.eql(['AMS']);
+
+        remote.value = ['AMS', 'XXX'];
+        remote.deselect();
+
+        expect(remote.value).to.be.empty;
+
+        remote.value = ['AMS', 'XXX'];
+        await elementUpdated(remote);
+        simulateClick(clearIcon());
+        await elementUpdated(remote);
+
+        expect(details('igcChange').at(-1).newValue).to.be.empty;
+        expect(remote.value).to.be.empty;
+      });
+
+      it('leaves value on a selection in single selection', async () => {
+        remote.singleSelect = true;
+        remote.value = ['XXX'];
+        remote.select('AMS');
+
+        expect(remote.value).to.eql(['AMS']);
+      });
+
+      it('lists each value one time', async () => {
+        remote.value = ['AMS', 'AMS', 'XXX', 'XXX'];
+        await openComboPopover(remote);
+        simulateClick(itemFor('Athens'));
+        await elementUpdated(remote);
+
+        expect(remote.value).to.eql(['AMS', 'XXX', 'ATH']);
+      });
+
+      it('shows the clear icon also when only values without a record remain', async () => {
+        remote.value = ['XXX'];
+        await elementUpdated(remote);
+
+        expect(clearIcon().hidden).to.be.false;
+
+        simulateClick(clearIcon());
+        await elementUpdated(remote);
+
+        expect(remote.value).to.be.empty;
+      });
+
+      it('leaves value on a commit of a deselection that names it, and stays on a cancel', async () => {
+        remote.selectionCommit = 'confirm';
+        await openComboPopover(remote);
+
+        remote.deselect('XXX');
+        expect(remote.pendingValue).to.eql(['AMS']);
+
+        remote.cancelSelection();
+        remote.select('BAR');
+        expect(remote.pendingValue).to.eql(['AMS', 'XXX', 'BAR']);
+
+        remote.cancelSelection();
+        remote.deselect('XXX');
+        remote.commitSelection();
+        expect(remote.value).to.eql(['AMS']);
+      });
+
+      it('stays after a commit of the confirm mode', async () => {
+        remote.selectionCommit = 'confirm';
+        await openComboPopover(remote);
+        simulateClick(itemFor('Athens'));
+        await elementUpdated(remote);
+
+        expect(remote.pendingValue).to.eql(['AMS', 'XXX', 'ATH']);
+
+        remote.commitSelection();
+
+        expect(remote.value).to.eql(['AMS', 'XXX', 'ATH']);
+      });
+    });
+
     it('emits igcDataRequest near the end of the data, in data coordinates', async () => {
       remote.groupKey = 'letter';
       await openComboPopover(remote);
@@ -564,6 +669,74 @@ describe('Combo', () => {
         await comboStable(remote);
 
         expect(details('igcDataRequest')).lengthOf(2);
+      });
+
+      it('shows new results from the top, with no active option', async () => {
+        remote.totalItemCount = 100;
+        await openComboPopover(remote);
+
+        simulateKeyboard(list, endKey);
+        await comboStable(remote);
+
+        expect(list.scrollTop).to.be.greaterThan(0);
+
+        simulateInput(searchNative, { value: 'b' });
+        remote.data = search('b');
+        await comboStable(remote);
+
+        expect(list.scrollTop).to.equal(0);
+        expect(details('igcDataRequest')).to.eql([
+          { startIndex: 10, count: 20 },
+          { startIndex: 10, count: 20 },
+        ]);
+
+        simulateKeyboard(list, arrowDown);
+        await comboStable(remote);
+
+        expect(items(remote)[0].active).to.be.true;
+      });
+
+      it('keeps the place for a copy of the same records, and not after a search', async () => {
+        remote.totalItemCount = 100;
+        await openComboPopover(remote);
+
+        simulateKeyboard(list, endKey);
+        await comboStable(remote);
+
+        const { scrollTop } = list;
+        remote.data = search('');
+        await comboStable(remote);
+
+        expect(list.scrollTop).to.equal(scrollTop);
+        expect(items(remote).some((item) => item.active)).to.be.true;
+
+        // The same first record, after a search.
+        const [first, ...rest] = remote.data;
+        simulateInput(searchNative, { value: 'a' });
+        remote.data = [first, ...rest.reverse()];
+        await comboStable(remote);
+
+        expect(list.scrollTop).to.equal(0);
+      });
+
+      it('shows new results that come while the list is closed from the top', async () => {
+        remote.totalItemCount = 100;
+        await openComboPopover(remote);
+
+        simulateKeyboard(list, endKey);
+        await comboStable(remote);
+        await remote.hide();
+
+        remote.data = search('b');
+        await elementUpdated(remote);
+        await openComboPopover(remote);
+        await comboStable(remote);
+
+        expect(list.scrollTop).to.equal(0);
+        expect(details('igcDataRequest')).to.eql([
+          { startIndex: 10, count: 20 },
+          { startIndex: 10, count: 20 },
+        ]);
       });
 
       it('does not select a placeholder', async () => {

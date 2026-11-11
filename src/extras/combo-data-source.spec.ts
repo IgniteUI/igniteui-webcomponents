@@ -625,6 +625,86 @@ describe('Combo data source binding', () => {
     expect(combo.selection).to.be.empty;
   });
 
+  describe('with a resolve that waits for the test', () => {
+    let answers: (() => void)[];
+
+    beforeEach(() => {
+      answers = [];
+      source.resolve = (values) =>
+        new Promise((resolve) => {
+          answers.push(() =>
+            resolve(PLACES.filter(({ id }) => values.includes(id)))
+          );
+        });
+    });
+
+    it('selects only the resolved values that the combo still holds', async () => {
+      combo.value = ['OSL', 'AMS'];
+      bind();
+      await waitUntil(() => answers.length);
+
+      combo.value = ['AMS'];
+      answers[0]();
+      await flush();
+
+      expect(combo.value).to.eql(['AMS']);
+      expect(ids(combo.selection)).to.eql(['AMS']);
+    });
+
+    it('selects the resolved values in the open list of confirm mode', async () => {
+      combo.selectionCommit = 'confirm';
+      combo.value = ['OSL'];
+      bind();
+      await waitUntil(() => answers.length);
+
+      await open();
+      answers[0]();
+      await flush();
+
+      expect(input.value).to.equal('Oslo');
+
+      combo.commitSelection();
+
+      expect(combo.value).to.eql(['OSL']);
+    });
+
+    it('selects a resolved value after a click of the user', async () => {
+      combo.value = ['OSL'];
+      bind();
+      await waitUntil(() => answers.length);
+
+      await open();
+      await answer(0);
+      simulateClick(
+        combo.renderRoot.querySelector<HTMLElement>('[part~="item"]')!
+      );
+      await flush();
+
+      answers[0]();
+      await flush();
+
+      expect(combo.value).to.have.members(['OSL', 'AMS']);
+      expect(input.value).to.include('Oslo');
+    });
+
+    it('selects the answers of two resolves in flight', async () => {
+      combo.value = ['OSL'];
+      bind();
+      await waitUntil(() => answers.length);
+
+      combo.value = ['OSL', 'SOF'];
+      await open();
+      await waitUntil(() => answers.length === 2);
+
+      answers[0]();
+      await flush();
+      answers[1]();
+      await flush();
+
+      expect(combo.value).to.have.members(['OSL', 'SOF']);
+    });
+  });
+
   it('calls resolve again after a failure', async () => {
     const onError = spy();
     let fails = true;

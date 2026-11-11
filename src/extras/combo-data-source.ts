@@ -46,7 +46,8 @@ export interface ComboDataSource<T> {
    * Loads the items of the selected values that the loaded pages do not hold,
    * such as the values of a saved filter. It runs when the binding starts,
    * after each load and when the list opens, one time per value. It needs a
-   * `valueKey` on the combo.
+   * `valueKey` on the combo. A value that leaves `value` meanwhile is not
+   * selected.
    */
   resolve?(values: unknown[], signal: AbortSignal): Promise<T[]>;
 }
@@ -227,9 +228,13 @@ export function bindComboDataSource<T extends object>(
         requested.delete(item[valueKey]);
       }
 
+      // The value can change while the source resolves.
+      const current = new Set<unknown>(combo.value);
+      const selected = items.filter((item) => current.has(item[valueKey]));
+
       // `select()` with no items selects all of them.
-      if (items.length) {
-        combo.select(items);
+      if (selected.length) {
+        combo.select(selected);
       }
     } catch (error) {
       for (const value of missing) {

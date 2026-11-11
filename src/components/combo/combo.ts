@@ -274,6 +274,8 @@ export default class IgcComboComponent<
     caseSensitive: false,
     matchDiacritics: false,
   };
+  // The options of the last write. A change of the object in place does not change them.
+  private _appliedFiltering = { ...this._filteringOptions };
 
   @state()
   private set _activeIndex(index: number) {
@@ -451,7 +453,24 @@ export default class IgcComboComponent<
    */
   @property({ type: Object, attribute: 'filtering-options' })
   public set filteringOptions(value: Partial<FilteringOptions<T>>) {
+    const applied = this._appliedFiltering;
+    const same = (options: Partial<FilteringOptions<T>>) =>
+      Object.entries(options).every(
+        ([key, option]) => applied[key as keyof FilteringOptions<T>] === option
+      );
+
+    // The same options keep the object, so nothing updates.
+    if (same(value ?? {}) && same(this._filteringOptions)) {
+      return;
+    }
+
     this._filteringOptions = { ...this._filteringOptions, ...value };
+    this._appliedFiltering = { ...this._filteringOptions };
+
+    // Now, so selectAllItems() sees the new filter. Remote mode does not filter.
+    if (applied.mode !== 'remote' || this._filteringOptions.mode !== 'remote') {
+      this._state.invalidate();
+    }
   }
 
   public get filteringOptions(): FilteringOptions<T> {
@@ -629,7 +648,7 @@ export default class IgcComboComponent<
    */
   public get pendingValue(): ComboValue<T>[] {
     const pending = this._selection.pending;
-    return pending ? this._selection.toValues(pending) : this.value;
+    return pending ? this._selection.valuesOf(pending) : this.value;
   }
 
   //#endregion
@@ -673,16 +692,9 @@ export default class IgcComboComponent<
       this._activeIndex = -1;
     }
 
-    // In remote mode, the filtering options do not change the records.
-    const filtering =
-      props.has('filteringOptions') &&
-      (this.filteringOptions.mode !== 'remote' ||
-        props.get('filteringOptions')?.mode !== 'remote');
-
     if (
       props.has('groupKey') ||
       props.has('groupSorting') ||
-      filtering ||
       props.has('totalItemCount') ||
       props.has('showSelectAll') ||
       props.has('groupSelection') ||
@@ -699,6 +711,16 @@ export default class IgcComboComponent<
 
     if (props.has('data')) {
       this._syncSelectionFromData();
+
+      // New remote results start with no active option.
+      if (
+        this._dataRequests.dataChanged(
+          props.get('data') ?? [],
+          this._listRef.value
+        )
+      ) {
+        this._activeIndex = -1;
+      }
     }
 
     // The list can open again before anything reads the pending selection.
@@ -848,7 +870,15 @@ export default class IgcComboComponent<
       ? Array.from(this._selection.current)
       : this._selection.resolve(collection);
 
-    return this._applySelection(resolved, type, emit);
+    if (!this._applySelection(resolved, type, emit)) {
+      return false;
+    }
+
+    if (!selecting) {
+      this._selection.forget(collection);
+    }
+
+    return true;
   }
 
   /**
@@ -955,15 +985,18 @@ export default class IgcComboComponent<
     }
 
     const items = this._selection.changes(pending);
+    const value = this._selection.valuesOf(pending);
 
-    if (isEmpty(items)) {
+    // A deselection can name a value without a record, which changes no record.
+    if (isEmpty(items) && sameItems(value, this.value)) {
       return true;
     }
 
+    // A copy, so a handler cannot change `value` through it.
     if (
       emit &&
       !this._emitSelectionChange({
-        newValue: this._selection.toValues(pending),
+        newValue: [...value],
         items,
         type: 'commit',
       })
@@ -973,7 +1006,7 @@ export default class IgcComboComponent<
 
     // The `value` setter finds the records that `data` does not hold here.
     this._selection.commit(pending);
-    this.value = this._selection.toValues(pending);
+    this.value = value;
     return true;
   }
 
@@ -1034,28 +1067,23 @@ export default class IgcComboComponent<
   }
 
   private _clearSelection(): void {
-    // The clear icon is on the input, which shows `value`, so it clears
-    // `value` at once, and the pending selection with it.
-    if (this._selection.pending) {
-      if (
-        this._emitSelectionChange({
-          newValue: [],
-          items: this.selection,
-          type: 'deselection',
-        })
-      ) {
-        this.value = [];
-      }
-      return;
-    }
-
     if (this.singleSelect) {
       this._clearSearchTerm(true);
       this._clearSingleSelection();
-    } else {
-      this._updateSelection([], 'deselection', true);
+      this._syncValueFromSelection();
+      return;
     }
-    this._syncValueFromSelection();
+
+    // Clears `value`, the pending selection and the unresolved values.
+    if (
+      this._emitSelectionChange({
+        newValue: [],
+        items: this.selection,
+        type: 'deselection',
+      })
+    ) {
+      this.value = [];
+    }
   }
 
   private _clearSingleSelection(): void {
@@ -1126,8 +1154,7 @@ export default class IgcComboComponent<
   }
 
   private _emitSearchInput(searchText: string): void {
-    // A new search starts a new sequence of data requests.
-    this._dataRequests.reset();
+    this._dataRequests.searched();
     this.emitEvent('igcSearchInput', { detail: { searchText } });
   }
 
@@ -1468,7 +1495,7 @@ export default class IgcComboComponent<
         part="clear-icon"
         role="button"
         @click=${this._handleClearIconClick}
-        ?hidden=${this.disableClear || isEmpty(this._selection.selected)}
+        ?hidden=${this.disableClear || isEmpty(this.value)}
         aria-label=${ifDefined(
           this.resourceStrings.combo_clearItems_placeholder
         )}

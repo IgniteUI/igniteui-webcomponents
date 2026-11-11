@@ -37,6 +37,7 @@ import {
 import {
   simulateCancelableKeydown,
   simulateClick,
+  simulateComposingKeys,
   simulateInput,
   simulateKeyboard,
   simulateScroll,
@@ -1094,6 +1095,15 @@ describe('Date picker', () => {
 
       await picker.show();
       expect(simulateCancelableKeydown(picker, escapeKey)).to.be.true;
+    });
+
+    it('stays open on an Escape that an IME handles', async () => {
+      await picker.show();
+
+      simulateComposingKeys(picker, escapeKey);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.true;
     });
 
     it('should open the calendar picker on Alt + ArrowDown and close it on Alt + ArrowUp - dropdown mode', async () => {

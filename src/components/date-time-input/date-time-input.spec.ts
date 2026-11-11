@@ -25,6 +25,7 @@ import {
 } from '#internals/testing/form-testbed.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
 import {
+  simulateComposingKeys,
   simulateInput,
   simulateKeyboard,
   simulateWheel,
@@ -1000,6 +1001,20 @@ describe('Date Time Input component', () => {
       await elementUpdated(element);
 
       expect(element.value.getFullYear()).to.equal(value.getFullYear() + 1);
+    });
+
+    it('does not spin on an arrow key that an IME handles', async () => {
+      const value = new Date(2020, 2, 3);
+      element.value = value;
+
+      element.focus();
+      await elementUpdated(element);
+      const text = input.value;
+
+      simulateComposingKeys(input, arrowUp);
+      await elementUpdated(element);
+
+      expect(input.value).to.equal(text);
     });
 
     it('ArrowDown should stepDown correctly', async () => {

@@ -185,13 +185,13 @@ The condition names are `igc-theme-material`, `igc-theme-bootstrap`, `igc-theme-
 
 ## Extras
 
-`igniteui-webcomponents/extras` has opt-in add-ons that build on the public API of the components. A bundle that does not import them does not contain them.
+The extras are opt-in add-ons that build on the public API of the components. A bundle that does not import them does not contain them. Each one has its own entry point, so it needs only its own dependencies.
 
-- `createMarkdownRenderer()` renders the chat messages from Markdown, with syntax highlighting.
-- `bindComboDataSource()` binds a combo to a server that searches and pages. It sets `totalItemCount` from the total of the server, so the list shows a placeholder row for each item to load, and `loading` while a search waits or a page loads.
+- `createMarkdownRenderer()` from `igniteui-webcomponents/extras` renders the chat messages from Markdown, with syntax highlighting. It imports the optional peer dependencies `marked` and `dompurify`, and loads `shiki` for the highlighting.
+- `bindComboDataSource()` from `igniteui-webcomponents/extras/combo-data-source` binds a combo to a server that searches and pages. It sets `totalItemCount` from the total of the server, so the list shows a placeholder row for each item to load, and `loading` while a search waits or a page loads.
 
 ```ts
-import { bindComboDataSource } from 'igniteui-webcomponents/extras';
+import { bindComboDataSource } from 'igniteui-webcomponents/extras/combo-data-source';
 
 const binding = bindComboDataSource(combo, {
   load: async ({ searchText, caseSensitive, startIndex, count }, signal) => {

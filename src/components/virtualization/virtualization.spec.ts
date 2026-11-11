@@ -393,6 +393,27 @@ describe('VirtualScroll', () => {
       expect(el.scrollLeft).to.be.greaterThan(0);
     });
 
+    it('renders the window of scrollToIndex before the scroll event', async () => {
+      const el = await createFixedScroll();
+
+      void el.scrollToIndex(500);
+      await elementUpdated(el);
+
+      expect(el.querySelector('[data-vs-index="500"]')).to.exist;
+    });
+
+    it('keeps its window when scrollToIndex runs while it is hidden', async () => {
+      const el = await createFixedScroll();
+      await el.scrollToIndex(500);
+
+      el.style.display = 'none';
+      void el.scrollToIndex(100);
+      await elementUpdated(el);
+      el.style.display = '';
+
+      expect(el.querySelector('[data-vs-index="500"]')).to.exist;
+    });
+
     it('settles at the last index instead of waiting out the scroll timeout', async () => {
       const el = await fixture<IgcVirtualScrollComponent<string>>(
         html`<igc-virtual-scroll

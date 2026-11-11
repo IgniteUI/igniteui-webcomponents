@@ -28,6 +28,10 @@ export class ComboSelection<T extends object> {
   private _selected: Set<T> = new Set();
   /** Read it through {@link pending}. */
   private _pending?: Set<T>;
+  /** The values of `value` that have no record. See {@link valuesOf}. */
+  private _unresolved = new Set<ComboValue<T>>();
+  /** The unresolved values of the pending selection, which a deselection can name. */
+  private _pendingUnresolved?: Set<ComboValue<T>>;
 
   constructor(host: ComboSelectionHost<T>) {
     this._host = host;
@@ -57,10 +61,15 @@ export class ComboSelection<T extends object> {
 
   private get _lazyPending(): Set<T> | undefined {
     if (this._host.open && this.confirmMode) {
-      return (this._pending ??= new Set(this._selected));
+      if (!this._pending) {
+        this._pending = new Set(this._selected);
+        this._pendingUnresolved = new Set(this._unresolved);
+      }
+
+      return this._pending;
     }
 
-    this._pending = undefined;
+    this.dropPending();
     return undefined;
   }
 
@@ -69,9 +78,15 @@ export class ComboSelection<T extends object> {
     return this._lazyPending ?? this._selected;
   }
 
+  /** The unresolved values that go with {@link current}. */
+  private get _targetUnresolved(): Set<ComboValue<T>> {
+    return this._lazyPending ? this._pendingUnresolved! : this._unresolved;
+  }
+
   /** The next read of {@link pending} copies {@link selected} again. */
   public dropPending(): void {
     this._pending = undefined;
+    this._pendingUnresolved = undefined;
   }
 
   /** Call when `data` or `valueKey` is set. */
@@ -112,6 +127,62 @@ export class ComboSelection<T extends object> {
     return Array.from(items, (item) => this._valueOf(item));
   }
 
+  private _toValue(item: Item<T>): ComboValue<T> {
+    return isObject(item) ? this._valueOf(item as T) : item;
+  }
+
+  /**
+   * The values of `records`, and the values of `value` that have no record in
+   * their places. A change keeps those until it names them. Multiple selection
+   * only.
+   */
+  public valuesOf(records: Iterable<T>): ComboValue<T>[] {
+    return this._withUnresolved(this.toValues(records), this._targetUnresolved);
+  }
+
+  private _withUnresolved(
+    values: ComboValue<T>[],
+    unresolved: ReadonlySet<ComboValue<T>>
+  ): ComboValue<T>[] {
+    if (this._host.singleSelect || !unresolved.size) {
+      return values;
+    }
+
+    const next = new Set(values);
+    const kept = new Set(
+      this._host.value.filter(
+        (value) => unresolved.has(value) || next.has(value)
+      )
+    );
+
+    return [...kept, ...values.filter((value) => !kept.has(value))];
+  }
+
+  /** Drops the values without a record that a deselection names, or all of them. */
+  public forget(items: Item<T>[]): void {
+    const unresolved = this._targetUnresolved;
+
+    if (isEmpty(items)) {
+      unresolved.clear();
+      return;
+    }
+
+    for (const item of items) {
+      unresolved.delete(this._toValue(item));
+    }
+  }
+
+  private _resolveUnresolved(
+    records: Iterable<T>,
+    unresolved: Set<ComboValue<T>>
+  ): void {
+    if (unresolved.size) {
+      for (const record of records) {
+        unresolved.delete(this._valueOf(record));
+      }
+    }
+  }
+
   /**
    * Resolves values or objects to records: the records of `data` in
    * data-source order, then the selected records and the objects that `data`
@@ -126,7 +197,7 @@ export class ComboSelection<T extends object> {
     let selected: Map<ComboValue<T>, T> | undefined;
 
     for (const item of items) {
-      const value = isObject(item) ? this._valueOf(item as T) : item;
+      const value = this._toValue(item);
       const found = index.get(value);
 
       if (found) {
@@ -159,14 +230,14 @@ export class ComboSelection<T extends object> {
     const current = this.current;
 
     if (selecting) {
-      return this.toValues(
+      return this.valuesOf(
         this._host.singleSelect ? records : new Set([...current, ...records])
       );
     }
 
     const removed = new Set(records);
 
-    return this.toValues(
+    return this.valuesOf(
       Iterator.from(current).filter((item) => !removed.has(item))
     );
   }
@@ -178,6 +249,10 @@ export class ComboSelection<T extends object> {
     for (const item of records) {
       selecting ? target.add(item) : target.delete(item);
     }
+
+    if (selecting) {
+      this._resolveUnresolved(records, this._targetUnresolved);
+    }
   }
 
   /**
@@ -187,13 +262,11 @@ export class ComboSelection<T extends object> {
    * @returns Whether {@link selected} changed.
    */
   public resolveValues(records: T[]): boolean {
-    const { value } = this._host;
-
-    // `selected` has at most one record for each value.
-    if (this.pending && this._selected.size < value.length) {
+    if (this.pending && this._unresolved.size) {
       this._selected = this._recordsOf(
-        value,
-        new Set(records).union(this._selected)
+        this._host.value,
+        new Set(records).union(this._selected),
+        this._unresolved
       );
       return true;
     }
@@ -210,6 +283,8 @@ export class ComboSelection<T extends object> {
     } else {
       this._selected = all;
     }
+
+    this._resolveUnresolved(all, this._targetUnresolved);
   }
 
   /** Clears the committed selection. The pending selection does not change. */
@@ -232,7 +307,8 @@ export class ComboSelection<T extends object> {
 
   /** Gives {@link selected} the records of `values`. A value that `data` does not hold keeps its record. */
   public syncFromValue(values: ComboValue<T>[]): void {
-    this._selected = this._recordsOf(values, this._selected);
+    this._unresolved = new Set();
+    this._selected = this._recordsOf(values, this._selected, this._unresolved);
   }
 
   /**
@@ -241,7 +317,7 @@ export class ComboSelection<T extends object> {
    * without a record can get a new record. Pass it to {@link syncPending}.
    */
   public knownValues(): Set<ComboValue<T>> | undefined {
-    return this.pending && this._selected.size < this._host.value.length
+    return this.pending && this._unresolved.size
       ? new Set(this.toValues(this._selected))
       : undefined;
   }
@@ -263,11 +339,11 @@ export class ComboSelection<T extends object> {
         );
       }
 
-      this._pending = this._recordsOf(values, pending);
+      this._pending = this._recordsOf(values, pending, this._pendingUnresolved);
     }
   }
 
-  /** The values and the display text of {@link selected}, in one pass. */
+  /** The values and the display text of {@link selected}, in one pass. See {@link valuesOf}. */
   public project(): { values: ComboValue<T>[]; text: string } {
     const { displayKey } = this._host;
     const values: ComboValue<T>[] = [];
@@ -278,13 +354,20 @@ export class ComboSelection<T extends object> {
       display.push(String((displayKey ? item[displayKey] : undefined) ?? item));
     }
 
-    return { values, text: display.join(', ') };
+    return {
+      values: this._withUnresolved(values, this._unresolved),
+      text: display.join(', '),
+    };
   }
 
-  /** The records of `values`. A value that `data` does not hold keeps its record in `previous`. */
+  /**
+   * The records of `values`. A value that `data` does not hold keeps its record
+   * in `previous`. `unresolved` gets the values without a record.
+   */
   private _recordsOf(
     values: ComboValue<T>[],
-    previous: ReadonlySet<T>
+    previous: ReadonlySet<T>,
+    unresolved?: Set<ComboValue<T>>
   ): Set<T> {
     const records = new Set<T>();
 
@@ -306,6 +389,9 @@ export class ComboSelection<T extends object> {
 
       if (record !== undefined) {
         records.add(record);
+        unresolved?.delete(value);
+      } else {
+        unresolved?.add(value);
       }
     }
 

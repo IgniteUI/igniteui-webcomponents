@@ -193,6 +193,34 @@ export function simulateCancelableKeydown(node: Element, key: string): boolean {
   );
 }
 
+/**
+ * Dispatches a cancelable `keydown` of each key that an IME handles: with
+ * `isComposing`, then with `keyCode` 229, as Safari sends it after
+ * `compositionend`. Returns whether a listener canceled one of them.
+ */
+export function simulateComposingKeys(
+  node: Element,
+  ...keys: string[]
+): boolean {
+  let canceled = false;
+
+  for (const init of [{ isComposing: true }, { keyCode: 229 }]) {
+    for (const key of keys) {
+      canceled ||= !node.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key,
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+          ...init,
+        })
+      );
+    }
+  }
+
+  return canceled;
+}
+
 /** Simulates scrolling for a given element. */
 export async function simulateScroll(
   node: Element,

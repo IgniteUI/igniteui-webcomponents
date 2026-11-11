@@ -37,6 +37,7 @@ import {
 import {
   simulateBlur,
   simulateClick,
+  simulateComposingKeys,
   simulateKeyboard,
   simulatePointerDown,
   simulateScroll,
@@ -1157,6 +1158,36 @@ describe('Combo', () => {
       expect(items(combo)).lengthOf(1);
     });
 
+    it('does not update for the same filtering options', async () => {
+      const options = combo.filteringOptions;
+      await elementUpdated(combo);
+
+      combo.filteringOptions = { ...options };
+
+      expect(combo.filteringOptions).to.equal(options);
+      expect(combo.isUpdatePending).to.be.false;
+
+      combo.filteringOptions = { caseSensitive: true };
+
+      expect(combo.isUpdatePending).to.be.true;
+    });
+
+    it('applies filtering options that changed in place', async () => {
+      await elementUpdated(combo);
+
+      const options = combo.filteringOptions;
+      options.caseSensitive = true;
+      combo.filteringOptions = { ...options };
+
+      expect(combo.isUpdatePending).to.be.true;
+
+      await elementUpdated(combo);
+      combo.filteringOptions.matchDiacritics = true;
+      combo.filteringOptions = { caseSensitive: true };
+
+      expect(combo.isUpdatePending).to.be.true;
+    });
+
     it('should select the first matched item upon pressing enter after search', async () => {
       combo.singleSelect = true;
       await elementUpdated(combo);
@@ -1171,6 +1202,20 @@ describe('Combo', () => {
       await elementUpdated(combo);
 
       expect(firstOf(combo.value)).to.equal('BG01');
+    });
+
+    it('leaves the Enter that commits an IME composition in the main input to the IME', async () => {
+      combo.singleSelect = true;
+      await elementUpdated(combo);
+
+      await openComboPopover(combo);
+      await filterCombo('sof');
+
+      simulateComposingKeys(input, enterKey);
+      await elementUpdated(combo);
+
+      expect(combo.value).to.be.empty;
+      expect(combo.open).to.be.true;
     });
 
     it('should select only one item at a time in single selection mode', async () => {

@@ -11,7 +11,11 @@ type Item = { id: number };
 const items = (count: number, start = 0): Item[] =>
   Array.from({ length: count }, (_, i) => ({ id: start + i }));
 
-const list = { updateComplete: Promise.resolve(true) };
+const list = {
+  updateComplete: Promise.resolve(true),
+  checkVisibility: () => true,
+  scrollToIndex: async () => {},
+};
 
 function setup(mode: ComboFilteringMode = 'remote') {
   const request = spy();
@@ -19,6 +23,7 @@ function setup(mode: ComboFilteringMode = 'remote') {
     open: true,
     data: items(10),
     filteringOptions: { filterKey: undefined, mode },
+    valueKey: 'id' as keyof Item | undefined,
   };
   const state = { loadedLength: 10, totalCount: 100 };
   const requests = new ComboDataRequests<Item>(host, state, request);
@@ -181,6 +186,106 @@ describe('Combo data requests', () => {
 
     await aTimeout(0);
     expect(request.callCount).to.equal(1);
+  });
+
+  describe('new results', () => {
+    const scrolled = () => {
+      const scrollToIndex = spy(async (_index: number) => {});
+      return { ...list, scrollToIndex };
+    };
+
+    it('scroll a shown list to the top at once', () => {
+      const { host, requests } = setup();
+      const shown = scrolled();
+      const previous = host.data;
+
+      host.data = items(10, 100);
+
+      expect(requests.dataChanged(previous, shown)).to.be.true;
+      expect(shown.scrollToIndex.calledOnceWith(0)).to.be.true;
+    });
+
+    it('come after a search, also with the same first record, or in a shorter data', () => {
+      const { host, requests } = setup();
+      const previous = host.data;
+
+      requests.searched();
+      host.data = [previous[0], ...previous.slice(1).reverse()];
+      expect(requests.dataChanged(previous, scrolled())).to.be.true;
+
+      host.data = previous.slice(0, 5);
+      expect(requests.dataChanged(previous, scrolled())).to.be.true;
+    });
+
+    it('keep the place for a page appended after a search that did not load', () => {
+      const { host, requests } = setup();
+      const previous = host.data;
+
+      requests.searched();
+      host.data = [...previous, ...items(10, 10)];
+
+      expect(requests.dataChanged(previous, scrolled())).to.be.false;
+    });
+
+    it('need a value key to compare the first records, and a previous data', () => {
+      const { host, requests } = setup();
+      const previous = host.data;
+
+      host.valueKey = undefined;
+      host.data = items(10, 100);
+      expect(requests.dataChanged(previous, scrolled())).to.be.false;
+
+      host.valueKey = 'id';
+      expect(requests.dataChanged([], scrolled())).to.be.false;
+    });
+
+    it('keep the place for a copy of the same records and an appended page', () => {
+      const { host, requests } = setup();
+      const previous = host.data;
+      const shown = scrolled();
+
+      host.data = items(10);
+      expect(requests.dataChanged(previous, shown)).to.be.false;
+
+      host.data = [...previous, ...items(10, 10)];
+      expect(requests.dataChanged(previous, shown)).to.be.false;
+      expect(shown.scrollToIndex.called).to.be.false;
+    });
+
+    it('do not move the list in local mode', () => {
+      const { host, requests } = setup('local');
+      const previous = host.data;
+
+      requests.searched();
+      host.data = items(10, 100);
+
+      expect(requests.dataChanged(previous, scrolled())).to.be.false;
+    });
+
+    it('scroll a hidden list to the top when it opens, before the check', async () => {
+      const { host, requests, request } = setup();
+      let visible = false;
+      const hidden = { ...scrolled(), checkVisibility: () => visible };
+      const previous = host.data;
+
+      host.data = items(10, 100);
+      requests.dataChanged(previous, hidden);
+      expect(hidden.scrollToIndex.called).to.be.false;
+
+      visible = true;
+      requests.rendered(9);
+      requests.afterUpdate(changed([['open', false]]), hidden);
+      await aTimeout(0);
+
+      expect(hidden.scrollToIndex.calledOnceWith(0)).to.be.true;
+      expect(hidden.scrollToIndex.firstCall.calledBefore(request.lastCall)).to
+        .be.true;
+
+      requests.afterUpdate(changed([['open', false]]), hidden);
+      await aTimeout(0);
+
+      expect(hidden.scrollToIndex.calledOnce).to.be.true;
+    });
   });
 
   it('checks after the list update when the total changes', async () => {

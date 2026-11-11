@@ -82,6 +82,7 @@
 |      20 | 2026-11-06 | With group selection, the items are one level in under their header, as in the tree |
 |      21 | 2026-11-06 | In multiple selection, the options report `aria-checked`; the select-all and group header options report `mixed` |
 |      22 | 2026-11-06 | Escape from the slot content keeps the list open when the content handled the key |
+|      23 | 2026-11-11 | The keys that an IME handles do nothing in the combo; new remote results show from the top with no active option, also in a list that opens; a value without a record stays in `value` until a change names it; the selection methods use a new `filteringOptions` at once, and the same options do not update the combo; `bindComboDataSource()` has its own entry point |
 
 ## Overview
 
@@ -225,10 +226,19 @@ The selection methods send no `igcChange`. In single selection, `select()` witho
 user action sends one cancelable `igcChange` before the selection changes. For the confirm mode, see
 [Confirm mode](#confirm-mode).
 
+A value of `value` without a record in `data` or in the selection, for example a value of a saved filter that a remote
+page does not hold yet, has no option, so the user cannot deselect it. In multiple selection, it stays in `value` when
+the user or a method changes other items, also in `igcChange.newValue`, `pendingValue` and a commit of the confirm
+mode. `deselect()` with that value or without an argument, `deselectAllItems(true)`, the clear icon and a new `value`
+remove it. In the confirm mode, such a deselection changes the pending selection, so a commit applies it and a cancel
+keeps the value. In single selection, a selection replaces it. It is not in `selection` or in the input text, but the
+clear icon shows for it. `value` lists each value one time. When `data` or `select()` gives it a record, it is a
+selected item again.
+
 #### Select all
 
-`selectAllItems()` and `deselectAllItems()` act on the items that the list shows, after the filter. They send no
-`igcChange`. With `ignoreFilter`, they act on all the items.
+`selectAllItems()` and `deselectAllItems()` act on the items that the list shows, after the filter, also right after a
+change of `data`, of the search text or of `filteringOptions`. They send no `igcChange`. With `ignoreFilter`, they act on all the items.
 
 In multiple selection, `show-select-all` adds a "Select all" option at the top of the list:
 
@@ -416,6 +426,11 @@ server did not return for the text.
   opening. So a source with no more items gets one request for each opening.
 - An empty `data` gets no request, because the application loads the first page of a search.
 - An answer is stale when `data.length` is not equal to its `startIndex`, for example after a new search.
+- New results show from the top, with no active option: the first `data` after a search, and a `data` that is
+  shorter or starts with another record. Records compare by `valueKey`; without it, only a search and a shorter `data`
+  count. So the list does not request pages from the offset of the old results. A list that is closed shows them from
+  the top when it opens. A page appended to the same records, also after a search that the application did not load,
+  and a copy of the same records keep the place.
 
 **Selection.** A new `data` keeps the selection. A selected item that the new `data` does not hold stays in `value`, in
 `selection` and in the input text. A later page or search that holds it shows it as selected again. The combo cannot
@@ -450,7 +465,7 @@ toggle icon.
   on the toggle icon. Tab does not reach it while the list is open.
 - The busy state shows in the field, not in the list, so the list does not move.
 
-`bindComboDataSource()` from `igniteui-webcomponents/extras` does this flow with the public API. Its `load()` gets the
+`bindComboDataSource()` from `igniteui-webcomponents/extras/combo-data-source` does this flow with the public API. Its `load()` gets the
 search text and `caseSensitive`. A new search text or a click on the case-sensitive icon loads the first page again.
 After a change of `filteringOptions.caseSensitive` in code, call `refresh()`. See the `RemoteData` story.
 
@@ -496,6 +511,9 @@ While the list is open:
 | <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd>  | Moves through the search input (the main input in single selection), the header content, the list, the empty content and the footer content. In confirm mode, the footer content is Cancel and Apply. Past the first or the last stop, or without focusable slot content, it closes the list and moves the focus on. |
 
 In multiple selection, the search input filters the list while it has the focus.
+
+A key that an IME handles does nothing in the combo, for example the Enter that commits a composition or the Escape
+that cancels it.
 
 ## API
 
@@ -732,14 +750,16 @@ state, the data requests and the selection model without a browser fixture.
 3. Single and multiple selection, with `select` and `deselect` with and without arguments.
 4. `value` and `selection` give the values and the records.
 5. Filtering, with case sensitivity, diacritics matching and `disableFiltering`. A set of `singleSelect` or
-   `disableFiltering` to its current value keeps the search text and the filter.
+   `disableFiltering` to its current value keeps the search text and the filter. The same filtering options do not
+   update the combo, and options that changed in place apply.
 6. Grouping, the `Other` group for the items without a group value, and the sort directions.
 7. The item and group header templates. The group header template gets the group `key` with its own type, also for
    number keys and the `Other` group. A template that reads the deprecated `item` still renders. A new item or group
    header template re-renders the open list.
 8. The empty message and the `empty` slot.
 9. Localization through `locale` and `resourceStrings`.
-10. Open, close and the keyboard navigation of the list, also Arrow Down at the end of the matches.
+10. Open, close and the keyboard navigation of the list, also Arrow Down at the end of the matches. In single
+    selection, the Enter of an IME composition in the main input does not select an option.
 11. The clear icon and `disableClear`.
 12. `igcChange` gives the new value, the items and the change type, and a cancel keeps the selection.
 13. The `igcChange` of the search input, and the `igcStateChange` and `igcDataRequest` events of the list, stay inside
@@ -805,7 +825,11 @@ state, the data requests and the selection model without a browser fixture.
     input text. A later selection adds to them, and the first page shows them as selected again with its own records.
 28. `deselect()` removes a selected item that `data` does not hold. `select()` selects an object that `data` does not
     hold, with and without `valueKey`. `select()` without an argument keeps the other selected items, and selects each
-    value one time, also before a new `data` syncs.
+    value one time, also before a new `data` syncs. A value without a record stays in `value` through a click, the
+    selection methods and a commit of the confirm mode, also in `igcChange.newValue` and `pendingValue`. It leaves
+    `value` when a deselection names it, on `deselect()` without an argument, on the clear icon and on a selection
+    in single selection. Each value shows one time, the clear icon shows for such values, and in the confirm mode a
+    commit applies a deselection that names one, and a cancel keeps it.
 29. `igcDataRequest` comes near the end of `data` with `startIndex` equal to `data.length`, also with groups. It does
     not come again until `data` grows. A new search, a new `data` without a search with a page of the same length, and
     a new opening each get their own request. It does not come in local mode, while the list is closed, or with an
@@ -819,7 +843,10 @@ state, the data requests and the selection model without a browser fixture.
 31. `igcDataRequest` covers the shown placeholders, for example after End, and does not go past `totalItemCount`. It
     stops when `data` holds `totalItemCount` items, and comes again when the total no longer stops it. Space, a click
     and `selectAllItems()` do not select a placeholder. In single selection, Enter or a click on a placeholder does
-    not close the list.
+    not close the list. New results show from the top with no active option, also after a search with the same
+    first record and in a list that opens after them, so the next request covers the top of the list. A copy of the
+    same records keeps the place. The unit specs of the data requests cover an appended page after a search, the
+    rule without `valueKey` and a first `data`.
 32. `loading` shows the named spinner over the hidden toggle icon, and "Loading" in an empty list. The toggle width
     does not change, and the list does not move. It passes the accessibility audit. The `loading` slot replaces the
     spinner. The spinner and the skeletons get their colors from the `loading` and `placeholder` parts.
@@ -827,7 +854,7 @@ state, the data requests and the selection model without a browser fixture.
 ### Select all methods
 
 33. `selectAllItems()` and `deselectAllItems()` change only the items that the filtered list shows, also right after a
-    change of `data` or of the search text. They send no `igcChange`, and change nothing when the list shows no items.
+    change of `data`, of the search text or of `filteringOptions`. They send no `igcChange`, and change nothing when the list shows no items.
     With `ignoreFilter`, they act on all the items. In single selection, `selectAllItems()` does nothing and
     `deselectAllItems()` deselects a shown item.
 
@@ -867,7 +894,8 @@ state, the data requests and the selection model without a browser fixture.
 43. Enter applies the pending selection with one `igcChange` of the `commit` type with the changed items. Then it
     closes the list with the `enter` trigger. This also occurs in the search input and without an active option.
     Without a change, it closes the list with no `igcChange`. A canceled `igcChange` keeps the list open with the
-    pending selection. A handler that changes `newValue` does not change `value`.
+    pending selection. A handler that changes `newValue` does not change `value`. Enter, Arrow Up and Escape of an IME
+    composition in the search input keep the list open with the pending selection.
 44. Escape, a click on the input, `hide()` and `open` set to `false` drop the pending selection, with no `igcChange`.
 45. From the moment the list opens, the selection methods change the pending selection, also with an item that `data`
     does not hold. From the moment the list closes, they change the value. `commitSelection()` applies the pending
@@ -875,7 +903,7 @@ state, the data requests and the selection model without a browser fixture.
     `value` keeps it.
 46. The clear icon clears `value` and the pending selection with one `igcChange`. A new `data` keeps the pending
     selection by value, and adds the values of `value` that it gives a record. A value without a record stays in
-    `value` until a commit, and `select()` gives it a record in the input text. The select-all option and the group
+    `value`, also after a commit, and `select()` gives it a record in the input text. The select-all option and the group
     header options change the pending selection. In single selection, each change applies at once.
 47. The footer shows Cancel and Apply with the `combo_cancel` and `combo_apply` texts, and the accessibility audit
     passes. Footer content replaces them, and the immediate mode and single selection do not show them.
@@ -913,8 +941,8 @@ The form-associated mixin gives the focus after the form checks and the rules of
 - The list is virtualized, so an option that the list does not show has no DOM node. Use the data records, not the
   item elements.
 - Without a `valueKey`, `value` contains whole records, not primitive values.
-- A user change sets `value` from the selected records, also a commit of the confirm mode. So a value that has no
-  record in `data` leaves `value`. The `resolve` option of `bindComboDataSource()` gives such values their records.
+- A value without a record has no option and no text in the input. The `resolve` option of `bindComboDataSource()`
+  gives such values their records.
 - `singleSelect` overrides `selectionCommit`: in single selection, each change applies at once. A change of
   `selectionCommit` or `singleSelect` while the list is open drops the pending selection.
 

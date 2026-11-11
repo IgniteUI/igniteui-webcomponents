@@ -17,7 +17,7 @@ import {
   type ComboDataBinding,
   type ComboDataRequest,
   type ComboDataSource,
-} from 'igniteui-webcomponents/extras';
+} from 'igniteui-webcomponents/extras/combo-data-source';
 import { registerMaterialIcons } from './story-icons.js';
 import {
   delay,
@@ -1495,7 +1495,7 @@ export const RemoteData: Story = {
     docs: {
       description: {
         story:
-          'A city picker that searches and pages on a server through `bindComboDataSource()` from `igniteui-webcomponents/extras`, twenty cities at a time. Open the list, scroll to its end to load more, then type to search. The list has a skeleton row for each city to load, so the scrollbar shows all the results, and a spinner takes the place of the toggle icon while a search waits or a page loads. Press End to jump to the last city: one request loads all the cities up to it. Select a few cities and search for others: the selection stays, also for the cities that the new results do not hold. The case icon of the first combo makes the server search match the case, and loads the results again. The second combo has a slower server and styles its loading parts: `::part(loading)` sets the color and the width of the spinner, and `::part(placeholder)` sets the color of the skeleton rows. The server log shows each request and answer of both combos.',
+          'A city picker that searches and pages on a server through `bindComboDataSource()` from `igniteui-webcomponents/extras/combo-data-source`, twenty cities at a time. Open the list, scroll to its end to load more, then type to search. The list has a skeleton row for each city to load, so the scrollbar shows all the results, and a spinner takes the place of the toggle icon while a search waits or a page loads. Press End to jump to the last city: one request loads all the cities up to it. Select a few cities and search for others: the selection stays, also for the cities that the new results do not hold. The case icon of the first combo makes the server search match the case, and loads the results again. The second combo has a slower server and styles its loading parts: `::part(loading)` sets the color and the width of the spinner, and `::part(placeholder)` sets the color of the skeleton rows. The server log shows each request and answer of both combos.',
       },
     },
   },

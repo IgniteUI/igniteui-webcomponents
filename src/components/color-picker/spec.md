@@ -59,6 +59,7 @@
 |      11 | 2026-11-02 | The events of the inner inputs, format select and canvas stay inside the picker |
 |      12 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
 |      13 | 2026-11-06 | A closed picker does not cancel <kbd>Escape</kbd> |
+|      14 | 2026-11-11 | The keys that an IME handles do nothing |
 
 ## Overview
 
@@ -308,7 +309,7 @@ Color values are locale-independent CSS strings.
 | <kbd>Arrow</kbd> keys                      | With the canvas marker focused, moves it one step in the pressed direction, updating the saturation and value. |
 | <kbd>Tab</kbd>                             | Moves focus between the interactive elements inside the open picker; focus is trapped while open. |
 
-All of the above are skipped while the component is `disabled`.
+All of the above are skipped while the component is `disabled`. A key that an IME handles, such as the <kbd>Enter</kbd> that commits a composition, does nothing here.
 
 ## API
 
@@ -453,7 +454,8 @@ The component suite reuses `createFormAssociatedTestBed`, `runValidationContaine
     events of the format select, and the `igcColorPicked` of the canvas do not reach a listener on the picker.
 11. Swatches - rendering the grid and applying a swatch.
 12. Copy and eye dropper, in environments with and without platform support.
-13. Open and close - the pointer, keyboard and outside-click paths. A closed picker does not cancel <kbd>Escape</kbd>.
+13. Open and close - the pointer, keyboard and outside-click paths. A closed picker does not cancel <kbd>Escape</kbd>. An
+    <kbd>Escape</kbd> that an IME handles keeps the picker open.
 14. Input mode - the anchor input, its label and its prefix.
 15. Rendering of the picker surface rows, and the direction of the slider tracks in LTR and RTL.
 16. Form association, the touched state, `defaultValue`, the initial format, and validation.

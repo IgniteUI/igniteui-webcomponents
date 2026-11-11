@@ -27,6 +27,7 @@ import {
 } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
+  simulateComposingKeys,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
 import { configureTheme } from '#theming/config.js';
@@ -107,6 +108,14 @@ describe('Combo', () => {
       combo.selectAllItems();
 
       expect(combo.value).to.eql(['BG01', 'BG02']);
+    });
+
+    it('acts on new filtering options at once', async () => {
+      await search('s');
+      combo.filteringOptions = { caseSensitive: true };
+      combo.selectAllItems();
+
+      expect(combo.value).to.eql(['US02', 'US03']);
     });
 
     it('selects nothing in single selection, and deselects a shown item', async () => {
@@ -626,6 +635,17 @@ describe('Combo', () => {
 
       expect(combo.value).to.eql(['BG01', 'BG02', 'BG03']);
       expect(changes().map(({ type }) => type)).to.eql(['commit', 'commit']);
+    });
+
+    it('leaves the keys of an IME composition in the search input to the IME', async () => {
+      await click(1);
+
+      simulateComposingKeys(searchInput, enterKey, arrowUp, escapeKey);
+      await comboStable(combo);
+
+      expect(combo.open).to.be.true;
+      expect(combo.pendingValue).to.eql(['BG01', 'BG02']);
+      expect(changes()).to.be.empty;
     });
 
     it('closes on Enter without igcChange when nothing changes', async () => {

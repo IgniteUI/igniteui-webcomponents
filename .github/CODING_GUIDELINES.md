@@ -29,7 +29,7 @@
 src/
 ├── animations/  # Animation players and presets            → #animations/*
 ├── components/  # One directory per component, each with its own spec.md
-├── extras/      # Opt-in add-ons, published as `igniteui-webcomponents/extras`
+├── extras/      # Opt-in add-ons, published under `igniteui-webcomponents/extras`
 ├── internals/   # Shared building blocks, never public API  → #internals/*
 ├── styles/      # Global SCSS: utilities, mixins, themes
 ├── theming/     # Theming controller and types             → #theming/*

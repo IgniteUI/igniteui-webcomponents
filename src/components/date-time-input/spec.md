@@ -67,6 +67,7 @@
 |      11 | 2026-11-02 | A `focus()` call before the first render applies after the render                                     |
 |      12 | 2026-11-06 | A value set from code is not a user change, also while focused, so no `igcChange` reports it; `filled` only while the input shows more than the placeholder or the empty mask |
 |      13 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown`, or the <kbd>Enter</kbd> that commits an IME composition, does not submit the form |
+|      14 | 2026-11-11 | The keys that an IME handles do nothing |
 
 ## Overview
 
@@ -575,6 +576,7 @@ localized by the application.
 
 All of the above are no-ops while the editor is `readonly`. Modified arrow presses other than the ones listed - for
 example <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> - are ignored, so they stay available to composing components.
+A key that an IME handles, such as the <kbd>Enter</kbd> that commits a composition, does nothing here.
 
 ## API
 
@@ -751,7 +753,8 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 
 ### Keyboard, wheel and pointer
 
-30. <kbd>Arrow Up</kbd> and <kbd>Arrow Down</kbd> spin the focused part, and are a no-op while read-only.
+30. <kbd>Arrow Up</kbd> and <kbd>Arrow Down</kbd> spin the focused part, and are a no-op while read-only and when
+    an IME handles them.
 31. <kbd>Alt</kbd> + arrow presses are a no-op.
 32. The caret does not move away from the focused part when `stepUp` or `stepDown` are invoked, and the value
     updates at once, also for a part that is not in the input format and over a keyboard draft.
