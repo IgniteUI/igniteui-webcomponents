@@ -1,6 +1,13 @@
-import { elementUpdated, expect, html } from '@open-wc/testing';
+import { elementUpdated, expect, html, waitUntil } from '@open-wc/testing';
+import { sendKeys } from '@web/test-runner-commands';
+import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { type City, cities } from '#internals/testing/combo.spec.js';
+import {
+  type City,
+  cities,
+  comboStable,
+  openComboPopover,
+} from '#internals/testing/combo.spec.js';
 import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
 import {
   axeReflectedRelationsOptions,
@@ -207,6 +214,86 @@ describe('Combo', () => {
         axeReflectedRelationsOptions
       );
       await expect(spec.element).to.be.accessible(axeReflectedRelationsOptions);
+    });
+  });
+
+  describe('Enter submission', () => {
+    const spec = createFormAssociatedTestBed<IgcComboComponent<City>>(
+      html`<igc-combo
+        name="combo"
+        .data=${cities}
+        value-key="id"
+        display-key="name"
+      >
+        <button slot="prefix" type="button">Info</button>
+      </igc-combo>`
+    );
+
+    let input: HTMLInputElement;
+
+    beforeEach(async () => {
+      await spec.setup(IgcComboComponent.tagName);
+      await spec.setProperties({ singleSelect: true }, true);
+      input = spec.element.renderRoot
+        .querySelector<IgcInputComponent>('#target')!
+        .renderRoot.querySelector('input')!;
+    });
+
+    it('submits once on a real Enter in single selection with the list closed', async () => {
+      expect(await spec.pressEnter()).to.equal(1);
+      expect(spec.submitWithEnter(input)).to.be.true;
+    });
+
+    it('does not submit on Enter while the list is open', async () => {
+      await openComboPopover(spec.element);
+      expect(spec.submitWithEnter(input)).to.be.false;
+    });
+
+    it('selects the active option on Enter and submits on the next Enter', async () => {
+      spec.element.focus();
+      await sendKeys({ type: 'sof' });
+      await comboStable(spec.element);
+
+      expect(await spec.pressEnter()).to.equal(0);
+      expect(spec.element.value).to.eql(['BG01']);
+
+      await waitUntil(() => !spec.element.open);
+      expect(await spec.pressEnter()).to.equal(1);
+    });
+
+    it('does not submit in multiple selection, also with a submit button', async () => {
+      await spec.setProperties({ singleSelect: false }, true);
+      spec.form.insertAdjacentHTML('beforeend', '<button>Save</button>');
+
+      expect(await spec.pressEnter()).to.equal(0);
+      expect(spec.submitWithEnter(input)).to.be.false;
+    });
+
+    it('counts as a text field only in single selection', async () => {
+      spec.form.insertAdjacentHTML(
+        'beforeend',
+        '<igc-input name="other"></igc-input>'
+      );
+      const other = spec.form.querySelector<IgcInputComponent>(
+        'igc-input[name="other"]'
+      )!;
+      await elementUpdated(other);
+      const otherInput = other.renderRoot.querySelector('input')!;
+
+      expect(spec.submitWithEnter(input)).to.be.false;
+      expect(spec.submitWithEnter(otherInput)).to.be.false;
+
+      await spec.setProperties({ singleSelect: false }, true);
+      expect(spec.submitWithEnter(otherInput)).to.be.true;
+    });
+
+    it('leaves Enter on slotted content to that content', async () => {
+      const button = spec.element.querySelector('button')!;
+      const click = spy();
+      button.addEventListener('click', click);
+
+      expect(await spec.pressEnter(button)).to.equal(0);
+      expect(click.calledOnce).to.be.true;
     });
   });
 

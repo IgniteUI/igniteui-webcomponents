@@ -83,6 +83,7 @@
 |      21 | 2026-11-06 | In multiple selection, the options report `aria-checked`; the select-all and group header options report `mixed` |
 |      22 | 2026-11-06 | Escape from the slot content keeps the list open when the content handled the key |
 |      23 | 2026-11-11 | The keys that an IME handles do nothing in the combo; new remote results show from the top with no active option, also in a list that opens; a value without a record stays in `value` until a change names it; the selection methods use a new `filteringOptions` at once, and the same options do not update the combo; `bindComboDataSource()` has its own entry point |
+|      24 | 2026-11-11 | <kbd>Enter</kbd> submits the form from single selection with the list closed, as in an input with a list; multiple selection does not submit, as a native `select` |
 
 ## Overview
 
@@ -376,6 +377,11 @@ or host ARIA names it.
 - The form submits the selection under `name`.
 - A form reset restores `defaultValue`, and removes the invalid styles of the control and its input.
 - An invalid control stops the submission.
+- In single selection, <kbd>Enter</kbd> with the list closed submits the form, as in a native input with a list. The
+  [rules of the input](../input/spec.md#form-integration) apply, and the combo counts as a text field. While the list is
+  open, <kbd>Enter</kbd> belongs to the list and does not submit. In multiple selection, <kbd>Enter</kbd> does not
+  submit, and the combo is not a text field, as a native `select`. <kbd>Enter</kbd> on slotted content belongs to
+  that content.
 
 As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
 the form. `reportValidity()` moves the focus to the control when it is invalid. `form.checkValidity()` and
@@ -496,6 +502,7 @@ While the list is closed:
 | --------------------------------------------------------------- | ------------------------------------------------------- |
 | <kbd>Arrow Down</kbd> / <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> | Opens the list.                                         |
 | A character key                                                 | In single selection, opens the list and filters it.    |
+| <kbd>Enter</kbd>                                                | In single selection, submits the form. See [Form integration](#form-integration). |
 | <kbd>Escape</kbd>                                               | Clears the value. The combo keeps the focus.            |
 
 While the list is open:
@@ -918,20 +925,24 @@ state, the data requests and the selection model without a browser fixture.
 51. It shows the disabled state of an ancestor `fieldset`.
 52. It obeys the required and custom constraints, and passes the accessibility audit while a submit fails on the
     required constraint.
+53. In single selection, a real or a synthetic <kbd>Enter</kbd> with the list closed submits the form once. With the
+    list open, <kbd>Enter</kbd> selects the active option and does not submit, and the next <kbd>Enter</kbd> submits.
+    Multiple selection does not submit, also with a submit button. Only single selection counts as a text field. A
+    slotted button gets its <kbd>Enter</kbd>, and the form does not submit.
 
 The form-associated mixin gives the focus after the form checks and the rules of the `invalid` event. The
 [input suite](../input/spec.md#form-validity-checks) tests them.
 
 ### defaultValue
 
-53. Form integration in single selection, in multiple selection, and with data that comes late.
-54. Validation against the default value.
+54. Form integration in single selection, in multiple selection, and with data that comes late.
+55. Validation against the default value.
 
 ### Validation message slots
 
 `runValidationContainerTests` makes these tests.
 
-55. The `value-missing`, `custom-error` and `invalid` slots show for their state.
+56. The `value-missing`, `custom-error` and `invalid` slots show for their state.
 
 ## Assumptions and limitations
 

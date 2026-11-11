@@ -832,9 +832,11 @@ duplicate them:
   invalid styles.
 - `invalid` is a visual state and is not reflected. Its getter returns the effective state:
   a touched control that fails validation reads `true` after you set `false`.
-- Bind `@blur` on the native editor to `_handleBlur` (touches and validates), and `@keydown`
-  to `_handleEnterKeydown` (submits with `form.requestSubmit()`, so the browser shows its own
-  validation feedback).
+- Bind `@blur` on the native editor to `_handleBlur` (touches and validates), and both
+  `@keydown` and `@keypress` to `_handleEnterKey`. It submits as native implicit submission
+  does: a click on the default button, or `form.requestSubmit()` from the only text field of a
+  form with no submit button. A text field control overrides `_blocksImplicitSubmission` to
+  return `true`.
 - `formResetCallback` restores the default through the public `value` or `checked` setter, so
   clamping applies. It also clears the pristine, touched and developer-set invalid states.
   Override it only for state that the mixin does not know, and call

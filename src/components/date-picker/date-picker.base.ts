@@ -169,6 +169,10 @@ export abstract class IgcDatePickerBaseComponent<
     return !this._isDropDown || this.readOnly || this.nonEditable;
   }
 
+  protected override get _blocksImplicitSubmission(): boolean {
+    return true;
+  }
+
   //#endregion
 
   //#region Abstract members

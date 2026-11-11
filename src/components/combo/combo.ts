@@ -745,6 +745,21 @@ export default class IgcComboComponent<
     return comboValidators;
   }
 
+  /** Single selection is a text field, as an input with a list. */
+  protected override get _blocksImplicitSubmission(): boolean {
+    return this.singleSelect;
+  }
+
+  /**
+   * Enter submits only from single selection with the list closed, as in an
+   * input with a list. Multiple selection never submits, as a native select.
+   */
+  protected override _handleEnterKey(event: KeyboardEvent): void {
+    if (this.singleSelect && !this.open) {
+      super._handleEnterKey(event);
+    }
+  }
+
   protected override _setDefaultValue(current: string | null): void {
     try {
       this.defaultValue = JSON.parse(current || '[]');
@@ -1516,6 +1531,8 @@ export default class IgcComboComponent<
         slot="anchor"
         exportparts="container: input, input: native-input, label, prefix, suffix"
         @click=${this._handleAnchorClick}
+        @keydown=${this._handleEnterKey}
+        @keypress=${this._handleEnterKey}
         placeholder=${ifDefined(this.placeholder)}
         label=${ifDefined(this.label)}
         @igcChange=${stopPropagation}

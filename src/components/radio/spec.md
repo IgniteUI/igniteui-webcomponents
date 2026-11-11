@@ -56,6 +56,7 @@
 |       7 | 2026-10-29 | Transition only the properties that change, so the radio hides at the same time as a hidden ancestor |
 |       8 | 2026-11-02 | `focus()` and `blur()` before the first render do not throw, and a `focus()` call applies after it   |
 |       9 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown` does not submit the form |
+|      10 | 2026-11-11 | <kbd>Enter</kbd> submits only through the first submit button of the form, as for a native radio, and not after a canceled `keypress` |
 
 ## Overview
 
@@ -219,6 +220,10 @@ the invalid state and the custom message stay consistent across it. See the
 - The checked radio submits its `value` under the shared `name`. A group with no selection submits nothing.
 - A form reset restores the selection described by the `checked` attributes.
 - A disabled radio does not submit a value.
+- <kbd>Enter</kbd> on the control submits the form, as for a native radio: the first submit button of the form
+  gets a click, and the click submits the form. A form with no submit button, or with a disabled first submit button,
+  does not submit. A `keydown` or `keypress` listener that calls `preventDefault()`, or a listener that disables the
+  control, stops the submission.
 
 As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
 the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
@@ -238,6 +243,7 @@ application and localized by it.
 | <kbd>Arrow Down</kbd> / <kbd>Arrow Right</kbd> | Moves focus to the next enabled radio of the group and selects it, wrapping at the end. |
 | <kbd>Arrow Up</kbd> / <kbd>Arrow Left</kbd>    | Moves focus to the previous enabled radio of the group and selects it, wrapping at the start. |
 | <kbd>Space</kbd>                               | Selects the focused radio.                                                          |
+| <kbd>Enter</kbd>                               | Clicks the first submit button of the form, if any.                                 |
 
 The horizontal arrow keys follow the writing direction, so they are mirrored in an RTL context.
 
@@ -364,8 +370,8 @@ Driven by `createFormAssociatedTestBed`.
     value.
 13. Is correctly reset on form reset, resets to a new default after a `setAttribute` call, and does not restore a
     checked state whose attribute was removed before the reset.
-14. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid or when a listener on
-    the host cancels the `keydown`.
+14. Is correctly submitted on <kbd>Enter</kbd> in a form with a submit button, and does not submit without a submit
+    button, while the value is invalid or when a listener on the host cancels the `keydown`.
 15. Reflects the disabled state of an ancestor `fieldset`.
 16. Fulfils the required and custom constraints.
 17. Issue #1122 - the component validates synchronously.

@@ -108,7 +108,8 @@ export class ComboNavigationController<T extends object> {
       .set(arrowUp, () => this._config.interactions.hide('arrow-up'))
       .set([altKey, arrowDown], this._onMainInputArrowDown)
       .set(arrowDown, this._onMainInputArrowDown)
-      .set(enterKey, this._onEnter);
+      // A canceled keydown has no keypress, so a closed list leaves Enter to the form.
+      .set(enterKey, this._onEnter, { when: () => this._host.open });
 
     addKeybindings(this._host, {
       skip,

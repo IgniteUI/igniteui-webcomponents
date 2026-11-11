@@ -452,7 +452,8 @@ export default class IgcDatePickerComponent extends I18nMixin(
         .invalid=${this.invalid}
         @igcChange=${this._handleInputChangeEvent}
         @igcInput=${this._handleInputEvent}
-        @keydown=${this._handleEnterKeydown}
+        @keydown=${this._handleEnterKey}
+        @keypress=${this._handleEnterKey}
         @click=${bindIf(this._opensOnClick, this._handleInputClick)}
         exportparts="container, input, label, prefix, suffix"
       >

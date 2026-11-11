@@ -56,6 +56,7 @@ This directory hosts two form-associated components that share the same base imp
 |       8 | 2026-10-29 | Transition only the properties that change, so the checkbox and the switch hide at the same time as a hidden ancestor |
 |       9 | 2026-11-02 | `focus()` and `blur()` before the first render do not throw, and a `focus()` call applies after it                    |
 |      10 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown` does not submit the form |
+|      11 | 2026-11-11 | <kbd>Enter</kbd> submits only through the first submit button of the form, as for a native checkbox, and not after a canceled `keypress` |
 
 ## Overview
 
@@ -225,6 +226,10 @@ mechanism.
 - When no `value` is set, a checked control submits `on`, following the native element.
 - A form reset restores the `defaultChecked` state, which is taken from the `checked` attribute.
 - A disabled control does not submit a value.
+- <kbd>Enter</kbd> on the control submits the form, as for a native checkbox: the first submit button of the form
+  gets a click, and the click submits the form. A form with no submit button, or with a disabled first submit button,
+  does not submit. A `keydown` or `keypress` listener that calls `preventDefault()`, or a listener that disables the
+  control, stops the submission.
 
 As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
 the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
@@ -242,6 +247,7 @@ application and localized by it.
 | ---------------- | --------------------------------------------------- |
 | <kbd>Tab</kbd>   | Moves focus to the control, and away from it.       |
 | <kbd>Space</kbd> | Toggles the checked state of the control.           |
+| <kbd>Enter</kbd> | Clicks the first submit button of the form, if any. |
 
 ## API
 
@@ -423,8 +429,9 @@ Driven by `createFormAssociatedTestBed`, in both suites.
 15. Is correctly reset on form reset, including after a `setAttribute` and after a `toggleAttribute` call
     (checkbox only).
 16. Syncs the native input checked state after a form reset (checkbox only).
-17. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid or when a listener on
-    the host cancels the `keydown`.
+17. Is correctly submitted on <kbd>Enter</kbd> in a form with a submit button, and does not submit without a submit
+    button, while the value is invalid or when a listener on the host cancels the `keydown`. A real <kbd>Enter</kbd>
+    submits once (checkbox only).
 18. Reflects the disabled state of an ancestor `fieldset`.
 19. Fulfils the required constraint - including in combination with `indeterminate` for the checkbox - and a custom
     constraint.
