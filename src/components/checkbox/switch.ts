@@ -65,7 +65,7 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
         html`<span part=${partMap({ thumb: true, checked })}></span>`,
       hideLabel: this._hideLabel,
       onClick: this._handleClick,
-      onKeyDown: this._handleEnterKeydown,
+      onEnterKey: this._handleEnterKey,
       onBlur: this._handleBlur,
     });
   }

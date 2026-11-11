@@ -83,6 +83,10 @@ describe('Form associated mixin tests', () => {
           initialValue: '',
         });
 
+        protected override get _blocksImplicitSubmission(): boolean {
+          return true;
+        }
+
         private _minLength!: number;
         private _maxLength!: number;
 
@@ -258,9 +262,7 @@ describe('Form associated mixin tests', () => {
   it('pressing Enter in an invalid control surfaces validation feedback', async () => {
     await createFormFixture({ required: true });
 
-    instance['_handleEnterKeydown'](
-      new KeyboardEvent('keydown', { key: 'Enter' })
-    );
+    instance['_handleEnterKey'](new KeyboardEvent('keydown', { key: 'Enter' }));
 
     expect(submitEvents).to.equal(0);
     expect(internalInvalidEvents).to.equal(1);
@@ -268,9 +270,7 @@ describe('Form associated mixin tests', () => {
 
     instance.value = '123';
 
-    instance['_handleEnterKeydown'](
-      new KeyboardEvent('keydown', { key: 'Enter' })
-    );
+    instance['_handleEnterKey'](new KeyboardEvent('keydown', { key: 'Enter' }));
 
     expect(submitEvents).to.equal(1);
   });

@@ -208,6 +208,7 @@ describe('Checkbox', () => {
       <igc-checkbox name="checkbox">
         I have reviewed ToC and I agree
       </igc-checkbox>
+      <button type="submit">Submit</button>
     `);
 
     beforeEach(async () => {
@@ -274,6 +275,17 @@ describe('Checkbox', () => {
       expect(
         spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
       ).to.be.true;
+    });
+
+    it('does not submit on Enter without a submit button', () => {
+      spec.form.querySelector('button')!.remove();
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.false;
+    });
+
+    it('submits once on a real Enter', async () => {
+      expect(await spec.pressEnter()).to.equal(1);
     });
 
     it('should not submit on pressing Enter when value is invalid', () => {

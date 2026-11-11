@@ -54,6 +54,7 @@
 |       8 | 2026-10-26 | Forward the host `aria-expanded`, `aria-haspopup` and `aria-controls`                    |
 |       9 | 2026-10-29 | Transition only the properties that change, so the button and a slotted icon hide at the same time as a hidden ancestor |
 |      10 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API                    |
+|      11 | 2026-11-11 | The form action runs after the click listeners, so a listener can cancel it; the button is the default button for <kbd>Enter</kbd> in a field |
 
 ## Overview
 
@@ -152,6 +153,12 @@ again. This also applies to a link in a disabled fieldset.
 The button is a form-associated custom element. `form` resolves the form it belongs to, through the closest
 ancestor `<form>` or the `form` attribute, and a `submit` or `reset` type performs that action. The button follows
 the disabled state of an ancestor fieldset. `click()` simulates a click, including the form action.
+
+As for a native button, the form action runs after the `click` listeners, and not when one of them cancels the click
+or disables the button. A `submit` button without `href` counts as a submit button of the form: when it is the first
+one, <kbd>Enter</kbd> in a text field of the form clicks it, and while it is disabled, <kbd>Enter</kbd> does not
+submit the form. A link button has no form action. A listener that stops the propagation of the click delays the
+form action to the next task.
 
 ```html
 <form>
@@ -302,8 +309,12 @@ button has no `name` and no `mirrored`. Slotted content takes the size of the ic
 
 ### Form integration tests
 
-14. The button is form associated, and submits and resets the form it belongs to.
-15. It follows the disabled state of an ancestor.
+14. The button is form associated, and submits and resets the form it belongs to. The submit comes after the `click`
+    listeners on the host. A listener that cancels the click stops the submit and the reset, and a listener that
+    disables the button stops the submit.
+15. It follows the disabled state of an ancestor. <kbd>Enter</kbd> in a field clicks it as the default button, also in
+    a form with two text fields. While disabled, it stops the <kbd>Enter</kbd> submission. With `href`, it is not the
+    default button.
 
 ### Icon button tests
 
