@@ -505,6 +505,8 @@ module with the fixtures, the selectors and the assertion helpers the other thre
 - In a container that takes its width from its content, a long tree takes the width of the items near the view, and
   the width can change while the user scrolls.
 - `innerText` of an item that skips its rendering is an empty string. `textContent` works.
+- In Safari before 26, which includes iOS 18, find-in-page does not find the text of an item that skips its
+  rendering. Safari 26 and the other browsers find it.
 - Cascade selection derives the state of a parent from its children, so setting `selected` on a parent and on a
   child inconsistently resolves in favor of the cascade.
 - The tree does not restrict what an item renders, so the developer is responsible for the accessibility of any

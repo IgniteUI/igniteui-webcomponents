@@ -246,6 +246,8 @@ The suite lives in [`list.spec.ts`](./list.spec.ts) and runs in a real browser t
 - In a container that takes its width from its content, a long list takes the width of the items near the view, and
   the width can change while the user scrolls.
 - `innerText` of an item that skips its rendering is an empty string. `textContent` works.
+- In Safari before 26, which includes iOS 18, find-in-page does not find the text of an item that skips its
+  rendering. Safari 26 and the other browsers find it.
 - Selection state lives on the individual items; the list neither enforces nor tracks it.
 - The list does not manage focus or keyboard navigation between the items.
 

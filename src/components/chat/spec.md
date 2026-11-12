@@ -584,6 +584,8 @@ The component exposes a part for every region it renders. The main groups are:
   (`content-visibility: auto`). Until its first render, it keeps a space of about 100px; after it, its real size.
   To render every message, use `igc-chat::part(message-item) { content-visibility: visible; }`.
 - `innerText` of a message that skips its rendering is an empty string. `textContent` works.
+- In Safari before 26, which includes iOS 18, find-in-page does not find the text of a message that skips its
+  rendering. Safari 26 and the other browsers find it.
 - There is no message status, no avatar handling, no emoji picker, no URL preview, no search and no contextual
   menu. These are planned and not part of this version.
 - The message list is a single tab stop and has no arrow key navigation between the messages.
