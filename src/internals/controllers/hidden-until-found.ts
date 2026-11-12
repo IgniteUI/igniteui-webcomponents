@@ -16,6 +16,18 @@ type HiddenUntilFoundOptions = {
   reveal: () => boolean;
 };
 
+/** The hosts in which a reveal of the browser runs. */
+let activeReveals = 0;
+
+/**
+ * Whether a reveal of the browser runs in any host. A host opens or closes
+ * without its animation then: the browser scrolls to the match right after the
+ * reveal, and an animated height above the match would move it away.
+ */
+export function isRevealing(): boolean {
+  return activeReveals > 0;
+}
+
 /**
  * Hides the content of a collapsible host with `hidden="until-found"`, so that
  * find-in-page, a text fragment or a link to an element in the content opens
@@ -45,10 +57,7 @@ class HiddenUntilFoundController implements ReactiveController {
     host.addController(this);
   }
 
-  /**
-   * Whether a reveal of the browser runs. The host opens without its
-   * animation then: the browser scrolls to the match right after the reveal.
-   */
+  /** Whether a reveal of the browser runs in this host. */
   public get revealing(): boolean {
     return this._timer !== undefined;
   }
@@ -77,7 +86,11 @@ class HiddenUntilFoundController implements ReactiveController {
       return;
     }
 
-    clearTimeout(this._timer);
+    if (this.revealing) {
+      clearTimeout(this._timer);
+    } else {
+      activeReveals++;
+    }
     this._timer = setTimeout(() => this._end());
 
     if (!this._options.reveal()) {
@@ -89,6 +102,7 @@ class HiddenUntilFoundController implements ReactiveController {
 
   private _end(): void {
     this._timer = undefined;
+    activeReveals--;
     this._host.requestUpdate();
   }
 

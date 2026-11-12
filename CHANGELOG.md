@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### Accordion, Expansion panel
+  - Find-in-page now searches the content of a collapsed expansion panel. A match, a text fragment or a link to an element in the content opens the panel at once and the browser scrolls to the match. The panel sends `igcOpening`, which can be canceled, and `igcOpened`, as for a user toggle. A disabled panel stays closed and its content is not searchable. In an accordion with `single-expand`, the other panels close at once, without the animation, so the match stays in view. The content uses `hidden="until-found"` (Chrome 102, Firefox 139, Safari 26.2); other browsers hide it as before.
 - #### API documentation
   - The manifest and the API documentation now list the custom states: `ig-invalid` of the form controls, `disabled` and `label-before` of the radio group, and `start-collapsed` and `end-collapsed` of the splitter. Style them with `:state()`, for example `igc-input:state(ig-invalid)`.
   - They also list the parts that were not documented: `prefixed`, `suffixed`, `filled`, `labelled`, `start`, `notch`, `filler` and `end` of the input, mask input, file input, date time input and textarea, `placeholder` of the textarea, `file-parts` of the file input, `dialog-base`, `title` and `footer` of the date pickers in dialog mode, `tabs`, `inner` and `scrollable` of the tabs, `indicator` and `inactive` of the carousel, and `counter` and `fraction` of the progress indicators.

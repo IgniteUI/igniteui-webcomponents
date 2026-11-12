@@ -1,5 +1,5 @@
 import { html, LitElement, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { addAnimationController } from '#animations/player.js';
 import { growVerIn, growVerOut } from '#animations/presets/grow/index.js';
@@ -7,6 +7,10 @@ import {
   ariaBindings,
   hostAria,
 } from '#internals/controllers/aria-projection.js';
+import {
+  addHiddenUntilFoundController,
+  isRevealing,
+} from '#internals/controllers/hidden-until-found.js';
 import {
   addKeybindings,
   altKey,
@@ -40,7 +44,8 @@ const nextId = createIdGenerator('igc-expansion-panel');
 
 /**
  * Shows a header with a title and a subtitle, and content that the user can
- * expand and collapse.
+ * expand and collapse. Find-in-page, a text fragment or a link to an element in
+ * the content opens a collapsed panel that is not disabled.
  *
  * @element igc-expansion-panel
  *
@@ -85,12 +90,38 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<IgcExp
     detail: () => this,
     transition: (open, signal) => {
       this.open = open;
-      return this._player.playExclusive(
-        open ? growVerIn() : growVerOut(),
-        signal
-      );
+
+      // The browser scrolls to the match right after a reveal, also of another
+      // panel, such as one that closes this panel in an accordion.
+      if (isRevealing()) {
+        return true;
+      }
+
+      if (open) {
+        // The animation measures the content, so it shows before the render.
+        this._panelRef.value?.removeAttribute('hidden');
+        return this._player.playExclusive(growVerIn(), signal);
+      }
+
+      this._closing = true;
+      return this._player.playExclusive(growVerOut(), signal).finally(() => {
+        this._closing = false;
+      });
     },
   });
+
+  // Find-in-page, a text fragment or a link to an element in the content opens
+  // a closed panel.
+  private readonly _untilFound = addHiddenUntilFoundController(this, {
+    reveal: () => {
+      this._show();
+      return this.open;
+    },
+  });
+
+  /** Whether the close animation runs. The content shows until it ends. */
+  @state()
+  private _closing = false;
 
   /**
    * Whether the panel is expanded and its content is visible.
@@ -239,7 +270,12 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<IgcExp
         role="region"
         id="${this._panelId}-content"
         aria-labelledby="${this._panelId}-header"
-        .inert=${!this.open}
+        hidden=${this._untilFound.value(
+          !(this.open || this._closing),
+          !this.disabled
+        )}
+        @beforematch=${this._untilFound.handleBeforeMatch}
+        .inert=${this._closing}
         aria-hidden=${!this.open}
       >
         <slot></slot>

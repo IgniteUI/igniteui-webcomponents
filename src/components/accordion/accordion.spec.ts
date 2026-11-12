@@ -10,6 +10,11 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
+  allowMotion,
+  clickWithMouse,
+  resetLocation,
+} from '#internals/testing/helpers.spec.js';
+import {
   simulateClick,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
@@ -323,6 +328,58 @@ describe('Accordion', () => {
 
       expect(panels[1].matches(':focus')).to.be.true;
       expect(panels[2].matches(':focus')).to.be.false;
+    });
+  });
+
+  describe('Content found by the browser', () => {
+    allowMotion();
+
+    let link: HTMLAnchorElement;
+    let target: HTMLElement;
+
+    beforeEach(async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <a href="#accordion-target">Go to the content</a>
+          <igc-accordion single-expand>
+            <igc-expansion-panel open>
+              <span slot="title">First</span>
+              <div style="height: 1000px">Tall content</div>
+            </igc-expansion-panel>
+            <igc-expansion-panel>
+              <span slot="title">Second</span>
+              <p>Content</p>
+            </igc-expansion-panel>
+            <igc-expansion-panel>
+              <span slot="title">Third</span>
+              <p id="accordion-target">Found content</p>
+            </igc-expansion-panel>
+          </igc-accordion>
+          <div style="height: 2000px"></div>
+        </div>
+      `);
+      accordion = root.querySelector(IgcAccordionComponent.tagName)!;
+      panels = accordion.panels;
+      link = root.querySelector('a')!;
+      target = root.querySelector('#accordion-target')!;
+    });
+
+    afterEach(resetLocation);
+
+    it('closes the other panels, and the match stays in view', async () => {
+      const closed = new Promise((resolve) =>
+        panels[0].addEventListener('igcClosed', resolve, { once: true })
+      );
+
+      await clickWithMouse(link);
+      verifyPanelsOpenState([false, false, true]);
+
+      // The first panel closes with its animation, above the match.
+      await closed;
+      const { top, bottom } = target.getBoundingClientRect();
+
+      expect(top).to.be.at.least(0);
+      expect(bottom).to.be.at.most(innerHeight);
     });
   });
 });

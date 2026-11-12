@@ -7,11 +7,14 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import { resetMouse, sendMouse } from '@web/test-runner-commands';
 import { LitElement, type TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
-import { addHiddenUntilFoundController } from './hidden-until-found.js';
+import { clickWithMouse, resetLocation } from '../testing/helpers.spec.js';
+import {
+  addHiddenUntilFoundController,
+  isRevealing,
+} from './hidden-until-found.js';
 
 describe('Hidden until found controller', () => {
   /** The order of the reveals of all hosts in a test. */
@@ -32,9 +35,13 @@ describe('Hidden until found controller', () => {
     /** `revealing` at each call of `reveal`. */
     public readonly reveals: boolean[] = [];
 
+    /** `isRevealing()` at each call of `reveal`. */
+    public readonly anyReveals: boolean[] = [];
+
     public readonly untilFound = addHiddenUntilFoundController(this, {
       reveal: () => {
         this.reveals.push(this.untilFound.revealing);
+        this.anyReveals.push(isRevealing());
         order.push(this.id);
 
         if (!this.refuse) {
@@ -73,10 +80,7 @@ describe('Hidden until found controller', () => {
     order = [];
   });
 
-  afterEach(async () => {
-    history.replaceState(null, '', location.pathname + location.search);
-    await resetMouse();
-  });
+  afterEach(resetLocation);
 
   /** A fixture with a link to a new target id, and the content around it. */
   async function setup(
@@ -95,15 +99,6 @@ describe('Hidden until found controller', () => {
       target: root.querySelector<HTMLElement>(`#${id}`)!,
       link: root.querySelector('a')!,
     };
-  }
-
-  /** A trusted click, which reveals with the timing of find-in-page. */
-  async function follow(link: HTMLElement): Promise<void> {
-    const { left, top, width, height } = link.getBoundingClientRect();
-    await sendMouse({
-      type: 'click',
-      position: [Math.round(left + width / 2), Math.round(top + height / 2)],
-    });
   }
 
   /** Waits for the end of the reveal, in the next task, and the render after it. */
@@ -143,15 +138,18 @@ describe('Hidden until found controller', () => {
     );
     const host = hostOf(root);
 
-    await follow(link);
+    await clickWithMouse(link);
 
     expect(host.open).to.be.true;
     expect(host.reveals).to.eql([true]);
     expect(host.content.hasAttribute('hidden')).to.be.false;
 
+    expect(host.anyReveals).to.eql([true]);
+
     await settle(host);
 
     expect(host.untilFound.revealing).to.be.false;
+    expect(isRevealing()).to.be.false;
     expect(host.content.hasAttribute('hidden')).to.be.false;
     expect(target.checkVisibility()).to.be.true;
   });
@@ -167,7 +165,7 @@ describe('Hidden until found controller', () => {
     const outer = hostOf(root, 'outer');
     const inner = hostOf(root, 'inner');
 
-    await follow(link);
+    await clickWithMouse(link);
     await settle(outer, inner);
 
     expect(order).to.eql(['inner', 'outer']);
@@ -185,7 +183,7 @@ describe('Hidden until found controller', () => {
     const host = hostOf(root);
     host.refuse = true;
 
-    await follow(link);
+    await clickWithMouse(link);
     await settle(host);
 
     expect(host.reveals).to.eql([true]);
@@ -203,7 +201,7 @@ describe('Hidden until found controller', () => {
     );
     const host = hostOf(root);
 
-    await follow(link);
+    await clickWithMouse(link);
     await settle(host);
 
     expect(host.reveals).to.be.empty;
@@ -222,7 +220,7 @@ describe('Hidden until found controller', () => {
     );
     const host = hostOf(root);
 
-    await follow(link);
+    await clickWithMouse(link);
     await settle(host);
 
     expect(host.reveals).to.be.empty;
@@ -238,7 +236,10 @@ describe('Hidden until found controller', () => {
     host.content.dispatchEvent(new Event('beforematch'));
     expect(host.untilFound.revealing).to.be.true;
 
+    expect(isRevealing()).to.be.true;
+
     host.remove();
     expect(host.untilFound.revealing).to.be.false;
+    expect(isRevealing()).to.be.false;
   });
 });
