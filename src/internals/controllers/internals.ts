@@ -5,7 +5,20 @@ import {
   type ReactiveControllerHost,
 } from 'lit';
 import { sameItems } from '../utils/arrays.js';
-import { setOrRemoveAttribute } from '../utils/dom.js';
+import { isDocument, setOrRemoveAttribute } from '../utils/dom.js';
+
+/**
+ * Whether a `<label>` can name the host. A label names only elements of its
+ * own root, so a host in a shadow root without labels has none.
+ */
+function mayHaveLabels(host: HTMLElement): boolean {
+  if (!host.id) {
+    return !!host.closest('label');
+  }
+
+  const root = host.getRootNode();
+  return isDocument(root) || !!(root as ParentNode).querySelector('label');
+}
 
 /** The value types that `ElementInternals.setFormValue` accepts. */
 export type FormValueType = string | File | FormData | null;
@@ -107,15 +120,13 @@ class ElementInternalsController implements ReactiveController {
       return this._labels;
     }
 
-    const host = this._host;
-    // The getter throws unless the host is form associated. Without an id or an
-    // ancestor `<label>`, no label can name the host, so skip the read: Chromium
-    // updates each live list on every DOM change until GC. The SSR DOM shim has
-    // no `closest()`.
+    // The getter throws unless the host is form associated. Skip the read when
+    // no label can name the host: Chromium updates each live list on every DOM
+    // change until GC. The SSR DOM shim has no `closest()`.
     const list =
       !isServer &&
-      (host.constructor as { formAssociated?: boolean }).formAssociated &&
-      (host.id || host.closest('label'))
+      (this._host.constructor as { formAssociated?: boolean }).formAssociated &&
+      mayHaveLabels(this._host)
         ? this._internals.labels
         : null;
     const labels = list?.length

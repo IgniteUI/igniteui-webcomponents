@@ -18,7 +18,6 @@ import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
-import { getElementByIdFromRoot } from '#internals/utils/dom.js';
 import { runDefaultAction } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
 
@@ -67,7 +66,10 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<IgcButton
   private readonly _internals = addInternalsController(this);
   private readonly _resolver = addIdRefResolver(
     this,
-    this._resolveCommandForElement
+    () => this._commandfor,
+    (element) => {
+      this.commandForElement = element;
+    }
   );
 
   private _disabled = false;
@@ -171,7 +173,6 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<IgcButton
     this._commandfor = value;
     if (value) {
       this._resolver.observe();
-      this._commandForElement = getElementByIdFromRoot(this, value);
     } else {
       this._commandForElement = null;
       this._resolver.unobserve();
@@ -220,22 +221,6 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<IgcButton
     trackLabels(this);
   }
 
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    // resolve `commandfor` in case it was set or changed while disconnected:
-    if (this._commandfor) {
-      this._resolveCommandFor();
-    }
-  }
-
-  protected override firstUpdated(): void {
-    this.updateComplete.then(() => {
-      if (this._commandfor) {
-        this._resolveCommandFor();
-      }
-    });
-  }
-
   //#endregion
 
   //#region Event handlers
@@ -268,18 +253,6 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<IgcButton
   }
 
   //#endregion
-
-  private _resolveCommandForElement(ids: Set<string>): void {
-    if (this._commandfor && ids.has(this._commandfor)) {
-      this._resolveCommandFor();
-    }
-  }
-
-  /** Looks up the `commandfor` target again and renders with it. */
-  private _resolveCommandFor(): void {
-    this._commandForElement = getElementByIdFromRoot(this, this._commandfor!);
-    this.requestUpdate();
-  }
 
   //#region Public API
 
