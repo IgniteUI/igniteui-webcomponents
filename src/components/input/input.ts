@@ -116,6 +116,10 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     return this.type !== 'number' ? stringValidators : numberValidators;
   }
 
+  protected override get _blocksImplicitSubmission(): boolean {
+    return true;
+  }
+
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The value of the control.
@@ -317,7 +321,8 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         minlength=${ifDefined(this.minLength)}
         maxlength=${bindIf(!this.validateOnly, this.maxLength)}
         step=${ifDefined(this.step)}
-        @keydown=${this._handleEnterKeydown}
+        @keydown=${this._handleEnterKey}
+        @keypress=${this._handleEnterKey}
         @change=${this._handleChange}
         @input=${this._handleInput}
         @blur=${this._handleBlur}

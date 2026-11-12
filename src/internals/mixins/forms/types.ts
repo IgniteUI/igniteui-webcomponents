@@ -23,6 +23,9 @@ export declare class BaseFormAssociatedElement {
 
   protected get __validators(): Validator[];
 
+  /** Whether the control counts as a text field for implicit submission. */
+  protected get _blocksImplicitSubmission(): boolean;
+
   /**
    * Whether the control is disabled. A disabled control is not validated, and
    * the form does not submit its value.
@@ -70,8 +73,8 @@ export declare class BaseFormAssociatedElement {
    */
   protected _handleLabelActivation(): void;
 
-  /** Submits the parent form, if any, on `Enter`. */
-  protected _handleEnterKeydown(event: KeyboardEvent): void;
+  /** Submits the form on Enter. Bind to `keydown` and `keypress`. */
+  protected _handleEnterKey(event: KeyboardEvent): void;
 
   /** Sets **touched**, then validates. Call this on blur or focusout. */
   protected _handleBlur(): void;

@@ -168,6 +168,10 @@ describe('Date Range Picker Single Input - Form integration', () => {
       ).to.be.false;
     });
 
+    it('submits once on a real Enter', async () => {
+      expect(await spec.pressEnter()).to.equal(1);
+    });
+
     it('should reflect disabled ancestor state (fieldset/form)', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;

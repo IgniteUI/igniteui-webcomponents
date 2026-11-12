@@ -68,6 +68,7 @@
 |      11 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
 |      12 | 2026-11-04 | In dialog mode, an open and a close play the animations of the dialog; a canceled `igcClosing` keeps the dialog open |
 |      13 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown`, or the <kbd>Enter</kbd> that commits an IME composition, does not submit the form |
+|      14 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form, after the `keypress`; <kbd>Enter</kbd> in slotted content does not submit a second time |
 
 ## Overview
 
@@ -434,9 +435,12 @@ name the control.
 - The value is submitted under `name`.
 - A form reset restores `defaultValue`, taken from the `value` attribute, and clears the invalid styles of the inner
   editor.
-- An invalid picker blocks submission; pressing <kbd>Enter</kbd> submits the owning form only when it is valid. A
-  `keydown` listener on the host or an ancestor that calls `preventDefault()` stops the submission, as for a native
-  input. The <kbd>Enter</kbd> that commits an IME composition does not submit.
+- An invalid picker blocks submission; pressing <kbd>Enter</kbd> submits the owning form only when it is valid. The
+  picker counts as one text field, and <kbd>Enter</kbd> submits as in a native text field (see the [input specification](../input/spec.md#form-integration)): through the
+  default button, or from the only text field of a form with no submit button. A `keydown` or `keypress` listener on
+  the host or an ancestor that calls `preventDefault()` stops the submission. The <kbd>Enter</kbd> that commits an IME
+  composition does not submit. <kbd>Enter</kbd> in the content of the `prefix` and `suffix` slots belongs to that
+  content, so the picker does not submit for it.
 
 As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
 the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
@@ -498,7 +502,7 @@ When the input part of the component is focused:
 | <kbd>Ctrl</kbd> / <kbd>Cmd</kbd> + <kbd>;</kbd>           | Sets the current date as the value of the component.                          |
 | <kbd>Alt</kbd> + <kbd>Arrow Down</kbd>                    | Opens the calendar picker.                                                    |
 | <kbd>Alt</kbd> + <kbd>Arrow Up</kbd>                      | Closes the calendar picker and returns focus to the input part.               |
-| <kbd>Enter</kbd>                                          | Submits the owning form, if any and if the picker is valid.                   |
+| <kbd>Enter</kbd>                                          | Submits the owning form as a native text field does, if the picker is valid.  |
 
 All of the above are no-ops while the component is `readonly` or `disabled`; the editing subset is additionally a
 no-op while the component is `non-editable` or in **dialog** mode.
@@ -749,7 +753,8 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 50. Participates in submission when the value adheres to the constraints.
 51. Resets to its default value on form reset, resets to a new default after a `setAttribute` call, and clears the
     invalid styles of the inner editor on reset.
-52. Submits on <kbd>Enter</kbd> when valid, and does not when invalid.
+52. Submits on <kbd>Enter</kbd> when valid, and does not when invalid. A real <kbd>Enter</kbd> submits once.
+    <kbd>Enter</kbd> in a field in the `suffix` slot submits once, and on a button in the slot it does not submit.
 53. Reflects the disabled state of an ancestor `fieldset` or form.
 54. Enforces the required, min, max - as dates and as string properties - and custom constraints.
 55. Invalidates the component when a disabled date is typed in the input.

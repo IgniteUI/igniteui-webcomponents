@@ -236,8 +236,8 @@ describe('Radio Component', () => {
     let radios: IgcRadioComponent[] = [];
     const spec = createFormAssociatedTestBed<IgcRadioComponent>(
       html`${values.map(
-        (e) => html`<igc-radio name="radio" value=${e}>${e}</igc-radio>`
-      )}`
+          (e) => html`<igc-radio name="radio" value=${e}>${e}</igc-radio>`
+        )}<button type="submit">Submit</button>`
     );
 
     beforeEach(async () => {
@@ -317,6 +317,13 @@ describe('Radio Component', () => {
       expect(
         spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
       ).to.be.true;
+    });
+
+    it('does not submit on Enter without a submit button', () => {
+      spec.form.querySelector('button')!.remove();
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.false;
     });
 
     it('should not submit on pressing Enter when value is invalid', () => {

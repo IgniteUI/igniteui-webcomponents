@@ -67,6 +67,7 @@
 |      11 | 2026-11-02 | A `focus()` call before the first render applies after the render                                     |
 |      12 | 2026-11-06 | A value set from code is not a user change, also while focused, so no `igcChange` reports it; `filled` only while the input shows more than the placeholder or the empty mask |
 |      13 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown`, or the <kbd>Enter</kbd> that commits an IME composition, does not submit the form |
+|      14 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form, after the `keypress` |
 
 ## Overview
 
@@ -521,8 +522,10 @@ presses that the editor ignores, for example <kbd>Alt</kbd> + <kbd>Arrow Down</k
 - The value is submitted under `name`.
 - A form reset restores `defaultValue`, which is taken from the `value` attribute.
 - An invalid editor blocks submission, and pressing <kbd>Enter</kbd> submits the owning form only when it is valid.
-  A `keydown` listener on the host or an ancestor that calls `preventDefault()` stops the submission, as for a native
-  input. The <kbd>Enter</kbd> that commits an IME composition does not submit.
+  The editor is a text field, and <kbd>Enter</kbd> submits as in a native text field (see the [input specification](../input/spec.md#form-integration)): through the default
+  button, or from the only text field of a form with no submit button. A `keydown` or `keypress` listener on the host
+  or an ancestor that calls `preventDefault()` stops the submission. The <kbd>Enter</kbd> that commits an IME
+  composition does not submit.
 
 As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
 the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
@@ -571,7 +574,7 @@ localized by the application.
 | <kbd>Ctrl</kbd> / <kbd>Cmd</kbd> + <kbd>;</kbd>                       | Sets the current date and time as the value of the editor.                                 |
 | <kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>Cmd</kbd> + <kbd>Z</kbd>        | Undoes the last edit step.                                                                 |
 | <kbd>Ctrl</kbd> + <kbd>Y</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd> | Redoes the last undone step.                                                  |
-| <kbd>Enter</kbd>                                                      | Submits the owning form, if any and if the editor is valid.                                |
+| <kbd>Enter</kbd>                                                      | Submits the owning form as a native text field does, if the editor is valid.               |
 
 All of the above are no-ops while the editor is `readonly`. Modified arrow presses other than the ones listed - for
 example <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> - are ignored, so they stay available to composing components.
@@ -768,7 +771,8 @@ Driven by `createFormAssociatedTestBed`.
 38. Is form associated, and is not associated on submit without a value.
 39. Is associated on submit.
 40. Is correctly reset on form reset, and resets to the new default after a `setAttribute` call.
-41. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid.
+41. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid. A real <kbd>Enter</kbd>
+    submits once.
 42. Reflects the disabled state of an ancestor `fieldset`.
 43. Fulfils the required, min, max - both as dates and as string property bindings - and custom constraints.
 

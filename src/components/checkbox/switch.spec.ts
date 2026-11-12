@@ -154,6 +154,7 @@ describe('Switch', () => {
   describe('Form integration', () => {
     const spec = createFormAssociatedTestBed<IgcSwitchComponent>(html`
       <igc-switch name="checkbox"> I have reviewed ToC and I agree </igc-switch>
+      <button type="submit">Submit</button>
     `);
 
     beforeEach(async () => {
@@ -196,6 +197,13 @@ describe('Switch', () => {
       expect(
         spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
       ).to.be.true;
+    });
+
+    it('does not submit on Enter without a submit button', () => {
+      spec.form.querySelector('button')!.remove();
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.false;
     });
 
     it('should not submit on pressing Enter when value is invalid', () => {

@@ -91,6 +91,10 @@ $fs: rem(16px) !default;
     will-change: font-size, color, transform, translate;
 }
 
+[part~='filled'] [part='label'] {
+    color: var-get($theme, 'filled-secondary-color');
+}
+
 [part^='container'] {
     grid-template-columns: auto auto 1fr auto;
 }
