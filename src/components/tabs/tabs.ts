@@ -508,6 +508,17 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
       : undefined;
   }
 
+  /**
+   * @hidden @internal
+   * Selects a tab whose panel the browser reveals, with `igcChange`, as a
+   * click does. It neither moves the focus nor follows a link.
+   */
+  public _revealTab(tab: IgcTabComponent): void {
+    if (this._isSelectable(tab)) {
+      this._setSelectedTab(tab);
+    }
+  }
+
   private _isSelectable(tab?: IgcTabComponent): tab is IgcTabComponent {
     return tab != null && !tab.disabled && this._tabs.includes(tab);
   }

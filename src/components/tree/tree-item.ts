@@ -25,6 +25,7 @@ import {
   addSafeEventListener,
   getElementFromPath,
 } from '#internals/utils/events.js';
+import { bindIf } from '#internals/utils/lit.js';
 import { all } from '#themes/tree/themes/item.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
@@ -620,6 +621,7 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
           !this.disabled
         )}
         @beforematch=${this._untilFound.handleBeforeMatch}
+        aria-hidden=${bindIf(!this.expanded, 'true')}
         .inert=${this._collapsing}
       >
         <slot @slotchange=${this._handleChange}></slot>

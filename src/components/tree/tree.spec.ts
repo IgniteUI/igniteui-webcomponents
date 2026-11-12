@@ -664,6 +664,9 @@ describe('Tree', () => {
 
       expect(groupOf(items.outer)).to.have.attribute('hidden', 'until-found');
       expect(groupOf(items.branch)).to.not.have.attribute('hidden');
+      // The browser keeps the box of the hidden group; assistive technology skips it.
+      expect(groupOf(items.outer)).to.have.attribute('aria-hidden', 'true');
+      expect(groupOf(items.branch)).to.not.have.attribute('aria-hidden');
 
       items.outer.disabled = true;
       await elementUpdated(items.outer);

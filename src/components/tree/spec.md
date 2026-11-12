@@ -53,6 +53,7 @@
 |       5 | 2026-11-02 | A real click on the checkbox of an item sends no `igcChange` out of the item              |
 |       6 | 2026-11-12 | A collapsed item far from the view skips its rendering, except the active and the focused item |
 |       7 | 2026-11-12 | Find-in-page and links to an element expand the collapsed items above it |
+|       8 | 2026-11-12 | The children container of a collapsed item has `aria-hidden="true"` |
 
 ## Overview
 
@@ -471,7 +472,8 @@ module with the fixtures, the selectors and the assertion helpers the other thre
 
 ### Content found by the browser
 
-63. A collapsed item hides its children with `hidden="until-found"`, and a disabled one with plain `hidden`.
+63. A collapsed item hides its children with `hidden="until-found"` and `aria-hidden`, and a disabled one with plain
+    `hidden`.
 64. A link to an item in a collapsed path expands the path from the inside out, each item with `igcItemExpanding`
     and `igcItemExpanded`.
 65. A canceled `igcItemExpanding` keeps the items collapsed and their children hidden.
@@ -520,7 +522,8 @@ module with the fixtures, the selectors and the assertion helpers the other thre
 
 - The tree has `role="tree"`, and `aria-multiselectable` while `selection` is not `none`.
 - An item has `role="treeitem"`, and the container of its children has `role="group"`, which the `hidden`
-  attribute hides while the item is collapsed. It is inert only while it animates closed.
+  attribute hides while the item is collapsed. It is inert only while it animates closed. The browser keeps the box
+  of a `hidden="until-found"` container, so it also has `aria-hidden="true"`, and assistive technology skips it.
 - An item whose label contains focusable elements moves the `treeitem` role and its ARIA state onto the first of
   them, and takes `role="none"` itself.
 - `aria-expanded` is rendered only for items with children, `aria-selected` only while selection is enabled, and

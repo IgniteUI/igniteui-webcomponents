@@ -144,20 +144,23 @@ describe('Tab component', () => {
     expect(getTabDOM(element.tabs[0]).header.tabIndex).to.equal(0);
   });
 
-  it('makes only the selected panel focusable and inerts the rest', async () => {
+  it('makes only the selected panel focusable and hides the rest until found', async () => {
     const [first, second] = element.tabs;
 
     expect(getTabDOM(first).body.tabIndex).to.equal(0);
-    expect(getTabDOM(first).body.inert).to.be.false;
+    expect(getTabDOM(first).body).to.not.have.attribute('hidden');
     expect(getTabDOM(second).body.tabIndex).to.equal(-1);
-    expect(getTabDOM(second).body.inert).to.be.true;
+    expect(getTabDOM(second).body).to.have.attribute('hidden', 'until-found');
+    // The browser keeps the box of the hidden panel; assistive technology skips it.
+    expect(getTabDOM(first).body).to.not.have.attribute('aria-hidden');
+    expect(getTabDOM(second).body).to.have.attribute('aria-hidden', 'true');
 
     element.select(second);
     await elementUpdated(element);
 
-    expect(getTabDOM(first).body.inert).to.be.true;
+    expect(getTabDOM(first).body).to.have.attribute('hidden', 'until-found');
     expect(getTabDOM(second).body.tabIndex).to.equal(0);
-    expect(getTabDOM(second).body.inert).to.be.false;
+    expect(getTabDOM(second).body).to.not.have.attribute('hidden');
   });
 
   it('reflects the selected and disabled state to the header', async () => {
