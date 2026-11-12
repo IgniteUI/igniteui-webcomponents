@@ -6,26 +6,26 @@ import {
 } from 'lit';
 import type { DirectiveResult } from 'lit/directive.js';
 import { type LiveDirective, live } from 'lit/directives/live.js';
+import type { Ref } from 'lit/directives/ref.js';
+import { createTimer } from '../timing.js';
 
 type HiddenUntilFoundOptions = {
-  /**
-   * Opens the host the way a user does, with its events. Returns whether the
-   * host is open, or opening, when the call returns: `false` when a handler
-   * of the cancelable event stopped the open.
-   */
+  /** Opens the host as a user does; returns `false` when the open is canceled. */
   reveal: () => boolean;
+  /** The content element, which shows before an open animation measures it. */
+  content?: Ref<HTMLElement>;
 };
 
-/** The hosts in which a reveal of the browser runs. */
-let activeReveals = 0;
+/** The controllers in which a reveal of the browser runs. */
+const revealing = new Set<HiddenUntilFoundController>();
 
 /**
- * Whether a reveal of the browser runs in any host. A host opens or closes
- * without its animation then: the browser scrolls to the match right after the
+ * Whether a reveal of the browser runs in any host. Hosts open and close
+ * without animation then: the browser scrolls to the match right after the
  * reveal, and an animated height above the match would move it away.
  */
 export function isRevealing(): boolean {
-  return activeReveals > 0;
+  return revealing.size > 0;
 }
 
 /**
@@ -37,9 +37,9 @@ export function isRevealing(): boolean {
  * The host binds {@link HiddenUntilFoundController.value} to the `hidden`
  * attribute of the content element and
  * {@link HiddenUntilFoundController.handleBeforeMatch} as its `beforematch`
- * listener. The element that carries `hidden` must have no
- * author `display` rule: where the browser does not know `until-found`, its
- * `[hidden]` rule hides the element.
+ * listener. The element that carries `hidden` must have no author `display`
+ * rule: where the browser does not know `until-found`, its `[hidden]` rule
+ * hides the element.
  *
  * The browser removes the attribute of each closed ancestor, innermost first,
  * and stops when an attribute changed in a `beforematch` handler or in the
@@ -49,7 +49,8 @@ export function isRevealing(): boolean {
 class HiddenUntilFoundController implements ReactiveController {
   private readonly _host: ReactiveControllerHost;
   private readonly _options: HiddenUntilFoundOptions;
-  private _timer?: ReturnType<typeof setTimeout>;
+  private readonly _timer = createTimer(() => this._end());
+  private _closing = false;
 
   constructor(host: ReactiveControllerHost, options: HiddenUntilFoundOptions) {
     this._host = host;
@@ -59,14 +60,15 @@ class HiddenUntilFoundController implements ReactiveController {
 
   /** Whether a reveal of the browser runs in this host. */
   public get revealing(): boolean {
-    return this._timer !== undefined;
+    return this._timer.active;
   }
 
-  /**
-   * The value of the `hidden` attribute of the content: `until-found` while it
-   * is hidden and `findable`, an empty string (plain `hidden`) while it is
-   * hidden and not findable, and no attribute while it shows.
-   */
+  /** Whether the close animation runs. The content shows until it ends. */
+  public get closing(): boolean {
+    return this._closing;
+  }
+
+  /** The `hidden` binding of the content; `noChange` while a reveal runs. */
   public value(
     hidden: boolean,
     findable = true
@@ -76,7 +78,30 @@ class HiddenUntilFoundController implements ReactiveController {
     }
 
     // `live()` writes the value back after the browser removed it.
-    return live(hidden ? (findable ? 'until-found' : '') : nothing);
+    return live(
+      hidden && !this._closing ? (findable ? 'until-found' : '') : nothing
+    );
+  }
+
+  /**
+   * Plays the open or close animation of the content with `play`. While a
+   * reveal runs in any host, it skips the animation and returns `true`.
+   */
+  public animate(
+    open: boolean,
+    play: () => Promise<boolean>
+  ): Promise<boolean> | boolean {
+    if (isRevealing()) {
+      return true;
+    }
+
+    if (open) {
+      this._options.content?.value?.removeAttribute('hidden');
+      return play();
+    }
+
+    this._setClosing(true);
+    return play().finally(() => this._setClosing(false));
   }
 
   /** The `beforematch` listener of the content element. */
@@ -86,12 +111,8 @@ class HiddenUntilFoundController implements ReactiveController {
       return;
     }
 
-    if (this.revealing) {
-      clearTimeout(this._timer);
-    } else {
-      activeReveals++;
-    }
-    this._timer = setTimeout(() => this._end());
+    revealing.add(this);
+    this._timer.start();
 
     if (!this._options.reveal()) {
       // Stops the reveal where the browser follows the standard. Elsewhere,
@@ -100,16 +121,20 @@ class HiddenUntilFoundController implements ReactiveController {
     }
   };
 
+  private _setClosing(closing: boolean): void {
+    this._closing = closing;
+    this._host.requestUpdate();
+  }
+
   private _end(): void {
-    this._timer = undefined;
-    activeReveals--;
+    revealing.delete(this);
     this._host.requestUpdate();
   }
 
   /** @internal */
   public hostDisconnected(): void {
     if (this.revealing) {
-      clearTimeout(this._timer);
+      this._timer.stop();
       this._end();
     }
   }

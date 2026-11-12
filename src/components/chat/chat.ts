@@ -491,11 +491,13 @@ export default class IgcChatComponent extends I18nMixin(
 
   /** Follows the bottom when the list grows, for example as messages render. */
   private _handleListResize(): void {
+    if (!this._followNewest || this._state.options?.disableAutoScroll) {
+      return;
+    }
+
     const { scrollTop, scrollHeight, clientHeight } = this._scrollContainer;
 
     if (
-      this._followNewest &&
-      !this._state.options?.disableAutoScroll &&
       // A move up that has no scroll event yet is the user's; the event decides.
       scrollTop >= this._lastScrollTop &&
       scrollHeight - scrollTop - clientHeight > BOTTOM_TOLERANCE

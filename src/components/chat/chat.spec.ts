@@ -2437,7 +2437,7 @@ describe('Chat', () => {
       const text = (i: number) => `${i} `.repeat(10 + (i % 7) * 40);
 
       // Appended to the current messages: WebKit moves the list to the top when
-      // all the messages are replaced (a known issue, not of this feature).
+      // all the messages are replaced.
       const longHistory = (): IgcChatMessage[] => [
         ...chat.messages,
         ...Array.from({ length: 300 }, (_, i) => ({

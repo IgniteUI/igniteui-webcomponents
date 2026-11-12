@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 
 import {
   IgcButtonComponent,
@@ -504,6 +505,7 @@ export const Sidebar: Story = {
 const answers = [
   {
     id: 'refunds',
+    popular: true,
     question: 'Can I get a refund?',
     answer:
       'Yes. Ask for a refund within 30 days of the purchase, in Billing > Orders. The money goes back to the card that you paid with, in 5 to 10 business days.',
@@ -516,6 +518,7 @@ const answers = [
   },
   {
     id: 'invoices',
+    popular: true,
     question: 'Where do I find my invoices?',
     answer:
       'Open Billing > Invoices. Each invoice has a PDF download. Add a company name and a tax number before you download it.',
@@ -528,13 +531,12 @@ const answers = [
   },
   {
     id: 'cancel',
+    popular: true,
     question: 'How do I cancel my subscription?',
     answer:
       'Open Billing > Plan and select Cancel subscription. The workspace stays active until the end of the paid period.',
   },
 ];
-
-const popular = ['refunds', 'invoices', 'cancel'];
 
 export const HelpCenter: Story = {
   argTypes: disableStoryControls(metadata),
@@ -547,13 +549,11 @@ export const HelpCenter: Story = {
     },
   },
   render: () => {
+    const status = createRef<HTMLElement>();
     const opened = (event: Event) => {
       const panel = event.currentTarget as IgcExpansionPanelComponent;
       const question = panel.querySelector('[slot="title"]')!.textContent;
-
-      panel
-        .closest('.ep-help')!
-        .querySelector('[role="status"]')!.textContent = `Opened: ${question}`;
+      status.value!.textContent = `Opened: ${question}`;
     };
 
     return html`
@@ -562,13 +562,15 @@ export const HelpCenter: Story = {
         <h3>Billing help</h3>
         <nav aria-label="Popular answers">
           <ul>
-            ${popular.map((id) => {
-              const { question } = answers.find((each) => each.id === id)!;
-              return html`<li><a href="#help-${id}">${question}</a></li>`;
-            })}
+            ${answers
+              .filter((each) => each.popular)
+              .map(
+                ({ id, question }) =>
+                  html`<li><a href="#help-${id}">${question}</a></li>`
+              )}
           </ul>
         </nav>
-        <p class="muted" role="status"></p>
+        <p class="muted" role="status" ${ref(status)}></p>
         <div class="ep-answers">
           ${answers.map(
             ({ id, question, answer }) => html`

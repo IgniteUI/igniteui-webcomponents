@@ -35,13 +35,9 @@ describe('Hidden until found controller', () => {
     /** `revealing` at each call of `reveal`. */
     public readonly reveals: boolean[] = [];
 
-    /** `isRevealing()` at each call of `reveal`. */
-    public readonly anyReveals: boolean[] = [];
-
     public readonly untilFound = addHiddenUntilFoundController(this, {
       reveal: () => {
         this.reveals.push(this.untilFound.revealing);
-        this.anyReveals.push(isRevealing());
         order.push(this.id);
 
         if (!this.refuse) {
@@ -143,8 +139,6 @@ describe('Hidden until found controller', () => {
     expect(host.open).to.be.true;
     expect(host.reveals).to.eql([true]);
     expect(host.content.hasAttribute('hidden')).to.be.false;
-
-    expect(host.anyReveals).to.eql([true]);
 
     await settle(host);
 

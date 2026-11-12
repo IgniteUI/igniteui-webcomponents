@@ -2,6 +2,7 @@ import { expect, nextFrame } from '@open-wc/testing';
 import { emulateMedia, resetMouse, sendMouse } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { type CalendarDay, toCalendarDay } from '../date/model.js';
+import { getCenterPoint } from '../utils/dom.js';
 import { toKebabCase } from '../utils/strings.js';
 
 /** Returns the animations of the element and, optionally, its descendants. */
@@ -58,19 +59,14 @@ export async function viewTransitionComplete(): Promise<void> {
 }
 
 /**
- * Clicks the center of `element` with real mouse input. A link then reveals
- * `hidden="until-found"` content with the timing of find-in-page: microtasks
- * run between the `beforematch` events. A script that sets `location.hash`
- * does not give that timing.
+ * Clicks the center of `element` with real mouse input. A link click reveals
+ * `hidden="until-found"` content with the timing of find-in-page, which a
+ * `location.hash` write does not give.
  */
 export async function clickWithMouse(element: Element): Promise<void> {
   element.scrollIntoView({ block: 'nearest' });
-  const { left, top, width, height } = element.getBoundingClientRect();
-
-  await sendMouse({
-    type: 'click',
-    position: [Math.round(left + width / 2), Math.round(top + height / 2)],
-  });
+  const { x, y } = getCenterPoint(element);
+  await sendMouse({ type: 'click', position: [Math.round(x), Math.round(y)] });
 }
 
 /** Removes the fragment and the scroll that a link to an element left. */

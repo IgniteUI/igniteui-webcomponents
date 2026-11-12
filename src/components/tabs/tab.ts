@@ -83,8 +83,6 @@ export default class IgcTabComponent extends EventEmitterMixin<IgcTabComponentEv
   @state()
   private _isTabStop = false;
 
-  // Find-in-page, a text fragment or a link to an element in the panel selects
-  // the tab, as a user does.
   private readonly _untilFound = addHiddenUntilFoundController(this, {
     reveal: () => {
       this.closest('igc-tabs')?._revealTab(this);
