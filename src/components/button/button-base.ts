@@ -171,10 +171,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<IgcButton
     this._commandfor = value;
     if (value) {
       this._resolver.observe();
-      // detached element has no root to call `getElementById` on until `connectedCallback`
-      this._commandForElement = this.isConnected
-        ? getElementByIdFromRoot(this, value)
-        : null;
+      this._commandForElement = getElementByIdFromRoot(this, value);
     } else {
       this._commandForElement = null;
       this._resolver.unobserve();
