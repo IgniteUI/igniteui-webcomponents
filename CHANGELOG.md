@@ -164,7 +164,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A button with `href` now keeps the link role of its anchor. Before, the anchor had `role="button"`, so screen readers announced a link as a button. [#2421](https://github.com/IgniteUI/igniteui-webcomponents/pull/2421)
   - A disabled link now renders a disabled native `<button>` with `role="link"` in place of the anchor. So it leaves the tab order, cannot navigate and dispatches no click. Before, the link stayed in the tab order, and `Enter` still followed it. While the link is disabled, the `base` part is the `<button>`. [#2421](https://github.com/IgniteUI/igniteui-webcomponents/pull/2421)
   - The form action of a `submit` or `reset` button now runs after the `click` listeners, as for a native button. A listener that cancels the click, or that disables the button, stops the submit or the reset. Before, the button submitted or reset the form before the listeners on the button ran, so they could not stop it.
-  - Setting `commandfor` on a detached button no longer throws `getElementById is not a function`. A change made while detached now also applies once the button is attached again.
+  - Setting `commandfor` on a detached button no longer throws `getElementById is not a function`. A change made while detached now also applies once the button is attached again. [#2592](https://github.com/IgniteUI/igniteui-webcomponents/pull/2592)
 - #### Button group, Stepper
   - The arrow keys that the orientation does not use are no longer canceled, so the page can scroll with them. Before, a horizontal group or stepper canceled Up and Down, and a vertical group canceled Left and Right.
 - #### Calendar
