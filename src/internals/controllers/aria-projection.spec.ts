@@ -11,6 +11,7 @@ import { LitElement, render } from 'lit';
 import sinon from 'sinon';
 import IgcCheckboxComponent from '../../components/checkbox/checkbox.js';
 import IgcInputComponent from '../../components/input/input.js';
+import IgcSelectComponent from '../../components/select/select.js';
 import { defineComponents } from '../definitions/defineComponents.js';
 import {
   type ARIABindings,
@@ -124,7 +125,7 @@ describe('ARIA projection', () => {
   });
 
   describe('trackLabels', () => {
-    before(() => defineComponents(IgcCheckboxComponent));
+    before(() => defineComponents(IgcCheckboxComponent, IgcSelectComponent));
 
     it('reads the labels of a control once per update', async () => {
       const root = await fixture<HTMLElement>(
@@ -145,6 +146,29 @@ describe('ARIA projection', () => {
       ).to.eql([root.querySelector('label')]);
 
       labels.get.restore();
+    });
+
+    it('reads the labels of a projecting host once per update', async () => {
+      const root = await fixture<HTMLElement>(
+        html`<div>
+          <label for="control">External</label>
+          <igc-select id="control"></igc-select>
+        </div>`
+      );
+      const select = root.querySelector(IgcSelectComponent.tagName)!;
+      const labels = sinon.spy(ElementInternals.prototype, 'labels', ['get']);
+
+      // An update of the select alone: the inner input keeps an id and reads its own labels.
+      select.requestUpdate();
+      await elementUpdated(select);
+      labels.get.restore();
+
+      expect(labels.get.callCount).to.equal(1);
+      expect(
+        select.renderRoot
+          .querySelector(IgcInputComponent.tagName)!
+          .renderRoot.querySelector('input')!.ariaLabelledByElements
+      ).to.eql([root.querySelector('label')]);
     });
   });
 
