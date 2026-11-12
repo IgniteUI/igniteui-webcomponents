@@ -14,6 +14,10 @@
     "./extras": {
       "types": "./extras/index.d.ts",
       "default": "./extras/index.js"
+    },
+    "./extras/combo-data-source": {
+      "types": "./extras/combo-data-source.d.ts",
+      "default": "./extras/combo-data-source.js"
     }
   },
   "imports": {

@@ -70,6 +70,7 @@
 |      13 | 2026-11-02 | A `focus()` call before the first render applies after the render                                                                                         |
 |      14 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown`, or the <kbd>Enter</kbd> that commits an IME composition, does not submit the form |
 |      15 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form: through the default button, from the only text field when the form has no submit button, after the `keypress`, and not when a listener disables the input |
+|      16 | 2026-11-11 | The combo in single selection is a text field                                                                                                              |
 
 ## Overview
 
@@ -341,7 +342,8 @@ validity flags and slot names.
     `click` listener can cancel the submission, and the button is the `submitter` of the `submit` event. A disabled
     default button blocks the submission. An `igc-button` with `type="submit"` and no `href` counts as a submit button.
   - A form with no submit button submits only when it has one text field. Text fields are the text-like native inputs,
-    also disabled ones, and the input, mask input, date time input, date picker and date range picker.
+    also disabled ones, and the input, mask input, date time input, date picker, date range picker and the combo in
+    single selection.
   - A `keydown` or `keypress` listener on the host or an ancestor that calls `preventDefault()` stops the submission,
     and so does a listener that disables the input. A real key press submits after its `keypress`. An Enter that code
     dispatches submits after its `keydown`, and its `keypress`, if any, does nothing.

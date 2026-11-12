@@ -69,7 +69,8 @@
 |      15 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
 |      16 | 2026-11-04 | In dialog mode, an open and a close play the animations of the dialog; a canceled `igcClosing` keeps the dialog open |
 |      17 | 2026-11-05 | Done and Cancel change the range only when the close goes on; Done emits `igcChange` after `igcClosing` |
-|      18 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form, after the `keypress`; <kbd>Enter</kbd> in slotted content does not submit a second time |
+|      18 | 2026-11-06 | A closed picker does not cancel <kbd>Escape</kbd> |
+|      19 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form, after the `keypress`; <kbd>Enter</kbd> in slotted content does not submit a second time |
 
 ## Overview
 
@@ -414,7 +415,7 @@ As long as focus is within any part of the picker:
 
 | Key combination   | Result                                                                                          |
 | ----------------- | ------------------------------------------------------------------------------------------------ |
-| <kbd>Escape</kbd> | If the picker is shown, closes it and returns focus to the input part. Otherwise it is a no-op.  |
+| <kbd>Escape</kbd> | If the picker is shown, closes it and returns focus to the input part. Otherwise it is a no-op and does not cancel the key. |
 
 When an input part is focused:
 
@@ -616,7 +617,7 @@ input and two inputs suites run with reduced motion, so the dialog does not fade
 11. Methods. `stepUp` and `stepDown` of the range input update its value at once, also while it is focused and empty.
     A value set from code while the input is focused is not reported on blur.
 12. Interactions - selection through the calendar, interactions with the input and the open and clear buttons, and
-    the readonly state.
+    the readonly state. A closed picker does not cancel <kbd>Escape</kbd>.
 13. Undo and redo of the masked range text.
 14. Slots.
 

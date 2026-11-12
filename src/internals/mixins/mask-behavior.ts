@@ -253,24 +253,23 @@ export function MaskBehaviorMixin<
       super(...args);
 
       // Assigning `input.value` clears the native undo stack, so the
-      // shortcuts read `_history`. Skip while an IME composition owns it.
-      const step =
-        (direction: 'undo' | 'redo') =>
-        (event: KeyboardEvent): void => {
-          if (!event.isComposing) {
-            this._historyStep(direction);
-          }
-        };
+      // shortcuts read `_history`.
+      const undo = (): void => {
+        this._historyStep('undo');
+      };
+      const redo = (): void => {
+        this._historyStep('redo');
+      };
 
       addKeybindings(this, {
         skip: () => this.readOnly,
         bindingDefaults: { repeat: true },
       })
-        .set([ctrlKey, 'z'], step('undo'))
-        .set([metaKey, 'z'], step('undo'))
-        .set([ctrlKey, 'y'], step('redo'))
-        .set([ctrlKey, shiftKey, 'z'], step('redo'))
-        .set([metaKey, shiftKey, 'z'], step('redo'));
+        .set([ctrlKey, 'z'], undo)
+        .set([metaKey, 'z'], undo)
+        .set([ctrlKey, 'y'], redo)
+        .set([ctrlKey, shiftKey, 'z'], redo)
+        .set([metaKey, shiftKey, 'z'], redo);
     }
 
     //#endregion

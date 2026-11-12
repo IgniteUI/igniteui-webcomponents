@@ -34,7 +34,9 @@ import {
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import {
+  simulateCancelableKeydown,
   simulateClick,
+  simulateComposingKeys,
   simulateInput,
   simulateKeyboard,
   simulateScroll,
@@ -1267,6 +1269,22 @@ describe('Color picker', () => {
 
       expect(picker.open).to.be.false;
       expect(isFocused(anchor)).to.be.true;
+    });
+
+    it('cancels Escape only while open', async () => {
+      expect(simulateCancelableKeydown(picker, escapeKey)).to.be.false;
+
+      await picker.show();
+      expect(simulateCancelableKeydown(picker, escapeKey)).to.be.true;
+    });
+
+    it('stays open on an Escape that an IME handles', async () => {
+      await picker.show();
+
+      simulateComposingKeys(picker, escapeKey);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.true;
     });
 
     it('opens with Alt+ArrowDown and closes with Alt+ArrowUp', async () => {

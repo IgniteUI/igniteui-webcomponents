@@ -68,7 +68,9 @@
 |      11 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
 |      12 | 2026-11-04 | In dialog mode, an open and a close play the animations of the dialog; a canceled `igcClosing` keeps the dialog open |
 |      13 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown`, or the <kbd>Enter</kbd> that commits an IME composition, does not submit the form |
-|      14 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form, after the `keypress`; <kbd>Enter</kbd> in slotted content does not submit a second time |
+|      14 | 2026-11-06 | A closed picker does not cancel <kbd>Escape</kbd> |
+|      15 | 2026-11-11 | The keys that an IME handles do nothing |
+|      16 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form, after the `keypress`; <kbd>Enter</kbd> in slotted content does not submit a second time |
 
 ## Overview
 
@@ -488,7 +490,7 @@ As long as focus is within any part of the date picker:
 
 | Key combination   | Result                                                                                                 |
 | ----------------- | ------------------------------------------------------------------------------------------------------ |
-| <kbd>Escape</kbd> | If the picker is shown, closes it and returns focus to the input part. Otherwise it is a no-op.        |
+| <kbd>Escape</kbd> | If the picker is shown, closes it and returns focus to the input part. Otherwise it is a no-op and does not cancel the key. |
 
 When the input part of the component is focused:
 
@@ -505,7 +507,7 @@ When the input part of the component is focused:
 | <kbd>Enter</kbd>                                          | Submits the owning form as a native text field does, if the picker is valid.  |
 
 All of the above are no-ops while the component is `readonly` or `disabled`; the editing subset is additionally a
-no-op while the component is `non-editable` or in **dialog** mode.
+no-op while the component is `non-editable` or in **dialog** mode. A key that an IME handles, such as the <kbd>Enter</kbd> that commits a composition, does nothing here.
 
 When focus is within the calendar, the keyboard navigation follows the
 [keyboard interactions of the calendar](../calendar/spec.md#keyboard-interactions).
@@ -718,7 +720,8 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 
 ### Interactions
 
-34. <kbd>Escape</kbd> closes an open picker.
+34. <kbd>Escape</kbd> closes an open picker, except when an IME handles it. A closed picker does not cancel
+    <kbd>Escape</kbd>.
 35. <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> opens and <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> closes the picker, in both
     modes.
 36. A value set from code, also with `stepUp`, is not reported as a change on a later blur, in the editable,

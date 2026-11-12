@@ -7,7 +7,12 @@ import {
 } from '@open-wc/testing';
 import { internalsOf } from '#internals/controllers/internals.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import {
+  allowMotion,
+  withDocumentSheets,
+} from '#internals/testing/helpers.spec.js';
 import { firstOf } from '#internals/utils/arrays.js';
+import { configureTheme } from '#theming/config.js';
 import IgcLinearProgressComponent from './linear-progress.js';
 
 describe('Linear progress component', () => {
@@ -252,6 +257,83 @@ describe('Linear progress component', () => {
       expect(
         firstOf(getDOM(progress).slot.assignedNodes()).textContent
       ).to.equal('Custom Label');
+    });
+  });
+
+  describe('Styles', () => {
+    /** The animation durations of the two bars and of their `::after`, by theme. */
+    function durations(): Record<string, string[]> {
+      const bars = progress.renderRoot.querySelectorAll(
+        '[part~="indeterminate"]'
+      );
+      const result: Record<string, string[]> = {};
+
+      try {
+        for (const theme of ['bootstrap', 'fluent'] as const) {
+          configureTheme(theme);
+          result[theme] = [...bars].flatMap((bar) => [
+            getComputedStyle(bar).animationDuration,
+            getComputedStyle(bar, '::after').animationDuration,
+          ]);
+        }
+      } finally {
+        configureTheme('bootstrap');
+      }
+
+      return result;
+    }
+
+    beforeEach(async () => {
+      progress = await fixture<IgcLinearProgressComponent>(
+        html`<igc-linear-progress></igc-linear-progress>`
+      );
+    });
+
+    it('runs the indeterminate animation at a third of its speed with reduced motion', async () => {
+      await updateProgress('indeterminate', true);
+
+      expect(durations()).to.eql({
+        bootstrap: ['6s', '6s', '6s', '6s'],
+        fluent: ['6s', '6s', '6s', '6s'],
+      });
+
+      // A duration set on the bars is slowed too.
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(
+        'igc-linear-progress::part(fill) { --linear-animation-duration: 1s; }'
+      );
+
+      await withDocumentSheets([sheet], () => {
+        expect(durations()).to.eql({
+          bootstrap: ['3s', '3s', '3s', '3s'],
+          fluent: ['3s', '3s', '3s', '3s'],
+        });
+      });
+    });
+
+    it('shows a new value at once with reduced motion', () => {
+      expect(
+        getComputedStyle(getDOM(progress).fill).transitionDuration
+      ).to.equal('0s');
+    });
+
+    describe('with motion', () => {
+      allowMotion();
+
+      it('runs the indeterminate animation at full speed', async () => {
+        await updateProgress('indeterminate', true);
+
+        expect(durations()).to.eql({
+          bootstrap: ['2s', '2s', '2s', '2s'],
+          fluent: ['2s', '2s', '2s', '2s'],
+        });
+      });
+
+      it('animates a new value', () => {
+        expect(
+          getComputedStyle(getDOM(progress).fill).transitionDuration
+        ).to.equal('0.5s');
+      });
     });
   });
 

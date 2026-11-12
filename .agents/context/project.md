@@ -23,7 +23,8 @@ Read them before making changes; if they disagree with this file, they win.
 - `src/internals/`, `src/theming/`, `src/animations/`: shared code, imported only through the
   `#internals/*`, `#theming/*` and `#animations/*` aliases. The theme aggregator of a component
   is imported through `#themes/*`.
-- `src/extras/`: opt-in add-ons, published as `igniteui-webcomponents/extras`
+- `src/extras/`: opt-in add-ons, published under `igniteui-webcomponents/extras`. A new add-on gets its own
+  subpath export, so an import pulls in only its own dependencies
 - `src/styles/`: global SCSS utilities, mixins and themes
 - `src/index.ts`: the public entry point of the package
 - `stories/`: Storybook stories, one per component tag

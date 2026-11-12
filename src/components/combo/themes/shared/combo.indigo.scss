@@ -57,7 +57,8 @@ $dropdown-theme: dropdown-theme.$indigo;
     min-height: calc(var(--size) * var(--item-count) + rem(16px)) !important;
 }
 
-[part='filter-input'] {
+[part='filter-input'],
+[part~='actions'] {
     padding-inline: pad-inline(rem(8px), rem(12px), rem(12px));
     padding-block: pad-block(rem(12px));
 }
@@ -103,4 +104,9 @@ $dropdown-theme: dropdown-theme.$indigo;
     igc-input::part(input)::selection {
         background: transparent;
     }
+}
+
+// The indent of the Indigo tree.
+[data-selectable-groups] [part~='item']:not([part~='select-all']) {
+    --_combo-item-indent: var(--ig-combo-item-indent, #{rem(24px)});
 }

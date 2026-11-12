@@ -28,6 +28,8 @@
     flex: 1 1 100%;
 }
 
+@include reduced-motion();
+
 :host(:dir(rtl)[indeterminate]),
 :host([dir='rtl'][indeterminate]) {
     [part~='track'] {
@@ -63,6 +65,9 @@
 
 [part~='indeterminate'],
 [part~='indeterminate secondary'] {
+    // On the bars, so a duration set on their parts applies.
+    --_indeterminate-duration: calc(var(--linear-animation-duration) * var(--_motion-factor));
+
     width: 100% !important;
     height: inherit;
     position: absolute;
@@ -81,20 +86,20 @@
 
 [part~='indeterminate']:not([part~='secondary']) {
     transform: scale3d(0, 1, 1);
-    animation: igc-indeterminate-primary var(--linear-animation-duration) infinite linear;
+    animation: igc-indeterminate-primary var(--_indeterminate-duration) infinite linear;
     left: -145.1666%;
 
     &::after {
-        animation: igc-indeterminate-primary-scale var(--linear-animation-duration) infinite linear;
+        animation: igc-indeterminate-primary-scale var(--_indeterminate-duration) infinite linear;
     }
 }
 
 [part~='secondary'] {
-    animation: igc-indeterminate-secondary var(--linear-animation-duration) infinite linear;
+    animation: igc-indeterminate-secondary var(--_indeterminate-duration) infinite linear;
     left: -54.8888%;
 
     &::after {
-        animation: igc-indeterminate-secondary-scale var(--linear-animation-duration) infinite linear;
+        animation: igc-indeterminate-secondary-scale var(--_indeterminate-duration) infinite linear;
         width: 100%;
         height: inherit;
     }

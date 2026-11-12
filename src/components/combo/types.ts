@@ -1,6 +1,6 @@
-import type { ReactiveControllerHost, TemplateResult } from 'lit';
+import type { TemplateResult } from 'lit';
+import type { VirtualScrollDataRequest } from '../virtualization/types.js';
 import type { VirtualScrollItemTemplate } from '../virtualization/virtualization.js';
-import type IgcComboComponent from './combo.js';
 
 export type Keys<T> = keyof T;
 export type Values<T> = T[keyof T];
@@ -10,23 +10,33 @@ export type ComboRecord<T extends object> = {
   value: T;
   header: boolean;
   /**
-   * 1-based position among the visible options. `-1` for group headers.
-   * Each pipeline run sets it again.
+   * 1-based position among the options, for `aria-posinset`. `-1` for the
+   * other records and for the shared select-all and placeholder records,
+   * whose positions come from their index. Each pipeline run sets it again.
    */
   position: number;
   /** The group value of a header record. Not set on the other records. */
   group?: unknown;
+  /**
+   * Set on a record with no item: a placeholder for an item to load, or the
+   * select-all option.
+   */
+  kind?: 'placeholder' | 'select-all';
 };
 
-export type ComboHost<T extends object> = ReactiveControllerHost &
-  IgcComboComponent<T>;
-
 export type GroupingDirection = 'asc' | 'desc' | 'none';
-export type ComboChangeType = 'selection' | 'deselection' | 'addition';
+/** `commit` applies the pending selection of the confirm mode. See `selectionCommit`. */
+export type ComboChangeType =
+  | 'selection'
+  | 'deselection'
+  | 'addition'
+  | 'commit';
 export type ComboRenderFunction<T extends object> = VirtualScrollItemTemplate<
   ComboRecord<T>
 >;
 export type ComboValue<T> = T | Values<T>;
+export type ComboFilteringMode = 'local' | 'remote';
+export type ComboSelectionCommit = 'immediate' | 'confirm';
 
 /* jsonAPIPlainObject */
 /** Filtering options for the combo component. */
@@ -37,6 +47,12 @@ export interface FilteringOptions<T extends object> {
   caseSensitive?: boolean;
   /** When true, the filter distinguishes between accented letters and their base letters. */
   matchDiacritics?: boolean;
+  /**
+   * Where the filtering runs. With `remote`, the combo does not filter the
+   * options: the application sets `data` on `igcSearchInput`, and appends to
+   * it on `igcDataRequest`. Default is `local`.
+   */
+  mode?: ComboFilteringMode;
 }
 
 export interface GroupingOptions<T extends object> {
@@ -55,8 +71,36 @@ export interface IgcComboChangeEventArgs<T extends object = any> {
   type: ComboChangeType;
 }
 
+export interface IgcComboSearchInputEventArgs {
+  /** The text of the search input, or of the main input in single selection mode. */
+  searchText: string;
+}
+
+/**
+ * The user action that closes the list of options. `toggle` is a click on the
+ * input, `selection` an item click in single selection mode, and `apply` and
+ * `cancel` the buttons of the confirm mode.
+ */
+export type ComboCloseTrigger =
+  | 'enter'
+  | 'escape'
+  | 'tab'
+  | 'arrow-up'
+  | 'outside-click'
+  | 'scroll'
+  | 'toggle'
+  | 'selection'
+  | 'apply'
+  | 'cancel';
+
+export interface IgcComboClosingEventArgs {
+  /** The user action that closes the list. */
+  trigger: ComboCloseTrigger;
+}
+
 export interface IgcComboComponentEventMap {
   igcChange: CustomEvent<IgcComboChangeEventArgs>;
+  igcPendingChange: CustomEvent<IgcComboChangeEventArgs>;
   // For analyzer meta only:
   /* skipWCPrefix */
   focus: FocusEvent;
@@ -64,8 +108,10 @@ export interface IgcComboComponentEventMap {
   blur: FocusEvent;
   igcOpening: CustomEvent<void>;
   igcOpened: CustomEvent<void>;
-  igcClosing: CustomEvent<void>;
-  igcClosed: CustomEvent<void>;
+  igcClosing: CustomEvent<IgcComboClosingEventArgs>;
+  igcClosed: CustomEvent<IgcComboClosingEventArgs>;
+  igcSearchInput: CustomEvent<IgcComboSearchInputEventArgs>;
+  igcDataRequest: CustomEvent<VirtualScrollDataRequest>;
 }
 
 export type ComboItemTemplate<T extends object> = (

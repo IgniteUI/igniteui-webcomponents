@@ -5,7 +5,7 @@ import { asArray, isEmpty, partition } from '../utils/arrays.js';
 import { isElement } from '../utils/dom.js';
 import { isFunction } from '../utils/types.js';
 import { addHostListeners } from './host-listeners.js';
-import { enterKey, spaceBar } from './keys.js';
+import { enterKey, isComposingKey, spaceBar } from './keys.js';
 
 // Re-exported from `./keys.js`, so a consumer keeps a single import.
 export * from './keys.js';
@@ -240,11 +240,11 @@ class KeyBindingController implements ReactiveController {
   //#region Private API
 
   /**
-   * Whether to ignore the event. The key has no binding, the event missed the
-   * observed element, or the skip configuration agrees.
+   * Whether to ignore the event. The key has no binding, an IME handles it,
+   * the event missed the observed element, or the skip configuration agrees.
    */
   private _shouldSkip(event: KeyboardEvent, key: string): boolean {
-    if (!this._allowedKeys.has(key)) {
+    if (!this._allowedKeys.has(key) || isComposingKey(event)) {
       return true;
     }
 
