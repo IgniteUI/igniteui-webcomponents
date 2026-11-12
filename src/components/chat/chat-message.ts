@@ -272,7 +272,6 @@ export default class IgcChatMessageComponent extends HydrationMixin(
   ) {
     return html`
       <igc-icon-button
-        id=${`${name}-button`}
         name=${name}
         variant="flat"
         aria-label=${label}

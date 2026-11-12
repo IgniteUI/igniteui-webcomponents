@@ -1,7 +1,6 @@
 import { isServer } from 'lit';
 import {
   CHANGE_THEME_EVENT,
-  CHANGED_THEME_EVENT,
   type ChangeThemeEventDetail,
 } from './theming-event.js';
 import {
@@ -31,36 +30,39 @@ function setTheme(value: Theme, variant: ThemeVariant): void {
 }
 
 /**
+ * The theming controllers that follow the global theme. Not an `EventTarget`:
+ * Chromium scans all listeners on each add and remove.
+ */
+export const _globalThemeListeners = new Set<{ globalThemeChanged(): void }>();
+
+/**
  * Relays "igc-change-theme" events from `window` to the theming controllers.
  * It also syncs the module state from the event detail, so an event from another
  * copy of the library changes the theme here too.
  */
-class ThemeChangedEmitter extends EventTarget {
-  constructor() {
-    super();
-    if (!isServer) {
-      globalThis.addEventListener(CHANGE_THEME_EVENT, this);
+function relayThemeChange({
+  detail,
+}: CustomEvent<ChangeThemeEventDetail>): void {
+  if (
+    isOfTypeTheme(detail?.theme) &&
+    isOfTypeThemeVariant(detail?.themeVariant)
+  ) {
+    // A repeated call or another copy of the library may send the active theme again.
+    if (detail.theme === theme && detail.themeVariant === themeVariant) {
+      return;
     }
-  }
 
-  /** @internal */
-  public handleEvent({ detail }: CustomEvent<ChangeThemeEventDetail>): void {
-    if (
-      isOfTypeTheme(detail?.theme) &&
-      isOfTypeThemeVariant(detail?.themeVariant)
-    ) {
-      // A repeated call or another copy of the library may send the active theme again.
-      if (detail.theme === theme && detail.themeVariant === themeVariant) {
-        return;
-      }
+    setTheme(detail.theme, detail.themeVariant);
 
-      setTheme(detail.theme, detail.themeVariant);
-      this.dispatchEvent(new CustomEvent(CHANGED_THEME_EVENT));
+    for (const listener of _globalThemeListeners) {
+      listener.globalThemeChanged();
     }
   }
 }
 
-export const _themeChangedEmitter = new ThemeChangedEmitter();
+if (!isServer) {
+  globalThis.addEventListener(CHANGE_THEME_EVENT, relayThemeChange);
+}
 
 export function getTheme(): ChangeThemeEventDetail {
   if (!(theme && themeVariant)) {
@@ -92,7 +94,7 @@ export function getTheme(): ChangeThemeEventDetail {
 export function configureTheme(t: Theme, v: ThemeVariant = 'light'): void {
   if (isOfTypeTheme(t) && isOfTypeThemeVariant(v)) {
     if (isServer) {
-      // On the client, the emitter's window listener sets the state.
+      // On the client, the window listener sets the state.
       setTheme(t, v);
     } else {
       globalThis.dispatchEvent(
