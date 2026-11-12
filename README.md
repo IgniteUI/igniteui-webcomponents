@@ -46,10 +46,12 @@ All components in this package are released under the MIT License. The table lis
 
 | Components              | Status |         Documentation          | Released Version |    License     |
 | :---------------------- | :----: | :----------------------------: | :--------------: | :------------: |
+| Breadcrumbs             |   ✅    |    [Docs][Breadcrumbs Docs]    |     [7.4.0]      | [MIT](LICENSE) |
 | Virtual Scroll          |   ✅    |  [Docs][Virtual scroll Docs]   |     [7.3.0]      | [MIT](LICENSE) |
 | QR Code                 |   ✅    |      [Docs][QR Code Docs]      |     [7.3.0]      | [MIT](LICENSE) |
 | Color Picker            |   ✅    |   [Docs][Color Picker Docs]    |     [7.3.0]      | [MIT](LICENSE) |
 | Splitter                |   ✅    |     [Docs][Splitter Docs]      |     [7.1.0]      | [MIT](LICENSE) |
+| Highlight               |   ✅    |     [Docs][Highlight Docs]     |     [7.1.0]      | [MIT](LICENSE) |
 | Chat                    |   ✅    |       [Docs][Chat Docs]        |     [6.3.0]      | [MIT](LICENSE) |
 | Date Range Picker       |   ✅    | [Docs][Date Range Picker Docs] |     [6.1.0]      | [MIT](LICENSE) |
 | Tooltip                 |   ✅    |      [Docs][Tooltip Docs]      |     [5.4.0]      | [MIT](LICENSE) |
@@ -365,6 +367,8 @@ The Grids, Dock Manager and other packages marked *Commercial* above are license
 [Color Picker Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/color-picker
 [QR Code Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/qr-code
 [Virtual scroll Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/virtual-scroll
+[Breadcrumbs Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/breadcrumbs
+[Highlight Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/highlight
 [1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0
 [2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.0.0
 [2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0
@@ -382,6 +386,7 @@ The Grids, Dock Manager and other packages marked *Commercial* above are license
 [6.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/6.3.0
 [7.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/7.1.0
 [7.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/7.3.0
+[7.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/7.4.0
 [Changelog]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/CHANGELOG.md
 [Accessibility]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/ACCESSIBILITY.md
 [Security]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/SECURITY.md
