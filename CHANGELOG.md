@@ -422,6 +422,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A list larger than the maximum scroll size of the browser shows its last items, and its items move evenly during a scroll. [#2410](https://github.com/IgniteUI/igniteui-webcomponents/pull/2410)
   - A new `data` array measures the new items at the rendered indices again. [#2412](https://github.com/IgniteUI/igniteui-webcomponents/pull/2412)
   - A `data` change in the same task as `scrollToIndex()` renders at the new offset. [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+  - A property change on a detached virtual scroll no longer throws an error.
 
 ### Security
 - #### Tile manager

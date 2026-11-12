@@ -198,6 +198,25 @@ describe('VirtualScroll', () => {
         document.adoptedStyleSheets = sheets;
       }
     });
+
+    it('updates while detached and keeps its styles once attached again', async () => {
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          .data=${createItems(100)}
+          .itemTemplate=${fixedTemplate}
+        ></igc-virtual-scroll>`
+      );
+      const parent = el.parentElement!;
+
+      el.remove();
+      el.keyFunction = (item) => item;
+      await elementUpdated(el);
+
+      parent.append(el);
+      await elementUpdated(el);
+
+      expect(getComputedStyle(el).overflowY).to.equal('auto');
+    });
   });
 
   describe('Events', () => {

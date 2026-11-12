@@ -199,7 +199,7 @@ class DraggableDirective extends PointerOperationDirective<
     operation.element = stays
       ? previous
       : (getRoot(operation.target)
-          .elementsFromPoint(clientX, clientY)
+          ?.elementsFromPoint(clientX, clientY)
           .find(matchTarget) ?? null);
 
     // The first move over a match, also straight from another match, only records it.

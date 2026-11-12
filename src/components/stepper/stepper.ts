@@ -350,7 +350,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<IgcStepperCom
 
   private _getActiveStepComponent(): IgcStepComponent | null {
     return (
-      getRoot(this).activeElement?.closest(IgcStepComponent.tagName) ?? null
+      getRoot(this)?.activeElement?.closest(IgcStepComponent.tagName) ?? null
     );
   }
 

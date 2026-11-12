@@ -61,6 +61,7 @@
 |       8 | 2026-10-21 | API descriptions aligned with the JSDoc.                                                   |
 |       8 | 2026-10-05 | The stylesheet comes back after other code replaces the sheets of the tree scope           |
 |       9 | 2026-11-11 | `scrollToIndex` renders the new window in the same task; a hidden list keeps its window    |
+|      10 | 2026-11-12 | A detached list updates without adopting the stylesheet, and adopts it once attached       |
 
 ## Overview
 
@@ -351,7 +352,8 @@ scope, the component adopts its stylesheet again on its next update.
 ### Rendering
 
 4. Nothing is rendered without an `itemTemplate`, and the track and the content elements are rendered with one.
-5. The stylesheet is adopted again on the next update after other code replaces the sheets of the tree scope.
+5. The stylesheet is adopted again on the next update after other code replaces the sheets of the tree scope. A
+   detached list updates and keeps its styles once attached again.
 
 ### Events tests
 

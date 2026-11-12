@@ -2,7 +2,6 @@ import {
   createGroupRegistry,
   type GroupMemberController,
 } from '#internals/controllers/group.js';
-import { getRoot } from '#internals/utils/dom.js';
 import type IgcRadioComponent from './radio.js';
 
 /**
@@ -14,7 +13,7 @@ import type IgcRadioComponent from './radio.js';
  */
 const radioGroups = createGroupRegistry<IgcRadioComponent, boolean>({
   keyOf: (radio) => radio.name || '',
-  scopeOf: (radio) => radio.form ?? getRoot(radio),
+  scopeOf: (radio) => radio.form ?? radio.getRootNode(),
   deriveState: (radios) =>
     radios.some((radio) => radio.checked && !radio.disabled),
 });

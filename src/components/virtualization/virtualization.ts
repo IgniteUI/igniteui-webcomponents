@@ -296,6 +296,11 @@ export default class IgcVirtualScrollComponent<
     }
 
     const root = getRoot(this);
+    // A detached scroller adopts the sheet in `connectedCallback`.
+    if (!root) {
+      return;
+    }
+
     const sheet = IgcVirtualScrollComponent._getStyleSheet();
     if (!root.adoptedStyleSheets.includes(sheet)) {
       root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];

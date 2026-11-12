@@ -149,14 +149,16 @@ export function closestComposed(
   return null;
 }
 
-/** Returns the root node (document or shadow root) of the given node. */
-export function getRoot(node: Node): Document | ShadowRoot {
-  return node.getRootNode() as Document | ShadowRoot;
+/** Returns the document or shadow root of the node, or `null` while it is disconnected. */
+export function getRoot(node: Node): Document | ShadowRoot | null {
+  return node.isConnected
+    ? (node.getRootNode() as Document | ShadowRoot)
+    : null;
 }
 
 /** Returns the element with the given id in the root node of `root`. */
 export function getElementByIdFromRoot(root: HTMLElement, id: string) {
-  return getRoot(root).getElementById(id);
+  return getRoot(root)?.getElementById(id) ?? null;
 }
 
 export function isElement(node: unknown): node is Element {
@@ -266,9 +268,9 @@ const TABBABLE_SELECTOR =
  * the document when the focus is outside `root`.
  */
 export function getDeepActiveElement(
-  root: Document | ShadowRoot = document
+  root: Document | ShadowRoot | null = document
 ): HTMLElement | null {
-  let element = root.activeElement ?? document.activeElement;
+  let element = root?.activeElement ?? document.activeElement;
 
   while (element?.shadowRoot?.activeElement) {
     element = element.shadowRoot.activeElement;

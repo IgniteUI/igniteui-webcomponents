@@ -1,5 +1,5 @@
 import { isServer } from 'lit';
-import { getRoot, isPopoverOpen } from '#internals/utils/dom.js';
+import { isPopoverOpen } from '#internals/utils/dom.js';
 import { toggleEventListener } from '#internals/utils/events.js';
 import {
   applyArrowStyles,
@@ -106,7 +106,7 @@ export class NativePositionStrategy extends PopoverPositionStrategy {
     super.attach(target, container);
 
     container.toggleAttribute('data-anchored', true);
-    this._anchorObserver.observe(getRoot(target), {
+    this._anchorObserver.observe(target.getRootNode(), {
       childList: true,
       subtree: true,
     });
