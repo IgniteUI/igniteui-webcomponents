@@ -508,6 +508,16 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
       : undefined;
   }
 
+  /**
+   * @hidden @internal
+   * Selects `tab` with `igcChange`, without focus or navigation.
+   */
+  public _revealTab(tab: IgcTabComponent): void {
+    if (this._isSelectable(tab)) {
+      this._setSelectedTab(tab);
+    }
+  }
+
   private _isSelectable(tab?: IgcTabComponent): tab is IgcTabComponent {
     return tab != null && !tab.disabled && this._tabs.includes(tab);
   }

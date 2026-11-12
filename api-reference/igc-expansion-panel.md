@@ -1,7 +1,8 @@
 # igc-expansion-panel
 
 Shows a header with a title and a subtitle, and content that the user can
-expand and collapse.
+expand and collapse. Find-in-page, a text fragment or a link to an element in
+the content opens a collapsed panel that is not disabled.
 
 ```ts
 import { defineComponents, IgcExpansionPanelComponent } from 'igniteui-webcomponents';

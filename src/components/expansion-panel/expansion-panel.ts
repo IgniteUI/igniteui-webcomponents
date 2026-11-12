@@ -7,6 +7,7 @@ import {
   ariaBindings,
   hostAria,
 } from '#internals/controllers/aria-projection.js';
+import { addHiddenUntilFoundController } from '#internals/controllers/hidden-until-found.js';
 import {
   addKeybindings,
   altKey,
@@ -40,7 +41,8 @@ const nextId = createIdGenerator('igc-expansion-panel');
 
 /**
  * Shows a header with a title and a subtitle, and content that the user can
- * expand and collapse.
+ * expand and collapse. Find-in-page, a text fragment or a link to an element in
+ * the content opens a collapsed panel that is not disabled.
  *
  * @element igc-expansion-panel
  *
@@ -85,10 +87,17 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<IgcExp
     detail: () => this,
     transition: (open, signal) => {
       this.open = open;
-      return this._player.playExclusive(
-        open ? growVerIn() : growVerOut(),
-        signal
+      return this._untilFound.animate(open, () =>
+        this._player.playExclusive(open ? growVerIn() : growVerOut(), signal)
       );
+    },
+  });
+
+  private readonly _untilFound = addHiddenUntilFoundController(this, {
+    content: this._panelRef,
+    reveal: () => {
+      this._show();
+      return this.open;
     },
   });
 
@@ -239,7 +248,9 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<IgcExp
         role="region"
         id="${this._panelId}-content"
         aria-labelledby="${this._panelId}-header"
-        .inert=${!this.open}
+        hidden=${this._untilFound.value(!this.open, !this.disabled)}
+        @beforematch=${this._untilFound.handleBeforeMatch}
+        .inert=${this._untilFound.closing}
         aria-hidden=${!this.open}
       >
         <slot></slot>

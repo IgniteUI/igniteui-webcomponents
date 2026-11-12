@@ -1,6 +1,7 @@
 import { TreeResourceStringsEN } from 'igniteui-i18n-core';
 import { html, isServer, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
+import { isRevealing } from '#internals/controllers/hidden-until-found.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -167,9 +168,12 @@ export default class IgcTreeComponent extends I18nMixin(
   /** @hidden @internal Collapses every item except the ancestors of `item`. */
   public _collapseOtherBranches(item: IgcTreeItemComponent | null): void {
     const keepExpanded = new Set(item ? item.path.slice(0, -1) : []);
+    // During a reveal, the items below `item` keep their state: the browser
+    // does not tell where the match is, and an expanded one can hold it.
+    const revealing = isRevealing();
 
     for (const other of this.items) {
-      if (!keepExpanded.has(other)) {
+      if (!(keepExpanded.has(other) || (revealing && item?.contains(other)))) {
         other.collapseWithEvent();
       }
     }

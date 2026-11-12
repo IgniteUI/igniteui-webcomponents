@@ -44,6 +44,7 @@ This directory hosts three public components: [`igc-list`](#igc-list), [`igc-lis
 |       2 | 2026-10-05 | A header has the `listitem` role                 |
 |       3 | 2026-10-05 | The title and subtitle container adds no role    |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.         |
+|       5 | 2026-11-12 | An item far from the view skips its rendering    |
 
 ## Overview
 
@@ -222,6 +223,11 @@ The suite lives in [`list.spec.ts`](./list.spec.ts) and runs in a real browser t
 
 5. The title and subtitle container is a `div`, so it adds no role around the title and the subtitle.
 
+### Items far from the view
+
+6. An item far from the view skips its rendering; an item in view renders.
+7. An item renders when it scrolls into view, and the item that left the view skips its rendering again.
+
 ### Not covered by the suite
 
 - The fixture of the third scenario nests `igc-list` elements between the headers instead of `igc-list-item`
@@ -234,7 +240,14 @@ The suite lives in [`list.spec.ts`](./list.spec.ts) and runs in a real browser t
 ## Assumptions and limitations
 
 - The list does not own a data source and does not virtualize. For large collections use
-  [`igc-virtual-scroll`](../virtualization/spec.md).
+  [`igc-virtual-scroll`](../virtualization/spec.md). An item that is far from the view skips its rendering
+  (`content-visibility: auto`). Until its first render, it keeps about the space of an item with a title and a
+  subtitle; after it, its real size. To render every item, set `content-visibility: visible` on `igc-list-item`.
+- In a container that takes its width from its content, a long list takes the width of the items near the view, and
+  the width can change while the user scrolls.
+- `innerText` of an item that skips its rendering is an empty string. `textContent` works.
+- In Safari before 26, which includes iOS 18, find-in-page does not find the text of an item that skips its
+  rendering. Safari 26 and the other browsers find it.
 - Selection state lives on the individual items; the list neither enforces nor tracks it.
 - The list does not manage focus or keyboard navigation between the items.
 

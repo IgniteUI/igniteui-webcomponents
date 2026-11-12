@@ -1,6 +1,8 @@
 # igc-tree-item
 
 The tree-item component represents a child item of the tree component or another tree item.
+Find-in-page, a text fragment or a link to an element in the children of a
+collapsed item expands it.
 
 ```ts
 import { defineComponents, IgcTreeItemComponent } from 'igniteui-webcomponents';

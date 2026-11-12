@@ -69,6 +69,7 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
 |      11 | 2026-10-29 | In a column, each header has the minimum height of a header row, the indicator follows the headers that `alignment` moves, and a `max-height` on the tabs, without their padding and border, limits the column as a definite height does. A selection made in the same task as a change of position stays. A tab that leaves its tabs drops the position. With `justify`, a hidden tab leaves no gap, and tabs in a panel keep the width limit of a header. The scroll buttons and the selection of a hidden tab do not scroll the strip |
 |      12 | 2026-11-04 | `igcNavigate` is not composed, so it does not reach a shadow host around the tabs; `_parent` and `_top` count as `_self` in a page that is not in a frame |
 |      13 | 2026-11-05 | With `prefers-reduced-motion: reduce`, the scroll buttons and the selection scroll the header strip at once; the scroll buttons follow the `scroll-behavior` of the `tabs` part |
+|      14 | 2026-11-12 | Find-in-page and links to an element in a panel select its tab; a panel that is not selected has `hidden="until-found"` |
 
 ## Overview
 
@@ -182,6 +183,14 @@ Disabled tabs and values that match no tab are ignored.
 The `selected` attribute of the tabs also sets the selection, after each change of the tabs. When several tabs become
 selected at once, the last one in document order wins, as in the initial markup. A selected tab that moves keeps the
 selection.
+
+#### Content found by the browser
+
+A panel that is not selected has `hidden="until-found"`, or plain `hidden` when its tab is disabled. Find-in-page
+searches it, and a match, a text fragment or a link to an element in it selects the tab with `igcChange`, as a click
+does. The reveal does not move the focus, and a link tab does not follow its link. A hidden panel takes no height,
+also when `::part(tab-body)` gives the panels a height, padding or a border, so it does not cover the selected panel
+in the shared area.
 
 #### Alignment
 
@@ -595,6 +604,16 @@ The groups below mirror the `describe` blocks.
 58. Each tab gets the position, also a tab added later.
 59. A column hides at the same time as a hidden ancestor (the shared `runHiddenAncestorTests` suite).
 
+### Content found by the browser
+
+60. A link to an element in a panel selects its tab with `igcChange`, hides the other panels until found, and does
+    not move the focus.
+61. A disabled tab hides its panel with plain `hidden` and is not selected.
+62. A click on the selected panel reaches its content: the hidden panels in the shared area take no height.
+63. A height, padding and a border on `::part(tab-body)` do not give the hidden panels a box.
+64. A link tab is selected without following its link.
+65. A collapsed expansion panel in a panel opens, and the tab is selected.
+
 ## Assumptions and limitations
 
 - A tab owns both its header and its body; the two cannot be declared separately.
@@ -612,6 +631,12 @@ The groups below mirror the `describe` blocks.
   [Prefix and suffix content](#prefix-and-suffix-content).
 - With `activation="auto"`, the arrow keys select a link tab but never follow its link.
 - Do not put the Angular `routerLink` directive on a tab. See [Link tabs](#link-tabs).
+- Find-in-page reaches a panel that is not selected where the browser supports `hidden="until-found"`: Chrome 102,
+  Firefox 139 and Safari 26.2. Firefox before 148 and Safari 26.2 select the tab but do not scroll to the match. Other
+  browsers treat the panel as plain `hidden`. There, a `display` value on `::part(tab-body)` keeps the hidden panels
+  in the layout with no height, and their content can take the focus.
+- A tab finds its tabs with `closest()`. A tab projected through a slot of another component is not revealed: its
+  panel stays hidden.
 
 ## Accessibility
 
@@ -619,6 +644,8 @@ The groups below mirror the `describe` blocks.
 
 - The header strip is a tab list, each header is a tab, and each body is a tab panel labelled by its header,
   following the WAI-ARIA tabs pattern.
+- A panel that is not selected keeps a box for find-in-page, so it also has `aria-hidden="true"`: assistive
+  technology skips it, as before.
 - The header strip is a single tab stop: the selected header carries the tab index and the arrow keys move within
   the strip.
 - The tab list has `aria-orientation="horizontal"` in a row and `aria-orientation="vertical"` in a column, so screen

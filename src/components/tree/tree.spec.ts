@@ -4,6 +4,7 @@ import {
   expect,
   fixture,
   html,
+  nextFrame,
   waitUntil,
 } from '@open-wc/testing';
 import { registerI18n, setCurrentI18n } from 'igniteui-i18n-core';
@@ -13,7 +14,14 @@ import {
 } from 'igniteui-i18n-resources';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { scrolledIntoView } from '#internals/testing/helpers.spec.js';
+import {
+  allowMotion,
+  clickWithMouse,
+  finishAnimationsFor,
+  getAnimationsFor,
+  resetLocation,
+  scrolledIntoView,
+} from '#internals/testing/helpers.spec.js';
 import type IgcCheckboxComponent from '../checkbox/checkbox.js';
 import type IgcTreeItemComponent from './tree-item.js';
 import {
@@ -177,12 +185,12 @@ describe('Tree', () => {
       const content1 = topLevelItems[0].renderRoot.querySelector(
         'div[role="group"]'
       ) as HTMLElement;
-      expect(content1.inert).to.be.true;
+      expect(content1).to.have.attribute('hidden', 'until-found');
 
       const content2 = topLevelItems[1].renderRoot.querySelector(
         'div[role="group"]'
       ) as HTMLElement;
-      expect(content2.inert).to.be.false;
+      expect(content2).to.not.have.attribute('hidden');
     });
 
     it('Should not render expand indicator if an item has no children', async () => {
@@ -525,6 +533,274 @@ describe('Tree', () => {
         'Tree Item 1',
         'Tree Item 2',
       ]);
+    });
+  });
+
+  describe('Items far from the view', () => {
+    // The item box always renders; its content is what skips.
+    const skipped = (item: IgcTreeItemComponent) =>
+      !item.renderRoot
+        .querySelector('[part~="wrapper"]')!
+        .checkVisibility({ contentVisibilityAuto: true });
+
+    beforeEach(async () => {
+      const box = await fixture<HTMLElement>(html`
+        <div style="height: 200px; overflow: auto">
+          <igc-tree>
+            <igc-tree-item label="Parent" expanded>
+              <igc-tree-item label="Child"></igc-tree-item>
+            </igc-tree-item>
+            ${Array.from(
+              { length: 100 },
+              (_, i) => html`<igc-tree-item label="Item ${i}"></igc-tree-item>`
+            )}
+          </igc-tree>
+        </div>
+      `);
+      tree = box.querySelector(IgcTreeComponent.tagName)!;
+      await elementUpdated(tree);
+      await nextFrame();
+      await nextFrame();
+    });
+
+    it('skip their rendering when they are collapsed', () => {
+      const [parent, child, first] = tree.items;
+      const last = tree.items.at(-1)!;
+
+      expect(getComputedStyle(parent).contentVisibility).to.equal('visible');
+      expect(getComputedStyle(child).contentVisibility).to.equal('auto');
+      expect(skipped(first)).to.be.false;
+      expect(skipped(last)).to.be.true;
+    });
+
+    it('keep the row height of the item as their size', () => {
+      const [, , first] = tree.items;
+      const last = tree.items.at(-1)!;
+      const row = first.getBoundingClientRect().height;
+
+      expect(getComputedStyle(last).containIntrinsicHeight).to.equal(
+        `auto ${row}px`
+      );
+      expect(last.getBoundingClientRect().height).to.equal(row);
+    });
+
+    it('render when they scroll into view', async () => {
+      const [, , first] = tree.items;
+      const last = tree.items.at(-1)!;
+
+      // `scrollIntoView()` renders its target at once; the others follow in a frame.
+      last.scrollIntoView();
+      await waitUntil(() => skipped(first), 'The first item still renders');
+
+      expect(skipped(last)).to.be.false;
+    });
+  });
+
+  describe('Content found by the browser', () => {
+    let box: HTMLElement;
+    let link: HTMLAnchorElement;
+    let target: HTMLElement;
+    let items: Record<string, IgcTreeItemComponent>;
+    let eventSpy: ReturnType<typeof spy>;
+
+    const groupOf = (item: IgcTreeItemComponent) =>
+      item.renderRoot.querySelector<HTMLElement>('[role="group"]')!;
+
+    async function setup(singleBranchExpand = false): Promise<void> {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <a href="#tree-target">Go to the item</a>
+          <div style="height: 300px; overflow: auto">
+            <igc-tree ?single-branch-expand=${singleBranchExpand}>
+              <igc-tree-item id="first" label="First"></igc-tree-item>
+              <igc-tree-item id="branch" label="Branch" expanded>
+                <igc-tree-item label="Branch child"></igc-tree-item>
+              </igc-tree-item>
+              ${Array.from(
+                { length: 30 },
+                (_, i) =>
+                  html`<igc-tree-item label="Item ${i}"></igc-tree-item>`
+              )}
+              <igc-tree-item id="outer" label="Outer">
+                <igc-tree-item id="inner" label="Inner">
+                  <igc-tree-item>
+                    <span slot="label" id="tree-target">Found</span>
+                  </igc-tree-item>
+                </igc-tree-item>
+              </igc-tree-item>
+            </igc-tree>
+          </div>
+        </div>
+      `);
+      tree = root.querySelector(IgcTreeComponent.tagName)!;
+      box = tree.parentElement!;
+      link = root.querySelector('a')!;
+      target = root.querySelector('#tree-target')!;
+      items = Object.fromEntries(
+        tree.items.filter((item) => item.id).map((item) => [item.id, item])
+      );
+      await elementUpdated(tree);
+
+      if (singleBranchExpand) {
+        // The tree collapses the other branches when it starts; the branch
+        // opens again here, so that the reveal must collapse it.
+        finishAnimationsFor(tree, { subtree: true });
+        items.branch.expanded = true;
+        await elementUpdated(items.branch);
+      }
+
+      eventSpy = spy(tree, 'emitEvent');
+    }
+
+    const expansionEvents = () =>
+      (eventSpy.args as [string, CustomEventInit<IgcTreeItemComponent>][])
+        .filter(([name]) => name.startsWith('igcItemExpand'))
+        .map(([name, init]) => `${name} ${init.detail!.label}`);
+
+    afterEach(resetLocation);
+
+    it('hides the children of a collapsed item until found, and of a disabled one from the browser', async () => {
+      await setup();
+
+      expect(groupOf(items.outer)).to.have.attribute('hidden', 'until-found');
+      expect(groupOf(items.branch)).to.not.have.attribute('hidden');
+      // The browser keeps the box of the hidden group; assistive technology skips it.
+      expect(groupOf(items.outer)).to.have.attribute('aria-hidden', 'true');
+      expect(groupOf(items.branch)).to.not.have.attribute('aria-hidden');
+
+      items.outer.disabled = true;
+      await elementUpdated(items.outer);
+
+      expect(groupOf(items.outer)).to.have.attribute('hidden', '');
+    });
+
+    it('expands the path to a linked item from the inside out, with the user events', async () => {
+      await setup();
+
+      await clickWithMouse(link);
+      await waitUntil(() => expansionEvents().length === 4);
+
+      expect(items.inner.expanded).to.be.true;
+      expect(items.outer.expanded).to.be.true;
+      // Each item ends its expansion before the browser reveals the next one.
+      expect(expansionEvents()).to.eql([
+        'igcItemExpanding Inner',
+        'igcItemExpanded Inner',
+        'igcItemExpanding Outer',
+        'igcItemExpanded Outer',
+      ]);
+      expect(target.checkVisibility()).to.be.true;
+    });
+
+    it('stays collapsed when `igcItemExpanding` is canceled', async () => {
+      await setup();
+      tree.addEventListener('igcItemExpanding', (e) => e.preventDefault());
+
+      await clickWithMouse(link);
+      await aTimeout(0);
+      await elementUpdated(items.outer);
+
+      // The group attributes, not `checkVisibility()`: WebKit reports the
+      // target visible in a nested `until-found` group.
+      expect(items.inner.expanded).to.be.false;
+      expect(items.outer.expanded).to.be.false;
+      expect(groupOf(items.inner)).to.have.attribute('hidden', 'until-found');
+      expect(groupOf(items.outer)).to.have.attribute('hidden', 'until-found');
+    });
+
+    it('does not expand a disabled item', async () => {
+      await setup();
+      items.inner.disabled = true;
+      await elementUpdated(items.inner);
+
+      await clickWithMouse(link);
+      await aTimeout(0);
+
+      // A link still reveals the enabled ancestors; find-in-page finds nothing.
+      expect(items.inner.expanded).to.be.false;
+      expect(target.checkVisibility()).to.be.false;
+    });
+
+    it('keeps the path to the match expanded with `singleBranchExpand`', async () => {
+      await setup(true);
+
+      await clickWithMouse(link);
+      await aTimeout(0);
+      await elementUpdated(tree);
+
+      expect(items.branch.expanded).to.be.false;
+      expect(items.outer.expanded).to.be.true;
+      expect(items.inner.expanded).to.be.true;
+      expect(target.checkVisibility()).to.be.true;
+    });
+
+    it('keeps the expanded items in the revealed item with `singleBranchExpand`', async () => {
+      await setup(true);
+      // Only the outer item hides the match; the inner item is expanded.
+      items.inner.expanded = true;
+      await elementUpdated(items.inner);
+
+      await clickWithMouse(link);
+      await aTimeout(0);
+      await elementUpdated(tree);
+
+      expect(items.outer.expanded).to.be.true;
+      expect(items.inner.expanded).to.be.true;
+      expect(target.checkVisibility()).to.be.true;
+    });
+
+    describe('with motion', () => {
+      allowMotion();
+
+      it('expands at once, and the match stays in view when another branch collapses', async () => {
+        await setup(true);
+        items.first.focus();
+
+        await clickWithMouse(link);
+
+        expect(getAnimationsFor(tree, { subtree: true })).to.be.empty;
+        expect(tree.items.flatMap((item) => item.shadowRoot!.getAnimations()))
+          .to.be.empty;
+
+        // The scroll to the match ends the smooth scroll of the collapse.
+        // WebKit does not scroll to this match, so only the stability counts.
+        const scrolled = box.scrollTop;
+        await aTimeout(500);
+        expect(box.scrollTop).to.equal(scrolled);
+      });
+
+      it('animates the expand from the height of the children', async () => {
+        await setup();
+
+        const expanding = items.outer.expandWithEvent();
+        const [animation] = items.outer.shadowRoot!.getAnimations();
+        const keyframes = (animation.effect as KeyframeEffect).getKeyframes();
+        const group = groupOf(items.outer);
+
+        expect(group.scrollHeight).to.be.greaterThan(0);
+        expect(Number.parseFloat(String(keyframes.at(-1)!.height))).to.equal(
+          group.scrollHeight
+        );
+        await expanding;
+      });
+
+      it('shows the children during the collapse animation, inert only then', async () => {
+        await setup();
+        const group = groupOf(items.branch);
+
+        const collapsing = items.branch.collapseWithEvent();
+        await elementUpdated(items.branch);
+
+        expect(items.branch.shadowRoot!.getAnimations()).not.to.be.empty;
+        expect(group).to.not.have.attribute('hidden');
+        expect(group.inert).to.be.true;
+
+        await collapsing;
+        await elementUpdated(items.branch);
+
+        expect(group).to.have.attribute('hidden', 'until-found');
+        expect(group.inert).to.be.false;
+      });
     });
   });
 

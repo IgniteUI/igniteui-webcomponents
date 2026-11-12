@@ -13,6 +13,7 @@ import {
   hostAria,
 } from '#internals/controllers/aria-projection.js';
 import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
+import { addHiddenUntilFoundController } from '#internals/controllers/hidden-until-found.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -34,7 +35,8 @@ export interface IgcTabComponentEventMap {
 }
 
 /**
- * A tab nested in a tabs component.
+ * A tab nested in a tabs component. Find-in-page, a text fragment or a link to
+ * an element in the panel of a tab that is not disabled selects it.
  *
  * @element igc-tab
  *
@@ -80,6 +82,13 @@ export default class IgcTabComponent extends EventEmitterMixin<IgcTabComponentEv
 
   @state()
   private _isTabStop = false;
+
+  private readonly _untilFound = addHiddenUntilFoundController(this, {
+    reveal: () => {
+      this.closest('igc-tabs')?._revealTab(this);
+      return this.selected;
+    },
+  });
 
   //#endregion
 
@@ -264,7 +273,9 @@ export default class IgcTabComponent extends EventEmitterMixin<IgcTabComponentEv
         id=${this._contentId}
         aria-labelledby=${this._headerId}
         tabindex=${this.selected ? 0 : -1}
-        .inert=${!this.selected}
+        hidden=${this._untilFound.value(!this.selected, !this.disabled)}
+        @beforematch=${this._untilFound.handleBeforeMatch}
+        aria-hidden=${bindIf(!this.selected, 'true')}
       >
         <slot></slot>
       </div>

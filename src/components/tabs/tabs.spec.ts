@@ -22,8 +22,10 @@ import {
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   allowMotion,
+  clickWithMouse,
   finishAnimationsFor,
   isUnderPageLayer,
+  resetLocation,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
@@ -41,6 +43,7 @@ import { styles as fluent } from '../../styles/themes/light/fluent.css.js';
 import { styles as indigo } from '../../styles/themes/light/indigo.css.js';
 import { styles as material } from '../../styles/themes/light/material.css.js';
 import type IgcIconButtonComponent from '../button/icon-button.js';
+import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import IgcTabComponent from './tab.js';
 import IgcTabsComponent from './tabs.js';
 
@@ -122,8 +125,8 @@ describe('Tabs component', () => {
       verifySelection(tabsComponent, tabsComponent.tabs[1]);
 
       for (const tab of tabsComponent.tabs) {
-        expect(getComputedStyle(getTabDOM(tab).body).display).to.equal(
-          tab.selected ? 'block' : 'none'
+        expect(getTabDOM(tab).body.getAttribute('hidden')).to.equal(
+          tab.selected ? null : 'until-found'
         );
       }
     });
@@ -3724,6 +3727,165 @@ describe('Tabs component', () => {
         <igc-tab label="Two">Two</igc-tab>
       </igc-tabs>
     `);
+  });
+
+  describe('Content found by the browser', () => {
+    let tabs: IgcTabsComponent;
+    let link: HTMLAnchorElement;
+    let changeSpy: ReturnType<typeof spy>;
+
+    async function setup(content: ReturnType<typeof html>): Promise<void> {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <a href="#tabs-target">Go to the content</a>
+          ${content}
+        </div>
+      `);
+      tabs = root.querySelector(IgcTabsComponent.tagName)!;
+      link = root.querySelector('a')!;
+      changeSpy = spy();
+      tabs.addEventListener('igcChange', changeSpy);
+    }
+
+    afterEach(resetLocation);
+
+    it('selects the tab with `igcChange` when a link targets its panel', async () => {
+      await setup(html`
+        <igc-tabs>
+          <igc-tab label="One">One</igc-tab>
+          <igc-tab label="Two">Two</igc-tab>
+          <igc-tab label="Three"><p id="tabs-target">Three</p></igc-tab>
+        </igc-tabs>
+      `);
+      const [first, , third] = tabs.tabs;
+
+      await clickWithMouse(link);
+      await elementUpdated(tabs);
+
+      expect(tabs.selectedTab).to.equal(third);
+      expect(changeSpy.calledOnce).to.be.true;
+      expect(changeSpy.firstCall.args[0].detail).to.equal(third);
+      expect(getTabDOM(third).body).to.not.have.attribute('hidden');
+      expect(getTabDOM(first).body).to.have.attribute('hidden', 'until-found');
+      // A reveal does not move the focus, as a click on the header does.
+      expect(document.activeElement).to.not.equal(third);
+    });
+
+    it('does not select a disabled tab', async () => {
+      await setup(html`
+        <igc-tabs>
+          <igc-tab label="One">One</igc-tab>
+          <igc-tab label="Two" disabled><p id="tabs-target">Two</p></igc-tab>
+        </igc-tabs>
+      `);
+      const [first, second] = tabs.tabs;
+
+      expect(getTabDOM(second).body).to.have.attribute('hidden', '');
+
+      await clickWithMouse(link);
+      await elementUpdated(tabs);
+
+      expect(tabs.selectedTab).to.equal(first);
+      expect(changeSpy.called).to.be.false;
+    });
+
+    it('lets a click on the selected panel reach its content', async () => {
+      await setup(html`
+        <igc-tabs>
+          <igc-tab label="One"><button>In the first panel</button></igc-tab>
+          <igc-tab label="Two"><p id="tabs-target">Two</p></igc-tab>
+          <igc-tab label="Three">Three</igc-tab>
+        </igc-tabs>
+      `);
+      const button = tabs.querySelector('button')!;
+      const clicked = spy();
+      button.addEventListener('click', clicked);
+
+      // The hidden panels share the area of the selected one.
+      await clickWithMouse(button);
+
+      expect(clicked.calledOnce).to.be.true;
+    });
+
+    it('keeps the hidden panels empty when the panel part has a box', async () => {
+      await setup(html`
+        <style>
+          .boxed igc-tab::part(tab-body) {
+            height: 12rem;
+            min-height: 10rem;
+            padding-block: 1rem;
+            border: 2px solid;
+            background: red;
+          }
+        </style>
+        <igc-tabs class="boxed">
+          <igc-tab label="One"><button>In the first panel</button></igc-tab>
+          <igc-tab label="Two"><p id="tabs-target">Two</p></igc-tab>
+          <igc-tab label="Three">Three</igc-tab>
+        </igc-tabs>
+      `);
+      const [, second, third] = tabs.tabs;
+      const button = tabs.querySelector('button')!;
+      const clicked = spy();
+      button.addEventListener('click', clicked);
+
+      for (const tab of [second, third]) {
+        expect(getTabDOM(tab).body.getBoundingClientRect().height).to.equal(0);
+      }
+
+      await clickWithMouse(button);
+      expect(clicked.calledOnce).to.be.true;
+
+      await clickWithMouse(link);
+      expect(getTabDOM(second).body.getBoundingClientRect().height).to.be.above(
+        0
+      );
+    });
+
+    it('selects a link tab without following its link', async () => {
+      await setup(html`
+        <igc-tabs>
+          <igc-tab label="One">One</igc-tab>
+          <igc-tab label="Two" href="#elsewhere">
+            <p id="tabs-target">Two</p>
+          </igc-tab>
+        </igc-tabs>
+      `);
+      const [, second] = tabs.tabs;
+      const navigateSpy = spy();
+      second.addEventListener('igcNavigate', navigateSpy);
+
+      await clickWithMouse(link);
+      await elementUpdated(tabs);
+
+      expect(tabs.selectedTab).to.equal(second);
+      expect(navigateSpy.called).to.be.false;
+      expect(location.hash).to.equal('#tabs-target');
+    });
+
+    it('opens a collapsed expansion panel in a panel, and selects the tab', async () => {
+      defineComponents(IgcExpansionPanelComponent);
+      await setup(html`
+        <igc-tabs>
+          <igc-tab label="One">One</igc-tab>
+          <igc-tab label="Two">
+            <igc-expansion-panel>
+              <span slot="title">Details</span>
+              <p id="tabs-target">Found</p>
+            </igc-expansion-panel>
+          </igc-tab>
+        </igc-tabs>
+      `);
+      const [, second] = tabs.tabs;
+      const panel = second.querySelector(IgcExpansionPanelComponent.tagName)!;
+
+      await clickWithMouse(link);
+      await elementUpdated(tabs);
+
+      expect(panel.open).to.be.true;
+      expect(tabs.selectedTab).to.equal(second);
+      expect(tabs.querySelector('#tabs-target')!.checkVisibility()).to.be.true;
+    });
   });
 
   runHiddenAncestorTests(html`

@@ -64,7 +64,6 @@
 // and in a column with a definite height it scrolls its own content. In a column,
 // the area of the panel spans all the headers, so the panel starts at its top.
 [part~='tab-body'] {
-    display: none;
     position: sticky;
     align-self: start;
     inset-block: var(--_ig-tab-panel-inset-block);
@@ -77,10 +76,15 @@
     overflow: var(--_ig-tab-panel-overflow);
 }
 
-:host([selected]) {
-    [part~='tab-body'] {
-        display: block;
-    }
+// A panel that is not selected keeps its box for find-in-page. It shares the
+// area of the selected panel, so it takes no height and does not scroll.
+// Important, so that styles of the part cannot make it cover the selected panel.
+[part~='tab-body'][hidden] {
+    height: 0 !important;
+    min-height: 0 !important;
+    padding-block: 0 !important;
+    border-block-width: 0 !important;
+    overflow: hidden !important;
 }
 
 :host([disabled]) {

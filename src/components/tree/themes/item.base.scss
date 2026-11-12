@@ -13,6 +13,14 @@
     }
 }
 
+// A collapsed item far from the view skips its rendering. The active and the
+// focused item render: the tree scrolls to them, and Firefox and WebKit do not
+// scroll into skipped content.
+:host(:not([expanded], [active], :focus-within)) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto none auto var(--size);
+}
+
 :host(:focus-within) {
     outline: none;
 }

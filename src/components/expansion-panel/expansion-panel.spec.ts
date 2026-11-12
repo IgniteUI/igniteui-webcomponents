@@ -1,4 +1,5 @@
 import {
+  aTimeout,
   elementUpdated,
   expect,
   fixture,
@@ -18,7 +19,9 @@ import {
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   allowMotion,
+  clickWithMouse,
   getAnimationsFor,
+  resetLocation,
 } from '#internals/testing/helpers.spec.js';
 import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import {
@@ -124,7 +127,7 @@ describe('Expansion Panel', () => {
         </div>
         <div
           aria-hidden="true"
-          inert
+          hidden="until-found"
           aria-labelledby="panel-header"
           id="panel-content"
           part="content"
@@ -218,8 +221,8 @@ describe('Expansion Panel', () => {
         `<div
           aria-hidden="true"
           aria-labelledby="panel-header"
+          hidden="until-found"
           id="panel-content"
-          inert
           part="content"
           role="region"
         >
@@ -274,24 +277,24 @@ describe('Expansion Panel', () => {
       await panel.show();
 
       expect(panel.open).to.be.true;
-      expect(getDOMPart('content')).to.not.have.attribute('inert');
+      expect(getDOMPart('content')).to.not.have.attribute('hidden');
 
       await panel.hide();
 
       expect(panel.open).to.be.false;
-      expect(getDOMPart('content')).to.have.attribute('inert');
+      expect(getDOMPart('content')).to.have.attribute('hidden', 'until-found');
     });
 
     it('should toggle open state on `toggle()`', async () => {
       await panel.toggle();
 
       expect(panel.open).to.be.true;
-      expect(getDOMPart('content')).to.not.have.attribute('inert');
+      expect(getDOMPart('content')).to.not.have.attribute('hidden');
 
       await panel.toggle();
 
       expect(panel.open).to.be.false;
-      expect(getDOMPart('content')).to.have.attribute('inert');
+      expect(getDOMPart('content')).to.have.attribute('hidden', 'until-found');
     });
 
     it('`show()/hide()` return false for the current state', async () => {
@@ -481,6 +484,114 @@ describe('Expansion Panel', () => {
       expect(eventSpy).calledOnceWith('igcClosing', {
         cancelable: true,
         detail: panel,
+      });
+    });
+  });
+
+  describe('Content found by the browser', () => {
+    let link: HTMLAnchorElement;
+    let target: HTMLElement;
+
+    beforeEach(async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <a href="#panel-target">Go to the content</a>
+          <igc-expansion-panel id="panel">
+            <h3 slot="title">Title</h3>
+            <p id="panel-target">Content</p>
+          </igc-expansion-panel>
+        </div>
+      `);
+      panel = root.querySelector(IgcExpansionPanelComponent.tagName)!;
+      link = root.querySelector('a')!;
+      target = root.querySelector('#panel-target')!;
+      eventSpy = spy(panel, 'emitEvent');
+    });
+
+    afterEach(resetLocation);
+
+    it('hides a closed panel until found, and a disabled one from the browser', async () => {
+      expect(getDOMPart('content')).to.have.attribute('hidden', 'until-found');
+
+      panel.disabled = true;
+      await elementUpdated(panel);
+
+      expect(getDOMPart('content')).to.have.attribute('hidden', '');
+    });
+
+    it('opens with the user events when a link targets its content', async () => {
+      await clickWithMouse(link);
+      await waitUntil(() => eventSpy.calledWith('igcOpened'));
+
+      verifyStateAndEventSequence({ open: true });
+      expect(getDOMPart('content')).to.not.have.attribute('hidden');
+      expect(target.checkVisibility()).to.be.true;
+    });
+
+    it('stays closed when `igcOpening` is canceled', async () => {
+      panel.addEventListener('igcOpening', (e) => e.preventDefault(), {
+        once: true,
+      });
+
+      await clickWithMouse(link);
+      await aTimeout(0);
+      await elementUpdated(panel);
+
+      expect(panel.open).to.be.false;
+      expect(getDOMPart('content')).to.have.attribute('hidden', 'until-found');
+      expect(target.checkVisibility()).to.be.false;
+    });
+
+    it('does not open when disabled', async () => {
+      panel.disabled = true;
+      await elementUpdated(panel);
+
+      await clickWithMouse(link);
+      await aTimeout(0);
+
+      expect(panel.open).to.be.false;
+      expect(eventSpy.called).to.be.false;
+      expect(target.checkVisibility()).to.be.false;
+    });
+
+    describe('with motion', () => {
+      allowMotion();
+
+      it('opens at once, with no animation', async () => {
+        await clickWithMouse(link);
+
+        expect(panel.open).to.be.true;
+        expect(getAnimationsFor(panel.shadowRoot!)).to.be.empty;
+      });
+
+      it('animates the open from the height of the content', async () => {
+        const opening = panel.show();
+        const [animation] = getAnimationsFor(panel.shadowRoot!);
+        const keyframes = (animation.effect as KeyframeEffect).getKeyframes();
+
+        expect(Number.parseFloat(String(keyframes.at(-1)!.height))).to.equal(
+          getDOMPart('content').scrollHeight
+        );
+        expect(getDOMPart('content').scrollHeight).to.be.greaterThan(0);
+        await opening;
+      });
+
+      it('shows the content during the close animation, inert only then', async () => {
+        panel.open = true;
+        await elementUpdated(panel);
+
+        const closing = panel.hide();
+        await elementUpdated(panel);
+        const content = getDOMPart('content');
+
+        expect(getAnimationsFor(panel.shadowRoot!)).not.to.be.empty;
+        expect(content).to.not.have.attribute('hidden');
+        expect(content.inert).to.be.true;
+
+        await closing;
+
+        expect(content).to.have.attribute('hidden', 'until-found');
+        expect(content.inert).to.be.false;
       });
     });
   });

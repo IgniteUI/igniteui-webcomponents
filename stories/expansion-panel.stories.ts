@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 
 import {
   IgcButtonComponent,
@@ -40,7 +41,7 @@ const metadata: Meta<IgcExpansionPanelComponent> = {
     docs: {
       description: {
         component:
-          'Shows a header with a title and a subtitle, and content that the user can\nexpand and collapse.',
+          'Shows a header with a title and a subtitle, and content that the user can\nexpand and collapse. Find-in-page, a text fragment or a link to an element in\nthe content opens a collapsed panel that is not disabled.',
       },
     },
     actions: {
@@ -194,6 +195,33 @@ const styles = html`
       align-content: start;
       padding: 1rem 1.5rem;
     }
+
+    .ep-help {
+      display: grid;
+      gap: 1rem;
+      max-width: 40rem;
+    }
+
+    .ep-help :is(h3, p, ul) {
+      margin: 0;
+    }
+
+    .ep-help ul {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.5rem;
+      padding: 0;
+      list-style: none;
+    }
+
+    .ep-answers {
+      display: grid;
+      border-block-start: 1px solid var(--ig-gray-300);
+    }
+
+    .ep-answers igc-expansion-panel {
+      border-block-end: 1px solid var(--ig-gray-300);
+    }
   </style>
 `;
 
@@ -272,7 +300,7 @@ export const AdvancedSettings: Story = {
     docs: {
       description: {
         story:
-          'A form that shows only the required fields first, and keeps the advanced settings in a closed panel. The `subtitle` slot sums up the advanced settings, so the user sees the values without opening the panel, and the summary follows each change. `indicator-position="end"` puts the indicator after the text. After a failed submit, the form controls move the focus to the first invalid field. But the content of a closed panel is inert, so a field in it cannot take the focus, and the submit fails without a visible reason. So the form has `novalidate`, and the submit handler calls `checkValidity()`. When the first invalid field is in a closed panel, the handler opens the panel with `show()`. Then it moves the focus to the field. Clear "Default branch", close the panel, and then submit.',
+          'A form that shows only the required fields first, and keeps the advanced settings in a closed panel. The `subtitle` slot sums up the advanced settings, so the user sees the values without opening the panel, and the summary follows each change. `indicator-position="end"` puts the indicator after the text. After a failed submit, the form controls move the focus to the first invalid field. But the content of a closed panel is hidden, so a field in it cannot take the focus, and the submit fails without a visible reason. So the form has `novalidate`, and the submit handler calls `checkValidity()`. When the first invalid field is in a closed panel, the handler opens the panel with `show()`. Then it moves the focus to the field. Clear "Default branch", close the panel, and then submit.',
       },
     },
   },
@@ -469,5 +497,94 @@ export const Sidebar: Story = {
 
     return html`${styles}
       <div ${story.mount}></div>`;
+  },
+};
+
+// region help center
+
+const answers = [
+  {
+    id: 'refunds',
+    popular: true,
+    question: 'Can I get a refund?',
+    answer:
+      'Yes. Ask for a refund within 30 days of the purchase, in Billing > Orders. The money goes back to the card that you paid with, in 5 to 10 business days.',
+  },
+  {
+    id: 'plan',
+    question: 'How do I change my plan?',
+    answer:
+      'Open Billing > Plan and select the new plan. An upgrade starts at once, and you pay the difference for the rest of the month. A downgrade starts at the next renewal.',
+  },
+  {
+    id: 'invoices',
+    popular: true,
+    question: 'Where do I find my invoices?',
+    answer:
+      'Open Billing > Invoices. Each invoice has a PDF download. Add a company name and a tax number before you download it.',
+  },
+  {
+    id: 'payment',
+    question: 'Which payment methods can I use?',
+    answer:
+      'Visa, Mastercard and American Express cards. Yearly plans can also use a bank transfer.',
+  },
+  {
+    id: 'cancel',
+    popular: true,
+    question: 'How do I cancel my subscription?',
+    answer:
+      'Open Billing > Plan and select Cancel subscription. The workspace stays active until the end of the paid period.',
+  },
+];
+
+export const HelpCenter: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A help page that keeps its answers in closed panels. The browser searches the content of a closed panel: press Ctrl+F (Command+F on macOS), search for "invoice", and the panel with the match opens. The links under "Popular answers" point to an element in an answer, so they open its panel too. A link to the page with such a fragment, or with a text fragment, opens the panel when the page loads. The panel opens as it does for the user, with `igcOpening` and `igcOpened`, and the status line shows the last answer that opened. A closed panel hides its content with `hidden="until-found"`. A browser that does not support it hides the content as before and does not search it.',
+      },
+    },
+  },
+  render: () => {
+    const status = createRef<HTMLElement>();
+    const opened = (event: Event) => {
+      const panel = event.currentTarget as IgcExpansionPanelComponent;
+      const question = panel.querySelector('[slot="title"]')!.textContent;
+      status.value!.textContent = `Opened: ${question}`;
+    };
+
+    return html`
+      ${styles}
+      <div class="ep-help">
+        <h3>Billing help</h3>
+        <nav aria-label="Popular answers">
+          <ul>
+            ${answers
+              .filter((each) => each.popular)
+              .map(
+                ({ id, question }) =>
+                  html`<li><a href="#help-${id}">${question}</a></li>`
+              )}
+          </ul>
+        </nav>
+        <p class="muted" role="status" ${ref(status)}></p>
+        <div class="ep-answers">
+          ${answers.map(
+            ({ id, question, answer }) => html`
+              <igc-expansion-panel
+                indicator-position="end"
+                @igcOpened=${opened}
+              >
+                <span slot="title">${question}</span>
+                <p id="help-${id}">${answer}</p>
+              </igc-expansion-panel>
+            `
+          )}
+        </div>
+      </div>
+    `;
   },
 };

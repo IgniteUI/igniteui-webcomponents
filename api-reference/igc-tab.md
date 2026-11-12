@@ -1,6 +1,7 @@
 # igc-tab
 
-A tab nested in a tabs component.
+A tab nested in a tabs component. Find-in-page, a text fragment or a link to
+an element in the panel of a tab that is not disabled selects it.
 
 ```ts
 import { defineComponents, IgcTabComponent } from 'igniteui-webcomponents';

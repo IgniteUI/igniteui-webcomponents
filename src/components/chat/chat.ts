@@ -6,9 +6,11 @@ import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { guard } from 'lit/directives/guard.js';
+import { ref } from 'lit/directives/ref.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { chatContext, chatUserInputContext } from '#internals/context.js';
 import { addContextProvider } from '#internals/controllers/context-provider.js';
+import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
 import {
   addSlotController,
   type InferSlotNames,
@@ -284,6 +286,14 @@ export default class IgcChatComponent extends I18nMixin(
   @query('[part="message-area-container"]', true)
   private readonly _scrollContainer!: HTMLElement;
 
+  // Messages far from the view skip their rendering, so the list can grow after
+  // a scroll to the bottom, in a later frame in some browsers.
+  private readonly _listResize = addResizeObserverController(this, {
+    target: null,
+    requestUpdate: false,
+    callback: this._handleListResize,
+  });
+
   /** Whether the list follows the newest message. */
   private _followNewest = true;
   /** Set when the suggestion slots change, so that `updated()` scrolls. */
@@ -473,13 +483,46 @@ export default class IgcChatComponent extends I18nMixin(
     // Read in the frame, after the layout that the update caused.
     requestAnimationFrame(() => {
       // The user can scroll up before the frame.
-      if (!this._followNewest) {
-        return;
+      if (this._followNewest) {
+        this._scrollListToBottom();
       }
-
-      const { scrollTop, scrollHeight } = this._scrollContainer;
-      this._scrollContainer.scrollBy({ top: scrollHeight - scrollTop });
     });
+  }
+
+  /** Follows the bottom when the list grows, for example as messages render. */
+  private _handleListResize(): void {
+    if (!this._followNewest || this._state.options?.disableAutoScroll) {
+      return;
+    }
+
+    const { scrollTop, scrollHeight, clientHeight } = this._scrollContainer;
+
+    if (
+      // A move up that has no scroll event yet is the user's; the event decides.
+      scrollTop >= this._lastScrollTop &&
+      scrollHeight - scrollTop - clientHeight > BOTTOM_TOLERANCE
+    ) {
+      this._scrollListToBottom();
+    }
+  }
+
+  /** Observes the message list, which renders only with messages. */
+  private _observeList(list?: Element): void {
+    if (list) {
+      this._listResize.observe(list);
+    } else {
+      for (const target of this._listResize.targets) {
+        this._listResize.unobserve(target);
+      }
+    }
+  }
+
+  private _scrollListToBottom(): void {
+    const container = this._scrollContainer;
+    container.scrollBy({ top: container.scrollHeight - container.scrollTop });
+    // The next scroll event can merge this scroll with one of the user, so it
+    // compares against this position.
+    this._lastScrollTop = container.scrollTop;
   }
 
   private _renderHeader() {
@@ -500,7 +543,7 @@ export default class IgcChatComponent extends I18nMixin(
 
   private _renderMessages() {
     return html`
-      <div part="message-list" tabindex="0">
+      <div part="message-list" tabindex="0" ${ref(this._observeList)}>
         ${repeat(
           this._state.messages,
           (message) => message.id,

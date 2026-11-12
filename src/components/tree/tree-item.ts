@@ -9,6 +9,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 import { addAnimationController } from '#animations/player.js';
 import { growVerIn, growVerOut } from '#animations/presets/grow/index.js';
+import { addHiddenUntilFoundController } from '#internals/controllers/hidden-until-found.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
@@ -21,6 +22,7 @@ import {
   addSafeEventListener,
   getElementFromPath,
 } from '#internals/utils/events.js';
+import { bindIf } from '#internals/utils/lit.js';
 import { all } from '#themes/tree/themes/item.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
@@ -44,6 +46,8 @@ import type { IgcTreeSelectionService } from './tree.selection.js';
 
 /**
  * The tree-item component represents a child item of the tree component or another tree item.
+ * Find-in-page, a text fragment or a link to an element in the children of a
+ * collapsed item expands it.
  *
  * @element igc-tree-item
  *
@@ -84,6 +88,14 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
   private _groupRef: Ref<HTMLElement> = createRef();
 
   private _animationPlayer = addAnimationController(this, this._groupRef);
+
+  private readonly _untilFound = addHiddenUntilFoundController(this, {
+    content: this._groupRef,
+    reveal: () => {
+      this.expandWithEvent();
+      return this.expanded;
+    },
+  });
 
   // A move into another tree changes whether the item renders the select marker.
   @state()
@@ -396,9 +408,10 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
     );
   }
 
-  private async _toggleAnimation(dir: 'open' | 'close') {
-    const animation = dir === 'open' ? growVerIn : growVerOut;
-    return this._animationPlayer.playExclusive(animation());
+  private async _toggleAnimation(open: boolean): Promise<boolean> {
+    return this._untilFound.animate(open, () =>
+      this._animationPlayer.playExclusive(open ? growVerIn() : growVerOut())
+    );
   }
 
   private _expandedChange(oldValue: boolean): void {
@@ -484,7 +497,7 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
     }
 
     this.expanded = expand;
-    if (await this._toggleAnimation(expand ? 'open' : 'close')) {
+    if (await this._toggleAnimation(expand)) {
       this.tree?.emitEvent(expand ? 'igcItemExpanded' : 'igcItemCollapsed', {
         detail: this,
       });
@@ -577,7 +590,14 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
           </slot>
         </div>
       </div>
-      <div ${ref(this._groupRef)} role="group" .inert=${!this.expanded}>
+      <div
+        ${ref(this._groupRef)}
+        role="group"
+        hidden=${this._untilFound.value(!this.expanded, !this.disabled)}
+        @beforematch=${this._untilFound.handleBeforeMatch}
+        aria-hidden=${bindIf(!this.expanded, 'true')}
+        .inert=${this._untilFound.closing}
+      >
         <slot @slotchange=${this._handleChange}></slot>
       </div>
     `;

@@ -1,7 +1,8 @@
 import { expect, nextFrame } from '@open-wc/testing';
-import { emulateMedia } from '@web/test-runner-commands';
+import { emulateMedia, resetMouse, sendMouse } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { type CalendarDay, toCalendarDay } from '../date/model.js';
+import { getCenterPoint } from '../utils/dom.js';
 import { toKebabCase } from '../utils/strings.js';
 
 /** Returns the animations of the element and, optionally, its descendants. */
@@ -55,6 +56,24 @@ export function finishBackdrop(dialog: HTMLDialogElement): CSSStyleDeclaration {
 export async function viewTransitionComplete(): Promise<void> {
   await nextFrame();
   await nextFrame();
+}
+
+/**
+ * Clicks the center of `element` with real mouse input. A link click reveals
+ * `hidden="until-found"` content with the timing of find-in-page, which a
+ * `location.hash` write does not give.
+ */
+export async function clickWithMouse(element: Element): Promise<void> {
+  element.scrollIntoView({ block: 'nearest' });
+  const { x, y } = getCenterPoint(element);
+  await sendMouse({ type: 'click', position: [Math.round(x), Math.round(y)] });
+}
+
+/** Removes the fragment and the scroll that a link to an element left. */
+export async function resetLocation(): Promise<void> {
+  history.replaceState(null, '', location.pathname + location.search);
+  scrollTo(0, 0);
+  await resetMouse();
 }
 
 /** Returns whether `el` is in the visible area of `view`. */
