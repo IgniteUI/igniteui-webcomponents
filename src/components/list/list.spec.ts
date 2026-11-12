@@ -1,4 +1,4 @@
-import { expect, fixture, html } from '@open-wc/testing';
+import { expect, fixture, html, nextFrame, waitUntil } from '@open-wc/testing';
 
 import { internalsOf } from '#internals/controllers/internals.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
@@ -81,6 +81,49 @@ describe('List', () => {
       // A `header` element in a `section` has the `sectionheader` role in Chromium.
       const container = item.renderRoot.querySelector('[part~="header"]')!;
       expect(container.localName).to.equal('div');
+    });
+  });
+
+  describe('Items far from the view', () => {
+    // The item box always renders; its content is what skips.
+    const skipped = (item: IgcListItemComponent) =>
+      !item
+        .querySelector('span')!
+        .checkVisibility({ contentVisibilityAuto: true });
+
+    let items: IgcListItemComponent[];
+
+    beforeEach(async () => {
+      const box = await fixture<HTMLElement>(html`
+        <div style="height: 200px; overflow: auto">
+          <igc-list>
+            ${Array.from(
+              { length: 100 },
+              (_, i) =>
+                html`<igc-list-item>
+                  <span slot="title">Item ${i}</span>
+                </igc-list-item>`
+            )}
+          </igc-list>
+        </div>
+      `);
+      items = Array.from(box.querySelectorAll('igc-list-item'));
+      await nextFrame();
+      await nextFrame();
+    });
+
+    it('skip their rendering', () => {
+      expect(getComputedStyle(items[0]).contentVisibility).to.equal('auto');
+      expect(skipped(items[0])).to.be.false;
+      expect(skipped(items[99])).to.be.true;
+    });
+
+    it('render when they scroll into view', async () => {
+      // `scrollIntoView()` renders its target at once; the others follow in a frame.
+      items[99].scrollIntoView();
+      await waitUntil(() => skipped(items[0]), 'The first item still renders');
+
+      expect(skipped(items[99])).to.be.false;
     });
   });
 });

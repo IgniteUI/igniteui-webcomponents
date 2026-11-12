@@ -4,6 +4,7 @@ import {
   expect,
   fixture,
   html,
+  nextFrame,
   waitUntil,
 } from '@open-wc/testing';
 import { registerI18n, setCurrentI18n } from 'igniteui-i18n-core';
@@ -525,6 +526,66 @@ describe('Tree', () => {
         'Tree Item 1',
         'Tree Item 2',
       ]);
+    });
+  });
+
+  describe('Items far from the view', () => {
+    // The item box always renders; its content is what skips.
+    const skipped = (item: IgcTreeItemComponent) =>
+      !item.renderRoot
+        .querySelector('[part~="wrapper"]')!
+        .checkVisibility({ contentVisibilityAuto: true });
+
+    beforeEach(async () => {
+      const box = await fixture<HTMLElement>(html`
+        <div style="height: 200px; overflow: auto">
+          <igc-tree>
+            <igc-tree-item label="Parent" expanded>
+              <igc-tree-item label="Child"></igc-tree-item>
+            </igc-tree-item>
+            ${Array.from(
+              { length: 100 },
+              (_, i) => html`<igc-tree-item label="Item ${i}"></igc-tree-item>`
+            )}
+          </igc-tree>
+        </div>
+      `);
+      tree = box.querySelector(IgcTreeComponent.tagName)!;
+      await elementUpdated(tree);
+      await nextFrame();
+      await nextFrame();
+    });
+
+    it('skip their rendering when they are collapsed', () => {
+      const [parent, child, first] = tree.items;
+      const last = tree.items.at(-1)!;
+
+      expect(getComputedStyle(parent).contentVisibility).to.equal('visible');
+      expect(getComputedStyle(child).contentVisibility).to.equal('auto');
+      expect(skipped(first)).to.be.false;
+      expect(skipped(last)).to.be.true;
+    });
+
+    it('keep the row height of the item as their size', () => {
+      const [, , first] = tree.items;
+      const last = tree.items.at(-1)!;
+      const row = first.getBoundingClientRect().height;
+
+      expect(getComputedStyle(last).containIntrinsicHeight).to.equal(
+        `auto ${row}px`
+      );
+      expect(last.getBoundingClientRect().height).to.equal(row);
+    });
+
+    it('render when they scroll into view', async () => {
+      const [, , first] = tree.items;
+      const last = tree.items.at(-1)!;
+
+      // `scrollIntoView()` renders its target at once; the others follow in a frame.
+      last.scrollIntoView();
+      await waitUntil(() => skipped(first), 'The first item still renders');
+
+      expect(skipped(last)).to.be.false;
     });
   });
 

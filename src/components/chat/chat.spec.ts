@@ -1,4 +1,10 @@
-import { elementUpdated, expect, fixture, nextFrame } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  nextFrame,
+  waitUntil,
+} from '@open-wc/testing';
 import { sendKeys } from '@web/test-runner-commands';
 import { html, nothing } from 'lit';
 import { restore, spy, stub, useFakeTimers } from 'sinon';
@@ -581,8 +587,8 @@ describe('Chat', () => {
 
       for (const attachment of attachments) {
         const { header, content } = getChatAttachmentDOM(attachment);
-        expect(header.querySelector('h5')?.innerText).matches(/^Custom/);
-        expect(content.querySelector('p')?.innerText).matches(
+        expect(header.querySelector('h5')?.textContent).matches(/^Custom/);
+        expect(content.querySelector('p')?.textContent).matches(
           /^This is a template/
         );
       }
@@ -603,7 +609,7 @@ describe('Chat', () => {
 
       for (const message of getChatDOM(chat).messages) {
         expect(
-          getChatMessageDOM(message).container.querySelector('h5')?.innerText
+          getChatMessageDOM(message).container.querySelector('h5')?.textContent
         ).to.equal(message.message.sender === 'user' ? 'You' : 'Bot');
       }
     });
@@ -617,7 +623,7 @@ describe('Chat', () => {
       await elementUpdated(chat);
 
       for (const [index, message] of getChatDOM(chat).messages.entries()) {
-        expect(getChatMessageDOM(message).content.innerText).to.equal(
+        expect(getChatMessageDOM(message).content.textContent?.trim()).to.equal(
           chat.messages[index].text.toUpperCase()
         );
       }
@@ -635,7 +641,7 @@ describe('Chat', () => {
       await elementUpdated(chat);
 
       for (const message of getChatDOM(chat).messages) {
-        expect(getChatMessageDOM(message).actions.innerText).to.equal(
+        expect(getChatMessageDOM(message).actions.textContent?.trim()).to.equal(
           message.message.sender === 'user' ? '' : 'Custom action'
         );
       }
@@ -697,7 +703,7 @@ describe('Chat', () => {
       await elementUpdated(chat);
 
       for (const message of getChatDOM(chat).messages) {
-        expect(getChatMessageDOM(message).header.innerText).to.equal(
+        expect(getChatMessageDOM(message).header.textContent?.trim()).to.equal(
           message.message.sender === 'user' ? '' : 'AI Assistant'
         );
       }
@@ -2425,6 +2431,69 @@ describe('Chat', () => {
       await nextFrame();
 
       expect(messageArea.scrollTop).to.equal(0);
+    });
+
+    describe('Messages far from the view', () => {
+      const text = (i: number) => `${i} `.repeat(10 + (i % 7) * 40);
+
+      // Appended to the current messages: WebKit moves the list to the top when
+      // all the messages are replaced (a known issue, not of this feature).
+      const longHistory = (): IgcChatMessage[] => [
+        ...chat.messages,
+        ...Array.from({ length: 300 }, (_, i) => ({
+          id: `long-${i}`,
+          text: text(i),
+          sender: i % 2 ? 'user' : 'bot',
+        })),
+      ];
+
+      // The message box always renders; its content is what skips.
+      const skipped = (message: Element) =>
+        !message
+          .shadowRoot!.querySelector('[part~="message-container"]')!
+          .checkVisibility({ contentVisibilityAuto: true });
+
+      it('skip their rendering', async () => {
+        await setMessages(longHistory());
+        const { messages } = getChatDOM(chat);
+        const [first, last] = [messages[0], messages.at(-1)!];
+
+        // Some browsers update the skipped messages a few frames after a scroll.
+        await waitUntil(
+          () => skipped(first) && !skipped(last),
+          'The far message renders, or the last one does not'
+        );
+
+        expect(skipped(first)).to.be.true;
+        expect(skipped(last)).to.be.false;
+      });
+
+      it('do not keep a long history from the bottom', async () => {
+        await setMessages(longHistory());
+        expectAtBottom();
+
+        await setMessages([
+          ...chat.messages,
+          { id: 'long', text: text(6), sender: 'bot' },
+        ]);
+        expectAtBottom();
+      });
+
+      it('do not bring back the list after the user scrolls up a little between the scrolls', async () => {
+        const { messageArea } = getChatDOM(chat);
+
+        chat.messages = longHistory();
+        await elementUpdated(chat);
+        // The first scroll to the bottom runs in this frame. Its scroll event
+        // comes with the next frame, together with the scroll of the user.
+        await nextFrame();
+        messageArea.scrollTop -= 300;
+        await nextFrame();
+        await nextFrame();
+
+        const { scrollHeight, scrollTop, clientHeight } = messageArea;
+        expect(scrollHeight - scrollTop - clientHeight).to.be.greaterThan(100);
+      });
     });
 
     it('scrolls to the bottom when the messages are replaced', async () => {

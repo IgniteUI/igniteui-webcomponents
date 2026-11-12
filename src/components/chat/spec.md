@@ -63,6 +63,7 @@
 |       9 | 2026-11-02 | The events of the inner text area and of the attachment chips stay inside the chat |
 |      10 | 2026-11-04 | The code color variables of the Markdown renderer have GitHub fallbacks and apply in light and dark mode; `igcNavigate` for links in messages |
 |      11 | 2026-11-06 | The <kbd>Enter</kbd> that commits an IME composition does not send the message |
+|      12 | 2026-11-12 | A message far from the view skips its rendering; the list also follows the bottom when it grows |
 
 ## Overview
 
@@ -192,8 +193,9 @@ to the text area of the composer.
 While the list is at the bottom, it follows the newest message: each change of `messages`, the typing indicator and
 new suggestions scroll it to the bottom. When the user scrolls up, the list keeps its position, until the user
 scrolls back to the bottom. A new message of the current user, and a `messages` array without the previous last
-message, such as another conversation, scroll to the bottom again. `disableAutoScroll` turns the automatic scrolling
-off.
+message, such as another conversation, scroll to the bottom again. While the list follows, it also stays at the
+bottom when it grows for another reason: a message that renders late, a resize of the chat, or content that loads in
+a message. `disableAutoScroll` turns the automatic scrolling off.
 
 #### Options
 
@@ -543,20 +545,26 @@ The component exposes a part for every region it renders. The main groups are:
     without the previous last message, scroll the list to the bottom. So do slotted suggestions that appear while the
     list is at the bottom.
 
+#### Messages far from the view
+
+36. A message far from the view skips its rendering, and a message at the bottom renders.
+37. With a long history of messages of different heights, the list ends at the bottom, also after a new long message.
+38. A scroll of the user between two scrolls to the bottom stops the follow; the list does not go back down.
+
 ### Names
 
-36. The message actions are named by the resource strings, like and dislike expose `aria-pressed`, and a change of
+39. The message actions are named by the resource strings, like and dislike expose `aria-pressed`, and a change of
     `resourceStrings` renames them.
-37. The text area, the attach button, the file input, the send button, the attachments list and the remove button of
+40. The text area, the attach button, the file input, the send button, the attachments list and the remove button of
     an attachment chip are named by the resource strings, and a change of `resourceStrings` renames them.
 
 ### Links
 
-38. A plain click or <kbd>Enter</kbd> on a link in a message, also an SVG link with `xlink:href`, emits
+41. A plain click or <kbd>Enter</kbd> on a link in a message, also an SVG link with `xlink:href`, emits
     `igcNavigate` on the chat, with the message and the absolute URL. The event does not bubble. When the application cancels it, the chat cancels the click.
-39. A click with a modifier key, a link with another target, `download` or a URL that does not parse, a click that
+42. A click with a modifier key, a link with another target, `download` or a URL that does not parse, a click that
     cannot be canceled and a click that the content already canceled emit no event.
-40. A link outside the messages, a link around the chat and a link in a chat in a message, also in its header, emit
+43. A link outside the messages, a link around the chat and a link in a chat in a message, also in its header, emit
     no event on the chat. The chat in the message emits the event of its own message link.
 
 ### Not covered by the suite
@@ -572,7 +580,10 @@ The component exposes a part for every region it renders. The main groups are:
 
 - The component is stateless with respect to the transport. It does not send, receive, retry or persist anything;
   the application owns `messages` and reacts to the events.
-- The message list is not virtualized, so a very long history is rendered in full.
+- The message list is not virtualized. A message that is far from the view skips its rendering
+  (`content-visibility: auto`). Until its first render, it keeps a space of about 100px; after it, its real size.
+  To render every message, use `igc-chat::part(message-item) { content-visibility: visible; }`.
+- `innerText` of a message that skips its rendering is an empty string. `textContent` works.
 - There is no message status, no avatar handling, no emoji picker, no URL preview, no search and no contextual
   menu. These are planned and not part of this version.
 - The message list is a single tab stop and has no arrow key navigation between the messages.

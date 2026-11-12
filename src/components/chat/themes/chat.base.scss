@@ -57,6 +57,13 @@ $inline-inset: rem(24px);
     gap: rem(24px);
 }
 
+// A message far from the view skips its rendering. A rendered message keeps its
+// real size; the chat follows the list as messages render late.
+[part~='message-item'] {
+    content-visibility: auto;
+    contain-intrinsic-size: auto none auto rem(100px);
+}
+
 [part='empty-state'] {
     height: 100%;
 }

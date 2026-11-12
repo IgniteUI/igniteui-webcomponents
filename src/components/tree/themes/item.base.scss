@@ -13,6 +13,16 @@
     }
 }
 
+// A collapsed item far from the view skips its rendering. It is one row of the
+// size token, so the placeholder size is exact. An expanded item always renders
+// its row, and each child decides for itself. The active and the focused item
+// render too: the tree scrolls to their row, and Firefox and WebKit do not
+// scroll to an element in skipped content.
+:host(:not([expanded], [active], :focus-within)) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto none auto var(--size);
+}
+
 :host(:focus-within) {
     outline: none;
 }

@@ -51,6 +51,7 @@
 |       3 | 2026-10-12 | `items` is empty during server-side rendering                                            |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                                 |
 |       5 | 2026-11-02 | A real click on the checkbox of an item sends no `igcChange` out of the item              |
+|       6 | 2026-11-12 | A collapsed item far from the view skips its rendering, except the active and the focused item |
 
 ## Overview
 
@@ -454,6 +455,12 @@ module with the fixtures, the selectors and the assertion helpers the other thre
 59. A delegating item copies the host label and `aria-labelledby`, keeps an own label of its delegate, removes the
     copy, and moves it to a new delegate. An item that does not delegate keeps its label.
 
+### Items far from the view
+
+60. A collapsed item far from the view skips its rendering; an expanded item and an item in view render.
+61. A skipped item keeps the height of one row.
+62. An item renders when it scrolls into view, and the item that left the view skips its rendering again.
+
 ### Not covered by the suite
 
 - The `loading` state and the `loading` slot are exercised only through the slot rendering test; there is no
@@ -469,8 +476,13 @@ module with the fixtures, the selectors and the assertion helpers the other thre
   available after the tree connects in the browser.
 - End-user selection is only possible through the checkbox of an item. A click on the label never changes the
   selection.
-- The tree is not virtualized. Every item is rendered, so very large hierarchies should be built with load on
-  demand.
+- The tree is not virtualized. Every item is in the DOM, so very large hierarchies should be built with load on
+  demand. A collapsed item that is far from the view skips its rendering (`content-visibility: auto`) and keeps the
+  space of one row (`--ig-tree-size`). The active item and the item with the focus always render, because the tree
+  scrolls to their row. To render every item, set `content-visibility: visible` on `igc-tree-item`.
+- In a container that takes its width from its content, a long tree takes the width of the items near the view, and
+  the width can change while the user scrolls.
+- `innerText` of an item that skips its rendering is an empty string. `textContent` works.
 - Cascade selection derives the state of a parent from its children, so setting `selected` on a parent and on a
   child inconsistently resolves in favor of the cascade.
 - The tree does not restrict what an item renders, so the developer is responsible for the accessibility of any
