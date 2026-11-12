@@ -9,7 +9,7 @@
     contain: layout;
 
     igc-circular-progress {
-        --diameter: #{sizable(rem(18px), rem(20px), rem(24px))};
+        --ig-circular-bar-diameter: #{sizable(rem(18px), rem(20px), rem(24px))};
     }
 }
 

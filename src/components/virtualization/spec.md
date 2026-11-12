@@ -60,6 +60,7 @@
 |       7 | 2026-09-30 | A `data` change measures the rendered items again from the first changed index             |
 |       8 | 2026-10-21 | API descriptions aligned with the JSDoc.                                                   |
 |       8 | 2026-10-05 | The stylesheet comes back after other code replaces the sheets of the tree scope           |
+|       9 | 2026-11-11 | `scrollToIndex` renders the new window in the same task; a hidden list keeps its window    |
 
 ## Overview
 
@@ -219,6 +220,10 @@ Items outside the rendered window carry only an estimate, so the first jump can 
 point are then measured and the offset is corrected, repeatedly, until it is stable. The returned promise resolves
 on the final offset, and a caller that only needs the approximate scroll can ignore it.
 
+The list renders the window of the new offset in the same task, before the `scroll` event. So a `data` change right
+after the call renders at the new offset. A hidden list does not scroll: it keeps its window, and the browser gives
+it its old offset when it shows.
+
 #### Infinite scrolling
 
 When the rendered window comes within five items of the end of `data`, `igcDataRequest` is emitted with the first
@@ -362,7 +367,8 @@ scope, the component adopts its stylesheet again on its next update.
 
 ### Public API
 
-10. `scrollToIndex` sets `scrollTop` in the vertical orientation and `scrollLeft` in the horizontal one.
+10. `scrollToIndex` sets `scrollTop` in the vertical orientation and `scrollLeft` in the horizontal one. It renders
+    the new window before the `scroll` event, and a call on a hidden list keeps the window.
 11. It settles on the last index instead of waiting out the scroll timeout, and does nothing for `block: nearest`
     when the item is already in view, including an item that already fills the viewport.
 12. It keeps the requested index aligned once the real item sizes differ from the estimate, including a far-away

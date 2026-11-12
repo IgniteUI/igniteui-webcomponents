@@ -59,7 +59,8 @@
 |       9 | 2026-10-23 | The mask input makes a stacking context, so the z-index of the input and the container does not compete with the layers of the page |
 |      10 | 2026-10-28 | Forward the host combobox state, as the input does                        |
 |      11 | 2026-11-02 | A `focus()` call before the first render applies after the render         |
-|      12 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form, after the `keypress`         |
+|      12 | 2026-11-11 | The keys that an IME handles do nothing |
+|      13 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form, after the `keypress`         |
 
 ## Overview
 
@@ -309,7 +310,7 @@ the UI. The `label`, `placeholder` and helper text are provided by the applicati
 | <kbd>Ctrl</kbd> + <kbd>Y</kbd>                        | Redoes the last undone step.                                          |
 | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd> / <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd> | Redoes the last undone step. |
 
-All other native text-editing keys apply, as the component delegates focus to the inner native input.
+All other native text-editing keys apply, as the component delegates focus to the inner native input. A key that an IME handles, such as the <kbd>Enter</kbd> that commits a composition, does nothing here.
 
 ## API
 

@@ -13,7 +13,8 @@ defineComponents(IgcComboComponent);
 ## Properties
 
 - `data`: `T[]`. Default: `[]`. No attribute.
-  The data source used to generate the list of options.
+  The data source used to generate the list of options. A new data source
+  keeps the selection, also the selected items that it does not hold.
 - `outlined`: `boolean`. Default: `false`. Attribute: `outlined`, reflected.
   Whether the control has an outlined appearance.
 - `singleSelect`: `boolean`. Default: `false`. Attribute: `single-select`, reflected.
@@ -44,12 +45,34 @@ defineComponents(IgcComboComponent);
   An object that configures the filtering of the combo.
 - `caseSensitiveIcon`: `boolean`. Default: `false`. Attribute: `case-sensitive-icon`.
   Whether the search input shows the icon that toggles case-sensitive
-  filtering.
+  filtering. In remote filtering mode, read `filteringOptions.caseSensitive`
+  when you send the search to the server.
 - `disableFiltering`: `boolean`. Default: `false`. Attribute: `disable-filtering`.
   Whether the filtering of the list of options is disabled. In multiple
   selection mode, it also hides the search input.
 - `disableClear`: `boolean`. Default: `false`. Attribute: `disable-clear`.
   Whether the clear button is hidden.
+- `totalItemCount`: `number | undefined`. Attribute: `total-item-count`.
+  The number of all the items of a remote source, when the source knows it.
+  In remote filtering mode, the list shows a placeholder for each item that
+  `data` does not hold yet, so the scrollbar shows the full list.
+- `loading`: `boolean`. Default: `false`. Attribute: `loading`, reflected.
+  Whether the combo loads options. A spinner, which the `loading` slot can
+  replace, then takes the place of the toggle icon, and an empty list shows
+  a loading message instead of the empty message.
+- `showSelectAll`: `boolean`. Default: `false`. Attribute: `show-select-all`.
+  Whether the list starts with an option that selects all the items that it
+  shows, or deselects them when all of them are selected. Only in multiple
+  selection mode.
+- `groupSelection`: `boolean`. Default: `false`. Attribute: `group-selection`.
+  Whether a group header is an option that selects the items of its group
+  that the list shows, or deselects them when all of them are selected.
+  Only in multiple selection mode with `groupKey`.
+- `selectionCommit`: `'immediate' | 'confirm'`. Default: `'immediate'`. Attribute: `selection-commit`.
+  When the user's changes of the selection apply in multiple selection
+  mode. With `confirm`, they change a pending selection while the list is
+  open, and Enter or the Apply button applies it with one `igcChange`. Any
+  other close drops it. While it exists, the selection methods change it too.
 - `itemTemplate`: `ComboItemTemplate<T>`. No attribute.
   The template used for the content of each combo item.
 - `groupHeaderTemplate`: `ComboGroupHeaderTemplate<T>`. No attribute.
@@ -59,6 +82,10 @@ defineComponents(IgcComboComponent);
   field of an item. Without it, each value is the item itself.
 - `selection`: `T[]`. Read-only. No attribute.
   Returns the current selection as an array of objects as provided in the `data` source.
+- `pendingValue`: `ComboValue<T>[]`. Read-only. No attribute.
+  The values of the pending selection in the confirm mode of
+  `selectionCommit`, which Enter, the Apply button or `commitSelection()`
+  applies. Without a pending selection, the same as `value`.
 - `locale`: `string`. Attribute: `locale`.
   The locale of the component. Without it, the component takes its own
   `lang`, else the locale of the nearest ancestor that has a `locale` (a
@@ -111,11 +138,23 @@ defineComponents(IgcComboComponent);
   Removes focus from the component.
 - `select(items?: Item<T> | Item<T>[]): void`
   Selects options in the list by reference or by `valueKey` value. It does
-  not emit `igcChange`. Without an argument, it selects all items, or
-  clears the selection in single selection mode.
+  not emit `igcChange`. An object that `data` does not hold is selected as
+  it is. Without an argument, it selects all the items of `data`, or clears
+  the selection in single selection mode.
 - `deselect(items?: Item<T> | Item<T>[]): void`
   Deselects options in the list by reference or by `valueKey` value. It
   does not emit `igcChange`. Without an argument, it deselects all items.
+- `selectAllItems(ignoreFilter?: boolean = false): void`
+  Selects all the items that the list shows. It does not emit `igcChange`,
+  and does nothing in single selection mode.
+- `deselectAllItems(ignoreFilter?: boolean = false): void`
+  Deselects all the items that the list shows. It does not emit `igcChange`.
+- `commitSelection(): void`
+  Applies the pending selection of the confirm mode to `value`. It does not
+  emit `igcChange` or close the list.
+- `cancelSelection(): void`
+  Puts `value` back as the pending selection of the confirm mode. It does
+  not close the list.
 - `reportValidity(): boolean`
   Checks validity. As for a native control, an invalid control emits
   `invalid` and takes the focus. It shows its own validation messages, not
@@ -142,23 +181,30 @@ defineComponents(IgcComboComponent);
 ## Events
 
 - `igcChange`
-  Emitted before the user changes the selection. Cancel the event to keep the selection.
+  Emitted before the user changes the selection, or applies the pending selection of the confirm mode (`type: 'commit'`). Cancel the event to keep the selection.
+- `igcPendingChange`
+  Emitted in the confirm mode of `selectionCommit` before the user changes the pending selection. Cancel the event to keep the pending selection.
 - `igcOpening`
   Emitted before the user opens the list of options. Cancelable.
 - `igcOpened`
   Emitted after the list of options opens on a user action.
 - `igcClosing`
-  Emitted before the user closes the list of options. Cancelable.
+  Emitted before the user closes the list of options. Cancelable. The `trigger` of the detail is the user action that closes the list.
 - `igcClosed`
-  Emitted after the list of options closes on a user action.
+  Emitted after the list of options closes on a user action. The `trigger` of the detail is the user action that closes the list.
+- `igcSearchInput`
+  Emitted when the user changes the text of the search input, or of the main input in single selection mode, and when a selection, a blur or the clear button clears the text. Also emitted with the same text when the case-sensitive icon changes the case of a search text.
+- `igcDataRequest`
+  Emitted in remote filtering mode when the user scrolls near the end of the options, or to a placeholder of `totalItemCount`. Append the requested items to `data`. It is not emitted again until the length of `data`, the search text or its case changes, or the list opens again.
 
 ## Slots
 
 - `prefix`: Renders content before the input of the combo.
 - `suffix`: Renders content after the input of the combo.
 - `header`: Renders a container before the list of options of the combo.
-- `footer`: Renders a container after the list of options of the combo.
+- `footer`: Renders a container after the list of options of the combo. In the confirm mode of `selectionCommit`, its default content is Cancel and Apply.
 - `empty`: Renders content when the combo dropdown list has no items/data.
+- `loading`: Renders content that replaces the default spinner while `loading` is set. It is in the input, so a click on it toggles the list, as on the toggle icon.
 - `helper-text`: Renders content below the input of the combo.
 - `toggle-icon`: Renders content that replaces the default toggle icon.
 - `clear-icon`: Renders content that replaces the default clear icon.
@@ -184,17 +230,25 @@ defineComponents(IgcComboComponent);
 - `list`: The list of options box of the combo.
 - `item`: Each item in the list of options.
 - `group-header`: Each group header in the list of options.
-- `active`: Added to the item part when the item is active, and to the case-icon part while case-sensitive filtering is on.
-- `selected`: Added to the item part when the item is selected.
+- `active`: Added to the item part when the item is active, to the group-header part when the header is an active option of `groupSelection`, and to the case-icon part while case-sensitive filtering is on.
+- `selected`: Added to the item part when the item is selected, and to the group-header part of `groupSelection` when all the shown items of the group are selected.
 - `checkbox`: The checkbox of each item in the list.
 - `checkbox-indicator`: The checkbox indicator of each item in the list.
 - `checked`: Added to the checkbox and checkbox-indicator parts when the checkbox is checked.
+- `indeterminate`: Added to the checkbox and checkbox-indicator parts of the select-all option, or of a group header of `groupSelection`, while only some of its shown items are selected.
+- `select-all`: Added to the item part of the select-all option.
 - `header`: The container holding the header content of the combo.
 - `footer`: The container holding the footer content of the combo.
+- `actions`: The container of the Cancel and Apply buttons of the confirm mode.
+- `cancel-button`: The Cancel button of the confirm mode.
+- `apply-button`: The Apply button of the confirm mode.
 - `empty`: The container holding the empty content of the combo.
+- `loading`: The indeterminate circular progress that replaces the toggle icon while `loading` is set. It has the color of the text.
+- `placeholder`: Added to the item part of each item to load, which `totalItemCount` adds. Its skeleton has the color of the text.
 
 ## CSS custom properties
 
+- `--ig-combo-item-indent`: The indent of the items under a group header option of `groupSelection`. Default is the indent of the tree: 12, 16 or 24 px by size, and 24 px in Indigo.
 - `--ig-helper-min-lines`: The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
 
 ## CSS custom states

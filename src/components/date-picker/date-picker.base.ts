@@ -505,7 +505,7 @@ export abstract class IgcDatePickerBaseComponent<
     })
       .set([altKey, arrowDown], this._handleAnchorClick)
       .set([altKey, arrowUp], this._onEscapeKey)
-      .set(escapeKey, this._onEscapeKey);
+      .set(escapeKey, this._onEscapeKey, { when: () => this.open });
   }
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {

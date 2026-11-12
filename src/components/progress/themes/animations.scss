@@ -22,6 +22,21 @@ $easing-curves: (
     @return map.get($easing-curves, $key);
 }
 
+// Slows the indeterminate animations, but does not stop them, so they still show
+// activity. `!important` overrides the inline duration from `animationDuration`.
+@mixin reduced-motion {
+    [part~='base'] {
+        --_motion-factor: 1;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        [part~='base'] {
+            --_motion-factor: 3;
+            --_transition-duration: 0ms !important;
+        }
+    }
+}
+
 @keyframes igc-indeterminate-primary {
     0% {
         transform: translateX(0);

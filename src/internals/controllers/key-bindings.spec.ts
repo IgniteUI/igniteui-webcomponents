@@ -7,7 +7,10 @@ import {
 } from '@open-wc/testing';
 import { LitElement } from 'lit';
 import { spy } from 'sinon';
-import { simulateKeyboard } from '../testing/simulate.spec.js';
+import {
+  simulateComposingKeys,
+  simulateKeyboard,
+} from '../testing/simulate.spec.js';
 import {
   addKeybindings,
   altKey,
@@ -112,6 +115,14 @@ describe('Key bindings controller', () => {
       simulateKeyboard(instance, 'k');
       expect(instance.key).to.be.undefined;
       expect(instance.event).to.be.undefined;
+    });
+
+    it('skips a key that an IME handles, and does not cancel it', () => {
+      expect(simulateComposingKeys(instance, 'k', 'd')).to.be.false;
+      expect(instance.event).to.be.undefined;
+
+      simulateKeyboard(instance, 'k');
+      expect(instance.key).to.equal('k');
     });
 
     it('event handler modifiers - prevent default', () => {

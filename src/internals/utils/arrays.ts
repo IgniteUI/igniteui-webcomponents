@@ -31,7 +31,7 @@ export function* chunk<T>(arr: T[], size: number): Generator<T[]> {
 
 /** Returns whether a given collection is empty. */
 export function isEmpty<T, U extends object>(
-  x: ArrayLike<T> | Set<T> | Map<U, T>
+  x: ArrayLike<T> | ReadonlySet<T> | ReadonlyMap<U, T>
 ): boolean {
   return 'length' in x ? x.length < 1 : x.size < 1;
 }

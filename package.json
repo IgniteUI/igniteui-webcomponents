@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.js",
     "./types": "./src/types.js",
-    "./extras": "./src/extras/index.js"
+    "./extras": "./src/extras/index.js",
+    "./extras/combo-data-source": "./src/extras/combo-data-source.js"
   },
   "imports": {
     "#internals/*.js": "./src/internals/*.ts",

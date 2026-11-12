@@ -35,7 +35,8 @@ export interface IgcVirtualScrollComponentEventMap {
   igcDataRequest: CustomEvent<VirtualScrollDataRequest>;
 }
 
-const REMOTE_SCROLLING_THRESHOLD = 5;
+/** How close the rendered window comes to the end of the items before a data request. */
+export const REMOTE_SCROLLING_THRESHOLD = 5;
 const MAX_LAYOUT_SETTLE_PASSES = 20;
 const MAX_SCROLL_CORRECTION_PASSES = 5;
 const SCROLL_END_TIMEOUT_MS = 2000;
@@ -482,6 +483,11 @@ export default class IgcVirtualScrollComponent<
     } else {
       this.scrollTo({ left: isLTR(this) ? offset : -offset, behavior });
     }
+
+    // `scroll` fires a frame later, so sync now. A hidden list keeps its offset.
+    if (this.checkVisibility()) {
+      this._handleScroll();
+    }
   }
 
   private _currentAxisScroll(): number {
@@ -577,6 +583,11 @@ export default class IgcVirtualScrollComponent<
     this._viewportSize = this._isVertical
       ? this.clientHeight
       : this.clientWidth;
+
+    // A list that shows again can get another offset with no `scroll` event.
+    if (this._viewportSize) {
+      this._scrollPosition = this._currentAxisScroll();
+    }
   }
 
   /**

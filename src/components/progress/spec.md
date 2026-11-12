@@ -47,6 +47,8 @@
 |       2 | 2026-09-23 | Limit the variant parts to the linear progress |
 |       3 | 2026-10-01 | Announce the shown percentage, round it to two decimals |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc. |
+|       5 | 2026-11-06 | The circular indicator: reduced motion, forced colors, the box of the ring |
+|       6 | 2026-11-06 | The linear indicator: reduced motion |
 
 ## Overview
 
@@ -156,6 +158,11 @@ The default label shows the value as a percentage of `max`, rounded to two decim
 
 `striped` gives the fill a striped look, and `labelAlign` places the default label at `top`, `bottom`,
 `top-start`, `top-end`, `bottom-start` or `bottom-end`.
+
+#### Circular specifics
+
+The circular indicator is an inline block with no line height, so its box is the size of the ring. As a block, the
+ring still follows `text-align`. `--ig-circular-bar-diameter` sets the size of the ring.
 
 #### Circular gradients
 
@@ -272,18 +279,27 @@ Both suites are structured the same way, so the scenarios below apply to both in
 
 13. The circular indicator renders slotted gradient stops.
 
+### Styles
+
+14. The circular indicator takes the box of the ring, and as a block it follows `text-align`.
+15. With reduced motion, the indeterminate animation runs at a third of its speed in each theme, and a new value
+    shows at once.
+16. With motion, the same animations run at full speed, and a new value animates.
+17. In forced colors, the ring and a custom gradient of the circular indicator have the text color, and the track is
+    `GrayText`.
+
 ### ARIA state
 
-14. The value text is the shown percentage of `max`, for example `25%` for `50` of `200`.
-15. The value text keeps two decimals (`1.05%`) and rounds as the label does (`13%` for `12.996`, `1.01%` for
+18. The value text is the shown percentage of `max`, for example `25%` for `50` of `200`.
+19. The value text keeps two decimals (`1.05%`) and rounds as the label does (`13%` for `12.996`, `1.01%` for
     `1.005`), also in the fill.
-16. The value text handles a fractional `max` (`50%` for `0.25` of `0.5`) and a `max` of `0` (`0%`).
-17. The value text is the `labelFormat` text when one is set.
-18. The indeterminate mode reports no value and no value text.
+20. The value text handles a fractional `max` (`50%` for `0.25` of `0.5`) and a `max` of `0` (`0%`).
+21. The value text is the `labelFormat` text when one is set.
+22. The indeterminate mode reports no value and no value text.
 
 ### Issues
 
-19. Issue #1083 — a value set at initialization is not reset by the first render.
+23. Issue #1083 — a value set at initialization is not reset by the first render.
 
 ### Not covered by the suite
 
@@ -314,6 +330,13 @@ Both suites are structured the same way, so the scenarios below apply to both in
 ### Keyboard support
 
 Not applicable; the indicators are not interactive.
+
+### Reduced motion and forced colors
+
+- With `prefers-reduced-motion: reduce`, the indeterminate animation of both indicators runs at a third of its
+  speed, so it still shows activity, and a new value shows at once.
+- Forced colors do not change SVG paint. So in forced colors, the ring of the circular indicator and a custom
+  gradient take the text color, and the track is `GrayText`.
 
 ### Right to Left support
 

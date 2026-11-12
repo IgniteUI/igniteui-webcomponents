@@ -321,7 +321,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
 
     addKeybindings(this, { skip: () => this.disabled })
-      .set(escapeKey, this._handleKeyboardClosing)
+      .set(escapeKey, this._handleKeyboardClosing, { when: () => this.open })
       .set([altKey, arrowDown], this._handleAnchorClick)
       .set([altKey, arrowUp], this._handleKeyboardClosing);
 
