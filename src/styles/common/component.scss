@@ -22,8 +22,10 @@
     }
 }
 
+// `hidden="until-found"` keeps its box, so that find-in-page can reveal it.
+// Where the browser does not know the value, its own `[hidden]` rule applies.
 :host([hidden]),
-[hidden] {
+[hidden]:not([hidden='until-found' i]) {
     display: none !important;
 }
 
