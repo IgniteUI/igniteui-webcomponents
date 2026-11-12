@@ -329,6 +329,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - The thumb label is in the top layer, so a container that clips its overflow does not cut it. It also shows on keyboard focus, and Escape hides it.
   - The box of the slider holds the ticks and their labels, so a slider with tick labels is taller. You can remove the space that you added for the labels. A tick label stays on one line. [#2445](https://github.com/IgniteUI/igniteui-webcomponents/pull/2445)
 - #### Select
+  - An open list no longer accepts a selection when the Select becomes disabled. [#2601](https://github.com/IgniteUI/igniteui-webcomponents/issues/2601)
   - In forced colors mode, the list has a border. [#2488](https://github.com/IgniteUI/igniteui-webcomponents/pull/2488)
 - #### Snackbar, Toast
   - `container` positioning no longer moves the component to the start of the container in the tab order. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)

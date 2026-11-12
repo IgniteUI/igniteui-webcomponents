@@ -30,6 +30,7 @@ import {
 } from '#internals/testing/form-testbed.spec.js';
 import {
   axeReflectedRelationsOptions,
+  clickWithMouse,
   isFocused,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
@@ -585,6 +586,18 @@ describe('Select', () => {
       select = await fixture<IgcSelectComponent>(createBasicSelect());
       select.value = 'implementation';
       await elementUpdated(select);
+    });
+
+    it('rejects a pointer selection after an open select becomes disabled', async () => {
+      const eventSpy = spy(select, 'emitEvent');
+      await openSelect();
+
+      select.disabled = true;
+      await elementUpdated(select);
+      await clickWithMouse(select.items[0]);
+
+      expect(select.value).to.equal('implementation');
+      expect(eventSpy).not.calledWith('igcChange');
     });
 
     it('closes the list when the current selection is clicked again', async () => {
