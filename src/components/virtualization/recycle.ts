@@ -88,7 +88,7 @@ function focusedPosition(
   parts: readonly ChildPart[]
 ): number {
   const container = containerPart.parentNode;
-  let node: Node | null = getRoot(container).activeElement;
+  let node: Node | null = getRoot(container)?.activeElement ?? null;
 
   while (node && node.parentNode !== container) {
     node = node.parentNode;

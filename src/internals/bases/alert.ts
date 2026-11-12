@@ -13,7 +13,7 @@ import { createMutationController } from '../controllers/mutation-observer.js';
 import { addToggleController } from '../controllers/toggle.js';
 import { coercedProperty } from '../decorators/coerced-property.js';
 import { createTimer } from '../timing.js';
-import { getRoot, getVisibleAncestor, isPopoverOpen } from '../utils/dom.js';
+import { getVisibleAncestor, isPopoverOpen } from '../utils/dom.js';
 import { getEventOrigin } from '../utils/events.js';
 import { nanoid } from '../utils/strings.js';
 
@@ -278,7 +278,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
       // anchor names of its own. Otherwise the container is the source of the
       // popover, and the browser moves the popover after it in the tab order.
       if (
-        getRoot(container) === getRoot(this) &&
+        container.getRootNode() === this.getRootNode() &&
         addAnchorName(container, this._anchorName)
       ) {
         this._anchor = container;

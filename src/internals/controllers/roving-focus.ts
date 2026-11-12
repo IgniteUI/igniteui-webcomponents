@@ -145,7 +145,7 @@ class RovingFocusController<T extends Element> {
       return this._options.current();
     }
 
-    const active = getRoot(this._host).activeElement;
+    const active = getRoot(this._host)?.activeElement;
     return active
       ? items.find((item) => item === active || item.contains(active))
       : undefined;

@@ -1,6 +1,5 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import { isEmpty } from '../utils/arrays.js';
-import { getRoot } from '../utils/dom.js';
 import { getOrInsertComputed } from '../utils/objects.js';
 
 type GroupHost = ReactiveControllerHost & Element;
@@ -71,7 +70,7 @@ export function createGroupRegistry<T extends GroupHost, S>(
   const controllers = new WeakMap<T, Member>();
 
   function scopeOf(host: T): GroupScope {
-    return config.scopeOf?.(host) ?? getRoot(host);
+    return config.scopeOf?.(host) ?? host.getRootNode();
   }
 
   /** Derives the group state and gives it to each member. */

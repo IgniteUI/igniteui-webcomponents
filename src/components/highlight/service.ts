@@ -10,20 +10,6 @@ import type IgcHighlightComponent from './highlight.js';
 
 type Match = { node: Node; indices: [start: number, end: number] };
 
-/**
- * Resolves the tree scope that must own the `::highlight()` rules. The rules are
- * tree-scoped, so slotted content needs the host root node, not the render root.
- * Firefox enforces this, Chromium currently does not.
- *
- * Returns `null` while the host is detached or inside a non-styleable fragment.
- */
-function getStyleRoot(
-  host: IgcHighlightComponent
-): (DocumentOrShadowRoot & Node) | null {
-  const root = getRoot(host);
-  return 'adoptedStyleSheets' in root ? root : null;
-}
-
 /* jsonAPIPlainObject */
 /* marshalByValue */
 /**
@@ -271,7 +257,8 @@ class HighlightService implements ReactiveController {
       return;
     }
 
-    const root = getStyleRoot(this._host);
+    // `::highlight()` rules are tree-scoped (Firefox enforces it): slotted content needs the host's root.
+    const root = getRoot(this._host);
 
     if (this._attachedRoot !== root) {
       this._removeStyleSheet();
