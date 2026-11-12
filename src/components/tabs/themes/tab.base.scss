@@ -76,12 +76,15 @@
     overflow: var(--_ig-tab-panel-overflow);
 }
 
-// A panel that is not selected keeps its box for find-in-page
-// (`hidden="until-found"`). It shares the area of the selected panel, so it
-// takes no height and cannot cover it, and it does not scroll.
+// A panel that is not selected keeps its box for find-in-page. It shares the
+// area of the selected panel, so it takes no height and does not scroll.
+// Important, so that styles of the part cannot make it cover the selected panel.
 [part~='tab-body'][hidden] {
-    height: 0;
-    overflow: hidden;
+    height: 0 !important;
+    min-height: 0 !important;
+    padding-block: 0 !important;
+    border-block-width: 0 !important;
+    overflow: hidden !important;
 }
 
 :host([disabled]) {

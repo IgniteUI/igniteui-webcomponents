@@ -168,8 +168,8 @@ export default class IgcTreeComponent extends I18nMixin(
   /** @hidden @internal Collapses every item except the ancestors of `item`. */
   public _collapseOtherBranches(item: IgcTreeItemComponent | null): void {
     const keepExpanded = new Set(item ? item.path.slice(0, -1) : []);
-    // A reveal of the browser expands the path to its match from the inside
-    // out, so the items below `item` are on that path.
+    // During a reveal, the items below `item` keep their state: the browser
+    // does not tell where the match is, and an expanded one can hold it.
     const revealing = isRevealing();
 
     for (const other of this.items) {

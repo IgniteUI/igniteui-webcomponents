@@ -188,8 +188,9 @@ selection.
 
 A panel that is not selected has `hidden="until-found"`, or plain `hidden` when its tab is disabled. Find-in-page
 searches it, and a match, a text fragment or a link to an element in it selects the tab with `igcChange`, as a click
-does. The reveal does not move the focus, and a link tab does not follow its link. A hidden panel takes no height, so
-it does not cover the selected panel in the shared area.
+does. The reveal does not move the focus, and a link tab does not follow its link. A hidden panel takes no height,
+also when `::part(tab-body)` gives the panels a height, padding or a border, so it does not cover the selected panel
+in the shared area.
 
 #### Alignment
 
@@ -609,8 +610,9 @@ The groups below mirror the `describe` blocks.
     not move the focus.
 61. A disabled tab hides its panel with plain `hidden` and is not selected.
 62. A click on the selected panel reaches its content: the hidden panels in the shared area take no height.
-63. A link tab is selected without following its link.
-64. A collapsed expansion panel in a panel opens, and the tab is selected.
+63. A height, padding and a border on `::part(tab-body)` do not give the hidden panels a box.
+64. A link tab is selected without following its link.
+65. A collapsed expansion panel in a panel opens, and the tab is selected.
 
 ## Assumptions and limitations
 
@@ -631,7 +633,8 @@ The groups below mirror the `describe` blocks.
 - Do not put the Angular `routerLink` directive on a tab. See [Link tabs](#link-tabs).
 - Find-in-page reaches a panel that is not selected where the browser supports `hidden="until-found"`: Chrome 102,
   Firefox 139 and Safari 26.2. Firefox before 148 and Safari 26.2 select the tab but do not scroll to the match. Other
-  browsers treat the panel as plain `hidden`. A `display` value on `::part(tab-body)` shows the hidden panels there.
+  browsers treat the panel as plain `hidden`. There, a `display` value on `::part(tab-body)` keeps the hidden panels
+  in the layout with no height, and their content can take the focus.
 - A tab finds its tabs with `closest()`. A tab projected through a slot of another component is not revealed: its
   panel stays hidden.
 

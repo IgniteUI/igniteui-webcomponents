@@ -3807,6 +3807,41 @@ describe('Tabs component', () => {
       expect(clicked.calledOnce).to.be.true;
     });
 
+    it('keeps the hidden panels empty when the panel part has a box', async () => {
+      await setup(html`
+        <style>
+          .boxed igc-tab::part(tab-body) {
+            height: 12rem;
+            min-height: 10rem;
+            padding-block: 1rem;
+            border: 2px solid;
+            background: red;
+          }
+        </style>
+        <igc-tabs class="boxed">
+          <igc-tab label="One"><button>In the first panel</button></igc-tab>
+          <igc-tab label="Two"><p id="tabs-target">Two</p></igc-tab>
+          <igc-tab label="Three">Three</igc-tab>
+        </igc-tabs>
+      `);
+      const [, second, third] = tabs.tabs;
+      const button = tabs.querySelector('button')!;
+      const clicked = spy();
+      button.addEventListener('click', clicked);
+
+      for (const tab of [second, third]) {
+        expect(getTabDOM(tab).body.getBoundingClientRect().height).to.equal(0);
+      }
+
+      await clickWithMouse(button);
+      expect(clicked.calledOnce).to.be.true;
+
+      await clickWithMouse(link);
+      expect(getTabDOM(second).body.getBoundingClientRect().height).to.be.above(
+        0
+      );
+    });
+
     it('selects a link tab without following its link', async () => {
       await setup(html`
         <igc-tabs>

@@ -734,6 +734,21 @@ describe('Tree', () => {
       expect(target.checkVisibility()).to.be.true;
     });
 
+    it('keeps the expanded items in the revealed item with `singleBranchExpand`', async () => {
+      await setup(true);
+      // Only the outer item hides the match; the inner item is expanded.
+      items.inner.expanded = true;
+      await elementUpdated(items.inner);
+
+      await clickWithMouse(link);
+      await aTimeout(0);
+      await elementUpdated(tree);
+
+      expect(items.outer.expanded).to.be.true;
+      expect(items.inner.expanded).to.be.true;
+      expect(target.checkVisibility()).to.be.true;
+    });
+
     describe('with motion', () => {
       allowMotion();
 
@@ -744,15 +759,11 @@ describe('Tree', () => {
         await clickWithMouse(link);
 
         expect(getAnimationsFor(tree, { subtree: true })).to.be.empty;
-        expect(
-          items.outer.shadowRoot!.getAnimations().length +
-            items.branch.shadowRoot!.getAnimations().length
-        ).to.equal(0);
+        expect(tree.items.flatMap((item) => item.shadowRoot!.getAnimations()))
+          .to.be.empty;
 
-        // A collapse smooth-scrolls to the focused item; the scroll of the
-        // browser to the match ends it. WebKit does not scroll to this match
-        // (a target in a collapsed item that skips its rendering), so the spec
-        // checks that the scroll does not change.
+        // The scroll to the match ends the smooth scroll of the collapse.
+        // WebKit does not scroll to this match, so only the stability counts.
         const scrolled = box.scrollTop;
         await aTimeout(500);
         expect(box.scrollTop).to.equal(scrolled);

@@ -479,9 +479,10 @@ module with the fixtures, the selectors and the assertion helpers the other thre
 65. A canceled `igcItemExpanding` keeps the items collapsed and their children hidden.
 66. A disabled item does not expand.
 67. With `singleBranchExpand`, the reveal collapses the other branch and keeps the path to the match expanded.
-68. With motion, the reveal expands at once, with no animation, and the scroll does not change after it.
-69. The expand animation of a user toggle starts from the height of the children.
-70. The children show during the collapse animation, and they are inert only then.
+68. With `singleBranchExpand`, the reveal keeps the expanded items in the item that it expands.
+69. With motion, the reveal expands at once, with no animation, and the scroll does not change after it.
+70. The expand animation of a user toggle starts from the height of the children.
+71. The children show during the collapse animation, and they are inert only then.
 
 ### Not covered by the suite
 
@@ -517,6 +518,8 @@ module with the fixtures, the selectors and the assertion helpers the other thre
   expands the path but does not scroll to a match in a collapsed item that skips its rendering.
 - A link to an element in a disabled item still expands the enabled items above it, and the element stays hidden.
   Find-in-page does not search a disabled item.
+- With `singleBranchExpand`, a user expand collapses the expanded items in the item, but a reveal keeps them
+  expanded: the browser does not tell which of them holds the match.
 
 ## Accessibility
 
