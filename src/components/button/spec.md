@@ -55,6 +55,7 @@
 |       9 | 2026-10-29 | Transition only the properties that change, so the button and a slotted icon hide at the same time as a hidden ancestor |
 |      10 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API                    |
 |      11 | 2026-11-11 | The form action runs after the click listeners, so a listener can cancel it; the button is the default button for <kbd>Enter</kbd> in a field |
+|      12 | 2026-11-12 | A `commandfor` set or changed while the button is detached resolves once it is attached |
 
 ## Overview
 
@@ -173,7 +174,7 @@ form action to the next task.
 to do with it. The built-in commands operate a native popover and a native `dialog`; the components of the library
 accept `--show`, `--hide` and `--toggle`. A custom command starts with two dashes.
 `commandForElement` resolves the target, accepts an element reference, and picks up a target appended after the
-first render.
+first render. A `commandfor` set or changed while the button is detached resolves once it is attached.
 
 ```html
 <igc-button command="--toggle" commandfor="drawer">Toggle</igc-button>
@@ -303,7 +304,8 @@ button has no `name` and no `mirrored`. Slotted content takes the size of the ic
 
 10. The `command` attribute is reflected onto the native button and follows a change of the property.
 11. `commandForElement` resolves from a string id and accepts an element reference, and `commandfor` resolves a
-    target appended after the first render.
+    target appended after the first render. A `commandfor` set before the button is attached, or changed while it
+    is detached, resolves once it is attached.
 12. A native popover is shown, hidden and toggled on repeated clicks.
 13. A native dialog is opened as modal and closed.
 
