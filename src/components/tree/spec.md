@@ -52,6 +52,7 @@
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                                 |
 |       5 | 2026-11-02 | A real click on the checkbox of an item sends no `igcChange` out of the item              |
 |       6 | 2026-11-12 | A collapsed item far from the view skips its rendering, except the active and the focused item |
+|       7 | 2026-11-12 | Find-in-page and links to an element expand the collapsed items above it |
 
 ## Overview
 
@@ -192,6 +193,13 @@ item toggles it, while a click on the selection checkbox still only changes the 
 
 With `singleBranchExpand`, expanding an item collapses its expanded siblings. Turning the property on collapses
 everything except the ancestors of the active item. Expansion through the API is not restricted by it.
+
+Find-in-page, a text fragment or a link to an element in the children of a collapsed item expands it. The browser
+reveals the collapsed items above the match from the inside out, and each one expands through the user path with
+`igcItemExpanding` and `igcItemExpanded`. A canceled `igcItemExpanding` keeps the item collapsed. While a collapsed
+item is not disabled, its children container has `hidden="until-found"`; a disabled item has plain `hidden`, and
+find-in-page does not search it. While a reveal runs, items expand and collapse without their animation, and with
+`singleBranchExpand` the items on the path to the match stay expanded.
 
 #### Active and focused item
 
@@ -461,6 +469,18 @@ module with the fixtures, the selectors and the assertion helpers the other thre
 61. A skipped item keeps the height of one row.
 62. An item renders when it scrolls into view, and the item that left the view skips its rendering again.
 
+### Content found by the browser
+
+63. A collapsed item hides its children with `hidden="until-found"`, and a disabled one with plain `hidden`.
+64. A link to an item in a collapsed path expands the path from the inside out, each item with `igcItemExpanding`
+    and `igcItemExpanded`.
+65. A canceled `igcItemExpanding` keeps the items collapsed and their children hidden.
+66. A disabled item does not expand.
+67. With `singleBranchExpand`, the reveal collapses the other branch and keeps the path to the match expanded.
+68. With motion, the reveal expands at once, with no animation, and the scroll does not change after it.
+69. The expand animation of a user toggle starts from the height of the children.
+70. The children show during the collapse animation, and they are inert only then.
+
 ### Not covered by the suite
 
 - The `loading` state and the `loading` slot are exercised only through the slot rendering test; there is no
@@ -488,13 +508,19 @@ module with the fixtures, the selectors and the assertion helpers the other thre
 - The tree does not restrict what an item renders, so the developer is responsible for the accessibility of any
   custom label content beyond the role delegation the item performs.
 
+- Find-in-page reaches the children of a collapsed item where the browser supports `hidden="until-found"`: Chrome
+  102, Firefox 139 and Safari 26.2. Other browsers treat the children as plain `hidden`. In WebKit, the browser
+  expands the path but does not scroll to a match in a collapsed item that skips its rendering.
+- A link to an element in a disabled item still expands the enabled items above it, and the element stays hidden.
+  Find-in-page does not search a disabled item.
+
 ## Accessibility
 
 ### ARIA roles and properties
 
 - The tree has `role="tree"`, and `aria-multiselectable` while `selection` is not `none`.
-- An item has `role="treeitem"`, and the container of its children has `role="group"`, which is inert while the
-  item is collapsed.
+- An item has `role="treeitem"`, and the container of its children has `role="group"`, which the `hidden`
+  attribute hides while the item is collapsed. It is inert only while it animates closed.
 - An item whose label contains focusable elements moves the `treeitem` role and its ARIA state onto the first of
   them, and takes `role="none"` itself.
 - `aria-expanded` is rendered only for items with children, `aria-selected` only while selection is enabled, and

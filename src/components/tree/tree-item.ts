@@ -9,6 +9,10 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 import { addAnimationController } from '#animations/player.js';
 import { growVerIn, growVerOut } from '#animations/presets/grow/index.js';
+import {
+  addHiddenUntilFoundController,
+  isRevealing,
+} from '#internals/controllers/hidden-until-found.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
@@ -44,6 +48,8 @@ import type { IgcTreeSelectionService } from './tree.selection.js';
 
 /**
  * The tree-item component represents a child item of the tree component or another tree item.
+ * Find-in-page, a text fragment or a link to an element in the children of a
+ * collapsed item expands it.
  *
  * @element igc-tree-item
  *
@@ -84,6 +90,19 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
   private _groupRef: Ref<HTMLElement> = createRef();
 
   private _animationPlayer = addAnimationController(this, this._groupRef);
+
+  // Find-in-page, a text fragment or a link to an element in the children
+  // expands a collapsed item.
+  private readonly _untilFound = addHiddenUntilFoundController(this, {
+    reveal: () => {
+      this.expandWithEvent();
+      return this.expanded;
+    },
+  });
+
+  /** Whether the collapse animation runs. The children show until it ends. */
+  @state()
+  private _collapsing = false;
 
   // A move into another tree changes whether the item renders the select marker.
   @state()
@@ -396,9 +415,25 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
     );
   }
 
-  private async _toggleAnimation(dir: 'open' | 'close') {
-    const animation = dir === 'open' ? growVerIn : growVerOut;
-    return this._animationPlayer.playExclusive(animation());
+  private async _toggleAnimation(dir: 'open' | 'close'): Promise<boolean> {
+    // The browser scrolls to the match right after a reveal, also of another
+    // item, such as one that collapses this item in a single-branch tree.
+    if (isRevealing()) {
+      return true;
+    }
+
+    if (dir === 'open') {
+      // The animation measures the children, so they show before the render.
+      this._groupRef.value?.removeAttribute('hidden');
+      return this._animationPlayer.playExclusive(growVerIn());
+    }
+
+    this._collapsing = true;
+    try {
+      return await this._animationPlayer.playExclusive(growVerOut());
+    } finally {
+      this._collapsing = false;
+    }
   }
 
   private _expandedChange(oldValue: boolean): void {
@@ -577,7 +612,16 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
           </slot>
         </div>
       </div>
-      <div ${ref(this._groupRef)} role="group" .inert=${!this.expanded}>
+      <div
+        ${ref(this._groupRef)}
+        role="group"
+        hidden=${this._untilFound.value(
+          !(this.expanded || this._collapsing),
+          !this.disabled
+        )}
+        @beforematch=${this._untilFound.handleBeforeMatch}
+        .inert=${this._collapsing}
+      >
         <slot @slotchange=${this._handleChange}></slot>
       </div>
     `;
