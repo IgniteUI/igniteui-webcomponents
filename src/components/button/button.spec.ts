@@ -442,6 +442,43 @@ describe('Button tests', () => {
 
         expect(button.commandForElement).to.be.null;
       });
+
+      it('resolves commandfor set before the button is inserted', async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div><div id="detached-target" popover></div></div>
+        `);
+        const target = container.querySelector('#detached-target');
+
+        // set attributes on element before inserting it as some frameworks do:
+        button = document.createElement(IgcButtonComponent.tagName);
+        button.setAttribute('commandfor', 'detached-target');
+        expect(button.commandForElement).to.be.null;
+
+        container.appendChild(button);
+        await elementUpdated(button);
+
+        expect(button.commandForElement).to.equal(target);
+      });
+
+      it('resolves a commandfor changed while the button was detached', async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <igc-button commandfor="first-target">Click</igc-button>
+            <div id="first-target" popover></div>
+            <div id="second-target" popover></div>
+          </div>
+        `);
+
+        button = container.querySelector<IgcButtonComponent>('igc-button')!;
+        const second = container.querySelector('#second-target');
+
+        button.remove();
+        button.commandfor = 'second-target';
+        container.appendChild(button);
+        await elementUpdated(button);
+
+        expect(button.commandForElement).to.equal(second);
+      });
     });
 
     describe('Popover control', () => {
