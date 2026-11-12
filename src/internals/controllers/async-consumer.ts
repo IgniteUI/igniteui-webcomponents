@@ -11,7 +11,8 @@ type AsyncContextOptions<T extends Context<unknown, unknown>> = {
   callback?: (value: ContextType<T>, dispose?: () => void) => void;
 };
 
-type Retry = (context: unknown) => void;
+type ProviderEvent = HTMLElementEventMap['context-provider'];
+type Retry = (event: ProviderEvent) => void;
 
 /** The unanswered consumers of each document. */
 const waiting = new WeakMap<Document, Set<Retry>>();
@@ -22,11 +23,21 @@ const waiting = new WeakMap<Document, Set<Retry>>();
  * remove.
  */
 function retryWaiting(event: Event): void {
-  const { context } = event as Event & { context?: unknown };
-
   for (const retry of waiting.get(event.currentTarget as Document) ?? []) {
-    retry(context);
+    retry(event as ProviderEvent);
   }
+}
+
+/**
+ * Whether a request of `consumer` can reach `provider`. In one tree, it
+ * reaches only the ancestors of the consumer. Across trees, slots decide, and
+ * a closed shadow root hides them.
+ */
+function mayReach(consumer: Element, provider: Element): boolean {
+  return (
+    consumer.getRootNode() !== provider.getRootNode() ||
+    provider.contains(consumer)
+  );
 }
 
 function createWaiting(document: Document): Set<Retry> {
@@ -59,9 +70,13 @@ class AsyncContextConsumer<
     return this._consumer?.value;
   }
 
-  private readonly _retry: Retry = (context) => {
-    if (context === this._options.context) {
-      this._consumer?.hostConnected();
+  private readonly _retry: Retry = ({ context, contextTarget }) => {
+    if (
+      this._consumer &&
+      context === this._options.context &&
+      mayReach(this._host, contextTarget)
+    ) {
+      this._consumer.hostConnected();
     }
   };
 

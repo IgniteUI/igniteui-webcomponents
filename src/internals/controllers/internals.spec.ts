@@ -293,6 +293,33 @@ describe('ElementInternals controller', () => {
 
         expect(host.internals.labels).to.eql([label]);
       });
+
+      describe('in a shadow root', () => {
+        async function renderInShadow(content: string): Promise<ShadowRoot> {
+          const wrapper = await fixture<HTMLElement>(html`<div></div>`);
+          const root = wrapper.attachShadow({ mode: 'open' });
+          root.innerHTML = content;
+          return root;
+        }
+
+        it('does not create the live list for an id when the root has no label', async () => {
+          const root = await renderInShadow(`<${tag} id="inner"></${tag}>`);
+          const host = root.querySelector<Fixture>(tag)!;
+          const read = sinon.spy(ElementInternals.prototype, 'labels', ['get']);
+
+          expect(host.internals.labels).to.be.null;
+          expect(read.get.called).to.be.false;
+        });
+
+        it('returns the label of the same root that names the host id', async () => {
+          const root = await renderInShadow(
+            `<label for="inner">Name</label><${tag} id="inner"></${tag}>`
+          );
+          const host = root.querySelector<Fixture>(tag)!;
+
+          expect(host.internals.labels).to.eql([root.querySelector('label')]);
+        });
+      });
     });
   });
 });
