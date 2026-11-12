@@ -171,7 +171,10 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<IgcButton
     this._commandfor = value;
     if (value) {
       this._resolver.observe();
-      this._commandForElement = getElementByIdFromRoot(this, value);
+      // detached element has no root to call `getElementById` on until `connectedCallback`
+      this._commandForElement = this.isConnected
+        ? getElementByIdFromRoot(this, value)
+        : null;
     } else {
       this._commandForElement = null;
       this._resolver.unobserve();
@@ -218,6 +221,14 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<IgcButton
   constructor() {
     super();
     trackLabels(this);
+  }
+
+  public override connectedCallback(): void {
+    super.connectedCallback();
+    // resolve `commandfor` in case it was set or changed while disconnected:
+    if (this._commandfor) {
+      this._resolveCommandFor();
+    }
   }
 
   protected override firstUpdated(): void {
