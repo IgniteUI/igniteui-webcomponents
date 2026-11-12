@@ -442,6 +442,7 @@ class AriaProjectorController implements ReactiveController {
   private readonly _host: ControllerHost;
   private readonly _config: AriaProjectorConfig;
   private _retryScheduled = false;
+  private _naming?: ResolvedNaming;
 
   constructor(host: ControllerHost, config: AriaProjectorConfig) {
     this._host = host;
@@ -451,13 +452,13 @@ class AriaProjectorController implements ReactiveController {
 
   /** Computes the state, with the name, the helper text and the description of the host. */
   private _state(): ProjectedARIA {
-    const { state, naming = true, fallbackLabel } = this._config;
+    const { state, naming = true } = this._config;
     const projected = state();
     const host = this._host;
     const helper = naming && host.renderRoot.querySelector('igc-validator');
 
     return {
-      ...(naming && resolveNaming(host, hasLabel(host), fallbackLabel?.())),
+      ...this._naming,
       ...projected,
       describedBy: joinRelations(
         helper ? [helper] : null,
@@ -465,6 +466,17 @@ class AriaProjectorController implements ReactiveController {
         host.ariaDescribedByElements
       ),
     };
+  }
+
+  /** @internal */
+  public hostUpdate(): void {
+    const { naming = true, fallbackLabel } = this._config;
+    const host = this._host;
+
+    // The labels cache of the internals controller ends at `hostUpdated`.
+    this._naming = naming
+      ? resolveNaming(host, hasLabel(host), fallbackLabel?.())
+      : undefined;
   }
 
   /** @internal */
