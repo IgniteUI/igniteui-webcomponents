@@ -1058,6 +1058,10 @@ describe('Masked input', () => {
       ).to.be.false;
     });
 
+    it('submits once on a real Enter', async () => {
+      expect(await spec.pressEnter()).to.equal(1);
+    });
+
     it('is with correct input value and placeholder after a form reset', async () => {
       const input = spec.element.renderRoot.querySelector('input')!;
       const placeholder = 'Type something';

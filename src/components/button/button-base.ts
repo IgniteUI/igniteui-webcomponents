@@ -19,6 +19,7 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import { getElementByIdFromRoot } from '#internals/utils/dom.js';
+import { runDefaultAction } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
 
 /**
@@ -231,15 +232,26 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<IgcButton
 
   //#region Event handlers
 
-  protected _handleClick(): void {
-    switch (this.type) {
-      case 'submit':
-        this.form?.requestSubmit();
-        break;
-      case 'reset':
-        this.form?.reset();
-        break;
+  /** A click listener that disables the button stops the form action. */
+  protected _handleClick(event: MouseEvent): void {
+    if (!this.form || this.type === 'button') {
+      return;
     }
+
+    runDefaultAction(event, () => {
+      if (this.disabled) {
+        return;
+      }
+
+      switch (this.type) {
+        case 'submit':
+          this.form?.requestSubmit();
+          break;
+        case 'reset':
+          this.form?.reset();
+          break;
+      }
+    });
   }
 
   protected formDisabledCallback(state: boolean): void {

@@ -1131,6 +1131,126 @@ describe('Input component', () => {
     });
   });
 
+  describe('Enter submission', () => {
+    const spec = createFormAssociatedTestBed<IgcInputComponent>(html`
+      <igc-input name="input" value="text"></igc-input>
+    `);
+
+    let input: HTMLInputElement;
+
+    function spySubmit() {
+      const submit = spy<(event: SubmitEvent) => void>(preventDefault);
+      spec.form.addEventListener('submit', submit);
+      return submit;
+    }
+
+    beforeEach(async () => {
+      await spec.setup(IgcInputComponent.tagName);
+      input = spec.element.renderRoot.querySelector('input')!;
+    });
+
+    it('submits a form with one text field and no submit button', () => {
+      spec.form.insertAdjacentHTML(
+        'beforeend',
+        '<input type="checkbox" name="c"><input type="hidden" name="h"><textarea name="t"></textarea>'
+      );
+      expect(spec.submitWithEnter(input)).to.be.true;
+    });
+
+    it('does not submit a form with another text field and no submit button', () => {
+      for (const markup of [
+        '<input name="other">',
+        '<input type="email" name="other" disabled>',
+        '<igc-input name="other"></igc-input>',
+      ]) {
+        spec.form.insertAdjacentHTML('beforeend', markup);
+        expect(spec.submitWithEnter(input), markup).to.be.false;
+        spec.form.lastElementChild!.remove();
+      }
+    });
+
+    it('clicks the default button, which submits the form', () => {
+      spec.form.insertAdjacentHTML(
+        'beforeend',
+        '<input name="other"><button type="button">Menu</button><button id="save">Save</button><button>Send</button>'
+      );
+      const save = spec.form.querySelector('#save')!;
+      const click = spy();
+      const submit = spySubmit();
+      save.addEventListener('click', click);
+
+      expect(spec.submitWithEnter(input)).to.be.true;
+      expect(click.calledOnce).to.be.true;
+      expect(submit.firstCall.args[0].submitter).to.equal(save);
+    });
+
+    it('does not submit when the default button is disabled', () => {
+      spec.form.insertAdjacentHTML(
+        'beforeend',
+        '<button disabled>Save</button><button>Send</button>'
+      );
+      expect(spec.submitWithEnter(input)).to.be.false;
+    });
+
+    it('does not submit when a listener cancels the click of the default button', () => {
+      spec.form.insertAdjacentHTML('beforeend', '<button>Save</button>');
+      spec.form
+        .querySelector('button')!
+        .addEventListener('click', preventDefault);
+
+      expect(spec.submitWithEnter(input)).to.be.false;
+    });
+
+    it('clicks an image button that comes first', () => {
+      spec.form.insertAdjacentHTML(
+        'beforeend',
+        '<input name="other"><input type="image" alt="Save"><button>Send</button>'
+      );
+      const submit = spySubmit();
+
+      expect(spec.submitWithEnter(input)).to.be.true;
+      expect(submit.firstCall.args[0].submitter).to.equal(
+        spec.form.querySelector('[type="image"]')
+      );
+    });
+
+    it('does not submit when a keydown listener disables the control', () => {
+      spec.element.addEventListener('keydown', () => {
+        spec.element.disabled = true;
+      });
+
+      expect(spec.submitWithEnter(input)).to.be.false;
+    });
+
+    it('submits once on a synthetic keydown and keypress pair', () => {
+      const submit = spySubmit();
+
+      for (const type of ['keydown', 'keypress']) {
+        input.dispatchEvent(
+          new KeyboardEvent(type, {
+            key: 'Enter',
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+          })
+        );
+      }
+
+      expect(submit.callCount).to.equal(1);
+    });
+
+    it('submits once on a real Enter', async () => {
+      expect(await spec.pressEnter()).to.equal(1);
+    });
+
+    it('does not submit on a real Enter when a listener cancels the keydown or the keypress', async () => {
+      for (const type of ['keydown', 'keypress']) {
+        spec.element.addEventListener(type, preventDefault, { once: true });
+        expect(await spec.pressEnter(), type).to.equal(0);
+      }
+    });
+  });
+
   describe('Validation message slots', () => {
     it('', async () => {
       const testParameters: ValidationContainerTestsParams<IgcInputComponent>[] =

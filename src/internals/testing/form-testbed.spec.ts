@@ -1,13 +1,16 @@
 import {
+  aTimeout,
   elementUpdated,
   expect,
   fixture,
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { sendKeys } from '@web/test-runner-commands';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { HOST_COMBOBOX_ATTRIBUTES } from '../controllers/aria-projection.js';
+import { enterKey } from '../controllers/keys.js';
 import type { IgcFormControl } from '../mixins/forms/types.js';
 import { isFocused } from './helpers.spec.js';
 import { simulateClick } from './simulate.spec.js';
@@ -107,6 +110,25 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
       })
     );
     return called;
+  }
+
+  /**
+   * Focuses `target`, or the component, and presses a real `Enter`. Resolves
+   * with the submit count after one task.
+   */
+  public async pressEnter(target: HTMLElement = this.element): Promise<number> {
+    let count = 0;
+    const handler = (event: SubmitEvent) => {
+      event.preventDefault();
+      count++;
+    };
+
+    target.focus();
+    this.form.addEventListener('submit', handler);
+    await sendKeys({ press: enterKey });
+    await aTimeout(0);
+    this.form.removeEventListener('submit', handler);
+    return count;
   }
 
   /** Assigns properties to the element, and optionally awaits the update. */

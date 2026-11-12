@@ -30,7 +30,7 @@ export interface ToggleShellOptions {
   description?: Element | null;
 
   onClick: (event: PointerEvent) => void;
-  onKeyDown: (event: KeyboardEvent) => void;
+  onEnterKey: (event: KeyboardEvent) => void;
   onBlur?: () => void;
 }
 
@@ -69,7 +69,8 @@ export function renderToggleShell(
         .checked=${live(host.checked)}
         .indeterminate=${live(options.indeterminate ?? false)}
         tabindex=${ifDefined(options.tabindex)}
-        @keydown=${options.onKeyDown}
+        @keydown=${options.onEnterKey}
+        @keypress=${options.onEnterKey}
         @click=${options.onClick}
         @blur=${options.onBlur ?? nothing}
       />

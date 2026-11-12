@@ -41,6 +41,11 @@ $theme: $base;
     color: var-get($theme, 'idle-secondary-color');
 }
 
+[part~='filled'] [part~='label'],
+[part~='label']:has(+ [part~='filled']) {
+    color: var-get($theme, 'filled-secondary-color');
+}
+
 textarea {
     background: transparent;
     color: var-get($theme, 'filled-text-color');
