@@ -1,7 +1,8 @@
-import type {
-  LitElement,
-  ReactiveController,
-  ReactiveControllerHost,
+import {
+  isServer,
+  type LitElement,
+  type ReactiveController,
+  type ReactiveControllerHost,
 } from 'lit';
 import { sameItems } from '../utils/arrays.js';
 import { setOrRemoveAttribute } from '../utils/dom.js';
@@ -106,9 +107,17 @@ class ElementInternalsController implements ReactiveController {
       return this._labels;
     }
 
-    const host = this._host.constructor as { formAssociated?: boolean };
-    // The getter throws for an element that is not form associated.
-    const list = host.formAssociated ? this._internals.labels : null;
+    const host = this._host;
+    // The getter throws unless the host is form associated. Without an id or an
+    // ancestor `<label>`, no label can name the host, so skip the read: Chromium
+    // updates each live list on every DOM change until GC. The SSR DOM shim has
+    // no `closest()`.
+    const list =
+      !isServer &&
+      (host.constructor as { formAssociated?: boolean }).formAssociated &&
+      (host.id || host.closest('label'))
+        ? this._internals.labels
+        : null;
     const labels = list?.length
       ? Array.from(list as NodeListOf<Element>)
       : null;

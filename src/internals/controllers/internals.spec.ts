@@ -6,6 +6,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import { LitElement } from 'lit';
+import sinon from 'sinon';
 import {
   addInternalsController,
   type ElementInternalsController,
@@ -242,6 +243,56 @@ describe('ElementInternals controller', () => {
       };
 
       expect(host.internals.labels).to.be.null;
+    });
+
+    describe('of a form associated host', () => {
+      let tag: string;
+      let tagName: ReturnType<typeof unsafeStatic>;
+
+      type Fixture = LitElement & { internals: ElementInternalsController };
+
+      before(() => {
+        tag = defineCE(
+          class extends LitElement {
+            public static formAssociated = true;
+            public internals = addInternalsController(this);
+          }
+        );
+        tagName = unsafeStatic(tag);
+      });
+
+      afterEach(() => sinon.restore());
+
+      it('does not create the live list when no label can name the host', async () => {
+        const root = await fixture<HTMLElement>(
+          html`<div><label>Other</label><${tagName}></${tagName}></div>`
+        );
+        const host = root.querySelector<Fixture>(tag)!;
+        const read = sinon.spy(ElementInternals.prototype, 'labels', ['get']);
+
+        expect(host.internals.labels).to.be.null;
+        expect(read.get.called).to.be.false;
+      });
+
+      it('returns the label that names the host id', async () => {
+        const root = await fixture<HTMLElement>(
+          html`<div>
+            <label for="named">Name</label><${tagName} id="named"></${tagName}>
+          </div>`
+        );
+        const host = root.querySelector<Fixture>('#named')!;
+
+        expect(host.internals.labels).to.eql([root.querySelector('label')]);
+      });
+
+      it('returns an ancestor label', async () => {
+        const label = await fixture<HTMLLabelElement>(
+          html`<label>Name <${tagName}></${tagName}></label>`
+        );
+        const host = label.querySelector<Fixture>(tag)!;
+
+        expect(host.internals.labels).to.eql([label]);
+      });
     });
   });
 });

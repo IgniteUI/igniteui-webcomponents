@@ -7,9 +7,8 @@ import {
 } from 'lit';
 
 import { getOrInsertComputed } from '#internals/utils/objects.js';
-import { _themeChangedEmitter, getTheme } from './config.js';
+import { _globalThemeListeners, getTheme } from './config.js';
 import { type ThemeContext, themeContext } from './context.js';
-import { CHANGED_THEME_EVENT } from './theming-event.js';
 import type {
   ComponentThemes,
   Theme,
@@ -67,7 +66,7 @@ function resolveSheets(
  * 2. **Global** - the application-wide theme set via `configureTheme()`.
  *
  * When a context provider is present, the controller subscribes to its updates
- * and stops listening to global theme change events. When the host element is
+ * and stops following the global theme. When the host element is
  * disconnected and reconnected outside a provider, it automatically falls back
  * to the global theme.
  *
@@ -139,14 +138,14 @@ class ThemingController implements ReactiveController {
   /** @internal */
   public hostConnected(): void {
     if (this._themeSource === 'uninitialized') {
-      _themeChangedEmitter.addEventListener(CHANGED_THEME_EVENT, this);
+      _globalThemeListeners.add(this);
       this._applyGlobalTheme();
     }
   }
 
   /** @internal */
   public hostDisconnected(): void {
-    _themeChangedEmitter.removeEventListener(CHANGED_THEME_EVENT, this);
+    _globalThemeListeners.delete(this);
 
     // Re-resolve the theme source on reconnect, which may be in another part of the tree.
     this._themeSource = 'uninitialized';
@@ -154,10 +153,10 @@ class ThemingController implements ReactiveController {
 
   //#endregion
 
-  //#region Event handling
+  //#region Global theme
 
   /** @internal */
-  public handleEvent(): void {
+  public globalThemeChanged(): void {
     if (this._themeSource === 'global') {
       this._applyGlobalTheme();
     }
@@ -168,7 +167,7 @@ class ThemingController implements ReactiveController {
   //#region Internal methods
 
   private _applyContextTheme({ theme, variant }: ThemeContext): void {
-    _themeChangedEmitter.removeEventListener(CHANGED_THEME_EVENT, this);
+    _globalThemeListeners.delete(this);
     this._themeSource = 'context';
     this._applyTheme(theme, variant);
   }
