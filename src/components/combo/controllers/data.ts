@@ -67,6 +67,9 @@ export class DataState<T extends object> implements ReactiveController {
   private _source?: T[];
   /** The host fields of the last pipeline run. See {@link _inputsChanged}. */
   private _inputs: unknown[] = [];
+  /** The state of each toggle option at {@link _toggleVersion}. See {@link selectionOf}. */
+  private readonly _toggleStates = new Map<number, boolean | 'mixed'>();
+  private _toggleVersion?: number;
 
   private _dataState: ComboRecord<T>[] = [];
   private _optionCount = 0;
@@ -188,6 +191,7 @@ export class DataState<T extends object> implements ReactiveController {
     }
 
     this._dataState = this._apply(this._indexed);
+    this._toggleStates.clear();
     this._dirty = false;
     return true;
   }
@@ -366,10 +370,36 @@ export class DataState<T extends object> implements ReactiveController {
 
   /**
    * Whether all (`true`), none (`false`) or some (`mixed`) of the items of the
-   * toggle option at `index` are in `selected`. Stops at the first mix,
-   * because these options render often.
+   * toggle option at `index` are in `selected`. These options render on each
+   * key and scroll, so with the `version` of `selected`, the state stays until
+   * the version changes or the pipeline runs again.
    */
   public selectionOf(
+    index: number,
+    selected: ReadonlySet<T>,
+    version?: number
+  ): boolean | 'mixed' {
+    if (version === undefined) {
+      return this._scanSelection(index, selected);
+    }
+
+    if (version !== this._toggleVersion) {
+      this._toggleStates.clear();
+      this._toggleVersion = version;
+    }
+
+    let state = this._toggleStates.get(index);
+
+    if (state === undefined) {
+      state = this._scanSelection(index, selected);
+      this._toggleStates.set(index, state);
+    }
+
+    return state;
+  }
+
+  /** Stops at the first mix. See {@link selectionOf}. */
+  private _scanSelection(
     index: number,
     selected: ReadonlySet<T>
   ): boolean | 'mixed' {

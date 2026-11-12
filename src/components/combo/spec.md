@@ -85,6 +85,7 @@
 |      23 | 2026-11-11 | The keys that an IME handles do nothing in the combo; new remote results show from the top with no active option, also in a list that opens; a value without a record stays in `value` until a change names it; the selection methods use a new `filteringOptions` at once, and the same options do not update the combo; `bindComboDataSource()` has its own entry point |
 |      24 | 2026-11-11 | <kbd>Enter</kbd> submits the form from single selection with the list closed, as in an input with a list; multiple selection does not submit, as a native `select` |
 |      25 | 2026-11-12 | A new `valueKey` or `displayKey` gives the group headers new records; an appended page keeps the records of the loaded items, so the list keeps their measured sizes |
+|      26 | 2026-11-12 | A write of the same `value` does not update the combo and keeps the pending selection; it still makes the control dirty, and after a new `data` or `valueKey` it gives the values their records again |
 
 ## Overview
 
@@ -756,7 +757,9 @@ state, the data requests and the selection model without a browser fixture.
 1. Rendering, the default state and the accessibility audit.
 2. Data binding through `data`, `valueKey`, `displayKey` and `groupKey`, also when the `data` array changes in place.
 3. Single and multiple selection, with `select` and `deselect` with and without arguments.
-4. `value` and `selection` give the values and the records.
+4. `value` and `selection` give the values and the records. A write of the same `value` requests no update and keeps
+   the pending selection, but makes the control dirty. After a new `data`, a `data` that grows in place or a new
+   `valueKey`, it gives the values their records again.
 5. Filtering, with case sensitivity, diacritics matching and `disableFiltering`. A set of `singleSelect` or
    `disableFiltering` to its current value keeps the search text and the filter. The same filtering options do not
    update the combo, and options that changed in place apply.

@@ -342,6 +342,28 @@ describe('Combo data state', () => {
     expect(state.dataState).not.to.include(first);
   });
 
+  it('keeps the state of a toggle option for one version of the selection', () => {
+    const { state } = setup({ groupKey: 'country', groupSelection: true });
+    const selected = new Set([sofia, plovdiv]);
+
+    expect(state.selectionOf(0, selected, 1)).to.be.true;
+
+    selected.delete(plovdiv);
+    expect(state.selectionOf(0, selected, 1)).to.be.true;
+    expect(state.selectionOf(0, selected, 2)).to.equal('mixed');
+
+    // Without a version, nothing is kept.
+    selected.add(plovdiv);
+    expect(state.selectionOf(0, selected)).to.be.true;
+    expect(state.selectionOf(0, selected, 2)).to.equal('mixed');
+
+    // A pipeline run reads the selection again.
+    selected.delete(plovdiv);
+    state.searchTerm = 'a';
+    state.hostUpdate();
+    expect(state.selectionOf(0, selected, 2)).to.be.true;
+  });
+
   it('sorts the groups again in a new locale', () => {
     const { host, state } = setup({ groupKey: 'country' });
 

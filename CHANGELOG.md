@@ -227,7 +227,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The deprecated `item` of the group header template follows a new `valueKey` or `displayKey`.
 - #### Combo, Dropdown, Highlight, Select
   - Setting a property to its current value no longer resets the state. This fixes React and other frameworks that set every property on each render. [#2515](https://github.com/IgniteUI/igniteui-webcomponents/issues/2515) [#2516](https://github.com/IgniteUI/igniteui-webcomponents/issues/2516) [#2518](https://github.com/IgniteUI/igniteui-webcomponents/pull/2518) [#2523](https://github.com/IgniteUI/igniteui-webcomponents/pull/2523) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545) [#2572](https://github.com/IgniteUI/igniteui-webcomponents/pull/2572)
-    - Combo: `singleSelect`, `disableFiltering` and `filteringOptions` no longer clear the search text or filter the items again.
+    - Combo: `singleSelect`, `disableFiltering` and `filteringOptions` no longer clear the search text or filter the items again. The same `value` no longer updates the combo.
     - Dropdown, Select: `selected` on an item no longer moves the active item.
     - Highlight: `searchText` and `caseSensitive` no longer move the active match back to the first match.
     - Select: `value` no longer moves the active item. When you remove the active item, the navigation goes back to the selected item.

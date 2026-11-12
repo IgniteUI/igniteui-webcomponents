@@ -1,4 +1,5 @@
 import { expect } from '@open-wc/testing';
+import { spy } from 'sinon';
 
 import { ComboSelection, type ComboSelectionHost } from './selection.js';
 
@@ -299,6 +300,69 @@ describe('Combo selection', () => {
       const { selection } = confirming({ value: [1] });
       selection.syncFromValue([1]);
       expect(selection.knownValues()).to.be.undefined;
+    });
+
+    it('indexes only the new items of a data that starts with the indexed items', () => {
+      const { host, selection } = setup();
+      const keys = spy(selection, 'keyOf');
+
+      selection.syncFromValue([1]);
+      expect(keys.callCount).to.equal(3);
+
+      host.data = [...cities, burgas];
+      selection.invalidateIndex();
+      selection.syncFromValue([9]);
+
+      expect(keys.callCount).to.equal(4);
+      expect([...selection.selected]).to.eql([burgas]);
+    });
+
+    it('indexes all the items again for a new valueKey', () => {
+      const { host, selection } = setup();
+
+      selection.syncFromValue([1]);
+      host.valueKey = 'name';
+      selection.syncFromValue(['Plovdiv']);
+
+      expect([...selection.selected]).to.eql([plovdiv]);
+    });
+  });
+
+  describe('Version', () => {
+    it('changes on each change of the selected or the pending records', () => {
+      const { host, selection } = confirming({ value: [1, 9] });
+      let version = selection.version;
+      const expectChange = (step: string) => {
+        expect(selection.version, step).not.to.equal(version);
+        version = selection.version;
+      };
+
+      // The first read copies the committed records, so nothing changes.
+      selection.pending;
+      expect(selection.version).to.equal(version);
+
+      selection.syncFromValue([1, 9]);
+      expectChange('syncFromValue');
+      selection.apply([plovdiv], true);
+      expectChange('apply');
+      selection.resolveValues([burgas]);
+      expectChange('resolveValues');
+      selection.syncPending(undefined);
+      expectChange('syncPending');
+      selection.selectAll();
+      expectChange('selectAll');
+      selection.commit(selection.pending!);
+      expectChange('commit');
+      selection.clear();
+      expectChange('clear');
+      selection.dropPending();
+      expectChange('dropPending');
+
+      // A closed list has no pending selection to drop.
+      host.open = false;
+      selection.pending;
+      selection.dropPending();
+      expect(selection.version).to.equal(version);
     });
   });
 });

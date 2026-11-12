@@ -24,7 +24,11 @@ export type ComboSelectionHost<T extends object> = Pick<
 export class ComboSelection<T extends object> {
   private readonly _host: ComboSelectionHost<T>;
   private _index?: Map<Item<T>, number[]>;
-  private _indexSize = 0;
+  /** The items and the `valueKey` of {@link _index}. See {@link _dataIndex}. */
+  private _indexed: T[] = [];
+  private _indexKey?: ComboSelectionHost<T>['valueKey'];
+  private _indexStale = false;
+  private _version = 0;
   private _selected: Set<T> = new Set();
   /** Read it through {@link pending}. */
   private _pending?: Set<T>;
@@ -40,6 +44,11 @@ export class ComboSelection<T extends object> {
   /** The committed selection: `selection`, `value` and the text of the input. */
   public get selected(): ReadonlySet<T> {
     return this._selected;
+  }
+
+  /** Changes when the records of {@link selected} or {@link pending} can change. */
+  public get version(): number {
+    return this._version;
   }
 
   public get confirmMode(): boolean {
@@ -85,30 +94,63 @@ export class ComboSelection<T extends object> {
 
   /** The next read of {@link pending} copies {@link selected} again. */
   public dropPending(): void {
+    if (this._pending) {
+      this._version++;
+    }
+
     this._pending = undefined;
     this._pendingUnresolved = undefined;
   }
 
-  /** Call when `data` or `valueKey` is set. */
+  /** Call when `data` is set, also to the same array. */
   public invalidateIndex(): void {
-    this._index = undefined;
+    this._indexStale = true;
   }
 
   /**
-   * Maps each value to the positions of its records, in data-source order.
-   * The size check finds in-place growth or shrink, but not a replaced element.
+   * Maps each value to the positions of its records, in data-source order. It
+   * keeps a copy of the indexed items, so a `data` that starts with them, such
+   * as an appended page, adds only the new items. A replaced element shows
+   * only after a set of `data` or a change of its length.
    */
   private get _dataIndex(): Map<Item<T>, number[]> {
-    const { data } = this._host;
+    const { data, valueKey } = this._host;
+    const sameKey = this._indexKey === valueKey;
+    let index = this._index;
+    let indexed = this._indexed;
 
-    if (!this._index || this._indexSize !== data.length) {
-      this._index = Map.groupBy(data.keys(), (position) =>
-        this.keyOf(data[position])
-      );
-      this._indexSize = data.length;
+    if (
+      index &&
+      sameKey &&
+      !this._indexStale &&
+      indexed.length === data.length
+    ) {
+      return index;
     }
 
-    return this._index;
+    if (
+      !(
+        index &&
+        sameKey &&
+        indexed.length <= data.length &&
+        indexed.every((item, position) => item === data[position])
+      )
+    ) {
+      index = this._index = new Map();
+      indexed = this._indexed = [];
+      this._indexKey = valueKey;
+    }
+
+    for (let position = indexed.length; position < data.length; position++) {
+      const key = this.keyOf(data[position]);
+      const positions = index.get(key);
+
+      positions ? positions.push(position) : index.set(key, [position]);
+      indexed.push(data[position]);
+    }
+
+    this._indexStale = false;
+    return index;
   }
 
   /** The key of the record in the value index. Unlike {@link _valueOf}, it has no fallback. */
@@ -250,6 +292,8 @@ export class ComboSelection<T extends object> {
       selecting ? target.add(item) : target.delete(item);
     }
 
+    this._version++;
+
     if (selecting) {
       this._resolveUnresolved(records, this._targetUnresolved);
     }
@@ -268,6 +312,7 @@ export class ComboSelection<T extends object> {
         new Set(records).union(this._selected),
         this._unresolved
       );
+      this._version++;
       return true;
     }
 
@@ -284,12 +329,14 @@ export class ComboSelection<T extends object> {
       this._selected = all;
     }
 
+    this._version++;
     this._resolveUnresolved(all, this._targetUnresolved);
   }
 
   /** Clears the committed selection. The pending selection does not change. */
   public clear(): void {
     this._selected = new Set();
+    this._version++;
   }
 
   /** The records that `pending` adds to {@link selected} or removes from it. */
@@ -303,12 +350,14 @@ export class ComboSelection<T extends object> {
    */
   public commit(pending: ReadonlySet<T>): void {
     this._selected = new Set(pending);
+    this._version++;
   }
 
   /** Gives {@link selected} the records of `values`. A value that `data` does not hold keeps its record. */
   public syncFromValue(values: ComboValue<T>[]): void {
     this._unresolved = new Set();
     this._selected = this._recordsOf(values, this._selected, this._unresolved);
+    this._version++;
   }
 
   /**
@@ -340,6 +389,7 @@ export class ComboSelection<T extends object> {
       }
 
       this._pending = this._recordsOf(values, pending, this._pendingUnresolved);
+      this._version++;
     }
   }
 

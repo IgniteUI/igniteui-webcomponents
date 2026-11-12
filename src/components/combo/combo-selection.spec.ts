@@ -49,6 +49,68 @@ describe('Combo', () => {
     suppressResizeObserverLoopError();
   });
 
+  describe('A write of the same value', () => {
+    beforeEach(async () => {
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>`
+      );
+    });
+
+    it('requests no update and keeps the pending selection', async () => {
+      combo.value = ['BG01', 'BG02'];
+      combo.selectionCommit = 'confirm';
+      await openComboPopover(combo);
+      combo.deselect('BG01');
+      await elementUpdated(combo);
+
+      combo.value = [...combo.value];
+
+      expect(combo.isUpdatePending).to.be.false;
+      expect(combo.value).to.eql(['BG01', 'BG02']);
+      expect(combo.pendingValue).to.eql(['BG02']);
+    });
+
+    it('makes the control dirty, as any write', async () => {
+      const form = document.createElement('form');
+      combo.before(form);
+      form.append(combo);
+      combo.value = ['BG01'];
+
+      // A reset makes the control pristine, so a new default sets the value.
+      form.reset();
+      combo.value = [];
+      combo.defaultValue = ['BG02'];
+
+      expect(combo.value).to.be.empty;
+      form.remove();
+    });
+
+    it('gives the values their records again after a new data or valueKey', () => {
+      const copies = cities.map((city) => ({ ...city }));
+      const other = { id: 'XX01', name: 'Elsewhere', country: '', zip: '' };
+      combo.value = ['BG01', 'BG02'];
+
+      combo.data = copies;
+      combo.value = ['BG01', 'BG02'];
+      expect(combo.selection).to.have.ordered.members(copies.slice(0, 2));
+
+      // A data that grows in place.
+      combo.value = ['BG01', 'XX01'];
+      copies.push(other);
+      combo.value = ['BG01', 'XX01'];
+      expect(combo.selection).to.have.ordered.members([copies[0], other]);
+      combo.value = ['BG01', 'BG02'];
+
+      combo.valueKey = 'name';
+      combo.value = ['BG01', 'BG02'];
+      expect(combo.selection).to.be.empty;
+    });
+  });
+
   describe('Select all methods', () => {
     async function search(text: string): Promise<void> {
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: text }));
