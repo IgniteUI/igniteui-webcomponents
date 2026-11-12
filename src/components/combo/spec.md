@@ -84,6 +84,7 @@
 |      22 | 2026-11-06 | Escape from the slot content keeps the list open when the content handled the key |
 |      23 | 2026-11-11 | The keys that an IME handles do nothing in the combo; new remote results show from the top with no active option, also in a list that opens; a value without a record stays in `value` until a change names it; the selection methods use a new `filteringOptions` at once, and the same options do not update the combo; `bindComboDataSource()` has its own entry point |
 |      24 | 2026-11-11 | <kbd>Enter</kbd> submits the form from single selection with the list closed, as in an input with a list; multiple selection does not submit, as a native `select` |
+|      25 | 2026-11-12 | A new `valueKey` or `displayKey` gives the group headers new records; an appended page keeps the records of the loaded items, so the list keeps their measured sizes |
 
 ## Overview
 
@@ -761,8 +762,9 @@ state, the data requests and the selection model without a browser fixture.
    update the combo, and options that changed in place apply.
 6. Grouping, the `Other` group for the items without a group value, and the sort directions.
 7. The item and group header templates. The group header template gets the group `key` with its own type, also for
-   number keys and the `Other` group. A template that reads the deprecated `item` still renders. A new item or group
-   header template re-renders the open list.
+   number keys and the `Other` group. A template that reads the deprecated `item` still renders, and the unit specs
+   check that `item` follows a new `valueKey` or `displayKey`. A new item or group header template re-renders the
+   open list.
 8. The empty message and the `empty` slot.
 9. Localization through `locale` and `resourceStrings`.
 10. Open, close and the keyboard navigation of the list, also Arrow Down at the end of the matches. In single
@@ -852,8 +854,8 @@ state, the data requests and the selection model without a browser fixture.
     and `selectAllItems()` do not select a placeholder. In single selection, Enter or a click on a placeholder does
     not close the list. New results show from the top with no active option, also after a search with the same
     first record and in a list that opens after them, so the next request covers the top of the list. A copy of the
-    same records keeps the place. The unit specs of the data requests cover an appended page after a search, the
-    rule without `valueKey` and a first `data`.
+    same records keeps the place. An appended page keeps the records of the loaded items. The unit specs of the data
+    requests cover an appended page after a search, the rule without `valueKey` and a first `data`.
 32. `loading` shows the named spinner over the hidden toggle icon, and "Loading" in an empty list. The toggle width
     does not change, and the list does not move. It passes the accessibility audit. The `loading` slot replaces the
     spinner. The spinner and the skeletons get their colors from the `loading` and `placeholder` parts.

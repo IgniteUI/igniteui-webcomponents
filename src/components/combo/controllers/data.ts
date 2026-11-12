@@ -1,5 +1,6 @@
 import type { ReactiveController } from 'lit';
 import { resolveLocale } from '#internals/i18n/locale.js';
+import { sameItems } from '#internals/utils/arrays.js';
 
 import type IgcComboComponent from '../combo.js';
 import FilterDataOperation from '../operations/filter.js';
@@ -59,10 +60,13 @@ export class DataState<T extends object> implements ReactiveController {
   private readonly _filtering = new FilterDataOperation<T>();
   private readonly _grouping = new GroupDataOperation<T>();
   private _compareCollator?: Intl.Collator;
+  private _collatorLocale?: string;
 
   /** The data source, indexed into records. See {@link hostUpdate}. */
   private _indexed: ComboRecord<T>[] = [];
   private _source?: T[];
+  /** The host fields of the last pipeline run. See {@link _inputsChanged}. */
+  private _inputs: unknown[] = [];
 
   private _dataState: ComboRecord<T>[] = [];
   private _optionCount = 0;
@@ -121,7 +125,7 @@ export class DataState<T extends object> implements ReactiveController {
 
       // In remote mode, the term does not change the records.
       if (this.filteringOptions.mode !== 'remote') {
-        this.invalidate();
+        this._invalidate();
       }
     }
   }
@@ -144,9 +148,14 @@ export class DataState<T extends object> implements ReactiveController {
   }
 
   public get compareCollator(): Intl.Collator {
-    return (this._compareCollator ??= new Intl.Collator(
-      resolveLocale(this._host.locale)
-    ));
+    if (!this._compareCollator) {
+      this._collatorLocale = this._host.locale;
+      this._compareCollator = new Intl.Collator(
+        resolveLocale(this._collatorLocale)
+      );
+    }
+
+    return this._compareCollator;
   }
 
   //#endregion
@@ -159,37 +168,95 @@ export class DataState<T extends object> implements ReactiveController {
   }
 
   /**
-   * Runs the pipeline before render when changes are batched.
+   * Runs the pipeline before render when `data`, the search term or a host
+   * field that the pipeline reads changed. The host also calls it to apply
+   * such a change before the next update.
+   * @returns Whether it built new records.
    * @internal
    */
-  public hostUpdate(): void {
+  public hostUpdate(): boolean {
     const data = this._host.data;
+    const changed = this._inputsChanged();
 
-    // An in-place change of `data` notifies neither Lit nor `invalidate()`, so
-    // check the length here. A replaced element needs a new `data` array.
-    // Record `value` and `header` are fixed, so rebuild the index only when the
-    // host data changes. A filter-only run allocates no records. See `_apply`.
+    // An in-place change of `data` does not notify Lit, so check the length
+    // here. A replaced element needs a new `data` array.
     if (this._source !== data || this._indexed.length !== data.length) {
       this._source = data;
       this._indexed = this._index(data);
-    } else if (!this._dirty) {
-      return;
+    } else if (!(this._dirty || changed)) {
+      return false;
     }
 
     this._dataState = this._apply(this._indexed);
     this._dirty = false;
+    return true;
   }
 
   //#endregion
 
   //#region Internal pipeline operations
 
+  /** Batches the changes into one pipeline run before the next render. */
+  private _invalidate(): void {
+    if (!this._dirty) {
+      this._dirty = true;
+      this._host.requestUpdate();
+    }
+  }
+
+  /**
+   * Whether a host field that the pipeline reads changed since the last call.
+   * In remote mode, the filter fields other than `mode` do not change the
+   * records. A new locale drops the collator of the group sorting.
+   */
+  private _inputsChanged(): boolean {
+    const host = this._host;
+    const { filterKey, caseSensitive, matchDiacritics, mode } =
+      host.filteringOptions;
+    const inputs = [
+      host.valueKey,
+      host.displayKey,
+      host.groupKey,
+      host.groupSorting,
+      host.totalItemCount,
+      host.showSelectAll,
+      host.groupSelection,
+      host.singleSelect,
+      mode,
+      ...(mode === 'remote' ? [] : [filterKey, caseSensitive, matchDiacritics]),
+    ];
+    let changed = !sameItems(inputs, this._inputs);
+
+    this._inputs = inputs;
+
+    if (this._compareCollator && this._collatorLocale !== host.locale) {
+      this._compareCollator = undefined;
+      changed = true;
+    }
+
+    return changed;
+  }
+
+  /**
+   * The records of `data`. Record `value` and `header` are fixed, so a `data`
+   * that starts with the indexed items, such as an appended page, keeps their
+   * records. The list then keeps their measured sizes. A filter-only run
+   * allocates no records. See {@link _apply}.
+   */
   private _index(data: T[]): ComboRecord<T>[] {
-    return data.map((item, index) => ({
+    const indexed = this._indexed;
+    const kept =
+      indexed.length <= data.length &&
+      indexed.every((record, index) => record.value === data[index])
+        ? indexed.length
+        : 0;
+    const added = data.slice(kept).map((item, index) => ({
       value: item,
       header: false,
-      position: index + 1,
+      position: kept + index + 1,
     }));
+
+    return kept ? indexed.concat(added) : added;
   }
 
   /**
@@ -331,25 +398,6 @@ export class DataState<T extends object> implements ReactiveController {
     }
 
     return some;
-  }
-
-  /** Only group sorting uses the collator, so the data changes only if it exists. */
-  public updateLocale(): void {
-    if (this._compareCollator) {
-      this._compareCollator = undefined;
-      this.invalidate();
-    }
-  }
-
-  /**
-   * Call when a host property that affects the data changes. Batches the
-   * changes into one pipeline run before the next render.
-   */
-  public invalidate(): void {
-    if (!this._dirty) {
-      this._dirty = true;
-      this._host.requestUpdate();
-    }
   }
 
   //#endregion

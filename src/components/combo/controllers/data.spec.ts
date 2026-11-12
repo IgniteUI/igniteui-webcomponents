@@ -238,4 +238,121 @@ describe('Combo data state', () => {
       'Hamburg',
     ]);
   });
+
+  it('runs the pipeline again when a host field that it reads changes', () => {
+    const changes: Partial<DataStateHost<City>>[] = [
+      { groupKey: undefined },
+      { groupSorting: 'desc' },
+      { valueKey: 'name' },
+      { displayKey: 'country' },
+      { showSelectAll: true },
+      { groupSelection: true },
+      { singleSelect: true },
+      { filteringOptions: { filterKey: 'country', caseSensitive: false } },
+      { filteringOptions: { filterKey: 'name', caseSensitive: true } },
+      { filteringOptions: { filterKey: 'name', matchDiacritics: true } },
+      { filteringOptions: remote },
+    ];
+
+    for (const change of changes) {
+      const { host, state } = setup({ groupKey: 'country' });
+      const records = state.dataState;
+
+      Object.assign(host, change);
+
+      expect(state.hostUpdate(), Object.keys(change)[0]).to.be.true;
+      expect(state.dataState).not.to.equal(records);
+      expect(state.hostUpdate()).to.be.false;
+    }
+
+    const { host, state } = setup({ filteringOptions: remote });
+
+    host.totalItemCount = 8;
+    expect(state.hostUpdate()).to.be.true;
+    expect(state.optionCount).to.equal(8);
+    expect(host.requestUpdate).not.to.have.been.called;
+  });
+
+  it('does not run the pipeline for the same fields', () => {
+    const { host, state } = setup();
+
+    host.filteringOptions = { ...host.filteringOptions };
+    host.data = [...cities];
+
+    expect(state.hostUpdate()).to.be.true;
+    expect(state.hostUpdate()).to.be.false;
+
+    host.filteringOptions = { ...host.filteringOptions };
+    expect(state.hostUpdate()).to.be.false;
+  });
+
+  it('reads only the filter mode in remote mode', () => {
+    const { host, state } = setup({ filteringOptions: remote });
+
+    host.filteringOptions = { ...remote, caseSensitive: true };
+    expect(state.hostUpdate()).to.be.false;
+
+    host.filteringOptions = { ...remote, mode: 'local' };
+    expect(state.hostUpdate()).to.be.true;
+  });
+
+  it('gives the group headers the new keys', () => {
+    const { host, state } = setup({ groupKey: 'country' });
+
+    host.displayKey = 'country';
+    state.hostUpdate();
+
+    const [header] = state.dataState;
+    expect(header.header).to.be.true;
+    expect(header.value).to.eql({ id: 'Bulgaria', country: 'Bulgaria' });
+  });
+
+  it('keeps the records of the loaded items when data grows', () => {
+    const { host, state } = setup();
+    const records = state.dataState;
+    const lyon = { id: 6, name: 'Lyon', country: 'France' };
+
+    host.data = [...cities, lyon];
+    state.hostUpdate();
+
+    expect(state.dataState.slice(0, 5)).to.have.ordered.members(records);
+    expect(names(state.dataState).at(-1)).to.equal('Lyon');
+    expect(positions(state.dataState)).to.eql([1, 2, 3, 4, 5, 6]);
+
+    // The same array, grown in place.
+    const data = [...cities];
+    host.data = data;
+    state.hostUpdate();
+    const grown = state.dataState;
+
+    data.push(lyon);
+    state.hostUpdate();
+
+    expect(state.dataState.slice(0, 5)).to.have.ordered.members(grown);
+  });
+
+  it('indexes all the items again when the loaded items change', () => {
+    const { host, state } = setup();
+    const [first] = state.dataState;
+
+    host.data = [plovdiv, sofia, ...cities.slice(2)];
+    state.hostUpdate();
+
+    expect(names(state.dataState).slice(0, 2)).to.eql(['Plovdiv', 'Sofia']);
+    expect(state.dataState).not.to.include(first);
+  });
+
+  it('sorts the groups again in a new locale', () => {
+    const { host, state } = setup({ groupKey: 'country' });
+
+    host.locale = 'bg';
+    expect(state.hostUpdate()).to.be.true;
+    expect(state.compareCollator.resolvedOptions().locale).to.equal('bg');
+
+    // Without groups, the locale does not change the records.
+    const ungrouped = setup();
+
+    ungrouped.host.locale = 'bg';
+    expect(ungrouped.state.hostUpdate()).to.be.false;
+  });
 });

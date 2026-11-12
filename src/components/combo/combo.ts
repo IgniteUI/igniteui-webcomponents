@@ -466,11 +466,6 @@ export default class IgcComboComponent<
 
     this._filteringOptions = { ...this._filteringOptions, ...value };
     this._appliedFiltering = { ...this._filteringOptions };
-
-    // Now, so selectAllItems() sees the new filter. Remote mode does not filter.
-    if (applied.mode !== 'remote' || this._filteringOptions.mode !== 'remote') {
-      this._state.invalidate();
-    }
   }
 
   public get filteringOptions(): FilteringOptions<T> {
@@ -679,10 +674,6 @@ export default class IgcComboComponent<
   protected override willUpdate(props: PropertyValues<this>): void {
     super.willUpdate(props);
 
-    if (props.has('locale')) {
-      this._state.updateLocale();
-    }
-
     // The select-all option moves the other records by one, and an active
     // group header can stop being an option.
     if (
@@ -690,18 +681,6 @@ export default class IgcComboComponent<
       this.hasUpdated
     ) {
       this._activeIndex = -1;
-    }
-
-    if (
-      props.has('groupKey') ||
-      props.has('groupSorting') ||
-      props.has('totalItemCount') ||
-      props.has('showSelectAll') ||
-      props.has('groupSelection') ||
-      props.has('singleSelect') ||
-      props.has('data')
-    ) {
-      this._state.invalidate();
     }
 
     // The list keeps the same `_itemRenderer`, so a new template must re-render it.
@@ -1029,8 +1008,9 @@ export default class IgcComboComponent<
     // Applies a change of `data` or of the search text that no update has
     // applied yet. The update gives the new records to the list before it
     // renders the selection.
-    this._state.hostUpdate();
-    this.requestUpdate();
+    if (this._state.hostUpdate()) {
+      this.requestUpdate();
+    }
 
     return this._state.shownItems();
   }
