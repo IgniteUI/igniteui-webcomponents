@@ -1,6 +1,6 @@
-import { isEmpty, startsWith } from '#internals/utils/arrays.js';
+import { isEmpty } from '#internals/utils/arrays.js';
 import { getOrInsertComputed } from '#internals/utils/objects.js';
-import { isObject } from '#internals/utils/types.js';
+import { isDefined, isObject } from '#internals/utils/types.js';
 import type IgcComboComponent from '../combo.js';
 import type { ComboValue, Item } from '../types.js';
 
@@ -21,7 +21,8 @@ export type ComboSelectionHost<T extends object> = Pick<
  * The values of a selection in order, each with its record, or `undefined` for
  * a value that has no record yet.
  */
-export type SelectionEntries<T extends object> = Map<
+type SelectionEntries<T extends object> = Map<ComboValue<T>, T | undefined>;
+type ReadonlyEntries<T extends object> = ReadonlyMap<
   ComboValue<T>,
   T | undefined
 >;
@@ -36,8 +37,8 @@ export type SelectionEntries<T extends object> = Map<
 export class ComboSelection<T extends object> {
   private readonly _host: ComboSelectionHost<T>;
   private _index?: Map<Item<T>, number[]>;
-  /** The items of {@link _index}. See {@link _dataIndex}. */
-  private _indexed: T[] = [];
+  /** The key of each item of {@link _index}. See {@link _dataIndex}. */
+  private _keys: Item<T>[] = [];
   private _indexStale = false;
   private _version = 0;
   /** The committed selection: `value`, `selection` and the text of the input. */
@@ -74,7 +75,7 @@ export class ComboSelection<T extends object> {
    * The pending selection, which exists while the list is open in the confirm
    * mode of `selectionCommit`. It starts as a copy of the committed selection.
    */
-  public get pending(): ReadonlyMap<ComboValue<T>, T | undefined> | undefined {
+  public get pending(): ReadonlyEntries<T> | undefined {
     return this._lazyPending;
   }
 
@@ -112,10 +113,8 @@ export class ComboSelection<T extends object> {
   }
 
   /** The records of `entries`, in order. */
-  public recordsOf(entries: ReadonlyMap<ComboValue<T>, T | undefined>): T[] {
-    return Iterator.from(entries.values())
-      .filter((record) => record !== undefined)
-      .toArray();
+  public recordsOf(entries: ReadonlyEntries<T>): T[] {
+    return Iterator.from(entries.values()).filter(isDefined).toArray();
   }
 
   /** The next read of {@link pending} copies the committed selection again. */
@@ -143,7 +142,10 @@ export class ComboSelection<T extends object> {
     this._version++;
   }
 
-  /** A value without a record keeps its value. A repeated value keeps its first record. */
+  /**
+   * A value without a record keeps its value. Each new value gets its first
+   * record in `data`, else the first selected record.
+   */
   private _rekeyed(entries: SelectionEntries<T>): SelectionEntries<T> {
     const next: SelectionEntries<T> = new Map();
 
@@ -151,7 +153,10 @@ export class ComboSelection<T extends object> {
       const key = record === undefined ? value : this._valueOf(record);
 
       if (!next.has(key)) {
-        next.set(key, record);
+        next.set(
+          key,
+          record === undefined ? record : (this._recordOf(key) ?? record)
+        );
       }
     }
 
@@ -160,33 +165,53 @@ export class ComboSelection<T extends object> {
 
   /**
    * Maps each value to the positions of its records, in data-source order. It
-   * keeps a copy of the indexed items, so a `data` that starts with them, such
-   * as an appended page, adds only the new items. A replaced element shows
-   * only after a set of `data` or a change of its length.
+   * keeps the indexed keys, so a `data` that starts with the same keys, such
+   * as an appended page, adds only the new items. A replaced element or a key
+   * that changed in place shows only after a set of `data` or a change of its
+   * length.
    */
   private get _dataIndex(): Map<Item<T>, number[]> {
     const { data } = this._host;
     let index = this._index;
-    let indexed = this._indexed;
+    let keys = this._keys;
 
-    if (index && !this._indexStale && indexed.length === data.length) {
+    if (index && !this._indexStale && keys.length === data.length) {
       return index;
     }
 
-    if (!(index && startsWith(data, indexed))) {
+    if (
+      !index ||
+      keys.length > data.length ||
+      !keys.every((key, position) => Object.is(this.keyOf(data[position]), key))
+    ) {
       index = this._index = new Map();
-      indexed = this._indexed = [];
+      keys = this._keys = [];
     }
 
-    for (let position = indexed.length; position < data.length; position++) {
-      getOrInsertComputed(index, this.keyOf(data[position]), newPositions).push(
-        position
-      );
-      indexed.push(data[position]);
+    for (let position = keys.length; position < data.length; position++) {
+      const key = this.keyOf(data[position]);
+
+      getOrInsertComputed(index, key, newPositions).push(position);
+      keys.push(key);
     }
 
     this._indexStale = false;
     return index;
+  }
+
+  /** The first record in `data` of each value of `records`, one time each, in their order. */
+  public firstRecords(records: T[]): T[] {
+    const first = new Map<ComboValue<T>, T>();
+
+    for (const record of records) {
+      const value = this._valueOf(record);
+
+      if (!first.has(value)) {
+        first.set(value, this._recordOf(value) ?? record);
+      }
+    }
+
+    return [...first.values()];
   }
 
   /** The first record of `value` in `data`. */
@@ -219,9 +244,7 @@ export class ComboSelection<T extends object> {
    * The values of `entries`: `value` or `pendingValue`. A value without a
    * record keeps its place until a change names it, in multiple selection only.
    */
-  public valuesOf(
-    entries: ReadonlyMap<ComboValue<T>, T | undefined>
-  ): ComboValue<T>[] {
+  public valuesOf(entries: ReadonlyEntries<T>): ComboValue<T>[] {
     if (!this._host.singleSelect) {
       return [...entries.keys()];
     }
@@ -298,9 +321,8 @@ export class ComboSelection<T extends object> {
   }
 
   /**
-   * Adds the values of `records` to `entries`, each with its first record in
-   * `data`, or removes them. A value keeps its record and its place, so a
-   * value without a record gets one in place.
+   * Adds `records` to `entries`, or removes their values. A value keeps its
+   * record and its place, so a value without a record gets one in place.
    */
   private _change(
     entries: SelectionEntries<T>,
@@ -313,7 +335,7 @@ export class ComboSelection<T extends object> {
       if (!selecting) {
         entries.delete(value);
       } else if (entries.get(value) === undefined) {
-        entries.set(value, this._recordOf(value) ?? record);
+        entries.set(value, record);
       }
     }
   }
@@ -384,7 +406,7 @@ export class ComboSelection<T extends object> {
   }
 
   /** The records that `pending` adds to the committed selection or removes from it. */
-  public changes(pending: ReadonlyMap<ComboValue<T>, T | undefined>): T[] {
+  public changes(pending: ReadonlyEntries<T>): T[] {
     const committed = this._committed;
     const added = Iterator.from(pending).filter(
       ([value, record]) =>
@@ -401,7 +423,7 @@ export class ComboSelection<T extends object> {
    * Makes `pending`, as the host read it before the change event, the
    * committed selection. The `value` sync then gives each value its record.
    */
-  public commit(pending: ReadonlyMap<ComboValue<T>, T | undefined>): void {
+  public commit(pending: ReadonlyEntries<T>): void {
     this._committed = new Map(pending);
     this._version++;
   }

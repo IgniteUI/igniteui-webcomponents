@@ -71,6 +71,21 @@ describe('Combo data state', () => {
     expect(state.loadedLength).to.equal(5);
   });
 
+  it('filters by the new text of an item after a new data', () => {
+    const data = cities.map((city) => ({ ...city }));
+    const { host, state } = setup({ data });
+
+    state.searchTerm = 'sof';
+    state.hostUpdate();
+    expect(names(state.dataState)).to.eql(['Sofia']);
+
+    data[0].name = 'Ruse';
+    host.data = [...data];
+    state.hostUpdate();
+
+    expect(state.dataState).to.be.empty;
+  });
+
   it('filters by the search term in the next update', () => {
     const { host, state } = setup();
 

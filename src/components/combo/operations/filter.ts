@@ -4,7 +4,8 @@ import type { ComboRecord, FilteringOptions } from '../types.js';
 /**
  * Filters combo records against the current search term.
  * Normalization is the main cost of each keystroke, so the normalized text is
- * cached per record. A new data source replaces the records, so the cache is weak.
+ * cached per record. A new `data` can keep the records of its items, so the
+ * data state clears the cache. See {@link clear}.
  */
 export default class FilterDataOperation<T extends object> {
   private _cache = new WeakMap<ComboRecord<T>, string>();
@@ -20,6 +21,11 @@ export default class FilterDataOperation<T extends object> {
       : text.normalize('NFKD').replace(/\p{M}/gu, '');
   }
 
+  /** Drops the memoized text, for example after a new `data`. */
+  public clear(): void {
+    this._cache = new WeakMap();
+  }
+
   /** Drops the memoized text whenever the normalization inputs change. */
   private _syncCache({
     filterKey,
@@ -30,7 +36,7 @@ export default class FilterDataOperation<T extends object> {
 
     if (this._signature !== signature) {
       this._signature = signature;
-      this._cache = new WeakMap<ComboRecord<T>, string>();
+      this.clear();
     }
   }
 

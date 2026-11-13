@@ -1,5 +1,4 @@
 import { expect } from '@open-wc/testing';
-import { spy } from 'sinon';
 
 import type { ComboValue } from '../types.js';
 import { ComboSelection, type ComboSelectionHost } from './selection.js';
@@ -256,9 +255,10 @@ describe('Combo selection', () => {
       expect(selection.has(sofia)).to.be.false;
       expect(selection.has(undefined as unknown as City)).to.be.false;
 
-      // Any record of the value selects its first record in data.
-      selection.apply([copy], true);
-      expect(selection.selected).to.have.ordered.members([sofia]);
+      // Any record of the value gives its first record in data.
+      expect(
+        selection.firstRecords([copy, plovdiv, sofia])
+      ).to.have.ordered.members([sofia, plovdiv]);
     });
 
     it('forgets the named values without a record, or all of them', () => {
@@ -389,19 +389,43 @@ describe('Combo selection', () => {
       expect(selection.valuesOf(selection.pending!)).to.eql([1]);
     });
 
-    it('indexes only the new items of a data that starts with the indexed items', () => {
+    it('indexes only the new items of a data that starts with the same keys', () => {
       const { host, selection } = setup();
-      const keys = spy(selection, 'keyOf');
-
-      selection.syncFromValue([1]);
-      expect(keys.callCount).to.equal(3);
+      const index = () => selection['_dataIndex'];
+      const before = index();
+      const positions = before.get(1);
 
       host.data = [...cities, burgas];
       selection.invalidateIndex();
-      selection.syncFromValue([9]);
 
-      expect(keys.callCount).to.equal(4);
-      expect([...selection.selected]).to.eql([burgas]);
+      expect(index()).to.equal(before);
+      expect(index().get(1)).to.equal(positions);
+      expect(index().get(9)).to.eql([3]);
+    });
+
+    it('indexes all the items again when a key changes in place', () => {
+      const moved: City = { ...sofia };
+      const { host, selection } = setup({ data: [moved, plovdiv] });
+
+      selection.syncFromValue([1]);
+      moved.id = 3;
+      host.data = [...host.data];
+      selection.invalidateIndex();
+      selection.syncFromValue([3]);
+
+      expect(selection.selected).to.eql([moved]);
+    });
+
+    it('gives a value that a new valueKey merges its first record in data', () => {
+      const twin: City = { id: 7, name: 'Sofia' };
+      const { host, selection } = setup({ data: [sofia, plovdiv, twin] });
+
+      selection.syncFromValue([7, 1]);
+      host.valueKey = 'name';
+      selection.rekey();
+
+      expect(selection.selected).to.eql([sofia]);
+      expect(selection.project().values).to.eql(['Sofia']);
     });
 
     it('indexes all the items again for a new valueKey', () => {

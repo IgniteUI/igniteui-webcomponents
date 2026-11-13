@@ -277,12 +277,7 @@ export default class IgcComboComponent<
   // The options of the last write. A change of the object in place does not change them.
   private _appliedFiltering = { ...this._filteringOptions };
   // What the last sync of the selection with `value` read. See `_isSyncedValue`.
-  private _syncedWith: {
-    data: T[];
-    valueKey?: Keys<T>;
-    length: number;
-    value: ComboValue<T>[];
-  } = { data: [], length: 0, value: [] };
+  private _syncedWith?: { data: T[]; length: number; value: ComboValue<T>[] };
 
   @state()
   private set _activeIndex(index: number) {
@@ -416,6 +411,8 @@ export default class IgcComboComponent<
     onChange: ({ value, host }) => {
       host._displayKey = host._displayKey ?? value;
       host._selection.rekey();
+      // The next `value` gives the values their records again.
+      host._syncedWith = undefined;
     },
   })
   public valueKey?: Keys<T> = undefined;
@@ -829,7 +826,7 @@ export default class IgcComboComponent<
 
   /**
    * Whether `items` is `value`, and the selection is synced with it and with
-   * the current `data` and `valueKey`. A new `data` gives a value its record
+   * the current `data`. A new `data` or `valueKey` gives a value its record
    * again. The copy of `value` sees a change of the array in place.
    */
   private _isSyncedValue(items: ComboValue<T>[]): boolean {
@@ -837,9 +834,9 @@ export default class IgcComboComponent<
     const values = this._asValue(items);
 
     return (
+      synced !== undefined &&
       synced.data === this.data &&
       synced.length === this.data.length &&
-      synced.valueKey === this.valueKey &&
       sameItems(values, this.value) &&
       sameItems(values, synced.value)
     );
@@ -849,7 +846,6 @@ export default class IgcComboComponent<
   private _markSynced(): void {
     this._syncedWith = {
       data: this.data,
-      valueKey: this.valueKey,
       length: this.data.length,
       value: [...this.value],
     };
@@ -939,15 +935,16 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Selects or deselects exactly `records`. With `emit`, `igcChange` can
-   * cancel the change.
+   * Selects or deselects the values of `items`, each with its first record in
+   * `data`. With `emit`, `igcChange` can cancel the change.
    * @returns Whether the change was committed.
    */
   private _applySelection(
-    records: T[],
+    items: T[],
     type: 'selection' | 'deselection',
     emit: boolean
   ): boolean {
+    const records = this._selection.firstRecords(items);
     const selecting = type === 'selection';
 
     if (
@@ -1084,10 +1081,9 @@ export default class IgcComboComponent<
     if (isItemRecord(record)) {
       const item = record.value;
 
-      // The first record of its value. Resolve the record, not its value, as
-      // an item without a value would select all.
+      // The record itself, as an item without a value would select all.
       this._applySelection(
-        this._selection.resolve([item]),
+        [item],
         toggle && this._selection.has(item) ? 'deselection' : 'selection',
         true
       );
@@ -1151,6 +1147,7 @@ export default class IgcComboComponent<
       )
     ) {
       this._formValue.setValueAndFormState([]);
+      this._markSynced();
     }
   }
 
@@ -1184,6 +1181,8 @@ export default class IgcComboComponent<
   protected override _handleBlur(): void {
     if (!this._selection.hasRecords) {
       this._clearSearchTerm(true);
+      // Also the cached text, so the same text shows again after a selection.
+      this._displayValue = '';
       this._setSingleSelectionDisplayValue('');
     }
     super._handleBlur();

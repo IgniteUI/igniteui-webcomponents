@@ -1,5 +1,5 @@
 import type { ReactiveController } from 'lit';
-import { resolveLocale } from '#internals/i18n/locale.js';
+import { getOrCreateForLocale } from '#internals/i18n/locale.js';
 import { sameItems } from '#internals/utils/arrays.js';
 import { getOrInsertComputed } from '#internals/utils/objects.js';
 
@@ -31,6 +31,16 @@ export type DataStateHost<T extends object> = Pick<
   | 'singleSelect'
 >;
 
+/** One collator for each locale, for all the combos. */
+const collators = new Map<string, Intl.Collator>();
+
+const collatorOf = (locale: string): Intl.Collator =>
+  getOrCreateForLocale(
+    collators,
+    locale,
+    (resolved) => new Intl.Collator(resolved)
+  );
+
 /** The record of each item to load. See `totalItemCount`. */
 const PLACEHOLDER: ComboRecord<never> = Object.freeze({
   value: undefined as never,
@@ -61,7 +71,6 @@ export class DataState<T extends object> implements ReactiveController {
   private readonly _filtering = new FilterDataOperation<T>();
   private readonly _grouping = new GroupDataOperation<T>();
   private _compareCollator?: Intl.Collator;
-  private _collatorLocale?: string;
 
   /** The data source, indexed into records. See {@link hostUpdate}. */
   private _indexed: ComboRecord<T>[] = [];
@@ -150,15 +159,9 @@ export class DataState<T extends object> implements ReactiveController {
     };
   }
 
+  /** The collator of the group sorting, for the host locale. See {@link _inputsChanged}. */
   public get compareCollator(): Intl.Collator {
-    if (!this._compareCollator) {
-      this._collatorLocale = this._host.locale;
-      this._compareCollator = new Intl.Collator(
-        resolveLocale(this._collatorLocale)
-      );
-    }
-
-    return this._compareCollator;
+    return (this._compareCollator ??= collatorOf(this._host.locale));
   }
 
   //#endregion
@@ -186,6 +189,8 @@ export class DataState<T extends object> implements ReactiveController {
     if (this._source !== data || this._indexed.length !== data.length) {
       this._source = data;
       this._indexed = this._index(data);
+      // A kept record can hold the old text of an item that changed in place.
+      this._filtering.clear();
     } else if (!changed) {
       return false;
     }
@@ -202,13 +207,14 @@ export class DataState<T extends object> implements ReactiveController {
   /**
    * Whether the search term or a host field that the pipeline reads changed
    * since the last call. In remote mode, the term and the filter fields other
-   * than `mode` do not change the records. A new locale drops the collator.
+   * than `mode` do not change the records. With groups, a new locale gives
+   * a new collator.
    */
   private _inputsChanged(): boolean {
     const host = this._host;
     const { filterKey, caseSensitive, matchDiacritics, mode } =
       host.filteringOptions;
-    const inputs = [
+    const inputs: unknown[] = [
       host.valueKey,
       host.displayKey,
       host.groupKey,
@@ -222,15 +228,15 @@ export class DataState<T extends object> implements ReactiveController {
         ? []
         : [filterKey, caseSensitive, matchDiacritics, this._searchTerm]),
     ];
-    let changed = !sameItems(inputs, this._inputs);
 
-    this._inputs = inputs;
-
-    if (this._compareCollator && this._collatorLocale !== host.locale) {
-      this._compareCollator = undefined;
-      changed = true;
+    if (host.groupKey) {
+      this._compareCollator = collatorOf(host.locale);
+      inputs.push(this._compareCollator);
     }
 
+    const changed = !sameItems(inputs, this._inputs);
+
+    this._inputs = inputs;
     return changed;
   }
 

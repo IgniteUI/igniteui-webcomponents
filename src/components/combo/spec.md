@@ -88,7 +88,7 @@
 |      26 | 2026-11-12 | A write of the same `value` does not update the combo and keeps the pending selection; it still makes the control dirty, and after a new `data` or `valueKey` it gives the values their records again |
 |      27 | 2026-11-12 | One rule for new remote results: a copy of the same records keeps the place and requests no page again; an append compares all the old items; `bindComboDataSource()` marks each first page as new results, so `refresh()` shows from the top |
 |      28 | 2026-11-13 | One record for each value, and each record of a selected value shows as selected; a value keeps its place when it gets a record; select all gives the order of `data`, then the values that `data` does not hold; a value that a pending deselection removed stays out of the pending selection after a new `data` |
-|      29 | 2026-11-13 | Review fixes: primitive records show as selected again; any record of a repeated value selects its first record, also in a commit; a `value` array that changed in place and is set again syncs the selection; a new `displayKey` or `valueKey` updates the input text |
+|      29 | 2026-11-13 | Review fixes: primitive records show as selected again; any record of a repeated value selects its first record, also in a commit, and a toggle option lists one record for each value; a `value` array that changed in place and is set again syncs the selection; a new `displayKey` or `valueKey` updates the input text; a new `data` filters by the current text of the items that keep their records and indexes a key that changed in place; a new `valueKey` merges values to their first records and drops the same-value sync; in single selection, a framework that writes back the cleared `value` keeps the typed text, and a blur that clears the input lets the same selection show its text again |
 
 ## Overview
 
@@ -243,9 +243,9 @@ selected item again, in the same place in `value`.
 
 **One record for each value.** The selection holds one record for each value: the first record of the value in `data`,
 or the record that it had before. When `data` repeats a value, the options of all its records show as selected. A click
-on any of them selects the first record, or deselects the value, and `igcChange` lists the first record. `selection` and
-the input text follow the order of `value`. `selectAllItems(true)` and `select()` without an argument give the order of
-`data`, then the selected values that `data` does not hold.
+on any of them selects the first record or deselects the value, and `igcChange` lists the first record. A toggle option
+lists one record for each value. `selection` and the input text follow the order of `value`. `selectAllItems(true)` and
+`select()` without an argument give the order of `data`, then the selected values that `data` does not hold.
 
 #### Select all
 
@@ -772,8 +772,9 @@ state, the data requests and the selection model without a browser fixture.
 3. Single and multiple selection, with `select` and `deselect` with and without arguments.
 4. `value` and `selection` give the values and the records. A write of the same `value` requests no update and keeps
    the pending selection, but makes the control dirty. After a new `data`, a `data` that grows in place or a new
-   `valueKey`, it gives the values their records again. A `value` array that changed in place and is set again syncs
-   the selection.
+   `valueKey`, it gives the values their records again, also after `valueKey` changes and comes back. A `value` array
+   that changed in place and is set again syncs the selection. In single selection, a write of the cleared `value`
+   after the user types keeps the typed text, and after a blur clears the input, the same selection shows its text.
 5. Filtering, with case sensitivity, diacritics matching and `disableFiltering`. A set of `singleSelect` or
    `disableFiltering` to its current value keeps the search text and the filter. The same filtering options do not
    update the combo, and options that changed in place apply.
