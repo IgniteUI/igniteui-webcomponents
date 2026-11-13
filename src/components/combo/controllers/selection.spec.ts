@@ -109,11 +109,11 @@ describe('Combo selection', () => {
       expect(selection.resolve([3])[0]).to.equal(varna);
     });
 
-    it('takes every record of a value that data repeats', () => {
+    it('takes the first record of a value that data repeats', () => {
       const copy = { ...sofia };
       const { selection } = setup({ data: [sofia, plovdiv, copy] });
 
-      expect(selection.resolve([1])).to.eql([sofia, copy]);
+      expect(selection.resolve([1, copy])).to.have.ordered.members([sofia]);
     });
 
     it('puts the selected records and the objects that data does not hold last', () => {
@@ -255,6 +255,10 @@ describe('Combo selection', () => {
       selection.apply([copy], false);
       expect(selection.has(sofia)).to.be.false;
       expect(selection.has(undefined as unknown as City)).to.be.false;
+
+      // Any record of the value selects its first record in data.
+      selection.apply([copy], true);
+      expect(selection.selected).to.have.ordered.members([sofia]);
     });
 
     it('forgets the named values without a record, or all of them', () => {
@@ -405,6 +409,7 @@ describe('Combo selection', () => {
 
       selection.syncFromValue([1]);
       host.valueKey = 'name';
+      selection.rekey();
       selection.syncFromValue(['Plovdiv']);
 
       expect([...selection.selected]).to.eql([plovdiv]);

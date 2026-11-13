@@ -68,13 +68,11 @@ export class ComboDataRequests<T extends object> {
   }
 
   /**
-   * Whether `data` holds new results after `old`, in remote mode. New results
-   * show from the top and start a new sequence of requests. A binder can tell
-   * it (see `newResultsHints`). Otherwise, they are the first `data` after a
-   * search, a shorter `data`, or another first `valueKey`. A `data` that starts
-   * with the items of `old`, such as an appended page, is not new, also after a
-   * search that the application did not load. Without `valueKey`, a copy of the
-   * records is not new.
+   * Whether `data` holds new results after `old`, in remote mode: the hint of
+   * a binder (see `newResultsHints`), else the first `data` after a search, a
+   * shorter `data` or another first `valueKey`. A `data` that starts with the
+   * items of `old`, such as an appended page, is not new. Without `valueKey`,
+   * a copy of the records is not new.
    */
   private _isNew(old: T[]): boolean {
     const { data, filteringOptions, valueKey } = this._host;
@@ -109,14 +107,10 @@ export class ComboDataRequests<T extends object> {
     const isNew = this._isNew(old);
 
     if (isNew) {
-      this._showFromTop(list);
+      this._toTop = list?.scrollToIndex(0);
     }
 
     return isNew;
-  }
-
-  private _showFromTop(list?: DataRequestsList): void {
-    this._toTop = list?.scrollToIndex(0);
   }
 
   /** Takes the end of the window that the list renders. */
@@ -134,7 +128,7 @@ export class ComboDataRequests<T extends object> {
     const changed = props.has('data');
 
     // An opening or new results start a new sequence of requests. Opening
-    // again also retries a failed request. The same rule as `dataChanged()`.
+    // again also retries a failed request.
     if (opened || (changed && this._isNew(props.get('data') ?? []))) {
       this.reset();
     }

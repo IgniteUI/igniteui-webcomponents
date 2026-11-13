@@ -14,6 +14,7 @@ import {
   simulateInput,
 } from '#internals/testing/simulate.spec.js';
 import IgcComboComponent from '../components/combo/combo.js';
+import { newResultsHints } from '../components/combo/controllers/results-hint.js';
 import type IgcInputComponent from '../components/input/input.js';
 import type IgcVirtualScrollComponent from '../components/virtualization/virtualization.js';
 import {
@@ -749,6 +750,20 @@ describe('Combo data source binding', () => {
     await waitUntil(() => input.value === 'Oslo');
 
     expect(ids(combo.selection)).to.eql(['OSL']);
+  });
+
+  it('leaves no hint when the source gives back the same array', async () => {
+    const places = PLACES.slice(0, 5);
+    source = { load: async () => ({ items: places, totalCount: 5 }) };
+    bind();
+    await open();
+    await settle();
+
+    await binding.refresh();
+    await settle();
+
+    expect(combo.data).to.equal(places);
+    expect(newResultsHints.has(combo)).to.be.false;
   });
 
   it('gives the mode back and ignores refresh after dispose', async () => {

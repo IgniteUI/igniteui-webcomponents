@@ -164,10 +164,16 @@ export function bindComboDataSource<T extends object>(
       }
 
       loadedSearch = query;
+      const data = startIndex ? [...combo.data, ...page.items] : page.items;
+
       // A first page shows from the top, also with the same first item, and a
-      // next page keeps the place.
-      newResultsHints.set(combo, !startIndex);
-      combo.data = startIndex ? [...combo.data, ...page.items] : page.items;
+      // next page keeps the place. The same array updates nothing, so it
+      // gets no hint.
+      if (data !== combo.data) {
+        newResultsHints.set(combo, !startIndex);
+      }
+
+      combo.data = data;
 
       if (!startIndex || page.totalCount != null) {
         combo.totalItemCount = page.totalCount;

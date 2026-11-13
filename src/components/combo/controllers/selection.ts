@@ -1,7 +1,10 @@
 import { isEmpty, startsWith } from '#internals/utils/arrays.js';
+import { getOrInsertComputed } from '#internals/utils/objects.js';
 import { isObject } from '#internals/utils/types.js';
 import type IgcComboComponent from '../combo.js';
 import type { ComboValue, Item } from '../types.js';
+
+const newPositions = (): number[] => [];
 
 /** The fields of the combo that the selection reads. */
 export type ComboSelectionHost<T extends object> = Pick<
@@ -33,9 +36,8 @@ export type SelectionEntries<T extends object> = Map<
 export class ComboSelection<T extends object> {
   private readonly _host: ComboSelectionHost<T>;
   private _index?: Map<Item<T>, number[]>;
-  /** The items and the `valueKey` of {@link _index}. See {@link _dataIndex}. */
+  /** The items of {@link _index}. See {@link _dataIndex}. */
   private _indexed: T[] = [];
-  private _indexKey?: ComboSelectionHost<T>['valueKey'];
   private _indexStale = false;
   private _version = 0;
   /** The committed selection: `value`, `selection` and the text of the input. */
@@ -98,13 +100,10 @@ export class ComboSelection<T extends object> {
 
   /**
    * Whether the value of `record` has a record in the selection that the list
-   * shows, so a record that repeats a selected value shows as selected too. A
-   * placeholder has no record.
+   * shows, so a record that repeats a selected value shows as selected too.
    */
   public has(record: T): boolean {
-    return (
-      isObject(record) && this._current.get(this._valueOf(record)) !== undefined
-    );
+    return this._current.get(this._valueOf(record)) !== undefined;
   }
 
   /** The records of the selection that the list shows. */
@@ -134,6 +133,7 @@ export class ComboSelection<T extends object> {
 
   /** Call when `valueKey` changes: the records get their new values. */
   public rekey(): void {
+    this._index = undefined;
     this._committed = this._rekeyed(this._committed);
 
     if (this._pending) {
@@ -165,31 +165,23 @@ export class ComboSelection<T extends object> {
    * only after a set of `data` or a change of its length.
    */
   private get _dataIndex(): Map<Item<T>, number[]> {
-    const { data, valueKey } = this._host;
-    const sameKey = this._indexKey === valueKey;
+    const { data } = this._host;
     let index = this._index;
     let indexed = this._indexed;
 
-    if (
-      index &&
-      sameKey &&
-      !this._indexStale &&
-      indexed.length === data.length
-    ) {
+    if (index && !this._indexStale && indexed.length === data.length) {
       return index;
     }
 
-    if (!(index && sameKey && startsWith(data, indexed))) {
+    if (!(index && startsWith(data, indexed))) {
       index = this._index = new Map();
       indexed = this._indexed = [];
-      this._indexKey = valueKey;
     }
 
     for (let position = indexed.length; position < data.length; position++) {
-      const key = this.keyOf(data[position]);
-      const positions = index.get(key);
-
-      positions ? positions.push(position) : index.set(key, [position]);
+      getOrInsertComputed(index, this.keyOf(data[position]), newPositions).push(
+        position
+      );
       indexed.push(data[position]);
     }
 
@@ -197,7 +189,7 @@ export class ComboSelection<T extends object> {
     return index;
   }
 
-  /** The first record of `value` in `data`. Only the first one, unlike {@link resolve}. */
+  /** The first record of `value` in `data`. */
   private _recordOf(value: ComboValue<T>): T | undefined {
     const position = this._dataIndex.get(value)?.[0];
     return position === undefined ? undefined : this._host.data[position];
@@ -212,7 +204,7 @@ export class ComboSelection<T extends object> {
   /** The `valueKey` property of `item`, or `item` when that property is not set. */
   private _valueOf(item: T): ComboValue<T> {
     const { valueKey } = this._host;
-    return (valueKey ? item[valueKey] : undefined) ?? item;
+    return (valueKey ? item?.[valueKey] : undefined) ?? item;
   }
 
   public toValues(items: Iterable<T>): ComboValue<T>[] {
@@ -255,10 +247,9 @@ export class ComboSelection<T extends object> {
   }
 
   /**
-   * Resolves values or objects to records: the records of `data` in
-   * data-source order, then the selected records and the objects that `data`
-   * does not hold. A repeated value resolves one time, so the change event
-   * has no duplicates.
+   * Resolves values or objects to records: the first record of each value in
+   * `data`, in data-source order, then the selected records and the objects
+   * that `data` does not hold. Each value resolves one time.
    */
   public resolve(items: Item<T>[]): T[] {
     const { data } = this._host;
@@ -269,12 +260,10 @@ export class ComboSelection<T extends object> {
 
     for (const item of items) {
       const value = this._toValue(item);
-      const found = index.get(value);
+      const position = index.get(value)?.[0];
 
-      if (found) {
-        for (const position of found) {
-          positions.add(position);
-        }
+      if (position !== undefined) {
+        positions.add(position);
         continue;
       }
 
@@ -309,8 +298,9 @@ export class ComboSelection<T extends object> {
   }
 
   /**
-   * Adds `records` to `entries`, or removes their values. A value keeps its
-   * record and its place, so a value without a record gets one in place.
+   * Adds the values of `records` to `entries`, each with its first record in
+   * `data`, or removes them. A value keeps its record and its place, so a
+   * value without a record gets one in place.
    */
   private _change(
     entries: SelectionEntries<T>,
@@ -323,7 +313,7 @@ export class ComboSelection<T extends object> {
       if (!selecting) {
         entries.delete(value);
       } else if (entries.get(value) === undefined) {
-        entries.set(value, record);
+        entries.set(value, this._recordOf(value) ?? record);
       }
     }
   }
@@ -346,7 +336,7 @@ export class ComboSelection<T extends object> {
         const value = this._valueOf(record);
 
         if (committed.has(value) && committed.get(value) === undefined) {
-          committed.set(value, record);
+          committed.set(value, current.get(value));
           resolved = true;
         }
       }
@@ -451,19 +441,15 @@ export class ComboSelection<T extends object> {
     }
   }
 
-  /** The values and the display text of the committed selection, in one pass. See {@link valuesOf}. */
+  /** The values and the display text of the committed selection. See {@link valuesOf}. */
   public project(): { values: ComboValue<T>[]; text: string } {
     const { displayKey } = this._host;
-    const display: string[] = [];
+    const text = this.recordsOf(this._committed)
+      .map((record) =>
+        String((displayKey ? record[displayKey] : undefined) ?? record)
+      )
+      .join(', ');
 
-    for (const record of this._committed.values()) {
-      if (record !== undefined) {
-        display.push(
-          String((displayKey ? record[displayKey] : undefined) ?? record)
-        );
-      }
-    }
-
-    return { values: this.valuesOf(this._committed), text: display.join(', ') };
+    return { values: this.valuesOf(this._committed), text };
   }
 }

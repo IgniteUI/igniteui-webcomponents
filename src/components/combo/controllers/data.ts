@@ -1,6 +1,7 @@
 import type { ReactiveController } from 'lit';
 import { resolveLocale } from '#internals/i18n/locale.js';
 import { sameItems } from '#internals/utils/arrays.js';
+import { getOrInsertComputed } from '#internals/utils/objects.js';
 
 import type IgcComboComponent from '../combo.js';
 import FilterDataOperation from '../operations/filter.js';
@@ -65,7 +66,7 @@ export class DataState<T extends object> implements ReactiveController {
   /** The data source, indexed into records. See {@link hostUpdate}. */
   private _indexed: ComboRecord<T>[] = [];
   private _source?: T[];
-  /** The host fields of the last pipeline run. See {@link _inputsChanged}. */
+  /** The pipeline inputs of the last check. See {@link _inputsChanged}. */
   private _inputs: unknown[] = [];
   /** The state of each toggle option at {@link _toggleVersion}. See {@link selectionOf}. */
   private readonly _toggleStates = new Map<number, boolean | 'mixed'>();
@@ -75,7 +76,6 @@ export class DataState<T extends object> implements ReactiveController {
   private _optionCount = 0;
   private _loadedLength = 0;
   private _searchTerm = '';
-  private _dirty = true;
 
   //#endregion
 
@@ -128,7 +128,7 @@ export class DataState<T extends object> implements ReactiveController {
 
       // In remote mode, the term does not change the records.
       if (this.filteringOptions.mode !== 'remote') {
-        this._invalidate();
+        this._host.requestUpdate();
       }
     }
   }
@@ -186,13 +186,12 @@ export class DataState<T extends object> implements ReactiveController {
     if (this._source !== data || this._indexed.length !== data.length) {
       this._source = data;
       this._indexed = this._index(data);
-    } else if (!(this._dirty || changed)) {
+    } else if (!changed) {
       return false;
     }
 
     this._dataState = this._apply(this._indexed);
     this._toggleStates.clear();
-    this._dirty = false;
     return true;
   }
 
@@ -200,18 +199,10 @@ export class DataState<T extends object> implements ReactiveController {
 
   //#region Internal pipeline operations
 
-  /** Batches the changes into one pipeline run before the next render. */
-  private _invalidate(): void {
-    if (!this._dirty) {
-      this._dirty = true;
-      this._host.requestUpdate();
-    }
-  }
-
   /**
-   * Whether a host field that the pipeline reads changed since the last call.
-   * In remote mode, the filter fields other than `mode` do not change the
-   * records. A new locale drops the collator of the group sorting.
+   * Whether the search term or a host field that the pipeline reads changed
+   * since the last call. In remote mode, the term and the filter fields other
+   * than `mode` do not change the records. A new locale drops the collator.
    */
   private _inputsChanged(): boolean {
     const host = this._host;
@@ -227,7 +218,9 @@ export class DataState<T extends object> implements ReactiveController {
       host.groupSelection,
       host.singleSelect,
       mode,
-      ...(mode === 'remote' ? [] : [filterKey, caseSensitive, matchDiacritics]),
+      ...(mode === 'remote'
+        ? []
+        : [filterKey, caseSensitive, matchDiacritics, this._searchTerm]),
     ];
     let changed = !sameItems(inputs, this._inputs);
 
@@ -388,14 +381,9 @@ export class DataState<T extends object> implements ReactiveController {
       this._toggleVersion = version;
     }
 
-    let state = this._toggleStates.get(index);
-
-    if (state === undefined) {
-      state = this._scanSelection(index, selected);
-      this._toggleStates.set(index, state);
-    }
-
-    return state;
+    return getOrInsertComputed(this._toggleStates, index, () =>
+      this._scanSelection(index, selected)
+    );
   }
 
   /** Stops at the first mix. See {@link selectionOf}. */

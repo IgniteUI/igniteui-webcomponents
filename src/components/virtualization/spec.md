@@ -230,8 +230,7 @@ kept call, and the promise of the kept call resolves at once. A list in a `conte
 shows with the same size scrolls at its next update.
 
 The list renders the window of the new offset in the same task, before the `scroll` event. So a `data` change right
-after the call renders at the new offset. A hidden list does not scroll: it keeps its window, and the browser gives
-it its old offset when it shows.
+after the call renders at the new offset.
 
 #### Infinite scrolling
 

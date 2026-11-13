@@ -277,10 +277,12 @@ export default class IgcComboComponent<
   // The options of the last write. A change of the object in place does not change them.
   private _appliedFiltering = { ...this._filteringOptions };
   // What the last sync of the selection with `value` read. See `_isSyncedValue`.
-  private _syncedWith: { data: T[]; valueKey?: Keys<T>; length: number } = {
-    data: [],
-    length: 0,
-  };
+  private _syncedWith: {
+    data: T[];
+    valueKey?: Keys<T>;
+    length: number;
+    value: ComboValue<T>[];
+  } = { data: [], length: 0, value: [] };
 
   @state()
   private set _activeIndex(index: number) {
@@ -611,8 +613,8 @@ export default class IgcComboComponent<
   /* @tsTwoWayProperty (true, "Change", "Detail.NewValue", false) */
   @property({ type: Array })
   public set value(items: ComboValue<T>[]) {
-    // A framework can set the same value on each render. Like any write, it
-    // makes the control dirty, but the selection does not change.
+    // A framework can set the same value on each render. It makes the control
+    // dirty, as any write, and keeps the selection.
     if (this._isSyncedValue(items)) {
       this._pristine = false;
       return;
@@ -686,6 +688,11 @@ export default class IgcComboComponent<
     // The list keeps the same `_itemRenderer`, so a new template must re-render it.
     if (props.has('itemTemplate') || props.has('groupHeaderTemplate')) {
       this._listRef.value?.requestUpdate();
+    }
+
+    // The input text reads `displayKey`, which falls back to `valueKey`.
+    if (props.has('displayKey') || props.has('valueKey')) {
+      this._projectSelection();
     }
 
     if (props.has('data')) {
@@ -821,18 +828,31 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Whether `items` is `value`, and the selection is synced with the current
-   * `data` and `valueKey`. A new `data` gives a value its record again.
+   * Whether `items` is `value`, and the selection is synced with it and with
+   * the current `data` and `valueKey`. A new `data` gives a value its record
+   * again. The copy of `value` sees a change of the array in place.
    */
   private _isSyncedValue(items: ComboValue<T>[]): boolean {
     const synced = this._syncedWith;
+    const values = this._asValue(items);
 
     return (
       synced.data === this.data &&
       synced.length === this.data.length &&
       synced.valueKey === this.valueKey &&
-      sameItems(this._asValue(items), this.value)
+      sameItems(values, this.value) &&
+      sameItems(values, synced.value)
     );
+  }
+
+  /** Records what the selection is synced with. See {@link _isSyncedValue}. */
+  private _markSynced(): void {
+    this._syncedWith = {
+      data: this.data,
+      valueKey: this.valueKey,
+      length: this.data.length,
+      value: [...this.value],
+    };
   }
 
   /** Sets `value` and gives the selection its records. */
@@ -971,11 +991,7 @@ export default class IgcComboComponent<
       this._formValue.setValueAndFormState(values);
     }
 
-    this._syncedWith = {
-      data: this.data,
-      valueKey: this.valueKey,
-      length: this.data.length,
-    };
+    this._markSynced();
     this._selection.syncFromValue(values);
     this._projectSelection();
     // The list does not update for a new `value` on its own.
@@ -999,6 +1015,7 @@ export default class IgcComboComponent<
     // without a record. See `_commitPending`.
     if (!this._selection.pending) {
       this._formValue.setValueAndFormState(this._projectSelection());
+      this._markSynced();
       this._setSingleSelectionDisplayValue(this._displayValue);
       this._validate();
     }
@@ -1038,8 +1055,8 @@ export default class IgcComboComponent<
       return false;
     }
 
-    // `_applyValue` finds the records that `data` does not hold here. The
-    // commit can change the records of the same values.
+    // Not the setter, which skips the same values: the commit can change
+    // their records.
     this._selection.commit(pending);
     this._applyValue(value);
     return true;
@@ -1067,9 +1084,10 @@ export default class IgcComboComponent<
     if (isItemRecord(record)) {
       const item = record.value;
 
-      // The record itself, as an item without a value would select all.
+      // The first record of its value. Resolve the record, not its value, as
+      // an item without a value would select all.
       this._applySelection(
-        [item],
+        this._selection.resolve([item]),
         toggle && this._selection.has(item) ? 'deselection' : 'selection',
         true
       );

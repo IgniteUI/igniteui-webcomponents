@@ -88,6 +88,7 @@
 |      26 | 2026-11-12 | A write of the same `value` does not update the combo and keeps the pending selection; it still makes the control dirty, and after a new `data` or `valueKey` it gives the values their records again |
 |      27 | 2026-11-12 | One rule for new remote results: a copy of the same records keeps the place and requests no page again; an append compares all the old items; `bindComboDataSource()` marks each first page as new results, so `refresh()` shows from the top |
 |      28 | 2026-11-13 | One record for each value, and each record of a selected value shows as selected; a value keeps its place when it gets a record; select all gives the order of `data`, then the values that `data` does not hold; a value that a pending deselection removed stays out of the pending selection after a new `data` |
+|      29 | 2026-11-13 | Review fixes: primitive records show as selected again; any record of a repeated value selects its first record, also in a commit; a `value` array that changed in place and is set again syncs the selection; a new `displayKey` or `valueKey` updates the input text |
 
 ## Overview
 
@@ -200,11 +201,11 @@ combo.groupKey = 'country';
 
 #### Data binding keys
 
-| Key          | Purpose                                                                             |
-| ------------ | ----------------------------------------------------------------------------------- |
-| `valueKey`   | The field of a record that `value` and the selection methods use.                  |
-| `displayKey` | The field of a record that the list and the input show. Without it, `valueKey`.    |
-| `groupKey`   | The field of a record that groups the options.                                     |
+| Key          | Purpose                                                                                                           |
+| ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `valueKey`   | The field of a record that `value` and the selection methods use.                                                 |
+| `displayKey` | The field of a record that the list and the input show. Without it, `valueKey`. A new one updates the input text. |
+| `groupKey`   | The field of a record that groups the options.                                                                    |
 
 Without a `valueKey`, `value` contains the records.
 
@@ -240,11 +241,11 @@ keeps the value. In single selection, a selection replaces it. It is not in `sel
 clear icon shows for it. `value` lists each value one time. When `data` or `select()` gives it a record, it is a
 selected item again, in the same place in `value`.
 
-**One record for each value.** The selection holds one record for each value: the first record of the value in
-`data`, or the record that it had before. When `data` repeats a value, the options of all its records show as
-selected, and a click on any of them deselects the value. `selection` and the input text follow the order of
-`value`. `selectAllItems(true)` and `select()` without an argument give the order of `data`, then the selected
-values that `data` does not hold.
+**One record for each value.** The selection holds one record for each value: the first record of the value in `data`,
+or the record that it had before. When `data` repeats a value, the options of all its records show as selected. A click
+on any of them selects the first record, or deselects the value, and `igcChange` lists the first record. `selection` and
+the input text follow the order of `value`. `selectAllItems(true)` and `select()` without an argument give the order of
+`data`, then the selected values that `data` does not hold.
 
 #### Select all
 
@@ -767,10 +768,12 @@ state, the data requests and the selection model without a browser fixture.
 
 1. Rendering, the default state and the accessibility audit.
 2. Data binding through `data`, `valueKey`, `displayKey` and `groupKey`, also when the `data` array changes in place.
+   A new `displayKey` updates the input text. Primitive records show and toggle their selection.
 3. Single and multiple selection, with `select` and `deselect` with and without arguments.
 4. `value` and `selection` give the values and the records. A write of the same `value` requests no update and keeps
    the pending selection, but makes the control dirty. After a new `data`, a `data` that grows in place or a new
-   `valueKey`, it gives the values their records again.
+   `valueKey`, it gives the values their records again. A `value` array that changed in place and is set again syncs
+   the selection.
 5. Filtering, with case sensitivity, diacritics matching and `disableFiltering`. A set of `singleSelect` or
    `disableFiltering` to its current value keeps the search text and the filter. The same filtering options do not
    update the combo, and options that changed in place apply.
@@ -853,8 +856,9 @@ state, the data requests and the selection model without a browser fixture.
     `value` when a deselection names it, on `deselect()` without an argument, on the clear icon and on a selection
     in single selection. Each value shows one time, the clear icon shows for such values, and in the confirm mode a
     commit applies a deselection that names one, and a cancel keeps it. A value keeps its place when it gets its
-    record, and select all puts it after the items of `data`. A repeated value selects its first record, and each of
-    its options shows as selected.
+    record, and select all puts it after the items of `data`. A repeated value selects its first record, also from a
+    click on another of its options, and each of its options shows as selected. A pending change to another option of
+    the same value commits no change.
 29. `igcDataRequest` comes near the end of `data` with `startIndex` equal to `data.length`, also with groups. It does
     not come again until `data` grows. A new search, new results without a search, and a new opening each get their
     own request. A copy of the same records gets none. It does not come in local mode, while the list is closed, or with an
