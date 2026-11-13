@@ -88,7 +88,7 @@ describe('Combo selection', () => {
       const { host, selection } = confirming();
 
       selection.syncFromValue([1, 9]);
-      selection.pending;
+      expect(selection.valuesOf(selection.pending!)).to.eql([1, 9]);
       host.valueKey = 'name';
       selection.rekey();
 
@@ -426,7 +426,7 @@ describe('Combo selection', () => {
       };
 
       // The first read copies the committed records, so nothing changes.
-      selection.pending;
+      expect(selection.pending).to.exist;
       expect(selection.version).to.equal(version);
 
       selection.syncFromValue([1, 9]);
@@ -448,7 +448,7 @@ describe('Combo selection', () => {
 
       // A closed list has no pending selection to drop.
       host.open = false;
-      selection.pending;
+      expect(selection.pending).to.be.undefined;
       selection.dropPending();
       expect(selection.version).to.equal(version);
     });
