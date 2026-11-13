@@ -21,7 +21,7 @@ type DataRequestsState<T extends object> = Pick<
 
 type DataRequestsList = Pick<
   IgcVirtualScrollComponent,
-  'updateComplete' | 'checkVisibility' | 'scrollToIndex'
+  'updateComplete' | 'scrollToIndex'
 >;
 
 /**
@@ -40,8 +40,11 @@ export class ComboDataRequests<T extends object> {
   private _lastRenderedIndex = -1;
   /** Whether a search came after the last `data`. Cleared after the update of a `data`. */
   private _searched = false;
-  /** Whether a hidden list scrolls to the top when it opens. */
-  private _toTopOnOpen = false;
+  /**
+   * The scroll to the top of new results. A hidden list scrolls when it shows,
+   * so an opening waits for it before the check. See `_checkAfter`.
+   */
+  private _toTop?: Promise<void>;
 
   constructor(
     host: DataRequestsHost<T>,
@@ -112,13 +115,8 @@ export class ComboDataRequests<T extends object> {
     return isNew;
   }
 
-  /** A hidden list cannot scroll, so it scrolls when it opens. */
   private _showFromTop(list?: DataRequestsList): void {
-    if (list?.checkVisibility()) {
-      void list.scrollToIndex(0);
-    } else {
-      this._toTopOnOpen = true;
-    }
+    this._toTop = list?.scrollToIndex(0);
   }
 
   /** Takes the end of the window that the list renders. */
@@ -149,19 +147,17 @@ export class ComboDataRequests<T extends object> {
     // The list reports a changed window after its own update, and an
     // unchanged one not at all, so check against the window after it.
     if (opened || changed || props.has('totalItemCount')) {
-      void list?.updateComplete.then(() => this._checkAfter(list, opened));
+      void list?.updateComplete.then(() => this._checkAfter(opened));
     }
   }
 
   /** Checks after a pending scroll to the top, against the new window. */
-  private async _checkAfter(
-    list: DataRequestsList,
-    opened: boolean
-  ): Promise<void> {
-    if (opened && this._toTopOnOpen) {
-      this._toTopOnOpen = false;
-      this._showFromTop(list);
-      await list.updateComplete;
+  private async _checkAfter(opened: boolean): Promise<void> {
+    const toTop = this._toTop;
+
+    if (opened && toTop) {
+      this._toTop = undefined;
+      await toTop;
     }
 
     this._check();

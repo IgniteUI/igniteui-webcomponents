@@ -326,27 +326,37 @@ describe('Combo data requests', () => {
 
     it('scroll a hidden list to the top when it opens, before the check', async () => {
       const { host, requests, request } = setup();
-      let visible = false;
-      const hidden = { ...scrolled(), checkVisibility: () => visible };
+      let show = () => {};
+      // A hidden list keeps the scroll, and resolves when it shows and scrolls.
+      const scrollToIndex = spy(
+        (_index: number) =>
+          new Promise<void>((resolve) => {
+            show = resolve;
+          })
+      );
+      const hidden = { ...list, scrollToIndex };
       const previous = host.data;
 
       host.data = items(10, 100);
       requests.dataChanged(previous, hidden);
-      expect(hidden.scrollToIndex.called).to.be.false;
+      expect(scrollToIndex.calledOnceWith(0)).to.be.true;
 
-      visible = true;
       requests.rendered(9);
       requests.afterUpdate(changed([['open', false]]), hidden);
       await aTimeout(0);
 
-      expect(hidden.scrollToIndex.calledOnceWith(0)).to.be.true;
-      expect(hidden.scrollToIndex.firstCall.calledBefore(request.lastCall)).to
-        .be.true;
+      expect(request.callCount).to.equal(1);
+
+      show();
+      await aTimeout(0);
+
+      expect(request.callCount).to.equal(2);
+      expect(scrollToIndex.firstCall.calledBefore(request.lastCall)).to.be.true;
 
       requests.afterUpdate(changed([['open', false]]), hidden);
       await aTimeout(0);
 
-      expect(hidden.scrollToIndex.calledOnce).to.be.true;
+      expect(scrollToIndex.calledOnce).to.be.true;
     });
   });
 
