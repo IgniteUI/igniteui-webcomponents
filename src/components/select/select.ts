@@ -701,7 +701,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   protected _renderDropdown() {
     return html`
-      <div part="base" .inert=${!this.open}>
+      <div part="base" .inert=${!this.open || this.disabled}>
         <slot name="header"></slot>
         <div
           id="dropdown"

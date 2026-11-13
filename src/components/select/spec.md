@@ -133,7 +133,8 @@ As a developer, I expect to be able to:
 The anchor renders like an input: a label, the display value or the placeholder, optional prefix and suffix content
 and a toggle icon that reflects the open state. Activating it opens the list of options, positioned against the
 anchor. The selected option is marked and the active option carries its own state. Selecting commits the value and
-closes the list unless `keepOpenOnSelect` is set.
+closes the list unless `keepOpenOnSelect` is set. If the select becomes disabled while its list is open, the
+list cannot receive focus or accept a selection.
 
 ### Developer experience
 
@@ -455,7 +456,8 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
    `value` again keeps the active item, while a user commit and `select()` with the selected item move it there. A
    removed active item hands the navigation back to the selected item. Setting `selected` on each item again keeps
    the active item and its tab stop.
-8. Selecting a disabled item is not possible.
+8. Selecting a disabled item is not possible. A pointer click cannot change the selection after the open
+   control becomes disabled.
 
 ### Asynchronously rendered items
 
