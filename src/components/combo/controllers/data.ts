@@ -376,7 +376,7 @@ export class DataState<T extends object> implements ReactiveController {
    */
   public selectionOf(
     index: number,
-    selected: ReadonlySet<T>,
+    selected: Pick<ReadonlySet<T>, 'has' | 'size'>,
     version?: number
   ): boolean | 'mixed' {
     if (version === undefined) {
@@ -401,7 +401,7 @@ export class DataState<T extends object> implements ReactiveController {
   /** Stops at the first mix. See {@link selectionOf}. */
   private _scanSelection(
     index: number,
-    selected: ReadonlySet<T>
+    selected: Pick<ReadonlySet<T>, 'has' | 'size'>
   ): boolean | 'mixed' {
     const records = this._dataState;
     let some = false;

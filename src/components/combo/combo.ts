@@ -305,9 +305,9 @@ export default class IgcComboComponent<
   private _displayValue = '';
 
   private get _mainAriaLabel(): string {
-    return isEmpty(this._selection.selected)
-      ? this.resourceStrings.combo_aria_label_no_options
-      : this.resourceStrings.combo_aria_label_options;
+    return this._selection.hasRecords
+      ? this.resourceStrings.combo_aria_label_options
+      : this.resourceStrings.combo_aria_label_no_options;
   }
 
   //#endregion
@@ -413,6 +413,7 @@ export default class IgcComboComponent<
   @coercedProperty<Keys<T> | undefined, IgcComboComponent<T>>({
     onChange: ({ value, host }) => {
       host._displayKey = host._displayKey ?? value;
+      host._selection.rekey();
     },
   })
   public valueKey?: Keys<T> = undefined;
@@ -632,7 +633,7 @@ export default class IgcComboComponent<
    * Returns the current selection as an array of objects as provided in the `data` source.
    */
   public get selection(): T[] {
-    return Array.from(this._selection.selected);
+    return this._selection.selected;
   }
 
   /**
@@ -903,7 +904,7 @@ export default class IgcComboComponent<
     }
 
     const resolved = isEmpty(collection)
-      ? Array.from(this._selection.current)
+      ? this._selection.currentRecords()
       : this._selection.resolve(collection);
 
     if (!this._applySelection(resolved, type, emit)) {
@@ -949,9 +950,8 @@ export default class IgcComboComponent<
       this._clearSearchTerm(emit);
     }
 
-    this._selection.apply(records, selecting);
-
-    if (selecting && this._selection.resolveValues(records)) {
+    // The committed values without a record can get them from a pending change.
+    if (this._selection.apply(records, selecting)) {
       this._projectSelection();
     }
 
@@ -983,8 +983,6 @@ export default class IgcComboComponent<
   }
 
   private _syncSelectionFromData(): void {
-    const known = this._selection.knownValues();
-
     // Sync the selection when `data` comes after `value`.
     if (!isEmpty(this.data) && !isEmpty(this.value)) {
       this._withPristine(() => {
@@ -993,7 +991,7 @@ export default class IgcComboComponent<
       });
     }
 
-    this._selection.syncPending(known);
+    this._selection.syncPending();
   }
 
   protected _syncValueFromSelection(): void {
@@ -1072,9 +1070,7 @@ export default class IgcComboComponent<
       // The record itself, as an item without a value would select all.
       this._applySelection(
         [item],
-        toggle && this._selection.current.has(item)
-          ? 'deselection'
-          : 'selection',
+        toggle && this._selection.has(item) ? 'deselection' : 'selection',
         true
       );
     } else if (record && this._state.isToggle(record)) {
@@ -1094,8 +1090,7 @@ export default class IgcComboComponent<
    */
   private _toggleItemsOf(index: number): void {
     const items = this._state.itemsOf(index);
-    const selected = this._selection.current;
-    const unselected = items.filter((item) => !selected.has(item));
+    const unselected = items.filter((item) => !this._selection.has(item));
 
     this._applySelection(
       unselected.length ? unselected : items,
@@ -1169,7 +1164,7 @@ export default class IgcComboComponent<
   }
 
   protected override _handleBlur(): void {
-    if (isEmpty(this._selection.selected)) {
+    if (!this._selection.hasRecords) {
       this._clearSearchTerm(true);
       this._setSingleSelectionDisplayValue('');
     }
@@ -1430,7 +1425,7 @@ export default class IgcComboComponent<
 
     const active = this._activeIndex === index;
 
-    const selected = this._selection.current.has(item.value);
+    const selected = this._selection.has(item.value);
     // One template for both, so a row keeps its element when its item loads.
     const placeholder = item.kind === 'placeholder';
     const { optionCount } = this._state;
@@ -1473,7 +1468,7 @@ export default class IgcComboComponent<
   ): TemplateResult {
     const state = this._state.selectionOf(
       index,
-      this._selection.current,
+      this._selection,
       this._selection.version
     );
     const all = state === true;

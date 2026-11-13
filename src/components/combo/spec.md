@@ -87,6 +87,7 @@
 |      25 | 2026-11-12 | A new `valueKey` or `displayKey` gives the group headers new records; an appended page keeps the records of the loaded items, so the list keeps their measured sizes |
 |      26 | 2026-11-12 | A write of the same `value` does not update the combo and keeps the pending selection; it still makes the control dirty, and after a new `data` or `valueKey` it gives the values their records again |
 |      27 | 2026-11-12 | One rule for new remote results: a copy of the same records keeps the place and requests no page again; an append compares all the old items; `bindComboDataSource()` marks each first page as new results, so `refresh()` shows from the top |
+|      28 | 2026-11-13 | One record for each value, and each record of a selected value shows as selected; a value keeps its place when it gets a record; select all gives the order of `data`, then the values that `data` does not hold; a value that a pending deselection removed stays out of the pending selection after a new `data` |
 
 ## Overview
 
@@ -237,7 +238,13 @@ mode. `deselect()` with that value or without an argument, `deselectAllItems(tru
 remove it. In the confirm mode, such a deselection changes the pending selection, so a commit applies it and a cancel
 keeps the value. In single selection, a selection replaces it. It is not in `selection` or in the input text, but the
 clear icon shows for it. `value` lists each value one time. When `data` or `select()` gives it a record, it is a
-selected item again.
+selected item again, in the same place in `value`.
+
+**One record for each value.** The selection holds one record for each value: the first record of the value in
+`data`, or the record that it had before. When `data` repeats a value, the options of all its records show as
+selected, and a click on any of them deselects the value. `selection` and the input text follow the order of
+`value`. `selectAllItems(true)` and `select()` without an argument give the order of `data`, then the selected
+values that `data` does not hold.
 
 #### Select all
 
@@ -845,7 +852,9 @@ state, the data requests and the selection model without a browser fixture.
     selection methods and a commit of the confirm mode, also in `igcChange.newValue` and `pendingValue`. It leaves
     `value` when a deselection names it, on `deselect()` without an argument, on the clear icon and on a selection
     in single selection. Each value shows one time, the clear icon shows for such values, and in the confirm mode a
-    commit applies a deselection that names one, and a cancel keeps it.
+    commit applies a deselection that names one, and a cancel keeps it. A value keeps its place when it gets its
+    record, and select all puts it after the items of `data`. A repeated value selects its first record, and each of
+    its options shows as selected.
 29. `igcDataRequest` comes near the end of `data` with `startIndex` equal to `data.length`, also with groups. It does
     not come again until `data` grows. A new search, new results without a search, and a new opening each get their
     own request. A copy of the same records gets none. It does not come in local mode, while the list is closed, or with an
@@ -919,7 +928,8 @@ state, the data requests and the selection model without a browser fixture.
     selection with no events and keeps the list open. `cancelSelection()` and a new `value` replace it, and the same
     `value` keeps it.
 46. The clear icon clears `value` and the pending selection with one `igcChange`. A new `data` keeps the pending
-    selection by value, and adds the values of `value` that it gives a record. A value without a record stays in
+    selection by value, and gives records to its values in place. A value that a pending deselection removed stays
+    out. A value without a record stays in
     `value`, also after a commit, and `select()` gives it a record in the input text. The select-all option and the group
     header options change the pending selection. In single selection, each change applies at once.
 47. The footer shows Cancel and Apply with the `combo_cancel` and `combo_apply` texts, and the accessibility audit

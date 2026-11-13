@@ -9,17 +9,26 @@ export type ComboSelectionHost<T extends object> = Pick<
   | 'data'
   | 'valueKey'
   | 'displayKey'
-  | 'value'
   | 'singleSelect'
   | 'open'
   | 'selectionCommit'
 >;
 
 /**
- * The selected records of the combo: the committed selection, and the pending
- * selection of the confirm mode while the list is open. It resolves values and
- * objects to the records of `data`, and keeps the selected records that `data`
- * does not hold. It sends no events.
+ * The values of a selection in order, each with its record, or `undefined` for
+ * a value that has no record yet.
+ */
+export type SelectionEntries<T extends object> = Map<
+  ComboValue<T>,
+  T | undefined
+>;
+
+/**
+ * The selected values and records of the combo: the committed selection, and
+ * the pending selection of the confirm mode while the list is open. It
+ * resolves values and objects to the records of `data`, and keeps the selected
+ * records and the values that `data` does not hold. One record for each value.
+ * It sends no events.
  */
 export class ComboSelection<T extends object> {
   private readonly _host: ComboSelectionHost<T>;
@@ -29,24 +38,28 @@ export class ComboSelection<T extends object> {
   private _indexKey?: ComboSelectionHost<T>['valueKey'];
   private _indexStale = false;
   private _version = 0;
-  private _selected: Set<T> = new Set();
+  /** The committed selection: `value`, `selection` and the text of the input. */
+  private _committed: SelectionEntries<T> = new Map();
   /** Read it through {@link pending}. */
-  private _pending?: Set<T>;
-  /** The values of `value` that have no record. See {@link valuesOf}. */
-  private _unresolved = new Set<ComboValue<T>>();
-  /** The unresolved values of the pending selection, which a deselection can name. */
-  private _pendingUnresolved?: Set<ComboValue<T>>;
+  private _pending?: SelectionEntries<T>;
 
   constructor(host: ComboSelectionHost<T>) {
     this._host = host;
   }
 
-  /** The committed selection: `selection`, `value` and the text of the input. */
-  public get selected(): ReadonlySet<T> {
-    return this._selected;
+  /** The records of the committed selection: `selection`. */
+  public get selected(): T[] {
+    return this.recordsOf(this._committed);
   }
 
-  /** Changes when the records of {@link selected} or {@link pending} can change. */
+  /** Whether the committed selection has a record. */
+  public get hasRecords(): boolean {
+    return Iterator.from(this._committed.values()).some(
+      (record) => record !== undefined
+    );
+  }
+
+  /** Changes when the records of the committed or the pending selection can change. */
   public get version(): number {
     return this._version;
   }
@@ -57,24 +70,15 @@ export class ComboSelection<T extends object> {
 
   /**
    * The pending selection, which exists while the list is open in the confirm
-   * mode of `selectionCommit`. It starts as a copy of {@link selected}.
+   * mode of `selectionCommit`. It starts as a copy of the committed selection.
    */
-  public get pending(): ReadonlySet<T> | undefined {
+  public get pending(): ReadonlyMap<ComboValue<T>, T | undefined> | undefined {
     return this._lazyPending;
   }
 
-  /** The selection that the list shows and the user changes. */
-  public get current(): ReadonlySet<T> {
-    return this._target;
-  }
-
-  private get _lazyPending(): Set<T> | undefined {
+  private get _lazyPending(): SelectionEntries<T> | undefined {
     if (this._host.open && this.confirmMode) {
-      if (!this._pending) {
-        this._pending = new Set(this._selected);
-        this._pendingUnresolved = new Set(this._unresolved);
-      }
-
+      this._pending ??= new Map(this._committed);
       return this._pending;
     }
 
@@ -82,29 +86,76 @@ export class ComboSelection<T extends object> {
     return undefined;
   }
 
-  /** The set that the changes of the user go to. See {@link current}. */
-  private get _target(): Set<T> {
-    return this._lazyPending ?? this._selected;
+  /** The selection that the list shows and the user changes. */
+  private get _current(): SelectionEntries<T> {
+    return this._lazyPending ?? this._committed;
   }
 
-  /** The unresolved values that go with {@link current}. */
-  private get _targetUnresolved(): Set<ComboValue<T>> {
-    return this._lazyPending ? this._pendingUnresolved! : this._unresolved;
+  /** The number of values of the selection that the list shows. */
+  public get size(): number {
+    return this._current.size;
   }
 
-  /** The next read of {@link pending} copies {@link selected} again. */
+  /**
+   * Whether the value of `record` has a record in the selection that the list
+   * shows, so a record that repeats a selected value shows as selected too. A
+   * placeholder has no record.
+   */
+  public has(record: T): boolean {
+    return (
+      isObject(record) && this._current.get(this._valueOf(record)) !== undefined
+    );
+  }
+
+  /** The records of the selection that the list shows. */
+  public currentRecords(): T[] {
+    return this.recordsOf(this._current);
+  }
+
+  /** The records of `entries`, in order. */
+  public recordsOf(entries: ReadonlyMap<ComboValue<T>, T | undefined>): T[] {
+    return Iterator.from(entries.values())
+      .filter((record) => record !== undefined)
+      .toArray();
+  }
+
+  /** The next read of {@link pending} copies the committed selection again. */
   public dropPending(): void {
     if (this._pending) {
+      this._pending = undefined;
       this._version++;
     }
-
-    this._pending = undefined;
-    this._pendingUnresolved = undefined;
   }
 
   /** Call when `data` is set, also to the same array. */
   public invalidateIndex(): void {
     this._indexStale = true;
+  }
+
+  /** Call when `valueKey` changes: the records get their new values. */
+  public rekey(): void {
+    this._committed = this._rekeyed(this._committed);
+
+    if (this._pending) {
+      this._pending = this._rekeyed(this._pending);
+    }
+
+    this._version++;
+  }
+
+  /** A value without a record keeps its value. A repeated value keeps its first record. */
+  private _rekeyed(entries: SelectionEntries<T>): SelectionEntries<T> {
+    const next: SelectionEntries<T> = new Map();
+
+    for (const [value, record] of entries) {
+      const key = record === undefined ? value : this._valueOf(record);
+
+      if (!next.has(key)) {
+        next.set(key, record);
+      }
+    }
+
+    return next;
   }
 
   /**
@@ -146,6 +197,12 @@ export class ComboSelection<T extends object> {
     return index;
   }
 
+  /** The first record of `value` in `data`. Only the first one, unlike {@link resolve}. */
+  private _recordOf(value: ComboValue<T>): T | undefined {
+    const position = this._dataIndex.get(value)?.[0];
+    return position === undefined ? undefined : this._host.data[position];
+  }
+
   /** The key of the record in the value index. Unlike {@link _valueOf}, it has no fallback. */
   public keyOf(record: T): Item<T> {
     const { valueKey } = this._host;
@@ -167,53 +224,32 @@ export class ComboSelection<T extends object> {
   }
 
   /**
-   * The values of `records`, and the values of `value` that have no record in
-   * their places. A change keeps those until it names them. Multiple selection
-   * only.
+   * The values of `entries`: `value` or `pendingValue`. A value without a
+   * record keeps its place until a change names it, in multiple selection only.
    */
-  public valuesOf(records: Iterable<T>): ComboValue<T>[] {
-    return this._withUnresolved(this.toValues(records), this._targetUnresolved);
-  }
-
-  private _withUnresolved(
-    values: ComboValue<T>[],
-    unresolved: ReadonlySet<ComboValue<T>>
+  public valuesOf(
+    entries: ReadonlyMap<ComboValue<T>, T | undefined>
   ): ComboValue<T>[] {
-    if (this._host.singleSelect || !unresolved.size) {
-      return values;
+    if (!this._host.singleSelect) {
+      return [...entries.keys()];
     }
 
-    const next = new Set(values);
-    const kept = new Set(
-      this._host.value.filter(
-        (value) => unresolved.has(value) || next.has(value)
-      )
-    );
-
-    return [...kept, ...values.filter((value) => !kept.has(value))];
+    return Iterator.from(entries)
+      .filter(([, record]) => record !== undefined)
+      .map(([value]) => value)
+      .toArray();
   }
 
   /** Drops the values without a record that a deselection names, or all of them. */
   public forget(items: Item<T>[]): void {
-    const unresolved = this._targetUnresolved;
+    const current = this._current;
+    const values = isEmpty(items)
+      ? current.keys()
+      : items.map((item) => this._toValue(item));
 
-    if (isEmpty(items)) {
-      unresolved.clear();
-      return;
-    }
-
-    for (const item of items) {
-      unresolved.delete(this._toValue(item));
-    }
-  }
-
-  private _resolveUnresolved(
-    records: Iterable<T>,
-    unresolved: Set<ComboValue<T>>
-  ): void {
-    if (unresolved.size) {
-      for (const record of records) {
-        unresolved.delete(this._valueOf(record));
+    for (const value of values) {
+      if (current.get(value) === undefined) {
+        current.delete(value);
       }
     }
   }
@@ -227,9 +263,9 @@ export class ComboSelection<T extends object> {
   public resolve(items: Item<T>[]): T[] {
     const { data } = this._host;
     const index = this._dataIndex;
+    const current = this._current;
     const positions = new Set<number>();
     const others = new Set<T>();
-    let selected: Map<ComboValue<T>, T> | undefined;
 
     for (const item of items) {
       const value = this._toValue(item);
@@ -243,9 +279,10 @@ export class ComboSelection<T extends object> {
       }
 
       // A pending record of the value comes before a committed one.
-      selected ??= this._byValue(this._selected.union(this.current));
       const record =
-        selected.get(value) ?? (isObject(item) ? (item as T) : undefined);
+        current.get(value) ??
+        this._committed.get(value) ??
+        (isObject(item) ? (item as T) : undefined);
 
       if (record) {
         others.add(record);
@@ -260,204 +297,173 @@ export class ComboSelection<T extends object> {
     ];
   }
 
-  /** The values of {@link current} after `records` apply: the `newValue` of the change event. */
+  /** The values of the current selection after `records` apply: the `newValue` of the change event. */
   public preview(records: T[], selecting: boolean): ComboValue<T>[] {
-    const current = this.current;
-
-    if (selecting) {
-      return this.valuesOf(
-        this._host.singleSelect ? records : new Set([...current, ...records])
-      );
+    if (selecting && this._host.singleSelect) {
+      return this.toValues(records);
     }
 
-    const removed = new Set(records);
-
-    return this.valuesOf(
-      Iterator.from(current).filter((item) => !removed.has(item))
-    );
+    const next = new Map(this._current);
+    this._change(next, records, selecting);
+    return this.valuesOf(next);
   }
 
-  /** Adds `records` to {@link current}, or removes them. */
-  public apply(records: T[], selecting: boolean): void {
-    const target = this._target;
+  /**
+   * Adds `records` to `entries`, or removes their values. A value keeps its
+   * record and its place, so a value without a record gets one in place.
+   */
+  private _change(
+    entries: SelectionEntries<T>,
+    records: T[],
+    selecting: boolean
+  ): void {
+    for (const record of records) {
+      const value = this._valueOf(record);
 
-    for (const item of records) {
-      selecting ? target.add(item) : target.delete(item);
-    }
-
-    this._version++;
-
-    if (selecting) {
-      this._resolveUnresolved(records, this._targetUnresolved);
+      if (!selecting) {
+        entries.delete(value);
+      } else if (entries.get(value) === undefined) {
+        entries.set(value, record);
+      }
     }
   }
 
   /**
-   * While the list has a pending selection, adds the records of the values of
-   * `value` that have none to {@link selected}, as a new `data` does. For
-   * example, a remote source gives them to `select()`.
-   * @returns Whether {@link selected} changed.
+   * Adds `records` to the current selection, or removes their values. While
+   * the list has a pending selection, a committed value without a record gets
+   * its record too, as a new `data` gives it.
+   * @returns Whether the committed selection got records while it was not the current one.
    */
-  public resolveValues(records: T[]): boolean {
-    if (this.pending && this._unresolved.size) {
-      this._selected = this._recordsOf(
-        this._host.value,
-        new Set(records).union(this._selected),
-        this._unresolved
-      );
-      this._version++;
-      return true;
-    }
+  public apply(records: T[], selecting: boolean): boolean {
+    const current = this._current;
+    const committed = this._committed;
+    let resolved = false;
 
-    return false;
-  }
+    this._change(current, records, selecting);
 
-  /** Selects all the records of `data`, and keeps the selected records that `data` does not hold. */
-  public selectAll(): void {
-    const all = new Set(this._host.data).union(this._selectedOutsideData());
+    if (selecting && current !== committed) {
+      for (const record of records) {
+        const value = this._valueOf(record);
 
-    if (this.pending) {
-      this._pending = all;
-    } else {
-      this._selected = all;
+        if (committed.has(value) && committed.get(value) === undefined) {
+          committed.set(value, record);
+          resolved = true;
+        }
+      }
     }
 
     this._version++;
-    this._resolveUnresolved(all, this._targetUnresolved);
+    return resolved;
+  }
+
+  /**
+   * Selects all the records of `data` in data-source order, then keeps the
+   * selected records and the values that `data` does not hold.
+   */
+  public selectAll(): void {
+    const current = this._current;
+    const all: SelectionEntries<T> = new Map();
+
+    for (const record of this._host.data) {
+      const value = this._valueOf(record);
+
+      if (!all.has(value)) {
+        all.set(value, record);
+      }
+    }
+
+    for (const [value, record] of current) {
+      if (!all.has(value)) {
+        all.set(value, record);
+      }
+    }
+
+    if (current === this._committed) {
+      this._committed = all;
+    } else {
+      this._pending = all;
+    }
+
+    this._version++;
   }
 
   /** Clears the committed selection. The pending selection does not change. */
   public clear(): void {
-    this._selected = new Set();
+    this._committed = new Map();
     this._version++;
   }
 
-  /** The records that `pending` adds to {@link selected} or removes from it. */
-  public changes(pending: ReadonlySet<T>): T[] {
-    return [...pending.symmetricDifference(this._selected)];
+  /** The records that `pending` adds to the committed selection or removes from it. */
+  public changes(pending: ReadonlyMap<ComboValue<T>, T | undefined>): T[] {
+    const committed = this._committed;
+    const added = Iterator.from(pending).filter(
+      ([value, record]) =>
+        record !== undefined && committed.get(value) !== record
+    );
+    const removed = Iterator.from(committed).filter(
+      ([value, record]) => record !== undefined && pending.get(value) !== record
+    );
+
+    return [...added, ...removed].map(([, record]) => record!);
   }
 
   /**
    * Makes `pending`, as the host read it before the change event, the
-   * committed selection. The `value` setter then gives each value its record.
+   * committed selection. The `value` sync then gives each value its record.
    */
-  public commit(pending: ReadonlySet<T>): void {
-    this._selected = new Set(pending);
+  public commit(pending: ReadonlyMap<ComboValue<T>, T | undefined>): void {
+    this._committed = new Map(pending);
     this._version++;
   }
 
-  /** Gives {@link selected} the records of `values`. A value that `data` does not hold keeps its record. */
+  /**
+   * Makes `values` the committed selection. Each value gets its first record in
+   * `data`, else keeps its record, else has none.
+   */
   public syncFromValue(values: ComboValue<T>[]): void {
-    this._unresolved = new Set();
-    this._selected = this._recordsOf(values, this._selected, this._unresolved);
+    const previous = this._committed;
+    const next: SelectionEntries<T> = new Map();
+
+    for (const value of values) {
+      if (!next.has(value)) {
+        next.set(value, this._recordOf(value) ?? previous.get(value));
+      }
+    }
+
+    this._committed = next;
     this._version++;
   }
 
   /**
-   * Before a new `data`: the values that have a record, while the list has a
-   * pending selection and some values of `value` have none. Only a value
-   * without a record can get a new record. Pass it to {@link syncPending}.
+   * After a new `data`: gives each value of the pending selection its first
+   * record in `data`, else keeps its record. A value that a pending
+   * deselection removed stays out.
    */
-  public knownValues(): Set<ComboValue<T>> | undefined {
-    return this.pending && this._unresolved.size
-      ? new Set(this.toValues(this._selected))
-      : undefined;
-  }
-
-  /**
-   * After a new `data` and the sync of {@link selected} with `value`: gives the
-   * pending selection the records of the new `data`, and the records that the
-   * values outside `known` got, because the user could not deselect them.
-   */
-  public syncPending(known: Set<ComboValue<T>> | undefined): void {
-    const pending = this.pending;
+  public syncPending(): void {
+    const pending = this._lazyPending;
 
     if (pending) {
-      const values = this.toValues(pending);
-
-      if (known) {
-        values.push(
-          ...this.toValues(this._selected).filter((value) => !known.has(value))
-        );
+      for (const [value, record] of pending) {
+        pending.set(value, this._recordOf(value) ?? record);
       }
 
-      this._pending = this._recordsOf(values, pending, this._pendingUnresolved);
       this._version++;
     }
   }
 
-  /** The values and the display text of {@link selected}, in one pass. See {@link valuesOf}. */
+  /** The values and the display text of the committed selection, in one pass. See {@link valuesOf}. */
   public project(): { values: ComboValue<T>[]; text: string } {
     const { displayKey } = this._host;
-    const values: ComboValue<T>[] = [];
     const display: string[] = [];
 
-    for (const item of this._selected) {
-      values.push(this._valueOf(item));
-      display.push(String((displayKey ? item[displayKey] : undefined) ?? item));
-    }
-
-    return {
-      values: this._withUnresolved(values, this._unresolved),
-      text: display.join(', '),
-    };
-  }
-
-  /**
-   * The records of `values`. A value that `data` does not hold keeps its record
-   * in `previous`. `unresolved` gets the values without a record.
-   */
-  private _recordsOf(
-    values: ComboValue<T>[],
-    previous: ReadonlySet<T>,
-    unresolved?: Set<ComboValue<T>>
-  ): Set<T> {
-    const records = new Set<T>();
-
-    if (isEmpty(values)) {
-      return records;
-    }
-
-    const { data } = this._host;
-    const index = this._dataIndex;
-    let byValue: Map<ComboValue<T>, T> | undefined;
-
-    for (const value of values) {
-      // Only the first record of the value, unlike `resolve()`.
-      const position = index.get(value)?.[0];
-      const record =
-        position === undefined
-          ? (byValue ??= this._byValue(previous)).get(value)
-          : data[position];
-
+    for (const record of this._committed.values()) {
       if (record !== undefined) {
-        records.add(record);
-        unresolved?.delete(value);
-      } else {
-        unresolved?.add(value);
+        display.push(
+          String((displayKey ? record[displayKey] : undefined) ?? record)
+        );
       }
     }
 
-    return records;
-  }
-
-  /** The selected records whose values `data` does not hold. */
-  private _selectedOutsideData(): Set<T> {
-    const index = this._dataIndex;
-
-    return new Set(
-      Iterator.from(this.current).filter(
-        (record) => !index.has(this.keyOf(record))
-      )
-    );
-  }
-
-  private _byValue(selected: ReadonlySet<T>): Map<ComboValue<T>, T> {
-    return new Map(
-      Iterator.from(selected).map((record): [ComboValue<T>, T] => [
-        this._valueOf(record),
-        record,
-      ])
-    );
+    return { values: this.valuesOf(this._committed), text: display.join(', ') };
   }
 }

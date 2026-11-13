@@ -111,6 +111,72 @@ describe('Combo', () => {
     });
   });
 
+  describe('One record for each value', () => {
+    const other = { id: 'XX01', name: 'Elsewhere', country: '', zip: '' };
+
+    beforeEach(async () => {
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>`
+      );
+      input = combo.renderRoot.querySelector('igc-input#target')!;
+    });
+
+    it('selects the first record of a repeated value, and shows each of its records as selected', async () => {
+      const copy = { ...cities[0] };
+      combo.data = [...cities, copy];
+      combo.select('BG01');
+      await openComboPopover(combo);
+
+      expect(combo.value).to.eql(['BG01']);
+      expect(combo.selection).to.have.ordered.members([cities[0]]);
+
+      const rows = items(combo).filter(
+        (item) => item.textContent?.trim() === 'Sofia'
+      );
+      expect(rows).lengthOf(2);
+      expect(rows.every((item) => item.selected)).to.be.true;
+
+      simulateClick(rows[1]);
+      await comboStable(combo);
+
+      expect(combo.value).to.be.empty;
+    });
+
+    it('keeps the place of a value that gets its record', async () => {
+      combo.value = ['XX01', 'BG02'];
+      combo.select(other);
+      await elementUpdated(combo);
+
+      expect(combo.value).to.eql(['XX01', 'BG02']);
+      expect(combo.selection.map(({ id }) => id)).to.eql(['XX01', 'BG02']);
+      expect(input.value).to.equal('Elsewhere, Plovdiv');
+    });
+
+    it('selects all in data order, then keeps the values without a record', () => {
+      combo.value = ['BG02', 'XX01'];
+      combo.selectAllItems(true);
+
+      expect(combo.value).to.eql([...cities.map(({ id }) => id), 'XX01']);
+    });
+
+    it('keeps a value that a pending deselection named out when a new data gives it a record', async () => {
+      combo.selectionCommit = 'confirm';
+      combo.value = ['BG01', 'XX01'];
+      await openComboPopover(combo);
+
+      combo.deselect('XX01');
+      combo.data = [...cities, other];
+      await comboStable(combo);
+
+      expect(combo.pendingValue).to.eql(['BG01']);
+      expect(combo.value).to.eql(['BG01', 'XX01']);
+    });
+  });
+
   describe('Select all methods', () => {
     async function search(text: string): Promise<void> {
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: text }));
@@ -876,7 +942,8 @@ describe('Combo', () => {
 
       expect(input.value).to.equal('Sofia, Elsewhere');
       expect(combo.value).to.eql(['BG01', 'XX01']);
-      expect(combo.pendingValue).to.eql(['BG01', 'BG02', 'XX01']);
+      // A value keeps its place when it gets its record.
+      expect(combo.pendingValue).to.eql(['BG01', 'XX01', 'BG02']);
 
       // A second record of the value does not join the selection.
       combo.deselect('XX01');
@@ -918,7 +985,7 @@ describe('Combo', () => {
       combo.data = [...cities, later];
       await comboStable(combo);
 
-      expect(combo.pendingValue).to.eql(['BG01', 'BG02', 'XX02']);
+      expect(combo.pendingValue).to.eql(['BG01', 'XX02', 'BG02']);
 
       await click(1);
       simulateKeyboard(list, enterKey);

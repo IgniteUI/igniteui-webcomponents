@@ -560,7 +560,8 @@ describe('Combo data source binding', () => {
     combo.value = ['OSL', 'AMS'];
     source.resolve = resolve;
     bind();
-    await waitUntil(() => input.value === 'Amsterdam, Oslo');
+    // The text follows the order of `value`, not of the answer.
+    await waitUntil(() => input.value === 'Oslo, Amsterdam');
 
     expect(resolve).calledOnce;
     expect(resolve.firstCall.args[0]).to.eql(['OSL', 'AMS']);
