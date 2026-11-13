@@ -1,9 +1,11 @@
 import type { PropertyValues } from 'lit';
+import { startsWith } from '#internals/utils/arrays.js';
 import type { VirtualScrollDataRequest } from '../../virtualization/types.js';
 import type IgcVirtualScrollComponent from '../../virtualization/virtualization.js';
 import { REMOTE_SCROLLING_THRESHOLD } from '../../virtualization/virtualization.js';
 import type IgcComboComponent from '../combo.js';
 import type { DataState } from './data.js';
+import { newResultsHints } from './results-hint.js';
 
 const DATA_REQUEST_COUNT = 20;
 
@@ -19,7 +21,7 @@ type DataRequestsState<T extends object> = Pick<
 
 type DataRequestsList = Pick<
   IgcVirtualScrollComponent,
-  'updateComplete' | 'checkVisibility' | 'scrollToIndex'
+  'updateComplete' | 'scrollToIndex'
 >;
 
 /**
@@ -36,10 +38,13 @@ export class ComboDataRequests<T extends object> {
   private _lastDataRequest?: number;
   /** The index of the last rendered option, from the list. */
   private _lastRenderedIndex = -1;
-  /** Whether a search came after the last `data`. */
+  /** Whether a search came after the last `data`. Cleared after the update of a `data`. */
   private _searched = false;
-  /** Whether a hidden list scrolls to the top when it opens. */
-  private _toTopOnOpen = false;
+  /**
+   * The scroll to the top of new results. A hidden list scrolls when it shows,
+   * so an opening waits for it before the check. See `_checkAfter`.
+   */
+  private _toTop?: Promise<void>;
 
   constructor(
     host: DataRequestsHost<T>,
@@ -63,45 +68,49 @@ export class ComboDataRequests<T extends object> {
   }
 
   /**
-   * Call from the `willUpdate()` of the host for a new `data`. Remote results
-   * show from the top when they are new: the first `data` after a search, a
-   * shorter `data`, or another first `valueKey`. A page appended to the same
-   * records keeps the place, also after a search that the application did not
-   * load. Without `valueKey`, a copy of the records is not new.
+   * Whether `data` holds new results after `old`, in remote mode: the hint of
+   * a binder (see `newResultsHints`), else the first `data` after a search, a
+   * shorter `data` or another first `valueKey`. A `data` that starts with the
+   * items of `old`, such as an appended page, is not new. Without `valueKey`,
+   * a copy of the records is not new.
+   */
+  private _isNew(old: T[]): boolean {
+    const { data, filteringOptions, valueKey } = this._host;
+
+    if (filteringOptions.mode !== 'remote' || !old.length) {
+      return false;
+    }
+
+    const hint = newResultsHints.get(this._host);
+
+    if (hint !== undefined) {
+      return hint;
+    }
+
+    const firstKey = (records: T[]) =>
+      valueKey ? records[0]?.[valueKey] : undefined;
+
+    return (
+      !startsWith(data, old) &&
+      (this._searched ||
+        data.length < old.length ||
+        firstKey(data) !== firstKey(old))
+    );
+  }
+
+  /**
+   * Call from the `willUpdate()` of the host for a new `data`. New results
+   * show from the top. See {@link _isNew}.
    * @returns Whether `data` holds new results.
    */
   public dataChanged(old: T[], list?: DataRequestsList): boolean {
-    const { data, filteringOptions, valueKey } = this._host;
-    const searched = this._searched;
-    const last = old.length - 1;
-    const appended =
-      data.length > last && data[0] === old[0] && data[last] === old[last];
-    const firstKey = (records: T[]) =>
-      valueKey ? records[0]?.[valueKey] : undefined;
-    const isNew =
-      filteringOptions.mode === 'remote' &&
-      old.length > 0 &&
-      !appended &&
-      (searched ||
-        data.length < old.length ||
-        firstKey(data) !== firstKey(old));
-
-    this._searched = false;
+    const isNew = this._isNew(old);
 
     if (isNew) {
-      this._showFromTop(list);
+      this._toTop = list?.scrollToIndex(0);
     }
 
     return isNew;
-  }
-
-  /** A hidden list cannot scroll, so it scrolls when it opens. */
-  private _showFromTop(list?: DataRequestsList): void {
-    if (list?.checkVisibility()) {
-      void list.scrollToIndex(0);
-    } else {
-      this._toTopOnOpen = true;
-    }
   }
 
   /** Takes the end of the window that the list renders. */
@@ -115,32 +124,34 @@ export class ComboDataRequests<T extends object> {
     props: PropertyValues<IgcComboComponent<T>>,
     list?: DataRequestsList
   ): void {
-    const { open, data } = this._host;
-    const opened = props.has('open') && open;
-    const replaced = props.has('data') && props.get('data')?.[0] !== data[0];
+    const opened = props.has('open') && this._host.open;
+    const changed = props.has('data');
 
-    // An opening, or a replaced `data` rather than an appended one, starts a
-    // new sequence of requests. Opening again also retries a failed request.
-    if (opened || replaced) {
+    // An opening or new results start a new sequence of requests. Opening
+    // again also retries a failed request.
+    if (opened || (changed && this._isNew(props.get('data') ?? []))) {
       this.reset();
+    }
+
+    if (changed) {
+      this._searched = false;
+      newResultsHints.delete(this._host);
     }
 
     // The list reports a changed window after its own update, and an
     // unchanged one not at all, so check against the window after it.
-    if (opened || props.has('data') || props.has('totalItemCount')) {
-      void list?.updateComplete.then(() => this._checkAfter(list, opened));
+    if (opened || changed || props.has('totalItemCount')) {
+      void list?.updateComplete.then(() => this._checkAfter(opened));
     }
   }
 
   /** Checks after a pending scroll to the top, against the new window. */
-  private async _checkAfter(
-    list: DataRequestsList,
-    opened: boolean
-  ): Promise<void> {
-    if (opened && this._toTopOnOpen) {
-      this._toTopOnOpen = false;
-      this._showFromTop(list);
-      await list.updateComplete;
+  private async _checkAfter(opened: boolean): Promise<void> {
+    const toTop = this._toTop;
+
+    if (opened && toTop) {
+      this._toTop = undefined;
+      await toTop;
     }
 
     this._check();

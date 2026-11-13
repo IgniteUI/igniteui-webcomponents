@@ -188,6 +188,13 @@ export default class IgcVirtualScrollComponent<
   private _layoutCompletePromise: Promise<void> | null = null;
   private _scrollRequestId = 0;
 
+  /** A `scrollToIndex` call that waits for the list to show. See `_applyPendingScroll`. */
+  private _pendingScroll: {
+    index: number;
+    options?: ScrollIntoViewOptions;
+    resolve: () => void;
+  } | null = null;
+
   /** The number of completed updates. See `_resolveLayoutComplete`. */
   private _updateCount = 0;
 
@@ -372,6 +379,7 @@ export default class IgcVirtualScrollComponent<
     this._scheduleItemMeasurement();
     this._checkDataRequest();
     this._emitStateChange();
+    this._applyPendingScroll();
   }
 
   protected override render(): TemplateResult {
@@ -592,6 +600,25 @@ export default class IgcVirtualScrollComponent<
     // A list that shows again can get another offset with no `scroll` event.
     if (this._viewportSize) {
       this._scrollPosition = this._currentAxisScroll();
+      this._applyPendingScroll();
+    }
+  }
+
+  /**
+   * Runs the `scrollToIndex` call of a hidden or detached list when the list
+   * shows: from the resize observer, before the list renders the old window,
+   * at the frame after the call, or after the first update of a list that
+   * connects. A list that is hidden and shown again before a frame keeps its
+   * size, so only the frame check sees it.
+   */
+  private _applyPendingScroll(): void {
+    const pending = this._pendingScroll;
+
+    if (pending && this.hasUpdated && this.checkVisibility()) {
+      this._pendingScroll = null;
+      void this.scrollToIndex(pending.index, pending.options).then(
+        pending.resolve
+      );
     }
   }
 
@@ -856,21 +883,35 @@ export default class IgcVirtualScrollComponent<
    * measured, and the scroll position is corrected. This repeats until the
    * offset is stable.
    *
+   * A hidden or detached list cannot scroll. It keeps the call and scrolls
+   * when it shows. A newer call replaces the kept one.
+   *
    * The returned promise resolves when the scroll settles on the final,
-   * corrected offset. Callers that need only the first, approximate scroll
-   * can ignore it.
+   * corrected offset, or when a newer call replaces this one. Callers that
+   * need only the first, approximate scroll can ignore it.
    */
   public async scrollToIndex(
     index: number,
     options?: ScrollIntoViewOptions
   ): Promise<void> {
+    // A newer call supersedes a correction loop that still runs for a
+    // previous call, for example under rapid, repeated calls, and a call
+    // that waits for the list to show.
+    const requestId = ++this._scrollRequestId;
+    this._pendingScroll?.resolve();
+    this._pendingScroll = null;
+
+    if (!this.checkVisibility()) {
+      requestAnimationFrame(() => this._applyPendingScroll());
+
+      return new Promise((resolve) => {
+        this._pendingScroll = { index, options, resolve };
+      });
+    }
+
     const maxIndex = Math.max(0, this._items.length - 1);
     const clampedIndex = clamp(index, 0, maxIndex);
     const behavior = options?.behavior ?? 'auto';
-
-    // A newer call supersedes a correction loop that still runs for a
-    // previous call, for example under rapid, repeated calls.
-    const requestId = ++this._scrollRequestId;
 
     let offset = this._getAlignedScrollOffset(clampedIndex, options);
     await this._scrollAndWaitForEnd(offset, behavior);

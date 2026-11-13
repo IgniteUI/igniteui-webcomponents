@@ -1,5 +1,6 @@
 import { createTimer } from '#internals/timing.js';
 import type IgcComboComponent from '../components/combo/combo.js';
+import { newResultsHints } from '../components/combo/controllers/results-hint.js';
 import type { IgcComboSearchInputEventArgs } from '../components/combo/types.js';
 import type { VirtualScrollDataRequest } from '../components/virtualization/types.js';
 
@@ -71,7 +72,7 @@ export interface ComboDataSourceOptions {
 }
 
 export interface ComboDataBinding {
-  /** Loads the first page of the current search text again. */
+  /** Loads the first page of the current search text again. The list shows it from the top. */
   refresh(): Promise<void>;
   /**
    * Removes the listeners, aborts the requests in flight, gives the combo back
@@ -163,7 +164,16 @@ export function bindComboDataSource<T extends object>(
       }
 
       loadedSearch = query;
-      combo.data = startIndex ? [...combo.data, ...page.items] : page.items;
+      const data = startIndex ? [...combo.data, ...page.items] : page.items;
+
+      // A first page shows from the top, also with the same first item, and a
+      // next page keeps the place. The same array updates nothing, so it
+      // gets no hint.
+      if (data !== combo.data) {
+        newResultsHints.set(combo, !startIndex);
+      }
+
+      combo.data = data;
 
       if (!startIndex || page.totalCount != null) {
         combo.totalItemCount = page.totalCount;

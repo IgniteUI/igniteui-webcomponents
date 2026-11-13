@@ -5,6 +5,7 @@ import { type SinonSpy, spy } from 'sinon';
 import type IgcComboComponent from '../combo.js';
 import type { ComboFilteringMode } from '../types.js';
 import { ComboDataRequests } from './data-requests.js';
+import { newResultsHints } from './results-hint.js';
 
 type Item = { id: number };
 
@@ -188,6 +189,18 @@ describe('Combo data requests', () => {
     expect(request.callCount).to.equal(1);
   });
 
+  it('keeps the sequence for a copy of the same records', async () => {
+    const { host, requests, request } = setup();
+
+    requests.rendered(9);
+    const previous = host.data;
+    host.data = items(10);
+    requests.afterUpdate(changed([['data', previous]]), list);
+
+    await aTimeout(0);
+    expect(request.callCount).to.equal(1);
+  });
+
   describe('new results', () => {
     const scrolled = () => {
       const scrollToIndex = spy(async (_index: number) => {});
@@ -252,6 +265,55 @@ describe('Combo data requests', () => {
       expect(shown.scrollToIndex.called).to.be.false;
     });
 
+    it('compare all the old items for an append', () => {
+      const { host, requests } = setup();
+      const previous = host.data;
+
+      requests.searched();
+      host.data = [previous[0], ...items(8, 50), previous[9], ...items(5, 60)];
+
+      expect(requests.dataChanged(previous, scrolled())).to.be.true;
+    });
+
+    it('come only in the first data after a search', () => {
+      const { host, requests } = setup();
+      const previous = host.data;
+
+      requests.searched();
+      host.data = items(10);
+      expect(requests.dataChanged(previous, scrolled())).to.be.true;
+      requests.afterUpdate(changed([['data', previous]]), list);
+
+      const copy = host.data;
+      host.data = items(10);
+      expect(requests.dataChanged(copy, scrolled())).to.be.false;
+    });
+
+    it('follow the hint of a binder until the update of the data', async () => {
+      const { host, requests, request } = setup();
+      const previous = host.data;
+
+      requests.rendered(9);
+
+      // A first page of the binder with the same records.
+      newResultsHints.set(host, true);
+      host.data = items(10);
+      expect(requests.dataChanged(previous, scrolled())).to.be.true;
+      requests.afterUpdate(changed([['data', previous]]), list);
+
+      await aTimeout(0);
+      expect(request.callCount).to.equal(2);
+
+      const copy = host.data;
+      host.data = items(10);
+      expect(requests.dataChanged(copy, scrolled())).to.be.false;
+
+      // A next page of the binder.
+      newResultsHints.set(host, false);
+      host.data = items(10, 100);
+      expect(requests.dataChanged(copy, scrolled())).to.be.false;
+    });
+
     it('do not move the list in local mode', () => {
       const { host, requests } = setup('local');
       const previous = host.data;
@@ -264,27 +326,37 @@ describe('Combo data requests', () => {
 
     it('scroll a hidden list to the top when it opens, before the check', async () => {
       const { host, requests, request } = setup();
-      let visible = false;
-      const hidden = { ...scrolled(), checkVisibility: () => visible };
+      let show = () => {};
+      // A hidden list keeps the scroll, and resolves when it shows and scrolls.
+      const scrollToIndex = spy(
+        (_index: number) =>
+          new Promise<void>((resolve) => {
+            show = resolve;
+          })
+      );
+      const hidden = { ...list, scrollToIndex };
       const previous = host.data;
 
       host.data = items(10, 100);
       requests.dataChanged(previous, hidden);
-      expect(hidden.scrollToIndex.called).to.be.false;
+      expect(scrollToIndex.calledOnceWith(0)).to.be.true;
 
-      visible = true;
       requests.rendered(9);
       requests.afterUpdate(changed([['open', false]]), hidden);
       await aTimeout(0);
 
-      expect(hidden.scrollToIndex.calledOnceWith(0)).to.be.true;
-      expect(hidden.scrollToIndex.firstCall.calledBefore(request.lastCall)).to
-        .be.true;
+      expect(request.callCount).to.equal(1);
+
+      show();
+      await aTimeout(0);
+
+      expect(request.callCount).to.equal(2);
+      expect(scrollToIndex.firstCall.calledBefore(request.lastCall)).to.be.true;
 
       requests.afterUpdate(changed([['open', false]]), hidden);
       await aTimeout(0);
 
-      expect(hidden.scrollToIndex.calledOnce).to.be.true;
+      expect(scrollToIndex.calledOnce).to.be.true;
     });
   });
 

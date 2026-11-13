@@ -86,6 +86,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Combo
   - **Behavioral change:** A new `data` keeps the selection. A selected item or value that `data` does not hold stays selected until the user or the application deselects it. To clear the selection with the data, for example in cascading combos, set `value` to `[]`. `select()` also accepts objects that `data` does not hold, for example the records of a saved filter. [#2519](https://github.com/IgniteUI/igniteui-webcomponents/issues/2519) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
   - In multiple selection, the options report their checkbox state in `aria-checked`, not in `aria-selected`. Screen readers announce them as checked or not checked. [#2535](https://github.com/IgniteUI/igniteui-webcomponents/issues/2535) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+  - **Behavioral change:** When `data` holds two or more items with the same value, the selection holds the first one, and `value` lists the value one time. Before, a selection of the value took all its items, and `value` listed it for each item. The options of all the items of a selected value show as selected, and a click on any of them deselects the value.
   - In TypeScript, `igcClosing` and `igcClosed` are `CustomEvent<IgcComboClosingEventArgs>`, not `CustomEvent<void>`. Change the handlers that declare `CustomEvent<void>`. [#2533](https://github.com/IgniteUI/igniteui-webcomponents/issues/2533) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
 - #### Date picker, Date range picker, Date time input
   - **Behavioral change:** `igcChange` reports only the changes of the user. A value that code sets no longer emits `igcChange` on the next blur or on Done. This applies to `value`, `clear()`, `stepUp()`, `stepDown()`, `setRangeText()`, `select()` and a form reset. The `clear()` of the date pickers still emits it, because their clear icon calls it. [#2488](https://github.com/IgniteUI/igniteui-webcomponents/pull/2488) [#2489](https://github.com/IgniteUI/igniteui-webcomponents/pull/2489) [#2580](https://github.com/IgniteUI/igniteui-webcomponents/pull/2580)
@@ -224,9 +225,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - When the list closes while it has the focus, the focus goes to the main input, not to the document. [#2533](https://github.com/IgniteUI/igniteui-webcomponents/issues/2533) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
   - `newValue` of `igcChange` has the same order as the `value` after the change. [#2533](https://github.com/IgniteUI/igniteui-webcomponents/issues/2533) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
   - A new `itemTemplate` or `groupHeaderTemplate` renders the open list again. [#2555](https://github.com/IgniteUI/igniteui-webcomponents/issues/2555) [#2557](https://github.com/IgniteUI/igniteui-webcomponents/pull/2557)
+  - The deprecated `item` of the group header template follows a new `valueKey` or `displayKey`.
+  - A new `displayKey` or `valueKey` updates the input text.
+  - In single selection, a framework that writes back the cleared `value` keeps the text that the user types.
+  - After a blur clears the input, the text shows again when the same item is selected again.
 - #### Combo, Dropdown, Highlight, Select
   - Setting a property to its current value no longer resets the state. This fixes React and other frameworks that set every property on each render. [#2515](https://github.com/IgniteUI/igniteui-webcomponents/issues/2515) [#2516](https://github.com/IgniteUI/igniteui-webcomponents/issues/2516) [#2518](https://github.com/IgniteUI/igniteui-webcomponents/pull/2518) [#2523](https://github.com/IgniteUI/igniteui-webcomponents/pull/2523) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545) [#2572](https://github.com/IgniteUI/igniteui-webcomponents/pull/2572)
-    - Combo: `singleSelect`, `disableFiltering` and `filteringOptions` no longer clear the search text or filter the items again.
+    - Combo: `singleSelect`, `disableFiltering` and `filteringOptions` no longer clear the search text or filter the items again. The same `value` no longer updates the combo.
     - Dropdown, Select: `selected` on an item no longer moves the active item.
     - Highlight: `searchText` and `caseSensitive` no longer move the active match back to the first match.
     - Select: `value` no longer moves the active item. When you remove the active item, the navigation goes back to the selected item.
@@ -423,6 +428,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A new `data` array measures the new items at the rendered indices again. [#2412](https://github.com/IgniteUI/igniteui-webcomponents/pull/2412)
   - A `data` change in the same task as `scrollToIndex()` renders at the new offset. [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
   - A property change on a detached virtual scroll no longer throws an error.
+  - `scrollToIndex()` on a hidden or detached list scrolls when the list shows, and its promise resolves then. Before, the call did nothing. A newer call replaces the waiting one.
 
 ### Security
 - #### Tile manager

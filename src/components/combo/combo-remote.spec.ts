@@ -520,10 +520,15 @@ describe('Combo', () => {
       ]);
     });
 
-    it('requests the next page when the data is replaced without a search', async () => {
+    it('requests the next page of new results without a search, but not for a copy', async () => {
       await openComboPopover(remote);
 
       remote.data = search('');
+      await comboStable(remote);
+
+      expect(details('igcDataRequest')).to.eql([{ startIndex: 10, count: 20 }]);
+
+      remote.data = search('').reverse();
       await comboStable(remote);
 
       expect(details('igcDataRequest')).to.eql([
@@ -717,6 +722,18 @@ describe('Combo', () => {
         await comboStable(remote);
 
         expect(list.scrollTop).to.equal(0);
+      });
+
+      it('keeps the records of the loaded items when a page is appended', async () => {
+        remote.totalItemCount = 20;
+        await openComboPopover(remote);
+        const loaded = list.data.slice(0, 10);
+
+        remote.data = [...remote.data, ...search('', 10, 5)];
+        await comboStable(remote);
+
+        expect(list.data.slice(0, 10)).to.have.ordered.members(loaded);
+        expect(list.data[10]).not.to.be.oneOf(loaded);
       });
 
       it('shows new results that come while the list is closed from the top', async () => {

@@ -276,6 +276,8 @@ export default class IgcComboComponent<
   };
   // The options of the last write. A change of the object in place does not change them.
   private _appliedFiltering = { ...this._filteringOptions };
+  // What the last sync of the selection with `value` read. See `_isSyncedValue`.
+  private _syncedWith?: { data: T[]; length: number; value: ComboValue<T>[] };
 
   @state()
   private set _activeIndex(index: number) {
@@ -300,9 +302,9 @@ export default class IgcComboComponent<
   private _displayValue = '';
 
   private get _mainAriaLabel(): string {
-    return isEmpty(this._selection.selected)
-      ? this.resourceStrings.combo_aria_label_no_options
-      : this.resourceStrings.combo_aria_label_options;
+    return this._selection.hasRecords
+      ? this.resourceStrings.combo_aria_label_options
+      : this.resourceStrings.combo_aria_label_no_options;
   }
 
   //#endregion
@@ -408,7 +410,9 @@ export default class IgcComboComponent<
   @coercedProperty<Keys<T> | undefined, IgcComboComponent<T>>({
     onChange: ({ value, host }) => {
       host._displayKey = host._displayKey ?? value;
-      host._selection.invalidateIndex();
+      host._selection.rekey();
+      // The next `value` gives the values their records again.
+      host._syncedWith = undefined;
     },
   })
   public valueKey?: Keys<T> = undefined;
@@ -466,11 +470,6 @@ export default class IgcComboComponent<
 
     this._filteringOptions = { ...this._filteringOptions, ...value };
     this._appliedFiltering = { ...this._filteringOptions };
-
-    // Now, so selectAllItems() sees the new filter. Remote mode does not filter.
-    if (applied.mode !== 'remote' || this._filteringOptions.mode !== 'remote') {
-      this._state.invalidate();
-    }
   }
 
   public get filteringOptions(): FilteringOptions<T> {
@@ -611,19 +610,14 @@ export default class IgcComboComponent<
   /* @tsTwoWayProperty (true, "Change", "Detail.NewValue", false) */
   @property({ type: Array })
   public set value(items: ComboValue<T>[]) {
-    const previous = this.value;
-    this._formValue.setValueAndFormState(items);
-    this._syncSelectionFromValue();
-
-    // A new value replaces the pending selection. The same value, for example
-    // from a render of the parent, keeps it.
-    if (!sameItems(previous, this.value)) {
-      this._selection.dropPending();
+    // A framework can set the same value on each render. It makes the control
+    // dirty, as any write, and keeps the selection.
+    if (this._isSyncedValue(items)) {
+      this._pristine = false;
+      return;
     }
 
-    if (this.hasUpdated) {
-      this._validate();
-    }
+    this._applyValue(items);
   }
 
   /**
@@ -638,7 +632,7 @@ export default class IgcComboComponent<
    * Returns the current selection as an array of objects as provided in the `data` source.
    */
   public get selection(): T[] {
-    return Array.from(this._selection.selected);
+    return this._selection.selected;
   }
 
   /**
@@ -679,10 +673,6 @@ export default class IgcComboComponent<
   protected override willUpdate(props: PropertyValues<this>): void {
     super.willUpdate(props);
 
-    if (props.has('locale')) {
-      this._state.updateLocale();
-    }
-
     // The select-all option moves the other records by one, and an active
     // group header can stop being an option.
     if (
@@ -692,21 +682,14 @@ export default class IgcComboComponent<
       this._activeIndex = -1;
     }
 
-    if (
-      props.has('groupKey') ||
-      props.has('groupSorting') ||
-      props.has('totalItemCount') ||
-      props.has('showSelectAll') ||
-      props.has('groupSelection') ||
-      props.has('singleSelect') ||
-      props.has('data')
-    ) {
-      this._state.invalidate();
-    }
-
     // The list keeps the same `_itemRenderer`, so a new template must re-render it.
     if (props.has('itemTemplate') || props.has('groupHeaderTemplate')) {
       this._listRef.value?.requestUpdate();
+    }
+
+    // The input text reads `displayKey`, which falls back to `valueKey`.
+    if (props.has('displayKey') || props.has('valueKey')) {
+      this._projectSelection();
     }
 
     if (props.has('data')) {
@@ -832,6 +815,61 @@ export default class IgcComboComponent<
 
   //#region Selection flow
 
+  /** `items` as `value` holds them: an array, with one value in single selection. */
+  private _asValue(items: ComboValue<T>[] | undefined): ComboValue<T>[] {
+    const values = asArray(items);
+
+    return this.singleSelect && !isEmpty(values)
+      ? asArray(firstOf(values))
+      : values;
+  }
+
+  /**
+   * Whether `items` is `value`, and the selection is synced with it and with
+   * the current `data`. A new `data` or `valueKey` gives a value its record
+   * again. The copy of `value` sees a change of the array in place.
+   */
+  private _isSyncedValue(items: ComboValue<T>[]): boolean {
+    const synced = this._syncedWith;
+    const values = this._asValue(items);
+
+    return (
+      synced !== undefined &&
+      synced.data === this.data &&
+      synced.length === this.data.length &&
+      sameItems(values, this.value) &&
+      sameItems(values, synced.value)
+    );
+  }
+
+  /** Records what the selection is synced with. See {@link _isSyncedValue}. */
+  private _markSynced(): void {
+    this._syncedWith = {
+      data: this.data,
+      length: this.data.length,
+      value: [...this.value],
+    };
+  }
+
+  /** Sets `value` and gives the selection its records. */
+  private _applyValue(items: ComboValue<T>[]): void {
+    const previous = this.value;
+    this._formValue.setValueAndFormState(items);
+    this._syncSelectionFromValue();
+
+    // A new value replaces the pending selection. The same value, for example
+    // after a new `data`, keeps it.
+    if (!sameItems(previous, this.value)) {
+      this._selection.dropPending();
+    }
+
+    if (this.hasUpdated) {
+      this._validate();
+    }
+
+    this.requestUpdate('value', previous);
+  }
+
   /** Sets {@link _displayValue} and returns the values of the selection. */
   private _projectSelection(): ComboValue<T>[] {
     const { values, text } = this._selection.project();
@@ -882,7 +920,7 @@ export default class IgcComboComponent<
     }
 
     const resolved = isEmpty(collection)
-      ? Array.from(this._selection.current)
+      ? this._selection.currentRecords()
       : this._selection.resolve(collection);
 
     if (!this._applySelection(resolved, type, emit)) {
@@ -897,15 +935,16 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Selects or deselects exactly `records`. With `emit`, `igcChange` can
-   * cancel the change.
+   * Selects or deselects the values of `items`, each with its first record in
+   * `data`. With `emit`, `igcChange` can cancel the change.
    * @returns Whether the change was committed.
    */
   private _applySelection(
-    records: T[],
+    items: T[],
     type: 'selection' | 'deselection',
     emit: boolean
   ): boolean {
+    const records = this._selection.firstRecords(items);
     const selecting = type === 'selection';
 
     if (
@@ -928,9 +967,8 @@ export default class IgcComboComponent<
       this._clearSearchTerm(emit);
     }
 
-    this._selection.apply(records, selecting);
-
-    if (selecting && this._selection.resolveValues(records)) {
+    // The committed values without a record can get them from a pending change.
+    if (this._selection.apply(records, selecting)) {
       this._projectSelection();
     }
 
@@ -943,18 +981,14 @@ export default class IgcComboComponent<
    * not hold keeps its selected record.
    */
   private _syncSelectionFromValue(): void {
-    let values = this._formValue.value;
+    const current = this._formValue.value;
+    const values = this._asValue(current);
 
-    if (this.singleSelect && !isEmpty(values)) {
-      const first = asArray(firstOf(values));
-
-      if (first.length !== values.length) {
-        this._formValue.setValueAndFormState(first);
-      }
-
-      values = first;
+    if (values.length !== current.length) {
+      this._formValue.setValueAndFormState(values);
     }
 
+    this._markSynced();
     this._selection.syncFromValue(values);
     this._projectSelection();
     // The list does not update for a new `value` on its own.
@@ -962,8 +996,6 @@ export default class IgcComboComponent<
   }
 
   private _syncSelectionFromData(): void {
-    const known = this._selection.knownValues();
-
     // Sync the selection when `data` comes after `value`.
     if (!isEmpty(this.data) && !isEmpty(this.value)) {
       this._withPristine(() => {
@@ -972,7 +1004,7 @@ export default class IgcComboComponent<
       });
     }
 
-    this._selection.syncPending(known);
+    this._selection.syncPending();
   }
 
   protected _syncValueFromSelection(): void {
@@ -980,6 +1012,7 @@ export default class IgcComboComponent<
     // without a record. See `_commitPending`.
     if (!this._selection.pending) {
       this._formValue.setValueAndFormState(this._projectSelection());
+      this._markSynced();
       this._setSingleSelectionDisplayValue(this._displayValue);
       this._validate();
     }
@@ -1019,9 +1052,10 @@ export default class IgcComboComponent<
       return false;
     }
 
-    // The `value` setter finds the records that `data` does not hold here.
+    // Not the setter, which skips the same values: the commit can change
+    // their records.
     this._selection.commit(pending);
-    this.value = value;
+    this._applyValue(value);
     return true;
   }
 
@@ -1029,8 +1063,9 @@ export default class IgcComboComponent<
     // Applies a change of `data` or of the search text that no update has
     // applied yet. The update gives the new records to the list before it
     // renders the selection.
-    this._state.hostUpdate();
-    this.requestUpdate();
+    if (this._state.hostUpdate()) {
+      this.requestUpdate();
+    }
 
     return this._state.shownItems();
   }
@@ -1049,9 +1084,7 @@ export default class IgcComboComponent<
       // The record itself, as an item without a value would select all.
       this._applySelection(
         [item],
-        toggle && this._selection.current.has(item)
-          ? 'deselection'
-          : 'selection',
+        toggle && this._selection.has(item) ? 'deselection' : 'selection',
         true
       );
     } else if (record && this._state.isToggle(record)) {
@@ -1071,8 +1104,7 @@ export default class IgcComboComponent<
    */
   private _toggleItemsOf(index: number): void {
     const items = this._state.itemsOf(index);
-    const selected = this._selection.current;
-    const unselected = items.filter((item) => !selected.has(item));
+    const unselected = items.filter((item) => !this._selection.has(item));
 
     this._applySelection(
       unselected.length ? unselected : items,
@@ -1097,7 +1129,7 @@ export default class IgcComboComponent<
         type: 'deselection',
       })
     ) {
-      this.value = [];
+      this._applyValue([]);
     }
   }
 
@@ -1115,6 +1147,7 @@ export default class IgcComboComponent<
       )
     ) {
       this._formValue.setValueAndFormState([]);
+      this._markSynced();
     }
   }
 
@@ -1146,8 +1179,10 @@ export default class IgcComboComponent<
   }
 
   protected override _handleBlur(): void {
-    if (isEmpty(this._selection.selected)) {
+    if (!this._selection.hasRecords) {
       this._clearSearchTerm(true);
+      // Also the cached text, so the same text shows again after a selection.
+      this._displayValue = '';
       this._setSingleSelectionDisplayValue('');
     }
     super._handleBlur();
@@ -1407,7 +1442,7 @@ export default class IgcComboComponent<
 
     const active = this._activeIndex === index;
 
-    const selected = this._selection.current.has(item.value);
+    const selected = this._selection.has(item.value);
     // One template for both, so a row keeps its element when its item loads.
     const placeholder = item.kind === 'placeholder';
     const { optionCount } = this._state;
@@ -1448,7 +1483,11 @@ export default class IgcComboComponent<
     index: number,
     content: unknown
   ): TemplateResult {
-    const state = this._state.selectionOf(index, this._selection.current);
+    const state = this._state.selectionOf(
+      index,
+      this._selection,
+      this._selection.version
+    );
     const all = state === true;
     const active = this._activeIndex === index;
 

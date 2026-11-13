@@ -81,9 +81,12 @@ defineComponents(IgcVirtualScrollComponent);
   measured, and the scroll position is corrected. This repeats until the
   offset is stable.
 
+  A hidden or detached list cannot scroll. It keeps the call and scrolls
+  when it shows. A newer call replaces the kept one.
+
   The returned promise resolves when the scroll settles on the final,
-  corrected offset. Callers that need only the first, approximate scroll
-  can ignore it.
+  corrected offset, or when a newer call replaces this one. Callers that
+  need only the first, approximate scroll can ignore it.
 
 ## Events
 

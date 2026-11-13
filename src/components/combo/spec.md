@@ -84,6 +84,11 @@
 |      22 | 2026-11-06 | Escape from the slot content keeps the list open when the content handled the key |
 |      23 | 2026-11-11 | The keys that an IME handles do nothing in the combo; new remote results show from the top with no active option, also in a list that opens; a value without a record stays in `value` until a change names it; the selection methods use a new `filteringOptions` at once, and the same options do not update the combo; `bindComboDataSource()` has its own entry point |
 |      24 | 2026-11-11 | <kbd>Enter</kbd> submits the form from single selection with the list closed, as in an input with a list; multiple selection does not submit, as a native `select` |
+|      25 | 2026-11-12 | A new `valueKey` or `displayKey` gives the group headers new records; an appended page keeps the records of the loaded items, so the list keeps their measured sizes |
+|      26 | 2026-11-12 | A write of the same `value` does not update the combo and keeps the pending selection; it still makes the control dirty, and after a new `data` or `valueKey` it gives the values their records again |
+|      27 | 2026-11-12 | One rule for new remote results: a copy of the same records keeps the place and requests no page again; an append compares all the old items; `bindComboDataSource()` marks each first page as new results, so `refresh()` shows from the top |
+|      28 | 2026-11-13 | One record for each value, and each record of a selected value shows as selected; a value keeps its place when it gets a record; select all gives the order of `data`, then the values that `data` does not hold; a value that a pending deselection removed stays out of the pending selection after a new `data` |
+|      29 | 2026-11-13 | Review fixes: primitive records show as selected again; any record of a repeated value selects its first record, also in a commit, and a toggle option lists one record for each value; a `value` array that changed in place and is set again syncs the selection; a new `displayKey` or `valueKey` updates the input text; a new `data` filters by the current text of the items that keep their records and indexes a key that changed in place; a new `valueKey` merges values to their first records and drops the same-value sync; in single selection, a framework that writes back the cleared `value` keeps the typed text, and a blur that clears the input lets the same selection show its text again |
 
 ## Overview
 
@@ -196,11 +201,11 @@ combo.groupKey = 'country';
 
 #### Data binding keys
 
-| Key          | Purpose                                                                             |
-| ------------ | ----------------------------------------------------------------------------------- |
-| `valueKey`   | The field of a record that `value` and the selection methods use.                  |
-| `displayKey` | The field of a record that the list and the input show. Without it, `valueKey`.    |
-| `groupKey`   | The field of a record that groups the options.                                     |
+| Key          | Purpose                                                                                                           |
+| ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `valueKey`   | The field of a record that `value` and the selection methods use.                                                 |
+| `displayKey` | The field of a record that the list and the input show. Without it, `valueKey`. A new one updates the input text. |
+| `groupKey`   | The field of a record that groups the options.                                                                    |
 
 Without a `valueKey`, `value` contains the records.
 
@@ -234,7 +239,13 @@ mode. `deselect()` with that value or without an argument, `deselectAllItems(tru
 remove it. In the confirm mode, such a deselection changes the pending selection, so a commit applies it and a cancel
 keeps the value. In single selection, a selection replaces it. It is not in `selection` or in the input text, but the
 clear icon shows for it. `value` lists each value one time. When `data` or `select()` gives it a record, it is a
-selected item again.
+selected item again, in the same place in `value`.
+
+**One record for each value.** The selection holds one record for each value: the first record of the value in `data`,
+or the record that it had before. When `data` repeats a value, the options of all its records show as selected. A click
+on any of them selects the first record or deselects the value, and `igcChange` lists the first record. A toggle option
+lists one record for each value. `selection` and the input text follow the order of `value`. `selectAllItems(true)` and
+`select()` without an argument give the order of `data`, then the selected values that `data` does not hold.
 
 #### Select all
 
@@ -428,15 +439,16 @@ server did not return for the text.
 **Page requests.** In remote mode, `igcDataRequest` comes when the open list shows one of the last five options of
 `data`.
 - `startIndex` is `data.length`, also with groups. `count` is the number of items to append.
-- It comes again only after a change of the length of `data`, a new first record, a new search text or case, or a new
-  opening. So a source with no more items gets one request for each opening.
+- It comes again only after a change of the length of `data`, new results (see below), a new search text or case, or
+  a new opening. So a source with no more items gets one request for each opening, and a copy of the same records
+  gets no request.
 - An empty `data` gets no request, because the application loads the first page of a search.
 - An answer is stale when `data.length` is not equal to its `startIndex`, for example after a new search.
 - New results show from the top, with no active option: the first `data` after a search, and a `data` that is
   shorter or starts with another record. Records compare by `valueKey`; without it, only a search and a shorter `data`
   count. So the list does not request pages from the offset of the old results. A list that is closed shows them from
-  the top when it opens. A page appended to the same records, also after a search that the application did not load,
-  and a copy of the same records keep the place.
+  the top when it opens. A `data` that starts with all the items of the old one, such as an appended page, also after
+  a search that the application did not load, and a copy of the same records keep the place.
 
 **Selection.** A new `data` keeps the selection. A selected item that the new `data` does not hold stays in `value`, in
 `selection` and in the input text. A later page or search that holds it shows it as selected again. The combo cannot
@@ -471,9 +483,11 @@ toggle icon.
   on the toggle icon. Tab does not reach it while the list is open.
 - The busy state shows in the field, not in the list, so the list does not move.
 
-`bindComboDataSource()` from `igniteui-webcomponents/extras/combo-data-source` does this flow with the public API. Its `load()` gets the
+`bindComboDataSource()` from `igniteui-webcomponents/extras/combo-data-source` does this flow. Its `load()` gets the
 search text and `caseSensitive`. A new search text or a click on the case-sensitive icon loads the first page again.
-After a change of `filteringOptions.caseSensitive` in code, call `refresh()`. See the `RemoteData` story.
+After a change of `filteringOptions.caseSensitive` in code, call `refresh()`. The binder tells the combo that each
+first page holds new results and each next page does not, so the combo does not guess: a first page shows from the
+top, also from `refresh()` with the same first item. See the `RemoteData` story.
 
 ### Localization
 
@@ -754,15 +768,21 @@ state, the data requests and the selection model without a browser fixture.
 
 1. Rendering, the default state and the accessibility audit.
 2. Data binding through `data`, `valueKey`, `displayKey` and `groupKey`, also when the `data` array changes in place.
+   A new `displayKey` updates the input text. Primitive records show and toggle their selection.
 3. Single and multiple selection, with `select` and `deselect` with and without arguments.
-4. `value` and `selection` give the values and the records.
+4. `value` and `selection` give the values and the records. A write of the same `value` requests no update and keeps
+   the pending selection, but makes the control dirty. After a new `data`, a `data` that grows in place or a new
+   `valueKey`, it gives the values their records again, also after `valueKey` changes and comes back. A `value` array
+   that changed in place and is set again syncs the selection. In single selection, a write of the cleared `value`
+   after the user types keeps the typed text, and after a blur clears the input, the same selection shows its text.
 5. Filtering, with case sensitivity, diacritics matching and `disableFiltering`. A set of `singleSelect` or
    `disableFiltering` to its current value keeps the search text and the filter. The same filtering options do not
    update the combo, and options that changed in place apply.
 6. Grouping, the `Other` group for the items without a group value, and the sort directions.
 7. The item and group header templates. The group header template gets the group `key` with its own type, also for
-   number keys and the `Other` group. A template that reads the deprecated `item` still renders. A new item or group
-   header template re-renders the open list.
+   number keys and the `Other` group. A template that reads the deprecated `item` still renders, and the unit specs
+   check that `item` follows a new `valueKey` or `displayKey`. A new item or group header template re-renders the
+   open list.
 8. The empty message and the `empty` slot.
 9. Localization through `locale` and `resourceStrings`.
 10. Open, close and the keyboard navigation of the list, also Arrow Down at the end of the matches. In single
@@ -836,10 +856,13 @@ state, the data requests and the selection model without a browser fixture.
     selection methods and a commit of the confirm mode, also in `igcChange.newValue` and `pendingValue`. It leaves
     `value` when a deselection names it, on `deselect()` without an argument, on the clear icon and on a selection
     in single selection. Each value shows one time, the clear icon shows for such values, and in the confirm mode a
-    commit applies a deselection that names one, and a cancel keeps it.
+    commit applies a deselection that names one, and a cancel keeps it. A value keeps its place when it gets its
+    record, and select all puts it after the items of `data`. A repeated value selects its first record, also from a
+    click on another of its options, and each of its options shows as selected. A pending change to another option of
+    the same value commits no change.
 29. `igcDataRequest` comes near the end of `data` with `startIndex` equal to `data.length`, also with groups. It does
-    not come again until `data` grows. A new search, a new `data` without a search with a page of the same length, and
-    a new opening each get their own request. It does not come in local mode, while the list is closed, or with an
+    not come again until `data` grows. A new search, new results without a search, and a new opening each get their
+    own request. A copy of the same records gets none. It does not come in local mode, while the list is closed, or with an
     empty `data`.
 
 ### Placeholders and loading
@@ -852,8 +875,9 @@ state, the data requests and the selection model without a browser fixture.
     and `selectAllItems()` do not select a placeholder. In single selection, Enter or a click on a placeholder does
     not close the list. New results show from the top with no active option, also after a search with the same
     first record and in a list that opens after them, so the next request covers the top of the list. A copy of the
-    same records keeps the place. The unit specs of the data requests cover an appended page after a search, the
-    rule without `valueKey` and a first `data`.
+    same records keeps the place. An appended page keeps the records of the loaded items. The unit specs of the data
+    requests cover an appended page after a search, the rule without `valueKey`, a first `data`, an append check over
+    all the old items and the hint of a binder. The binder specs check that `refresh()` shows from the top.
 32. `loading` shows the named spinner over the hidden toggle icon, and "Loading" in an empty list. The toggle width
     does not change, and the list does not move. It passes the accessibility audit. The `loading` slot replaces the
     spinner. The spinner and the skeletons get their colors from the `loading` and `placeholder` parts.
@@ -909,7 +933,8 @@ state, the data requests and the selection model without a browser fixture.
     selection with no events and keeps the list open. `cancelSelection()` and a new `value` replace it, and the same
     `value` keeps it.
 46. The clear icon clears `value` and the pending selection with one `igcChange`. A new `data` keeps the pending
-    selection by value, and adds the values of `value` that it gives a record. A value without a record stays in
+    selection by value, and gives records to its values in place. A value that a pending deselection removed stays
+    out. A value without a record stays in
     `value`, also after a commit, and `select()` gives it a record in the input text. The select-all option and the group
     header options change the pending selection. In single selection, each change applies at once.
 47. The footer shows Cancel and Apply with the `combo_cancel` and `combo_apply` texts, and the accessibility audit

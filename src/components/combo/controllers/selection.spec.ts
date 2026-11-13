@@ -1,5 +1,6 @@
 import { expect } from '@open-wc/testing';
 
+import type { ComboValue } from '../types.js';
 import { ComboSelection, type ComboSelectionHost } from './selection.js';
 
 type City = { id: number | null; name: string };
@@ -18,7 +19,6 @@ function setup(overrides: Partial<ComboSelectionHost<City>> = {}) {
     data: cities,
     valueKey: 'id',
     displayKey: 'name',
-    value: [],
     singleSelect: false,
     open: false,
     selectionCommit: 'immediate',
@@ -31,6 +31,11 @@ function setup(overrides: Partial<ComboSelectionHost<City>> = {}) {
 /** Opens the list in the confirm mode, so the selection has a pending part. */
 function confirming(overrides: Partial<ComboSelectionHost<City>> = {}) {
   return setup({ open: true, selectionCommit: 'confirm', ...overrides });
+}
+
+/** The entries of a selection of `records`, keyed by `id`. */
+function entriesOf(...records: City[]): Map<ComboValue<City>, City> {
+  return new Map(records.map((record) => [record.id, record]));
 }
 
 describe('Combo selection', () => {
@@ -62,6 +67,33 @@ describe('Combo selection', () => {
         text: 'Varna, Sofia',
       });
     });
+
+    it('keeps a value without a record in its place, only in multiple selection', () => {
+      const { host, selection } = setup();
+
+      selection.syncFromValue([9, 1]);
+      expect(selection.project()).to.eql({ values: [9, 1], text: 'Sofia' });
+      expect(selection.selected).to.eql([sofia]);
+      expect(selection.hasRecords).to.be.true;
+
+      host.singleSelect = true;
+      expect(selection.project().values).to.eql([1]);
+
+      selection.syncFromValue([9]);
+      expect(selection.hasRecords).to.be.false;
+    });
+
+    it('gives the records their values again for a new valueKey', () => {
+      const { host, selection } = confirming();
+
+      selection.syncFromValue([1, 9]);
+      expect(selection.valuesOf(selection.pending!)).to.eql([1, 9]);
+      host.valueKey = 'name';
+      selection.rekey();
+
+      expect(selection.project().values).to.eql(['Sofia', 9]);
+      expect(selection.valuesOf(selection.pending!)).to.eql(['Sofia', 9]);
+    });
   });
 
   describe('Resolve', () => {
@@ -76,11 +108,11 @@ describe('Combo selection', () => {
       expect(selection.resolve([3])[0]).to.equal(varna);
     });
 
-    it('takes every record of a value that data repeats', () => {
+    it('takes the first record of a value that data repeats', () => {
       const copy = { ...sofia };
       const { selection } = setup({ data: [sofia, plovdiv, copy] });
 
-      expect(selection.resolve([1])).to.eql([sofia, copy]);
+      expect(selection.resolve([1, copy])).to.have.ordered.members([sofia]);
     });
 
     it('puts the selected records and the objects that data does not hold last', () => {
@@ -98,7 +130,7 @@ describe('Combo selection', () => {
       const { selection } = confirming();
       const newer: City = { ...burgas };
 
-      selection.commit(new Set([burgas]));
+      selection.commit(entriesOf(burgas));
       selection.apply([burgas], false);
       selection.apply([newer], true);
 
@@ -120,24 +152,23 @@ describe('Combo selection', () => {
     it('starts as a copy of the committed selection on the first read', () => {
       const { selection } = confirming();
 
-      selection.commit(new Set([sofia]));
+      selection.commit(entriesOf(sofia));
       const pending = selection.pending!;
 
-      expect(pending).not.to.equal(selection.selected);
-      expect([...pending]).to.eql([sofia]);
+      expect(selection.recordsOf(pending)).to.eql([sofia]);
       expect(selection.pending).to.equal(pending);
-      expect(selection.current).to.equal(pending);
+      expect(selection.has(sofia)).to.be.true;
     });
 
     it('takes the changes and leaves the committed selection as it is', () => {
       const { selection } = confirming();
 
-      selection.commit(new Set([sofia]));
+      selection.commit(entriesOf(sofia));
       selection.apply([plovdiv], true);
       selection.apply([sofia], false);
 
-      expect([...selection.current]).to.eql([plovdiv]);
-      expect([...selection.selected]).to.eql([sofia]);
+      expect(selection.currentRecords()).to.eql([plovdiv]);
+      expect(selection.selected).to.eql([sofia]);
     });
 
     it('is dropped when the list closes, or on request', () => {
@@ -180,38 +211,71 @@ describe('Combo selection', () => {
       expect([...selection.selected]).to.eql([...cities, burgas]);
     });
 
-    it('selects all into the pending selection', () => {
+    it('selects all into the pending selection, and keeps the values without a record after the records', () => {
       const { selection } = confirming();
 
+      selection.syncFromValue([42]);
       selection.selectAll();
-      expect([...selection.pending!]).to.eql(cities);
+      expect(selection.recordsOf(selection.pending!)).to.eql(cities);
+      expect(selection.valuesOf(selection.pending!)).to.eql([1, 2, 3, 42]);
       expect(selection.selected).to.be.empty;
     });
 
-    it('gives the committed selection the records of values that had none', () => {
-      const { selection } = confirming({ value: [1, 9] });
+    it('gives a committed value without a record its record from a pending change, in place', () => {
+      const { selection } = confirming();
 
-      selection.syncFromValue([1, 9]);
-      expect([...selection.selected]).to.eql([sofia]);
+      selection.syncFromValue([9, 1]);
+      expect(selection.selected).to.eql([sofia]);
 
-      selection.apply([burgas], true);
-      expect(selection.resolveValues([burgas])).to.be.true;
-      expect([...selection.selected]).to.eql([sofia, burgas]);
-      expect(selection.resolveValues([plovdiv])).to.be.false;
+      expect(selection.apply([burgas], true)).to.be.true;
+      expect(selection.selected).to.eql([burgas, sofia]);
+      expect(selection.apply([plovdiv], true)).to.be.false;
     });
 
-    it('resolves values only while the list has a pending selection', () => {
-      const { selection } = setup({ value: [1, 9] });
+    it('gives a value without a record its record in place without a pending selection', () => {
+      const { selection } = setup();
 
-      selection.syncFromValue([1, 9]);
-      expect(selection.resolveValues([burgas])).to.be.false;
-      expect([...selection.selected]).to.eql([sofia]);
+      selection.syncFromValue([9, 1]);
+      expect(selection.apply([burgas], true)).to.be.false;
+      expect(selection.project()).to.eql({
+        values: [9, 1],
+        text: 'Burgas, Sofia',
+      });
+    });
+
+    it('keeps one record for each value, and shows the value as selected for each record', () => {
+      const copy = { ...sofia };
+      const { selection } = setup({ data: [sofia, plovdiv, copy] });
+
+      selection.apply([sofia, copy], true);
+      expect(selection.selected).to.have.ordered.members([sofia]);
+      expect(selection.has(copy)).to.be.true;
+
+      selection.apply([copy], false);
+      expect(selection.has(sofia)).to.be.false;
+      expect(selection.has(undefined as unknown as City)).to.be.false;
+
+      // Any record of the value gives its first record in data.
+      expect(
+        selection.firstRecords([copy, plovdiv, sofia])
+      ).to.have.ordered.members([sofia, plovdiv]);
+    });
+
+    it('forgets the named values without a record, or all of them', () => {
+      const { selection } = setup();
+
+      selection.syncFromValue([9, 1, 42, 43]);
+      selection.forget([42, sofia]);
+      expect(selection.project().values).to.eql([9, 1, 43]);
+
+      selection.forget([]);
+      expect(selection.project().values).to.eql([1]);
     });
 
     it('lists the records that the pending selection adds or removes, and commits it', () => {
       const { selection } = confirming();
 
-      selection.commit(new Set([sofia, plovdiv]));
+      selection.commit(entriesOf(sofia, plovdiv));
       expect(selection.changes(selection.pending!)).to.be.empty;
 
       selection.apply([sofia], false);
@@ -221,8 +285,11 @@ describe('Combo selection', () => {
       expect(selection.changes(pending)).to.eql([varna, sofia]);
 
       selection.commit(pending);
-      expect([...selection.selected]).to.eql([plovdiv, varna]);
-      expect(selection.selected).not.to.equal(pending);
+      expect(selection.selected).to.eql([plovdiv, varna]);
+
+      // The commit copies the pending selection.
+      selection.apply([sofia], true);
+      expect(selection.selected).to.eql([plovdiv, varna]);
     });
 
     it('clears the committed selection', () => {
@@ -276,29 +343,138 @@ describe('Combo selection', () => {
     });
 
     it('gives the pending selection the records that new data gives to its values', () => {
-      const { host, selection } = confirming({ value: [1, 9] });
+      const { host, selection } = confirming();
 
       selection.syncFromValue([1, 9]);
       selection.apply([plovdiv], true);
 
       host.data = [...cities, burgas];
       selection.invalidateIndex();
-      const known = selection.knownValues();
+      selection.syncFromValue([1, 9]);
+      selection.syncPending();
 
-      expect([...known!]).to.eql([1]);
-      selection.syncFromValue(host.value);
-      selection.syncPending(known);
-
-      expect([...selection.selected]).to.eql([sofia, burgas]);
-      expect([...selection.pending!]).to.eql([sofia, plovdiv, burgas]);
+      expect(selection.selected).to.eql([sofia, burgas]);
+      expect(selection.recordsOf(selection.pending!)).to.eql([
+        sofia,
+        burgas,
+        plovdiv,
+      ]);
     });
 
-    it('has no known values without a pending selection, or when every value has a record', () => {
-      expect(setup({ value: [1, 9] }).selection.knownValues()).to.be.undefined;
+    it('keeps the pending records that a new data does not hold', () => {
+      const { host, selection } = confirming();
 
-      const { selection } = confirming({ value: [1] });
+      selection.apply([burgas], true);
+      host.data = cities.slice(0, 2);
+      selection.invalidateIndex();
+      selection.syncPending();
+
+      expect(selection.recordsOf(selection.pending!)).to.have.ordered.members([
+        burgas,
+      ]);
+    });
+
+    it('keeps a value that the pending selection dropped out of it when new data gives it a record', () => {
+      const { host, selection } = confirming();
+
+      selection.syncFromValue([1, 9]);
+      selection.forget([9]);
+
+      host.data = [...cities, burgas];
+      selection.invalidateIndex();
+      selection.syncFromValue([1, 9]);
+      selection.syncPending();
+
+      expect(selection.selected).to.eql([sofia, burgas]);
+      expect(selection.valuesOf(selection.pending!)).to.eql([1]);
+    });
+
+    it('indexes only the new items of a data that starts with the same keys', () => {
+      const { host, selection } = setup();
+      const index = () => selection['_dataIndex'];
+      const before = index();
+      const positions = before.get(1);
+
+      host.data = [...cities, burgas];
+      selection.invalidateIndex();
+
+      expect(index()).to.equal(before);
+      expect(index().get(1)).to.equal(positions);
+      expect(index().get(9)).to.eql([3]);
+    });
+
+    it('indexes all the items again when a key changes in place', () => {
+      const moved: City = { ...sofia };
+      const { host, selection } = setup({ data: [moved, plovdiv] });
+
       selection.syncFromValue([1]);
-      expect(selection.knownValues()).to.be.undefined;
+      moved.id = 3;
+      host.data = [...host.data];
+      selection.invalidateIndex();
+      selection.syncFromValue([3]);
+
+      expect(selection.selected).to.eql([moved]);
+    });
+
+    it('gives a value that a new valueKey merges its first record in data', () => {
+      const twin: City = { id: 7, name: 'Sofia' };
+      const { host, selection } = setup({ data: [sofia, plovdiv, twin] });
+
+      selection.syncFromValue([7, 1]);
+      host.valueKey = 'name';
+      selection.rekey();
+
+      expect(selection.selected).to.eql([sofia]);
+      expect(selection.project().values).to.eql(['Sofia']);
+    });
+
+    it('indexes all the items again for a new valueKey', () => {
+      const { host, selection } = setup();
+
+      selection.syncFromValue([1]);
+      host.valueKey = 'name';
+      selection.rekey();
+      selection.syncFromValue(['Plovdiv']);
+
+      expect([...selection.selected]).to.eql([plovdiv]);
+    });
+  });
+
+  describe('Version', () => {
+    it('changes on each change of the selected or the pending records', () => {
+      const { host, selection } = confirming();
+      let version = selection.version;
+      const expectChange = (step: string) => {
+        expect(selection.version, step).not.to.equal(version);
+        version = selection.version;
+      };
+
+      // The first read copies the committed records, so nothing changes.
+      expect(selection.pending).to.exist;
+      expect(selection.version).to.equal(version);
+
+      selection.syncFromValue([1, 9]);
+      expectChange('syncFromValue');
+      selection.apply([plovdiv], true);
+      expectChange('apply');
+      selection.syncPending();
+      expectChange('syncPending');
+      selection.selectAll();
+      expectChange('selectAll');
+      selection.rekey();
+      expectChange('rekey');
+      selection.commit(selection.pending!);
+      expectChange('commit');
+      selection.clear();
+      expectChange('clear');
+      selection.dropPending();
+      expectChange('dropPending');
+
+      // A closed list has no pending selection to drop.
+      host.open = false;
+      expect(selection.pending).to.be.undefined;
+      selection.dropPending();
+      expect(selection.version).to.equal(version);
     });
   });
 });

@@ -1,5 +1,7 @@
 import type { ReactiveController } from 'lit';
-import { resolveLocale } from '#internals/i18n/locale.js';
+import { getOrCreateForLocale } from '#internals/i18n/locale.js';
+import { sameItems } from '#internals/utils/arrays.js';
+import { getOrInsertComputed } from '#internals/utils/objects.js';
 
 import type IgcComboComponent from '../combo.js';
 import FilterDataOperation from '../operations/filter.js';
@@ -28,6 +30,16 @@ export type DataStateHost<T extends object> = Pick<
   | 'groupSelection'
   | 'singleSelect'
 >;
+
+/** One collator for each locale, for all the combos. */
+const collators = new Map<string, Intl.Collator>();
+
+const collatorOf = (locale: string): Intl.Collator =>
+  getOrCreateForLocale(
+    collators,
+    locale,
+    (resolved) => new Intl.Collator(resolved)
+  );
 
 /** The record of each item to load. See `totalItemCount`. */
 const PLACEHOLDER: ComboRecord<never> = Object.freeze({
@@ -63,12 +75,16 @@ export class DataState<T extends object> implements ReactiveController {
   /** The data source, indexed into records. See {@link hostUpdate}. */
   private _indexed: ComboRecord<T>[] = [];
   private _source?: T[];
+  /** The pipeline inputs of the last check. See {@link _inputsChanged}. */
+  private _inputs: unknown[] = [];
+  /** The state of each toggle option at {@link _toggleVersion}. See {@link selectionOf}. */
+  private readonly _toggleStates = new Map<number, boolean | 'mixed'>();
+  private _toggleVersion?: number;
 
   private _dataState: ComboRecord<T>[] = [];
   private _optionCount = 0;
   private _loadedLength = 0;
   private _searchTerm = '';
-  private _dirty = true;
 
   //#endregion
 
@@ -121,7 +137,7 @@ export class DataState<T extends object> implements ReactiveController {
 
       // In remote mode, the term does not change the records.
       if (this.filteringOptions.mode !== 'remote') {
-        this.invalidate();
+        this._host.requestUpdate();
       }
     }
   }
@@ -143,10 +159,9 @@ export class DataState<T extends object> implements ReactiveController {
     };
   }
 
+  /** The collator of the group sorting, for the host locale. See {@link _inputsChanged}. */
   public get compareCollator(): Intl.Collator {
-    return (this._compareCollator ??= new Intl.Collator(
-      resolveLocale(this._host.locale)
-    ));
+    return (this._compareCollator ??= collatorOf(this._host.locale));
   }
 
   //#endregion
@@ -159,37 +174,92 @@ export class DataState<T extends object> implements ReactiveController {
   }
 
   /**
-   * Runs the pipeline before render when changes are batched.
+   * Runs the pipeline before render when `data`, the search term or a host
+   * field that the pipeline reads changed. The host also calls it to apply
+   * such a change before the next update.
+   * @returns Whether it built new records.
    * @internal
    */
-  public hostUpdate(): void {
+  public hostUpdate(): boolean {
     const data = this._host.data;
+    const changed = this._inputsChanged();
 
-    // An in-place change of `data` notifies neither Lit nor `invalidate()`, so
-    // check the length here. A replaced element needs a new `data` array.
-    // Record `value` and `header` are fixed, so rebuild the index only when the
-    // host data changes. A filter-only run allocates no records. See `_apply`.
+    // An in-place change of `data` does not notify Lit, so check the length
+    // here. A replaced element needs a new `data` array.
     if (this._source !== data || this._indexed.length !== data.length) {
       this._source = data;
       this._indexed = this._index(data);
-    } else if (!this._dirty) {
-      return;
+      // A kept record can hold the old text of an item that changed in place.
+      this._filtering.clear();
+    } else if (!changed) {
+      return false;
     }
 
     this._dataState = this._apply(this._indexed);
-    this._dirty = false;
+    this._toggleStates.clear();
+    return true;
   }
 
   //#endregion
 
   //#region Internal pipeline operations
 
+  /**
+   * Whether the search term or a host field that the pipeline reads changed
+   * since the last call. In remote mode, the term and the filter fields other
+   * than `mode` do not change the records. With groups, a new locale gives
+   * a new collator.
+   */
+  private _inputsChanged(): boolean {
+    const host = this._host;
+    const { filterKey, caseSensitive, matchDiacritics, mode } =
+      host.filteringOptions;
+    const inputs: unknown[] = [
+      host.valueKey,
+      host.displayKey,
+      host.groupKey,
+      host.groupSorting,
+      host.totalItemCount,
+      host.showSelectAll,
+      host.groupSelection,
+      host.singleSelect,
+      mode,
+      ...(mode === 'remote'
+        ? []
+        : [filterKey, caseSensitive, matchDiacritics, this._searchTerm]),
+    ];
+
+    if (host.groupKey) {
+      this._compareCollator = collatorOf(host.locale);
+      inputs.push(this._compareCollator);
+    }
+
+    const changed = !sameItems(inputs, this._inputs);
+
+    this._inputs = inputs;
+    return changed;
+  }
+
+  /**
+   * The records of `data`. Record `value` and `header` are fixed, so a `data`
+   * that starts with the indexed items, such as an appended page, keeps their
+   * records. The list then keeps their measured sizes. A filter-only run
+   * allocates no records. See {@link _apply}.
+   */
   private _index(data: T[]): ComboRecord<T>[] {
-    return data.map((item, index) => ({
+    const indexed = this._indexed;
+    const kept =
+      indexed.length <= data.length &&
+      indexed.every((record, index) => record.value === data[index])
+        ? indexed.length
+        : 0;
+    const added = data.slice(kept).map((item, index) => ({
       value: item,
       header: false,
-      position: index + 1,
+      position: kept + index + 1,
     }));
+
+    return kept ? indexed.concat(added) : added;
   }
 
   /**
@@ -299,12 +369,33 @@ export class DataState<T extends object> implements ReactiveController {
 
   /**
    * Whether all (`true`), none (`false`) or some (`mixed`) of the items of the
-   * toggle option at `index` are in `selected`. Stops at the first mix,
-   * because these options render often.
+   * toggle option at `index` are in `selected`. These options render on each
+   * key and scroll, so with the `version` of `selected`, the state stays until
+   * the version changes or the pipeline runs again.
    */
   public selectionOf(
     index: number,
-    selected: ReadonlySet<T>
+    selected: Pick<ReadonlySet<T>, 'has' | 'size'>,
+    version?: number
+  ): boolean | 'mixed' {
+    if (version === undefined) {
+      return this._scanSelection(index, selected);
+    }
+
+    if (version !== this._toggleVersion) {
+      this._toggleStates.clear();
+      this._toggleVersion = version;
+    }
+
+    return getOrInsertComputed(this._toggleStates, index, () =>
+      this._scanSelection(index, selected)
+    );
+  }
+
+  /** Stops at the first mix. See {@link selectionOf}. */
+  private _scanSelection(
+    index: number,
+    selected: Pick<ReadonlySet<T>, 'has' | 'size'>
   ): boolean | 'mixed' {
     const records = this._dataState;
     let some = false;
@@ -331,25 +422,6 @@ export class DataState<T extends object> implements ReactiveController {
     }
 
     return some;
-  }
-
-  /** Only group sorting uses the collator, so the data changes only if it exists. */
-  public updateLocale(): void {
-    if (this._compareCollator) {
-      this._compareCollator = undefined;
-      this.invalidate();
-    }
-  }
-
-  /**
-   * Call when a host property that affects the data changes. Batches the
-   * changes into one pipeline run before the next render.
-   */
-  public invalidate(): void {
-    if (!this._dirty) {
-      this._dirty = true;
-      this._host.requestUpdate();
-    }
   }
 
   //#endregion
