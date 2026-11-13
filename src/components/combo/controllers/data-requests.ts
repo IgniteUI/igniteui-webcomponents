@@ -1,9 +1,11 @@
 import type { PropertyValues } from 'lit';
+import { startsWith } from '#internals/utils/arrays.js';
 import type { VirtualScrollDataRequest } from '../../virtualization/types.js';
 import type IgcVirtualScrollComponent from '../../virtualization/virtualization.js';
 import { REMOTE_SCROLLING_THRESHOLD } from '../../virtualization/virtualization.js';
 import type IgcComboComponent from '../combo.js';
 import type { DataState } from './data.js';
+import { newResultsHints } from './results-hint.js';
 
 const DATA_REQUEST_COUNT = 20;
 
@@ -36,7 +38,7 @@ export class ComboDataRequests<T extends object> {
   private _lastDataRequest?: number;
   /** The index of the last rendered option, from the list. */
   private _lastRenderedIndex = -1;
-  /** Whether a search came after the last `data`. */
+  /** Whether a search came after the last `data`. Cleared after the update of a `data`. */
   private _searched = false;
   /** Whether a hidden list scrolls to the top when it opens. */
   private _toTopOnOpen = false;
@@ -63,30 +65,45 @@ export class ComboDataRequests<T extends object> {
   }
 
   /**
-   * Call from the `willUpdate()` of the host for a new `data`. Remote results
-   * show from the top when they are new: the first `data` after a search, a
-   * shorter `data`, or another first `valueKey`. A page appended to the same
-   * records keeps the place, also after a search that the application did not
-   * load. Without `valueKey`, a copy of the records is not new.
+   * Whether `data` holds new results after `old`, in remote mode. New results
+   * show from the top and start a new sequence of requests. A binder can tell
+   * it (see `newResultsHints`). Otherwise, they are the first `data` after a
+   * search, a shorter `data`, or another first `valueKey`. A `data` that starts
+   * with the items of `old`, such as an appended page, is not new, also after a
+   * search that the application did not load. Without `valueKey`, a copy of the
+   * records is not new.
+   */
+  private _isNew(old: T[]): boolean {
+    const { data, filteringOptions, valueKey } = this._host;
+
+    if (filteringOptions.mode !== 'remote' || !old.length) {
+      return false;
+    }
+
+    const hint = newResultsHints.get(this._host);
+
+    if (hint !== undefined) {
+      return hint;
+    }
+
+    const firstKey = (records: T[]) =>
+      valueKey ? records[0]?.[valueKey] : undefined;
+
+    return (
+      !startsWith(data, old) &&
+      (this._searched ||
+        data.length < old.length ||
+        firstKey(data) !== firstKey(old))
+    );
+  }
+
+  /**
+   * Call from the `willUpdate()` of the host for a new `data`. New results
+   * show from the top. See {@link _isNew}.
    * @returns Whether `data` holds new results.
    */
   public dataChanged(old: T[], list?: DataRequestsList): boolean {
-    const { data, filteringOptions, valueKey } = this._host;
-    const searched = this._searched;
-    const last = old.length - 1;
-    const appended =
-      data.length > last && data[0] === old[0] && data[last] === old[last];
-    const firstKey = (records: T[]) =>
-      valueKey ? records[0]?.[valueKey] : undefined;
-    const isNew =
-      filteringOptions.mode === 'remote' &&
-      old.length > 0 &&
-      !appended &&
-      (searched ||
-        data.length < old.length ||
-        firstKey(data) !== firstKey(old));
-
-    this._searched = false;
+    const isNew = this._isNew(old);
 
     if (isNew) {
       this._showFromTop(list);
@@ -115,19 +132,23 @@ export class ComboDataRequests<T extends object> {
     props: PropertyValues<IgcComboComponent<T>>,
     list?: DataRequestsList
   ): void {
-    const { open, data } = this._host;
-    const opened = props.has('open') && open;
-    const replaced = props.has('data') && props.get('data')?.[0] !== data[0];
+    const opened = props.has('open') && this._host.open;
+    const changed = props.has('data');
 
-    // An opening, or a replaced `data` rather than an appended one, starts a
-    // new sequence of requests. Opening again also retries a failed request.
-    if (opened || replaced) {
+    // An opening or new results start a new sequence of requests. Opening
+    // again also retries a failed request. The same rule as `dataChanged()`.
+    if (opened || (changed && this._isNew(props.get('data') ?? []))) {
       this.reset();
+    }
+
+    if (changed) {
+      this._searched = false;
+      newResultsHints.delete(this._host);
     }
 
     // The list reports a changed window after its own update, and an
     // unchanged one not at all, so check against the window after it.
-    if (opened || props.has('data') || props.has('totalItemCount')) {
+    if (opened || changed || props.has('totalItemCount')) {
       void list?.updateComplete.then(() => this._checkAfter(list, opened));
     }
   }

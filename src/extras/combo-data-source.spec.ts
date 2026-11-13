@@ -608,6 +608,29 @@ describe('Combo data source binding', () => {
     expect(ids(combo.data)).to.eql(ids(PLACES.slice(0, 10)));
   });
 
+  it('shows the results of refresh from the top, also with the same first item', async () => {
+    const list =
+      combo.renderRoot.querySelector<IgcVirtualScrollComponent>(
+        'igc-virtual-scroll'
+      )!;
+
+    bind({ pageSize: 30 });
+    await open();
+    await answer(0);
+    list.scrollToIndex(PLACES.length - 1);
+    await settle();
+
+    expect(list.scrollTop).to.be.greaterThan(0);
+
+    const refresh = binding.refresh();
+    requests.at(-1)!.answer();
+    await refresh;
+    await settle();
+
+    expect(ids(combo.data)).to.eql(ids(PLACES));
+    expect(list.scrollTop).to.equal(0);
+  });
+
   it('does not select all the items when resolve finds none', async () => {
     const resolve = spy(async () => []);
 

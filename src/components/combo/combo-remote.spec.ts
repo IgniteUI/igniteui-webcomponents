@@ -520,10 +520,15 @@ describe('Combo', () => {
       ]);
     });
 
-    it('requests the next page when the data is replaced without a search', async () => {
+    it('requests the next page of new results without a search, but not for a copy', async () => {
       await openComboPopover(remote);
 
       remote.data = search('');
+      await comboStable(remote);
+
+      expect(details('igcDataRequest')).to.eql([{ startIndex: 10, count: 20 }]);
+
+      remote.data = search('').reverse();
       await comboStable(remote);
 
       expect(details('igcDataRequest')).to.eql([

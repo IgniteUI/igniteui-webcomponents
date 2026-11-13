@@ -1,4 +1,4 @@
-import { isEmpty } from '#internals/utils/arrays.js';
+import { isEmpty, startsWith } from '#internals/utils/arrays.js';
 import { isObject } from '#internals/utils/types.js';
 import type IgcComboComponent from '../combo.js';
 import type { ComboValue, Item } from '../types.js';
@@ -128,14 +128,7 @@ export class ComboSelection<T extends object> {
       return index;
     }
 
-    if (
-      !(
-        index &&
-        sameKey &&
-        indexed.length <= data.length &&
-        indexed.every((item, position) => item === data[position])
-      )
-    ) {
+    if (!(index && sameKey && startsWith(data, indexed))) {
       index = this._index = new Map();
       indexed = this._indexed = [];
       this._indexKey = valueKey;

@@ -7,6 +7,7 @@ import {
   lastOf,
   partition,
   sameItems,
+  startsWith,
 } from './arrays.js';
 
 describe('Array utilities', () => {
@@ -92,6 +93,20 @@ describe('Array utilities', () => {
     it('matches NaN to itself, like Object.is', () => {
       expect(sameItems([Number.NaN], [Number.NaN])).to.be.true;
       expect(sameItems([0], [-0])).to.be.false;
+    });
+  });
+
+  describe('startsWith', () => {
+    it('compares the first items by identity and order', () => {
+      const [a, b, c] = [{}, {}, {}];
+
+      expect(startsWith([a, b, c], [a, b])).to.be.true;
+      expect(startsWith([a, b], [a, b])).to.be.true;
+      expect(startsWith([a, b], [])).to.be.true;
+      expect(startsWith([a, b], [a, b, c])).to.be.false;
+      expect(startsWith([a, b, c], [a, c])).to.be.false;
+      expect(startsWith([a], [{}])).to.be.false;
+      expect(startsWith([a], [a, undefined])).to.be.false;
     });
   });
 });

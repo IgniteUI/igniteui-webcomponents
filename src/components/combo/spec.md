@@ -86,6 +86,7 @@
 |      24 | 2026-11-11 | <kbd>Enter</kbd> submits the form from single selection with the list closed, as in an input with a list; multiple selection does not submit, as a native `select` |
 |      25 | 2026-11-12 | A new `valueKey` or `displayKey` gives the group headers new records; an appended page keeps the records of the loaded items, so the list keeps their measured sizes |
 |      26 | 2026-11-12 | A write of the same `value` does not update the combo and keeps the pending selection; it still makes the control dirty, and after a new `data` or `valueKey` it gives the values their records again |
+|      27 | 2026-11-12 | One rule for new remote results: a copy of the same records keeps the place and requests no page again; an append compares all the old items; `bindComboDataSource()` marks each first page as new results, so `refresh()` shows from the top |
 
 ## Overview
 
@@ -430,15 +431,16 @@ server did not return for the text.
 **Page requests.** In remote mode, `igcDataRequest` comes when the open list shows one of the last five options of
 `data`.
 - `startIndex` is `data.length`, also with groups. `count` is the number of items to append.
-- It comes again only after a change of the length of `data`, a new first record, a new search text or case, or a new
-  opening. So a source with no more items gets one request for each opening.
+- It comes again only after a change of the length of `data`, new results (see below), a new search text or case, or
+  a new opening. So a source with no more items gets one request for each opening, and a copy of the same records
+  gets no request.
 - An empty `data` gets no request, because the application loads the first page of a search.
 - An answer is stale when `data.length` is not equal to its `startIndex`, for example after a new search.
 - New results show from the top, with no active option: the first `data` after a search, and a `data` that is
   shorter or starts with another record. Records compare by `valueKey`; without it, only a search and a shorter `data`
   count. So the list does not request pages from the offset of the old results. A list that is closed shows them from
-  the top when it opens. A page appended to the same records, also after a search that the application did not load,
-  and a copy of the same records keep the place.
+  the top when it opens. A `data` that starts with all the items of the old one, such as an appended page, also after
+  a search that the application did not load, and a copy of the same records keep the place.
 
 **Selection.** A new `data` keeps the selection. A selected item that the new `data` does not hold stays in `value`, in
 `selection` and in the input text. A later page or search that holds it shows it as selected again. The combo cannot
@@ -473,9 +475,11 @@ toggle icon.
   on the toggle icon. Tab does not reach it while the list is open.
 - The busy state shows in the field, not in the list, so the list does not move.
 
-`bindComboDataSource()` from `igniteui-webcomponents/extras/combo-data-source` does this flow with the public API. Its `load()` gets the
+`bindComboDataSource()` from `igniteui-webcomponents/extras/combo-data-source` does this flow. Its `load()` gets the
 search text and `caseSensitive`. A new search text or a click on the case-sensitive icon loads the first page again.
-After a change of `filteringOptions.caseSensitive` in code, call `refresh()`. See the `RemoteData` story.
+After a change of `filteringOptions.caseSensitive` in code, call `refresh()`. The binder tells the combo that each
+first page holds new results and each next page does not, so the combo does not guess: a first page shows from the
+top, also from `refresh()` with the same first item. See the `RemoteData` story.
 
 ### Localization
 
@@ -843,8 +847,8 @@ state, the data requests and the selection model without a browser fixture.
     in single selection. Each value shows one time, the clear icon shows for such values, and in the confirm mode a
     commit applies a deselection that names one, and a cancel keeps it.
 29. `igcDataRequest` comes near the end of `data` with `startIndex` equal to `data.length`, also with groups. It does
-    not come again until `data` grows. A new search, a new `data` without a search with a page of the same length, and
-    a new opening each get their own request. It does not come in local mode, while the list is closed, or with an
+    not come again until `data` grows. A new search, new results without a search, and a new opening each get their
+    own request. A copy of the same records gets none. It does not come in local mode, while the list is closed, or with an
     empty `data`.
 
 ### Placeholders and loading
@@ -858,7 +862,8 @@ state, the data requests and the selection model without a browser fixture.
     not close the list. New results show from the top with no active option, also after a search with the same
     first record and in a list that opens after them, so the next request covers the top of the list. A copy of the
     same records keeps the place. An appended page keeps the records of the loaded items. The unit specs of the data
-    requests cover an appended page after a search, the rule without `valueKey` and a first `data`.
+    requests cover an appended page after a search, the rule without `valueKey`, a first `data`, an append check over
+    all the old items and the hint of a binder. The binder specs check that `refresh()` shows from the top.
 32. `loading` shows the named spinner over the hidden toggle icon, and "Loading" in an empty list. The toggle width
     does not change, and the list does not move. It passes the accessibility audit. The `loading` slot replaces the
     spinner. The spinner and the skeletons get their colors from the `loading` and `placeholder` parts.
