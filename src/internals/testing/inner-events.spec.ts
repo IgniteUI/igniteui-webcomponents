@@ -9,13 +9,6 @@
  * does not bubble: such an event still calls the listeners on each shadow host.
  */
 
-/** Leaks that a fix on another branch removes. */
-const KNOWN_LEAKS = new Set([
-  // #2530, fixed on `rkaraivanov/combo-enhancements`.
-  'igc-combo > igc-virtual-scroll: igcStateChange',
-  'igc-combo > igc-virtual-scroll: igcDataRequest',
-]);
-
 /** The title of the root hooks that check for leaks. */
 export const INNER_EVENTS_HOOK = 'inner events guard';
 
@@ -116,11 +109,7 @@ function install(state: GuardState): void {
         const path = [...hosts, this as Node].map((node) =>
           node.nodeName.toLowerCase()
         );
-        const key = `${path.join(' > ')}: ${event.type}`;
-
-        if (!KNOWN_LEAKS.has(key)) {
-          state.pending.push(key);
-        }
+        state.pending.push(`${path.join(' > ')}: ${event.type}`);
       }
     }
   };
