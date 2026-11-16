@@ -120,6 +120,10 @@ async function runTask(tag, cmd) {
     await cp('skills', DEST_DIR('skills'), { recursive: true });
   });
 
+  await runTask('Copying migrations directory', async () => {
+    await cp('migrations', DEST_DIR('migrations'), { recursive: true });
+  });
+
   await runTask('llms.txt', () => buildLlmsFiles(customElements, DEST_DIR()));
 
   report.success('\n🎉 Done! 🎉');
