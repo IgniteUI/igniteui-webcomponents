@@ -1,7 +1,9 @@
 import { elementUpdated, nextFrame } from '@open-wc/testing';
 
+import type IgcComboHeaderComponent from '../../components/combo/combo-header.js';
 import type IgcComboItemComponent from '../../components/combo/combo-item.js';
 import type IgcComboComponent from '../../components/combo/combo.js';
+import type IgcInputComponent from '../../components/input/input.js';
 import type IgcVirtualScrollComponent from '../../components/virtualization/virtualization.js';
 import { internalsOf } from '../controllers/internals.js';
 
@@ -53,6 +55,47 @@ export const cities: City[] = [
   },
 ];
 
+const listOf = <T extends object>(
+  combo: IgcComboComponent<T>
+): IgcVirtualScrollComponent =>
+  combo.renderRoot.querySelector<IgcVirtualScrollComponent>(
+    'igc-virtual-scroll'
+  )!;
+
+/** Shadow DOM parts of `host()`, queried on each read so a replaced fixture works. */
+export function getComboDOM<T extends object>(
+  host: () => IgcComboComponent<T>
+) {
+  const query = <E extends Element>(selector: string) =>
+    host().renderRoot.querySelector<E>(selector);
+
+  return {
+    get input() {
+      return query<IgcInputComponent>('igc-input#target')!;
+    },
+    get nativeInput() {
+      return this.input.renderRoot.querySelector('input')!;
+    },
+    /** Hidden in single selection. */
+    get searchInput() {
+      return query<IgcInputComponent>('[part="search-input"]')!;
+    },
+    get list() {
+      return listOf(host());
+    },
+    get headers() {
+      return Array.from(
+        this.list.querySelectorAll<IgcComboHeaderComponent>(
+          '[part~="group-header"]'
+        )
+      );
+    },
+    get clearIcon() {
+      return query<HTMLElement>('[part="clear-icon"]')!;
+    },
+  };
+}
+
 export async function comboStable<T extends object>(
   combo: IgcComboComponent<T>
 ) {
@@ -69,12 +112,9 @@ export async function openComboPopover<T extends object>(
   await layoutComplete(combo);
 }
 
-export const items = <T extends object>(combo: IgcComboComponent<T>) =>
-  [
-    ...combo.renderRoot
-      .querySelector('igc-virtual-scroll')!
-      .querySelectorAll('[part~="item"]'),
-  ] as IgcComboItemComponent[];
+export const items = <T extends object>(combo: IgcComboComponent<T>) => [
+  ...listOf(combo).querySelectorAll<IgcComboItemComponent>('[part~="item"]'),
+];
 
 /** The selection state that an option reports to assistive technology. */
 export const ariaOf = (item: Element) => ({
@@ -83,8 +123,4 @@ export const ariaOf = (item: Element) => ({
 });
 
 export const layoutComplete = <T extends object>(combo: IgcComboComponent<T>) =>
-  (
-    combo.renderRoot.querySelector(
-      'igc-virtual-scroll'
-    ) as IgcVirtualScrollComponent
-  ).layoutComplete;
+  listOf(combo).layoutComplete;

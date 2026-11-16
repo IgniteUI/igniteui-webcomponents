@@ -237,6 +237,7 @@ export default class IgcComboComponent<
   @query('[part="list-wrapper"]', true)
   private readonly _popup!: HTMLDivElement | null;
 
+  // Before the navigation: its hostUpdate reads the records that this one builds.
   private readonly _state = new DataState<T>(this);
   private readonly _selection = new ComboSelection<T>(this);
   private readonly _navigation = new ComboNavigationController(
@@ -253,9 +254,8 @@ export default class IgcComboComponent<
         show: () => this._show(true),
         hide: (trigger) => this._close(trigger),
         toggleSelection: (index) => this._selectAt(index, true),
-        select: (index) => this._selectAt(index, false),
         hasPending: () => this._selection.pending !== undefined,
-        apply: (trigger) => this._applyAndClose(trigger),
+        commit: (trigger, index) => this._commitAndClose(trigger, index),
         clearSelection: () => this._clearSelection(),
       },
     }
@@ -278,16 +278,6 @@ export default class IgcComboComponent<
   private _appliedFiltering = { ...this._filteringOptions };
   // What the last sync of the selection with `value` read. See `_isSyncedValue`.
   private _syncedWith?: { data: T[]; length: number; value: ComboValue<T>[] };
-
-  @state()
-  private set _activeIndex(index: number) {
-    this._navigation.active = index;
-    this._listRef.value?.requestUpdate();
-  }
-
-  private get _activeIndex(): number {
-    return this._navigation.active;
-  }
 
   @state()
   private set _searchTerm(value: string) {
@@ -347,7 +337,7 @@ export default class IgcComboComponent<
 
       if (host.hasUpdated) {
         host._withPristine(() => {
-          host._activeIndex = -1;
+          host._navigation.active = -1;
           host._searchTerm = '';
           host._formValue.setValueAndFormState(host.value);
         });
@@ -679,7 +669,7 @@ export default class IgcComboComponent<
       (props.has('showSelectAll') || props.has('groupSelection')) &&
       this.hasUpdated
     ) {
-      this._activeIndex = -1;
+      this._navigation.active = -1;
     }
 
     // The list keeps the same `_itemRenderer`, so a new template must re-render it.
@@ -702,7 +692,7 @@ export default class IgcComboComponent<
           this._listRef.value
         )
       ) {
-        this._activeIndex = -1;
+        this._navigation.active = -1;
       }
     }
 
@@ -791,7 +781,7 @@ export default class IgcComboComponent<
     ]);
 
     if (canClose) {
-      this._activeIndex = -1;
+      this._navigation.active = -1;
     }
 
     return canClose;
@@ -809,6 +799,25 @@ export default class IgcComboComponent<
    */
   private async _applyAndClose(trigger: ComboCloseTrigger): Promise<boolean> {
     return this._commitPending(true) ? this._close(trigger) : false;
+  }
+
+  /**
+   * In single selection, selects the option at `index` first. Enter applies
+   * the pending selection; Tab drops it. Not async, to keep the microtask
+   * depth of the keyboard handlers.
+   * @returns Whether the list closes.
+   */
+  private _commitAndClose(
+    trigger: 'enter' | 'tab',
+    index: number
+  ): Promise<boolean> {
+    if (this.singleSelect) {
+      this._selectAt(index, false);
+    }
+
+    return trigger === 'enter'
+      ? this._applyAndClose(trigger)
+      : this._close(trigger);
   }
 
   //#endregion
@@ -907,14 +916,11 @@ export default class IgcComboComponent<
       : asArray(items);
 
     if (isEmpty(collection) && selecting) {
-      // Selects all items without an event, or clears a single selection.
       if (singleSelect) {
-        this._selection.clear();
-        this._searchTerm = '';
-      } else {
-        this._selection.selectAll();
+        return this._applySelection([], type, false);
       }
 
+      this._selection.selectAll();
       this.requestUpdate();
       return true;
     }
@@ -961,9 +967,8 @@ export default class IgcComboComponent<
       return false;
     }
 
-    // The change is committed, so drop the previous single selection and search term.
+    // Its `igcSearchInput` precedes the change, as with the clear button.
     if (selecting && this.singleSelect) {
-      this._selection.clear();
       this._clearSearchTerm(emit);
     }
 
@@ -1071,46 +1076,36 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Selects the record at `index`. With `toggle`, deselects a selected one.
-   * A toggle option toggles its items. See {@link DataState.isToggle}.
+   * Selects the item at `index`, or the items of the toggle option at `index`,
+   * with one `igcChange`. `toggle` follows {@link ComboSelection.toggleChange}.
    * @returns Whether `index` holds an item or a toggle option.
    */
   private _selectAt(index: number, toggle: boolean): boolean {
     const record = this._state.dataState[index];
+    let items: T[];
 
     if (isItemRecord(record)) {
-      const item = record.value;
-
       // The record itself, as an item without a value would select all.
-      this._applySelection(
-        [item],
-        toggle && this._selection.has(item) ? 'deselection' : 'selection',
-        true
-      );
+      items = [record.value];
     } else if (record && this._state.isToggle(record)) {
-      this._toggleItemsOf(index);
+      items = this._state.itemsOf(index);
     } else {
       return false;
     }
 
-    this._activeIndex = index;
-    this._syncValueFromSelection();
-    return true;
-  }
+    const { records, selecting } = toggle
+      ? this._selection.toggleChange(items)
+      : { records: items, selecting: true };
 
-  /**
-   * Selects the items of the toggle option at `index`, or deselects them when
-   * all of them are selected, with one `igcChange` for the items that change.
-   */
-  private _toggleItemsOf(index: number): void {
-    const items = this._state.itemsOf(index);
-    const unselected = items.filter((item) => !this._selection.has(item));
-
+    // First, as a change listener can build new records.
+    this._navigation.active = index;
     this._applySelection(
-      unselected.length ? unselected : items,
-      unselected.length ? 'selection' : 'deselection',
+      records,
+      selecting ? 'selection' : 'deselection',
       true
     );
+    this._syncValueFromSelection();
+    return true;
   }
 
   private _clearSelection(): void {
@@ -1171,7 +1166,7 @@ export default class IgcComboComponent<
     await this.updateComplete;
 
     // Remote results come later, so no option of the old results becomes active.
-    this._activeIndex =
+    this._navigation.active =
       this.filteringOptions.mode === 'remote'
         ? -1
         : this._state.firstOptionIndex;
@@ -1250,7 +1245,7 @@ export default class IgcComboComponent<
   private _handleClearIconClick(event: PointerEvent): void {
     event.stopPropagation();
     this._clearSelection();
-    this._activeIndex = -1;
+    this._navigation.active = -1;
   }
 
   private _handleApply(): void {
@@ -1409,9 +1404,9 @@ export default class IgcComboComponent<
     return this.id ? `${this.id}-item-${position}` : `item-${position}`;
   }
 
-  /** Derived from {@link _activeIndex}, so it cannot go stale. */
   private get _activeDescendant(): string | undefined {
-    return this._activeIndex > -1 ? this._itemId(this._activeIndex) : undefined;
+    const { active } = this._navigation;
+    return active > -1 ? this._itemId(active) : undefined;
   }
 
   protected _itemRenderer: ComboRenderFunction<T> = (
@@ -1440,7 +1435,7 @@ export default class IgcComboComponent<
       );
     }
 
-    const active = this._activeIndex === index;
+    const active = this._navigation.active === index;
 
     const selected = this._selection.has(item.value);
     // One template for both, so a row keeps its element when its item loads.
@@ -1489,7 +1484,7 @@ export default class IgcComboComponent<
       this._selection.version
     );
     const all = state === true;
-    const active = this._activeIndex === index;
+    const active = this._navigation.active === index;
 
     return html`
       <igc-combo-item

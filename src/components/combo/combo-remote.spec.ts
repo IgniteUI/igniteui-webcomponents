@@ -189,6 +189,41 @@ describe('Combo', () => {
       expect(searchEvents()).to.eql(['a', '', 'b']);
     });
 
+    it('emits the igcSearchInput of a selection in single selection before the selection changes', async () => {
+      remote.singleSelect = true;
+      remote.filteringOptions = { mode: 'local' };
+      remote.select('AMS');
+      await elementUpdated(remote);
+
+      // The application keeps the selection when the user types.
+      remote.addEventListener('igcChange', (event) => {
+        if (event.detail.type === 'deselection') {
+          event.preventDefault();
+        }
+      });
+
+      const reads: { value: unknown[]; selection: string[] }[] = [];
+      remote.addEventListener('igcSearchInput', ({ detail }) => {
+        if (!detail.searchText) {
+          reads.push({
+            value: [...remote.value],
+            selection: remote.selection.map(({ id }) => id),
+          });
+        }
+      });
+
+      simulateInput(mainNative, { value: 'bu' });
+      await comboStable(remote);
+      expect(remote.value).to.eql(['AMS']);
+
+      simulateKeyboard(list, enterKey);
+      await elementUpdated(remote);
+
+      expect(reads).to.eql([{ value: ['AMS'], selection: ['AMS'] }]);
+      expect(remote.value).to.eql(['BUC']);
+      expect(remote.selection.map(({ id }) => id)).to.eql(['BUC']);
+    });
+
     it('clears the search input and reports it when a blur clears the search text', async () => {
       await openComboPopover(remote);
 
@@ -734,6 +769,37 @@ describe('Combo', () => {
 
         expect(list.data.slice(0, 10)).to.have.ordered.members(loaded);
         expect(list.data[10]).not.to.be.oneOf(loaded);
+      });
+
+      it('activates the item that loads in place of the active placeholder', async () => {
+        remote.totalItemCount = 12;
+        await openComboPopover(remote);
+
+        simulateKeyboard(list, endKey);
+        await comboStable(remote);
+        expect(items(remote).at(-1)!.active).to.be.true;
+
+        remote.data = [...remote.data, ...search('', 10, 2)];
+        await comboStable(remote);
+
+        const last = items(remote).at(-1)!;
+        expect(last.active).to.be.true;
+        expect(last.textContent?.trim()).to.equal('Bern');
+      });
+
+      it('leaves no active option when the active placeholder goes away', async () => {
+        remote.totalItemCount = 12;
+        await openComboPopover(remote);
+
+        simulateKeyboard(list, endKey);
+        await comboStable(remote);
+        expect(items(remote).at(-1)!.active).to.be.true;
+
+        remote.totalItemCount = 10;
+        await comboStable(remote);
+
+        expect(items(remote).some((item) => item.active)).to.be.false;
+        expect(list.hasAttribute('aria-activedescendant')).to.be.false;
       });
 
       it('shows new results that come while the list is closed from the top', async () => {

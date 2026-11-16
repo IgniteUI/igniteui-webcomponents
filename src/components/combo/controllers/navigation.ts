@@ -19,7 +19,7 @@ import { focusTabStop } from '#internals/utils/events.js';
 import type IgcInputComponent from '../../input/input.js';
 import type IgcVirtualScrollComponent from '../../virtualization/virtualization.js';
 import type IgcComboComponent from '../combo.js';
-import type { ComboCloseTrigger } from '../types.js';
+import type { ComboCloseTrigger, ComboRecord } from '../types.js';
 import type { DataState } from './data.js';
 
 type ListSlot = 'header' | 'empty' | 'footer';
@@ -34,11 +34,10 @@ type ComboNavigationConfig = {
     show: () => Promise<boolean>;
     hide: (trigger: ComboCloseTrigger) => Promise<boolean>;
     toggleSelection: (index: number) => void;
-    select: (index: number) => void;
     /** Whether the confirm mode has a pending selection. */
     hasPending: () => boolean;
-    /** Applies the pending selection, then closes the list. Returns whether the list closes. */
-    apply: (trigger: ComboCloseTrigger) => Promise<boolean>;
+    /** Commits, then closes the list; returns whether it closes. */
+    commit: (trigger: 'enter' | 'tab', index: number) => Promise<boolean>;
     clearSelection: () => void;
   };
 };
@@ -49,6 +48,10 @@ export class ComboNavigationController<T extends object> {
   private readonly _host: IgcComboComponent<T>;
   private readonly _state: DataState<T>;
   private readonly _config: ComboNavigationConfig;
+  private _active = -1;
+  /** The record at {@link _active} when it was set. */
+  private _activeRecord?: ComboRecord<T>;
+  private _moved = false;
 
   private get _input(): IgcInputComponent | undefined {
     return this._config.input.value;
@@ -74,7 +77,22 @@ export class ComboNavigationController<T extends object> {
 
   //#endregion
 
-  public active = -1;
+  /** The index of the active option in the records of the list, or -1. */
+  public get active(): number {
+    return this._active;
+  }
+
+  public set active(index: number) {
+    const previous = this._active;
+    this._active = index;
+    this._activeRecord = this._state.dataState[index];
+    // The rows re-render only on a list update.
+    this._list?.requestUpdate();
+
+    if (previous !== index) {
+      this._host.requestUpdate();
+    }
+  }
 
   constructor(
     host: IgcComboComponent<T>,
@@ -133,8 +151,41 @@ export class ComboNavigationController<T extends object> {
       .set(enterKey, this._onEnter);
   }
 
-  public hostDisconnected(): void {
+  // Not on disconnect, which would render the detached host.
+  public hostConnected(): void {
     this.active = -1;
+  }
+
+  /**
+   * Moves the active index to its record after the records change. A
+   * placeholder keeps its index for the item that loads there.
+   */
+  public hostUpdate(): void {
+    const record = this._activeRecord;
+    const records = this._state.dataState;
+
+    if (!record || records[this._active] === record) {
+      return;
+    }
+
+    const index =
+      record.kind === 'placeholder'
+        ? this._active
+        : this._state.indexOfRecord(record);
+    const next = records[index];
+    // A header without group selection, or a place past the end, is no option.
+    const active = next && this._state.isOption(next) ? index : -1;
+
+    this._moved = active > -1 && active !== this._active;
+    this.active = active;
+  }
+
+  public hostUpdated(): void {
+    if (this._moved) {
+      this._moved = false;
+      // The list measures with its records, which it gets in its own update.
+      void this._list?.updateComplete.then(() => this._scrollToActive());
+    }
   }
 
   //#region Event handlers
@@ -156,10 +207,7 @@ export class ComboNavigationController<T extends object> {
       return;
     }
 
-    if (this._host.singleSelect) {
-      this._config.interactions.select(this.active);
-    }
-    if (await this._config.interactions.apply('enter')) {
+    if (await this._config.interactions.commit('enter', this.active)) {
       this._input?.select();
       this._host.focus();
     }
@@ -186,11 +234,7 @@ export class ComboNavigationController<T extends object> {
       this._host.focus();
     }
 
-    if (this._host.singleSelect && this.active > -1) {
-      this._config.interactions.select(this.active);
-    }
-
-    await this._config.interactions.hide('tab');
+    await this._config.interactions.commit('tab', this.active);
   };
 
   private _onEscape = (): Promise<void> => {
@@ -217,17 +261,18 @@ export class ComboNavigationController<T extends object> {
   };
 
   private _onHome = (): void => {
-    this._setActive(this._firstItem);
+    this.active = this._firstItem;
     this._scrollToActive();
   };
 
   private _onEnd = (): void => {
-    this._setActive(this._lastItem);
+    this.active = this._lastItem;
     this._scrollToActive();
   };
 
   private _onArrowUp = (): void => {
-    if (this.active === this._firstItem) {
+    // Also without an active option.
+    if (this.active <= this._firstItem) {
       // Focus the search input when it shows. Otherwise, close the list.
       const search = this._searchInput;
       search ? search.focus() : this._closeToInput('arrow-up');
@@ -278,19 +323,8 @@ export class ComboNavigationController<T extends object> {
     return [input!, ...before, ...list, ...after];
   }
 
-  /**
-   * Sets the active index from the keyboard. The host mirrors it as
-   * `_activeIndex`, so the update request carries the old value.
-   */
-  private _setActive(index: number): void {
-    const previous = this.active;
-    this.active = index;
-    this._host.requestUpdate('_activeIndex', previous);
-  }
-
   private _scrollToActive(): void {
     this._list?.scrollToIndex(this.active, { block: 'center' });
-    this._list?.requestUpdate();
   }
 
   private _getNextItem(delta: -1 | 1): void {
@@ -298,7 +332,7 @@ export class ComboNavigationController<T extends object> {
 
     for (let i = this.active + delta; i >= 0 && i < items.length; i += delta) {
       if (this._state.isOption(items[i])) {
-        this._setActive(i);
+        this.active = i;
         return;
       }
     }

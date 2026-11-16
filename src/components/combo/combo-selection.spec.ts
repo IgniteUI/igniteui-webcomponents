@@ -7,6 +7,7 @@ import {
   enterKey,
   escapeKey,
   homeKey,
+  shiftKey,
   spaceBar,
   tabKey,
 } from '#internals/controllers/key-bindings.js';
@@ -1013,6 +1014,38 @@ describe('Combo', () => {
       await comboStable(combo);
 
       expect(combo.pendingValue).to.eql(['BG01']);
+    });
+
+    it('drops the pending selection on Tab out of the combo', async () => {
+      const tabs = [
+        () => {
+          actions()[1].focus();
+          return sendKeys({ press: tabKey });
+        },
+        () => {
+          searchInput.focus();
+          return sendKeys({ press: `${shiftKey}+${tabKey}` });
+        },
+      ];
+
+      for (const tab of tabs) {
+        await openComboPopover(combo);
+        await click(1);
+
+        expect(combo.pendingValue).to.eql(['BG01', 'BG02']);
+
+        await tab();
+        await comboStable(combo);
+
+        expect(combo.open).to.be.false;
+        expect(combo.value).to.eql(['BG01']);
+        expect(combo.pendingValue).to.eql(['BG01']);
+      }
+
+      expect(changes()).to.be.empty;
+      expect(
+        eventSpy.withArgs('igcClosed').args.map(([, { detail }]) => detail)
+      ).to.eql([{ trigger: 'tab' }, { trigger: 'tab' }]);
     });
 
     it('stages the selection methods, and commitSelection() applies them without events', async () => {

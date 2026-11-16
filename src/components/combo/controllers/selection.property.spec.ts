@@ -142,10 +142,95 @@ function run(confirm: boolean, ops: Op[]): void {
   }
 }
 
+/**
+ * Runs `ops` and checks for each change that `preview()`, the `newValue` of
+ * `igcChange`, gives the values that `apply()` then makes. As the combo, it
+ * passes the first records, one record in single selection, and does not
+ * select all in single selection.
+ */
+function runPreview(single: boolean, confirm: boolean, ops: Op[]): void {
+  const host: ComboSelectionHost<City> = {
+    data: pool.slice(0, 4),
+    valueKey: 'id',
+    displayKey: 'name',
+    singleSelect: single,
+    open: false,
+    selectionCommit: confirm ? 'confirm' : 'immediate',
+  };
+  const selection = new ComboSelection<City>(host);
+  const limit = <V>(values: V[]): V[] => (single ? values.slice(0, 1) : values);
+  const currentValues = () => {
+    const pending = selection.pending;
+    return pending ? selection.valuesOf(pending) : selection.project().values;
+  };
+
+  for (const step of ops) {
+    switch (step.op) {
+      case 'apply': {
+        const records = selection.firstRecords(
+          limit(step.records).map(
+            (id) => host.data.find((r) => r.id === id) ?? pool[id]
+          )
+        );
+        const preview = selection.preview(records, step.selecting);
+
+        selection.apply(records, step.selecting);
+        expect(currentValues()).to.eql(preview);
+        break;
+      }
+      case 'syncFromValue':
+        selection.syncFromValue(limit(step.values));
+        break;
+      case 'forget':
+        selection.forget(step.values);
+        break;
+      case 'open':
+      case 'close':
+        host.open = step.op === 'open';
+        break;
+      case 'commit': {
+        const pending = selection.pending;
+        if (pending) {
+          selection.commit(pending);
+        }
+        break;
+      }
+      case 'data': {
+        const committed = selection.project().values;
+        host.data = pool
+          .slice(0, step.size)
+          .map((record) => (step.copies ? { ...record } : record));
+        selection.invalidateIndex();
+        selection.syncFromValue(committed);
+        selection.syncPending();
+        break;
+      }
+      case 'selectAll':
+        if (!single) {
+          selection.selectAll();
+        }
+        break;
+      default:
+        selection[step.op]();
+    }
+  }
+}
+
 describe('Combo selection properties', () => {
   it('keeps unique values, one record for each value and one order', () => {
     fc.assert(
       fc.property(fc.boolean(), fc.array(opArb, { maxLength: 20 }), run)
+    );
+  });
+
+  it('previews the values that each change makes, in both selection modes', () => {
+    fc.assert(
+      fc.property(
+        fc.boolean(),
+        fc.boolean(),
+        fc.array(opArb, { maxLength: 20 }),
+        runPreview
+      )
     );
   });
 });

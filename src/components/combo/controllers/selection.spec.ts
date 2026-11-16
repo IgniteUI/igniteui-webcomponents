@@ -203,6 +203,63 @@ describe('Combo selection', () => {
       expect(selection.preview([sofia], true)).to.eql([1]);
     });
 
+    it('replaces the selection with a selection in single selection', () => {
+      const { selection } = setup({ singleSelect: true });
+
+      selection.syncFromValue([42]);
+      selection.apply([varna], true);
+      expect(selection.project().values).to.eql([3]);
+
+      selection.apply([sofia], true);
+      expect(selection.selected).to.eql([sofia]);
+
+      // A deselection removes only its value.
+      selection.apply([plovdiv], false);
+      expect(selection.selected).to.eql([sofia]);
+    });
+
+    it('toggles the items that are not selected on, or all of them off when each one is selected', () => {
+      const { selection } = setup();
+
+      expect(selection.toggleChange([sofia])).to.eql({
+        records: [sofia],
+        selecting: true,
+      });
+
+      selection.apply([sofia], true);
+      expect(selection.toggleChange([sofia])).to.eql({
+        records: [sofia],
+        selecting: false,
+      });
+      expect(selection.toggleChange(cities)).to.eql({
+        records: [plovdiv, varna],
+        selecting: true,
+      });
+
+      selection.apply([plovdiv, varna], true);
+      expect(selection.toggleChange(cities)).to.eql({
+        records: cities,
+        selecting: false,
+      });
+
+      // It gives the change and does not make it.
+      expect(selection.selected).to.eql(cities);
+    });
+
+    it('toggles a repeated value off, and reads the pending selection', () => {
+      const copy = { ...sofia };
+      const { selection } = confirming({ data: [sofia, plovdiv, copy] });
+
+      selection.apply([sofia], true);
+      expect(selection.selected).to.be.empty;
+
+      const { records, selecting } = selection.toggleChange([copy, plovdiv]);
+      expect(selecting).to.be.true;
+      expect(records).to.have.ordered.members([plovdiv]);
+
+      expect(selection.toggleChange([copy]).selecting).to.be.false;
+    });
+
     it('selects all the records of data and keeps the selected records outside it', () => {
       const { selection } = setup();
 
