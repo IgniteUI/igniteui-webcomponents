@@ -68,14 +68,14 @@ const metadata: Meta<IgcTooltipComponent> = {
       type: {
         name: 'enum',
         value: [
-          'left',
-          'top',
-          'right',
           'bottom',
+          'top',
           'top-start',
           'top-end',
           'bottom-start',
           'bottom-end',
+          'left',
+          'right',
           'right-start',
           'right-end',
           'left-start',
@@ -84,14 +84,14 @@ const metadata: Meta<IgcTooltipComponent> = {
       },
       description: 'Where to place the tooltip relative to its anchor element.',
       options: [
-        'left',
-        'top',
-        'right',
         'bottom',
+        'top',
         'top-start',
         'top-end',
         'bottom-start',
         'bottom-end',
+        'left',
+        'right',
         'right-start',
         'right-end',
         'left-start',
@@ -188,14 +188,14 @@ interface IgcTooltipArgs {
   offset: number;
   /** Where to place the tooltip relative to its anchor element. */
   placement:
-    | 'left'
-    | 'top'
-    | 'right'
     | 'bottom'
+    | 'top'
     | 'top-start'
     | 'top-end'
     | 'bottom-start'
     | 'bottom-end'
+    | 'left'
+    | 'right'
     | 'right-start'
     | 'right-end'
     | 'left-start'

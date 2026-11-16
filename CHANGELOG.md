@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - #### Skeleton
-  - New `igc-skeleton` component shows a placeholder while its content loads. Set `loading` to hide the content and draw an animated shape over each visible leaf element and run of text. The `animation` attribute selects `pulse`, `breathe` (the default), `shimmer`, `wave` or `glow`. When loading ends, the content fades in and the host has the `revealing` custom state.
+  - New `igc-skeleton` component shows a placeholder while its content loads. Set `loading` to hide the content and draw a shape over each visible leaf element and each line of text. A text shape is as tall as the font size, so consecutive lines keep a gap. The `animation` attribute selects `breathe` (the default), `wave` or `none`. When loading ends, the content fades in and the host has the `revealing` custom state. No animation runs when the user prefers reduced motion.
   - While loading, the content is inert and the host has `aria-busy="true"`.
 
 ### Changed

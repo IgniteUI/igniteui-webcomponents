@@ -1,42 +1,67 @@
-import { html, LitElement, type PropertyValues } from 'lit';
+import {
+  html,
+  LitElement,
+  nothing,
+  type PropertyValues,
+  type TemplateResult,
+} from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { createMutationController } from '#internals/controllers/mutation-observer.js';
 import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { partMap } from '#internals/part-map.js';
-import { createTimer } from '#internals/timing.js';
 import {
   type Box,
   getBorderRadius,
   getCSSZoom,
   getDeepBorderRadius,
   getOverflowClip,
-  getPaddingBox,
+  getSkipTest,
   intersectBoxes,
   isElement,
   isEmptyBox,
   isSameBox,
   iterAncestors,
-  skipsRendering,
 } from '#internals/utils/dom.js';
 import { addSafeEventListener } from '#internals/utils/events.js';
-import { equal } from '#internals/utils/objects.js';
+import { equal, getOrInsertComputed } from '#internals/utils/objects.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles as shared } from './themes/shared/skeleton.common.css.js';
 import { styles } from './themes/skeleton.base.css.js';
 
-/** Keep in sync with the `reveal-content` animation in `skeleton.base.scss`. */
-const REVEAL_DURATION_MS = 600;
+type SkeletonAnimation = 'none' | 'breathe' | 'wave';
 
-/** The `wave` delay restarts after this many shapes. */
+const ANIMATIONS = new Set<unknown>(['none', 'breathe', 'wave']);
+
 const WAVE_CYCLE = 10;
+
+/**
+ * The room for the motion of the shapes on the start sides of their layer.
+ * The layer clips the end sides, where motion would add scrollable overflow.
+ */
+const MOTION_ROOM = 32;
 
 const SCROLL_OPTIONS: AddEventListenerOptions = {
   capture: true,
   passive: true,
 };
+
+/** Controls and embedded content keep their box, whatever their children. */
+const BOX_ELEMENTS = new Set([
+  'audio',
+  'button',
+  'canvas',
+  'iframe',
+  'meter',
+  'object',
+  'progress',
+  'select',
+  'textarea',
+  'video',
+]);
 
 type MeasuredNode = {
   x: number;
@@ -47,11 +72,17 @@ type MeasuredNode = {
   borderRadius: string | null;
 };
 
-/** A viewport area in which content is visible. */
-type Clip = Box & {
-  /** The radius of the innermost element that clips. */
-  borderRadius: string | null;
+type Layer = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  nodes: MeasuredNode[];
 };
+
+type Clip = Box & { borderRadius: string | null };
+
+type Scale = { x: number; y: number };
 
 const NO_CLIP: Clip = {
   left: -Infinity,
@@ -61,7 +92,6 @@ const NO_CLIP: Clip = {
   borderRadius: null,
 };
 
-/** Narrows `clip` to the overflow clip of `element`, and takes its radius. */
 function narrow(
   clip: Clip,
   element: Element,
@@ -70,14 +100,19 @@ function narrow(
   const box = getOverflowClip(element, style);
 
   return box
-    ? {
-        ...intersectBoxes(clip, box),
-        borderRadius: getBorderRadius(style),
-      }
+    ? { ...intersectBoxes(clip, box), borderRadius: getBorderRadius(style) }
     : clip;
 }
 
-/** Returns whether `b` continues `a` on the same line, with no gap between them. */
+function isVertical(style: CSSStyleDeclaration): boolean {
+  return !style.writingMode.startsWith('horizontal');
+}
+
+/** Swaps the axes, so that vertical lines can be handled as horizontal ones. */
+function transpose({ left, top, right, bottom }: Box): Box {
+  return { left: top, top: left, right: bottom, bottom: right };
+}
+
 function continuesLine(a: Box, b: Box): boolean {
   return (
     Math.abs(a.top - b.top) < 0.5 &&
@@ -88,51 +123,130 @@ function continuesLine(a: Box, b: Box): boolean {
 }
 
 /**
- * Joins the boxes that continue each other on a line into one box. The browser
- * returns a box for each text node, and templates often split a line of text
- * into several text nodes. Skips the boxes with no area.
+ * Joins the boxes that touch on a line. Templates often split a line of text
+ * into several text nodes, and the browser returns a box for each.
  */
-function joinLines(rects: Iterable<DOMRect>): Box[] {
+function joinLines(rects: Iterable<Box>, vertical: boolean): Box[] {
   const boxes: Box[] = [];
 
   for (const rect of rects) {
     if (isEmptyBox(rect)) continue;
 
+    const box = vertical ? transpose(rect) : rect;
     const last = boxes.at(-1);
 
-    if (last && continuesLine(last, rect)) {
+    if (last && continuesLine(last, box)) {
       // A `DOMRect` has no own properties to spread.
       boxes[boxes.length - 1] = {
-        left: Math.min(last.left, rect.left),
+        left: Math.min(last.left, box.left),
         top: last.top,
-        right: Math.max(last.right, rect.right),
+        right: Math.max(last.right, box.right),
         bottom: last.bottom,
       };
     } else {
-      boxes.push(rect);
+      boxes.push(box);
     }
   }
 
-  return boxes;
+  return vertical ? boxes.map(transpose) : boxes;
 }
 
 /**
- * A skeleton component that overlays placeholder shapes on top of projected
- * content while it is in a loading state, then smoothly reveals the content
- * once loading is complete.
+ * Returns a box as thick as the font for each line of text. The half-leading
+ * is equal on both sides of the text, so the box is in the middle of the line.
+ */
+function getTextLines(
+  rects: Iterable<Box>,
+  size: number,
+  vertical: boolean
+): Box[] {
+  return joinLines(rects, vertical).map((line) => {
+    const { left, top, right, bottom } = vertical ? transpose(line) : line;
+    const middle = (top + bottom) / 2;
+    const box = {
+      left,
+      top: middle - size / 2,
+      right,
+      bottom: middle + size / 2,
+    };
+
+    return vertical ? transpose(box) : box;
+  });
+}
+
+/**
+ * Returns the font size of the text in `parent`, in viewport pixels, before
+ * the scale of the transforms around the host.
+ */
+function getFontSize(parent: Element, style: CSSStyleDeclaration): number {
+  let box = parent;
+
+  // `currentCSSZoom` is 1 without a box.
+  if (style.display === 'contents') {
+    for (const ancestor of iterAncestors(parent, true)) {
+      box = ancestor;
+      if (getComputedStyle(ancestor).display !== 'contents') break;
+    }
+  }
+
+  return Number.parseFloat(style.fontSize) * getCSSZoom(box);
+}
+
+/** Returns whether the shapes of `element` come from its child nodes. */
+function measuresChildren(element: Element): boolean {
+  const { localName } = element;
+
+  if (
+    element instanceof SVGElement ||
+    BOX_ELEMENTS.has(localName) ||
+    (element.constructor as { formAssociated?: boolean }).formAssociated
+  ) {
+    return false;
+  }
+
+  return element.childElementCount > 0 || !localName.includes('-');
+}
+
+/** Returns the layer that holds `nodes`, with the room for their motion. */
+function createLayer(nodes: MeasuredNode[], rtl: boolean): Layer {
+  let left = Infinity;
+  let top = Infinity;
+  let right = -Infinity;
+  let bottom = -Infinity;
+
+  for (const node of nodes) {
+    left = Math.min(left, node.x);
+    top = Math.min(top, node.y);
+    right = Math.max(right, node.x + node.width);
+    bottom = Math.max(bottom, node.y + node.height);
+  }
+
+  top -= MOTION_ROOM;
+
+  if (rtl) {
+    right += MOTION_ROOM;
+  } else {
+    left -= MOTION_ROOM;
+  }
+
+  return { x: left, y: top, width: right - left, height: bottom - top, nodes };
+}
+
+/**
+ * Shows placeholder shapes over its content while the content loads, then
+ * fades the content in.
  *
  * @element igc-skeleton
  *
  * @slot - The default slot for the skeleton content.
  *
  * @csspart content - The wrapper around the slotted content.
- * @csspart overlay - The translucent layer rendered over the content during loading.
- * @csspart shape - An individual placeholder shape rendered over a leaf element or a run of text.
+ * @csspart shape - A placeholder shape over a leaf element or over a line of text.
  *
- * @cssproperty --ig-skeleton-overlay-color - Background color of the overlay layer.
- * @cssproperty --ig-skeleton-shape-color - Background color of the placeholder shapes.
- * @cssproperty --ig-skeleton-highlight-color - Color of the highlight that the `shimmer` animation sweeps across each shape.
- * @cssproperty --border-radius - Border radius of the overlay, and of each shape whose source has no border radius.
+ * @cssproperty --ig-skeleton-shape-color - The background color of the placeholder shapes.
+ * @cssproperty --border-radius - The border radius of the text shapes, and of each shape whose source element has no border radius.
+ *
+ * @cssstate revealing - Set after loading ends, until the content has faded in. Ends at once when loading starts again or the skeleton is disconnected.
  *
  * @example
  * ```html
@@ -147,8 +261,8 @@ function joinLines(rects: Iterable<DOMRect>): Box[] {
  *   </div>
  * </igc-skeleton>
  *
- * <!-- Choose an animation style -->
- * <igc-skeleton loading animation="shimmer">
+ * <!-- Choose an animation -->
+ * <igc-skeleton loading animation="wave">
  *   <p>Loading content…</p>
  * </igc-skeleton>
  * ```
@@ -164,18 +278,20 @@ export default class IgcSkeletonComponent extends LitElement {
 
   //#region Internal state and properties
 
+  private readonly _requestMeasure = (): void => this._scheduleMeasure();
+
   private readonly _internals = addInternalsController(this, {
     aria: () => ({ ariaBusy: `${this.loading}` }),
   });
 
   private readonly _resizeObserver = addResizeObserverController(this, {
-    callback: this._scheduleMeasure,
+    callback: this._requestMeasure,
     target: null,
     requestUpdate: false,
   });
 
   private readonly _mutationObserver = createMutationController(this, {
-    callback: this._scheduleMeasure,
+    callback: this._requestMeasure,
     target: () => (this.loading ? [this] : []),
     config: {
       attributes: true,
@@ -185,19 +301,19 @@ export default class IgcSkeletonComponent extends LitElement {
     },
   });
 
-  private readonly _revealTimer = createTimer(
-    () => this._endReveal(),
-    REVEAL_DURATION_MS
-  );
+  private readonly _content = createRef<HTMLElement>();
+
+  private readonly _origin = createRef<HTMLElement>();
+
+  private _scrollRoots = new Set<ShadowRoot>();
 
   private _measureFrame?: number;
 
-  private _scrollListeners?: AbortController;
-
-  private readonly _measureOnEvent = (): void => this._scheduleMeasure();
+  /** Counts the reveals, so that an old one does not end a new one. */
+  private _reveals = 0;
 
   @state({ hasChanged: (a, b) => !equal(a, b) })
-  private _nodes: MeasuredNode[] = [];
+  private _layer: Layer | null = null;
 
   //#endregion
 
@@ -216,28 +332,31 @@ export default class IgcSkeletonComponent extends LitElement {
   public loading = false;
 
   /**
-   * Defines the animation style for the skeleton when in a loading state.
+   * The animation of the shapes while loading.
    *
-   * - `pulse`: A pulsing animation that fades the shapes in and out.
-   * - `breathe`: A subtle breathing animation that fades and slightly scales the shapes.
-   * - `shimmer`: A horizontal highlight sweep across each shape.
-   * - `wave`: A staggered vertical bounce across shapes.
-   * - `glow`: A pulsing box-shadow glow on each shape.
+   * - `none`: The shapes are static.
+   * - `breathe`: The shapes fade in and grow a little, then return.
+   * - `wave`: The shapes move up and back down, one after another.
+   *
+   * Another value, or no attribute, gives `breathe`. No animation runs when the
+   * user prefers reduced motion.
    *
    * @attr animation
    * @default 'breathe'
    */
   @property()
-  public animation: 'pulse' | 'breathe' | 'shimmer' | 'wave' | 'glow' =
-    'breathe';
+  @coercedProperty<SkeletonAnimation, IgcSkeletonComponent>({
+    transform: ({ value }) => (ANIMATIONS.has(value) ? value : 'breathe'),
+  })
+  public animation: 'none' | 'breathe' | 'wave' = 'breathe';
 
   //#endregion
 
   constructor() {
     super();
 
-    // A scroll event does not bubble, but the host gets it in the capture phase.
-    addSafeEventListener(this, 'scroll', this._scheduleMeasure, SCROLL_OPTIONS);
+    // The host gets the scroll events of its content in the capture phase.
+    addSafeEventListener(this, 'scroll', this._requestMeasure, SCROLL_OPTIONS);
   }
 
   //#region Lit lifecycle methods
@@ -245,17 +364,14 @@ export default class IgcSkeletonComponent extends LitElement {
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
-    // A web font changes the text metrics, but no observer reports it.
-    document.fonts.addEventListener('loadingdone', this._measureOnEvent);
-    // The disconnect cancels a pending measurement.
     this._scheduleMeasure();
   }
 
   /** @internal */
   public override disconnectedCallback(): void {
     super.disconnectedCallback();
-    document.fonts.removeEventListener('loadingdone', this._measureOnEvent);
     this._cancelMeasure();
+    this._stopListening();
     this._endReveal();
   }
 
@@ -269,8 +385,7 @@ export default class IgcSkeletonComponent extends LitElement {
         this._cleanupObservers();
 
         if (this.isConnected) {
-          this._internals.setState('revealing', true);
-          this._revealTimer.start();
+          this._reveal();
         }
       }
     }
@@ -282,8 +397,21 @@ export default class IgcSkeletonComponent extends LitElement {
 
   //#region Internal API
 
+  /** Sets the `revealing` state until the animations of the content end. */
+  private async _reveal(): Promise<void> {
+    const reveal = ++this._reveals;
+    this._internals.setState('revealing', true);
+
+    const animations = this._content.value?.getAnimations() ?? [];
+    await Promise.allSettled(animations.map(({ finished }) => finished));
+
+    if (reveal === this._reveals) {
+      this._endReveal();
+    }
+  }
+
   private _endReveal(): void {
-    this._revealTimer.stop();
+    this._reveals++;
     this._internals.setState('revealing', false);
   }
 
@@ -291,12 +419,17 @@ export default class IgcSkeletonComponent extends LitElement {
     this._cancelMeasure();
     this._mutationObserver.disconnect();
     this._syncResizeTargets(new Set());
-    this._scrollListeners?.abort();
-    this._nodes = [];
+    this._stopListening();
+    this._layer = null;
   }
 
   private _scheduleMeasure(): void {
-    if (!this.loading || this._measureFrame !== undefined) return;
+    if (
+      !(this.loading && this.isConnected) ||
+      this._measureFrame !== undefined
+    ) {
+      return;
+    }
 
     this._measureFrame = requestAnimationFrame(() => {
       this._measureFrame = undefined;
@@ -320,7 +453,7 @@ export default class IgcSkeletonComponent extends LitElement {
       }
     }
 
-    // Re-observing sends a new first notification.
+    // Observing again sends a new first notification.
     for (const target of targets) {
       if (!observer.targets.has(target)) {
         observer.observe(target);
@@ -329,149 +462,169 @@ export default class IgcSkeletonComponent extends LitElement {
   }
 
   /** A scroll event in a shadow root does not reach the host. */
-  private _listenToScrollRoots(roots: Set<ShadowRoot>): void {
-    this._scrollListeners?.abort();
-    this._scrollListeners = new AbortController();
-    const options = { ...SCROLL_OPTIONS, signal: this._scrollListeners.signal };
+  private _syncScrollRoots(roots: Set<ShadowRoot>): void {
+    for (const root of this._scrollRoots) {
+      if (!roots.has(root)) {
+        root.removeEventListener(
+          'scroll',
+          this._requestMeasure,
+          SCROLL_OPTIONS
+        );
+      }
+    }
 
     for (const root of roots) {
-      root.addEventListener('scroll', this._measureOnEvent, options);
+      if (!this._scrollRoots.has(root)) {
+        root.addEventListener('scroll', this._requestMeasure, SCROLL_OPTIONS);
+      }
     }
+
+    this._scrollRoots = roots;
   }
 
-  /**
-   * Draws a shape over each line box of each visible leaf element and text
-   * run. An inline SVG and an element whose children have no area are leaves.
-   */
+  private _stopListening(): void {
+    this._syncScrollRoots(new Set());
+    document.fonts.removeEventListener('loadingdone', this._requestMeasure);
+  }
+
   private _measure(): void {
     const nodes: MeasuredNode[] = [];
     const targets = new Set<Element>([this]);
     const scrollRoots = new Set<ShadowRoot>();
     const slotClips = new Map<HTMLSlotElement, Clip | null>();
     const range = document.createRange();
+    const hostStyle = getComputedStyle(this);
 
-    // Shapes start at the padding box of the host and scroll with it.
+    // A 1px element at the start of the content gives the origin of the
+    // shapes, and their scale with the zoom and the transforms.
+    const origin = this._origin.value!.getBoundingClientRect();
+    const scale: Scale = { x: origin.width, y: origin.height };
     const zoom = getCSSZoom(this);
-    const host = getPaddingBox(this);
-    const originX = host.left - this.scrollLeft * zoom;
-    const originY = host.top - this.scrollTop * zoom;
+    const transform: Scale = { x: scale.x / zoom, y: scale.y / zoom };
 
     /**
-     * Adds the visible part of each rect, which has the given `style`. Returns
-     * whether a rect has an area, even a clipped or hidden one.
+     * Adds the visible part of each box. Returns whether there is a box, also
+     * a clipped or hidden one. Only the boxes of `element` take its radius.
      */
     const add = (
-      rects: Iterable<DOMRect>,
+      boxes: Box[],
       clip: Clip,
       style: CSSStyleDeclaration,
       element?: Element
     ): boolean => {
-      const draw = style.visibility === 'visible';
-      let rendered = false;
+      if (style.visibility !== 'visible') return boxes.length > 0;
 
-      for (const rect of joinLines(rects)) {
-        rendered = true;
+      let own: string | null | undefined;
 
-        const shape = intersectBoxes(rect, clip);
-        if (!draw || isEmptyBox(shape)) continue;
+      for (const box of boxes) {
+        const shape = intersectBoxes(box, clip);
+        if (isEmptyBox(shape)) continue;
 
         // A cropped shape takes the radius of a rounded clip that it fills,
         // such as an image in a round frame.
         const clipRadius = isSameBox(shape, clip) ? clip.borderRadius : null;
-        const cropped = !isSameBox(shape, rect);
-        const own =
-          (cropped && clipRadius) || !element
-            ? null
-            : getDeepBorderRadius(element, style);
+        const cropped = clipRadius && !isSameBox(shape, box);
+
+        if (element && !cropped && own === undefined) {
+          own = getDeepBorderRadius(element, style);
+        }
 
         nodes.push({
-          x: (shape.left - originX) / zoom,
-          y: (shape.top - originY) / zoom,
-          width: (shape.right - shape.left) / zoom,
-          height: (shape.bottom - shape.top) / zoom,
-          borderRadius: own ?? clipRadius,
+          x: (shape.left - origin.left) / scale.x,
+          y: (shape.top - origin.top) / scale.y,
+          width: (shape.right - shape.left) / scale.x,
+          height: (shape.bottom - shape.top) / scale.y,
+          borderRadius: (!cropped && own) || clipRadius,
         });
       }
 
-      return rendered;
+      return boxes.length > 0;
     };
 
-    /**
-     * Narrows `clip` by the shadow elements from `parent` down to `slot`.
-     * Returns `null` when one of them skips the slot.
-     */
+    /** Adds the lines of the text from `first` to `last`. */
+    const addText = (
+      first: Text,
+      last: Text,
+      parent: Element,
+      style: CSSStyleDeclaration,
+      clip: Clip
+    ): boolean => {
+      // Slotted text takes its styles from the slot.
+      const slot = first.assignedSlot;
+      const textStyle = slot ? getComputedStyle(slot) : style;
+      const vertical = isVertical(textStyle);
+      const size =
+        getFontSize(slot ?? parent, textStyle) *
+        (vertical ? transform.x : transform.y);
+
+      range.setStart(first, 0);
+      range.setEnd(last, last.length);
+
+      const lines = getTextLines(range.getClientRects(), size, vertical);
+      return add(lines, clip, textStyle);
+    };
+
+    /** Narrows `clip` by the shadow elements from `parent` down to `slot`. */
     const clipThrough = (
       slot: HTMLSlotElement,
       parent: Element,
       clip: Clip
-    ): Clip | null => {
-      const cached = slotClips.get(slot);
-      if (cached !== undefined) return cached;
+    ): Clip | null =>
+      getOrInsertComputed(slotClips, slot, () => {
+        const chain: [Element, CSSStyleDeclaration][] = [];
+        let skipped = false;
+        let below: Element = slot;
 
-      const chain: [Element, CSSStyleDeclaration][] = [];
-      let skipped = false;
-      let below: Element = slot;
-
-      for (const element of iterAncestors(slot, true)) {
-        if (element === parent) break;
-        const style = getComputedStyle(element);
-        skipped ||= skipsRendering(element, below, style);
-        chain.push([element, style]);
-        below = element;
-      }
-
-      let result = clip;
-
-      for (const [element, style] of chain.reverse()) {
-        const next = narrow(result, element, style);
-
-        if (next !== result) {
-          const root = element.getRootNode();
-          if (root instanceof ShadowRoot) scrollRoots.add(root);
-          targets.add(element);
-          result = next;
+        for (const element of iterAncestors(slot, true)) {
+          if (element === parent) break;
+          const style = getComputedStyle(element);
+          skipped ||= getSkipTest(element, style)?.(below) ?? false;
+          chain.push([element, style]);
+          below = element;
         }
-      }
 
-      const value = skipped ? null : result;
-      slotClips.set(slot, value);
-      return value;
-    };
+        let result = clip;
 
-    /** Returns the clip of `child`, or `null` when `parent` skips it. */
-    const clipFor = (
-      child: Element | Text,
-      parent: Element,
-      style: CSSStyleDeclaration,
-      clip: Clip
-    ): Clip | null => {
-      if (skipsRendering(parent, child, style)) return null;
-      const slot = child.assignedSlot;
-      return slot ? clipThrough(slot, parent, clip) : clip;
-    };
+        for (const [element, style] of chain.reverse()) {
+          const next = narrow(result, element, style);
+
+          if (next !== result) {
+            const root = element.getRootNode();
+            if (root instanceof ShadowRoot) scrollRoots.add(root);
+            targets.add(element);
+            result = next;
+          }
+        }
+
+        return skipped ? null : result;
+      });
 
     /**
-     * Returns whether a child node of `parent` has a box. The text nodes
-     * between two child elements are one run, without the whitespace-only
-     * text nodes at its ends.
+     * Returns whether a child node of `parent` has a box. The text between
+     * two child elements is one run, without whitespace-only nodes at its ends.
      */
     const visitChildren = (
       parent: Element,
       style: CSSStyleDeclaration,
       clip: Clip
     ): boolean => {
+      // A range measures skipped text too.
+      const skips = getSkipTest(parent, style);
       let rendered = false;
       let first: Text | undefined;
       let last: Text | undefined;
 
+      const clipFor = (child: Element | Text): Clip | null => {
+        if (skips?.(child)) return null;
+        const slot = child.assignedSlot;
+        return slot ? clipThrough(slot, parent, clip) : clip;
+      };
+
       const addRun = (): void => {
-        // A range measures skipped text too.
-        const runClip = first && clipFor(first, parent, style, clip);
+        const runClip = first && clipFor(first);
 
         if (first && last && runClip) {
-          range.setStart(first, 0);
-          range.setEnd(last, last.length);
-          rendered = add(range.getClientRects(), runClip, style) || rendered;
+          rendered = addText(first, last, parent, style, runClip) || rendered;
         }
 
         first = last = undefined;
@@ -480,8 +633,7 @@ export default class IgcSkeletonComponent extends LitElement {
       for (const child of parent.childNodes) {
         if (isElement(child)) {
           addRun();
-          rendered =
-            visit(child, clipFor(child, parent, style, clip)) || rendered;
+          rendered = visit(child, clipFor(child)) || rendered;
         } else if (child instanceof Text && /\S/.test(child.data)) {
           first ??= child;
           last = child;
@@ -510,29 +662,37 @@ export default class IgcSkeletonComponent extends LitElement {
       targets.add(element);
 
       if (
-        element.childElementCount > 0 &&
-        !(element instanceof SVGElement) &&
+        measuresChildren(element) &&
         visitChildren(element, style, narrow(clip, element, style))
       ) {
         return true;
       }
 
-      return add(element.getClientRects(), clip, style, element);
+      const boxes = joinLines(element.getClientRects(), isVertical(style));
+      return add(boxes, clip, style, element);
     };
 
-    visitChildren(this, getComputedStyle(this), NO_CLIP);
+    visitChildren(this, hostStyle, NO_CLIP);
     this._syncResizeTargets(targets);
-    this._listenToScrollRoots(scrollRoots);
-    this._nodes = nodes;
+    this._syncScrollRoots(scrollRoots);
+    // No observer reports the new text metrics of a web font.
+    document.fonts.addEventListener('loadingdone', this._requestMeasure);
+    this._layer = nodes.length
+      ? createLayer(nodes, hostStyle.direction === 'rtl')
+      : null;
   }
 
   //#endregion
 
-  private _renderShape(node: MeasuredNode, index: number) {
-    const parts = { shape: true, [this.animation]: true };
+  private _renderShape(
+    node: MeasuredNode,
+    index: number,
+    layer: Layer,
+    part: string
+  ): TemplateResult {
     const shapeStyles = styleMap({
-      left: `${node.x}px`,
-      top: `${node.y}px`,
+      left: `${node.x - layer.x}px`,
+      top: `${node.y - layer.y}px`,
       width: `${node.width}px`,
       height: `${node.height}px`,
       borderRadius: node.borderRadius,
@@ -543,16 +703,33 @@ export default class IgcSkeletonComponent extends LitElement {
           : null,
     });
 
+    return html`<div part=${part} style=${shapeStyles}></div>`;
+  }
+
+  private _renderLayer(layer: Layer): TemplateResult {
+    const part =
+      this.animation === 'none' ? 'shape' : `shape ${this.animation}`;
+    const layerStyles = styleMap({
+      left: `${layer.x}px`,
+      top: `${layer.y}px`,
+      width: `${layer.width}px`,
+      height: `${layer.height}px`,
+    });
+
     return html`
-      <div aria-hidden="true" part=${partMap(parts)} style=${shapeStyles}></div>
+      <div aria-hidden="true" data-shapes style=${layerStyles}>
+        ${layer.nodes.map((node, i) => this._renderShape(node, i, layer, part))}
+      </div>
     `;
   }
 
-  protected override render() {
+  protected override render(): TemplateResult {
     return html`
-      <div part="content" ?inert=${this.loading}><slot></slot></div>
-      <div aria-hidden="true" part="overlay"></div>
-      ${this._nodes.map((node, i) => this._renderShape(node, i))}
+      <div ${ref(this._content)} part="content" ?inert=${this.loading}>
+        <slot></slot>
+      </div>
+      <div ${ref(this._origin)} data-origin></div>
+      ${this._layer ? this._renderLayer(this._layer) : nothing}
     `;
   }
 }

@@ -165,6 +165,7 @@
     "IgcSelectGroupComponent",
     "IgcSelectHeaderComponent",
     "IgcSelectItemComponent",
+    "IgcSkeletonComponent",
     "IgcSliderComponent",
     "IgcSliderComponentEventMap",
     "IgcSliderLabelComponent",
@@ -3354,6 +3355,33 @@
         "suffix"
       ],
       "cssProperties": []
+    },
+    "igc-skeleton": {
+      "class": "IgcSkeletonComponent",
+      "attributes": {
+        "animation": "'none' | 'breathe' | 'wave'",
+        "loading": "boolean"
+      },
+      "properties": {
+        "animation": "'none' | 'breathe' | 'wave'",
+        "loading": "boolean",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        ""
+      ],
+      "cssParts": [
+        "content",
+        "shape"
+      ],
+      "cssProperties": [
+        "--border-radius",
+        "--ig-skeleton-shape-color"
+      ]
     },
     "igc-slider": {
       "class": "IgcSliderComponent",

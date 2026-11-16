@@ -100,7 +100,7 @@ const metadata: Meta<IgcSkeletonComponent> = {
     docs: {
       description: {
         component:
-          'A skeleton component that overlays placeholder shapes on top of projected\ncontent while it is in a loading state, then smoothly reveals the content\nonce loading is complete.',
+          'Shows placeholder shapes over its content while the content loads, then\nfades the content in.',
       },
     },
   },
@@ -113,14 +113,11 @@ const metadata: Meta<IgcSkeletonComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     animation: {
-      type: {
-        name: 'enum',
-        value: ['pulse', 'breathe', 'shimmer', 'wave', 'glow'],
-      },
+      type: { name: 'enum', value: ['none', 'breathe', 'wave'] },
       description:
-        'Defines the animation style for the skeleton when in a loading state.\n\n- `pulse`: A pulsing animation that fades the shapes in and out.\n- `breathe`: A subtle breathing animation that fades and slightly scales the shapes.\n- `shimmer`: A horizontal highlight sweep across each shape.\n- `wave`: A staggered vertical bounce across shapes.\n- `glow`: A pulsing box-shadow glow on each shape.',
-      options: ['pulse', 'breathe', 'shimmer', 'wave', 'glow'],
-      control: { type: 'select' },
+        'The animation of the shapes while loading.\n\n- `none`: The shapes are static.\n- `breathe`: The shapes fade in and grow a little, then return.\n- `wave`: The shapes move up and back down, one after another.\n\nAnother value, or no attribute, gives `breathe`. No animation runs when the\nuser prefers reduced motion.',
+      options: ['none', 'breathe', 'wave'],
+      control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'breathe' } },
     },
   },
@@ -138,15 +135,16 @@ interface IgcSkeletonArgs {
    */
   loading: boolean;
   /**
-   * Defines the animation style for the skeleton when in a loading state.
+   * The animation of the shapes while loading.
    *
-   * - `pulse`: A pulsing animation that fades the shapes in and out.
-   * - `breathe`: A subtle breathing animation that fades and slightly scales the shapes.
-   * - `shimmer`: A horizontal highlight sweep across each shape.
-   * - `wave`: A staggered vertical bounce across shapes.
-   * - `glow`: A pulsing box-shadow glow on each shape.
+   * - `none`: The shapes are static.
+   * - `breathe`: The shapes fade in and grow a little, then return.
+   * - `wave`: The shapes move up and back down, one after another.
+   *
+   * Another value, or no attribute, gives `breathe`. No animation runs when the
+   * user prefers reduced motion.
    */
-  animation: 'pulse' | 'breathe' | 'shimmer' | 'wave' | 'glow';
+  animation: 'none' | 'breathe' | 'wave';
 }
 type Story = StoryObj<IgcSkeletonArgs>;
 
@@ -524,9 +522,13 @@ function storeMetrics(period: Period) {
   };
 }
 
-function countKpi(current: number[], previous: number[]): Kpi {
+function countKpi(
+  current: number[],
+  previous: number[],
+  format = integers
+): Kpi {
   return {
-    value: integers.format(sum(current)),
+    value: format.format(sum(current)),
     change: percentChange(sum(current), sum(previous)),
     series: current,
   };
@@ -550,11 +552,7 @@ const dashboardSources: {
   ],
   revenueKpi: (period) => {
     const { revenue, previousRevenue } = storeMetrics(period);
-    return {
-      value: wholeDollars.format(sum(revenue)),
-      change: percentChange(sum(revenue), sum(previousRevenue)),
-      series: revenue,
-    };
+    return countKpi(revenue, previousRevenue, wholeDollars);
   },
   ordersKpi: (period) => {
     const { orders, previousOrders } = storeMetrics(period);
@@ -1275,10 +1273,6 @@ const dashboardStyles = html`
       opacity: 0.6;
     }
 
-    .db-inspect igc-skeleton::part(overlay) {
-      opacity: 0;
-    }
-
     .db-inspect igc-skeleton::part(shape) {
       background: color-mix(in srgb, var(--ig-primary-500) 16%, transparent);
       outline: 1px solid var(--ig-primary-500);
@@ -1685,7 +1679,6 @@ const dashboardStyles = html`
 `;
 
 export const Dashboard: Story = {
-  args: { animation: 'shimmer' },
   argTypes: {
     ...disableStoryControls(metadata),
     animation: metadata.argTypes!.animation,
@@ -1766,8 +1759,16 @@ export const Dashboard: Story = {
       }
     }
 
-    const skeleton = (part: DashboardPart, content: unknown) => html`
-      <igc-skeleton ?loading=${parts[part].loading} animation=${animation}>
+    const skeleton = (
+      part: DashboardPart,
+      content: unknown,
+      className = ''
+    ) => html`
+      <igc-skeleton
+        class=${className}
+        ?loading=${parts[part].loading}
+        animation=${animation}
+      >
         ${content}
       </igc-skeleton>
     `;
@@ -1846,23 +1847,23 @@ export const Dashboard: Story = {
               name="notifications"
               aria-label="Notifications"
             ></igc-icon-button>
-            <igc-skeleton
-              class="db-user"
-              ?loading=${parts.user.loading}
-              animation=${animation}
-            >
-              <div class="db-user-content">
-                <igc-avatar
-                  shape="circle"
-                  src=${ifDefined(avatarSrc(user))}
-                  alt=${user.name}
-                ></igc-avatar>
-                <div class="db-text">
-                  <span class="db-strong">${user.name}</span>
-                  <span class="muted">${user.role}</span>
+            ${skeleton(
+              'user',
+              html`
+                <div class="db-user-content">
+                  <igc-avatar
+                    shape="circle"
+                    src=${ifDefined(avatarSrc(user))}
+                    alt=${user.name}
+                  ></igc-avatar>
+                  <div class="db-text">
+                    <span class="db-strong">${user.name}</span>
+                    <span class="muted">${user.role}</span>
+                  </div>
                 </div>
-              </div>
-            </igc-skeleton>
+              `,
+              'db-user'
+            )}
           </div>
         </igc-navbar>
       `;
@@ -1972,11 +1973,9 @@ export const Dashboard: Story = {
             </div>
 
             <p class="db-note">
-              Each value is an inline span and each change is a pill with only
-              text, so their shapes have the size of the text. The column does
-              not stretch its items, so the line under the value is as wide as
-              its text too. Each sparkline is one inline SVG, so it gets one
-              shape.
+              Each value and each change pill is a span with only text, so their
+              shapes cover the text: as wide as the text and as tall as the font
+              size. Each sparkline is one inline SVG, so it gets one shape.
             </p>
             <div class="db-kpis">${KPI_TILES.map(kpiTile)}</div>
 
@@ -2006,7 +2005,7 @@ export const Dashboard: Story = {
                 'orders',
                 'db-span-8',
                 'Recent orders',
-                'The table scrolls, so the shapes are clipped to it and follow its scroll. Scroll it while it loads. The Items cells have only text, so each shape fills its cell. The other cells put the text in inline elements, and the status pills keep their radius.',
+                'The table scrolls, so the shapes are clipped to it and follow its scroll. Scroll it while it loads. Each cell gets a shape over its text, as tall as the font size. The status pills are spans with only text, so their shapes cover the text, not the pill.',
                 ordersBody(valueOf('orders'))
               )}
               ${panel(
@@ -2027,7 +2026,7 @@ export const Dashboard: Story = {
                 'support',
                 'db-span-3',
                 'Support',
-                'A badge with only text is a leaf. The button has an icon and text, so the icon and the text get shapes, but the box of the button does not.',
+                'A badge is a custom element with only text, and the button is a form control, so both keep their box.',
                 supportBody(valueOf('support'))
               )}
             </div>
@@ -2104,6 +2103,14 @@ const productPlaceholder: ProductDetails = {
   intro:
     'Loading the introduction of the product, which is a few sentences long and wraps to several lines in the column.',
   delivery: today,
+};
+
+const reviewPlaceholder: Review = {
+  author: { name: 'Loading name', role: '' },
+  rating: 0,
+  date: today,
+  title: 'Loading title',
+  text: 'Loading the text of the review, which is one or two sentences long.',
 };
 
 const reviews: Review[] = [
@@ -2395,9 +2402,8 @@ export const ProductPage: Story = {
       const data = details ?? productPlaceholder;
       const photos = productPhotos(color);
       const saving = Math.round((1 - data.price / data.listPrice) * 100);
-      // Placeholder cards with the shape of the real reviews.
-      const shownReviews: (Review | undefined)[] =
-        productReviews ?? reviews.map(() => undefined);
+      const shownReviews =
+        productReviews ?? reviews.map(() => reviewPlaceholder);
 
       return html`
         <div class="sk-toolbar">
@@ -2536,32 +2542,21 @@ export const ProductPage: Story = {
                     <div class="sk-row" style="gap: 0.75rem;">
                       <igc-avatar
                         shape="circle"
-                        src=${ifDefined(review && avatarSrc(review.author))}
+                        src=${ifDefined(avatarSrc(review.author))}
                         aria-hidden="true"
                       ></igc-avatar>
                       <div class="sk-stack" style="gap: 0;">
-                        <span class="sk-title">
-                          ${review?.author.name ?? 'Loading name'}
-                        </span>
-                        <span class="muted">
-                          ${formatDate(review?.date ?? today)}
-                        </span>
+                        <span class="sk-title"> ${review.author.name} </span>
+                        <span class="muted"> ${formatDate(review.date)} </span>
                       </div>
                     </div>
                     <igc-rating
                       readonly
-                      .value=${review?.rating ?? 0}
+                      .value=${review.rating}
                       aria-label="Rating"
                     ></igc-rating>
-                    <strong>${review?.title ?? 'Loading title'}</strong>
-                    <p>
-                      <span>
-                        ${
-                          review?.text ??
-                          'Loading the text of the review, which is one or two sentences long.'
-                        }
-                      </span>
-                    </p>
+                    <strong>${review.title}</strong>
+                    <p><span>${review.text}</span></p>
                   </li>
                 `
               )}
@@ -2903,12 +2898,12 @@ export const Animations: Story = {
     docs: {
       description: {
         story:
-          'The five animation variants side by side. All of them stop when the user prefers reduced motion.',
+          'The two animations and the static shapes side by side. No animation runs when the user prefers reduced motion.',
       },
     },
   },
   render: () => {
-    const animations = ['breathe', 'pulse', 'shimmer', 'wave', 'glow'] as const;
+    const animations = ['breathe', 'wave', 'none'] as const;
 
     return html`
       ${demoStyles}
@@ -2938,7 +2933,7 @@ export const Styling: Story = {
     docs: {
       description: {
         story:
-          'The `--ig-skeleton-*` properties set the colors, and `--border-radius` sets the radius of the shapes whose source has none. The `shape` part accepts any other style.',
+          'The `--ig-skeleton-shape-color` property sets the color of the shapes, and `--border-radius` sets the radius of the text shapes and of the shapes whose source has none. The `shape` part accepts any other style.',
       },
     },
   },
@@ -2946,9 +2941,7 @@ export const Styling: Story = {
     ${demoStyles}
     <style>
       .sk-brand {
-        --ig-skeleton-overlay-color: var(--ig-primary-50);
         --ig-skeleton-shape-color: var(--ig-primary-200);
-        --ig-skeleton-highlight-color: var(--ig-primary-100);
       }
 
       .sk-radius {
@@ -2962,18 +2955,13 @@ export const Styling: Story = {
     <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
       ${[
         ['Default', ''],
-        ['Brand colors', 'sk-brand'],
+        ['Brand color', 'sk-brand'],
         ['Custom radius', 'sk-radius'],
         ['::part(shape)', 'sk-flat'],
       ].map(
         ([label, className]) => html`
           <div class="sk-stack" style="align-items: center;">
-            <igc-skeleton
-              loading
-              animation="shimmer"
-              class=${className}
-              style="width: 240px;"
-            >
+            <igc-skeleton loading class=${className} style="width: 240px;">
               ${profile()}
             </igc-skeleton>
             <code>${label}</code>

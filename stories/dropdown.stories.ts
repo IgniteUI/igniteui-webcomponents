@@ -76,14 +76,14 @@ const metadata: Meta<IgcDropdownComponent> = {
       type: {
         name: 'enum',
         value: [
-          'left',
-          'top',
-          'right',
           'bottom',
+          'top',
           'top-start',
           'top-end',
           'bottom-start',
           'bottom-end',
+          'left',
+          'right',
           'right-start',
           'right-end',
           'left-start',
@@ -93,14 +93,14 @@ const metadata: Meta<IgcDropdownComponent> = {
       description:
         'The preferred placement of the component around the target element.',
       options: [
-        'left',
-        'top',
-        'right',
         'bottom',
+        'top',
         'top-start',
         'top-end',
         'bottom-start',
         'bottom-end',
+        'left',
+        'right',
         'right-start',
         'right-end',
         'left-start',
@@ -174,14 +174,14 @@ export default metadata;
 interface IgcDropdownArgs {
   /** The preferred placement of the component around the target element. */
   placement:
-    | 'left'
-    | 'top'
-    | 'right'
     | 'bottom'
+    | 'top'
     | 'top-start'
     | 'top-end'
     | 'bottom-start'
     | 'bottom-end'
+    | 'left'
+    | 'right'
     | 'right-start'
     | 'right-end'
     | 'left-start'

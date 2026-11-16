@@ -8,6 +8,7 @@ import {
   getFocusableElements,
   getOverflowClip,
   getPaddingBox,
+  getSkipTest,
   getScaleFactor,
   getVisibleAncestor,
   hasNegativeTabIndex,
@@ -20,7 +21,6 @@ import {
   resolveCssLength,
   roundByDPR,
   setOrRemoveAttribute,
-  skipsRendering,
 } from './dom.js';
 
 describe('DOM utilities', () => {
@@ -350,6 +350,13 @@ describe('DOM utilities', () => {
         expect(getOverflowClip(child)).to.be.null;
       }
     });
+
+    it('returns null for an element outside the document', () => {
+      const element = document.createElement('div');
+      element.style.overflow = 'hidden';
+
+      expect(getOverflowClip(element)).to.be.null;
+    });
   });
 
   describe('getBorderRadius and getDeepBorderRadius', () => {
@@ -369,6 +376,13 @@ describe('DOM utilities', () => {
       expect(radiusOf('0')).to.be.null;
       expect(radiusOf('0%')).to.be.null;
       expect(radiusOf('0 4px 0 0')).to.equal('0px 4px 0px 0px');
+    });
+
+    it('returns null for the empty style of an element outside the document', () => {
+      const element = document.createElement('div');
+      element.style.borderRadius = '4px';
+
+      expect(getBorderRadius(getComputedStyle(element))).to.be.null;
     });
 
     it('returns the radius of a nested shadow element that covers the element', async () => {
@@ -392,16 +406,16 @@ describe('DOM utilities', () => {
     });
   });
 
-  describe('skipsRendering', () => {
+  describe('getSkipTest', () => {
     it('skips all content with `content-visibility: hidden`', async () => {
       const element = await fixture<HTMLElement>(
         html`<div style="content-visibility: hidden"><span></span></div>`
       );
 
-      expect(skipsRendering(element, element.firstElementChild!)).to.be.true;
+      expect(getSkipTest(element)?.(element.firstElementChild!)).to.be.true;
     });
 
-    it('ignores `content-visibility` on an inline box and on no box', async () => {
+    it('skips nothing with `content-visibility` on an inline box, on no box and outside the document', async () => {
       const root = await fixture<HTMLElement>(
         html`<div>
           <span style="content-visibility: hidden"><b></b></span>
@@ -410,9 +424,11 @@ describe('DOM utilities', () => {
           </div>
         </div>`
       );
+      const detached = document.createElement('div');
+      detached.style.contentVisibility = 'hidden';
 
-      for (const element of root.children) {
-        expect(skipsRendering(element, element.firstElementChild!)).to.be.false;
+      for (const element of [...root.children, detached]) {
+        expect(getSkipTest(element)).to.be.null;
       }
     });
 
@@ -430,9 +446,8 @@ describe('DOM utilities', () => {
           </details>
         </div>`
       );
-      const details = root.querySelector('details')!;
 
-      expect(skipsRendering(details, details.querySelector('b')!)).to.be.false;
+      expect(getSkipTest(root.querySelector('details')!)).to.be.null;
     });
 
     it('skips all but the summary of a closed details element', async () => {
@@ -444,12 +459,13 @@ describe('DOM utilities', () => {
       );
       const summary = details.querySelector('summary')!;
       const text = summary.nextSibling!;
+      const skips = getSkipTest(details)!;
 
-      expect(skipsRendering(details, summary)).to.be.false;
-      expect(skipsRendering(details, text)).to.be.true;
+      expect(skips(summary)).to.be.false;
+      expect(skips(text)).to.be.true;
 
       details.open = true;
-      expect(skipsRendering(details, text)).to.be.false;
+      expect(getSkipTest(details)).to.be.null;
     });
   });
 

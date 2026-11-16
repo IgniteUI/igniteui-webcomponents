@@ -114,9 +114,8 @@ export function* iterNodes<T extends Node>(
 }
 
 /**
- * Iterates over `node` and its element ancestors, and crosses each shadow
- * root through its host. With `flat`, a slotted node goes to its slot, as in
- * the flat tree.
+ * Iterates over `node` and its element ancestors across shadow roots. With
+ * `flat`, a slotted node goes to its slot.
  */
 export function* iterAncestors(
   node?: Node | null,
@@ -244,8 +243,16 @@ export function roundByDPR(value: number): number {
   return Math.round(value * dpr) / dpr;
 }
 
-/** The edges of a box, in viewport coordinates. */
-export type Box = Pick<DOMRectReadOnly, 'left' | 'top' | 'right' | 'bottom'>;
+/**
+ * The edges of a box in viewport coordinates. Not a `Pick<>` with a key union:
+ * its literal types change the member order of the unions in the manifest.
+ */
+export type Box = {
+  readonly left: number;
+  readonly top: number;
+  readonly right: number;
+  readonly bottom: number;
+};
 
 /** Returns whether two boxes match to half a pixel. */
 export function isSameBox(a: Box, b: Box): boolean {
@@ -257,7 +264,6 @@ export function isSameBox(a: Box, b: Box): boolean {
   );
 }
 
-/** Returns the overlap of two boxes, which can be empty. */
 export function intersectBoxes(a: Box, b: Box): Box {
   return {
     left: Math.max(a.left, b.left),
@@ -267,17 +273,13 @@ export function intersectBoxes(a: Box, b: Box): Box {
   };
 }
 
-/** Returns whether the box has no area. */
 export function isEmptyBox(box: Box): boolean {
   return box.right <= box.left || box.bottom <= box.top;
 }
 
 /**
- * Returns the padding box of the element in viewport coordinates, without the
- * scrollbars.
- *
- * @remarks
- * The client rects include the CSS zoom, but the client metrics do not.
+ * Returns the padding box of the element without the scrollbars, in viewport
+ * coordinates. The client metrics, unlike the rects, exclude the CSS zoom.
  */
 export function getPaddingBox(element: Element): Box {
   const zoom = getCSSZoom(element);
@@ -293,29 +295,33 @@ export function getPaddingBox(element: Element): Box {
   };
 }
 
-/** Overflow and containment have no effect on an inline box or on no box. */
-function canContain(style: CSSStyleDeclaration): boolean {
-  return style.display !== 'inline' && style.display !== 'contents';
+/**
+ * Overflow and containment have no effect on an inline box or on no box. An
+ * element outside the document has an empty style.
+ */
+function canContain({ display }: CSSStyleDeclaration): boolean {
+  return !!display && display !== 'inline' && display !== 'contents';
 }
 
 /**
- * Returns the padding box that clips the content of the element, or `null`
- * when it clips nothing. An axis that it does not clip has infinite edges.
- *
- * @remarks
- * Paint containment, also from `content-visibility`, clips both axes.
+ * Returns the padding box that clips the content of the element, with
+ * infinite edges on an axis that it does not clip, or `null`.
  */
 export function getOverflowClip(
   element: Element,
   style = getComputedStyle(element)
 ): Box | null {
+  if (!canContain(style)) {
+    return null;
+  }
+
   const contained =
     /\b(paint|content|strict)\b/.test(style.contain) ||
     style.contentVisibility !== 'visible';
   const clipX = contained || style.overflowX !== 'visible';
   const clipY = contained || style.overflowY !== 'visible';
 
-  if (!(clipX || clipY) || !canContain(style)) {
+  if (!(clipX || clipY)) {
     return null;
   }
 
@@ -340,8 +346,7 @@ const CORNERS = [
 export function getBorderRadius(style: CSSStyleDeclaration): string | null {
   const radius = style.borderRadius;
 
-  // The corners are needed only for `0%` and for mixed values.
-  if (radius === '0px') {
+  if (!radius || radius === '0px') {
     return null;
   }
 
@@ -351,9 +356,8 @@ export function getBorderRadius(style: CSSStyleDeclaration): string | null {
 }
 
 /**
- * Returns the border radius of the element, or of the first rounded shadow
- * element at any depth that covers it, such as the base part of a component.
- * Returns `null` when every corner is square.
+ * Returns the border radius of the element, or of a shadow element at any
+ * depth that covers it, such as the base part of a component.
  */
 export function getDeepBorderRadius(
   element: Element,
@@ -379,42 +383,35 @@ export function getDeepBorderRadius(
   return null;
 }
 
+const skipsAll = (): boolean => true;
+
 /**
- * Returns whether the element skips the rendering of its child node `child`,
- * through `content-visibility: hidden` on the element or, for all but the
- * summary of a `<details>`, on its `::details-content`.
- *
- * @remarks
- * `checkVisibility()` is false for a skipped element, but a range still
- * measures skipped text.
+ * Returns a test for the child nodes whose rendering the element skips, or
+ * `null` when it skips none. An element skips all of them with
+ * `content-visibility: hidden`, and a closed `<details>` all but its summary.
  */
-export function skipsRendering(
+export function getSkipTest(
   element: Element,
-  child: Node,
   style = getComputedStyle(element)
-): boolean {
+): ((child: Node) => boolean) | null {
   if (!canContain(style)) {
-    return false;
+    return null;
   }
 
   if (style.contentVisibility === 'hidden') {
-    return true;
+    return skipsAll;
   }
 
   if (
     !(element instanceof HTMLDetailsElement) ||
-    child === element.querySelector(':scope > summary')
+    getComputedStyle(element, '::details-content').contentVisibility !==
+      'hidden'
   ) {
-    return false;
+    return null;
   }
 
-  // An engine without `::details-content` reads an empty value.
-  const content = getComputedStyle(
-    element,
-    '::details-content'
-  ).contentVisibility;
-
-  return content ? content === 'hidden' : !element.open;
+  const summary = element.querySelector(':scope > summary');
+  return (child) => child !== summary;
 }
 
 /**
