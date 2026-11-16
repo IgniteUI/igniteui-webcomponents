@@ -12,6 +12,8 @@ import IgcCircularGradientComponent from './circular-gradient.js';
 import { styles } from './themes/circular/circular.progress.base.css.js';
 import { styles as shared } from './themes/circular/shared/circular.progress.common.css.js';
 
+const Slots = setSlots('gradient');
+
 const nextId = createIdGenerator('circular-progress');
 
 /**
@@ -49,7 +51,7 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
 
   private readonly _gradientId = nextId();
   protected override readonly _slots = addSlotController(this, {
-    slots: setSlots('gradient'),
+    slots: Slots,
   });
 
   constructor() {

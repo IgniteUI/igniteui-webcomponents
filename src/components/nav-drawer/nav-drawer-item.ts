@@ -9,6 +9,8 @@ import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/item.base.css.js';
 import { styles as shared } from './themes/shared/item/item.common.css.js';
 
+const Slots = setSlots('content', 'icon');
+
 /**
  * Represents a navigation drawer item.
  *
@@ -32,7 +34,7 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   }
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots('content', 'icon'),
+    slots: Slots,
     onChange: this._handleSlotChange,
   });
 

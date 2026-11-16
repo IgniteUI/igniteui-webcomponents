@@ -4,11 +4,11 @@ import {
 } from 'igniteui-i18n-core';
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { cache } from 'lit/directives/cache.js';
 import { guard } from 'lit/directives/guard.js';
 import { ref } from 'lit/directives/ref.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { chatContext, chatUserInputContext } from '#internals/context.js';
+import { invalidateDocumentStyles } from '#internals/controllers/adopt-styles.js';
 import { addContextProvider } from '#internals/controllers/context-provider.js';
 import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
 import {
@@ -39,8 +39,6 @@ import { ChatState } from './chat-state.js';
 import { styles } from './themes/chat.base.css.js';
 import { styles as shared } from './themes/shared/chat.common.css.js';
 import type {
-  ChatRenderContext,
-  ChatTemplateRenderer,
   IgcChatDraftMessage,
   IgcChatMessage,
   IgcChatMessageAttachment,
@@ -51,10 +49,6 @@ import type {
 
 /** The distance from the bottom, in pixels, that still counts as the bottom. */
 const BOTTOM_TOLERANCE = 2;
-
-type DefaultChatRenderers = {
-  suggestionPrefix: ChatTemplateRenderer<ChatRenderContext>;
-};
 
 /**
  * Defines the custom events dispatched by the chat component.
@@ -259,10 +253,6 @@ export default class IgcChatComponent extends I18nMixin(
     () => this._userInputContext.publish()
   );
 
-  private readonly _defaults = Object.freeze<DefaultChatRenderers>({
-    suggestionPrefix: () => this._renderSuggestionPrefix(),
-  });
-
   private readonly _slots = addSlotController(this, {
     slots: Slots,
     onChange: this._handleSlotChange,
@@ -365,7 +355,16 @@ export default class IgcChatComponent extends I18nMixin(
 
   constructor() {
     super();
-    addThemingController(this, all);
+    addThemingController(this, all, {
+      themeChange: this._handleThemeChange,
+    });
+  }
+
+  /** A theme can change page styles in place, unseen by the tracker. */
+  private _handleThemeChange(): void {
+    if (this.hasUpdated) {
+      invalidateDocumentStyles(this.ownerDocument);
+    }
   }
 
   private _hasSlotted(...slots: SlotName[]): boolean {
@@ -377,12 +376,6 @@ export default class IgcChatComponent extends I18nMixin(
     slot,
   }: SlotChangeCallbackParameters<SlotName>): void {
     this._suggestionSlotsChanged ||= SuggestionSlots.includes(slot);
-  }
-
-  private _getRenderer<U extends keyof DefaultChatRenderers>(
-    name: U
-  ): DefaultChatRenderers[U] {
-    return this._state.options?.renderers?.[name] ?? this._defaults[name];
   }
 
   private _handleSuggestionClick(text: string): void {
@@ -608,6 +601,9 @@ export default class IgcChatComponent extends I18nMixin(
     const hidden =
       isEmpty(suggestions) && !this._hasSlotted(...SuggestionSlots);
     const ctx = { instance: this };
+    const prefix =
+      this._state.options?.renderers?.suggestionPrefix ??
+      this._renderSuggestionPrefix;
 
     // Always rendered, so the slot controller sees the slotted suggestions.
     return html`
@@ -628,7 +624,7 @@ export default class IgcChatComponent extends I18nMixin(
                     @click=${() => this._handleSuggestionClick(suggestion)}
                   >
                     <span slot="start" part="suggestion-prefix">
-                      ${this._getRenderer('suggestionPrefix')(ctx)}
+                      ${prefix(ctx)}
                     </span>
                     <span slot="title" part="suggestion-title"
                       >${suggestion}</span
@@ -661,11 +657,11 @@ export default class IgcChatComponent extends I18nMixin(
         ${this._renderHeader()}
 
         <div part="message-area-container" @scroll=${this._handleScroll}>
-          ${cache(
+          ${
             hasMessages || this._state.options?.isTyping
               ? this._renderMessages()
               : this._renderEmptyState()
-          )}
+          }
           ${
             this._state.suggestionsPosition === 'below-messages'
               ? suggestions

@@ -175,7 +175,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     {
       itemTag: IgcSelectItemComponent.tagName,
       focusOnNavigate: true,
-      onChange: () => this.requestUpdate(),
     }
   );
 
@@ -186,7 +185,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   protected _list!: HTMLDivElement | null;
 
   @query('[part="base"]', true)
-  private readonly _popup!: HTMLDivElement | null;
+  protected override readonly _popup!: HTMLDivElement | null;
 
   //#endregion
 
@@ -294,14 +293,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       bindingDefaults: { preventDefault: true, repeat: true },
     })
       .set([altKey, arrowDown], this._handleAltArrowDown)
-      .set([altKey, arrowUp], this._handleAltArrowUp)
+      .set([altKey, arrowUp], this._handleClose)
       .set(arrowDown, this._handleArrowDown)
       .set(arrowUp, this._handleArrowUp)
       .set(arrowLeft, this._handleArrowUp)
       .set(arrowRight, this._handleArrowDown)
       .set(tabKey, this._handleTab, { preventDefault: false })
       .set([shiftKey, tabKey], this._handleTab, { preventDefault: false })
-      .set(escapeKey, this._handleEscape, { when: () => this.open })
+      .set(escapeKey, this._handleClose, { when: () => this.open })
       .set(homeKey, this._handleHome)
       .set(endKey, this._handleEnd)
       .set(spaceBar, this._handleSpace)
@@ -335,6 +334,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     // An unmatched value stays; only the stale element references go.
     this._selection.prune();
+    this.requestUpdate();
   }
 
   protected override async firstUpdated(): Promise<void> {
@@ -363,10 +363,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     }
 
     this._validate();
-  }
-
-  protected override _popupElement(): Element | null {
-    return this._popup;
   }
 
   protected override _returnFocus(): void {
@@ -461,14 +457,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     }
   }
 
-  private async _handleAltArrowUp(): Promise<void> {
+  private async _handleClose(): Promise<void> {
     if (this.open && (await this._hide(true))) {
-      this._input.focus();
-    }
-  }
-
-  private async _handleEscape(): Promise<void> {
-    if (await this._hide(true)) {
       this._input.focus();
     }
   }
@@ -509,7 +499,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   private _handleClick(event: PointerEvent): void {
     const item = getElementFromPath(IgcSelectItemComponent.tagName, event);
-    if (item && this._selection.activeItems.includes(item)) {
+    if (item && !item.disabled) {
       this._selectItem(item);
     }
   }
@@ -551,6 +541,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   private _updateValue(value?: string): void {
     this._formValue.setValueAndFormState(value!);
+    // The form value state, not a reactive property, holds the value.
+    this.requestUpdate();
   }
 
   private async _focusItemOnOpen(): Promise<void> {

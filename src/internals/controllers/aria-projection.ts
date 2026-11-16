@@ -266,9 +266,15 @@ class AriaTargetController {
   public setProjected(state: ProjectedARIA): void {
     const previous = this._resolved;
     const { role, hasPopup } = this._projected;
-    this._projected = Object.fromEntries(
-      Object.entries(state).filter(([, value]) => value !== undefined)
-    );
+    // Only the defined keys, so `in` checks and comparisons see no others.
+    const projected: Record<string, unknown> = {};
+    for (const key in state) {
+      const value = state[key as keyof ProjectedARIA];
+      if (value !== undefined) {
+        projected[key] = value;
+      }
+    }
+    this._projected = projected as ProjectedARIA;
 
     // The themes cannot see the editor ARIA, so mirror the projected role and
     // popup on the host. Compare the projection: a host role can keep the

@@ -1,5 +1,5 @@
 import type { ReactiveControllerHost } from 'lit';
-import { addHostListeners } from './host-listeners.js';
+import { addSafeEventListeners } from '../utils/events.js';
 
 type FullscreenControllerConfiguration = {
   /**
@@ -28,7 +28,7 @@ class FullscreenController {
     this._host = host;
     this._onChange = options?.onChange;
 
-    addHostListeners(host, { events: ['fullscreenchange'], listener: this });
+    addSafeEventListeners(host, ['fullscreenchange'], this);
     host.addController(this);
   }
 

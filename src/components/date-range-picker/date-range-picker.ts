@@ -26,6 +26,7 @@ import { all } from '#themes/date-range-picker/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
+import { datesChanged } from '../calendar/helpers.js';
 import type { CalendarSelection } from '../calendar/types.js';
 import {
   IgcDatePickerBaseComponent,
@@ -247,7 +248,7 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   private _placeholder?: string;
 
   /** The range reflected in the calendar, committed or still being typed. */
-  @state()
+  @state({ hasChanged: datesChanged })
   private _calendarRange: Date[] | null = null;
 
   @queryAll(IgcDateTimeInputComponent.tagName)
@@ -569,7 +570,7 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     this._commitRange(this._getUpdatedDateRange(input, newValue));
   }
 
-  protected async _handleDateRangeInput(event: CustomEvent<string>) {
+  protected _handleDateRangeInput(event: CustomEvent<string>): void {
     event.stopPropagation();
     if (this.nonEditable) {
       event.preventDefault();
@@ -670,10 +671,10 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   }
 
   /** Applies a predefined range. In dialog mode, Done commits it. */
-  private _select(value: DateRangeValue | null) {
+  private _handleRangeSelect({ detail }: CustomEvent<DateRangeValue>): void {
     if (this._isClosing) return;
 
-    this._value = value;
+    this._value = detail;
     this._setCalendarActiveDate(this._firstDefinedInRange);
 
     if (this._isDropDown) {
@@ -710,8 +711,7 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
             .usePredefinedRanges=${this.usePredefinedRanges}
             .customRanges=${this.customRanges}
             .resourceStrings=${this.resourceStrings}
-            @igcRangeSelect=${({ detail }: CustomEvent<DateRangeValue>) =>
-              this._select(detail)}
+            @igcRangeSelect=${this._handleRangeSelect}
             exportparts="ranges"
           >
           </igc-predefined-ranges-area>

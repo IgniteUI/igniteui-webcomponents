@@ -6,7 +6,6 @@ import {
   helperText,
 } from '#internals/controllers/aria-projection.js';
 import {
-  addKeybindings,
   arrowDown,
   arrowLeft,
   arrowRight,
@@ -39,7 +38,6 @@ import IgcValidationContainerComponent from '../validation-container/validation-
 import {
   type DatePartDeltas,
   DatePartType,
-  DEFAULT_DATE_PARTS_SPIN_DELTAS,
   type IDatePart,
 } from './date-part.js';
 import type { DateFormatMaskParser } from './datetime-mask-parser.js';
@@ -126,11 +124,6 @@ export abstract class IgcDateTimeInputBaseComponent<
    */
   public get _uncommittedValue(): T | null {
     return this._isEditing ? this._parseMask(true) : this.value;
-  }
-
-  /** The spin amount for each date part - the defaults overlaid with `spinDelta`. */
-  protected get _datePartDeltas(): DatePartDeltas {
-    return { ...DEFAULT_DATE_PARTS_SPIN_DELTAS, ...this.spinDelta };
   }
 
   protected get _targetDatePart(): P | undefined {
@@ -265,10 +258,7 @@ export abstract class IgcDateTimeInputBaseComponent<
   constructor() {
     super();
 
-    addKeybindings(this, {
-      skip: () => this.readOnly,
-      bindingDefaults: { repeat: true },
-    })
+    this._keyBindings
       .set([ctrlKey, ';'], this._setCurrentDateTime)
       .set(arrowUp, this._keyboardSpin.bind(this, 1))
       .set(arrowDown, this._keyboardSpin.bind(this, -1))

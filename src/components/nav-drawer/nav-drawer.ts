@@ -29,6 +29,8 @@ import IgcNavDrawerItemComponent from './nav-drawer-item.js';
 import { styles } from './themes/container.base.css.js';
 import { styles as shared } from './themes/shared/container/nav-drawer.common.css.js';
 
+const Slots = setSlots('mini');
+
 export interface IgcNavDrawerComponentEventMap {
   igcClosing: CustomEvent<void>;
   igcClosed: CustomEvent<void>;
@@ -111,7 +113,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<IgcNavDrawe
   });
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots('mini'),
+    slots: Slots,
   });
 
   private get _dialog(): HTMLDialogElement | undefined {

@@ -32,6 +32,8 @@ import type { IgcStepperComponentEventMap } from './common/types.js';
 import IgcStepComponent from './step.js';
 import { styles } from './themes/stepper/stepper.base.css.js';
 
+const Slots = setSlots();
+
 /** Property changes that the stepper republishes its context for. */
 const STEPPER_SYNC_PROPERTIES: (keyof IgcStepperComponent)[] = [
   'orientation',
@@ -109,7 +111,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<IgcStepperCom
   private readonly _state = createStepperState();
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots(),
+    slots: Slots,
     onChange: this._handleSlotChange,
   });
 
@@ -275,8 +277,14 @@ export default class IgcStepperComponent extends EventEmitterMixin<IgcStepperCom
     // Only a header opens its step. A click in the content leaves the active
     // step alone, so a button there can change it.
     const header = getElementFromPath('[data-step-header]', event);
+
+    if (!header) {
+      return;
+    }
+
+    const root = header.getRootNode();
     const step = this._state.steps.find(
-      ({ renderRoot }) => renderRoot === header?.getRootNode()
+      ({ renderRoot }) => renderRoot === root
     );
 
     if (step && this._state.isAccessible(step)) {

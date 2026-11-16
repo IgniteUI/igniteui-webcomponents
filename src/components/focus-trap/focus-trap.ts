@@ -44,7 +44,12 @@ export default class IgcFocusTrapComponent extends LitElement {
 
   /** An array of focusable elements including elements in Shadow roots */
   public get focusableElements() {
-    return Iterator.from(this.children).flatMap(getFocusableElements).toArray();
+    return this._focusables().toArray();
+  }
+
+  /** Lazy: `focusFirstElement` stops at the first match. */
+  private _focusables() {
+    return Iterator.from(this.children).flatMap(getFocusableElements);
   }
 
   constructor() {
@@ -59,7 +64,7 @@ export default class IgcFocusTrapComponent extends LitElement {
   }
 
   public focusFirstElement() {
-    this.focusableElements.at(0)?.focus();
+    this._focusables().next().value?.focus();
   }
 
   public focusLastElement() {

@@ -10,7 +10,10 @@ import {
   trackLabels,
 } from '#internals/controllers/aria-projection.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
-import { addIdRefResolver } from '#internals/controllers/id-resolver.js';
+import {
+  addIdRefResolver,
+  type IdRefResolverController,
+} from '#internals/controllers/id-resolver.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
@@ -64,13 +67,8 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<IgcButton
 
   private readonly _focusRingManager = addKeyboardFocusRing(this);
   private readonly _internals = addInternalsController(this);
-  private readonly _resolver = addIdRefResolver(
-    this,
-    () => this._commandfor,
-    (element) => {
-      this.commandForElement = element;
-    }
-  );
+  /** Lazy: most buttons have no `commandfor`. */
+  private _resolver?: IdRefResolverController;
 
   private _disabled = false;
   private _commandfor: string | null = null;
@@ -172,10 +170,17 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<IgcButton
   public set commandfor(value: string | null) {
     this._commandfor = value;
     if (value) {
+      this._resolver ??= addIdRefResolver(
+        this,
+        () => this._commandfor,
+        (element) => {
+          this.commandForElement = element;
+        }
+      );
       this._resolver.observe();
     } else {
       this._commandForElement = null;
-      this._resolver.unobserve();
+      this._resolver?.unobserve();
     }
   }
 

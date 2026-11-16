@@ -2,6 +2,7 @@ import { ColorPickerResourceStringsEN } from 'igniteui-i18n-core';
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
+import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -609,16 +610,14 @@ export default class IgcColorPickerComponent extends I18nMixin(
    * it, so it also runs on a first render with no value.
    */
   private _applyColorProperties(): void {
-    const properties = {
-      '--_current-color': this._currentColor,
-      '--_selected-color': this._opaqueColor,
-    };
+    this._setHostColor('--_current-color', this._currentColor);
+    this._setHostColor('--_selected-color', this._opaqueColor);
+  }
 
-    for (const [name, value] of Object.entries(properties)) {
-      if (this._appliedProperties.get(name) !== value) {
-        this._appliedProperties.set(name, value);
-        this.style.setProperty(name, value);
-      }
+  private _setHostColor(name: string, value: string): void {
+    if (this._appliedProperties.get(name) !== value) {
+      this._appliedProperties.set(name, value);
+      this.style.setProperty(name, value);
     }
   }
 
@@ -1000,16 +999,6 @@ export default class IgcColorPickerComponent extends I18nMixin(
     `;
   }
 
-  private _renderAnchor(): TemplateResult {
-    return this._isInputMode
-      ? this._renderInputAnchor()
-      : this._renderButtonAnchor();
-  }
-
-  private _renderHelperText(): TemplateResult {
-    return IgcValidationContainerComponent.create(this);
-  }
-
   //#endregion
 
   private _renderPicker(): TemplateResult {
@@ -1032,7 +1021,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
               : nothing
           }
           <div part="inputs-row">${this._renderInputsRow()}</div>
-          ${this._renderSwatches()}
+          ${guard([this.swatches], () => this._renderSwatches())}
         </div>
       </igc-focus-trap>
     `;
@@ -1047,14 +1036,18 @@ export default class IgcColorPickerComponent extends I18nMixin(
           .scrollStrategy=${this.scrollStrategy}
           @igcPopoverScrollClose=${this._handleClosing}
         >
-          ${this._renderAnchor()}${this._renderPicker()}
+          ${
+            this._isInputMode
+              ? this._renderInputAnchor()
+              : this._renderButtonAnchor()
+          }${this._renderPicker()}
         </igc-popover>
         ${
           !this._isInputMode && this.label
             ? html`<label part="label" for="trigger">${this.label}</label>`
             : nothing
         }
-        ${this._renderHelperText()}
+        ${IgcValidationContainerComponent.create(this)}
       </div>
     `;
   }

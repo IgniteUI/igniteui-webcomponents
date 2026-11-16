@@ -26,6 +26,8 @@ import IgcButtonComponent from '../button/button.js';
 import { styles } from './themes/dialog.base.css.js';
 import { styles as shared } from './themes/shared/dialog.common.css.js';
 
+const Slots = setSlots('title', 'message', 'footer');
+
 export interface IgcDialogComponentEventMap {
   igcClosing: CustomEvent<void>;
   igcClosed: CustomEvent<void>;
@@ -91,7 +93,7 @@ export default class IgcDialogComponent extends I18nMixin(
   private readonly _titleId = nextId();
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots('title', 'message', 'footer'),
+    slots: Slots,
   });
 
   private readonly _dialogRef = createRef<HTMLDialogElement>();

@@ -77,14 +77,14 @@ export class IgcBaseComboBoxComponent extends LitElement {
       this.hasUpdated &&
       props.has('open') &&
       !this.open &&
-      this._popupElement?.()?.matches(':focus-within')
+      this._popup?.matches(':focus-within')
     ) {
       this._returnFocus();
     }
   }
 
   /** The popup that turns inert on close. A close moves the focus out of it. */
-  protected _popupElement?(): Element | null;
+  declare protected readonly _popup?: Element | null;
 
   /** Takes the focus from a closing popup. */
   protected _returnFocus(): void {

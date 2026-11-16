@@ -1,11 +1,18 @@
-import { html, isServer, LitElement, nothing, type PropertyValues } from 'lit';
+import {
+  isServer,
+  LitElement,
+  nothing,
+  type PropertyValues,
+  svg,
+  type TemplateResult,
+} from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { blazorInclude } from '#internals/decorators/blazorInclude.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { HydrationMixin } from '#internals/mixins/hydration.js';
+import { getOrInsertComputed } from '#internals/utils/objects.js';
 import { all } from '#themes/icon/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
@@ -15,9 +22,22 @@ import {
   registerIconFromText as registerIconFromText_impl,
   setIconRef as setIconRef_impl,
 } from './icon.registry.js';
-import type { IconMeta } from './registry/types.js';
+import type { IconMeta, SvgIcon } from './registry/types.js';
 import { styles } from './themes/icon.base.css.js';
 import { styles as shared } from './themes/shared/icon.common.css.js';
+
+/** Lit caches a parse per strings array, so one array per icon parses it once. */
+const svgTemplates = new WeakMap<SvgIcon, TemplateResult>();
+
+function toTemplate(icon: SvgIcon): TemplateResult {
+  return getOrInsertComputed(svgTemplates, icon, () =>
+    svg(
+      Object.assign([icon.svg], {
+        raw: [icon.svg],
+      }) as unknown as TemplateStringsArray
+    )
+  );
+}
 
 /**
  * Shows an SVG icon from a collection of registered icons.
@@ -69,13 +89,13 @@ export default class IgcIconComponent extends HydrationMixin(
   private readonly _internals = addInternalsController(this);
 
   private readonly _theming = addThemingController(this, all, {
-    themeChange: this._getIcon,
+    themeChange: this._handleThemeChange,
   });
 
   private readonly _onRegistryChange = (): void => this._getIcon();
 
   @state()
-  private _svg = '';
+  private _icon?: SvgIcon;
 
   /* alternateName: iconName */
   /**
@@ -126,6 +146,11 @@ export default class IgcIconComponent extends HydrationMixin(
   public override connectedCallback(): void {
     super.connectedCallback();
     getIconRegistry().subscribe(this._onRegistryChange);
+
+    // The registry can change while the icon is out of the document.
+    if (this.hasUpdated) {
+      this._getIcon();
+    }
   }
 
   /** An author label applies at once, without a render. @internal */
@@ -146,7 +171,7 @@ export default class IgcIconComponent extends HydrationMixin(
 
     super.update(props);
 
-    if (props.has('_svg')) {
+    if (props.has('_icon')) {
       // The host carries any name, so the SVG is decorative.
       this.renderRoot.querySelector('svg')?.setAttribute('aria-hidden', 'true');
     }
@@ -154,8 +179,15 @@ export default class IgcIconComponent extends HydrationMixin(
 
   protected override _onHydrated(): void {
     // Named, so the update treats the withheld SVG as a change.
-    if (this._svg) {
-      this.requestUpdate('_svg');
+    if (this._icon) {
+      this.requestUpdate('_icon');
+    }
+  }
+
+  /** The first update resolves a new icon. */
+  private _handleThemeChange(): void {
+    if (this.hasUpdated) {
+      this._getIcon();
     }
   }
 
@@ -166,7 +198,8 @@ export default class IgcIconComponent extends HydrationMixin(
       this.collection,
       this._theming.theme
     );
-    const { svg = '', title } = registry.get(name, collection) ?? {};
+    const icon = registry.get(name, collection);
+    const title = icon?.title;
 
     // An unnamed icon is decorative, and an unnamed `img` is only noise.
     const labelled =
@@ -174,7 +207,7 @@ export default class IgcIconComponent extends HydrationMixin(
       this.hasAttribute('aria-label') ||
       this.hasAttribute('aria-labelledby');
 
-    this._svg = svg;
+    this._icon = icon?.svg ? icon : undefined;
     this._internals.setARIA({
       role: labelled ? 'img' : null,
       ariaLabel: title ?? null,
@@ -182,9 +215,9 @@ export default class IgcIconComponent extends HydrationMixin(
   }
 
   protected override render() {
-    return isServer || this._hydrating
+    return isServer || this._hydrating || !this._icon
       ? nothing
-      : html`${unsafeSVG(this._svg)}`;
+      : toTemplate(this._icon);
   }
 
   /* c8 ignore next 8 */

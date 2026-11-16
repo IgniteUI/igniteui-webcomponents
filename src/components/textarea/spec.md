@@ -66,6 +66,7 @@
 |       9 | 2026-10-28 | Forward the host suggestion state                  |
 |      10 | 2026-10-29 | Transition only the color and the width of the bottom line in the Material theme, and only its color in the Indigo theme, so the line hides at the same time as a hidden ancestor |
 |      11 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API                                                                              |
+|      12 | 2026-11-16 | `setRangeText` before the first render keeps the value                                                                                                                              |
 
 ## Overview
 
@@ -464,7 +465,7 @@ The groups below mirror the `describe` blocks of the suite.
 
 17. `select`.
 18. `setSelectionRange`.
-19. `setRangeText`.
+19. `setRangeText`. Before the first render, it keeps the value.
 20. `selectionStart` and `selectionEnd` report the selection.
 21. `setRangeText` without a range replaces the selection.
 22. `focus` and `blur`.

@@ -36,16 +36,16 @@ class StepperState {
 
   //#region Per-step state
 
-  /** Merges `state` into the state of `step`, and updates the step on a change. */
-  public set(step: IgcStepComponent, state: Partial<StepState>): void {
+  /** Sets one state value of `step`, and updates the step on a change. */
+  public set<K extends keyof StepState>(
+    step: IgcStepComponent,
+    key: K,
+    value: StepState[K]
+  ): void {
     const current = this.get(step);
 
-    if (
-      current &&
-      Object.entries(state).every(
-        ([key, value]) => current[key as keyof StepState] === value
-      )
-    ) {
+    // A step without state always gets one, and an update.
+    if (current?.[key] === value) {
       return;
     }
 
@@ -54,7 +54,7 @@ class StepperState {
       previousCompleted: false,
       visited: false,
       ...current,
-      ...state,
+      [key]: value,
     });
     step.requestUpdate();
   }
@@ -92,7 +92,7 @@ class StepperState {
 
     this._activeStep = step;
     moveFlag(previous, step, 'active');
-    this.set(step, { visited: true });
+    this.set(step, 'visited', true);
   }
 
   /** Activates the first non-disabled step. */
@@ -125,9 +125,7 @@ class StepperState {
       step.active = this._activeStep === step;
 
       if (index > 0) {
-        this.set(step, {
-          previousCompleted: this._steps[index - 1].complete,
-        });
+        this.set(step, 'previousCompleted', this._steps[index - 1].complete);
       }
     }
   }
@@ -138,7 +136,7 @@ class StepperState {
     this.linear = value;
 
     for (const [index, step] of this._steps.entries()) {
-      this.set(step, { visited: index <= activeIndex });
+      this.set(step, 'visited', index <= activeIndex);
     }
 
     this.setLinearState();
@@ -153,9 +151,11 @@ class StepperState {
       : -1;
 
     for (const [index, step] of this._steps.entries()) {
-      this.set(step, {
-        linearDisabled: invalidIndex > -1 && index > invalidIndex,
-      });
+      this.set(
+        step,
+        'linearDisabled',
+        invalidIndex > -1 && index > invalidIndex
+      );
     }
   }
 

@@ -33,6 +33,8 @@ import { styles } from './themes/group.base.css.js';
 import { styles as shared } from './themes/shared/group/group.common.css.js';
 import IgcToggleButtonComponent from './toggle-button.js';
 
+const Slots = setSlots();
+
 export interface IgcButtonGroupComponentEventMap {
   igcSelect: CustomEvent<string | undefined>;
   igcDeselect: CustomEvent<string | undefined>;
@@ -79,7 +81,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<IgcButton
   private _tabStop?: IgcToggleButtonComponent;
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots(),
+    slots: Slots,
     onChange: this._handleSlotChange,
   });
 
@@ -256,8 +258,6 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<IgcButton
       !this._buttons.includes(button)
     );
   }
-
-  /** The button holding focus, when it is one of the group. */
 
   /**
    * Focuses `button` and moves the selection to it, as a radio group does.

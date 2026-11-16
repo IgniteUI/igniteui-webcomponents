@@ -480,7 +480,11 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
       end ?? this._input.selectionEnd,
       selectMode
     );
-    this.value = this._input?.value ?? '';
+
+    // No native textarea before the first render.
+    if (this._input) {
+      this.value = this._input.value;
+    }
   }
 
   /* blazorSuppress */

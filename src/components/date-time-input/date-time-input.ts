@@ -13,7 +13,7 @@ import { styles as shared } from '../input/themes/shared/input.common.css.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import {
   createDatePart,
-  DatePart,
+  type DatePart,
   type DatePartDeltas,
   DatePartType,
 } from './date-part.js';
@@ -203,7 +203,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     sign: 1 | -1
   ): Date {
     const effectiveDelta =
-      delta || this._datePartDeltas[datePart as keyof DatePartDeltas] || 1;
+      delta || this.spinDelta?.[datePart as keyof DatePartDeltas] || 1;
 
     return this._spinDatePart(datePart, sign * Math.abs(effectiveDelta));
   }
@@ -224,10 +224,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       part = createDatePart(partType, { start: 0, end: 0, format: '' });
     }
 
-    const amPmValue =
-      datePart === DatePart.AmPm
-        ? this._readAmPmFromMask(this._parser.getPartByType(DatePartType.AmPm))
-        : undefined;
+    const amPmValue = this._readAmPmFromMask(part);
 
     part.spin(delta, {
       date: newDate,

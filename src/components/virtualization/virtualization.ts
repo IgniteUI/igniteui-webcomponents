@@ -9,11 +9,11 @@ import {
 import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { addHostListeners } from '#internals/controllers/host-listeners.js';
 import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { getRoot, isLTR } from '#internals/utils/dom.js';
+import { addSafeEventListener } from '#internals/utils/events.js';
 import { asNumber, clamp } from '#internals/utils/math.js';
 import { VirtualScrollEngine } from './engine.js';
 import { recycle } from './recycle.js';
@@ -53,7 +53,7 @@ const SCROLL_IDLE_MS = 100;
 const LAYOUT_FRAME_TIMEOUT_MS = 100;
 
 /**
- * `scrollend` reports exactly when a scroll has settled. Safari before 18.2
+ * `scrollend` reports exactly when a scroll has settled. Safari before 26.2
  * does not have it, and `_scrollAndWaitForEnd` falls back to a scroll-idle
  * timer there.
  */
@@ -320,11 +320,7 @@ export default class IgcVirtualScrollComponent<
     /** @hidden @internal */
     this._engine.onSizeChange = () => this.requestUpdate();
 
-    addHostListeners(this, {
-      events: ['scroll'],
-      listener: this._handleScroll,
-      options: { passive: true },
-    });
+    addSafeEventListener(this, 'scroll', this._handleScroll, { passive: true });
 
     addResizeObserverController(this, {
       callback: this._measureViewport,
@@ -684,13 +680,11 @@ export default class IgcVirtualScrollComponent<
 
   private _handleItemResize(entries: ResizeObserverEntry[]): void {
     for (const entry of entries) {
-      const el = entry.target as HTMLElement;
-      const index = asNumber(el.dataset.vsIndex, -1);
+      const index = this._observedItemIndexes.get(entry.target) ?? -1;
       if (index < 0) continue;
 
-      const measured = this._isVertical
-        ? (entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height)
-        : (entry.borderBoxSize?.[0]?.inlineSize ?? entry.contentRect.width);
+      const [{ blockSize, inlineSize }] = entry.borderBoxSize;
+      const measured = this._isVertical ? blockSize : inlineSize;
 
       if (measured > 0) {
         this._engine.measureItem(index, measured);

@@ -365,7 +365,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     }
   }
 
-  /** Focuses the slider, as a native range input label does. */
+  /** Focuses the rating, as a native range input label does. */
   protected override _handleLabelActivation(): void {
     this.focus();
   }

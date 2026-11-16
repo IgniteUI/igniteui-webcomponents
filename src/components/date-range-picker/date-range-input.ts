@@ -179,7 +179,7 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     }
 
     const effectiveDelta =
-      delta ?? this._datePartDeltas[range.part as keyof DatePartDeltas] ?? 1;
+      delta ?? this.spinDelta?.[range.part as keyof DatePartDeltas] ?? 1;
     const spinAmount = effectiveDelta * sign;
 
     const amPmValue = this._readAmPmFromMask(part);

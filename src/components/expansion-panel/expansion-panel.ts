@@ -30,6 +30,8 @@ import type { ExpansionPanelIndicatorPosition } from '../types.js';
 import { styles } from './themes/expansion-panel.base.css.js';
 import { styles as shared } from './themes/shared/expansion-panel.common.css.js';
 
+const Slots = setSlots('title', 'subtitle', 'indicator', 'indicator-expanded');
+
 export interface IgcExpansionPanelComponentEventMap {
   igcOpening: CustomEvent<IgcExpansionPanelComponent>;
   igcOpened: CustomEvent<IgcExpansionPanelComponent>;
@@ -80,7 +82,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<IgcExp
 
   private readonly _player = addAnimationController(this, this._panelRef);
   private readonly _slots = addSlotController(this, {
-    slots: setSlots('title', 'subtitle', 'indicator', 'indicator-expanded'),
+    slots: Slots,
   });
 
   private readonly _toggleController = addToggleController(this, {

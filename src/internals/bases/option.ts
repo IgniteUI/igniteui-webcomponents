@@ -22,10 +22,6 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
   @queryAssignedNodes({ flatten: true })
   protected readonly _content!: Array<Element>;
 
-  protected get _contentSlotText(): string {
-    return normalizedTextContent(this._content);
-  }
-
   /**
    * Whether the item is active. The active item has the visual focus during
    * keyboard navigation.
@@ -78,7 +74,7 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
   }
 
   public get value(): string {
-    return this._value ? this._value : this._contentSlotText;
+    return this._value || normalizedTextContent(this._content);
   }
 
   protected override render() {

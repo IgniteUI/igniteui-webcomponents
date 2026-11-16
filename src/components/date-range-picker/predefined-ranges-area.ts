@@ -1,5 +1,5 @@
-import { html, LitElement, type PropertyValues } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { html, LitElement } from 'lit';
+import { property } from 'lit/decorators.js';
 import { CalendarDay } from '#internals/date/model.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
@@ -40,8 +40,12 @@ export default class IgcPredefinedRangesAreaComponent extends I18nMixin(
     registerComponent(IgcPredefinedRangesAreaComponent, IgcChipComponent);
   }
 
-  @state()
-  private _predefinedRanges: PredefinedRange[] = [];
+  private get _predefinedRanges(): PredefinedRange[] {
+    return PREDEFINED_RANGES.map(({ resourceKey, getDateRange }) => ({
+      label: this.resourceStrings[resourceKey]!,
+      getDateRange,
+    }));
+  }
 
   /**
    * Whether the control will show chips with predefined ranges.
@@ -63,17 +67,6 @@ export default class IgcPredefinedRangesAreaComponent extends I18nMixin(
   constructor() {
     super();
     addThemingController(this, all);
-  }
-
-  protected override willUpdate(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has('resourceStrings')) {
-      this._predefinedRanges = PREDEFINED_RANGES.map(
-        ({ resourceKey, getDateRange }) => ({
-          label: this.resourceStrings[resourceKey]!,
-          getDateRange,
-        })
-      );
-    }
   }
 
   private _handleRangeSelect(range: DateRangeValue): void {

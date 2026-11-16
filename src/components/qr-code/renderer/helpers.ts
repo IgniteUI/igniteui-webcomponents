@@ -4,13 +4,6 @@ import type {
   QrDotStyle,
 } from '../types.js';
 
-type DotNeighbor = {
-  top: boolean;
-  right: boolean;
-  bottom: boolean;
-  left: boolean;
-};
-
 function squarePath(x: number, y: number, s: number): string {
   return `M${x},${y}h${s}v${s}h${-s}Z`;
 }
@@ -58,15 +51,17 @@ function roundedRectPerCorner(
 }
 
 /**
- * Returns the SVG path of one data module. For `'rounded'`, the neighbors select the
- * rounded corners.
+ * Returns the SVG path of the data module at row `r` and column `c`. A
+ * `'rounded'` module keeps a square corner toward each dark neighbor.
  */
 function dotPath(
+  data: boolean[][],
+  r: number,
+  c: number,
   x: number,
   y: number,
   s: number,
-  style: QrDotStyle,
-  neighbors?: DotNeighbor
+  style: QrDotStyle
 ): string {
   switch (style) {
     case 'square':
@@ -75,17 +70,21 @@ function dotPath(
       return circlePath(x + s / 2, y + s / 2, s / 2);
     case 'rounded': {
       const R = s * 0.45;
-      const n = neighbors || {
-        top: false,
-        right: false,
-        bottom: false,
-        left: false,
-      };
-      const rTL = n.top || n.left ? 0 : R;
-      const rTR = n.top || n.right ? 0 : R;
-      const rBR = n.bottom || n.right ? 0 : R;
-      const rBL = n.bottom || n.left ? 0 : R;
-      return roundedRectPerCorner(x, y, s, s, rTL, rTR, rBR, rBL);
+      // Out of the matrix, the reads give `undefined`, a light neighbor.
+      const top = data[r - 1]?.[c];
+      const right = data[r][c + 1];
+      const bottom = data[r + 1]?.[c];
+      const left = data[r][c - 1];
+      return roundedRectPerCorner(
+        x,
+        y,
+        s,
+        s,
+        top || left ? 0 : R,
+        top || right ? 0 : R,
+        bottom || right ? 0 : R,
+        bottom || left ? 0 : R
+      );
     }
   }
 }
@@ -175,17 +174,7 @@ export function renderDataModules(
       const x = moduleToPx(c, moduleSize, marginPx);
       const y = moduleToPx(r, moduleSize, marginPx);
 
-      let neighbors: DotNeighbor | undefined;
-      if (dotStyle === 'rounded') {
-        neighbors = {
-          top: r > 0 && data[r - 1][c],
-          right: c < size - 1 && data[r][c + 1],
-          bottom: r < size - 1 && data[r + 1][c],
-          left: c > 0 && data[r][c - 1],
-        };
-      }
-
-      paths.push(dotPath(x, y, moduleSize, dotStyle, neighbors));
+      paths.push(dotPath(data, r, c, x, y, moduleSize, dotStyle));
     }
   }
 

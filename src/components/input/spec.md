@@ -71,6 +71,7 @@
 |      14 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown`, or the <kbd>Enter</kbd> that commits an IME composition, does not submit the form |
 |      15 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form: through the default button, from the only text field when the form has no submit button, after the `keypress`, and not when a listener disables the input |
 |      16 | 2026-11-11 | The combo in single selection is a text field                                                                                                              |
+|      17 | 2026-11-16 | `stepUp`, `stepDown` and `setRangeText` before the first render keep the value                                                                             |
 
 ## Overview
 
@@ -540,7 +541,8 @@ The groups below mirror the `describe` blocks of the suite.
 
 ### Methods
 
-15. `stepUp` and `stepDown` increment and decrement the value.
+15. `stepUp` and `stepDown` increment and decrement the value. Before the first render, they and `setRangeText` keep
+    the value.
 16. `setRangeText` replaces the given range, and the selection when it gets no range.
 17. `setSelectionRange` sets the selection, and `selectionStart` and `selectionEnd` report it.
 18. `selectionStart` and `selectionEnd` are `null` for the `email` and `number` types.

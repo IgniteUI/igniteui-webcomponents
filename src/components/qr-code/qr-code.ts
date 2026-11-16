@@ -49,6 +49,9 @@ import type {
 
 const nextMaskId = createIdGenerator('igc-qr-code-mask');
 
+/** A test, not a lower-cased copy: a data URI can be large. */
+const BLOCKED_LOGO_SOURCE = /^\s*(?:javascript:|vbscript:|data:(?!image\/))/i;
+
 /**
  * Generates a QR code from a value and renders it as an SVG image.
  * Properties set the size, the shapes, the error correction level and an optional logo.
@@ -274,11 +277,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
    * non-image data URI.
    */
   private _hasValidLogoSrc(): boolean {
-    if (!this.logoSrc) return false;
-    const s = this.logoSrc.trim().toLowerCase();
-    if (s.startsWith('javascript:') || s.startsWith('vbscript:')) return false;
-    if (s.startsWith('data:') && !s.startsWith('data:image/')) return false;
-    return true;
+    return !!this.logoSrc && !BLOCKED_LOGO_SOURCE.test(this.logoSrc);
   }
 
   /**
@@ -514,7 +513,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
     const totalModules = size + this.margin * 2;
     const moduleSize = size / totalModules;
     const marginPx = this.margin * moduleSize;
-    const svgSize = moduleSize * (size + this.margin * 2);
+    const svgSize = moduleSize * totalModules;
 
     const { mask, image, shouldApplyMask } = renderQrMaskAndImage({
       hasLogo,

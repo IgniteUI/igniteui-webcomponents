@@ -489,10 +489,9 @@ function BaseFormAssociated<T extends LitElementConstructor>(
         message = userMessage;
       }
 
-      this._internals.setValidity(
-        validity,
-        message ?? this.__messageOf(failed)
-      );
+      // Store the key: `validationMessage` localizes it on read. Only the
+      // `customError` paths read the native message back.
+      this._internals.setValidity(validity, message ?? failed?.key ?? '');
 
       // `checkValidity()` would send `invalid`, which a native control does
       // not do while the user edits it.
