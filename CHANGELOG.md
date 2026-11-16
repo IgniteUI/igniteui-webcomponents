@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [7.5.0] - 2026-11-16
 ### Added
 - #### Accordion, Expansion panel, Tabs, Tree
   - Find-in-page, text fragments and links to an element now find content in collapsed panels, in tabs that are not selected and in collapsed tree items. The component shows the match and emits its usual events. [#2594](https://github.com/IgniteUI/igniteui-webcomponents/pull/2594)
@@ -85,8 +85,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The `end` slot renders after the `suffix` slot, at the end of the chip. Before, it rendered before the `suffix` slot. [#2488](https://github.com/IgniteUI/igniteui-webcomponents/pull/2488)
 - #### Combo
   - **Behavioral change:** A new `data` keeps the selection. A selected item or value that `data` does not hold stays selected until the user or the application deselects it. To clear the selection with the data, for example in cascading combos, set `value` to `[]`. `select()` also accepts objects that `data` does not hold, for example the records of a saved filter. [#2519](https://github.com/IgniteUI/igniteui-webcomponents/issues/2519) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+  - **Behavioral change:** When `data` holds two or more items with the same value, the selection holds the first item, and `value` lists the value one time. Before, a selection of the value took all its items, and `value` listed the value for each item. The options of all the items of a selected value show as selected. A click on any of them deselects the value. [#2603](https://github.com/IgniteUI/igniteui-webcomponents/pull/2603)
   - In multiple selection, the options report their checkbox state in `aria-checked`, not in `aria-selected`. Screen readers announce them as checked or not checked. [#2535](https://github.com/IgniteUI/igniteui-webcomponents/issues/2535) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
-  - **Behavioral change:** When `data` holds two or more items with the same value, the selection holds the first one, and `value` lists the value one time. Before, a selection of the value took all its items, and `value` listed it for each item. The options of all the items of a selected value show as selected, and a click on any of them deselects the value.
   - In TypeScript, `igcClosing` and `igcClosed` are `CustomEvent<IgcComboClosingEventArgs>`, not `CustomEvent<void>`. Change the handlers that declare `CustomEvent<void>`. [#2533](https://github.com/IgniteUI/igniteui-webcomponents/issues/2533) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
 - #### Date picker, Date range picker, Date time input
   - **Behavioral change:** `igcChange` reports only the changes of the user. A value that code sets no longer emits `igcChange` on the next blur or on Done. This applies to `value`, `clear()`, `stepUp()`, `stepDown()`, `setRangeText()`, `select()` and a form reset. The `clear()` of the date pickers still emits it, because their clear icon calls it. [#2488](https://github.com/IgniteUI/igniteui-webcomponents/pull/2488) [#2489](https://github.com/IgniteUI/igniteui-webcomponents/pull/2489) [#2580](https://github.com/IgniteUI/igniteui-webcomponents/pull/2580)
@@ -225,14 +225,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - When the list closes while it has the focus, the focus goes to the main input, not to the document. [#2533](https://github.com/IgniteUI/igniteui-webcomponents/issues/2533) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
   - `newValue` of `igcChange` has the same order as the `value` after the change. [#2533](https://github.com/IgniteUI/igniteui-webcomponents/issues/2533) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
   - A new `itemTemplate` or `groupHeaderTemplate` renders the open list again. [#2555](https://github.com/IgniteUI/igniteui-webcomponents/issues/2555) [#2557](https://github.com/IgniteUI/igniteui-webcomponents/pull/2557)
-  - The deprecated `item` of the group header template follows a new `valueKey` or `displayKey`.
-  - A new `displayKey` or `valueKey` updates the input text.
-  - In single selection, a framework that writes back the cleared `value` keeps the text that the user types.
-  - After a blur clears the input, the text shows again when the same item is selected again.
-  - After the combo leaves the document and comes back, the list no longer refers to the old active option in `aria-activedescendant`.
-  - The active option stays on its item (the same object, or the same `valueKey` value) when a search, a selection or a new `data` changes the list, and the list scrolls to it. Before, `aria-activedescendant` could refer to no option and the arrow keys did nothing.
+  - A new `displayKey` or `valueKey` updates the input text and the deprecated `item` of the group header template. [#2603](https://github.com/IgniteUI/igniteui-webcomponents/pull/2603)
+  - Input text in single selection: [#2603](https://github.com/IgniteUI/igniteui-webcomponents/pull/2603)
+    - When a framework writes back the cleared `value`, the input keeps the text that the user types.
+    - After a blur clears the input, the input shows the text again when `value` selects the same item again.
+  - Active option: [#2612](https://github.com/IgniteUI/igniteui-webcomponents/pull/2612)
+    - A search, a selection or a new `data` no longer moves the active option to a different item. The active option stays on the same object, or on the item with the same `valueKey` value, and the list scrolls to it. Before, `aria-activedescendant` could refer to no option, and the arrow keys did nothing.
+    - After the combo leaves the document and comes back, `aria-activedescendant` no longer refers to the old active option.
 - #### Combo, Dropdown, Highlight, Select
-  - Setting a property to its current value no longer resets the state. This fixes React and other frameworks that set every property on each render. [#2515](https://github.com/IgniteUI/igniteui-webcomponents/issues/2515) [#2516](https://github.com/IgniteUI/igniteui-webcomponents/issues/2516) [#2518](https://github.com/IgniteUI/igniteui-webcomponents/pull/2518) [#2523](https://github.com/IgniteUI/igniteui-webcomponents/pull/2523) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545) [#2572](https://github.com/IgniteUI/igniteui-webcomponents/pull/2572)
+  - Setting a property to its current value no longer resets the state. This fixes React and other frameworks that set every property on each render. [#2515](https://github.com/IgniteUI/igniteui-webcomponents/issues/2515) [#2516](https://github.com/IgniteUI/igniteui-webcomponents/issues/2516) [#2518](https://github.com/IgniteUI/igniteui-webcomponents/pull/2518) [#2523](https://github.com/IgniteUI/igniteui-webcomponents/pull/2523) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545) [#2572](https://github.com/IgniteUI/igniteui-webcomponents/pull/2572) [#2603](https://github.com/IgniteUI/igniteui-webcomponents/pull/2603)
     - Combo: `singleSelect`, `disableFiltering` and `filteringOptions` no longer clear the search text or filter the items again. The same `value` no longer updates the combo.
     - Dropdown, Select: `selected` on an item no longer moves the active item.
     - Highlight: `searchText` and `caseSensitive` no longer move the active match back to the first match.
@@ -425,12 +426,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Tree
   - A tree item outside a tree no longer renders a selection checkbox. [#2488](https://github.com/IgniteUI/igniteui-webcomponents/pull/2488)
 - #### Virtual scroll
-  - `scrollToIndex` puts the item at the requested edge, also when its size is different from the estimate. `layoutComplete` resolves after the rendered items are measured. [#2410](https://github.com/IgniteUI/igniteui-webcomponents/pull/2410)
+  - `scrollToIndex()`: [#2410](https://github.com/IgniteUI/igniteui-webcomponents/pull/2410) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545) [#2603](https://github.com/IgniteUI/igniteui-webcomponents/pull/2603)
+    - It puts the item at the requested edge, also when the size of the item is different from the estimate.
+    - A `data` change in the same task renders at the new offset.
+    - On a hidden or detached list, the call waits and scrolls when the list shows. Its promise resolves after that scroll. A newer call replaces the waiting call. Before, the call did nothing.
+  - `layoutComplete` resolves after the rendered items are measured. [#2410](https://github.com/IgniteUI/igniteui-webcomponents/pull/2410)
   - A list larger than the maximum scroll size of the browser shows its last items, and its items move evenly during a scroll. [#2410](https://github.com/IgniteUI/igniteui-webcomponents/pull/2410)
   - A new `data` array measures the new items at the rendered indices again. [#2412](https://github.com/IgniteUI/igniteui-webcomponents/pull/2412)
-  - A `data` change in the same task as `scrollToIndex()` renders at the new offset. [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
-  - A property change on a detached virtual scroll no longer throws an error.
-  - `scrollToIndex()` on a hidden or detached list scrolls when the list shows, and its promise resolves then. Before, the call did nothing. A newer call replaces the waiting one.
+  - A property change on a detached virtual scroll no longer throws an error. [#2597](https://github.com/IgniteUI/igniteui-webcomponents/pull/2597)
 
 ### Security
 - #### Tile manager
@@ -2133,6 +2136,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.5.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.4.1...7.5.0
 [7.4.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.4.0...7.4.1
 [7.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.3.2...7.4.0
 [7.3.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.3.1...7.3.2
