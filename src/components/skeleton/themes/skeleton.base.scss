@@ -1,0 +1,87 @@
+@use 'styles/utilities' as *;
+
+@keyframes breathe {
+    0%,
+    100% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.02);
+    }
+}
+
+@keyframes wave {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(rem(-6px));
+    }
+}
+
+@keyframes reveal-content {
+    from {
+        opacity: 0;
+        transform: translateY(rem(8px));
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+:host {
+    --_fallback-radius: #{border-radius(rem(6px), $max: rem(24px))};
+
+    display: block;
+}
+
+:host([loading]) [part~='content'] {
+    opacity: 0;
+}
+
+:host(:state(revealing)) [part~='content'] {
+    animation: reveal-content 0.6s ease-out both;
+}
+
+[data-origin] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    visibility: hidden;
+}
+
+// A transformed shape adds scrollable overflow, so the layer clips it.
+[data-shapes] {
+    position: absolute;
+    overflow: clip;
+}
+
+[part~='shape'] {
+    position: absolute;
+    contain: strict;
+    border-radius: var(--border-radius, var(--_fallback-radius));
+}
+
+[part~='breathe'] {
+    animation: breathe 1.5s ease-in-out infinite;
+}
+
+[part~='wave'] {
+    animation: wave 1s ease-in-out var(--_wave-delay, 0s) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [part~='shape'],
+    :host(:state(revealing)) [part~='content'] {
+        animation: none;
+    }
+}

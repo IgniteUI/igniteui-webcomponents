@@ -73,6 +73,7 @@ export { default as IgcStepComponent } from './components/stepper/step.js';
 export { default as IgcHighlightComponent } from './components/highlight/highlight.js';
 export { default as IgcTooltipComponent } from './components/tooltip/tooltip.js';
 export { default as IgcThemeProviderComponent } from './components/theme-provider/theme-provider.js';
+export { default as IgcSkeletonComponent } from './components/skeleton/skeleton.js';
 export { default as IgcQrCodeComponent } from './components/qr-code/qr-code.js';
 export { default as IgcBreadcrumbsComponent } from './components/breadcrumb/breadcrumbs.js';
 export { default as IgcBreadcrumbComponent } from './components/breadcrumb/breadcrumb.js';

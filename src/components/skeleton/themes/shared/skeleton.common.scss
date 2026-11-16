@@ -1,0 +1,9 @@
+@use 'styles/utilities' as *;
+
+:host {
+    --_shape-color: var(--ig-skeleton-shape-color, #{color(gray, 300)});
+}
+
+[part~='shape'] {
+    background-color: var(--_shape-color);
+}
