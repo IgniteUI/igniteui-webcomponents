@@ -55,26 +55,34 @@ export const cities: City[] = [
   },
 ];
 
-/** The parts of the shadow DOM of `combo` that the specs read. Each getter queries again. */
-export function getComboDOM<T extends object>(combo: IgcComboComponent<T>) {
-  const root = combo.renderRoot;
+const listOf = <T extends object>(
+  combo: IgcComboComponent<T>
+): IgcVirtualScrollComponent =>
+  combo.renderRoot.querySelector<IgcVirtualScrollComponent>(
+    'igc-virtual-scroll'
+  )!;
+
+/** Shadow DOM parts of `host()`, queried on each read so a replaced fixture works. */
+export function getComboDOM<T extends object>(
+  host: () => IgcComboComponent<T>
+) {
+  const query = <E extends Element>(selector: string) =>
+    host().renderRoot.querySelector<E>(selector);
 
   return {
-    /** The main input. */
     get input() {
-      return root.querySelector<IgcInputComponent>('igc-input#target')!;
+      return query<IgcInputComponent>('igc-input#target')!;
     },
-    /** The search input of multiple selection. */
+    get nativeInput() {
+      return this.input.renderRoot.querySelector('input')!;
+    },
+    /** Hidden in single selection. */
     get searchInput() {
-      return root.querySelector<IgcInputComponent>('[part="search-input"]')!;
+      return query<IgcInputComponent>('[part="search-input"]')!;
     },
-    /** The list of options. */
     get list() {
-      return root.querySelector<IgcVirtualScrollComponent>(
-        'igc-virtual-scroll'
-      )!;
+      return listOf(host());
     },
-    /** The group headers that the list shows. */
     get headers() {
       return Array.from(
         this.list.querySelectorAll<IgcComboHeaderComponent>(
@@ -82,10 +90,11 @@ export function getComboDOM<T extends object>(combo: IgcComboComponent<T>) {
         )
       );
     },
+    get clearIcon() {
+      return query<HTMLElement>('[part="clear-icon"]')!;
+    },
   };
 }
-
-export type ComboDOM = ReturnType<typeof getComboDOM>;
 
 export async function comboStable<T extends object>(
   combo: IgcComboComponent<T>
@@ -103,12 +112,9 @@ export async function openComboPopover<T extends object>(
   await layoutComplete(combo);
 }
 
-export const items = <T extends object>(combo: IgcComboComponent<T>) =>
-  [
-    ...combo.renderRoot
-      .querySelector('igc-virtual-scroll')!
-      .querySelectorAll('[part~="item"]'),
-  ] as IgcComboItemComponent[];
+export const items = <T extends object>(combo: IgcComboComponent<T>) => [
+  ...listOf(combo).querySelectorAll<IgcComboItemComponent>('[part~="item"]'),
+];
 
 /** The selection state that an option reports to assistive technology. */
 export const ariaOf = (item: Element) => ({
@@ -117,8 +123,4 @@ export const ariaOf = (item: Element) => ({
 });
 
 export const layoutComplete = <T extends object>(combo: IgcComboComponent<T>) =>
-  (
-    combo.renderRoot.querySelector(
-      'igc-virtual-scroll'
-    ) as IgcVirtualScrollComponent
-  ).layoutComplete;
+  listOf(combo).layoutComplete;

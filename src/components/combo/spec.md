@@ -100,9 +100,7 @@
 |      27 | 2026-11-12 | One rule for new remote results: a copy of the same records keeps the place and requests no page again; an append compares all the old items; `bindComboDataSource()` marks each first page as new results, so `refresh()` shows from the top |
 |      28 | 2026-11-13 | One record for each value, and each record of a selected value shows as selected; a value keeps its place when it gets a record; select all gives the order of `data`, then the values that `data` does not hold; a value that a pending deselection removed stays out of the pending selection after a new `data` |
 |      29 | 2026-11-13 | Review fixes: primitive records show as selected again; any record of a repeated value selects its first record, also in a commit, and a toggle option lists one record for each value; a `value` array that changed in place and is set again syncs the selection; a new `displayKey` or `valueKey` updates the input text; a new `data` filters by the current text of the items that keep their records and indexes a key that changed in place; a new `valueKey` merges values to their first records and drops the same-value sync; in single selection, a framework that writes back the cleared `value` keeps the typed text, and a blur that clears the input lets the same selection show its text again |
-|      30 | 2026-11-16 | After the combo leaves the document and comes back, no option is active, also in `aria-activedescendant` |
-|      31 | 2026-11-16 | In single selection, a selection sends the `igcSearchInput` of the cleared text before the selection changes |
-|      32 | 2026-11-16 | The `Component` test scenarios follow the groups of the spec file; Tab out of the combo drops the pending selection of the confirm mode |
+|      30 | 2026-11-16 | The active option stays on its item when a search, a selection or a new `data` changes the list, and the list scrolls to it; after the combo leaves the document and comes back, no option is active; in single selection, a selection sends the `igcSearchInput` of the cleared text before the selection changes; Tab out of the combo drops the pending selection of the confirm mode; the `Component` test scenarios follow the groups of the spec file |
 
 ## Overview
 
@@ -547,6 +545,12 @@ While the list is open:
 
 In multiple selection, the search input filters the list while it has the focus.
 
+When a search, a selection or a new `data` changes the list, the active option stays on its item (the same object, or
+the same `valueKey` value) and the list scrolls to it, or no option is active when the list no longer shows it. Without
+`valueKey`, a copy of an item is another item, as for the selection. New remote results start with no active option.
+An active placeholder keeps its place, so the option that comes there becomes active. Arrow Up without an active
+option acts as from the first option.
+
 A key that an IME handles does nothing in the combo, for example the Enter that commits a composition or the Escape
 that cancels it.
 
@@ -826,13 +830,15 @@ the shadow DOM through `getComboDOM()`.
 #### Keyboard navigation
 
 11. The keyboard navigation of the list, also Arrow Down at the end of the matches. After the combo leaves the
-    document and comes back, no option is active.
+    document and comes back, no option is active. A search or a new `data` with copies keeps the active option on its
+    item, also the select-all option or a group header, and the list scrolls to it. A search that hides it leaves none
+    active, and Arrow Up then acts as from the first option.
 
 #### Single selection
 
 12. Enter, Tab and Escape in single selection, and the main input that filters the list. The Enter of an IME
     composition in the main input does not select an option. A Tab or a click outside after a search keeps a valid
-    state (issue 2221).
+    state (issue 2221). A selection from a search keeps the active option on the selected item.
 
 #### Grouping and templates
 
@@ -926,7 +932,8 @@ the shadow DOM through `getComboDOM()`.
 
 33. In remote mode, `totalItemCount` adds placeholder options after the groups. They count in `aria-setsize`, take the
     next positions, are disabled, have the name "Loading", and pass the accessibility audit. Local mode, an empty
-    `data` and a total that is not a finite number show no placeholders.
+    `data` and a total that is not a finite number show no placeholders. When an item loads in place of the active
+    placeholder, that item is active; when the active placeholder goes away, none is.
 34. `igcDataRequest` covers the shown placeholders, for example after End, and does not go past `totalItemCount`. It
     stops when `data` holds `totalItemCount` items, and comes again when the total no longer stops it. Space, a click
     and `selectAllItems()` do not select a placeholder. In single selection, Enter or a click on a placeholder does

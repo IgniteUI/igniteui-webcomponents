@@ -230,6 +230,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - In single selection, a framework that writes back the cleared `value` keeps the text that the user types.
   - After a blur clears the input, the text shows again when the same item is selected again.
   - After the combo leaves the document and comes back, the list no longer refers to the old active option in `aria-activedescendant`.
+  - The active option stays on its item (the same object, or the same `valueKey` value) when a search, a selection or a new `data` changes the list, and the list scrolls to it. Before, `aria-activedescendant` could refer to no option and the arrow keys did nothing.
 - #### Combo, Dropdown, Highlight, Select
   - Setting a property to its current value no longer resets the state. This fixes React and other frameworks that set every property on each render. [#2515](https://github.com/IgniteUI/igniteui-webcomponents/issues/2515) [#2516](https://github.com/IgniteUI/igniteui-webcomponents/issues/2516) [#2518](https://github.com/IgniteUI/igniteui-webcomponents/pull/2518) [#2523](https://github.com/IgniteUI/igniteui-webcomponents/pull/2523) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545) [#2572](https://github.com/IgniteUI/igniteui-webcomponents/pull/2572)
     - Combo: `singleSelect`, `disableFiltering` and `filteringOptions` no longer clear the search text or filter the items again. The same `value` no longer updates the combo.

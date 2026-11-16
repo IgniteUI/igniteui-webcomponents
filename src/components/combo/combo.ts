@@ -237,6 +237,7 @@ export default class IgcComboComponent<
   @query('[part="list-wrapper"]', true)
   private readonly _popup!: HTMLDivElement | null;
 
+  // Before the navigation: its hostUpdate reads the records that this one builds.
   private readonly _state = new DataState<T>(this);
   private readonly _selection = new ComboSelection<T>(this);
   private readonly _navigation = new ComboNavigationController(
@@ -801,10 +802,9 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Enter or Tab in the combo: in single selection, selects the option at
-   * `index`. Then Enter applies the pending selection and closes the list.
-   * Tab closes it, which drops the pending selection, as the other closes do.
-   * Not async, so the awaits of the keyboard take as long as before.
+   * In single selection, selects the option at `index` first. Enter applies
+   * the pending selection; Tab drops it. Not async, to keep the microtask
+   * depth of the keyboard handlers.
    * @returns Whether the list closes.
    */
   private _commitAndClose(
@@ -916,14 +916,11 @@ export default class IgcComboComponent<
       : asArray(items);
 
     if (isEmpty(collection) && selecting) {
-      // Selects all items without an event, or clears a single selection.
       if (singleSelect) {
-        this._selection.clear();
-        this._searchTerm = '';
-      } else {
-        this._selection.selectAll();
+        return this._applySelection([], type, false);
       }
 
+      this._selection.selectAll();
       this.requestUpdate();
       return true;
     }
@@ -970,8 +967,7 @@ export default class IgcComboComponent<
       return false;
     }
 
-    // A single selection clears the search text. The `igcSearchInput` of the
-    // clear comes before the change, as for the clear button.
+    // Its `igcSearchInput` precedes the change, as with the clear button.
     if (selecting && this.singleSelect) {
       this._clearSearchTerm(emit);
     }
@@ -1080,9 +1076,8 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Selects the item at `index`, or the items of the toggle option at `index`
-   * (see {@link DataState.isToggle}), with one `igcChange`. With `toggle`, it
-   * deselects them when each one is selected. See {@link ComboSelection.toggleChange}.
+   * Selects the item at `index`, or the items of the toggle option at `index`,
+   * with one `igcChange`. `toggle` follows {@link ComboSelection.toggleChange}.
    * @returns Whether `index` holds an item or a toggle option.
    */
   private _selectAt(index: number, toggle: boolean): boolean {
@@ -1102,12 +1097,13 @@ export default class IgcComboComponent<
       ? this._selection.toggleChange(items)
       : { records: items, selecting: true };
 
+    // First, as a change listener can build new records.
+    this._navigation.active = index;
     this._applySelection(
       records,
       selecting ? 'selection' : 'deselection',
       true
     );
-    this._navigation.active = index;
     this._syncValueFromSelection();
     return true;
   }
@@ -1408,7 +1404,6 @@ export default class IgcComboComponent<
     return this.id ? `${this.id}-item-${position}` : `item-${position}`;
   }
 
-  /** Derived from the active index, so it cannot go stale. */
   private get _activeDescendant(): string | undefined {
     const { active } = this._navigation;
     return active > -1 ? this._itemId(active) : undefined;

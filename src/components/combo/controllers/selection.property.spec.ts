@@ -165,8 +165,6 @@ function runPreview(single: boolean, confirm: boolean, ops: Op[]): void {
   };
 
   for (const step of ops) {
-    const committedBefore = selection.project().values;
-
     switch (step.op) {
       case 'apply': {
         const records = selection.firstRecords(
@@ -197,14 +195,16 @@ function runPreview(single: boolean, confirm: boolean, ops: Op[]): void {
         }
         break;
       }
-      case 'data':
+      case 'data': {
+        const committed = selection.project().values;
         host.data = pool
           .slice(0, step.size)
           .map((record) => (step.copies ? { ...record } : record));
         selection.invalidateIndex();
-        selection.syncFromValue(committedBefore);
+        selection.syncFromValue(committed);
         selection.syncPending();
         break;
+      }
       case 'selectAll':
         if (!single) {
           selection.selectAll();

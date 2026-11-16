@@ -771,6 +771,37 @@ describe('Combo', () => {
         expect(list.data[10]).not.to.be.oneOf(loaded);
       });
 
+      it('activates the item that loads in place of the active placeholder', async () => {
+        remote.totalItemCount = 12;
+        await openComboPopover(remote);
+
+        simulateKeyboard(list, endKey);
+        await comboStable(remote);
+        expect(items(remote).at(-1)!.active).to.be.true;
+
+        remote.data = [...remote.data, ...search('', 10, 2)];
+        await comboStable(remote);
+
+        const last = items(remote).at(-1)!;
+        expect(last.active).to.be.true;
+        expect(last.textContent?.trim()).to.equal('Bern');
+      });
+
+      it('leaves no active option when the active placeholder goes away', async () => {
+        remote.totalItemCount = 12;
+        await openComboPopover(remote);
+
+        simulateKeyboard(list, endKey);
+        await comboStable(remote);
+        expect(items(remote).at(-1)!.active).to.be.true;
+
+        remote.totalItemCount = 10;
+        await comboStable(remote);
+
+        expect(items(remote).some((item) => item.active)).to.be.false;
+        expect(list.hasAttribute('aria-activedescendant')).to.be.false;
+      });
+
       it('shows new results that come while the list is closed from the top', async () => {
         remote.totalItemCount = 100;
         await openComboPopover(remote);

@@ -3,6 +3,7 @@ import { getOrInsertComputed } from '#internals/utils/objects.js';
 import { isDefined, isObject } from '#internals/utils/types.js';
 import type IgcComboComponent from '../combo.js';
 import type { ComboValue, Item } from '../types.js';
+import { valueOf } from './data.js';
 
 const newPositions = (): number[] => [];
 
@@ -226,10 +227,8 @@ export class ComboSelection<T extends object> {
     return valueKey ? record[valueKey] : record;
   }
 
-  /** The `valueKey` property of `item`, or `item` when that property is not set. */
   private _valueOf(item: T): ComboValue<T> {
-    const { valueKey } = this._host;
-    return (valueKey ? item?.[valueKey] : undefined) ?? item;
+    return valueOf(item, this._host.valueKey);
   }
 
   public toValues(items: Iterable<T>): ComboValue<T>[] {
@@ -311,19 +310,22 @@ export class ComboSelection<T extends object> {
 
   /** The values of the current selection after `records` apply: the `newValue` of the change event. */
   public preview(records: T[], selecting: boolean): ComboValue<T>[] {
-    if (selecting && this._host.singleSelect) {
-      return this.toValues(records);
-    }
+    const next: SelectionEntries<T> = this._replaces(selecting)
+      ? new Map()
+      : new Map(this._current);
 
-    const next = new Map(this._current);
     this._change(next, records, selecting);
     return this.valuesOf(next);
   }
 
+  /** In single selection, a selection replaces the selection. */
+  private _replaces(selecting: boolean): boolean {
+    return selecting && this._host.singleSelect;
+  }
+
   /**
-   * The change that toggles `items` in the selection that the list shows: it
-   * selects the items that are not selected, or deselects all of them when
-   * each one is selected. It does not make the change. See {@link apply}.
+   * Selects the items that are not selected, or deselects all of them when
+   * each one is selected. It does not apply the change.
    */
   public toggleChange(items: T[]): { records: T[]; selecting: boolean } {
     const unselected = items.filter((item) => !this.has(item));
@@ -355,13 +357,12 @@ export class ComboSelection<T extends object> {
 
   /**
    * Adds `records` to the current selection, or removes their values. In
-   * single selection, a selection replaces the selection, as in
-   * {@link preview}. While the list has a pending selection, a committed value
-   * without a record gets its record too, as a new `data` gives it.
+   * single selection, a selection replaces the selection. While the list has a
+   * pending selection, a committed value without a record gets its record too.
    * @returns Whether the committed selection got records while it was not the current one.
    */
   public apply(records: T[], selecting: boolean): boolean {
-    if (selecting && this._host.singleSelect) {
+    if (this._replaces(selecting)) {
       this.clear();
     }
 

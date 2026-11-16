@@ -8,6 +8,7 @@ import FilterDataOperation from '../operations/filter.js';
 import GroupDataOperation from '../operations/group.js';
 import type {
   ComboRecord,
+  ComboValue,
   FilteringOptions,
   GroupingOptions,
   Keys,
@@ -62,6 +63,14 @@ export function isItemRecord<T extends object>(
   record?: ComboRecord<T>
 ): boolean {
   return !!record && !record.header && !record.kind;
+}
+
+/** The `valueKey` field of `item`, or `item` when the field is not set. */
+export function valueOf<T extends object>(
+  item: T,
+  valueKey?: Keys<T>
+): ComboValue<T> {
+  return (valueKey ? item?.[valueKey] : undefined) ?? item;
 }
 
 /* blazorSuppress */
@@ -355,6 +364,31 @@ export class DataState<T extends object> implements ReactiveController {
     }
 
     return [...items];
+  }
+
+  /**
+   * The index of the loaded record with the item, `valueKey` value, group or
+   * kind of `record`, or -1. A new `data` can hold new objects for the same items.
+   */
+  public indexOfRecord(record: ComboRecord<T>): number {
+    const { valueKey } = this._host;
+    const keyOf = (other: ComboRecord<T>): unknown =>
+      other.header ? other.group : valueOf(other.value, valueKey);
+    const key = keyOf(record);
+
+    for (let i = 0; i < this._loadedLength; i++) {
+      const other = this._dataState[i];
+
+      if (
+        other.kind === record.kind &&
+        other.header === record.header &&
+        Object.is(keyOf(other), key)
+      ) {
+        return i;
+      }
+    }
+
+    return -1;
   }
 
   /** The items that the list shows. */

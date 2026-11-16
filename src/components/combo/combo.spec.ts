@@ -23,7 +23,6 @@ import {
   openComboPopover,
   items,
   layoutComplete,
-  type ComboDOM,
   getComboDOM,
 } from '#internals/testing/combo.spec.js';
 import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
@@ -54,8 +53,6 @@ import IgcComboComponent from './combo.js';
 import type { ComboCloseTrigger, ComboItemTemplate } from './types.js';
 
 describe('Combo', () => {
-  let dom: ComboDOM;
-
   const citiesWithDiacritics = [
     {
       id: 'US01',
@@ -128,6 +125,7 @@ describe('Combo', () => {
   ];
 
   let combo: IgcComboComponent<City>;
+  const dom = getComboDOM(() => combo);
 
   const filterCombo = async (term: string) => {
     dom.input.dispatchEvent(new CustomEvent('igcInput', { detail: term }));
@@ -135,6 +133,21 @@ describe('Combo', () => {
     // `_handleMainInput` sets the active index after its own `updateComplete`.
     await elementUpdated(combo);
     await layoutComplete(combo);
+  };
+
+  /** The text of the active option, which the list also names, or none. */
+  const expectActive = (name?: string) => {
+    const item = dom.list.querySelector<HTMLElement>('[active]');
+
+    expect(item?.textContent?.trim()).to.equal(name);
+    expect(dom.list.getAttribute('aria-activedescendant')).to.equal(
+      item?.id ?? null
+    );
+  };
+
+  const searchFor = async (detail: string) => {
+    dom.searchInput.dispatchEvent(new CustomEvent('igcInput', { detail }));
+    await comboStable(combo);
   };
 
   before(() => {
@@ -152,8 +165,6 @@ describe('Combo', () => {
           group-key="country"
         ></igc-combo>`
       );
-
-      dom = getComboDOM(combo);
     });
 
     describe('Rendering and data', () => {
@@ -179,7 +190,6 @@ describe('Combo', () => {
             display-key="name"
           ></igc-combo>`
         );
-        dom = getComboDOM(combo);
 
         // Warm both the value index and the data pipeline
         combo.select('BG01');
@@ -1124,7 +1134,7 @@ describe('Combo', () => {
 
         await elementUpdated(combo);
 
-        const button = combo.renderRoot.querySelector('[part="clear-icon"]');
+        const button = dom.clearIcon;
 
         (button! as HTMLSpanElement).click();
 
@@ -1136,14 +1146,14 @@ describe('Combo', () => {
         combo.select();
         await elementUpdated(combo);
 
-        let button = combo.renderRoot.querySelector('[part="clear-icon"]');
+        let button = dom.clearIcon;
         expect(button).to.exist;
         expect(button?.hasAttribute('hidden')).to.be.false;
 
         combo.disableClear = true;
         await elementUpdated(combo);
 
-        button = combo.renderRoot.querySelector('[part="clear-icon"]');
+        button = dom.clearIcon;
         expect(button?.hasAttribute('hidden')).to.be.true;
       });
 
@@ -1152,13 +1162,13 @@ describe('Combo', () => {
         combo.select();
         await elementUpdated(combo);
 
-        let button = combo.renderRoot.querySelector('[part="clear-icon"]');
+        let button = dom.clearIcon;
         expect(button?.hasAttribute('hidden')).to.be.true;
 
         combo.disableClear = false;
         await elementUpdated(combo);
 
-        button = combo.renderRoot.querySelector('[part="clear-icon"]');
+        button = dom.clearIcon;
         expect(button?.hasAttribute('hidden')).to.be.false;
       });
 
@@ -1167,7 +1177,7 @@ describe('Combo', () => {
         await elementUpdated(combo);
 
         combo.addEventListener('igcChange', (event) => event.preventDefault());
-        simulateClick(combo.renderRoot.querySelector('[part="clear-icon"]')!);
+        simulateClick(dom.clearIcon!);
         await elementUpdated(combo);
 
         expect(combo.value).to.eql(['BG01', 'BG02']);
@@ -1474,6 +1484,96 @@ describe('Combo', () => {
         expect(combo.value).to.be.empty;
         expect(eventSpy).not.calledWith('igcChange');
       });
+
+      it('keeps the active option on its item when a search changes the list', async () => {
+        await openComboPopover(combo);
+        simulateKeyboard(dom.list, arrowDown, 4);
+        await comboStable(combo);
+        expectActive('New York');
+
+        await searchFor('o');
+
+        expectActive('New York');
+
+        await searchFor('v');
+
+        expectActive();
+
+        // Arrow Up without an active option acts as from the first option.
+        dom.list.focus();
+        simulateKeyboard(dom.list, arrowUp);
+        expect(isFocused(dom.searchInput)).to.be.true;
+
+        simulateKeyboard(dom.list, arrowDown);
+        await comboStable(combo);
+
+        expectActive('Plovdiv');
+      });
+
+      it('keeps the select-all option or a group header active across a search', async () => {
+        combo.showSelectAll = true;
+        combo.groupSelection = true;
+        await elementUpdated(combo);
+        await openComboPopover(combo);
+
+        simulateKeyboard(dom.list, homeKey);
+        await comboStable(combo);
+        expectActive(combo.resourceStrings.combo_select_all);
+
+        await searchFor('o');
+        expectActive(combo.resourceStrings.combo_select_all);
+
+        simulateKeyboard(dom.list, arrowDown);
+        await comboStable(combo);
+        expectActive('Bulgaria');
+
+        await searchFor('v');
+        expectActive('Bulgaria');
+
+        await searchFor('york');
+        expectActive();
+      });
+
+      it('scrolls to the active option when the list moves it', async () => {
+        const many = Array.from({ length: 200 }, (_, i) => ({
+          id: `C${i}`,
+          name: `City ${i}`,
+          country: '',
+          zip: '',
+        }));
+        combo = await fixture<IgcComboComponent<City>>(
+          html`<igc-combo
+            .data=${many}
+            value-key="id"
+            display-key="name"
+          ></igc-combo>`
+        );
+        await openComboPopover(combo);
+
+        simulateKeyboard(dom.list, endKey);
+        await comboStable(combo);
+        expectActive('City 199');
+
+        await searchFor('City 199');
+        expectActive('City 199');
+
+        await searchFor('');
+        await comboStable(combo);
+
+        expectActive('City 199');
+      });
+
+      it('keeps the active option on its item when a new data holds copies of the items', async () => {
+        await openComboPopover(combo);
+        simulateKeyboard(dom.list, arrowDown);
+        await comboStable(combo);
+        expectActive('Sofia');
+
+        combo.data = cities.map((city) => ({ ...city })).reverse();
+        await comboStable(combo);
+
+        expectActive('Sofia');
+      });
     });
 
     describe('Single selection', () => {
@@ -1619,13 +1719,29 @@ describe('Combo', () => {
 
         expect(items(combo)[1].selected).to.be.true;
 
-        simulateKeyboard(dom.list, arrowDown, 2);
+        simulateKeyboard(dom.list, arrowDown);
         simulateKeyboard(dom.list, spaceBar);
 
         await elementUpdated(combo);
 
         expect(items(combo)[1].selected).to.be.false;
         expect(items(combo)[2].selected).to.be.true;
+      });
+
+      it('keeps the active option on the item that a selection picks from a search', async () => {
+        combo.singleSelect = true;
+        await elementUpdated(combo);
+        await openComboPopover(combo);
+
+        await filterCombo('v');
+        expectActive('Plovdiv');
+
+        simulateKeyboard(dom.list, arrowDown);
+        simulateKeyboard(dom.list, spaceBar);
+        await comboStable(combo);
+
+        expect(combo.value).to.eql(['BG03']);
+        expectActive('Varna');
       });
 
       it('should maintain value with repeated selection via input in single selection mode', async () => {
@@ -2033,7 +2149,6 @@ describe('Combo', () => {
       apply = container.querySelector('#apply')!;
       buttonBefore = container.querySelector('#before')!;
       buttonAfter = container.querySelector('#after')!;
-      dom = getComboDOM(combo);
 
       await openComboPopover(combo);
     });
@@ -2260,7 +2375,6 @@ describe('Combo', () => {
         ></igc-combo>`
       );
 
-      dom = getComboDOM(combo);
       eventSpy = spy(combo, 'emitEvent');
 
       await openComboPopover(combo);
@@ -2476,12 +2590,10 @@ describe('Combo', () => {
           group-key="country"
         ></igc-combo>`
       );
-
-      dom = getComboDOM(combo);
     });
 
     it('names the input with the selection status only while no label names it', async () => {
-      const native = dom.input.renderRoot.querySelector('input')!;
+      const native = dom.nativeInput;
 
       expect(native.getAttribute('aria-label')).to.equal(
         combo.resourceStrings.combo_aria_label_no_options
@@ -2495,7 +2607,7 @@ describe('Combo', () => {
     });
 
     it('leaves the disabled state to the native input', async () => {
-      const native = dom.input.renderRoot.querySelector('input')!;
+      const native = dom.nativeInput;
 
       combo.disabled = true;
       await elementUpdated(combo);
