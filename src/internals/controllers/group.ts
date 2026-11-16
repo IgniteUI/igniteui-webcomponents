@@ -20,8 +20,8 @@ type GroupRegistryConfig<T extends GroupHost, S> = {
 interface GroupMemberController<
   T extends GroupHost,
 > extends ReactiveController {
-  /** The hosts of the group, in DOM order. A lone host gets its own group. */
-  readonly members: T[];
+  /** The hosts of the group, in DOM order when `ordered`. A lone host is its own group. */
+  getMembers(ordered: boolean): T[];
   /** Moves the host to the group of its scope and key, and syncs both. */
   updateMembership(): void;
   sync(): void;
@@ -30,8 +30,8 @@ interface GroupMemberController<
 interface GroupRegistry<T extends GroupHost, S> {
   /** Creates a membership controller and adds it to the host. */
   attach(host: T, onSync: (state: S) => void): GroupMemberController<T>;
-  /** Returns the hosts of the group of `member`, in DOM order. */
-  membersOf(member: T): T[];
+  /** The hosts of the group of `member`, in DOM order unless `ordered` is `false`. */
+  membersOf(member: T, ordered?: boolean): T[];
 }
 
 function byDocumentOrder(a: Node, b: Node): number {
@@ -111,11 +111,14 @@ export function createGroupRegistry<T extends GroupHost, S>(
       return isEmpty(members) ? [this] : members;
     }
 
-    public get members(): T[] {
-      // Only readers need document order.
-      return this._group
-        .sort((a, b) => byDocumentOrder(a.host, b.host))
-        .map((member) => member.host);
+    public getMembers(ordered: boolean): T[] {
+      const group = this._group;
+
+      if (ordered) {
+        group.sort((a, b) => byDocumentOrder(a.host, b.host));
+      }
+
+      return group.map((member) => member.host);
     }
 
     constructor(host: T, onSync: (state: S) => void) {
@@ -185,13 +188,13 @@ export function createGroupRegistry<T extends GroupHost, S>(
       return new Member(host, onSync);
     },
 
-    membersOf(member) {
+    membersOf(member, ordered = true) {
       const controller = controllers.get(member);
 
       // Move first, so a read after a key or scope change resolves right.
       controller?.updateMembership();
 
-      return controller?.members ?? [member];
+      return controller?.getMembers(ordered) ?? [member];
     },
   };
 }

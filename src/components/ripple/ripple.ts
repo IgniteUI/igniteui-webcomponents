@@ -50,21 +50,12 @@ export default class IgcRippleComponent extends LitElement {
       event.clientY
     );
 
+    // The stylesheet has the rest of the wave styles.
     setStyles(element, {
-      position: 'absolute',
-      display: 'block',
-      pointerEvents: 'none',
-      transformOrigin: 'center',
-      transform: 'translate3d(0, 0, 0) scale(0)',
-      willChange: 'opacity, transform',
-      margin: '0',
-      border: 'none',
       width: `${radius}px`,
       height: `${radius}px`,
-      borderRadius: '50%',
       top: `${top}px`,
       left: `${left}px`,
-      background: 'var(--color, var(--ig-gray-800))',
     });
     this.renderRoot.appendChild(element);
 

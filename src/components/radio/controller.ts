@@ -18,20 +18,17 @@ const radioGroups = createGroupRegistry<IgcRadioComponent, boolean>({
     radios.some((radio) => radio.checked && !radio.disabled),
 });
 
-type RadioGroupController = GroupMemberController<IgcRadioComponent>;
-
-export type { RadioGroupController };
-
 export function addRadioGroupController(
   host: IgcRadioComponent,
   onSync: (hasCheckedRadio: boolean) => void
-): RadioGroupController {
+): GroupMemberController<IgcRadioComponent> {
   return radioGroups.attach(host, onSync);
 }
 
 /** Returns the radios of the group of `member`, in DOM order. */
 export function getGroupMembers(
-  member: IgcRadioComponent
+  member: IgcRadioComponent,
+  ordered?: boolean
 ): IgcRadioComponent[] {
-  return radioGroups.membersOf(member);
+  return radioGroups.membersOf(member, ordered);
 }

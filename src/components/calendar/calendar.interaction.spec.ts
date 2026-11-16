@@ -760,6 +760,28 @@ describe('Calendar interactions', () => {
     expect(calendar.values).lengthOf(5);
   });
 
+  it('previews only from a day, also under an element with `data-value`', async () => {
+    const start = CalendarDay.from(calendar.value!).set({ date: 20 });
+    const outer = document.createElement('div');
+    outer.dataset.value = '3';
+    calendar.replaceWith(outer);
+    outer.append(calendar);
+
+    calendar.selection = 'range';
+    await elementUpdated(calendar);
+
+    simulateClick(getDOMDate(start, daysView));
+    await elementUpdated(calendar);
+
+    const row = getDOMDate(start, daysView).closest('[role="row"]')!;
+    row.dispatchEvent(
+      new PointerEvent('pointerover', { bubbles: true, composed: true })
+    );
+    await elementUpdated(daysView);
+
+    expect(daysView.rangePreviewDate).to.be.undefined;
+  });
+
   it('marks a previewed date before the range start as its first date', async () => {
     const start = CalendarDay.from(calendar.value!).set({ date: 20 });
     const preview = start.set({ date: 15 });

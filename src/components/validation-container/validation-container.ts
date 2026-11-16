@@ -1,7 +1,6 @@
 import { html, isServer, LitElement, nothing, type TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { createAbortHandle } from '#internals/abort-handler.js';
 import { HELPER_TEXT_ID } from '#internals/controllers/aria-projection.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import {
@@ -61,9 +60,11 @@ const VALIDITY_SLOTS: ReadonlyArray<
  * `invalid` first, then each failing constraint.
  */
 function* activeValidationSlots(validity: ValidityState): Generator<string> {
-  if (!validity.valid) {
-    yield 'invalid';
+  if (validity.valid) {
+    return;
   }
+
+  yield 'invalid';
 
   for (const [key, slot] of VALIDITY_SLOTS) {
     if (validity[key]) {
@@ -71,6 +72,11 @@ function* activeValidationSlots(validity: ValidityState): Generator<string> {
     }
   }
 }
+
+const DEFAULT_CONFIG: ValidationContainerConfig = {
+  id: HELPER_TEXT_ID,
+  hasHelperText: true,
+};
 
 /** The message slots that each host forwarded in its last render. */
 const forwardedSlots = new WeakMap<IgcFormControl, string[]>();
@@ -119,10 +125,7 @@ export default class IgcValidationContainerComponent extends LitElement {
    */
   public static create(
     host: IgcFormControl,
-    config: ValidationContainerConfig = {
-      id: HELPER_TEXT_ID,
-      hasHelperText: true,
-    }
+    config: ValidationContainerConfig = DEFAULT_CONFIG
   ): TemplateResult {
     const helperText = config.hasHelperText
       ? html`<slot name="helper-text" slot="helper-text"></slot>`
@@ -152,7 +155,6 @@ export default class IgcValidationContainerComponent extends LitElement {
     `;
   }
 
-  private readonly _abortHandle = createAbortHandle();
   private readonly _resumeUpdate = (): void => this.requestUpdate();
   /** Whether a render read the projected slots. The first render cannot. */
   private _hasReadSlots = false;
@@ -181,12 +183,12 @@ export default class IgcValidationContainerComponent extends LitElement {
 
     // Listeners are not removed on disconnect: the container lives in the
     // target's shadow root and shares its lifetime.
-    this._abortHandle.abort();
-    const { signal } = this._abortHandle;
+    this._target?.removeEventListener(InternalInvalidEvent, this);
+    this._target?.removeEventListener(InternalResetEvent, this);
 
     this._target = value;
-    this._target.addEventListener(InternalInvalidEvent, this, { signal });
-    this._target.addEventListener(InternalResetEvent, this, { signal });
+    value.addEventListener(InternalInvalidEvent, this);
+    value.addEventListener(InternalResetEvent, this);
   }
 
   public get target(): IgcFormControl {

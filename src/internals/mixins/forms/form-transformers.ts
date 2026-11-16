@@ -17,7 +17,6 @@ export type FormValueTransformers<T> = {
 
 export type FormValueConfig<T> = {
   initialValue: T;
-  initialDefaultValue?: T;
   transformers?: Partial<FormValueTransformers<T>>;
 };
 

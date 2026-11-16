@@ -38,7 +38,7 @@ type SlotChangeCallbackParameters<T> = {
 
 type SlotControllerOptions<T> = {
   /** The slot names to observe. */
-  slots?: Iterable<T>;
+  slots?: readonly T[];
   /** Callback that runs when the assigned nodes of a slot change. */
   onChange?: SlotChangeCallback<T>;
   /** Whether `onChange` also runs once, after the first host update. */
@@ -50,7 +50,6 @@ const DefaultSlot = '[default]';
 class SlotController<T> implements ReactiveController {
   private readonly _host: ReactiveControllerHost & LitElement;
   private readonly _options: SlotControllerOptions<T>;
-  private readonly _slots?: Set<T>;
   private readonly _slotCache = new Map<T | undefined, HTMLSlotElement>();
   private _initialized = false;
 
@@ -65,11 +64,11 @@ class SlotController<T> implements ReactiveController {
   private _queryWithheld = false;
 
   /** The `slotchange` callbacks that wait for the end of the hydration. */
-  private readonly _pendingChanges: SlotChangeCallbackParameters<T>[] = [];
+  private _pendingChanges?: SlotChangeCallbackParameters<T>[];
 
   constructor(
     host: ReactiveControllerHost & LitElement,
-    options?: SlotControllerOptions<T>
+    options: SlotControllerOptions<T>
   ) {
     this._host = host;
     this._host.addController(this);
@@ -78,8 +77,7 @@ class SlotController<T> implements ReactiveController {
     // declarative shadow root from the server. Create the controller there.
     this._hydrating = !isServer && host.shadowRoot !== null;
 
-    this._options = { ...options };
-    this._slots = options?.slots ? new Set(options.slots) : undefined;
+    this._options = options;
   }
 
   /**
@@ -179,12 +177,12 @@ class SlotController<T> implements ReactiveController {
     const isDefault = name === '';
     const observed = isDefault ? (DefaultSlot as T) : name;
 
-    if (this._slots && !this._slots.has(observed)) return;
+    if (this._options.slots && !this._options.slots.includes(observed)) return;
 
     const change = { slot: name, isDefault, isInitial: false };
 
     if (this._hydrating) {
-      this._pendingChanges.push(change);
+      (this._pendingChanges ??= []).push(change);
     } else {
       this._notifyChange(change);
     }
@@ -197,7 +195,10 @@ class SlotController<T> implements ReactiveController {
 
   /** Runs the waiting `slotchange` callbacks, and renders the slots a query missed. */
   private _endHydration(): void {
-    for (const change of this._pendingChanges.splice(0)) {
+    const pending = this._pendingChanges ?? [];
+    this._pendingChanges = undefined;
+
+    for (const change of pending) {
       this._notifyChange(change);
     }
 
@@ -227,14 +228,14 @@ class SlotController<T> implements ReactiveController {
 
 function addSlotController<K extends readonly string[]>(
   host: ReactiveControllerHost,
-  options?: SlotControllerOptions<InferSlotNames<K>> & {
+  options: SlotControllerOptions<InferSlotNames<K>> & {
     slots?: K;
   }
 ): SlotController<InferSlotNames<K>> {
-  return new SlotController(host as ReactiveControllerHost & LitElement, {
-    ...options,
-    slots: options?.slots as Iterable<InferSlotNames<K>>,
-  });
+  return new SlotController(
+    host as ReactiveControllerHost & LitElement,
+    options
+  );
 }
 
 function setSlots<const T extends readonly string[]>(...slots: T) {

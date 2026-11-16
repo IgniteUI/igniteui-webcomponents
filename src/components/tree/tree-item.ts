@@ -328,7 +328,7 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
   }
 
   private _onFocusIn(ev: Event): void {
-    ev?.stopPropagation();
+    ev.stopPropagation();
     if (!this.disabled) {
       // A click on a tabbable element while the item is not focused.
       if (!this._focusedProgrammatically) {
@@ -341,7 +341,7 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
   }
 
   private _onFocusOut(ev: Event): void {
-    ev?.stopPropagation();
+    ev.stopPropagation();
     this._isFocused = false;
     this._setTabbable(-1);
 
@@ -441,11 +441,16 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
   }
 
   private _selectedChange(): void {
-    if (this.selected && !this._selectionService?.isItemSelected(this)) {
-      this._selectionService?.selectItemsWithNoEvent([this]);
+    const service = this._selectionService;
+
+    if (!service || service.isItemSelected(this) === this.selected) {
+      return;
     }
-    if (!this.selected && this._selectionService?.isItemSelected(this)) {
-      this._selectionService?.deselectItemsWithNoEvent([this]);
+
+    if (this.selected) {
+      service.selectItemsWithNoEvent([this]);
+    } else {
+      service.deselectItemsWithNoEvent([this]);
     }
   }
 

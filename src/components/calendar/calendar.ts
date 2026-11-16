@@ -751,7 +751,11 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
             part="days-view"
             exportparts="days-row, label, label-inner, date-inner, week-number-inner, week-number, date, first, last, selected, inactive, hidden, current, content-vertical, weekend, range, special, disabled, single, preview"
             .active=${this._activeDaysViewIndex === idx}
-            .activeDate=${date.native}
+            .activeDate=${
+              // Inactive views read only the month; day 1 spares them a render.
+              (idx === this._activeDaysViewIndex ? date : date.set({ date: 1 }))
+                .native
+            }
             .disabledDates=${this._disabledDates}
             .hideLeadingDays=${this.hideOutsideDays || idx !== 0}
             .hideTrailingDays=${this.hideOutsideDays || idx !== length}

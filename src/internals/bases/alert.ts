@@ -7,14 +7,13 @@ import type {
   NotificationPositioning,
 } from '../../components/types.js';
 import { addToggleCommands } from '../controllers/command.js';
-import { addHostListeners } from '../controllers/host-listeners.js';
 import { addInternalsController } from '../controllers/internals.js';
 import { createMutationController } from '../controllers/mutation-observer.js';
 import { addToggleController } from '../controllers/toggle.js';
 import { coercedProperty } from '../decorators/coerced-property.js';
 import { createTimer } from '../timing.js';
 import { getVisibleAncestor, isPopoverOpen } from '../utils/dom.js';
-import { getEventOrigin } from '../utils/events.js';
+import { addSafeEventListeners, getEventOrigin } from '../utils/events.js';
 import { nanoid } from '../utils/strings.js';
 
 /** The names that open components add to the `anchor-name` of a container. */
@@ -189,16 +188,11 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
       },
     });
 
-    addHostListeners(this, {
-      events: [
-        'pointerenter',
-        'pointerleave',
-        'pointerdown',
-        'focusin',
-        'focusout',
-      ],
-      listener: this._handleHold,
-    });
+    addSafeEventListeners(
+      this,
+      ['pointerenter', 'pointerleave', 'pointerdown', 'focusin', 'focusout'],
+      this._handleHold
+    );
   }
 
   public override connectedCallback(): void {

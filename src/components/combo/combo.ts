@@ -15,6 +15,7 @@ import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import type { FormValueTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
@@ -201,31 +202,39 @@ export default class IgcComboComponent<
   private readonly _slots = addSlotController(this, { slots: SLOTS });
   private readonly _themes: ThemingController;
 
+  private static readonly _transformers: Partial<
+    FormValueTransformers<unknown[]>
+  > = {
+    setValue: asArray,
+    setDefaultValue: asArray,
+    setFormValue: (value, host) => {
+      const { name, singleSelect } = host as IgcComboComponent;
+
+      if (isEmpty(value) || !name) {
+        return null;
+      }
+
+      if (singleSelect) {
+        return String(firstOf(value));
+      }
+
+      const formData = new FormData();
+
+      for (const item of value) {
+        formData.append(name, String(item));
+      }
+
+      return formData;
+    },
+  };
+
   protected override readonly _formValue = createFormValueState<
     ComboValue<T>[]
   >(this, {
     initialValue: [],
-    transformers: {
-      setValue: asArray,
-      setDefaultValue: asArray,
-      setFormValue: (value) => {
-        if (isEmpty(value) || !this.name) {
-          return null;
-        }
-
-        if (this.singleSelect) {
-          return String(firstOf(value));
-        }
-
-        const formData = new FormData();
-
-        for (const item of value) {
-          formData.append(this.name, String(item));
-        }
-
-        return formData;
-      },
-    },
+    transformers: IgcComboComponent._transformers as Partial<
+      FormValueTransformers<ComboValue<T>[]>
+    >,
   });
 
   private readonly _inputRef = createRef<IgcInputComponent>();
@@ -235,7 +244,7 @@ export default class IgcComboComponent<
   private readonly _listRef = createRef<IgcVirtualScrollComponent>();
 
   @query('[part="list-wrapper"]', true)
-  private readonly _popup!: HTMLDivElement | null;
+  protected override readonly _popup!: HTMLDivElement | null;
 
   // Before the navigation: its hostUpdate reads the records that this one builds.
   private readonly _state = new DataState<T>(this);
@@ -704,10 +713,6 @@ export default class IgcComboComponent<
 
   protected override updated(props: PropertyValues<this>): void {
     this._dataRequests.afterUpdate(props, this._listRef.value);
-  }
-
-  protected override _popupElement(): Element | null {
-    return this._popup;
   }
 
   //#endregion

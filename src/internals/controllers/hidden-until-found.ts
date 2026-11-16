@@ -7,7 +7,7 @@ import {
 import type { DirectiveResult } from 'lit/directive.js';
 import { type LiveDirective, live } from 'lit/directives/live.js';
 import type { Ref } from 'lit/directives/ref.js';
-import { createTimer } from '../timing.js';
+import { createTimer, type Timer } from '../timing.js';
 
 type HiddenUntilFoundOptions = {
   /** Opens the host as a user does; returns `false` when the open is canceled. */
@@ -49,7 +49,8 @@ export function isRevealing(): boolean {
 class HiddenUntilFoundController implements ReactiveController {
   private readonly _host: ReactiveControllerHost;
   private readonly _options: HiddenUntilFoundOptions;
-  private readonly _timer = createTimer(() => this._end());
+  /** Lazy: most hosts never reveal. */
+  private _timer?: Timer;
   private _closing = false;
 
   constructor(host: ReactiveControllerHost, options: HiddenUntilFoundOptions) {
@@ -60,7 +61,7 @@ class HiddenUntilFoundController implements ReactiveController {
 
   /** Whether a reveal of the browser runs in this host. */
   public get revealing(): boolean {
-    return this._timer.active;
+    return this._timer?.active ?? false;
   }
 
   /** Whether the close animation runs. The content shows until it ends. */
@@ -112,7 +113,7 @@ class HiddenUntilFoundController implements ReactiveController {
     }
 
     revealing.add(this);
-    this._timer.start();
+    (this._timer ??= createTimer(() => this._end())).start();
 
     if (!this._options.reveal()) {
       // Stops the reveal where the browser follows the standard. Elsewhere,
@@ -133,7 +134,7 @@ class HiddenUntilFoundController implements ReactiveController {
 
   /** @internal */
   public hostDisconnected(): void {
-    if (this.revealing) {
+    if (this._timer?.active) {
       this._timer.stop();
       this._end();
     }

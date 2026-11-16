@@ -1,8 +1,6 @@
 import { html, isServer, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { until } from 'lit/directives/until.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HydrationMixin } from '#internals/mixins/hydration.js';
 import { partMap } from '#internals/part-map.js';
@@ -27,6 +25,7 @@ import type {
   ChatTemplateRenderer,
   IgcChatMessage,
 } from './types.js';
+import { renderResult } from './utils.js';
 
 const LIKE_INACTIVE = 'thumb_up_inactive';
 const LIKE_ACTIVE = 'thumb_up_active';
@@ -97,9 +96,7 @@ export default class IgcChatMessageComponent extends HydrationMixin(
 
   constructor() {
     super();
-    addThemingController(this, all, {
-      themeChange: () => this._chat.refreshStyles(),
-    });
+    addThemingController(this, all);
   }
 
   private _getRenderer(name: keyof DefaultMessageRenderers) {
@@ -116,13 +113,9 @@ export default class IgcChatMessageComponent extends HydrationMixin(
       chat_message_copied,
     } = this._state.resourceStrings;
 
-    const attachmentsText = isEmpty(attachments)
-      ? ''
-      : attachments
-          .map(
-            ({ name, url }) => `${name ?? chat_attachment_label}: ${url ?? ''}`
-          )
-          .join('\n');
+    const attachmentsText = attachments
+      .map(({ name, url }) => `${name ?? chat_attachment_label}: ${url ?? ''}`)
+      .join('\n');
 
     const payload = attachmentsText
       ? `${text}${separator}${chat_attachments_list_label}:\n${attachmentsText}`
@@ -161,11 +154,9 @@ export default class IgcChatMessageComponent extends HydrationMixin(
           : DISLIKE_ACTIVE;
         break;
       case COPY_CONTENT:
-        reaction = COPY_CONTENT;
         this._handleCopy();
         break;
       case REGENERATE:
-        reaction = REGENERATE;
         break;
       default:
         reaction = '';
@@ -228,7 +219,7 @@ export default class IgcChatMessageComponent extends HydrationMixin(
   }
 
   private _renderActions() {
-    const isSent = this.message.sender === this._state.currentUserId;
+    const isSent = this._state.isCurrentUserMessage(this.message);
     const hasText = this.message.text.trim();
     const hasAttachments = !isEmpty(this.message.attachments ?? []);
     const isTyping = this._state.options?.isTyping;
@@ -270,16 +261,17 @@ export default class IgcChatMessageComponent extends HydrationMixin(
     label: string,
     pressed?: 'true' | 'false'
   ) {
+    const showTooltip = ({ target }: Event) =>
+      this._state.showActionsTooltip(target as Element, label);
+
     return html`
       <igc-icon-button
         name=${name}
         variant="flat"
         aria-label=${label}
         aria-pressed=${ifDefined(pressed)}
-        @pointerenter=${({ target }: PointerEvent) =>
-          this._state.showActionsTooltip(target as Element, label)}
-        @focus=${({ target }: FocusEvent) =>
-          this._state.showActionsTooltip(target as Element, label)}
+        @pointerenter=${showTooltip}
+        @focus=${showTooltip}
       ></igc-icon-button>
     `;
   }
@@ -300,24 +292,19 @@ export default class IgcChatMessageComponent extends HydrationMixin(
         `;
   }
 
-  private _renderMessage() {
-    const ctx: ChatMessageRenderContext = {
-      message: this.message,
-      instance: this._state.host,
-    };
-
+  private _renderMessage(ctx: ChatMessageRenderContext) {
     return trimmedHtml`
       <div part="message-header">
-        ${until(this._getRenderer('messageHeader')(ctx))}
+        ${renderResult(this._getRenderer('messageHeader')(ctx))}
       </div>
       <div part="plain-text">
-        ${until(this._getRenderer('messageContent')(ctx))}
+        ${renderResult(this._getRenderer('messageContent')(ctx))}
       </div>
       <div part="message-attachments">
-        ${until(this._getRenderer('messageAttachments')(ctx))}
+        ${renderResult(this._getRenderer('messageAttachments')(ctx))}
       </div>
       <div part="message-actions" @click=${this._handleMessageActionClick}>
-        ${until(this._getRenderer('messageActions')(ctx))}
+        ${renderResult(this._getRenderer('messageActions')(ctx))}
       </div>
     `;
   }
@@ -325,36 +312,24 @@ export default class IgcChatMessageComponent extends HydrationMixin(
   protected override render() {
     // No chat provides the state outside a chat or during SSR. A hydrating
     // host matches that empty server render.
-    if (isServer || this._hydrating || !this._chat.state) {
+    if (isServer || this._hydrating || !this._chat.state || !this.message) {
       return nothing;
     }
 
     const messageRenderer = this._state.options?.renderers?.message;
+    const sent = this._state.isCurrentUserMessage(this.message);
     const ctx: ChatMessageRenderContext = {
       message: this.message,
       instance: this._state.host,
     };
 
-    const parts = {
-      'message-container': true,
-      received: !this._state.isCurrentUserMessage(this.message),
-      sent: this._state.isCurrentUserMessage(this.message),
-    };
-
     return html`
-      ${cache(
-        this.message
-          ? html`
-              <div part=${partMap(parts)} @click=${this._handleLinkClick}>
-                ${cache(
-                  messageRenderer
-                    ? until(messageRenderer(ctx))
-                    : this._renderMessage()
-                )}
-              </div>
-            `
-          : nothing
-      )}
+      <div
+        part=${partMap({ 'message-container': true, received: !sent, sent })}
+        @click=${this._handleLinkClick}
+      >
+        ${messageRenderer ? renderResult(messageRenderer(ctx)) : this._renderMessage(ctx)}
+      </div>
     `;
   }
 }

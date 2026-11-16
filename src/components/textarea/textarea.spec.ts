@@ -352,6 +352,14 @@ describe('Textarea component', () => {
       expect(detached.value).to.equal('');
     });
 
+    it('setRangeText() keeps the value before the textarea renders', () => {
+      const detached = document.createElement(IgcTextareaComponent.tagName);
+      detached.value = 'Hello';
+
+      detached.setRangeText('text', 0, 0);
+      expect(detached.value).to.equal('Hello');
+    });
+
     it('does not restrict the native textarea length with validate-only', async () => {
       await createFixture(
         html`<igc-textarea maxlength="3" validate-only></igc-textarea>`

@@ -20,7 +20,7 @@ const copiedAria = new WeakMap<Element, Map<string, string>>();
 export function isTreeItem(
   element?: Element | null
 ): element is IgcTreeItemComponent {
-  return element?.tagName.toLowerCase() === TREE_ITEM_TAG;
+  return element?.localName === TREE_ITEM_TAG;
 }
 
 /**

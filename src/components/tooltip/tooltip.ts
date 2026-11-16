@@ -34,6 +34,8 @@ import { addTooltipController } from './controller.js';
 import { styles as shared } from './themes/shared/tooltip.common.css.js';
 import { styles } from './themes/tooltip.base.css.js';
 
+const Slots = setSlots('close-button');
+
 export interface IgcTooltipComponentEventMap {
   igcOpening: CustomEvent<void>;
   igcOpened: CustomEvent<void>;
@@ -111,7 +113,7 @@ export default class IgcTooltipComponent extends I18nMixin(
   private readonly _containerRef = createRef<HTMLElement>();
   private readonly _player = addAnimationController(this, this._containerRef);
   private readonly _slots = addSlotController(this, {
-    slots: setSlots('close-button'),
+    slots: Slots,
   });
 
   private _anchorChanged = false;

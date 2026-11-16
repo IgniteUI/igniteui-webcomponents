@@ -28,6 +28,13 @@ import { styles } from './themes/radio.base.css.js';
 import { styles as shared } from './themes/shared/radio.common.css.js';
 import { radioValidators } from './validators.js';
 
+const Slots = setSlots(
+  'helper-text',
+  'value-missing',
+  'custom-error',
+  'invalid'
+);
+
 export interface IgcRadioChangeEventArgs {
   checked: boolean;
   value?: string;
@@ -97,7 +104,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   });
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots('helper-text', 'value-missing', 'custom-error', 'invalid'),
+    slots: Slots,
     onChange: this._handleSlotChange,
   });
 

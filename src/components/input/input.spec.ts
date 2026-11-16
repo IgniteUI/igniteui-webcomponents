@@ -361,6 +361,16 @@ describe('Input component', () => {
         expect(detached.value).to.equal('');
       });
 
+      it('the editing methods keep the value before the input renders', () => {
+        const detached = document.createElement('igc-input');
+        detached.value = '5';
+
+        detached.setRangeText('text', 0, 0);
+        detached.stepUp();
+        detached.stepDown();
+        expect(detached.value).to.equal('5');
+      });
+
       it('focus() and blur()', async () => {
         await createFixture(html`<igc-input></igc-input>`);
 

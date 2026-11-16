@@ -265,7 +265,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
       end ?? this._input.selectionEnd ?? 0,
       selectMode
     );
-    this.value = this._input?.value ?? '';
+    this._syncValueFromInput();
   }
 
   /* blazorSuppress */
@@ -281,13 +281,20 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   /** Increments the numeric value of the input by one or more steps. */
   public stepUp(n?: number): void {
     this._input?.stepUp(n);
-    this.value = this._input?.value ?? '';
+    this._syncValueFromInput();
   }
 
   /** Decrements the numeric value of the input by one or more steps. */
   public stepDown(n?: number): void {
     this._input?.stepDown(n);
-    this.value = this._input?.value ?? '';
+    this._syncValueFromInput();
+  }
+
+  /** No native input before the first render. */
+  private _syncValueFromInput(): void {
+    if (this._input) {
+      this.value = this._input.value;
+    }
   }
 
   private _handleInput(): void {

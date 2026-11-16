@@ -15,6 +15,13 @@ import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import type { ToggleLabelPosition } from '../types.js';
 import { checkBoxValidators } from './validators.js';
 
+const Slots = setSlots(
+  'helper-text',
+  'value-missing',
+  'custom-error',
+  'invalid'
+);
+
 export interface IgcCheckboxChangeEventArgs {
   checked: boolean;
   value?: string;
@@ -38,7 +45,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   }
 
   protected readonly _slots = addSlotController(this, {
-    slots: setSlots('helper-text', 'value-missing', 'custom-error', 'invalid'),
+    slots: Slots,
     onChange: this._handleSlotChange,
   });
 

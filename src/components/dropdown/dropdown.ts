@@ -128,7 +128,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   private readonly _targetSlot!: HTMLSlotElement | null;
 
   @query('[part="base"]', true)
-  private readonly _popup!: HTMLDivElement | null;
+  protected override readonly _popup!: HTMLDivElement | null;
 
   /** The target, or its first focusable element for a wrapper target. */
   private get _focusTarget(): HTMLElement | undefined {
@@ -258,10 +258,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     }
   }
 
-  protected override _popupElement(): Element | null {
-    return this._popup;
-  }
-
   protected override _returnFocus(): void {
     this._focusTarget?.focus({ preventScroll: true });
   }
@@ -354,14 +350,9 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   }
 
   private _selectItem(
-    item?: IgcDropdownItemComponent | null,
+    item: IgcDropdownItemComponent,
     emit = true
   ): IgcDropdownItemComponent | null {
-    if (!item) {
-      this._selection.commit(null);
-      return null;
-    }
-
     // Re-selecting the current item is not a change, but still a commit.
     const changed = this._selection.commit(item);
 

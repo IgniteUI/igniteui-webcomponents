@@ -12,7 +12,6 @@ import type { ChatState } from './chat-state.js';
  * into the part while the `adoptRootStyles` option is set.
  */
 class ChatStateConsumer {
-  private readonly _host: LitElement;
   private readonly _adoptedStyles: AdoptedStylesController;
   private readonly _consumer: ContextConsumer<typeof chatContext, LitElement>;
 
@@ -24,19 +23,12 @@ class ChatStateConsumer {
   }
 
   constructor(host: LitElement) {
-    this._host = host;
     this._adoptedStyles = addAdoptedStylesController(host);
     this._consumer = new ContextConsumer(host, {
       context: chatContext,
       callback: () => this._handleStateChange(),
       subscribe: true,
     });
-  }
-
-  /** Clones the page styles again, for a change the tracker cannot see. */
-  public refreshStyles(): void {
-    this._adoptedStyles.invalidateCache(this._host.ownerDocument);
-    this._adoptedStyles.shouldAdoptStyles(this._adoptRootStyles);
   }
 
   private _handleStateChange(): void {

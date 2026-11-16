@@ -11,6 +11,16 @@ import type { PopoverRect } from '../popover/position/types.js';
 import service from './service.js';
 import type IgcTooltipComponent from './tooltip.js';
 
+const DEFAULT_SHOW_TRIGGERS: ReadonlySet<string> = new Set([
+  'pointerenter',
+  'focusin',
+]);
+const DEFAULT_HIDE_TRIGGERS: ReadonlySet<string> = new Set([
+  'pointerleave',
+  'click',
+  'focusout',
+]);
+
 class TooltipController implements ReactiveController {
   //#region Internal properties and state
 
@@ -26,8 +36,9 @@ class TooltipController implements ReactiveController {
   private readonly _initialAbortHandle = createAbortHandle();
   private readonly _transientAbortHandle = createAbortHandle();
 
-  private _showTriggers = new Set(['pointerenter', 'focusin']);
-  private _hideTriggers = new Set(['pointerleave', 'click', 'focusout']);
+  // Never mutated, so the instances share the defaults.
+  private _showTriggers: ReadonlySet<string> = DEFAULT_SHOW_TRIGGERS;
+  private _hideTriggers: ReadonlySet<string> = DEFAULT_HIDE_TRIGGERS;
 
   private _anchor: WeakRef<Element> | null = null;
   private _initialAnchor: WeakRef<Element> | null = null;

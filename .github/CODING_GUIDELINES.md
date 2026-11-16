@@ -270,8 +270,7 @@ Before you write lifecycle code, look for a controller that already does it:
 | `addRovingFocusController`                                    | `#internals/controllers/roving-focus.js`    | Arrow-key focus movement between items (roving tab index)      |
 | `addAriaTarget` / `addAriaProjector` / `ariaBindings` / `hostAria` | `#internals/controllers/aria-projection.js` | Projecting composite ARIA across shadow roots, and forwarding the host name and description |
 | `addToggleController`                                         | `#internals/controllers/toggle.js`          | The open/close sequence and events of toggleable hosts         |
-| `addHostListeners`                                            | `#internals/controllers/host-listeners.js`  | Listeners that exist while the host is connected               |
-| `addCommandController`                                        | `#internals/controllers/command.js`         | The Invoker Commands API (`command` / `commandfor`)            |
+| `addToggleCommands`                                           | `#internals/controllers/command.js`         | The `--show`, `--hide` and `--toggle` invoker commands         |
 | `addIdRefResolver`                                            | `#internals/controllers/id-resolver.js`     | Resolving IDREF attributes to elements                         |
 | `addRootClickController`                                      | `#internals/controllers/root-click.js`      | Closing overlays on an outside click                           |
 | `createMutationController` / `addResizeObserverController`    | `#internals/controllers/*-observer.js`      | Observing DOM mutations and size changes                       |
@@ -879,7 +878,7 @@ export default class IgcChipComponent extends I18nMixin(LitElement, i18n) {
 ```
 
 - A component that only needs the locale, and no public resource API, calls
-  `addI18nController` directly (see `date-time-input.base.ts`).
+  `addLocaleController` directly (see `date-time-input.base.ts`).
 - Do not put user-facing text in a template. Read it from the resource strings, so that it
   follows the active locale and consumer overrides.
 - Format dates and times with `getDateTimeFormat` / `formatDisplayDate` from
@@ -898,23 +897,30 @@ export default class IgcChipComponent extends I18nMixin(LitElement, i18n) {
 - Listeners:
   - Lit manages template listeners (`@event`) and listeners on the host. They need no clean-up.
     Add host listeners with `addSafeEventListener` from `#internals/utils/events.js`, which does
-    nothing during SSR.
-  - For listeners on other targets (`window`, `document`, the render root), use
-    `addHostListeners`. It adds them on connect and removes them on disconnect with one abort
-    signal. It does not bind the listener, so bind a method first:
+    nothing during SSR. `addSafeEventListeners` adds one listener object for several events.
+  - Add a listener on another target (`window`, `document`) in `connectedCallback` and remove it
+    in `disconnectedCallback`. Use an arrow function field, so that both calls get the same
+    function:
 
     ```ts
     constructor() {
       super();
       addSafeEventListener(this, 'click', this._handleClick);
-
-      this._handleResize = this._handleResize.bind(this);
-      addHostListeners(this, {
-        target: () => window,
-        events: ['resize'],
-        listener: this._handleResize,
-      });
     }
+
+    public override connectedCallback(): void {
+      super.connectedCallback();
+      window.addEventListener('resize', this._handleResize);
+    }
+
+    public override disconnectedCallback(): void {
+      window.removeEventListener('resize', this._handleResize);
+      super.disconnectedCallback();
+    }
+
+    private readonly _handleResize = (): void => {
+      // ...
+    };
     ```
 
 ## Common Pitfalls

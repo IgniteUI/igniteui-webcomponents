@@ -1,5 +1,7 @@
+import { until } from 'lit/directives/until.js';
 import { lastOf } from '#internals/utils/arrays.js';
 import { getOrInsertComputed } from '#internals/utils/objects.js';
+import { isFunction } from '#internals/utils/types.js';
 import type { IgcChatMessageAttachment } from './types.js';
 
 export type ChatAcceptedFileTypes = {
@@ -30,6 +32,13 @@ export const ChatFileTypeIcons = new Map(
     default: 'file_generic',
   })
 );
+
+/** Only a promise needs `until`. */
+export function renderResult(value: unknown): unknown {
+  return isFunction((value as PromiseLike<unknown> | null)?.then)
+    ? until(value)
+    : value;
+}
 
 export function parseAcceptedFileTypes(
   fileTypes: string
