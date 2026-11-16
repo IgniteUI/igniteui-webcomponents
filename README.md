@@ -24,10 +24,13 @@
     - [Dock Manager - EXCLUSIVE FEATURE](#dock-manager---exclusive-feature)
 - [Quick start](#quick-start)
 - [Bundling a single theme](#bundling-a-single-theme)
+- [Extras](#extras)
 - [Browser support](#browser-support)
 - [Tooling](#tooling)
   - [Editor metadata](#editor-metadata)
   - [AI agent skills](#ai-agent-skills)
+  - [Agent documentation (llms.txt)](#agent-documentation-llmstxt)
+  - [MCP servers](#mcp-servers)
 - [Accessibility](#accessibility)
 - [Security and supply chain](#security-and-supply-chain)
 - [Privacy](#privacy)
@@ -44,10 +47,12 @@ All components in this package are released under the MIT License. The table lis
 
 | Components              | Status |         Documentation          | Released Version |    License     |
 | :---------------------- | :----: | :----------------------------: | :--------------: | :------------: |
+| Breadcrumbs             |   ✅    |    [Docs][Breadcrumbs Docs]    |     [7.4.0]      | [MIT](LICENSE) |
 | Virtual Scroll          |   ✅    |  [Docs][Virtual scroll Docs]   |     [7.3.0]      | [MIT](LICENSE) |
 | QR Code                 |   ✅    |      [Docs][QR Code Docs]      |     [7.3.0]      | [MIT](LICENSE) |
 | Color Picker            |   ✅    |   [Docs][Color Picker Docs]    |     [7.3.0]      | [MIT](LICENSE) |
 | Splitter                |   ✅    |     [Docs][Splitter Docs]      |     [7.1.0]      | [MIT](LICENSE) |
+| Highlight               |   ✅    |     [Docs][Highlight Docs]     |     [7.1.0]      | [MIT](LICENSE) |
 | Chat                    |   ✅    |       [Docs][Chat Docs]        |     [6.3.0]      | [MIT](LICENSE) |
 | Date Range Picker       |   ✅    | [Docs][Date Range Picker Docs] |     [6.1.0]      | [MIT](LICENSE) |
 | Tooltip                 |   ✅    |      [Docs][Tooltip Docs]      |     [5.4.0]      | [MIT](LICENSE) |
@@ -180,11 +185,35 @@ The condition names are `igc-theme-material`, `igc-theme-bootstrap`, `igc-theme-
 - Load the global theme style sheet as before, for example `igniteui-webcomponents/themes/light/bootstrap.css`.
 - Without a condition, the bundle contains all four themes, as before.
 
+## Extras
+
+The extras are opt-in add-ons that build on the public API of the components. A bundle that does not import them does not contain them. Each one has its own entry point, so it needs only its own dependencies.
+
+- `createMarkdownRenderer()` from `igniteui-webcomponents/extras` renders the chat messages from Markdown, with syntax highlighting. It imports the optional peer dependencies `marked` and `dompurify`, and loads `shiki` for the highlighting.
+- `bindComboDataSource()` from `igniteui-webcomponents/extras/combo-data-source` binds a combo to a server that searches and pages. It sets `totalItemCount` from the total of the server, so the list shows a placeholder row for each item to load, and `loading` while a search waits or a page loads.
+
+```ts
+import { bindComboDataSource } from 'igniteui-webcomponents/extras/combo-data-source';
+
+const binding = bindComboDataSource(combo, {
+  load: async ({ searchText, caseSensitive, startIndex, count }, signal) => {
+    const query = `q=${encodeURIComponent(searchText)}&case=${caseSensitive}&skip=${startIndex}&top=${count}`;
+    const response = await fetch(`/api/cities?${query}`, { signal });
+    const { items, total } = await response.json();
+    return { items, totalCount: total };
+  },
+});
+
+binding.dispose(); // removes the listeners, aborts the request in flight and clears `totalItemCount` and `loading`
+```
+
 ## Browser support
 
 | ![chrome_48x48] | ![firefox_48x48] | ![edge_48x48] | ![opera_48x48] | ![safari_48x48] |
 | --------------- | ---------------- | ------------- | -------------- | --------------- |
-| Latest ✔️        | Latest ✔️         | Latest ✔️      | Latest ✔️       | Latest ✔️        |
+| Last 2 ✔️        | Last 2 ✔️         | Last 2 ✔️      | Last 2 ✔️       | Last 2 ✔️        |
+
+The library supports the last 2 major versions of each browser.
 
 ## Tooling
 
@@ -208,10 +237,18 @@ The package also includes reusable skills for GitHub Copilot and other compatibl
 - [Integrating with React, Angular, Vue, or vanilla JavaScript](skills/igniteui-wc-integrate-with-framework/SKILL.md)
 - [Customizing component themes](skills/igniteui-wc-customize-component-theme/SKILL.md)
 - [Generating a view from an image or design](skills/igniteui-wc-generate-from-image-design/SKILL.md)
+- [Building a view from a Figma design](skills/igniteui-wc-figma-to-app/SKILL.md)
+- [Configuring a data grid](skills/igniteui-wc-grids/SKILL.md)
 - [Optimizing bundle size](skills/igniteui-wc-optimize-bundle-size/SKILL.md)
 - [Migrating from Grid Lite to the premium Data Grid](skills/igniteui-wc-migrate-grid-lite-to-premium/SKILL.md)
 
-After you install the package, copy the skills into your repository so that your agent can find them automatically:
+To install the skills, use the [`skills` CLI](https://github.com/vercel-labs/skills). It asks which skills to install and for which agents:
+
+```sh
+npx skills add IgniteUI/igniteui-webcomponents
+```
+
+You can also copy the skills from the package into your repository, so that your agent finds them automatically:
 
 ```sh
 # Unix/macOS
@@ -224,6 +261,29 @@ Copy-Item -Recurse node_modules\igniteui-webcomponents\skills\* .github\skills\
 ```
 
 See the [AI agent skills guide](skills/README.md) for example prompts, supported workflows, and additional installation locations.
+
+### Agent documentation (llms.txt)
+
+The package includes API documentation for AI agents in the [llms.txt](https://llmstxt.org) format. The build generates it from the Custom Elements Manifest, so it matches the installed version.
+
+| Package path                                  | Description                                                                                             |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `igniteui-webcomponents/llms.txt`             | The index: usage notes, a link to the page of each component, the skills and other resources            |
+| `igniteui-webcomponents/docs/<tag>.md`        | The API of one component: properties, methods, events, slots, CSS parts and CSS custom properties       |
+| `igniteui-webcomponents/llms-full.txt`        | The usage notes and all the component pages in one file                                                 |
+
+Tell your agent to read `node_modules/igniteui-webcomponents/llms.txt`. An agent without the package can read the files from an npm CDN, for example `https://cdn.jsdelivr.net/npm/igniteui-webcomponents/llms.txt`. The guides on the documentation site have their own [llms.txt index](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/llms.txt).
+
+### MCP servers
+
+Two free MCP servers (MIT license) give AI agents tools for Ignite UI:
+
+| Server                | Command                                         | Tools                                                                                     |
+| --------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Ignite UI CLI MCP     | `npx -y igniteui-cli mcp`                       | Search the documentation and the API reference, list components, scaffold a project      |
+| Ignite UI Theming MCP | `npx -y igniteui-theming igniteui-theming-mcp`  | Create palettes, themes, typography and component themes, read the design tokens          |
+
+To configure the two servers and the skills for your agents in one step, run `npx igniteui-cli ai-config` in your project.
 
 ## Accessibility
 
@@ -306,7 +366,7 @@ The Grids, Dock Manager and other packages marked *Commercial* above are license
 [Dropdown Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/dropdown
 [Tree Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/tree
 [Expansion Panel Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/expansion-panel
-[Masked Input Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/input
+[Masked Input Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/mask-input
 [Accordion Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/accordion
 [Tabs Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/tabs
 [Date Time Input Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/date-time-input
@@ -332,6 +392,8 @@ The Grids, Dock Manager and other packages marked *Commercial* above are license
 [Color Picker Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/color-picker
 [QR Code Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/qr-code
 [Virtual scroll Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/virtual-scroll
+[Breadcrumbs Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/breadcrumbs
+[Highlight Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/highlight
 [1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0
 [2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.0.0
 [2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0
@@ -349,6 +411,7 @@ The Grids, Dock Manager and other packages marked *Commercial* above are license
 [6.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/6.3.0
 [7.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/7.1.0
 [7.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/7.3.0
+[7.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/7.4.0
 [Changelog]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/CHANGELOG.md
 [Accessibility]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/ACCESSIBILITY.md
 [Security]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/SECURITY.md

@@ -1,5 +1,6 @@
 import { ChatResourceStringsEN } from 'igniteui-i18n-core';
-import { chatResourcesMap, convertToIgcResource } from '../utils.js';
+import { convertToIgcResource } from '../converters.js';
+import { chatResourcesMap } from '../utils.js';
 
 /* blazorSuppress */
 /**

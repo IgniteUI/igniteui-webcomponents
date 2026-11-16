@@ -1,10 +1,24 @@
-import type {
-  LitElement,
-  ReactiveController,
-  ReactiveControllerHost,
+import {
+  isServer,
+  type LitElement,
+  type ReactiveController,
+  type ReactiveControllerHost,
 } from 'lit';
 import { sameItems } from '../utils/arrays.js';
-import { setOrRemoveAttribute } from '../utils/dom.js';
+import { isDocument, setOrRemoveAttribute } from '../utils/dom.js';
+
+/**
+ * Whether a `<label>` can name the host. A label names only elements of its
+ * own root, so a host in a shadow root without labels has none.
+ */
+function mayHaveLabels(host: HTMLElement): boolean {
+  if (!host.id) {
+    return !!host.closest('label');
+  }
+
+  const root = host.getRootNode();
+  return isDocument(root) || !!(root as ParentNode).querySelector('label');
+}
 
 /** The value types that `ElementInternals.setFormValue` accepts. */
 export type FormValueType = string | File | FormData | null;
@@ -106,9 +120,15 @@ class ElementInternalsController implements ReactiveController {
       return this._labels;
     }
 
-    const host = this._host.constructor as { formAssociated?: boolean };
-    // The getter throws for an element that is not form associated.
-    const list = host.formAssociated ? this._internals.labels : null;
+    // The getter throws unless the host is form associated. Skip the read when
+    // no label can name the host: Chromium updates each live list on every DOM
+    // change until GC. The SSR DOM shim has no `closest()`.
+    const list =
+      !isServer &&
+      (this._host.constructor as { formAssociated?: boolean }).formAssociated &&
+      mayHaveLabels(this._host)
+        ? this._internals.labels
+        : null;
     const labels = list?.length
       ? Array.from(list as NodeListOf<Element>)
       : null;
@@ -239,9 +259,12 @@ class ElementInternalsController implements ReactiveController {
 
   /** Adds or removes a custom state, which CSS matches with `:state()`. */
   public setState(state: string, value: boolean): void {
-    value
-      ? this._internals.states.add(state)
-      : this._internals.states.delete(state);
+    const states = this._internals.states;
+
+    // Chromium restyles the host on each `add()`, also of a state that is set.
+    if (states.has(state) !== value) {
+      value ? states.add(state) : states.delete(state);
+    }
   }
 
   /**

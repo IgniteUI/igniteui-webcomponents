@@ -5,7 +5,6 @@ import {
   type TemplateResult,
 } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import { buttonGroupContext } from '#internals/context.js';
 import {
   ariaBindings,
@@ -14,10 +13,12 @@ import {
 import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import { setOrRemoveAttribute } from '#internals/utils/dom.js';
+import { bindIf } from '#internals/utils/lit.js';
 import { all } from '#themes/button-group/themes/button.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
@@ -26,14 +27,14 @@ import { styles as shared } from './themes/shared/button/button.common.css.js';
 
 /**
  * The toggle button wraps a native button element and exposes additional `value` and `selected` properties.
- * It is used in the context of a button group to facilitate the creation of group/toolbar like UX behaviors.
+ * Use it in a button group to make a toolbar or a set of options.
  *
  * @element igc-toggle-button
  *
  * @slot - Renders the label/content of the button.
  *
  * @csspart toggle - The native button element.
- * @csspart focused - The native button element when focused through a keyboard interaction.
+ * @csspart focused - Added to the toggle part when the button has keyboard focus.
  */
 @shadowOptions({ delegatesFocus: true })
 export default class IgcToggleButtonComponent extends HostAriaMixin(
@@ -128,11 +129,13 @@ export default class IgcToggleButtonComponent extends HostAriaMixin(
   /** Sets focus on the button. */
   public override focus(options?: FocusOptions): void {
     this._nativeButton?.focus(options);
+    deferFocus(this, options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the button. */
   public override blur(): void {
+    cancelDeferredFocus(this);
     this._nativeButton?.blur();
   }
 
@@ -156,11 +159,11 @@ export default class IgcToggleButtonComponent extends HostAriaMixin(
           focused: this._focusRingManager.focused,
         })}
         type="button"
-        role=${ifDefined(isRadio ? 'radio' : undefined)}
+        role=${bindIf(isRadio, 'radio')}
         ?disabled=${disabled}
         ${ariaBindings(hostAria(this))}
-        aria-checked=${ifDefined(isRadio ? selectedState : undefined)}
-        aria-pressed=${ifDefined(isRadio ? undefined : selectedState)}
+        aria-checked=${bindIf(isRadio, selectedState)}
+        aria-pressed=${bindIf(!isRadio, selectedState)}
         aria-disabled=${disabled}
       >
         <slot></slot>

@@ -13,6 +13,7 @@ describe('Tab component', () => {
     tagName: 'igc-tab',
     template: html`<igc-tabs><igc-tab label="One">Content</igc-tab></igc-tabs>`,
     getTarget: (host) => host.renderRoot.querySelector('[part="tab-header"]')!,
+    visibleText: 'One',
   });
 
   let element: IgcTabsComponent;
@@ -143,20 +144,23 @@ describe('Tab component', () => {
     expect(getTabDOM(element.tabs[0]).header.tabIndex).to.equal(0);
   });
 
-  it('makes only the selected panel focusable and inerts the rest', async () => {
+  it('makes only the selected panel focusable and hides the rest until found', async () => {
     const [first, second] = element.tabs;
 
     expect(getTabDOM(first).body.tabIndex).to.equal(0);
-    expect(getTabDOM(first).body.inert).to.be.false;
+    expect(getTabDOM(first).body).to.not.have.attribute('hidden');
     expect(getTabDOM(second).body.tabIndex).to.equal(-1);
-    expect(getTabDOM(second).body.inert).to.be.true;
+    expect(getTabDOM(second).body).to.have.attribute('hidden', 'until-found');
+    // The browser keeps the box of the hidden panel; assistive technology skips it.
+    expect(getTabDOM(first).body).to.not.have.attribute('aria-hidden');
+    expect(getTabDOM(second).body).to.have.attribute('aria-hidden', 'true');
 
     element.select(second);
     await elementUpdated(element);
 
-    expect(getTabDOM(first).body.inert).to.be.true;
+    expect(getTabDOM(first).body).to.have.attribute('hidden', 'until-found');
     expect(getTabDOM(second).body.tabIndex).to.equal(0);
-    expect(getTabDOM(second).body.inert).to.be.false;
+    expect(getTabDOM(second).body).to.not.have.attribute('hidden');
   });
 
   it('reflects the selected and disabled state to the header', async () => {
@@ -175,6 +179,144 @@ describe('Tab component', () => {
     expect(getTabDOM(third).header.getAttribute('aria-disabled')).to.equal(
       'false'
     );
+  });
+
+  describe('Link', () => {
+    runHostAriaTests({
+      tagName: 'igc-tab',
+      template: html`<igc-tabs>
+        <igc-tab label="One" href="#one">Content</igc-tab>
+      </igc-tabs>`,
+      getTarget: (host) =>
+        host.renderRoot.querySelector('[part="tab-header"]')!,
+      visibleText: 'One',
+    });
+
+    beforeEach(async () => {
+      element = await fixture<IgcTabsComponent>(html`
+        <igc-tabs>
+          <igc-tab label="Tab 1" href="#one" target="_top" rel="external">
+            Content 1
+          </igc-tab>
+          <igc-tab label="Tab 2" href="#two">Content 2</igc-tab>
+          <igc-tab label="Tab 3" href="#three" disabled>Content 3</igc-tab>
+        </igc-tabs>
+      `);
+    });
+
+    // See the note on the `igc-tabs` accessibility test for the suppressed rule.
+    it('is accessible', async () => {
+      await expect(element).to.be.accessible({
+        ignoredRules: ['aria-required-children'],
+      });
+    });
+
+    it('renders the header as a link with the tab role', () => {
+      const [first, second] = element.tabs;
+      const { header, body } = getTabDOM(first);
+
+      expect(header).to.be.instanceOf(HTMLAnchorElement);
+      expect(header.role).to.equal('tab');
+      expect(header.getAttribute('href')).to.equal('#one');
+      expect(header.getAttribute('target')).to.equal('_top');
+      expect(header.getAttribute('rel')).to.equal('external');
+      expect(header.getAttribute('aria-selected')).to.equal('true');
+      expect(header.getAttribute('aria-controls')).to.equal(body.id);
+      expect(header.getAttribute('aria-posinset')).to.equal('1');
+      expect(header.getAttribute('aria-setsize')).to.equal('3');
+      expect(header.tabIndex).to.equal(0);
+
+      const other = getTabDOM(second).header;
+
+      expect(other.getAttribute('href')).to.equal('#two');
+      expect(other.hasAttribute('target')).to.be.false;
+      expect(other.hasAttribute('rel')).to.be.false;
+      expect(other.tabIndex).to.equal(-1);
+    });
+
+    it('styles a link header as a plain header', async () => {
+      const tabs = await fixture<IgcTabsComponent>(html`
+        <igc-tabs>
+          <igc-tab label="Tab 1">Content 1</igc-tab>
+          <igc-tab label="Tab 2">Content 2</igc-tab>
+          <igc-tab label="Tab 3" href="#three">Content 3</igc-tab>
+        </igc-tabs>
+      `);
+
+      const plain = getComputedStyle(getTabDOM(tabs.tabs[1]).header);
+      const link = getComputedStyle(getTabDOM(tabs.tabs[2]).header);
+
+      expect(link.textDecorationLine).to.equal('none');
+      expect(link.color).to.equal(plain.color);
+      expect(link.display).to.equal(plain.display);
+      expect(link.cursor).to.equal(plain.cursor);
+    });
+
+    it('drops the URL of a disabled link tab and keeps the header element', async () => {
+      const third = element.tabs[2];
+      const { header } = getTabDOM(third);
+
+      expect(header).to.be.instanceOf(HTMLAnchorElement);
+      expect(header.role).to.equal('tab');
+      expect(header.hasAttribute('href')).to.be.false;
+      expect(header.getAttribute('aria-disabled')).to.equal('true');
+
+      third.disabled = false;
+      await elementUpdated(third);
+
+      expect(getTabDOM(third).header).to.equal(header);
+      expect(header.getAttribute('href')).to.equal('#three');
+      expect(header.getAttribute('aria-disabled')).to.equal('false');
+    });
+
+    it('keeps the focus on the header when the URL is removed or added', async () => {
+      const second = element.tabs[1];
+      const header = () => getTabDOM(second).header;
+
+      header().focus();
+
+      second.href = undefined;
+      await elementUpdated(second);
+
+      expect(header()).to.be.instanceOf(HTMLDivElement);
+      expect(second.shadowRoot!.activeElement).to.equal(header());
+
+      second.href = '#two';
+      await elementUpdated(second);
+
+      expect(header()).to.be.instanceOf(HTMLAnchorElement);
+      expect(second.shadowRoot!.activeElement).to.equal(header());
+    });
+
+    it('leaves the focus in the panel when the URL changes', async () => {
+      const first = element.tabs[0];
+      const input = document.createElement('input');
+
+      first.append(input);
+      input.focus();
+
+      first.href = undefined;
+      await elementUpdated(first);
+
+      expect(document.activeElement).to.equal(input);
+    });
+
+    it('renders the plain header again when the URL is removed', async () => {
+      const second = element.tabs[1];
+      const id = getTabDOM(second).header.id;
+
+      second.href = undefined;
+      await elementUpdated(second);
+
+      const { header, body } = getTabDOM(second);
+
+      expect(header).to.be.instanceOf(HTMLDivElement);
+      expect(header.role).to.equal('tab');
+      expect(header.id).to.equal(id);
+      expect(header.getAttribute('aria-controls')).to.equal(body.id);
+      expect(header.getAttribute('aria-posinset')).to.equal('2');
+      expect(header.tabIndex).to.equal(-1);
+    });
   });
 });
 

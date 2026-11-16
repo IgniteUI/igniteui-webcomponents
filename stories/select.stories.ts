@@ -62,7 +62,8 @@ const metadata: Meta<IgcSelectComponent> = {
     },
     autofocus: {
       type: 'boolean',
-      description: 'Whether the control should receive focus automatically.',
+      description:
+        'Whether the control takes the focus after its first render.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -122,7 +123,7 @@ const metadata: Meta<IgcSelectComponent> = {
     required: {
       type: 'boolean',
       description:
-        'When set, makes the component a required field for validation.',
+        'Whether the control is required. A required control that has no value,\nor is not checked, fails validation.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -133,40 +134,42 @@ const metadata: Meta<IgcSelectComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component.',
+      description:
+        'Whether the control is disabled. A disabled control is not validated,\nand the form does not submit its value.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
-      description: 'Sets the control into invalid state (visual state only).',
+      description:
+        'Whether the control shows the invalid state. It changes only the visual\nstate, not the validity.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     keepOpenOnSelect: {
       type: 'boolean',
       description:
-        'Keeps the dropdown of the component open after the user selects an item.',
+        'Whether the component stays open after the user selects an item.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     keepOpenOnOutsideClick: {
       type: 'boolean',
       description:
-        'Keeps the dropdown of the component open when the user clicks outside of\nit.',
+        'Whether the component stays open when the user clicks outside of it.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     open: {
       type: 'boolean',
-      description: 'Sets the open state of the component.',
+      description: 'Whether the component is open.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     scrollStrategy: {
       type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
       description:
-        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
+        'The behavior of the component when a parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
       options: ['scroll', 'hide', 'close'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'hide' } },
@@ -194,7 +197,7 @@ interface IgcSelectArgs {
   value: string;
   /** Whether the control has an outlined appearance. */
   outlined: boolean;
-  /** Whether the control should receive focus automatically. */
+  /** Whether the control takes the focus after its first render. */
   autofocus: boolean;
   /** The distance of the select dropdown from its input. */
   distance: number;
@@ -216,25 +219,31 @@ interface IgcSelectArgs {
     | 'right-end'
     | 'left-start'
     | 'left-end';
-  /** When set, makes the component a required field for validation. */
+  /**
+   * Whether the control is required. A required control that has no value,
+   * or is not checked, fails validation.
+   */
   required: boolean;
   /** The name of the control, submitted with the form data. */
   name: string;
-  /** The disabled state of the component. */
-  disabled: boolean;
-  /** Sets the control into invalid state (visual state only). */
-  invalid: boolean;
-  /** Keeps the dropdown of the component open after the user selects an item. */
-  keepOpenOnSelect: boolean;
   /**
-   * Keeps the dropdown of the component open when the user clicks outside of
-   * it.
+   * Whether the control is disabled. A disabled control is not validated,
+   * and the form does not submit its value.
    */
+  disabled: boolean;
+  /**
+   * Whether the control shows the invalid state. It changes only the visual
+   * state, not the validity.
+   */
+  invalid: boolean;
+  /** Whether the component stays open after the user selects an item. */
+  keepOpenOnSelect: boolean;
+  /** Whether the component stays open when the user clicks outside of it. */
   keepOpenOnOutsideClick: boolean;
-  /** Sets the open state of the component. */
+  /** Whether the component is open. */
   open: boolean;
   /**
-   * Sets the behavior of the component when the parent container scrolls.
+   * The behavior of the component when a parent container scrolls.
    *
    * If the value is `hide`, the component hides while the anchor is fully out
    * of view. `hide` is the default value.
@@ -610,6 +619,110 @@ export const AssignTicket: Story = {
 
         .se-activity {
           padding-inline-start: 1.25rem;
+        }
+      </style>
+      <div ${story.mount}></div>
+    `;
+  },
+};
+
+const expenseCategories = [
+  'Travel',
+  'Meals',
+  'Lodging',
+  'Office supplies',
+  'Software',
+];
+
+export const ExpenseCategory: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The category of an expense. A category that is not in the list can be added from the `footer` slot of the select. The footer content is outside the list and keeps its own keys: the text field takes the typed text, Space and the arrow keys, so typing does not jump to an option, and the Add button takes Enter and Space. Tab moves from the select through the field and the Add button. The field and the button belong to a separate form through their `form` attribute, so Enter in the field adds the category and does not submit the expense. The new category is selected with `select()`, and `hide()` closes the list. The list closes with the focus in it, so the focus goes back to the select. Escape from the field also closes the list.',
+      },
+    },
+  },
+  render: () => {
+    const categories = [...expenseCategories];
+
+    const addCategory = (event: SubmitEvent) => {
+      event.preventDefault();
+
+      const form = event.target as HTMLFormElement;
+      const name = String(new FormData(form).get('name') ?? '').trim();
+
+      if (!name) {
+        return;
+      }
+
+      const existing = categories.find(
+        (category) => category.toLocaleLowerCase() === name.toLocaleLowerCase()
+      );
+
+      if (!existing) {
+        categories.push(name);
+        story.update();
+      }
+
+      form.reset();
+
+      const select =
+        story.host!.querySelector<IgcSelectComponent>('#se-category')!;
+      select.select(existing ?? name);
+      select.hide();
+    };
+
+    const story = renderInto(
+      () => html`
+        <form id="se-category-form" @submit=${addCategory}></form>
+        <form class="se-panel" @submit=${formSubmitHandler}>
+          <h3>New expense</h3>
+          <igc-input name="description" label="Description" required>
+          </igc-input>
+          <igc-input name="amount" label="Amount (USD)" required></igc-input>
+          <igc-select
+            id="se-category"
+            name="category"
+            label="Category"
+            required
+          >
+            ${categories.map(
+              (category) =>
+                html`<igc-select-item value=${category}
+                  >${category}</igc-select-item
+                >`
+            )}
+            <div slot="footer" class="se-new-category">
+              <igc-input
+                form="se-category-form"
+                name="name"
+                label="New category"
+              ></igc-input>
+              <igc-button type="submit" form="se-category-form">Add</igc-button>
+            </div>
+          </igc-select>
+          <div class="se-actions">
+            <igc-button type="submit">Save expense</igc-button>
+          </div>
+        </form>
+      `
+    );
+
+    return html`
+      ${styles}
+      <style>
+        .se-new-category {
+          display: flex;
+          align-items: flex-end;
+          gap: 0.5rem;
+          padding: 0.75rem 1rem;
+          border-block-start: 1px solid var(--ig-gray-300);
+        }
+
+        .se-new-category igc-input {
+          flex: 1;
         }
       </style>
       <div ${story.mount}></div>

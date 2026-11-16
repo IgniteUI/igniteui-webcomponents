@@ -89,7 +89,8 @@ const metadata: Meta<IgcStepperComponent> = {
     },
     contentTop: {
       type: 'boolean',
-      description: 'Whether the content is displayed above the steps.',
+      description:
+        'Whether the content is displayed above the steps. Applies only to the\nhorizontal orientation.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -143,7 +144,10 @@ interface IgcStepperArgs {
   stepType: 'full' | 'indicator' | 'title';
   /** Whether the stepper is linear. */
   linear: boolean;
-  /** Whether the content is displayed above the steps. */
+  /**
+   * Whether the content is displayed above the steps. Applies only to the
+   * horizontal orientation.
+   */
   contentTop: boolean;
   /** The animation type when in vertical mode. */
   verticalAnimation: 'fade' | 'none' | 'grow';

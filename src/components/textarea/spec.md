@@ -16,6 +16,7 @@
       - [Sizing and resizing](#sizing-and-resizing)
       - [Prefix, suffix and helper text](#prefix-suffix-and-helper-text)
       - [Labeling from the light DOM](#labeling-from-the-light-dom)
+      - [Suggestions from a list of the page](#suggestions-from-a-list-of-the-page)
       - [Validation](#validation)
       - [Form integration](#form-integration)
       - [Text selection and scrolling](#text-selection-and-scrolling)
@@ -27,6 +28,8 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
+    - [CSS custom properties](#css-custom-properties)
   - [Test scenarios](#test-scenarios)
     - [Defaults](#defaults)
     - [Setting value through attribute and projection](#setting-value-through-attribute-and-projection)
@@ -38,7 +41,11 @@
     - [Validation message slots](#validation-message-slots)
     - [External label association](#external-label-association)
     - [Host ARIA](#host-aria)
+    - [Host suggestion state](#host-suggestion-state)
+    - [Auto sizing](#auto-sizing)
+    - [Hidden ancestor](#hidden-ancestor)
     - [Not covered by the suite](#not-covered-by-the-suite)
+  - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
     - [Keyboard support](#keyboard-support)
@@ -53,6 +60,13 @@
 |       3 | 2026-10-02 | Focus after form checks; `invalid` only on checks  |
 |       4 | 2026-10-02 | Forward the host `aria-describedby`                |
 |       5 | 2026-10-07 | Whitespace in the slot, selection, `spellcheck`    |
+|       6 | 2026-10-20 | CSS field sizing for `resize="auto"`               |
+|       7 | 2026-10-21 | API descriptions aligned with the JSDoc.           |
+|       8 | 2026-10-23 | The textarea makes a stacking context, so the z-index of the textarea and the container does not compete with the layers of the page |
+|       9 | 2026-10-28 | Forward the host suggestion state                  |
+|      10 | 2026-10-29 | Transition only the color and the width of the bottom line in the Material theme, and only its color in the Indigo theme, so the line hides at the same time as a hidden ancestor |
+|      11 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API                                                                              |
+|      12 | 2026-11-16 | `setRangeText` before the first render keeps the value                                                                                                                              |
 
 ## Overview
 
@@ -174,7 +188,14 @@ Removing the projected text clears the value.
 | `none`     | The control cannot be resized and keeps the height derived from `rows`.         |
 | `auto`     | The control resizes itself to fit its content; manual resizing is disabled.     |
 
-Auto-sizing recalculates on value, `rows` and `resize` changes, and whenever the element is resized by its layout.
+With `resize="auto"`, the minimum height is `rows` lines. A browser that supports the CSS `field-sizing` property sizes
+the control to its content. In other browsers, the component measures the height on value, `rows` and `resize` changes,
+and when the layout resizes the element. In this mode the textarea uses the content box, so a `max-block-size` on the
+`input` part does not include the padding and the border: `max-block-size: 10lh` shows 10 lines before the control
+scrolls. In a shrink-to-fit layout, such as a flex item without a width, a browser with field sizing makes the control
+approximately 20 characters wide.
+
+A height that the end-user sets with the resize handle stays until `resize` changes.
 
 #### Prefix, suffix and helper text
 
@@ -211,6 +232,28 @@ Because a reflected relation blanks its content attribute, assert such a relatio
 The name follows the [naming order](../input/spec.md#naming-order), so the host `aria-labelledby` and `aria-label` also
 name the control.
 
+#### Suggestions from a list of the page
+
+A message field with @mention suggestions keeps the focus in the text, and the arrow keys move
+`aria-activedescendant` through the options of a listbox. Set the state on the host:
+
+```html
+<igc-textarea
+  label="Message"
+  aria-autocomplete="list"
+  aria-controls="mentions"
+  aria-activedescendant="mention-2"
+></igc-textarea>
+<div id="mentions" role="listbox" aria-label="People">
+  <div id="mention-1" role="option">…</div>
+  <div id="mention-2" role="option">…</div>
+</div>
+```
+
+The textarea forwards the host state as the [input](../input/spec.md#combobox-over-a-list-of-the-page) does. HTML
+allows no `role` on a `textarea`, so axe reports a forwarded `role="combobox"`. Use `aria-autocomplete`,
+`aria-controls` and `aria-activedescendant` without a role. The limitations of the input apply.
+
 #### Validation
 
 ```html
@@ -234,7 +277,7 @@ and see the error message instead of being silently truncated. See the
 </form>
 ```
 
-- The value is submitted under `name`, wrapped according to the `wrap` property.
+- The value is submitted under `name`. The `wrap` property does not change the submitted value.
 - A form reset restores the value to `defaultValue`, taken from the `value` attribute or the projected text.
 - An invalid control blocks submission and fires the native `invalid` event.
 
@@ -282,27 +325,27 @@ The component delegates focus to the inner native textarea, so all native text-e
 | value             | value          | No        | `string`                    | `''`       | The value of the component.                                                 |
 | label             | label          | No        | `string`                    | -          | The label for the control.                                                  |
 | placeholder       | placeholder    | No        | `string`                    | -          | The placeholder text of the control.                                        |
-| rows              | rows           | No        | `number`                    | 3          | The number of visible text lines for the control.                           |
-| resize            | resize         | No        | `TextareaResize`            | `vertical` | Controls whether the control can be resized. `auto` fits the content.       |
-| wrap              | wrap           | No        | `'hard' \| 'soft' \| 'off'` | `soft`     | Indicates how the control should wrap the value for form submission.        |
-| outlined          | outlined       | Yes       | `boolean`                   | false      | Whether the control will have outlined appearance.                          |
-| readOnly          | readonly       | Yes       | `boolean`                   | false      | Makes the control a readonly field.                                         |
-| required          | required       | Yes       | `boolean`                   | false      | Makes the component a required field for validation.                        |
-| disabled          | disabled       | Yes       | `boolean`                   | false      | The disabled state of the component.                                        |
-| invalid           | invalid        | No        | `boolean`                   | false      | Sets the control into invalid state (visual state only).                    |
+| rows              | rows           | No        | `number`                    | 3          | The number of visible text lines of the control. As in the native textarea, a value less than 1 shows 2 lines. |
+| resize            | resize         | No        | `TextareaResize`            | `vertical` | How the user can resize the control. With `auto`, the height of the control fits its content and the resize handle is hidden. |
+| wrap              | wrap           | No        | `'hard' \| 'soft' \| 'off'` | `soft`     | How the control wraps long lines of text. With `off`, the lines do not wrap. It does not change the submitted value. |
+| outlined          | outlined       | Yes       | `boolean`                   | false      | Whether the control has an outlined appearance.                             |
+| readOnly          | readonly       | Yes       | `boolean`                   | false      | Whether the control is read-only.                                           |
+| required          | required       | Yes       | `boolean`                   | false      | Whether the control is required. A required control that has no value, or is not checked, fails validation.                        |
+| disabled          | disabled       | Yes       | `boolean`                   | false      | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                                        |
+| invalid           | invalid        | No        | `boolean`                   | false      | Whether the control shows the invalid state. It changes only the visual state, not the validity.                    |
 | name              | name           | Yes       | `string`                    | -          | The name of the control, submitted with the form data.                      |
-| minLength         | minlength      | No        | `number`                    | -          | The minimum number of characters required that the user should enter.       |
+| minLength         | minlength      | No        | `number`                    | -          | The minimum number of characters (UTF-16 code units) that the value must have. |
 | maxLength         | maxlength      | No        | `number`                    | -          | The maximum number of characters that the user can enter.                   |
-| validateOnly      | validate-only  | Yes       | `boolean`                   | false      | Evaluates `maxLength` without restricting user input.                       |
-| spellcheck        | spellcheck     | No        | `boolean`                   | true       | Controls spell checking. As for the native attribute, only `false` is off.  |
-| autocapitalize    | autocapitalize | No        | `string`                    | -          | Controls whether and how text input is automatically capitalized.           |
+| validateOnly      | validate-only  | Yes       | `boolean`                   | false      | Whether the validation rules apply without restricting user input. The user can type past `maxLength`. |
+| spellcheck        | spellcheck     | No        | `boolean`                   | true       | Whether the browser checks the spelling of the value. As for the native attribute, only the `"false"` attribute value turns the check off. |
+| autocapitalize    | autocapitalize | No        | `string`                    | -          | Whether and how the browser capitalizes the text that the user enters.      |
 | autocomplete      | autocomplete   | No        | `string`                    | -          | A hint for the browser on how to autofill the control.                      |
-| inputMode         | inputmode      | No        | `string`                    | -          | Hints at the type of data to be entered, for the virtual keyboard.          |
-| defaultValue      | -              | No        | `string`                    | `''`       | The initial value of the control, restored on a form reset.                 |
-| form              | -              | No        | `HTMLFormElement \| null`   | -          | Read-only. The form associated with this element.                           |
-| validity          | -              | No        | `ValidityState`             | -          | Read-only. The validity state of the element.                               |
-| validationMessage | -              | No        | `string`                    | -          | Read-only. The validation message of the element.                           |
-| willValidate      | -              | No        | `boolean`                   | -          | Read-only. Whether the element is a candidate for constraint validation.    |
+| inputMode         | inputmode      | No        | `string`                    | -          | A hint to the browser for which virtual keyboard layout to display.         |
+| defaultValue      | -              | No        | `string`                    | `''`       | The default value of the control. A form reset restores the value to it. While the value is unchanged since the start or the last form reset, a new default also sets the value. The `value` attribute also sets it.                 |
+| form              | -              | No        | `HTMLFormElement \| null`   | -          | Read-only. The form that the control is associated with, or `null`.                           |
+| validity          | -              | No        | `ValidityState`             | -          | Read-only. The validity state of the control.                               |
+| validationMessage | -              | No        | `string`                    | -          | Read-only. The validation message of the control. It is empty when the control is valid.                           |
+| willValidate      | -              | No        | `boolean`                   | -          | Read-only. Whether the control is a candidate for constraint validation.    |
 | selectionStart    | -              | No        | `number`                    | 0          | Read-only. The offset of the start of the text selection.                   |
 | selectionEnd      | -              | No        | `number`                    | 0          | Read-only. The offset of the end of the text selection.                     |
 
@@ -310,13 +353,15 @@ The component delegates focus to the inner native textarea, so all native text-e
 
 | Name              | Type signature                                                                                | Description                                                                 |
 | ----------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| focus             | `(options?: FocusOptions): void`                                                              | Sets focus on the control.                                                  |
+| blur              | `(): void`                                                                                    | Removes focus from the control.                                             |
 | select            | `(): void`                                                                                    | Selects all text within the control.                                        |
 | setSelectionRange | `(start: number, end: number, direction?: SelectionRangeDirection): void`                     | Sets the text selection range of the control.                               |
 | setRangeText      | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the text from `start` to `end`, or the selected text without them. |
-| scrollTo          | `(options?: ScrollToOptions): void` / `(x: number, y: number): void`                          | Scrolls the control to the given position.                                  |
-| checkValidity     | `(): boolean`                                                                                 | Checks validity and emits `invalid` when the control is invalid.            |
-| reportValidity    | `(): boolean`                                                                                 | Checks validity; when invalid, emits `invalid` and focuses the control.     |
-| setCustomValidity | `(message: string): void`                                                                     | Sets a custom message. Invalid while `message` is not empty.                |
+| scrollTo          | `(options?: ScrollToOptions): void` / `(x: number, y: number): void`                          | Scrolls the text of the control to the given position.                      |
+| checkValidity     | `(): boolean`                                                                                 | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid.            |
+| reportValidity    | `(): boolean`                                                                                 | Checks validity. As for a native control, an invalid control emits `invalid` and takes the focus. It shows its own validation messages, not the message of the browser. Returns `true` when the control is valid.     |
+| setCustomValidity | `(message: string): void`                                                                     | Sets a custom validation message. The control is invalid while the message is not empty. An empty string removes the custom error.                |
 
 ### Events
 
@@ -329,14 +374,14 @@ The component delegates focus to the inner native textarea, so all native text-e
 
 | Name            | Description                                                                      |
 | --------------- | --------------------------------------------------------------------------------- |
-| (default)       | Text content from the default slot will be used as the value of the component.   |
+| (default)       | The text content of the default slot sets the value of the component.            |
 | `prefix`        | Renders content before the input.                                                |
-| `suffix`        | Renders content after input.                                                     |
+| `suffix`        | Renders content after the input.                                                 |
 | `helper-text`   | Renders content below the input.                                                 |
 | `value-missing` | Renders content when the required validation fails.                              |
 | `too-long`      | Renders content when the maxlength validation fails.                             |
 | `too-short`     | Renders content when the minlength validation fails.                             |
-| `custom-error`  | Renders content when setCustomValidity(message) is set.                          |
+| `custom-error`  | Renders content when a custom message is set with `setCustomValidity()`.         |
 | `invalid`       | Renders content when the component is in invalid state (validity.valid = false). |
 
 ### CSS Shadow parts
@@ -344,11 +389,32 @@ The component delegates focus to the inner native textarea, so all native text-e
 | Part          | Description                                                       |
 | ------------- | ----------------------------------------------------------------- |
 | `container`   | The main wrapper that holds all main input elements of the textarea. |
-| `input`       | The native input element of the textarea.                         |
+| `input`       | The native textarea element.                                         |
 | `label`       | The native label element of the textarea.                         |
 | `prefix`      | The prefix wrapper of the textarea.                               |
 | `suffix`      | The suffix wrapper of the textarea.                               |
 | `helper-text` | The helper text wrapper of the textarea.                          |
+| `prefixed`    | Added to the container when an element that is not hidden is in the prefix slot. |
+| `suffixed`    | Added to the container when an element that is not hidden is in the suffix slot. |
+| `filled`      | Added to the container when the textarea has a value.             |
+| `placeholder` | Added to the container in the material theme when the textarea has a placeholder. |
+| `labelled`    | Added to the container in the material theme when the control has a label. |
+| `start`       | The wrapper of the prefix in the material theme.                  |
+| `notch`       | The wrapper of the label in the material theme.                   |
+| `filler`      | The outline segment between the notch and the end in the material theme. |
+| `end`         | The wrapper of the suffix in the material theme.                  |
+
+### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
+
+### CSS custom properties
+
+| Property                | Description                                                                                                                                                                                                                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ig-helper-min-lines` | The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`. |
 
 ## Test scenarios
 
@@ -361,6 +427,7 @@ The suite lives in [`textarea.spec.ts`](./textarea.spec.ts). It runs in a real b
 | `createFormAssociatedTestBed` | A `form` fixture around the control, exposing `formData`, `submit`, `reset` and `valid`. |
 | `runValidationContainerTests` | Generated cases asserting that each validation slot renders for its failing constraint. |
 | `runExternalLabelAssociationTests` | External `label` association through `for`, by nesting and after the first render, click-to-focus, an axe audit, and the host ARIA naming. |
+| `runHostComboboxTests` | The host combobox state on the native editor, with an axe audit. |
 | `simulateInput / simulateClick / simulateKeyboard` | User interaction driven without real device events. |
 | `ValidityHelpers` | Assertions for validity, invalid styling and validation slot presence and content. |
 | `isFocused` | Focus assertions that see through shadow roots. |
@@ -370,9 +437,10 @@ The groups below mirror the `describe` blocks of the suite.
 ### Defaults
 
 1. Is accessible (axe audit).
-2. Renders the expected layout for the material variant.
+2. Renders the expected layout for the material variant. The textarea is painted under an earlier page layer with
+   `z-index: 1`.
 3. Auto sizing is applied when `resize="auto"`.
-4. The auto sizing height is released when `resize` changes away from `auto`.
+4. Without CSS field sizing, the measured auto sizing height is released when `resize` changes away from `auto`.
 
 ### Setting value through attribute and projection
 
@@ -397,7 +465,7 @@ The groups below mirror the `describe` blocks of the suite.
 
 17. `select`.
 18. `setSelectionRange`.
-19. `setRangeText`.
+19. `setRangeText`. Before the first render, it keeps the value.
 20. `selectionStart` and `selectionEnd` report the selection.
 21. `setRangeText` without a range replaces the selection.
 22. `focus` and `blur`.
@@ -449,6 +517,38 @@ Generated by `runExternalLabelAssociationTests`.
 39. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal.
 
+### Host suggestion state
+
+Generated by `runHostComboboxTests` with no audited role.
+
+40. A host `aria-autocomplete`, `aria-controls` and `aria-activedescendant` point the native textarea at a listbox of
+    the page, with no `role`, and an axe audit passes.
+41. The native textarea follows a change of the host `aria-activedescendant` and `aria-controls`, and each set of the host
+    `ariaActiveDescendantElement`. A reference to no element forwards nothing.
+42. Each host attribute, also `role="combobox"`, `aria-expanded` and `aria-haspopup`, goes to the native textarea and
+    goes away with the host attribute. A role other than `combobox` and an `aria-expanded` without a role stay on the
+    host. The host state sets no `data-role` or `data-haspopup`.
+
+### Auto sizing
+
+Each case runs with CSS field sizing and without it.
+
+43. Keeps `rows` lines as the minimum height, also after a `rows` change, and uses two rows for `rows="0"`.
+44. Follows the content, with no inline height when the browser sizes the control, and stops when `resize` changes away
+    from `auto`.
+45. Keeps the width of a shrink-to-fit layout while the content grows.
+46. Keeps a height from the resize handle until `resize` changes.
+
+### Hidden ancestor
+
+47. The textarea hides at the same time as a hidden ancestor in each theme, at rest and after a focus or a hover: no
+    element transitions `visibility` or sets it to `visible`.
+48. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
+    takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
+    `disabled` set does not cancel an earlier call on another element.
+
 ### Not covered by the suite
 
 The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
@@ -456,6 +556,12 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 The following documented behaviors have no dedicated case yet: the `validateOnly` mode, and the forwarding of
 `autocapitalize`, `autocomplete` and `inputmode`.
+
+## Assumptions and limitations
+
+- `wrap="hard"` wraps the text as the native element does, but does not add line breaks to the submitted value. The
+  browser computes those line breaks from the layout, and only when it submits a native `textarea`.
+
 ## Accessibility
 
 ### ARIA roles and properties
@@ -468,6 +574,7 @@ The following documented behaviors have no dedicated case yet: the `validateOnly
 - The helper text and the validation messages are referenced through `aria-describedby`.
 - The required, disabled and read-only states come from the native attributes on the inner textarea.
 - A host `aria-describedby` describes the native control after the helper text, by element reference.
+- The host suggestion state goes to the native textarea. See [Suggestions from a list of the page](#suggestions-from-a-list-of-the-page).
 
 ### Keyboard support
 

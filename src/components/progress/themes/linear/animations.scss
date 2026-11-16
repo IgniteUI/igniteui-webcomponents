@@ -1,0 +1,139 @@
+@forward '../animations';
+@use 'sass:map';
+
+$easing-curves: (
+    primary-translate-start: cubic-bezier(0.5, 0, 0.7017, 0.4958),
+    primary-translate-mid: cubic-bezier(0.3024, 0.3813, 0.55, 0.9563),
+
+    primary-scale-slow-start: cubic-bezier(0.3347, 0.124, 0.7858, 1),
+    primary-scale-quick-end: cubic-bezier(0.06, 0.11, 0.6, 1),
+
+    secondary-translate-start: cubic-bezier(0.15, 0, 0.515, 0.4096),
+    secondary-translate-mid: cubic-bezier(0.31, 0.284, 0.8, 0.7337),
+    secondary-translate-end: cubic-bezier(0.4, 0.627, 0.6, 0.902),
+
+    secondary-scale-slow-start: cubic-bezier(0.15, 0, 0.515, 0.4096),
+    secondary-scale-mid: cubic-bezier(0.31, 0.284, 0.8, 0.7337),
+    secondary-scale-smooth-end: cubic-bezier(0.4, 0.627, 0.6, 0.902)
+);
+
+@function timing-function($key) {
+    @return map.get($easing-curves, $key);
+}
+
+@keyframes igc-indeterminate-primary {
+    0% {
+        transform: translateX(0);
+    }
+
+    20% {
+        animation-timing-function: timing-function('primary-translate-start');
+        transform: translateX(0);
+    }
+
+    59.15% {
+        animation-timing-function: timing-function('primary-translate-mid');
+        transform: translateX(83.671%);
+    }
+
+    100% {
+        transform: translateX(200.611%);
+    }
+}
+
+@keyframes igc-indeterminate-primary-scale {
+    0% {
+        transform: scaleX(0.08);
+    }
+
+    36.65% {
+        animation-timing-function: timing-function('primary-scale-slow-start');
+        transform: scaleX(0.08);
+    }
+
+    69.15% {
+        animation-timing-function: timing-function('primary-scale-quick-end');
+        transform: scaleX(0.6614);
+    }
+
+    100% {
+        transform: scaleX(0.08);
+    }
+}
+
+@keyframes igc-indeterminate-secondary {
+    0% {
+        animation-timing-function: timing-function('secondary-translate-start');
+        transform: translateX(0);
+    }
+
+    25% {
+        animation-timing-function: timing-function('secondary-translate-mid');
+        transform: translateX(37.6519%);
+    }
+
+    48.35% {
+        animation-timing-function: timing-function('secondary-translate-end');
+        transform: translateX(84.3861%);
+    }
+
+    100% {
+        transform: translateX(160.2777%);
+    }
+}
+
+@keyframes igc-indeterminate-secondary-scale {
+    0% {
+        animation-timing-function: timing-function('secondary-scale-slow-start');
+        transform: scaleX(0.08);
+    }
+
+    19.15% {
+        animation-timing-function: timing-function('secondary-scale-mid');
+        transform: scaleX(0.4571);
+    }
+
+    44.15% {
+        animation-timing-function: timing-function('secondary-scale-smooth-end');
+        transform: scaleX(0.727);
+    }
+
+    100% {
+        transform: scaleX(0.08);
+    }
+}
+
+// Used by the Fluent theme sheet, which shares the shadow root of the base sheet.
+@keyframes igc-indeterminate-bar-fluent {
+    0% {
+        transform: translateX(-100%);
+        transform-origin: left;
+    }
+
+    100% {
+        transform: translateX(310%);
+        transform-origin: right;
+    }
+}
+
+@keyframes igc-indeterminate-bar-fluent-rtl {
+    0% {
+        transform: translateX(100%);
+        transform-origin: right;
+    }
+
+    100% {
+        transform: translateX(-310%);
+        transform-origin: left;
+    }
+}
+
+@keyframes igc-initial-width {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: calc(var(--_progress-whole, 0) * 1%);
+    }
+}

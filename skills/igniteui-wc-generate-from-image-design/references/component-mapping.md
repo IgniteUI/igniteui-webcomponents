@@ -40,7 +40,7 @@ Component decision matrix (by visual pattern, domain-neutral):
 | Visual Pattern | Recommended Component | Notes |
 |---|---|---|
 | Repeated rows with icon/text/action | `IgcListComponent` + `IgcListItemComponent` | Use when the row anatomy and interaction model match. Use `slot="title"`, `slot="subtitle"`, `slot="start"`, `slot="end"`. Use native `<ul>/<li>` or custom containers when that is a closer visual fit |
-| Spreadsheet-like editable or sortable table | `IgcGridComponent` | Use `igniteui-grid-lite` for lightweight tables. Use advanced grid packages when the screenshot needs built-in editing, paging, filtering, grouping, summaries, hierarchy, or pivoting |
+| Spreadsheet-like editable or sortable table | `IgcGridLite` or `IgcGridComponent` | Use `IgcGridLite` (`igniteui-grid-lite`) for lightweight tables that need only sorting and filtering. Use `IgcGridComponent` from the advanced grid packages when the screenshot needs built-in editing, paging, grouping, summaries, hierarchy, or pivoting |
 | Hierarchical or tree-structured table | `IgcTreeGridComponent` or `IgcHierarchicalGridComponent` | Use when rows have parent-child or master-detail relationships |
 | Content blocks / summary cards | `IgcCardComponent` | Use when card chrome helps match the panel shape and structure. Use header/content/actions subcomponents with slotted content. Use plain `<div>` containers for flat or highly custom tiles |
 | Any text input field | `IgcInputComponent` | Use when the input anatomy matches the screenshot, including search fields and inline editors. Apply CSS and tokens to match the screenshot's border/radius style |
@@ -83,14 +83,14 @@ Decision rule:
 | Icons | `IgcIconComponent` |
 | Progress bar | `IgcLinearProgressComponent` |
 | Circular progress | `IgcCircularProgressComponent` |
-| Flat data grid | `IgcGridComponent` |
+| Flat data grid | `IgcGridLite` / `IgcGridComponent` |
 | Hierarchical/tree data grid | `IgcTreeGridComponent` / `IgcHierarchicalGridComponent` |
 | Filter/tag chips | `IgcChipComponent` |
 
 Decision rule:
 
 - Use `IgcListComponent` for repeated-row content lists when its row structure and interaction model match the screenshot. The component adds accessible keyboard navigation, item structure, and theming when those benefits fit the design. Use native `<ul>/<li>` or custom containers when they are a closer visual fit.
-- Choose `IgcGridComponent` only when the image is clearly tabular (flat rows and columns, spreadsheet-style). Use the required behavior to decide if the lightweight or the advanced grid package is the correct fit.
+- Choose `IgcGridLite` or `IgcGridComponent` only when the image is clearly tabular (flat rows and columns, spreadsheet-style). Use the required behavior to decide if the lightweight or the advanced grid package is the correct fit.
 - Choose `IgcTreeGridComponent` or `IgcHierarchicalGridComponent` when rows have parent-child or nested structure.
 - Use `IgcChipComponent` when chip anatomy matches the screenshot's status badges, tags, or label pills. Use custom badge or pill markup when you need a simpler or more exact visual match.
 

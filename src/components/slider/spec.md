@@ -25,6 +25,7 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
   - [Test scenarios](#test-scenarios)
     - [Regular](#regular)
     - [Range](#range)
@@ -36,6 +37,7 @@
     - [Default value](#default-value)
     - [External label association](#external-label-association)
     - [Host ARIA](#host-aria)
+    - [Hidden ancestor](#hidden-ancestor)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -54,6 +56,9 @@
 |       5 | 2026-10-05 | Values in any order, nearest step, range defaults and value text, label in top layer |
 |       6 | 2026-10-06 | Tick labels inside the box and on one line, unset bounds                             |
 |       7 | 2026-10-06 | `focus()` and `blur()` move the focus to a thumb, the lower one in a range slider    |
+|       8 | 2026-10-21 | API descriptions aligned with the JSDoc.                                             |
+|       9 | 2026-10-29 | The base of the slider has no transition, so the slider hides at the same time as a hidden ancestor |
+|      10 | 2026-11-02 | A `focus()` call before the first render applies after the render                                   |
 
 ## Overview
 
@@ -206,8 +211,8 @@ The labels name only the primary ticks, so the secondary ticks have no label.
 restores it, clamped into the current range. It follows the disabled state of an ancestor fieldset and supports
 `setCustomValidity`, `checkValidity` and `reportValidity`. Its validation behavior follows the
 [form-associated elements specification](../validation-container/spec.md). `focus()` moves the focus to the thumb,
-so a failed submit and `reportValidity()` focus an invalid slider. A disabled slider does not take the focus.
-`igc-range-slider` is not form associated.
+so a failed submit and `reportValidity()` focus an invalid slider. A disabled slider does not take the focus. A
+`focus()` call before the first render applies after the render. `igc-range-slider` is not form associated.
 
 ### Localization
 
@@ -243,18 +248,18 @@ Shared by `igc-slider` and `igc-range-slider`:
 | `max`                 | `max`                   | no        | `number`                          | `100`   | The end of the scale.                                            |
 | `lowerBound`          | `lower-bound`           | no        | `number`                          | `min`   | The lowest reachable value.                                      |
 | `upperBound`          | `upper-bound`           | no        | `number`                          | `max`   | The highest reachable value.                                     |
-| `step`                | `step`                  | no        | `number`                          | `1`     | The granularity; `0` makes the slider continuous.                |
-| `disabled`            | `disabled`              | yes       | `boolean`                         | `false` | Disables the interactions of the slider.                         |
-| `discreteTrack`       | `discrete-track`        | no        | `boolean`                         | `false` | Draws the steps on the track.                                    |
-| `hideTooltip`         | `hide-tooltip`          | no        | `boolean`                         | `false` | Hides the thumb tooltip.                                         |
+| `step`                | `step`                  | no        | `number`                          | `1`     | The interval between two valid values, counted from `min`. `0` makes the slider continuous. |
+| `disabled`            | `disabled`              | yes       | `boolean`                         | `false` | Whether the slider is disabled. A disabled slider ignores user interaction. |
+| `discreteTrack`       | `discrete-track`        | no        | `boolean`                         | `false` | Whether the track shows the steps. It has no effect when `step` is 0. |
+| `hideTooltip`         | `hide-tooltip`          | no        | `boolean`                         | `false` | Whether the thumb tooltip is hidden.                             |
 | `primaryTicks`        | `primary-ticks`         | no        | `number`                          | `0`     | The number of primary ticks.                                     |
-| `secondaryTicks`      | `secondary-ticks`       | no        | `number`                          | `0`     | The number of secondary ticks between two primary ones.          |
-| `tickOrientation`     | `tick-orientation`      | no        | `"start" \| "end" \| "mirror"`    | `end`   | Where the ticks are drawn.                                       |
-| `hidePrimaryLabels`   | `hide-primary-labels`   | no        | `boolean`                         | `false` | Hides the labels of the primary ticks.                           |
-| `hideSecondaryLabels` | `hide-secondary-labels` | no        | `boolean`                         | `false` | Hides the labels of the secondary ticks.                         |
+| `secondaryTicks`      | `secondary-ticks`       | no        | `number`                          | `0`     | The number of secondary ticks between two primary ticks. Without primary ticks, it is the total number of ticks. |
+| `tickOrientation`     | `tick-orientation`      | no        | `"start" \| "end" \| "mirror"`    | `end`   | Where the ticks are drawn: before the track (`start`), after it (`end`), or on both sides (`mirror`). |
+| `hidePrimaryLabels`   | `hide-primary-labels`   | no        | `boolean`                         | `false` | Whether the labels of the primary ticks are hidden.              |
+| `hideSecondaryLabels` | `hide-secondary-labels` | no        | `boolean`                         | `false` | Whether the labels of the secondary ticks are hidden.            |
 | `tickLabelRotation`   | `tick-label-rotation`   | yes       | `0 \| 90 \| -90`                  | `0`     | The rotation of the tick labels in degrees.                      |
 | `locale`              | `locale`                | no        | `string`                          | `en`    | The locale used to format the values.                            |
-| `valueFormat`         | `value-format`          | no        | `string \| undefined`             | —       | The format string used for the values.                           |
+| `valueFormat`         | `value-format`          | no        | `string \| undefined`             | —       | String format used for the thumb and tick label values in the slider. The `{0}` placeholder holds the formatted number. |
 | `valueFormatOptions`  | —                       | —         | `Intl.NumberFormatOptions`        | —       | The number format options used for the values.                   |
 
 `igc-slider` adds:
@@ -318,8 +323,15 @@ thumb and the tick labels.
 | `tick-label-inner`  | The inner element of a tick label.              |
 | `thumbs`            | The container of the thumbs.                    |
 | `thumb`             | A thumb.                                        |
+| `focused`           | Added to the thumb part when the thumb has keyboard focus. |
 | `thumb-label`       | The tooltip of a thumb.                         |
 | `thumb-label-inner` | The inner element of a thumb tooltip.           |
+
+### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
 
 ## Test scenarios
 
@@ -450,6 +462,17 @@ Generated by `runExternalLabelAssociationTests` for the single-value slider.
 53. `focus()` of a range slider moves the focus to the lower thumb, and a focused upper thumb keeps it. `blur()`
     removes the focus from either thumb. A disabled range slider does not take the focus.
 54. An invalid slider takes the focus on a failed submit and on `reportValidity()`.
+
+### Hidden ancestor
+
+55. The slider and the range slider hide at the same time as a hidden ancestor in each theme, at rest and after a focus
+    or a hover: no element transitions `visibility` or sets it to `visible`.
+56. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
+    takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
+    `disabled` set does not cancel an earlier call on another element. The suite runs for the slider and the range
+    slider.
 
 ### Not covered by the suite
 

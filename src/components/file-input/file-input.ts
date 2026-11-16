@@ -1,14 +1,9 @@
-import {
-  FileInputResourceStringsEN,
-  type IFileInputResourceStrings,
-} from 'igniteui-i18n-core';
+import { FileInputResourceStringsEN } from 'igniteui-i18n-core';
 import { html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ariaBindings } from '#internals/controllers/aria-projection.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
-import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueFileListTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
@@ -50,21 +45,23 @@ const Slots = setSlots(
   'invalid'
 );
 
-const i18n: I18nControllerConfig<IFileInputResourceStrings> = {
+const i18n = {
   defaultEN: FileInputResourceStringsEN,
 };
 
 /* blazorSuppress */
 /**
+ * A form control that lets the user select one or more files, or a folder.
+ *
  * @element igc-file-input
  *
  * @slot prefix - Renders content before the input.
- * @slot suffix - Renders content after input.
+ * @slot suffix - Renders content after the input.
  * @slot helper-text - Renders content below the input.
- * @slot file-selector-text - Renders content for the browse button when input type is file.
- * @slot file-missing-text - Renders content when input type is file and no file is chosen.
+ * @slot file-selector-text - Renders content for the browse button.
+ * @slot file-missing-text - Renders content when no file is chosen.
  * @slot value-missing - Renders content when the required validation fails.
- * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot custom-error - Renders content when a custom message is set with `setCustomValidity()`.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcChange - Emitted when the selection of the control changes.
@@ -73,21 +70,34 @@ const i18n: I18nControllerConfig<IFileInputResourceStrings> = {
  * @csspart container - The main wrapper that holds all main input elements.
  * @csspart input - The native input element.
  * @csspart label - The native label element.
- * @csspart file-names - The file names wrapper when input type is 'file'.
- * @csspart file-selector-button - The browse button when input type is 'file'.
+ * @csspart file-names - The file names wrapper.
+ * @csspart file-selector-button - The browse button wrapper.
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
+ * @csspart prefixed - Added to the container and the input when an element that is not hidden is in the prefix slot.
+ * @csspart suffixed - Added to the container and the input when an element that is not hidden is in the suffix slot.
+ * @csspart filled - Added to the container and the input when the control has a value.
+ * @csspart labelled - Added to the container in the material theme when the control has a label.
+ * @csspart start - The wrapper of the prefix in the material theme.
+ * @csspart notch - The wrapper of the label in the material theme.
+ * @csspart filler - The outline segment between the notch and the end in the material theme.
+ * @csspart end - The wrapper of the suffix in the material theme.
+ * @csspart file-parts - The wrapper of the browse button and the file names.
+ *
+ * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 export default class IgcFileInputComponent extends I18nMixin(
   EventEmitterMixin<
     IgcFileInputComponentEventMap,
-    AbstractConstructor<IgcInputBaseComponent>
+    typeof IgcInputBaseComponent
   >(IgcInputBaseComponent),
   i18n
 ) {
   public static readonly tagName = 'igc-file-input';
-  public static styles = [componentBase, baseStyle, shared, styles];
+  public static override styles = [componentBase, baseStyle, shared, styles];
 
   /* blazorSuppress */
   public static register(): void {
@@ -122,9 +132,18 @@ export default class IgcFileInputComponent extends I18nMixin(
       return null;
     }
 
-    return Array.from(files)
-      .map((file) => file.name || 'unnamed')
-      .join(', ');
+    // A folder selection shows the folder, not each of its files.
+    if (files[0].webkitRelativePath) {
+      const folders = new Set<string>();
+
+      for (const file of files) {
+        folders.add(file.webkitRelativePath.split('/', 1)[0]);
+      }
+
+      return Array.from(folders).join(', ');
+    }
+
+    return Array.from(files, (file) => file.name || 'unnamed').join(', ');
   }
 
   /** Whether the file picker dialog is open. Validation on blur depends on it. */
@@ -137,14 +156,15 @@ export default class IgcFileInputComponent extends I18nMixin(
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
-   * The value of the control.
-   * Similar to native file input, this property is read-only and cannot be set programmatically.
+   * The value of the control: the name of the first selected file, as the native file input gives it.
+   * As for the native file input, only an empty string can be set. It clears the selection.
    * @attr
    */
   @property()
   public set value(value: string) {
     if (value === '' && this._input) {
       this._input.value = value;
+      this._formValue.setValueAndFormState(null);
     }
   }
 
@@ -162,6 +182,17 @@ export default class IgcFileInputComponent extends I18nMixin(
   public multiple = false;
 
   /**
+   * Whether the user selects a folder instead of files. The selection then holds
+   * every file in the folder and its subfolders, and the `webkitRelativePath` of
+   * each file gives its path from the folder.
+   *
+   * @attr
+   * @default false
+   */
+  @property({ type: Boolean })
+  public directory = false;
+
+  /**
    * The file types the control accepts, as a comma-separated list.
    * @attr
    */
@@ -169,13 +200,13 @@ export default class IgcFileInputComponent extends I18nMixin(
   public accept = '';
 
   /**
-   * Whether the control should receive focus automatically.
+   * Whether the control receives focus automatically.
    * @attr
    */
   @property({ type: Boolean })
   public override autofocus!: boolean;
 
-  /** Returns the list of selected files. */
+  /** The list of selected files. */
   public get files(): FileList {
     return this._input?.files ?? new DataTransfer().files;
   }
@@ -277,6 +308,7 @@ export default class IgcFileInputComponent extends I18nMixin(
         ?required=${this.required}
         ?autofocus=${this.autofocus}
         ?multiple=${this.multiple}
+        .webkitdirectory=${this.directory}
         tabindex=${bindIf(hasNegativeTabIndex(this), -1)}
         accept=${bindIf(this.accept, this.accept)}
         @click=${this._handleClick}

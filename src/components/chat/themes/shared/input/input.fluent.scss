@@ -1,10 +1,10 @@
 @use 'styles/utilities' as *;
-@use '../../light/themes' as *;
+@use 'components/textarea/themes/light/themes' as *;
 
 $theme: $fluent;
 
 igc-textarea::part(input) {
-    max-height: rem(150px);
+    max-height: rem(128px);
     padding-block: rem(11px);
 }
 

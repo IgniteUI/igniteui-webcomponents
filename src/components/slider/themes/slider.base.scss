@@ -26,7 +26,6 @@ slot {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto rem(48px) auto;
     align-items: center;
-    transition: all .2s ease-out;
     font-family: var(--ig-font-family);
     touch-action: pan-y pinch-zoom;
 }

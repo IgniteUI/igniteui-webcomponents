@@ -9,8 +9,16 @@
     contain: layout;
 
     igc-circular-progress {
-        --diameter: #{sizable(rem(18px), rem(20px), rem(24px))};
+        --ig-circular-bar-diameter: #{sizable(rem(18px), rem(20px), rem(24px))};
     }
+}
+
+// A collapsed item far from the view skips its rendering. The active and the
+// focused item render: the tree scrolls to them, and Firefox and WebKit do not
+// scroll into skipped content.
+:host(:not([expanded], [active], :focus-within)) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto none auto var(--size);
 }
 
 :host(:focus-within) {
@@ -93,6 +101,9 @@
     z-index: 1;
 
     igc-checkbox {
+        // The item does not adopt the component base, which resets this.
+        --ig-helper-min-lines: 0;
+
         &::part(label) {
             display: none;
         }

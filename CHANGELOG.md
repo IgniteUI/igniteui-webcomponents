@@ -9,207 +9,449 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Skeleton
   - New `igc-skeleton` component shows a placeholder while its content loads. Set `loading` to hide the content and draw an animated shape over each visible leaf element and run of text. The `animation` attribute selects `pulse`, `breathe` (the default), `shimmer`, `wave` or `glow`. When loading ends, the content fades in and the host has the `revealing` custom state.
   - While loading, the content is inert and the host has `aria-busy="true"`.
-- #### Calendar, Date picker, Date range picker
-  - `DateRangeDescriptor` has an optional `label`. The calendar adds the labels of the matching `specialDates` and `disabledDates` descriptors to the accessible name of a date, for example "Thursday, October 8, 2026, Free delivery". Before, the special state was only visual, and assistive technologies did not announce it. [#2423](https://github.com/IgniteUI/igniteui-webcomponents/pull/2423)
-- #### Library
-  - The repository has new `SECURITY.md`, `PRIVACY.md`, `ACCESSIBILITY.md`, `THREAT-MODEL.md` and `.github/SUPPORT.md` documents. `SECURITY.md` gives the supported versions: 7.x gets all security fixes, and 6.5.x gets fixes for critical vulnerabilities only. Report a vulnerability through GitHub private vulnerability reporting, not in a public issue. [#2383](https://github.com/IgniteUI/igniteui-webcomponents/pull/2383)
-  - The package has four export conditions that keep only one theme in your bundle: `igc-theme-material`, `igc-theme-bootstrap`, `igc-theme-indigo` and `igc-theme-fluent`. Set one condition in your bundler, or with `node --conditions`. The bundle then contains only the component styles of that theme, light and dark, and is approximately 15–17% smaller after gzip. Without a condition, the bundle contains all four themes, as before. If you call `configureTheme()` with a theme that is not in the bundle, the components show only their structural styles. For the bundler settings, see "Bundling a single theme" in the README.
-  - When another class already defines the tag of a component, the component now writes one warning to the console. An example is a second copy or another version of the library on the same page. The component does not define the tag, so the page keeps the first class. Before, the component skipped the definition and gave no warning.
-- #### Tabs
-  - `header-background` theme token. It paints the full header strip behind the tab items, and it follows `item-background` until you set it. So a translucent `item-background` shows over the header color and does not stack on a copy of itself. You can also make only the header transparent. The `tabs-theme` function of `igniteui-theming` 29.1.0 has the matching `$header-background` parameter. [#2431](https://github.com/IgniteUI/igniteui-webcomponents/pull/2431)
-- #### Text selection
-  - The date picker, the date time input, the input, the mask input and the textarea have read-only `selectionStart` and `selectionEnd` properties. Before, an application could set the selection with `setSelectionRange()`, but it could not read it. In the input, the two properties are `null` for the `email` and `number` types, as on the native input. In the mask input and the date time input, they report the selection from `setRangeText()` when `updateComplete` resolves. [#2451](https://github.com/IgniteUI/igniteui-webcomponents/pull/2451) [#2452](https://github.com/IgniteUI/igniteui-webcomponents/pull/2452)
 
 ### Changed
 - #### Library
-  - The package has a new runtime dependency, `tslib`. The components import the TypeScript helpers from it, so a bundle contains one copy of each helper.
-  - The bundle of all components is approximately 6% smaller after gzip. The components share one copy of their common styles, and the dark theme styles contain only the values that are different from the light theme.
-  - A theme change now updates only the components that render differently for each theme. A `configureTheme()` call with the active theme and variant does not update the components.
-  - The component styles no longer have vendor prefixes for KaiOS, Opera Mini, UC Browser and QQ Browser. The library does not support these browsers.
-  - The minimum versions of the optional peer dependencies are now `dompurify` 3.4.16, `marked` 18.1.0 and `shiki` 4.5.0. [#2450](https://github.com/IgniteUI/igniteui-webcomponents/pull/2450)
-- #### Snackbar, Toast
-  - The display time now stops while the pointer is on the component or the keyboard focus is in it. It starts again in full when both leave. Before, the component closed under the pointer, and a keyboard user could lose the snackbar action before they got to it. A pointer click on the action does not keep the component open, also when the action has the keyboard focus. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
-  - `show()` on an open component now starts the display time again. It still resolves `false`. Before, a new message in an open component closed with the time that remained from the previous message. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
-- #### Tile manager
-  - The default actions of a tile now have names that tell what they do: "Maximize" or "Restore", and "Enter full screen" or "Exit full screen". Before, screen readers announced the icon names, such as "expand_content". The names are in English. To localize them, put your own buttons in the `maximize-action` and `fullscreen-action` slots. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - A tile is now a region, and the content of its `title` slot gives its name. So screen reader users can move from tile to tile. An `aria-label` or `aria-labelledby` on the tile replaces the title as the name. Before, a tile had no role. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - In Chromium, the Tab order and the reading order of screen readers now follow the layout: the `position` of the tiles and the gaps that later tiles fill. Other browsers do not support `reading-flow` yet and keep the DOM order. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - `igcTileDragEnd` and `igcTileDragCancel` now fire after the tiles have their new or restored positions, as `igcTileResizeEnd` does. So a handler can call `saveLayout()` and `loadLayout()`. The end or cancel event of a drag still comes before the `igcTileDragStart` of the next drag. Before, the events fired before the view transition applied the positions. So `saveLayout()` returned the old layout, and the transition overwrote the layout from `loadLayout()`. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-- #### Theming
-  - The component styles no longer declare `--ig-theme` and `--ig-theme-variant`. The library reads the two variables from the document root only. Thus `getComputedStyle()` on a component gives the inherited values, usually the values of the document root.
+  - The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The fallbacks for older browsers are removed, and the styles no longer have vendor prefixes for them.
 
 ### Fixed
-- #### Accordion
-  - The arrow keys, `Home` and `End` now skip a panel that does not render, such as a panel with the `hidden` attribute or `display: none`. Before, the focus stayed on the current panel. [#2418](https://github.com/IgniteUI/igniteui-webcomponents/pull/2418)
-- #### AI-Assisted Development
-  - The `igniteui-wc-migrate-grid-lite-to-premium` skill now shows a correct custom sort strategy for the Premium Grid: an object with a `sort()` method that reads the cell values through `valueResolver`. Before, the example extended `DefaultSortingStrategy`, which the grid package does not export. [#2407](https://github.com/IgniteUI/igniteui-webcomponents/pull/2407)
-- #### Button, Icon button
-  - A button with `href` now keeps the link role of its anchor. Before, the anchor had `role="button"`, so screen readers announced a link as a button. [#2421](https://github.com/IgniteUI/igniteui-webcomponents/pull/2421)
-  - A disabled link now renders a disabled native `<button>` with `role="link"` in place of the anchor. So it leaves the tab order, cannot navigate and dispatches no click. Before, the link stayed in the tab order, and `Enter` still followed it. While the link is disabled, the `base` part is the `<button>`. [#2421](https://github.com/IgniteUI/igniteui-webcomponents/pull/2421)
-  - A change of the host `aria-label` alone now updates the name of the native button or link. Before, the new label applied only after the next change of a property. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
-  - A host `aria-labelledby` and `aria-describedby` now get to the native button or link, and a `<label>` for the button names it. A host `aria-label` still has priority over a `<label>`, as for a native button. An `igc-tooltip` on a button now describes the native button. Before, the button forwarded only `aria-label`. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
-- #### Button group
-  - A change of `aria-label` alone on a toggle button now updates the name of its native button. Before, the change applied only after the next change of a property. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
-  - A toggle button now forwards a host `aria-labelledby` and `aria-describedby` to its native button. Before, it forwarded only `aria-label`. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
-- #### Calendar
-  - A calendar without `activeDate` now gets the active date from its value before the first render, so it renders once. Before, it rendered a second time, and Lit in development mode warned that an update was scheduled after an update completed. [#2423](https://github.com/IgniteUI/igniteui-webcomponents/pull/2423)
-- #### Card
-  - In the dark Bootstrap theme, the last card content now has its bottom padding. Before, the dark variant did not apply the Bootstrap layout styles of the card.
+- #### Input, Textarea
+  - `stepUp()`, `stepDown()` and `setRangeText()` no longer clear the value when you call them before the first render.
+
+## [7.5.0] - 2026-11-16
+### Added
+- #### Accordion, Expansion panel, Tabs, Tree
+  - Find-in-page, text fragments and links to an element now find content in collapsed panels, in tabs that are not selected and in collapsed tree items. The component shows the match and emits its usual events. [#2594](https://github.com/IgniteUI/igniteui-webcomponents/pull/2594)
+    - Expansion panel: opens and emits `igcOpening`, which you can cancel, and `igcOpened`. In an accordion with `single-expand`, the other panels close with no animation.
+    - Tabs: selects the tab and emits `igcChange`. The focus does not move, and a link tab does not follow its link.
+    - Tree: expands the collapsed items above the match. Each item emits `igcItemExpanding`, which you can cancel, and `igcItemExpanded`. In WebKit, the tree does not scroll to a match in an item that skips its rendering.
+    - A disabled panel, tab or item stays closed, and its content is not searchable.
+    - The browser must support `hidden="until-found"` (Chrome 102, Firefox 139, Safari 26.2). Other browsers hide the content as before.
+- #### API documentation
+  - The manifest and the API documentation now list the custom states and 20 parts that were not documented. The states are `ig-invalid` of the form controls, `disabled` and `label-before` of the radio group, and `start-collapsed` and `end-collapsed` of the splitter. Style a state with `:state()`, for example `igc-input:state(ig-invalid)`. [#2489](https://github.com/IgniteUI/igniteui-webcomponents/pull/2489)
+- #### Calendar, Date picker, Date range picker
+  - `DateRangeDescriptor` has an optional `label`. The calendar adds the labels of the matching `specialDates` and `disabledDates` to the accessible name of a date, for example "Thursday, October 8, 2026, Free delivery". [#2423](https://github.com/IgniteUI/igniteui-webcomponents/pull/2423)
 - #### Chat
-  - The chat now creates one object URL for each attached file, and revokes it when you remove the attachment or when a listener cancels `igcAttachmentAdded`. Before, each render created a new object URL and did not revoke the old one, so the memory use increased.
-  - While the typing indicator or the suggestions show, the message area now scrolls to the bottom only when content is added. Before, each update of the chat scrolled it to the bottom, for example a change of `headerText`, also while the user read earlier messages.
-- #### Checkbox
-  - The indicator icon is now hidden from assistive technologies. Before, each checkbox had an unnamed image next to it in the accessibility tree. [#2425](https://github.com/IgniteUI/igniteui-webcomponents/pull/2425)
-- #### Chip
-  - The chip now delegates the focus to its action control, so `focus()` and `blur()` work on the host. Before, `focus()` did nothing, so an application could not move the focus to a chip, for example after a removal. [#2426](https://github.com/IgniteUI/igniteui-webcomponents/pull/2426)
-  - The host `aria-label`, `aria-labelledby` and `aria-describedby` now name and describe the action button. Before, these attributes stayed on the host, where screen readers did not use them. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
-- #### Circular progress, Linear progress
-  - The default `aria-valuetext` is now the percentage that the label shows. Before, it was the value with a percent sign: "50%" for 50 of 200, while the label showed 25%. [#2427](https://github.com/IgniteUI/igniteui-webcomponents/pull/2427)
-  - The percentage now rounds correctly to two decimals: 12.996% shows as 13%, not "12.100%", and 1.005% shows as 1.01%, not 1%. [#2427](https://github.com/IgniteUI/igniteui-webcomponents/pull/2427)
-  - A fractional `max` now gives the correct percentage, such as 50% for 0.25 of 0.5. Before, it showed 25%. [#2427](https://github.com/IgniteUI/igniteui-webcomponents/pull/2427)
-- #### Color picker
-  - The initial `value` is now in the notation of `format` when the `value` attribute comes before the `format` attribute. Before, `value` and the form data stayed in hex until the color changed. [#2413](https://github.com/IgniteUI/igniteui-webcomponents/pull/2413)
-  - The HSL saturation no longer becomes infinite for a very small saturation at full value. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
-  - The hue slider track now has the correct colors. Before, the thumb for yellow was on the orange part of the track.
-  - The alpha slider track now starts and ends at the limits of the thumb movement. Before, at 0% and 100% the track under the thumb was approximately 4% and 96% opaque.
-  - In right-to-left layouts, the hue and alpha slider tracks now go from right to left, as the sliders do. Before, each thumb was on the wrong color.
+  - `focusInput()` moves the focus to the text area, for example after you set `draftMessage`. It waits for the first render. It does nothing when a custom `input` renderer replaces the text area. [#2474](https://github.com/IgniteUI/igniteui-webcomponents/pull/2474) [#2539](https://github.com/IgniteUI/igniteui-webcomponents/pull/2539)
+  - `igcNavigate` is emitted before a plain click or Enter opens a message link in the same tab. Cancel it to route on the client. The detail has the message and the absolute URL. The event does not bubble, so listen to it on the chat. [#2573](https://github.com/IgniteUI/igniteui-webcomponents/pull/2573)
 - #### Combo
-  - Arrow Down no longer closes the list, or moves the focus back to the search input, when a search finds one match or none. [#2428](https://github.com/IgniteUI/igniteui-webcomponents/pull/2428)
-  - A form reset now clears the invalid styles of a required single-selection combo that had the focus. [#2428](https://github.com/IgniteUI/igniteui-webcomponents/pull/2428)
-  - The native input no longer has `aria-disabled`. Its native `disabled` state is sufficient. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
-- #### Date range picker, Date time input, Mask input
-  - A mask position holds one UTF-16 code unit. So the editors now reject an astral character, such as an emoji, as input and as a prompt. Before, it moved the positions after it or split into two halves. A mask or input format with an astral literal now edits at the correct positions. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
-  - In the mask input, an empty value is no longer a bad input. Only `required` makes an empty control invalid. A value that fits no position of a letter mask, such as `12` for `LLL`, is now a bad input. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
-  - In the date time input and the date range picker: [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
-    - A mask flag in the input format, such as `A` or `0`, now stays literal. The letters of a date range separator, such as the `t` of `' to '`, also stay literal.
-    - A `yyyy` year of three or four typed digits now stays as typed, also in the calendar: `0049` is year 49, and `02/29/0000` is valid. One or two typed digits still resolve to the range 1950 to 2049.
-    - A `y` or `yyy` year format now widens to four characters in the mask and in the default placeholder, and keeps its case.
-  - In the date range picker, `min` or `max` with a value before the first render no longer causes a `TypeError`. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
-- #### Dialog
-  - An `aria-label` on the dialog is now its only accessible name. Before, the inner `<dialog>` also got `aria-labelledby` with the text of the label, which is not a valid ID reference. [#2429](https://github.com/IgniteUI/igniteui-webcomponents/pull/2429)
-  - A change of `aria-label` alone now updates the name of the dialog. When you remove `aria-label`, the title gives the name again. Before, the change applied only after the next change of a property, such as `open`. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
-  - A host `aria-labelledby` now names the dialog, with priority over `aria-label` and the title. A host `aria-describedby` describes the dialog. Before, the dialog forwarded only `aria-label`. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
-  - When the platform closes the dialog while `open` stays `true`, the dialog now opens again. An example is a second Escape when an `igcClosing` handler cancels the close. Before, only `keepOpenOnEscape` did this. In other cases, `open` stayed `true` with a closed dialog, the backdrop still covered the page, and `show()` did nothing. [#2441](https://github.com/IgniteUI/igniteui-webcomponents/pull/2441)
-- #### Expansion panel
-  - The host `aria-label`, `aria-labelledby` and `aria-describedby` now name and describe the header. Before, these attributes stayed on the host, where screen readers did not use them. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
+  - Remote data: set `filteringOptions.mode` to `remote` to stop the local filter. Read `detail.searchText` of `igcSearchInput`, search on the server, and set `data` to the results. When the user scrolls near the end of `data`, `igcDataRequest` asks for `count` more items at `startIndex`. New types: `ComboFilteringMode`, `IgcComboSearchInputEventArgs`. [#2519](https://github.com/IgniteUI/igniteui-webcomponents/issues/2519) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+  - `totalItemCount` gives the size of a remote source. The list shows a skeleton for each item that is not loaded, so the scrollbar shows the full length. `loading` shows a spinner in place of the toggle icon. Change them with the `loading` slot and the `loading` and `placeholder` parts. [#2519](https://github.com/IgniteUI/igniteui-webcomponents/issues/2519) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+  - `bindComboDataSource()` from `igniteui-webcomponents/extras/combo-data-source` connects a combo to a server that searches and pages. You give it a `load` function that returns one page, and an optional `resolve` function for the items of preset values. It sets `totalItemCount` and `loading`. See "Extras" in the README. [#2519](https://github.com/IgniteUI/igniteui-webcomponents/issues/2519) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+  - `showSelectAll` adds a "Select all" option in multiple selection. `selectAllItems()` and `deselectAllItems()` do the same from code. Both act on the items that the filter shows. Give `ignoreFilter` to the methods to act on all of `data`. Part: `select-all`. Resource string: `combo_select_all`. [#2535](https://github.com/IgniteUI/igniteui-webcomponents/issues/2535) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+  - `groupSelection` makes each group header an option that selects or deselects the shown items of its group, in multiple selection with `groupKey`. The items are indented under their header. Set `--ig-combo-item-indent` to change the indent. [#2535](https://github.com/IgniteUI/igniteui-webcomponents/issues/2535) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+  - `selectionCommit="confirm"` holds the changes of the user while the list is open, in multiple selection. Each toggle emits `igcPendingChange`, which you can cancel. Enter or the Apply button applies the changes with one `igcChange`. Any other close drops them. For a custom `footer`, use `pendingValue`, `commitSelection()` and `cancelSelection()`. New type: `ComboSelectionCommit`. [#2533](https://github.com/IgniteUI/igniteui-webcomponents/issues/2533) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+  - The `detail` of `igcClosing` and `igcClosed` gives the `trigger` of the close, for example `enter`, `escape`, `outside-click` or `apply`. New types: `IgcComboClosingEventArgs`, `ComboCloseTrigger`. [#2533](https://github.com/IgniteUI/igniteui-webcomponents/issues/2533) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+  - The group header template gets `key`, the `groupKey` value of the group. New types: `ComboGroupHeaderTemplate`, `ComboGroupHeaderContext`. [#2462](https://github.com/IgniteUI/igniteui-webcomponents/issues/2462) [#2468](https://github.com/IgniteUI/igniteui-webcomponents/pull/2468)
+- #### Dropdown
+  - The `header` and `footer` slots hold content before and after the items, outside the `listbox` role. Use them for a search field or action buttons. [#2531](https://github.com/IgniteUI/igniteui-webcomponents/issues/2531) [#2585](https://github.com/IgniteUI/igniteui-webcomponents/pull/2585)
 - #### File input
-  - In the Bootstrap, Fluent and Indigo themes, a long file name ends with an ellipsis again. Before, the file names did not shrink and went outside the component. [#2384](https://github.com/IgniteUI/igniteui-webcomponents/issues/2384) [#2411](https://github.com/IgniteUI/igniteui-webcomponents/pull/2411)
+  - `directory` lets the user select a folder. The selection holds all the files in the folder and its subfolders. `webkitRelativePath` gives the path of each file. [#2481](https://github.com/IgniteUI/igniteui-webcomponents/pull/2481)
 - #### Form controls
-  - A failed form submit or `form.reportValidity()` now moves the focus to the first invalid control, as for native controls. This also occurs when an invalid native control comes after it. `reportValidity()` of an invalid control moves the focus to that control. `form.checkValidity()` does not move the focus. Before, the focus did not move, because the controls cancel the `invalid` event to hide the browser message. Only the select moved the focus on `reportValidity()`. To tell a submit from `form.checkValidity()`, also when one runs in the other, the library wraps `checkValidity()`, `reportValidity()` and `requestSubmit()` of `HTMLFormElement.prototype`. [#2430](https://github.com/IgniteUI/igniteui-webcomponents/pull/2430)
-  - The controls no longer send an `invalid` event while the user edits an invalid field or leaves it. Before, each validation sent one, unlike a native control. Now only `checkValidity()`, `reportValidity()`, the same methods of the form, and a failed submit send the event. [#2430](https://github.com/IgniteUI/igniteui-webcomponents/pull/2430)
-  - In the rating, the slider and the range slider, `focus()` now moves the focus to the control, and `blur()` removes it. The rating focuses its slider element, and the slider focuses its thumb. The range slider focuses its lower thumb, unless one of its thumbs has the focus already. A disabled control does not take the focus. Before, `focus()` did nothing, so a failed submit and `reportValidity()` did not move the focus to an invalid rating or slider. [#2448](https://github.com/IgniteUI/igniteui-webcomponents/pull/2448)
-  - A host `aria-describedby` now describes the native control, after the helper text. So an `igc-tooltip` on the control also describes it. In the two-input date range picker, the end editor gets only the host description. Before, the description stayed on the host, where screen readers did not use it. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
-  - The asterisk of a required control is no longer part of its accessible name. Before, screen readers read the label as "Email star". [#2428](https://github.com/IgniteUI/igniteui-webcomponents/pull/2428)
-  - In the date picker, the date range picker, the date time input and the mask input, `required` now sets `aria-required` on the native input of each editor. This includes the two-input mode of the date range picker. Before, screen readers did not announce these fields as required. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
-- #### Highlight
-  - A space in `searchText` now matches any sequence of whitespace in the content, such as a line break in the HTML source. Before, "cold brew" did not find the two words when a line break separated them. [#2430](https://github.com/IgniteUI/igniteui-webcomponents/pull/2430)
-- #### Icon
-  - The SVG of an icon is now hidden from assistive technologies, because the host carries the name. Before, the SVG of an icon without a title was still an unnamed image. A change of `aria-label` or `aria-labelledby` now updates the role of the icon. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
-- #### Input
-  - `pattern` now has to match the full value, as for a native input. Before, a match in a part of the value was sufficient, so `[0-9]{3}` accepted `1234`. The pattern also compiles with the `v` flag. An invalid pattern sets no constraint. Before, an invalid pattern caused an error in `checkValidity()`. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
-- #### List
-  - `igc-list-header` now has the `listitem` role. Before, it had the `separator` role. A list cannot contain a separator, and a separator hides its content from assistive technologies, so a screen reader could skip the text of the header. Screen readers now read the header and count it with the items. Put a heading in the header, so that users can move from group to group. [#2439](https://github.com/IgniteUI/igniteui-webcomponents/pull/2439)
-  - The title and subtitle container of `igc-list-item` is now a `div`, not a `header` element. Before, Chromium exposed it as a `sectionheader` in each item. The `header` part does not change. [#2439](https://github.com/IgniteUI/igniteui-webcomponents/pull/2439)
-- #### Navigation drawer
-  - When a drawer with a `mini` variant closes, the focus now goes back to the element that had the focus when the drawer opened, such as a menu button in the rail. Before, the drawer closed its dialog while the rail was still hidden, so the focus went to the page body. [#2440](https://github.com/IgniteUI/igniteui-webcomponents/pull/2440)
-  - When the platform closes the dialog of a drawer that stays open, the drawer now opens the dialog again. An example is a second Escape when an `igcClosing` handler cancels the close. When the drawer then closes, the focus goes back to the element that had it when the drawer first opened. Before, `open` stayed `true` with a closed dialog, and `show()` did nothing. [#2440](https://github.com/IgniteUI/igniteui-webcomponents/pull/2440)
-  - The host `aria-label`, `aria-labelledby` and `aria-describedby` now name and describe the drawer. `label` still has priority over the host `aria-label`. Before, these attributes stayed on the host, where screen readers did not use them. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
+  - `--ig-helper-min-lines` keeps space for `1`, `2` or `3` message lines below a control, so a validation message does not move the content below. Set it on a form to apply it to all its controls. The browser must support container style queries. [#2491](https://github.com/IgniteUI/igniteui-webcomponents/pull/2491)
+- #### Host ARIA attributes
+  - Button, Chip, Icon button: a host `aria-expanded`, `aria-haspopup` and `aria-controls` now go to the inner button or link. So assistive technology knows that the control opens a menu or a panel. A selectable chip keeps its `aria-pressed`. [#2513](https://github.com/IgniteUI/igniteui-webcomponents/issues/2513) [#2517](https://github.com/IgniteUI/igniteui-webcomponents/pull/2517) [#2581](https://github.com/IgniteUI/igniteui-webcomponents/pull/2581)
+  - Button, Icon button: a host `aria-pressed` now goes to the native button, so the button can be a toggle button. A link does not get it. [#2474](https://github.com/IgniteUI/igniteui-webcomponents/pull/2474)
+  - Date time input, File input, Input, Mask input, Textarea: a host `role="combobox"`, `aria-expanded`, `aria-haspopup`, `aria-autocomplete`, `aria-controls` and `aria-activedescendant` now go to the native field. Use them to make the field a combobox over your own listbox, for example in a command palette. Do not set `role` on a textarea, because HTML does not allow it. [#2548](https://github.com/IgniteUI/igniteui-webcomponents/pull/2548)
+- #### Library
+  - A component no longer defines its tag when another class already defines it, for example a second copy of the library on the page. It writes one warning to the console. [#2461](https://github.com/IgniteUI/igniteui-webcomponents/pull/2461)
+- #### Localization
+  - The color picker, dialog, splitter, tile and tooltip have `locale` and `resourceStrings`. Before, their default labels were English only. The English label of the color value input is now "Color value". [#2477](https://github.com/IgniteUI/igniteui-webcomponents/pull/2477) [#2480](https://github.com/IgniteUI/igniteui-webcomponents/pull/2480)
+  - The chat and the tile manager have `locale`. The tile manager gives its locale to the tiles that have no `locale`. [#2475](https://github.com/IgniteUI/igniteui-webcomponents/pull/2475) [#2478](https://github.com/IgniteUI/igniteui-webcomponents/pull/2478)
 - #### QR code
-  - Codes of versions 31 and 32 now have their alignment patterns at the positions of ISO/IEC 18004. Before, the last alignment pattern of each row and column was two modules out of position, so a scanner could fail to read these codes.
-  - Without `error-level`, a logo larger than the safe area of level `M` now raises the error correction level to the smallest level that holds the logo, as documented. Before, the default `M` always applied, so the logo became smaller. An explicit `error-level`, `M` included, still limits the size of the logo. [#2414](https://github.com/IgniteUI/igniteui-webcomponents/pull/2414)
-  - Versions 30 to 40 at the `M` error correction level now use the data codeword counts of ISO/IEC 18004. Before, these codes had the wrong block structure. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
-  - A new `aria-label` alone now updates the `<title>` of the code. Before, the title changed only on the next change of a different property. [#2414](https://github.com/IgniteUI/igniteui-webcomponents/pull/2414)
-  - A host `aria-labelledby` and `aria-describedby` now name and describe the SVG. The exported SVG does not include the two relations. Before, only `aria-label` got to the code. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
-  - The logo in an exported SVG now also has `xlink:href`, so SVG 1.1 consumers show it, such as Illustrator, the Office import, Batik and older librsvg. Before, they did not show the logo and left a blank area in the code. [#2414](https://github.com/IgniteUI/igniteui-webcomponents/pull/2414)
-- #### Radio group
-  - In the horizontal alignment, the helper text and the validation messages of the radios now show under the radios, each in a row of its own. Before, the messages of two radios showed on top of each other. With a `label` element in the group, the messages showed between the label and the radios. [#2442](https://github.com/IgniteUI/igniteui-webcomponents/pull/2442)
-- #### Range slider, Slider
-  - A value on a fractional step now stays where it is. Before, each change of a constraint moved it down by one step: 0.5 with `step="0.01"` became 0.47. With `step="0.1"` on a scale of 0 to 1, the arrow keys, Page Up and `stepUp()` stopped at 0.4. [#2433](https://github.com/IgniteUI/igniteui-webcomponents/issues/2433) [#2438](https://github.com/IgniteUI/igniteui-webcomponents/pull/2438)
-  - A value now snaps to the nearest step, as for a native range input. A tie goes to the higher step, and the steps count from `min`. Before, a value went down to the step below it. The steps also counted from `lowerBound`, so the values did not match the discrete track and the ticks. [#2438](https://github.com/IgniteUI/igniteui-webcomponents/pull/2438)
-  - The order of `value`, `lower`, `upper`, `min`, `max` and `step` no longer changes the result, as attributes or as properties set in one task. For example, `<igc-slider value="0.5" min="0" max="1" step="0.01">` gives 0.5, `<igc-slider value="150" max="200">` gives 150, and `<igc-slider min="150" max="200">` gives a `min` of 150. Before, the slider checked each value against the constraints of that moment. When an update ends with `min` above `max`, the slider keeps the previous `min` and `max`. [#2434](https://github.com/IgniteUI/igniteui-webcomponents/issues/2434) [#2438](https://github.com/IgniteUI/igniteui-webcomponents/pull/2438)
-  - A negative `step` now keeps the previous step. Before, the slider accepted it and reversed the arrow keys. [#2438](https://github.com/IgniteUI/igniteui-webcomponents/pull/2438)
-  - The removal of the `lower-bound` or `upper-bound` attribute, or a `null` or `undefined` value, now unsets the bound, so it follows `min` or `max` again. Before, the removal set the bound to 0, which could move the value, and `undefined` kept the previous bound. [#2445](https://github.com/IgniteUI/igniteui-webcomponents/pull/2445)
-  - When the projected `igc-slider-label` elements go, `min`, `max` and `step` return to the values that the author set. [#2438](https://github.com/IgniteUI/igniteui-webcomponents/pull/2438)
-  - `upper` of the range slider now follows `upperBound` until you set it, and again after you remove the attribute. So `<igc-range-slider>` covers the full scale. Before, `upper` was 0. A `lower` above `upper` from code or markup now swaps the two values, as a drag does. Before, the thumbs crossed and the fill had a negative width. [#2438](https://github.com/IgniteUI/igniteui-webcomponents/pull/2438)
-  - The keyboard no longer emits `igcInput` and `igcChange` when the value stays the same, for example End on the last step below `max`. [#2438](https://github.com/IgniteUI/igniteui-webcomponents/pull/2438)
-  - A right click no longer moves a thumb. A second pointer, such as a second finger, no longer takes control of a drag. A drag now sends one `igcChange`. [#2438](https://github.com/IgniteUI/igniteui-webcomponents/pull/2438)
-  - Each thumb of the range slider now announces its own value: the label text, or the formatted value. Before, the focused thumb announced label indexes such as "0 - 2", and the other thumb announced English text such as "min 20". The host `aria-label` and `aria-labelledby` now name the group of the two thumbs, and the host `aria-describedby` describes the two thumbs. [#2438](https://github.com/IgniteUI/igniteui-webcomponents/pull/2438)
-  - The thumb label is now in the top layer. So a container that clips its overflow, such as a card or a dialog body, no longer cuts it off. The label also shows while a thumb has the keyboard focus. Escape hides it, also while the focus is on a different element. A modifier key alone, such as Shift, no longer counts as keyboard focus. [#2438](https://github.com/IgniteUI/igniteui-webcomponents/pull/2438)
-  - The box of the slider now holds the ticks and their labels, so a slider with tick labels is taller. Before, the labels were outside the box, by approximately 25 px for the `end` orientation and more for rotated labels. So the next element covered them, unless the page added space. A page that added space for the labels can remove it. The tick label is now next to its tick in the shadow DOM, and it is not absolutely positioned. The rotated labels at the start are 4 px nearer to the ticks, at the same distance as the other labels. [#2445](https://github.com/IgniteUI/igniteui-webcomponents/pull/2445)
-  - A tick label now stays on one line. Before, a label at the end of the track wrapped at each space, such as "1,000" and "GB" on two lines. [#2445](https://github.com/IgniteUI/igniteui-webcomponents/pull/2445)
-- #### Snackbar, Toast
-  - `container` positioning now anchors the component with a name that it adds to the inline `anchor-name` of the container while it is open. It adds the name again when a new `style` attribute removes it. Before, the container was the `source` of the popover. So the browser moved the snackbar to the start of the container in the tab order, and Tab got to the action before the content of the container. Some containers are still the `source` and keep their anchor names: a container with anchor names of its own, also when it gets them while the component is open, and a container in a different tree, such as the host of the shadow root that holds the component. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
-  - A component that moves while it is open now shows again in its new place, with a full display time. Before, it stayed hidden with `open` set. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
-  - `show()` and `toggle()` during the fade-out of `hide()` now keep the component open, and `hide()` during the fade-out resolves `false`. Before, `show()` resolved `false` and the component closed. `toggle()` or a second `hide()` closed the component immediately, without the remaining fade-out. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
-  - The default action of the snackbar now shows the keyboard focus style of a flat button in every theme, also on hover. Before, it showed none in the Material and Fluent themes, and none in any theme when the `action-text` attribute was set. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
-- #### Splitter
-  - The host `aria-labelledby` and `aria-label` now name the splitter bar, and a host `aria-describedby` describes it. Before, every bar had the name "Resize panes". So the bars of nested splitters had the same name, and an application could not localize the name. A bar without a host name keeps the name "Resize panes". [#2449](https://github.com/IgniteUI/igniteui-webcomponents/pull/2449)
-  - The bar no longer has the English description "Start pane expanded and End pane expanded". Its value already tells which pane is collapsed: 0% for the start pane and 100% for the end pane. [#2449](https://github.com/IgniteUI/igniteui-webcomponents/pull/2449)
-- #### Stepper
-  - A click in the content of a step no longer activates that step. Before, a button in the content that called `next()`, `prev()`, `navigateTo()` or `reset()` had its change undone by the same click, with an `igcActiveStepChanging` and `igcActiveStepChanged` pair. A click on a header of a nested stepper no longer changes the outer stepper. [#2453](https://github.com/IgniteUI/igniteui-webcomponents/pull/2453)
-  - The content of the inactive steps is now `inert`. Before, it was only transparent, so Tab moved into the fields of hidden steps, and screen readers read every panel. [#2453](https://github.com/IgniteUI/igniteui-webcomponents/pull/2453)
-  - The header of a disabled step, and of a step that linear mode locks, now has `aria-disabled`. Before, screen readers did not announce these steps as unavailable. [#2453](https://github.com/IgniteUI/igniteui-webcomponents/pull/2453)
-  - The host `aria-label`, `aria-labelledby` and `aria-describedby` of a step now name and describe its header. Before, these attributes stayed on the host, where screen readers did not use them. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
+  - `copyToClipboard()` copies the code as a PNG image. With `format: 'svg'`, it copies an SVG image and a PNG image. `scale` multiplies the size. The promise resolves with the format that the clipboard got. Browsers allow the copy only during a user action. So call the method directly in the event handler, with no `await` before it. New types: `QrCodeCopyFormat`, `QrCodeCopyOptions`. [#2483](https://github.com/IgniteUI/igniteui-webcomponents/pull/2483)
 - #### Tabs
-  - `alignment` now works in the Material, Fluent and Indigo themes. Before, `center`, `end` and `justify` rendered like `start`, because outside the Bootstrap theme the header grid did not take the full width of the strip. [#2431](https://github.com/IgniteUI/igniteui-webcomponents/pull/2431)
-  - `justify` now gives every tab the same width, as the Angular tabs do. Before, each tab got its content width and an equal part of the free space. [#2431](https://github.com/IgniteUI/igniteui-webcomponents/pull/2431)
-  - The Material and Fluent themes now paint the full header strip, as the Angular tabs do. Before, only the area under the tab items had the color, so the strip ended at the last tab. [IgniteUI/igniteui-angular#17421](https://github.com/IgniteUI/igniteui-angular/issues/17421) [#2431](https://github.com/IgniteUI/igniteui-webcomponents/pull/2431)
-  - A tab that you select through its `selected` property, from markup or by a framework binding, now scrolls into view. This is the same as for a tab that you select by click, keyboard or `select()`. The scroll stays in the header strip and never moves the page. The fix for [#2267](https://github.com/IgniteUI/igniteui-webcomponents/issues/2267) stays in effect. [#2431](https://github.com/IgniteUI/igniteui-webcomponents/pull/2431)
-  - A tab added as selected that makes the strip overflow now scrolls fully into view. Before, the end scroll button that had just appeared covered part of it. [#2431](https://github.com/IgniteUI/igniteui-webcomponents/pull/2431)
-  - The scroll buttons now go away when the removal of tabs makes the strip fit again. Before, the buttons stayed, because the overflow measurement included their own columns. [#2431](https://github.com/IgniteUI/igniteui-webcomponents/pull/2431)
-  - A tab added as selected now gets the selection, also when the selected tab is deselected or removed at the same time, as a framework render or new `innerHTML` does. A selected tab that moves keeps the selection. Before, the first tab got the selection in these cases. When several tabs become selected at the same time, the last one in document order gets the selection, as in the initial markup. [#2446](https://github.com/IgniteUI/igniteui-webcomponents/pull/2446)
-  - The host `aria-label`, `aria-labelledby` and `aria-describedby` of a tab now name and describe its header. Before, these attributes stayed on the host, where screen readers did not use them. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
-  - Tabs that you remove before their first frame no longer throw `Failed to execute 'observe' on 'ResizeObserver'`. This occurs when a framework renders the tabs and replaces them at once, for example in a grid detail row. When you add these tabs again, the selected indicator and the scroll buttons now follow a change of size. Before, they did not. [#2416](https://github.com/IgniteUI/igniteui-webcomponents/issues/2416)
+  - `headerPosition` (`header-position`) puts the headers in a column on the `start` or `end` side of the panels. The default is `top`. In a column, Up and Down move between the tabs. Give the tabs a `height` or a `max-height` to scroll a tall panel and to show the scroll buttons. New type: `TabsHeaderPosition`. [#2553](https://github.com/IgniteUI/igniteui-webcomponents/issues/2553) [#2556](https://github.com/IgniteUI/igniteui-webcomponents/pull/2556)
+  - Link tabs: a tab with `href` renders its header as a link. A plain click, Enter or Space selects the tab, emits `igcChange` and `igcNavigate`, and follows the link. Cancel `igcNavigate` to route on the client. A middle click, Ctrl/Cmd+click and Ctrl/Cmd+Enter open the link in a new browser tab and do not change the selection. `target` and `rel` go to the link. [#2497](https://github.com/IgniteUI/igniteui-webcomponents/pull/2497)
+  - The `header-background` theme token paints the full header strip. Until you set it, it follows `item-background`. The `tabs-theme` function of `igniteui-theming` 29.1.0 has the matching `$header-background` parameter. [#2431](https://github.com/IgniteUI/igniteui-webcomponents/pull/2431)
 - #### Text selection
-  - In the input and the textarea, `setRangeText()` without `start` and `end` now replaces the selected text, as the native method does. Before, it inserted the text at the start of the value. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432) [#2451](https://github.com/IgniteUI/igniteui-webcomponents/pull/2451)
-  - In the date picker, the `start` and `end` parameters of `setRangeText()` are now optional, as in the date time input. Without them, the method replaces the selected text. Before, the TypeScript signature required them, although the method worked without them. [#2452](https://github.com/IgniteUI/igniteui-webcomponents/pull/2452)
-- #### Textarea
-  - A change of `minLength` or `maxLength` now updates the validity immediately. Before, the validity changed only at the next change of the value.
-  - Whitespace in the default slot, such as the indentation around a slotted helper text, no longer clears the value. Before, it replaced the value from the `value` attribute or the property with an empty string. Whitespace added later cleared the text that the user typed. Projected text still sets the value, and its removal still clears the value. [#2451](https://github.com/IgniteUI/igniteui-webcomponents/pull/2451)
-  - The `spellcheck` attribute now works as the native attribute: only `false` turns the spell check off. Before, an empty attribute, such as `<igc-textarea spellcheck>`, and a removed attribute turned it off. [#2451](https://github.com/IgniteUI/igniteui-webcomponents/pull/2451)
+  - The date picker, date time input, input, mask input and textarea have read-only `selectionStart` and `selectionEnd`. In the input, both are `null` for the `email` and `number` types, as in the native input. [#2451](https://github.com/IgniteUI/igniteui-webcomponents/pull/2451) [#2452](https://github.com/IgniteUI/igniteui-webcomponents/pull/2452)
 - #### Theming
-  - A theme change now replaces only the theme style sheets of a component. It keeps the style sheets that other code adopted into the shadow root, after the theme style sheets. Before, a theme change removed them. [#2436](https://github.com/IgniteUI/igniteui-webcomponents/pull/2436)
+  - Four export conditions keep only one theme in your bundle: `igc-theme-material`, `igc-theme-bootstrap`, `igc-theme-indigo` and `igc-theme-fluent`. Set one in your bundler or with `node --conditions`. The bundle is then approximately 15–17% smaller after gzip. With a theme that is not in the bundle, `configureTheme()` gives only the structural styles. See "Bundling a single theme" in the README. [#2461](https://github.com/IgniteUI/igniteui-webcomponents/pull/2461)
 - #### Tile manager
-  - Maximize and full screen now keep the focus on the action, also when resizing is on. Before, the tile rendered its content again, so the focus went to the page body. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - While a tile is maximized, the other tiles are hidden, and Tab skips their content. Before, Tab moved the focus into the tiles under the maximized tile. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - The divider under the tile header is hidden from assistive technologies. Before, screen readers found a separator in each tile. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - `fullscreen` now follows the browser. It becomes `false` after Escape, also when a listener cancels `igcTileFullscreen`. It becomes `true` when a custom `fullscreen-action` calls `requestFullscreen()` on the tile. The `igcTileFullscreen` event after such a change is not cancelable, because the change already occurred. Before, the tile could show the wrong actions and keep resizing off. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - When the browser rejects a request to enter full screen, the tile now emits `igcTileFullscreen` with `state: false`, which is not cancelable. Before, the state rolled back without an event, after the event that announced `state: true`. A rejected exit from full screen works the same way, with `state: true`. Before, the tile showed the normal state while it stayed in full screen. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - A fullscreen tile that you remove from the page and add again is no longer `fullscreen`. Before, the tile kept the state, and drag and resize stayed off. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - Two quick clicks on the maximize action now set the state that the two `igcTileMaximize` events report. Before, the tile toggled two times, and a skipped view transition caused an unhandled error. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - When you remove a maximized tile, the manager now releases the grid height that it kept for the maximized tile. Before, the grid kept that height. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - The tile manager keeps its background while a tile is maximized. Before, the background went away. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - A maximized or fullscreen tile now scrolls by touch while dragging is on. Before, the tile canceled each `touchstart`, although you cannot drag it in that state. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - With `drag-mode="tile-header"`, the tile content now scrolls by touch, and you can drag an image or a link in it natively. The actions and the resize handles also no longer cancel a touch. Before, the tile canceled every `touchstart` and `dragstart`, also where a drag cannot start. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - A drag no longer swaps with a tile that leaves the manager before the swap applies. Before, the dragged tile could take the position of the removed tile, so two tiles had the same position. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - A drag now swaps with a tile that the pointer gets to directly from a different tile, as in a fast move. Before, the drag swapped only after the pointer went through a gap between the tiles. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - A dragged tile keeps its size. Before, the line around its placeholder was a border, which made the tile 2 px larger in a grid that sizes to its content. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - The drag and resize styles of a tile now apply also when the tile has a `part` attribute of its own. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - Escape after a drag that moved a tile back and forth now restores every tile. This also occurs when tiles leave the manager during the drag, and when the next drag starts immediately. A tile that moves to a different manager during the drag keeps its place there. A start column that a smaller `columnCount` removed stays removed. A layout from `loadLayout()` during the drag stays. Before, two tiles could get the same position, and a tile could get a width of 0. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - A drag or a resize now cancels when the tile leaves the page, also from an `igcTileDragStart` or `igcTileResizeStart` listener, or when the browser sends `pointercancel`. The tile then emits `igcTileDragCancel` or `igcTileResizeCancel`. Before, the tile stayed invisible or half transparent and did not accept clicks. The events of a second pointer no longer move or end the operation. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - A tile that moves out of its manager no longer drags or resizes. The tiles of a manager that the browser defines after them now connect to it. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - When tiles move in the DOM, for example when a framework reorders a list, their positions no longer change. Before, a moved tile changed places with the tile before it. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - `loadLayout` now gives every tile a unique position, and `position` takes a whole number. A value that applies to no tile changes no position. Before, a layout with two equal positions gave two tiles the same place, and a fractional position did not change the CSS `order`. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - In a manager that is narrower than `minColumnWidth`, a responsive column now takes the width of the manager. Before, the column kept the minimum width, and the manager scrolled horizontally. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - Resizing now works for a tile whose `grid-column` or `grid-row` comes from author CSS, and the spans and the starts take whole numbers. A start from a negative line, such as `-1 / span 2`, now comes from the place of the tile. Before, the resize caused an error and left its preview in the page, and it read a negative line as a line from the start. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - A resize below the last row now reads `min-row-height` and `min-column-width` in any CSS length, such as `rem`. Before, `10rem` counted as 10 pixels, so the tile got too many new rows. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - In a right-to-left layout, the side and corner resize handles are on the left edge, and the tile and its preview both grow to the left. Before, the handles were on the right edge, and the preview grew to the right while the tile grew to the left. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - In nested tile managers, a drag moves only the innermost tile, and it changes places only with the tiles of its own manager. Before, the outer tile also started a drag, and an inner tile could change places with the outer tile that held it. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - In nested tile managers, the tiles of an inner manager no longer take the spans and the starts of the tile that holds the manager. Before, a resize of the outer tile to two columns or two rows made each inner tile two columns wide or two rows tall. [#2457](https://github.com/IgniteUI/igniteui-webcomponents/pull/2457)
-  - The swaps of a tile that holds a nested tile manager now animate. Before, the drag preview copied the view transition names of the inner tiles, so the browser skipped each swap transition and logged a duplicate name. [#2457](https://github.com/IgniteUI/igniteui-webcomponents/pull/2457)
-  - The drag and resize previews now render in the nearest modal dialog, fullscreen element or open popover that holds the manager. This includes the dialog of `igc-dialog`. A preview there does not scroll or clip with its container. It covers the tile also when the container has a translate or a scale, such as the one that centers a modal. A rotation is not supported. Before, the previews went into the document body and were hidden under the container. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - The drag and resize previews in the page body now cover the tile, also when the body is positioned or has a filter, and when the page scrolls during the operation. Before, the drag preview was off by the margin of the body. In a positioned body, both previews were off. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
-  - The maximize, restore and resize animations now keep the tile content sharp. The box of the tile grows or shrinks and shows the content at its real size. The new content fades in at the start, and the tiles that a maximized tile covers fade in place. The drag preview stays on the pointer during a swap. Before, the animation stretched the tile images, so the text was blurred and out of shape, and the covered tiles moved. The rules for these animations are in the theme style sheets, such as `themes/light/bootstrap.css`. The view transition classes of the author stay on the tile. Browsers without view transition classes keep the default animation. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
+  - `--grid-padding` sets the padding of the grid. The default is `1.25rem`. Use it, not a padding on the `base` part, so that the resize handles stay inside the tiles. [#2501](https://github.com/IgniteUI/igniteui-webcomponents/pull/2501)
+- #### Tooltip
+  - `showAt()` shows the tooltip at a point or a rectangle, in viewport coordinates. For example, `tooltip.showAt({ x: event.clientX, y: event.clientY })` shows it at the pointer over a canvas. Call it again to move the tooltip. The application shows and hides the tooltip, and Escape still closes it. After it closes, `anchor` applies again. New type: `TooltipRect`. [#2538](https://github.com/IgniteUI/igniteui-webcomponents/issues/2538) [#2561](https://github.com/IgniteUI/igniteui-webcomponents/pull/2561)
+
+### Changed
+- #### Avatar, Badge, Carousel
+  - The avatar, the badge and the carousel slide no longer set `aria-roledescription`. Screen readers now announce their role in the language of the user, not the English words "avatar", "badge" and "slide". To set a role description, add an `aria-roledescription` attribute. The carousel keeps its role description, from the `carousel_role_description` resource string. [#2472](https://github.com/IgniteUI/igniteui-webcomponents/pull/2472) [#2477](https://github.com/IgniteUI/igniteui-webcomponents/pull/2477)
+- #### Calendar, Chat, Color picker, Combo
+  - **Behavioral change:** The events of inner components no longer leave the component. Listen to the events of the component. [#2530](https://github.com/IgniteUI/igniteui-webcomponents/issues/2530) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545) [#2568](https://github.com/IgniteUI/igniteui-webcomponents/pull/2568)
+    - Chat: use `igcInputChange`, not `igcInput` or `igcChange` of the text area. Use `igcAttachmentRemoved`, not `igcRemove` of the attachment chip.
+    - Combo: use `igcSearchInput`, not `igcInput` of the inputs. A listener on the combo no longer gets a second `igcChange` from the search input. For more data on scroll, use `igcDataRequest` of the combo in remote mode, not the events of the inner list.
+    - Color picker: the `igcInput` of its inputs and the open and close events of its format select stay inside.
+    - Calendar: the internal `igcActiveDateChange` and `igcRangePreviewDateChange` stay inside, also in the date pickers.
+- #### Carousel
+  - **Behavioral change:** The carousel takes the height of its tallest slide, so the text of a slide no longer overflows. Before, it took the height of its parent, at least 240px. A `height` or `max-height` on the carousel, or a height from its parent, still sets the height. Set a height to keep the page stable when slide content loads late. An image that is a direct child of a slide does not add height. [#2550](https://github.com/IgniteUI/igniteui-webcomponents/pull/2550)
+- #### Chat
+  - The message area follows the newest message only while it is at the bottom. When the user scrolls up, new messages do not move it. A new message of the current user, or a new conversation, scrolls to the bottom again. At the bottom, the area also stays there when content grows late. [#2461](https://github.com/IgniteUI/igniteui-webcomponents/pull/2461) [#2474](https://github.com/IgniteUI/igniteui-webcomponents/pull/2474) [#2594](https://github.com/IgniteUI/igniteui-webcomponents/pull/2594)
+  - The Markdown renderer of `igniteui-webcomponents/extras` does less work. It loads shiki only when syntax highlighting is on, and it loads only the themes that it uses. While a message streams, it highlights each finished code block one time. Renderers with the same languages and themes share one highlighter. A code block of more than 2 KB that still streams shows as plain code until its closing fence. [#2494](https://github.com/IgniteUI/igniteui-webcomponents/pull/2494)
+  - The Markdown renderer opens links to another origin in a new tab, with `rel="noopener noreferrer"`. Links in the same origin, such as `/register` or `#top`, and `mailto:` links open in the same tab, so the application can route them. Before, the result depended on the sanitizer. [#2494](https://github.com/IgniteUI/igniteui-webcomponents/pull/2494) [#2500](https://github.com/IgniteUI/igniteui-webcomponents/pull/2500)
+  - `colorReplacements` of the Markdown renderer applies to every theme, not only to the GitHub themes. [#2494](https://github.com/IgniteUI/igniteui-webcomponents/pull/2494)
+- #### Chat, List, Tree
+  - Tree items, list items and chat messages that are far from the view skip their rendering (`content-visibility: auto`). Long lists render faster. For example, the first render of a tree with 2,000 items takes 41% less time. [#2594](https://github.com/IgniteUI/igniteui-webcomponents/pull/2594)
+    - In a container that takes its width from its content, the width follows the items near the view. It can change while the user scrolls.
+    - `innerText` of a skipped item is an empty string. Use `textContent`.
+    - In Safari before 26, find-in-page does not find the text of a skipped item.
+    - To render every item, set `content-visibility: visible` on `igc-tree-item`, on `igc-list-item` or on `igc-chat::part(message-item)`.
+- #### Chip
+  - The `end` slot renders after the `suffix` slot, at the end of the chip. Before, it rendered before the `suffix` slot. [#2488](https://github.com/IgniteUI/igniteui-webcomponents/pull/2488)
+- #### Combo
+  - **Behavioral change:** A new `data` keeps the selection. A selected item or value that `data` does not hold stays selected until the user or the application deselects it. To clear the selection with the data, for example in cascading combos, set `value` to `[]`. `select()` also accepts objects that `data` does not hold, for example the records of a saved filter. [#2519](https://github.com/IgniteUI/igniteui-webcomponents/issues/2519) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+  - **Behavioral change:** When `data` holds two or more items with the same value, the selection holds the first item, and `value` lists the value one time. Before, a selection of the value took all its items, and `value` listed the value for each item. The options of all the items of a selected value show as selected. A click on any of them deselects the value. [#2603](https://github.com/IgniteUI/igniteui-webcomponents/pull/2603)
+  - In multiple selection, the options report their checkbox state in `aria-checked`, not in `aria-selected`. Screen readers announce them as checked or not checked. [#2535](https://github.com/IgniteUI/igniteui-webcomponents/issues/2535) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+  - In TypeScript, `igcClosing` and `igcClosed` are `CustomEvent<IgcComboClosingEventArgs>`, not `CustomEvent<void>`. Change the handlers that declare `CustomEvent<void>`. [#2533](https://github.com/IgniteUI/igniteui-webcomponents/issues/2533) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+- #### Date picker, Date range picker, Date time input
+  - **Behavioral change:** `igcChange` reports only the changes of the user. A value that code sets no longer emits `igcChange` on the next blur or on Done. This applies to `value`, `clear()`, `stepUp()`, `stepDown()`, `setRangeText()`, `select()` and a form reset. The `clear()` of the date pickers still emits it, because their clear icon calls it. [#2488](https://github.com/IgniteUI/igniteui-webcomponents/pull/2488) [#2489](https://github.com/IgniteUI/igniteui-webcomponents/pull/2489) [#2580](https://github.com/IgniteUI/igniteui-webcomponents/pull/2580)
+- #### Date picker, Date range picker, Dialog
+  - **Breaking change:** The dialog backdrop is now the native `::backdrop`, in the top layer. It covers the full page, also when an ancestor has a `transform`, a `filter` or a stacking context. It also covers a toast or a snackbar that opened before the dialog. [#2549](https://github.com/IgniteUI/igniteui-webcomponents/pull/2549)
+    - Removed parts: `backdrop` and `animating` of the dialog, and `overlay` of the date pickers in dialog mode.
+    - To style the backdrop, use `igc-dialog::part(base)::backdrop`, or `::part(dialog-base)::backdrop` on a date picker.
+  - **Behavioral change:** In dialog mode, the date pickers fade in and out, as the dialog does. `igcOpened` and `igcClosed` come after the animation, and `open` stays `true` until the exit ends. A change of `open` from code still applies at once. [#2574](https://github.com/IgniteUI/igniteui-webcomponents/pull/2574)
+- #### Date range picker
+  - **Behavioral change:** In dialog mode, Done emits `igcChange` after `igcClosing`. Done and Cancel change the range only when the close continues. So a canceled `igcClosing` keeps the dialog open with the selected range. To ask for a confirmation before a close, restore the range through `value` when the user declines. [#2577](https://github.com/IgniteUI/igniteui-webcomponents/pull/2577)
+  - **Behavioral change:** "Last 7 Days" selects 7 days: today and the 6 days before it. Before, it selected 8 days. [#2528](https://github.com/IgniteUI/igniteui-webcomponents/issues/2528) [#2540](https://github.com/IgniteUI/igniteui-webcomponents/pull/2540)
+- #### Form controls
+  - **Behavioral change:** Enter in a text field submits the form as in a native form. It clicks the first submit button of the form. So that button is the `submitter`, and a `click` listener can stop the submission. Before, Enter submitted the form with no submitter. [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545) [#2586](https://github.com/IgniteUI/igniteui-webcomponents/pull/2586) [#2590](https://github.com/IgniteUI/igniteui-webcomponents/pull/2590)
+    - The text fields are the input, mask input, date time input, date picker, date range picker, and the combo in single selection with its list closed. The combo in multiple selection does not submit, as a native `select`.
+    - An `igc-button` with `type="submit"` counts as a submit button. A disabled first submit button blocks the submission.
+    - A form without a submit button submits only when it has one text field.
+    - The checkbox, radio and switch submit only through a submit button.
+    - Enter does not submit when a `keypress` listener cancels it, or when it commits an IME composition.
+- #### Highlight
+  - **Behavioral change:** The match colors come only from `--background`, `--foreground`, `--background-active` and `--foreground-active` on the highlight. A match inside a list, a tree, a button or a nested highlight now shows the colors of the highlight. Before, it took the colors of that component. [#2554](https://github.com/IgniteUI/igniteui-webcomponents/pull/2554)
+  - The highlight searches again when its content changes. You no longer call `search()` after a change. [#2572](https://github.com/IgniteUI/igniteui-webcomponents/pull/2572)
+- #### Library
+  - Dependencies:
+    - New runtime dependency: `tslib`. [#2461](https://github.com/IgniteUI/igniteui-webcomponents/pull/2461)
+    - `igniteui-i18n-core` 2.0. If you register languages from `igniteui-i18n-resources`, update it to 2.0 too. [#2474](https://github.com/IgniteUI/igniteui-webcomponents/pull/2474) [#2477](https://github.com/IgniteUI/igniteui-webcomponents/pull/2477) [#2595](https://github.com/IgniteUI/igniteui-webcomponents/pull/2595)
+    - The optional peer dependency `shiki` must be 4.5.0 or later. [#2575](https://github.com/IgniteUI/igniteui-webcomponents/pull/2575)
+    - `marked-shiki` is no longer a peer dependency. You can remove it. [#2494](https://github.com/IgniteUI/igniteui-webcomponents/pull/2494)
+    - The themes are built with `igniteui-theming` 30.2.0. The built-in palettes keep their colors. [#2487](https://github.com/IgniteUI/igniteui-webcomponents/pull/2487) [#2570](https://github.com/IgniteUI/igniteui-webcomponents/pull/2570) [#2576](https://github.com/IgniteUI/igniteui-webcomponents/pull/2576)
+  - Bundle size:
+    - All the components together are approximately 6% smaller after gzip. The components share their common styles, and the dark themes hold only the values that are different from the light themes. [#2461](https://github.com/IgniteUI/igniteui-webcomponents/pull/2461)
+    - The carousel, chat, chip, combo, file input and tree no longer bundle the date formatter of `igniteui-i18n-core`. Each one is approximately 7 KB smaller after minification. [#2475](https://github.com/IgniteUI/igniteui-webcomponents/pull/2475)
+    - The styles no longer have vendor prefixes for KaiOS, Opera Mini, UC Browser and QQ Browser. The library does not support these browsers. [#2461](https://github.com/IgniteUI/igniteui-webcomponents/pull/2461)
+- #### Localization
+  - **Behavioral change:** A component without `locale` now inherits the locale. It uses its own `lang`, then the `locale` or `lang` of the nearest ancestor, then the global locale. The search goes up through shadow roots, but not through slots. For example, `<section lang="it">` gives the Italian locale to the components in it. [#2478](https://github.com/IgniteUI/igniteui-webcomponents/pull/2478) [#2493](https://github.com/IgniteUI/igniteui-webcomponents/pull/2493)
+    - If you set `lang` on `<body>` or on another element below `<html>`, the components in it now use that `lang`, not the language from `setCurrentI18n()`. Set `locale` on a component to keep a different locale.
+    - Server-side rendering cannot see the ancestors. Set `locale` on a server-rendered component that must not use the global locale.
+    - This applies to the calendar, carousel, chat, chip, color picker, combo, date picker, date range picker, date time input, dialog, file input, splitter, tile, tile manager, tooltip and tree.
+  - The components no longer register their English strings with `igniteui-i18n-core`. `getCurrentResourceStrings()` now returns only the strings that you register. [#2476](https://github.com/IgniteUI/igniteui-webcomponents/pull/2476)
+  - In TypeScript, the core strings in `resourceStrings` of the date picker and the date range picker are `string`, not `string | undefined`. [#2475](https://github.com/IgniteUI/igniteui-webcomponents/pull/2475)
+- #### Navigation drawer
+  - **Behavioral change:** In Firefox and Safari, a drawer at an edge position slides out and its backdrop fades out, as in Chromium. `hide()` and `toggle()` resolve, and `igcClosed` comes, after the exit. `open` still changes at once. With reduced motion, the drawer changes at once. [#2578](https://github.com/IgniteUI/igniteui-webcomponents/pull/2578)
+- #### Snackbar, Toast
+  - The display time pauses while the pointer or the keyboard focus is on the component. It starts again in full when both leave. A click on the action does not keep the component open. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
+  - `show()` on an open component starts the display time again. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
+- #### Splitter
+  - **Behavioral change:** A change of `orientation` keeps the sizes and the minimum and maximum sizes that you set. Only the sizes from a drag, a key or a collapse go back to the default. The minimum and maximum sizes now also apply on the new axis, so change them together with the orientation when they are different. [#2527](https://github.com/IgniteUI/igniteui-webcomponents/pull/2527)
+  - Each pane has its own stacking context, so slotted content with any `z-index` stays under the focus ring of the bar. [#2567](https://github.com/IgniteUI/igniteui-webcomponents/pull/2567)
+- #### Tabs
+  - With `prefers-reduced-motion: reduce`, the header strip scrolls at once. The scroll buttons also follow a `scroll-behavior` on the `tabs` part. [#2579](https://github.com/IgniteUI/igniteui-webcomponents/pull/2579)
+  - Changes inside a panel no longer make the tabs measure all the headers. [#2497](https://github.com/IgniteUI/igniteui-webcomponents/pull/2497)
+- #### Textarea
+  - With `resize="auto"`, a browser that supports CSS `field-sizing` sizes the control to its content. Other browsers measure the height as before. [#2479](https://github.com/IgniteUI/igniteui-webcomponents/pull/2479)
+    - The control uses the content box. So a `max-height` or `max-block-size` on the `input` part no longer includes the padding and the border. Subtract them from your value, or give the maximum in lines, for example `max-block-size: 8lh`.
+    - In a shrink-to-fit layout, such as a flex item with no width, the control is approximately 20 characters wide.
+- #### Theming
+  - **Breaking change:** The components take their surface color from `--ig-surface-base`, not from `--ig-surface-500`. The themes also define `--ig-surface-raised`, `--ig-surface-overlay`, `--ig-surface-sunken` and `--ig-surface-container`. To change the surface at runtime, set these surface roles. `--ig-surface-500` has no effect on the components. [#2487](https://github.com/IgniteUI/igniteui-webcomponents/pull/2487)
+  - A theme change updates only the components that render differently for each theme. A `configureTheme()` call with the active theme and variant does nothing. [#2461](https://github.com/IgniteUI/igniteui-webcomponents/pull/2461)
+  - The component styles no longer declare `--ig-theme` and `--ig-theme-variant`. The library reads them from the document root only. [#2461](https://github.com/IgniteUI/igniteui-webcomponents/pull/2461)
+- #### Tile manager
+  - **Behavioral change:** A tile no longer spans past the last column. A tile that starts after the last column moves back so that its span fits. `colSpan` and `colStart` keep the values that you set at every column count. So one layout works for all column counts, and `saveLayout()` returns your values. A `--column-count` from a style sheet must be a whole number, and `initial` gives the responsive layout. [#2496](https://github.com/IgniteUI/igniteui-webcomponents/pull/2496) [#2565](https://github.com/IgniteUI/igniteui-webcomponents/pull/2565)
+  - **Behavioral change:** The tile manager no longer inherits `--column-count` and `--grid-gap` from an ancestor. Set them on the tile manager, for example `igc-tile-manager { --column-count: 2; }`. [#2565](https://github.com/IgniteUI/igniteui-webcomponents/pull/2565)
+  - A tile is a region. The content of its `title` slot gives its name. An `aria-label` or `aria-labelledby` on the tile replaces that name. The default actions have names: "Maximize" or "Restore", and "Enter full screen" or "Exit full screen". In Chromium, the Tab order and the screen reader order follow the layout. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456) [#2477](https://github.com/IgniteUI/igniteui-webcomponents/pull/2477)
+  - `igcTileDragEnd` and `igcTileDragCancel` are emitted after the tiles have their new positions, as `igcTileResizeEnd` is. So a handler can call `saveLayout()` and `loadLayout()`. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
+  - The content container fills the tile under the header. So content with `block-size: 100%`, such as a chart, takes the free height. You can remove the flex rules that you added on `::part(base)` or `::part(content-container)` for this. [#2496](https://github.com/IgniteUI/igniteui-webcomponents/pull/2496)
+  - The default resize handles stand out of the tile through a negative margin. If you move them with `bottom`, `right` or `inset-inline-end` on the `trigger`, `trigger-side` or `trigger-bottom` part, also set `margin: 0`. [#2501](https://github.com/IgniteUI/igniteui-webcomponents/pull/2501)
+  - A tile has a `view-transition-name` only during a view transition of its manager. If your own view transition moves tiles, give them a name for that transition. [#2566](https://github.com/IgniteUI/igniteui-webcomponents/pull/2566)
+  - The content of a tile has its own stacking context. So the resize handles stay above content with any `z-index`. [#2566](https://github.com/IgniteUI/igniteui-webcomponents/pull/2566)
+
+### Deprecated
+- #### Combo
+  - The `item` of the group header template. Use `key`. [#2462](https://github.com/IgniteUI/igniteui-webcomponents/issues/2462) [#2468](https://github.com/IgniteUI/igniteui-webcomponents/pull/2468)
+- #### Theming
+  - The numbered surface shades, such as `--ig-surface-500`. A future release of `igniteui-theming` removes them. Use the surface roles. [#2487](https://github.com/IgniteUI/igniteui-webcomponents/pull/2487)
+
+### Fixed
+- #### Accordion, Tabs
+  - The arrow keys, Home and End skip a panel or a tab that does not render, such as one with the `hidden` attribute. [#2418](https://github.com/IgniteUI/igniteui-webcomponents/pull/2418) [#2497](https://github.com/IgniteUI/igniteui-webcomponents/pull/2497)
+- #### AI-Assisted Development
+  - The `igniteui-wc-migrate-grid-lite-to-premium` skill shows a correct custom sort strategy for the Premium Grid. [#2407](https://github.com/IgniteUI/igniteui-webcomponents/pull/2407)
+- #### Banner
+  - The banner stays inside its container. A closed banner takes no space in a column flex container, and the banner is never wider than its container. [#2543](https://github.com/IgniteUI/igniteui-webcomponents/issues/2543) [#2546](https://github.com/IgniteUI/igniteui-webcomponents/pull/2546)
+- #### Banner, Dialog, Expansion panel, Snackbar, Toast, Tooltip
+  - A change of `open` during a running `show()`, `hide()` or animation now ends it, and the component keeps the new state. The running method resolves `false`. Before, the end of the animation replaced the new state. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447) [#2549](https://github.com/IgniteUI/igniteui-webcomponents/pull/2549) [#2571](https://github.com/IgniteUI/igniteui-webcomponents/pull/2571)
+    - Dialog, Snackbar, Toast: `open` stays `true` during the exit. To keep the component open, set `open` to `false` and then to `true`.
+    - Snackbar, Toast: `show()` and `toggle()` during the fade-out keep the component open.
+    - Tooltip: when the pointer leaves the anchor during the show animation, the animation ends at once. The pointer can then move onto the tooltip to keep it open.
+- #### Button, Icon button
+  - A button with `href` keeps the link role. [#2421](https://github.com/IgniteUI/igniteui-webcomponents/pull/2421)
+  - A disabled link renders a disabled native `<button>` with `role="link"`. It leaves the tab order and cannot navigate. While the link is disabled, the `base` part is this `<button>`. [#2421](https://github.com/IgniteUI/igniteui-webcomponents/pull/2421)
+  - The form action of a `submit` or `reset` button runs after the `click` listeners, as in a native button. So a listener can stop it. [#2590](https://github.com/IgniteUI/igniteui-webcomponents/pull/2590)
+  - Setting `commandfor` on a detached button no longer throws an error. The change applies when the button is attached. [#2592](https://github.com/IgniteUI/igniteui-webcomponents/pull/2592)
+- #### Button group, Stepper
+  - The arrow keys that the orientation does not use are no longer canceled, so the page can scroll with them. [#2556](https://github.com/IgniteUI/igniteui-webcomponents/pull/2556)
+- #### Calendar
+  - A calendar without `activeDate` renders one time. Before, it rendered two times, and Lit in development mode showed a warning. [#2423](https://github.com/IgniteUI/igniteui-webcomponents/pull/2423)
+- #### Card
+  - In the dark Bootstrap theme, the last card content has its bottom padding. [#2461](https://github.com/IgniteUI/igniteui-webcomponents/pull/2461)
+  - Header text that does not fit on one line wraps next to the thumbnail, not under it. [#2551](https://github.com/IgniteUI/igniteui-webcomponents/pull/2551)
+- #### Carousel
+  - An icon in the `previous-button` or `next-button` slot gets the arrow color tokens of the theme. [#2550](https://github.com/IgniteUI/igniteui-webcomponents/pull/2550)
+- #### Chat
+  - The chat creates one object URL for each attached file and revokes it when the attachment goes. Before, the memory use increased with each render. [#2461](https://github.com/IgniteUI/igniteui-webcomponents/pull/2461)
+  - An attachment with an image MIME type, such as `image/png`, renders as an image. [#2474](https://github.com/IgniteUI/igniteui-webcomponents/pull/2474)
+  - The file picker attaches only the files that `acceptedFiles` allows. A pick or a drop that adds no file does not emit `igcAttachmentAdded`. [#2474](https://github.com/IgniteUI/igniteui-webcomponents/pull/2474)
+  - Keyboard users can get to the attachment header in a message. Enter and Space emit `igcAttachmentClick`. [#2474](https://github.com/IgniteUI/igniteui-webcomponents/pull/2474)
+  - The message actions and the input controls take their names from resource strings, such as the `chat_reaction_*` strings and `chat_send_message`. Like and dislike report their state with `aria-pressed`. The remove button of an attachment names the file, for example "Remove photo.png". [#2474](https://github.com/IgniteUI/igniteui-webcomponents/pull/2474)
+  - Elements in the `suggestion` slot replace the default suggestions. Content in the `suggestions` or `suggestion` slot shows also without `options.suggestions`. [#2488](https://github.com/IgniteUI/igniteui-webcomponents/pull/2488) [#2489](https://github.com/IgniteUI/igniteui-webcomponents/pull/2489)
+  - Markdown renderer of `igniteui-webcomponents/extras`: [#2494](https://github.com/IgniteUI/igniteui-webcomponents/pull/2494) [#2573](https://github.com/IgniteUI/igniteui-webcomponents/pull/2573)
+    - A `theme` with only `light` or only `dark` uses the default theme for the other mode. A `theme` that pairs `none` with another theme gives valid colors.
+    - The text of a link keeps its formatting, and the renderer escapes `href` and `title`.
+    - A code block that cannot be highlighted shows as escaped text. Before, HTML in the code, such as `<b>`, rendered as elements.
+    - The default GitHub themes use the `--shiki-purple`, `--shiki-dark-blue`, `--shiki-red`, `--shiki-blue`, `--shiki-green` and `--shiki-orange` variables in the two modes. Set a variable on the chat to change a color.
+- #### Checkbox
+  - The indicator icon is hidden from assistive technology. Before, each checkbox had an unnamed image next to it. [#2425](https://github.com/IgniteUI/igniteui-webcomponents/pull/2425)
+- #### Chip
+  - `focus()` and `blur()` work on the chip. The chip delegates the focus to its action control. [#2426](https://github.com/IgniteUI/igniteui-webcomponents/pull/2426)
+- #### Circular progress, Linear progress
+  - The percentage rounds to two decimals and is correct for a fractional `max`. The default `aria-valuetext` is the percentage that the label shows. [#2427](https://github.com/IgniteUI/igniteui-webcomponents/pull/2427)
+  - With `prefers-reduced-motion: reduce`, the indeterminate animation runs at a third of its speed, and a new value shows at once. [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+  - Circular progress: in forced colors mode, the ring has the text color and the track is `GrayText`. The element has the size of the ring, so a small ring is at the center of its parent. [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+- #### Color picker
+  - The initial `value` has the notation of `format`, also when the `value` attribute comes before `format`. [#2413](https://github.com/IgniteUI/igniteui-webcomponents/pull/2413)
+  - The HSL saturation is no longer infinite for a very small saturation at full value. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
+  - The hue and alpha slider tracks match the thumb positions, also in right-to-left layouts. [#2466](https://github.com/IgniteUI/igniteui-webcomponents/pull/2466)
+- #### Color picker, Combo, Date picker, Date range picker, Dropdown, Select, Slider, Tooltip
+  - In browsers without CSS anchor positioning, a popup stays at its anchor inside an ancestor with CSS `zoom`. It also stays at an anchor in a modal dialog while the page scrolls. [#2561](https://github.com/IgniteUI/igniteui-webcomponents/pull/2561)
+- #### Color picker, Combo, Date picker, Date time input, Mask input
+  - The keys that an IME uses, such as the Enter that commits a composition, no longer act in these components. [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+- #### Color picker, Date picker, Date range picker, Select
+  - A closed component no longer cancels Escape. So a parent popup, such as a dropdown, can close on the key. [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545) [#2585](https://github.com/IgniteUI/igniteui-webcomponents/pull/2585)
+- #### Combo
+  - Arrow Down no longer closes the list or moves the focus to the search input when a search finds one match or none. [#2428](https://github.com/IgniteUI/igniteui-webcomponents/pull/2428)
+  - A form reset clears the invalid styles of a required single-selection combo. [#2428](https://github.com/IgniteUI/igniteui-webcomponents/pull/2428)
+  - The native input no longer has `aria-disabled`. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
+  - Removing the `locale` attribute no longer throws a `TypeError`. [#2475](https://github.com/IgniteUI/igniteui-webcomponents/pull/2475)
+  - When the list closes while it has the focus, the focus goes to the main input, not to the document. [#2533](https://github.com/IgniteUI/igniteui-webcomponents/issues/2533) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+  - `newValue` of `igcChange` has the same order as the `value` after the change. [#2533](https://github.com/IgniteUI/igniteui-webcomponents/issues/2533) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+  - A new `itemTemplate` or `groupHeaderTemplate` renders the open list again. [#2555](https://github.com/IgniteUI/igniteui-webcomponents/issues/2555) [#2557](https://github.com/IgniteUI/igniteui-webcomponents/pull/2557)
+  - A new `displayKey` or `valueKey` updates the input text and the deprecated `item` of the group header template. [#2603](https://github.com/IgniteUI/igniteui-webcomponents/pull/2603)
+  - Input text in single selection: [#2603](https://github.com/IgniteUI/igniteui-webcomponents/pull/2603)
+    - When a framework writes back the cleared `value`, the input keeps the text that the user types.
+    - After a blur clears the input, the input shows the text again when `value` selects the same item again.
+  - Active option: [#2612](https://github.com/IgniteUI/igniteui-webcomponents/pull/2612)
+    - A search, a selection or a new `data` no longer moves the active option to a different item. The active option stays on the same object, or on the item with the same `valueKey` value, and the list scrolls to it. Before, `aria-activedescendant` could refer to no option, and the arrow keys did nothing.
+    - After the combo leaves the document and comes back, `aria-activedescendant` no longer refers to the old active option.
+- #### Combo, Dropdown, Highlight, Select
+  - Setting a property to its current value no longer resets the state. This fixes React and other frameworks that set every property on each render. [#2515](https://github.com/IgniteUI/igniteui-webcomponents/issues/2515) [#2516](https://github.com/IgniteUI/igniteui-webcomponents/issues/2516) [#2518](https://github.com/IgniteUI/igniteui-webcomponents/pull/2518) [#2523](https://github.com/IgniteUI/igniteui-webcomponents/pull/2523) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545) [#2572](https://github.com/IgniteUI/igniteui-webcomponents/pull/2572) [#2603](https://github.com/IgniteUI/igniteui-webcomponents/pull/2603)
+    - Combo: `singleSelect`, `disableFiltering` and `filteringOptions` no longer clear the search text or filter the items again. The same `value` no longer updates the combo.
+    - Dropdown, Select: `selected` on an item no longer moves the active item.
+    - Highlight: `searchText` and `caseSensitive` no longer move the active match back to the first match.
+    - Select: `value` no longer moves the active item. When you remove the active item, the navigation goes back to the selected item.
+- #### Combo, Dropdown, Select
+  - Interactive content in the `header` and `footer` slots, and in the `empty` slot of the combo, keeps its keys while the list is open. A text field gets the typed text, the arrow keys, Home and End. A button gets Enter and Space. [#2529](https://github.com/IgniteUI/igniteui-webcomponents/issues/2529) [#2531](https://github.com/IgniteUI/igniteui-webcomponents/issues/2531) [#2532](https://github.com/IgniteUI/igniteui-webcomponents/issues/2532) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545) [#2585](https://github.com/IgniteUI/igniteui-webcomponents/pull/2585)
+    - Tab and Shift+Tab move through this content. Past either end, Tab closes the list, as before.
+    - Escape from this content closes the list only when the content does not use the key.
+    - When the list closes with the focus in it, the focus goes back to the input or to the target.
+    - In the select, the two slots are outside the `listbox` role, so they pass the accessibility audit. In the dropdown, put this content in the new `header` and `footer` slots.
+- #### Date picker, Date range picker
+  - In dialog mode, a canceled `igcClosing` keeps the dialog open. An outside click commits the range only when the close continues. [#2574](https://github.com/IgniteUI/igniteui-webcomponents/pull/2574)
+  - Enter in the content of the `prefix` or `suffix` slot no longer submits the form a second time. [#2590](https://github.com/IgniteUI/igniteui-webcomponents/pull/2590)
+  - Date picker: in a dropdown that is not editable, a selection in the calendar emits one `igcChange`, not two. [#2489](https://github.com/IgniteUI/igniteui-webcomponents/pull/2489)
+- #### Date picker, Date time input
+  - `stepUp()` and `stepDown()` update `value` and the form value at once, also while the input has the focus. A step of a part that is not in the input format no longer goes away on blur. The arrow keys and the mouse wheel still change only the text until blur. [#2488](https://github.com/IgniteUI/igniteui-webcomponents/pull/2488) [#2489](https://github.com/IgniteUI/igniteui-webcomponents/pull/2489)
+- #### Date range picker
+  - The predefined ranges use the date of the click, not the date of the first render. [#2540](https://github.com/IgniteUI/igniteui-webcomponents/pull/2540)
+  - A change of `mode` no longer sets `keepOpenOnSelect`. [#2488](https://github.com/IgniteUI/igniteui-webcomponents/pull/2488)
+  - A `min` or `max` that you set before the first render no longer throws a `TypeError`. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
+- #### Date range picker, Date time input, Mask input
+  - The editors reject an astral character, such as an emoji, as input and as a prompt. A mask or an input format with an astral literal edits at the correct positions. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
+  - Mask input: an empty value is not a bad input. Only `required` makes an empty control invalid. A value that fits no position of a letter mask, such as `12` for `LLL`, is a bad input. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
+  - Date range picker, Date time input: [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
+    - Mask flags in the input format, such as `A` or `0`, stay literal. So do the letters of a range separator, such as the `t` of `' to '`.
+    - A `yyyy` year of three or four typed digits stays as typed, so `0049` is the year 49. One or two typed digits still give a year from 1950 to 2049.
+    - A `y` or `yyy` year format widens to four characters.
+- #### Date time input
+  - An empty input without the focus no longer has the `filled` part. [#2580](https://github.com/IgniteUI/igniteui-webcomponents/pull/2580)
+- #### Dialog
+  - `hide()` in the same task as `show()` closes the dialog at once. [#2574](https://github.com/IgniteUI/igniteui-webcomponents/pull/2574)
+  - A dialog that you move, or remove and append again, keeps its state. An open dialog is modal again, with its backdrop, and a closed dialog stays closed. This also applies to the date pickers in dialog mode. [#2577](https://github.com/IgniteUI/igniteui-webcomponents/pull/2577)
+  - An `aria-label` on the dialog is its only accessible name. [#2429](https://github.com/IgniteUI/igniteui-webcomponents/pull/2429)
+  - When the browser closes the dialog while `open` stays `true`, the dialog opens again. An example is a second Escape after a canceled `igcClosing`. [#2441](https://github.com/IgniteUI/igniteui-webcomponents/pull/2441)
+- #### File input
+  - In the Bootstrap, Fluent and Indigo themes, a long file name ends with an ellipsis again. [#2384](https://github.com/IgniteUI/igniteui-webcomponents/issues/2384) [#2411](https://github.com/IgniteUI/igniteui-webcomponents/pull/2411)
+  - An empty string in `value` clears the form value and updates the validity. [#2481](https://github.com/IgniteUI/igniteui-webcomponents/pull/2481)
+- #### Focus
+  - `focus()` right after a component connects moves the focus to the component after its first render, as on a native control. Before, the call did nothing, and in the checkbox, radio, select and switch it threw a `TypeError`. [#2569](https://github.com/IgniteUI/igniteui-webcomponents/pull/2569)
+    - This applies to the button, carousel, checkbox, chip, color picker, combo, date picker, date range picker, date time input, file input, icon button, input, mask input, radio, range slider, rating, select, slider, switch, textarea and toggle button.
+- #### Form controls
+  - A failed submit or `form.reportValidity()` moves the focus to the first invalid control, as for native controls. For this, the library wraps `checkValidity()`, `reportValidity()` and `requestSubmit()` of `HTMLFormElement.prototype`. [#2430](https://github.com/IgniteUI/igniteui-webcomponents/pull/2430)
+  - The controls send `invalid` only from `checkValidity()`, `reportValidity()` or a failed submit, not while the user edits. [#2430](https://github.com/IgniteUI/igniteui-webcomponents/pull/2430)
+  - `focus()` and `blur()` work in the rating, slider and range slider. [#2448](https://github.com/IgniteUI/igniteui-webcomponents/pull/2448)
+  - The asterisk of a required control is no longer part of its accessible name. [#2428](https://github.com/IgniteUI/igniteui-webcomponents/pull/2428)
+  - The date picker, date range picker, date time input and mask input set `aria-required` on each native input. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
+  - A click on a button below a control works also when the control shows or hides a validation message on blur. [#2491](https://github.com/IgniteUI/igniteui-webcomponents/pull/2491)
+- #### Hidden ancestors
+  - Components hide at the same time as a hidden ancestor, such as a carousel slide that goes out of view. Before, some stayed visible for the length of their transition. The active slide and indicator of a carousel and the selected indicator of the tabs also hide. [#2552](https://github.com/IgniteUI/igniteui-webcomponents/pull/2552)
+  - After an orientation change, the splitter bar takes its new size at once. [#2552](https://github.com/IgniteUI/igniteui-webcomponents/pull/2552)
+- #### Highlight
+  - A space in `searchText` matches any sequence of whitespace, such as a line break. [#2430](https://github.com/IgniteUI/igniteui-webcomponents/pull/2430)
+  - A `searchText` or `caseSensitive` that you set before the first render runs the search. [#2572](https://github.com/IgniteUI/igniteui-webcomponents/pull/2572)
+- #### Host ARIA attributes
+  - A host `aria-label`, `aria-labelledby` and `aria-describedby` name and describe the inner element that has the role. A change of these attributes applies at once. [#2414](https://github.com/IgniteUI/igniteui-webcomponents/pull/2414) [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432) [#2449](https://github.com/IgniteUI/igniteui-webcomponents/pull/2449)
+    - This applies to the button, icon button, button group, chip, dialog, expansion panel, navigation drawer, QR code, splitter, stepper, tabs and tree, and to `aria-describedby` of the form controls.
+    - Button, Icon button: a `<label>` for the button also names it, and an `igc-tooltip` on it describes it.
+    - Dialog: the host `aria-labelledby` has priority over `aria-label` and the title.
+    - Splitter: the bars of nested splitters no longer have the same name.
+- #### Icon
+  - The SVG is hidden from assistive technology, because the host has the name. A change of `aria-label` or `aria-labelledby` updates the role. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
+- #### Input
+  - `pattern` must match the full value, as in a native input. So `[0-9]{3}` no longer accepts `1234`. An invalid pattern sets no constraint. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
+  - In the Material theme, the floated label of an outlined search field stays inside the box. [#2526](https://github.com/IgniteUI/igniteui-webcomponents/pull/2526)
+- #### Library
+  - The custom elements manifest no longer lists an event without a name, or chat events on the chat input. [#2488](https://github.com/IgniteUI/igniteui-webcomponents/pull/2488)
+  - A server-rendered component with slotted content hydrates without an error and shows its slotted content. [#2580](https://github.com/IgniteUI/igniteui-webcomponents/pull/2580)
+- #### List
+  - `igc-list-header` has the `listitem` role, not `separator`, so screen readers read its text. Put a heading in the header, so that users can move from group to group. [#2439](https://github.com/IgniteUI/igniteui-webcomponents/pull/2439)
+  - The title container of `igc-list-item` is a `div`, not a `header`. So browsers no longer expose a section header in each item. [#2439](https://github.com/IgniteUI/igniteui-webcomponents/pull/2439)
+- #### Localization
+  - A change of the global locale updates the chat labels, the combo group sort order, the tree item labels, and a date time input that was outside the document. [#2474](https://github.com/IgniteUI/igniteui-webcomponents/pull/2474) [#2475](https://github.com/IgniteUI/igniteui-webcomponents/pull/2475)
+  - The calendar, date picker, date range picker and chat resolve every core resource string. Before, the newer strings were `undefined`. [#2474](https://github.com/IgniteUI/igniteui-webcomponents/pull/2474)
+  - The date pickers give the calendar strings of `resourceStrings` to their calendar. [#2475](https://github.com/IgniteUI/igniteui-webcomponents/pull/2475)
+  - English strings that you register with `registerI18n(strings, 'en-US')` before the first component apply. [#2476](https://github.com/IgniteUI/igniteui-webcomponents/pull/2476)
+  - `validationMessage` of the form controls uses the strings, the number format and the date format of the locale. Before, it was always in English, and the date range picker showed "[object Object]". [#2492](https://github.com/IgniteUI/igniteui-webcomponents/pull/2492)
+- #### Navigation drawer
+  - When a drawer with a `mini` variant closes, the focus goes back to the element that had it when the drawer opened. [#2440](https://github.com/IgniteUI/igniteui-webcomponents/pull/2440)
+  - When the browser closes the dialog of a drawer that stays open, the drawer opens the dialog again. [#2440](https://github.com/IgniteUI/igniteui-webcomponents/pull/2440)
+  - In the Material theme, the item highlight shows in a drawer with `position="relative"`. [#2499](https://github.com/IgniteUI/igniteui-webcomponents/pull/2499)
+  - Content with `position: fixed` in a `top` or `bottom` drawer, or in the mini variant, is placed against the viewport. [#2578](https://github.com/IgniteUI/igniteui-webcomponents/pull/2578)
+- #### QR code
+  - Codes of versions 30 to 40 agree with ISO/IEC 18004. The `M` level uses the correct data codeword counts, and versions 31 and 32 have their alignment patterns at the correct positions. Before, a scanner could fail to read these codes. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409) [#2461](https://github.com/IgniteUI/igniteui-webcomponents/pull/2461)
+  - Without `error-level`, a logo that is too large for level `M` raises the error correction level, as documented. [#2414](https://github.com/IgniteUI/igniteui-webcomponents/pull/2414)
+  - The logo in an exported SVG also has `xlink:href`, so SVG 1.1 tools, such as Illustrator, show it. [#2414](https://github.com/IgniteUI/igniteui-webcomponents/pull/2414)
+  - `toImage()` reads `size` after pending changes render. [#2483](https://github.com/IgniteUI/igniteui-webcomponents/pull/2483)
+  - A value that does not fit renders nothing and writes a warning to the console. `toBlob()` and `toImage()` reject with the reason. A `version` that is not a whole number from 1 to 40 selects the version automatically. [#2488](https://github.com/IgniteUI/igniteui-webcomponents/pull/2488)
+- #### Radio group
+  - In the horizontal alignment, the helper text and the validation messages show under the radios, each in its own row. [#2442](https://github.com/IgniteUI/igniteui-webcomponents/pull/2442)
+- #### Range slider, Slider
+  - Values: [#2433](https://github.com/IgniteUI/igniteui-webcomponents/issues/2433) [#2434](https://github.com/IgniteUI/igniteui-webcomponents/issues/2434) [#2438](https://github.com/IgniteUI/igniteui-webcomponents/pull/2438) [#2445](https://github.com/IgniteUI/igniteui-webcomponents/pull/2445)
+    - A value snaps to the nearest step, counted from `min`, as in a native range input. A value on a fractional step, such as 0.5 with `step="0.01"`, stays where it is.
+    - The order of `value`, `lower`, `upper`, `min`, `max` and `step` no longer changes the result. When `min` ends above `max`, the slider keeps the previous `min` and `max`.
+    - A negative `step` keeps the previous step.
+    - Removing `lower-bound` or `upper-bound` unsets the bound.
+    - `upper` of the range slider follows `upperBound` until you set it, so the default range covers the full scale. A `lower` above `upper` swaps the two values.
+    - When the `igc-slider-label` elements go, `min`, `max` and `step` go back to your values.
+  - Interaction: [#2438](https://github.com/IgniteUI/igniteui-webcomponents/pull/2438)
+    - The keyboard emits no `igcInput` or `igcChange` when the value stays the same. A drag emits one `igcChange`. A right click or a second pointer no longer moves a thumb.
+    - Each thumb of the range slider announces its own value. The host `aria-label` and `aria-labelledby` name the group of the two thumbs.
+    - The thumb label is in the top layer, so a container that clips its overflow does not cut it. It also shows on keyboard focus, and Escape hides it.
+  - The box of the slider holds the ticks and their labels, so a slider with tick labels is taller. You can remove the space that you added for the labels. A tick label stays on one line. [#2445](https://github.com/IgniteUI/igniteui-webcomponents/pull/2445)
+- #### Select
+  - In forced colors mode, the list has a border. [#2488](https://github.com/IgniteUI/igniteui-webcomponents/pull/2488)
+- #### Snackbar, Toast
+  - `container` positioning no longer moves the component to the start of the container in the tab order. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
+  - A component that moves while it is open shows again in its new place, with a full display time. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
+  - The default action of the snackbar shows the keyboard focus style in every theme. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)
+- #### Splitter
+  - The bar no longer has the English description "Start pane expanded and End pane expanded". Its value tells which pane is collapsed. [#2449](https://github.com/IgniteUI/igniteui-webcomponents/pull/2449)
+- #### Stacking order
+  - The `z-index` values of the parts stay inside each component, so they no longer compete with the layers of the page. For example, the tab labels no longer show through a sticky page header with `z-index: 1`. Slotted content with a `z-index` also stays inside. [#2499](https://github.com/IgniteUI/igniteui-webcomponents/pull/2499)
+    - This applies to the button group, carousel, checkbox, color picker, date range picker, date time input, file input, input, mask input, navigation drawer with `position="relative"`, radio, splitter, stepper, switch, tabs, textarea and tile manager.
+- #### Stepper
+  - A click in the content of a step no longer activates the step. A click on a header of a nested stepper no longer changes the outer stepper. [#2453](https://github.com/IgniteUI/igniteui-webcomponents/pull/2453)
+  - The content of an inactive step is `inert`, so Tab and screen readers skip it. [#2453](https://github.com/IgniteUI/igniteui-webcomponents/pull/2453)
+  - The header of a disabled step, or of a step that linear mode locks, has `aria-disabled`. [#2453](https://github.com/IgniteUI/igniteui-webcomponents/pull/2453)
+  - `navigateTo()` no longer activates a disabled step. [#2488](https://github.com/IgniteUI/igniteui-webcomponents/pull/2488)
+  - Setting `active` activates the step at once. When several steps become active in one task, the last one is active. [#2547](https://github.com/IgniteUI/igniteui-webcomponents/pull/2547)
+  - When an `igcActiveStepChanging` handler activates a step, the click stops and does not emit `igcActiveStepChanged`. [#2547](https://github.com/IgniteUI/igniteui-webcomponents/pull/2547)
+  - `next()`, `prev()` and the arrow keys move from a disabled active step to its neighbors. `prev()` moves back from a step that linear mode locks. [#2547](https://github.com/IgniteUI/igniteui-webcomponents/pull/2547)
+  - When all the steps are disabled, enabling a step activates the first enabled step. [#2547](https://github.com/IgniteUI/igniteui-webcomponents/pull/2547)
+  - A control in the title or the subtitle of a step, such as a button, keeps its keys. [#2563](https://github.com/IgniteUI/igniteui-webcomponents/pull/2563)
+- #### Tabs
+  - `alignment` works in the Material, Fluent and Indigo themes. With `justify`, all the tabs have the same width, and a hidden tab leaves no space. [#2431](https://github.com/IgniteUI/igniteui-webcomponents/pull/2431) [#2556](https://github.com/IgniteUI/igniteui-webcomponents/pull/2556)
+  - The Material and Fluent themes paint the full header strip. [IgniteUI/igniteui-angular#17421](https://github.com/IgniteUI/igniteui-angular/issues/17421) [#2431](https://github.com/IgniteUI/igniteui-webcomponents/pull/2431)
+  - A tab that you select through its `selected` property scrolls into view inside the strip. A new selected tab that makes the strip overflow scrolls fully into view. [#2431](https://github.com/IgniteUI/igniteui-webcomponents/pull/2431)
+  - The scroll buttons go away when the tabs fit again. [#2431](https://github.com/IgniteUI/igniteui-webcomponents/pull/2431)
+  - A tab added as selected keeps the selection when the previous selected tab goes at the same time, as in a framework render. [#2446](https://github.com/IgniteUI/igniteui-webcomponents/pull/2446)
+  - Tabs that you remove before their first frame no longer throw `Failed to execute 'observe' on 'ResizeObserver'`. [#2416](https://github.com/IgniteUI/igniteui-webcomponents/issues/2416) [#2467](https://github.com/IgniteUI/igniteui-webcomponents/pull/2467)
+  - Tabs that another component projects through its slot: the keyboard works, and changes to the tabs apply. [#2497](https://github.com/IgniteUI/igniteui-webcomponents/pull/2497)
+  - The selected indicator follows a change of size of a header and a change of direction. The scroll button arrows follow `dir="rtl"` on any ancestor. [#2497](https://github.com/IgniteUI/igniteui-webcomponents/pull/2497)
+  - Changes made while the tabs are detached apply when they connect again. [#2497](https://github.com/IgniteUI/igniteui-webcomponents/pull/2497)
+  - The tabs measure correctly under an ancestor with `zoom`. [#2497](https://github.com/IgniteUI/igniteui-webcomponents/pull/2497)
+  - The strip no longer snaps to the edge of a tab when you scroll it by touch after a scroll button press. [#2497](https://github.com/IgniteUI/igniteui-webcomponents/pull/2497)
+  - Tabs in a panel of `justify` tabs keep the width limit of a header. [#2556](https://github.com/IgniteUI/igniteui-webcomponents/pull/2556)
+  - The scroll buttons and the selection of a hidden tab no longer scroll the strip. [#2556](https://github.com/IgniteUI/igniteui-webcomponents/pull/2556)
+  - An element with `position: fixed` in the selected panel is placed against the viewport. [#2549](https://github.com/IgniteUI/igniteui-webcomponents/pull/2549)
+- #### Text selection
+  - In the input and the textarea, `setRangeText()` without `start` and `end` replaces the selected text, as the native method does. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432) [#2451](https://github.com/IgniteUI/igniteui-webcomponents/pull/2451)
+  - In the date picker, the `start` and `end` parameters of `setRangeText()` are optional in TypeScript. [#2452](https://github.com/IgniteUI/igniteui-webcomponents/pull/2452)
+- #### Textarea
+  - A height that the user sets with the resize handle stays. [#2479](https://github.com/IgniteUI/igniteui-webcomponents/pull/2479)
+  - A change of `minLength` or `maxLength` updates the validity at once. [#2461](https://github.com/IgniteUI/igniteui-webcomponents/pull/2461)
+  - Whitespace in the default slot, such as the indentation around a helper text, no longer clears the value. [#2451](https://github.com/IgniteUI/igniteui-webcomponents/pull/2451)
+  - `spellcheck` works as the native attribute: only `false` turns the spell check off. [#2451](https://github.com/IgniteUI/igniteui-webcomponents/pull/2451)
+- #### Theming
+  - The breadcrumbs, button and combo use their default sizes when `--ig-size-small`, `--ig-size-medium` and `--ig-size-large` are not registered, for example with a theme used only in a shadow root. [igniteui-theming#652](https://github.com/IgniteUI/igniteui-theming/issues/652) [#2544](https://github.com/IgniteUI/igniteui-webcomponents/pull/2544)
+  - A theme change keeps the style sheets that other code adopted into the shadow root. [#2436](https://github.com/IgniteUI/igniteui-webcomponents/pull/2436)
+- #### Tile manager
+  - Focus and accessibility: [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
+    - Maximize and full screen keep the focus on the action.
+    - While a tile is maximized, Tab skips the other tiles.
+    - Screen readers no longer find a separator in each tile.
+  - Maximize and full screen: [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
+    - Two quick clicks on the maximize action no longer cause an unhandled error.
+    - When you remove a maximized tile, the manager releases the grid height that it kept for the tile.
+    - `fullscreen` follows the browser, also after Escape or after a custom action calls `requestFullscreen()`. When the browser rejects a change, the tile emits an `igcTileFullscreen` with the real state, which you cannot cancel.
+    - A fullscreen tile that you remove and add again is no longer `fullscreen`.
+  - Touch: a maximized or fullscreen tile scrolls by touch. With `drag-mode="tile-header"`, the content scrolls by touch, and the native drag of images and links works. [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
+  - Drag and resize: [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456) [#2565](https://github.com/IgniteUI/igniteui-webcomponents/pull/2565)
+    - A drag swaps with the tile under the pointer also during a fast move. It no longer swaps with a tile that left the manager.
+    - Escape after a drag restores every tile.
+    - A drag or a resize cancels when the tile leaves the page or the browser sends `pointercancel`. The tile then emits `igcTileDragCancel` or `igcTileResizeCancel`. A second pointer no longer moves or ends the operation.
+    - A resize works with a `grid-column` or `grid-row` from your CSS, with `min-row-height` and `min-column-width` in any CSS unit, and with a percentage `gap`.
+    - In a right-to-left layout, the resize handles are on the left edge, and a drag reads the CSS `direction`.
+    - The copy of the tile during a drag no longer acts as a second tile. Its form controls, frames and media do nothing.
+    - A dragged tile keeps its size.
+    - A drag gives an inline `user-select` back to the page body when it ends. A resize also stops text selection and touch scrolling.
+  - Layout: [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456) [#2565](https://github.com/IgniteUI/igniteui-webcomponents/pull/2565)
+    - Tiles that move in the DOM, for example in a list that a framework sorts, keep their positions.
+    - `loadLayout()` gives every tile a unique position.
+    - A fractional `columnCount` is truncated to a whole number.
+    - In a manager that is narrower than `minColumnWidth`, a responsive column takes the width of the manager.
+  - Nested tile managers: [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456) [#2457](https://github.com/IgniteUI/igniteui-webcomponents/pull/2457) [#2565](https://github.com/IgniteUI/igniteui-webcomponents/pull/2565)
+    - An inner manager no longer takes the column count, the gap, the spans or the starts of the outer manager or tile.
+    - A drag moves only the innermost tile, and it swaps only with the tiles of its own manager.
+    - The swaps of a tile that holds a nested manager animate.
+  - Previews and animations: [#2456](https://github.com/IgniteUI/igniteui-webcomponents/pull/2456)
+    - The drag and resize previews render in the nearest modal dialog, fullscreen element or open popover. They cover the tile also when the page body is positioned or the page scrolls.
+    - The maximize, restore and resize animations keep the content sharp. The animation rules are in the theme style sheets.
+- #### Tooltip
+  - An event in both `show-triggers` and `hide-triggers` emits `igcOpening` one time, not two. [#2561](https://github.com/IgniteUI/igniteui-webcomponents/pull/2561)
+  - After a show at another target, the triggers of the anchor bind one time, not two. [#2561](https://github.com/IgniteUI/igniteui-webcomponents/pull/2561)
+  - `show(target)` after a change of `anchor` in the same task shows the tooltip at the target. [#2561](https://github.com/IgniteUI/igniteui-webcomponents/pull/2561)
+  - A tooltip that moves in the DOM still closes on Escape and hides when the pointer leaves it. A tooltip that you remove while it opens no longer takes the Escape key. [#2561](https://github.com/IgniteUI/igniteui-webcomponents/pull/2561)
+  - Removing the `placement` attribute no longer throws an error. [#2561](https://github.com/IgniteUI/igniteui-webcomponents/pull/2561)
+  - With `with-arrow`, the arrow is at the center of the anchor on the first show, and it stays inside the tooltip for the `-start` and `-end` placements. [#2520](https://github.com/IgniteUI/igniteui-webcomponents/issues/2520) [#2524](https://github.com/IgniteUI/igniteui-webcomponents/pull/2524) [#2561](https://github.com/IgniteUI/igniteui-webcomponents/pull/2561)
+  - `message` shows when there is only whitespace between the tags. [#2561](https://github.com/IgniteUI/igniteui-webcomponents/pull/2561)
 - #### Tree
-  - A tree item that gives its role to a link in its label now copies the host `aria-label`, `aria-labelledby` and `aria-describedby` to that link, unless the link has its own. Before, these attributes stayed on the host, where screen readers did not use them. [#2432](https://github.com/IgniteUI/igniteui-webcomponents/pull/2432)
+  - A tree item outside a tree no longer renders a selection checkbox. [#2488](https://github.com/IgniteUI/igniteui-webcomponents/pull/2488)
 - #### Virtual scroll
-  - `layoutComplete` now resolves after the rendered items are measured. Before, it could resolve first. So `scrollToIndex` stopped its correction early, and an item with a size different from the estimate landed up to tens of pixels from the requested edge. [#2410](https://github.com/IgniteUI/igniteui-webcomponents/pull/2410)
-  - A list larger than the maximum scroll size of the browser now shows its last items at the end of the scroll range, and `scrollToIndex` puts the item at the requested edge. The items also move evenly during a scroll. Before, you could not get to the last items, the item landed tens of pixels off, and the items jumped by some pixels each time the rendered window changed. [#2410](https://github.com/IgniteUI/igniteui-webcomponents/pull/2410)
-  - A new `data` array with new items at the rendered indices now measures those items again. Before, an item element that kept its index was not measured again. So the scroll size and the item positions used the estimate until the item left the rendered window. [#2412](https://github.com/IgniteUI/igniteui-webcomponents/pull/2412)
+  - `scrollToIndex()`: [#2410](https://github.com/IgniteUI/igniteui-webcomponents/pull/2410) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545) [#2603](https://github.com/IgniteUI/igniteui-webcomponents/pull/2603)
+    - It puts the item at the requested edge, also when the size of the item is different from the estimate.
+    - A `data` change in the same task renders at the new offset.
+    - On a hidden or detached list, the call waits and scrolls when the list shows. Its promise resolves after that scroll. A newer call replaces the waiting call. Before, the call did nothing.
+  - `layoutComplete` resolves after the rendered items are measured. [#2410](https://github.com/IgniteUI/igniteui-webcomponents/pull/2410)
+  - A list larger than the maximum scroll size of the browser shows its last items, and its items move evenly during a scroll. [#2410](https://github.com/IgniteUI/igniteui-webcomponents/pull/2410)
+  - A new `data` array measures the new items at the rendered indices again. [#2412](https://github.com/IgniteUI/igniteui-webcomponents/pull/2412)
+  - A property change on a detached virtual scroll no longer throws an error. [#2597](https://github.com/IgniteUI/igniteui-webcomponents/pull/2597)
 
 ### Security
 - #### Tile manager
-  - `loadLayout` now copies only the serialized tile properties: the spans, the positions, the flags and `id`. A layout from storage or a server can no longer set `innerHTML` on a tile or replace its prototype through `__proto__`. The method ignores a value that is not an array and an entry that is not an object. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
+  - `loadLayout` copies only the serialized tile properties: the spans, the positions, the flags and `id`. So a layout from storage or a server can no longer set `innerHTML` on a tile or change its prototype through `__proto__`. The method ignores a value that is not an array, and an entry that is not an object. [#2409](https://github.com/IgniteUI/igniteui-webcomponents/pull/2409)
 
 ## [7.4.1] - 2026-09-25
 ### Added
@@ -1908,6 +2150,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.5.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.4.1...7.5.0
 [7.4.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.4.0...7.4.1
 [7.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.3.2...7.4.0
 [7.3.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.3.1...7.3.2

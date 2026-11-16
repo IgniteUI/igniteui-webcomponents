@@ -1,4 +1,5 @@
 import type { LitElement } from 'lit';
+import { createAbortHandle } from '../abort-handler.js';
 
 /**
  * The events that a {@link ToggleController} sends. Include them, or a subset
@@ -16,22 +17,30 @@ export interface ToggleEventMap {
 }
 
 /**
- * A toggleable host must give the `emitEvent` method of the event-emitter
- * mixin. Extend {@link ../mixins/event-emitter.js#EventEmitterMixin | EventEmitterMixin}
+ * A host that asks for the events must give the `emitEvent` method of the
+ * event-emitter mixin. Extend {@link ../mixins/event-emitter.js#EventEmitterMixin | EventEmitterMixin}
  * with the {@link ToggleEventMap}, or with a subset of it.
  */
 type ToggleHost = LitElement & {
   open: boolean;
-  emitEvent(name: string, init?: CustomEventInit): boolean;
+  emitEvent?(name: string, init?: CustomEventInit): boolean;
 };
 
 /**
  * Runs the visual transition of the host to the requested state: it sets
- * `open`, plays the animations and awaits the updates. A resolved `false`
+ * `open`, plays the animations and awaits the updates. A `false` result
  * marks the transition as superseded, and the controller then sends no
  * trailing "-ed" event.
+ *
+ * The signal aborts when a newer request or a direct change of `open` takes
+ * over. The transition then stops its animations and changes no more state.
+ * A transition that refuses without a change of `open` stays the request in
+ * flight until its promise settles.
  */
-type ToggleTransitionFunction = (open: boolean) => Promise<boolean> | boolean;
+type ToggleTransitionFunction = (
+  open: boolean,
+  signal: AbortSignal
+) => Promise<boolean> | boolean;
 
 type ToggleControllerOptions = {
   /**
@@ -52,7 +61,9 @@ type ToggleControllerOptions = {
  * transition, awaits the host update, then sends `igcOpened` or `igcClosed`.
  * The events run only when the caller asks for them.
  *
- * The controller has no life cycle, so the host does not register it.
+ * The controller has no life cycle, so the host does not register it. A host
+ * whose transition outlives a task calls {@link ToggleController.sync} from
+ * its `open` setter.
  */
 class ToggleController {
   private readonly _host: ToggleHost;
@@ -67,6 +78,9 @@ class ToggleController {
   /** Incremented per operation. A superseded operation stops. */
   private _generation = 0;
 
+  /** Aborts the transition of the operation in flight. */
+  private readonly _abort = createAbortHandle();
+
   constructor(host: ToggleHost, options?: ToggleControllerOptions) {
     this._host = host;
     this._options = { ...options };
@@ -76,20 +90,31 @@ class ToggleController {
    * Sends the event through the host `emitEvent`. Consumers and framework
    * wrappers observe that one method.
    */
-  private _emit(name: keyof ToggleEventMap, cancelable: boolean): boolean {
+  private _emit(
+    name: keyof ToggleEventMap,
+    cancelable: boolean,
+    detail: unknown = this._options.detail?.call(this._host)
+  ): boolean {
     const host = this._host;
-    const detail = this._options.detail?.call(host);
 
     // Omit the falsy keys, so `emitEvent` applies its own defaults.
-    return host.emitEvent(name, {
+    return host.emitEvent!(name, {
       ...(cancelable && { cancelable }),
       ...(detail !== undefined && { detail }),
     });
   }
 
+  /** Ends the operation in flight, if any, and starts a new generation. */
+  private _supersede(): number {
+    this._pending = undefined;
+    this._abort.abort();
+    return ++this._generation;
+  }
+
   private async _setOpenState(
     open: boolean,
-    emitEvents: boolean
+    emitEvents: boolean,
+    detail?: unknown
   ): Promise<boolean> {
     const host = this._host;
     const { transition } = this._options;
@@ -98,19 +123,24 @@ class ToggleController {
       return false;
     }
 
-    if (emitEvents && !this._emit(open ? 'igcOpening' : 'igcClosing', true)) {
+    if (
+      emitEvents &&
+      !this._emit(open ? 'igcOpening' : 'igcClosing', true, detail)
+    ) {
       return false;
     }
 
-    const generation = ++this._generation;
+    const generation = this._supersede();
     this._pending = open;
 
-    // The default transition is synchronous, so the state change and the
-    // `updateComplete` subscription stay in the microtask of the caller.
+    // A synchronous transition, as the default one, keeps the state change and
+    // the `updateComplete` subscription in the microtask of the caller.
     let completed = true;
     try {
       if (transition) {
-        completed = (await transition.call(host, open)) !== false;
+        const result = transition.call(host, open, this._abort.signal);
+        completed =
+          (result instanceof Promise ? await result : result) !== false;
       } else {
         host.open = open;
       }
@@ -118,6 +148,7 @@ class ToggleController {
       // A newer operation owns the pending state from here on.
       if (generation === this._generation) {
         this._pending = undefined;
+        this._abort.reset();
       }
     }
 
@@ -133,7 +164,7 @@ class ToggleController {
         return false;
       }
 
-      this._emit(open ? 'igcOpened' : 'igcClosed', false);
+      this._emit(open ? 'igcOpened' : 'igcClosed', false, detail);
     }
 
     return completed;
@@ -143,6 +174,11 @@ class ToggleController {
    * The methods below are not `async`. An `async` wrapper adds microtask
    * hops, which shift the timing of caller code against `updateComplete`.
    */
+
+  /** Whether a `hide()` is in flight. */
+  public get closing(): boolean {
+    return this._pending === false;
+  }
 
   /**
    * Opens the host, and sends `igcOpening` and `igcOpened` when `emitEvents`
@@ -156,17 +192,29 @@ class ToggleController {
 
   /**
    * Closes the host, and sends `igcClosing` and `igcClosed` when `emitEvents`
-   * is true. Returns `false` when the host is already closed or closing, the
+   * is true. A `detail` other than `undefined` replaces the one of the
+   * `detail` option in both events. Returns `false` when the host is already closed or closing, the
    * closing event is canceled, a later request supersedes this one, or the
    * transition is interrupted.
    */
-  public hide(emitEvents = false): Promise<boolean> {
-    return this._setOpenState(false, emitEvents);
+  public hide(emitEvents = false, detail?: unknown): Promise<boolean> {
+    return this._setOpenState(false, emitEvents, detail);
   }
 
   /** Opens the host, or closes it, based on its current state. */
   public toggle(emitEvents = false): Promise<boolean> {
     return this._host.open ? this.hide(emitEvents) : this.show(emitEvents);
+  }
+
+  /**
+   * Reports a change of `host.open`; call it from the `open` setter. A value
+   * against the request in flight means that the application took over: the
+   * request resolves `false`, and the signal of its transition aborts.
+   */
+  public sync(open: boolean): void {
+    if (this._pending !== undefined && open !== this._pending) {
+      this._supersede();
+    }
   }
 }
 

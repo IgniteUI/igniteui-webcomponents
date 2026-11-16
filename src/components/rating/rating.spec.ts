@@ -17,6 +17,7 @@ import {
   homeKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
@@ -44,6 +45,8 @@ describe('Rating component', () => {
         '[part="base"]'
       )!,
   });
+
+  runFocusBeforeRenderTests(html`<igc-rating></igc-rating>`);
 
   let el: IgcRatingComponent;
 

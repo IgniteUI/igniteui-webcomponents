@@ -2,7 +2,6 @@ import {
   createGroupRegistry,
   type GroupMemberController,
 } from '#internals/controllers/group.js';
-import { getRoot } from '#internals/utils/dom.js';
 import type IgcRadioComponent from './radio.js';
 
 /**
@@ -14,25 +13,22 @@ import type IgcRadioComponent from './radio.js';
  */
 const radioGroups = createGroupRegistry<IgcRadioComponent, boolean>({
   keyOf: (radio) => radio.name || '',
-  scopeOf: (radio) => radio.form ?? getRoot(radio),
+  scopeOf: (radio) => radio.form ?? radio.getRootNode(),
   deriveState: (radios) =>
     radios.some((radio) => radio.checked && !radio.disabled),
 });
 
-type RadioGroupController = GroupMemberController<IgcRadioComponent>;
-
-export type { RadioGroupController };
-
 export function addRadioGroupController(
   host: IgcRadioComponent,
   onSync: (hasCheckedRadio: boolean) => void
-): RadioGroupController {
+): GroupMemberController<IgcRadioComponent> {
   return radioGroups.attach(host, onSync);
 }
 
 /** Returns the radios of the group of `member`, in DOM order. */
 export function getGroupMembers(
-  member: IgcRadioComponent
+  member: IgcRadioComponent,
+  ordered?: boolean
 ): IgcRadioComponent[] {
-  return radioGroups.membersOf(member);
+  return radioGroups.membersOf(member, ordered);
 }

@@ -73,7 +73,7 @@ const metadata: Meta<IgcThemeProviderComponent> = {
     docs: {
       description: {
         component:
-          'A theme provider component that uses Lit context to provide theme information\nto descendant components.\n\nThis component allows you to scope a theme to a specific part of the page.\nAll library components within this provider will use the specified theme\ninstead of the global theme.',
+          'Provides a theme to its descendant components through Lit context.\n\nUse it to scope a theme to a part of the page. The library components in\nthe provider use its theme instead of the global theme.',
       },
     },
   },
@@ -186,8 +186,8 @@ const styles = html`
 
     /* The themed surface of a provider: its host is display: contents. */
     .tp-surface {
-      background: var(--ig-surface-500);
-      color: var(--ig-surface-500-contrast);
+      background: var(--ig-surface-base);
+      color: var(--ig-surface-base-contrast);
       font-family: var(--ig-font-family);
     }
 

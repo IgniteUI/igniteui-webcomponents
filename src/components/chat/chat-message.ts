@@ -1,13 +1,15 @@
-import { ContextConsumer } from '@lit/context';
-import { html, isServer, LitElement, nothing, type PropertyValues } from 'lit';
-import { property, state } from 'lit/decorators.js';
-import { cache } from 'lit/directives/cache.js';
-import { until } from 'lit/directives/until.js';
-import { chatContext } from '#internals/context.js';
-import { addAdoptedStylesController } from '#internals/controllers/adopt-styles.js';
+import { html, isServer, LitElement, nothing } from 'lit';
+import { property } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { HydrationMixin } from '#internals/mixins/hydration.js';
 import { partMap } from '#internals/part-map.js';
 import { isEmpty } from '#internals/utils/arrays.js';
+import { isElement } from '#internals/utils/dom.js';
+import {
+  getElementFromPath,
+  linkOpensElsewhere,
+} from '#internals/utils/events.js';
 import { trimmedHtml } from '#internals/utils/lit.js';
 import { all } from '#themes/chat/themes/message.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -15,6 +17,7 @@ import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import type { ChatState } from './chat-state.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
+import { addChatStateConsumer } from './state-consumer.js';
 import { styles } from './themes/message.base.css.js';
 import { styles as shared } from './themes/shared/chat-message/chat-message.common.css.js';
 import type {
@@ -22,6 +25,7 @@ import type {
   ChatTemplateRenderer,
   IgcChatMessage,
 } from './types.js';
+import { renderResult } from './utils.js';
 
 const LIKE_INACTIVE = 'thumb_up_inactive';
 const LIKE_ACTIVE = 'thumb_up_active';
@@ -29,6 +33,8 @@ const DISLIKE_INACTIVE = 'thumb_down_inactive';
 const DISLIKE_ACTIVE = 'thumb_down_active';
 const COPY_CONTENT = 'copy_content';
 const REGENERATE = 'regenerate';
+// `*|href` also matches the `xlink:href` of an SVG link.
+const LINK = 'a[*|href], area[href]';
 
 type DefaultMessageRenderers = {
   messageHeader: ChatTemplateRenderer<ChatMessageRenderContext>;
@@ -41,21 +47,22 @@ type DefaultMessageRenderers = {
 /**
  * A chat message component for displaying individual messages in the chat component.
  *
- * @element igc-chat-message
- *
- *
  * This component renders a single chat message including:
- * - Message text (sanitized)
+ * - Message text
  * - Attachments (if any)
  * - Custom templates for message content and actions (if provided via chat options)
  *
  * It distinguishes sent messages from received messages by comparing
  * the message sender with the current user ID from chat state.
  *
- * The message text is sanitized with DOMPurify before rendering,
- * and can be rendered with a markdown renderer if provided.
+ * The default renderer shows the message text as plain text. A `messageContent`
+ * renderer in the chat options can replace it, for example with a markdown renderer.
+ *
+ * @element igc-chat-message
  */
-export default class IgcChatMessageComponent extends LitElement {
+export default class IgcChatMessageComponent extends HydrationMixin(
+  LitElement
+) {
   public static readonly tagName = 'igc-chat-message';
   public static override styles = [componentBase, styles, shared];
 
@@ -68,7 +75,7 @@ export default class IgcChatMessageComponent extends LitElement {
     );
   }
 
-  private readonly _adoptedStyles = addAdoptedStylesController(this);
+  private readonly _chat = addChatStateConsumer(this);
 
   private readonly _defaults = Object.freeze<DefaultMessageRenderers>({
     messageHeader: () => this._renderHeader(),
@@ -77,27 +84,8 @@ export default class IgcChatMessageComponent extends LitElement {
     messageActions: () => this._renderActions(),
   });
 
-  private readonly _stateChanged = () => {
-    this._shouldAdoptRootStyles = Boolean(this._state.options?.adoptRootStyles);
-  };
-
-  private readonly _stateConsumer = new ContextConsumer(this, {
-    context: chatContext,
-    callback: this._stateChanged,
-    subscribe: true,
-  });
-
-  /**
-   * Set while a server-rendered host is hydrating, during which `render()`
-   * withholds the template so both renders match.
-   */
-  private _hydrating = false;
-
-  @state()
-  private _shouldAdoptRootStyles = false;
-
   private get _state(): ChatState {
-    return this._stateConsumer.value!;
+    return this._chat.state!;
   }
 
   /**
@@ -108,33 +96,7 @@ export default class IgcChatMessageComponent extends LitElement {
 
   constructor() {
     super();
-    addThemingController(this, all, { themeChange: this._adoptPageStyles });
-  }
-
-  /** @internal */
-  protected override createRenderRoot(): HTMLElement | DocumentFragment {
-    this._hydrating = this.shadowRoot !== null;
-    return super.createRenderRoot();
-  }
-
-  protected override update(props: PropertyValues): void {
-    if (props.has('_shouldAdoptRootStyles')) {
-      this._adoptedStyles.shouldAdoptStyles(this._shouldAdoptRootStyles);
-    }
-    super.update(props);
-  }
-
-  protected override firstUpdated(): void {
-    if (this._hydrating) {
-      this._hydrating = false;
-      // Off the current update cycle - avoids Lit's change-in-update warning.
-      queueMicrotask(() => this.requestUpdate());
-    }
-  }
-
-  private _adoptPageStyles(): void {
-    this._adoptedStyles.invalidateCache(this.ownerDocument);
-    this._adoptedStyles.shouldAdoptStyles(this._shouldAdoptRootStyles);
+    addThemingController(this, all);
   }
 
   private _getRenderer(name: keyof DefaultMessageRenderers) {
@@ -151,13 +113,9 @@ export default class IgcChatMessageComponent extends LitElement {
       chat_message_copied,
     } = this._state.resourceStrings;
 
-    const attachmentsText = isEmpty(attachments)
-      ? ''
-      : attachments
-          .map(
-            ({ name, url }) => `${name ?? chat_attachment_label}: ${url ?? ''}`
-          )
-          .join('\n');
+    const attachmentsText = attachments
+      .map(({ name, url }) => `${name ?? chat_attachment_label}: ${url ?? ''}`)
+      .join('\n');
 
     const payload = attachmentsText
       ? `${text}${separator}${chat_attachments_list_label}:\n${attachmentsText}`
@@ -196,11 +154,9 @@ export default class IgcChatMessageComponent extends LitElement {
           : DISLIKE_ACTIVE;
         break;
       case COPY_CONTENT:
-        reaction = COPY_CONTENT;
         this._handleCopy();
         break;
       case REGENERATE:
-        reaction = REGENERATE;
         break;
       default:
         reaction = '';
@@ -213,6 +169,47 @@ export default class IgcChatMessageComponent extends LitElement {
     this.requestUpdate();
   }
 
+  private _handleLinkClick(event: MouseEvent): void {
+    // A link around the chat does not count.
+    const path = event.composedPath();
+    const link = path
+      .slice(0, path.indexOf(this))
+      .find((item): item is Element => isElement(item) && item.matches(LINK));
+    const href = link?.getAttribute('href') ?? link?.getAttribute('xlink:href');
+
+    if (
+      !link ||
+      href == null ||
+      !event.cancelable ||
+      event.defaultPrevented ||
+      link.hasAttribute('download') ||
+      // A link in a nested chat, also in its header, belongs to that chat.
+      getElementFromPath(this._state.host.localName, event) !==
+        this._state.host ||
+      linkOpensElsewhere(
+        link.getAttribute('target'),
+        link.ownerDocument,
+        event
+      ) ||
+      !URL.canParse(href, link.baseURI)
+    ) {
+      return;
+    }
+
+    const navigate = this._state.emitEvent('igcNavigate', {
+      bubbles: false,
+      cancelable: true,
+      detail: {
+        message: this.message,
+        href: new URL(href, link.baseURI).href,
+      },
+    });
+
+    if (!navigate) {
+      event.preventDefault();
+    }
+  }
+
   private _renderHeader() {
     return nothing;
   }
@@ -222,7 +219,7 @@ export default class IgcChatMessageComponent extends LitElement {
   }
 
   private _renderActions() {
-    const isSent = this.message.sender === this._state.currentUserId;
+    const isSent = this._state.isCurrentUserMessage(this.message);
     const hasText = this.message.text.trim();
     const hasAttachments = !isEmpty(this.message.attachments ?? []);
     const isTyping = this._state.options?.isTyping;
@@ -233,22 +230,23 @@ export default class IgcChatMessageComponent extends LitElement {
       return nothing;
     }
 
+    const liked = this.message.reactions?.includes(LIKE_ACTIVE);
+    const disliked = this.message.reactions?.includes(DISLIKE_ACTIVE);
+
     return html`
       ${this._renderActionButton(
         COPY_CONTENT,
         resourceStrings.chat_reaction_copy!
       )}
       ${this._renderActionButton(
-        this.message.reactions?.includes(LIKE_ACTIVE)
-          ? LIKE_ACTIVE
-          : LIKE_INACTIVE,
-        resourceStrings.chat_reaction_like!
+        liked ? LIKE_ACTIVE : LIKE_INACTIVE,
+        resourceStrings.chat_reaction_like!,
+        liked ? 'true' : 'false'
       )}
       ${this._renderActionButton(
-        this.message.reactions?.includes(DISLIKE_ACTIVE)
-          ? DISLIKE_ACTIVE
-          : DISLIKE_INACTIVE,
-        resourceStrings.chat_reaction_dislike!
+        disliked ? DISLIKE_ACTIVE : DISLIKE_INACTIVE,
+        resourceStrings.chat_reaction_dislike!,
+        disliked ? 'true' : 'false'
       )}
       ${this._renderActionButton(
         REGENERATE,
@@ -257,16 +255,23 @@ export default class IgcChatMessageComponent extends LitElement {
     `;
   }
 
-  private _renderActionButton(name: string, tooltipMessage: string) {
+  /** Pass `pressed` for a toggle action, such as like. */
+  private _renderActionButton(
+    name: string,
+    label: string,
+    pressed?: 'true' | 'false'
+  ) {
+    const showTooltip = ({ target }: Event) =>
+      this._state.showActionsTooltip(target as Element, label);
+
     return html`
       <igc-icon-button
-        id=${`${name}-button`}
         name=${name}
         variant="flat"
-        @pointerenter=${({ target }: PointerEvent) =>
-          this._state.showActionsTooltip(target as Element, tooltipMessage)}
-        @focus=${({ target }: FocusEvent) =>
-          this._state.showActionsTooltip(target as Element, tooltipMessage)}
+        aria-label=${label}
+        aria-pressed=${ifDefined(pressed)}
+        @pointerenter=${showTooltip}
+        @focus=${showTooltip}
       ></igc-icon-button>
     `;
   }
@@ -287,24 +292,19 @@ export default class IgcChatMessageComponent extends LitElement {
         `;
   }
 
-  private _renderMessage() {
-    const ctx: ChatMessageRenderContext = {
-      message: this.message,
-      instance: this._state.host,
-    };
-
+  private _renderMessage(ctx: ChatMessageRenderContext) {
     return trimmedHtml`
       <div part="message-header">
-        ${until(this._getRenderer('messageHeader')(ctx))}
+        ${renderResult(this._getRenderer('messageHeader')(ctx))}
       </div>
       <div part="plain-text">
-        ${until(this._getRenderer('messageContent')(ctx))}
+        ${renderResult(this._getRenderer('messageContent')(ctx))}
       </div>
       <div part="message-attachments">
-        ${until(this._getRenderer('messageAttachments')(ctx))}
+        ${renderResult(this._getRenderer('messageAttachments')(ctx))}
       </div>
       <div part="message-actions" @click=${this._handleMessageActionClick}>
-        ${until(this._getRenderer('messageActions')(ctx))}
+        ${renderResult(this._getRenderer('messageActions')(ctx))}
       </div>
     `;
   }
@@ -312,36 +312,24 @@ export default class IgcChatMessageComponent extends LitElement {
   protected override render() {
     // No chat provides the state outside a chat or during SSR. A hydrating
     // host matches that empty server render.
-    if (isServer || this._hydrating || !this._stateConsumer.value) {
+    if (isServer || this._hydrating || !this._chat.state || !this.message) {
       return nothing;
     }
 
     const messageRenderer = this._state.options?.renderers?.message;
+    const sent = this._state.isCurrentUserMessage(this.message);
     const ctx: ChatMessageRenderContext = {
       message: this.message,
       instance: this._state.host,
     };
 
-    const parts = {
-      'message-container': true,
-      received: !this._state.isCurrentUserMessage(this.message),
-      sent: this._state.isCurrentUserMessage(this.message),
-    };
-
     return html`
-      ${cache(
-        this.message
-          ? html`
-              <div part=${partMap(parts)}>
-                ${cache(
-                  messageRenderer
-                    ? until(messageRenderer(ctx))
-                    : this._renderMessage()
-                )}
-              </div>
-            `
-          : nothing
-      )}
+      <div
+        part=${partMap({ 'message-container': true, received: !sent, sent })}
+        @click=${this._handleLinkClick}
+      >
+        ${messageRenderer ? renderResult(messageRenderer(ctx)) : this._renderMessage(ctx)}
+      </div>
     `;
   }
 }

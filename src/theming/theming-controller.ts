@@ -1,4 +1,4 @@
-import { ContextConsumer } from '@lit/context';
+import { ContextEvent } from '@lit/context';
 import {
   adoptStyles,
   type ReactiveController,
@@ -7,9 +7,8 @@ import {
 } from 'lit';
 
 import { getOrInsertComputed } from '#internals/utils/objects.js';
-import { _themeChangedEmitter, getTheme } from './config.js';
+import { _globalThemeListeners, getTheme } from './config.js';
 import { type ThemeContext, themeContext } from './context.js';
-import { CHANGED_THEME_EVENT } from './theming-event.js';
 import type {
   ComponentThemes,
   Theme,
@@ -30,6 +29,47 @@ const resolvedSheets = new WeakMap<
   ComponentThemes,
   WeakMap<ElementClass, Map<string, ReadonlySet<CSSStyleSheet>>>
 >();
+
+/** Set by the first theme provider. Until then, nothing can answer a request. */
+let themeContextEnabled = false;
+
+/**
+ * Called by a theme provider. The first call also sends the context request
+ * of the components that connected before the provider.
+ */
+export function enableThemeContext(): void {
+  if (themeContextEnabled) {
+    return;
+  }
+
+  themeContextEnabled = true;
+
+  // After the provider connects and listens.
+  queueMicrotask(() => {
+    for (const listener of Array.from(_globalThemeListeners)) {
+      listener.requestThemeContext();
+    }
+  });
+}
+
+/** The sheets of a controller that has adopted nothing yet. */
+const NO_SHEETS: ReadonlySet<CSSStyleSheet> = new Set();
+
+/** Whether `adopted` starts with `sheets`, in their order. */
+function adoptsFirst(
+  adopted: readonly CSSStyleSheet[],
+  sheets: ReadonlySet<CSSStyleSheet>
+): boolean {
+  let index = 0;
+
+  for (const sheet of sheets) {
+    if (adopted[index++] !== sheet) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 /** Returns the element styles of `ctor` followed by the shared and the theme styles. */
 function resolveSheets(
@@ -67,7 +107,7 @@ function resolveSheets(
  * 2. **Global** - the application-wide theme set via `configureTheme()`.
  *
  * When a context provider is present, the controller subscribes to its updates
- * and stops listening to global theme change events. When the host element is
+ * and stops following the global theme. When the host element is
  * disconnected and reconnected outside a provider, it automatically falls back
  * to the global theme.
  *
@@ -90,7 +130,16 @@ class ThemingController implements ReactiveController {
   private _observed = false;
 
   /** The element and theme sheets that this controller adopted last. */
-  private _sheets: ReadonlySet<CSSStyleSheet> = new Set();
+  private _sheets = NO_SHEETS;
+
+  /** Ends the subscription to the theme provider that answered last. */
+  private _unsubscribe?: () => void;
+
+  /** The context callback. A stable function, as a provider dedupes by it. */
+  private _contextCallback?: (
+    value: ThemeContext,
+    unsubscribe?: () => void
+  ) => void;
 
   //#endregion
 
@@ -119,18 +168,6 @@ class ThemingController implements ReactiveController {
     this._themes = themes;
     this._options = config;
 
-    // Registered before this controller, so a connected provider answers its
-    // context request before `hostConnected` below falls back to the global theme.
-    new ContextConsumer(this._host, {
-      context: themeContext,
-      callback: (value) => {
-        if (value) {
-          this._applyContextTheme(value);
-        }
-      },
-      subscribe: true,
-    });
-
     this._host.addController(this);
   }
 
@@ -138,15 +175,22 @@ class ThemingController implements ReactiveController {
 
   /** @internal */
   public hostConnected(): void {
+    // A connected provider answers at once, before the global fallback below.
+    if (themeContextEnabled) {
+      this.requestThemeContext();
+    }
+
     if (this._themeSource === 'uninitialized') {
-      _themeChangedEmitter.addEventListener(CHANGED_THEME_EVENT, this);
+      _globalThemeListeners.add(this);
       this._applyGlobalTheme();
     }
   }
 
   /** @internal */
   public hostDisconnected(): void {
-    _themeChangedEmitter.removeEventListener(CHANGED_THEME_EVENT, this);
+    this._unsubscribe?.();
+    this._unsubscribe = undefined;
+    _globalThemeListeners.delete(this);
 
     // Re-resolve the theme source on reconnect, which may be in another part of the tree.
     this._themeSource = 'uninitialized';
@@ -154,10 +198,28 @@ class ThemingController implements ReactiveController {
 
   //#endregion
 
-  //#region Event handling
+  //#region Global theme
 
   /** @internal */
-  public handleEvent(): void {
+  public requestThemeContext(): void {
+    this._contextCallback ??= (value, unsubscribe) => {
+      // Another answer means another provider.
+      if (this._unsubscribe !== unsubscribe) {
+        this._unsubscribe?.();
+        this._unsubscribe = unsubscribe;
+      }
+      if (value) {
+        this._applyContextTheme(value);
+      }
+    };
+
+    this._host.dispatchEvent(
+      new ContextEvent(themeContext, this._host, this._contextCallback, true)
+    );
+  }
+
+  /** @internal */
+  public globalThemeChanged(): void {
     if (this._themeSource === 'global') {
       this._applyGlobalTheme();
     }
@@ -168,7 +230,7 @@ class ThemingController implements ReactiveController {
   //#region Internal methods
 
   private _applyContextTheme({ theme, variant }: ThemeContext): void {
-    _themeChangedEmitter.removeEventListener(CHANGED_THEME_EVENT, this);
+    _globalThemeListeners.delete(this);
     this._themeSource = 'context';
     this._applyTheme(theme, variant);
   }
@@ -181,10 +243,20 @@ class ThemingController implements ReactiveController {
   }
 
   private _applyTheme(theme: Theme, variant: ThemeVariant): void {
+    const changed =
+      this._sheets === NO_SHEETS ||
+      theme !== this._theme ||
+      variant !== this._variant;
+
     this._theme = theme;
     this._variant = variant;
-
     this._adoptStyles();
+
+    // A reconnect in the same theme changes nothing that the host renders.
+    if (!changed) {
+      return;
+    }
+
     this._options?.themeChange?.call(this._host, this._theme);
 
     // A host that never reads the theme renders the same output for every theme.
@@ -201,6 +273,14 @@ class ThemingController implements ReactiveController {
       this._theme,
       this._variant
     );
+
+    // Adopted already; the check still repairs a root whose sheets were replaced.
+    if (
+      sheets === this._sheets &&
+      adoptsFirst(root.adoptedStyleSheets, sheets)
+    ) {
+      return;
+    }
 
     // The sheets that other code adopted, such as a virtual scroll or a highlight.
     const foreign = root.adoptedStyleSheets.filter(

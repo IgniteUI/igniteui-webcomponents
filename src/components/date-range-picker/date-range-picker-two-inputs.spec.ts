@@ -14,6 +14,7 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { CalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   runAriaProjectionTests,
   runExternalLabelAssociationTests,
@@ -488,6 +489,7 @@ describe('Date range picker - two inputs', () => {
           'igc-button[slot="footer"]:last-of-type'
         ) as HTMLButtonElement;
         doneBtn?.click();
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         expect(eventSpy).calledWith('igcChange');
         checkSelectedRange(picker, {
@@ -565,6 +567,7 @@ describe('Date range picker - two inputs', () => {
           'igc-button[slot="footer"]'
         ) as HTMLButtonElement;
         cancelBtn?.click();
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         expect(eventSpy).not.to.be.calledWith('igcChange');
         dialog = picker.renderRoot.querySelector('igc-dialog');
@@ -605,6 +608,7 @@ describe('Date range picker - two inputs', () => {
           'igc-button[slot="footer"]'
         ) as HTMLButtonElement;
         cancelBtn?.click();
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         expect(eventSpy).not.to.be.calledWith('igcChange');
         dialog = picker.renderRoot.querySelector('igc-dialog');
@@ -649,6 +653,7 @@ describe('Date range picker - two inputs', () => {
         checkSelectedRange(picker, { start: date1.native, end: date2.native });
 
         simulateKeyboard(picker, escapeKey);
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         await elementUpdated(dateTimeInputs[0]);
         await elementUpdated(dateTimeInputs[1]);
@@ -752,6 +757,25 @@ describe('Date range picker - two inputs', () => {
         expect(dateTimeInputs[1].value).to.be.null;
       });
 
+      it('emits igcChange on blur after the clear icon and a render', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        picker.value = { start: today.native, end: tomorrow.native };
+        await elementUpdated(picker);
+
+        dateTimeInputs[0].focus();
+        simulateClick(getIcon(picker, clearIcon));
+        // The render writes the cleared value back into the inputs.
+        await elementUpdated(picker);
+
+        dateTimeInputs[0].blur();
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcChange', {
+          detail: { start: null, end: null },
+        });
+        expect(picker.value).to.deep.equal({ start: null, end: null });
+      });
+
       it('should emit igcInput and igcChange on input value change', async () => {
         const eventSpy = spy(picker, 'emitEvent');
         const now = new CalendarDay({ year: 2026, month: 3, date: 1 });
@@ -791,7 +815,10 @@ describe('Date range picker - two inputs', () => {
         dateTimeInputs[0].focus();
         expect(isFocused(dateTimeInputs[0])).to.be.true;
 
-        dateTimeInputs[0].value = now.native;
+        simulateInput(dateTimeInputs[0].renderRoot.querySelector('input')!, {
+          value: '04/01/2026',
+          inputType: 'insertText',
+        });
         await elementUpdated(picker);
 
         dateTimeInputs[0].setSelectionRange(0, 1); // make sure caret is on the month part (MM/dd/yyyy)
@@ -1200,4 +1227,8 @@ describe('Date range picker - two inputs', () => {
       }
     });
   });
+
+  runFocusBeforeRenderTests(
+    html`<igc-date-range-picker use-two-inputs></igc-date-range-picker>`
+  );
 });

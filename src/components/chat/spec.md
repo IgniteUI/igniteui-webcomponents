@@ -19,6 +19,8 @@
       - [Suggestions](#suggestions)
       - [Custom renderers](#custom-renderers)
       - [Message content and sanitization](#message-content-and-sanitization)
+      - [Code highlighting](#code-highlighting)
+      - [Links in messages](#links-in-messages)
       - [Adopting the document styles](#adopting-the-document-styles)
     - [Localization](#localization)
     - [Keyboard interactions](#keyboard-interactions)
@@ -38,6 +40,7 @@
     - [Events tests](#events-tests)
     - [Adopted root styles](#adopted-root-styles)
     - [Hydration](#hydration)
+    - [Links](#links)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -52,6 +55,15 @@
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-09-23 | Remove the `prefix` and `title` parts and add the `input-container` part |
 |       3 | 2026-10-12 | The input and the messages render empty on the server and render after hydration |
+|       4 | 2026-10-19 | The list follows the newest message only from the bottom; `focusInput()`; image MIME types; the file picker applies `acceptedFiles`; keyboard access to attachments |
+|       5 | 2026-10-19 | Named message actions with a pressed state for like and dislike; localized composer labels; a remove name per attachment |
+|       6 | 2026-10-21 | API descriptions aligned with the JSDoc. |
+|       7 | 2026-10-21 | Slotted suggestions show the suggestions area, which stays in the DOM, hidden, without suggestions |
+|       8 | 2026-10-26 | `focusInput()` waits for the first render of a new chat and returns a promise |
+|       9 | 2026-11-02 | The events of the inner text area and of the attachment chips stay inside the chat |
+|      10 | 2026-11-04 | The code color variables of the Markdown renderer have GitHub fallbacks and apply in light and dark mode; `igcNavigate` for links in messages |
+|      11 | 2026-11-06 | The <kbd>Enter</kbd> that commits an IME composition does not send the message |
+|      12 | 2026-11-12 | A message far from the view skips its rendering; the list also follows the bottom when it grows |
 
 ## Overview
 
@@ -75,7 +87,7 @@ chat.addEventListener('igcMessageCreated', ({ detail }) => send(detail));
 ### Key features
 
 - **Message list** in chronological order, with the messages of the current user styled apart, and automatic
-  scrolling to the newest one.
+  scrolling to the newest one while the user is at the bottom.
 - **Composer** with a text area that grows with its content, sending on <kbd>Enter</kbd> and a new line on
   <kbd>Shift</kbd> + <kbd>Enter</kbd>.
 - **Attachments** through the file picker and through drag and drop, with previews before sending and an accepted
@@ -175,7 +187,15 @@ is rendered as an outgoing one.
 unsent message and written to restore one.
 
 Sending emits a cancelable `igcMessageCreated` with the new message; the component appends it to `messages` unless
-the event is canceled. `scrollToMessage(id)` brings a specific message into view.
+the event is canceled. `scrollToMessage(id)` brings a specific message into view, and `focusInput()` moves the focus
+to the text area of the composer.
+
+While the list is at the bottom, it follows the newest message: each change of `messages`, the typing indicator and
+new suggestions scroll it to the bottom. When the user scrolls up, the list keeps its position, until the user
+scrolls back to the bottom. A new message of the current user, and a `messages` array without the previous last
+message, such as another conversation, scroll to the bottom again. While the list follows, it also stays at the
+bottom when it grows for another reason: a message that renders late, a resize of the chat, or content that loads in
+a message. `disableAutoScroll` turns the automatic scrolling off.
 
 #### Options
 
@@ -199,7 +219,10 @@ chat.options = {
 #### Attachments
 
 Unless `disableInputAttachments` is set, the composer renders a file picker and accepts dropped files. The
-`acceptedFiles` option is forwarded to the underlying file input and also filters what a drop accepts. Adding and
+`acceptedFiles` option is forwarded to the underlying file input, and it filters the files from the picker and from a
+drop. The picker filter of the browser is only a default, so the user can still pick other files, and the composer
+leaves them out. A pick or a drop that adds no new file emits no `igcAttachmentAdded`. An attachment with a `file` of an image type, or with the `type` `image` or an image MIME type such
+as `image/png`, renders as an image. Adding and
 removing attachments emits the cancelable `igcAttachmentAdded` and `igcAttachmentRemoved`, the drag operation
 emits `igcAttachmentDrag` and `igcAttachmentDrop`, and a click on an attachment of a sent message emits
 `igcAttachmentClick`.
@@ -208,7 +231,9 @@ emits `igcAttachmentDrag` and `igcAttachmentDrop`, and a click on an attachment 
 
 `options.suggestions` renders a list of quick replies. Clicking one sends it as a message immediately. Their
 position follows `suggestionsPosition`, either `below-messages`, the default, or `below-input`. The
-`suggestions`, `suggestions-header`, `suggestions-actions` and `suggestion` slots replace the rendered list.
+`suggestions`, `suggestions-header`, `suggestions-actions` and `suggestion` slots replace the rendered list:
+`suggestions` the whole list and `suggestion` its default items. Content in the `suggestions` or `suggestion` slot
+also shows the area without `options.suggestions`. Without suggestions, the area stays in the DOM, hidden.
 
 #### Custom renderers
 
@@ -233,6 +258,67 @@ The available renderers are `message`, `messageHeader`, `messageContent`, `messa
 The text of a message is sanitized with DOMPurify before it is rendered, and can be rendered through a markdown
 renderer. Sanitization is not optional and applies to the default rendering path.
 
+#### Code highlighting
+
+The Markdown renderer of `igniteui-webcomponents/extras` highlights code blocks with shiki. With the default
+themes, `github-light` and `github-dark`, the code uses these CSS variables:
+
+| Variable | Use |
+| -------- | --- |
+| `--shiki-bg` | The background of a code block. The chat themes set it on each message from the `code-background` token. |
+| `--shiki-fg` | The text color of a code block. Without it, the code has the color of the message text. |
+| `--shiki-purple`, `--shiki-dark-blue`, `--shiki-red`, `--shiki-blue`, `--shiki-green`, `--shiki-orange` | The token colors. Without them, the tokens have the GitHub colors of the light or the dark mode. |
+
+Set a token color on the chat or on an element around it. It applies in light and dark mode. Set `--shiki-bg` on the
+`message-container` part:
+
+```css
+igc-chat {
+  --shiki-red: #b31d28;
+}
+
+igc-chat::part(message-container) {
+  --shiki-bg: #f6f8fa;
+}
+```
+
+Comments have a fixed color. With `colorReplacements`, the tokens use that map instead. Other shiki themes use their
+own colors.
+
+#### Links in messages
+
+The chat emits `igcNavigate` when a plain click or <kbd>Enter</kbd> opens a link (`a` or `area` with `href`, or an
+SVG `a` with `xlink:href`) in a message in the same tab, before the browser navigates. Cancel it to route on the client. The detail has the `message`
+and the absolute `href` that the browser follows.
+
+The chat emits no event when:
+
+- The click has a modifier key, or a button other than the primary one.
+- The `target` of the link, or else the target of the page's `<base>` element, is not `_self`. In a page that is not
+  in a frame, `_parent` and `_top` count as `_self`.
+- The link has `download`, or its URL does not parse.
+- The click cannot be canceled, or a listener in the message content already canceled it.
+- The link is in another chat in the message, also in its header. That chat emits the event for its messages.
+
+The event does not bubble and is not composed. Listen to it on the chat.
+
+With the default sanitizer, http and https links to another origin open in a new tab and emit no event. Other links,
+such as `mailto:` and `blob:` links and links from a custom renderer, can emit it. So check the protocol and the
+origin before you route:
+
+```ts
+chat.addEventListener('igcNavigate', (event) => {
+  const url = new URL(event.detail.href);
+
+  if (url.protocol.startsWith('http') && url.origin === location.origin) {
+    event.preventDefault();
+    router.push(url.pathname + url.search + url.hash);
+  }
+});
+```
+
+Use the route call of your router. If the router has a base path, remove it from the path first.
+
 #### Adopting the document styles
 
 `options.adoptRootStyles` copies the stylesheets of the document into the shadow root of the component, so that
@@ -243,7 +329,9 @@ removed later are handled, as is a theme change and a reconnect of the host.
 
 ### Localization
 
-The chat takes its resource strings from the `igniteui-i18n-core` package through the `resourceStrings` property.
+The chat takes its resource strings from the `igniteui-i18n-core` package through the `locale` and `resourceStrings`
+properties. Without an explicit `locale`, it takes its own `lang`, else the locale of the nearest ancestor that has a
+`locale` (a component) or a `lang`, and then the global locale of the library.
 
 | Key                         | Default English value        | Used for                                    |
 | --------------------------- | ---------------------------- | ------------------------------------------- |
@@ -255,6 +343,14 @@ The chat takes its resource strings from the `igniteui-i18n-core` package throug
 | `chat_attachment_label`     | Attachment                   | The label of a single attachment.            |
 | `chat_attachments_list_label` | Attachments                | The label of the attachments list.           |
 | `chat_message_copied`       | Message copied to clipboard  | The confirmation shown after a copy.         |
+| `chat_input_label`          | Chat text input              | The name of the text area.                   |
+| `chat_attach_files`         | Attach files                 | The name of the attach button.               |
+| `chat_file_input_label`     | Upload button                | The name of the file input.                  |
+| `chat_send_message`         | Send message                 | The name of the send button.                 |
+| `chat_remove_attachment`    | Remove {0}                   | The name of the remove button of an attachment chip; `{0}` is the file name. |
+
+The copy, like, dislike and regenerate strings also name the message actions. A change of the locale or of
+`resourceStrings` renders the labels of the messages and the input again.
 
 The older `IgcChatResourceStrings` interface is deprecated since 7.2.0 in favor of `IChatResourceStrings` and the
 global `registerI18n` mechanism, and both shapes are accepted by the property.
@@ -263,10 +359,11 @@ global `registerI18n` mechanism, and both shapes are accepted by the property.
 
 | Keys                                  | Context           | Description                                                 |
 | ------------------------------------- | ----------------- | ----------------------------------------------------------- |
-| <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd> | anywhere | Moves between the header actions, the message list, the file picker, the text area, the send button and the attachment chips. |
-| <kbd>Enter</kbd>                      | text area         | Sends the composed message.                                  |
+| <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd> | anywhere | Moves between the header actions, the message list, the attachments of the messages, the file picker, the text area, the send button and the attachment chips. |
+| <kbd>Enter</kbd>                      | text area         | Sends the composed message. The <kbd>Enter</kbd> that commits an IME composition does not send. |
 | <kbd>Shift</kbd> + <kbd>Enter</kbd>   | text area         | Inserts a new line instead of sending.                        |
 | <kbd>Enter</kbd> / <kbd>Space</kbd>   | suggestion, send button, message action | Activates the control.                 |
+| <kbd>Enter</kbd> / <kbd>Space</kbd>   | attachment of a message | Emits `igcAttachmentClick`.                                  |
 
 ## API
 
@@ -278,7 +375,8 @@ global `registerI18n` mechanism, and both shapes are accepted by the property.
 | ----------------- | ------------------------------------------------- | ------- | --------------------------------------------------------------- |
 | `messages`        | `IgcChatMessage[]`                                | `[]`    | The messages currently displayed.                                |
 | `draftMessage`    | `IgcChatDraftMessage`                             | —       | The message being composed, with its text and its attachments.   |
-| `options`         | `IgcChatOptions \| undefined`                     | —       | The behavior and appearance configuration of the chat.           |
+| `options`         | `IgcChatOptions \| undefined`                     | —       | The configuration object of the chat: behavior and appearance options, suggestions and custom renderers. |
+| `locale`          | `string`                                          | global  | The locale of the resource strings.                               |
 | `resourceStrings` | `IChatResourceStrings`                            | English | The resource strings of the component.                            |
 
 `IgcChatOptions`
@@ -290,7 +388,7 @@ global `registerI18n` mechanism, and both shapes are accepted by the property.
 | `inputPlaceholder`        | `string`                                   | —                 | The placeholder of the composer.                              |
 | `acceptedFiles`           | `string`                                   | —                 | The accepted file types of the file picker.                   |
 | `disableInputAttachments` | `boolean`                                  | `false`           | Turns attachments off.                                        |
-| `disableAutoScroll`       | `boolean`                                  | `false`           | Stops the list from scrolling to the newest message.          |
+| `disableAutoScroll`       | `boolean`                                  | `false`           | Stops the list from following the newest message.             |
 | `isTyping`                | `boolean`                                  | `false`           | Shows the typing indicator of the other side.                 |
 | `stopTypingDelay`         | `number`                                   | `3000`            | The idle time before the typing state is reported as stopped. |
 | `suggestions`             | `string[]`                                 | —                 | The quick replies to render.                                  |
@@ -303,22 +401,27 @@ global `registerI18n` mechanism, and both shapes are accepted by the property.
 | Method            | Signature                        | Description                               |
 | ----------------- | -------------------------------- | ----------------------------------------- |
 | `scrollToMessage` | `(messageId: string): void`      | Scrolls the list to the given message.     |
+| `focusInput`      | `(options?: FocusOptions): Promise<void>` | Focuses the text area of the composer, after the first render of a new chat. Does nothing when a custom `input` renderer replaces it. |
 
 ### Events
 
 | Event                  | Detail                        | Cancelable | Description                                                     |
 | ---------------------- | ----------------------------- | ---------- | --------------------------------------------------------------- |
-| `igcMessageCreated`    | `IgcChatMessage`              | yes        | A message was composed and sent.                                 |
-| `igcMessageReact`      | `IgcChatMessageReaction`      | no         | A message was reacted to.                                        |
-| `igcAttachmentAdded`   | `IgcChatMessageAttachment[]`  | yes        | Attachments were added, by the picker or by a drop.              |
-| `igcAttachmentRemoved` | `IgcChatMessageAttachment`    | yes        | An attachment was removed by the user.                           |
-| `igcAttachmentClick`   | `IgcChatMessageAttachment`    | no         | An attachment of a message was clicked.                          |
-| `igcAttachmentDrag`    | —                             | no         | A file is being dragged over the composer.                       |
-| `igcAttachmentDrop`    | —                             | no         | A file was dropped into the composer.                            |
-| `igcTypingChange`      | `boolean`                     | no         | The typing state of the local user changed.                      |
+| `igcMessageCreated`    | `IgcChatMessage`              | yes        | Dispatched when the user sends a message, also with a click on a suggestion. Cancelable: a canceled event does not add the message. |
+| `igcMessageReact`      | `IgcChatMessageReaction`      | no         | Dispatched when the user clicks an action button of a message, for example like or copy. |
+| `igcAttachmentAdded`   | `IgcChatMessageAttachment[]`  | yes        | Dispatched when the user adds attachments with drag and drop or with the default file input. Cancelable: a canceled event does not add them. |
+| `igcAttachmentRemoved` | `IgcChatMessageAttachment`    | yes        | Dispatched when the user removes an attachment from the input. Cancelable: a canceled event keeps the attachment. |
+| `igcAttachmentClick`   | `IgcChatMessageAttachment`    | no         | Dispatched when the user clicks the header of a message attachment. |
+| `igcNavigate`          | `IgcChatMessageLink`          | yes        | Dispatched when a plain click or Enter opens a link in a message in the same tab, before the browser navigates. Cancel it to route on the client. Does not bubble. |
+| `igcAttachmentDrag`    | —                             | no         | Dispatched when the user drags files into the input area.        |
+| `igcAttachmentDrop`    | —                             | no         | Dispatched when the user drops files on the input area.          |
+| `igcTypingChange`      | `boolean`                     | no         | Dispatched when the user starts or stops typing. The detail is `true` while the user types. |
 | `igcInputFocus`        | —                             | no         | The composer received focus.                                     |
 | `igcInputBlur`         | —                             | no         | The composer lost focus.                                         |
 | `igcInputChange`       | `string`                      | no         | The content of the composer changed.                             |
+
+The `igcInput` and `igcChange` events of the inner text area and the `igcRemove` event of an attachment chip stay
+inside the chat. Use `igcInputChange` and `igcAttachmentRemoved`.
 
 ### Slots
 
@@ -330,7 +433,7 @@ global `registerI18n` mechanism, and both shapes are accepted by the property.
 | `suggestions-header`  | The header of the suggestions list.                          |
 | `suggestions`         | The whole suggestions list.                                  |
 | `suggestions-actions` | Additional actions next to the suggestions.                  |
-| `suggestion`          | A single suggestion.                                         |
+| `suggestion`          | Suggestions that replace the default items.                  |
 | `empty-state`         | The content shown while there are no messages.               |
 | `typing-indicator`    | The typing indicator of the other side.                      |
 
@@ -362,14 +465,16 @@ The component exposes a part for every region it renders. The main groups are:
 5. The send button is enabled and disabled according to the composed content.
 6. `disableInputAttachments` removes the attachment button, and `acceptedFiles` reaches the file input.
 7. The attachment chips render for the composed attachments.
-8. The suggestions container is rendered only when suggestions are provided, and follows
+8. The suggestions container shows only when suggestions are provided or slotted, else it is hidden, and follows
    `suggestionsPosition` for the empty state, below the messages and below the input.
 9. `isTyping` renders the typing indicator.
 
 ### Slots tests
 
 10. The `prefix`, `title` and `actions` slots of the header accept content.
-11. The `empty-state`, `suggestions-header`, `suggestions` and `suggestions-actions` slots accept content.
+11. The `empty-state`, `suggestions-header`, `suggestions` and `suggestions-actions` slots accept content, and one
+    `suggestion` slot takes every slotted suggestion. Content in the `suggestions` or `suggestion` slot shows the
+    suggestions area alone, also when it is slotted later, and its removal hides the area. A header alone does not.
 
 ### Templates
 
@@ -390,14 +495,16 @@ The component exposes a part for every region it renders. The main groups are:
 
 ### Keyboard
 
-20. <kbd>Enter</kbd> in the focused text area sends the composed message.
+20. <kbd>Enter</kbd> in the focused text area sends the composed message. The <kbd>Enter</kbd> that commits an IME
+    composition, also after `compositionend` with the `keyCode` 229, does not send and is not canceled.
 
 ### Events tests
 
 21. `igcAttachmentClick`, `igcInputFocus`, `igcInputBlur`, `igcInputChange` and `igcMessageReact` are emitted.
 22. `igcTypingChange` is emitted for the start and the stop of typing, is emitted after a message is sent, is not
     emitted for <kbd>Tab</kbd>, and its stop is deferred when `stopTypingDelay` grows while the timer runs.
-23. `igcMessageCreated` and the attachment change event can be canceled.
+23. `igcMessageCreated` and the attachment change event can be canceled. The `igcInput` and `igcChange` of the text
+    area (real typing and a blur) and the `igcRemove` of an attachment chip do not reach a listener on the chat.
 
 ### Adopted root styles
 
@@ -414,11 +521,55 @@ The component exposes a part for every region it renders. The main groups are:
 28. An input that hydrates an empty declarative shadow root keeps its first render empty, to match the server
     render, and renders the composer on the next update.
 29. A message that hydrates an empty declarative shadow root keeps its first render empty, to match the server
-    render, and renders the message on the next update.
+    render, and renders the message on the next update. A chat that hydrates renders its slotted suggestions on the
+    next update.
+
+### Attachments and focus
+
+30. The file picker and a drop attach only the files that `acceptedFiles` allows and that are not attached yet, and
+    emit no `igcAttachmentAdded` when no file remains.
+31. An attachment with an image MIME type in `type` renders as an image.
+32. The header of an attachment is in the tab order, and <kbd>Enter</kbd> and <kbd>Space</kbd> on it emit
+    `igcAttachmentClick`. <kbd>Enter</kbd> and <kbd>Space</kbd> from inside a custom `attachmentHeader` do not
+    activate the header.
+33. `focusInput()` focuses the text area, and does nothing when a custom `input` renderer replaces it. In a new chat,
+    it waits for the first render, and in a server-rendered chat, for the render after the hydration. A
+    disconnected chat does not wait.
+
+### Automatic scrolling
+
+34. The list follows the newest message while it is at the bottom, keeps its position after the user scrolls up,
+    also when the user scrolls up before a queued scroll runs, and follows again after the user scrolls back to the
+    bottom.
+35. A new message of the current user, also with a reply after it in the same update, and a new `messages` array
+    without the previous last message, scroll the list to the bottom. So do slotted suggestions that appear while the
+    list is at the bottom.
+
+#### Messages far from the view
+
+36. A message far from the view skips its rendering, and a message at the bottom renders.
+37. With a long history of messages of different heights, the list ends at the bottom, also after a new long message.
+38. A scroll of the user between two scrolls to the bottom stops the follow; the list does not go back down.
+
+### Names
+
+39. The message actions are named by the resource strings, like and dislike expose `aria-pressed`, and a change of
+    `resourceStrings` renames them.
+40. The text area, the attach button, the file input, the send button, the attachments list and the remove button of
+    an attachment chip are named by the resource strings, and a change of `resourceStrings` renames them.
+
+### Links
+
+41. A plain click or <kbd>Enter</kbd> on a link in a message, also an SVG link with `xlink:href`, emits
+    `igcNavigate` on the chat, with the message and the absolute URL. The event does not bubble. When the application cancels it, the chat cancels the click.
+42. A click with a modifier key, a link with another target, `download` or a URL that does not parse, a click that
+    cannot be canceled and a click that the content already canceled emit no event.
+43. A link outside the messages, a link around the chat and a link in a chat in a message, also in its header, emit
+    no event on the chat. The chat in the message emits the event of its own message link.
 
 ### Not covered by the suite
 
-- Automatic scrolling, `disableAutoScroll` and `scrollToMessage` are not covered.
+- Scrolling with the wheel, touch or the keyboard is not covered. The tests set `scrollTop`.
 - Markdown rendering and the sanitization of the message content are not covered by the component suite.
 - The `locale` fallback and the localized strings are not asserted; the suite runs against the English defaults.
 - Keyboard navigation inside the message list is neither implemented nor covered.
@@ -429,13 +580,24 @@ The component exposes a part for every region it renders. The main groups are:
 
 - The component is stateless with respect to the transport. It does not send, receive, retry or persist anything;
   the application owns `messages` and reacts to the events.
-- The message list is not virtualized, so a very long history is rendered in full.
+- The message list is not virtualized. A message that is far from the view skips its rendering
+  (`content-visibility: auto`). Until its first render, it keeps a space of about 100px; after it, its real size.
+  To render every message, use `igc-chat::part(message-item) { content-visibility: visible; }`.
+- `innerText` of a message that skips its rendering is an empty string. `textContent` works.
+- In Safari before 26, which includes iOS 18, find-in-page does not find the text of a message that skips its
+  rendering. Safari 26 and the other browsers find it.
 - There is no message status, no avatar handling, no emoji picker, no URL preview, no search and no contextual
   menu. These are planned and not part of this version.
 - The message list is a single tab stop and has no arrow key navigation between the messages.
 - `adoptRootStyles` intentionally breaks shadow DOM encapsulation and is documented as a last resort.
 - Sanitization protects the rendered content, but an application that supplies its own renderers is responsible
   for what those render.
+- A click on a control inside a link in a message, such as a checkbox, also emits `igcNavigate`. HTML does not allow
+  interactive content inside a link.
+- The suggestions area shows only while `options.suggestions` has items or the `suggestions` or `suggestion` slot has
+  content. Content in the header or the actions slot alone does not show it. The area and its slots stay in the DOM,
+  hidden, so the chat can detect slotted content. The server cannot see the light DOM, so a hydrating chat shows the
+  slotted suggestions after its first update.
 - The input and the messages get their state from the chat, which is not available during server-side rendering.
   Their shadow roots render empty on the server. On the client, the first render also stays empty, to match the
   server render during hydration, and the content renders on the next update. Outside a chat, the input and the
@@ -447,11 +609,15 @@ The component exposes a part for every region it renders. The main groups are:
 
 - The message list is a focusable scroll container, so that the history can be reached and scrolled with the
   keyboard alone.
-- The composer text area, the file picker, the upload button and the send button each carry their own label.
-- The attachment chips of the composer form a labelled list, with each chip a list item.
-- An attachment of a sent message is exposed as a button, since clicking it emits `igcAttachmentClick`.
-- The message actions are icon buttons with the localized copy, like, dislike and regenerate labels, and the copy
-  action confirms itself through a tooltip.
+- The composer text area, the file picker, the upload button and the send button each carry their own localized
+  label.
+- The attachment chips of the composer form a labelled list, with each chip a list item. The remove button of a
+  chip names the file, for example "Remove photo.png".
+- An attachment of a sent message is exposed as a button in the tab order, since clicking it emits
+  `igcAttachmentClick`. <kbd>Enter</kbd> and <kbd>Space</kbd> activate it.
+- The message actions are icon buttons with the localized copy, like, dislike and regenerate names. Like and
+  dislike are toggle buttons with `aria-pressed`. A tooltip shows the name on hover and focus, and the copy action
+  confirms itself through a toast.
 
 ### Keyboard support
 

@@ -2,7 +2,6 @@ import { html, LitElement, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { CalendarDay } from '#internals/date/model.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { chunk } from '#internals/utils/arrays.js';
@@ -29,11 +28,10 @@ export interface YearMonthViewCell {
  * Both are grids of single values derived from the current one, so everything except
  * which cells to render is shared.
  */
-export abstract class IgcYearMonthViewBaseComponent extends EventEmitterMixin<
-  IgcCalendarViewComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
-  public static styles = styles;
+export abstract class IgcYearMonthViewBaseComponent extends EventEmitterMixin<IgcCalendarViewComponentEventMap>(
+  LitElement
+) {
+  public static override styles = styles;
 
   //#region Internal state
 

@@ -33,6 +33,8 @@ export interface MaskedInputOptions {
   onClick: () => void;
   /** Captures the selection on `keydown`, `cut` and `dragstart`. */
   onSetMaskSelection: (event: Event) => void;
+  /** Submits the form on `keypress`. `onSetMaskSelection` covers `keydown`. */
+  onEnterKey: (event: KeyboardEvent) => void;
   onCompositionStart: () => void;
   onCompositionEnd: (event: CompositionEvent) => void;
 
@@ -79,6 +81,7 @@ export function renderMaskedNativeInput(
       @blur=${opts.onBlur}
       @click=${opts.onClick}
       @keydown=${opts.onSetMaskSelection}
+      @keypress=${opts.onEnterKey}
       @cut=${opts.onSetMaskSelection}
       @dragstart=${opts.onSetMaskSelection}
       @compositionstart=${opts.onCompositionStart}

@@ -6,19 +6,28 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
-import { spy } from 'sinon';
+import { spy, stub } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
+  runHostComboboxTests,
 } from '#internals/testing/form-testbed.spec.js';
-import { isFocused } from '#internals/testing/helpers.spec.js';
+import {
+  isFocused,
+  isUnderPageLayer,
+  suppressResizeObserverLoopError,
+  withDocumentSheets,
+} from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { simulateInput } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
 } from '#internals/testing/validity-helpers.spec.js';
 import { configureTheme } from '#theming/config.js';
+import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
 import IgcTextareaComponent from './textarea.js';
 
 describe('Textarea component', () => {
@@ -34,12 +43,33 @@ describe('Textarea component', () => {
     textArea = element.renderRoot.querySelector('textarea')!;
   }
 
+  /** Creates the fixture as in a browser without CSS field sizing. */
+  async function createFallbackFixture(template: TemplateResult) {
+    const supports = stub(CSS, 'supports').callThrough();
+    supports.withArgs('field-sizing: content').returns(false);
+
+    try {
+      await createFixture(template);
+    } finally {
+      supports.restore();
+    }
+
+    // Chromium still applies the CSS rule, so turn it off.
+    textArea.style.fieldSizing = 'fixed';
+  }
+
   describe('Defaults', () => {
     it('is accessible', async () => {
       await createFixture(html`<igc-textarea label="Label"></igc-textarea>`);
 
       await expect(element).to.be.accessible();
       await expect(element).shadowDom.to.be.accessible();
+    });
+
+    it('paints the textarea under an earlier page layer', async () => {
+      await createFixture(html`<igc-textarea label="Label"></igc-textarea>`);
+
+      expect(isUnderPageLayer(element, textArea)).to.be.true;
     });
 
     it('material variant layout', async () => {
@@ -73,7 +103,7 @@ describe('Textarea component', () => {
     });
 
     it('auto sizing height is released when resize changes away from `auto`', async () => {
-      await createFixture(
+      await createFallbackFixture(
         html`<igc-textarea resize="auto" rows="1"></igc-textarea>`
       );
 
@@ -320,6 +350,14 @@ describe('Textarea component', () => {
 
       detached.setRangeText('text', 0, 0);
       expect(detached.value).to.equal('');
+    });
+
+    it('setRangeText() keeps the value before the textarea renders', () => {
+      const detached = document.createElement(IgcTextareaComponent.tagName);
+      detached.value = 'Hello';
+
+      detached.setRangeText('text', 0, 0);
+      expect(detached.value).to.equal('Hello');
     });
 
     it('does not restrict the native textarea length with validate-only', async () => {
@@ -699,4 +737,114 @@ describe('Textarea component', () => {
     getNativeInput: (host) =>
       (host as IgcTextareaComponent).renderRoot.querySelector('textarea')!,
   });
+
+  runHostComboboxTests({
+    tagName: IgcTextareaComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcTextareaComponent).renderRoot.querySelector('textarea')!,
+    role: null,
+  });
+
+  describe('Auto sizing', () => {
+    const sixLines = [1, 2, 3, 4, 5, 6].join('\n');
+
+    before(() => suppressResizeObserverLoopError());
+
+    for (const [path, create, measured] of [
+      ['with CSS field sizing', createFixture, false],
+      ['without CSS field sizing', createFallbackFixture, true],
+    ] as const) {
+      describe(path, () => {
+        it('keeps `rows` lines as the minimum height', async () => {
+          // The theme sheet gives the textarea a padding and a border.
+          await withDocumentSheets([bootstrap.styleSheet!], async () => {
+            await create(
+              html`<igc-textarea resize="auto" rows="3"></igc-textarea>`
+            );
+            const fixed = await fixture<IgcTextareaComponent>(
+              html`<igc-textarea resize="none" rows="3"></igc-textarea>`
+            );
+            const fixedArea = fixed.renderRoot.querySelector('textarea')!;
+
+            // The native control uses two rows for 0.
+            for (const rows of [3, 5, 0]) {
+              element.rows = rows;
+              fixed.rows = rows;
+              await elementUpdated(element);
+              await elementUpdated(fixed);
+
+              expect(textArea.offsetHeight, `rows=${rows}`).to.equal(
+                fixedArea.offsetHeight
+              );
+            }
+          });
+        });
+
+        it('follows the content', async () => {
+          await create(
+            html`<igc-textarea resize="auto" rows="1"></igc-textarea>`
+          );
+          const initialHeight = textArea.offsetHeight;
+
+          simulateInput(textArea, { value: sixLines });
+          await elementUpdated(element);
+
+          expect(textArea.offsetHeight).greaterThan(initialHeight);
+          expect(Boolean(textArea.style.height)).to.equal(measured);
+
+          simulateInput(textArea, { value: '' });
+          await elementUpdated(element);
+
+          expect(textArea.offsetHeight).to.equal(initialHeight);
+
+          simulateInput(textArea, { value: sixLines });
+          element.resize = 'vertical';
+          await elementUpdated(element);
+
+          expect(textArea.offsetHeight).to.equal(initialHeight);
+        });
+
+        it('keeps the width of a shrink-to-fit layout', async () => {
+          await create(
+            html`<igc-textarea
+              resize="auto"
+              style="display: inline-block"
+            ></igc-textarea>`
+          );
+          const width = element.offsetWidth;
+
+          simulateInput(textArea, { value: 'Long text '.repeat(30) });
+          await elementUpdated(element);
+
+          expect(element.offsetWidth).to.equal(width);
+        });
+
+        it('keeps a height from the resize handle until `resize` changes', async () => {
+          await create(
+            html`<igc-textarea resize="vertical" rows="2"></igc-textarea>`
+          );
+          const rowsHeight = textArea.offsetHeight;
+
+          // The native resize handle sets an inline height.
+          textArea.style.height = `${rowsHeight + 100}px`;
+          simulateInput(textArea, { value: sixLines });
+          await elementUpdated(element);
+          await nextFrame();
+          await nextFrame();
+
+          expect(textArea.offsetHeight).to.equal(rowsHeight + 100);
+
+          element.resize = 'auto';
+          simulateInput(textArea, { value: '' });
+          await elementUpdated(element);
+
+          expect(textArea.offsetHeight).to.equal(rowsHeight);
+        });
+      });
+    }
+  });
+
+  runHiddenAncestorTests(html`<igc-textarea label="Label"></igc-textarea>`);
+
+  runFocusBeforeRenderTests(html`<igc-textarea label="Label"></igc-textarea>`);
 });

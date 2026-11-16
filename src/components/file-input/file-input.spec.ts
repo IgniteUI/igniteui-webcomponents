@@ -8,6 +8,7 @@ import {
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
@@ -17,7 +18,7 @@ import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
 } from '#internals/testing/validity-helpers.spec.js';
-import { firstOf } from '#internals/utils/arrays.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import { configureTheme } from '#theming/config.js';
 import IgcFileInputComponent from './file-input.js';
 
@@ -49,6 +50,13 @@ describe('File Input component', () => {
     return element.renderRoot.querySelector(selector) as HTMLElement;
   }
 
+  /** A file as a folder selection gives it. Only the picker sets `webkitRelativePath`. */
+  function createFolderFile(path: string): File {
+    const file = new File([''], lastOf(path.split('/')));
+    Object.defineProperty(file, 'webkitRelativePath', { value: path });
+    return file;
+  }
+
   describe('Properties', () => {
     it('sets the multiple property when input is of type file', async () => {
       await createFixture(html`<igc-file-input multiple></igc-file-input>`);
@@ -76,6 +84,24 @@ describe('File Input component', () => {
 
       expect(element.accept).to.be.empty;
       expect(input.accept).to.be.empty;
+    });
+
+    it('sets the directory property on the native input', async () => {
+      await createFixture(html`<igc-file-input></igc-file-input>`);
+
+      expect(element.directory).to.be.false;
+      expect(input.webkitdirectory).to.be.false;
+
+      element.setAttribute('directory', '');
+      await elementUpdated(element);
+
+      expect(element.directory).to.be.true;
+      expect(input.webkitdirectory).to.be.true;
+
+      element.directory = false;
+      await elementUpdated(element);
+
+      expect(input.webkitdirectory).to.be.false;
     });
 
     it('returns the uploaded files when input is of type file', async () => {
@@ -109,6 +135,23 @@ describe('File Input component', () => {
 
       expect(getDOM('[part="file-names"]').innerText).to.equal(
         firstOf(files).name
+      );
+    });
+
+    it('shows the folder name for a folder selection', async () => {
+      await createFixture(html`<igc-file-input directory></igc-file-input>`);
+      const folderFiles = [
+        createFolderFile('photos/a.jpg'),
+        createFolderFile('photos/2025/b.jpg'),
+      ];
+
+      simulateFileUpload(input, folderFiles);
+      await elementUpdated(element);
+
+      expect(getDOM('[part="file-names"]').innerText).to.equal('photos');
+      expect(element.files).lengthOf(2);
+      expect(element.files.item(1)?.webkitRelativePath).to.equal(
+        'photos/2025/b.jpg'
       );
     });
 
@@ -238,6 +281,10 @@ describe('File Input component', () => {
       expect(element.invalid).to.be.true;
     });
   });
+
+  runFocusBeforeRenderTests(
+    html`<igc-file-input label="Label"></igc-file-input>`
+  );
 });
 
 describe('Form Integration', () => {
@@ -280,6 +327,23 @@ describe('Form Integration', () => {
     spec.reset();
 
     expect(spec.element.value).to.be.empty;
+  });
+
+  it('clears the form value when an empty string is assigned to value', async () => {
+    simulateFileUpload(input, files);
+    await elementUpdated(spec.element);
+    spec.assertSubmitPasses();
+
+    spec.element.value = '';
+    await elementUpdated(spec.element);
+
+    expect(spec.formData.getAll(spec.element.name)).to.eql([]);
+    expect(spec.element.validity.valueMissing).to.be.true;
+    expect(
+      spec.element.renderRoot.querySelector<HTMLElement>('[part="file-names"]')!
+        .innerText
+    ).to.equal('No file chosen');
+    spec.assertSubmitFails();
   });
 
   it('ignores the value attribute as a default on form reset', () => {

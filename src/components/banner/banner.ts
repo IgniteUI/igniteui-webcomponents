@@ -3,17 +3,19 @@ import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { addAnimationController } from '#animations/player.js';
 import { growVerIn, growVerOut } from '#animations/presets/grow/index.js';
-import { addCommandController } from '#internals/controllers/command.js';
+import { addToggleCommands } from '#internals/controllers/command.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { addToggleController } from '#internals/controllers/toggle.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { all } from '#themes/banner/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { styles } from './themes/banner.base.css.js';
+
+const Slots = setSlots('prefix', 'actions');
 
 export interface IgcBannerComponentEventMap {
   igcClosing: CustomEvent<void>;
@@ -27,11 +29,10 @@ export interface IgcBannerComponentEventMap {
  * The banner slides into view with an animated grow transition and renders
  * inline, pushing the surrounding page content rather than overlaying it.
  *
- * The component integrates with the
- * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):
- * an Ignite button or a native `<button>` with `command="--show"` / `"--hide"` /
- * `"--toggle"` and `commandfor` pointing to this element will call the
- * corresponding method declaratively without any JavaScript.
+ * The component supports the
+ * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API).
+ * A button with `command="--show"`, `"--hide"` or `"--toggle"` and a
+ * `commandfor` that points to this element calls the matching method.
  *
  * @element igc-banner
  *
@@ -42,8 +43,8 @@ export interface IgcBannerComponentEventMap {
  *   animation has completed.
  *
  * @slot - The banner message text content.
- * @slot prefix - An icon or illustration rendered to the left of the message.
- *   Useful for reinforcing the message type (info, warning, success, etc.).
+ * @slot prefix - An icon or illustration rendered before the message, reinforcing
+ *   the message type.
  * @slot actions - Custom action elements rendered in the banner's action area.
  *   When provided, replaces the default "OK" dismiss button.
  *
@@ -54,12 +55,11 @@ export interface IgcBannerComponentEventMap {
  * @csspart content - The container for the default message slot.
  * @csspart actions - The container for the action buttons slot.
  */
-export default class IgcBannerComponent extends EventEmitterMixin<
-  IgcBannerComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcBannerComponent extends EventEmitterMixin<IgcBannerComponentEventMap>(
+  LitElement
+) {
   public static readonly tagName = 'igc-banner';
-  public static styles = [styles];
+  public static override styles = [styles];
 
   /* blazorSuppress */
   public static register(): void {
@@ -70,16 +70,16 @@ export default class IgcBannerComponent extends EventEmitterMixin<
   private readonly _player = addAnimationController(this, this._bannerRef);
 
   private readonly _toggleController = addToggleController(this, {
-    transition: async (open) => {
+    transition: async (open, signal) => {
       if (open) {
         this.open = true;
-        return this._player.playExclusive(growVerIn());
+        return this._player.playExclusive(growVerIn(), signal);
       }
 
-      const completed = await this._player.playExclusive(growVerOut());
+      const completed = await this._player.playExclusive(growVerOut(), signal);
 
-      // An interrupted exit animation means a newer `show()` took over.
-      if (completed) {
+      // A newer request or a direct change of `open` took over.
+      if (completed && !signal.aborted) {
         this.open = false;
       }
 
@@ -90,31 +90,29 @@ export default class IgcBannerComponent extends EventEmitterMixin<
   /**
    * Whether the banner is open.
    *
-   * Setting this property programmatically will immediately show or hide the
-   * banner without animation and without emitting close events.
-   * Prefer the `show()`, `hide()`, and `toggle()` methods for animated
-   * transitions.
+   * Setting it skips the animation and the close events. Use the `show()`,
+   * `hide()` and `toggle()` methods for an animated transition.
    * @attr open
    * @default false
    */
   @property({ type: Boolean, reflect: true })
+  @coercedProperty<boolean, IgcBannerComponent>({
+    onChange: ({ host, value }) => host._toggleController.sync(value),
+  })
   public open = false;
 
   constructor() {
     super();
 
     addThemingController(this, all);
-    addSlotController(this, { slots: setSlots('prefix', 'actions') });
+    addSlotController(this, { slots: Slots });
     addInternalsController(this, {
       initialARIA: {
         role: 'status',
         ariaLive: 'polite',
       },
     });
-    addCommandController(this)
-      .set('--show', this.show)
-      .set('--hide', this.hide)
-      .set('--toggle', this.toggle);
+    addToggleCommands(this);
   }
 
   private _handleClick(): void {
@@ -125,7 +123,8 @@ export default class IgcBannerComponent extends EventEmitterMixin<
    * Opens the banner with an animated grow-in transition.
    *
    * Returns `true` when the banner was successfully opened, or `false` if it
-   * was already open or the transition was superseded by a newer one.
+   * was already open or opening, the transition was superseded by a newer one,
+   * or `open` was set to `false` during it.
    */
   public async show(): Promise<boolean> {
     return this._toggleController.show();
@@ -135,7 +134,8 @@ export default class IgcBannerComponent extends EventEmitterMixin<
    * Closes the banner with an animated grow-out transition.
    *
    * Returns `true` when the banner was successfully closed, or `false` if it
-   * was already closed or the transition was superseded by a newer one.
+   * was already closed or closing, the transition was superseded by a newer
+   * one, or `open` was set to `false` and then to `true` during it.
    */
   public async hide(): Promise<boolean> {
     return this._toggleController.hide();
@@ -145,7 +145,8 @@ export default class IgcBannerComponent extends EventEmitterMixin<
    * Toggles the banner open or closed depending on its current state.
    *
    * Equivalent to calling `show()` when closed and `hide()` when open.
-   * Returns `true` when the transition completed successfully.
+   * Returns `true` when the transition completed successfully, with the same
+   * `false` cases as these methods.
    */
   public async toggle(): Promise<boolean> {
     return this._toggleController.toggle();

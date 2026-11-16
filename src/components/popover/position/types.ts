@@ -1,4 +1,4 @@
-import type { PopoverScrollStrategy } from '../../types.js';
+import type { PopoverScrollStrategy, TooltipRect } from '../../types.js';
 import type { PopoverPlacement } from '../popover.js';
 
 /**
@@ -28,6 +28,9 @@ export function getForcedPopoverPositionStrategy():
   return forcedStrategy;
 }
 
+/** A rectangle in viewport coordinates, with the size resolved. */
+export type PopoverRect = Required<TooltipRect>;
+
 /** The inputs that a position strategy reads from the popover component. */
 export interface PopoverPositionHost {
   /** The value is null or undefined at run time if the attribute is removed. */
@@ -39,6 +42,7 @@ export interface PopoverPositionHost {
   readonly arrowOffset: number;
   readonly open: boolean;
   readonly scrollStrategy: PopoverScrollStrategy;
+  readonly anchorRect: PopoverRect | null;
 }
 
 /** Returns the placement, or the default if the attribute is removed. */

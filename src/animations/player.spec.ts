@@ -9,6 +9,7 @@ import { css, LitElement } from 'lit';
 import { createRef } from 'lit/directives/ref.js';
 import sinon from 'sinon';
 
+import { allowMotion } from '#internals/testing/helpers.spec.js';
 import { EaseOut } from './easings.js';
 import { addAnimationController, getPrefersReducedMotion } from './player.js';
 import { type AnimationReferenceMetadata, animation } from './types.js';
@@ -26,6 +27,8 @@ const animationOptions = {
 const fade: AnimationReferenceMetadata = animation(keyframes, animationOptions);
 
 describe('Animations Player', () => {
+  allowMotion();
+
   let tag: string;
   let el: HTMLElement & { player: ReturnType<typeof addAnimationController> };
 
@@ -69,6 +72,35 @@ describe('Animations Player', () => {
     ])) as AnimationPlaybackEvent[];
 
     expect(playbackEvent.type).to.equal('cancel');
+  });
+
+  it('should cancel the animation when its signal aborts', async () => {
+    const abort = new AbortController();
+    const playing = el.player.play(fade, abort.signal);
+    abort.abort();
+
+    expect((await playing).type).to.equal('cancel');
+  });
+
+  it('should resolve `playExclusive` `false` when its signal aborts', async () => {
+    const abort = new AbortController();
+    const playing = el.player.playExclusive(fade, abort.signal);
+    el.getAnimations()[0].finish();
+    abort.abort();
+
+    expect(await playing).to.be.false;
+  });
+
+  it('should not play or cancel others with an aborted signal', async () => {
+    const running = el.player.play(fade);
+    const abort = new AbortController();
+    abort.abort();
+
+    expect(await el.player.playExclusive(fade, abort.signal)).to.be.false;
+    expect(el.getAnimations()).to.have.length(1);
+
+    el.getAnimations()[0].finish();
+    expect((await running).type).to.equal('finish');
   });
 
   it('should error on infinite animations', async () => {

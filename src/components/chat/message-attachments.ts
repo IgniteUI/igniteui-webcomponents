@@ -1,12 +1,12 @@
 import { consume } from '@lit/context';
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import { cache } from 'lit/directives/cache.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { until } from 'lit/directives/until.js';
 import { chatContext } from '#internals/context.js';
+import { addKeybindings } from '#internals/controllers/key-bindings.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
+import { getEventOrigin } from '#internals/utils/events.js';
 import { trimmedHtml } from '#internals/utils/lit.js';
 import { all } from '#themes/chat/themes/attachments.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -27,7 +27,13 @@ import {
   createAttachmentURL,
   getFileExtension,
   isImageAttachment,
+  renderResult,
 } from './utils.js';
+
+/** Only the header itself, so a control in a custom header keeps its keys. */
+function getHeader(event: Event): HTMLElement | undefined {
+  return getEventOrigin<HTMLElement>('[part~="attachment-header"]', event);
+}
 
 type DefaultAttachmentRenderers = {
   attachment: ChatTemplateRenderer<ChatAttachmentRenderContext>;
@@ -71,8 +77,8 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
 
   private readonly _defaults: Readonly<DefaultAttachmentRenderers> =
     Object.freeze<DefaultAttachmentRenderers>({
-      attachment: (ctx) => this._renderAttachment(ctx.attachment),
-      attachmentHeader: (ctx) => this.renderHeader(ctx.attachment),
+      attachment: (ctx) => this._renderAttachment(ctx),
+      attachmentHeader: (ctx) => this._renderHeader(ctx.attachment),
       attachmentContent: (ctx) => this._renderContent(ctx.attachment),
     });
 
@@ -88,17 +94,19 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   constructor() {
     super();
     addThemingController(this, all);
+
+    // Enter and Space activate a header, as on a native button.
+    addKeybindings(this, {
+      skip: (_, event) => !getHeader(event),
+    }).setActivateHandler((event) => getHeader(event)!.click());
   }
 
   private _getRenderer(name: keyof DefaultAttachmentRenderers) {
     return this._state.options?.renderers?.[name] ?? this._defaults[name];
   }
 
-  private _handleHeaderClick = (attachment: IgcChatMessageAttachment) => {
-    this._state.emitEvent('igcAttachmentClick', { detail: attachment });
-  };
   /** The default header of `attachment`: its icon and its name. */
-  private renderHeader(attachment: IgcChatMessageAttachment) {
+  private _renderHeader(attachment: IgcChatMessageAttachment) {
     const isCurrentUser = this._state.isCurrentUserMessage(this.message);
     const iconName = isImageAttachment(attachment)
       ? 'attach_image'
@@ -134,7 +142,8 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
         ></igc-icon>`;
   }
 
-  private _renderAttachment(attachment: IgcChatMessageAttachment) {
+  private _renderAttachment(ctx: ChatAttachmentRenderContext) {
+    const { attachment } = ctx;
     const isCurrentUser = this._state.isCurrentUserMessage(this.message);
 
     const contentParts = {
@@ -146,22 +155,18 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
       sent: isCurrentUser,
     };
 
-    const ctx: ChatAttachmentRenderContext = {
-      attachment,
-      message: this.message!,
-      instance: this._state.host,
-    };
-
     const content = html`<div part=${partMap(contentParts)}>
-      ${until(this._getRenderer('attachmentContent')(ctx))}
+      ${renderResult(this._getRenderer('attachmentContent')(ctx))}
     </div>`;
     const header = html` <div
       part=${partMap(headerParts)}
       role="button"
-      @click=${() => this._handleHeaderClick(attachment)}
+      tabindex="0"
+      @click=${() =>
+        this._state.emitEvent('igcAttachmentClick', { detail: attachment })}
     >
       <div part="details">
-        ${until(this._getRenderer('attachmentHeader')(ctx))}
+        ${renderResult(this._getRenderer('attachmentHeader')(ctx))}
       </div>
     </div>`;
 
@@ -172,35 +177,31 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   }
 
   protected override render() {
-    const attachments = this.message?.attachments ?? [];
-    const isCurrentUser = this._state.isCurrentUserMessage(this.message);
+    const message = this.message;
+
+    if (!message) {
+      return nothing;
+    }
+
+    const instance = this._state.host;
     const attachmentParts = {
       attachment: true,
-      sent: isCurrentUser,
+      sent: this._state.isCurrentUserMessage(message),
     };
-    return html`${cache(
-      this.message
-        ? html`
-            <div part="attachments-container">
-              ${repeat(
-                attachments,
-                (attachment) => attachment.id,
-                (attachment) => trimmedHtml`
-                  <div part="${partMap(attachmentParts)}">
-                    ${until(
-                      this._getRenderer('attachment')({
-                        attachment,
-                        message: this.message!,
-                        instance: this._state.host,
-                      })
-                    )}
-                  </div>
-                `
-              )}
+
+    return html`
+      <div part="attachments-container">
+        ${repeat(
+          message.attachments ?? [],
+          (attachment) => attachment.id,
+          (attachment) => trimmedHtml`
+            <div part="${partMap(attachmentParts)}">
+              ${renderResult(this._getRenderer('attachment')({ attachment, message, instance }))}
             </div>
           `
-        : nothing
-    )}`;
+        )}
+      </div>
+    `;
   }
 }
 

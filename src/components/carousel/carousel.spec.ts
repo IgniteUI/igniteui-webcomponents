@@ -7,7 +7,10 @@ import {
   waitUntil,
 } from '@open-wc/testing';
 
+import { registerI18n } from 'igniteui-i18n-core';
+import { CarouselResourceStringsBG } from 'igniteui-i18n-resources';
 import { type SinonFakeTimers, spy, stub, useFakeTimers } from 'sinon';
+import { internalsOf } from '#internals/controllers/internals.js';
 import {
   arrowLeft,
   arrowRight,
@@ -15,12 +18,17 @@ import {
   enterKey,
   homeKey,
   spaceBar,
+  tabKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
+  allowMotion,
   finishAnimationsFor,
   getAnimationsFor,
+  isUnderPageLayer,
 } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -116,6 +124,33 @@ describe('Carousel', () => {
       await expect(carousel).shadowDom.to.be.accessible();
     });
 
+    it('paints the slides, the indicators and the navigation under an earlier page layer', () => {
+      expect(isUnderPageLayer(carousel, slides[0])).to.be.true;
+      expect(isUnderPageLayer(carousel, defaultIndicators[0])).to.be.true;
+      expect(isUnderPageLayer(carousel, nextButton)).to.be.true;
+    });
+
+    it('sets a role description on the carousel and not on the slides', () => {
+      expect(internalsOf(carousel)!.getARIA('ariaRoleDescription')).to.equal(
+        'carousel'
+      );
+
+      for (const slide of slides) {
+        expect(internalsOf(slide)!.getARIA('role')).to.equal('tabpanel');
+        expect(internalsOf(slide)!.getARIA('ariaRoleDescription')).to.be.null;
+      }
+    });
+
+    it('takes the role description from the strings of its locale', async () => {
+      registerI18n(CarouselResourceStringsBG, 'bg');
+      carousel.locale = 'bg';
+      await elementUpdated(carousel);
+
+      expect(internalsOf(carousel)!.getARIA('ariaRoleDescription')).to.equal(
+        CarouselResourceStringsBG.carousel_role_description
+      );
+    });
+
     it('is correctly initialized with its default component state', () => {
       expect(carousel.disableLoop).to.be.false;
       expect(carousel.disablePauseOnInteraction).to.be.false;
@@ -207,6 +242,17 @@ describe('Carousel', () => {
           ignoreAttributes: ['type', 'variant', 'part', 'style'],
         }
       );
+    });
+
+    it('lets the native navigation buttons control the slides container', async () => {
+      const container = carousel.renderRoot.querySelector('[aria-live]');
+
+      for (const button of [prevButton, nextButton]) {
+        await elementUpdated(button);
+        expect(
+          button.renderRoot.querySelector('button')!.ariaControlsElements
+        ).to.eql([container]);
+      }
     });
 
     it('slide is correctly rendered both in active/inactive states', async () => {
@@ -1496,7 +1542,153 @@ describe('Carousel', () => {
     });
   });
 
+  describe('Layout and theming', () => {
+    const heightOf = (element: Element) =>
+      element.getBoundingClientRect().height;
+
+    it('takes the height of its tallest slide', async () => {
+      const el = await fixture<IgcCarouselComponent>(html`
+        <igc-carousel style="width: 400px">
+          <igc-carousel-slide><span>Short</span></igc-carousel-slide>
+          <igc-carousel-slide>
+            <div style="height: 500px"></div>
+          </igc-carousel-slide>
+        </igc-carousel>
+      `);
+
+      expect(heightOf(el)).to.equal(500);
+      expect(el.slides.map(heightOf)).to.eql([500, 500]);
+    });
+
+    it('keeps the height that its styles or its parent give', async () => {
+      const slides = html`
+        <igc-carousel-slide>
+          <div style="height: 500px"></div>
+        </igc-carousel-slide>
+        <igc-carousel-slide><span>Short</span></igc-carousel-slide>
+      `;
+
+      const el = await fixture<HTMLElement>(html`
+        <div style="width: 400px">
+          <igc-carousel style="height: 300px">${slides}</igc-carousel>
+          <igc-carousel style="max-height: 300px">${slides}</igc-carousel>
+          <div style="display: flex; flex-direction: column; height: 400px">
+            <div style="flex: none; height: 100px"></div>
+            <igc-carousel>${slides}</igc-carousel>
+          </div>
+        </div>
+      `);
+
+      for (const item of el.querySelectorAll(IgcCarouselComponent.tagName)) {
+        const box = item.getBoundingClientRect();
+        const indicators = item.renderRoot
+          .querySelector('[part~="indicators"]')!
+          .getBoundingClientRect();
+
+        expect(box.height).to.equal(300);
+        expect(item.slides.map(heightOf)).to.eql([300, 300]);
+        expect(indicators.bottom).to.be.at.most(box.bottom);
+      }
+    });
+
+    it('does not take the height of its images', async () => {
+      const square =
+        'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"/>';
+
+      // `height: auto` is what common CSS resets set. The `width` and
+      // `height` attributes are what image components of frameworks set.
+      const el = await fixture<IgcCarouselComponent>(html`
+        <igc-carousel style="width: 400px">
+          <igc-carousel-slide>
+            <img src=${square} alt="" />
+          </igc-carousel-slide>
+          <igc-carousel-slide>
+            <img src=${square} alt="" style="height: auto" />
+          </igc-carousel-slide>
+          <igc-carousel-slide>
+            <img src=${square} alt="" width="800" height="600" />
+          </igc-carousel-slide>
+          <igc-carousel-slide>
+            <img
+              src=${square}
+              alt=""
+              width="800"
+              height="600"
+              style="height: auto"
+            />
+          </igc-carousel-slide>
+        </igc-carousel>
+      `);
+      const images = Array.from(el.querySelectorAll('img'));
+      await Promise.all(images.map((image) => image.decode()));
+
+      const section = el.renderRoot.querySelector('section')!;
+      const { minHeight } = getComputedStyle(section);
+
+      expect(heightOf(el)).to.equal(Number.parseFloat(minHeight));
+      expect(images.map(heightOf)).to.eql(images.map(() => heightOf(el)));
+      // An inline image would add the descent of its line box.
+      expect(section.scrollHeight).to.equal(section.clientHeight);
+    });
+
+    it('does not take the width of its slides', async () => {
+      const el = await fixture<HTMLElement>(html`
+        <div style="display: inline-block">
+          <igc-carousel>
+            <igc-carousel-slide>
+              <div style="width: 1000px"></div>
+            </igc-carousel-slide>
+          </igc-carousel>
+        </div>
+      `);
+      const item = el.querySelector(IgcCarouselComponent.tagName)!;
+      const { minWidth } = getComputedStyle(
+        item.renderRoot.querySelector('section')!
+      );
+
+      expect(item.getBoundingClientRect().width).to.equal(
+        Number.parseFloat(minWidth)
+      );
+    });
+
+    it('passes the arrow colors of its theme to the navigation buttons', async () => {
+      const baseOf = (button: IgcButtonComponent) =>
+        getComputedStyle(button.renderRoot.querySelector('[part~="base"]')!);
+
+      carousel.style.setProperty(
+        '--ig-carousel-button-arrow-color',
+        'rgb(1, 2, 3)'
+      );
+      carousel.style.setProperty(
+        '--ig-carousel-button-disabled-arrow-color',
+        'rgb(4, 5, 6)'
+      );
+      carousel.style.setProperty(
+        '--ig-carousel-button-focus-arrow-color',
+        'rgb(7, 8, 9)'
+      );
+      carousel.disableLoop = true;
+      await elementUpdated(carousel);
+
+      expect(baseOf(nextButton).getPropertyValue('--icon-color')).to.equal(
+        'rgb(1, 2, 3)'
+      );
+      expect(
+        baseOf(prevButton).getPropertyValue('--disabled-icon-color')
+      ).to.equal('rgb(4, 5, 6)');
+
+      simulateKeyboard(nextButton, tabKey);
+      await elementUpdated(nextButton);
+
+      expect(baseOf(nextButton).getPropertyValue('--icon-color')).to.equal(
+        'rgb(7, 8, 9)'
+      );
+    });
+  });
+
   describe('Animations, labels and projected indicators', () => {
+    allowMotion();
+
     /** The keyframes of the animations the slide plays on its host. */
     function keyframesOf(slide: IgcCarouselSlideComponent) {
       return getAnimationsFor(slide).flatMap((animation) =>
@@ -1695,4 +1887,27 @@ describe('Carousel', () => {
       el.remove();
     });
   });
+
+  runHiddenAncestorTests(html`
+    <igc-carousel>
+      <igc-carousel-slide>One</igc-carousel-slide>
+      <igc-carousel-slide>Two</igc-carousel-slide>
+    </igc-carousel>
+  `);
+
+  runFocusBeforeRenderTests(
+    html`<igc-carousel>
+      <igc-carousel-slide>1</igc-carousel-slide>
+      <igc-carousel-slide>2</igc-carousel-slide>
+    </igc-carousel>`
+  );
+
+  // The first render has no focusable element: the indicators come after the
+  // carousel finds its slides.
+  runFocusBeforeRenderTests(
+    html`<igc-carousel hide-navigation>
+      <igc-carousel-slide>1</igc-carousel-slide>
+      <igc-carousel-slide>2</igc-carousel-slide>
+    </igc-carousel>`
+  );
 });

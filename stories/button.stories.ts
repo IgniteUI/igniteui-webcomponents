@@ -38,7 +38,7 @@ const metadata: Meta<IgcButtonComponent> = {
     docs: {
       description: {
         component:
-          'Represents a clickable button, used to submit forms or anywhere in a\ndocument for accessible, standard button functionality.\n\nThe button supports multiple visual variants, can render as an anchor\n(`<a>`) element when the `href` attribute is set, and is fully\nform-associated, acting as a native `submit` or `reset` control.',
+          'Represents a clickable button, used to submit forms or anywhere in a\ndocument for accessible, standard button functionality.\n\nThe button has several visual variants. It renders as an anchor (`<a>`)\nelement when the `href` attribute is set. It is form-associated and can\nact as a native `submit` or `reset` control.',
       },
     },
   },
@@ -86,7 +86,8 @@ const metadata: Meta<IgcButtonComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'When set, the button will be disabled and non-interactive.',
+      description:
+        'Whether the button is disabled. A disabled button ignores user interaction.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -155,7 +156,7 @@ interface IgcButtonArgs {
    * setting `rel="noopener noreferrer"` is strongly recommended for security.
    */
   rel: string;
-  /** When set, the button will be disabled and non-interactive. */
+  /** Whether the button is disabled. A disabled button ignores user interaction. */
   disabled: boolean;
   /**
    * The command to invoke on the target element specified by `commandfor`.

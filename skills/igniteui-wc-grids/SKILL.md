@@ -22,7 +22,7 @@ user-invocable: true
 | Parent-child, different schema per level | `<igc-hierarchical-grid>` | `igniteui-webcomponents-grids` (trial) / `@infragistics/igniteui-webcomponents-grids` (licensed) |
 | Cross-tab / OLAP analysis | `<igc-pivot-grid>` | `igniteui-webcomponents-grids` (trial) / `@infragistics/igniteui-webcomponents-grids` (licensed) |
 
-Do not mix `igc-grid-lite` with a premium grid type for the same table. Pick one. To upgrade Grid Lite to `igc-grid`, use the migration skill above.
+Do not mix `igc-grid-lite` with a premium grid type for the same table. Pick one. To upgrade Grid Lite to `igc-grid`, use the [`igniteui-wc-migrate-grid-lite-to-premium`](../igniteui-wc-migrate-grid-lite-to-premium/SKILL.md) skill.
 
 For Grid Lite, import the `igniteui-grid-lite` package and its elements directly. Load only the base Ignite UI theme. Do not import the premium grid package or the grid theme:
 
@@ -110,7 +110,7 @@ igc-grid { flex: 1 1 auto; min-height: 0; block-size: 100%; }
 </igc-grid>
 ```
 
-The filtering UI shows only when the grid has `allow-filtering="true"`. A column's `filterable="true"` alone has no visible effect. Boolean-looking attributes take quoted string values (`sortable="true"`, not bare `sortable`). For events, remote sort/filter, or programmatic APIs, see the migration skill above. The API is the same for apps that migrate from Grid Lite and for apps that do not.
+The filtering UI shows only when the grid has `allow-filtering="true"`. A column's `filterable="true"` alone has no visible effect. Boolean-looking attributes take quoted string values (`sortable="true"`, not bare `sortable`). For events, remote sort/filter, or programmatic APIs, see Steps 7-9 of the [`igniteui-wc-migrate-grid-lite-to-premium`](../igniteui-wc-migrate-grid-lite-to-premium/SKILL.md) skill. The API is the same for apps that migrate from Grid Lite and for apps that do not.
 
 ## Verify with a Clean Run
 

@@ -59,6 +59,11 @@ This directory hosts four public components: [`igc-select`](#igc-select), [`igc-
 |       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
 |       3 | 2026-10-02 | Focus after form checks; `invalid` only on checks  |
 |       4 | 2026-10-02 | Forward the host `aria-describedby`                |
+|       5 | 2026-10-21 | API descriptions aligned with the JSDoc.           |
+|       6 | 2026-10-26 | Setting the current `value` again keeps the active item |
+|       7 | 2026-11-02 | `focus()` and `blur()` before the first render do not throw, and a `focus()` call applies after it |
+|       8 | 2026-11-04 | Setting `selected` on an item again keeps the active item; only the selected item starts active |
+|       9 | 2026-11-06 | The header and footer content keeps its keys, is outside the listbox, and Tab moves through it |
 
 ## Overview
 
@@ -171,6 +176,11 @@ const item = select.selectedItem;
 An item without an explicit `value` falls back to its text content. The display value of the anchor is rendered from
 the selected item, so it can carry rich content while the submitted value stays a plain string.
 
+A new selection also becomes the active item. Setting `value` to the value that the select already has does not
+move the active item, so a framework that sets each property on each render keeps the keyboard position in an open
+list. Setting `selected` on an item to its current value does not move it either. A user selection, `select()` and `clearSelection()` move the active item, also when the selection does not
+change.
+
 #### Templating
 
 ```html
@@ -263,9 +273,16 @@ While the list of options **is** visible:
 | <kbd>Arrow Up</kbd> / <kbd>Arrow Left</kbd>  | Activates the previous option.                    |
 | <kbd>Home</kbd> / <kbd>End</kbd>             | Activates the first or the last option.           |
 | <kbd>Escape</kbd>                            | Closes the list without changing the selection.   |
+| <kbd>Tab</kbd>                               | Selects the active option, closes the list and keeps the focus on the input. |
+| <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd>, with focusable header or footer content | Moves through the input, the header content, the active option and the footer content. Past either end, does what <kbd>Tab</kbd> does without that content. |
 
 Typing while the component is focused queries the options and selects the closest match; while the list is open the
 matching option is activated instead.
+
+The content of the `header` and `footer` slots keeps its own keys: a text field takes the typed text, the arrow keys,
+<kbd>Home</kbd> and <kbd>End</kbd>, and a button takes <kbd>Space</kbd> and <kbd>Enter</kbd>. <kbd>Escape</kbd> from
+that content closes the list, unless the content handled the key (`defaultPrevented`). When the list closes with the
+focus in it, the input gets the focus.
 
 ## API
 
@@ -276,54 +293,54 @@ matching option is activated instead.
 | Property               | Attribute                  | Reflected | Type                                | Default        | Description                                                     |
 | ---------------------- | -------------------------- | --------- | ----------------------------------- | -------------- | ---------------------------------------------------------------- |
 | value                  | value                      | No        | `string \| undefined`               | -              | The value of the control.                                       |
-| open                   | open                       | Yes       | `boolean`                           | false          | The open state of the component.                                |
+| open                   | open                       | Yes       | `boolean`                           | false          | Whether the component is open.                                |
 | label                  | label                      | No        | `string`                            | -              | The label of the control.                                       |
 | placeholder            | placeholder                | No        | `string`                            | -              | The placeholder text of the control.                            |
 | outlined               | outlined                   | Yes       | `boolean`                           | false          | Whether the control has an outlined appearance.                 |
 | placement              | placement                  | No        | `PopoverPlacement`                  | `bottom-start` | The preferred placement of the dropdown around the input.       |
 | distance               | distance                   | No        | `number`                            | 0              | The distance of the dropdown from its input.                    |
-| keepOpenOnSelect       | keep-open-on-select        | Yes       | `boolean`                           | false          | Keeps the dropdown open after the user selects an item.         |
-| keepOpenOnOutsideClick | keep-open-on-outside-click | Yes       | `boolean`                           | false          | Keeps the dropdown open when the user clicks outside of it.     |
+| keepOpenOnSelect       | keep-open-on-select        | Yes       | `boolean`                           | false          | Whether the component stays open after the user selects an item.         |
+| keepOpenOnOutsideClick | keep-open-on-outside-click | Yes       | `boolean`                           | false          | Whether the component stays open when the user clicks outside of it.     |
 | scrollStrategy         | scroll-strategy            | No        | `PopoverScrollStrategy`             | `hide`         | The behavior of the component when a parent container scrolls.  |
-| required               | required                   | Yes       | `boolean`                           | false          | Makes the component a required field for validation.            |
-| disabled               | disabled                   | Yes       | `boolean`                           | false          | The disabled state of the component.                            |
-| invalid                | invalid                    | No        | `boolean`                           | false          | Sets the control into invalid state (visual state only).        |
+| required               | required                   | Yes       | `boolean`                           | false          | Whether the control is required. A required control that has no value, or is not checked, fails validation.            |
+| disabled               | disabled                   | Yes       | `boolean`                           | false          | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                            |
+| invalid                | invalid                    | No        | `boolean`                           | false          | Whether the control shows the invalid state. It changes only the visual state, not the validity.        |
 | name                   | name                       | Yes       | `string`                            | -              | The name of the control, submitted with the form data.          |
-| autofocus              | autofocus                  | No        | `boolean`                           | false          | Whether the control should receive focus automatically.         |
+| autofocus              | autofocus                  | No        | `boolean`                           | false          | Whether the control takes the focus after its first render.     |
 | items                  | -                          | No        | `IgcSelectItemComponent[]`          | -              | Read-only. The items of the select component.                   |
 | groups                 | -                          | No        | `IgcSelectGroupComponent[]`         | -              | Read-only. The groups of the select component.                  |
 | selectedItem           | -                          | No        | `IgcSelectItemComponent \| null`    | `null`         | Read-only. The selected item, or `null`.                        |
-| defaultValue           | -                          | No        | `string`                            | -              | The initial value of the control, restored on a form reset.     |
-| form                   | -                          | No        | `HTMLFormElement \| null`           | -              | Read-only. The form associated with this element.               |
-| validity               | -                          | No        | `ValidityState`                     | -              | Read-only. The validity state of the element.                   |
-| validationMessage      | -                          | No        | `string`                            | -              | Read-only. The validation message of the element.               |
+| defaultValue           | -                          | No        | `string`                            | -              | The default value of the control. A form reset restores the value to it. While the value is unchanged since the start or the last form reset, a new default also sets the value. The `value` attribute also sets it.     |
+| form                   | -                          | No        | `HTMLFormElement \| null`           | -              | Read-only. The form that the control is associated with, or `null`.               |
+| validity               | -                          | No        | `ValidityState`                     | -              | Read-only. The validity state of the control.                   |
+| validationMessage      | -                          | No        | `string`                            | -              | Read-only. The validation message of the control. It is empty when the control is valid.               |
 | willValidate           | -                          | No        | `boolean`                           | -              | Read-only. Whether the element is a candidate for validation.   |
 
 #### Methods
 
 | Name              | Type signature                                              | Description                                                             |
 | ----------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`                                      | Shows the component.                                                    |
-| hide              | `(): Promise<boolean>`                                      | Hides the component.                                                    |
-| toggle            | `(): Promise<boolean>`                                      | Toggles the open state of the component.                                |
+| show              | `(): Promise<boolean>`                                      | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one.                                                    |
+| hide              | `(): Promise<boolean>`                                      | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                    |
+| toggle            | `(): Promise<boolean>`                                      | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes.                                |
 | select            | `(value: string \| number): IgcSelectItemComponent \| null` | Selects the item with the given value or index.                         |
 | navigateTo        | `(value: string \| number): IgcSelectItemComponent \| null` | Activates the item with the given value or index.                       |
 | clearSelection    | `(): void`                                                  | Resets the current value and selection of the component.                |
 | focus             | `(options?: FocusOptions): void`                            | Sets focus on the component.                                            |
 | blur              | `(): void`                                                  | Removes focus from the component.                                       |
-| checkValidity     | `(): boolean`                                               | Checks validity and emits `invalid` when the control is invalid.        |
-| reportValidity    | `(): boolean`                                               | Checks validity; when invalid, emits `invalid` and focuses the control. |
-| setCustomValidity | `(message: string): void`                                   | Sets a custom message. Invalid while `message` is not empty.            |
+| checkValidity     | `(): boolean`                                               | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid.        |
+| reportValidity    | `(): boolean`                                               | Checks validity. As for a native control, an invalid control emits `invalid` and takes the focus. It shows its own validation messages, not the message of the browser. Returns `true` when the control is valid. |
+| setCustomValidity | `(message: string): void`                                   | Sets a custom validation message. The control is invalid while the message is not empty. An empty string removes the custom error.            |
 
 #### Events
 
 | Name       | Cancellable | Description                                       |
 | ---------- | ----------- | ------------------------------------------------- |
-| igcChange  | false       | Emitted when the selection of the control changes. |
-| igcOpening | true        | Emitted just before the list of options is opened. |
-| igcOpened  | false       | Emitted after the list of options is opened.      |
-| igcClosing | true        | Emitted just before the list of options is closed. |
-| igcClosed  | false       | Emitted after the list of options is closed.      |
+| igcChange  | false       | Emitted when the user selects a different item. The detail is the item. |
+| igcOpening | true        | Emitted before the user opens the list of options. Cancelable. |
+| igcOpened  | false       | Emitted after the list of options opens on a user action. |
+| igcClosing | true        | Emitted before the user closes the list of options. Cancelable. |
+| igcClosed  | false       | Emitted after the list of options closes on a user action. |
 
 #### Slots
 
@@ -331,11 +348,11 @@ matching option is activated instead.
 | ---------------------- | --------------------------------------------------------------------------------- |
 | (default)              | Renders the list of select items.                                                |
 | `prefix`               | Renders content before the input.                                                |
-| `suffix`               | Renders content after input.                                                     |
+| `suffix`               | Renders content after the input.                                                 |
 | `header`               | Renders a container before the list of options.                                  |
 | `footer`               | Renders a container after the list of options.                                   |
 | `helper-text`          | Renders content below the input.                                                 |
-| `toggle-icon`          | Renders content inside the suffix container.                                     |
+| `toggle-icon`          | Renders content that replaces the default toggle icon.                           |
 | `toggle-icon-expanded` | Renders content for the toggle icon when the component is in open state.         |
 | `value-missing`        | Renders content when the required validation fails.                              |
 | `custom-error`         | Renders content when setCustomValidity(message) is set.                          |
@@ -345,13 +362,28 @@ matching option is activated instead.
 
 | Part          | Description                                            |
 | ------------- | ------------------------------------------------------ |
+| `base`        | The popup container of the list of options.            |
 | `list`        | The list wrapping container for the items of the select. |
 | `input`       | The encapsulated input of the select.                  |
+| `native-input` | The native input element of the encapsulated input.   |
 | `label`       | The encapsulated text label of the select.             |
 | `prefix`      | The prefix wrapper of the input of the select.         |
 | `suffix`      | The suffix wrapper of the input of the select.         |
 | `toggle-icon` | The toggle icon wrapper of the select.                 |
+| `filled`      | Added to the toggle-icon part when the select has a value. |
 | `helper-text` | The helper text wrapper of the select.                 |
+
+#### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
+
+#### CSS custom properties
+
+| Property                | Description                                                                                                                                                                                                                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ig-helper-min-lines` | The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`. |
 
 ### igc-select-item
 
@@ -360,8 +392,8 @@ Represents an item in a select list.
 | Property | Attribute | Reflected | Type      | Default | Description                                            |
 | -------- | --------- | --------- | --------- | ------- | -------------------------------------------------------- |
 | value    | value     | No        | `string`  | -       | The value of the item. Falls back to the text content. |
-| selected | selected  | Yes       | `boolean` | false   | Whether the item is selected.                          |
-| active   | active    | Yes       | `boolean` | false   | Whether the item is active.                            |
+| selected | selected  | Yes       | `boolean` | false   | Whether the item is selected. A change also sets `active` to the same value.                    |
+| active   | active    | Yes       | `boolean` | false   | Whether the item is active. The active item is the target of keyboard navigation and the only item in the tab order. |
 | disabled | disabled  | Yes       | `boolean` | false   | Whether the item is disabled.                          |
 
 | Slot      | Description                                    |
@@ -388,7 +420,7 @@ A container for a group of select items.
 | Slot      | Description                          |
 | --------- | ------------------------------------ |
 | `label`   | Contains the label of the group.     |
-| (default) | The items belonging to this group.   |
+| (default) | Renders the items of the group.      |
 
 | Part    | Description               |
 | ------- | ------------------------- |
@@ -410,87 +442,121 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 1. The default structure renders the anchor, the label, the toggle icon and the list.
 2. Slotted content - prefix, suffix, header, footer, helper text and the toggle icons - is rendered.
 3. `autofocus` focuses the component on the first render.
+4. In forced colors, the indigo list has one frame: the border, without the theme outline.
 
 ### Initial selection and navigation
 
-4. An item marked `selected` in markup becomes the initial selection.
-5. Navigating from an initial selection established through each supported path continues from that item.
+5. An item marked `selected` in markup becomes the initial selection and the only active item.
+6. Navigating from an initial selection established through each supported path continues from that item.
 
 ### Selection integrity
 
-6. The selection stays consistent across open and close cycles and programmatic changes.
-7. Selecting a disabled item is not possible.
+7. The selection stays consistent across open and close cycles and programmatic changes. Setting the current
+   `value` again keeps the active item, while a user commit and `select()` with the selected item move it there. A
+   removed active item hands the navigation back to the selected item. Setting `selected` on each item again keeps
+   the active item and its tab stop.
+8. Selecting a disabled item is not possible.
 
 ### Asynchronously rendered items
 
-8. Items added after the first render are picked up, and a pending value is applied to them.
+9. Items added after the first render are picked up, and a pending value is applied to them.
 
 ### Type-ahead
 
-9. Typing while closed selects the closest matching option.
-10. Typing while open activates the closest matching option.
+10. Typing while closed selects the closest matching option.
+11. Typing while open activates the closest matching option.
 
 ### Display value
 
-11. The display value is rendered from the selected item, and falls back to the placeholder when nothing is
+12. The display value is rendered from the selected item, and falls back to the placeholder when nothing is
     selected.
 
 ### Accessibility semantics
 
-12. The anchor, the list, the items and the groups expose their roles and states, and the component passes the
+13. The anchor, the list, the items and the groups expose their roles and states, and the component passes the
     accessibility audit.
 
 ### API tests
 
-13. `show`, `hide` and `toggle` transition the open state.
-14. `select` and `navigateTo` work by value and by index and return the item or `null`.
-15. `clearSelection` resets the value and the selection.
-16. `focus` and `blur` move focus to and from the component, and `reportValidity()` focuses an invalid select.
+14. `show`, `hide` and `toggle` transition the open state.
+15. `select` and `navigateTo` work by value and by index and return the item or `null`.
+16. `clearSelection` resets the value and the selection.
+17. `focus` and `blur` move focus to and from the component, and `reportValidity()` focuses an invalid select.
 
 ### Groups
 
-17. Grouped items are reported by the group and by the select.
-18. A disabled group disables all of its items.
+18. Grouped items are reported by the group and by the select.
+19. A disabled group disables all of its items.
 
 ### User interactions
 
-19. Clicking an item selects it and closes the list, unless `keepOpenOnSelect` is set.
-20. Clicking outside closes the list, unless `keepOpenOnOutsideClick` is set.
-21. The keyboard interactions behave as specified with the list closed and open.
+20. Clicking an item selects it and closes the list, unless `keepOpenOnSelect` is set.
+21. Clicking outside closes the list, unless `keepOpenOnOutsideClick` is set.
+22. The keyboard interactions behave as specified with the list closed and open.
 
 ### Events tests
 
-22. `igcChange` is emitted on a user-driven selection change.
-23. `igcOpening` and `igcClosing` are emitted and can be canceled; `igcOpened` and `igcClosed` follow the transition.
-24. Issue #1123.
+23. `igcChange` is emitted on a user-driven selection change.
+24. `igcOpening` and `igcClosing` are emitted and can be canceled; `igcOpened` and `igcClosed` follow the transition.
+25. Issue #1123.
 
 ### Scroll strategy tests
 
-25. `hide`, `scroll` and `close` behave as specified while an ancestor scrolls.
+26. `hide`, `scroll` and `close` behave as specified while an ancestor scrolls.
 
 ### Form integration tests
 
-26. Is form associated, submits its value, and does not submit when it has none.
-27. Is correctly reset on form reset, including after a `setAttribute` call.
-28. Reflects the disabled state of an ancestor `fieldset`.
-29. Fulfils the required and custom constraints.
-30. `defaultValue` - correct initial state, submission, reset and validation.
+27. Is form associated, submits its value, and does not submit when it has none.
+28. Is correctly reset on form reset, including after a `setAttribute` call.
+29. Reflects the disabled state of an ancestor `fieldset`.
+30. Fulfils the required and custom constraints.
+31. `defaultValue` - correct initial state, submission, reset and validation.
 
 ### Validation message slots
 
 Generated by `runValidationContainerTests`.
 
-31. The `value-missing`, `custom-error` and `invalid` slots render for their matching state.
+32. The `value-missing`, `custom-error` and `invalid` slots render for their matching state.
 
 ### Host ARIA
 
-32. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+33. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal.
+34. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
+    takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
+    `disabled` set does not cancel an earlier call on another element. The calls do not throw before the render.
+
+### Header and footer content
+
+35. The `header` and `footer` slots are outside the listbox, and the accessibility audit passes with focusable
+    content in them.
+36. A text field in the header takes the typed text, the arrow keys, <kbd>Home</kbd> and <kbd>End</kbd>, a radio
+    group takes the arrow keys, and a button takes <kbd>Space</kbd> and <kbd>Enter</kbd>. The active option does
+    not change.
+37. Tab moves from the input through the header content, the active option and the footer content, and Shift+Tab
+    moves back. Tab from the last footer control selects the active option, closes the list and focuses the input.
+    Shift+Tab from the input closes the list.
+38. <kbd>Escape</kbd> from the header content closes the list and focuses the input, unless the content handled the
+    key.
+39. When the list closes with the focus in the footer, the input gets the focus. A focus outside the list does not
+    move.
+40. Without focusable header or footer content, Shift+Tab is not bound.
+41. A control inside an option is not a Tab stop.
+42. <kbd>Escape</kbd> is not cancelled while the list is closed.
+43. When the header content closes the list on <kbd>Enter</kbd>, the list stays closed.
 
 ## Assumptions and limitations
 
 - Only single selection is supported. For multiple selection use [`igc-combo`](../combo/spec.md).
 - The anchor is not editable; the value is chosen from the list or set programmatically.
+- A control in the `header` or `footer` slot does not move to the options with the arrow keys. The application can
+  call `navigateTo()` from its own key handler.
+- The events of the `header` and `footer` content bubble through the select, for example the `igcChange` of a
+  checkbox. An `igcChange` listener on the select checks `event.target`.
+- A form control in the `header` or `footer` slot belongs to the form of the select, so Enter in an `igc-input` there
+  submits that form. Give the control its own form with the `form` attribute, as the `ExpenseCategory` story does.
 - The submitted value is always a string; an item without an explicit value submits its text content.
 
 ## Accessibility

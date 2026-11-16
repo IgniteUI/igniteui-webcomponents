@@ -18,10 +18,22 @@
 /// The label asterisk of a required control, with empty alternative text to
 /// keep it out of the accessible name.
 @mixin required-asterisk {
-    content: '*';
+    content: '*' / '';
+}
 
-    // An older browser drops the whole value with the alternative text.
-    @supports (content: '*' / '') {
-        content: '*' / '';
+/// Fades the native `::backdrop` of a modal dialog in, or not at all with
+/// reduced motion. For the fade-out, set the backdrop `opacity` to `0` and keep
+/// the dialog modal until the fade ends.
+@mixin modal-backdrop($duration, $easing) {
+    &::backdrop {
+        transition: opacity $duration $easing;
+
+        @starting-style {
+            opacity: 0;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            transition: none;
+        }
     }
 }

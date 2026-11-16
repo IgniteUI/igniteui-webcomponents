@@ -50,8 +50,7 @@ $theme: $material;
 
 [part='tab-header'],
 :host([selected]) [part='tab-header'] {
-    &:focus-within,
-    &:focus {
+    &:focus-within {
         outline: none;
     }
 }

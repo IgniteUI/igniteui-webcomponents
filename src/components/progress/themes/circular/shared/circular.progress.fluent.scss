@@ -26,7 +26,7 @@ $theme: $fluent;
 
     [part~='fill'] {
         stroke-linecap: round;
-        animation: 2s linear 0s infinite normal none running igc-indeterminate-circular-fluent
+        animation: calc(2s * var(--_motion-factor)) linear 0s infinite normal none running igc-indeterminate-circular-fluent;
     }
 }
 

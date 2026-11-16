@@ -11,6 +11,12 @@ export interface HostAriaTestConfig {
   getTarget: (host: LitElement) => Element;
   /** The axe rules that the audit skips. */
   ignoredRules?: string[];
+  /**
+   * The visible text of the target. The audit names the host
+   * `${visibleText} host name`, because the name of an element must contain its
+   * visible label (WCAG 2.5.3).
+   */
+  visibleText?: string;
 }
 
 /**
@@ -73,9 +79,12 @@ export function runHostAriaTests(config: HostAriaTestConfig): void {
     });
 
     it('passes an a11y audit with a host `aria-label`', async () => {
-      const { ignoredRules } = config;
+      const { ignoredRules, visibleText } = config;
 
-      await update('aria-label', 'Host name');
+      await update(
+        'aria-label',
+        visibleText ? `${visibleText} host name` : 'Host name'
+      );
       await expect(host).shadowDom.to.be.accessible({ ignoredRules });
       await expect(host).to.be.accessible({ ignoredRules });
     });

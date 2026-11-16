@@ -3,24 +3,22 @@ import { property } from 'lit/decorators.js';
 import { addContextProvider } from '#internals/controllers/context-provider.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { themeContext } from '#theming/context.js';
+import { enableThemeContext } from '#theming/theming-controller.js';
 import type { Theme, ThemeVariant } from '#theming/types.js';
 
 /**
- * A theme provider component that uses Lit context to provide theme information
- * to descendant components.
+ * Provides a theme to its descendant components through Lit context.
  *
- * This component allows you to scope a theme to a specific part of the page.
- * All library components within this provider will use the specified theme
- * instead of the global theme.
+ * Use it to scope a theme to a part of the page. The library components in
+ * the provider use its theme instead of the global theme.
  *
  * @element igc-theme-provider
  *
- * @slot - Default slot for content that should receive the provided theme.
+ * @slot - The content that receives the provided theme.
  *
  * @remarks
- * When using the theme provider, it must be registered **before** any descendant components
- * that will consume the theme context. This ensures the context provider is available
- * when descendant components attempt to consume it.
+ * Register the theme provider **before** the descendant components that consume the theme
+ * context. Then the context provider is available when the descendant components request it.
  *
  * ```typescript
  * import { defineComponents, IgcThemeProviderComponent, IgcButtonComponent } from 'igniteui-webcomponents';
@@ -67,6 +65,7 @@ export default class IgcThemeProviderComponent extends LitElement {
   constructor() {
     super();
 
+    enableThemeContext();
     addContextProvider(this, {
       context: themeContext,
       watch: ['theme', 'variant'],

@@ -3,7 +3,7 @@
 @use 'igniteui-theming/sass/themes/schemas/components/light/input-group' as *;
 
 // Schema keys the component styles never read.
-$_unused: ('filled-secondary-color', 'success-secondary-color', 'success-shadow-color', 'warning-secondary-color');
+$_unused: ('success-secondary-color', 'success-shadow-color', 'warning-secondary-color');
 $base: map.remove(digest-schema($light-input-group), $_unused...);
 $material: map.remove(digest-schema($material-input-group), $_unused...);
 $bootstrap: map.remove(digest-schema($bootstrap-input-group), $_unused...);

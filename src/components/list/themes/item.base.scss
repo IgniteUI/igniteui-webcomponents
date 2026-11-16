@@ -9,6 +9,11 @@
     padding-inline: pad-inline(rem(4px), rem(8px), rem(16px));
     padding-block: pad-block(rem(2px), rem(4px), rem(8px));
 
+    // An item far from the view skips its rendering. The placeholder is about
+    // an item with a title and a subtitle; a rendered item keeps its real size.
+    content-visibility: auto;
+    contain-intrinsic-size: auto none auto sizable(rem(46px), rem(50px), rem(56px));
+
     ::slotted(igc-avatar) {
         --ig-size: 1;
     }

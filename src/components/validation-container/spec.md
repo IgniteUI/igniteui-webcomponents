@@ -15,6 +15,8 @@
       - [Validation slots](#validation-slots)
       - [The invalid slot](#the-invalid-slot)
       - [Helper text replacement](#helper-text-replacement)
+      - [Pointer presses](#pointer-presses)
+      - [Reserved message lines](#reserved-message-lines)
       - [Examples](#examples)
     - [Validation mapping table](#validation-mapping-table)
     - [Localization](#localization)
@@ -25,9 +27,12 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom properties](#css-custom-properties)
   - [Test scenarios](#test-scenarios)
     - [Rendering and projection](#rendering-and-projection)
     - [create()](#create)
+    - [Pointer press](#pointer-press)
+    - [Reserved message lines](#reserved-message-lines-1)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -39,6 +44,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-10-22 | Pointer presses, reserved message lines |
 
 ## Overview
 
@@ -60,6 +66,9 @@ parts and the same behavior.
   restored when it becomes valid. The swap only happens when error messages are actually slotted.
 - **Form pipeline integration**: reacts to user interaction, form submission and form reset through internal events
   emitted by the form-associated mixins.
+- **Stable clicks**: while the user presses the pointer, a message does not show or go away, so the element under
+  the pointer does not move before the release.
+- **Reserved message lines**: `--ig-helper-min-lines` keeps space for messages before they show.
 - **SSR-safe**: renders nothing on the server and during hydration, then projects the slots on the first client update.
 - **Themeable**: uses the input themes of the library and exposes shadow parts for the message, the icon and the wrapper.
 
@@ -163,6 +172,47 @@ Use it when a single generic message is preferable to granular ones.
 When both a helper text and at least one matching error message are slotted, the helper text is replaced by the error
 message(s) while the host is invalid. When no error message is slotted for the current state, the helper text stays
 visible.
+
+#### Pointer presses
+
+The `mousedown` of a press moves the focus, and a host that validates on blur can then show or hide a message. That
+moves the content below the host. The browser sends `click` to the common ancestor of the `mousedown` and `mouseup`
+targets, so a press on a button that moved before the release does not click the button.
+
+While the primary button of a real pointer is down, the container does not update. It updates in the task after the
+release, when the `click` of the press has gone out. Synthetic pointer events from scripts do not hold an update. A
+host render in a press keeps the message slots that the host forwarded before, so a held message keeps its content,
+and the host renders again after the release. The first render of the container cannot read its projected slots, so
+the render after it, which can, is not held: a control that is created in a press does not show an empty line.
+
+The press tracking lives in `#internals/pointer-press.js`: `trackPointerPress()` starts it, `isPointerPressed()`
+tells whether a press is in progress, and `afterPointerPress(callback)` queues a callback for the end of the current
+press. A press also ends when the window loses the focus, on a key press, or when the pointer moves with no button
+down, so a release that the page does not get cannot hold the container. The release is a `MessageChannel` message,
+not a timeout, so fake timers in the tests of an application do not hold it.
+
+#### Reserved message lines
+
+`--ig-helper-min-lines` sets the minimum number of message lines below the host: `1`, `2` or `3`. The `helper-text`
+wrapper gets a minimum block size: that many lines of its text, or the size of the small error icon (`--ig-icon-size`
+when it is set), whichever is larger. The wrapper keeps the margin, type style and display of its theme, so it is as
+tall as a message of that many lines, and its content stays at the top. A message of more lines makes it taller.
+
+An empty wrapper is absolutely positioned and hidden, so it takes no space. With reserved lines, it stays in the
+flow, and an empty `::before` gives a grid wrapper one row, so that the minimum row height of the theme applies as it
+does to a message. A container style query turns this on only for the values `1`, `2` and `3`, so other values, such
+as `0px`, `-1` or `calc(0)`, keep no space. A browser without container style queries keeps no space.
+
+The variable is inherited. The shared component styles set it to `0` on the form controls inside the shadow root of
+a component, for example the input of the combo, which then reserve no space of their own. The tree item does not
+adopt those styles, so it sets the variable on its checkbox. A radio group shows its message on its last radio, so it
+sets the variable to `0` on its other radios.
+
+```css
+form {
+  --ig-helper-min-lines: 1;
+}
+```
 
 #### Examples
 
@@ -337,6 +387,12 @@ its target:
 
 All three parts are re-exported by the created element, so a host component exposes them without extra configuration.
 
+### CSS custom properties
+
+| Property                | Description                                                                                                                   |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `--ig-helper-min-lines` | The minimum number of message lines below the host. Inherited from the host. Default is `0`. See [Reserved message lines](#reserved-message-lines). |
+
 ## Test scenarios
 
 The suite lives in [`validation-container.spec.ts`](./validation-container.spec.ts). It runs in a real browser
@@ -367,10 +423,39 @@ The groups below mirror the `describe` blocks of the suite.
 7. Does not project a `helper-text` slot when `hasHelperText` is `false`.
 8. Applies the `id`, `slot` and `part` values from the configuration to the rendered element.
 
+### Pointer press
+
+The cases press a button below the host with a real pointer (`sendMouse`), with a rendered frame between down and up.
+
+9. The click reaches the button when the host shows a two-line message on blur, and the message shows after the
+   release.
+10. The click reaches the button when the host hides a two-line message on blur.
+11. A control that is created in a press has no empty message line before the release.
+
+### Reserved message lines
+
+12. No space is reserved by default.
+13. With one and two reserved lines, the container is as tall as with a one-line and a two-line message, in each of
+    the four themes.
+14. Values other than `1`, `2` and `3`, such as `0.0`, `0px`, `-1`, `calc(1)` and `4`, reserve no space.
+15. A one-line helper text stays at the top of two reserved lines in a checkbox.
+16. In a radio group, only the last radio reserves lines.
+17. A message that replaces the helper text keeps the height.
+18. The form controls inside the combo, select, date picker, date range picker (both modes), color picker, chat and
+    tree item reserve no space.
+
+The press tracking has its own suite in [`pointer-press.spec.ts`](../../internals/pointer-press.spec.ts). It covers
+the release after the `click`, fake timers and the end of a press on a key press.
+
 ### Not covered by the suite
 
 There is no dedicated case for the reset path - `igc-form-internal-reset` clearing the invalid state - or for the
 SSR and hydration behavior; both are exercised indirectly through the form reset cases of the host components.
+
+The end of a press when the window loses the focus, or when the pointer moves with no button down, is not covered:
+a test cannot make the browser lose a trusted release. A new press that clears the queued release of an earlier one
+is not covered either, because `sendMouse` cannot start a press before that release runs. Browsers without container
+style queries keep no space, and the suite runs in Chromium only.
 ## Accessibility
 
 ### ARIA roles and properties
@@ -378,6 +463,8 @@ SSR and hydration behavior; both are exercised indirectly through the form reset
 - No intrinsic role is applied to the `igc-validator` element itself.
 - The message wrapper carries `aria-live="polite"`, so new error messages are announced without interrupting the user.
 - The error icon is decorative and carries `aria-hidden="true"`.
+- An empty wrapper is hidden with `visibility: hidden`, also while it holds reserved lines, so it is not in the
+  accessibility tree.
 - Host components associate the container with their control, so the current message is announced as its
   description. An input-shaped host resolves the container element and projects it onto its native editor as an
   `aria-describedby` element reference, because an IDREF does not cross a shadow boundary. A host that renders

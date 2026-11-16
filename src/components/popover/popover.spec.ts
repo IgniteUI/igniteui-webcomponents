@@ -5,12 +5,17 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { spy } from 'sinon';
 
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { simulateScroll } from '#internals/testing/simulate.spec.js';
+import { getCenterPoint, isPopoverOpen } from '#internals/utils/dom.js';
 import IgcPopoverComponent, { type PopoverPlacement } from './popover.js';
 import { shouldUseNativeAnchorPositioning } from './position/native.js';
-import { setPopoverPositionStrategy } from './position/types.js';
+import {
+  type PopoverRect,
+  setPopoverPositionStrategy,
+} from './position/types.js';
 
 type PositionMode = 'native' | 'fallback';
 
@@ -744,6 +749,75 @@ function definePositioningSuites(mode: PositionMode) {
     });
   });
 
+  describe('Arrow element sized by its side part', () => {
+    let popover: IgcPopoverComponent;
+    let anchor: HTMLElement;
+    let arrow: HTMLElement;
+
+    // Like the tooltip arrow: a border triangle that has no size until the
+    // popover sets its side part.
+    beforeEach(async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div style="padding: 200px">
+          <style>
+            #arrow {
+              position: absolute;
+              width: 0;
+              height: 0;
+            }
+
+            #arrow[part~='bottom'] {
+              border-left: 5px solid transparent;
+              border-right: 5px solid transparent;
+              border-bottom: 5px solid currentColor;
+            }
+
+            #arrow[part~='right'] {
+              border-top: 5px solid transparent;
+              border-bottom: 5px solid transparent;
+              border-right: 5px solid currentColor;
+            }
+          </style>
+          <button id="btn" type="button">Show message</button>
+          <igc-popover anchor="btn" placement="bottom">
+            <p style="width: 200px; margin: 0">Message</p>
+            <div id="arrow"></div>
+          </igc-popover>
+        </div>
+      `);
+      popover = queryPopover(root);
+      anchor = root.querySelector('#btn') as HTMLElement;
+      arrow = root.querySelector('#arrow') as HTMLElement;
+      popover.arrow = arrow;
+    });
+
+    function expectArrowCentered() {
+      expect(arrow.getBoundingClientRect().width).to.equal(10);
+      expect(getCenterPoint(arrow).x).to.be.closeTo(
+        getCenterPoint(anchor).x,
+        1
+      );
+    }
+
+    it('is centered on the anchor on the first show', async () => {
+      popover.open = true;
+      await waitForPaint(popover);
+
+      expectArrowCentered();
+    });
+
+    it('is centered on the anchor after a change of the axis', async () => {
+      popover.placement = 'right';
+      popover.open = true;
+      await waitForPaint(popover);
+
+      popover.placement = 'bottom';
+      await waitForPaint(popover);
+
+      expectArrowCentered();
+    });
+  });
+
   describe('Arrow element with flipping', () => {
     afterEach(() => {
       window.scrollTo(0, 0);
@@ -779,6 +853,310 @@ function definePositioningSuites(mode: PositionMode) {
 
       // The anchor now sits near the viewport top - back below it.
       expect(popover.arrow.part.contains('bottom')).to.be.true;
+    });
+  });
+
+  describe('Rectangle anchor', () => {
+    function getRectAnchor(popover: IgcPopoverComponent): HTMLElement | null {
+      return popover.renderRoot.querySelector<HTMLElement>(
+        '[data-rect-anchor]'
+      );
+    }
+
+    async function createRectPopover(
+      rect: PopoverRect,
+      placement: PopoverPlacement = 'bottom'
+    ): Promise<IgcPopoverComponent> {
+      const popover = await fixture<IgcPopoverComponent>(html`
+        <igc-popover open flip placement=${placement} .anchorRect=${rect}>
+          <div style="width: 40px; height: 20px">M</div>
+        </igc-popover>
+      `);
+      await waitForPaint(popover);
+      return popover;
+    }
+
+    function floaterRect(popover: IgcPopoverComponent): DOMRect {
+      return getFloater(popover).getBoundingClientRect();
+    }
+
+    it('places the container below a point', async () => {
+      const popover = await createRectPopover({
+        x: 200,
+        y: 150,
+        width: 0,
+        height: 0,
+      });
+      const rect = floaterRect(popover);
+
+      expect(rect.top).to.be.closeTo(150, 1);
+      expect(rect.left + rect.width / 2).to.be.closeTo(200, 1);
+    });
+
+    it('places the container against a rectangle', async () => {
+      const popover = await createRectPopover(
+        { x: 200, y: 150, width: 80, height: 40 },
+        'bottom-start'
+      );
+      const rect = floaterRect(popover);
+
+      expect(rect.top).to.be.closeTo(190, 1);
+      expect(rect.left).to.be.closeTo(200, 1);
+    });
+
+    it('applies the offset', async () => {
+      const popover = await createRectPopover({
+        x: 200,
+        y: 150,
+        width: 0,
+        height: 0,
+      });
+
+      popover.offset = 10;
+      await waitForPaint(popover);
+
+      expect(floaterRect(popover).top).to.be.closeTo(160, 1);
+    });
+
+    it('follows a move of the rectangle without a new show', async () => {
+      const popover = await createRectPopover({
+        x: 200,
+        y: 150,
+        width: 0,
+        height: 0,
+      });
+      const show = spy(getFloater(popover), 'showPopover');
+
+      popover.anchorRect = { x: 300, y: 250, width: 0, height: 0 };
+      await waitForPaint(popover);
+
+      const rect = floaterRect(popover);
+
+      expect(show.called).to.be.false;
+      expect(rect.top).to.be.closeTo(250, 1);
+      expect(rect.left + rect.width / 2).to.be.closeTo(300, 1);
+    });
+
+    it('uses viewport coordinates inside a transformed ancestor', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div
+          style="transform: scale(1.5) translate(40px, 30px); contain: layout"
+        >
+          <igc-popover
+            open
+            placement="bottom-start"
+            .anchorRect=${{ x: 120, y: 80, width: 0, height: 0 }}
+          >
+            <div style="width: 40px; height: 20px">M</div>
+          </igc-popover>
+        </div>
+      `);
+      const popover = queryPopover(root);
+      await waitForPaint(popover);
+
+      const rect = floaterRect(popover);
+
+      expect(rect.top).to.be.closeTo(80, 1);
+      expect(rect.left).to.be.closeTo(120, 1);
+    });
+
+    it('flips at the bottom edge of the viewport', async () => {
+      const y = window.innerHeight - 5;
+      const popover = await createRectPopover({
+        x: 200,
+        y,
+        width: 0,
+        height: 0,
+      });
+
+      expect(floaterRect(popover).bottom).to.be.closeTo(y, 1);
+    });
+
+    it('takes precedence over the anchor', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <button id="btn" type="button" style="position: fixed; top: 0">
+            Anchor
+          </button>
+          <igc-popover
+            open
+            anchor="btn"
+            placement="bottom-start"
+            .anchorRect=${{ x: 200, y: 150, width: 0, height: 0 }}
+          >
+            <div style="width: 40px; height: 20px">M</div>
+          </igc-popover>
+        </div>
+      `);
+      const popover = queryPopover(root);
+      await waitForPaint(popover);
+
+      expect(floaterRect(popover).top).to.be.closeTo(150, 1);
+    });
+
+    it('switches between an element anchor and a rectangle while open', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <button
+            id="btn"
+            type="button"
+            style="position: fixed; top: 40px; left: 40px; height: 20px"
+          >
+            Anchor
+          </button>
+          <igc-popover open anchor="btn" placement="bottom-start">
+            <div style="width: 40px; height: 20px">M</div>
+          </igc-popover>
+        </div>
+      `);
+      const popover = queryPopover(root);
+      await waitForPaint(popover);
+
+      popover.anchorRect = { x: 200, y: 150, width: 0, height: 0 };
+      await waitForPaint(popover);
+
+      expect(isFloaterOpen(popover)).to.be.true;
+      expect(floaterRect(popover).top).to.be.closeTo(150, 1);
+      expect(isPopoverOpen(getRectAnchor(popover)!)).to.be.true;
+
+      popover.anchorRect = null;
+      await waitForPaint(popover);
+
+      expect(isFloaterOpen(popover)).to.be.true;
+      expect(floaterRect(popover).top).to.be.closeTo(60, 1);
+      expect(isPopoverOpen(getRectAnchor(popover)!)).to.be.false;
+    });
+
+    it('hides the proxy anchor on close and shows it again on reconnect', async () => {
+      const popover = await createRectPopover({
+        x: 200,
+        y: 150,
+        width: 0,
+        height: 0,
+      });
+      const proxy = getRectAnchor(popover)!;
+
+      expect(proxy.getAttribute('aria-hidden')).to.equal('true');
+      expect(isPopoverOpen(proxy)).to.be.true;
+
+      popover.open = false;
+      await waitForPaint(popover);
+      expect(isPopoverOpen(proxy)).to.be.false;
+
+      popover.open = true;
+      await waitForPaint(popover);
+      expect(isPopoverOpen(proxy)).to.be.true;
+      expect(floaterRect(popover).top).to.be.closeTo(150, 1);
+
+      const parent = popover.parentElement!;
+      popover.remove();
+      parent.append(popover);
+      await waitForPaint(popover);
+
+      expect(isPopoverOpen(proxy)).to.be.true;
+      expect(isFloaterOpen(popover)).to.be.true;
+      expect(floaterRect(popover).top).to.be.closeTo(150, 1);
+    });
+
+    it('does not open while it is disconnected', async () => {
+      const popover = await createRectPopover({
+        x: 200,
+        y: 150,
+        width: 0,
+        height: 0,
+      });
+      const parent = popover.parentElement!;
+
+      popover.open = false;
+      await waitForPaint(popover);
+
+      popover.open = true;
+      popover.remove();
+      await popover.updateComplete;
+
+      expect(isPopoverOpen(getRectAnchor(popover)!)).to.be.false;
+      expect(isFloaterOpen(popover)).to.be.false;
+
+      parent.append(popover);
+      await waitForPaint(popover);
+
+      expect(isFloaterOpen(popover)).to.be.true;
+    });
+
+    it('does not reuse the proxy anchor for an IDREF that does not resolve', async () => {
+      const popover = await fixture<IgcPopoverComponent>(html`
+        <igc-popover
+          open
+          anchor="not-rendered-yet"
+          .anchorRect=${{ x: 200, y: 150, width: 0, height: 0 }}
+        >
+          <div style="width: 40px; height: 20px">M</div>
+        </igc-popover>
+      `);
+      await waitForPaint(popover);
+      expect(isFloaterOpen(popover)).to.be.true;
+
+      popover.anchorRect = null;
+      await waitForPaint(popover);
+
+      expect(isPopoverOpen(getRectAnchor(popover)!)).to.be.false;
+      expect(isFloaterOpen(popover)).to.be.false;
+    });
+
+    it('uses viewport coordinates inside a zoomed ancestor', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div style="zoom: 1.5">
+          <igc-popover
+            open
+            placement="bottom"
+            offset="4"
+            .anchorRect=${{ x: 200, y: 150, width: 0, height: 0 }}
+          >
+            <div style="width: 40px; height: 20px">M</div>
+          </igc-popover>
+        </div>
+      `);
+      const popover = queryPopover(root);
+      await waitForPaint(popover);
+
+      const rect = floaterRect(popover);
+
+      // The offset is in CSS pixels, so the zoom scales it too.
+      expect(rect.top).to.be.closeTo(156, 1);
+      expect(rect.left + rect.width / 2).to.be.closeTo(200, 1);
+    });
+
+    it('creates no proxy anchor without a rectangle', async () => {
+      const root = await fixture<HTMLElement>(createNonSlottedPopover(true));
+      const popover = queryPopover(root);
+      await waitForPaint(popover);
+
+      expect(getRectAnchor(popover)).to.be.null;
+    });
+
+    // An aligned placement puts the point at the container edge, where the
+    // arrow stays inside the container.
+    it('points the arrow at the point', async () => {
+      const popover = await fixture<IgcPopoverComponent>(html`
+        <igc-popover
+          open
+          placement="bottom"
+          .anchorRect=${{ x: 200, y: 150, width: 0, height: 0 }}
+        >
+          <div style="width: 80px; height: 20px">M</div>
+          <div
+            id="arrow"
+            style="position: absolute; width: 10px; height: 10px"
+          ></div>
+        </igc-popover>
+      `);
+      const arrow = popover.querySelector<HTMLElement>('#arrow')!;
+
+      popover.arrow = arrow;
+      await waitForPaint(popover);
+
+      const rect = arrow.getBoundingClientRect();
+      expect(rect.left + rect.width / 2).to.be.closeTo(200, 1);
     });
   });
 
@@ -1073,6 +1451,19 @@ describe('Popover', () => {
       expect(popover.open).to.be.true;
     });
 
+    it('`close` still emits after the anchor changes while open', async () => {
+      const other = document.createElement('button');
+      other.textContent = 'Other';
+      scroller.firstElementChild!.append(other);
+
+      popover.scrollStrategy = 'close';
+      popover.anchor = other;
+      await waitForPaint(popover);
+
+      await simulateScroll(scroller, { top: 200 });
+      expect(closeRequests).to.be.greaterThan(0);
+    });
+
     it('stops emitting when the strategy is reset while open', async () => {
       popover.scrollStrategy = 'close';
       await elementUpdated(popover);
@@ -1149,6 +1540,78 @@ describe('Popover', () => {
 
     after(() => {
       setPopoverPositionStrategy();
+    });
+
+    it('stays at an anchor inside the top layer while the page scrolls', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div style="height: 3000px">
+          <div
+            id="layer"
+            popover="manual"
+            style="margin: 0; inset: auto; left: 100px; top: 100px"
+          >
+            <button id="inside" type="button">Inside</button>
+          </div>
+          <igc-popover anchor="inside" placement="bottom-start">
+            <p>Message</p>
+          </igc-popover>
+        </div>
+      `);
+      const anchor = root.querySelector<HTMLElement>('#inside')!;
+      const popover = queryPopover(root);
+
+      root.querySelector<HTMLElement>('#layer')!.showPopover();
+      popover.open = true;
+      await waitForPaint(popover);
+
+      try {
+        window.scrollBy(0, 100);
+        // No position update has run yet.
+        expect(getFloater(popover).getBoundingClientRect().top).to.be.closeTo(
+          anchor.getBoundingClientRect().bottom,
+          1
+        );
+      } finally {
+        window.scrollTo(0, 0);
+      }
+    });
+
+    it('follows an anchor in the top layer that moves without a scroll', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <div
+            id="moving"
+            popover="manual"
+            style="margin: 0; inset: auto; left: 100px; top: 100px; width: 40px; height: 20px"
+          ></div>
+          <igc-popover open anchor="moving" placement="bottom-start">
+            <p>Message</p>
+          </igc-popover>
+        </div>
+      `);
+      const anchor = root.querySelector<HTMLElement>('#moving')!;
+      const popover = queryPopover(root);
+
+      anchor.showPopover();
+      popover.open = false;
+      await waitForPaint(popover);
+      popover.open = true;
+      await waitForPaint(popover);
+
+      expect(getFloater(popover).getBoundingClientRect().left).to.be.closeTo(
+        100,
+        1
+      );
+
+      // Only the layout shift observer of floating-ui sees this move.
+      anchor.style.left = '250px';
+      await nextFrame();
+      await waitForPaint(popover);
+
+      expect(getFloater(popover).getBoundingClientRect().left).to.be.closeTo(
+        250,
+        1
+      );
     });
 
     function createStickyPopover(level: 'parent' | 'grandparent') {

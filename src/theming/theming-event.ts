@@ -1,7 +1,6 @@
 import type { Theme, ThemeVariant } from './types.js';
 
 export const CHANGE_THEME_EVENT = 'igc-change-theme';
-export const CHANGED_THEME_EVENT = 'igc-changed-theme';
 
 declare global {
   interface WindowEventMap {

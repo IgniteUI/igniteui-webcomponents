@@ -9,13 +9,13 @@ import {
   type DayParameter,
   toCalendarDay,
 } from '#internals/date/model.js';
+import { getOrCreateForLocale } from '#internals/i18n/locale.js';
 import { firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
 import {
   addSafeEventListener,
   getElementFromPath,
 } from '#internals/utils/events.js';
 import { asNumber, modulo } from '#internals/utils/math.js';
-import { getOrInsertComputed } from '#internals/utils/objects.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import type { ComponentThemes } from '#theming/types.js';
 import {
@@ -99,20 +99,14 @@ export function getWeekDayNumber(value: WeekDays): number {
   return WEEK_DAYS_MAP[value];
 }
 
-/**
- * The first day of the week of `locale`. Without `Intl.Locale.prototype.getWeekInfo()`,
- * igniteui-i18n-core returns Monday, so return `sunday`, the documented default.
- */
+/** The first day of the week of `locale`. */
 export function getLocaleWeekStart(locale: string): WeekDays {
-  if (!('getWeekInfo' in Intl.Locale.prototype)) {
-    return 'sunday';
-  }
-
   // igniteui-i18n-core numbers the days 1 (Monday) - 7 (Sunday)
-  return getOrInsertComputed(
+  return getOrCreateForLocale(
     localeWeekStarts,
     locale,
-    () => WEEK_DAY_NAMES[getDateFormatter().getFirstDayOfWeek(locale) % 7]
+    (resolved) =>
+      WEEK_DAY_NAMES[getDateFormatter().getFirstDayOfWeek(resolved) % 7]
   );
 }
 

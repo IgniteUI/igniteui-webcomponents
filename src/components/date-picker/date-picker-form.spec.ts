@@ -17,6 +17,7 @@ import {
 } from '#internals/testing/validity-helpers.spec.js';
 import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
+import IgcInputComponent from '../input/input.js';
 import IgcDatePickerComponent from './date-picker.js';
 
 describe('igc-datepicker form integration', () => {
@@ -40,6 +41,32 @@ describe('igc-datepicker form integration', () => {
 
       expect(picker.invalid).to.be.false;
       expect(dateTimeInput.invalid).to.be.false;
+    });
+  });
+
+  describe('Enter in slotted content', () => {
+    const spec = createFormAssociatedTestBed<IgcDatePickerComponent>(html`
+      <igc-date-picker name="datePicker">
+        <igc-input slot="suffix" name="note" label="Note"></igc-input>
+        <button slot="suffix" type="button">Info</button>
+      </igc-date-picker>
+      <button type="submit">Save</button>
+    `);
+
+    before(() => defineComponents(IgcInputComponent));
+
+    beforeEach(async () => {
+      await spec.setup(IgcDatePickerComponent.tagName);
+    });
+
+    it('submits once from a slotted field', async () => {
+      const field = spec.element.querySelector(IgcInputComponent.tagName)!;
+      expect(await spec.pressEnter(field)).to.equal(1);
+    });
+
+    it('does not submit from a slotted button', async () => {
+      const button = spec.element.querySelector('button')!;
+      expect(await spec.pressEnter(button)).to.equal(0);
     });
   });
 
@@ -127,6 +154,10 @@ describe('igc-datepicker form integration', () => {
           )
         )
       ).to.be.false;
+    });
+
+    it('submits once on a real Enter', async () => {
+      expect(await spec.pressEnter()).to.equal(1);
     });
 
     it('should reflect disabled ancestor state (fieldset/form)', () => {

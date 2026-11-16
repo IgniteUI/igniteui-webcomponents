@@ -37,6 +37,7 @@
     - [Arrow navigation](#arrow-navigation)
     - [Toggle button tests](#toggle-button-tests)
     - [Host ARIA](#host-aria)
+    - [Hidden ancestor](#hidden-ancestor)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -51,6 +52,10 @@
 |       1 | 2026-09-21 | Initial specification                                                        |
 |       2 | 2026-10-02 | The toggle button follows a change of `aria-label`                           |
 |       3 | 2026-10-02 | The toggle button forwards the host `aria-labelledby` and `aria-describedby` |
+|       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                     |
+|       5 | 2026-10-23 | The group makes a stacking context, so the z-index of its buttons does not compete with the layers of the page |
+|       6 | 2026-10-29 | Transition only the properties that change, so the toggle buttons hide at the same time as a hidden ancestor |
+|       7 | 2026-11-02 | A `focus()` call before the first render applies after the render                                            |
 
 ## Overview
 
@@ -159,8 +164,9 @@ disabled state of each button when it is lifted.
 
 #### The toggle button
 
-`igc-toggle-button` exposes `value`, `selected` and `disabled`, plus `focus()`, `blur()` and `click()`. It renders
-projected content, and takes its vertical sizing from the group or from a CSS variable set on it.
+`igc-toggle-button` exposes `value`, `selected` and `disabled`, plus `focus()`, `blur()` and `click()`. A `focus()`
+call before the first render applies after the render. It renders projected content, and takes its vertical sizing
+from the group or from a CSS variable set on it.
 
 ### Localization
 
@@ -189,10 +195,10 @@ Disabled buttons are skipped, and the direction of the arrow keys follows the wr
 
 | Property        | Attribute       | Reflected | Type                                                | Default      | Description                                      |
 | --------------- | --------------- | --------- | ---------------------------------------------------- | ------------ | ------------------------------------------------ |
-| `selection`     | `selection`     | no        | `"single" \| "single-required" \| "multiple"`        | `single`     | The selection mode of the group.                  |
+| `selection`     | `selection`     | no        | `"single" \| "single-required" \| "multiple"`        | `single`     | The selection mode of the group. A change of the mode clears the selection. |
 | `alignment`     | `alignment`     | yes       | `"horizontal" \| "vertical"`                         | `horizontal` | The orientation of the buttons.                   |
-| `disabled`      | `disabled`      | yes       | `boolean`                                            | `false`      | Disables every button of the group.               |
-| `selectedItems` | `selectedItems` | no        | `string[]`                                           | `[]`         | The values of the selected buttons.               |
+| `disabled`      | `disabled`      | yes       | `boolean`                                            | `false`      | Whether all buttons in the group are disabled.    |
+| `selectedItems` | `selected-items` | no       | `string[]`                                           | `[]`         | The values of the selected buttons. A button without a value is not in the list. When set, selects the buttons with these values. A single selection mode selects only the first matching button. |
 
 `igc-toggle-button`
 
@@ -218,8 +224,8 @@ Emitted by `igc-button-group`, for user interaction only.
 
 | Event        | Detail   | Cancelable | Description                                       |
 | ------------ | -------- | ---------- | ------------------------------------------------- |
-| `igcSelect`  | `string` | no         | A button was selected by the user.                 |
-| `igcDeselect`| `string` | no         | A button was deselected by the user.               |
+| `igcSelect`  | `string \| undefined` | no         | A button was selected by the user.                 |
+| `igcDeselect`| `string \| undefined` | no         | A button was deselected by the user.               |
 
 ### Slots
 
@@ -234,7 +240,7 @@ Emitted by `igc-button-group`, for user interaction only.
 | ------------------- | --------- | -------------------------------------------------------------- |
 | `igc-button-group`  | `group`   | The container of the group.                                     |
 | `igc-toggle-button` | `toggle`  | The native button element.                                      |
-| `igc-toggle-button` | `focused` | The native button while it is focused through the keyboard.      |
+| `igc-toggle-button` | `focused` | Added to the toggle part when the button has keyboard focus.     |
 
 ## Test scenarios
 
@@ -246,7 +252,8 @@ Emitted by `igc-button-group`, for user interaction only.
 ### Initialization
 
 1. The group passes the accessibility audit and is initialized with its toggle buttons and its default state.
-2. The group renders the correct role and attributes.
+2. The group renders the correct role and attributes. A selected button is painted under an earlier page layer with
+   `z-index: 1`.
 
 ### Properties tests
 
@@ -320,6 +327,16 @@ Emitted by `igc-button-group`, for user interaction only.
 ### Host ARIA
 
 35. The toggle button forwards the host `aria-labelledby` and `aria-describedby`.
+
+### Hidden ancestor
+
+36. The toggle buttons hide at the same time as a hidden ancestor in each theme, at rest and after a focus or a hover:
+    no element transitions `visibility` or sets it to `visible`.
+37. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after a toggle button connects
+    focuses the same element as a call after the first render. `blur()`, a later `focus()` on another element and a
+    removal that lasts until the render cancel the call, but a move in the same task keeps it. After the render,
+    `focus()` takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component
+    with `disabled` set does not cancel an earlier call on another element.
 
 ### Not covered by the suite
 

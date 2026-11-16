@@ -5,20 +5,24 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { emulateMedia, sendKeys } from '@web/test-runner-commands';
 import { spy, useFakeTimers } from 'sinon';
 import { internalsOf } from '#internals/controllers/internals.js';
 import {
   altKey,
   arrowDown,
+  arrowLeft,
   arrowUp,
   endKey,
   enterKey,
   escapeKey,
   homeKey,
+  shiftKey,
   spaceBar,
   tabKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runAriaProjectionTests,
@@ -27,6 +31,7 @@ import {
 import {
   axeReflectedRelationsOptions,
   isFocused,
+  withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
@@ -38,6 +43,8 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import { configureTheme } from '#theming/config.js';
+import { styles as indigo } from '../../styles/themes/light/indigo.css.js';
 import IgcInputComponent from '../input/input.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import type IgcSelectItemComponent from './select-item.js';
@@ -308,6 +315,27 @@ describe('Select', () => {
         expect(getSlot('toggle-icon')).to.have.attribute('hidden');
         expect(getSlot('toggle-icon-expanded')).to.not.have.attribute('hidden');
       });
+
+      it('draws one frame around the list in forced colors', async () => {
+        // The theme sheet resolves the outline of the indigo list.
+        await withDocumentSheets([indigo.styleSheet!], async () => {
+          try {
+            configureTheme('indigo');
+            await emulateMedia({ forcedColors: 'active' });
+
+            select = await fixture<IgcSelectComponent>(createBasicSelect());
+            const base = getComputedStyle(
+              select.renderRoot.querySelector('[part~="base"]')!
+            );
+
+            expect(base.borderTopStyle).to.equal('solid');
+            expect(base.outlineStyle).to.equal('none');
+          } finally {
+            await emulateMedia({ forcedColors: 'none' });
+            configureTheme('bootstrap');
+          }
+        });
+      });
     });
   });
 
@@ -320,6 +348,20 @@ describe('Select', () => {
 
     it('correctly applies autofocus on init', async () => {
       expect(document.activeElement).to.equal(select);
+    });
+
+    // Native `autofocus` reads only an attribute that is present at insertion.
+    it('applies `autofocus` set as a property before the connection', async () => {
+      const container = await fixture<HTMLElement>(html`<div></div>`);
+      const element = document.createElement(IgcSelectComponent.tagName);
+      element.autofocus = true;
+      container.append(element);
+
+      await elementUpdated(element);
+      await nextFrame();
+
+      expect(element.hasAttribute('autofocus')).to.be.false;
+      expect(document.activeElement).to.equal(element);
     });
   });
 
@@ -370,6 +412,18 @@ describe('Select', () => {
 
       expect(select.selectedItem?.value).to.equal('3');
       expect(select.value).to.equal('3');
+    });
+
+    it('makes only the selected item active', async () => {
+      select = await fixture<IgcSelectComponent>(html`
+        <igc-select>
+          <igc-select-item value="1" active>1</igc-select-item>
+          <igc-select-item value="2" selected>2</igc-select-item>
+        </igc-select>
+      `);
+
+      expect(select.items.map((item) => item.active)).to.eql([false, true]);
+      expect(select.items.map((item) => item.tabIndex)).to.eql([-1, 0]);
     });
   });
 
@@ -626,6 +680,84 @@ describe('Select', () => {
       await nextFrame();
 
       expect(getActiveItem()?.value).to.equal('implementation');
+    });
+
+    it('keeps the active item when the selected value is set again', async () => {
+      await openSelect();
+      simulateKeyboard(select, arrowDown, 2);
+      await elementUpdated(select);
+
+      // A framework that sets each property on each render does this.
+      select.value = 'implementation';
+      await elementUpdated(select);
+
+      expect(getActiveItem()?.value).to.equal('documentation');
+      expect(select.selectedItem?.value).to.equal('implementation');
+
+      // A method call is a commit.
+      select.select('implementation');
+      await elementUpdated(select);
+
+      expect(getActiveItem()?.value).to.equal('implementation');
+    });
+
+    it('keeps the active item when the items get their selected state again', async () => {
+      await openSelect();
+      simulateKeyboard(select, arrowDown, 2);
+      await elementUpdated(select);
+
+      // A framework that sets each property on each render does this.
+      for (const item of select.items) {
+        item.selected = item.value === select.value;
+      }
+      await elementUpdated(select);
+
+      const active = select.items.filter((item) => item.active);
+
+      expect(active.map((item) => item.value)).to.eql(['documentation']);
+      expect(active[0].tabIndex).to.equal(0);
+      expect(select.selectedItem?.tabIndex).to.equal(-1);
+    });
+
+    it('keeps the active item when no value is set again', async () => {
+      select.clearSelection();
+      await openSelect();
+      simulateKeyboard(select, arrowDown, 2);
+      await elementUpdated(select);
+
+      select.value = undefined;
+      await elementUpdated(select);
+
+      expect(getActiveItem()?.value).to.equal('implementation');
+    });
+
+    it('drops a removed active item while the value still matches', async () => {
+      await openSelect();
+      simulateKeyboard(select, arrowDown);
+      await elementUpdated(select);
+
+      getActiveItem()!.remove();
+      await elementUpdated(select);
+
+      expect(getActiveItem()?.value).to.equal('implementation');
+
+      simulateKeyboard(select, enterKey);
+      await elementUpdated(select);
+
+      expect(select.value).to.equal('implementation');
+    });
+
+    it('moves the active item to a selected item that the user commits', async () => {
+      await openSelect();
+      simulateKeyboard(select, arrowUp);
+      simulateKeyboard(select, escapeKey);
+      await elementUpdated(select);
+
+      // Closed, ArrowDown commits the selected item again, then moves on.
+      simulateKeyboard(select, arrowDown, 2);
+      await elementUpdated(select);
+
+      expect(select.value).to.equal('samples');
     });
   });
 
@@ -1601,6 +1733,273 @@ describe('Select', () => {
     });
   });
 
+  describe('Header and footer content', () => {
+    let search: HTMLInputElement;
+    let radios: HTMLInputElement[];
+    let fill: HTMLButtonElement;
+    let after: HTMLButtonElement;
+
+    const tab = () => sendKeys({ press: tabKey });
+    const shiftTab = () => sendKeys({ press: `${shiftKey}+${tabKey}` });
+
+    function expectFocus(element: Element, open = true): void {
+      expect(isFocused(element)).to.be.true;
+      expect(select.open).to.equal(open);
+    }
+
+    beforeEach(async () => {
+      const container = await fixture<HTMLDivElement>(html`
+        <div>
+          <igc-select label="Country">
+            <div slot="header">
+              <input id="search" aria-label="Search" />
+            </div>
+            <igc-select-item value="at">Austria</igc-select-item>
+            <igc-select-item value="be">Belgium</igc-select-item>
+            <div slot="footer">
+              <input
+                type="radio"
+                name="scope"
+                value="all"
+                aria-label="All"
+                checked
+              />
+              <input type="radio" name="scope" value="eu" aria-label="EU" />
+              <button id="fill" type="button">Fill</button>
+            </div>
+          </igc-select>
+          <button id="after">After</button>
+        </div>
+      `);
+
+      select = container.querySelector(IgcSelectComponent.tagName)!;
+      search = container.querySelector('#search')!;
+      radios = Array.from(container.querySelectorAll('[type="radio"]'));
+      fill = container.querySelector('#fill')!;
+      after = container.querySelector('#after')!;
+
+      await openSelect();
+    });
+
+    it('renders the header and footer outside the listbox', () => {
+      for (const name of ['header', 'footer'] as const) {
+        const slot = getSlot(name);
+        expect(slot.closest('[role="listbox"]')).to.be.null;
+        expect(slot.closest('[part="base"]')).to.exist;
+      }
+    });
+
+    it('is accessible with focusable header and footer content', async () => {
+      await expect(select).dom.to.be.accessible(axeReflectedRelationsOptions);
+      await expect(select).shadowDom.to.be.accessible(
+        axeReflectedRelationsOptions
+      );
+    });
+
+    it('keeps the typed text of a text field in the header', async () => {
+      search.focus();
+      await sendKeys({ type: 'ab c' });
+      await elementUpdated(select);
+
+      expect(search.value).to.equal('ab c');
+      expect(getActiveItem()).to.be.undefined;
+      expectFocus(search);
+    });
+
+    it('keeps the arrow keys, Home and End of the header and footer content', async () => {
+      search.focus();
+      await sendKeys({ type: 'abc' });
+      await sendKeys({ press: arrowLeft });
+      expect(search.selectionStart).to.equal(2);
+
+      await sendKeys({ press: homeKey });
+      expect(search.selectionStart).to.equal(0);
+
+      radios[0].focus();
+      await sendKeys({ press: arrowDown });
+      await elementUpdated(select);
+
+      expect(radios[1].checked).to.be.true;
+      expect(getActiveItem()).to.be.undefined;
+      expectFocus(radios[1]);
+    });
+
+    it('keeps Space and Enter of a footer button', async () => {
+      const onClick = spy();
+      fill.addEventListener('click', onClick);
+      fill.focus();
+
+      await sendKeys({ press: 'Space' });
+      await sendKeys({ press: enterKey });
+      await elementUpdated(select);
+
+      expect(onClick).calledTwice;
+      expect(select.value).to.be.undefined;
+      expectFocus(fill);
+    });
+
+    it('moves with Tab from the input through the header, the active item and the footer', async () => {
+      select.navigateTo('be');
+      getInput().focus();
+
+      await tab();
+      expectFocus(search);
+
+      await tab();
+      expectFocus(select.items[1]);
+
+      await tab();
+      expectFocus(radios[0]);
+
+      await tab();
+      expectFocus(fill);
+    });
+
+    it('moves back with Shift+Tab from the footer to the input', async () => {
+      select.navigateTo('be');
+      fill.focus();
+
+      await shiftTab();
+      expectFocus(radios[0]);
+
+      await shiftTab();
+      expectFocus(select.items[1]);
+
+      await shiftTab();
+      expectFocus(search);
+
+      await shiftTab();
+      expectFocus(getInput());
+    });
+
+    it('selects the active item, closes the list and focuses the input with Tab from the last footer control', async () => {
+      select.navigateTo('be');
+      fill.focus();
+
+      await tab();
+      await elementUpdated(select);
+
+      expect(select.value).to.equal('be');
+      expectFocus(getInput(), false);
+    });
+
+    it('closes the list and keeps the focus on the input with Shift+Tab from the input', async () => {
+      getInput().focus();
+
+      await shiftTab();
+      await elementUpdated(select);
+
+      expectFocus(getInput(), false);
+    });
+
+    it('closes the list and focuses the input with Escape from the header content', async () => {
+      search.focus();
+
+      await sendKeys({ press: escapeKey });
+      await elementUpdated(select);
+
+      expectFocus(getInput(), false);
+    });
+
+    it('stays closed when the content closes the list on Enter', async () => {
+      search.addEventListener('keydown', (event) => {
+        if (event.key === enterKey) select.hide();
+      });
+      search.focus();
+
+      await sendKeys({ press: enterKey });
+      await elementUpdated(select);
+
+      expectFocus(getInput(), false);
+    });
+
+    it('ignores an Escape that the content handled', async () => {
+      search.addEventListener('keydown', (event) => {
+        if (event.key === escapeKey) event.preventDefault();
+      });
+      search.focus();
+
+      await sendKeys({ press: escapeKey });
+      await elementUpdated(select);
+
+      expectFocus(search);
+    });
+
+    it('moves the focus to the input when the app closes the list from a footer control', async () => {
+      fill.focus();
+      await select.hide();
+
+      expectFocus(getInput(), false);
+    });
+
+    it('keeps the focus outside the list when the list closes', async () => {
+      after.focus();
+      await select.hide();
+
+      expectFocus(after, false);
+    });
+  });
+
+  describe('Header and footer content edge cases', () => {
+    it('does not stop on a control inside an item', async () => {
+      select = await fixture<IgcSelectComponent>(html`
+        <igc-select label="Select">
+          <igc-select-item value="a"
+            >A<button slot="suffix" type="button">i</button></igc-select-item
+          >
+          <igc-select-item value="b"
+            >B<button slot="suffix" type="button">i</button></igc-select-item
+          >
+        </igc-select>
+      `);
+
+      await openSelect();
+      select.navigateTo('b');
+
+      await sendKeys({ press: tabKey });
+      await elementUpdated(select);
+
+      expect(select.value).to.equal('b');
+      expect(isFocused(getInput())).to.be.true;
+      expect(select.open).to.be.false;
+    });
+
+    it('does not cancel Escape while the list is closed', async () => {
+      select = await fixture<IgcSelectComponent>(createBasicSelect());
+      const event = new KeyboardEvent('keydown', {
+        key: escapeKey,
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      });
+
+      select.dispatchEvent(event);
+
+      expect(event.defaultPrevented).to.be.false;
+    });
+  });
+
+  describe('Shift+Tab without header or footer content', () => {
+    it('is not bound', async () => {
+      select = await fixture<IgcSelectComponent>(createBasicSelect());
+      await openSelect();
+      select.navigateTo('implementation');
+      const event = new KeyboardEvent('keydown', {
+        key: tabKey,
+        shiftKey: true,
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      });
+
+      select.items[1].dispatchEvent(event);
+      await elementUpdated(select);
+
+      expect(event.defaultPrevented).to.be.false;
+      expect(select.open).to.be.true;
+    });
+  });
+
   describe('Events', () => {
     beforeEach(async () => {
       select = await fixture<IgcSelectComponent>(createBasicSelect());
@@ -1906,4 +2305,6 @@ describe('Select', () => {
     ],
     openProperty: 'open',
   });
+
+  runFocusBeforeRenderTests(createBasicSelect());
 });

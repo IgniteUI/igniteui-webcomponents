@@ -4,24 +4,32 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   type ARIABindings,
   ariaBindings,
+  HOST_DISCLOSURE_ATTRIBUTES,
   hostAria,
+  hostDisclosure,
   trackLabels,
 } from '#internals/controllers/aria-projection.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
-import { addIdRefResolver } from '#internals/controllers/id-resolver.js';
+import {
+  addIdRefResolver,
+  type IdRefResolverController,
+} from '#internals/controllers/id-resolver.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
-import { getElementByIdFromRoot } from '#internals/utils/dom.js';
+import { runDefaultAction } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
 
-/** As for a native button, the host `aria-label` wins over a `<label>`. */
+/**
+ * As for a native button, the host `aria-label` wins over a `<label>`. The
+ * disclosure state of the host goes to the button and to the link alike.
+ */
 function nativeAria(host: Element): ARIABindings {
-  const aria = hostAria(host);
+  const aria: ARIABindings = { ...hostAria(host), ...hostDisclosure(host) };
   const label = host.getAttribute('aria-label');
 
   return label && !host.ariaLabelledByElements?.length
@@ -50,20 +58,17 @@ export interface IgcButtonEventMap {
  */
 @blazorDeepImport
 @shadowOptions({ delegatesFocus: true })
-export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
-  IgcButtonEventMap,
-  Constructor<LitElement>
->(HostAriaMixin(LitElement)) {
+export abstract class IgcButtonBaseComponent extends EventEmitterMixin<IgcButtonEventMap>(
+  HostAriaMixin(LitElement, ['aria-pressed', ...HOST_DISCLOSURE_ATTRIBUTES])
+) {
   public static readonly formAssociated = true;
 
   //#region Internal state
 
   private readonly _focusRingManager = addKeyboardFocusRing(this);
   private readonly _internals = addInternalsController(this);
-  private readonly _resolver = addIdRefResolver(
-    this,
-    this._resolveCommandForElement
-  );
+  /** Lazy: most buttons have no `commandfor`. */
+  private _resolver?: IdRefResolverController;
 
   private _disabled = false;
   private _commandfor: string | null = null;
@@ -132,7 +137,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   public rel?: string;
 
   /**
-   * When set, the button will be disabled and non-interactive.
+   * Whether the button is disabled. A disabled button ignores user interaction.
    *
    * @attr disabled
    * @default false
@@ -165,11 +170,17 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   public set commandfor(value: string | null) {
     this._commandfor = value;
     if (value) {
+      this._resolver ??= addIdRefResolver(
+        this,
+        () => this._commandfor,
+        (element) => {
+          this.commandForElement = element;
+        }
+      );
       this._resolver.observe();
-      this._commandForElement = getElementByIdFromRoot(this, value);
     } else {
       this._commandForElement = null;
-      this._resolver.unobserve();
+      this._resolver?.unobserve();
     }
   }
 
@@ -215,27 +226,30 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     trackLabels(this);
   }
 
-  protected override firstUpdated(): void {
-    this.updateComplete.then(() => {
-      if (this._commandfor) {
-        this._resolveCommandFor();
-      }
-    });
-  }
-
   //#endregion
 
   //#region Event handlers
 
-  protected _handleClick(): void {
-    switch (this.type) {
-      case 'submit':
-        this.form?.requestSubmit();
-        break;
-      case 'reset':
-        this.form?.reset();
-        break;
+  /** A click listener that disables the button stops the form action. */
+  protected _handleClick(event: MouseEvent): void {
+    if (!this.form || this.type === 'button') {
+      return;
     }
+
+    runDefaultAction(event, () => {
+      if (this.disabled) {
+        return;
+      }
+
+      switch (this.type) {
+        case 'submit':
+          this.form?.requestSubmit();
+          break;
+        case 'reset':
+          this.form?.reset();
+          break;
+      }
+    });
   }
 
   protected formDisabledCallback(state: boolean): void {
@@ -245,19 +259,21 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
 
   //#endregion
 
-  private _resolveCommandForElement(ids: Set<string>): void {
-    if (this._commandfor && ids.has(this._commandfor)) {
-      this._resolveCommandFor();
-    }
-  }
-
-  /** Looks up the `commandfor` target again and renders with it. */
-  private _resolveCommandFor(): void {
-    this._commandForElement = getElementByIdFromRoot(this, this._commandfor!);
-    this.requestUpdate();
-  }
-
   //#region Public API
+
+  /* alternateName: focusComponent */
+  /** Sets focus on the button. */
+  public override focus(options?: FocusOptions): void {
+    super.focus(options);
+    deferFocus(this, options);
+  }
+
+  /* alternateName: blurComponent */
+  /** Removes focus from the button. */
+  public override blur(): void {
+    cancelDeferredFocus(this);
+    super.blur();
+  }
 
   /** Simulates a mouse click on the button, triggering its click handler and any associated form action. */
   public override click(): void {
@@ -278,6 +294,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
         part=${partMap({ base: true, focused: this._focusRingManager.focused })}
         role=${bindIf(link, 'link')}
         ${ariaBindings(nativeAria(this))}
+        .ariaPressed=${link ? null : this.getAttribute('aria-pressed')}
         ?disabled=${this.disabled}
         type=${ifDefined(link ? 'button' : this.type)}
         @click=${this._handleClick}

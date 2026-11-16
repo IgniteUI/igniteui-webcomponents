@@ -51,7 +51,8 @@ const metadata: Meta<IgcAccordionComponent> = {
   argTypes: {
     singleExpand: {
       type: 'boolean',
-      description: 'Allows only one panel to be expanded at a time.',
+      description:
+        'Whether only one panel can be expanded at a time. When the user expands a\npanel, the other panels collapse.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -62,7 +63,10 @@ const metadata: Meta<IgcAccordionComponent> = {
 export default metadata;
 
 interface IgcAccordionArgs {
-  /** Allows only one panel to be expanded at a time. */
+  /**
+   * Whether only one panel can be expanded at a time. When the user expands a
+   * panel, the other panels collapse.
+   */
   singleExpand: boolean;
 }
 type Story = StoryObj<IgcAccordionArgs>;

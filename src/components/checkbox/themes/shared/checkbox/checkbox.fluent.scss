@@ -68,7 +68,7 @@ $disabled-fill-color: var-get($theme, 'disabled-fill-color');
         height: inherit;
         content: '';
         transform: scale(.5);
-        transition-duration: .1s;
+        transition: background .1s;
         background: var-get($theme, 'fill-color');
         z-index: 1;
     }

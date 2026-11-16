@@ -45,7 +45,7 @@ const metadata: Meta<IgcAvatarComponent> = {
     docs: {
       description: {
         component:
-          'An avatar component is used as a representation of a user identity\ntypically in a user profile.',
+          'Shows the identity of a user, for example in a user profile.',
       },
     },
   },
@@ -703,7 +703,7 @@ export const Group: Story = {
           padding: 1rem;
           border: 1px solid var(--ig-gray-300);
           border-radius: 8px;
-          background: var(--ig-surface-500);
+          background: var(--ig-surface-base);
         }
 
         .av-project h4 {
@@ -723,7 +723,7 @@ export const Group: Story = {
         }
 
         .av-stack igc-avatar::part(base) {
-          box-shadow: 0 0 0 2px var(--ig-surface-500);
+          box-shadow: 0 0 0 2px var(--ig-surface-base);
         }
 
         .av-more {
@@ -872,7 +872,7 @@ export const Styling: Story = {
 
         .av-workspaces [aria-current] igc-avatar::part(base) {
           box-shadow:
-            0 0 0 2px var(--ig-surface-500),
+            0 0 0 2px var(--ig-surface-base),
             0 0 0 4px var(--ig-primary-500);
         }
 

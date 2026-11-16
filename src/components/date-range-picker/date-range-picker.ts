@@ -11,13 +11,13 @@ import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditi
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import {
-  addI18nController,
   getDateTimeFormat,
-} from '#internals/i18n/i18n-controller.js';
-import type { AbstractConstructor } from '#internals/mixins/constructor.js';
+  getLocaleDateTimeFormats,
+} from '#internals/i18n/date-formats.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateRangeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
 import { firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { asNumber, clamp } from '#internals/utils/math.js';
@@ -26,10 +26,12 @@ import { all } from '#themes/date-range-picker/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
+import { datesChanged } from '../calendar/helpers.js';
 import type { CalendarSelection } from '../calendar/types.js';
 import {
   IgcDatePickerBaseComponent,
   type IgcPickerBaseEventMap,
+  type PickerEditor,
   pickerDependencies,
 } from '../date-picker/date-picker.base.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
@@ -42,12 +44,7 @@ import IgcValidationContainerComponent from '../validation-container/validation-
 import IgcDateRangeInputComponent from './date-range-input.js';
 import { DateRangePosition } from './date-range-mask-parser.js';
 import { styles } from './date-range-picker.base.css.js';
-import {
-  dateRangeI18nConfig,
-  type DateRangePickerResourceStringsType,
-  type DateRangeResourceStrings,
-  type IgcDateRangePickerResourceStrings,
-} from './i18n.js';
+import { dateRangeI18nConfig } from './i18n.js';
 import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
 import { styles as shared } from './themes/shared/date-range-picker.common.css.js';
 import { dateRangeValidators, isCompleteDateRange } from './validators.js';
@@ -60,9 +57,6 @@ export interface CustomDateRange {
   label: string;
   dateRange: DateRangeValue;
 }
-
-/** Either editor the picker renders the range in - the masked single one or a start/end pair. */
-type PickerEditor = IgcDateRangeInputComponent | IgcDateTimeInputComponent;
 
 export type IgcDateRangePickerComponentEventMap =
   IgcPickerBaseEventMap<DateRangeValue>;
@@ -102,7 +96,8 @@ const Slots = setSlots(
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
 /**
- * The Date Range Picker includes a text input and a calendar pop-up, allowing users to easily select start and end dates.
+ * A date range field where the user types a start and an end date or selects a range in a calendar.
+ * The calendar opens in a dropdown or in a dialog.
  *
  * @element igc-date-range-picker
  *
@@ -113,17 +108,17 @@ const Slots = setSlots(
  * @slot suffix-start - Renders content after the start input (two inputs).
  * @slot suffix-end - Renders content after the end input (two inputs).
  * @slot helper-text - Renders content below the input.
- * @slot bad-input - Renders content when the value is in the disabledDates ranges.
+ * @slot bad-input - Renders content when the range includes a date in the `disabledDates` ranges.
  * @slot value-missing - Renders content when the required validation fails.
  * @slot range-overflow - Renders content when the max validation fails.
  * @slot range-underflow - Renders content when the min validation fails.
- * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot custom-error - Renders content when a custom message is set with `setCustomValidity()`.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
- * @slot title - Renders content in the calendar title.
- * @slot header-date - Renders content instead of the current date/range in the calendar header.
- * @slot clear-icon - Renders a clear icon template.
- * @slot clear-icon-start - Renders a clear icon template for the start input (two inputs).
- * @slot clear-icon-end - Renders a clear icon template for the end input (two inputs).
+ * @slot title - Renders content in the calendar title. It applies only in `dialog` mode.
+ * @slot header-date - Renders content instead of the current range in the calendar header. It applies only in `dialog` mode.
+ * @slot clear-icon - Renders the icon of the clear button.
+ * @slot clear-icon-start - Renders the icon of the clear button for the start input (two inputs).
+ * @slot clear-icon-end - Renders the icon of the clear button for the end input (two inputs).
  * @slot calendar-icon - Renders the icon/content for the calendar picker.
  * @slot calendar-icon-start - Renders the icon/content for the calendar picker for the start input (two inputs).
  * @slot calendar-icon-end - Renders the icon/content for the calendar picker for the end input (two inputs).
@@ -133,13 +128,14 @@ const Slots = setSlots(
  * @slot actions - Renders content in the action part of the picker in open state.
  * @slot separator - Renders the separator element between the two inputs.
  *
- * @fires igcOpening - Emitted just before the calendar popover is shown.
- * @fires igcOpened - Emitted after the calendar popover is shown.
- * @fires igcClosing - Emitted just before the calendar popover is hidden.
- * @fires igcClosed - Emitted after the calendar popover is hidden.
- * @fires igcChange - Emitted when the user modifies and commits the element's value.
- * @fires igcInput - Emitted when the user types in the element.
+ * @fires igcOpening - Emitted before a user interaction opens the calendar. Cancelable.
+ * @fires igcOpened - Emitted after a user interaction opens the calendar.
+ * @fires igcClosing - Emitted before a user interaction closes the calendar. Cancelable.
+ * @fires igcClosed - Emitted after a user interaction closes the calendar.
+ * @fires igcChange - Emitted when the user commits a change to the value.
+ * @fires igcInput - Emitted when the user types in an input.
  *
+ * @csspart inputs - The wrapper of the start input, the separator and the end input (two inputs).
  * @csspart separator - The separator element between the two inputs.
  * @csspart ranges - The wrapper that renders the custom and predefined ranges.
  * @csspart label - The label wrapper that renders content above the target input.
@@ -172,7 +168,10 @@ const Slots = setSlots(
  * @csspart months-view - The calendar months view element.
  * @csspart years-view - The calendar years view element.
  * @csspart days-row - The calendar days row element.
+ * @csspart months-row - The calendar months row element.
+ * @csspart years-row - The calendar years row element.
  * @csspart calendar-label - The calendar week header label element.
+ * @csspart calendar-label-inner - The calendar week header label inner element.
  * @csspart week-number - The calendar week number element.
  * @csspart week-number-inner - The calendar week number inner element.
  * @csspart date - The calendar date element.
@@ -193,17 +192,27 @@ const Slots = setSlots(
  * @csspart year-inner - The calendar year inner element.
  * @csspart selected - The calendar selected state for element(s). Applies to date, month and year elements.
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
+ * @csspart dialog-base - The base of the dialog in dialog mode. Style the backdrop with `::part(dialog-base)::backdrop`.
+ * @csspart title - The title of the dialog in dialog mode.
+ * @csspart footer - The footer of the dialog in dialog mode, which holds the Cancel and Done buttons.
+ *
+ * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent, IgcChipComponent, IgcInputComponent'
 )
 @shadowOptions({ delegatesFocus: true })
-export default class IgcDateRangePickerComponent extends EventEmitterMixin<
-  IgcDateRangePickerComponentEventMap,
-  AbstractConstructor<IgcDatePickerBaseComponent<DateRangeValue>>
->(IgcDatePickerBaseComponent) {
+export default class IgcDateRangePickerComponent extends I18nMixin(
+  EventEmitterMixin<
+    IgcDateRangePickerComponentEventMap,
+    typeof IgcDatePickerBaseComponent<DateRangeValue>
+  >(IgcDatePickerBaseComponent),
+  dateRangeI18nConfig
+) {
   public static readonly tagName = 'igc-date-range-picker';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -229,9 +238,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     slots: Slots,
   });
 
-  protected override readonly _i18nController =
-    addI18nController<DateRangeResourceStrings>(this, dateRangeI18nConfig);
-
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: { start: null, end: null },
     transformers: FormValueDateRangeTransformers,
@@ -242,7 +248,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   private _placeholder?: string;
 
   /** The range reflected in the calendar, committed or still being typed. */
-  @state()
+  @state({ hasChanged: datesChanged })
   private _calendarRange: Date[] | null = null;
 
   @queryAll(IgcDateTimeInputComponent.tagName)
@@ -251,8 +257,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   @query(IgcDateRangeInputComponent.tagName)
   private readonly _input!: IgcDateRangeInputComponent;
 
-  /** The editors currently rendered by the picker. */
-  private get _editors(): PickerEditor[] {
+  protected override get _editors(): PickerEditor[] {
     return this.useTwoInputs ? Array.from(this._inputs) : [this._input];
   }
 
@@ -268,8 +273,12 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     return this.value;
   }
 
+  /** A user change. It stays uncommitted until the picker emits `igcChange`. */
   protected override set _value(value: DateRangeValue | null) {
-    this.value = value;
+    const previous = this.value;
+    this._formValue.setValueAndFormState(value);
+    this._setCalendarRangeValues();
+    this.requestUpdate('value', previous);
   }
 
   protected override get _hasValue(): boolean {
@@ -288,25 +297,36 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     return this._firstDefinedInRange;
   }
 
-  protected override get _selectDateLabel(): string | undefined {
-    return this.resourceStrings.calendar_select_date;
+  protected override get _calendarResourceStrings() {
+    return this.resourceStrings;
   }
 
   protected override get _defaultDisplayFormat(): string | undefined {
-    return this._inputFormat ?? this._i18nController.localeDisplayFormat;
+    return this._inputFormat ?? getLocaleDateTimeFormats(this.locale).display;
   }
 
   protected override get _defaultInputFormat(): string | undefined {
-    return this._i18nController.localeInputFormat;
+    return getLocaleDateTimeFormats(this.locale).input;
+  }
+
+  protected override _formatValidationValue(
+    value: unknown,
+    locale: string
+  ): string {
+    const range = value as DateRangeValue;
+
+    if (!isCompleteDateRange(range)) {
+      return super._formatValidationValue(value, locale);
+    }
+
+    return [range.start, range.end]
+      .map((date) => super._formatValidationValue(date, locale))
+      .join(` ${this.resourceStrings.date_range_picker_date_separator} `);
   }
 
   protected override get _projectionTarget() {
     // The host's associated labels are projected only onto the start input.
     return this._input ?? this._inputs?.[0] ?? null;
-  }
-
-  protected override _focusInput(): void {
-    firstOf(this._editors).focus();
   }
 
   protected override _focusAndSelectInput(): void {
@@ -327,12 +347,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   protected override _syncCalendarOnToggle(): void {
     this._setCalendarActiveDate(this._firstDefinedInRange);
     this._calendar['_activeDaysViewIndex'] = 0;
-  }
-
-  protected override _clearEditors(): void {
-    for (const editor of this._editors) {
-      editor?.clear();
-    }
   }
 
   protected override _onDialogClosing(): void {
@@ -359,13 +373,14 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false, true) */
   /**
-   * The value of the picker
+   * The value of the picker: a range with a `start` and an `end` date.
    * @attr
    */
   @property({ converter: convertToDateRange })
   public set value(value: DateRangeValue | string | null | undefined) {
-    this._formValue.setValueAndFormState(convertToDateRange(value));
-    this._setCalendarRangeValues();
+    this._value = convertToDateRange(value);
+    // A set from code is committed at once, so no later commit reports it.
+    this._oldValue = this.value;
   }
 
   public get value(): DateRangeValue | null {
@@ -373,7 +388,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   }
 
   /**
-   * The number of months displayed in the calendar.
+   * The number of months displayed in the calendar: 1 or 2.
    * @attr visible-months
    * @default 2
    */
@@ -387,20 +402,20 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   }
 
   /**
-   * Renders chips with custom ranges based on the elements of the array.
+   * The custom date ranges that the picker shows as chips. A click on a chip selects its range.
    */
   @property({ attribute: false })
   public customRanges: CustomDateRange[] = [];
 
   /**
-   * Use two inputs to display the date range values. Makes the input editable in dropdown mode.
+   * Whether the picker shows the start and the end date in two separate inputs.
    * @attr use-two-inputs
    */
   @property({ type: Boolean, reflect: true, attribute: 'use-two-inputs' })
   public useTwoInputs = false;
 
   /**
-   * Whether the control will show chips with predefined ranges.
+   * Whether the picker shows chips with predefined ranges.
    * @attr
    */
   @property({
@@ -409,17 +424,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     attribute: 'use-predefined-ranges',
   })
   public usePredefinedRanges = false;
-
-  /** The resource strings of the date range picker. */
-  @property({ attribute: false })
-  public set resourceStrings(value: DateRangeResourceStrings) {
-    this._i18nController.resourceStrings = value;
-  }
-
-  public get resourceStrings(): IgcDateRangePickerResourceStrings &
-    DateRangePickerResourceStringsType {
-    return this._i18nController.resourceStrings;
-  }
 
   // #endregion
 
@@ -486,14 +490,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     });
   }
 
-  protected override willUpdate(changedProperties: PropertyValues<this>): void {
-    super.willUpdate(changedProperties);
-
-    if (changedProperties.has('mode') && !this._isDropDown) {
-      this.keepOpenOnSelect = true;
-    }
-  }
-
   protected override update(changedProperties: PropertyValues<this>): void {
     // The render swaps the editors, so the range and validity are re-applied after it.
     if (changedProperties.has('useTwoInputs')) {
@@ -530,9 +526,10 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     return formatHasTimeParts(this.inputFormat);
   }
 
-  /** Selects a date range value in the picker */
+  /** Sets the value of the picker to `value`. It does not emit events. */
   public select(value: DateRangeValue | null): void {
-    this._select(value);
+    this.value = value;
+    this._setCalendarActiveDate(this._firstDefinedInRange);
   }
 
   // #endregion
@@ -540,13 +537,11 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   // #region Event handlers
 
   protected _dialogCancel() {
-    this._revertValue();
-    this._hide(true);
+    this._closeWith(() => this._revertValue());
   }
 
   protected _dialogDone() {
-    this._emitChangeIfDirty();
-    this._hide(true);
+    this._closeWith(() => this._emitChangeIfDirty());
   }
 
   protected _handleInput(event: CustomEvent<string>) {
@@ -575,7 +570,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     this._commitRange(this._getUpdatedDateRange(input, newValue));
   }
 
-  protected async _handleDateRangeInput(event: CustomEvent<string>) {
+  protected _handleDateRangeInput(event: CustomEvent<string>): void {
     event.stopPropagation();
     if (this.nonEditable) {
       event.preventDefault();
@@ -665,8 +660,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
       end: null,
     };
 
-    this.value = { start, end };
-    this.emitEvent('igcChange', { detail: this.value });
+    this._commitEditorValue({ start, end });
   }
 
   private _swapDates(range: DateRangeValue): DateRangeValue {
@@ -676,13 +670,15 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
       : range;
   }
 
-  private _select(value: DateRangeValue | null, emitEvent = false) {
-    this.value = value;
+  /** Applies a predefined range. In dialog mode, Done commits it. */
+  private _handleRangeSelect({ detail }: CustomEvent<DateRangeValue>): void {
+    if (this._isClosing) return;
+
+    this._value = detail;
     this._setCalendarActiveDate(this._firstDefinedInRange);
 
-    if (emitEvent) {
-      this.emitEvent('igcChange', { detail: this.value });
-      this._oldValue = this.value;
+    if (this._isDropDown) {
+      this._emitChange();
       this._hide(true);
     }
   }
@@ -715,8 +711,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
             .usePredefinedRanges=${this.usePredefinedRanges}
             .customRanges=${this.customRanges}
             .resourceStrings=${this.resourceStrings}
-            @igcRangeSelect=${({ detail }: CustomEvent<DateRangeValue>) =>
-              this._select(detail, this._isDropDown)}
+            @igcRangeSelect=${this._handleRangeSelect}
             exportparts="ranges"
           >
           </igc-predefined-ranges-area>
@@ -781,7 +776,8 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
         ?invalid=${live(this.invalid)}
         @igcChange=${this._handleInputChange}
         @igcInput=${this._handleInput}
-        @keydown=${this._handleEnterKeydown}
+        @keydown=${this._handleEnterKey}
+        @keypress=${this._handleEnterKey}
         @click=${bindIf(this._opensOnClick, this._handleInputClick)}
         exportparts="input, label, prefix, suffix"
       >
@@ -805,9 +801,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   }
 
   private _renderSingleInput(id: string) {
-    const format =
-      getDateTimeFormat(this.displayFormat) ??
-      this._i18nController.localeDisplayFormat;
+    const format = getDateTimeFormat(this.displayFormat)!;
 
     return html`
       <igc-date-range-input
@@ -826,7 +820,8 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
         .prompt=${this.prompt}
         @igcInput=${this._handleDateRangeInput}
         @igcChange=${this._handleDateRangeInputChange}
-        @keydown=${this._handleEnterKeydown}
+        @keydown=${this._handleEnterKey}
+        @keypress=${this._handleEnterKey}
         @click=${bindIf(this._opensOnClick, this._handleInputClick)}
         exportparts="input, label, prefix, suffix"
       >

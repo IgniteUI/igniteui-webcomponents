@@ -16,6 +16,7 @@ import type {
 import {
   type ChatAcceptedFileTypes,
   getFileURL,
+  isAcceptedFileType,
   isImageAttachment,
   parseAcceptedFileTypes,
   revokeFileURL,
@@ -41,15 +42,26 @@ const OPTION_READERS: Record<
   disableAutoScroll: 'host',
 };
 
+const OPTIONS_READ_BY = {
+  messages: optionsReadBy('messages'),
+  input: optionsReadBy('input'),
+};
+
+function optionsReadBy(
+  context: 'messages' | 'input'
+): (keyof IgcChatOptions)[] {
+  return (Object.keys(OPTION_READERS) as (keyof IgcChatOptions)[]).filter(
+    (key) => OPTION_READERS[key] === context || OPTION_READERS[key] === 'both'
+  );
+}
+
 function optionsChanged(
   previous: IgcChatOptions | undefined,
   next: IgcChatOptions | undefined,
   context: 'messages' | 'input'
 ): boolean {
-  return (Object.keys(OPTION_READERS) as (keyof IgcChatOptions)[]).some(
-    (key) =>
-      (OPTION_READERS[key] === context || OPTION_READERS[key] === 'both') &&
-      previous?.[key] !== next?.[key]
+  return OPTIONS_READ_BY[context].some(
+    (key) => previous?.[key] !== next?.[key]
   );
 }
 
@@ -245,9 +257,9 @@ export class ChatState {
   }
 
   /**
-   * Emits the cancelable `igcAttachmentAdded` event.
-   * On success, adds the new files as attachments. On cancel, revokes their
-   * object URLs.
+   * Emits the cancelable `igcAttachmentAdded` event for the new files that
+   * `acceptedFiles` allows, if any. On success, adds them as attachments. On
+   * cancel, revokes their object URLs.
    * @internal
    */
   public attachFilesWithEvent(files: File[]): void {
@@ -257,7 +269,10 @@ export class ChatState {
     );
 
     for (const file of files) {
-      if (fileNames.has(file.name)) {
+      if (
+        fileNames.has(file.name) ||
+        !isAcceptedFileType(file, this._acceptedTypesCache)
+      ) {
         continue;
       }
 
@@ -273,6 +288,10 @@ export class ChatState {
         attachment.thumbnail = url;
       }
       newAttachments.push(attachment);
+    }
+
+    if (isEmpty(newAttachments)) {
+      return;
     }
 
     if (

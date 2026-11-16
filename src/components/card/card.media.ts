@@ -6,7 +6,7 @@ import { styles } from './themes/card.media.base.css.js';
 
 /**
  * A container component for card media content such as images, GIFs, or videos.
- * This component should be used within a card to display visual content.
+ * Use it in a card for visual content.
  *
  * @element igc-card-media
  *

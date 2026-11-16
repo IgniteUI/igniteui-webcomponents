@@ -8,3 +8,17 @@
     contain: content;
     overflow: hidden;
 }
+
+// The wave of each press. The press sets only its size and position inline.
+span {
+    position: absolute;
+    display: block;
+    pointer-events: none;
+    transform-origin: center;
+    transform: translate3d(0, 0, 0) scale(0);
+    will-change: opacity, transform;
+    margin: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--color, var(--ig-gray-800));
+}

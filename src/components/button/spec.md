@@ -32,6 +32,7 @@
     - [Form integration tests](#form-integration-tests)
     - [Icon button tests](#icon-button-tests)
     - [Host ARIA](#host-aria)
+    - [Hidden ancestor](#hidden-ancestor)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -48,6 +49,13 @@
 |       3 | 2026-10-01 | A link keeps the link role; a disabled link leaves the tab order and cannot be activated |
 |       4 | 2026-10-02 | Document the default slot of the icon button; follow a change of the host `aria-label`   |
 |       5 | 2026-10-02 | Forward the host `aria-labelledby` and `aria-describedby`; a `<label>` names the button  |
+|       6 | 2026-10-19 | Forward the host `aria-pressed` to the native button, so a button can be a toggle         |
+|       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                                                 |
+|       8 | 2026-10-26 | Forward the host `aria-expanded`, `aria-haspopup` and `aria-controls`                    |
+|       9 | 2026-10-29 | Transition only the properties that change, so the button and a slotted icon hide at the same time as a hidden ancestor |
+|      10 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API                    |
+|      11 | 2026-11-11 | The form action runs after the click listeners, so a listener can cancel it; the button is the default button for <kbd>Enter</kbd> in a field |
+|      12 | 2026-11-12 | A `commandfor` set or changed while the button is detached resolves once it is attached |
 
 ## Overview
 
@@ -147,6 +155,12 @@ The button is a form-associated custom element. `form` resolves the form it belo
 ancestor `<form>` or the `form` attribute, and a `submit` or `reset` type performs that action. The button follows
 the disabled state of an ancestor fieldset. `click()` simulates a click, including the form action.
 
+As for a native button, the form action runs after the `click` listeners, and not when one of them cancels the click
+or disables the button. A `submit` button without `href` counts as a submit button of the form: when it is the first
+one, <kbd>Enter</kbd> in a text field of the form clicks it, and while it is disabled, <kbd>Enter</kbd> does not
+submit the form. A link button has no form action. A listener that stops the propagation of the click delays the
+form action to the next task.
+
 ```html
 <form>
   <igc-button type="submit">Submit</igc-button>
@@ -160,7 +174,7 @@ the disabled state of an ancestor fieldset. `click()` simulates a click, includi
 to do with it. The built-in commands operate a native popover and a native `dialog`; the components of the library
 accept `--show`, `--hide` and `--toggle`. A custom command starts with two dashes.
 `commandForElement` resolves the target, accepts an element reference, and picks up a target appended after the
-first render.
+first render. A `commandfor` set or changed while the button is detached resolves once it is attached.
 
 ```html
 <igc-button command="--toggle" commandfor="drawer">Toggle</igc-button>
@@ -200,7 +214,7 @@ Shared by `igc-button` and `igc-icon-button`:
 
 | Property            | Attribute    | Reflected | Type                                             | Default     | Description                                            |
 | ------------------- | ------------ | --------- | ------------------------------------------------ | ----------- | ------------------------------------------------------ |
-| `disabled`          | `disabled`   | yes       | `boolean`                                        | `false`     | Disables the button.                                    |
+| `disabled`          | `disabled`   | yes       | `boolean`                                        | `false`     | Whether the button is disabled. A disabled button ignores user interaction. |
 | `type`              | `type`       | yes       | `"button" \| "submit" \| "reset"`                | `button`    | The behavior of the button; ignored while `href` is set. |
 | `href`              | `href`       | no        | `string \| undefined`                            | —           | Renders the component as an anchor to this URL.          |
 | `download`          | `download`   | no        | `string \| undefined`                            | —           | Downloads the target instead of navigating to it.        |
@@ -223,14 +237,16 @@ Shared by `igc-button` and `igc-icon-button`:
 | ------------ | ------------ | --------- | ----------------------------------------- | ----------- | --------------------------------------------- |
 | `name`       | `name`       | no        | `string \| undefined`                     | —           | The name of the icon to show.                  |
 | `collection` | `collection` | no        | `string \| undefined`                     | —           | The collection the icon belongs to.            |
-| `mirrored`   | `mirrored`   | no        | `boolean`                                 | `false`     | Mirrors the icon in a right-to-left context.   |
+| `mirrored`   | `mirrored`   | no        | `boolean`                                 | `false`     | Whether the icon is flipped horizontally. Use it for a directional icon in a right-to-left layout. |
 | `variant`    | `variant`    | yes       | `"contained" \| "outlined" \| "flat"`     | `contained` | The visual variant of the button.              |
 
 ### Methods
 
-| Method  | Signature  | Description                                                                    |
-| ------- | ---------- | ------------------------------------------------------------------------------ |
-| `click` | `(): void` | Simulates a click, triggering the handler and any associated form action.       |
+| Method  | Signature                        | Description                                                               |
+| ------- | -------------------------------- | ------------------------------------------------------------------------- |
+| `focus` | `(options?: FocusOptions): void` | Sets focus on the button.                                                 |
+| `blur`  | `(): void`                       | Removes focus from the button.                                            |
+| `click` | `(): void`                       | Simulates a click, triggering the handler and any associated form action. |
 
 ### Events
 
@@ -243,7 +259,7 @@ None of their own. The components emit the native events of the rendered `<butto
 | `igc-button`      | default  | The label of the button.                          |
 | `igc-button`      | `prefix` | Content before the label.                         |
 | `igc-button`      | `suffix` | Content after the label.                          |
-| `igc-icon-button` | default  | Content after the icon, such as text or a ripple. |
+| `igc-icon-button` | default  | Renders content after the icon, such as text or a ripple. |
 
 The icon of `igc-icon-button` comes from the registry. The default slot renders after the icon, and alone when the
 button has no `name` and no `mirrored`. Slotted content takes the size of the icon.
@@ -253,7 +269,7 @@ button has no `name` and no `mirrored`. Slotted content takes the size of the ic
 | Component         | Part     | Description                                      |
 | ----------------- | -------- | ------------------------------------------------ |
 | `igc-button`      | `base`   | The native button or anchor element.              |
-| `igc-icon-button` | `base`   | The wrapping element of the icon button.          |
+| `igc-icon-button` | `base`   | The native button or anchor element.              |
 | `igc-icon-button` | `icon`   | The icon element.                                 |
 
 ## Test scenarios
@@ -288,14 +304,19 @@ button has no `name` and no `mirrored`. Slotted content takes the size of the ic
 
 10. The `command` attribute is reflected onto the native button and follows a change of the property.
 11. `commandForElement` resolves from a string id and accepts an element reference, and `commandfor` resolves a
-    target appended after the first render.
+    target appended after the first render. A `commandfor` set before the button is attached, or changed while it
+    is detached, resolves once it is attached.
 12. A native popover is shown, hidden and toggled on repeated clicks.
 13. A native dialog is opened as modal and closed.
 
 ### Form integration tests
 
-14. The button is form associated, and submits and resets the form it belongs to.
-15. It follows the disabled state of an ancestor.
+14. The button is form associated, and submits and resets the form it belongs to. The submit comes after the `click`
+    listeners on the host. A listener that cancels the click stops the submit and the reset, and a listener that
+    disables the button stops the submit.
+15. It follows the disabled state of an ancestor. <kbd>Enter</kbd> in a field clicks it as the default button, also in
+    a form with two text fields. While disabled, it stops the <kbd>Enter</kbd> submission. With `href`, it is not the
+    default button.
 
 ### Icon button tests
 
@@ -311,6 +332,23 @@ button has no `name` and no `mirrored`. Slotted content takes the size of the ic
 
 21. The host `aria-labelledby`, `aria-describedby`, a `<label for>`, a label added later and an `igc-tooltip` name
     and describe the native element, also as a link and a disabled link. A host `aria-label` wins over a `<label>`.
+22. The host `aria-pressed` reaches the native button, also after a change and a removal, and passes the
+    accessibility audit. A link and a disabled link do not get it.
+23. The host `aria-expanded`, `aria-haspopup` and `aria-controls` reach the native button, also after a change, a
+    removal and each set of `ariaControlsElements`, and pass the accessibility audit. A link and a disabled link
+    keep them. An empty value and an `aria-controls` that references no element are not forwarded. The icon button
+    forwards `aria-expanded` and `aria-haspopup` too.
+
+### Hidden ancestor
+
+24. The button and a slotted icon hide at the same time as a hidden ancestor in each theme, at rest and after a focus or
+    a hover: no element transitions `visibility` or sets it to `visible`.
+25. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
+    takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
+    `disabled` set does not cancel an earlier call on another element. The suite runs for the button and the icon
+    button.
 
 ### Not covered by the suite
 
@@ -327,6 +365,8 @@ button has no `name` and no `mirrored`. Slotted content takes the size of the ic
 - The icon of `igc-icon-button` must exist in the registry. Its default slot takes other content, such as text.
 - The size of a button comes from the theming mechanism rather than from a property.
 - An icon button that shows only an icon needs an `aria-label` of its own.
+- The host `aria-controls`, `aria-labelledby` and `aria-describedby` resolve when the button renders. A referenced
+  element that is added after the host attribute takes effect at the next render.
 
 ## Accessibility
 
@@ -340,6 +380,11 @@ button has no `name` and no `mirrored`. Slotted content takes the size of the ic
   exposes the link role with the native disabled state.
 - A host `aria-labelledby` and `aria-describedby` reach the native element by element reference. A `<label>` for the
   button names it, but a host `aria-label` wins, as for a native button.
+- A host `aria-pressed` reaches the native button, so a button can be a toggle button, such as the like action of
+  a chat message. The link role does not allow `aria-pressed`, so a link and a disabled link do not get it.
+- A host `aria-expanded`, `aria-haspopup` and `aria-controls` reach the native element, also as a link and a
+  disabled link, so a button that opens a menu, a panel or a drawer exposes its state. `aria-controls` goes by
+  element reference.
 
 ### Keyboard support
 

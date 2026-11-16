@@ -1,8 +1,7 @@
 import { property } from 'lit/decorators.js';
 import { CalendarDay } from '#internals/date/model.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { formatDisplayDate } from '#internals/i18n/i18n-controller.js';
-import type { AbstractConstructor } from '#internals/mixins/constructor.js';
+import { formatDisplayDate } from '#internals/i18n/date-formats.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateRangeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
@@ -42,12 +41,10 @@ export interface IgcDateRangeInputComponentEventMap {
 /* blazorSuppress */
 export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   IgcDateRangeInputComponentEventMap,
-  AbstractConstructor<
-    IgcDateTimeInputBaseComponent<DateRangeValue, DateRangePart>
-  >
+  typeof IgcDateTimeInputBaseComponent<DateRangeValue, DateRangePart>
 >(IgcDateTimeInputBaseComponent) {
   public static readonly tagName = 'igc-date-range-input';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -85,16 +82,6 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
 
   public override get value(): DateRangeValue | null {
     return this._formValue.value;
-  }
-
-  // #endregion
-
-  // #region Lifecycle Hooks
-
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    this._initializeDefaultMask();
-    this._updateMaskDisplay();
   }
 
   // #endregion
@@ -150,22 +137,19 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   protected override _performStep(
     datePart: DateRangePart | undefined,
     delta: number | undefined,
-    sign: 1 | -1
+    sign: 1 | -1,
+    commit = false
   ): boolean {
     // With no value, start from today.
     const current = this._uncommittedValue;
 
     if (!current?.start && !current?.end) {
       const today = CalendarDay.today.native;
-      this._setDraftValue({ start: today, end: today });
-      const { start, end } = this._inputSelection;
-      this.updateComplete.then(() =>
-        this._input?.setSelectionRange(start, end)
-      );
+      this._applyStep({ start: today, end: today }, commit);
       return true;
     }
 
-    return super._performStep(datePart, delta, sign);
+    return super._performStep(datePart, delta, sign, commit);
   }
 
   protected override _buildDisplayValue(): string {
@@ -195,7 +179,7 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     }
 
     const effectiveDelta =
-      delta ?? this._datePartDeltas[range.part as keyof DatePartDeltas] ?? 1;
+      delta ?? this.spinDelta?.[range.part as keyof DatePartDeltas] ?? 1;
     const spinAmount = effectiveDelta * sign;
 
     const amPmValue = this._readAmPmFromMask(part);
@@ -253,12 +237,12 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
 
   // #region Public API Overrides
 
-  /** Increments a date/time portion. */
+  /** Increments a date/time portion. The `value` updates at once. */
   public override stepUp(datePart?: DateRangePart, delta?: number): void {
     super.stepUp(datePart, delta);
   }
 
-  /** Decrements a date/time portion. */
+  /** Decrements a date/time portion. The `value` updates at once. */
   public override stepDown(datePart?: DateRangePart, delta?: number): void {
     super.stepDown(datePart, delta);
   }

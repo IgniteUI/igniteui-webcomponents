@@ -1,6 +1,6 @@
 import { elementUpdated, expect } from '@open-wc/testing';
 import type { CalendarDay } from '#internals/date/model.js';
-import { formatDisplayDate } from '#internals/i18n/i18n-controller.js';
+import { formatDisplayDate } from '#internals/i18n/date-formats.js';
 import {
   getCalendarDOM,
   getDOMDate,

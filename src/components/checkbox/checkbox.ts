@@ -26,16 +26,22 @@ const nextId = createIdGenerator('checkbox');
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcChange - Emitted when the control's checked state changes.
+ * @fires igcChange - Emitted when the checked state of the control changes by user interaction.
  *
  * @csspart base - The base wrapper of the checkbox.
- * @csspart control - The checkbox input element.
+ * @csspart control - The box of the checkbox. It holds the indicator.
  * @csspart label - The checkbox label.
  * @csspart indicator - The checkbox indicator icon.
+ * @csspart checked - Added to the base, control, label and indicator parts when the checkbox is checked.
+ * @csspart focused - Added to the base part when the checkbox has keyboard focus.
+ *
+ * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-checkbox';
-  protected static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -48,7 +54,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   private readonly _labelId = `checkbox-label-${this._inputId}`;
 
   /**
-   * Draws the checkbox in indeterminate state.
+   * Whether the checkbox is in the indeterminate state. A user click clears it.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
@@ -109,7 +115,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
         indeterminate: this.indeterminate,
         description: helperText(this, this._slots),
         onClick: this._handleClick,
-        onKeyDown: this._handleEnterKeydown,
+        onEnterKey: this._handleEnterKey,
         onBlur: this._handleBlur,
       })}
       ${IgcValidationContainerComponent.create(this)}

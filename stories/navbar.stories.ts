@@ -106,7 +106,7 @@ const styles = html`
     }
 
     .nb-searching igc-navbar {
-      --ig-navbar-background: var(--ig-surface-500);
+      --ig-navbar-background: var(--ig-surface-base);
       --ig-navbar-text-color: var(--ig-gray-900);
     }
 

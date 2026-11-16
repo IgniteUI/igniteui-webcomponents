@@ -1,11 +1,7 @@
 @use 'styles/utilities' as *;
-@use '../../light/themes' as *;
+@use 'components/textarea/themes/light/themes' as *;
 
 $theme: $indigo;
-
-igc-textarea::part(input) {
-    max-height: rem(140px);
-}
 
 [part~='input-container'] {
     border-radius: rem(13px);

@@ -1,6 +1,7 @@
 import { getOrInsertComputed } from '#internals/utils/objects.js';
 
-const EXP_TABLE: number[] = new Array(512);
+// The readers reduce the exponent modulo 255, so one cycle is enough.
+const EXP_TABLE: number[] = new Array(256);
 const LOG_TABLE: number[] = new Array(256);
 const POLYNOMIALS = new Map<number, number[]>();
 
@@ -13,9 +14,6 @@ const POLYNOMIALS = new Map<number, number[]>();
     if (x & 0x100) {
       x ^= 0x11d;
     }
-  }
-  for (let i = 256; i < 512; i++) {
-    EXP_TABLE[i] = EXP_TABLE[i - 256];
   }
 })();
 
@@ -223,10 +221,9 @@ export function interleaveBlocks(
 
   const maxECCLength = ecBlock.ecPerBlock;
   for (let i = 0; i < maxECCLength; i++) {
+    // Each block has `ecPerBlock` codewords.
     for (const eccBlock of eccBlocks) {
-      if (i < eccBlock.length) {
-        interleaved.push(eccBlock[i]);
-      }
+      interleaved.push(eccBlock[i]);
     }
   }
 

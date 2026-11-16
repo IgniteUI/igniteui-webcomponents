@@ -24,11 +24,13 @@ import {
   tabKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
@@ -47,6 +49,8 @@ import type { IgcSliderBaseComponent } from './slider-base.js';
 import IgcSliderComponent from './slider.js';
 
 describe('Slider component', () => {
+  before(() => defineComponents(IgcSliderComponent, IgcRangeSliderComponent));
+
   describe('Regular', () => {
     let slider: IgcSliderComponent;
 
@@ -2691,6 +2695,14 @@ describe('Slider component', () => {
       });
     });
   });
+
+  runHiddenAncestorTests(html`
+    <igc-slider value="40"></igc-slider>
+    <igc-range-slider lower="20" upper="60"></igc-range-slider>
+  `);
+
+  runFocusBeforeRenderTests(html`<igc-slider></igc-slider>`);
+  runFocusBeforeRenderTests(html`<igc-range-slider></igc-range-slider>`);
 });
 
 function getDOM<T = HTMLElement>(slider: IgcSliderBaseComponent) {

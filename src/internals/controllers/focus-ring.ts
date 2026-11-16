@@ -1,5 +1,5 @@
 import type { ReactiveControllerHost } from 'lit';
-import { addHostListeners } from './host-listeners.js';
+import { addSafeEventListeners } from '../utils/events.js';
 
 /** Tracks the keyboard focus state. See {@link addKeyboardFocusRing}. */
 class KeyboardFocusRingController {
@@ -16,10 +16,8 @@ class KeyboardFocusRingController {
   constructor(host: ReactiveControllerHost & HTMLElement) {
     this._host = host;
 
-    addHostListeners(host, {
-      events: KeyboardFocusRingController._events,
-      listener: this,
-      options: { passive: true },
+    addSafeEventListeners(host, KeyboardFocusRingController._events, this, {
+      passive: true,
     });
   }
 

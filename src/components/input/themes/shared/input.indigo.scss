@@ -30,6 +30,7 @@ $transition-duration: .25s;
     [part='suffix'] {
         // transition-duration is needed here because of a bug in safari
         // https://github.com/IgniteUI/igniteui-webcomponents/pull/881
+        transition-property: color, background;
         transition-duration: 0ms;
 
         ::slotted(*) {
@@ -62,6 +63,10 @@ $transition-duration: .25s;
 
         color: var-get($theme, 'idle-secondary-color');
         margin-block-end: rem(4px);
+    }
+
+    [part='label']:has(+ [part~='filled']) {
+        color: var-get($theme, 'filled-secondary-color');
     }
 
     [part^='container'] {

@@ -7,6 +7,7 @@ import {
   ariaBindings,
   hostAria,
 } from '#internals/controllers/aria-projection.js';
+import { addHiddenUntilFoundController } from '#internals/controllers/hidden-until-found.js';
 import {
   addKeybindings,
   altKey,
@@ -15,8 +16,8 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { addToggleController } from '#internals/controllers/toggle.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
@@ -29,6 +30,8 @@ import type { ExpansionPanelIndicatorPosition } from '../types.js';
 import { styles } from './themes/expansion-panel.base.css.js';
 import { styles as shared } from './themes/shared/expansion-panel.common.css.js';
 
+const Slots = setSlots('title', 'subtitle', 'indicator', 'indicator-expanded');
+
 export interface IgcExpansionPanelComponentEventMap {
   igcOpening: CustomEvent<IgcExpansionPanelComponent>;
   igcOpened: CustomEvent<IgcExpansionPanelComponent>;
@@ -39,35 +42,34 @@ export interface IgcExpansionPanelComponentEventMap {
 const nextId = createIdGenerator('igc-expansion-panel');
 
 /**
- * The Expansion Panel Component provides a way to display information in a toggleable way -
- * compact summary view containing title and description and expanded detail view containing
- * additional content to the summary header.
+ * Shows a header with a title and a subtitle, and content that the user can
+ * expand and collapse. Find-in-page, a text fragment or a link to an element in
+ * the content opens a collapsed panel that is not disabled.
  *
  * @element igc-expansion-panel
  *
- * @slot - renders the default content of the panel
- * @slot title - renders the title of the panel's header
- * @slot subtitle - renders the subtitle of the panel's header
- * @slot indicator - renders the expand/collapsed indicator
- * @slot indicator-expanded - renders the expanded state of the indicator
+ * @slot - Renders the default content of the panel.
+ * @slot title - Renders the title of the panel header.
+ * @slot subtitle - Renders the subtitle of the panel header.
+ * @slot indicator - Renders the expand/collapse indicator.
+ * @slot indicator-expanded - Renders the expanded state of the indicator.
  *
- * @fires igcOpening - Emitted before opening the expansion panel.
+ * @fires igcOpening - Emitted before the user opens the panel. Cancelable.
  * @fires igcOpened - Emitted after the expansion panel is opened.
- * @fires igcClosing - Emitted before closing the expansion panel.
+ * @fires igcClosing - Emitted before the user closes the panel. Cancelable.
  * @fires igcClosed - Emitted after the expansion panel is closed.
  *
  * @csspart header - The container of the expansion indicator, title and subtitle.
- * @csspart title -  The title container.
+ * @csspart title - The title container.
  * @csspart subtitle - The subtitle container.
  * @csspart indicator - The indicator container.
  * @csspart content - The expansion panel's content wrapper.
  */
-export default class IgcExpansionPanelComponent extends EventEmitterMixin<
-  IgcExpansionPanelComponentEventMap,
-  Constructor<LitElement>
->(HostAriaMixin(LitElement)) {
+export default class IgcExpansionPanelComponent extends EventEmitterMixin<IgcExpansionPanelComponentEventMap>(
+  HostAriaMixin(LitElement)
+) {
   public static readonly tagName = 'igc-expansion-panel';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -80,26 +82,40 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   private readonly _player = addAnimationController(this, this._panelRef);
   private readonly _slots = addSlotController(this, {
-    slots: setSlots('title', 'subtitle', 'indicator', 'indicator-expanded'),
+    slots: Slots,
   });
 
   private readonly _toggleController = addToggleController(this, {
     detail: () => this,
-    transition: (open) => {
+    transition: (open, signal) => {
       this.open = open;
-      return this._player.playExclusive(open ? growVerIn() : growVerOut());
+      return this._untilFound.animate(open, () =>
+        this._player.playExclusive(open ? growVerIn() : growVerOut(), signal)
+      );
+    },
+  });
+
+  private readonly _untilFound = addHiddenUntilFoundController(this, {
+    content: this._panelRef,
+    reveal: () => {
+      this._show();
+      return this.open;
     },
   });
 
   /**
-   * Indicates whether the contents of the control should be visible.
+   * Whether the panel is expanded and its content is visible.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
+  @coercedProperty<boolean, IgcExpansionPanelComponent>({
+    onChange: ({ host, value }) => host._toggleController.sync(value),
+  })
   public open = false;
 
   /**
-   * Get/Set whether the expansion panel is disabled. Disabled panels are ignored for user interactions.
+   * Whether the panel is disabled. A disabled panel does not respond to user
+   * interaction.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
@@ -168,7 +184,8 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   /**
    * Hides the panel content.
    * @returns `true` when the panel was successfully closed, or `false` if it was
-   * already closed or the transition was superseded by a newer one.
+   * already closed or closing, the transition was superseded by a newer one, or
+   * `open` was set to `true` during it.
    */
   public async hide(): Promise<boolean> {
     return this._toggleController.hide();
@@ -177,7 +194,8 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   /**
    * Shows the panel content.
    * @returns `true` when the panel was successfully opened, or `false` if it was
-   * already open or the transition was superseded by a newer one.
+   * already open or opening, the transition was superseded by a newer one, or
+   * `open` was set to `false` during it.
    */
   public async show(): Promise<boolean> {
     return this._toggleController.show();
@@ -232,7 +250,9 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
         role="region"
         id="${this._panelId}-content"
         aria-labelledby="${this._panelId}-header"
-        .inert=${!this.open}
+        hidden=${this._untilFound.value(!this.open, !this.disabled)}
+        @beforematch=${this._untilFound.handleBeforeMatch}
+        .inert=${this._untilFound.closing}
         aria-hidden=${!this.open}
       >
         <slot></slot>

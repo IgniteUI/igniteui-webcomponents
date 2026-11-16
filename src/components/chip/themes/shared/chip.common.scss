@@ -68,7 +68,7 @@ $theme: $material;
     }
 
     ::slotted(igc-circular-progress) {
-        --diameter: #{sizable(rem(14px), rem(18px), rem(24px))};
+        --ig-circular-bar-diameter: #{sizable(rem(14px), rem(18px), rem(24px))};
     }
 }
 

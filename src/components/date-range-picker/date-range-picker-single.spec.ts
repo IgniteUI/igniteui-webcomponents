@@ -17,12 +17,14 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { CalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   runAriaProjectionTests,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
 import {
+  simulateCancelableKeydown,
   simulateClick,
   simulateInput,
   simulateKeyboard,
@@ -526,6 +528,43 @@ describe('Date range picker - single input', () => {
       expect(input.value).to.equal('1/15/2025 - 1/16/2025');
     });
 
+    it('should update the value on stepUp/stepDown while the input is focused', async () => {
+      picker.value = {
+        start: new Date(2025, 0, 15),
+        end: new Date(2025, 0, 16),
+      };
+      await elementUpdated(picker);
+
+      rangeInput.focus();
+      rangeInput.setSelectionRange(0, 0);
+      rangeInput.stepUp();
+      expect(rangeInput.value?.start?.getMonth()).to.equal(1);
+
+      rangeInput.stepDown();
+      expect(rangeInput.value?.start?.getMonth()).to.equal(0);
+
+      // An empty input starts from today, also committed at once.
+      rangeInput.clear();
+      rangeInput.stepUp();
+      expect(rangeInput.value?.start).to.exist;
+    });
+
+    it('should not report a value set from code while the input is focused', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+
+      rangeInput.focus();
+      picker.value = {
+        start: new Date(2025, 0, 15),
+        end: new Date(2025, 0, 16),
+      };
+      await elementUpdated(picker);
+
+      rangeInput.blur();
+      await elementUpdated(picker);
+
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
     it('does not step a date part that the input format does not have', async () => {
       const value = {
         start: new Date(2025, 0, 15),
@@ -626,6 +665,7 @@ describe('Date range picker - single input', () => {
           'igc-button[slot="footer"]:last-of-type'
         ) as HTMLButtonElement;
         doneBtn?.click();
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         expect(eventSpy).calledWith('igcChange');
         checkSelectedRange(
@@ -715,6 +755,7 @@ describe('Date range picker - single input', () => {
           'igc-button[slot="footer"]'
         ) as HTMLButtonElement;
         cancelBtn?.click();
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         expect(eventSpy).not.to.be.calledWith('igcChange');
         dialog = picker.renderRoot.querySelector('igc-dialog');
@@ -763,6 +804,7 @@ describe('Date range picker - single input', () => {
           'igc-button[slot="footer"]'
         ) as HTMLButtonElement;
         cancelBtn?.click();
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         expect(eventSpy).not.to.be.calledWith('igcChange');
         dialog = picker.renderRoot.querySelector('igc-dialog');
@@ -808,6 +850,7 @@ describe('Date range picker - single input', () => {
         );
 
         simulateKeyboard(picker, escapeKey);
+        await waitUntil(() => !picker.open);
         await elementUpdated(picker);
         await elementUpdated(input);
         expect(eventSpy).not.to.be.calledWith('igcChange');
@@ -829,6 +872,13 @@ describe('Date range picker - single input', () => {
     });
 
     describe('Interactions with the inputs and the open and clear buttons', () => {
+      it('cancels Escape only while open', async () => {
+        expect(simulateCancelableKeydown(picker, escapeKey)).to.be.false;
+
+        await picker.show();
+        expect(simulateCancelableKeydown(picker, escapeKey)).to.be.true;
+      });
+
       it('should not open the picker when clicking the input in dropdown mode', async () => {
         const input = picker.renderRoot.querySelector(
           IgcDateRangeInputComponent.tagName
@@ -1411,4 +1461,8 @@ describe('Date range picker - single input', () => {
       }
     });
   });
+
+  runFocusBeforeRenderTests(
+    html`<igc-date-range-picker label="Label"></igc-date-range-picker>`
+  );
 });

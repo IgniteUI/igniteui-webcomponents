@@ -62,7 +62,7 @@ const metadata: Meta<IgcCardComponent> = {
     elevated: {
       type: 'boolean',
       description:
-        'Sets the card to have an elevated appearance with shadow.\nWhen false, the card uses an outlined style with a border.',
+        'Whether the card has an elevated appearance with a shadow.\nWhen false, the card uses an outlined style with a border.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -74,7 +74,7 @@ export default metadata;
 
 interface IgcCardArgs {
   /**
-   * Sets the card to have an elevated appearance with shadow.
+   * Whether the card has an elevated appearance with a shadow.
    * When false, the card uses an outlined style with a border.
    */
   elevated: boolean;
@@ -369,7 +369,7 @@ export const Tours: Story = {
           inset-inline-end: 0.5rem;
           z-index: 2;
           border-radius: 50%;
-          background: var(--ig-surface-500);
+          background: var(--ig-surface-base);
         }
       </style>
       <section class="cd-stack" aria-label="Tours" ${mount}></section>

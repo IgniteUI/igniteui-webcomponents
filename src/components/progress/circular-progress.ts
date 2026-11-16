@@ -12,6 +12,8 @@ import IgcCircularGradientComponent from './circular-gradient.js';
 import { styles } from './themes/circular/circular.progress.base.css.js';
 import { styles as shared } from './themes/circular/shared/circular.progress.common.css.js';
 
+const Slots = setSlots('gradient');
+
 const nextId = createIdGenerator('circular-progress');
 
 /**
@@ -20,9 +22,10 @@ const nextId = createIdGenerator('circular-progress');
  *
  * @element igc-circular-progress
  *
- * @slot - The text area container.
- * @slot gradient - Customize the progress bar in order to use a color gradient instead of a solid color. Accepts circular gradient elements.
+ * @slot - Custom label content. A slotted element replaces the default label.
+ * @slot gradient - The gradient stops of the fill. Accepts circular gradient elements.
  *
+ * @csspart base - The wrapper of the circular progress.
  * @csspart svg - The circular progress SVG element.
  * @csspart gradient_start - The circular progress linear-gradient start color.
  * @csspart gradient_end - The circular progress linear-gradient end color.
@@ -30,7 +33,9 @@ const nextId = createIdGenerator('circular-progress');
  * @csspart fill - The circular progress indicator area.
  * @csspart label - The circular progress label.
  * @csspart value - The circular progress label value.
- * @csspart indeterminate - The circular progress indeterminate state.
+ * @csspart indeterminate - Added to the SVG and track parts while the progress is indeterminate.
+ * @csspart counter - Added to the label value while it shows the default percentage text.
+ * @csspart fraction - Added to the label value when the percentage has a fractional part.
  */
 export default class IgcCircularProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-circular-progress';
@@ -46,7 +51,7 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
 
   private readonly _gradientId = nextId();
   protected override readonly _slots = addSlotController(this, {
-    slots: setSlots('gradient'),
+    slots: Slots,
   });
 
   constructor() {

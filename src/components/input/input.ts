@@ -44,13 +44,13 @@ const Slots = setSlots(
 );
 
 /**
- * A highly customizable single-line text field for entering and editing data,
- * with support for prefix/suffix content, helper text, form integration, and built-in validation.
+ * A single-line text field to enter and edit data. It supports prefix and
+ * suffix content, helper text, form integration and built-in validation.
  *
  * @element igc-input
  *
  * @slot prefix - Renders content before the input.
- * @slot suffix - Renders content after input.
+ * @slot suffix - Renders content after the input.
  * @slot helper-text - Renders content below the input.
  * @slot value-missing - Renders content when the required validation fails.
  * @slot type-mismatch - Renders content when the url/email type validation fails.
@@ -60,7 +60,7 @@ const Slots = setSlots(
  * @slot range-overflow - Renders content when the max validation fails.
  * @slot range-underflow - Renders content when the min validation fails.
  * @slot step-mismatch - Renders content when the step validation fails.
- * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot custom-error - Renders content when a custom message is set with `setCustomValidity()`.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcInput - Emitted when the control input receives user input.
@@ -72,10 +72,22 @@ const Slots = setSlots(
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
+ * @csspart prefixed - Added to the container and the input when an element that is not hidden is in the prefix slot.
+ * @csspart suffixed - Added to the container and the input when an element that is not hidden is in the suffix slot.
+ * @csspart filled - Added to the container and the input when the control has a value.
+ * @csspart labelled - Added to the container in the material theme when the control has a label.
+ * @csspart start - The wrapper of the prefix in the material theme.
+ * @csspart notch - The wrapper of the label in the material theme.
+ * @csspart filler - The outline segment between the notch and the end in the material theme.
+ * @csspart end - The wrapper of the suffix in the material theme.
+ *
+ * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 export default class IgcInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-input';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /** Shared config for the constraint properties - a change revalidates. */
   private static readonly _revalidate: CoercedPropertyConfig<
@@ -104,6 +116,10 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     return this.type !== 'number' ? stringValidators : numberValidators;
   }
 
+  protected override get _blocksImplicitSubmission(): boolean {
+    return true;
+  }
+
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The value of the control.
@@ -127,7 +143,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   public type: InputType = 'text';
 
   /**
-   * Makes the control a readonly field.
+   * Whether the control is read-only.
    *
    * @attr readonly
    * @default false
@@ -192,7 +208,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   public step?: number = undefined;
 
   /**
-   * Whether the control should receive focus automatically.
+   * Whether the control receives focus automatically.
    * @attr
    */
   @property({ type: Boolean })
@@ -206,8 +222,8 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   public autocomplete!: string;
 
   /**
-   * Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property for
-   * string-type inputs or allows spin buttons to exceed the predefined `min/max` limits for number-type inputs.
+   * Whether the validation rules apply without restricting user input. The user can type past `maxLength`,
+   * and the spin buttons of a `number` input can go past `min` and `max`.
    *
    * @attr validate-only
    * @default false
@@ -249,11 +265,11 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
       end ?? this._input.selectionEnd ?? 0,
       selectMode
     );
-    this.value = this._input?.value ?? '';
+    this._syncValueFromInput();
   }
 
   /* blazorSuppress */
-  /** Sets the text selection range of the control */
+  /** Sets the text selection range of the control. */
   public setSelectionRange(
     start?: number,
     end?: number,
@@ -265,13 +281,20 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   /** Increments the numeric value of the input by one or more steps. */
   public stepUp(n?: number): void {
     this._input?.stepUp(n);
-    this.value = this._input?.value ?? '';
+    this._syncValueFromInput();
   }
 
   /** Decrements the numeric value of the input by one or more steps. */
   public stepDown(n?: number): void {
     this._input?.stepDown(n);
-    this.value = this._input?.value ?? '';
+    this._syncValueFromInput();
+  }
+
+  /** No native input before the first render. */
+  private _syncValueFromInput(): void {
+    if (this._input) {
+      this.value = this._input.value;
+    }
   }
 
   private _handleInput(): void {
@@ -305,7 +328,8 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         minlength=${ifDefined(this.minLength)}
         maxlength=${bindIf(!this.validateOnly, this.maxLength)}
         step=${ifDefined(this.step)}
-        @keydown=${this._handleEnterKeydown}
+        @keydown=${this._handleEnterKey}
+        @keypress=${this._handleEnterKey}
         @change=${this._handleChange}
         @input=${this._handleInput}
         @blur=${this._handleBlur}

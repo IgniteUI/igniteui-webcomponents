@@ -2,12 +2,17 @@ import { isServer, type LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { trackLabels } from '../../controllers/aria-projection.js';
 import { addInternalsController } from '../../controllers/internals.js';
-import { enterKey, isKey } from '../../controllers/keys.js';
-import { addSafeEventListener, preventDefault } from '../../utils/events.js';
+import { enterKey, isComposingKey, isKey } from '../../controllers/keys.js';
+import { getHostLocale } from '../../i18n/i18n-controller.js';
+import {
+  addSafeEventListener,
+  preventDefault,
+  runDefaultAction,
+} from '../../utils/events.js';
 import { getOrInsertComputed } from '../../utils/objects.js';
 import { isFunction, isString } from '../../utils/types.js';
-import type { Validator } from '../../validators.js';
-import type { Constructor } from '../constructor.js';
+import { createLocalizeMessage, type Validator } from '../../validators.js';
+import type { Constructor, LitElementConstructor } from '../constructor.js';
 import { HostAriaMixin } from '../host-aria.js';
 import type { FormValue } from './form-value.js';
 import {
@@ -109,12 +114,84 @@ function isInvalidControl(element: ListedElement): boolean {
   return !!element.willValidate && !element.validity?.valid;
 }
 
-/** `stateKey` names the state property, whose attribute sets the default. */
-function BaseFormAssociated<T extends Constructor<LitElement>>(
+//#region Implicit submission
+
+/** The `<input>` types that block implicit submission. */
+const textFieldTypes = new Set([
+  'date',
+  'datetime-local',
+  'email',
+  'month',
+  'number',
+  'password',
+  'search',
+  'tel',
+  'text',
+  'time',
+  'url',
+  'week',
+]);
+
+type SubmissionElement = Element & {
+  type?: unknown;
+  href?: unknown;
+  _blocksImplicitSubmission?: boolean;
+};
+
+function blocksImplicitSubmission(element: SubmissionElement): boolean {
+  return element instanceof HTMLInputElement
+    ? textFieldTypes.has(element.type)
+    : !!element._blocksImplicitSubmission;
+}
+
+/** A link button has no form action. */
+function isSubmitButton(
+  element: SubmissionElement
+): element is SubmissionElement & HTMLElement {
+  return element.type === 'submit' && element.href == null;
+}
+
+/** `form.elements` has no image buttons, so query them separately. */
+function defaultButtonOf(form: HTMLFormElement): HTMLElement | undefined {
+  const button = Iterator.from(form.elements).find(isSubmitButton);
+  const image = form.querySelector<HTMLInputElement>('input[type="image" i]');
+
+  return image?.form === form &&
+    (!button ||
+      image.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING)
+    ? image
+    : button;
+}
+
+/** As in HTML, a disabled default button blocks the submission. */
+function submitImplicitly(form: HTMLFormElement, fromTextField: boolean): void {
+  const button = defaultButtonOf(form);
+
+  if (button) {
+    if (!button.matches(':disabled')) {
+      button.click();
+    }
+  } else if (
+    fromTextField &&
+    Iterator.from(form.elements).filter(blocksImplicitSubmission).toArray()
+      .length === 1
+  ) {
+    form.requestSubmit();
+  }
+}
+
+//#endregion
+
+/**
+ * `stateKey` names the state property, whose attribute sets the default.
+ * `hostAria` lists more host attributes to forward, see `HostAriaMixin`.
+ */
+function BaseFormAssociated<T extends LitElementConstructor>(
   base: T,
-  stateKey: 'value' | 'checked' = 'value'
+  stateKey: 'value' | 'checked' = 'value',
+  hostAria: readonly string[] = []
 ) {
-  class BaseFormAssociatedElement extends HostAriaMixin(base) {
+  class BaseFormAssociatedElement extends HostAriaMixin(base, hostAria) {
     public static readonly formAssociated = true;
 
     //#region Internal state and properties
@@ -128,6 +205,8 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(
     private _isReportingValidity = false;
     private _touched = false;
     private _isExternalInvalid = false;
+    /** The message is built on read, so it follows the locale. */
+    private __failedValidator?: Validator;
 
     private get _shouldApplyStyles(): boolean {
       if (this._isExternalInvalid) {
@@ -146,6 +225,11 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(
       return [];
     }
 
+    /** Whether the control counts as a text field for implicit submission. */
+    protected get _blocksImplicitSubmission(): boolean {
+      return false;
+    }
+
     //#endregion
 
     //#region Public properties and attributes
@@ -158,7 +242,8 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(
     public name!: string;
 
     /**
-     * The disabled state of the component.
+     * Whether the control is disabled. A disabled control is not validated,
+     * and the form does not submit its value.
      * @attr
      * @default false
      */
@@ -176,11 +261,13 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(
     }
 
     /**
-     * Sets the control into invalid state (visual state only).
+     * Whether the control shows the invalid state. It changes only the visual
+     * state, not the validity.
      *
      * @remarks
-     * Not reflected to the attribute. Reading returns the effective state, so
-     * a touched control that fails validation reads `true` after `false`.
+     * Not reflected to the attribute. Reading returns the visual state. A
+     * touched control that fails validation reads `true`, also after you set
+     * `false`.
      * @attr
      * @default false
      */
@@ -194,25 +281,27 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(
       return this._shouldApplyStyles;
     }
 
-    /** Returns the HTMLFormElement associated with this element. */
+    /** The form that the control is associated with, or `null`. */
     public get form(): HTMLFormElement | null {
       return this._internals.form;
     }
 
-    /** Returns a `ValidityState` object for the element. */
+    /** The validity state of the control. */
     public get validity(): ValidityState {
       return this._internals.validity;
     }
 
-    /** A string containing the validation message of this element. */
+    /**
+     * The validation message of the control. It is empty when the control is
+     * valid.
+     */
     public get validationMessage(): string {
-      return this._internals.validationMessage;
+      return this.__failedValidator && !this.validity.customError
+        ? this.__messageOf(this.__failedValidator)
+        : this._internals.validationMessage;
     }
 
-    /**
-     * Returns `true` when the element is a candidate for constraint
-     * validation.
-     */
+    /** Whether the control is a candidate for constraint validation. */
     public get willValidate(): boolean {
       return this._internals.willValidate;
     }
@@ -270,12 +359,30 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(
 
     //#region Enter key submission handling
 
-    protected _handleEnterKeydown(event: KeyboardEvent): void {
-      if (!isKey(event, enterKey) || event.repeat) {
+    /**
+     * Bind to `keydown` and `keypress` on the element that gets the key. A
+     * real Enter submits on `keypress`, so listeners can cancel both. A
+     * synthetic Enter submits on `keydown`, which may have no `keypress`.
+     */
+    protected _handleEnterKey(event: KeyboardEvent): void {
+      if (
+        (event.type === 'keypress') !== event.isTrusted ||
+        // A key from slotted content belongs to that content.
+        event.target !== event.currentTarget ||
+        !this.form ||
+        !isKey(event, enterKey) ||
+        event.repeat ||
+        isComposingKey(event)
+      ) {
         return;
       }
 
-      this.form?.requestSubmit();
+      // A listener that disables the control also stops the submit.
+      runDefaultAction(event, () => {
+        if (this.form && !this.disabled) {
+          submitImplicitly(this.form, this._blocksImplicitSubmission);
+        }
+      });
     }
 
     //#endregion
@@ -322,10 +429,10 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(
 
     private __runValidators(): {
       validity: ValidityStateFlags;
-      message: string;
+      failed?: Validator;
     } {
       let validity: ValidityStateFlags = {};
-      let message = '';
+      let failed: Validator | undefined;
 
       for (const validator of this.__validators) {
         const isValid = validator.isValid(this);
@@ -333,9 +440,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(
         validity[validator.key] = !isValid;
 
         if (!isValid) {
-          message = isFunction(validator.message)
-            ? validator.message(this)
-            : validator.message;
+          failed = validator;
 
           if (validator.key === 'valueMissing') {
             validity = { valueMissing: true };
@@ -344,21 +449,39 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(
         }
       }
 
-      return { validity, message };
+      return { validity, failed };
+    }
+
+    private __messageOf(validator?: Validator): string {
+      const message = validator?.message ?? '';
+
+      return isFunction(message)
+        ? message(
+            this,
+            createLocalizeMessage(getHostLocale(this), (value, locale) =>
+              this._formatValidationValue(value, locale)
+            )
+          )
+        : message;
+    }
+
+    protected _formatValidationValue(value: unknown, _locale: string): string {
+      return `${value}`;
     }
 
     /** Runs the validators and updates the internal validity state. */
     protected _validate(userMessage?: string): void {
       if (isServer) return;
-      const { validity, message: validatorMessage } = this.__runValidators();
+      const { validity, failed } = this.__runValidators();
       const hasCustomError = this.validity.customError;
-      let message = validatorMessage;
+      let message: string | undefined;
+      this.__failedValidator = failed;
 
       if (hasCustomError && userMessage === undefined) {
         // Internal cycle after `setCustomValidity(message)`. Keep the
         // `customError` flag and the message.
         validity.customError = true;
-        message = this.validationMessage;
+        message = this._internals.validationMessage;
       } else if (hasCustomError && userMessage === '') {
         validity.customError = false;
       } else if (userMessage && userMessage !== '') {
@@ -366,7 +489,9 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(
         message = userMessage;
       }
 
-      this._internals.setValidity(validity, message);
+      // Store the key: `validationMessage` localizes it on read. Only the
+      // `customError` paths read the native message back.
+      this._internals.setValidity(validity, message ?? failed?.key ?? '');
 
       // `checkValidity()` would send `invalid`, which a native control does
       // not do while the user edits it.
@@ -485,7 +610,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(
     /**
      * Checks validity. As for a native control, an invalid control emits
      * `invalid` and takes the focus. It shows its own validation messages, not
-     * the message of the browser.
+     * the message of the browser. Returns `true` when the control is valid.
      */
     public reportValidity(): boolean {
       const state = this._reportValidity();
@@ -506,7 +631,10 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(
       return state;
     }
 
-    /** Checks validity and emits `invalid` when the control is invalid. */
+    /**
+     * Checks validity and emits `invalid` when the control is invalid. Returns
+     * `true` when the control is valid.
+     */
     public checkValidity(): boolean {
       this._isInternalValidation = true;
       const state = this._internals.checkValidity();
@@ -515,7 +643,10 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(
       return state;
     }
 
-    /** Sets a custom message. Invalid while `message` is not empty. */
+    /**
+     * Sets a custom validation message. The control is invalid while the
+     * message is not empty. An empty string removes the custom error.
+     */
     public setCustomValidity(message: string): void {
       this._validate(message);
       this.requestUpdate();
@@ -529,13 +660,23 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(
 
 /**
  * Turns the given class into a form-associated custom element with a
- * `defaultValue` property.
+ * `defaultValue` property. `hostAria` lists more host attributes to forward.
  */
-export function FormAssociatedMixin<T extends Constructor<LitElement>>(
-  base: T
+export function FormAssociatedMixin<T extends LitElementConstructor>(
+  base: T,
+  hostAria: readonly string[] = []
 ) {
-  class FormAssociatedElement extends BaseFormAssociated(base) {
+  class FormAssociatedElement extends BaseFormAssociated(
+    base,
+    'value',
+    hostAria
+  ) {
     /* blazorCSSuppress */
+    /**
+     * The default value of the control. A form reset restores the value to it.
+     * While the value is unchanged since the start or the last form reset, a
+     * new default also sets the value. The `value` attribute also sets it.
+     */
     @property({ attribute: false })
     public set defaultValue(value: unknown) {
       this._applyDefault(value);
@@ -566,7 +707,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
  * Turns the given class into a form-associated checkbox custom element with
  * a `defaultChecked` property.
  */
-export function FormAssociatedCheckboxMixin<T extends Constructor<LitElement>>(
+export function FormAssociatedCheckboxMixin<T extends LitElementConstructor>(
   base: T
 ) {
   class FormAssociatedCheckboxElement extends BaseFormAssociated(
@@ -574,6 +715,12 @@ export function FormAssociatedCheckboxMixin<T extends Constructor<LitElement>>(
     'checked'
   ) {
     /* blazorCSSuppress */
+    /**
+     * Whether the control is checked by default. A form reset restores the
+     * checked state to it. While the checked state is unchanged since the
+     * start or the last form reset, a new default also sets the checked state.
+     * The `checked` attribute also sets it.
+     */
     @property({ attribute: false })
     public set defaultChecked(value: boolean) {
       this._applyDefault(value);

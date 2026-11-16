@@ -4,12 +4,46 @@ import type {
   ReactiveController,
   ReactiveControllerHost,
 } from 'lit';
-import { createAbortHandle } from '../abort-handler.js';
+import { getOrInsertComputed } from '../utils/objects.js';
 
 type AsyncContextOptions<T extends Context<unknown, unknown>> = {
   context: T;
   callback?: (value: ContextType<T>, dispose?: () => void) => void;
 };
+
+type ProviderEvent = HTMLElementEventMap['context-provider'];
+type Retry = (event: ProviderEvent) => void;
+
+/** The unanswered consumers of each document. */
+const waiting = new WeakMap<Document, Set<Retry>>();
+
+/**
+ * A late provider announces itself, so the unanswered consumers ask again.
+ * One listener per document: Chromium scans all listeners on each add and
+ * remove.
+ */
+function retryWaiting(event: Event): void {
+  for (const retry of waiting.get(event.currentTarget as Document) ?? []) {
+    retry(event as ProviderEvent);
+  }
+}
+
+/**
+ * Whether a request of `consumer` can reach `provider`. In one tree, it
+ * reaches only the ancestors of the consumer. Across trees, slots decide, and
+ * a closed shadow root hides them.
+ */
+function mayReach(consumer: Element, provider: Element): boolean {
+  return (
+    consumer.getRootNode() !== provider.getRootNode() ||
+    provider.contains(consumer)
+  );
+}
+
+function createWaiting(document: Document): Set<Retry> {
+  document.addEventListener('context-provider', retryWaiting);
+  return new Set();
+}
 
 /* blazorSuppress */
 class AsyncContextConsumer<
@@ -19,9 +53,11 @@ class AsyncContextConsumer<
   protected _host: Host;
   protected _options: AsyncContextOptions<T>;
   protected _consumer?: ContextConsumer<T, Host>;
-  /** Whether a provider answered the request of the current connection. */
-  private _answered = false;
-  private readonly _abort = createAbortHandle();
+  /**
+   * The set of the document at connect time. A move to another document
+   * changes `ownerDocument` before the disconnect.
+   */
+  private _waiting?: Set<Retry>;
 
   constructor(host: Host, options: AsyncContextOptions<T>) {
     this._host = host;
@@ -34,27 +70,25 @@ class AsyncContextConsumer<
     return this._consumer?.value;
   }
 
-  /**
-   * A provider that connects after the host, such as one that the browser
-   * defines later, announces itself. An unanswered request then goes again.
-   */
-  private readonly _handleProvider = (event: Event): void => {
-    const { context } = event as Event & { context?: unknown };
-
-    if (!this._answered && context === this._options.context) {
-      this._consumer?.hostConnected();
+  private readonly _retry: Retry = ({ context, contextTarget }) => {
+    if (
+      this._consumer &&
+      context === this._options.context &&
+      mayReach(this._host, contextTarget)
+    ) {
+      this._consumer.hostConnected();
     }
   };
 
   // The consumer survives a disconnect, and a reconnect can land during the
   // await, so the guard runs on both sides of it.
   public async hostConnected(): Promise<void> {
-    this._answered = false;
-    this._host.ownerDocument.addEventListener(
-      'context-provider',
-      this._handleProvider,
-      { signal: this._abort.signal }
+    this._waiting = getOrInsertComputed(
+      waiting,
+      this._host.ownerDocument,
+      createWaiting
     );
+    this._waiting.add(this._retry);
 
     if (this._consumer) {
       return;
@@ -65,7 +99,7 @@ class AsyncContextConsumer<
     this._consumer ??= new ContextConsumer(this._host, {
       context: this._options.context,
       callback: (value, dispose) => {
-        this._answered = true;
+        this._waiting?.delete(this._retry);
         this._options.callback?.(value, dispose);
       },
       subscribe: true,
@@ -73,7 +107,7 @@ class AsyncContextConsumer<
   }
 
   public hostDisconnected(): void {
-    this._abort.abort();
+    this._waiting?.delete(this._retry);
   }
 }
 

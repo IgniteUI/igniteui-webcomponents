@@ -1,12 +1,10 @@
-@use 'sass:map';
 @use 'igniteui-theming/sass/color/functions' as theming;
 @use 'igniteui-theming/sass/themes/config' as themes;
-@use 'igniteui-theming/sass/themes/mixins' as theme-mixins;
 @include themes.configure-variable-prefix('ig');
 
 @function color(
     $color: primary,
-    $variant: 500,
+    $variant: null,
     $opacity: null) {
     @return theming.color(
         $palette: null,
@@ -16,24 +14,11 @@
     );
 }
 
-@function contrast-color($color: primary, $variant: 500, $opacity: null) {
+@function contrast-color($color: primary, $variant: null, $opacity: null) {
     @return theming.contrast-color(
         $palette: null,
         $color: $color,
         $variant: $variant,
         $opacity: $opacity
     );
-}
-
-/// Emits the CSS variables of a component theme, without the `--ig-theme` and
-/// `--ig-theme-variant` markers: the library reads them from the document
-/// root only, where the global theme sheet declares them.
-@mixin css-vars-from-theme($theme, $name: null, $ignored: theme-mixins.$ignored-keys) {
-    $meta: map.get($theme, '_meta');
-
-    @if $meta {
-        $theme: map.set($theme, '_meta', map.remove($meta, 'theme', 'variant'));
-    }
-
-    @include theme-mixins.css-vars-from-theme($theme, $name, $ignored);
 }

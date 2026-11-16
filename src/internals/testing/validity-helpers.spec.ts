@@ -144,9 +144,18 @@ function hasSlotContent(
   return !!slot && !isEmpty(slot.assignedElements({ flatten: true }));
 }
 
+/** The validation container that `host` renders in its shadow root. */
+export function getValidationContainer(
+  host: Element
+): IgcValidationContainerComponent | null {
+  return (
+    host.shadowRoot?.querySelector(IgcValidationContainerComponent.tagName) ??
+    null
+  );
+}
+
 function getValidationContainerRoot(
   host: IgcFormControl
 ): HTMLElement | DocumentFragment {
-  return host.renderRoot.querySelector(IgcValidationContainerComponent.tagName)!
-    .renderRoot;
+  return getValidationContainer(host)!.renderRoot;
 }

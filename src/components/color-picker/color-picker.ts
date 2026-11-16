@@ -1,6 +1,8 @@
+import { ColorPickerResourceStringsEN } from 'igniteui-i18n-core';
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
+import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -24,11 +26,12 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import {
@@ -77,6 +80,10 @@ const Slots = setSlots(
   'helper-text'
 );
 
+const i18n = {
+  defaultEN: ColorPickerResourceStringsEN,
+};
+
 /** The color string shape of each format. Shown while the input is empty. */
 const formatPlaceholders: Record<ColorFormat, string> = {
   hex: '#rrggbb',
@@ -124,38 +131,51 @@ function getEyeDropper(): EyeDropperConstructor | undefined {
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  * @slot helper-text - Renders content below the picker.
  *
- * @fires igcOpening - Emitted just before the picker dropdown is open.
- * @fires igcOpened - Emitted after the picker dropdown is open.
- * @fires igcClosing - Emitted just before the picker dropdown is closed.
- * @fires igcClosed - Emitted after closing the picker dropdown.
- * @fires igcInput - Emitted when the value of the component is changed.
- * @fires igcChange - Emitted when the value of the component is committed.
+ * @fires igcOpening - Emitted before the user opens the picker dropdown. Cancelable.
+ * @fires igcOpened - Emitted after the picker dropdown opens on a user action.
+ * @fires igcClosing - Emitted before the user closes the picker dropdown. Cancelable.
+ * @fires igcClosed - Emitted after the picker dropdown closes on a user action.
+ * @fires igcInput - Emitted when the user changes the color with the canvas, the sliders, the alpha input, a swatch or the eyedropper.
+ * @fires igcChange - Emitted when the focus leaves the component after the user changed the color.
  *
+ * @csspart color-picker - The wrapper of the anchor, the label and the helper text.
  * @csspart anchor - The trigger element that opens the picker (the button in default mode, or the swatch prefix in input mode).
  * @csspart empty - Applied alongside `anchor` when no color value is set, rendering a checkered background.
- * @csspart label - The label rendered above the anchor in default mode.
+ * @csspart input-mode - Added to the anchor part in input mode.
+ * @csspart label - The label rendered after the anchor in default mode.
  * @csspart picker - The popover container holding the canvas, sliders, inputs and swatches.
+ * @csspart picker-canvas - The saturation and value canvas.
+ * @csspart marker - The marker on the canvas that shows the saturation and value.
+ * @csspart dragging - Added to the marker part while the user drags it.
  * @csspart main-row - The row containing the hue slider and the copy/eyedropper buttons.
  * @csspart alpha-row - The row containing the alpha slider and input, rendered when `show-alpha` is set.
  * @csspart inputs-row - The row containing the format select and the color value input.
  * @csspart buttons - The wrapper around the copy and eyedropper buttons.
  * @csspart hue - The hue slider.
  * @csspart alpha - The alpha slider.
+ * @csspart alpha-input - The input of the alpha value, rendered when `show-alpha` is set.
  * @csspart copy - The button that copies the current color value to the clipboard.
  * @csspart eye-dropper - The button that activates the EyeDropper API.
  * @csspart format-select - The select control used to switch the color string format.
  * @csspart swatches - The container of the pre-defined color swatches.
  * @csspart swatch - An individual color swatch button.
+ *
+ * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 @shadowOptions({ delegatesFocus: true })
-export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin(
-  EventEmitterMixin<
-    IgcColorPickerComponentEventMap,
-    AbstractConstructor<IgcBaseComboBoxComponent>
-  >(IgcBaseComboBoxComponent)
+export default class IgcColorPickerComponent extends I18nMixin(
+  FormAssociatedRequiredMixin(
+    EventEmitterMixin<
+      IgcColorPickerComponentEventMap,
+      typeof IgcBaseComboBoxComponent
+    >(IgcBaseComboBoxComponent)
+  ),
+  i18n
 ) {
   public static readonly tagName = 'igc-color-picker';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -240,7 +260,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   /**
-   * Sets the color format of the string value.
+   * The color format of the string value.
    *
    * A format change renders `value` in the new notation. The color does not
    * change, so the component emits no `igcInput` or `igcChange`.
@@ -252,7 +272,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   public format: ColorFormat = 'hex';
 
   /**
-   * Whether to hide the format picker buttons.
+   * Whether the format select is hidden.
    *
    * @attr hide-formats
    * @default false
@@ -284,8 +304,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
   /**
    * Pre-defined color strings. The component renders them as clickable
-   * swatches below the picker controls. A click on a swatch commits its color
-   * as the value.
+   * swatches below the picker controls. A click on a swatch sets its color as
+   * the value.
    */
   @property({ attribute: false })
   public swatches: string[] = [];
@@ -302,7 +322,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
 
     addKeybindings(this, { skip: () => this.disabled })
-      .set(escapeKey, this._handleKeyboardClosing)
+      .set(escapeKey, this._handleKeyboardClosing, { when: () => this.open })
       .set([altKey, arrowDown], this._handleAnchorClick)
       .set([altKey, arrowUp], this._handleKeyboardClosing);
 
@@ -398,6 +418,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private _handleCanvasColorPicked(
     event: CustomEvent<PickerCanvasEventDetail>
   ): void {
+    stopPropagation(event);
+
     this._color.setSaturationAndValue(event.detail.x, 100 - event.detail.y);
     this._updateColor(true);
   }
@@ -588,16 +610,14 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
    * it, so it also runs on a first render with no value.
    */
   private _applyColorProperties(): void {
-    const properties = {
-      '--_current-color': this._currentColor,
-      '--_selected-color': this._opaqueColor,
-    };
+    this._setHostColor('--_current-color', this._currentColor);
+    this._setHostColor('--_selected-color', this._opaqueColor);
+  }
 
-    for (const [name, value] of Object.entries(properties)) {
-      if (this._appliedProperties.get(name) !== value) {
-        this._appliedProperties.set(name, value);
-        this.style.setProperty(name, value);
-      }
+  private _setHostColor(name: string, value: string): void {
+    if (this._appliedProperties.get(name) !== value) {
+      this._appliedProperties.set(name, value);
+      this.style.setProperty(name, value);
     }
   }
 
@@ -666,6 +686,24 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
   //#endregion
 
+  //#region Public methods
+
+  /* alternateName: focusComponent */
+  /** Sets focus on the color picker. */
+  public override focus(options?: FocusOptions): void {
+    super.focus(options);
+    deferFocus(this, options);
+  }
+
+  /* alternateName: blurComponent */
+  /** Removes focus from the color picker. */
+  public override blur(): void {
+    cancelDeferredFocus(this);
+    super.blur();
+  }
+
+  //#endregion
+
   //#region Canvas area rendering
 
   private _renderCanvasGradient(): TemplateResult {
@@ -681,6 +719,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         markerColor=${this._opaqueColor}
         .saturation=${saturation}
         .brightness=${brightness}
+        .markerLabel=${this.resourceStrings.color_picker_canvas_label}
+        .markerValueFormat=${this.resourceStrings.color_picker_canvas_value}
       >
       </igc-picker-canvas>
     `;
@@ -693,7 +733,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private _renderHueSlider(): TemplateResult {
     return html`
       <input
-        aria-label="Hue"
+        aria-label=${this.resourceStrings.color_picker_hue}
         type="range"
         part="hue"
         min="0"
@@ -726,18 +766,20 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   private _renderPickerButtons(): TemplateResult {
+    const strings = this.resourceStrings;
+
     return html`
       <div part="buttons">
         ${this._renderIconButton(
           'copy',
           'copy_content',
-          'Copy color value to clipboard',
+          strings.color_picker_copy,
           this._handleCopy
         )}
         ${this._renderIconButton(
           'eye-dropper',
           'eye_dropper',
-          'Pick a color from the screen',
+          strings.color_picker_eye_dropper,
           this._handleEyeDropperClick,
           !this._supportsEyeDropper
         )}
@@ -750,9 +792,11 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   //#region Alpha row rendering
 
   private _renderAlphaRow(): TemplateResult {
+    const strings = this.resourceStrings;
+
     return html`
       <input
-        aria-label="Alpha slider"
+        aria-label=${strings.color_picker_alpha}
         type="range"
         part="alpha"
         min="0"
@@ -763,14 +807,14 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
       />
 
       <igc-visually-hidden>
-        <label for="alpha">Alpha value</label>
+        <label for="alpha">${strings.color_picker_alpha_value}</label>
       </igc-visually-hidden>
 
       <igc-input
         ${ref(this._alphaInputRef)}
         id="alpha"
         name="alpha"
-        placeholder="Alpha value"
+        placeholder=${strings.color_picker_alpha_value}
         inputmode="numeric"
         part="alpha-input"
         outlined
@@ -780,6 +824,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         @focusin=${this._handleAlphaInputCaret}
         @click=${this._handleAlphaInputCaret}
         @keyup=${this._handleAlphaInputCaret}
+        @igcInput=${stopPropagation}
         @igcChange=${this._handleAlphaInputChange}
       ></igc-input>
     `;
@@ -790,19 +835,25 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   //#region Color formats and input row rendering
 
   private _renderSelect(): TemplateResult {
+    const label = this.resourceStrings.color_picker_format;
+
     return html`
       <igc-visually-hidden>
-        <label for="format-select">Color format</label>
+        <label for="format-select">${label}</label>
       </igc-visually-hidden>
 
       <igc-select
         id="format-select"
         part="format-select"
-        placeholder="Color format"
+        placeholder=${label}
         name="format"
         outlined
         .value=${this.format}
         @igcChange=${this._handleFormatChange}
+        @igcOpening=${stopPropagation}
+        @igcOpened=${stopPropagation}
+        @igcClosing=${stopPropagation}
+        @igcClosed=${stopPropagation}
       >
         <igc-select-item value="hex">Hex</igc-select-item>
         <igc-select-item value="rgb">RGB</igc-select-item>
@@ -812,10 +863,12 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   private _renderInputsRow(): TemplateResult {
+    const label = this.resourceStrings.color_picker_value;
+
     return html`
       ${cache(this.hideFormats ? nothing : this._renderSelect())}
       <igc-visually-hidden>
-        <label for="color-input"> Color value input </label>
+        <label for="color-input">${label}</label>
       </igc-visually-hidden>
 
       <igc-input
@@ -824,6 +877,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         placeholder=${formatPlaceholders[this.format]}
         outlined
         .value=${live(this._color.asString(this.format))}
+        @igcInput=${stopPropagation}
         @igcChange=${this._handleColorInputChange}
       ></igc-input>
     `;
@@ -885,6 +939,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   private _renderButtonAnchor(): TemplateResult {
+    const label = this.resourceStrings.color_picker_open;
+
     return html`
       <button
         ${ref(this._anchorRef)}
@@ -906,7 +962,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         ?disabled=${this.disabled}
         @click=${this._handleAnchorClick}
       >
-        <igc-visually-hidden>Open color picker</igc-visually-hidden>
+        <igc-visually-hidden>${label}</igc-visually-hidden>
       </button>
     `;
   }
@@ -923,13 +979,14 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         ?disabled=${this.disabled}
         .value=${live(this.value)}
         .invalid=${this.invalid}
+        @igcInput=${stopPropagation}
         @igcChange=${this._handleColorInputChange}
       >
         <div slot="prefix">
           <button
             type="button"
             part=${this._anchorParts}
-            aria-label="Open color picker"
+            aria-label=${this.resourceStrings.color_picker_open}
             aria-haspopup="dialog"
             aria-controls="picker"
             aria-expanded=${this.open}
@@ -942,16 +999,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     `;
   }
 
-  private _renderAnchor(): TemplateResult {
-    return this._isInputMode
-      ? this._renderInputAnchor()
-      : this._renderButtonAnchor();
-  }
-
-  private _renderHelperText(): TemplateResult {
-    return IgcValidationContainerComponent.create(this);
-  }
-
   //#endregion
 
   private _renderPicker(): TemplateResult {
@@ -961,7 +1008,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
           id="picker"
           part="picker"
           role="dialog"
-          aria-label="Color picker"
+          aria-label=${this.resourceStrings.color_picker_dialog_label}
           aria-modal="false"
         >
           ${this._renderCanvasGradient()}
@@ -974,7 +1021,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
               : nothing
           }
           <div part="inputs-row">${this._renderInputsRow()}</div>
-          ${this._renderSwatches()}
+          ${guard([this.swatches], () => this._renderSwatches())}
         </div>
       </igc-focus-trap>
     `;
@@ -989,14 +1036,18 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
           .scrollStrategy=${this.scrollStrategy}
           @igcPopoverScrollClose=${this._handleClosing}
         >
-          ${this._renderAnchor()}${this._renderPicker()}
+          ${
+            this._isInputMode
+              ? this._renderInputAnchor()
+              : this._renderButtonAnchor()
+          }${this._renderPicker()}
         </igc-popover>
         ${
           !this._isInputMode && this.label
             ? html`<label part="label" for="trigger">${this.label}</label>`
             : nothing
         }
-        ${this._renderHelperText()}
+        ${IgcValidationContainerComponent.create(this)}
       </div>
     `;
   }

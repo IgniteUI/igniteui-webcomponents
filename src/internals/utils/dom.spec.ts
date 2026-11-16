@@ -5,6 +5,7 @@ import {
   getCSSZoom,
   getDeepActiveElement,
   getDeepBorderRadius,
+  getFocusableElements,
   getOverflowClip,
   getPaddingBox,
   getScaleFactor,
@@ -162,6 +163,11 @@ describe('DOM utilities', () => {
 
     it('should return 0 for percentages, which are not lengths', () => {
       expect(resolveCssLength(element, '50%')).to.equal(0);
+    });
+
+    it('should resolve percentages against a basis', () => {
+      expect(resolveCssLength(element, '50%', 300)).to.equal(150);
+      expect(resolveCssLength(element, 'calc(10% + 1em)', 300)).to.equal(50);
     });
 
     it('should return 0 for values that are not valid lengths', () => {
@@ -493,6 +499,47 @@ describe('DOM utilities', () => {
       } finally {
         outside.remove();
       }
+    });
+  });
+
+  describe('getFocusableElements', () => {
+    const ids = (root: Element) =>
+      Array.from(getFocusableElements(root), (element) => element.id);
+
+    it('keeps only the checked radio button of a group', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <input type="radio" id="a" name="group" />
+          <input type="radio" id="b" name="group" checked />
+          <input type="radio" id="c" name="group" />
+          <button id="next">Next</button>
+        </div>
+      `);
+
+      expect(ids(root)).to.eql(['b', 'next']);
+    });
+
+    it('keeps the first radio button of a group without a checked one', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <input type="radio" id="a" name="group" />
+          <input type="radio" id="b" name="group" />
+          <input type="radio" id="single" />
+        </div>
+      `);
+
+      expect(ids(root)).to.eql(['a', 'single']);
+    });
+
+    it('separates radio groups of different forms', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <form><input type="radio" id="a" name="group" checked /></form>
+          <form><input type="radio" id="b" name="group" /></form>
+        </div>
+      `);
+
+      expect(ids(root)).to.eql(['a', 'b']);
     });
   });
 

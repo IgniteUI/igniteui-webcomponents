@@ -38,7 +38,7 @@ The assets to protect are:
 
 ### Requests to host-supplied URLs
 
-The components make no network requests of their own. `registerIcon` fetches the URL that it receives. The QR code loads the `logo-src` image to measure it. `toBlob()` and `toImage()` fetch it again to inline it in the export. These requests go to the origin that the URL names and follow the page's referrer policy.
+The components make no network requests of their own. `registerIcon` fetches the URL that it receives. The QR code loads the `logo-src` image to measure it. `toBlob()`, `toImage()` and `copyToClipboard()` fetch it again to inline it in the export. These requests go to the origin that the URL names and follow the page's referrer policy.
 
 Supply only URLs that you trust. Restrict them with the `connect-src` and `img-src` directives of your Content Security Policy.
 
@@ -52,7 +52,7 @@ The icon registry opens the `BroadcastChannel` `ignite-ui-icon-channel`. It publ
 
 ### Clipboard
 
-The color picker and the chat message actions write to the clipboard only when the user activates a copy control. The components never read the clipboard, so pasted content reaches them only as ordinary user input.
+The color picker and the chat message actions write to the clipboard only when the user activates a copy control. The QR code writes to it only when the host application calls `copyToClipboard()`. The components never read the clipboard, so pasted content reaches them only as ordinary user input.
 
 ### Content Security Policy
 

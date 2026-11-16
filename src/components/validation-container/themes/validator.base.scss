@@ -1,7 +1,13 @@
+@use 'sass:list';
+@use 'sass:map';
 @use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/icon' as icon-schema;
 
 :host {
     --ig-size: 1;
+
+    // The small error icon. Indigo sets its own size.
+    --_icon-size: #{list.nth(map.get(icon-schema.$light-icon, 'size', 'sizable'), 1)};
 
     display: block;
     grid-row: 2;
@@ -27,8 +33,32 @@
     align-items: center;
 }
 
-[part~='empty'] {
+[part~='validation-message'][part~='empty'] {
     display: none !important;
+}
+
+// An empty wrapper keeps the display of its theme, so it can hold reserved
+// lines. Without them, it leaves the flow and takes no space.
+[part~='helper-text'][part~='empty'] {
+    position: absolute !important;
+    visibility: hidden !important;
+}
+
+// Only whole counts match, so `0px`, `-1` or `calc(0)` reserve nothing.
+@container style(--ig-helper-min-lines: 1) or style(--ig-helper-min-lines: 2) or style(--ig-helper-min-lines: 3) {
+    [part~='helper-text'] {
+        min-block-size: max(var(--ig-icon-size, var(--_icon-size)), var(--ig-helper-min-lines) * 1lh);
+        align-content: start;
+    }
+
+    [part~='helper-text'][part~='empty'] {
+        position: static !important;
+
+        // A grid row, so that the minimum row height of the theme applies.
+        &::before {
+            content: '';
+        }
+    }
 }
 
 @media (forced-colors: active) {

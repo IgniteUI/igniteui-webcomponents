@@ -1,7 +1,6 @@
 import { expect } from '@open-wc/testing';
 import {
   createIdGenerator,
-  escapeRegex,
   formatString,
   nanoid,
   splitToWords,
@@ -42,14 +41,6 @@ describe('String utilities', () => {
       expect(toKebabCase('backgroundColor')).to.equal('background-color');
       expect(toKebabCase('Hello World')).to.equal('hello-world');
       expect(toKebabCase('snake_case')).to.equal('snake-case');
-    });
-  });
-
-  describe('escapeRegex', () => {
-    it('should escape regex syntax characters', () => {
-      const escaped = escapeRegex('a.b*c?(d)[e]{f}|g^$\\');
-      expect(() => new RegExp(escaped)).to.not.throw();
-      expect(new RegExp(escaped).test('a.b*c?(d)[e]{f}|g^$\\')).to.be.true;
     });
   });
 

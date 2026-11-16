@@ -11,6 +11,9 @@
     font-family: var(--ig-font-family);
     outline-style: none;
 
+    // Keeps the z-index of the parts inside the component.
+    isolation: isolate;
+
     ::part(helper-text) {
         @include type-style('caption');
         @include line-clamp(2, true, true);

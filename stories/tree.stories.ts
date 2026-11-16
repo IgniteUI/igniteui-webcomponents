@@ -54,20 +54,20 @@ const metadata: Meta<IgcTreeComponent> = {
     singleBranchExpand: {
       type: 'boolean',
       description:
-        "Whether a single or multiple of a parent's child items can be expanded.",
+        'Whether only one branch of the tree can be expanded at a time. When the user\nexpands an item, the items outside its path collapse.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     toggleNodeOnClick: {
       type: 'boolean',
-      description:
-        'Whether clicking over nodes will change their expanded state or not.',
+      description: 'Whether a click on an item toggles its expanded state.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     selection: {
       type: { name: 'enum', value: ['none', 'multiple', 'cascade'] },
-      description: 'The selection state of the tree.',
+      description:
+        'The selection mode of the tree. A change clears the current selection.',
       options: ['none', 'multiple', 'cascade'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'none' } },
@@ -75,7 +75,7 @@ const metadata: Meta<IgcTreeComponent> = {
     locale: {
       type: 'string',
       description:
-        'The locale for the resource strings. Falls back to the global locale.',
+        'The locale of the component. Without it, the component takes its own\n`lang`, else the locale of the nearest ancestor that has a `locale` (a\ncomponent) or a `lang`, and then the global locale.',
       control: 'text',
     },
   },
@@ -89,13 +89,20 @@ const metadata: Meta<IgcTreeComponent> = {
 export default metadata;
 
 interface IgcTreeArgs {
-  /** Whether a single or multiple of a parent's child items can be expanded. */
+  /**
+   * Whether only one branch of the tree can be expanded at a time. When the user
+   * expands an item, the items outside its path collapse.
+   */
   singleBranchExpand: boolean;
-  /** Whether clicking over nodes will change their expanded state or not. */
+  /** Whether a click on an item toggles its expanded state. */
   toggleNodeOnClick: boolean;
-  /** The selection state of the tree. */
+  /** The selection mode of the tree. A change clears the current selection. */
   selection: 'none' | 'multiple' | 'cascade';
-  /** The locale for the resource strings. Falls back to the global locale. */
+  /**
+   * The locale of the component. Without it, the component takes its own
+   * `lang`, else the locale of the nearest ancestor that has a `locale` (a
+   * component) or a `lang`, and then the global locale.
+   */
   locale: string;
 }
 type Story = StoryObj<IgcTreeArgs>;

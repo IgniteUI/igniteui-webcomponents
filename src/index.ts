@@ -122,19 +122,29 @@ export {
   type ICarouselResourceStrings,
   type IChatResourceStrings,
   type IChipResourceStrings,
+  type IColorPickerResourceStrings,
   type IComboResourceStrings,
   type IDatePickerResourceStrings,
   type IDateRangePickerResourceStrings,
+  type IDialogResourceStrings,
   type IFileInputResourceStrings,
+  type ISplitterResourceStrings,
+  type ITileResourceStrings,
+  type ITooltipResourceStrings,
   type ITreeResourceStrings,
   CalendarResourceStringsEN,
   CarouselResourceStringsEN,
   ChatResourceStringsEN,
   ChipResourceStringsEN,
+  ColorPickerResourceStringsEN,
   ComboResourceStringsEN,
   DatePickerResourceStringsEN,
   DateRangePickerResourceStringsEN,
+  DialogResourceStringsEN,
   FileInputResourceStringsEN,
+  SplitterResourceStringsEN,
+  TileResourceStringsEN,
+  TooltipResourceStringsEN,
   TreeResourceStringsEN,
   registerI18n,
   setCurrentI18n,
@@ -169,6 +179,7 @@ export type { IgcRangeSliderComponentEventMap } from './components/slider/range-
 export type { IgcSnackbarComponentEventMap } from './components/snackbar/snackbar.js';
 export type { IgcSplitterComponentEventMap } from './components/splitter/splitter.js';
 export type { IgcStepperComponentEventMap } from './components/stepper/common/types.js';
+export type { IgcTabComponentEventMap } from './components/tabs/tab.js';
 export type { IgcTabsComponentEventMap } from './components/tabs/tabs.js';
 export type { IgcTextareaComponentEventMap } from './components/textarea/textarea.js';
 export type { IgcTileComponentEventMap } from './components/tile-manager/tile.js';
@@ -207,11 +218,18 @@ export type {
 } from './components/stepper/common/types.js';
 export type { IgcTreeSelectionEventArgs } from './components/tree/tree.common.js';
 export type {
+  ComboCloseTrigger,
+  ComboFilteringMode,
+  ComboGroupHeaderContext,
+  ComboGroupHeaderTemplate,
   ComboItemTemplate,
+  ComboSelectionCommit,
   ComboTemplateProps,
   FilteringOptions,
   GroupingDirection,
   IgcComboChangeEventArgs,
+  IgcComboClosingEventArgs,
+  IgcComboSearchInputEventArgs,
 } from './components/combo/types.js';
 export type {
   IconMeta,
@@ -219,6 +237,8 @@ export type {
 } from './components/icon/registry/types.js';
 export type * from './components/chat/types.js';
 export type {
+  QrCodeCopyFormat,
+  QrCodeCopyOptions,
   QrCodeExportFormat,
   QrCodeExportOptions,
   QrCornerSquareStyle,

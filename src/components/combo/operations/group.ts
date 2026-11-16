@@ -38,6 +38,7 @@ export default class GroupDataOperation<T extends object> {
           } as T,
           header: true,
           position: -1,
+          group: key,
         },
         ...(grouped.get(key) ?? []),
       ];

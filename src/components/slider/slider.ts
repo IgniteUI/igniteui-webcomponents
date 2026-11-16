@@ -1,7 +1,6 @@
 import { property } from 'lit/decorators.js';
 import { hostAria } from '#internals/controllers/aria-projection.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '#internals/mixins/forms/associated.js';
 import { FormValueNumberTransformers } from '#internals/mixins/forms/form-transformers.js';
@@ -21,9 +20,12 @@ export interface IgcSliderComponentEventMap {
 }
 
 /**
- * A slider component used to select numeric value within a range.
+ * A slider component used to select a numeric value within a range.
  *
  * @element igc-slider
+ *
+ * @slot - Renders slider labels. Their text replaces the numbers in the thumb
+ * and tick labels.
  *
  * @fires igcInput - Emitted when a value is changed via thumb drag or keyboard interaction.
  * @fires igcChange - Emitted when a value change is committed on a thumb drag end or keyboard interaction.
@@ -36,18 +38,20 @@ export interface IgcSliderComponentEventMap {
  * @csspart tick-label-inner - The inner element of the tick label.
  * @csspart thumbs - The thumbs container.
  * @csspart thumb - The thumb element.
+ * @csspart focused - Added to the thumb part when the thumb has keyboard focus.
  * @csspart thumb-label - The thumb tooltip label container.
  * @csspart thumb-label-inner - The thumb tooltip label inner element.
  * @csspart track - The track container.
  * @csspart steps - The track steps element.
  * @csspart inactive - The inactive element of the track.
  * @csspart fill - The filled part of the track.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 export default class IgcSliderComponent extends FormAssociatedMixin(
-  EventEmitterMixin<
-    IgcSliderComponentEventMap,
-    Constructor<IgcSliderBaseComponent>
-  >(IgcSliderBaseComponent)
+  EventEmitterMixin<IgcSliderComponentEventMap, typeof IgcSliderBaseComponent>(
+    IgcSliderBaseComponent
+  )
 ) {
   public static readonly tagName = 'igc-slider';
 

@@ -1,132 +1,108 @@
 import { isServer, type LitElement, type ReactiveController } from 'lit';
-import { isDocument, isElement } from '../utils/dom.js';
+import { getElementByIdFromRoot, isDocument } from '../utils/dom.js';
 import { getOrInsertComputed } from '../utils/objects.js';
 
-const ID_REF_EMITTERS = new WeakMap<Node, IdRefChangeEmitter>();
-const ID_REF_EVENT = 'id-refs-change';
+const ID_REF_OBSERVERS = new WeakMap<Node, IdRefObserver>();
 
-function getEmitter(root: Node): IdRefChangeEmitter {
+function getObserver(root: Node): IdRefObserver {
   return getOrInsertComputed(
-    ID_REF_EMITTERS,
+    ID_REF_OBSERVERS,
     root,
-    () => new IdRefChangeEmitter(root)
+    () => new IdRefObserver(root)
   );
 }
 
-/** Adds the ids of `nodes` and of any of their descendants to `affected`. */
-function collectIds(nodes: NodeList, affected: Set<string>): void {
-  for (const node of nodes) {
-    if (!isElement(node)) continue;
-    if (node.id) affected.add(node.id);
-    for (const child of node.querySelectorAll('[id]')) {
-      if (child.id) affected.add(child.id);
-    }
-  }
-}
-
-function refObserverCallback(
-  mutations: MutationRecord[],
-  emitter: IdRefChangeEmitter
-): void {
-  const affected = new Set<string>();
-
-  for (const mutation of mutations) {
-    if (mutation.type === 'attributes') {
-      if (!isElement(mutation.target)) continue;
-      const oldId = mutation.oldValue;
-      const newId = mutation.target.id;
-      if (oldId) affected.add(oldId);
-      if (newId) affected.add(newId);
-    } else {
-      collectIds(mutation.addedNodes, affected);
-      collectIds(mutation.removedNodes, affected);
-    }
-  }
-
-  if (affected.size > 0) {
-    emitter.dispatchEvent(new CustomEvent(ID_REF_EVENT, { detail: affected }));
-  }
-}
-
 /**
- * Sends an event when an ID in a root node changes. Its consumers share one
- * reference-counted observer.
+ * The shared observer of the resolvers of a root node. A batch of changes
+ * costs one `getElementById` per resolver, not a scan of the changed nodes.
+ * Not an `EventTarget`: Chromium scans all listeners on each add and remove.
  */
-class IdRefChangeEmitter extends EventTarget {
+class IdRefObserver {
   private readonly _observer?: MutationObserver;
   private readonly _root: Node;
-  private _refCount = 0;
+  private readonly _resolvers = new Set<IdRefResolverController>();
 
   constructor(root: Node) {
-    super();
     this._root = root;
 
     if (!isServer) {
-      this._observer = new MutationObserver((mutations) =>
-        refObserverCallback(mutations, this)
-      );
-    }
-  }
-
-  /** Starts the mutation observer on the first call. */
-  public retain(): void {
-    if (this._refCount++ === 0) {
-      const root = isDocument(this._root) ? this._root.body : this._root;
-      this._observer?.observe(root, {
-        attributeFilter: ['id'],
-        attributeOldValue: true,
-        subtree: true,
-        childList: true,
+      this._observer = new MutationObserver(() => {
+        for (const resolver of this._resolvers) {
+          resolver.check();
+        }
       });
     }
   }
 
-  /** Stops the observer when the reference count reaches zero. */
-  public release(): void {
-    if (this._refCount > 0 && --this._refCount === 0) {
+  /** Adds a resolver, and starts the observer for the first one. */
+  public add(resolver: IdRefResolverController): void {
+    if (this._resolvers.size === 0) {
+      const root = isDocument(this._root) ? this._root.body : this._root;
+      this._observer?.observe(root, {
+        attributeFilter: ['id'],
+        subtree: true,
+        childList: true,
+      });
+    }
+
+    this._resolvers.add(resolver);
+  }
+
+  /** Removes a resolver, and stops the observer after the last one. */
+  public delete(resolver: IdRefResolverController): void {
+    if (this._resolvers.delete(resolver) && this._resolvers.size === 0) {
       this._observer?.disconnect();
     }
   }
 }
 
-/** Resolves ID references in a root node. See {@link addIdRefResolver}. */
+/** Resolves an ID reference in a root node. See {@link addIdRefResolver}. */
 class IdRefResolverController implements ReactiveController {
   private readonly _host: LitElement;
-  private readonly _callback: (ids: Set<string>) => unknown;
+  private readonly _id: () => string | null;
+  private readonly _callback: (element: Element | null) => unknown;
   /** Whether the consumer asked for the observation. */
   private _active = false;
+  /** The element of the last callback. */
+  private _element: Element | null = null;
 
-  /** The emitter of the current root node, non-null only while observing. */
-  private _emitter: IdRefChangeEmitter | null = null;
+  /** The shared observer of the current root node, non-null only while observing. */
+  private _shared: IdRefObserver | null = null;
 
-  constructor(host: LitElement, callback: (ids: Set<string>) => unknown) {
+  constructor(
+    host: LitElement,
+    id: () => string | null,
+    callback: (element: Element | null) => unknown
+  ) {
     this._host = host;
     this._host.addController(this);
+    this._id = id;
     this._callback = callback;
   }
 
   private _observe(): void {
-    if (this._emitter) {
-      return;
+    if (!this._shared) {
+      this._shared = getObserver(this._host.getRootNode());
+      this._shared.add(this);
     }
 
-    const root = this._host.getRootNode();
-    this._emitter = getEmitter(root);
-    this._emitter.retain();
-    this._emitter.addEventListener(ID_REF_EVENT, this);
+    this.check();
   }
 
   private _unobserve(): void {
-    if (this._emitter) {
-      this._emitter.removeEventListener(ID_REF_EVENT, this);
-      this._emitter.release();
-      this._emitter = null;
-    }
+    this._shared?.delete(this);
+    this._shared = null;
   }
 
   /** @internal */
-  public handleEvent(event: Event): void {
-    this._callback.call(this._host, (event as CustomEvent<Set<string>>).detail);
+  public check(): void {
+    const id = this._id();
+    const element = id ? getElementByIdFromRoot(this._host, id) : null;
+
+    if (element !== this._element) {
+      this._element = element;
+      this._callback.call(this._host, element);
+    }
   }
 
   /** @internal */
@@ -141,6 +117,7 @@ class IdRefResolverController implements ReactiveController {
     this._unobserve();
   }
 
+  /** Starts the observation, or checks the id again while observing. */
   public observe(): void {
     this._active = true;
 
@@ -151,22 +128,27 @@ class IdRefResolverController implements ReactiveController {
 
   public unobserve(): void {
     this._active = false;
+    this._element = null;
     this._unobserve();
   }
 }
 
 /**
- * Adds a controller that resolves ID references in the root node of the host.
+ * Adds a controller that resolves the ID reference `id` in the root node of
+ * the host.
  *
  * @remarks
- * The controller calls `callback` with the ids that changed. Call `observe`
- * to start and `unobserve` to stop. A root node shares one observation.
+ * The controller calls `callback` with the element of the id when it differs
+ * from the last one: on `observe`, on a connect and after DOM changes in the
+ * root node. Call `observe` to start and `unobserve` to stop. A root node
+ * shares one observation.
  */
 export function addIdRefResolver(
   host: LitElement,
-  callback: (ids: Set<string>) => unknown
+  id: () => string | null,
+  callback: (element: Element | null) => unknown
 ): IdRefResolverController {
-  return new IdRefResolverController(host, callback);
+  return new IdRefResolverController(host, id, callback);
 }
 
 export type { IdRefResolverController };

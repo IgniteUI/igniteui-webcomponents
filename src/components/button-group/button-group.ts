@@ -21,7 +21,6 @@ import {
   setSlots,
 } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { asArray, firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
 import { getElementFromPath } from '#internals/utils/events.js';
@@ -33,6 +32,8 @@ import type { ButtonGroupSelection, ContentOrientation } from '../types.js';
 import { styles } from './themes/group.base.css.js';
 import { styles as shared } from './themes/shared/group/group.common.css.js';
 import IgcToggleButtonComponent from './toggle-button.js';
+
+const Slots = setSlots();
 
 export interface IgcButtonGroupComponentEventMap {
   igcSelect: CustomEvent<string | undefined>;
@@ -52,12 +53,11 @@ export interface IgcButtonGroupComponentEventMap {
  *
  * @csspart group - The button group container.
  */
-export default class IgcButtonGroupComponent extends EventEmitterMixin<
-  IgcButtonGroupComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcButtonGroupComponent extends EventEmitterMixin<IgcButtonGroupComponentEventMap>(
+  LitElement
+) {
   public static readonly tagName = 'igc-button-group';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -81,7 +81,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   private _tabStop?: IgcToggleButtonComponent;
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots(),
+    slots: Slots,
     onChange: this._handleSlotChange,
   });
 
@@ -108,7 +108,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   //#region Public properties
 
   /**
-   * Disables all buttons inside the group.
+   * Whether all buttons in the group are disabled.
    *
    * @attr disabled
    * @default false
@@ -126,7 +126,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   public alignment: ContentOrientation = 'horizontal';
 
   /**
-   * Controls the mode of selection for the button group.
+   * The selection mode of the group. A change of the mode clears the selection.
    *
    * @attr selection
    * @default 'single'
@@ -135,7 +135,11 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   public selection: ButtonGroupSelection = 'single';
 
   /**
-   * Gets/Sets the currently selected buttons (their values).
+   * The values of the selected buttons. A button without a value is not in
+   * the list.
+   *
+   * When set, selects the buttons with these values. A single selection mode
+   * selects only the first matching button.
    * @attr
    */
   @property({ attribute: 'selected-items', type: Array, reflect: false })
@@ -254,8 +258,6 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
       !this._buttons.includes(button)
     );
   }
-
-  /** The button holding focus, when it is one of the group. */
 
   /**
    * Focuses `button` and moves the selection to it, as a radio group does.

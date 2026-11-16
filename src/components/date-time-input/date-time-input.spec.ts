@@ -1,5 +1,10 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { setCurrentI18n } from 'igniteui-i18n-core';
+import {
+  getI18nManager,
+  registerI18n,
+  setCurrentI18n,
+} from 'igniteui-i18n-core';
+import { ValidationResourceStringsBG } from 'igniteui-i18n-resources';
 import { spy } from 'sinon';
 import {
   altKey,
@@ -12,12 +17,15 @@ import {
 import { isValidDate } from '#internals/date/converters.js';
 import { CalendarDay, toCalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
+  runHostComboboxTests,
 } from '#internals/testing/form-testbed.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
 import {
+  simulateComposingKeys,
   simulateInput,
   simulateKeyboard,
   simulateWheel,
@@ -27,6 +35,7 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import { formatString } from '#internals/utils/strings.js';
 import { DatePart } from './date-part.js';
 import IgcDateTimeInputComponent from './date-time-input.js';
 import { DateTimeMaskParser } from './datetime-mask-parser.js';
@@ -88,6 +97,32 @@ describe('Date Time Input component', () => {
       expect(input.placeholder).to.equal('Pick a date');
     });
 
+    it('has the filled part only while the input shows more than the empty mask', async () => {
+      const isFilled = () =>
+        [element.renderRoot.querySelector('[part~="container"]')!, input].map(
+          (node) => node.part.contains('filled')
+        );
+
+      // Empty and unfocused: the input shows the placeholder.
+      expect(isFilled()).to.eql([false, false]);
+
+      element.focus();
+      await elementUpdated(element);
+      expect(isFilled()).to.eql([false, false]);
+
+      simulateInput(input, { value: '10', inputType: 'insertText' });
+      await elementUpdated(element);
+      expect(isFilled()).to.eql([true, true]);
+
+      element.blur();
+      await elementUpdated(element);
+      expect(isFilled()).to.eql([true, true]);
+
+      element.clear();
+      await elementUpdated(element);
+      expect(isFilled()).to.eql([false, false]);
+    });
+
     it('should update inputFormat with no value according to locale', async () => {
       element.locale = 'no';
       await elementUpdated(element);
@@ -131,6 +166,33 @@ describe('Date Time Input component', () => {
       expect(input.value).to.equal('3.3.2020');
 
       setCurrentI18n('en');
+    });
+
+    it('applies a global locale change that happened while detached', async () => {
+      const parent = element.parentElement!;
+      element.remove();
+      setCurrentI18n('no');
+
+      try {
+        parent.append(element);
+        await elementUpdated(element);
+
+        expect(element.inputFormat).to.equal('dd.MM.yyyy');
+        expect(input.placeholder).to.equal('dd.MM.yyyy');
+      } finally {
+        setCurrentI18n('en');
+      }
+    });
+
+    it('does not register resource strings', async () => {
+      const register = spy(getI18nManager(), 'registerI18n');
+
+      try {
+        await fixture(html`<igc-date-time-input></igc-date-time-input>`);
+        expect(register.called).to.be.false;
+      } finally {
+        register.restore();
+      }
     });
 
     it('should use inputFormat if no displayFormat is defined - issue 1114', async () => {
@@ -366,6 +428,59 @@ describe('Date Time Input component', () => {
         await elementUpdated(element);
 
         expect(input.value).to.equal('01/02/1999');
+      });
+
+      it('does not report a value set from code while focused', async () => {
+        const eventSpy = spy(element, 'emitEvent');
+        element.focus();
+        await elementUpdated(element);
+
+        simulateInput(input, { value: '1010', inputType: 'insertText' });
+        element.value = new Date(1999, 0, 2);
+        await elementUpdated(element);
+
+        element.blur();
+        await elementUpdated(element);
+
+        expect(element.value?.getTime()).to.equal(
+          new Date(1999, 0, 2).getTime()
+        );
+        expect(eventSpy).not.calledWith('igcChange');
+      });
+
+      it('does not report clear() while focused', async () => {
+        const eventSpy = spy(element, 'emitEvent');
+        element.value = new Date(2020, 9, 10);
+        element.focus();
+        await elementUpdated(element);
+
+        element.clear();
+        element.blur();
+        await elementUpdated(element);
+
+        expect(element.value).to.be.null;
+        expect(eventSpy).not.calledWith('igcChange');
+      });
+
+      it('reports an edit against the last value set from code', async () => {
+        const eventSpy = spy(element, 'emitEvent');
+        element.focus();
+        element.value = new Date(1999, 0, 2);
+        await elementUpdated(element);
+
+        element.setSelectionRange(0, input.value.length);
+        simulateInput(input, { value: '10102020', inputType: 'insertText' });
+        await elementUpdated(element);
+
+        element.blur();
+        await elementUpdated(element);
+
+        const changes = eventSpy.withArgs('igcChange');
+
+        expect(changes).calledOnce;
+        expect(changes.firstCall.args[1]?.detail.getTime()).to.equal(
+          new Date(2020, 9, 10).getTime()
+        );
       });
 
       it('emptying the mask commits an empty value, not a defaults-filled date', async () => {
@@ -888,6 +1003,20 @@ describe('Date Time Input component', () => {
       expect(element.value.getFullYear()).to.equal(value.getFullYear() + 1);
     });
 
+    it('does not spin on an arrow key that an IME handles', async () => {
+      const value = new Date(2020, 2, 3);
+      element.value = value;
+
+      element.focus();
+      await elementUpdated(element);
+      const text = input.value;
+
+      simulateComposingKeys(input, arrowUp);
+      await elementUpdated(element);
+
+      expect(input.value).to.equal(text);
+    });
+
     it('ArrowDown should stepDown correctly', async () => {
       const value = new Date(2020, 2, 3);
       element.value = value;
@@ -978,8 +1107,9 @@ describe('Date Time Input component', () => {
       element.stepDown();
       await elementUpdated(element);
 
-      // Spinning while focused is an uncommitted edit, so only the mask draft moves.
+      // A step from code updates the value at once, also while focused.
       expect(input.value).to.equal('2022/06/01');
+      expect(element.value.getFullYear()).to.eq(2022);
       expect(input.selectionStart).to.eq(start);
       expect(input.selectionEnd).to.eq(end);
 
@@ -992,6 +1122,7 @@ describe('Date Time Input component', () => {
       await elementUpdated(element);
 
       expect(input.value).to.equal('2022/07/01');
+      expect(element.value.getMonth()).to.eq(6);
       expect(input.selectionStart).to.eq(start);
       expect(input.selectionEnd).to.eq(end);
 
@@ -1000,6 +1131,44 @@ describe('Date Time Input component', () => {
 
       expect(element.value.getFullYear()).to.eq(2022);
       expect(element.value.getMonth()).to.eq(6);
+    });
+
+    it('should commit a step from code over a keyboard draft', async () => {
+      element.inputFormat = 'yyyy/MM/dd';
+      element.value = new Date(2023, 5, 1);
+      element.focus();
+      await elementUpdated(element);
+      const eventSpy = spy(element, 'emitEvent');
+
+      element.setSelectionRange(5, 6);
+      simulateKeyboard(input, arrowDown);
+      await elementUpdated(element);
+      expect(input.value).to.equal('2023/05/01');
+
+      element.stepUp();
+      await elementUpdated(element);
+      expect(input.value).to.equal('2023/06/01');
+      expect(element.value.getMonth()).to.eq(5);
+
+      element.blur();
+      await elementUpdated(element);
+      expect(element.value.getMonth()).to.eq(5);
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    it('should keep a focused step of a part that is not in the input format', async () => {
+      element.inputFormat = 'yyyy/MM/dd';
+      element.value = new Date(2023, 5, 1, 10, 30);
+      element.focus();
+      await elementUpdated(element);
+
+      element.stepDown(DatePart.Minutes, 15);
+      await elementUpdated(element);
+      expect(element.value.getMinutes()).to.eq(15);
+
+      element.blur();
+      await elementUpdated(element);
+      expect(element.value.getMinutes()).to.eq(15);
     });
 
     it('ArrowLeft/Right should navigate to the beginning/end of date section', async () => {
@@ -1403,6 +1572,10 @@ describe('Date Time Input component', () => {
       ).to.be.false;
     });
 
+    it('submits once on a real Enter', async () => {
+      expect(await spec.pressEnter()).to.equal(1);
+    });
+
     it('is correctly reset to the new default value after setAttribute() call', () => {
       spec.setAttributes({ value: today.native.toISOString() });
       spec.setProperties({ value: today.add('day', 180).native });
@@ -1607,11 +1780,45 @@ describe('Date Time Input component', () => {
     });
   });
 
+  describe('Validation messages', () => {
+    before(() => registerI18n(ValidationResourceStringsBG, 'bg'));
+
+    it('formats a bound as the input displays it', async () => {
+      const min = new Date(2026, 9, 10);
+      const element = await fixture<IgcDateTimeInputComponent>(
+        html`<igc-date-time-input
+          locale="bg"
+          display-format="longDate"
+          .min=${min}
+          .value=${new Date(2026, 9, 1)}
+        ></igc-date-time-input>`
+      );
+      const date = new Intl.DateTimeFormat('bg', { dateStyle: 'long' });
+
+      expect(element.validationMessage).to.equal(
+        formatString(
+          ValidationResourceStringsBG.min_validation_error!,
+          date.format(min)
+        )
+      );
+    });
+  });
+
   runExternalLabelAssociationTests({
     tagName: IgcDateTimeInputComponent.tagName,
     getNativeInput: (host) =>
       (host as IgcDateTimeInputComponent).renderRoot.querySelector('input')!,
   });
+
+  runHostComboboxTests({
+    tagName: IgcDateTimeInputComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcDateTimeInputComponent).renderRoot.querySelector('input')!,
+  });
+
+  runFocusBeforeRenderTests(
+    html`<igc-date-time-input label="Label"></igc-date-time-input>`
+  );
 });
 
 function checkDates(a: Date, b: Date) {

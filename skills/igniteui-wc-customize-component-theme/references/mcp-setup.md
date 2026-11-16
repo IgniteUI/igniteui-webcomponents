@@ -58,7 +58,7 @@ Edit the Claude Desktop config file:
 1. Go to **Settings → Tools → AI Assistant → MCP Servers**
 2. Click **+ Add MCP Server**
 3. Set Command to `npx`
-4. Set Arguments to `igniteui-theming igniteui-theming-mcp`
+4. Set Arguments to `-y igniteui-theming igniteui-theming-mcp`
 5. Click OK
 6. Restart the AI Assistant
 

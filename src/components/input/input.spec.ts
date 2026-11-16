@@ -1,25 +1,39 @@
 import {
+  aTimeout,
   elementUpdated,
   expect,
   fixture,
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { registerI18n, setCurrentI18n } from 'igniteui-i18n-core';
+import { ValidationResourceStringsBG } from 'igniteui-i18n-resources';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
+  runHostComboboxTests,
 } from '#internals/testing/form-testbed.spec.js';
-import { isFocused } from '#internals/testing/helpers.spec.js';
+import {
+  finishAnimationsFor,
+  isFocused,
+  isUnderPageLayer,
+  withDocumentSheets,
+} from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { simulateInput } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import { preventDefault, stopPropagation } from '#internals/utils/events.js';
+import { formatString } from '#internals/utils/strings.js';
 import { configureTheme } from '#theming/config.js';
+import { styles as material } from '../../styles/themes/light/material.css.js';
 import IgcInputComponent from './input.js';
 
 describe('Input component', () => {
@@ -57,6 +71,12 @@ describe('Input component', () => {
 
         await expect(element).to.be.accessible();
         await expect(element).shadowDom.to.be.accessible();
+      });
+
+      it('paints the input under an earlier page layer', async () => {
+        await createFixture(html`<igc-input label="Label"></igc-input>`);
+
+        expect(isUnderPageLayer(element, input)).to.be.true;
       });
 
       it('material variant layout', async () => {
@@ -341,6 +361,16 @@ describe('Input component', () => {
         expect(detached.value).to.equal('');
       });
 
+      it('the editing methods keep the value before the input renders', () => {
+        const detached = document.createElement('igc-input');
+        detached.value = '5';
+
+        detached.setRangeText('text', 0, 0);
+        detached.stepUp();
+        detached.stepDown();
+        expect(detached.value).to.equal('5');
+      });
+
       it('focus() and blur()', async () => {
         await createFixture(html`<igc-input></igc-input>`);
 
@@ -501,6 +531,74 @@ describe('Input component', () => {
       input.blur();
       expect(input.invalid).to.be.true;
     });
+  });
+
+  describe('Material search field', () => {
+    afterEach(() => configureTheme('bootstrap'));
+
+    function expectLabelInside(state: string): void {
+      const label = element.renderRoot.querySelector('[part="label"]')!;
+      const container = element.renderRoot.querySelector(
+        '[part~="container"]'
+      )!;
+
+      finishAnimationsFor(label);
+
+      const labelBox = label.getBoundingClientRect();
+      const containerBox = container.getBoundingClientRect();
+
+      expect(labelBox.top, `${state}: top`).to.be.at.least(containerBox.top);
+      expect(labelBox.bottom, `${state}: bottom`).to.be.at.most(
+        containerBox.bottom
+      );
+    }
+
+    for (const outlined of [false, true]) {
+      const variant = outlined ? 'outlined' : 'filled';
+
+      it(`keeps the floated label inside the ${variant} field`, async () => {
+        await withDocumentSheets([material.styleSheet!], async () => {
+          configureTheme('material');
+          await createFixture(html`
+            <igc-input
+              type="search"
+              ?outlined=${outlined}
+              label="Find a person"
+              placeholder="Name or email"
+            ></igc-input>
+          `);
+
+          expectLabelInside('placeholder');
+
+          element.focus();
+          expectLabelInside('focused');
+
+          element.value = 'Ada';
+          await elementUpdated(element);
+          expectLabelInside('focused with a value');
+
+          element.blur();
+          expectLabelInside('with a value');
+        });
+      });
+
+      it(`keeps the label inside the focused read-only ${variant} field`, async () => {
+        await withDocumentSheets([material.styleSheet!], async () => {
+          configureTheme('material');
+          await createFixture(html`
+            <igc-input
+              type="search"
+              ?outlined=${outlined}
+              label="Find a person"
+              readonly
+            ></igc-input>
+          `);
+
+          element.focus();
+          expectLabelInside('focused');
+        });
+      });
+    }
   });
 
   describe('Part names', () => {
@@ -845,6 +943,36 @@ describe('Input component', () => {
           spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
         ).to.be.false;
       });
+
+      it('does not submit on Enter when a listener on the host or an ancestor cancels it', () => {
+        const input = spec.element.renderRoot.querySelector('input');
+
+        for (const target of [spec.element, spec.form]) {
+          target.addEventListener('keydown', preventDefault, { once: true });
+          expect(spec.submitWithEnter(input, { cancelable: true })).to.be.false;
+        }
+      });
+
+      it('submits on Enter in the next task when a listener stops it', async () => {
+        const submit = spy();
+        spec.form.addEventListener('submit', submit);
+        spec.element.addEventListener('keydown', stopPropagation);
+
+        expect(
+          spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+        ).to.be.false;
+
+        await aTimeout(0);
+        expect(submit.calledOnce).to.be.true;
+      });
+
+      it('does not submit on the Enter that commits an IME composition', () => {
+        const input = spec.element.renderRoot.querySelector('input');
+
+        for (const init of [{ isComposing: true }, { keyCode: 229 }]) {
+          expect(spec.submitWithEnter(input, init)).to.be.false;
+        }
+      });
     });
 
     describe('Validation', () => {
@@ -1013,6 +1141,126 @@ describe('Input component', () => {
     });
   });
 
+  describe('Enter submission', () => {
+    const spec = createFormAssociatedTestBed<IgcInputComponent>(html`
+      <igc-input name="input" value="text"></igc-input>
+    `);
+
+    let input: HTMLInputElement;
+
+    function spySubmit() {
+      const submit = spy<(event: SubmitEvent) => void>(preventDefault);
+      spec.form.addEventListener('submit', submit);
+      return submit;
+    }
+
+    beforeEach(async () => {
+      await spec.setup(IgcInputComponent.tagName);
+      input = spec.element.renderRoot.querySelector('input')!;
+    });
+
+    it('submits a form with one text field and no submit button', () => {
+      spec.form.insertAdjacentHTML(
+        'beforeend',
+        '<input type="checkbox" name="c"><input type="hidden" name="h"><textarea name="t"></textarea>'
+      );
+      expect(spec.submitWithEnter(input)).to.be.true;
+    });
+
+    it('does not submit a form with another text field and no submit button', () => {
+      for (const markup of [
+        '<input name="other">',
+        '<input type="email" name="other" disabled>',
+        '<igc-input name="other"></igc-input>',
+      ]) {
+        spec.form.insertAdjacentHTML('beforeend', markup);
+        expect(spec.submitWithEnter(input), markup).to.be.false;
+        spec.form.lastElementChild!.remove();
+      }
+    });
+
+    it('clicks the default button, which submits the form', () => {
+      spec.form.insertAdjacentHTML(
+        'beforeend',
+        '<input name="other"><button type="button">Menu</button><button id="save">Save</button><button>Send</button>'
+      );
+      const save = spec.form.querySelector('#save')!;
+      const click = spy();
+      const submit = spySubmit();
+      save.addEventListener('click', click);
+
+      expect(spec.submitWithEnter(input)).to.be.true;
+      expect(click.calledOnce).to.be.true;
+      expect(submit.firstCall.args[0].submitter).to.equal(save);
+    });
+
+    it('does not submit when the default button is disabled', () => {
+      spec.form.insertAdjacentHTML(
+        'beforeend',
+        '<button disabled>Save</button><button>Send</button>'
+      );
+      expect(spec.submitWithEnter(input)).to.be.false;
+    });
+
+    it('does not submit when a listener cancels the click of the default button', () => {
+      spec.form.insertAdjacentHTML('beforeend', '<button>Save</button>');
+      spec.form
+        .querySelector('button')!
+        .addEventListener('click', preventDefault);
+
+      expect(spec.submitWithEnter(input)).to.be.false;
+    });
+
+    it('clicks an image button that comes first', () => {
+      spec.form.insertAdjacentHTML(
+        'beforeend',
+        '<input name="other"><input type="image" alt="Save"><button>Send</button>'
+      );
+      const submit = spySubmit();
+
+      expect(spec.submitWithEnter(input)).to.be.true;
+      expect(submit.firstCall.args[0].submitter).to.equal(
+        spec.form.querySelector('[type="image"]')
+      );
+    });
+
+    it('does not submit when a keydown listener disables the control', () => {
+      spec.element.addEventListener('keydown', () => {
+        spec.element.disabled = true;
+      });
+
+      expect(spec.submitWithEnter(input)).to.be.false;
+    });
+
+    it('submits once on a synthetic keydown and keypress pair', () => {
+      const submit = spySubmit();
+
+      for (const type of ['keydown', 'keypress']) {
+        input.dispatchEvent(
+          new KeyboardEvent(type, {
+            key: 'Enter',
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+          })
+        );
+      }
+
+      expect(submit.callCount).to.equal(1);
+    });
+
+    it('submits once on a real Enter', async () => {
+      expect(await spec.pressEnter()).to.equal(1);
+    });
+
+    it('does not submit on a real Enter when a listener cancels the keydown or the keypress', async () => {
+      for (const type of ['keydown', 'keypress']) {
+        spec.element.addEventListener(type, preventDefault, { once: true });
+        expect(await spec.pressEnter(), type).to.equal(0);
+      }
+    });
+  });
+
   describe('Validation message slots', () => {
     it('', async () => {
       const testParameters: ValidationContainerTestsParams<IgcInputComponent>[] =
@@ -1049,9 +1297,52 @@ describe('Input component', () => {
     });
   });
 
+  describe('Validation messages', () => {
+    before(() => registerI18n(ValidationResourceStringsBG, 'bg'));
+    afterEach(() => setCurrentI18n('en'));
+
+    it('reports the type mismatch in the current locale', async () => {
+      setCurrentI18n('bg');
+      await createFixture(html`<igc-input type="email" value="a"></igc-input>`);
+
+      expect(element.validationMessage).to.equal(
+        ValidationResourceStringsBG.email_validation_error
+      );
+    });
+
+    it('formats a number bound in the current locale', async () => {
+      setCurrentI18n('bg');
+      await createFixture(
+        html`<igc-input type="number" min="1000.5" value="1"></igc-input>`
+      );
+
+      expect(element.validationMessage).to.equal(
+        formatString(
+          ValidationResourceStringsBG.min_validation_error!,
+          '1000,5'
+        )
+      );
+    });
+  });
+
   runExternalLabelAssociationTests({
     tagName: IgcInputComponent.tagName,
     getNativeInput: (host) =>
       (host as IgcInputComponent).renderRoot.querySelector('input')!,
   });
+
+  runHostComboboxTests({
+    tagName: IgcInputComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcInputComponent).renderRoot.querySelector('input')!,
+  });
+
+  runHiddenAncestorTests(html`
+    <igc-input label="Label">
+      <span slot="prefix">$</span>
+      <span slot="suffix">USD</span>
+    </igc-input>
+  `);
+
+  runFocusBeforeRenderTests(html`<igc-input label="Label"></igc-input>`);
 });

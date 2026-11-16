@@ -1,0 +1,91 @@
+@forward '../animations';
+@use '../vars' as *;
+
+@keyframes igc-indeterminate-accordion {
+    0% {
+        stroke-dashoffset: calc(#{$circumference} * 2);
+        stroke-dasharray: calc(#{$circumference} * 9 / 10);
+    }
+
+    100% {
+        stroke-dashoffset: calc(#{$circumference} * 2 / 5);
+    }
+}
+
+@keyframes igc-indeterminate-accordion-rtl {
+    0% {
+        stroke-dashoffset: calc(#{$circumference} * -2);
+        stroke-dasharray: calc(#{$circumference} * 9 / 10);
+    }
+
+    100% {
+        stroke-dashoffset: calc(#{$circumference} * -2 / 5);
+    }
+}
+
+// Fluent indeterminate circle: the dash array changes while the stroke rotates.
+// Used by the Fluent theme sheet, which shares the shadow root of the base sheet.
+@keyframes igc-indeterminate-circular-fluent {
+    0% {
+        stroke-dasharray: calc(#{$circumference} * 0.0001), #{$circumference};
+        stroke-dashoffset: calc(-1 * #{$circumference} / 4);
+
+        // Start at 12 o'clock
+        transform: rotate(-90deg);
+    }
+
+    50% {
+        stroke-dasharray: calc(#{$circumference} / 2), calc(#{$circumference} / 2);
+        stroke-dashoffset: calc(-1 * #{$circumference} / 4);
+        transform: rotate(360deg);
+    }
+
+    100% {
+        stroke-dasharray: calc(#{$circumference} * 0.0001), #{$circumference};
+        stroke-dashoffset: calc(-1 * #{$circumference} / 4);
+        transform: rotate(990deg);
+    }
+}
+
+@keyframes igc-indeterminate-circular-fluent-rtl {
+    0% {
+        stroke-dasharray: calc(#{$circumference} * 0.0001), #{$circumference};
+
+        // Positive offset for opposite direction
+        stroke-dashoffset: calc(#{$circumference} / 4);
+        transform: rotate(90deg);
+    }
+
+    50% {
+        stroke-dasharray: calc(#{$circumference} / 2), calc(#{$circumference} / 2);
+        stroke-dashoffset: calc(#{$circumference} / 4);
+        transform: rotate(-360deg);
+    }
+
+    100% {
+        stroke-dasharray: calc(#{$circumference} * 0.0001), #{$circumference};
+        stroke-dashoffset: calc(#{$circumference} / 4);
+        transform: rotate(-990deg);
+    }
+}
+
+@keyframes igc-rotate-center {
+    0% {
+        transform: rotate(0);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes igc-initial-dashoffset {
+    from {
+        /* Start with no progress (0%) */
+        stroke-dashoffset: #{$circumference};
+    }
+
+    to {
+        stroke-dashoffset: calc(#{$circumference} - var(--_progress-percentage) * #{$circumference});
+    }
+}

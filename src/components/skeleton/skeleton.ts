@@ -1,7 +1,6 @@
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { addHostListeners } from '#internals/controllers/host-listeners.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { createMutationController } from '#internals/controllers/mutation-observer.js';
 import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
@@ -239,13 +238,6 @@ export default class IgcSkeletonComponent extends LitElement {
 
     // A scroll event does not bubble, but the host gets it in the capture phase.
     addSafeEventListener(this, 'scroll', this._scheduleMeasure, SCROLL_OPTIONS);
-
-    // A web font changes the text metrics, but no observer reports it.
-    addHostListeners(this, {
-      target: () => document.fonts,
-      events: ['loadingdone'],
-      listener: this._measureOnEvent,
-    });
   }
 
   //#region Lit lifecycle methods
@@ -253,6 +245,8 @@ export default class IgcSkeletonComponent extends LitElement {
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
+    // A web font changes the text metrics, but no observer reports it.
+    document.fonts.addEventListener('loadingdone', this._measureOnEvent);
     // The disconnect cancels a pending measurement.
     this._scheduleMeasure();
   }
@@ -260,6 +254,7 @@ export default class IgcSkeletonComponent extends LitElement {
   /** @internal */
   public override disconnectedCallback(): void {
     super.disconnectedCallback();
+    document.fonts.removeEventListener('loadingdone', this._measureOnEvent);
     this._cancelMeasure();
     this._endReveal();
   }

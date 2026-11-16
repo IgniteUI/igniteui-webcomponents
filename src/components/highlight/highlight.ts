@@ -14,21 +14,21 @@ import {
 import { styles as shared } from './themes/shared/highlight.common.css.js';
 
 /**
- * The highlight component provides efficient searching and highlighting of text
- * projected into it via its default slot. It uses the native CSS Custom Highlight API
- * to apply highlight styles to matched text nodes without modifying the DOM.
+ * Searches the text projected into its default slot and highlights the matches.
+ * It uses the native CSS Custom Highlight API, so it does not change the DOM.
  *
- * The component supports case-sensitive matching, programmatic navigation between
- * matches, and automatic scroll-into-view of the active match.
+ * The component supports case-sensitive matching and programmatic navigation between
+ * matches. Navigation scrolls the active match into view. When the content changes,
+ * the component searches it again and keeps the active match where it can.
  *
  * @element igc-highlight
  *
- * @slot - The default slot. Place the text content you want to search and highlight here.
+ * @slot - The content to search. Only content projected here takes part in the matching.
  *
- * @cssproperty --foreground - The text color for a highlighted text node.
- * @cssproperty --background - The background color for a highlighted text node.
- * @cssproperty --foreground-active - The text color for the active highlighted text node.
- * @cssproperty --background-active - The background color for the active highlighted text node.
+ * @cssproperty --foreground - The text color for a highlighted text node. Set it on the host.
+ * @cssproperty --background - The background color for a highlighted text node. Set it on the host.
+ * @cssproperty --foreground-active - The text color for the active highlighted text node. Set it on the host.
+ * @cssproperty --background-active - The background color for the active highlighted text node. Set it on the host.
  *
  * @example
  * Basic usage - wrap your text and set the `search-text` attribute:
@@ -66,14 +66,6 @@ import { styles as shared } from './themes/shared/highlight.common.css.js';
  * const highlight = document.querySelector('igc-highlight');
  * highlight.next({ preventScroll: true });
  * ```
- *
- * @example
- * Re-run search after dynamic content changes (e.g. lazy-loaded text):
- * ```typescript
- * const highlight = document.querySelector('igc-highlight');
- * // After slotted content has been updated:
- * highlight.search();
- * ```
  */
 export default class IgcHighlightComponent extends LitElement {
   public static readonly tagName = 'igc-highlight';
@@ -101,7 +93,7 @@ export default class IgcHighlightComponent extends LitElement {
   //#region Public properties and attributes
 
   /**
-   * Whether to match the searched text with case sensitivity in mind.
+   * Whether the matching distinguishes upper and lower case.
    * When `true`, only exact-case occurrences of `searchText` are highlighted.
    *
    * @attr case-sensitive
@@ -113,7 +105,7 @@ export default class IgcHighlightComponent extends LitElement {
 
   /**
    * The string to search and highlight in the DOM content of the component.
-   * Setting this property triggers a new search automatically.
+   * A change of this property starts a new search.
    * An empty string clears all highlights.
    *
    * @attr search-text
@@ -127,7 +119,7 @@ export default class IgcHighlightComponent extends LitElement {
     return this._service.size;
   }
 
-  /** The zero-based index of the currently active (focused) match. Returns `0` when there are no matches. */
+  /** The zero-based index of the active match. Returns `0` when there are no matches. */
   public get current(): number {
     return this._service.current;
   }
@@ -173,16 +165,13 @@ export default class IgcHighlightComponent extends LitElement {
   }
 
   /**
-   * Re-runs the highlight search based on the current `searchText` and `caseSensitive` values.
+   * Re-runs the highlight search based on the current `searchText` and `caseSensitive` values,
+   * and makes the first match active.
    *
-   * Call this method after the slotted content changes dynamically (e.g. after lazy loading
-   * or programmatic DOM mutations) to ensure all matches are up to date.
+   * The component also searches again by itself after its content changes.
    */
   public search(): void {
-    if (this.hasUpdated) {
-      this._service.clear();
-      this._service.find(this.searchText);
-    }
+    this._service.search();
   }
 
   //#endregion

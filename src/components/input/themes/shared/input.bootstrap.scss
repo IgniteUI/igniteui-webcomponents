@@ -83,6 +83,10 @@ $theme: $bootstrap;
     }
 }
 
+[part='label']:has(+ [part~='filled']) {
+    color: var-get($theme, 'filled-secondary-color');
+}
+
 [name='prefix']::slotted(*),
 [name='suffix']::slotted(*) {
     display: inline-flex;

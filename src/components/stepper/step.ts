@@ -10,6 +10,7 @@ import {
 } from '#internals/controllers/aria-projection.js';
 import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
@@ -30,6 +31,8 @@ import type { StepperState } from './common/state.js';
 import type IgcStepperComponent from './stepper.js';
 import { styles as shared } from './themes/step/shared/step.common.css.js';
 import { styles } from './themes/step/step.base.css.js';
+
+const Slots = setSlots('indicator', 'title', 'subtitle');
 
 const nextId = createIdGenerator('igc-step');
 
@@ -57,14 +60,14 @@ const nextId = createIdGenerator('igc-step');
  * @csspart complete-end - Indicates a complete state of the previous step. Applies to `header-container`.
  * @csspart optional - Indicates an optional state. Applies to `header-container`.
  * @csspart invalid - Indicates an invalid state. Applies to `header-container`.
- * @csspart top - Indicates that the title should be above the indicator. Applies to `header-container`.
- * @csspart bottom - Indicates that the title should be below the indicator. Applies to `header-container`.
- * @csspart start - Indicates that the title should be before the indicator. Applies to `header-container`.
- * @csspart end - Indicates that the title should be after the indicator. Applies to `header-container`.
+ * @csspart top - Indicates that the title is above the indicator. Applies to `header-container`.
+ * @csspart bottom - Indicates that the title is below the indicator. Applies to `header-container`.
+ * @csspart start - Indicates that the title is before the indicator. Applies to `header-container`.
+ * @csspart end - Indicates that the title is after the indicator. Applies to `header-container`.
  * @csspart header - Wrapper of the step's `indicator` and `text`.
  * @csspart indicator - The indicator of the step.
  * @csspart text - Wrapper of the step's `title` and `subtitle`.
- * @csspart empty - Indicates that no title and subtitle have been provided to the step. Applies to `text`.
+ * @csspart empty - Indicates that the step shows no title and subtitle. Applies to `text`.
  * @csspart title - The title of the step.
  * @csspart subtitle - The subtitle of the step.
  * @csspart body - Wrapper of the step's `content`.
@@ -123,7 +126,7 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
   );
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots('indicator', 'title', 'subtitle'),
+    slots: Slots,
   });
 
   private _stepperContext?: StepperContext;
@@ -201,8 +204,8 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
   /**
    * Whether the step is invalid.
    *
-   * Invalid steps are styled with an error state and are not
-   * interactive when the stepper is in linear mode.
+   * A visited step that is not active shows an error state. In linear mode,
+   * the user cannot open the steps after an invalid step.
    *
    * @attr invalid
    * @default false
@@ -214,18 +217,26 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
    * Whether the step is active.
    *
    * Active steps are styled with an active state and their content is visible.
+   * Setting it activates the step at once, also a disabled step, so of several
+   * steps set in one task, the last one is active.
    *
    * @attr active
    * @default false
    */
   @property({ type: Boolean, reflect: true })
+  @coercedProperty<boolean, IgcStepComponent>({
+    onChange: ({ value, host }) => {
+      if (value) {
+        host._state?.stepActivated(host);
+      }
+    },
+  })
   public active = false;
 
   /**
    * Whether the step is optional.
    *
-   * Optional steps validity does not affect the default behavior when the stepper is in linear mode i.e.
-   * if optional step is invalid the user could still move to the next step.
+   * In linear mode, an invalid optional step does not block the steps after it.
    *
    * @attr optional
    * @default false
@@ -265,6 +276,11 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
+    // The setter cannot apply `active` before the step has its context.
+    if (changed.has('active') && this.active) {
+      this._state?.stepActivated(this);
+    }
+
     if (
       changed.has('active') ||
       changed.has('complete') ||
@@ -272,7 +288,7 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
       changed.has('invalid') ||
       changed.has('optional')
     ) {
-      this._state?.onStepPropertyChanged(this, changed);
+      this._state?.syncActiveStep();
     }
   }
 
@@ -286,9 +302,11 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
   ) {
     const bodyAnimation = bodyAnimations[this._animation][type];
     const contentAnimation = contentAnimations[this._animation][type];
-    const bodyHeight = getComputedStyle(this).getPropertyValue(
-      '--vertical-body-height'
-    );
+    // Only the grow animation reads the height; the read forces a style pass.
+    const bodyHeight =
+      this._animation === 'grow'
+        ? getComputedStyle(this).getPropertyValue('--vertical-body-height')
+        : '';
 
     const options: KeyframeAnimationOptions = {
       duration: this._animationDuration,
@@ -405,13 +423,11 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
   protected override render() {
     const renderBeforeHeader = this._contentTop && this._isHorizontal;
 
-    return html`
-      ${cache(
-        renderBeforeHeader
-          ? html`${this._renderContent()} ${this._renderHeader()}`
-          : html`${this._renderHeader()} ${this._renderContent()}`
-      )}
-    `;
+    return cache(
+      renderBeforeHeader
+        ? html`${this._renderContent()} ${this._renderHeader()}`
+        : html`${this._renderHeader()} ${this._renderContent()}`
+    );
   }
 }
 

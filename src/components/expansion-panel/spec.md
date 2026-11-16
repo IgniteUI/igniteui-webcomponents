@@ -44,6 +44,9 @@
 | ------: | ---------- | ----------------------------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                                                   |
 |       2 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
+|       3 | 2026-10-21 | API descriptions aligned with the JSDoc.                                |
+|       4 | 2026-10-29 | A change of `open` against a running transition ends it                 |
+|       5 | 2026-11-12 | Find-in-page and links to an element open a collapsed panel             |
 
 ## Overview
 
@@ -106,6 +109,10 @@ The panel renders its header with the title, the subtitle and the indicator. Act
 panel, animating the content into view and rotating or replacing the indicator. Activating it again collapses the
 panel.
 
+Find-in-page searches the content of a collapsed panel. A match, a text fragment or a link to an element in the
+content opens the panel at once, without the animation, and the browser scrolls to the match. The content of a
+disabled panel is not searchable, and the panel stays closed.
+
 ### Developer experience
 
 #### Basic initialization
@@ -151,7 +158,8 @@ await panel.toggle();
 
 The three methods are asynchronous and resolve with `true` when the transition completed and changed the open
 state, and with `false` when it did not — the panel was already in the requested state, or a newer transition
-superseded this one.
+superseded this one. A change of `open` against a running transition also ends it: the method resolves `false`, the
+animation stops, and the panel sends no `igcOpened` or `igcClosed`.
 
 Setting the `open` property changes the state as well.
 
@@ -162,6 +170,14 @@ Setting the `open` property changes the state as well.
 ```
 
 A disabled panel is ignored for user interaction, and is skipped by the keyboard navigation of an accordion.
+
+#### Content found by the browser
+
+While the panel is closed, its content part has `hidden="until-found"`, or plain `hidden` when the panel is
+disabled. When the browser reveals the content, the panel opens through the user path: it sends `igcOpening`, which
+can be canceled, and `igcOpened`. A canceled `igcOpening` keeps the panel closed and its content hidden. While a
+reveal runs in any component, the panel opens and closes without its animation, so that nothing moves the match away
+from the place the browser scrolls to.
 
 ### Localization
 
@@ -183,8 +199,8 @@ The keys apply while the header of the panel has focus.
 
 | Property          | Attribute          | Reflected | Type                                | Default | Description                                                 |
 | ----------------- | ------------------ | --------- | ----------------------------------- | ------- | ------------------------------------------------------------- |
-| open              | open               | Yes       | `boolean`                           | false   | Indicates whether the contents of the control are visible.  |
-| disabled          | disabled           | Yes       | `boolean`                           | false   | Whether the panel is disabled. Disabled panels are ignored for user interactions. |
+| open              | open               | Yes       | `boolean`                           | false   | Whether the panel is expanded and its content is visible.   |
+| disabled          | disabled           | Yes       | `boolean`                           | false   | Whether the panel is disabled. A disabled panel does not respond to user interaction. |
 | indicatorPosition | indicator-position | Yes       | `ExpansionPanelIndicatorPosition`   | `start` | The indicator position of the expansion panel.              |
 
 ### Methods
@@ -199,9 +215,9 @@ The keys apply while the header of the panel has focus.
 
 | Name       | Cancellable | Description                                  |
 | ---------- | ----------- | -------------------------------------------- |
-| igcOpening | true        | Emitted before opening the expansion panel.  |
+| igcOpening | true        | Emitted before the user opens the panel. Cancelable. |
 | igcOpened  | false       | Emitted after the expansion panel is opened. |
-| igcClosing | true        | Emitted before closing the expansion panel.  |
+| igcClosing | true        | Emitted before the user closes the panel. Cancelable. |
 | igcClosed  | false       | Emitted after the expansion panel is closed. |
 
 ### Slots
@@ -247,7 +263,8 @@ The suite lives in [`expansion-panel.spec.ts`](./expansion-panel.spec.ts) and ru
 
 ### Methods tests
 
-8. `show`, `hide` and `toggle` change the open state.
+8. `show`, `hide` and `toggle` change the open state. A change of `open` against a running transition ends it and
+   its trailing event, and the next `show()` works at once.
 
 ### User interactions
 
@@ -266,12 +283,29 @@ The suite lives in [`expansion-panel.spec.ts`](./expansion-panel.spec.ts) and ru
 15. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
     target and follow a change, and an axe audit passes with a host label.
 
+### Content found by the browser
+
+16. A closed panel hides its content with `hidden="until-found"`, and a disabled one with plain `hidden`.
+17. A link to an element in the content opens the panel with `igcOpening` and `igcOpened`.
+18. A canceled `igcOpening` keeps the panel closed and its content hidden.
+19. A disabled panel does not open.
+20. The panel opens at once, with no animation.
+21. The open animation of a user toggle starts from the height of the content.
+22. The content shows during the close animation, and it is inert only then.
+
 ## Assumptions and limitations
 
 - The panel animates its content; the methods do not resolve on the animation, unlike the bulk methods of the
   accordion.
 - The summary view always renders; only the default slot content is toggled.
 - Grouping several panels and navigating between them is the job of [`igc-accordion`](../accordion/spec.md).
+- Find-in-page reaches a collapsed panel where the browser supports `hidden="until-found"`: Chrome 102, Firefox 139
+  and Safari 26.2. Firefox before 148 and Safari 26.2 open the panel but do not scroll to the match. Other browsers
+  treat the content as plain `hidden`.
+- A `display` value on `::part(content)` shows the content of a closed panel in a browser that does not support
+  `hidden="until-found"`, because the panel relies on the `[hidden]` rule of the browser there.
+- wtr cannot drive the find bar or text fragments. The suite reveals the content with a link and a real click; the
+  find bar is checked by hand.
 
 ## Accessibility
 
@@ -279,6 +313,8 @@ The suite lives in [`expansion-panel.spec.ts`](./expansion-panel.spec.ts) and ru
 
 - The header is a button that exposes the expanded state and controls the content region.
 - The content region is labelled by the header, so assistive technology announces what has been expanded.
+- The content of a collapsed panel is hidden from assistive technology by the `hidden` attribute. It is inert only
+  while it animates closed.
 - A disabled panel exposes its disabled state and is not focusable.
 - The host `aria-label`, `aria-labelledby` and `aria-describedby` name and describe the header button.
 

@@ -1,59 +1,27 @@
 import type { LitElement } from 'lit';
-import { addHostListeners } from './host-listeners.js';
+import { addSafeEventListeners } from '../utils/events.js';
 
-/**
- * Connects the native
- * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API)
- * to the programmatic API of a component.
- *
- * @remarks
- * An element with the `command` and `commandfor` attributes makes the browser
- * send a `CommandEvent` to the host, and the controller runs the callback of
- * that command string.
- *
- * @example
- * ```ts
- * class IgcDialogComponent extends LitElement {
- *   private readonly _commands = addCommandController(this)
- *     .set('--show', this.show)
- *     .set('--hide', this.hide)
- *     .set('--toggle', this.toggle);
- * }
- * ```
- */
-class CommandController {
-  private readonly _host: LitElement;
-  private readonly _commandMap = new Map<string, () => unknown>();
+type ToggleCommandsHost = LitElement & {
+  show(): unknown;
+  hide(): unknown;
+  toggle(): unknown;
+};
 
-  constructor(host: LitElement) {
-    this._host = host;
+const TOGGLE_COMMANDS = new Map<string, 'show' | 'hide' | 'toggle'>([
+  ['--show', 'show'],
+  ['--hide', 'hide'],
+  ['--toggle', 'toggle'],
+]);
 
-    addHostListeners(host, { events: ['command'], listener: this });
-  }
+function handleCommand(this: ToggleCommandsHost, event: Event): void {
+  const method = TOGGLE_COMMANDS.get((event as CommandEvent).command);
 
-  /**
-   * Registers a command string and its handler callback.
-   *
-   * @param command - The command string to listen for, for example the
-   *   built-in `'toggle-popover'` or a custom `'--show'`.
-   * @param callback - The method that runs when the command arrives. The
-   *   controller calls it with the host as `this`.
-   */
-  public set(command: string, callback: () => unknown): this {
-    this._commandMap.set(command, callback);
-    return this;
-  }
-
-  /** @internal */
-  public handleEvent(event: Event): void {
-    const commandEvent = event as CommandEvent;
-    this._commandMap.get(commandEvent.command)?.call(this._host);
+  if (method) {
+    this[method]();
   }
 }
 
-/** Creates a {@link CommandController} and adds it to the given host. */
-export function addCommandController(host: LitElement): CommandController {
-  return new CommandController(host);
+/** Runs the host `show`, `hide` and `toggle` for the `--show`, `--hide` and `--toggle` invoker commands. */
+export function addToggleCommands(host: ToggleCommandsHost): void {
+  addSafeEventListeners(host, ['command'], handleCommand);
 }
-
-export type { CommandController };

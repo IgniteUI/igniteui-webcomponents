@@ -34,6 +34,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-10-21 | API descriptions aligned with the JSDoc. |
 
 ## Overview
 
@@ -126,17 +127,17 @@ None applicable.
 | Name      | Description                              |
 | --------- | ---------------------------------------- |
 | (default) | Renders a title inside the default slot. |
-| `start`   | Renders left aligned icons.              |
-| `end`     | Renders right aligned action icons.      |
+| `start`   | Renders icons at the start of the navigation bar. |
+| `end`     | Renders action icons at the end of the navigation bar. |
 
 ### CSS Shadow parts
 
 | Part     | Description                            |
 | -------- | -------------------------------------- |
 | `base`   | The base wrapper of the navigation bar. |
-| `start`  | The left aligned icon container.       |
+| `start`  | The container of the start icons.      |
 | `middle` | The navigation bar title container.    |
-| `end`    | The right aligned action icons container. |
+| `end`    | The container of the end action icons. |
 
 ## Test scenarios
 

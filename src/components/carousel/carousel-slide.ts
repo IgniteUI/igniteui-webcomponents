@@ -45,13 +45,18 @@ export default class IgcCarouselSlideComponent extends LitElement {
   }
 
   /**
-   * The current active slide for the carousel component.
+   * Whether the slide is the active slide of the carousel.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
   public active = false;
 
   /* blazorSuppress */
+  /**
+   * Whether the slide is the outgoing slide of a running transition.
+   * The carousel sets this value.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public previous = false;
 
@@ -59,10 +64,7 @@ export default class IgcCarouselSlideComponent extends LitElement {
     super();
 
     addInternalsController(this, {
-      initialARIA: {
-        role: 'tabpanel',
-        ariaRoleDescription: 'slide',
-      },
+      initialARIA: { role: 'tabpanel' },
       aria: () => ({
         ariaLabel: this._carousel
           ? formatString(

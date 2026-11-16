@@ -38,7 +38,7 @@ const metadata: Meta<IgcHighlightComponent> = {
     docs: {
       description: {
         component:
-          'The highlight component provides efficient searching and highlighting of text\nprojected into it via its default slot. It uses the native CSS Custom Highlight API\nto apply highlight styles to matched text nodes without modifying the DOM.\n\nThe component supports case-sensitive matching, programmatic navigation between\nmatches, and automatic scroll-into-view of the active match.',
+          'Searches the text projected into its default slot and highlights the matches.\nIt uses the native CSS Custom Highlight API, so it does not change the DOM.\n\nThe component supports case-sensitive matching and programmatic navigation between\nmatches. Navigation scrolls the active match into view. When the content changes,\nthe component searches it again and keeps the active match where it can.',
       },
     },
   },
@@ -46,14 +46,14 @@ const metadata: Meta<IgcHighlightComponent> = {
     caseSensitive: {
       type: 'boolean',
       description:
-        'Whether to match the searched text with case sensitivity in mind.\nWhen `true`, only exact-case occurrences of `searchText` are highlighted.',
+        'Whether the matching distinguishes upper and lower case.\nWhen `true`, only exact-case occurrences of `searchText` are highlighted.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     searchText: {
       type: 'string',
       description:
-        'The string to search and highlight in the DOM content of the component.\nSetting this property triggers a new search automatically.\nAn empty string clears all highlights.',
+        'The string to search and highlight in the DOM content of the component.\nA change of this property starts a new search.\nAn empty string clears all highlights.',
       control: 'text',
       table: { defaultValue: { summary: '' } },
     },
@@ -65,13 +65,13 @@ export default metadata;
 
 interface IgcHighlightArgs {
   /**
-   * Whether to match the searched text with case sensitivity in mind.
+   * Whether the matching distinguishes upper and lower case.
    * When `true`, only exact-case occurrences of `searchText` are highlighted.
    */
   caseSensitive: boolean;
   /**
    * The string to search and highlight in the DOM content of the component.
-   * Setting this property triggers a new search automatically.
+   * A change of this property starts a new search.
    * An empty string clears all highlights.
    */
   searchText: string;
@@ -495,7 +495,7 @@ export const SettingsSearch: Story = {
     docs: {
       description: {
         story:
-          'A search in the settings of an application. The list shows only the settings that contain the search text, and the highlight marks the text in each setting. The component does not observe its content: after a render, its ranges point to text that has changed. Lit sets the properties of an element before it updates the children, so a `searchText` binding searches the old list. That is why the story sets `searchText` after each render, or calls `search()` when the text stays the same. Turn on "Show advanced settings" to add settings to the list while the search text stays the same.',
+          'A search in the settings of an application. The list shows only the settings that contain the search text, and the highlight marks the text in each setting. The highlight searches again when the list changes, so the story only binds `searchText`. Turn on "Show advanced settings" to add settings to the list while the search text stays the same.',
       },
     },
   },
@@ -548,7 +548,7 @@ export const SettingsSearch: Story = {
                   : `No settings contain "${text}".`
               }
             </p>
-            <igc-highlight>
+            <igc-highlight search-text=${text}>
               <ul>
                 ${visible.map(
                   ({ name, section, description }) => html`
@@ -565,14 +565,6 @@ export const SettingsSearch: Story = {
         `,
         host
       );
-
-      const highlight = host.querySelector('igc-highlight')!;
-
-      if (highlight.searchText === text) {
-        highlight.search();
-      } else {
-        highlight.searchText = text;
-      }
     };
 
     const mount = (element?: Element) => {

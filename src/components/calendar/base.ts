@@ -9,9 +9,8 @@ import { CalendarDay, toCalendarDayOrNull } from '#internals/date/model.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
 import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.resources.js';
-import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import { calendarResourcesMap } from '#internals/i18n/utils.js';
-import { I18nMixin } from '#internals/mixins/i18n.js';
+import { I18nMixin, type I18nMixinConfig } from '#internals/mixins/i18n.js';
 import { firstOf } from '#internals/utils/arrays.js';
 import {
   dateChanged,
@@ -27,8 +26,9 @@ import type {
   WeekDays,
 } from './types.js';
 
-const i18n: I18nControllerConfig<
-  IgcCalendarResourceStrings | ICalendarResourceStrings
+const i18n: I18nMixinConfig<
+  IgcCalendarResourceStrings | ICalendarResourceStrings,
+  IgcCalendarResourceStrings & Required<ICalendarResourceStrings>
 > = {
   defaultEN: CalendarResourceStringsEN,
   resourceMap: calendarResourcesMap,
@@ -36,11 +36,7 @@ const i18n: I18nControllerConfig<
 
 @blazorIndirectRender
 @blazorDeepImport
-export class IgcCalendarBaseComponent extends I18nMixin<
-  IgcCalendarResourceStrings | ICalendarResourceStrings,
-  typeof LitElement,
-  IgcCalendarResourceStrings & Required<ICalendarResourceStrings>
->(LitElement, i18n) {
+export class IgcCalendarBaseComponent extends I18nMixin(LitElement, i18n) {
   private _initialActiveDateSet = false;
   private _weekStart?: WeekDays;
 
@@ -89,8 +85,7 @@ export class IgcCalendarBaseComponent extends I18nMixin<
 
   /* blazorSuppress */
   /**
-   * The current value of the calendar.
-   * Used when selection is set to single
+   * The value of the calendar in `single` selection mode.
    *
    * @attr value
    */
@@ -105,8 +100,7 @@ export class IgcCalendarBaseComponent extends I18nMixin<
 
   /* blazorSuppress */
   /**
-   * The current values of the calendar.
-   * Used when selection is set to multiple or range.
+   * The values of the calendar in `multiple` and `range` selection modes.
    *
    * @attr values
    */
@@ -121,7 +115,10 @@ export class IgcCalendarBaseComponent extends I18nMixin<
   }
 
   /* blazorSuppress */
-  /** Get/Set the date which is shown in view and is highlighted. By default it is the current date. */
+  /**
+   * The date that the calendar shows and highlights. It changes when the user navigates.
+   * Without it, the calendar starts at its value, or at the current date when there is no value.
+   */
   @property({
     attribute: 'active-date',
     converter: convertToDate,
@@ -138,7 +135,8 @@ export class IgcCalendarBaseComponent extends I18nMixin<
   }
 
   /**
-   * Sets the type of selection in the component.
+   * The selection mode of the calendar: `single`, `multiple` or `range`.
+   * A change after the first render clears the value and the values.
    * @attr selection
    * @default single
    */
@@ -146,7 +144,7 @@ export class IgcCalendarBaseComponent extends I18nMixin<
   public selection: CalendarSelection = 'single';
 
   /**
-   * Whether to show the week numbers.
+   * Whether the calendar shows the week numbers.
    * @attr show-week-numbers
    * @default false
    */
@@ -154,7 +152,7 @@ export class IgcCalendarBaseComponent extends I18nMixin<
   public showWeekNumbers = false;
 
   /**
-   * Gets/Sets the first day of the week.
+   * The first day of the week.
    *
    * @remarks
    * When not set, the week starts on the first day of the week of the current {@link locale}.
@@ -171,7 +169,7 @@ export class IgcCalendarBaseComponent extends I18nMixin<
   }
 
   /**
-   * Gets/Sets the special dates for the component.
+   * The date ranges that the calendar marks as special.
    *
    * @remarks
    * Returns `undefined` when no dates are set, which the setter accepts as well so that
@@ -187,7 +185,7 @@ export class IgcCalendarBaseComponent extends I18nMixin<
   }
 
   /**
-   * Gets/Sets the disabled dates for the component.
+   * The date ranges that the user cannot select.
    *
    * @remarks
    * Returns `undefined` when no dates are set, which the setter accepts as well so that

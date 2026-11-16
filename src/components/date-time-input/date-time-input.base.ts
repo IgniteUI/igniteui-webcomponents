@@ -2,10 +2,10 @@ import { LitElement, type PropertyValues, type TemplateResult } from 'lit';
 import { eventOptions, property, query } from 'lit/decorators.js';
 import {
   addAriaTarget,
+  HOST_COMBOBOX_ATTRIBUTES,
   helperText,
 } from '#internals/controllers/aria-projection.js';
 import {
-  addKeybindings,
   arrowDown,
   arrowLeft,
   arrowRight,
@@ -16,7 +16,12 @@ import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { convertToDate } from '#internals/date/converters.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
-import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
+import {
+  formatDisplayDate,
+  getLocaleDateTimeFormats,
+} from '#internals/i18n/date-formats.js';
+import { addLocaleController } from '#internals/i18n/i18n-controller.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import type { FormValue } from '#internals/mixins/forms/form-value.js';
 import { MaskBehaviorMixin } from '#internals/mixins/mask-behavior.js';
@@ -33,7 +38,6 @@ import IgcValidationContainerComponent from '../validation-container/validation-
 import {
   type DatePartDeltas,
   DatePartType,
-  DEFAULT_DATE_PARTS_SPIN_DELTAS,
   type IDatePart,
 } from './date-part.js';
 import type { DateFormatMaskParser } from './datetime-mask-parser.js';
@@ -61,7 +65,9 @@ const Slots = setSlots(
 export abstract class IgcDateTimeInputBaseComponent<
   T,
   P,
-> extends MaskBehaviorMixin(FormAssociatedRequiredMixin(LitElement)) {
+> extends MaskBehaviorMixin(
+  FormAssociatedRequiredMixin(LitElement, HOST_COMBOBOX_ATTRIBUTES)
+) {
   // #region Internal state and properties
 
   protected abstract readonly _themes: ThemingController;
@@ -79,8 +85,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected override readonly _input?: HTMLInputElement;
 
   /**
-   * Names and describes the native input, and applies the ARIA a composite host
-   * projects. See {@link addAriaTarget}.
+   * Names and describes the native input, and applies the projected and the
+   * host ARIA. See {@link addAriaTarget}.
    */
   protected readonly _ariaTarget = addAriaTarget(this, () =>
     helperText(this, this._slots)
@@ -90,10 +96,7 @@ export abstract class IgcDateTimeInputBaseComponent<
     return dateTimeInputValidators;
   }
 
-  private readonly _i18nController = addI18nController(this, {
-    defaultEN: {},
-    onResourceChange: this._handleResourceChange,
-  });
+  private readonly _localeController = addLocaleController(this);
 
   protected _min: Date | null = null;
   protected _max: Date | null = null;
@@ -101,9 +104,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected _displayFormat?: string;
   protected _inputFormat?: string;
 
-  /** The locale-default display format, resolved by the i18n controller. */
   protected get _defaultDisplayFormat(): string {
-    return this._i18nController.localeDisplayFormat;
+    return getLocaleDateTimeFormats(this.locale).display;
   }
 
   /**
@@ -112,7 +114,7 @@ export abstract class IgcDateTimeInputBaseComponent<
    */
   protected _isEditing = false;
 
-  /** The value the input was focused with, used to detect a committed change. */
+  /** The `igcChange` baseline: the value at focus, at the last commit or from the last change from code. */
   protected _oldValue: T | null = null;
 
   /**
@@ -122,11 +124,6 @@ export abstract class IgcDateTimeInputBaseComponent<
    */
   public get _uncommittedValue(): T | null {
     return this._isEditing ? this._parseMask(true) : this.value;
-  }
-
-  /** The spin amount for each date part - the defaults overlaid with `spinDelta`. */
-  protected get _datePartDeltas(): DatePartDeltas {
-    return { ...DEFAULT_DATE_PARTS_SPIN_DELTAS, ...this.spinDelta };
   }
 
   protected get _targetDatePart(): P | undefined {
@@ -140,7 +137,7 @@ export abstract class IgcDateTimeInputBaseComponent<
   // #region Public attributes and properties
 
   /**
-   * Whether the control will have outlined appearance.
+   * Whether the control has an outlined appearance.
    *
    * @attr
    * @default false
@@ -163,7 +160,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   public label!: string;
 
   /**
-   * The date format to apply on the input.
+   * The date format of the input while the user edits the value.
+   * Without it, the input uses the input format of the locale.
    * @attr input-format
    */
   @property({ attribute: 'input-format' })
@@ -208,8 +206,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Format to display the value in when not editing.
-   * Defaults to the locale format if not set.
+   * The format of the value while the input does not have focus.
+   * Without it, the input uses `inputFormat` when set, else the display format of the locale.
    * @attr display-format
    */
   @property({ attribute: 'display-format' })
@@ -224,31 +222,33 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Delta values used to increment or decrement each date part on step actions.
+   * The amount by which a step action increments or decrements each date part.
    * All values default to `1`.
    */
   @property({ attribute: false })
   public spinDelta?: DatePartDeltas;
 
   /**
-   * Sets whether to loop over the currently spun segment.
+   * Whether a spun date part wraps around at its limits.
+   * When false, the part stops at its minimum or maximum.
    * @attr spin-loop
    */
   @property({ type: Boolean, attribute: 'spin-loop' })
   public spinLoop = true;
 
   /**
-   * The locale used to format the display value and to resolve the
-   * component's resource strings. Falls back to the global locale when not set.
+   * The locale used to format the display value. Without it, the input takes
+   * its own `lang`, else the locale of the nearest ancestor that has a
+   * `locale` (a component) or a `lang`, and then the global locale.
    * @attr locale
    */
   @property()
   public set locale(value: string) {
-    this._i18nController.locale = value;
+    this._localeController.locale = value;
   }
 
   public get locale(): string {
-    return this._i18nController.locale;
+    return this._localeController.locale;
   }
 
   // #endregion
@@ -258,10 +258,7 @@ export abstract class IgcDateTimeInputBaseComponent<
   constructor() {
     super();
 
-    addKeybindings(this, {
-      skip: () => this.readOnly,
-      bindingDefaults: { repeat: true },
-    })
+    this._keyBindings
       .set([ctrlKey, ';'], this._setCurrentDateTime)
       .set(arrowUp, this._keyboardSpin.bind(this, 1))
       .set(arrowDown, this._keyboardSpin.bind(this, -1))
@@ -284,11 +281,6 @@ export abstract class IgcDateTimeInputBaseComponent<
   //#endregion
 
   // #region Event handlers
-
-  private _handleResourceChange(): void {
-    this._initializeDefaultMask();
-    this._updateMaskDisplay();
-  }
 
   protected _handleDragEnter(): void {
     if (!this._focused) {
@@ -361,15 +353,27 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected _performStep(
     datePart: P | undefined,
     delta: number | undefined,
-    sign: 1 | -1
+    sign: 1 | -1,
+    commit = false
   ): boolean {
     const part = datePart || this._targetDatePart;
     if (!part) return false;
 
-    const { start, end } = this._inputSelection;
-    this._setDraftValue(this._calculateSpunValue(part, delta, sign));
-    this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
+    this._applyStep(this._calculateSpunValue(part, delta, sign), commit);
     return true;
+  }
+
+  /** Keeps the selection. With `commit`, a focused editor also updates `value`, not only the draft. */
+  protected _applyStep(value: T, commit: boolean): void {
+    const { start, end } = this._inputSelection;
+    this._setDraftValue(value);
+
+    // A focused editor holds the step as a draft. Commit the exact value: the mask can lack the stepped part.
+    if (commit && this._focused) {
+      this._applyDraft(value);
+    }
+
+    this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
   }
 
   /** Shows the editable mask when focused, else the display format. */
@@ -419,16 +423,39 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Applies a value assignment from code. Stops if the value is unchanged,
-   * cancels an edit, and renders the mask again from the new value.
+   * Applies a value set from code. A change becomes the `igcChange` baseline. An equal
+   * value keeps it, so a picker that renders its cleared value back still gets the clear.
    */
   protected _applyValue(value: T | null): void {
-    if (equal(this._formValue.value, value)) {
-      return;
+    if (this._setValue(value)) {
+      this._oldValue = value;
+    }
+  }
+
+  /** Sets the value, cancels an edit and renders the mask. Returns whether the value changed. */
+  private _setValue(value: T | null): boolean {
+    const previous = this._formValue.value;
+
+    if (equal(previous, value)) {
+      return false;
     }
 
     this._isEditing = false;
     this._formValue.setValueAndFormState(value);
+    this.requestUpdate('value', previous);
+    this._updateMaskDisplay();
+    return true;
+  }
+
+  /**
+   * Clears like `clear()`, but keeps the `igcChange` baseline, so the next commit reports the clear.
+   *
+   * @hidden @internal
+   */
+  public _clearAsEdit(): void {
+    this._isEditing = false;
+    this._maskedValue = '';
+    this._setValue(null);
     this._updateMaskDisplay();
   }
 
@@ -442,37 +469,26 @@ export abstract class IgcDateTimeInputBaseComponent<
       : undefined;
   }
 
-  /** Applies the masked text to the public value without emitting anything. */
-  protected _applyDraft(): void {
+  /** Applies the masked text, or `value`, to the public value without emitting anything. */
+  protected _applyDraft(value: T | null = this._parseMask(true)): void {
     this._isEditing = false;
-    this.value = this._parseMask(true);
+    this.value = value;
     this._updateMaskDisplay();
   }
 
-  /**
-   * Commits the draft to the public value. Emits `igcChange` if the committed
-   * value differs from the value at focus.
-   */
+  /** Commits the draft to the public value. Emits `igcChange` if the value differs from `_oldValue`. */
   protected _commitEdit(): void {
     // Only a real edit is parsed again. A display-formatted mask parses wrong
     // under the input format.
     if (this._isEditing) {
       this._isEditing = false;
-
-      // A partial mask parses leniently. Only an empty result clears the value.
-      const parsed = this._parseMask(false);
-
-      if (parsed === null) {
-        this.clear();
-      } else {
-        this.value = parsed;
-      }
+      // A partial mask parses leniently; an empty one gives `null`.
+      this._setValue(this._parseMask(false));
     }
 
     // The assignments skip an unchanged value, so restore the display format here.
     this._updateMaskDisplay();
 
-    // `clear()` or a set while focused also moves the value. That is a commit too.
     if (!this.readOnly && !equal(this._oldValue, this.value)) {
       this._oldValue = this.value;
       this.emitEvent('igcChange', { detail: this.value });
@@ -517,10 +533,17 @@ export abstract class IgcDateTimeInputBaseComponent<
     }
   }
 
+  protected override _formatValidationValue(
+    value: unknown,
+    locale: string
+  ): string {
+    return formatDisplayDate(value as Date, locale, this.displayFormat);
+  }
+
   /** Applies the locale-default mask, unless an explicit input format is set. */
   protected _initializeDefaultMask(): void {
     if (!this._inputFormat) {
-      this._applyMask(this._i18nController.localeInputFormat);
+      this._applyMask(getLocaleDateTimeFormats(this.locale).input);
     }
   }
 
@@ -541,28 +564,41 @@ export abstract class IgcDateTimeInputBaseComponent<
   /** Sets focus on the control. */
   public override focus(options?: FocusOptions): void {
     this._input?.focus(options);
+    deferFocus(this, options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the control. */
   public override blur(): void {
+    cancelDeferredFocus(this);
     this._input?.blur();
   }
 
   /* blazorSuppress */
-  /** Increments a date/time portion. */
+  /**
+   * Increments a date or time part by `delta`, or by its `spinDelta` value.
+   * Without `datePart`, it changes the part at the cursor or a default part.
+   * The `value` updates at once.
+   */
   public stepUp(datePart?: P, delta?: number): void {
-    this._performStep(datePart, delta, 1);
+    this._performStep(datePart, delta, 1, true);
   }
 
   /* blazorSuppress */
-  /** Decrements a date/time portion. */
+  /**
+   * Decrements a date or time part by `delta`, or by its `spinDelta` value.
+   * Without `datePart`, it changes the part at the cursor or a default part.
+   * The `value` updates at once.
+   */
   public stepDown(datePart?: P, delta?: number): void {
-    this._performStep(datePart, delta, -1);
+    this._performStep(datePart, delta, -1, true);
   }
 
   /* blazorSuppress */
-  /** Replaces the selected text in the control and re-applies the mask. */
+  /**
+   * Replaces the text from `start` to `end` in the input and re-applies the mask.
+   * Without `start` and `end`, replaces the selected text. The `value` updates at once.
+   */
   public override setRangeText(
     replacement: string,
     start?: number,
@@ -573,12 +609,10 @@ export abstract class IgcDateTimeInputBaseComponent<
     this._applyDraft();
   }
 
-  /** Clears the input element of user input. */
+  /** Clears the value and the text of the input. */
   public clear(): void {
-    this._isEditing = false;
-    this._maskedValue = '';
-    this.value = null;
-    this._updateMaskDisplay();
+    this._oldValue = null;
+    this._clearAsEdit();
   }
 
   //#endregion
@@ -617,7 +651,10 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   protected abstract override readonly _formValue: FormValue<T | null>;
 
-  /** Provided by `EventEmitterMixin` in the concrete components. */
+  /**
+   * Provided by `EventEmitterMixin` in the concrete components.
+   * @hidden @internal
+   */
   public abstract emitEvent(name: string, init?: CustomEventInit): boolean;
 
   /** The committed value of the input. */
@@ -649,13 +686,13 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected abstract _getDefaultDatePart(): P | undefined;
 
   /* blazorSuppress */
-  /** Whether the current format holds a date part: day, month or year. */
+  /** Returns whether the input format has a date part: day, month or year. */
   public hasDateParts(): boolean {
     return this._parser.hasDateParts();
   }
 
   /* blazorSuppress */
-  /** Whether the current format holds a time part: hours, minutes or seconds. */
+  /** Returns whether the input format has a time part: hours, minutes or seconds. */
   public hasTimeParts(): boolean {
     return this._parser.hasTimeParts();
   }

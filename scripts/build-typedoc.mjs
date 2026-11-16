@@ -34,6 +34,10 @@ const TYPEDOC = {
     'ignite-ui-web-components.json'
   ),
   PROJECT_PATH: ROOT('src', 'index.ts'),
+  // The release build's config. TypeDoc type-checks every file in it, and the root
+  // config also includes the specs, which import theme modules a release build does
+  // not generate.
+  TSCONFIG: ROOT('scripts', 'tsconfig.prod.json'),
   TEMPLATE_STRINGS_PATH: ROOT(
     'extras',
     'template',
@@ -103,6 +107,7 @@ async function main() {
   const app = await Application.bootstrapWithPlugins({
     entryPoints,
     entryPointStrategy,
+    tsconfig: TYPEDOC.TSCONFIG,
     plugin: [TYPEDOC.PLUGINS.THEME, TYPEDOC.PLUGINS.LOCALIZATION],
     theme: 'igtheme',
     router: 'kind',
@@ -115,6 +120,7 @@ async function main() {
       '@fires',
       '@csspart',
       '@cssproperty',
+      '@cssstate',
       '@attr',
     ],
     suppressCommentWarningsInDeclarationFiles: true,
@@ -134,6 +140,12 @@ async function main() {
   }
 
   const project = await app.convert();
+
+  if (!project) {
+    throw new Error(
+      'TypeDoc could not convert the project. See the errors above.'
+    );
+  }
 
   switch (action) {
     case 'export':

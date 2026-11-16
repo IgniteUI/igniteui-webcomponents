@@ -65,14 +65,6 @@ $dropdown-theme: dropdown-theme.$material;
             background: color(primary, 100);
         }
     }
-
-    [part='case-icon'] {
-        color: color(gray, 600);
-    }
-
-    [part='case-icon active'] {
-        color: color(primary, 500);
-    }
 }
 
 :host(:not([outlined]):focus-within) {

@@ -37,8 +37,7 @@ const metadata: Meta<IgcIconComponent> = {
   parameters: {
     docs: {
       description: {
-        component:
-          'The icon component allows visualizing collections of pre-registered SVG icons.',
+        component: 'Shows an SVG icon from a collection of registered icons.',
       },
     },
   },
@@ -51,15 +50,14 @@ const metadata: Meta<IgcIconComponent> = {
     },
     collection: {
       type: 'string',
-      description:
-        'The name of the registered collection for look up of icons.',
+      description: 'The registered collection to look the icon up in.',
       control: 'text',
       table: { defaultValue: { summary: 'default' } },
     },
     mirrored: {
       type: 'boolean',
       description:
-        'Whether to flip the icon horizontally. Useful for RTL (right-to-left) layouts.',
+        'Whether the icon is flipped horizontally, for example for RTL layouts.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -72,9 +70,9 @@ export default metadata;
 interface IgcIconArgs {
   /** The name of the icon glyph to draw. */
   name: string;
-  /** The name of the registered collection for look up of icons. */
+  /** The registered collection to look the icon up in. */
   collection: string;
-  /** Whether to flip the icon horizontally. Useful for RTL (right-to-left) layouts. */
+  /** Whether the icon is flipped horizontally, for example for RTL layouts. */
   mirrored: boolean;
 }
 type Story = StoryObj<IgcIconArgs>;

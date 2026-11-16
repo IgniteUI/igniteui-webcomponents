@@ -1,6 +1,6 @@
 import type { QrErrorCorrectionLevel } from '../types.js';
 import { encodeQR } from './encode.js';
-import { applyMask, selectBestMask } from './mask.js';
+import { selectBestMask, toggleMask } from './mask.js';
 
 /**
  * Returns the alignment pattern center coordinates of a version (ISO/IEC 18004, Annex E).
@@ -197,13 +197,12 @@ function placeDataBits(
         const c = col - dc;
         if (c < 0) continue;
         if (functionModules[row][c]) continue;
+        // The remainder bits stay 0, as `createMatrix` fills them.
         if (bitIndex < totalBits) {
           const byteIndex = Math.floor(bitIndex / 8);
           const bitPosition = 7 - (bitIndex % 8);
           matrix[row][c] = ((codewords[byteIndex] >> bitPosition) & 1) === 1;
           bitIndex++;
-        } else {
-          matrix[row][c] = false; // Padding bits (set to 0)
         }
       }
     }
@@ -270,13 +269,14 @@ export function generateQRCodeMatrix(
 
   const bestMask = selectBestMask(matrix, functionModules);
 
-  const maskedMatrix = applyMask(matrix, functionModules, bestMask);
+  // The matrix is local, so mask it in place.
+  toggleMask(matrix, functionModules, bestMask);
 
   const formatBits = getFormatInfo(ecLevelIndex, bestMask);
   for (const [r, c, bit] of formatModules) {
-    maskedMatrix[r][c] = ((formatBits >> bit) & 1) === 1;
+    matrix[r][c] = ((formatBits >> bit) & 1) === 1;
   }
-  maskedMatrix[size - 8][8] = true;
+  matrix[size - 8][8] = true;
 
-  return { matrix: maskedMatrix, version, size };
+  return { matrix, version, size };
 }

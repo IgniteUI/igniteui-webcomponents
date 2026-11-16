@@ -130,6 +130,14 @@ describe('QR model - encodeQR', () => {
       expect(() => encodeQR('A', 'M', 41)).to.throw();
     });
 
+    it('throws for a requestedVersion that is not an integer', () => {
+      for (const version of [1.5, Number.NaN]) {
+        expect(() => encodeQR('A', 'M', version)).to.throw(
+          'Requested version must be an integer between 1 and 40'
+        );
+      }
+    });
+
     it('throws when data is too long for the explicitly requested version', () => {
       // A 200-character lowercase string cannot fit in version 1 at any EC level
       expect(() => encodeQR('a'.repeat(200), 'M', 1)).to.throw();

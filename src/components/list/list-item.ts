@@ -37,7 +37,8 @@ export default class IgcListItemComponent extends LitElement {
   }
 
   /**
-   * Defines if the list item is selected or not.
+   * Whether the list item is selected. It changes only the visual style of the
+   * item.
    * @attr
    */
   @property({ type: Boolean, reflect: true })

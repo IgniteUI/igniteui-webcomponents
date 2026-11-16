@@ -1,3 +1,6 @@
+import { notEqual, type PropertyDeclaration } from 'lit';
+import { isObject } from '../utils/types.js';
+
 /** The argument object that the {@link coercedProperty} callbacks get. */
 export interface CoercedPropertyContext<T, H> {
   /** The raw value in `transform`, the coerced value in `onChange`. */
@@ -14,8 +17,30 @@ export interface CoercedPropertyConfig<T, H> {
   /** Coerces every incoming value, the field initializer included. */
   transform?: (context: CoercedPropertyContext<T, H>) => T;
 
-  /** Runs after the property stores a value, but not for the initializer. */
+  /**
+   * Runs after a set, but not for the initializer. The `hasChanged` of the
+   * property options decides what a change is. Without it, an equal
+   * primitive, by Lit's `notEqual`, is not a change. The same object or array
+   * is, because it can hold an in-place change.
+   */
   onChange?: (context: CoercedPropertyContext<T, H>) => void;
+}
+
+function hasChanged(
+  host: object,
+  name: PropertyKey,
+  next: unknown,
+  previous: unknown
+): boolean {
+  const { elementProperties } = host.constructor as {
+    elementProperties?: Map<PropertyKey, PropertyDeclaration>;
+  };
+  // `@property()` without options stores Lit's default, `notEqual`.
+  const custom = elementProperties?.get(name)?.hasChanged;
+
+  return custom && custom !== notEqual
+    ? custom(next, previous)
+    : isObject(next) || notEqual(next, previous);
 }
 
 /**
@@ -79,8 +104,8 @@ export function coercedProperty<T, H extends object = object>(
 
         write.call(this, next);
 
-        if (!initial) {
-          onChange?.({ value: next, host: this, previous });
+        if (!initial && onChange && hasChanged(this, name, next, previous)) {
+          onChange({ value: next, host: this, previous });
         }
       },
       configurable: true,

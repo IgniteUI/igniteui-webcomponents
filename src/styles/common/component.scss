@@ -22,7 +22,29 @@
     }
 }
 
+// `hidden="until-found"` keeps its box, so that find-in-page can reveal it.
+// Where the browser does not know the value, its own `[hidden]` rule applies.
 :host([hidden]),
-[hidden] {
+[hidden]:not([hidden='until-found' i]) {
     display: none !important;
+}
+
+// A form control inside a component reserves no message lines. The outer
+// component renders its own, if it has any.
+:is(
+    igc-checkbox,
+    igc-color-picker,
+    igc-combo,
+    igc-date-picker,
+    igc-date-range-input,
+    igc-date-range-picker,
+    igc-date-time-input,
+    igc-file-input,
+    igc-input,
+    igc-mask-input,
+    igc-radio,
+    igc-select,
+    igc-textarea
+) {
+    --ig-helper-min-lines: 0;
 }

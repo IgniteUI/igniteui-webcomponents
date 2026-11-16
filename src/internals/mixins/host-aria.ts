@@ -1,5 +1,4 @@
-import type { LitElement } from 'lit';
-import type { Constructor } from './constructor.js';
+import type { Constructor, LitElementConstructor } from './constructor.js';
 
 /** @internal */
 export const HOST_ARIA_ATTRIBUTES = [
@@ -16,19 +15,20 @@ export declare class HostAriaElementInterface {
 
 /**
  * Renders the component again when a name or description source of its host
- * changes, so the render can forward it into the shadow root.
+ * changes, so the render can forward it into the shadow root. `state` lists
+ * more host attributes to forward, such as `aria-pressed`.
  * @internal
  */
-export function HostAriaMixin<T extends Constructor<LitElement>>(base: T) {
+export function HostAriaMixin<T extends LitElementConstructor>(
+  base: T,
+  state: readonly string[] = []
+) {
+  const observed = [...HOST_ARIA_ATTRIBUTES, ...state];
+
   class HostAriaElement extends base {
-    /**
-     * `Reflect.get` calls the base getter with this class as `this`, because
-     * the mixin base type has no static `observedAttributes`.
-     * @internal
-     */
-    public static get observedAttributes(): string[] {
-      const inherited = Reflect.get(base, 'observedAttributes', this);
-      return [...(inherited as string[]), ...HOST_ARIA_ATTRIBUTES];
+    /** @internal */
+    public static override get observedAttributes(): string[] {
+      return [...super.observedAttributes, ...observed];
     }
 
     /** @internal */
@@ -39,7 +39,7 @@ export function HostAriaMixin<T extends Constructor<LitElement>>(base: T) {
     ): void {
       super.attributeChangedCallback(name, prev, current);
 
-      if (HOST_ARIA_ATTRIBUTES.includes(name)) {
+      if (observed.includes(name)) {
         this._handleHostAriaChange(name);
       }
     }

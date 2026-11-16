@@ -44,6 +44,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-10-21 | API descriptions aligned with the JSDoc. |
 
 ## Overview
 
@@ -211,8 +212,8 @@ projected content.
 
 | Property   | Attribute  | Reflected | Type      | Default | Description                                                     |
 | ---------- | ---------- | --------- | --------- | ------- | --------------------------------------------------------------- |
-| `current`  | `current`  | yes       | `boolean` | `false` | Marks the item as the current page.                              |
-| `disabled` | `disabled` | yes       | `boolean` | `false` | Disables the item and removes its content from the tab sequence.  |
+| `current`  | `current`  | yes       | `boolean` | `false` | Whether the breadcrumb represents the current page. Sets `aria-current="page"` on the element when true. |
+| `disabled` | `disabled` | yes       | `boolean` | `false` | Whether the breadcrumb is disabled. Sets `aria-disabled="true"` on the element and removes the slotted content from the tab sequence while true. |
 
 ### Methods
 

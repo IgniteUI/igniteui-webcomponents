@@ -26,6 +26,7 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
   - [Test scenarios](#test-scenarios)
     - [Rendering](#rendering)
     - [Slotted content](#slotted-content)
@@ -39,6 +40,10 @@
     - [Nested splitters tests](#nested-splitters-tests)
     - [RTL tests](#rtl-tests)
     - [Edge scenarios](#edge-scenarios)
+    - [Host ARIA](#host-aria)
+    - [Localization](#localization-1)
+    - [Hidden ancestor](#hidden-ancestor)
+    - [Orientation change in a theme](#orientation-change-in-a-theme)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
     - [Keyboard support](#keyboard-support)
@@ -50,6 +55,11 @@
 | ------: | ---------- | --------------------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                                           |
 |       2 | 2026-10-07 | Host ARIA names and describes the bar, no English state text    |
+|       3 | 2026-10-19 | Localize the default name of the bar                            |
+|       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                        |
+|       5 | 2026-10-23 | The splitter makes a stacking context, so the z-index of the focused bar does not compete with the layers of the page |
+|       6 | 2026-10-29 | Transition only the colors, the shadow and the scale of the bar, so the bar hides at the same time as a hidden ancestor and takes its new size, and in the Indigo theme its new scale, at once after an orientation change |
+|       7 | 2026-11-02 | Each pane makes a stacking context, so the focused bar stays above slotted content with any `z-index` |
 
 ## Overview
 
@@ -155,7 +165,8 @@ The splitter component presents users with a clear, intuitive interface for mana
 
 **Accessibility experience**
 
-- **Focus indicators**: the splitter bar displays a clear focus ring when it is reached from the keyboard.
+- **Focus indicators**: the splitter bar displays a clear focus ring when it is reached from the keyboard. Content in
+  the panes does not cover the ring, whatever its `z-index`.
 - **Screen reader announcements**: the bar announces its name and the size of the start pane in percent. The value
   0% tells that the start pane is collapsed, and 100% that the end pane is collapsed.
 - **Predictable navigation**: the tab order flows naturally and the keyboard shortcuts follow standard conventions.
@@ -185,8 +196,9 @@ By default this creates a horizontal splitter with equal-sized panes.
 ```
 
 > [!NOTE]
-> Changing the orientation after the initial render clears the pane sizes and their min and max constraints, along
-> with the corresponding attributes: a size authored for one axis rarely makes sense on the other.
+> Changing the orientation after the initial render returns the panes to the sizes set through `startSize` and
+> `endSize`, or to automatic sizing. The sizes from a drag, a key press or a collapse were measured on the other axis,
+> so they are dropped. The minimum and maximum sizes and the attributes stay.
 
 #### Setting size constraints
 
@@ -254,8 +266,15 @@ Nested splitters operate independently; a resize in one does not disturb the oth
 
 ### Localization
 
-The splitter has one text: "Resize panes", the English default name of the bar. Set `aria-labelledby` or `aria-label`
-on the splitter to give the bar a localized name. All visual elements are icon-based.
+The splitter takes its resource strings from the `igniteui-i18n-core` package through the `locale` and `resourceStrings`
+properties. Without an explicit `locale`, it takes its own `lang`, else the locale of the nearest ancestor that has a
+`locale` (a component) or a `lang`, and then the global locale of the library.
+
+| Key                     | Default English value | Used for                     |
+| ----------------------- | --------------------- | ---------------------------- |
+| `splitter_resize_panes` | Resize panes          | The default name of the bar. |
+
+A host `aria-labelledby` or `aria-label` replaces the default name. All visual elements are icon-based.
 
 ### Keyboard interactions
 
@@ -265,12 +284,15 @@ on the splitter to give the bar a localized name. All visual elements are icon-b
 | <kbd>Arrow Down</kbd>                    | In vertical orientation, increases the start pane size by 10px (decreases the end pane). |
 | <kbd>Arrow Left</kbd>                    | In horizontal orientation, decreases the start pane size by 10px (increases the end pane). |
 | <kbd>Arrow Right</kbd>                   | In horizontal orientation, increases the start pane size by 10px (decreases the end pane). |
-| <kbd>Ctrl</kbd> + <kbd>Arrow Up</kbd>    | In vertical orientation, collapses or expands the start pane (if collapse is enabled).  |
-| <kbd>Ctrl</kbd> + <kbd>Arrow Down</kbd>  | In vertical orientation, collapses or expands the end pane (if collapse is enabled).    |
-| <kbd>Ctrl</kbd> + <kbd>Arrow Left</kbd>  | In horizontal orientation, collapses or expands the start pane (if collapse is enabled). |
-| <kbd>Ctrl</kbd> + <kbd>Arrow Right</kbd> | In horizontal orientation, collapses or expands the end pane (if collapse is enabled).  |
+| <kbd>Ctrl</kbd> + <kbd>Arrow Up</kbd>    | In vertical orientation, expands the end pane if it is collapsed, else toggles the start pane (if collapse is enabled). |
+| <kbd>Ctrl</kbd> + <kbd>Arrow Down</kbd>  | In vertical orientation, expands the start pane if it is collapsed, else toggles the end pane (if collapse is enabled). |
+| <kbd>Ctrl</kbd> + <kbd>Arrow Left</kbd>  | In horizontal orientation, expands the end pane if it is collapsed, else toggles the start pane (if collapse is enabled). |
+| <kbd>Ctrl</kbd> + <kbd>Arrow Right</kbd> | In horizontal orientation, expands the start pane if it is collapsed, else toggles the end pane (if collapse is enabled). |
 | <kbd>Home</kbd>                          | Resizes to the minimum size of the start pane.                                          |
 | <kbd>End</kbd>                           | Resizes to the maximum size of the start pane.                                          |
+
+In a right-to-left context, <kbd>Arrow Left</kbd> and <kbd>Arrow Right</kbd> swap their actions, with and without
+<kbd>Ctrl</kbd>.
 
 ## API
 
@@ -281,16 +303,18 @@ on the splitter to give the bar a localized name. All visual elements are icon-b
 | orientation         | orientation           | Yes       | `SplitterOrientation`       | `horizontal` | Orientation layout for the splitter panes.                                  |
 | disableCollapse     | disable-collapse      | Yes       | `boolean`                   | false        | Whether collapsing either pane is disabled. Also hides the collapse buttons. |
 | disableResize       | disable-resize        | Yes       | `boolean`                   | false        | Whether resizing is disabled. Also hides the drag handle.                   |
-| hideDragHandle      | hide-drag-handle      | Yes       | `boolean`                   | false        | Controls the visibility of the drag handle on the splitter bar.             |
-| hideCollapseButtons | hide-collapse-buttons | Yes       | `boolean`                   | false        | Controls the visibility of the expand/collapse buttons on the splitter bar. |
-| startSize           | start-size            | No        | `string \| undefined`       | -            | The initial display size of the start pane.                                 |
-| endSize             | end-size              | No        | `string \| undefined`       | -            | The initial display size of the end pane.                                   |
+| hideDragHandle      | hide-drag-handle      | Yes       | `boolean`                   | false        | Whether the drag handle on the splitter bar is hidden. |
+| hideCollapseButtons | hide-collapse-buttons | Yes       | `boolean`                   | false        | Whether the expand/collapse buttons on the splitter bar are hidden. |
+| startSize           | start-size            | No        | `string \| undefined`       | -            | The size of the start pane. |
+| endSize             | end-size              | No        | `string \| undefined`       | -            | The size of the end pane. |
 | startMinSize        | start-min-size        | No        | `string \| undefined`       | -            | The minimum display size for the start pane.                                |
 | startMaxSize        | start-max-size        | No        | `string \| undefined`       | -            | The maximum display size for the start pane.                                |
 | endMinSize          | end-min-size          | No        | `string \| undefined`       | -            | The minimum display size for the end pane.                                  |
 | endMaxSize          | end-max-size          | No        | `string \| undefined`       | -            | The maximum display size for the end pane.                                  |
-| startCollapsed      | start-collapsed       | Yes       | `boolean`                   | false        | Gets/sets the collapsed state of the start pane.                            |
-| endCollapsed        | end-collapsed         | Yes       | `boolean`                   | false        | Gets/sets the collapsed state of the end pane.                              |
+| startCollapsed      | start-collapsed       | Yes       | `boolean`                   | false        | Whether the start pane is currently collapsed. Set this property to collapse or expand the pane programmatically. |
+| endCollapsed        | end-collapsed         | Yes       | `boolean`                   | false        | Whether the end pane is currently collapsed. Set this property to collapse or expand the pane programmatically. |
+| locale              | locale                | No        | `string`                    | -            | The locale for the resource strings. Falls back to the inherited locale, then the global one.       |
+| resourceStrings     | -                     | No        | `ISplitterResourceStrings`  | EN           | The texts of the component. The strings that you set replace the strings of the current locale. Reading returns all the strings, with your strings over the locale strings.                                      |
 
 ### Methods
 
@@ -341,13 +365,14 @@ interface IgcSplitterLayoutChangedEventArgs {
 
 | Name    | Description                                                                                                        |
 | ------- | -------------------------------------------------------------------------------------------------------------------- |
-| `start` | The start pane of the splitter. In horizontal layout this is the leftmost pane, and in vertical layout the topmost.  |
-| `end`   | The end pane of the splitter. In horizontal layout this is the rightmost pane, and in vertical layout the bottom one. |
+| `start` | Content projected into the start panel, at the inline start or the top.                                              |
+| `end`   | Content projected into the end panel, at the inline end or the bottom.                                               |
 
 ### CSS Shadow parts
 
 | Part                 | Description                                         |
 | -------------------- | --------------------------------------------------- |
+| `base`               | The container of the panels and the splitter bar.   |
 | `splitter-bar`       | The resizable bar element between the two panes.    |
 | `drag-handle`        | The drag handle icon/element on the splitter bar.   |
 | `start-pane`         | The container for the start pane content.           |
@@ -356,6 +381,13 @@ interface IgcSplitterLayoutChangedEventArgs {
 | `end-collapse-btn`   | The button to collapse the end pane.                |
 | `start-expand-btn`   | The button to expand the start pane when collapsed. |
 | `end-expand-btn`     | The button to expand the end pane when collapsed.   |
+
+### CSS custom states
+
+| State             | Description                            |
+| ----------------- | -------------------------------------- |
+| `start-collapsed` | Set while the start pane is collapsed. |
+| `end-collapsed`   | Set while the end pane is collapsed.   |
 
 ## Test scenarios
 
@@ -366,8 +398,12 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 
 1. The component renders with its default horizontal orientation, both panes, the splitter bar, the drag handle and
    the collapse buttons. It passes the accessibility audit, the bar is named "Resize panes" and has no description,
-   and its value text is 0% while the start pane is collapsed.
-2. Changing the orientation updates the layout, and clears the sizes and constraints along with their attributes.
+   and its value text is 0% while the start pane is collapsed. The focused bar is painted under an earlier page layer
+   with `z-index: 1`, and above content with `position: fixed` and `z-index: 100` in both panes.
+2. Changing the orientation updates the layout. The sizes, the constraints and their attributes stay, also a size set
+   in the same update. The sizes of a drag are dropped, and a pane that is collapsed during the change expands to its
+   authored size. An orientation that returns to the same axis in one update keeps the dragged sizes. The restored
+   sizes are reported as changed properties, and a drag in progress is cancelled.
 3. The correct parts are applied for each orientation and state.
 
 ### Slotted content
@@ -429,7 +465,8 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 ### Edge scenarios
 
 27. Rapid resize and collapse interactions settle in a consistent state.
-28. Conflicting constraints are resolved without breaking the layout.
+28. Conflicting constraints are resolved without breaking the layout. Minimums that do not fit do not limit a resize,
+    so no size becomes negative.
 
 ### Host ARIA
 
@@ -437,6 +474,27 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
     named "Resize panes". The accessibility audit passes with a host label.
 30. The host `aria-labelledby` names the bar by element reference, before the host `aria-label`, and the host
     `aria-describedby` describes it. A removal of either is followed.
+
+### Localization
+
+31. The bar takes its default name from the strings of `locale` and from `resourceStrings`.
+
+### Size properties
+
+[`splitter.property.spec.ts`](./splitter.property.spec.ts) runs these with fast-check.
+
+32. A size that the splitter accepts is a valid CSS `flex-basis`.
+33. Every non-negative length, and a percentage up to 100, is accepted.
+34. The minimum and maximum sizes accept the same values as the sizes.
+
+### Hidden ancestor
+
+35. The splitter hides at the same time as a hidden ancestor in each theme, at rest and after a focus or a hover: no
+    element transitions `visibility` or sets it to `visible`.
+
+### Orientation change in a theme
+
+36. In the Indigo theme, the bar takes the scale of a new orientation at once, with no transition.
 
 ## Accessibility
 
@@ -452,7 +510,8 @@ properties are present on the splitter bar:
 - the **aria-valuenow**, **aria-valuemin** and **aria-valuemax** attributes report the current position, the size of
   the start pane in percent. **aria-valuetext** adds the percent sign. The value is 0 while the start pane is collapsed
   and 100 while the end pane is collapsed.
-- the bar takes its name from the host `aria-labelledby`, then the host `aria-label`, and otherwise "Resize panes". As
+- the bar takes its name from the host `aria-labelledby`, then the host `aria-label`, and otherwise the
+  `splitter_resize_panes` resource string ("Resize panes" in English). As
   the window splitter pattern suggests, point `aria-labelledby` at the label of the start pane, so that nested
   splitters have different names. A host `aria-describedby` describes the bar. Both relations use element references,
   and a change of the host attributes at runtime is picked up.

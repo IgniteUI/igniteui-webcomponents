@@ -45,6 +45,9 @@
 |       1 | 2026-09-21 | Initial specification                                                   |
 |       2 | 2026-10-01 | Delegate the focus                                                      |
 |       3 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
+|       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                |
+|       5 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
+|       6 | 2026-11-06 | Forward the host `aria-expanded`, `aria-haspopup` and `aria-controls`   |
 
 ## Overview
 
@@ -125,8 +128,9 @@ not intercept the activation keys.
 #### Focus
 
 The chip delegates the focus to its action control, so `focus()` and `blur()` work on the host, and the host
-matches `:focus` while the action control has the focus. A disabled chip takes no focus. After a removal, the chip
-that had the focus is gone, so the application moves the focus, for example to the next chip with `focus()`.
+matches `:focus` while the action control has the focus. A disabled chip takes no focus. A `focus()` call before
+the first render applies after the render. After a removal, the chip that had the focus is gone, so the application
+moves the focus, for example to the next chip with `focus()`.
 
 #### The content slots
 
@@ -143,8 +147,9 @@ a `prefix` and a `suffix` around the label. The `select` and `remove` slots over
 
 ### Localization
 
-The chip takes its resource strings from the `igniteui-i18n-core` package through the `locale` and
-`resourceStrings` properties. Without an explicit `locale`, it falls back to the global locale of the library.
+The chip takes its resource strings from the `igniteui-i18n-core` package through the `locale` and `resourceStrings`
+properties. Without an explicit `locale`, it takes its own `lang`, else the locale of the nearest ancestor that has a
+`locale` (a component) or a `lang`, and then the global locale of the library.
 
 | Key           | Default English value | Used for                                |
 | ------------- | --------------------- | --------------------------------------- |
@@ -167,7 +172,7 @@ The chip takes its resource strings from the `igniteui-i18n-core` package throug
 | ----------------- | ------------ | --------- | ------------------------------------------------------------------------ | ------- | ---------------------------------------------- |
 | `selectable`      | `selectable` | yes       | `boolean`                                                                | `false` | Whether the chip can be selected.               |
 | `selected`        | `selected`   | yes       | `boolean`                                                                | `false` | Whether the chip is selected.                   |
-| `removable`       | `removable`  | yes       | `boolean`                                                                | `false` | Whether the chip renders a remove control.      |
+| `removable`       | `removable`  | yes       | `boolean`                                                                | `false` | Whether the chip shows a remove control. A disabled chip hides it. |
 | `disabled`        | `disabled`   | yes       | `boolean`                                                                | `false` | Whether the chip is disabled.                   |
 | `outlined`        | `outlined`   | yes       | `boolean`                                                                | `false` | Whether the chip is outlined.                   |
 | `variant`         | `variant`    | yes       | `"primary" \| "info" \| "success" \| "warning" \| "danger" \| undefined` | —       | The color variant of the chip.                  |
@@ -176,14 +181,17 @@ The chip takes its resource strings from the `igniteui-i18n-core` package throug
 
 ### Methods
 
-None applicable.
+| Name  | Type signature                   | Description                  |
+| ----- | -------------------------------- | ---------------------------- |
+| focus | `(options?: FocusOptions): void` | Sets focus on the chip.      |
+| blur  | `(): void`                       | Removes focus from the chip. |
 
 ### Events
 
 | Event       | Detail    | Cancelable | Description                                   |
 | ----------- | --------- | ---------- | --------------------------------------------- |
-| `igcSelect` | `boolean` | no         | The chip was selected or deselected.          |
-| `igcRemove` | —         | no         | The remove control of the chip was activated. |
+| `igcSelect` | `boolean` | no         | Emitted when the user selects or deselects the chip. The detail is the new selected state. |
+| `igcRemove` | —         | no         | Emitted when the user activates the remove control. The chip does not remove itself. |
 
 The detail of `igcSelect` is the new `selected` state of the chip.
 
@@ -191,13 +199,13 @@ The detail of `igcSelect` is the new `selected` state of the chip.
 
 | Name     | Description                                                  |
 | -------- | ------------------------------------------------------------ |
-| default  | The label of the chip.                                        |
+| default  | Renders the label of the chip.                                |
 | `start`  | Content at the start of the chip, before the prefix.           |
 | `prefix` | Content before the label.                                      |
 | `suffix` | Content after the label.                                      |
 | `end`    | Content at the end of the chip, after the suffix.              |
-| `select` | The indicator rendered while the chip is selected.             |
-| `remove` | The content of the remove control.                             |
+| `select` | Renders content while a selectable chip is selected. It replaces the default selected icon. |
+| `remove` | Renders content that replaces the default remove icon.         |
 
 ### CSS Shadow parts
 
@@ -233,27 +241,36 @@ The detail of `igcSelect` is the new `selected` state of the chip.
 7. The prefix stays hidden for a chip that is selected but not selectable.
 8. The suffix stays hidden when only the remove control is rendered.
 9. A disabled chip renders no remove control.
+10. The slots render in the order start, prefix, label, suffix, end.
 
 ### Events tests
 
-10. `igcRemove` is emitted when the remove control is activated, and `igcSelect` is not.
-11. A chip that is not removable does not intercept the activation keys.
-12. `igcSelect` is emitted from the action control.
+11. `igcRemove` is emitted when the remove control is activated, and `igcSelect` is not.
+12. A chip that is not removable does not intercept the activation keys.
+13. `igcSelect` is emitted from the action control.
 
 ### Focus tests
 
-13. `focus()` moves the focus to the action control, also when the chip is removable.
-14. `blur()` removes the focus.
-15. A disabled chip does not take the focus.
+14. `focus()` moves the focus to the action control, also when the chip is removable.
+15. `blur()` removes the focus.
+16. A disabled chip does not take the focus.
 
 ### Host ARIA
 
-16. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
+17. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
     target and follow a change, and an axe audit passes with a host label.
+18. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
+    takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
+    `disabled` set does not cancel an earlier call on another element.
+19. The host `aria-expanded`, `aria-haspopup` and `aria-controls` reach the action button, also after a change and
+    a removal, next to the `aria-pressed` of a selectable chip, and pass the accessibility audit.
+20. An empty `aria-expanded` or `aria-haspopup` and an `aria-controls` that references no element are not forwarded.
 
 ### Not covered by the suite
 
-- The `start`, `end` and `select` slots are not covered.
+- The `select` slot is not covered.
 - The `locale` and `resourceStrings` properties are not covered; the labels are asserted against their English
   defaults.
 
@@ -265,6 +282,8 @@ The detail of `igcSelect` is the new `selected` state of the chip.
   application.
 - The chip does not remove itself from the DOM when its remove control is activated.
 - A `selected` chip that is not `selectable` keeps the state but offers no affordance to change it.
+- The host `aria-controls`, `aria-labelledby` and `aria-describedby` resolve when the chip renders. A referenced
+  element that is added after the host attribute takes effect at the next render.
 
 ## Accessibility
 
@@ -275,6 +294,8 @@ The detail of `igcSelect` is the new `selected` state of the chip.
   separate targets for both the pointer and assistive technology.
 - The selection indicator is kept out of the accessible name, so that the name is the label of the chip alone.
 - The host `aria-label`, `aria-labelledby` and `aria-describedby` name and describe the action button.
+- A host `aria-expanded`, `aria-haspopup` and `aria-controls` reach the action button, so a chip that opens a menu or
+  a filter panel exposes its state. `aria-controls` goes by element reference.
 
 ### Keyboard support
 

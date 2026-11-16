@@ -14,7 +14,7 @@ import { styles as shared } from './themes/shared/group/dropdown-group.common.cs
  * @element igc-dropdown-group
  *
  * @slot label - Contains the group's label.
- * @slot - Intended to contain the items belonging to this group.
+ * @slot - Renders the items of the group.
  *
  * @csspart label - The native label element.
  */

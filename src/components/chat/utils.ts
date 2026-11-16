@@ -1,5 +1,7 @@
+import { until } from 'lit/directives/until.js';
 import { lastOf } from '#internals/utils/arrays.js';
 import { getOrInsertComputed } from '#internals/utils/objects.js';
+import { isFunction } from '#internals/utils/types.js';
 import type { IgcChatMessageAttachment } from './types.js';
 
 export type ChatAcceptedFileTypes = {
@@ -31,6 +33,13 @@ export const ChatFileTypeIcons = new Map(
   })
 );
 
+/** Only a promise needs `until`. */
+export function renderResult(value: unknown): unknown {
+  return isFunction((value as PromiseLike<unknown> | null)?.then)
+    ? until(value)
+    : value;
+}
+
 export function parseAcceptedFileTypes(
   fileTypes: string
 ): ChatAcceptedFileTypes {
@@ -46,7 +55,7 @@ export function parseAcceptedFileTypes(
   };
 }
 
-function isAcceptedFileType(
+export function isAcceptedFileType(
   file: File,
   accepted: ChatAcceptedFileTypes | null
 ): boolean {
@@ -77,8 +86,13 @@ export function getChatAcceptedFiles(
     .filter((file) => isAcceptedFileType(file, accepted));
 }
 
+/** Whether `type` is `image` or an image MIME type, such as `image/png`. */
+export function isImageType(type?: string): boolean {
+  return /^image(\/|$)/.test(type ?? '');
+}
+
 export function getIconName(fileType?: string) {
-  return fileType?.startsWith('image') ? 'attach_image' : 'attach_document';
+  return isImageType(fileType) ? 'attach_image' : 'attach_document';
 }
 
 const fileURLs = new WeakMap<File, string>();
@@ -117,11 +131,8 @@ export function getFileExtension(name?: string): string {
 export function isImageAttachment(
   attachment: IgcChatMessageAttachment | File
 ): boolean {
-  if (attachment instanceof File) {
-    return attachment.type.startsWith('image/');
-  }
-
-  return Boolean(
-    attachment.type === 'image' || attachment.file?.type.startsWith('image/')
+  return (
+    isImageType(attachment.type) ||
+    (!(attachment instanceof File) && isImageType(attachment.file?.type))
   );
 }

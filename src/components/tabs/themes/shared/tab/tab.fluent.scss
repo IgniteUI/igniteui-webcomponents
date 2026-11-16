@@ -4,7 +4,7 @@
 $theme: $fluent;
 
 [part='tab-header'] {
-    transition: all .3s cubic-bezier(.35, 0, .25, 1);
+    transition-property: background-color, border-color, color;
     padding: pad-block(rem(10px)) pad-inline(rem(16px));
 }
 

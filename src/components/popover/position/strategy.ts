@@ -5,7 +5,8 @@ import type { PopoverPositionHost } from './types.js';
  * Positions the container of a popover against an anchor.
  *
  * For each open cycle the host calls `attach`, then `show`. The host calls
- * `update` after a property changes, and `hide` to close the container.
+ * `update` after a property changes, `reposition` after only the rectangle
+ * anchor moves, and `hide` to close the container.
  */
 export abstract class PopoverPositionStrategy {
   protected readonly _host: PopoverPositionHost;
@@ -29,7 +30,7 @@ export abstract class PopoverPositionStrategy {
   }
 
   /** Resolves when the container is positioned. The host awaits it in `getUpdateComplete`. */
-  public whenPositioned(): Promise<unknown> {
+  public whenPositioned(): Promise<void> {
     return Promise.resolve();
   }
 
@@ -44,6 +45,9 @@ export abstract class PopoverPositionStrategy {
 
   /** Positions the container again after a property of the host changes. */
   public abstract update(): void;
+
+  /** Positions the container again after the anchor moves. */
+  public abstract reposition(): void;
 
   /** Stops all observers, listeners and pending updates of the strategy. */
   public abstract detach(): void;

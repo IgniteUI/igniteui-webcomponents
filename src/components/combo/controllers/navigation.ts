@@ -13,20 +13,31 @@ import {
   spaceBar,
   tabKey,
 } from '#internals/controllers/key-bindings.js';
+import { isEmpty } from '#internals/utils/arrays.js';
+import { getFocusableElements } from '#internals/utils/dom.js';
+import { focusTabStop } from '#internals/utils/events.js';
 import type IgcInputComponent from '../../input/input.js';
 import type IgcVirtualScrollComponent from '../../virtualization/virtualization.js';
-import type { ComboHost } from '../types.js';
+import type IgcComboComponent from '../combo.js';
+import type { ComboCloseTrigger, ComboRecord } from '../types.js';
 import type { DataState } from './data.js';
+
+type ListSlot = 'header' | 'empty' | 'footer';
 
 type ComboNavigationConfig = {
   input: Ref<IgcInputComponent>;
   search: Ref<IgcInputComponent>;
   list: Ref<IgcVirtualScrollComponent>;
+  /** The elements assigned to a slot of the list, or its fallback content. */
+  slotted: (slot: ListSlot) => Element[];
   interactions: {
     show: () => Promise<boolean>;
-    hide: () => Promise<boolean>;
+    hide: (trigger: ComboCloseTrigger) => Promise<boolean>;
     toggleSelection: (index: number) => void;
-    select: (index: number) => void;
+    /** Whether the confirm mode has a pending selection. */
+    hasPending: () => boolean;
+    /** Commits, then closes the list; returns whether it closes. */
+    commit: (trigger: 'enter' | 'tab', index: number) => Promise<boolean>;
     clearSelection: () => void;
   };
 };
@@ -34,16 +45,22 @@ type ComboNavigationConfig = {
 export class ComboNavigationController<T extends object> {
   //#region Internal state
 
-  private readonly _host: ComboHost<T>;
+  private readonly _host: IgcComboComponent<T>;
   private readonly _state: DataState<T>;
   private readonly _config: ComboNavigationConfig;
+  private _active = -1;
+  /** The record at {@link _active} when it was set. */
+  private _activeRecord?: ComboRecord<T>;
+  private _moved = false;
 
   private get _input(): IgcInputComponent | undefined {
     return this._config.input.value;
   }
 
+  /** The search input while it shows. */
   private get _searchInput(): IgcInputComponent | undefined {
-    return this._config.search.value;
+    const search = this._config.search.value;
+    return search?.checkVisibility() ? search : undefined;
   }
 
   private get _list(): IgcVirtualScrollComponent | undefined {
@@ -51,7 +68,7 @@ export class ComboNavigationController<T extends object> {
   }
 
   private get _firstItem(): number {
-    return this._state.firstItemIndex;
+    return this._state.firstOptionIndex;
   }
 
   private get _lastItem(): number {
@@ -60,10 +77,25 @@ export class ComboNavigationController<T extends object> {
 
   //#endregion
 
-  public active = -1;
+  /** The index of the active option in the records of the list, or -1. */
+  public get active(): number {
+    return this._active;
+  }
+
+  public set active(index: number) {
+    const previous = this._active;
+    this._active = index;
+    this._activeRecord = this._state.dataState[index];
+    // The rows re-render only on a list update.
+    this._list?.requestUpdate();
+
+    if (previous !== index) {
+      this._host.requestUpdate();
+    }
+  }
 
   constructor(
-    host: ComboHost<T>,
+    host: IgcComboComponent<T>,
     state: DataState<T>,
     config: ComboNavigationConfig
   ) {
@@ -75,7 +107,11 @@ export class ComboNavigationController<T extends object> {
     const bindingDefaults: KeyBindingOptions = { repeat: true };
     const skip = (): boolean => this._host.disabled;
 
-    addKeybindings(this._host, { skip, bindingDefaults })
+    // A slotted control that handles Tab or Escape keeps the key.
+    addKeybindings(this._host, {
+      skip: (_, event) => skip() || event.defaultPrevented,
+      bindingDefaults,
+    })
       .set(tabKey, this._onTab, { preventDefault: false })
       .set([shiftKey, tabKey], this._onTab, {
         preventDefault: false,
@@ -87,18 +123,20 @@ export class ComboNavigationController<T extends object> {
       ref: this._config.input,
       bindingDefaults,
     })
-      .set(arrowUp, this._config.interactions.hide)
+      .set(arrowUp, () => this._config.interactions.hide('arrow-up'))
       .set([altKey, arrowDown], this._onMainInputArrowDown)
       .set(arrowDown, this._onMainInputArrowDown)
-      .set(enterKey, this._onEnter);
+      // A canceled keydown has no keypress, so a closed list leaves Enter to the form.
+      .set(enterKey, this._onEnter, { when: () => this._host.open });
 
     addKeybindings(this._host, {
       skip,
       ref: this._config.search,
       bindingDefaults,
     })
-      .set(arrowUp, this._onEscape)
-      .set(arrowDown, this._onSearchArrowDown);
+      .set(arrowUp, () => this._closeToInput('arrow-up'))
+      .set(arrowDown, this._onSearchArrowDown)
+      .set(enterKey, this._onSearchEnter);
 
     addKeybindings(this._host, {
       skip,
@@ -113,8 +151,41 @@ export class ComboNavigationController<T extends object> {
       .set(enterKey, this._onEnter);
   }
 
-  public hostDisconnected(): void {
+  // Not on disconnect, which would render the detached host.
+  public hostConnected(): void {
     this.active = -1;
+  }
+
+  /**
+   * Moves the active index to its record after the records change. A
+   * placeholder keeps its index for the item that loads there.
+   */
+  public hostUpdate(): void {
+    const record = this._activeRecord;
+    const records = this._state.dataState;
+
+    if (!record || records[this._active] === record) {
+      return;
+    }
+
+    const index =
+      record.kind === 'placeholder'
+        ? this._active
+        : this._state.indexOfRecord(record);
+    const next = records[index];
+    // A header without group selection, or a place past the end, is no option.
+    const active = next && this._state.isOption(next) ? index : -1;
+
+    this._moved = active > -1 && active !== this._active;
+    this.active = active;
+  }
+
+  public hostUpdated(): void {
+    if (this._moved) {
+      this._moved = false;
+      // The list measures with its records, which it gets in its own update.
+      void this._list?.updateComplete.then(() => this._scrollToActive());
+    }
   }
 
   //#region Event handlers
@@ -126,40 +197,52 @@ export class ComboNavigationController<T extends object> {
   };
 
   private _onEnter = async (): Promise<void> => {
-    if (this.active > -1) {
-      if (this._host.singleSelect) {
-        this._config.interactions.select(this.active);
-      }
-      if (await this._config.interactions.hide()) {
-        this._input?.select();
-        this._host.focus();
-      }
+    // A placeholder has no item, so Enter on it does nothing.
+    if (this._state.dataState[this.active]?.kind === 'placeholder') {
+      return;
+    }
+
+    // In confirm mode, Enter applies the pending selection also without an active option.
+    if (this.active < 0 && !this._config.interactions.hasPending()) {
+      return;
+    }
+
+    if (await this._config.interactions.commit('enter', this.active)) {
+      this._input?.select();
+      this._host.focus();
     }
   };
 
-  private _onTab = async ({ shiftKey }: KeyboardEvent): Promise<void> => {
-    if (this._host.open) {
-      if (shiftKey) {
-        // Focus the main input before the default Shift+Tab action.
-        this._host.focus();
-      }
-
-      if (this._host.singleSelect && this.active > -1) {
-        this._config.interactions.select(this.active);
-      }
-
-      await this._config.interactions.hide();
+  private _onSearchEnter = async (): Promise<void> => {
+    if (this._config.interactions.hasPending()) {
+      await this._onEnter();
     }
   };
 
-  private _onEscape = async (): Promise<void> => {
+  private _onTab = async (event: KeyboardEvent): Promise<void> => {
+    if (!this._host.open) {
+      return;
+    }
+
+    if (focusTabStop(event, this._tabStops())) {
+      event.preventDefault();
+      return;
+    }
+
+    if (event.shiftKey) {
+      // Focus the main input before the default Shift+Tab action.
+      this._host.focus();
+    }
+
+    await this._config.interactions.commit('tab', this.active);
+  };
+
+  private _onEscape = (): Promise<void> => {
     if (!this._host.open) {
       this._config.interactions.clearSelection();
     }
 
-    if (await this._config.interactions.hide()) {
-      this._input?.focus();
-    }
+    return this._closeToInput('escape');
   };
 
   private _onMainInputArrowDown = async (): Promise<void> => {
@@ -178,21 +261,21 @@ export class ComboNavigationController<T extends object> {
   };
 
   private _onHome = (): void => {
-    this._setActive(this._firstItem);
+    this.active = this._firstItem;
     this._scrollToActive();
   };
 
   private _onEnd = (): void => {
-    this._setActive(this._lastItem);
+    this.active = this._lastItem;
     this._scrollToActive();
   };
 
   private _onArrowUp = (): void => {
-    if (this.active === this._firstItem) {
+    // Also without an active option.
+    if (this.active <= this._firstItem) {
       // Focus the search input when it shows. Otherwise, close the list.
-      this._searchInput?.checkVisibility()
-        ? this._searchInput?.focus()
-        : this._onEscape();
+      const search = this._searchInput;
+      search ? search.focus() : this._closeToInput('arrow-up');
       return;
     }
 
@@ -209,27 +292,47 @@ export class ComboNavigationController<T extends object> {
 
   //#region Internal helper methods
 
+  private async _closeToInput(trigger: ComboCloseTrigger): Promise<void> {
+    if (await this._config.interactions.hide(trigger)) {
+      this._input?.focus();
+    }
+  }
+
   /**
-   * The only write path for the active index. The host mirrors it as
-   * `_activeIndex`, so the update request carries the old value.
+   * The Tab order of the open list: the filtering input, the header content,
+   * the list, and the empty and footer content. Empty without focusable slot
+   * content, so Tab closes the list.
    */
-  private _setActive(index: number): void {
-    const previous = this.active;
-    this.active = index;
-    this._host.requestUpdate('_activeIndex', previous);
+  private _tabStops(): HTMLElement[] {
+    const focusable = (...slots: ListSlot[]) =>
+      slots.flatMap((slot) =>
+        Iterator.from(this._config.slotted(slot))
+          .flatMap(getFocusableElements)
+          .toArray()
+      );
+    const before = focusable('header');
+    const after = focusable('empty', 'footer');
+
+    if (isEmpty(before) && isEmpty(after)) {
+      return [];
+    }
+
+    const input = this._searchInput ?? this._input;
+    const list = this._list?.checkVisibility() ? [this._list] : [];
+
+    return [input!, ...before, ...list, ...after];
   }
 
   private _scrollToActive(): void {
     this._list?.scrollToIndex(this.active, { block: 'center' });
-    this._list?.requestUpdate();
   }
 
   private _getNextItem(delta: -1 | 1): void {
     const items = this._state.dataState;
 
     for (let i = this.active + delta; i >= 0 && i < items.length; i += delta) {
-      if (!items[i].header) {
-        this._setActive(i);
+      if (this._state.isOption(items[i])) {
+        this.active = i;
         return;
       }
     }

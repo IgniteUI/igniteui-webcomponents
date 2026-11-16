@@ -1,86 +1,64 @@
 import { isPlainObject } from '#internals/utils/types.js';
-import type IgcTileManagerComponent from './tile-manager.js';
+import type IgcTileComponent from './tile.js';
 
-export interface SerializedTile {
-  colSpan: number;
-  colStart: number | null;
-  disableFullscreen: boolean;
-  disableMaximize: boolean;
-  disableResize: boolean;
-  maximized: boolean;
-  position: number;
-  rowSpan: number;
-  rowStart: number | null;
-  id: string | null;
+/** The tile properties of a layout, in the order that `saveLayout` writes them. */
+const SERIALIZED_KEYS = [
+  'colSpan',
+  'colStart',
+  'disableFullscreen',
+  'disableMaximize',
+  'disableResize',
+  'maximized',
+  'position',
+  'rowSpan',
+  'rowStart',
+  'id',
+] as const;
+
+export type SerializedTile = Pick<
+  IgcTileComponent,
+  (typeof SERIALIZED_KEYS)[number]
+>;
+
+export function serializeTiles(tiles: IgcTileComponent[]): string {
+  return JSON.stringify(
+    tiles.map((tile) =>
+      Object.fromEntries(SERIALIZED_KEYS.map((key) => [key, tile[key]]))
+    )
+  );
 }
 
-/** The tile properties of a layout. The type makes the list complete. */
-const SERIALIZED: Record<keyof SerializedTile, true> = {
-  colSpan: true,
-  colStart: true,
-  disableFullscreen: true,
-  disableMaximize: true,
-  disableResize: true,
-  maximized: true,
-  position: true,
-  rowSpan: true,
-  rowStart: true,
-  id: true,
-};
+/**
+ * Applies a layout to the tiles with the same `id`. The layout is untrusted:
+ * only the serialized keys of plain-object entries are copied. Invalid JSON
+ * throws. Returns `true` when the layout applied to a tile.
+ */
+export function applyLayout(tiles: IgcTileComponent[], data: string): boolean {
+  const layout: unknown = data ? JSON.parse(data) : null;
 
-const SERIALIZED_KEYS = Object.keys(SERIALIZED) as Array<keyof SerializedTile>;
-
-class TileManagerSerializer {
-  private readonly _tileManager: IgcTileManagerComponent;
-
-  constructor(tileManager: IgcTileManagerComponent) {
-    this._tileManager = tileManager;
+  if (!Array.isArray(layout)) {
+    return false;
   }
 
-  public saveAsJSON(): string {
-    return JSON.stringify(
-      this._tileManager.tiles.map((tile) =>
-        Object.fromEntries(SERIALIZED_KEYS.map((key) => [key, tile[key]]))
-      )
-    );
-  }
+  let applied = false;
 
-  /**
-   * Applies a layout to the tiles with the same `id`. The layout is not trusted. Copies
-   * only the serialized properties, and ignores values that are not tile objects.
-   * Returns `true` when the layout applied to a tile.
-   */
-  public loadFromJSON(data: string): boolean {
-    const tiles: unknown = data ? JSON.parse(data) : null;
+  const mapped = new Map(
+    layout.filter(isPlainObject).map((tile) => [tile.id, tile])
+  );
 
-    if (!Array.isArray(tiles)) {
-      return false;
-    }
+  for (const tile of tiles) {
+    const serialized = mapped.get(tile.id);
 
-    let applied = false;
+    if (serialized) {
+      applied = true;
 
-    const mapped = new Map(
-      tiles.filter(isPlainObject).map((tile) => [tile.id, tile])
-    );
-
-    for (const tile of this._tileManager.tiles) {
-      const serialized = mapped.get(tile.id);
-
-      if (serialized) {
-        applied = true;
-
-        for (const key of SERIALIZED_KEYS) {
-          if (Object.hasOwn(serialized, key)) {
-            Reflect.set(tile, key, serialized[key]);
-          }
+      for (const key of SERIALIZED_KEYS) {
+        if (Object.hasOwn(serialized, key)) {
+          Reflect.set(tile, key, serialized[key]);
         }
       }
     }
-
-    return applied;
   }
-}
 
-export function createSerializer(host: IgcTileManagerComponent) {
-  return new TileManagerSerializer(host);
+  return applied;
 }

@@ -1,11 +1,14 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
-import { isFocused } from '#internals/testing/helpers.spec.js';
+import { isUnderPageLayer } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
+import { configureTheme } from '#theming/config.js';
 import IgcSwitchComponent from './switch.js';
 
 describe('Switch', () => {
@@ -52,6 +55,20 @@ describe('Switch', () => {
     it('should render a switch component successfully', async () => {
       await expect(element).shadowDom.to.be.accessible();
       await expect(element).to.be.accessible();
+    });
+
+    it('paints the control under an earlier page layer', async () => {
+      try {
+        configureTheme('material');
+        element.checked = true;
+        await elementUpdated(element);
+
+        const control = element.renderRoot.querySelector('[part~="control"]')!;
+
+        expect(isUnderPageLayer(element, control)).to.be.true;
+      } finally {
+        configureTheme('bootstrap');
+      }
     });
 
     it('should set the switch name property correctly', async () => {
@@ -123,16 +140,6 @@ describe('Switch', () => {
       expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
     });
 
-    it('should have correct focus states between Light/Shadow DOM', () => {
-      element.focus();
-      expect(isFocused(element)).to.be.true;
-      expect(isFocused(input)).to.be.true;
-
-      element.blur();
-      expect(isFocused(element)).to.be.false;
-      expect(isFocused(input)).to.be.false;
-    });
-
     it('should emit igcChange event when the switch checked state changes', async () => {
       const eventSpy = spy(element, 'emitEvent');
       element.click();
@@ -147,6 +154,7 @@ describe('Switch', () => {
   describe('Form integration', () => {
     const spec = createFormAssociatedTestBed<IgcSwitchComponent>(html`
       <igc-switch name="checkbox"> I have reviewed ToC and I agree </igc-switch>
+      <button type="submit">Submit</button>
     `);
 
     beforeEach(async () => {
@@ -189,6 +197,13 @@ describe('Switch', () => {
       expect(
         spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
       ).to.be.true;
+    });
+
+    it('does not submit on Enter without a submit button', () => {
+      spec.form.querySelector('button')!.remove();
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.false;
     });
 
     it('should not submit on pressing Enter when value is invalid', () => {
@@ -279,4 +294,11 @@ describe('Switch', () => {
       (host as IgcSwitchComponent).renderRoot.querySelector('input')!,
     checkable: true,
   });
+
+  runHiddenAncestorTests(html`
+    <igc-switch>Label</igc-switch>
+    <igc-switch checked>Label</igc-switch>
+  `);
+
+  runFocusBeforeRenderTests(html`<igc-switch>Label</igc-switch>`);
 });

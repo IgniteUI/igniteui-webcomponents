@@ -164,6 +164,61 @@ describe('Card Component', () => {
       expect(header).dom.to.contain.text('Extra');
     });
 
+    describe('Layout', () => {
+      function getRects() {
+        return {
+          thumbnail: header
+            .querySelector('[slot="thumbnail"]')!
+            .getBoundingClientRect(),
+          text: header
+            .shadowRoot!.querySelector('[part="header"]')!
+            .getBoundingClientRect(),
+        };
+      }
+
+      function expectCentered(a: DOMRect, b: DOMRect): void {
+        expect(a.top - b.top).to.be.closeTo(b.bottom - a.bottom, 1);
+      }
+
+      it('should center the thumbnail next to taller text', async () => {
+        header = await fixture<IgcCardHeaderComponent>(
+          html`<igc-card-header>
+            <div slot="thumbnail" style="width: 20px; height: 20px"></div>
+            <h3 slot="title">Title</h3>
+            <p slot="subtitle">Subtitle</p>
+          </igc-card-header>`
+        );
+
+        const { thumbnail, text } = getRects();
+        expectCentered(thumbnail, text);
+      });
+
+      it('should center the text next to a taller thumbnail', async () => {
+        header = await fixture<IgcCardHeaderComponent>(
+          html`<igc-card-header>
+            <div slot="thumbnail" style="width: 100px; height: 100px"></div>
+            <h3 slot="title">Title</h3>
+          </igc-card-header>`
+        );
+
+        const { thumbnail, text } = getRects();
+        expectCentered(text, thumbnail);
+      });
+
+      it('should keep wide text next to the thumbnail', async () => {
+        header = await fixture<IgcCardHeaderComponent>(
+          html`<igc-card-header style="width: 200px">
+            <div slot="thumbnail" style="width: 40px; height: 40px"></div>
+            <h3 slot="title">A card title that is too wide for one line</h3>
+          </igc-card-header>`
+        );
+
+        const { thumbnail, text } = getRects();
+        expect(text.left).to.be.at.least(thumbnail.right);
+        expect(text.top).to.be.below(thumbnail.bottom);
+      });
+    });
+
     it('should have correct shadow DOM parts', async () => {
       header = await fixture<IgcCardHeaderComponent>(
         html`<igc-card-header>

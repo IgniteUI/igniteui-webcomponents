@@ -4,18 +4,24 @@ import {
 } from 'igniteui-i18n-core';
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { cache } from 'lit/directives/cache.js';
 import { guard } from 'lit/directives/guard.js';
+import { ref } from 'lit/directives/ref.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { chatContext, chatUserInputContext } from '#internals/context.js';
+import { invalidateDocumentStyles } from '#internals/controllers/adopt-styles.js';
 import { addContextProvider } from '#internals/controllers/context-provider.js';
-import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
+import {
+  addSlotController,
+  type InferSlotNames,
+  type SlotChangeCallbackParameters,
+  setSlots,
+} from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { IgcChatResourceStrings } from '#internals/i18n/EN/chat.resources.js';
-import { addI18nController } from '#internals/i18n/i18n-controller.js';
 import { chatResourcesMap } from '#internals/i18n/utils.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { I18nMixin, type I18nMixinConfig } from '#internals/mixins/i18n.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { all } from '#themes/chat/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -33,65 +39,71 @@ import { ChatState } from './chat-state.js';
 import { styles } from './themes/chat.base.css.js';
 import { styles as shared } from './themes/shared/chat.common.css.js';
 import type {
-  ChatRenderContext,
-  ChatTemplateRenderer,
   IgcChatDraftMessage,
   IgcChatMessage,
   IgcChatMessageAttachment,
+  IgcChatMessageLink,
   IgcChatMessageReaction,
   IgcChatOptions,
 } from './types.js';
 
-type DefaultChatRenderers = {
-  suggestionPrefix: ChatTemplateRenderer<ChatRenderContext>;
-};
+/** The distance from the bottom, in pixels, that still counts as the bottom. */
+const BOTTOM_TOLERANCE = 2;
 
 /**
  * Defines the custom events dispatched by the chat component.
  */
 export interface IgcChatComponentEventMap {
   /**
-   * Dispatched when a new chat message is created (sent).
+   * Dispatched when the user sends a message, also with a click on a suggestion.
+   * Cancelable: a canceled event does not add the message.
    */
   igcMessageCreated: CustomEvent<IgcChatMessage>;
 
   /**
-   * Dispatched when a message is reacted to.
+   * Dispatched when the user clicks an action button of a message, for example like or copy.
    */
   igcMessageReact: CustomEvent<IgcChatMessageReaction>;
 
   /**
-   * Dispatched when a chat message attachment is clicked.
+   * Dispatched when the user clicks the header of a message attachment.
    */
   igcAttachmentClick: CustomEvent<IgcChatMessageAttachment>;
 
+  /**
+   * Dispatched when a plain click or Enter opens a link in a message in the same tab, before the
+   * browser navigates. Cancel it to route on the client. Does not bubble.
+   */
+  igcNavigate: CustomEvent<IgcChatMessageLink>;
+
   /* blazorSuppress */
   /**
-   * Dispatched when attachment(s) are added either through drag & drop or through
-   * the default file input.
+   * Dispatched when the user adds attachments with drag and drop or with the
+   * default file input. Cancelable: a canceled event does not add them.
    */
   igcAttachmentAdded: CustomEvent<IgcChatMessageAttachment[]>;
 
   /* blazorSuppress */
   /**
-   * Dispatched when an attachment is removed by the user.
+   * Dispatched when the user removes an attachment from the input.
+   * Cancelable: a canceled event keeps the attachment.
    */
   igcAttachmentRemoved: CustomEvent<IgcChatMessageAttachment>;
 
   /* blazorSuppress */
   /**
-   * Dispatched during an attachment drag operation.
+   * Dispatched when the user drags files into the input area.
    */
   igcAttachmentDrag: CustomEvent<void>;
 
   /* blazorSuppress */
   /**
-   * Dispatched when an attachment is dropped (e.g., in a drag-and-drop operation).
+   * Dispatched when the user drops files on the input area.
    */
   igcAttachmentDrop: CustomEvent<void>;
 
   /**
-   * Dispatched when the typing status changes (e.g., user starts or stops typing).
+   * Dispatched when the user starts or stops typing. The detail is `true` while the user types.
    */
   igcTypingChange: CustomEvent<boolean>;
 
@@ -123,6 +135,19 @@ const Slots = setSlots(
   'typing-indicator'
 );
 
+type SlotName = InferSlotNames<typeof Slots>;
+
+/** The slots whose content shows the suggestions area. */
+const SuggestionSlots: readonly SlotName[] = ['suggestions', 'suggestion'];
+
+const i18n: I18nMixinConfig<
+  IgcChatResourceStrings | IChatResourceStrings,
+  IgcChatResourceStrings & IChatResourceStrings
+> = {
+  defaultEN: ChatResourceStringsEN,
+  resourceMap: chatResourcesMap,
+};
+
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
 /**
@@ -130,27 +155,28 @@ const Slots = setSlots(
  *
  * @element igc-chat
  *
- * @fires igcMessageCreated - Dispatched when a new chat message is created (sent).
- * @fires igcMessageReact - Dispatched when a message is reacted to.
- * @fires igcAttachmentClick - Dispatched when a chat message attachment is clicked.
- * @fires igcAttachmentAdded - Dispatched when attachment(s) are added either through drag & drop or through the default file input.
- * @fires igcAttachmentRemoved - Dispatched when an attachment is removed by the user.
- * @fires igcAttachmentDrag - Dispatched during an attachment drag operation.
- * @fires igcAttachmentDrop - Dispatched when an attachment is dropped (e.g., in a drag-and-drop operation).
- * @fires igcTypingChange - Dispatched when the typing status changes (e.g., user starts or stops typing).
+ * @fires igcMessageCreated - Dispatched when the user sends a message, also with a click on a suggestion. Cancelable: a canceled event does not add the message.
+ * @fires igcMessageReact - Dispatched when the user clicks an action button of a message, for example like or copy.
+ * @fires igcAttachmentClick - Dispatched when the user clicks the header of a message attachment.
+ * @fires igcNavigate - Dispatched when a plain click or Enter opens a link in a message in the same tab, before the browser navigates. Cancel it to route on the client. Does not bubble.
+ * @fires igcAttachmentAdded - Dispatched when the user adds attachments with drag and drop or with the default file input. Cancelable: a canceled event does not add them.
+ * @fires igcAttachmentRemoved - Dispatched when the user removes an attachment from the input. Cancelable: a canceled event keeps the attachment.
+ * @fires igcAttachmentDrag - Dispatched when the user drags files into the input area.
+ * @fires igcAttachmentDrop - Dispatched when the user drops files on the input area.
+ * @fires igcTypingChange - Dispatched when the user starts or stops typing. The detail is `true` while the user types.
  * @fires igcInputFocus - Dispatched when the chat input field gains focus.
  * @fires igcInputBlur - Dispatched when the chat input field loses focus.
  * @fires igcInputChange - Dispatched when the content of the chat input changes.
  *
- * @slot prefix - Slot for injecting content (e.g., avatar or icon) before the chat title.
- * @slot title - Slot for overriding the chat title content.
- * @slot actions - Slot for injecting header actions (e.g., buttons, menus).
- * @slot suggestions-header - Slot for rendering a custom header for the suggestions list.
- * @slot suggestions - Slot for rendering a custom list of quick reply suggestions.
- * @slot suggestions-actions - Slot for rendering additional actions.
- * @slot suggestion - Slot for rendering a single suggestion item.
- * @slot empty-state - Slot shown when there are no messages.
- * @slot typing-indicator - Slot for the "is typing" indicator.
+ * @slot prefix - Content before the title, such as an avatar or an icon.
+ * @slot title - The title of the header.
+ * @slot actions - The actions of the header.
+ * @slot suggestions-header - The header of the suggestions list.
+ * @slot suggestions - The whole suggestions list.
+ * @slot suggestions-actions - Additional actions next to the suggestions.
+ * @slot suggestion - Suggestions that replace the default items.
+ * @slot empty-state - The content shown while there are no messages.
+ * @slot typing-indicator - The typing indicator of the other side.
  *
  * @csspart chat-container - Styles the main chat container.
  * @csspart header - Styles the chat header container.
@@ -170,7 +196,7 @@ const Slots = setSlots(
  * @csspart empty-state - Styles the empty state container when there are no messages.
  *
  * @csspart input-area-container - Styles the wrapper around the chat input area.
- * @csspart input-area - Styles the main text input area.
+ * @csspart input-area - Styles the input area: the attachments, the text input and the actions.
  * @csspart input-container - Styles the wrapper around the text input.
  * @csspart input-attachments-container - Styles the container for attachments in the input.
  * @csspart input-attachment-container - Styles a single attachment in the input area.
@@ -181,29 +207,29 @@ const Slots = setSlots(
  * @csspart input-actions-start - Styles the group of actions at the start of the input after the default file upload.
  * @csspart input-actions-end - Styles the group of actions at the end of the input.
  * @csspart file-upload-container - Styles the container for the file upload input.
- * @csspart file-upload - Styles the file upload input itself.
+ * @csspart file-upload - Styles the label that holds the file upload button and the file input.
  * @csspart send-button-container - Styles the container around the send button.
  * @csspart send-button - Styles the send button.
  *
  * @csspart message-container - Styles the container of a single message.
- * @csspart message-header - Styles the header of a message (e.g., sender, timestamp).
+ * @csspart message-header - Styles the header of a message. The header is empty without a `messageHeader` renderer.
  * @csspart message-content - Styles the text content of a message.
  * @csspart message-attachments-container - Styles the container for message attachments.
  * @csspart message-attachment - Styles a single message attachment.
  * @csspart message-actions-container - Styles the container holding message actions.
- * @csspart message-sent - Styles messages marked as sent by the current user.
+ * @csspart message-sent - Added to the message container of a message from the current user.
  * @csspart attachment-header - Styles the header of an attachment block.
  * @csspart attachment-content - Styles the content of an attachment block.
  * @csspart attachment-icon - Styles the icon of an attachment.
  * @csspart file-name - Styles the file name shown in an attachment.
  */
-export default class IgcChatComponent extends EventEmitterMixin<
-  IgcChatComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcChatComponent extends I18nMixin(
+  EventEmitterMixin<IgcChatComponentEventMap>(LitElement),
+  i18n
+) {
   public static readonly tagName = 'igc-chat';
 
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -227,17 +253,16 @@ export default class IgcChatComponent extends EventEmitterMixin<
     () => this._userInputContext.publish()
   );
 
-  private readonly _defaults = Object.freeze<DefaultChatRenderers>({
-    suggestionPrefix: () => this._renderSuggestionPrefix(),
-  });
-
   private readonly _slots = addSlotController(this, {
     slots: Slots,
+    onChange: this._handleSlotChange,
   });
 
+  // The input and the messages read the labels through this context.
   private readonly _context = addContextProvider(this, {
     context: chatContext,
     value: () => this._state,
+    watch: ['resourceStrings'],
   });
 
   private readonly _userInputContext = addContextProvider(this, {
@@ -245,18 +270,26 @@ export default class IgcChatComponent extends EventEmitterMixin<
     value: () => this._state,
   });
 
-  private readonly _i18nController = addI18nController<
-    IgcChatResourceStrings | IChatResourceStrings
-  >(this, {
-    defaultEN: ChatResourceStringsEN,
-    resourceMap: chatResourcesMap,
-  });
-
   @query(IgcChatInputComponent.tagName)
   private readonly _input?: IgcChatInputComponent;
 
   @query('[part="message-area-container"]', true)
   private readonly _scrollContainer!: HTMLElement;
+
+  // Messages far from the view skip their rendering, so the list can grow after
+  // a scroll to the bottom, in a later frame in some browsers.
+  private readonly _listResize = addResizeObserverController(this, {
+    target: null,
+    requestUpdate: false,
+    callback: this._handleListResize,
+  });
+
+  /** Whether the list follows the newest message. */
+  private _followNewest = true;
+  /** Set when the suggestion slots change, so that `updated()` scrolls. */
+  private _suggestionSlotsChanged = false;
+  private _lastScrollTop = 0;
+  private _lastMessageId?: string;
 
   /**
    * The list of chat messages currently displayed.
@@ -291,8 +324,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   /**
-   * Controls the chat behavior and appearance through a configuration object.
-   * Use this to toggle UI options, provide suggestions, templates, etc.
+   * The configuration object of the chat: behavior and appearance options,
+   * suggestions and custom renderers.
    */
   @property({ attribute: false })
   public set options(value: IgcChatOptions) {
@@ -303,31 +336,46 @@ export default class IgcChatComponent extends EventEmitterMixin<
     return this._state.options;
   }
 
+  // Re-declared only to keep the strings out of the Blazor wrapper.
   /* blazorSuppress */
   /**
    * The resource strings of the chat.
    */
-  @property({ attribute: false })
-  public set resourceStrings(
+  public override set resourceStrings(
     value: IgcChatResourceStrings | IChatResourceStrings
   ) {
-    this._i18nController.resourceStrings = value;
+    super.resourceStrings = value;
   }
 
   /* blazorSuppress */
-  public get resourceStrings(): IgcChatResourceStrings & IChatResourceStrings {
-    return this._i18nController.resourceStrings;
+  public override get resourceStrings(): IgcChatResourceStrings &
+    IChatResourceStrings {
+    return super.resourceStrings;
   }
 
   constructor() {
     super();
-    addThemingController(this, all);
+    addThemingController(this, all, {
+      themeChange: this._handleThemeChange,
+    });
   }
 
-  private _getRenderer<U extends keyof DefaultChatRenderers>(
-    name: U
-  ): DefaultChatRenderers[U] {
-    return this._state.options?.renderers?.[name] ?? this._defaults[name];
+  /** A theme can change page styles in place, unseen by the tracker. */
+  private _handleThemeChange(): void {
+    if (this.hasUpdated) {
+      invalidateDocumentStyles(this.ownerDocument);
+    }
+  }
+
+  private _hasSlotted(...slots: SlotName[]): boolean {
+    return slots.some((slot) => this._slots.hasAssignedElements(slot));
+  }
+
+  /** Slotted suggestions scroll the list, as new `options.suggestions` do. */
+  private _handleSlotChange({
+    slot,
+  }: SlotChangeCallbackParameters<SlotName>): void {
+    this._suggestionSlotsChanged ||= SuggestionSlots.includes(slot);
   }
 
   private _handleSuggestionClick(text: string): void {
@@ -344,12 +392,66 @@ export default class IgcChatComponent extends EventEmitterMixin<
       ?.scrollIntoView({ block: 'end', inline: 'end' });
   }
 
+  /**
+   * Moves the focus to the text area of the chat input, after the first render
+   * of a new chat. The promise resolves when the focus moves. A disconnected
+   * chat does not wait. Does nothing when a custom `input` renderer replaces
+   * the text area.
+   */
+  public async focusInput(options?: FocusOptions): Promise<void> {
+    // A disconnected chat never renders.
+    if (this.isConnected && !this.hasUpdated) {
+      await this.updateComplete;
+    }
+
+    await this._input?.focusInput(options);
+  }
+
+  private _handleScroll(): void {
+    const { scrollTop, scrollHeight, clientHeight } = this._scrollContainer;
+
+    if (scrollHeight - scrollTop - clientHeight <= BOTTOM_TOLERANCE) {
+      this._followNewest = true;
+    } else if (scrollTop < this._lastScrollTop) {
+      // New content and the scroll to the bottom never move the list up.
+      this._followNewest = false;
+    }
+
+    this._lastScrollTop = scrollTop;
+  }
+
+  /** Follows again for a new message of the current user, or for replaced messages. */
+  private _updateFollowNewest(): void {
+    const messages = this._state.messages;
+    const previous = messages.findLastIndex(
+      ({ id }) => id === this._lastMessageId
+    );
+
+    // One update can add a message of the current user and a reply after it.
+    this._followNewest ||=
+      (previous < 0 && this._lastMessageId !== undefined) ||
+      messages
+        .slice(previous + 1)
+        .some((message) => this._state.isCurrentUserMessage(message));
+
+    this._lastMessageId = messages.at(-1)?.id;
+  }
+
   protected override updated(properties: PropertyValues<this>): void {
-    if (this._state.options?.disableAutoScroll) {
+    this._updateFollowNewest();
+
+    const slotsChanged = this._suggestionSlotsChanged;
+    this._suggestionSlotsChanged = false;
+
+    if (this._state.options?.disableAutoScroll || !this._followNewest) {
       return;
     }
 
-    if (properties.has('messages') || this._contentAdded(properties)) {
+    if (
+      properties.has('messages') ||
+      slotsChanged ||
+      this._contentAdded(properties)
+    ) {
       this._scrollToBottom();
     }
   }
@@ -373,24 +475,59 @@ export default class IgcChatComponent extends EventEmitterMixin<
   private _scrollToBottom(): void {
     // Read in the frame, after the layout that the update caused.
     requestAnimationFrame(() => {
-      const { scrollTop, scrollHeight } = this._scrollContainer;
-      this._scrollContainer.scrollBy({ top: scrollHeight - scrollTop });
+      // The user can scroll up before the frame.
+      if (this._followNewest) {
+        this._scrollListToBottom();
+      }
     });
   }
 
+  /** Follows the bottom when the list grows, for example as messages render. */
+  private _handleListResize(): void {
+    if (!this._followNewest || this._state.options?.disableAutoScroll) {
+      return;
+    }
+
+    const { scrollTop, scrollHeight, clientHeight } = this._scrollContainer;
+
+    if (
+      // A move up that has no scroll event yet is the user's; the event decides.
+      scrollTop >= this._lastScrollTop &&
+      scrollHeight - scrollTop - clientHeight > BOTTOM_TOLERANCE
+    ) {
+      this._scrollListToBottom();
+    }
+  }
+
+  /** Observes the message list, which renders only with messages. */
+  private _observeList(list?: Element): void {
+    if (list) {
+      this._listResize.observe(list);
+    } else {
+      for (const target of this._listResize.targets) {
+        this._listResize.unobserve(target);
+      }
+    }
+  }
+
+  private _scrollListToBottom(): void {
+    const container = this._scrollContainer;
+    container.scrollBy({ top: container.scrollHeight - container.scrollTop });
+    // The next scroll event can merge this scroll with one of the user, so it
+    // compares against this position.
+    this._lastScrollTop = container.scrollTop;
+  }
+
   private _renderHeader() {
+    const hasPrefix = this._hasSlotted('prefix');
     const hasContent =
-      this._slots.hasAssignedElements('prefix') ||
-      this._slots.hasAssignedElements('title') ||
-      this._slots.hasAssignedElements('actions') ||
+      hasPrefix ||
+      this._hasSlotted('title', 'actions') ||
       this._state.options?.headerText;
 
     return html`
       <div part="header" ?hidden=${!hasContent}>
-        <slot
-          name="prefix"
-          ?hidden=${!this._slots.hasAssignedElements('prefix')}
-        ></slot>
+        <slot name="prefix" ?hidden=${!hasPrefix}></slot>
         <slot name="title">${this._state.options?.headerText}</slot>
         <slot name="actions"></slot>
       </div>
@@ -399,7 +536,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   private _renderMessages() {
     return html`
-      <div part="message-list" tabindex="0">
+      <div part="message-list" tabindex="0" ${ref(this._observeList)}>
         ${repeat(
           this._state.messages,
           (message) => message.id,
@@ -459,12 +596,18 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   private _renderSuggestions() {
-    const hasContent = this._slots.hasAssignedElements('suggestions-header');
+    const hasContent = this._hasSlotted('suggestions-header');
     const suggestions = this._state.options?.suggestions ?? [];
+    const hidden =
+      isEmpty(suggestions) && !this._hasSlotted(...SuggestionSlots);
     const ctx = { instance: this };
+    const prefix =
+      this._state.options?.renderers?.suggestionPrefix ??
+      this._renderSuggestionPrefix;
 
+    // Always rendered, so the slot controller sees the slotted suggestions.
     return html`
-      <div part="suggestions-container">
+      <div part="suggestions-container" ?hidden=${hidden}>
         <igc-list>
           <igc-list-header part="suggestions-header">
             <span ?hidden=${hasContent}>
@@ -473,23 +616,23 @@ export default class IgcChatComponent extends EventEmitterMixin<
             <slot name="suggestions-header"></slot>
           </igc-list-header>
           <slot name="suggestions">
-            ${suggestions.map(
-              (suggestion) => html`
-                <slot name="suggestion">
+            <slot name="suggestion">
+              ${suggestions.map(
+                (suggestion) => html`
                   <igc-list-item
                     part="suggestion"
                     @click=${() => this._handleSuggestionClick(suggestion)}
                   >
                     <span slot="start" part="suggestion-prefix">
-                      ${this._getRenderer('suggestionPrefix')(ctx)}
+                      ${prefix(ctx)}
                     </span>
                     <span slot="title" part="suggestion-title"
                       >${suggestion}</span
                     >
                   </igc-list-item>
-                </slot>
-              `
-            )}
+                `
+              )}
+            </slot>
           </slot>
           <slot name="suggestions-actions"></slot>
         </igc-list>
@@ -507,20 +650,18 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   protected override render() {
     const hasMessages = !isEmpty(this.messages);
-    const suggestions = isEmpty(this._state.options?.suggestions ?? [])
-      ? nothing
-      : this._renderSuggestions();
+    const suggestions = this._renderSuggestions();
 
     return html`
       <div part="chat-container">
         ${this._renderHeader()}
 
-        <div part="message-area-container">
-          ${cache(
+        <div part="message-area-container" @scroll=${this._handleScroll}>
+          ${
             hasMessages || this._state.options?.isTyping
               ? this._renderMessages()
               : this._renderEmptyState()
-          )}
+          }
           ${
             this._state.suggestionsPosition === 'below-messages'
               ? suggestions

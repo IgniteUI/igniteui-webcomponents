@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { type TemplateResult, html, nothing } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -73,7 +74,7 @@ const metadata: Meta<IgcTileManagerComponent> = {
     columnCount: {
       type: 'number',
       description:
-        'The number of columns. A value of 0 or less gives a responsive layout.',
+        'The number of columns, truncated to a whole number. A value of 0 or less\ngives a responsive layout.',
       control: 'number',
       table: { defaultValue: { summary: '0' } },
     },
@@ -92,6 +93,12 @@ const metadata: Meta<IgcTileManagerComponent> = {
       description: 'The gap between the tiles.',
       control: 'text',
     },
+    locale: {
+      type: 'string',
+      description:
+        'The locale of the tiles. A tile without its own locale takes this one.\nWithout it, the manager takes its own `lang`, else the locale of the\nnearest ancestor that has a `locale` (a component) or a `lang`, and then\nthe global locale.',
+      control: 'text',
+    },
   },
   args: { resizeMode: 'none', dragMode: 'none', columnCount: 0 },
 };
@@ -103,7 +110,10 @@ interface IgcTileManagerArgs {
   resizeMode: 'none' | 'hover' | 'always';
   /** The drag mode of the tiles. `none` turns drag and drop off. */
   dragMode: 'none' | 'tile-header' | 'tile';
-  /** The number of columns. A value of 0 or less gives a responsive layout. */
+  /**
+   * The number of columns, truncated to a whole number. A value of 0 or less
+   * gives a responsive layout.
+   */
   columnCount: number;
   /** The minimum width of a column. */
   minColumnWidth: string;
@@ -111,6 +121,13 @@ interface IgcTileManagerArgs {
   minRowHeight: string;
   /** The gap between the tiles. */
   gap: string;
+  /**
+   * The locale of the tiles. A tile without its own locale takes this one.
+   * Without it, the manager takes its own `lang`, else the locale of the
+   * nearest ancestor that has a `locale` (a component) or a `lang`, and then
+   * the global locale.
+   */
+  locale: string;
 }
 type Story = StoryObj<IgcTileManagerArgs>;
 
@@ -132,17 +149,6 @@ registerMaterialIcons(
 const styles = html`
   ${storyStyles}
   <style>
-    /* The content of a tile fills the space under the header. */
-    igc-tile::part(base) {
-      display: flex;
-      flex-direction: column;
-    }
-
-    igc-tile::part(content-container) {
-      flex: 1;
-      min-height: 0;
-    }
-
     .tm-kpi {
       display: grid;
       align-content: center;
@@ -310,6 +316,7 @@ export const Default: Story = {
       .gap=${args.gap}
       .dragMode=${args.dragMode}
       .resizeMode=${args.resizeMode}
+      locale=${ifDefined(args.locale)}
     >
       ${kpiTile('Revenue', '$12,480', 'up', '8% more than last Tuesday')}
       ${kpiTile('Orders', '184', 'up', '12 more than last Tuesday')}
@@ -1147,14 +1154,21 @@ function itemIcon({ pull, status }: BoardItem) {
       };
 }
 
-/** Runs `update` in a view transition, unless the user prefers less motion. */
+/**
+ * Runs `update` in a view transition of the `board` type, unless the user
+ * prefers less motion or the browser has no transition types. The style sheet
+ * of the story names the cards for this type.
+ */
 function withTransition(update: () => void): Promise<void> {
-  if (!('startViewTransition' in document) || prefersReducedMotion()) {
+  if (
+    !('types' in (globalThis.ViewTransition?.prototype ?? {})) ||
+    prefersReducedMotion()
+  ) {
     update();
     return Promise.resolve();
   }
 
-  const transition = document.startViewTransition(update);
+  const transition = document.startViewTransition({ update, types: ['board'] });
   transition.ready.catch(() => {});
   return transition.updateCallbackDone;
 }
@@ -1165,7 +1179,7 @@ export const ProjectBoard: Story = {
     docs: {
       description: {
         story:
-          'A project board in the style of GitHub Projects. Each status column is a tile with its own tile manager for its cards. Drag a card to change its place in its column, or drop it in another column to change its status. A manager swaps only its own tiles, so the story builds the move to another column from `igcTileDragStart`, `igcTileDragEnd` and the pointer position: a drop preview, which is also a tile, shows where the card goes. Drag the header of a column to move the column. Point at a column to show its resize handles. When a column is two columns wide, its cards go into two columns. Maximize a column to see more of its cards, or show it in full screen for a meeting. Dragging is a pointer action, so the menu of a card also moves it to the top or the bottom of its column, or to another status. Each card has a fixed `id`, so it keeps its view transition name, and a view transition moves it to the other column. The In progress column has a limit of three items. Its count and the drop preview change color when it has more.',
+          'A project board in the style of GitHub Projects. Each status column is a tile with its own tile manager for its cards. Drag a card to change its place in its column, or drop it in another column to change its status. A manager swaps only its own tiles, so the story builds the move to another column from `igcTileDragStart`, `igcTileDragEnd` and the pointer position: a drop preview, which is also a tile, shows where the card goes. Drag the header of a column to move the column. Point at a column to show its resize handles. When a column is two columns wide, its cards go into two columns. Maximize a column to see more of its cards, or show it in full screen for a meeting. Dragging is a pointer action, so the menu of a card also moves it to the top or the bottom of its column, or to another status. A tile manager names its tiles only for its own view transitions, so the story starts its transitions with the `board` type, and a `:active-view-transition-type(board)` rule names the cards from their fixed `id`. A view transition then moves a card to the other column. The In progress column has a limit of three items. Its count and the drop preview change color when it has more.',
       },
     },
   },
@@ -1184,6 +1198,7 @@ export const ProjectBoard: Story = {
       disableFullscreen: true,
     });
     placeholder.setAttribute('aria-hidden', 'true');
+    placeholder.style.setProperty('--card-name', 'card-placeholder');
 
     const itemOf = (tile: IgcTileComponent) =>
       items.find((each) => itemId(each) === tile.dataset.item);
@@ -1391,6 +1406,7 @@ export const ProjectBoard: Story = {
         <igc-tile
           id="tm-item-${itemId(item)}"
           class="tm-card"
+          style=${styleMap({ '--card-name': `card-${itemId(item)}` })}
           data-item=${itemId(item)}
           disable-maximize
           disable-fullscreen
@@ -1549,7 +1565,7 @@ export const ProjectBoard: Story = {
           --tm-column: color-mix(
             in srgb,
             var(--ig-gray-500) 10%,
-            var(--ig-surface-500)
+            var(--ig-surface-base)
           );
           --ig-tile-manager-background: transparent;
           --ig-tile-manager-tile-background: var(--tm-column);
@@ -1609,8 +1625,16 @@ export const ProjectBoard: Story = {
         }
 
         /* The cards have no resize handles, so less space is enough. */
-        .tm-cards::part(base) {
-          padding: 0.5rem;
+        .tm-cards {
+          --grid-padding: 0.5rem;
+        }
+
+        /*
+         * A manager names its tiles only for its own transitions. The board
+         * transitions name the cards by id, so a card moves to another column.
+         */
+        :root:active-view-transition-type(board) .tm-cards > igc-tile {
+          view-transition-name: var(--card-name);
         }
 
         /* The drop preview of a card from another column. */

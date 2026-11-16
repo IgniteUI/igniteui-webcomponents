@@ -9,6 +9,8 @@ import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/item.base.css.js';
 import { styles as shared } from './themes/shared/item/item.common.css.js';
 
+const Slots = setSlots('content', 'icon');
+
 /**
  * Represents a navigation drawer item.
  *
@@ -20,6 +22,7 @@ import { styles as shared } from './themes/shared/item/item.common.css.js';
  * @csspart base - The base wrapper of the drawer item.
  * @csspart icon - The icon container.
  * @csspart content - The content container.
+ * @csspart mini - Added to the base part when the content slot is empty.
  */
 export default class IgcNavDrawerItemComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer-item';
@@ -31,7 +34,7 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   }
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots('content', 'icon'),
+    slots: Slots,
     onChange: this._handleSlotChange,
   });
 
@@ -39,14 +42,14 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   private _hasContent = true;
 
   /**
-   * Determines whether the drawer item is disabled.
+   * Whether the drawer item is disabled.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
   /**
-   * Determines whether the drawer item is active.
+   * Whether the drawer item is active.
    * @attr
    */
   @property({ type: Boolean, reflect: true })

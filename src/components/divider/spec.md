@@ -37,6 +37,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-10-21 | API descriptions aligned with the JSDoc. |
 
 ## Overview
 
@@ -128,8 +129,8 @@ None applicable. The component is not interactive.
 | Property | Attribute | Reflected | Type           | Default | Description                                                          |
 | -------- | --------- | --------- | -------------- | ------- | ---------------------------------------------------------------------- |
 | vertical | vertical  | Yes       | `boolean`      | false   | Whether to render a vertical divider line.                           |
-| type     | type      | Yes       | `DividerType`  | `solid` | Whether to render a solid or a dashed divider line.                  |
-| middle   | middle    | Yes       | `boolean`      | false   | When set, and an inset is provided, shrinks the line from both sides. |
+| type     | type      | Yes       | `DividerType`  | `solid` | The style of the divider line: solid or dashed.                      |
+| middle   | middle    | Yes       | `boolean`      | false   | Whether the `--inset` value shrinks the line from both sides, not only from the start. |
 
 ### Methods
 
@@ -151,8 +152,8 @@ None applicable.
 
 | Property  | Description                                                                                        |
 | --------- | ---------------------------------------------------------------------------------------------------- |
-| `--color` | Sets the color of the divider.                                                                     |
-| `--inset` | Shrinks the divider by the given amount from the start. With `middle` set, it shrinks from both sides. |
+| `--color` | The color of the divider.                                                                          |
+| `--inset` | The amount by which the line shrinks from the start. When `middle` is set, the line shrinks from both sides. |
 
 ## Test scenarios
 
