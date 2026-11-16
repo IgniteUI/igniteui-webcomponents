@@ -1,6 +1,6 @@
 @use 'sass:math';
 @use 'styles/utilities' as *;
-@use '../animations' as *;
+@use 'animations' as *;
 @use '../vars' as *;
 
 :host {
