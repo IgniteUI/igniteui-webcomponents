@@ -797,27 +797,6 @@ describe('Calendar Rendering', () => {
       expect(firstDateValue()).to.equal(`${monday.timestamp}`);
     });
 
-    it('falls back to sunday in engines without `Intl.Locale.prototype.getWeekInfo()`', async () => {
-      const prototype = Intl.Locale.prototype;
-      const descriptor = Object.getOwnPropertyDescriptor(
-        prototype,
-        'getWeekInfo'
-      );
-
-      expect(Reflect.deleteProperty(prototype, 'getWeekInfo')).to.be.true;
-
-      try {
-        calendar = await createCalendarElement(
-          html`<igc-calendar locale="bg"></igc-calendar>`
-        );
-        expect(calendar.weekStart).to.equal('sunday');
-      } finally {
-        if (descriptor) {
-          Object.defineProperty(prototype, 'getWeekInfo', descriptor);
-        }
-      }
-    });
-
     it('renders the header date in the field order of the locale', async () => {
       calendar = await createCalendarElement(
         html`<igc-calendar locale="ja" .value=${july.native}></igc-calendar>`

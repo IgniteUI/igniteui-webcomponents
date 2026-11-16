@@ -23,6 +23,17 @@
 10. Give functions and methods explicit return types, unless the type is obvious or adds noise.
 11. Do not use native private fields (`#field`). Use TypeScript `private` with a `_` prefix.
 
+## Browser Support
+
+The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The `browserslist`
+entry in `package.json` holds the same list.
+
+1. A platform feature that all these versions have needs no feature detection and no fallback. Check each feature
+   in the MDN browser compatibility data. Safari adds features in minor versions, so check against the first
+   release of the older major version (for example 26.0, not 26.2).
+2. Any other feature needs feature detection and a fallback that keeps the component usable.
+3. When a fallback becomes redundant, remove it together with its tests.
+
 ## Project Structure
 
 ```

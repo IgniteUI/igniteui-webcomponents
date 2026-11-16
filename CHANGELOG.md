@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Changed
+- #### Library
+  - The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The fallbacks for older browsers are removed, and the styles no longer have vendor prefixes for them.
+
 ## [7.5.0] - 2026-11-16
 ### Added
 - #### Accordion, Expansion panel, Tabs, Tree

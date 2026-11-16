@@ -1277,13 +1277,6 @@ describe('IgcQrCodeComponent', () => {
         expect(getWrittenItem().types).to.eql(['image/png']);
       });
 
-      it('copies only the PNG image without ClipboardItem.supports()', async () => {
-        supports.value(undefined);
-
-        expect(await el.copyToClipboard({ format: 'svg' })).to.equal('png');
-        expect(getWrittenItem().types).to.eql(['image/png']);
-      });
-
       it('rejects when the clipboard rejects the write', async () => {
         write.callsFake(async (items: ClipboardItem[]) => {
           await readItem(items);

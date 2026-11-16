@@ -6,28 +6,11 @@ import { getPrefersReducedMotion } from './player.js';
  */
 let started: ViewTransition | null = null;
 
-/**
- * Starts a document view transition, skipped on reduced motion. Without the
- * API, runs `callback` and returns promises that settle after it.
- */
+/** Starts a document view transition, skipped on reduced motion. */
 export function startViewTransition(
   callback: ViewTransitionUpdateCallback
 ): ViewTransition {
-  const init = globalThis.document?.startViewTransition;
-
-  /* c8 ignore next 10 */
-  if (!init) {
-    const done = Promise.resolve(callback()).then(() => {});
-
-    return {
-      finished: done,
-      ready: done,
-      updateCallbackDone: done,
-      skipTransition: () => {},
-    } as ViewTransition;
-  }
-
-  const transition = init.call(globalThis.document, callback);
+  const transition = document.startViewTransition(callback);
 
   // A skipped transition rejects `ready`.
   transition.ready.catch(() => {});
