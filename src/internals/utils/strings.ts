@@ -32,18 +32,6 @@ export function toKebabCase(text: string): string {
 }
 
 /**
- * Escapes each regular expression character in a string, so that `RegExp()`
- * reads it as a literal pattern.
- *
- * @remarks
- * Replace with `RegExp.escape` once browser support is sufficient:
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/escape#browser_compatibility
- */
-export function escapeRegex(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/**
  * Creates a function that returns DOM ids with the given prefix.
  *
  * @example

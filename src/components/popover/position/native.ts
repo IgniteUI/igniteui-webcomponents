@@ -1,4 +1,3 @@
-import { isServer } from 'lit';
 import { isPopoverOpen } from '#internals/utils/dom.js';
 import { toggleEventListener } from '#internals/utils/events.js';
 import {
@@ -16,54 +15,6 @@ import {
 
 const OFFSET_PROPERTY = '--_igc-popover-offset';
 
-let nativeSupport: boolean | undefined;
-
-/**
- * Tests the native CSS anchor positioning once, with a real popover.
- * `CSS.supports` cannot test `showPopover({ source })`, which Chromium 125 to
- * 132 ignores.
- */
-function supportsNativeAnchoring(): boolean {
-  nativeSupport ??= probeNativeAnchoring();
-  return nativeSupport;
-}
-
-function probeNativeAnchoring(): boolean {
-  if (
-    isServer ||
-    typeof CSS === 'undefined' ||
-    !CSS.supports('anchor-name: --a')
-  ) {
-    return false;
-  }
-
-  const anchor = document.createElement('div');
-  const popover = document.createElement('div');
-
-  popover.popover = 'manual';
-  anchor.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px';
-  // `span-right` also tests the span keywords that the aligned placements need.
-  popover.style.cssText =
-    'margin:0;inset:auto;border:none;padding:0;width:1px;height:1px;position-area:bottom span-right';
-
-  try {
-    document.body.append(anchor, popover);
-    popover.showPopover({ source: anchor });
-
-    // An anchored popover sits directly below the 1px anchor. A browser that
-    // ignores `source` centers it.
-    const anchored = Math.abs(popover.getBoundingClientRect().top - 1) <= 1;
-
-    popover.hidePopover();
-    return anchored;
-  } catch {
-    return false;
-  } finally {
-    anchor.remove();
-    popover.remove();
-  }
-}
-
 /**
  * True if the native CSS anchor positioning can position the `target`.
  * `source` accepts only an HTMLElement, so an SVG anchor uses the fallback.
@@ -77,7 +28,7 @@ export function shouldUseNativeAnchorPositioning(
     return forced === 'native';
   }
 
-  return target instanceof HTMLElement && supportsNativeAnchoring();
+  return target instanceof HTMLElement;
 }
 
 /**

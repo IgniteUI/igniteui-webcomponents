@@ -211,7 +211,9 @@ binding.dispose(); // removes the listeners, aborts the request in flight and cl
 
 | ![chrome_48x48] | ![firefox_48x48] | ![edge_48x48] | ![opera_48x48] | ![safari_48x48] |
 | --------------- | ---------------- | ------------- | -------------- | --------------- |
-| Latest ✔️        | Latest ✔️         | Latest ✔️      | Latest ✔️       | Latest ✔️        |
+| Last 2 ✔️        | Last 2 ✔️         | Last 2 ✔️      | Last 2 ✔️       | Last 2 ✔️        |
+
+The library supports the last 2 major versions of each browser.
 
 ## Tooling
 

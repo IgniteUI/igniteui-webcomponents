@@ -18,12 +18,7 @@
 /// The label asterisk of a required control, with empty alternative text to
 /// keep it out of the accessible name.
 @mixin required-asterisk {
-    content: '*';
-
-    // An older browser drops the whole value with the alternative text.
-    @supports (content: '*' / '') {
-        content: '*' / '';
-    }
+    content: '*' / '';
 }
 
 /// Fades the native `::backdrop` of a modal dialog in, or not at all with

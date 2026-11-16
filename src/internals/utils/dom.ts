@@ -18,14 +18,11 @@ const PIXEL_LENGTH = /^\d*\.?\d+px$/;
 /** A percentage, such as the `5%` of `calc(5% + 10px)`. */
 const PERCENTAGE = /(-?\d*\.?\d+(?:e[+-]?\d+)?)%/gi;
 
-const SUPPORTS_REGISTERED_PROPERTIES =
-  !isServer && typeof CSS !== 'undefined' && 'registerProperty' in CSS;
-
 let lengthPropertyUsable: boolean | undefined;
 
 function canResolveLengths(): boolean {
   if (lengthPropertyUsable === undefined) {
-    lengthPropertyUsable = SUPPORTS_REGISTERED_PROPERTIES;
+    lengthPropertyUsable = !isServer;
 
     if (lengthPropertyUsable) {
       try {

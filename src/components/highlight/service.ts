@@ -5,7 +5,7 @@ import {
 } from '#internals/controllers/mutation-observer.js';
 import { getRoot, iterNodes, scrollIntoView } from '#internals/utils/dom.js';
 import { wrap } from '#internals/utils/math.js';
-import { escapeRegex, nanoid } from '#internals/utils/strings.js';
+import { nanoid } from '#internals/utils/strings.js';
 import type IgcHighlightComponent from './highlight.js';
 
 type Match = { node: Node; indices: [start: number, end: number] };
@@ -179,7 +179,7 @@ class HighlightService implements ReactiveController {
     // the content, such as a line break in the HTML source.
     const pattern = value
       .split(/\s+/)
-      .map(escapeRegex)
+      .map(RegExp.escape)
       .join(String.raw`\s+`);
     return new RegExp(pattern, this._host.caseSensitive ? 'dg' : 'dgi');
   }

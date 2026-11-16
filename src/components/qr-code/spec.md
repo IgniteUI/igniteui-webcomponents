@@ -409,8 +409,7 @@ None. The SVG is rendered entirely from the properties of the component.
 24. `copyToClipboard()` copies a PNG image at the component size by default, and a `size` set right after the call
     applies to the copy.
 25. An `svg` copy holds an SVG image, with the theme colors resolved and the parts stripped, and a PNG image, both
-    multiplied by `scale`. A clipboard that does not take SVG gets only the PNG, and so does a browser without
-    `ClipboardItem.supports()`.
+    multiplied by `scale`. A clipboard that does not take SVG gets only the PNG.
 26. The clipboard write starts before the first `await` of the method, for a PNG copy and an SVG copy.
 27. The method rejects when the clipboard refuses the write and without the Clipboard API. It also rejects on invalid
     options and without a value, and then it writes nothing. A refused write that skips a failed export leaves no
@@ -451,8 +450,6 @@ None. The SVG is rendered entirely from the properties of the component.
   directly from the event handler of the action.
 - On 2026-10-20, only Chromium 124 and later copies SVG to the clipboard. The method follows
   `ClipboardItem.supports('image/svg+xml')`, so other browsers get the PNG until they report SVG support.
-- A browser without `ClipboardItem.supports()`, for example Chrome before 121 or Safari before 18.4, gets only the
-  PNG image.
 
 ## Accessibility
 
