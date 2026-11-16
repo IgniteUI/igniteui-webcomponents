@@ -189,6 +189,41 @@ describe('Combo', () => {
       expect(searchEvents()).to.eql(['a', '', 'b']);
     });
 
+    it('emits the igcSearchInput of a selection in single selection before the selection changes', async () => {
+      remote.singleSelect = true;
+      remote.filteringOptions = { mode: 'local' };
+      remote.select('AMS');
+      await elementUpdated(remote);
+
+      // The application keeps the selection when the user types.
+      remote.addEventListener('igcChange', (event) => {
+        if (event.detail.type === 'deselection') {
+          event.preventDefault();
+        }
+      });
+
+      const reads: { value: unknown[]; selection: string[] }[] = [];
+      remote.addEventListener('igcSearchInput', ({ detail }) => {
+        if (!detail.searchText) {
+          reads.push({
+            value: [...remote.value],
+            selection: remote.selection.map(({ id }) => id),
+          });
+        }
+      });
+
+      simulateInput(mainNative, { value: 'bu' });
+      await comboStable(remote);
+      expect(remote.value).to.eql(['AMS']);
+
+      simulateKeyboard(list, enterKey);
+      await elementUpdated(remote);
+
+      expect(reads).to.eql([{ value: ['AMS'], selection: ['AMS'] }]);
+      expect(remote.value).to.eql(['BUC']);
+      expect(remote.selection.map(({ id }) => id)).to.eql(['BUC']);
+    });
+
     it('clears the search input and reports it when a blur clears the search text', async () => {
       await openComboPopover(remote);
 

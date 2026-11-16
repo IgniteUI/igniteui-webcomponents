@@ -203,6 +203,21 @@ describe('Combo selection', () => {
       expect(selection.preview([sofia], true)).to.eql([1]);
     });
 
+    it('replaces the selection with a selection in single selection', () => {
+      const { selection } = setup({ singleSelect: true });
+
+      selection.syncFromValue([42]);
+      selection.apply([varna], true);
+      expect(selection.project().values).to.eql([3]);
+
+      selection.apply([sofia], true);
+      expect(selection.selected).to.eql([sofia]);
+
+      // A deselection removes only its value.
+      selection.apply([plovdiv], false);
+      expect(selection.selected).to.eql([sofia]);
+    });
+
     it('toggles the items that are not selected on, or all of them off when each one is selected', () => {
       const { selection } = setup();
 

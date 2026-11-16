@@ -90,6 +90,7 @@
 |      28 | 2026-11-13 | One record for each value, and each record of a selected value shows as selected; a value keeps its place when it gets a record; select all gives the order of `data`, then the values that `data` does not hold; a value that a pending deselection removed stays out of the pending selection after a new `data` |
 |      29 | 2026-11-13 | Review fixes: primitive records show as selected again; any record of a repeated value selects its first record, also in a commit, and a toggle option lists one record for each value; a `value` array that changed in place and is set again syncs the selection; a new `displayKey` or `valueKey` updates the input text; a new `data` filters by the current text of the items that keep their records and indexes a key that changed in place; a new `valueKey` merges values to their first records and drops the same-value sync; in single selection, a framework that writes back the cleared `value` keeps the typed text, and a blur that clears the input lets the same selection show its text again |
 |      30 | 2026-11-16 | After the combo leaves the document and comes back, no option is active, also in `aria-activedescendant` |
+|      31 | 2026-11-16 | In single selection, a selection sends the `igcSearchInput` of the cleared text before the selection changes |
 
 ## Overview
 
@@ -846,10 +847,11 @@ state, the data requests and the selection model without a browser fixture.
     filter the options. A change back to `local` filters them.
 26. `igcSearchInput` reports each change of the search text in both modes, and of the main input in single selection,
     also when the text is cleared. It reports an empty text when a selection or a blur clears the text, and a blur
-    also clears the search input. It does not come on a property change or with `disableFiltering`. The `igcInput` of
-    the inputs stays inside the combo. In remote mode, an input in single selection activates no option. The
-    case-sensitive icon shows in remote mode. In both modes, a click on it reports the search text again with the new
-    case, but does not report an empty text.
+    also clears the search input. A listener of the empty text of a selection reads the selection before the change.
+    It does not come on a property change or with `disableFiltering`. The `igcInput` of the inputs stays inside the
+    combo. In remote mode, an input in single selection activates no option. The case-sensitive icon shows in remote
+    mode. In both modes, a click on it reports the search text again with the new case, but does not report an empty
+    text.
 27. The repro of issue 2519: a search that replaces `data` keeps the selected items in `value`, `selection` and the
     input text. A later selection adds to them, and the first page shows them as selected again with its own records.
 28. `deselect()` removes a selected item that `data` does not hold. `select()` selects an object that `data` does not

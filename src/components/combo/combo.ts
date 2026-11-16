@@ -951,9 +951,9 @@ export default class IgcComboComponent<
       return false;
     }
 
-    // The change is committed, so drop the previous single selection and search term.
+    // A single selection clears the search text. The `igcSearchInput` of the
+    // clear comes before the change, as for the clear button.
     if (selecting && this.singleSelect) {
-      this._selection.clear();
       this._clearSearchTerm(emit);
     }
 

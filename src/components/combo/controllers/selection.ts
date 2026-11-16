@@ -354,12 +354,17 @@ export class ComboSelection<T extends object> {
   }
 
   /**
-   * Adds `records` to the current selection, or removes their values. While
-   * the list has a pending selection, a committed value without a record gets
-   * its record too, as a new `data` gives it.
+   * Adds `records` to the current selection, or removes their values. In
+   * single selection, a selection replaces the selection, as in
+   * {@link preview}. While the list has a pending selection, a committed value
+   * without a record gets its record too, as a new `data` gives it.
    * @returns Whether the committed selection got records while it was not the current one.
    */
   public apply(records: T[], selecting: boolean): boolean {
+    if (selecting && this._host.singleSelect) {
+      this.clear();
+    }
+
     const current = this._current;
     const committed = this._committed;
     let resolved = false;
