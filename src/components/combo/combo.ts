@@ -280,16 +280,6 @@ export default class IgcComboComponent<
   private _syncedWith?: { data: T[]; length: number; value: ComboValue<T>[] };
 
   @state()
-  private set _activeIndex(index: number) {
-    this._navigation.active = index;
-    this._listRef.value?.requestUpdate();
-  }
-
-  private get _activeIndex(): number {
-    return this._navigation.active;
-  }
-
-  @state()
   private set _searchTerm(value: string) {
     this._state.searchTerm = value;
   }
@@ -347,7 +337,7 @@ export default class IgcComboComponent<
 
       if (host.hasUpdated) {
         host._withPristine(() => {
-          host._activeIndex = -1;
+          host._navigation.active = -1;
           host._searchTerm = '';
           host._formValue.setValueAndFormState(host.value);
         });
@@ -679,7 +669,7 @@ export default class IgcComboComponent<
       (props.has('showSelectAll') || props.has('groupSelection')) &&
       this.hasUpdated
     ) {
-      this._activeIndex = -1;
+      this._navigation.active = -1;
     }
 
     // The list keeps the same `_itemRenderer`, so a new template must re-render it.
@@ -702,7 +692,7 @@ export default class IgcComboComponent<
           this._listRef.value
         )
       ) {
-        this._activeIndex = -1;
+        this._navigation.active = -1;
       }
     }
 
@@ -791,7 +781,7 @@ export default class IgcComboComponent<
     ]);
 
     if (canClose) {
-      this._activeIndex = -1;
+      this._navigation.active = -1;
     }
 
     return canClose;
@@ -1093,7 +1083,7 @@ export default class IgcComboComponent<
       return false;
     }
 
-    this._activeIndex = index;
+    this._navigation.active = index;
     this._syncValueFromSelection();
     return true;
   }
@@ -1171,7 +1161,7 @@ export default class IgcComboComponent<
     await this.updateComplete;
 
     // Remote results come later, so no option of the old results becomes active.
-    this._activeIndex =
+    this._navigation.active =
       this.filteringOptions.mode === 'remote'
         ? -1
         : this._state.firstOptionIndex;
@@ -1250,7 +1240,7 @@ export default class IgcComboComponent<
   private _handleClearIconClick(event: PointerEvent): void {
     event.stopPropagation();
     this._clearSelection();
-    this._activeIndex = -1;
+    this._navigation.active = -1;
   }
 
   private _handleApply(): void {
@@ -1409,9 +1399,10 @@ export default class IgcComboComponent<
     return this.id ? `${this.id}-item-${position}` : `item-${position}`;
   }
 
-  /** Derived from {@link _activeIndex}, so it cannot go stale. */
+  /** Derived from the active index, so it cannot go stale. */
   private get _activeDescendant(): string | undefined {
-    return this._activeIndex > -1 ? this._itemId(this._activeIndex) : undefined;
+    const { active } = this._navigation;
+    return active > -1 ? this._itemId(active) : undefined;
   }
 
   protected _itemRenderer: ComboRenderFunction<T> = (
@@ -1440,7 +1431,7 @@ export default class IgcComboComponent<
       );
     }
 
-    const active = this._activeIndex === index;
+    const active = this._navigation.active === index;
 
     const selected = this._selection.has(item.value);
     // One template for both, so a row keeps its element when its item loads.
@@ -1489,7 +1480,7 @@ export default class IgcComboComponent<
       this._selection.version
     );
     const all = state === true;
-    const active = this._activeIndex === index;
+    const active = this._navigation.active === index;
 
     return html`
       <igc-combo-item

@@ -89,6 +89,7 @@
 |      27 | 2026-11-12 | One rule for new remote results: a copy of the same records keeps the place and requests no page again; an append compares all the old items; `bindComboDataSource()` marks each first page as new results, so `refresh()` shows from the top |
 |      28 | 2026-11-13 | One record for each value, and each record of a selected value shows as selected; a value keeps its place when it gets a record; select all gives the order of `data`, then the values that `data` does not hold; a value that a pending deselection removed stays out of the pending selection after a new `data` |
 |      29 | 2026-11-13 | Review fixes: primitive records show as selected again; any record of a repeated value selects its first record, also in a commit, and a toggle option lists one record for each value; a `value` array that changed in place and is set again syncs the selection; a new `displayKey` or `valueKey` updates the input text; a new `data` filters by the current text of the items that keep their records and indexes a key that changed in place; a new `valueKey` merges values to their first records and drops the same-value sync; in single selection, a framework that writes back the cleared `value` keeps the typed text, and a blur that clears the input lets the same selection show its text again |
+|      30 | 2026-11-16 | After the combo leaves the document and comes back, no option is active, also in `aria-activedescendant` |
 
 ## Overview
 
@@ -786,7 +787,8 @@ state, the data requests and the selection model without a browser fixture.
 8. The empty message and the `empty` slot.
 9. Localization through `locale` and `resourceStrings`.
 10. Open, close and the keyboard navigation of the list, also Arrow Down at the end of the matches. In single
-    selection, the Enter of an IME composition in the main input does not select an option.
+    selection, the Enter of an IME composition in the main input does not select an option. After the combo leaves
+    the document and comes back, no option is active.
 11. The clear icon and `disableClear`.
 12. `igcChange` gives the new value, the items and the change type, and a cancel keeps the selection.
 13. The `igcChange` of the search input, and the `igcStateChange` and `igcDataRequest` events of the list, stay inside

@@ -49,6 +49,7 @@ export class ComboNavigationController<T extends object> {
   private readonly _host: IgcComboComponent<T>;
   private readonly _state: DataState<T>;
   private readonly _config: ComboNavigationConfig;
+  private _active = -1;
 
   private get _input(): IgcInputComponent | undefined {
     return this._config.input.value;
@@ -74,7 +75,21 @@ export class ComboNavigationController<T extends object> {
 
   //#endregion
 
-  public active = -1;
+  /** The index of the active option in the records of the list, or -1. */
+  public get active(): number {
+    return this._active;
+  }
+
+  /** The only write path of the index: it updates the list, and a new index also updates the host. */
+  public set active(index: number) {
+    const previous = this._active;
+    this._active = index;
+    this._list?.requestUpdate();
+
+    if (previous !== index) {
+      this._host.requestUpdate();
+    }
+  }
 
   constructor(
     host: IgcComboComponent<T>,
@@ -217,12 +232,12 @@ export class ComboNavigationController<T extends object> {
   };
 
   private _onHome = (): void => {
-    this._setActive(this._firstItem);
+    this.active = this._firstItem;
     this._scrollToActive();
   };
 
   private _onEnd = (): void => {
-    this._setActive(this._lastItem);
+    this.active = this._lastItem;
     this._scrollToActive();
   };
 
@@ -278,19 +293,8 @@ export class ComboNavigationController<T extends object> {
     return [input!, ...before, ...list, ...after];
   }
 
-  /**
-   * Sets the active index from the keyboard. The host mirrors it as
-   * `_activeIndex`, so the update request carries the old value.
-   */
-  private _setActive(index: number): void {
-    const previous = this.active;
-    this.active = index;
-    this._host.requestUpdate('_activeIndex', previous);
-  }
-
   private _scrollToActive(): void {
     this._list?.scrollToIndex(this.active, { block: 'center' });
-    this._list?.requestUpdate();
   }
 
   private _getNextItem(delta: -1 | 1): void {
@@ -298,7 +302,7 @@ export class ComboNavigationController<T extends object> {
 
     for (let i = this.active + delta; i >= 0 && i < items.length; i += delta) {
       if (this._state.isOption(items[i])) {
-        this._setActive(i);
+        this.active = i;
         return;
       }
     }

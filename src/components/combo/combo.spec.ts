@@ -1655,6 +1655,29 @@ describe('Combo', () => {
       expect(eventSpy).not.calledWith('igcChange');
     });
 
+    it('has no active option after it leaves the document and comes back', async () => {
+      const eventSpy = spy(combo, 'emitEvent');
+      await openComboPopover(combo);
+
+      simulateKeyboard(options, arrowDown);
+      await comboStable(combo);
+      expect(items(combo).some((item) => item.active)).to.be.true;
+
+      const parent = combo.parentElement!;
+      combo.remove();
+      parent.append(combo);
+      await comboStable(combo);
+
+      expect(items(combo).some((item) => item.active)).to.be.false;
+      expect(options.hasAttribute('aria-activedescendant')).to.be.false;
+
+      simulateKeyboard(options, spaceBar);
+      await elementUpdated(combo);
+
+      expect(combo.value).to.be.empty;
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
     it('does not change the selection when a group header is clicked', async () => {
       const eventSpy = spy(combo, 'emitEvent');
       await openComboPopover(combo);
