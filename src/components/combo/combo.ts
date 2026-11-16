@@ -253,9 +253,8 @@ export default class IgcComboComponent<
         show: () => this._show(true),
         hide: (trigger) => this._close(trigger),
         toggleSelection: (index) => this._selectAt(index, true),
-        select: (index) => this._selectAt(index, false),
         hasPending: () => this._selection.pending !== undefined,
-        apply: (trigger) => this._applyAndClose(trigger),
+        commit: (trigger, index) => this._commitAndClose(trigger, index),
         clearSelection: () => this._clearSelection(),
       },
     }
@@ -799,6 +798,26 @@ export default class IgcComboComponent<
    */
   private async _applyAndClose(trigger: ComboCloseTrigger): Promise<boolean> {
     return this._commitPending(true) ? this._close(trigger) : false;
+  }
+
+  /**
+   * Enter or Tab in the combo: in single selection, selects the option at
+   * `index`. Then Enter applies the pending selection and closes the list.
+   * Tab closes it, which drops the pending selection, as the other closes do.
+   * Not async, so the awaits of the keyboard take as long as before.
+   * @returns Whether the list closes.
+   */
+  private _commitAndClose(
+    trigger: 'enter' | 'tab',
+    index: number
+  ): Promise<boolean> {
+    if (this.singleSelect) {
+      this._selectAt(index, false);
+    }
+
+    return trigger === 'enter'
+      ? this._applyAndClose(trigger)
+      : this._close(trigger);
   }
 
   //#endregion

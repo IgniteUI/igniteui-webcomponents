@@ -34,11 +34,14 @@ type ComboNavigationConfig = {
     show: () => Promise<boolean>;
     hide: (trigger: ComboCloseTrigger) => Promise<boolean>;
     toggleSelection: (index: number) => void;
-    select: (index: number) => void;
     /** Whether the confirm mode has a pending selection. */
     hasPending: () => boolean;
-    /** Applies the pending selection, then closes the list. Returns whether the list closes. */
-    apply: (trigger: ComboCloseTrigger) => Promise<boolean>;
+    /**
+     * Enter or Tab: selects the option at `index` in single selection, then
+     * closes the list. Enter first applies the pending selection. Returns
+     * whether the list closes.
+     */
+    commit: (trigger: 'enter' | 'tab', index: number) => Promise<boolean>;
     clearSelection: () => void;
   };
 };
@@ -171,10 +174,7 @@ export class ComboNavigationController<T extends object> {
       return;
     }
 
-    if (this._host.singleSelect) {
-      this._config.interactions.select(this.active);
-    }
-    if (await this._config.interactions.apply('enter')) {
+    if (await this._config.interactions.commit('enter', this.active)) {
       this._input?.select();
       this._host.focus();
     }
@@ -201,11 +201,7 @@ export class ComboNavigationController<T extends object> {
       this._host.focus();
     }
 
-    if (this._host.singleSelect && this.active > -1) {
-      this._config.interactions.select(this.active);
-    }
-
-    await this._config.interactions.hide('tab');
+    await this._config.interactions.commit('tab', this.active);
   };
 
   private _onEscape = (): Promise<void> => {
