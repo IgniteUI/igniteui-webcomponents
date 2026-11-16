@@ -321,6 +321,19 @@ export class ComboSelection<T extends object> {
   }
 
   /**
+   * The change that toggles `items` in the selection that the list shows: it
+   * selects the items that are not selected, or deselects all of them when
+   * each one is selected. It does not make the change. See {@link apply}.
+   */
+  public toggleChange(items: T[]): { records: T[]; selecting: boolean } {
+    const unselected = items.filter((item) => !this.has(item));
+
+    return isEmpty(unselected)
+      ? { records: items, selecting: false }
+      : { records: unselected, selecting: true };
+  }
+
+  /**
    * Adds `records` to `entries`, or removes their values. A value keeps its
    * record and its place, so a value without a record gets one in place.
    */

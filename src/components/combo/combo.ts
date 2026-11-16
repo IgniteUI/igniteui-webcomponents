@@ -1061,46 +1061,36 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Selects the record at `index`. With `toggle`, deselects a selected one.
-   * A toggle option toggles its items. See {@link DataState.isToggle}.
+   * Selects the item at `index`, or the items of the toggle option at `index`
+   * (see {@link DataState.isToggle}), with one `igcChange`. With `toggle`, it
+   * deselects them when each one is selected. See {@link ComboSelection.toggleChange}.
    * @returns Whether `index` holds an item or a toggle option.
    */
   private _selectAt(index: number, toggle: boolean): boolean {
     const record = this._state.dataState[index];
+    let items: T[];
 
     if (isItemRecord(record)) {
-      const item = record.value;
-
       // The record itself, as an item without a value would select all.
-      this._applySelection(
-        [item],
-        toggle && this._selection.has(item) ? 'deselection' : 'selection',
-        true
-      );
+      items = [record.value];
     } else if (record && this._state.isToggle(record)) {
-      this._toggleItemsOf(index);
+      items = this._state.itemsOf(index);
     } else {
       return false;
     }
 
+    const { records, selecting } = toggle
+      ? this._selection.toggleChange(items)
+      : { records: items, selecting: true };
+
+    this._applySelection(
+      records,
+      selecting ? 'selection' : 'deselection',
+      true
+    );
     this._navigation.active = index;
     this._syncValueFromSelection();
     return true;
-  }
-
-  /**
-   * Selects the items of the toggle option at `index`, or deselects them when
-   * all of them are selected, with one `igcChange` for the items that change.
-   */
-  private _toggleItemsOf(index: number): void {
-    const items = this._state.itemsOf(index);
-    const unselected = items.filter((item) => !this._selection.has(item));
-
-    this._applySelection(
-      unselected.length ? unselected : items,
-      unselected.length ? 'selection' : 'deselection',
-      true
-    );
   }
 
   private _clearSelection(): void {
