@@ -115,6 +115,7 @@ async function main() {
       '@fires',
       '@csspart',
       '@cssproperty',
+      '@cssstate',
       '@attr',
     ],
     suppressCommentWarningsInDeclarationFiles: true,
