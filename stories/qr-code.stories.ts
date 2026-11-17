@@ -43,7 +43,7 @@ const metadata: Meta<IgcQrCodeComponent> = {
     version: {
       type: 'number',
       description:
-        'The version of the QR code to generate, which determines the size and data capacity of the QR code.\nValid values are integers from 1 to 40, where each version corresponds to a specific module size and data capacity.\n\nWhen it is not set, or it is not an integer from 1 to 40, the component selects the smallest\nversion that holds the value. When the value does not fit the version, the component renders nothing.',
+        'The version of the QR code to generate, which determines the size and data capacity of the QR code.\nValid values are integers from 1 to 40, where each version corresponds to a specific module size and data capacity.\n\nWhen it is not set, or it is not an integer from 1 to 40, the component selects the smallest\nversion that holds the value and that stays readable under the logo. When the value does not\nfit the version, the component renders nothing. On a version that is set, a logo gets smaller\nto keep the code readable.',
       control: 'number',
     },
     errorLevel: {
@@ -77,7 +77,7 @@ const metadata: Meta<IgcQrCodeComponent> = {
     logoSize: {
       type: 'number',
       description:
-        "The size of the logo, as a ratio of the maximum area that can safely be obscured by a logo\nwhile the QR code remains scannable (up to 9% of the code's area, at the highest error\ncorrection level). The value is a number from 0 to 1, where 0 means no logo and 1\nmeans the logo covers the full safe area (not the entire QR code). Other values are clamped.\nThe default value is 0.4, meaning the logo covers 40% of that safe area (~3.6% of the QR code).\n\nWhen `error-level` is not set and the logo is larger than the safe area of level 'M', the\ncomponent uses the smallest error correction level that holds the logo. When `error-level`\nis set, the logo does not grow past the safe area of that level.",
+        "The size of the logo, as a ratio of the maximum area that can safely be obscured by a logo\nwhile the QR code remains scannable (up to 9% of the code's area, at the highest error\ncorrection level). The value is a number from 0 to 1, where 0 means no logo and 1\nmeans the logo covers the full safe area (not the entire QR code). Other values are clamped.\nThe default value is 0.4, meaning the logo covers 40% of that safe area (~3.6% of the QR code).\nThe area of the code leaves out the quiet zone, so `margin` does not change the logo.\n\nWhen `error-level` is not set and the logo is larger than the safe area of level 'M', the\ncomponent uses the smallest error correction level that holds the logo. When `error-level`\nis set, the logo does not grow past the safe area of that level.\n\nOn a small code, the logo can hide more codewords than the error correction recovers. The\ncomponent then uses a larger version, or, when `version` is set, a smaller logo.",
       control: 'number',
       table: { defaultValue: { summary: '0.4' } },
     },
@@ -88,20 +88,43 @@ const metadata: Meta<IgcQrCodeComponent> = {
       control: 'number',
     },
     dotStyle: {
-      type: { name: 'enum', value: ['square', 'circle', 'rounded'] },
+      type: {
+        name: 'enum',
+        value: ['square', 'circle', 'rounded', 'squircle'],
+      },
       description:
-        "The style of the data modules (dots) in the QR code, and of the inner dot of each finder-pattern\ncorner. This can be 'square', 'circle', or 'rounded'.",
-      options: ['square', 'circle', 'rounded'],
-      control: { type: 'inline-radio' },
+        "The style of the data modules (dots) in the QR code. This can be 'square', 'circle',\n'rounded', or 'squircle'. The inner dot of each finder-pattern corner uses the same style\nunless `cornerDotStyle` is set.",
+      options: ['square', 'circle', 'rounded', 'squircle'],
+      control: { type: 'select' },
       table: { defaultValue: { summary: 'square' } },
     },
-    squareStyle: {
-      type: { name: 'enum', value: ['square', 'circle', 'rounded'] },
+    dotScale: {
+      type: 'number',
       description:
-        "The style of the corner squares in the QR code. This can be 'square', 'circle', or 'rounded'.",
-      options: ['square', 'circle', 'rounded'],
-      control: { type: 'inline-radio' },
+        "The size of each data module, as a ratio of its cell in the module grid. The value is a\nnumber from 0.7 to 1. Other values are clamped. A value below 1 leaves a gap between the\nmodules, so 'rounded' modules do not join their neighbors. The finder-pattern corners keep\ntheir full size. A smaller value can make the code harder to scan with a camera.",
+      control: 'number',
+      table: { defaultValue: { summary: '1' } },
+    },
+    squareStyle: {
+      type: {
+        name: 'enum',
+        value: ['square', 'circle', 'rounded', 'squircle'],
+      },
+      description:
+        "The style of the corner squares in the QR code. This can be 'square', 'circle', 'rounded',\nor 'squircle'.",
+      options: ['square', 'circle', 'rounded', 'squircle'],
+      control: { type: 'select' },
       table: { defaultValue: { summary: 'square' } },
+    },
+    cornerDotStyle: {
+      type: {
+        name: 'enum',
+        value: ['square', 'circle', 'rounded', 'squircle'],
+      },
+      description:
+        "The style of the inner dot of each finder-pattern corner. This can be 'square', 'circle',\n'rounded', or 'squircle'. When it is not set, the inner dot uses `dotStyle`.",
+      options: ['square', 'circle', 'rounded', 'squircle'],
+      control: { type: 'select' },
     },
   },
   args: {
@@ -110,6 +133,7 @@ const metadata: Meta<IgcQrCodeComponent> = {
     margin: 4,
     logoSize: 0.4,
     dotStyle: 'square',
+    dotScale: 1,
     squareStyle: 'square',
   },
 };
@@ -127,7 +151,9 @@ interface IgcQrCodeArgs {
    * Valid values are integers from 1 to 40, where each version corresponds to a specific module size and data capacity.
    *
    * When it is not set, or it is not an integer from 1 to 40, the component selects the smallest
-   * version that holds the value. When the value does not fit the version, the component renders nothing.
+   * version that holds the value and that stays readable under the logo. When the value does not
+   * fit the version, the component renders nothing. On a version that is set, a logo gets smaller
+   * to keep the code readable.
    */
   version: number;
   /**
@@ -159,10 +185,14 @@ interface IgcQrCodeArgs {
    * correction level). The value is a number from 0 to 1, where 0 means no logo and 1
    * means the logo covers the full safe area (not the entire QR code). Other values are clamped.
    * The default value is 0.4, meaning the logo covers 40% of that safe area (~3.6% of the QR code).
+   * The area of the code leaves out the quiet zone, so `margin` does not change the logo.
    *
    * When `error-level` is not set and the logo is larger than the safe area of level 'M', the
    * component uses the smallest error correction level that holds the logo. When `error-level`
    * is set, the logo does not grow past the safe area of that level.
+   *
+   * On a small code, the logo can hide more codewords than the error correction recovers. The
+   * component then uses a larger version, or, when `version` is set, a smaller logo.
    */
   logoSize: number;
   /**
@@ -171,12 +201,28 @@ interface IgcQrCodeArgs {
    */
   logoMargin: number;
   /**
-   * The style of the data modules (dots) in the QR code, and of the inner dot of each finder-pattern
-   * corner. This can be 'square', 'circle', or 'rounded'.
+   * The style of the data modules (dots) in the QR code. This can be 'square', 'circle',
+   * 'rounded', or 'squircle'. The inner dot of each finder-pattern corner uses the same style
+   * unless `cornerDotStyle` is set.
    */
-  dotStyle: 'square' | 'circle' | 'rounded';
-  /** The style of the corner squares in the QR code. This can be 'square', 'circle', or 'rounded'. */
-  squareStyle: 'square' | 'circle' | 'rounded';
+  dotStyle: 'square' | 'circle' | 'rounded' | 'squircle';
+  /**
+   * The size of each data module, as a ratio of its cell in the module grid. The value is a
+   * number from 0.7 to 1. Other values are clamped. A value below 1 leaves a gap between the
+   * modules, so 'rounded' modules do not join their neighbors. The finder-pattern corners keep
+   * their full size. A smaller value can make the code harder to scan with a camera.
+   */
+  dotScale: number;
+  /**
+   * The style of the corner squares in the QR code. This can be 'square', 'circle', 'rounded',
+   * or 'squircle'.
+   */
+  squareStyle: 'square' | 'circle' | 'rounded' | 'squircle';
+  /**
+   * The style of the inner dot of each finder-pattern corner. This can be 'square', 'circle',
+   * 'rounded', or 'squircle'. When it is not set, the inner dot uses `dotStyle`.
+   */
+  cornerDotStyle: 'square' | 'circle' | 'rounded' | 'squircle';
 }
 type Story = StoryObj<IgcQrCodeArgs>;
 
@@ -235,14 +281,45 @@ export const Shapes: Story = {
     docs: {
       description: {
         story:
-          '`dot-style` sets the shape of the data modules and of the inner dot of each corner. `square-style` sets the shape of the outer corner squares. The table shows all nine combinations for the same value.',
+          '`dot-style` sets the shape of the data modules and of the inner dot of each corner. `square-style` sets the shape of the outer corner squares. The table shows all 16 combinations for the same value. Below it, `corner-dot-style` gives the inner corner dots a shape of their own, and `dot-scale` shrinks the data modules to leave a gap between them.',
       },
     },
   },
   render: () => {
-    const shapes = ['square', 'circle', 'rounded'] as const;
+    const shapes = ['square', 'circle', 'rounded', 'squircle'] as const;
+    const variants = [
+      {
+        caption: 'Squircle modules with circle corner dots',
+        dot: 'squircle',
+        square: 'squircle',
+        cornerDot: 'circle',
+        scale: 1,
+      },
+      {
+        caption: 'Square modules at dot-scale 0.8',
+        dot: 'square',
+        square: 'square',
+        cornerDot: undefined,
+        scale: 0.8,
+      },
+      {
+        caption: 'Circle modules at dot-scale 0.7',
+        dot: 'circle',
+        square: 'circle',
+        cornerDot: undefined,
+        scale: 0.7,
+      },
+      {
+        caption: 'Rounded modules at dot-scale 0.85, which do not join',
+        dot: 'rounded',
+        square: 'rounded',
+        cornerDot: undefined,
+        scale: 0.85,
+      },
+    ] as const;
 
     return html`
+      ${samples}
       <div style="overflow-x: auto">
         <table style="border-spacing: 1.5rem 1rem; text-align: center">
           <thead>
@@ -275,6 +352,23 @@ export const Shapes: Story = {
             )}
           </tbody>
         </table>
+      </div>
+      <div class="qr-samples">
+        ${variants.map(
+          (variant) => html`
+            <figure>
+              <igc-qr-code
+                value=${productUrl}
+                size="160"
+                dot-style=${variant.dot}
+                square-style=${variant.square}
+                corner-dot-style=${ifDefined(variant.cornerDot)}
+                dot-scale=${variant.scale}
+              ></igc-qr-code>
+              <figcaption>${variant.caption}</figcaption>
+            </figure>
+          `
+        )}
       </div>
     `;
   },
