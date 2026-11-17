@@ -5,6 +5,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- #### Copy to clipboard
+  - New `igc-copy-to-clipboard` component. It overlays a copy button on its slotted content and writes the rendered text to the clipboard. The button appears on hover or when focus enters the component, and stays visible on devices without hover.
+    - `format` selects the serialization: `plain` (default) collapses whitespace into a single body of text, and `preserve` keeps paragraph breaks and code indentation.
+    - `disable-interaction` hides the button. The `--copy` command from the Invoker Commands API still triggers the copy action. Where the browser does not support that API, call `copy()`. It resolves with the status and the text.
+    - The `copy-icon`, `success-icon` and `error-icon` slots replace the default icons. A visually hidden live region announces the result of the copy action.
+    - `igcCopy` gives the `status` (`'success'` or `'error'`) and the `text` of each copy action, from the button or the `--copy` command; the text is there also on failure. A component that is not rendered or not visible copies nothing and gives the `error` status. While the status icon shows, the component matches `:state(ig-success)` or `:state(ig-error)`.
+    - The `aria-label`, `aria-labelledby` and `aria-describedby` of the component name and describe the copy button.
+    - The button name and the announcements come from the `CopyToClipboardResourceStringsEN` resource strings. Set `locale` or `resourceStrings` to change them.
+
 ### Changed
 - #### Library
   - The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The fallbacks for older browsers are removed, and the styles no longer have vendor prefixes for them.

@@ -32,6 +32,8 @@
     "ComboSelectionCommit",
     "ComboTemplateProps",
     "ContentOrientation",
+    "CopyToClipboardFormat",
+    "CopyToClipboardResourceStringsEN",
     "CustomDateRange",
     "DatePart",
     "DatePartDeltas",
@@ -53,6 +55,7 @@
     "IChipResourceStrings",
     "IColorPickerResourceStrings",
     "IComboResourceStrings",
+    "ICopyToClipboardResourceStrings",
     "IDatePickerResourceStrings",
     "IDateRangePickerResourceStrings",
     "IDialogResourceStrings",
@@ -112,6 +115,9 @@
     "IgcComboComponent",
     "IgcComboComponentEventMap",
     "IgcComboSearchInputEventArgs",
+    "IgcCopyToClipboardComponent",
+    "IgcCopyToClipboardComponentEventMap",
+    "IgcCopyToClipboardEventArgs",
     "IgcDatePickerComponent",
     "IgcDatePickerComponentEventMap",
     "IgcDateRangePickerComponent",
@@ -1363,6 +1369,40 @@
         "--ig-combo-item-indent",
         "--ig-helper-min-lines"
       ]
+    },
+    "igc-copy-to-clipboard": {
+      "class": "IgcCopyToClipboardComponent",
+      "attributes": {
+        "disable-interaction": "boolean",
+        "format": "CopyToClipboardFormat ('plain' | 'preserve')",
+        "locale": "string"
+      },
+      "properties": {
+        "disableInteraction": "boolean",
+        "format": "CopyToClipboardFormat ('plain' | 'preserve')",
+        "locale": "string",
+        "resourceStrings": "Required<ICopyToClipboardResourceStrings>",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "blur": "() => void",
+        "copy": "() => Promise<IgcCopyToClipboardEventArgs>",
+        "focus": "(options?: FocusOptions) => void",
+        "static register": "() => void"
+      },
+      "events": {
+        "igcCopy": "unknown"
+      },
+      "slots": [
+        "",
+        "copy-icon",
+        "error-icon",
+        "success-icon"
+      ],
+      "cssParts": [
+        "button"
+      ],
+      "cssProperties": []
     },
     "igc-date-picker": {
       "class": "IgcDatePickerComponent",

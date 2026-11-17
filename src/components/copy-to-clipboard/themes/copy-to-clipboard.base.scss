@@ -1,0 +1,37 @@
+@use 'styles/utilities' as *;
+
+:host {
+    --_offset: #{pad(rem(4px))};
+
+    display: block;
+}
+
+[part~='button'] {
+    position: absolute;
+    inset-block-start: var(--_offset);
+    inset-inline-end: var(--_offset);
+    padding: var(--_offset);
+    transition: opacity .2s ease-in-out;
+
+    @media (prefers-reduced-motion: reduce) {
+        transition: none;
+    }
+}
+
+// The button name and the live region are for assistive technology only.
+[part~='button'] > span,
+[role='status'] {
+    @include hide-default();
+
+    // A 1px box would wrap the text one word per line.
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+// Without hover, as on a touch screen, the button stays visible.
+@media (hover: hover) {
+    :host(:not(:hover, :focus-within)) [part~='button'] {
+        opacity: 0;
+        pointer-events: none;
+    }
+}
