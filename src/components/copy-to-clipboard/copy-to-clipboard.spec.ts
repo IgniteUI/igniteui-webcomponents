@@ -7,27 +7,48 @@ import {
   oneEvent,
 } from '@open-wc/testing';
 import { resetMouse, sendMouse } from '@web/test-runner-commands';
-import type { TemplateResult } from 'lit';
-import { type SinonFakeTimers, stub, useFakeTimers } from 'sinon';
-import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
+  CopyToClipboardResourceStringsEN,
+  registerI18n,
+} from 'igniteui-i18n-core';
+import { CopyToClipboardResourceStringsBG } from 'igniteui-i18n-resources';
+import type { TemplateResult } from 'lit';
+import { type SinonFakeTimers, spy, stub, useFakeTimers } from 'sinon';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
+import {
+  clickWithMouse,
   compareStyles,
   finishAnimationsFor,
 } from '#internals/testing/helpers.spec.js';
 import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import { getCenterPoint } from '#internals/utils/dom.js';
+import IgcButtonComponent from '../button/button.js';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcCopyToClipboardComponent from './copy-to-clipboard.js';
 
+const {
+  copy_to_clipboard_label: LABEL,
+  copy_to_clipboard_success: SUCCESS_MESSAGE,
+  copy_to_clipboard_error: ERROR_MESSAGE,
+} = CopyToClipboardResourceStringsEN;
+
+/** The delays of the component, in milliseconds. */
+const ANNOUNCE_DELAY = 100;
+const RESET_DELAY = 1000;
+
 describe('Copy to clipboard', () => {
   before(() => {
-    defineComponents(IgcCopyToClipboardComponent);
+    defineComponents(IgcCopyToClipboardComponent, IgcButtonComponent);
   });
+
+  const template = html`<igc-copy-to-clipboard>Text</igc-copy-to-clipboard>`;
 
   let element: IgcCopyToClipboardComponent;
   let copyButton: IgcIconButtonComponent;
   let writeTextStub: ReturnType<typeof stub>;
+  let clock: SinonFakeTimers;
 
   function getButton() {
     return element.renderRoot.querySelector<IgcIconButtonComponent>(
@@ -35,11 +56,34 @@ describe('Copy to clipboard', () => {
     )!;
   }
 
-  async function setup(
-    template = html`<igc-copy-to-clipboard>Text</igc-copy-to-clipboard>`
-  ): Promise<void> {
-    element = await fixture<IgcCopyToClipboardComponent>(template);
+  async function setup(content = template): Promise<void> {
+    element = await fixture<IgcCopyToClipboardComponent>(content);
     copyButton = getButton();
+  }
+
+  /** Fakes the timers of the component in the calling `describe`. */
+  function useFakeClock(): void {
+    beforeEach(() => {
+      clock = useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    });
+
+    afterEach(() => {
+      clock.restore();
+    });
+  }
+
+  /** Waits on the fake clock until the live region gets the result. */
+  async function waitForAnnouncement(): Promise<void> {
+    await clock.tickAsync(ANNOUNCE_DELAY);
+    await elementUpdated(element);
+  }
+
+  function iconName(): string | null {
+    return copyButton.getAttribute('name');
+  }
+
+  function isInState(state: 'ig-success' | 'ig-error'): boolean {
+    return element.matches(`:state(${state})`);
   }
 
   /** Whether the copy button is shown, after its fade transition ends. */
@@ -87,13 +131,13 @@ describe('Copy to clipboard', () => {
     );
   }
 
-  /** Sends the `--copy` command from a real invoker button. */
-  async function sendCopyCommand(): Promise<void> {
+  /** Sends `command` from a real invoker button. */
+  async function sendCopyCommand(command = '--copy'): Promise<void> {
     const invoker = document.createElement('button');
-    invoker.command = '--copy';
+    invoker.command = command;
     invoker.commandForElement = element;
     element.after(invoker);
-    invoker.click();
+    simulateClick(invoker);
     invoker.remove();
     await nextFrame();
   }
@@ -107,9 +151,7 @@ describe('Copy to clipboard', () => {
   });
 
   it('passes the a11y audit', async () => {
-    await setup(
-      html`<igc-copy-to-clipboard>Sample text</igc-copy-to-clipboard>`
-    );
+    await setup();
 
     await expect(element).shadowDom.to.be.accessible();
     await expect(element).to.be.accessible();
@@ -118,7 +160,6 @@ describe('Copy to clipboard', () => {
   it('should initialize with default values', async () => {
     await setup(html`<igc-copy-to-clipboard></igc-copy-to-clipboard>`);
 
-    expect(element.format).to.equal('plain');
     expect(element).dom.to.equal(
       '<igc-copy-to-clipboard></igc-copy-to-clipboard>'
     );
@@ -136,19 +177,20 @@ describe('Copy to clipboard', () => {
   it('should render copy button in shadow DOM', async () => {
     await setup();
     expect(copyButton).to.exist;
-    expect(copyButton.tagName.toLowerCase()).to.equal('igc-icon-button');
   });
 
   it('should have copy button with screen reader label', async () => {
     await setup();
-    expect(copyButton.textContent.trim()).to.equal('Copy to clipboard');
+    expect(copyButton.textContent.trim()).to.equal(LABEL);
   });
 
   runHostAriaTests({
     tagName: IgcCopyToClipboardComponent.tagName,
-    template: html`<igc-copy-to-clipboard>Text</igc-copy-to-clipboard>`,
+    template,
     getTarget: (host) => host.renderRoot.querySelector('igc-icon-button')!,
   });
+
+  runFocusBeforeRenderTests(template);
 
   describe('Accessibility', () => {
     it('should name the native copy button by the host aria-label', async () => {
@@ -185,7 +227,7 @@ describe('Copy to clipboard', () => {
     });
 
     it('should expose the live region as a status without an explicit aria-live', async () => {
-      await setup(html`<igc-copy-to-clipboard>Text</igc-copy-to-clipboard>`);
+      await setup();
 
       expect(getLiveRegion()).to.not.have.attribute('aria-live');
     });
@@ -204,18 +246,15 @@ describe('Copy to clipboard', () => {
 
   describe('User Interaction', () => {
     beforeEach(async () => {
-      await setup(
-        html`<igc-copy-to-clipboard>Sample text</igc-copy-to-clipboard>`
-      );
+      await setup();
     });
 
     afterEach(async () => {
       await resetMouse();
     });
 
-    it('should keep the copy button enabled while hidden', () => {
+    it('should keep the copy button in the page while it is not shown', () => {
       expect(isButtonShown()).to.be.false;
-      expect(copyButton).to.not.have.attribute('disabled');
       expect(copyButton).to.not.have.attribute('hidden');
     });
 
@@ -268,6 +307,51 @@ describe('Copy to clipboard', () => {
       expect(copyButton).to.have.attribute('hidden');
     });
 
+    it('should not move the focus to the copy button on a click in the content', async () => {
+      await clickWithMouse(element);
+
+      expect(element.matches(':focus-within')).to.be.false;
+    });
+
+    it('should focus the copy button through focus() and blur it through blur()', () => {
+      element.focus();
+
+      expect(element.shadowRoot!.activeElement).to.equal(copyButton);
+      expect(isButtonShown()).to.be.true;
+
+      element.blur();
+
+      expect(element.matches(':focus-within')).to.be.false;
+    });
+
+    it('should focus the copy button right after disableInteraction is turned off', async () => {
+      element.disableInteraction = true;
+      await elementUpdated(element);
+
+      element.disableInteraction = false;
+      element.focus();
+
+      expect(element.shadowRoot!.activeElement).to.equal(copyButton);
+    });
+
+    it('should focus the copy button when the host has autofocus', async () => {
+      await setup(
+        html`<igc-copy-to-clipboard autofocus>Text</igc-copy-to-clipboard>`
+      );
+      await elementUpdated(copyButton);
+
+      expect(element.shadowRoot!.activeElement).to.equal(copyButton);
+    });
+
+    it('should not take the focus through focus() when disableInteraction is true', async () => {
+      element.disableInteraction = true;
+      await elementUpdated(element);
+
+      element.focus();
+
+      expect(element.matches(':focus-within')).to.be.false;
+    });
+
     it('should not show copy button when disableInteraction is true', async () => {
       element.disableInteraction = true;
       await elementUpdated(element);
@@ -275,7 +359,6 @@ describe('Copy to clipboard', () => {
       await hover();
 
       expect(isButtonShown()).to.be.false;
-      expect(copyButton).to.have.attribute('disabled');
       expect(copyButton).to.have.attribute('hidden');
 
       copyButton.focus();
@@ -367,61 +450,155 @@ Line 2</pre>
 
       expect(copied).to.equal('');
     });
+
+    it('should copy nothing and emit the error status when the component is not rendered', async () => {
+      await setup(
+        html`<igc-copy-to-clipboard hidden>
+          <span slot="copy-icon">Icon</span>
+          <p>Visible</p>
+          <p hidden>Secret</p>
+        </igc-copy-to-clipboard>`
+      );
+      const event = oneEvent(element, 'igcCopy');
+
+      await sendCopyCommand();
+
+      expect((await event).detail).to.eql({ status: 'error', text: '' });
+      expect(writeTextStub).to.not.have.been.called;
+    });
+
+    it('should emit the error status when the Clipboard API is not available', async () => {
+      await setup();
+      const clipboard = stub(navigator, 'clipboard').value(undefined);
+
+      try {
+        const event = oneEvent(element, 'igcCopy');
+        simulateClick(copyButton);
+
+        expect((await event).detail).to.eql({ status: 'error', text: 'Text' });
+        expect(isInState('ig-error')).to.be.true;
+      } finally {
+        clipboard.restore();
+      }
+    });
+
+    it('should copy through an igc-button invoker', async () => {
+      const container = await fixture<HTMLElement>(
+        html`<div>
+          <igc-copy-to-clipboard id="snippet" disable-interaction
+            >Text</igc-copy-to-clipboard
+          >
+          <igc-button command="--copy" commandfor="snippet">Copy</igc-button>
+        </div>`
+      );
+      element = container.querySelector(IgcCopyToClipboardComponent.tagName)!;
+
+      container.querySelector(IgcButtonComponent.tagName)!.click();
+      await nextFrame();
+
+      expect(writeTextStub).to.have.been.calledOnceWith('Text');
+    });
+
+    it('should copy the content through copy() before the first render', async () => {
+      const container = await fixture<HTMLElement>(html`<div></div>`);
+      element = document.createElement(IgcCopyToClipboardComponent.tagName);
+      element.append('Text');
+      container.append(element);
+
+      expect(await element.copy()).to.eql({ status: 'success', text: 'Text' });
+      expect(writeTextStub).to.have.been.calledOnceWith('Text');
+    });
+
+    it('should copy nothing and emit the error status when the component is invisible', async () => {
+      await setup(
+        html`<igc-copy-to-clipboard style="visibility: hidden"
+          >Text</igc-copy-to-clipboard
+        >`
+      );
+      const event = oneEvent(element, 'igcCopy');
+
+      await sendCopyCommand();
+
+      expect((await event).detail).to.eql({ status: 'error', text: '' });
+      expect(writeTextStub).to.not.have.been.called;
+    });
   });
 
   describe('Copy Status', () => {
-    let clock: SinonFakeTimers;
+    useFakeClock();
 
     beforeEach(async () => {
-      clock = useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       await setup();
     });
 
-    afterEach(() => {
-      clock.restore();
-    });
-
     it('should show the success icon and announce the result', async () => {
-      expect(copyButton.part.contains('copy-button')).to.be.true;
-      expect(copyButton.getAttribute('name')).to.equal('copy_content');
+      expect(iconName()).to.equal('copy_content');
       expect(announcement()).to.equal('');
 
       await clickCopy();
 
-      expect(copyButton.part.contains('success-button')).to.be.true;
-      expect(copyButton.getAttribute('name')).to.equal('copy_success');
-      expect(announcement()).to.equal(
-        'Content copied to clipboard successfully.'
-      );
+      expect(iconName()).to.equal('copy_success');
+
+      await waitForAnnouncement();
+
+      expect(announcement()).to.equal(SUCCESS_MESSAGE);
     });
 
     it('should show the error icon and announce the failure', async () => {
-      writeTextStub.rejects(new Error('Permission denied'));
+      writeTextStub.rejects();
 
       await clickCopy();
 
       expect(writeTextStub).to.have.been.calledOnce;
-      expect(copyButton.part.contains('error-button')).to.be.true;
-      expect(copyButton.getAttribute('name')).to.equal('error');
-      expect(announcement()).to.equal(
-        'Failed to copy content to clipboard. Please try again.'
-      );
+      expect(iconName()).to.equal('error');
+
+      await waitForAnnouncement();
+
+      expect(announcement()).to.equal(ERROR_MESSAGE);
+    });
+
+    it('should have only the button part in each status', async () => {
+      expect(copyButton.part.value).to.equal('button');
+
+      await clickCopy();
+      expect(copyButton.part.value).to.equal('button');
+
+      writeTextStub.rejects();
+      await clickCopy();
+      expect(copyButton.part.value).to.equal('button');
+    });
+
+    it('should clear the live region and announce an equal result again', async () => {
+      writeTextStub.rejects();
+      await clickCopy();
+      await waitForAnnouncement();
+      expect(announcement()).to.equal(ERROR_MESSAGE);
+
+      await clickCopy();
+
+      expect(announcement()).to.equal('');
+
+      await waitForAnnouncement();
+
+      expect(announcement()).to.equal(ERROR_MESSAGE);
     });
 
     it('should keep the button label while the status changes', async () => {
       await clickCopy();
 
-      expect(copyButton.textContent.trim()).to.equal('Copy to clipboard');
+      expect(copyButton.textContent.trim()).to.equal(LABEL);
     });
 
-    it('should return to the copy icon after the reset delay', async () => {
+    it('should return to the copy icon and clear the live region after the reset delay', async () => {
       await clickCopy();
-      expect(copyButton.part.contains('success-button')).to.be.true;
+      await waitForAnnouncement();
+      expect(iconName()).to.equal('copy_success');
+      expect(announcement()).to.equal(SUCCESS_MESSAGE);
 
-      await clock.tickAsync(1000);
+      await clock.tickAsync(RESET_DELAY);
       await elementUpdated(element);
 
-      expect(copyButton.part.contains('copy-button')).to.be.true;
+      expect(iconName()).to.equal('copy_content');
       expect(announcement()).to.equal('');
     });
 
@@ -433,25 +610,32 @@ Line 2</pre>
       await clock.tickAsync(400);
       await elementUpdated(element);
 
-      expect(copyButton.part.contains('success-button')).to.be.true;
+      expect(iconName()).to.equal('copy_success');
 
       await clock.tickAsync(600);
       await elementUpdated(element);
 
-      expect(copyButton.part.contains('copy-button')).to.be.true;
+      expect(iconName()).to.equal('copy_content');
     });
 
     it('should return to the copy icon after a reconnect', async () => {
       await clickCopy();
-      expect(copyButton.part.contains('success-button')).to.be.true;
+      await waitForAnnouncement();
+      expect(iconName()).to.equal('copy_success');
 
       const parent = element.parentElement!;
       element.remove();
       parent.append(element);
       await elementUpdated(element);
 
-      expect(copyButton.part.contains('copy-button')).to.be.true;
+      expect(iconName()).to.equal('copy_content');
       expect(announcement()).to.equal('');
+    });
+
+    it('should ignore other commands', async () => {
+      await sendCopyCommand('--show');
+
+      expect(writeTextStub).to.not.have.been.called;
     });
 
     it('should copy through the --copy command when interaction is disabled', async () => {
@@ -462,10 +646,6 @@ Line 2</pre>
 
       expect(writeTextStub).to.have.been.calledOnceWith('Text');
     });
-
-    function isInState(state: 'ig-success' | 'ig-error'): boolean {
-      return element.matches(`:state(${state})`);
-    }
 
     it('should emit igcCopy with the success status and the copied text', async () => {
       const event = oneEvent(document, 'igcCopy');
@@ -480,7 +660,7 @@ Line 2</pre>
     });
 
     it('should emit igcCopy with the error status and the text when the write fails', async () => {
-      writeTextStub.rejects(new Error('Permission denied'));
+      writeTextStub.rejects();
       const event = oneEvent(element, 'igcCopy');
       simulateClick(copyButton);
 
@@ -513,26 +693,26 @@ Line 2</pre>
       expect(inStateOnEvent).to.be.true;
       expect(isInState('ig-error')).to.be.false;
 
-      await clock.tickAsync(1000);
+      await clock.tickAsync(RESET_DELAY);
 
       expect(isInState('ig-success')).to.be.false;
     });
 
     it('should be in the ig-error state after a failed write, until the reset delay ends', async () => {
-      writeTextStub.rejects(new Error('Permission denied'));
+      writeTextStub.rejects();
 
       await clickCopy();
 
       expect(isInState('ig-error')).to.be.true;
       expect(isInState('ig-success')).to.be.false;
 
-      await clock.tickAsync(1000);
+      await clock.tickAsync(RESET_DELAY);
 
       expect(isInState('ig-error')).to.be.false;
     });
 
     it('should switch from the ig-error state to ig-success on the next copy', async () => {
-      writeTextStub.rejects(new Error('Permission denied'));
+      writeTextStub.rejects();
       await clickCopy();
       expect(isInState('ig-error')).to.be.true;
 
@@ -550,6 +730,164 @@ Line 2</pre>
       element.remove();
 
       expect(isInState('ig-success')).to.be.false;
+    });
+
+    it('should change nothing when the component disconnects during the write', async () => {
+      let resolveWrite!: () => void;
+      writeTextStub.returns(
+        new Promise<void>((resolve) => (resolveWrite = resolve))
+      );
+      const listener = spy();
+      element.addEventListener('igcCopy', listener);
+
+      simulateClick(copyButton);
+      element.remove();
+      resolveWrite();
+      await nextFrame();
+
+      expect(isInState('ig-success')).to.be.false;
+      expect(listener).to.not.have.been.called;
+      expect(clock.countTimers()).to.equal(0);
+    });
+
+    it('should keep the status of the latest copy action and emit igcCopy for each', async () => {
+      let rejectFirst!: (reason: Error) => void;
+      writeTextStub
+        .onFirstCall()
+        .returns(new Promise<void>((_, reject) => (rejectFirst = reject)));
+      const listener = spy();
+      element.addEventListener('igcCopy', listener);
+
+      simulateClick(copyButton);
+      await clickCopy();
+      expect(isInState('ig-success')).to.be.true;
+
+      rejectFirst(new Error('Permission denied'));
+      await nextFrame();
+
+      expect(isInState('ig-success')).to.be.true;
+      expect(isInState('ig-error')).to.be.false;
+      expect(
+        listener.getCalls().map((call) => call.args[0].detail.status)
+      ).to.eql(['success', 'error']);
+    });
+
+    it('should emit igcCopy for a click that a copy() call overtakes', async () => {
+      let resolveFirst!: () => void;
+      writeTextStub
+        .onFirstCall()
+        .returns(new Promise<void>((resolve) => (resolveFirst = resolve)));
+      const listener = spy();
+      element.addEventListener('igcCopy', listener);
+
+      simulateClick(copyButton);
+      await element.copy();
+      resolveFirst();
+      await nextFrame();
+
+      expect(listener).to.have.been.calledOnce;
+      expect(isInState('ig-success')).to.be.true;
+    });
+
+    it('should show the result and emit igcCopy when the component moves during the write', async () => {
+      let resolveWrite!: () => void;
+      writeTextStub.returns(
+        new Promise<void>((resolve) => (resolveWrite = resolve))
+      );
+      const listener = spy();
+      element.addEventListener('igcCopy', listener);
+
+      simulateClick(copyButton);
+      const parent = element.parentElement!;
+      element.remove();
+      parent.append(element);
+      resolveWrite();
+      await nextFrame();
+
+      expect(isInState('ig-success')).to.be.true;
+      expect(listener).to.have.been.calledOnce;
+    });
+
+    it('should set no status and start no timer for copy() on a disconnected component', async () => {
+      element.remove();
+
+      expect(await element.copy()).to.eql({ status: 'error', text: '' });
+      expect(isInState('ig-error')).to.be.false;
+      expect(clock.countTimers()).to.equal(0);
+    });
+
+    it('should copy through copy() and show the status, without igcCopy', async () => {
+      const listener = spy();
+      element.addEventListener('igcCopy', listener);
+
+      const result = await element.copy();
+      await waitForAnnouncement();
+
+      expect(result).to.eql({ status: 'success', text: 'Text' });
+      expect(isInState('ig-success')).to.be.true;
+      expect(announcement()).to.equal(SUCCESS_MESSAGE);
+      expect(listener).to.not.have.been.called;
+    });
+
+    it('should resolve copy() with the error status when the write fails', async () => {
+      writeTextStub.rejects();
+
+      expect(await element.copy()).to.eql({ status: 'error', text: 'Text' });
+      expect(isInState('ig-error')).to.be.true;
+    });
+
+    it('should not copy a custom icon while a status change waits for its render', async () => {
+      await setup(
+        html`<igc-copy-to-clipboard>
+          <span slot="success-icon">Done!</span>
+          <p>Body</p>
+        </igc-copy-to-clipboard>`
+      );
+      await clickCopy();
+
+      // The status returns to copy, and the success icon still shows.
+      clock.tick(RESET_DELAY);
+      element.copy();
+
+      expect(writeTextStub.secondCall.args[0]).to.equal('Body');
+    });
+  });
+
+  describe('Localization', () => {
+    before(() => registerI18n(CopyToClipboardResourceStringsBG, 'bg'));
+
+    useFakeClock();
+
+    it('should name the button and announce the result in its locale', async () => {
+      await setup(
+        html`<igc-copy-to-clipboard locale="bg">Text</igc-copy-to-clipboard>`
+      );
+
+      expect(copyButton.textContent.trim()).to.equal(
+        CopyToClipboardResourceStringsBG.copy_to_clipboard_label
+      );
+
+      await clickCopy();
+      await waitForAnnouncement();
+
+      expect(announcement()).to.equal(
+        CopyToClipboardResourceStringsBG.copy_to_clipboard_success
+      );
+    });
+
+    it('should take the strings from resourceStrings', async () => {
+      await setup();
+
+      element.resourceStrings = {
+        copy_to_clipboard_label: 'Kopieren',
+        copy_to_clipboard_error: 'Fehler',
+      };
+      writeTextStub.rejects();
+      await clickCopy();
+      await waitForAnnouncement();
+
+      expect(copyButton.textContent.trim()).to.equal('Kopieren');
+      expect(announcement()).to.equal('Fehler');
     });
   });
 
@@ -596,6 +934,35 @@ Line 2</pre>
 
       expect(copied).to.equal('First\n\nSecond');
     });
+
+    it('should not copy the success icon while it shows', async () => {
+      await setup(
+        html`<igc-copy-to-clipboard>
+          <span slot="success-icon">Done!</span>
+          <p>Body</p>
+        </igc-copy-to-clipboard>`
+      );
+
+      await clickCopy();
+      await clickCopy();
+
+      expect(writeTextStub.secondCall.args[0]).to.equal('Body');
+    });
+
+    it('should not copy the error icon while it shows', async () => {
+      await setup(
+        html`<igc-copy-to-clipboard>
+          <span slot="error-icon">Failed!</span>
+          <p>Body</p>
+        </igc-copy-to-clipboard>`
+      );
+      writeTextStub.rejects();
+
+      await clickCopy();
+      await clickCopy();
+
+      expect(writeTextStub.secondCall.args[0]).to.equal('Body');
+    });
   });
 
   describe('Whitespace Normalization', () => {
@@ -609,6 +976,13 @@ Line 2</pre>
       const copied = await copyPreformatted('Text\twith\t\ttabs');
 
       expect(copied).to.equal('Text with tabs');
+    });
+
+    it('should collapse non-breaking spaces to single space', async () => {
+      const nbsp = String.fromCodePoint(0xa0);
+      const copied = await copyPreformatted(`Text${nbsp.repeat(3)}with${nbsp}`);
+
+      expect(copied).to.equal('Text with');
     });
 
     it('should preserve single newlines', async () => {
@@ -651,7 +1025,7 @@ Third line</pre>
 
   describe('Copy Format', () => {
     it('should default to plain format', async () => {
-      await setup(html`<igc-copy-to-clipboard>Text</igc-copy-to-clipboard>`);
+      await setup();
 
       expect(element.format).to.equal('plain');
       expect(element).to.not.have.attribute('format');

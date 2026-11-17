@@ -39,7 +39,7 @@ const metadata: Meta<IgcCopyToClipboardComponent> = {
     disableInteraction: {
       type: 'boolean',
       description:
-        'Whether the copy button is hidden and disabled. The `--copy` command\nstill copies the content.',
+        'Whether the copy button is hidden. The `--copy` command and `copy()`\nstill copy the content.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -51,6 +51,12 @@ const metadata: Meta<IgcCopyToClipboardComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'plain' } },
     },
+    locale: {
+      type: 'string',
+      description:
+        'The locale of the component. Without it, the component takes its own\n`lang`, else the locale of the nearest ancestor that has a `locale` (a\ncomponent) or a `lang`, and then the global locale.',
+      control: 'text',
+    },
   },
   args: { disableInteraction: false, format: 'plain' },
 };
@@ -59,8 +65,8 @@ export default metadata;
 
 interface IgcCopyToClipboardArgs {
   /**
-   * Whether the copy button is hidden and disabled. The `--copy` command
-   * still copies the content.
+   * Whether the copy button is hidden. The `--copy` command and `copy()`
+   * still copy the content.
    */
   disableInteraction: boolean;
   /**
@@ -69,6 +75,12 @@ interface IgcCopyToClipboardArgs {
    * - `preserve`: Keeps paragraph breaks and indentation.
    */
   format: 'preserve' | 'plain';
+  /**
+   * The locale of the component. Without it, the component takes its own
+   * `lang`, else the locale of the nearest ancestor that has a `locale` (a
+   * component) or a `lang`, and then the global locale.
+   */
+  locale: string;
 }
 type Story = StoryObj<IgcCopyToClipboardArgs>;
 
@@ -293,7 +305,7 @@ export const ShareInvite: Story = {
     docs: {
       description: {
         story:
-          'The invite panel of a workspace. A `::part(button)` rule keeps the copy button visible, because users look for it next to a link. The `copy-icon` and `success-icon` slots replace the default icons with a link icon and a done icon, and the `success-button` part gives the button the success color while the done icon shows. A `:state(ig-success)` rule outlines the link for the same time. The component reads the text at the time of the copy, so after "Reset link" it copies the new link.',
+          'The invite panel of a workspace. A `::part(button)` rule keeps the copy button visible, because users look for it next to a link. The `copy-icon` and `success-icon` slots replace the default icons with a link icon and a done icon, and a `:state(ig-success)::part(button)` rule gives the button the success color while the done icon shows. A `:state(ig-success)` rule outlines the link for the same time. The component reads the text at the time of the copy, so after "Reset link" it copies the new link.',
       },
     },
   },
@@ -338,7 +350,7 @@ export const ShareInvite: Story = {
           pointer-events: auto;
         }
 
-        .cc-invite::part(success-button) {
+        .cc-invite:state(ig-success)::part(button) {
           --cc-bg: var(--ig-success-500);
           --cc-fg: var(--ig-success-500-contrast);
           --ig-contained-icon-button-background: var(--cc-bg);

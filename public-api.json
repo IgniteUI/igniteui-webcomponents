@@ -32,7 +32,8 @@
     "ComboSelectionCommit",
     "ComboTemplateProps",
     "ContentOrientation",
-    "CopyFormat",
+    "CopyToClipboardFormat",
+    "CopyToClipboardResourceStringsEN",
     "CustomDateRange",
     "DatePart",
     "DatePartDeltas",
@@ -54,6 +55,7 @@
     "IChipResourceStrings",
     "IColorPickerResourceStrings",
     "IComboResourceStrings",
+    "ICopyToClipboardResourceStrings",
     "IDatePickerResourceStrings",
     "IDateRangePickerResourceStrings",
     "IDialogResourceStrings",
@@ -1372,14 +1374,20 @@
       "class": "IgcCopyToClipboardComponent",
       "attributes": {
         "disable-interaction": "boolean",
-        "format": "CopyFormat ('plain' | 'preserve')"
+        "format": "CopyToClipboardFormat ('plain' | 'preserve')",
+        "locale": "string"
       },
       "properties": {
         "disableInteraction": "boolean",
-        "format": "CopyFormat ('plain' | 'preserve')",
+        "format": "CopyToClipboardFormat ('plain' | 'preserve')",
+        "locale": "string",
+        "resourceStrings": "Required<ICopyToClipboardResourceStrings>",
         "static tagName": "readonly string"
       },
       "methods": {
+        "blur": "() => void",
+        "copy": "() => Promise<IgcCopyToClipboardEventArgs>",
+        "focus": "(options?: FocusOptions) => void",
         "static register": "() => void"
       },
       "events": {
@@ -1392,10 +1400,7 @@
         "success-icon"
       ],
       "cssParts": [
-        "button",
-        "copy-button",
-        "error-button",
-        "success-button"
+        "button"
       ],
       "cssProperties": []
     },
