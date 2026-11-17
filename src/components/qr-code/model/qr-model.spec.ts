@@ -590,20 +590,24 @@ describe('QR model - logo cutout', () => {
         const total = getTotalCodewordsCount(version);
         const counts = new Array<number>(total).fill(0);
         let dataModules = 0;
+        let misplacedLocators = 0;
 
+        // One assertion for each version: an `expect` for each module is too slow.
         for (const [index, codeword] of map.entries()) {
-          const [row, col] = [Math.floor(index / size), index % size];
+          const row = Math.floor(index / size);
+          const col = index % size;
           if (!functionModules[row][col]) {
             dataModules++;
           }
           if (codeword >= 0) {
             counts[codeword]++;
           }
-          expect(codeword === LOCATOR_MODULE).to.equal(
-            locatorModules[row][col]
-          );
+          if ((codeword === LOCATOR_MODULE) !== locatorModules[row][col]) {
+            misplacedLocators++;
+          }
         }
 
+        expect(misplacedLocators, `V${version}`).to.equal(0);
         expect(
           counts.every((count) => count === 8),
           `V${version}`
