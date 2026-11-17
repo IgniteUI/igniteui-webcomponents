@@ -6,6 +6,8 @@ import {
   type CustomDateRange,
   type DateRangeValue,
   DateRangeType,
+  type IgcSelectedRangeChangeEventArgs,
+  type PredefinedRangeKey,
   IgcButtonComponent,
   IgcDateRangePickerComponent,
   IgcIconComponent,
@@ -59,6 +61,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
         'igcClosed',
         'igcChange',
         'igcInput',
+        'igcSelectedRangeChange',
       ],
     },
   },
@@ -73,6 +76,12 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       description: 'The number of months displayed in the calendar: 1 or 2.',
       control: 'number',
       table: { defaultValue: { summary: '2' } },
+    },
+    selectedRange: {
+      type: 'string',
+      description:
+        'The key of the range that set the value: a built-in key, such as `lastQuarter`, also of a range that does not\nshow, or the key of a custom range. The chip of the range shows as selected.\nSet it to select the range and set its value. A key that no custom range has yet waits for `customRanges`.\nIt is `null` when the user types or draws other dates, and when the value changes to other dates from code.',
+      control: 'text',
     },
     useTwoInputs: {
       type: 'boolean',
@@ -342,6 +351,13 @@ interface IgcDateRangePickerArgs {
   value: DateRangeValue;
   /** The number of months displayed in the calendar: 1 or 2. */
   visibleMonths: number;
+  /**
+   * The key of the range that set the value: a built-in key, such as `lastQuarter`, also of a range that does not
+   * show, or the key of a custom range. The chip of the range shows as selected.
+   * Set it to select the range and set its value. A key that no custom range has yet waits for `customRanges`.
+   * It is `null` when the user types or draws other dates, and when the value changes to other dates from code.
+   */
+  selectedRange: string;
   /** Whether the picker shows the start and the end date in two separate inputs. */
   useTwoInputs: boolean;
   /** Whether the picker shows chips with predefined ranges. */
@@ -708,29 +724,35 @@ export const SalesReport: Story = {
     docs: {
       description: {
         story:
-          'The period of a sales report. In the single input mode the input is read-only, and the user selects the period in the calendar or with a chip. `use-predefined-ranges` adds the chips "Last 7 days", "Current month", "Last 30 days" and "Year to date". `customRanges` adds two more chips, "This quarter" and "Previous quarter". A chip sets the range and emits `igcChange` at once. The handler sums made-up orders for the days of the period. The "Current month" chip ends on the last day of the month, so the handler counts the orders only up to today.',
+          'The period of a sales report, which the app saves by name. In the single input mode the input is read-only, and the user selects the period in the calendar or with a chip. `use-predefined-ranges` shows the built-in range chips, and `predefinedRanges` chooses them and their order: "Last 7 Days", "Current Month", "Last Month", "Quarter to Date", "Last Quarter" and "Year to Date". `customRanges` adds "Last 12 months", whose `getDateRange` computes the dates when the user selects the chip, so the range stays current on a page that is open past midnight, as the built-in ranges do. `selected-range="last7Days"` sets the first period, and its chip shows as selected. A chip sets the range and emits `igcSelectedRangeChange` and `igcChange` at once. The handler shows the name of the period, or "Custom period" after the user selects days in the calendar, and sums made-up orders for the days of the period. The "Current Month" chip ends on the last day of the month, so the handler counts the orders only up to today.',
       },
     },
   },
   render: () => {
-    const quarter = Math.floor(today.getMonth() / 3) * 3;
+    const predefinedRanges: PredefinedRangeKey[] = [
+      'last7Days',
+      'currentMonth',
+      'lastMonth',
+      'quarterToDate',
+      'lastQuarter',
+      'yearToDate',
+    ];
     const customRanges: CustomDateRange[] = [
       {
-        label: 'This quarter',
-        dateRange: {
-          start: new Date(today.getFullYear(), quarter, 1),
-          end: today,
-        },
-      },
-      {
-        label: 'Previous quarter',
-        dateRange: {
-          start: new Date(today.getFullYear(), quarter - 3, 1),
-          end: new Date(today.getFullYear(), quarter, 0),
+        key: 'last12Months',
+        label: 'Last 12 months',
+        getDateRange: () => {
+          const now = new Date();
+          return {
+            start: new Date(now.getFullYear() - 1, now.getMonth() + 1, 1),
+            end: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+          };
         },
       },
     ];
 
+    // The app would load the saved period here.
+    let periodName: string | null = 'Last 7 Days';
     let period: DateRangeValue | null = {
       start: addDays(today, -6),
       end: today,
@@ -746,7 +768,7 @@ export const SalesReport: Story = {
       const medium: Intl.DateTimeFormatOptions = { dateStyle: 'medium' };
 
       return html`
-        <h3>Sales</h3>
+        <h3>Sales: ${periodName ?? 'Custom period'}</h3>
         <p class="muted">
           ${
             start && end
@@ -773,6 +795,13 @@ export const SalesReport: Story = {
       `;
     });
 
+    // Emitted before `igcChange`, when the user picks another named period.
+    const rangeChange = ({
+      detail,
+    }: CustomEvent<IgcSelectedRangeChangeEventArgs>) => {
+      periodName = detail.label;
+    };
+
     const change = ({ detail }: CustomEvent<DateRangeValue | null>) => {
       period = detail;
       summary.update();
@@ -785,8 +814,10 @@ export const SalesReport: Story = {
           style="width: min(100%, 20rem)"
           label="Report period"
           use-predefined-ranges
+          selected-range="last7Days"
+          .predefinedRanges=${predefinedRanges}
           .customRanges=${customRanges}
-          .value=${period}
+          @igcSelectedRangeChange=${rangeChange}
           @igcChange=${change}
         >
           <span slot="helper-text">

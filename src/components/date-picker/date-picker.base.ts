@@ -512,7 +512,7 @@ export abstract class IgcDatePickerBaseComponent<
     super.willUpdate(changedProperties);
 
     if (changedProperties.has('open') && this.open) {
-      this._oldValue = this._value;
+      this._markCommitted();
     }
   }
 
@@ -640,10 +640,15 @@ export abstract class IgcDatePickerBaseComponent<
     }
   }
 
+  /** Records the value as the last committed one. */
+  protected _markCommitted(): void {
+    this._oldValue = this._value;
+  }
+
   /** Emits `igcChange` and records the value as the last committed one. */
   protected _emitChange(): void {
     this.emitEvent('igcChange', { detail: this._value });
-    this._oldValue = this._value;
+    this._markCommitted();
   }
 
   /** Commits a value from an editor. An edit back to the last committed value emits nothing. */
@@ -694,7 +699,7 @@ export abstract class IgcDatePickerBaseComponent<
 
   /** Clears the value and the input text of the picker. */
   public clear(): void {
-    this._oldValue = this._value;
+    this._markCommitted();
     this._value = null;
     this._clearEditors();
   }

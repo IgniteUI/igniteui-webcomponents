@@ -283,7 +283,7 @@ export default class IgcDatePickerComponent extends I18nMixin(
   }
 
   protected override _onDialogClosing(): void {
-    this._oldValue = this.value;
+    this._markCommitted();
   }
 
   //#endregion
@@ -305,7 +305,7 @@ export default class IgcDatePickerComponent extends I18nMixin(
   public set value(value: Date | string | null | undefined) {
     this._value = value as Date | null;
     // A set from code is committed at once, so no later commit reports it.
-    this._oldValue = this.value;
+    this._markCommitted();
   }
 
   public get value(): Date | null {

@@ -140,6 +140,14 @@ export function monthOffset(
   return monthIndex(target) - monthIndex(origin);
 }
 
+/** The first day of the week of `day`. `firstWeekDay`: Sunday = 0. */
+export function weekStartOf(
+  day: CalendarDay,
+  firstWeekDay: number
+): CalendarDay {
+  return day.add('day', -modulo(day.day - firstWeekDay, DAYS_IN_WEEK));
+}
+
 /** Yields the days rendered by a single days view - six weeks starting on `firstWeekDay`. */
 export function* generateMonth(
   value: DayParameter,
@@ -147,10 +155,8 @@ export function* generateMonth(
 ): Generator<CalendarDay, void, unknown> {
   const { year, month } = toCalendarDay(value);
 
-  const start = new CalendarDay({ year, month });
-  const offset = modulo(start.day - firstWeekDay, DAYS_IN_WEEK);
   yield* calendarRange({
-    start: start.add('day', -offset),
+    start: weekStartOf(new CalendarDay({ year, month }), firstWeekDay),
     end: CALENDAR_CELLS,
   });
 }
@@ -211,6 +217,69 @@ export function isDateInRanges(
 ): boolean {
   const value = toCalendarDay(date);
   return ranges.some((range) => isDateInRange(value, range));
+}
+
+/** Whether a day from `start` to `end` matches `range`, without a check of each day. */
+function isSpanInRange(
+  start: CalendarDay,
+  end: CalendarDay,
+  range: DateRangeDescriptor
+): boolean {
+  if (
+    range.type === DateRangeType.Weekdays ||
+    range.type === DateRangeType.Weekends
+  ) {
+    // Any seven days hold both weekdays and weekend days.
+    let count = 0;
+    for (const day of calendarRange({ start, end, inclusive: true })) {
+      if (isDateInRange(day, range)) return true;
+      if (++count === DAYS_IN_WEEK) break;
+    }
+    return false;
+  }
+
+  if (!range.dateRange?.length) {
+    return false;
+  }
+
+  const first = firstOf(range.dateRange);
+
+  switch (range.type) {
+    case DateRangeType.After:
+      return end.greaterThan(first);
+
+    case DateRangeType.Before:
+      return start.lessThan(first);
+
+    case DateRangeType.Between: {
+      const last = lastOf(range.dateRange);
+      const [low, high] =
+        CalendarDay.compare(first, last) > 0 ? [last, first] : [first, last];
+      return start.lessThanOrEqual(high) && end.greaterThanOrEqual(low);
+    }
+
+    case DateRangeType.Specific:
+      return range.dateRange.some(
+        (date) => start.lessThanOrEqual(date) && end.greaterThanOrEqual(date)
+      );
+
+    default:
+      return false;
+  }
+}
+
+/** Whether a day from `start` to `end`, in either order, is in `ranges`. */
+export function isSpanInRanges(
+  start: DayParameter,
+  end: DayParameter,
+  ranges: DateRangeDescriptor[]
+): boolean {
+  const [low, high] =
+    CalendarDay.compare(start, end) > 0 ? [end, start] : [start, end];
+  const first = toCalendarDay(low);
+  const last = toCalendarDay(high);
+
+  return ranges.some((range) => isSpanInRange(first, last, range));
 }
 
 /** The labels of the descriptors in `ranges` that match `date`, in order and without duplicates. */

@@ -17,6 +17,14 @@ defineComponents(IgcDateRangePickerComponent);
   The number of months displayed in the calendar: 1 or 2.
 - `customRanges`: `CustomDateRange[]`. Default: `[]`. No attribute.
   The custom date ranges that the picker shows as chips. A click on a chip selects its range.
+- `predefinedRanges`: `PredefinedRangeKey[]`. Default: `[ 'last7Days', 'currentMonth', 'last30Days', 'yearToDate', ]`. No attribute.
+  The built-in ranges that show while `usePredefinedRanges` is set, in this order.
+  The picker skips an unknown key and a repeated key.
+- `selectedRange`: `string | null`. Attribute: `selected-range`.
+  The key of the range that set the value: a built-in key, such as `lastQuarter`, also of a range that does not
+  show, or the key of a custom range. The chip of the range shows as selected.
+  Set it to select the range and set its value. A key that no custom range has yet waits for `customRanges`.
+  It is `null` when the user types or draws other dates, and when the value changes to other dates from code.
 - `useTwoInputs`: `boolean`. Default: `false`. Attribute: `use-two-inputs`, reflected.
   Whether the picker shows the start and the end date in two separate inputs.
 - `usePredefinedRanges`: `boolean`. Default: `false`. Attribute: `use-predefined-ranges`, reflected.
@@ -171,6 +179,8 @@ defineComponents(IgcDateRangePickerComponent);
   Emitted when the user commits a change to the value.
 - `igcInput`
   Emitted when the user types in an input.
+- `igcSelectedRangeChange`
+  Emitted before `igcChange` when a commit of the user changes `selectedRange`. In dialog mode, Done commits.
 
 ## Slots
 

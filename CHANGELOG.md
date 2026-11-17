@@ -5,11 +5,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- #### Date range picker
+  - A custom range can have `getDateRange` in place of `dateRange`. The picker calls it when the user selects the chip, so a period relative to today, such as the last quarter, stays current on a page that is open past midnight. `dateRange` is now optional. `getDateRange` is not available in Blazor. [#2534](https://github.com/IgniteUI/igniteui-webcomponents/issues/2534)
+  - `selectedRange` (`selected-range`) is the key of the range that set the value, and its chip shows as selected. The built-in keys are those of `PredefinedRangeKey`. A custom range has an optional `key`; without it, the key is the label. Set `selectedRange` to select a range and set its value from code, for example from saved state. The key is `null` after the user selects other dates. [#2534](https://github.com/IgniteUI/igniteui-webcomponents/issues/2534)
+  - `igcSelectedRangeChange` is emitted before `igcChange` when a commit of the user changes `selectedRange`. The detail has the `key`, the `label` and the `value`. New type: `IgcSelectedRangeChangeEventArgs`. [#2534](https://github.com/IgniteUI/igniteui-webcomponents/issues/2534)
+  - `predefinedRanges` chooses the built-in ranges that `usePredefinedRanges` shows, and their order. The default is the four ranges of before. New built-in ranges: `today`, `yesterday`, `lastWeek`, `lastMonth`, `currentQuarter`, `lastQuarter`, `quarterToDate`, `currentYear` and `lastYear`. `lastWeek` starts on `weekStart`, and the quarters are calendar quarters. Their labels come from the resource strings `date_range_picker_today` to `date_range_picker_lastYear`; a locale that does not have them yet shows them in English. New type: `PredefinedRangeKey`. [#2534](https://github.com/IgniteUI/igniteui-webcomponents/issues/2534)
+  - A range chip is disabled when its range includes a date before `min`, after `max` or in `disabledDates`, so a chip no longer sets a value that is not valid. The picker checks the ranges each time it opens, so a relative range follows the day. [#2534](https://github.com/IgniteUI/igniteui-webcomponents/issues/2534)
+
 ### Changed
 - #### Library
   - The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The fallbacks for older browsers are removed, and the styles no longer have vendor prefixes for them.
 
 ### Fixed
+- #### Date range picker
+  - The range chips of a read-only or disabled picker that opens from code are disabled. Before, a chip changed the value. [#2534](https://github.com/IgniteUI/igniteui-webcomponents/issues/2534)
 - #### Input, Textarea
   - `stepUp()`, `stepDown()` and `setRangeText()` no longer clear the value when you call them before the first render.
 

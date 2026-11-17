@@ -202,6 +202,8 @@ export type { DatePartDeltas } from './components/date-time-input/date-part.js';
 export type {
   CustomDateRange,
   DateRangeValue,
+  IgcSelectedRangeChangeEventArgs,
+  PredefinedRangeKey,
 } from './components/date-range-picker/date-range-picker.js';
 export type { PopoverPlacement } from './components/popover/popover.js';
 export type { IgcRadioChangeEventArgs } from './components/radio/radio.js';
