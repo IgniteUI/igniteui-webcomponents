@@ -7,7 +7,10 @@ import {
 } from '@open-wc/testing';
 import { LitElement } from 'lit';
 import { spy } from 'sinon';
-import { simulateKeyboard } from '../testing/simulate.spec.js';
+import {
+  simulateComposingKeys,
+  simulateKeyboard,
+} from '../testing/simulate.spec.js';
 import {
   addKeybindings,
   altKey,
@@ -49,7 +52,6 @@ describe('Key bindings controller', () => {
               .set('d', this.handleKeyboardEvent, {
                 triggers: ['keydown', 'keyup'],
                 preventDefault: true,
-                stopPropagation: true,
               })
               .set([shiftKey, 'c'], this.handleKeyboardEvent)
               .set([shiftKey, altKey, arrowUp], this.handleKeyboardEvent);
@@ -114,6 +116,14 @@ describe('Key bindings controller', () => {
       expect(instance.event).to.be.undefined;
     });
 
+    it('skips a key that an IME handles, and does not cancel it', () => {
+      expect(simulateComposingKeys(instance, 'k', 'd')).to.be.false;
+      expect(instance.event).to.be.undefined;
+
+      simulateKeyboard(instance, 'k');
+      expect(instance.key).to.equal('k');
+    });
+
     it('event handler modifiers - prevent default', () => {
       dispatch(instance, 'keydown', 'd');
       expect(instance.event.type).to.equal('keydown');
@@ -122,20 +132,6 @@ describe('Key bindings controller', () => {
       dispatch(instance, 'keyup', 'd');
       expect(instance.event.type).to.equal('keyup');
       expect(instance.event.defaultPrevented).to.be.true;
-    });
-
-    it('event handler modifiers - stop propagation', () => {
-      let parentHandlerCalled = false;
-      const handler = () => {
-        parentHandlerCalled = true;
-      };
-      const container = instance.parentElement!;
-      container.addEventListener('keydown', handler, { once: true });
-      container.addEventListener('keyup', handler, { once: true });
-
-      simulateKeyboard(instance, 'd');
-      expect(parentHandlerCalled).to.be.false;
-      expect(instance.key).to.equal('d');
     });
 
     it('activation keys', () => {
@@ -204,9 +200,7 @@ describe('Key bindings controller', () => {
       try {
         const tagName = unsafeStatic(multiTag);
         await fixture(
-          html`<div>
-          <${tagName}></${tagName}><${tagName}></${tagName}>
-        </div>`
+          html`<div><${tagName}></${tagName}><${tagName}></${tagName}></div>`
         );
 
         expect(add.callCount).to.equal(0);
@@ -275,6 +269,12 @@ describe('Key bindings controller', () => {
       expect(repeatInstance.callCount).to.equal(1);
     });
 
+    it('should prevent default on repeated keydown by default', () => {
+      const event = dispatch(repeatInstance, 'keydown', 'a', true);
+      expect(event.defaultPrevented).to.be.true;
+      expect(repeatInstance.callCount).to.equal(0);
+    });
+
     it('should fire the correct binding when keys overlap (keyup not yet fired for previous key)', () => {
       let repeatInstance2: LitElement & {
         lastKey: string | undefined;
@@ -334,6 +334,49 @@ describe('Key bindings controller', () => {
       });
     });
   });
+  describe('when option', () => {
+    let whenTag: string;
+    let whenInstance: LitElement & { enabled: boolean; callCount: number };
+
+    before(() => {
+      whenTag = defineCE(
+        class extends LitElement {
+          public enabled = false;
+          public callCount = 0;
+
+          constructor() {
+            super();
+            addKeybindings(this).set('a', () => this.callCount++, {
+              when: () => this.enabled,
+            });
+          }
+        }
+      );
+    });
+
+    beforeEach(async () => {
+      const tagName = unsafeStatic(whenTag);
+      whenInstance = await fixture(html`<${tagName}></${tagName}>`);
+    });
+
+    it('should leave the key unbound while the predicate is false', () => {
+      const event = dispatch(whenInstance, 'keydown', 'a');
+      dispatch(whenInstance, 'keyup', 'a');
+
+      expect(event.defaultPrevented).to.be.false;
+      expect(whenInstance.callCount).to.equal(0);
+    });
+
+    it('should bind the key while the predicate is true', () => {
+      whenInstance.enabled = true;
+
+      const event = dispatch(whenInstance, 'keydown', 'a');
+      dispatch(whenInstance, 'keyup', 'a');
+
+      expect(event.defaultPrevented).to.be.true;
+      expect(whenInstance.callCount).to.equal(1);
+    });
+  });
 });
 
 function dispatch(
@@ -341,14 +384,14 @@ function dispatch(
   type: 'keydown' | 'keyup',
   key: string,
   repeat = false
-) {
-  node.dispatchEvent(
-    new KeyboardEvent(type, {
-      key,
-      bubbles: true,
-      composed: true,
-      cancelable: true,
-      repeat,
-    })
-  );
+): KeyboardEvent {
+  const event = new KeyboardEvent(type, {
+    key,
+    bubbles: true,
+    composed: true,
+    cancelable: true,
+    repeat,
+  });
+  node.dispatchEvent(event);
+  return event;
 }

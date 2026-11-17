@@ -47,19 +47,29 @@ class AnimationController {
    * Cancels all animations on the target, then plays the keyframes.
    * The cancel must stay synchronous: an await before it lets an animation
    * started earlier in the same tick run to completion.
+   * Resolves `true` when the animation finishes and `signal` is not aborted.
    */
   public async playExclusive(
-    animation: AnimationReferenceMetadata
+    animation: AnimationReferenceMetadata,
+    signal?: AbortSignal
   ): Promise<boolean> {
+    if (signal?.aborted) {
+      return false;
+    }
+
     this.cancelAll();
 
-    const event = await this.play(animation);
-    return event.type === 'finish';
+    const event = await this.play(animation, signal);
+    return event.type === 'finish' && !signal?.aborted;
   }
 
-  /** Plays the keyframes. Reduced motion sets the duration to 0. */
+  /**
+   * Plays the keyframes. Reduced motion sets the duration to 0. An abort of
+   * `signal` cancels the animation.
+   */
   public async play(
-    animation: AnimationReferenceMetadata
+    animation: AnimationReferenceMetadata,
+    signal?: AbortSignal
   ): Promise<AnimationPlaybackEvent> {
     const { steps, options } = animation;
     const duration = getPrefersReducedMotion() ? 0 : (options?.duration ?? 0);
@@ -76,8 +86,20 @@ class AnimationController {
         duration,
       });
 
-      player.addEventListener('cancel', resolve, LISTENER_OPTIONS);
-      player.addEventListener('finish', resolve, LISTENER_OPTIONS);
+      const cancel = () => player.cancel();
+      const settle = (event: AnimationPlaybackEvent) => {
+        signal?.removeEventListener('abort', cancel);
+        resolve(event);
+      };
+
+      player.addEventListener('cancel', settle, LISTENER_OPTIONS);
+      player.addEventListener('finish', settle, LISTENER_OPTIONS);
+
+      if (signal?.aborted) {
+        cancel();
+      } else {
+        signal?.addEventListener('abort', cancel, LISTENER_OPTIONS);
+      }
     });
   }
 

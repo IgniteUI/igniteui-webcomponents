@@ -7,7 +7,9 @@
   "compilerOptions": {
     "module": "esnext",
     "moduleResolution": "bundler",
-    "noEmit": true
+    "noEmit": true,
+    "incremental": true,
+    "tsBuildInfoFile": "../node_modules/.cache/igniteui-webcomponents/tsc-stories.tsbuildinfo"
   },
   "include": ["../stories/**/*.ts", "../.storybook/**/*.ts"]
 }

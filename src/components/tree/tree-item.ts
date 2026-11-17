@@ -9,6 +9,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 import { addAnimationController } from '#animations/player.js';
 import { growVerIn, growVerOut } from '#animations/presets/grow/index.js';
+import { addHiddenUntilFoundController } from '#internals/controllers/hidden-until-found.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
@@ -21,6 +22,7 @@ import {
   addSafeEventListener,
   getElementFromPath,
 } from '#internals/utils/events.js';
+import { bindIf } from '#internals/utils/lit.js';
 import { all } from '#themes/tree/themes/item.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
@@ -44,16 +46,19 @@ import type { IgcTreeSelectionService } from './tree.selection.js';
 
 /**
  * The tree-item component represents a child item of the tree component or another tree item.
+ * Find-in-page, a text fragment or a link to an element in the children of a
+ * collapsed item expands it.
  *
  * @element igc-tree-item
  *
  * @slot - Renders nested tree-item component.
- * @slot label - Renders the tree item container.
+ * @slot label - Renders the content of the tree item, in place of the `label` property.
  * @slot indicator - Renders the expand indicator container.
  * @slot loading - Renders the tree item loading indicator container.
  * @slot indentation - Renders the container (by default the space) before the tree item.
  *
  * @csspart wrapper - The wrapper for the tree item.
+ * @csspart indentation - The indentation area before the tree item.
  * @csspart selected - Indicates selected state. Applies to `wrapper`.
  * @csspart focused - Indicates focused state. Applies to `wrapper`.
  * @csspart active - Indicates an active state. Applies to `wrapper`.
@@ -84,6 +89,16 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
 
   private _animationPlayer = addAnimationController(this, this._groupRef);
 
+  private readonly _untilFound = addHiddenUntilFoundController(this, {
+    content: this._groupRef,
+    reveal: () => {
+      this.expandWithEvent();
+      return this.expanded;
+    },
+  });
+
+  // A move into another tree changes whether the item renders the select marker.
+  @state()
   private _tree?: IgcTreeComponent;
 
   /* blazorSuppress */
@@ -109,6 +124,10 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
 
   private get _navService(): IgcTreeNavigationService | undefined {
     return this.tree?.navService;
+  }
+
+  private get _isSelectable(): boolean {
+    return !!this.tree && this.tree.selection !== 'none';
   }
 
   private get _parts() {
@@ -147,42 +166,44 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
   public label = '';
 
   /**
-   * The tree item expansion state.
+   * Whether the tree item is expanded.
    * @attr
    */
   @property({ reflect: true, type: Boolean })
   public expanded = false;
 
   /**
-   * Marks the item as the tree's active item.
+   * Whether the item is the active item of the tree. When true, the ancestors of
+   * the item expand.
    * @attr
    */
   @property({ reflect: true, type: Boolean })
   public active = false;
 
   /**
-   * Get/Set whether the tree item is disabled. Disabled items are ignored for user interactions.
+   * Whether the tree item is disabled. A disabled item does not respond to user interaction.
    * @attr
    */
   @property({ reflect: true, type: Boolean })
   public disabled = false;
 
   /**
-   * The tree item selection state.
+   * Whether the tree item is selected.
    * @attr
    */
   @property({ reflect: true, type: Boolean })
   public selected = false;
 
   /**
-   * To be used for load-on-demand scenarios in order to specify whether the item is loading data.
+   * Whether the item is loading data, for load-on-demand scenarios. The item
+   * shows a loading indicator in place of the expand indicator.
    * @attr
    */
   @property({ reflect: true, type: Boolean })
   public loading = false;
 
   /**
-   * The value entry that the tree item is visualizing. Required for searching through items.
+   * The value that the tree item represents. The component does not use it.
    * @type any
    * @attr
    */
@@ -251,11 +272,10 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
 
   /**
    * The full path to the tree item, starting from the top-most ancestor.
-   *
-   * `parent` is read into a local first: reading `parent.path` twice per level
-   * would make a single access cost 2^depth instead of `depth`.
    */
   public get path(): IgcTreeItemComponent[] {
+    // `parent` is read into a local first: reading `parent.path` twice per level
+    // would make a single access cost 2^depth instead of `depth`.
     const parent = this.parent;
     return parent ? [...parent.path, this] : [this];
   }
@@ -308,7 +328,7 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
   }
 
   private _onFocusIn(ev: Event): void {
-    ev?.stopPropagation();
+    ev.stopPropagation();
     if (!this.disabled) {
       // A click on a tabbable element while the item is not focused.
       if (!this._focusedProgrammatically) {
@@ -321,7 +341,7 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
   }
 
   private _onFocusOut(ev: Event): void {
-    ev?.stopPropagation();
+    ev.stopPropagation();
     this._isFocused = false;
     this._setTabbable(-1);
 
@@ -379,7 +399,7 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
     setOrRemoveAttribute(
       target,
       'aria-selected',
-      this.tree && this.tree.selection !== 'none' ? String(this.selected) : null
+      this._isSelectable ? String(this.selected) : null
     );
     setOrRemoveAttribute(
       target,
@@ -388,9 +408,10 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
     );
   }
 
-  private async _toggleAnimation(dir: 'open' | 'close') {
-    const animation = dir === 'open' ? growVerIn : growVerOut;
-    return this._animationPlayer.playExclusive(animation());
+  private async _toggleAnimation(open: boolean): Promise<boolean> {
+    return this._untilFound.animate(open, () =>
+      this._animationPlayer.playExclusive(open ? growVerIn() : growVerOut())
+    );
   }
 
   private _expandedChange(oldValue: boolean): void {
@@ -420,11 +441,16 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
   }
 
   private _selectedChange(): void {
-    if (this.selected && !this._selectionService?.isItemSelected(this)) {
-      this._selectionService?.selectItemsWithNoEvent([this]);
+    const service = this._selectionService;
+
+    if (!service || service.isItemSelected(this) === this.selected) {
+      return;
     }
-    if (!this.selected && this._selectionService?.isItemSelected(this)) {
-      this._selectionService?.deselectItemsWithNoEvent([this]);
+
+    if (this.selected) {
+      service.selectItemsWithNoEvent([this]);
+    } else {
+      service.deselectItemsWithNoEvent([this]);
     }
   }
 
@@ -476,7 +502,7 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
     }
 
     this.expanded = expand;
-    if (await this._toggleAnimation(expand ? 'open' : 'close')) {
+    if (await this._toggleAnimation(expand)) {
       this.tree?.emitEvent(expand ? 'igcItemExpanded' : 'igcItemCollapsed', {
         detail: this,
       });
@@ -543,7 +569,7 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
           }
         </div>
         ${
-          this.tree?.selection !== 'none'
+          this._isSelectable
             ? html`
                 <div part="select" aria-hidden="true">
                   <igc-checkbox
@@ -569,7 +595,14 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
           </slot>
         </div>
       </div>
-      <div ${ref(this._groupRef)} role="group" .inert=${!this.expanded}>
+      <div
+        ${ref(this._groupRef)}
+        role="group"
+        hidden=${this._untilFound.value(!this.expanded, !this.disabled)}
+        @beforematch=${this._untilFound.handleBeforeMatch}
+        aria-hidden=${bindIf(!this.expanded, 'true')}
+        .inert=${this._untilFound.closing}
+      >
         <slot @slotchange=${this._handleChange}></slot>
       </div>
     `;

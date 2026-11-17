@@ -3,6 +3,7 @@ import {
   elementUpdated,
   expect,
   fixture,
+  fixtureSync,
   html,
   unsafeStatic,
 } from '@open-wc/testing';
@@ -10,8 +11,10 @@ import { LitElement, html as litHtml } from 'lit';
 import { spy } from 'sinon';
 
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { withDocumentSheets } from '#internals/testing/helpers.spec.js';
 import { configureTheme } from '#theming/config.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
 import IgcHighlightComponent from './highlight.js';
 import { all } from './themes/themes.js';
 
@@ -152,6 +155,153 @@ describe('Highlight', () => {
     });
   });
 
+  describe('Highlight colors', () => {
+    type Color = { backgroundColor: string; color: string };
+    type Colors = { resting: Color; active: Color };
+    type Names = { resting: string; active: string };
+
+    const red = 'rgb(255, 0, 0)';
+    const redColors: Colors = {
+      resting: { backgroundColor: red, color: red },
+      active: { backgroundColor: red, color: red },
+    };
+    const customColors: Colors = {
+      resting: { backgroundColor: 'rgb(1, 2, 3)', color: 'rgb(4, 5, 6)' },
+      active: { backgroundColor: 'rgb(7, 8, 9)', color: 'rgb(10, 11, 12)' },
+    };
+
+    function toStyle({ resting, active }: Colors): string {
+      return `--background: ${resting.backgroundColor}; --foreground: ${resting.color}; --background-active: ${active.backgroundColor}; --foreground-active: ${active.color}`;
+    }
+
+    /** The highlight names that have a match in the node. */
+    function getHighlightNames(node: Node): Names {
+      const entries = Array.from(CSS.highlights).filter(([, entry]) =>
+        Array.from(entry as Iterable<Range>).some((range) =>
+          node.contains(range.startContainer)
+        )
+      );
+
+      const getName = (priority: number): string => {
+        const entry = entries.find(([, value]) => value.priority === priority);
+        expect(entry, `a highlight with priority ${priority}`).to.exist;
+        return entry![0];
+      };
+
+      return { resting: getName(0), active: getName(1) };
+    }
+
+    function getColors(element: Element, names: Names): Colors {
+      const read = (name: string): Color => {
+        const { backgroundColor, color } = getComputedStyle(
+          element,
+          `::highlight(${name})`
+        );
+        return { backgroundColor, color };
+      };
+
+      return { resting: read(names.resting), active: read(names.active) };
+    }
+
+    it('paints the matches inside an element that sets the same custom property names', async () => {
+      // Without a palette, every match is transparent.
+      await withDocumentSheets([bootstrap.styleSheet!], async () => {
+        highlight = await fixture(
+          html`<igc-highlight search-text="ele">
+            <p>Elena Kolev</p>
+            <div style=${toStyle(redColors)}>
+              <p>Elena Marinova</p>
+            </div>
+          </igc-highlight>`
+        );
+
+        const [outer, inner] = highlight.querySelectorAll('p');
+        const names = getHighlightNames(highlight);
+        const colors = getColors(outer, names);
+
+        expect(highlight.size).to.equal(2);
+        expect(colors.resting.backgroundColor).to.not.equal('rgba(0, 0, 0, 0)');
+        expect(colors.active.backgroundColor).to.not.equal('rgba(0, 0, 0, 0)');
+        expect(getColors(inner, names)).to.deep.equal(colors);
+      });
+    });
+
+    it('paints the matches with the custom properties set on the host', async () => {
+      highlight = await fixture(
+        html`<igc-highlight search-text="ele" style=${toStyle(customColors)}>
+          <div style=${toStyle(redColors)}>
+            <p>Elena Marinova</p>
+          </div>
+        </igc-highlight>`
+      );
+
+      const text = highlight.querySelector('p')!;
+
+      expect(getColors(text, getHighlightNames(text))).to.deep.equal(
+        customColors
+      );
+    });
+
+    it('keeps the host colors after a theme change', async () => {
+      highlight = await fixture(
+        html`<igc-highlight search-text="ele" style=${toStyle(customColors)}>
+          <p>Elena</p>
+        </igc-highlight>`
+      );
+
+      const text = highlight.querySelector('p')!;
+      const names = getHighlightNames(text);
+
+      try {
+        configureTheme('material');
+        expect(getColors(text, names)).to.deep.equal(customColors);
+      } finally {
+        configureTheme('bootstrap');
+      }
+    });
+
+    it('paints the matches inside a nested highlight with its own colors', async () => {
+      highlight = await fixture(
+        html`<igc-highlight search-text="ele" style=${toStyle(customColors)}>
+          <p>Elena</p>
+          <igc-highlight search-text="kol" style=${toStyle(redColors)}>
+            <p>Elena</p>
+            <p>Kolev</p>
+          </igc-highlight>
+        </igc-highlight>`
+      );
+
+      const [outer, inner, innerOwn] = highlight.querySelectorAll('p');
+
+      expect(getColors(inner, getHighlightNames(outer))).to.deep.equal(
+        customColors
+      );
+      expect(getColors(innerOwn, getHighlightNames(innerOwn))).to.deep.equal(
+        redColors
+      );
+    });
+
+    it('adopts the color sheet of the host only once across reconnects', async () => {
+      highlight = await fixture(createHighlightWithInitialMatch());
+
+      const countSheets = () =>
+        highlight.shadowRoot!.adoptedStyleSheets.filter((sheet) =>
+          Array.from(sheet.cssRules).some((rule) =>
+            rule.cssText.includes('--_igc-highlight-')
+          )
+        ).length;
+
+      expect(countSheets()).to.equal(1);
+
+      const parent = highlight.parentElement!;
+      highlight.remove();
+      parent.append(highlight);
+      await elementUpdated(highlight);
+
+      expect(countSheets()).to.equal(1);
+    });
+  });
+
   describe('API', () => {
     beforeEach(async () => {
       highlight = await fixture(createHighlight());
@@ -211,6 +361,23 @@ describe('Highlight', () => {
 
       highlight.next();
       expect(highlight.current).to.equal(1);
+    });
+
+    it('keeps the active match when the search is set again to its values', async () => {
+      highlight.searchText = 'e';
+      await elementUpdated(highlight);
+
+      highlight.next();
+      highlight.searchText = 'e';
+      highlight.caseSensitive = false;
+      await elementUpdated(highlight);
+
+      expect(highlight.current).to.equal(1);
+
+      highlight.caseSensitive = true;
+      await elementUpdated(highlight);
+
+      expect(highlight.current).to.equal(0);
     });
 
     it('moves to the previous when `previous()` is invoked', async () => {
@@ -282,6 +449,76 @@ describe('Highlight', () => {
       highlight.search();
 
       expect(highlight.size).to.equal(1);
+    });
+
+    it('searches when `searchText` is set before the first render', async () => {
+      const element = fixtureSync<IgcHighlightComponent>(
+        html`<igc-highlight>Lorem ipsum, lorem.</igc-highlight>`
+      );
+
+      element.searchText = 'lorem';
+
+      expect(element.hasUpdated).to.be.false;
+      expect(element.size).to.equal(2);
+
+      await elementUpdated(element);
+      expect(element.size).to.equal(2);
+    });
+
+    it('searches again when the content changes', async () => {
+      highlight.searchText = 'lorem';
+      await elementUpdated(highlight);
+
+      const node = document.createElement('div');
+      node.textContent = 'Lorem '.repeat(9);
+
+      highlight.append(node);
+      await elementUpdated(highlight);
+      expect(highlight.size).to.equal(10);
+
+      node.firstChild!.textContent = 'Lorem';
+      await elementUpdated(highlight);
+      expect(highlight.size).to.equal(2);
+
+      node.remove();
+      await elementUpdated(highlight);
+      expect(highlight.size).to.equal(1);
+    });
+
+    it('keeps the active match when the content around it changes', async () => {
+      highlight.searchText = 'e';
+      await elementUpdated(highlight);
+
+      highlight.setActive(3);
+
+      const node = document.createElement('p');
+      node.textContent = 'e e e';
+
+      highlight.prepend(node);
+      await elementUpdated(highlight);
+      expect(highlight.current).to.equal(6);
+
+      // The active match goes with its text, so the first match takes over.
+      highlight.replaceChildren(document.createTextNode('e e e'));
+      await elementUpdated(highlight);
+      expect(highlight.current).to.equal(0);
+    });
+
+    it('keeps the active match when its text node changes after it', async () => {
+      const text = document.createTextNode('e e e');
+
+      highlight.replaceChildren(text);
+      highlight.searchText = 'e';
+      await elementUpdated(highlight);
+
+      highlight.setActive(2);
+
+      // Frameworks replace the whole text of a node.
+      text.data = 'e e e e';
+      await elementUpdated(highlight);
+
+      expect(highlight.size).to.equal(4);
+      expect(highlight.current).to.equal(2);
     });
   });
 });

@@ -1,3 +1,4 @@
+import { DialogResourceStringsEN } from 'igniteui-i18n-core';
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -10,10 +11,11 @@ import {
 import { addToggleCommands } from '#internals/controllers/command.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { addToggleController } from '#internals/controllers/toggle.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
 import { isPointInsideElement } from '#internals/utils/dom.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
@@ -24,6 +26,8 @@ import IgcButtonComponent from '../button/button.js';
 import { styles } from './themes/dialog.base.css.js';
 import { styles as shared } from './themes/shared/dialog.common.css.js';
 
+const Slots = setSlots('title', 'message', 'footer');
+
 export interface IgcDialogComponentEventMap {
   igcClosing: CustomEvent<void>;
   igcClosed: CustomEvent<void>;
@@ -31,50 +35,53 @@ export interface IgcDialogComponentEventMap {
 
 const nextId = createIdGenerator('title');
 
+const i18n = {
+  defaultEN: DialogResourceStringsEN,
+};
+
 /* blazorAdditionalDependency: IgcButtonComponent */
 /**
  * A modal dialog component built on the native `<dialog>` element.
  *
  * The dialog traps focus while open and blocks interaction with the rest
  * of the page (modal semantics). It supports animated open/close
- * transitions, an optional backdrop overlay, and multiple content areas
+ * transitions, a backdrop overlay, and multiple content areas
  * through named slots.
  *
- * The component integrates with the
- * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):
- * an Ignite button or a native `<button>` with `command="--show"` / `"--hide"` / `"--toggle"`
- * and `commandfor` pointing to this element will call the corresponding method
- * declaratively without any JavaScript.
+ * The component supports the
+ * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API).
+ * A button with `command="--show"`, `"--hide"` or `"--toggle"` and a `commandfor`
+ * that points to this element calls the matching method.
  *
  * @element igc-dialog
  *
- * @fires igcClosing - Emitted just before the dialog closes. Cancelable -
+ * @fires igcClosing - Emitted before the dialog closes on a user action. Cancelable -
  *   call `event.preventDefault()` to abort the closing sequence.
- * @fires igcClosed - Emitted after the dialog has fully closed and its
- *   exit animation has completed.
+ * @fires igcClosed - Emitted after the dialog closes on a user action and its
+ *   exit animation completes.
  *
- * @slot - General-purpose content area. Also the target for any
- *   `<form method="dialog">` placed inside the dialog.
+ * @slot - General-purpose content area. A `<form method="dialog">` in this
+ *   slot closes the dialog on submit.
  * @slot title - Content rendered in the dialog header. Falls back to the
  *   `title` attribute when empty.
  * @slot message - A dedicated message/body area rendered above the default
  *   slot. Hidden when no content is assigned.
  * @slot footer - Content rendered in the dialog footer. When empty, a
- *   default "OK" close button is shown (unless `hide-default-action` is set).
+ *   default action button is shown (unless `hide-default-action` is set).
  *
- * @csspart base - The native `<dialog>` element.
+ * @csspart base - The native `<dialog>` element. Style the backdrop with `::part(base)::backdrop`.
+ * @csspart titled - Added to the base part when the dialog has a title.
+ * @csspart footed - Added to the base part when the footer has slotted content or a default action.
  * @csspart title - The `<header>` element wrapping the title slot.
  * @csspart content - The `<section>` element wrapping the message and default slots.
  * @csspart footer - The `<footer>` element wrapping the footer slot.
- * @csspart backdrop - The decorative backdrop overlay element.
- * @csspart animating - Applied to the backdrop while an animation is running.
  */
-export default class IgcDialogComponent extends EventEmitterMixin<
-  IgcDialogComponentEventMap,
-  Constructor<LitElement>
->(HostAriaMixin(LitElement)) {
+export default class IgcDialogComponent extends I18nMixin(
+  EventEmitterMixin<IgcDialogComponentEventMap>(HostAriaMixin(LitElement)),
+  i18n
+) {
   public static readonly tagName = 'igc-dialog';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -86,26 +93,39 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   private readonly _titleId = nextId();
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots('title', 'message', 'footer'),
+    slots: Slots,
   });
 
   private readonly _dialogRef = createRef<HTMLDialogElement>();
   private readonly _player = addAnimationController(this, this._dialogRef);
 
   private readonly _toggleController = addToggleController(this, {
-    transition: async (open) => {
+    transition: async (open, signal) => {
       if (open) {
         this.open = true;
-        // A superseded exit also clears this, but too late for this render.
-        this._animating = false;
-        return this._player.playExclusive(fadeIn());
+        return this._player.playExclusive(fadeIn(), signal);
       }
 
-      this._animating = true;
-      const completed = await this._player.playExclusive(fadeOut());
-      this._animating = false;
+      // A dialog that has not opened yet, as after a `show()` in this task, has no exit to play.
+      if (!this._dialog?.open) {
+        this.open = false;
+        return true;
+      }
 
-      // An interrupted exit animation means a newer `show()` took over.
+      this._closing = true;
+      // In the same task, so the render after the abort has the backdrop.
+      signal.addEventListener('abort', () => (this._closing = false), {
+        once: true,
+      });
+      const completed = await this._player.playExclusive(fadeOut(), signal);
+
+      // A newer request or a direct change of `open` took over.
+      if (signal.aborted) {
+        return false;
+      }
+
+      this._closing = false;
+
       if (completed) {
         this.open = false;
       }
@@ -115,7 +135,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   });
 
   @state()
-  private _animating = false;
+  private _closing = false;
 
   private get _dialog(): HTMLDialogElement | undefined {
     return this._dialogRef.value;
@@ -126,11 +146,10 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   //#region Public properties
 
   /**
-   * When set, pressing the `Escape` key will not close the dialog.
+   * Whether the dialog stays open when the user presses the `Escape` key.
    *
-   * By default the browser closes a modal dialog on `Escape`. Enable this
-   * option when the dialog guards unsaved work and should require an explicit
-   * user action to dismiss.
+   * Use it when the dialog guards unsaved work and needs an explicit user
+   * action to close.
    * @attr keep-open-on-escape
    * @default false
    */
@@ -138,8 +157,8 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   public keepOpenOnEscape = false;
 
   /**
-   * When set, clicking on the backdrop area outside the dialog surface
-   * will close it (emitting close events).
+   * Whether a click on the backdrop, outside the dialog surface, closes the
+   * dialog. The close emits the close events.
    *
    * Has no effect when the dialog is not yet open.
    * @attr close-on-outside-click
@@ -149,10 +168,10 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   public closeOnOutsideClick = false;
 
   /**
-   * When set, the built-in "OK" close button in the footer is not rendered.
+   * Whether the default action button in the footer is hidden.
    *
-   * Has no effect when content is projected into the `footer` slot, since
-   * the slot content replaces the default button entirely.
+   * Has no effect when content is projected into the `footer` slot, because
+   * the slot content replaces the default button.
    * @attr hide-default-action
    * @default false
    */
@@ -162,14 +181,15 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   /**
    * Whether the dialog is open.
    *
-   * Setting this property programmatically will open or close the dialog
-   * without animation and without emitting close events.
-   * Prefer the `show()`, `hide()`, and `toggle()` methods for animated
-   * transitions.
+   * Setting it skips the animation and the close events. Use the `show()`,
+   * `hide()` and `toggle()` methods for an animated transition.
    * @attr open
    * @default false
    */
   @property({ type: Boolean, reflect: true })
+  @coercedProperty<boolean, IgcDialogComponent>({
+    onChange: ({ host, value }) => host._toggleController.sync(value),
+  })
   public open = false;
 
   /**
@@ -200,6 +220,14 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
     addThemingController(this, all);
     addToggleCommands(this);
+  }
+
+  public override connectedCallback(): void {
+    super.connectedCallback();
+
+    if (this.hasUpdated) {
+      this._syncDialog();
+    }
   }
 
   protected override updated(properties: PropertyValues<this>): void {
@@ -253,12 +281,26 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   }
 
   /**
-   * Opens or closes the dialog to match `open`. It also runs on the `close`
-   * event, so a close that the component cannot cancel, such as a second
-   * Escape, does not leave it open with a closed dialog.
+   * Makes the dialog modal when `open` is set, and closes it otherwise. It runs
+   * on a change of `open`, on a reconnect, and on the `close` event, so a close
+   * that the component cannot cancel, such as a second Escape, does not leave
+   * it open with a closed dialog.
    */
   private _syncDialog(): void {
-    this.open ? this._dialog?.showModal() : this._dialog?.close();
+    // Not `_dialog`: Lit empties the ref while the host is out of the document.
+    const dialog = this.renderRoot.querySelector('dialog');
+
+    if (!dialog || (this.open ? dialog.matches(':modal') : !dialog.open)) {
+      return;
+    }
+
+    // A removal takes the dialog out of the top layer, so it can be open but
+    // not modal, and `showModal()` then throws. A dialog out of the document
+    // cannot be modal, so it waits for the reconnect.
+    dialog.close();
+    if (this.open && this.isConnected) {
+      dialog.showModal();
+    }
   }
 
   //#endregion
@@ -269,7 +311,8 @@ export default class IgcDialogComponent extends EventEmitterMixin<
    * Opens the dialog with an animated fade-in transition.
    *
    * Returns `true` when the dialog was successfully opened, or `false` if it
-   * was already open or the transition was superseded by a newer one.
+   * was already open or opening, the transition was superseded by a newer one,
+   * or `open` was set to `false` during it.
    */
   public async show(): Promise<boolean> {
     return this._toggleController.show();
@@ -279,7 +322,8 @@ export default class IgcDialogComponent extends EventEmitterMixin<
    * Closes the dialog with an animated fade-out transition.
    *
    * Returns `true` when the dialog was successfully closed, or `false` if it
-   * was already closed or the transition was superseded by a newer one.
+   * was already closed or closing, the transition was superseded by a newer
+   * one, or `open` was set to `false` and then to `true` during it.
    */
   public async hide(): Promise<boolean> {
     return this._toggleController.hide();
@@ -289,7 +333,8 @@ export default class IgcDialogComponent extends EventEmitterMixin<
    * Toggles the dialog open or closed depending on its current state.
    *
    * Equivalent to calling `show()` when closed and `hide()` when open.
-   * Returns `true` when the transition completed successfully.
+   * Returns `true` when the transition completed successfully, with the same
+   * `false` cases as these methods.
    */
   public async toggle(): Promise<boolean> {
     return this._toggleController.toggle();
@@ -298,15 +343,6 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   //#endregion
 
   //#region Render methods
-
-  protected _renderBackdrop() {
-    return html`
-      <div
-        aria-hidden=${!this.open}
-        part=${partMap({ backdrop: true, animating: this._animating })}
-      ></div>
-    `;
-  }
 
   protected _renderHeader() {
     return html`
@@ -337,7 +373,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
               ? nothing
               : html`
                   <igc-button variant="flat" @click=${this._closeWithEvent}>
-                    OK
+                    ${this.resourceStrings.dialog_default_action}
                   </igc-button>
                 `
           }
@@ -352,10 +388,10 @@ export default class IgcDialogComponent extends EventEmitterMixin<
       this._slots.hasAssignedElements('footer') || !this.hideDefaultAction;
 
     return html`
-      ${this._renderBackdrop()}
       <dialog
         ${ref(this._dialogRef)}
         part=${partMap({ base: true, titled: hasTitle, footed: hasFooter })}
+        ?data-closing=${this._closing}
         role="dialog"
         ${ariaBindings(hostAria(this, { ownLabel: !this.ariaLabel && this._titleId }))}
         @click=${this._handleClick}

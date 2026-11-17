@@ -3,9 +3,9 @@ import type { Ref } from 'lit/directives/ref.js';
 import { createAbortHandle } from '../abort-handler.js';
 import { asArray, isEmpty, partition } from '../utils/arrays.js';
 import { isElement } from '../utils/dom.js';
-import { isFunction } from '../utils/types.js';
-import { addHostListeners } from './host-listeners.js';
-import { enterKey, spaceBar } from './keys.js';
+import { addSafeEventListeners } from '../utils/events.js';
+import { isFunction, isString } from '../utils/types.js';
+import { enterKey, isComposingKey, spaceBar } from './keys.js';
 
 // Re-exported from `./keys.js`, so a consumer keeps a single import.
 export * from './keys.js';
@@ -118,8 +118,12 @@ interface KeyBindingOptions {
   repeat?: boolean;
   /** Whether to call `preventDefault` before the handler runs. */
   preventDefault?: boolean;
-  /** Whether to call `stopPropagation` before the handler runs. */
-  stopPropagation?: boolean;
+  /**
+   * Whether the binding applies, called with the host on each key press. While it
+   * returns `false`, the key is not bound: the controller neither cancels it nor
+   * runs the handler.
+   */
+  when?: () => boolean;
 }
 
 /** A registered binding. The key of the binding map holds the combination. */
@@ -131,6 +135,8 @@ interface KeyBinding {
 //#endregion
 
 //#region Internal functions and constants
+
+const DEFAULT_SKIP_SELECTOR = 'input,textarea,select';
 
 function isKeyup(event: Event): boolean {
   return event.type === 'keyup';
@@ -193,6 +199,7 @@ class KeyBindingController implements ReactiveController {
   private readonly _skipCallback?: KeyBindingSkipCallback;
 
   private _observedElement?: Element;
+  private _listening = false;
 
   private get _element(): Element {
     return this._observedElement ?? this._ref?.value ?? this._host;
@@ -210,19 +217,29 @@ class KeyBindingController implements ReactiveController {
     this._host = host;
     this._ref = options?.ref;
 
-    this._bindingDefaults = {
-      ...defaults.bindingDefaults,
-      ...options?.bindingDefaults,
-    };
+    this._bindingDefaults = options?.bindingDefaults
+      ? { ...defaults.bindingDefaults, ...options.bindingDefaults }
+      : defaults.bindingDefaults;
 
     if (isFunction(skip)) {
       this._skipCallback = skip;
     } else {
-      this._skipSelector = skip.join(',');
+      this._skipSelector =
+        skip === defaults.skip ? DEFAULT_SKIP_SELECTOR : skip.join(',');
     }
 
-    addHostListeners(host, { events: ['keyup', 'keydown'], listener: this });
     host.addController(this);
+  }
+
+  /**
+   * Listens from the first connect, after the host listeners of a framework,
+   * so they can cancel a key. @internal
+   */
+  public hostConnected(): void {
+    if (!this._listening) {
+      this._listening = true;
+      addSafeEventListeners(this._host, ['keyup', 'keydown'], this);
+    }
   }
 
   /** @internal */
@@ -234,11 +251,11 @@ class KeyBindingController implements ReactiveController {
   //#region Private API
 
   /**
-   * Whether to ignore the event. The key has no binding, the event missed the
-   * observed element, or the skip configuration agrees.
+   * Whether to ignore the event. The key has no binding, an IME handles it,
+   * the event missed the observed element, or the skip configuration agrees.
    */
   private _shouldSkip(event: KeyboardEvent, key: string): boolean {
-    if (!this._allowedKeys.has(key)) {
+    if (!this._allowedKeys.has(key) || isComposingKey(event)) {
       return true;
     }
 
@@ -318,22 +335,22 @@ class KeyBindingController implements ReactiveController {
       }
     }
 
-    if (binding) {
+    if (binding && binding.options.when?.call(this._host) !== false) {
       const { handler, options } = binding;
-      const triggers = options.triggers ?? ['keydown'];
+      const { triggers } = options;
 
-      // The event type must be a trigger, and a repeated keydown needs `repeat`.
+      // A trigger type (`keydown` by default); a repeat needs `repeat`.
       if (
-        triggers.includes(event.type as KeyBindingTrigger) &&
-        (isKeyup(event) || !event.repeat || options.repeat)
+        triggers
+          ? triggers.includes(event.type as KeyBindingTrigger)
+          : !isKeyup(event)
       ) {
         if (options.preventDefault) {
           event.preventDefault();
         }
-        if (options.stopPropagation) {
-          event.stopPropagation();
+        if (isKeyup(event) || !event.repeat || options.repeat) {
+          handler.call(this._host, event);
         }
-        handler.call(this._host, event);
       }
     }
 
@@ -363,15 +380,29 @@ class KeyBindingController implements ReactiveController {
     handler: KeyBindingHandler,
     bindingOptions?: KeyBindingOptions
   ): this {
-    const { keys, modifiers } = parseKeys(key);
-    const combination = createCombinationKey(keys, sortModifiers(modifiers));
-    const options = { ...this._bindingDefaults, ...bindingOptions };
+    // Read only, so the bindings can share the defaults.
+    const options = bindingOptions
+      ? { ...this._bindingDefaults, ...bindingOptions }
+      : this._bindingDefaults;
 
-    for (const each of [...keys, ...modifiers]) {
+    // A single key, a modifier too, is its own combination.
+    if (isString(key)) {
+      const name = key.toLowerCase();
+      this._allowedKeys.add(name);
+      this._bindings.set(name, { handler, options });
+      return this;
+    }
+
+    const { keys, modifiers } = parseKeys(key);
+
+    for (const each of keys.concat(modifiers)) {
       this._allowedKeys.add(each);
     }
 
-    this._bindings.set(combination, { handler, options });
+    this._bindings.set(createCombinationKey(keys, sortModifiers(modifiers)), {
+      handler,
+      options,
+    });
 
     return this;
   }

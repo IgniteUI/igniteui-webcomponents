@@ -199,6 +199,20 @@ export interface IgcChatMessageReaction {
 }
 
 /**
+ * A link in a chat message that the user follows.
+ */
+export interface IgcChatMessageLink {
+  /**
+   * The chat message that holds the link.
+   */
+  message: IgcChatMessage;
+  /**
+   * The absolute URL that the browser follows.
+   */
+  href: string;
+}
+
+/**
  * A collection of optional rendering functions that allow for custom UI rendering.
  * Each property is a function that takes a context object and returns a template result.
  * @hidden

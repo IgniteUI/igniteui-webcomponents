@@ -6,6 +6,7 @@ import {
   IgcQrCodeComponent,
   IgcSelectComponent,
   IgcSwitchComponent,
+  type QrCodeCopyFormat,
   type QrCodeExportFormat,
 } from 'igniteui-webcomponents';
 import { html } from 'lit';
@@ -28,7 +29,7 @@ const metadata: Meta<IgcQrCodeComponent> = {
     docs: {
       description: {
         component:
-          '\nGenerates a QR code based on the provided value and options.\nThe component renders an SVG representation of the QR code, which can be customized using various properties.',
+          'Generates a QR code from a value and renders it as an SVG image.\nProperties set the size, the shapes, the error correction level and an optional logo.',
       },
     },
   },
@@ -36,13 +37,13 @@ const metadata: Meta<IgcQrCodeComponent> = {
     value: {
       type: 'string',
       description:
-        'The value to be encoded in the QR code. This can be any string, such as a URL, text, or other data.\nWhen this property is set, the component will generate a QR code representing the provided value.',
+        'The value to encode in the QR code. This can be any string, such as a URL, text, or other data.\nWithout a value, the component renders nothing.',
       control: 'text',
     },
     version: {
       type: 'number',
       description:
-        'The version of the QR code to generate, which determines the size and data capacity of the QR code.\nValid values are integers from 1 to 40, where each version corresponds to a specific module size and data capacity.\n\nIf not specified, the component will automatically select the smallest version that can accommodate the provided value.',
+        'The version of the QR code to generate, which determines the size and data capacity of the QR code.\nValid values are integers from 1 to 40, where each version corresponds to a specific module size and data capacity.\n\nWhen it is not set, or it is not an integer from 1 to 40, the component selects the smallest\nversion that holds the value. When the value does not fit the version, the component renders nothing.',
       control: 'number',
     },
     errorLevel: {
@@ -70,13 +71,13 @@ const metadata: Meta<IgcQrCodeComponent> = {
     logoSrc: {
       type: 'string',
       description:
-        'The source URL of an optional logo image to be displayed at the center of the QR code. The logo can help with branding and recognition.\nIf provided, the component will attempt to render the logo within the QR code while maintaining scannability.',
+        'The source URL of an optional logo image at the center of the QR code.\nThe component does not render a logo that fails to load, a `javascript:` or `vbscript:` URL,\nor a data URI that is not an image.',
       control: 'text',
     },
     logoSize: {
       type: 'number',
       description:
-        "The size of the logo, as a ratio of the maximum area that can safely be obscured by a logo\nwhile the QR code remains scannable (up to 9% of the code's area, at the highest error\ncorrection level). The value should be a number between 0 and 1, where 0 means no logo and 1\nmeans the logo will cover the full safe area (not the entire QR code).\nThe default value is 0.4, meaning the logo covers 40% of that safe area (~3.6% of the QR code).\n\nWhen `error-level` is not set and the logo is larger than the safe area of level 'M', the\ncomponent uses the smallest error correction level that holds the logo.",
+        "The size of the logo, as a ratio of the maximum area that can safely be obscured by a logo\nwhile the QR code remains scannable (up to 9% of the code's area, at the highest error\ncorrection level). The value is a number from 0 to 1, where 0 means no logo and 1\nmeans the logo covers the full safe area (not the entire QR code). Other values are clamped.\nThe default value is 0.4, meaning the logo covers 40% of that safe area (~3.6% of the QR code).\n\nWhen `error-level` is not set and the logo is larger than the safe area of level 'M', the\ncomponent uses the smallest error correction level that holds the logo. When `error-level`\nis set, the logo does not grow past the safe area of that level.",
       control: 'number',
       table: { defaultValue: { summary: '0.4' } },
     },
@@ -117,15 +118,16 @@ export default metadata;
 
 interface IgcQrCodeArgs {
   /**
-   * The value to be encoded in the QR code. This can be any string, such as a URL, text, or other data.
-   * When this property is set, the component will generate a QR code representing the provided value.
+   * The value to encode in the QR code. This can be any string, such as a URL, text, or other data.
+   * Without a value, the component renders nothing.
    */
   value: string;
   /**
    * The version of the QR code to generate, which determines the size and data capacity of the QR code.
    * Valid values are integers from 1 to 40, where each version corresponds to a specific module size and data capacity.
    *
-   * If not specified, the component will automatically select the smallest version that can accommodate the provided value.
+   * When it is not set, or it is not an integer from 1 to 40, the component selects the smallest
+   * version that holds the value. When the value does not fit the version, the component renders nothing.
    */
   version: number;
   /**
@@ -146,19 +148,21 @@ interface IgcQrCodeArgs {
    */
   margin: number;
   /**
-   * The source URL of an optional logo image to be displayed at the center of the QR code. The logo can help with branding and recognition.
-   * If provided, the component will attempt to render the logo within the QR code while maintaining scannability.
+   * The source URL of an optional logo image at the center of the QR code.
+   * The component does not render a logo that fails to load, a `javascript:` or `vbscript:` URL,
+   * or a data URI that is not an image.
    */
   logoSrc: string;
   /**
    * The size of the logo, as a ratio of the maximum area that can safely be obscured by a logo
    * while the QR code remains scannable (up to 9% of the code's area, at the highest error
-   * correction level). The value should be a number between 0 and 1, where 0 means no logo and 1
-   * means the logo will cover the full safe area (not the entire QR code).
+   * correction level). The value is a number from 0 to 1, where 0 means no logo and 1
+   * means the logo covers the full safe area (not the entire QR code). Other values are clamped.
    * The default value is 0.4, meaning the logo covers 40% of that safe area (~3.6% of the QR code).
    *
    * When `error-level` is not set and the logo is larger than the safe area of level 'M', the
-   * component uses the smallest error correction level that holds the logo.
+   * component uses the smallest error correction level that holds the logo. When `error-level`
+   * is set, the logo does not grow past the safe area of that level.
    */
   logoSize: number;
   /**
@@ -796,7 +800,7 @@ export const Export: Story = {
     docs: {
       description: {
         story:
-          '`toImage()` exports the code as a `png`, `jpeg`, `webp` or `svg` file. `scale` multiplies `size`, so a scale of 4 gives a 1024 pixel image of this code for print. `download: true` opens the download dialog, and without it the returned `File` goes to the clipboard, as the "Copy PNG" button does. `toBlob()` returns an SVG blob with the colors and the logo inlined, so the blob looks the same outside the component. The preview shows that blob in an `img` element.',
+          '`toImage()` exports the code as a `png`, `jpeg`, `webp` or `svg` file. `scale` multiplies `size`, so a scale of 4 gives a 1024 pixel image of this code for print. `download: true` opens the download dialog. `copyToClipboard()` copies the code as an image: "Copy PNG" copies a PNG image, and "Copy SVG" copies an SVG image and a PNG image for applications that do not read SVG. A browser that cannot copy SVG gets only the PNG. The buttons call the method directly in the click handler, because browsers accept a clipboard write only during a user action. `toBlob()` returns an SVG blob with the colors and the logo inlined, so the blob looks the same outside the component. The preview shows that blob in an `img` element.',
       },
     },
   },
@@ -834,13 +838,15 @@ export const Export: Story = {
           return `Downloaded ${file.name} (${file.type}).`;
         });
 
-    const copy = (event: Event) =>
+    const copied: Record<QrCodeCopyFormat, string> = {
+      svg: 'Copied an SVG image and a PNG image to the clipboard.',
+      png: 'Copied a PNG image to the clipboard.',
+    };
+
+    const copy = (format: QrCodeCopyFormat) => (event: Event) =>
       run(event, async () => {
-        const file = await context(event).qr.toImage({ scale: 2 });
-        await navigator.clipboard.write([
-          new ClipboardItem({ [file.type]: file }),
-        ]);
-        return 'Copied a PNG image to the clipboard.';
+        const { qr } = context(event);
+        return copied[await qr.copyToClipboard({ format, scale: 2 })];
       });
 
     const preview = (event: Event) =>
@@ -888,7 +894,12 @@ export const Export: Story = {
           <igc-button @click=${download('webp', 2)}>
             Download WebP (2x)
           </igc-button>
-          <igc-button variant="outlined" @click=${copy}>Copy PNG</igc-button>
+          <igc-button variant="outlined" @click=${copy('png')}>
+            Copy PNG
+          </igc-button>
+          <igc-button variant="outlined" @click=${copy('svg')}>
+            Copy SVG
+          </igc-button>
           <igc-button variant="outlined" @click=${preview}>
             Preview SVG blob
           </igc-button>

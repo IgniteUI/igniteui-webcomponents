@@ -15,7 +15,8 @@ $dropdown-theme: dropdown-theme.$fluent;
     }
 }
 
-[part='filter-input'] {
+[part='filter-input'],
+[part~='actions'] {
     padding: pad(rem(2px), rem(4px), rem(8px));
 }
 
@@ -69,4 +70,8 @@ $dropdown-theme: dropdown-theme.$fluent;
     igc-input::part(suffix) {
         background: transparent;
     }
+}
+
+igc-combo-item[part~='group-header'] {
+    @include type-style('subtitle-2');
 }

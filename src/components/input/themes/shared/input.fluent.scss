@@ -48,6 +48,10 @@ $theme: $fluent;
         color: var-get($theme, 'idle-secondary-color');
     }
 
+    [part='label']:has(+ [part~='filled']) {
+        color: var-get($theme, 'filled-secondary-color');
+    }
+
     [part^='container'] {
         height: var-get($theme, 'size');
         background: var-get($theme, 'border-background');

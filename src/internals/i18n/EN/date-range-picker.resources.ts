@@ -1,5 +1,6 @@
 import { DateRangePickerResourceStringsEN } from 'igniteui-i18n-core';
-import { convertToIgcResource, dateRangePickerResourcesMap } from '../utils.js';
+import { convertToIgcResource } from '../converters.js';
+import { dateRangePickerResourcesMap } from '../utils.js';
 import {
   IgcCalendarResourceStringEN,
   type IgcCalendarResourceStrings,

@@ -1,10 +1,14 @@
 import type { LitElement } from 'lit';
+import { getOrInsertComputed } from '../../utils/objects.js';
 import {
   type FormValueConfig,
   FormValueDefaultTransformers,
   type FormValueTransformers,
 } from './form-transformers.js';
 import type { IgcFormControl } from './types.js';
+
+/** The transformers of each config object, merged over the defaults one time. */
+const mergedTransformers = new WeakMap<object, unknown>();
 
 /* blazorSuppress */
 export class FormValue<T> {
@@ -20,13 +24,18 @@ export class FormValue<T> {
   constructor(host: IgcFormControl, config: FormValueConfig<T>) {
     this._host = host;
     this._value = config.initialValue;
-    this._defaultValue = config.initialDefaultValue ?? this._value;
+    this._defaultValue = this._value;
     this._setFormValue = host[FormValue.setFormValueKey];
 
-    this._transformers = {
-      ...FormValueDefaultTransformers,
-      ...config.transformers,
-    } as FormValueTransformers<T>;
+    const { transformers } = config;
+    this._transformers = (
+      transformers
+        ? getOrInsertComputed(mergedTransformers, transformers, () => ({
+            ...FormValueDefaultTransformers,
+            ...transformers,
+          }))
+        : FormValueDefaultTransformers
+    ) as FormValueTransformers<T>;
   }
 
   public setValueAndFormState(value: T): void {

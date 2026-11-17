@@ -25,6 +25,7 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
     - [CSS custom properties](#css-custom-properties)
   - [Test scenarios](#test-scenarios)
     - [Default](#default)
@@ -52,6 +53,8 @@
 |       4 | 2026-10-02 | Correct the `reportValidity` description                                             |
 |       5 | 2026-10-02 | Forward the host `aria-describedby`                                                  |
 |       6 | 2026-10-06 | `focus()` and `blur()` move the focus to the slider element                          |
+|       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                                             |
+|       8 | 2026-11-02 | A `focus()` call before the first render applies after the render                    |
 
 ## Overview
 
@@ -165,6 +168,7 @@ a form reset restores it, clamping it into the range. It follows the disabled st
 supports `setCustomValidity`, `checkValidity` and `reportValidity`. Its validation behavior follows the
 [form-associated elements specification](../validation-container/spec.md). `focus()` moves the focus to the slider
 element, so a failed submit and `reportValidity()` focus an invalid rating. A disabled rating does not take the focus.
+A `focus()` call before the first render applies after the render.
 
 ### Localization
 
@@ -192,17 +196,17 @@ value: `{0}` is replaced with the current value and `{1}` with the maximum.
 
 | Property       | Attribute       | Reflected | Type                  | Default | Description                                                     |
 | -------------- | --------------- | --------- | --------------------- | ------- | --------------------------------------------------------------- |
-| `value`        | `value`         | no        | `number`              | `0`     | The value of the control.                                        |
-| `max`          | `max`           | no        | `number`              | `5`     | The maximum value; derived from the projected symbols when there are any. |
-| `step`         | `step`          | no        | `number`              | `1`     | The smallest allowed change, clamped to `0.001`–`1`.              |
+| `value`        | `value`         | no        | `number`              | `0`     | The value of the rating, clamped between 0 and `max`.            |
+| `max`          | `max`           | no        | `number`              | `5`     | The maximum value for the rating. With projected symbols, the maximum value is the number of symbols. A maximum below the value also lowers the value. |
+| `step`         | `step`          | no        | `number`              | `1`     | The minimum value change allowed, clamped to `0.001`–`1`. In single selection mode, the step is always 1. |
 | `label`        | `label`         | no        | `string \| undefined` | —       | The label of the control.                                        |
-| `valueFormat`  | `value-format`  | no        | `string \| undefined` | —       | The format of the announced value text.                          |
+| `valueFormat`  | `value-format`  | no        | `string \| undefined` | —       | The format of the `aria-valuetext` of the rating. `{0}` stands for the value and `{1}` for the maximum value. |
 | `hoverPreview` | `hover-preview` | yes       | `boolean`             | `false` | Previews the value under the pointer.                            |
-| `single`       | `single`        | yes       | `boolean`             | `false` | Single selection mode; forces `step` to `1`.                     |
+| `single`       | `single`        | yes       | `boolean`             | `false` | Whether only the symbol at the value is full, instead of all symbols up to it. It also sets `step` to 1 and rounds the value up. |
 | `allowReset`   | `allow-reset`   | yes       | `boolean`             | `false` | Clicking the current value resets it to `0`.                     |
-| `readOnly`     | `readonly`      | yes       | `boolean`             | `false` | Makes the control read-only.                                     |
+| `readOnly`     | `readonly`      | yes       | `boolean`             | `false` | Whether the rating is read-only. A read-only rating shows its value but ignores user input. |
 | `name`         | `name`          | yes       | `string`              | —       | The name submitted with the form data.                           |
-| `disabled`     | `disabled`      | no        | `boolean`             | `false` | The disabled state of the component.                             |
+| `disabled`     | `disabled`      | no        | `boolean`             | `false` | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                             |
 | `invalid`      | `invalid`       | no        | `boolean`             | `false` | The invalid visual state of the component.                       |
 | `defaultValue` | —               | —         | `number`              | —       | The value restored on a form reset.                              |
 | `form`         | —               | —         | `HTMLFormElement \| null` | —   | The associated form. Read-only.                                  |
@@ -226,8 +230,8 @@ value: `{0}` is replaced with the current value and `{1}` with the maximum.
 
 | Event       | Detail   | Cancelable | Description                                                         |
 | ----------- | -------- | ---------- | ------------------------------------------------------------------- |
-| `igcChange` | `number` | no         | The value changed through user interaction.                          |
-| `igcHover`  | `number` | no         | A symbol was hovered while `hoverPreview` is on.                     |
+| `igcChange` | `number` | no         | Emitted when the user changes the value.                             |
+| `igcHover`  | `number` | no         | Emitted when the pointer moves to a new value over the symbols while `hoverPreview` is set. |
 
 Setting `value` from code does not emit `igcChange`, and neither does an interaction that leaves the value as it was.
 
@@ -236,17 +240,17 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 | Component           | Name          | Description                                                     |
 | ------------------- | ------------- | --------------------------------------------------------------- |
 | `igc-rating`        | `symbol`      | The custom rating symbols. Their number decides `max`.           |
-| `igc-rating`        | `value-label` | The content shown next to the value.                             |
+| `igc-rating`        | `value-label` | Renders content after the symbols, such as the value as text.    |
 | `igc-rating-symbol` | default       | The full state of the symbol.                                    |
-| `igc-rating-symbol` | `empty`       | The empty state of the symbol.                                   |
+| `igc-rating-symbol` | `empty`       | Renders the projected empty symbols/icons.                       |
 
 ### CSS Shadow parts
 
 | Component           | Part          | Description                                     |
 | ------------------- | ------------- | ----------------------------------------------- |
-| `igc-rating`        | `base`        | The wrapper of all rating elements.              |
-| `igc-rating`        | `label`       | The label of the control.                        |
-| `igc-rating`        | `value-label` | The value label of the control.                  |
+| `igc-rating`        | `base`        | The main wrapper which holds the symbols and the value label. |
+| `igc-rating`        | `label`       | The label of the rating.                         |
+| `igc-rating`        | `value-label` | The wrapper of the `value-label` slot.           |
 | `igc-rating`        | `symbols`     | The wrapper of all symbols.                      |
 | `igc-rating`        | `symbol`      | A default symbol.                                |
 | `igc-rating`        | `full`        | A full default symbol.                           |
@@ -254,6 +258,12 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 | `igc-rating-symbol` | `symbol`      | The wrapper of the projected symbol.             |
 | `igc-rating-symbol` | `full`        | The wrapper of the full state.                   |
 | `igc-rating-symbol` | `empty`       | The wrapper of the empty state.                  |
+
+### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
 
 ### CSS custom properties
 
@@ -336,6 +346,11 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 26. `focus()` moves the focus to the slider element and `blur()` removes it. A disabled rating does not take the
     focus.
 27. An invalid rating takes the focus on a failed submit and on `reportValidity()`.
+28. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
+    takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
+    `disabled` set does not cancel an earlier call on another element.
 
 ### Not covered by the suite
 

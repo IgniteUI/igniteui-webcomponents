@@ -18,10 +18,12 @@ const rippleAnimation: KeyframeAnimationOptions = {
 };
 
 /**
- * A ripple can be applied to an element to represent
- * an interactive surface.
+ * Shows a ripple wave on a pointer press, to mark an element as an
+ * interactive surface.
  *
  * @element igc-ripple
+ *
+ * @cssproperty --color - The color of the ripple wave.
  */
 export default class IgcRippleComponent extends LitElement {
   public static readonly tagName = 'igc-ripple';
@@ -48,21 +50,12 @@ export default class IgcRippleComponent extends LitElement {
       event.clientY
     );
 
+    // The stylesheet has the rest of the wave styles.
     setStyles(element, {
-      position: 'absolute',
-      display: 'block',
-      pointerEvents: 'none',
-      transformOrigin: 'center',
-      transform: 'translate3d(0, 0, 0) scale(0)',
-      willChange: 'opacity, transform',
-      margin: '0',
-      border: 'none',
       width: `${radius}px`,
       height: `${radius}px`,
-      borderRadius: '50%',
       top: `${top}px`,
       left: `${left}px`,
-      background: 'var(--color, var(--ig-gray-800))',
     });
     this.renderRoot.appendChild(element);
 

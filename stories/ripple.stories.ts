@@ -34,7 +34,7 @@ const metadata: Meta<IgcRippleComponent> = {
     docs: {
       description: {
         component:
-          'A ripple can be applied to an element to represent\nan interactive surface.',
+          'Shows a ripple wave on a pointer press, to mark an element as an\ninteractive surface.',
       },
     },
   },
@@ -113,7 +113,7 @@ export const Default: Story = {
         padding: 1rem 0.5rem;
         border: 1px solid var(--ig-gray-300);
         border-radius: 12px;
-        background: var(--ig-surface-500);
+        background: var(--ig-surface-base);
       }
 
       .rp-action igc-icon {

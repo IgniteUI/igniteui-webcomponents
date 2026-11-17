@@ -1,8 +1,7 @@
 import { property } from 'lit/decorators.js';
 import { convertToDate, isValidDate } from '#internals/date/converters.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { formatDisplayDate } from '#internals/i18n/i18n-controller.js';
-import type { AbstractConstructor } from '#internals/mixins/constructor.js';
+import { formatDisplayDate } from '#internals/i18n/date-formats.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateTimeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
@@ -14,7 +13,7 @@ import { styles as shared } from '../input/themes/shared/input.common.css.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import {
   createDatePart,
-  DatePart,
+  type DatePart,
   type DatePartDeltas,
   DatePartType,
 } from './date-part.js';
@@ -38,18 +37,17 @@ export interface IgcDateTimeInputComponentEventMap {
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
 /**
- * A date time input is an input field that lets you set and edit the date and time in a chosen input element
- * using customizable display and input formats.
+ * An input field to enter and edit a date and time value, with configurable input and display formats.
  *
  * @element igc-date-time-input
  *
  * @slot prefix - Renders content before the input.
- * @slot suffix - Renders content after input.
+ * @slot suffix - Renders content after the input.
  * @slot helper-text - Renders content below the input.
  * @slot value-missing - Renders content when the required validation fails.
  * @slot range-overflow - Renders content when the max validation fails.
  * @slot range-underflow - Renders content when the min validation fails.
- * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot custom-error - Renders content when a custom message is set with `setCustomValidity()`.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcInput - Emitted when the control input receives user input.
@@ -61,13 +59,25 @@ export interface IgcDateTimeInputComponentEventMap {
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
+ * @csspart prefixed - Added to the container and the input when an element that is not hidden is in the prefix slot.
+ * @csspart suffixed - Added to the container and the input when an element that is not hidden is in the suffix slot.
+ * @csspart filled - Added to the container and the input unless the focused input shows only the empty mask.
+ * @csspart labelled - Added to the container in the material theme when the control has a label.
+ * @csspart start - The wrapper of the prefix in the material theme.
+ * @csspart notch - The wrapper of the label in the material theme.
+ * @csspart filler - The outline segment between the notch and the end in the material theme.
+ * @csspart end - The wrapper of the suffix in the material theme.
+ *
+ * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   IgcDateTimeInputComponentEventMap,
-  AbstractConstructor<IgcDateTimeInputBaseComponent<Date, DatePart>>
+  typeof IgcDateTimeInputBaseComponent<Date, DatePart>
 >(IgcDateTimeInputBaseComponent) {
   public static readonly tagName = 'igc-date-time-input';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -193,7 +203,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     sign: 1 | -1
   ): Date {
     const effectiveDelta =
-      delta || this._datePartDeltas[datePart as keyof DatePartDeltas] || 1;
+      delta || this.spinDelta?.[datePart as keyof DatePartDeltas] || 1;
 
     return this._spinDatePart(datePart, sign * Math.abs(effectiveDelta));
   }
@@ -214,10 +224,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       part = createDatePart(partType, { start: 0, end: 0, format: '' });
     }
 
-    const amPmValue =
-      datePart === DatePart.AmPm
-        ? this._readAmPmFromMask(this._parser.getPartByType(DatePartType.AmPm))
-        : undefined;
+    const amPmValue = this._readAmPmFromMask(part);
 
     part.spin(delta, {
       date: newDate,
@@ -233,12 +240,20 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   //#region Public API
 
-  /** Increments a date/time portion. */
+  /**
+   * Increments a date or time part by `delta`, or by its `spinDelta` value.
+   * Without `datePart`, it changes the part at the cursor or a default part.
+   * The `value` updates at once.
+   */
   public override stepUp(datePart?: DatePart, delta?: number): void {
     super.stepUp(datePart, delta);
   }
 
-  /** Decrements a date/time portion. */
+  /**
+   * Decrements a date or time part by `delta`, or by its `spinDelta` value.
+   * Without `datePart`, it changes the part at the cursor or a default part.
+   * The `value` updates at once.
+   */
   public override stepDown(datePart?: DatePart, delta?: number): void {
     super.stepDown(datePart, delta);
   }

@@ -43,9 +43,15 @@ export declare class EventEmitterInterface<E> {
   ): boolean;
 }
 
-export function EventEmitterMixin<E, T extends AbstractConstructor<LitElement>>(
-  superClass: T
-): Constructor<EventEmitterInterface<E>> & T;
+/**
+ * Adds `emitEvent` and typed event listeners for the event map `E`. When the
+ * base class is not `LitElement`, pass `typeof Base` as `T`, so the result
+ * keeps the statics of the base.
+ */
+export function EventEmitterMixin<
+  E,
+  T extends AbstractConstructor<LitElement> = typeof LitElement,
+>(superClass: T): Constructor<EventEmitterInterface<E>> & T;
 export function EventEmitterMixin<E, T extends Constructor<LitElement>>(
   superClass: T
 ) {
@@ -57,13 +63,16 @@ export function EventEmitterMixin<E, T extends Constructor<LitElement>>(
       type: K,
       eventInitDict?: CustomEventInit<D>
     ): boolean {
-      return this.dispatchEvent(
-        new CustomEvent<D>(type as string, {
-          detail: {} as D,
-          ...defaultEventInit,
-          ...eventInitDict,
-        })
-      );
+      const bubbles = eventInitDict?.bubbles ?? defaultEventInit.bubbles;
+      // Inlined in `dispatchEvent`, the manifest analyzer records an unnamed event.
+      const event = new CustomEvent<D>(type as string, {
+        detail: {} as D,
+        ...defaultEventInit,
+        // A composed event also reaches the listeners on each shadow host around the target.
+        composed: bubbles,
+        ...eventInitDict,
+      });
+      return this.dispatchEvent(event);
     }
   }
   return EventEmitterElement as Constructor<EventEmitterInterface<E>> & T;

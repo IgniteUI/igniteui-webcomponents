@@ -6,6 +6,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import { defineComponents, IgcIconButtonComponent } from '../../index.js';
 
@@ -228,9 +229,27 @@ describe('IconButton component', () => {
       DIFF_OPTIONS
     );
   });
+
+  it('forwards the host `aria-expanded` and `aria-haspopup` to the native button', async () => {
+    el = await createIconButtonComponent(
+      '<igc-icon-button variant="flat" aria-label="Collapse"></igc-icon-button>'
+    );
+    el.setAttribute('aria-expanded', 'true');
+    el.setAttribute('aria-haspopup', 'menu');
+    await elementUpdated(el);
+
+    const button = el.renderRoot.querySelector('button')!;
+    expect(button.getAttribute('aria-expanded')).to.equal('true');
+    expect(button.getAttribute('aria-haspopup')).to.equal('menu');
+    await expect(el).to.be.accessible();
+  });
   const createIconButtonComponent = (
     template = '<igc-icon-button aria-label="Icon button"/>'
   ) => {
     return fixture<IgcIconButtonComponent>(html`${unsafeStatic(template)}`);
   };
+
+  runFocusBeforeRenderTests(
+    html`<igc-icon-button aria-label="Label"></igc-icon-button>`
+  );
 });

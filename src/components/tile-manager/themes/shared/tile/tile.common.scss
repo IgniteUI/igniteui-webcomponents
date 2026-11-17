@@ -38,7 +38,7 @@ $theme: $material;
 }
 
 :host([part~='dragging']) {
-    background: var-get($theme, 'placeholder-background');
+    background: var-get($theme, 'overlay-background');
 
     // An outline, not a border, so that the dragged tile keeps its size.
     outline: rem(1px) solid var-get($theme, 'ghost-border');
@@ -83,21 +83,10 @@ igc-divider {
     width: var(--_size);
     aspect-ratio: 1;
     border-radius: 50%;
-    z-index: 11111;
     background-color: var-get($theme, 'ghost-border');
 }
 
-// Custom adorners have no indicator look and sit flush with the tile edges.
+// Custom adorners have no indicator look.
 [part~='custom'] {
     background-color: transparent;
-}
-
-[part~='trigger-side'][part~='custom'],
-[part~='trigger'][part~='custom'] {
-    inset-inline-end: 0;
-}
-
-[part~='trigger'][part~='custom'],
-[part~='trigger-bottom'][part~='custom'] {
-    bottom: 0;
 }

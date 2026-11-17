@@ -242,7 +242,8 @@ export class MaskParser {
     this._literals.clear();
 
     for (let i = 0; i < length; i++) {
-      const [current, next] = [mask.charAt(i), mask.charAt(i + 1)];
+      const current = mask.charAt(i);
+      const next = mask.charAt(i + 1);
 
       if (this._isEscapedFlag(current, next)) {
         // Escaped flag: the next character is a literal.

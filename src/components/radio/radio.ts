@@ -8,8 +8,8 @@ import {
   DefaultSlot,
   setSlots,
 } from '#internals/controllers/slot.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedCheckboxRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import { FormValueBooleanTransformers } from '#internals/mixins/forms/form-transformers.js';
@@ -28,6 +28,13 @@ import { styles } from './themes/radio.base.css.js';
 import { styles as shared } from './themes/shared/radio.common.css.js';
 import { radioValidators } from './validators.js';
 
+const Slots = setSlots(
+  'helper-text',
+  'value-missing',
+  'custom-error',
+  'invalid'
+);
+
 export interface IgcRadioChangeEventArgs {
   checked: boolean;
   value?: string;
@@ -45,7 +52,8 @@ export interface IgcRadioComponentEventMap {
 const nextId = createIdGenerator('radio');
 
 /**
- * The radio component allows the user to select a single option from an available set of options that are listed side by side.
+ * Lets the user select one option from a set. Radios with the same `name`
+ * form a group, and only one radio of the group is checked.
  *
  * @element igc-radio
  *
@@ -55,19 +63,24 @@ const nextId = createIdGenerator('radio');
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcChange - Emitted when the control's checked state changes.
+ * @fires igcChange - Emitted when the checked state of the control changes by user interaction.
  *
  * @csspart base - The radio control base wrapper.
- * @csspart control - The radio input control.
+ * @csspart control - The circle of the radio.
  * @csspart label - The radio control label.
+ * @csspart ripple - The highlight around the circle on hover and focus. A disabled radio hides it.
+ * @csspart checked - Added to the base, control, label and ripple parts when the radio is checked.
+ * @csspart focused - Added to the base part when the radio has keyboard focus.
+ *
+ * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. In a radio group, only the last radio keeps the space. Default is `0`.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMixin(
-  EventEmitterMixin<IgcRadioComponentEventMap, Constructor<LitElement>>(
-    LitElement
-  )
+  EventEmitterMixin<IgcRadioComponentEventMap>(LitElement)
 ) {
   public static readonly tagName = 'igc-radio';
-  protected static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -91,7 +104,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   });
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots('helper-text', 'value-missing', 'custom-error', 'invalid'),
+    slots: Slots,
     onChange: this._handleSlotChange,
   });
 
@@ -133,6 +146,12 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     return this._radios.findLast((radio) => radio.checked) === this;
   }
 
+  /**
+   * Whether the group of the radio is required. A required group fails
+   * validation while none of its radios is checked.
+   * @attr
+   * @default false
+   */
   @property({ type: Boolean, reflect: true })
   public override set required(value: boolean) {
     super.required = value;
@@ -149,7 +168,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   /**
-   * The value of the control.
+   * The value of the control, submitted when the control is checked.
    * @attr
    */
   @property()
@@ -166,7 +185,8 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   /* @tsTwoWayProperty(true, "igcChange", "detail.checked", false) */
   /**
-   * The checked state of the control.
+   * Whether the control is checked. A checked radio clears the other radios
+   * of its group.
    * @attr
    */
   @property({ type: Boolean })
@@ -275,20 +295,25 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   /* alternateName: focusComponent */
   /** Sets focus on the radio control. */
   public override focus(options?: FocusOptions): void {
-    this._input.focus(options);
+    this._input?.focus(options);
+    deferFocus(this, options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the radio control. */
   public override blur(): void {
-    this._input.blur();
+    cancelDeferredFocus(this);
+    this._input?.blur();
   }
 
   private _checkValidity(): boolean {
     return super.checkValidity();
   }
 
-  /** Checks for validity of the control and emits the invalid event if it's invalid. */
+  /**
+   * Checks the validity of the whole group. Each invalid radio of the group
+   * emits `invalid`.
+   */
   public override checkValidity(): boolean {
     for (const radio of this._siblings()) {
       radio._checkValidity();
@@ -311,8 +336,8 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   /**
-   * Sets a custom validation message for the control.
-   * As long as `message` is not empty, the control is considered invalid.
+   * Sets a custom validation message on every radio of the group. The radios
+   * are invalid while `message` is not empty.
    */
   public override setCustomValidity(message: string): void {
     for (const radio of this._radios) {
@@ -391,7 +416,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
         tabindex: this._tabIndex,
         description: helperText(this, this._slots),
         onClick: this._handleClick,
-        onKeyDown: this._handleEnterKeydown,
+        onEnterKey: this._handleEnterKey,
       })}
       ${IgcValidationContainerComponent.create(this)}
     `;

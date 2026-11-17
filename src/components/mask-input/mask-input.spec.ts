@@ -7,9 +7,11 @@ import {
   shiftKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
+  runHostComboboxTests,
 } from '#internals/testing/form-testbed.spec.js';
 import {
   simulateInput,
@@ -1056,6 +1058,10 @@ describe('Masked input', () => {
       ).to.be.false;
     });
 
+    it('submits once on a real Enter', async () => {
+      expect(await spec.pressEnter()).to.equal(1);
+    });
+
     it('is with correct input value and placeholder after a form reset', async () => {
       const input = spec.element.renderRoot.querySelector('input')!;
       const placeholder = 'Type something';
@@ -1305,6 +1311,16 @@ describe('Masked input', () => {
     getNativeInput: (host) =>
       (host as IgcMaskInputComponent).renderRoot.querySelector('input')!,
   });
+
+  runHostComboboxTests({
+    tagName: IgcMaskInputComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcMaskInputComponent).renderRoot.querySelector('input')!,
+  });
+
+  runFocusBeforeRenderTests(
+    html`<igc-mask-input label="Label"></igc-mask-input>`
+  );
 });
 
 type CompositionEventType = 'compositionstart' | 'compositionend';

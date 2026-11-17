@@ -5,6 +5,13 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
+import {
+  ColorPickerResourceStringsEN,
+  type IColorPickerResourceStrings,
+  registerI18n,
+  setCurrentI18n,
+} from 'igniteui-i18n-core';
+import { ColorPickerResourceStringsBG } from 'igniteui-i18n-resources';
 import { spy, stub } from 'sinon';
 import {
   altKey,
@@ -15,6 +22,7 @@ import {
   escapeKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runAriaProjectionTests,
@@ -22,10 +30,13 @@ import {
 } from '#internals/testing/form-testbed.spec.js';
 import {
   isFocused,
+  isUnderPageLayer,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import {
+  simulateCancelableKeydown,
   simulateClick,
+  simulateComposingKeys,
   simulateInput,
   simulateKeyboard,
   simulateScroll,
@@ -35,6 +46,7 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import { formatString } from '#internals/utils/strings.js';
 import { configureTheme } from '#theming/config.js';
 import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
 import type IgcInputComponent from '../input/input.js';
@@ -182,6 +194,51 @@ async function expectSliderTracks(
   });
 }
 
+/** The localized labels of a picker with `show-alpha` and no value. */
+function getLabels(picker: IgcColorPickerComponent) {
+  const root = picker.renderRoot;
+  const text = (selector: string) =>
+    root.querySelector(selector)!.textContent!.trim();
+  const marker =
+    getCanvas(picker).renderRoot.querySelector('[part~="marker"]')!;
+
+  return {
+    open: getAnchor(picker).textContent!.trim(),
+    dialog: root.querySelector('#picker')!.getAttribute('aria-label'),
+    hue: getHueSlider(picker).getAttribute('aria-label'),
+    alpha: getAlphaSlider(picker).getAttribute('aria-label'),
+    alphaValue: text('label[for="alpha"]'),
+    alphaPlaceholder: getAlphaInput(picker).placeholder,
+    format: text('label[for="format-select"]'),
+    formatPlaceholder: getFormatSelect(picker).placeholder,
+    copy: text('[part="copy"]'),
+    eyeDropper: text('[part="eye-dropper"]'),
+    canvas: marker.getAttribute('aria-label'),
+    canvasValue: marker.getAttribute('aria-valuetext'),
+  };
+}
+
+/** The labels that {@link getLabels} reads, from a set of resource strings. */
+function expectedLabels(strings: IColorPickerResourceStrings) {
+  const all = strings as Required<IColorPickerResourceStrings>;
+
+  return {
+    open: all.color_picker_open,
+    dialog: all.color_picker_dialog_label,
+    hue: all.color_picker_hue,
+    alpha: all.color_picker_alpha,
+    alphaValue: all.color_picker_alpha_value,
+    alphaPlaceholder: all.color_picker_alpha_value,
+    format: all.color_picker_format,
+    formatPlaceholder: all.color_picker_format,
+    copy: all.color_picker_copy,
+    eyeDropper: all.color_picker_eye_dropper,
+    canvas: all.color_picker_canvas_label,
+    // An empty picker starts at the white corner.
+    canvasValue: formatString(all.color_picker_canvas_value, 0, 100),
+  };
+}
+
 describe('Color picker', () => {
   before(() => defineComponents(IgcColorPickerComponent));
 
@@ -220,6 +277,15 @@ describe('Color picker', () => {
 
       await expect(picker).shadowDom.to.be.accessible(hiddenLabelOptions);
       await expect(picker).lightDom.to.be.accessible(hiddenLabelOptions);
+    });
+
+    it('paints the focus ring of the anchor under an earlier page layer', () => {
+      const anchor = getAnchor(picker);
+
+      anchor.focus();
+
+      expect(anchor.matches(':focus-visible')).to.be.true;
+      expect(isUnderPageLayer(picker, anchor)).to.be.true;
     });
   });
 
@@ -349,6 +415,85 @@ describe('Color picker', () => {
       // `<label for="alpha">` labels the `igc-input`. An IDREF cannot cross into
       // the shadow root, so the native editor uses element reflection.
       expect(editor.ariaLabelledByElements).to.eql([label]);
+    });
+  });
+
+  describe('Localization', () => {
+    before(() => registerI18n(ColorPickerResourceStringsBG, 'bg'));
+
+    beforeEach(async () => {
+      picker = await fixture<IgcColorPickerComponent>(
+        html`<igc-color-picker show-alpha></igc-color-picker>`
+      );
+      await elementUpdated(getCanvas(picker));
+    });
+
+    async function updated(): Promise<void> {
+      await elementUpdated(picker);
+      await elementUpdated(getCanvas(picker));
+    }
+
+    it('renders the English strings by default', () => {
+      expect(getLabels(picker)).to.eql(
+        expectedLabels(ColorPickerResourceStringsEN)
+      );
+    });
+
+    it('renders the strings of its `locale`', async () => {
+      picker.locale = 'bg';
+      await updated();
+
+      expect(getLabels(picker)).to.eql(
+        expectedLabels(ColorPickerResourceStringsBG)
+      );
+    });
+
+    it('follows a change of the global locale', async () => {
+      setCurrentI18n('bg');
+
+      try {
+        await updated();
+
+        expect(getLabels(picker)).to.eql(
+          expectedLabels(ColorPickerResourceStringsBG)
+        );
+      } finally {
+        setCurrentI18n('en');
+      }
+    });
+
+    it('labels the prefix button of the input mode', async () => {
+      picker.mode = 'input';
+      picker.locale = 'bg';
+      await elementUpdated(picker);
+
+      expect(getAnchor(picker).getAttribute('aria-label')).to.equal(
+        ColorPickerResourceStringsBG.color_picker_open
+      );
+    });
+
+    it('labels the color value input', async () => {
+      const label = () =>
+        picker.renderRoot
+          .querySelector('label[for="color-input"]')!
+          .textContent!.trim();
+
+      expect(label()).to.equal(ColorPickerResourceStringsEN.color_picker_value);
+
+      picker.locale = 'bg';
+      await elementUpdated(picker);
+
+      expect(label()).to.equal(ColorPickerResourceStringsBG.color_picker_value);
+    });
+
+    it('takes single strings from `resourceStrings`', async () => {
+      picker.resourceStrings = { color_picker_hue: 'Farbton' };
+      await updated();
+
+      expect(getLabels(picker)).to.eql({
+        ...expectedLabels(ColorPickerResourceStringsEN),
+        hue: 'Farbton',
+      });
     });
   });
 
@@ -856,6 +1001,121 @@ describe('Color picker', () => {
     });
   });
 
+  describe('Inner events', () => {
+    /**
+     * Records the events of `types` that `inner` sends, and the ones of them
+     * that also reach a listener on the picker.
+     */
+    function trackInnerEvents(inner: Element, ...types: string[]) {
+      const sent: Event[] = [];
+      const leaked: Event[] = [];
+
+      for (const type of types) {
+        inner.addEventListener(type, (event) => sent.push(event));
+        picker.addEventListener(type, (event) => {
+          if (sent.includes(event)) leaked.push(event);
+        });
+      }
+
+      return { sent, leaked };
+    }
+
+    function typeInto(input: IgcInputComponent, value: string): void {
+      simulateInput(input.renderRoot.querySelector('input')!, { value });
+    }
+
+    beforeEach(async () => {
+      picker = await createDefaultColorPicker();
+      picker.value = '#ff0000';
+      picker.open = true;
+      await elementUpdated(picker);
+    });
+
+    it('keeps the igcInput of the alpha input inside', async () => {
+      picker.showAlpha = true;
+      picker.format = 'rgb';
+      await elementUpdated(picker);
+
+      const eventSpy = spy(picker, 'emitEvent');
+      const { sent, leaked } = trackInnerEvents(
+        getAlphaInput(picker),
+        'igcInput'
+      );
+
+      clearAlpha(picker);
+      typeIntoAlpha(picker, '25');
+      await elementUpdated(picker);
+
+      expect(sent).not.to.be.empty;
+      expect(leaked).to.be.empty;
+      expect(eventSpy).calledWith('igcInput', { detail: picker.value });
+    });
+
+    it('keeps the igcInput of the color value input inside', async () => {
+      const input = getColorInput(picker);
+      const { sent, leaked } = trackInnerEvents(input, 'igcInput');
+
+      typeInto(input, '#00ff00');
+      await elementUpdated(picker);
+
+      expect(sent).lengthOf(1);
+      expect(leaked).to.be.empty;
+    });
+
+    it('keeps the igcInput of the input anchor inside', async () => {
+      picker.mode = 'input';
+      await elementUpdated(picker);
+
+      const input = picker.renderRoot.querySelector<IgcInputComponent>(
+        'igc-input[slot="anchor"]'
+      )!;
+      const { sent, leaked } = trackInnerEvents(input, 'igcInput');
+
+      typeInto(input, '#00ff00');
+      await elementUpdated(picker);
+
+      expect(sent).lengthOf(1);
+      expect(leaked).to.be.empty;
+    });
+
+    it('keeps the open and close events of the format select inside', async () => {
+      const select = getFormatSelect(picker);
+      const { sent, leaked } = trackInnerEvents(
+        select,
+        'igcOpening',
+        'igcOpened',
+        'igcClosing',
+        'igcClosed'
+      );
+
+      simulateClick(select.renderRoot.querySelector('igc-input')!);
+      await elementUpdated(select);
+
+      simulateClick(select.items[1]);
+      await elementUpdated(select);
+
+      expect(sent.map(({ type }) => type)).to.deep.equal([
+        'igcOpening',
+        'igcOpened',
+        'igcClosing',
+        'igcClosed',
+      ]);
+      expect(leaked).to.be.empty;
+      expect(picker.format).to.equal('rgb');
+    });
+
+    it('keeps the igcColorPicked of the canvas inside', async () => {
+      const canvas = getCanvas(picker);
+      const { sent, leaked } = trackInnerEvents(canvas, 'igcColorPicked');
+
+      simulateKeyboard(canvas, arrowDown);
+      await elementUpdated(picker);
+
+      expect(sent).lengthOf(1);
+      expect(leaked).to.be.empty;
+    });
+  });
+
   describe('Swatches', () => {
     beforeEach(async () => {
       picker = await createDefaultColorPicker();
@@ -1009,6 +1269,22 @@ describe('Color picker', () => {
 
       expect(picker.open).to.be.false;
       expect(isFocused(anchor)).to.be.true;
+    });
+
+    it('cancels Escape only while open', async () => {
+      expect(simulateCancelableKeydown(picker, escapeKey)).to.be.false;
+
+      await picker.show();
+      expect(simulateCancelableKeydown(picker, escapeKey)).to.be.true;
+    });
+
+    it('stays open on an Escape that an IME handles', async () => {
+      await picker.show();
+
+      simulateComposingKeys(picker, escapeKey);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.true;
     });
 
     it('opens with Alt+ArrowDown and closes with Alt+ArrowUp', async () => {
@@ -1526,4 +1802,6 @@ describe('Color picker', () => {
       )!,
     ],
   });
+
+  runFocusBeforeRenderTests(html`<igc-color-picker></igc-color-picker>`);
 });

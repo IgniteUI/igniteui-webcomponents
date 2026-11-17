@@ -13,13 +13,13 @@ import { styles as shared } from './themes/shared/navbar.common.css.js';
  * @element igc-navbar
  *
  * @slot - Renders a title inside the default slot.
- * @slot start - Renders left aligned icons.
- * @slot end - Renders right aligned action icons.
+ * @slot start - Renders icons at the start of the navigation bar.
+ * @slot end - Renders action icons at the end of the navigation bar.
  *
  * @csspart base - The base wrapper of the navigation bar.
- * @csspart start - The left aligned icon container.
+ * @csspart start - The container of the start icons.
  * @csspart middle - The navigation bar title container.
- * @csspart end - The right aligned action icons container.
+ * @csspart end - The container of the end action icons.
  */
 export default class IgcNavbarComponent extends LitElement {
   public static readonly tagName = 'igc-navbar';

@@ -33,6 +33,7 @@ import {
   pageUpKey,
 } from '#internals/controllers/key-bindings.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { createTimer } from '#internals/timing.js';
 import { isLTR, pointToFraction } from '#internals/utils/dom.js';
 import {
@@ -75,6 +76,8 @@ function stepFrom(base: number, step: number, steps: number): number {
   const decimals = Math.max(numberOfDecimals(base), numberOfDecimals(step));
   return roundPrecise(base + steps * step, decimals);
 }
+
+const NO_FORMAT_OPTIONS: Intl.NumberFormatOptions = Object.freeze({});
 
 /**
  * Counts the steps from `base` to the step nearest to `value`. As a native
@@ -146,7 +149,7 @@ export class IgcSliderBaseComponent extends LitElement {
    * update checks the values after all of them are set, so the order of the
    * attributes has no effect.
    *
-   * If `labels` are provided (projected), then `min` is always 0.
+   * With slider labels in the default slot, `min` is always 0.
    *
    * If `lowerBound` is less than `min`, the slider uses `min` as the lower bound.
    * @attr
@@ -167,7 +170,7 @@ export class IgcSliderBaseComponent extends LitElement {
    * update checks the values after all of them are set, so the order of the
    * attributes has no effect.
    *
-   * If `labels` are provided (projected), then `max` is always the number of
+   * With slider labels in the default slot, `max` is always the number of
    * labels minus one.
    *
    * If `upperBound` is greater than `max`, the slider uses `max` as the upper bound.
@@ -217,33 +220,32 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   /**
-   * Disables the UI interactions of the slider.
+   * Whether the slider is disabled. A disabled slider ignores user interaction.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
   /**
-   * Marks the slider track as discrete so it displays the steps.
-   * If the `step` is 0, the slider will remain continuous even if `discreteTrack` is `true`.
+   * Whether the track shows the steps. It has no effect when `step` is 0.
    * @attr discrete-track
    */
   @property({ type: Boolean, attribute: 'discrete-track' })
   public discreteTrack = false;
 
   /**
-   * Hides the thumb tooltip.
+   * Whether the thumb tooltip is hidden.
    * @attr hide-tooltip
    */
   @property({ type: Boolean, attribute: 'hide-tooltip' })
   public hideTooltip = false;
 
   /**
-   * Specifies the granularity that the value must adhere to.
+   * The interval between two valid values, counted from `min`.
    *
    * If set to 0 no stepping is implied and any value in the range is allowed.
    * A negative step is not valid, so the previous step stays.
-   * If `labels` are provided (projected) then the step is always assumed to be 1 since it is a discrete slider.
+   * With slider labels in the default slot, the step is always 1.
    *
    * @attr
    * @default 1
@@ -266,28 +268,30 @@ export class IgcSliderBaseComponent extends LitElement {
   public primaryTicks = 0;
 
   /**
-   * The number of secondary ticks. It defaults to 0 which means no secondary ticks are displayed.
+   * The number of secondary ticks between two primary ticks. Without primary
+   * ticks, it is the total number of ticks. The default 0 shows no secondary ticks.
    * @attr secondary-ticks
    */
   @property({ type: Number, attribute: 'secondary-ticks' })
   public secondaryTicks = 0;
 
   /**
-   * Changes the orientation of the ticks.
+   * Where the ticks are drawn: before the track (`start`), after it (`end`),
+   * or on both sides (`mirror`).
    * @attr tick-orientation
    */
   @property({ attribute: 'tick-orientation' })
   public tickOrientation: SliderTickOrientation = 'end';
 
   /**
-   * Hides the primary tick labels.
+   * Whether the labels of the primary ticks are hidden.
    * @attr hide-primary-labels
    */
   @property({ type: Boolean, attribute: 'hide-primary-labels' })
   public hidePrimaryLabels = false;
 
   /**
-   * Hides the secondary tick labels.
+   * Whether the labels of the secondary ticks are hidden.
    * @attr hide-secondary-labels
    */
   @property({ type: Boolean, attribute: 'hide-secondary-labels' })
@@ -302,6 +306,7 @@ export class IgcSliderBaseComponent extends LitElement {
 
   /**
    * String format used for the thumb and tick label values in the slider.
+   * The `{0}` placeholder holds the formatted number.
    * @attr value-format
    */
   @property({ attribute: 'value-format' })
@@ -345,13 +350,11 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   protected override willUpdate(changedProperties: PropertyValues): void {
-    // `valueFormatOptions` can change in place, so the update keeps a copy.
-    const formatSource: [string, Intl.NumberFormatOptions] = [
-      this.locale,
-      { ...this.valueFormatOptions },
-    ];
-    if (!equal(formatSource, this._formatSource)) {
-      this._formatSource = formatSource;
+    // Copy, as the options change in place; a new copy only on a change.
+    const options = this.valueFormatOptions ?? NO_FORMAT_OPTIONS;
+    const source = this._formatSource;
+    if (!source || this.locale !== source[0] || !equal(options, source[1])) {
+      this._formatSource = [this.locale, { ...options }];
       this._numberFormat = undefined;
     }
 
@@ -366,7 +369,9 @@ export class IgcSliderBaseComponent extends LitElement {
       [this._min, this._max] = this._scale;
     }
 
-    this._scale = [this._min, this._max];
+    if (this._scale[0] !== this._min || this._scale[1] !== this._max) {
+      this._scale = [this._min, this._max];
+    }
 
     const constraintsChanged =
       changedProperties.has('min') ||
@@ -402,12 +407,14 @@ export class IgcSliderBaseComponent extends LitElement {
   public override focus(options?: FocusOptions): void {
     if (!(this.disabled || this._activeThumb)) {
       this._thumb?.focus(options);
+      deferFocus(this, options);
     }
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the thumb. */
   public override blur(): void {
+    cancelDeferredFocus(this);
     this._activeThumb?.blur();
   }
 

@@ -1,9 +1,13 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import { isPopoverOpen } from '#internals/utils/dom.js';
+import { preventDefault } from '#internals/utils/events.js';
 import IgcInputComponent from '../input/input.js';
 import IgcTooltipComponent from '../tooltip/tooltip.js';
 import IgcButtonComponent from './button.js';
@@ -438,6 +442,43 @@ describe('Button tests', () => {
 
         expect(button.commandForElement).to.be.null;
       });
+
+      it('resolves commandfor set before the button is inserted', async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div><div id="detached-target" popover></div></div>
+        `);
+        const target = container.querySelector('#detached-target');
+
+        // set attributes on element before inserting it as some frameworks do:
+        button = document.createElement(IgcButtonComponent.tagName);
+        button.setAttribute('commandfor', 'detached-target');
+        expect(button.commandForElement).to.be.null;
+
+        container.appendChild(button);
+        await elementUpdated(button);
+
+        expect(button.commandForElement).to.equal(target);
+      });
+
+      it('resolves a commandfor changed while the button was detached', async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <igc-button commandfor="first-target">Click</igc-button>
+            <div id="first-target" popover></div>
+            <div id="second-target" popover></div>
+          </div>
+        `);
+
+        button = container.querySelector<IgcButtonComponent>('igc-button')!;
+        const second = container.querySelector('#second-target');
+
+        button.remove();
+        button.commandfor = 'second-target';
+        container.appendChild(button);
+        await elementUpdated(button);
+
+        expect(button.commandForElement).to.equal(second);
+      });
     });
 
     describe('Popover control', () => {
@@ -567,6 +608,76 @@ describe('Button tests', () => {
       expect(spec.element.value).to.equal('John Doe');
     });
 
+    it('submits after the click listeners on the host', () => {
+      const events: string[] = [];
+      spec.form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        events.push('submit');
+      });
+      button.addEventListener('click', () => events.push('click'));
+
+      button.click();
+      expect(events).to.eql(['click', 'submit']);
+    });
+
+    it('does not submit or reset when a listener cancels the click', () => {
+      const submit = spy(preventDefault);
+      spec.form.addEventListener('submit', submit);
+      button.addEventListener('click', preventDefault);
+
+      button.click();
+      expect(submit.called).to.be.false;
+
+      spec.setProperties({ value: 'Jane Doe' });
+      button.type = 'reset';
+
+      button.click();
+      expect(spec.element.value).to.equal('Jane Doe');
+    });
+
+    it('does not submit when a click listener disables the button', () => {
+      const submit = spy(preventDefault);
+      spec.form.addEventListener('submit', submit);
+      button.addEventListener('click', () => {
+        button.disabled = true;
+      });
+
+      button.click();
+      expect(submit.called).to.be.false;
+    });
+
+    it('is the default button for Enter in a field', () => {
+      const click = spy();
+      button.addEventListener('click', click);
+      // With two text fields, only a default button submits on Enter.
+      spec.form.append(document.createElement('input'));
+
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.true;
+      expect(click.calledOnce).to.be.true;
+    });
+
+    it('blocks Enter submission while it is the disabled default button', () => {
+      button.disabled = true;
+
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.false;
+    });
+
+    it('is not the default button as a link', () => {
+      const click = spy();
+      button.addEventListener('click', click);
+      button.href = '#';
+
+      // One text field and no submit button, so Enter submits the form.
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.true;
+      expect(click.called).to.be.false;
+    });
+
     it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
@@ -582,6 +693,7 @@ describe('Button tests', () => {
     tagName: 'igc-button',
     template: html`<igc-button>Click</igc-button>`,
     getTarget: (host) => host.renderRoot.querySelector('[part~="base"]')!,
+    visibleText: 'Click',
   });
 
   describe('Naming', () => {
@@ -595,7 +707,7 @@ describe('Button tests', () => {
           <span id="name">Save</span>
           <span id="hint">Saves the draft</span>
           <label for="button">Save the file</label>
-          <igc-button id="button">Click</igc-button>
+          <igc-button id="button">Save</igc-button>
         </div>
       `);
       button = container.querySelector('igc-button')!;
@@ -683,5 +795,115 @@ describe('Button tests', () => {
 
       expect(native().hasAttribute('aria-label')).to.be.false;
     });
+
+    it('forwards the host `aria-pressed` to the native button', async () => {
+      button.setAttribute('aria-pressed', 'false');
+      await elementUpdated(button);
+      expect(native().getAttribute('aria-pressed')).to.equal('false');
+      await expect(button).to.be.accessible();
+
+      button.ariaPressed = 'true';
+      await elementUpdated(button);
+      expect(native().getAttribute('aria-pressed')).to.equal('true');
+
+      button.removeAttribute('aria-pressed');
+      await elementUpdated(button);
+      expect(native().hasAttribute('aria-pressed')).to.be.false;
+    });
+
+    it('does not forward `aria-pressed` to a link or a disabled link', async () => {
+      button.setAttribute('aria-pressed', 'true');
+      button.href = '/';
+      await elementUpdated(button);
+      expect(native().localName).to.equal('a');
+      expect(native().hasAttribute('aria-pressed')).to.be.false;
+
+      button.disabled = true;
+      await elementUpdated(button);
+      expect(native().getAttribute('role')).to.equal('link');
+      expect(native().hasAttribute('aria-pressed')).to.be.false;
+    });
+
+    it('forwards the host disclosure state to the native button', async () => {
+      const hint = container.querySelector('#hint');
+
+      button.setAttribute('aria-expanded', 'true');
+      button.setAttribute('aria-haspopup', 'menu');
+      button.setAttribute('aria-controls', 'hint');
+      await elementUpdated(button);
+      expect(native().getAttribute('aria-expanded')).to.equal('true');
+      expect(native().getAttribute('aria-haspopup')).to.equal('menu');
+      expect(native().ariaControlsElements).to.eql([hint]);
+      await expect(button).to.be.accessible();
+
+      button.ariaExpanded = 'false';
+      await elementUpdated(button);
+      expect(native().getAttribute('aria-expanded')).to.equal('false');
+
+      button.removeAttribute('aria-expanded');
+      button.removeAttribute('aria-haspopup');
+      button.removeAttribute('aria-controls');
+      await elementUpdated(button);
+      expect(native().hasAttribute('aria-expanded')).to.be.false;
+      expect(native().hasAttribute('aria-haspopup')).to.be.false;
+      expect(native().hasAttribute('aria-controls')).to.be.false;
+    });
+
+    it('follows each set of the host `ariaControlsElements`', async () => {
+      const [name, hint] = [...container.querySelectorAll('span')];
+
+      button.ariaControlsElements = [name];
+      await elementUpdated(button);
+      expect(native().ariaControlsElements).to.eql([name]);
+
+      button.ariaControlsElements = [hint];
+      await elementUpdated(button);
+      expect(native().ariaControlsElements).to.eql([hint]);
+    });
+
+    it('does not forward an `aria-controls` that references no element', async () => {
+      button.setAttribute('aria-controls', 'missing');
+      await elementUpdated(button);
+
+      expect(native().hasAttribute('aria-controls')).to.be.false;
+    });
+
+    it('does not forward an empty disclosure state', async () => {
+      button.setAttribute('aria-expanded', '');
+      button.setAttribute('aria-haspopup', '');
+      await elementUpdated(button);
+
+      expect(native().hasAttribute('aria-expanded')).to.be.false;
+      expect(native().hasAttribute('aria-haspopup')).to.be.false;
+    });
+
+    it('keeps the disclosure state as a link and as a disabled link', async () => {
+      const hint = container.querySelector('#hint');
+
+      button.setAttribute('aria-expanded', 'false');
+      button.setAttribute('aria-haspopup', 'dialog');
+      button.setAttribute('aria-controls', 'hint');
+      button.href = '/';
+      await elementUpdated(button);
+
+      expect(native().localName).to.equal('a');
+      expect(native().getAttribute('aria-expanded')).to.equal('false');
+      expect(native().getAttribute('aria-haspopup')).to.equal('dialog');
+      expect(native().ariaControlsElements).to.eql([hint]);
+
+      button.disabled = true;
+      await elementUpdated(button);
+
+      expect(native().getAttribute('role')).to.equal('link');
+      expect(native().getAttribute('aria-expanded')).to.equal('false');
+      expect(native().getAttribute('aria-haspopup')).to.equal('dialog');
+      expect(native().ariaControlsElements).to.eql([hint]);
+    });
   });
+
+  runHiddenAncestorTests(html`
+    <igc-button><igc-icon slot="prefix"></igc-icon>Click</igc-button>
+  `);
+
+  runFocusBeforeRenderTests(html`<igc-button>Label</igc-button>`);
 });

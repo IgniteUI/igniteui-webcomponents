@@ -34,55 +34,15 @@ export class IgcTreeSelectionService {
 
   //#region Public API
 
-  /** Select range from last selected item to the current specified item. */
-  public selectMultipleItems(item: IgcTreeItemComponent): void {
-    this._flush();
-    if (isEmpty(this._itemSelection)) {
-      this.selectItem(item);
-      return;
-    }
-
-    const items = this._tree.items;
-    const selected = Array.from(this._itemSelection);
-    const lastSelectedIndex = items.indexOf(lastOf(selected));
-    const currentIndex = items.indexOf(item);
-
-    const range = items.slice(
-      Math.min(currentIndex, lastSelectedIndex),
-      Math.max(currentIndex, lastSelectedIndex) + 1
-    );
-    const added = range.filter((i) => !this.isItemSelected(i));
-
-    this._emitSelectionEvent(selected.concat(added), added, []);
-  }
-
   /** Toggles the selection of `item` with the event, or extends the range to it. */
   public toggleItem(item: IgcTreeItemComponent, extendRange: boolean): void {
     if (extendRange) {
-      this.selectMultipleItems(item);
+      this._selectMultipleItems(item);
     } else if (item.selected) {
-      this.deselectItem(item);
+      this._deselectItem(item);
     } else {
-      this.selectItem(item);
+      this._selectItem(item);
     }
-  }
-
-  /** Select the specified item and emit event. */
-  public selectItem(item: IgcTreeItemComponent): void {
-    this._flush();
-    if (this._tree.selection === 'none') {
-      return;
-    }
-    this._emitSelectionEvent([...this._itemSelection, item], [item], []);
-  }
-
-  /** Deselect the specified item and emit event. */
-  public deselectItem(item: IgcTreeItemComponent): void {
-    this._flush();
-    const newSelection = Array.from(this._itemSelection).filter(
-      (i) => i !== item
-    );
-    this._emitSelectionEvent(newSelection, [], [item]);
   }
 
   /** Clears item selection */
@@ -179,13 +139,13 @@ export class IgcTreeSelectionService {
       return;
     }
 
-    const oldSelection = Array.from(this._itemSelection);
-
+    // Without a cascade, no other item depends on these.
     for (const item of items) {
-      this._itemSelection.add(item);
+      if (!this._itemSelection.has(item)) {
+        this._itemSelection.add(item);
+        item.selected = true;
+      }
     }
-
-    this._updateItemsState(oldSelection);
   }
 
   /** Deselect specified items. No event is emitted. */
@@ -210,22 +170,57 @@ export class IgcTreeSelectionService {
       return;
     }
 
-    const oldSelection = this._excluding(this._itemSelection, excluded);
-
-    if (items) {
-      for (const item of items) {
-        this._itemSelection.delete(item);
+    // A `Set` iteration allows the deletion of the current entry.
+    for (const item of items ?? this._itemSelection) {
+      if (this._itemSelection.delete(item) && !excluded) {
+        item.selected = false;
       }
-    } else {
-      this._itemSelection.clear();
     }
-
-    this._updateItemsState(oldSelection);
   }
 
   //#endregion
 
   //#region Selection events
+
+  /** Select range from last selected item to the current specified item. */
+  private _selectMultipleItems(item: IgcTreeItemComponent): void {
+    this._flush();
+    if (isEmpty(this._itemSelection)) {
+      this._selectItem(item);
+      return;
+    }
+
+    const items = this._tree.items;
+    const selected = Array.from(this._itemSelection);
+    const lastSelectedIndex = items.indexOf(lastOf(selected));
+    const currentIndex = items.indexOf(item);
+
+    const range = items.slice(
+      Math.min(currentIndex, lastSelectedIndex),
+      Math.max(currentIndex, lastSelectedIndex) + 1
+    );
+    const added = range.filter((i) => !this.isItemSelected(i));
+
+    this._emitSelectionEvent(selected.concat(added), added, []);
+  }
+
+  /** Select the specified item and emit event. */
+  private _selectItem(item: IgcTreeItemComponent): void {
+    this._flush();
+    if (this._tree.selection === 'none') {
+      return;
+    }
+    this._emitSelectionEvent([...this._itemSelection, item], [item], []);
+  }
+
+  /** Deselect the specified item and emit event. */
+  private _deselectItem(item: IgcTreeItemComponent): void {
+    this._flush();
+    const newSelection = Array.from(this._itemSelection).filter(
+      (i) => i !== item
+    );
+    this._emitSelectionEvent(newSelection, [], [item]);
+  }
 
   private _emitSelectionEvent(
     newSelection: IgcTreeItemComponent[],

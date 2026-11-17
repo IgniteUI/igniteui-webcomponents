@@ -15,7 +15,7 @@
     }
 
     ::slotted(igc-icon) {
-        --component-size: var(--ig-size-small) !important;
+        --component-size: var(--ig-size-small, 1) !important;
     }
 }
 

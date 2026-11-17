@@ -1,15 +1,18 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
-import { isFocused } from '#internals/testing/helpers.spec.js';
+import { isUnderPageLayer } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
 } from '#internals/testing/validity-helpers.spec.js';
+import { preventDefault } from '#internals/utils/events.js';
 import { configureTheme } from '#theming/config.js';
 import IgcCheckboxComponent from './checkbox.js';
 
@@ -59,6 +62,22 @@ describe('Checkbox', () => {
     it('should render a checkbox component successfully', async () => {
       await expect(element).shadowDom.to.be.accessible();
       await expect(element).to.be.accessible();
+    });
+
+    it('paints the indicator under an earlier page layer', async () => {
+      try {
+        configureTheme('material');
+        element.checked = true;
+        await elementUpdated(element);
+
+        const indicator = element.renderRoot.querySelector(
+          '[part~="indicator"]'
+        )!;
+
+        expect(isUnderPageLayer(element, indicator)).to.be.true;
+      } finally {
+        configureTheme('bootstrap');
+      }
     });
 
     it('should render the correct SVG in indigo theme', async () => {
@@ -163,16 +182,6 @@ describe('Checkbox', () => {
       expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
     });
 
-    it('should have correct focus states between Light/Shadow DOM', () => {
-      element.focus();
-      expect(isFocused(element)).to.be.true;
-      expect(isFocused(input));
-
-      element.blur();
-      expect(isFocused(element)).to.be.false;
-      expect(isFocused(input)).to.be.false;
-    });
-
     it('should emit click event only once', async () => {
       const eventSpy = spy(element, 'click');
 
@@ -199,6 +208,7 @@ describe('Checkbox', () => {
       <igc-checkbox name="checkbox">
         I have reviewed ToC and I agree
       </igc-checkbox>
+      <button type="submit">Submit</button>
     `);
 
     beforeEach(async () => {
@@ -267,10 +277,30 @@ describe('Checkbox', () => {
       ).to.be.true;
     });
 
+    it('does not submit on Enter without a submit button', () => {
+      spec.form.querySelector('button')!.remove();
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.false;
+    });
+
+    it('submits once on a real Enter', async () => {
+      expect(await spec.pressEnter()).to.equal(1);
+    });
+
     it('should not submit on pressing Enter when value is invalid', () => {
       spec.setProperties({ required: true, checked: false });
       expect(
         spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.false;
+    });
+
+    it('does not submit when a listener cancels the Enter key press', () => {
+      spec.element.addEventListener('keydown', preventDefault);
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'), {
+          cancelable: true,
+        })
       ).to.be.false;
     });
 
@@ -413,4 +443,12 @@ describe('Checkbox', () => {
       (host as IgcCheckboxComponent).renderRoot.querySelector('input')!,
     checkable: true,
   });
+
+  runHiddenAncestorTests(html`
+    <igc-checkbox>Label</igc-checkbox>
+    <igc-checkbox checked>Label</igc-checkbox>
+    <igc-checkbox indeterminate>Label</igc-checkbox>
+  `);
+
+  runFocusBeforeRenderTests(html`<igc-checkbox>Label</igc-checkbox>`);
 });

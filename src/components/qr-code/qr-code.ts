@@ -5,6 +5,7 @@ import {
   ariaBindings,
   hostAria,
 } from '#internals/controllers/aria-projection.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { bindIf } from '#internals/utils/lit.js';
@@ -13,9 +14,11 @@ import { createIdGenerator } from '#internals/utils/strings.js';
 import { all } from '#themes/qr-code/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
+import { isValidVersion } from './model/encode.js';
 import type { QRCodeMatrixResult } from './model/matrix.js';
 import { generateQRCodeMatrix } from './model/matrix.js';
 import {
+  canCopySvg,
   createSvgSnapshot,
   downloadFile,
   ensureExtension,
@@ -36,6 +39,8 @@ import {
 import { styles } from './themes/qr-code.base.css.js';
 import { styles as shared } from './themes/shared/qr-code.common.css.js';
 import type {
+  QrCodeCopyFormat,
+  QrCodeCopyOptions,
   QrCodeExportOptions,
   QrCornerSquareStyle,
   QrDotStyle,
@@ -44,10 +49,12 @@ import type {
 
 const nextMaskId = createIdGenerator('igc-qr-code-mask');
 
+/** A test, not a lower-cased copy: a data URI can be large. */
+const BLOCKED_LOGO_SOURCE = /^\s*(?:javascript:|vbscript:|data:(?!image\/))/i;
+
 /**
- *
- * Generates a QR code based on the provided value and options.
- * The component renders an SVG representation of the QR code, which can be customized using various properties.
+ * Generates a QR code from a value and renders it as an SVG image.
+ * Properties set the size, the shapes, the error correction level and an optional logo.
  *
  * @element igc-qr-code
  *
@@ -79,7 +86,8 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
     value: string;
     errorLevel: QrErrorCorrectionLevel;
     version?: number;
-    result: QRCodeMatrixResult;
+    result: QRCodeMatrixResult | null;
+    error?: unknown;
   };
 
   @state()
@@ -97,8 +105,8 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   }
 
   /**
-   * The value to be encoded in the QR code. This can be any string, such as a URL, text, or other data.
-   * When this property is set, the component will generate a QR code representing the provided value.
+   * The value to encode in the QR code. This can be any string, such as a URL, text, or other data.
+   * Without a value, the component renders nothing.
    *
    * @attr value
    */
@@ -109,12 +117,16 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
    * The version of the QR code to generate, which determines the size and data capacity of the QR code.
    * Valid values are integers from 1 to 40, where each version corresponds to a specific module size and data capacity.
    *
-   * If not specified, the component will automatically select the smallest version that can accommodate the provided value.
+   * When it is not set, or it is not an integer from 1 to 40, the component selects the smallest
+   * version that holds the value. When the value does not fit the version, the component renders nothing.
    *
    * @attr version
    */
   @property({ type: Number })
-  public version?: number;
+  @coercedProperty<number | undefined>({
+    transform: ({ value }) => (isValidVersion(value) ? value : undefined),
+  })
+  public version?: number = undefined;
 
   /**
    * The error correction level for the QR code, which determines the QR code's ability to be read if it is partially obscured or damaged.
@@ -157,8 +169,9 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   public margin = 4;
 
   /**
-   * The source URL of an optional logo image to be displayed at the center of the QR code. The logo can help with branding and recognition.
-   * If provided, the component will attempt to render the logo within the QR code while maintaining scannability.
+   * The source URL of an optional logo image at the center of the QR code.
+   * The component does not render a logo that fails to load, a `javascript:` or `vbscript:` URL,
+   * or a data URI that is not an image.
    *
    * @attr logo-src
    */
@@ -168,12 +181,13 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   /**
    * The size of the logo, as a ratio of the maximum area that can safely be obscured by a logo
    * while the QR code remains scannable (up to 9% of the code's area, at the highest error
-   * correction level). The value should be a number between 0 and 1, where 0 means no logo and 1
-   * means the logo will cover the full safe area (not the entire QR code).
+   * correction level). The value is a number from 0 to 1, where 0 means no logo and 1
+   * means the logo covers the full safe area (not the entire QR code). Other values are clamped.
    * The default value is 0.4, meaning the logo covers 40% of that safe area (~3.6% of the QR code).
    *
    * When `error-level` is not set and the logo is larger than the safe area of level 'M', the
-   * component uses the smallest error correction level that holds the logo.
+   * component uses the smallest error correction level that holds the logo. When `error-level`
+   * is set, the logo does not grow past the safe area of that level.
    *
    * @attr logo-size
    * @default 0.4
@@ -263,11 +277,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
    * non-image data URI.
    */
   private _hasValidLogoSrc(): boolean {
-    if (!this.logoSrc) return false;
-    const s = this.logoSrc.trim().toLowerCase();
-    if (s.startsWith('javascript:') || s.startsWith('vbscript:')) return false;
-    if (s.startsWith('data:') && !s.startsWith('data:image/')) return false;
-    return true;
+    return !!this.logoSrc && !BLOCKED_LOGO_SOURCE.test(this.logoSrc);
   }
 
   /**
@@ -299,22 +309,34 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
     return { errorLevel: this._pickErrorLevel(targetArea), area: targetArea };
   }
 
+  /** Returns `null` when the value cannot be encoded. */
   private _getMatrix(
     value: string,
     errorLevel: QrErrorCorrectionLevel
-  ): QRCodeMatrixResult {
+  ): QRCodeMatrixResult | null {
+    const version = this.version;
     const cached = this._matrixCache;
     if (
       cached &&
       cached.value === value &&
       cached.errorLevel === errorLevel &&
-      cached.version === this.version
+      cached.version === version
     ) {
       return cached.result;
     }
 
-    const result = generateQRCodeMatrix(value, errorLevel, this.version);
-    this._matrixCache = { value, errorLevel, version: this.version, result };
+    let result: QRCodeMatrixResult | null = null;
+    let error: unknown;
+
+    try {
+      result = generateQRCodeMatrix(value, errorLevel, version);
+    } catch (e) {
+      error = e;
+      // oxlint-disable-next-line no-console -- an empty render is the only other signal
+      console.warn(`<igc-qr-code> cannot encode its value. ${e}`);
+    }
+
+    this._matrixCache = { value, errorLevel, version, result, error };
     return result;
   }
 
@@ -329,13 +351,46 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
     await this._logoReady;
     await this.updateComplete;
 
-    // The SVG is rendered only when there is a value.
+    // The SVG is rendered only when there is a value that fits.
     const svg = this.renderRoot.querySelector('svg');
     if (!svg) {
-      throw new Error('Cannot export an igc-qr-code without a value.');
+      const error = this.value ? this._matrixCache?.error : undefined;
+      throw error ?? new Error('Cannot export an igc-qr-code without a value.');
     }
 
     return createSvgSnapshot(svg);
+  }
+
+  /** Returns `size * scale` in whole pixels. Throws a RangeError when `scale` or the result is out of range. */
+  private _getExportDimension(scale: number, size = this.size): number {
+    if (!Number.isFinite(scale) || scale <= 0) {
+      throw new RangeError(
+        'The export scale must be a positive finite number.'
+      );
+    }
+
+    const dimension = Math.round(size * scale);
+    if (!numberInRangeInclusive(dimension, 1, MAX_EXPORT_DIMENSION)) {
+      throw new RangeError(
+        `The exported image side must be between 1 and ${MAX_EXPORT_DIMENSION} pixels.`
+      );
+    }
+
+    return dimension;
+  }
+
+  /** Serializes a snapshot resized to `scale`, measured from its rendered width. */
+  private async _serializeSnapshot(
+    scale: number
+  ): Promise<{ blob: Blob; dimension: number }> {
+    const svg = await this._createSnapshot();
+    const dimension = this._getExportDimension(
+      scale,
+      Number(svg.getAttribute('width'))
+    );
+    svg.setAttribute('width', `${dimension}`);
+    svg.setAttribute('height', `${dimension}`);
+    return { blob: serializeSvg(svg), dimension };
   }
 
   /* blazorSuppress */
@@ -346,7 +401,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
    * is fetched and inlined, so the blob renders identically outside the component.
    * A logo that cannot be fetched (for example a cross-origin URL without CORS headers) is omitted.
    *
-   * Rejects when the component has no `value`.
+   * Rejects when there is no `value` or it does not fit the `version`.
    */
   public async toBlob(): Promise<Blob> {
     return serializeSvg(await this._createSnapshot());
@@ -360,8 +415,9 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
    * with `scale: 2` produces a 512x512 image. When `download` is `true` the browser
    * download dialog opens for the file.
    *
-   * Rejects when the component has no `value`, when `format` is not supported, when `scale`
-   * is not a positive finite number, or when the resulting image exceeds the maximum canvas size.
+   * Rejects when there is no `value` or it does not fit the `version`, when `format` is not
+   * supported, when `scale` is not a positive finite number, or when the resulting image
+   * exceeds the maximum canvas size.
    */
   public async toImage(options?: QrCodeExportOptions): Promise<File> {
     const { fileName, format = 'png', scale = 1, download } = options ?? {};
@@ -370,24 +426,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
       throw new TypeError(`Unsupported export format: ${format}.`);
     }
 
-    if (!Number.isFinite(scale) || scale <= 0) {
-      throw new RangeError(
-        'The export scale must be a positive finite number.'
-      );
-    }
-
-    const dimension = Math.round(this.size * scale);
-    if (!numberInRangeInclusive(dimension, 1, MAX_EXPORT_DIMENSION)) {
-      throw new RangeError(
-        `The exported image side must be between 1 and ${MAX_EXPORT_DIMENSION} pixels.`
-      );
-    }
-
-    const svg = await this._createSnapshot();
-    svg.setAttribute('width', `${dimension}`);
-    svg.setAttribute('height', `${dimension}`);
-
-    const svgBlob = serializeSvg(svg);
+    const { blob: svgBlob, dimension } = await this._serializeSnapshot(scale);
     const blob =
       format === 'svg'
         ? svgBlob
@@ -403,18 +442,78 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
     return file;
   }
 
+  /* blazorSuppress */
+  /**
+   * Copies the QR code to the clipboard as an image and resolves to the format that the clipboard
+   * received. A browser that cannot copy SVG gets only the PNG.
+   *
+   * Browsers accept a clipboard write only in a focused document during a user action, so call
+   * the method directly from the event handler, with no `await` before it.
+   *
+   * Rejects when there is no `value` or it does not fit the `version`, when `format` is not
+   * supported, when `scale` is not a positive finite number, when the image exceeds the maximum
+   * canvas size, when the Clipboard API is not available, or when the browser refuses the write.
+   */
+  public async copyToClipboard(
+    options?: QrCodeCopyOptions
+  ): Promise<QrCodeCopyFormat> {
+    const { format = 'png', scale = 1 } = options ?? {};
+
+    if (format !== 'png' && format !== 'svg') {
+      throw new TypeError(`Unsupported copy format: ${format}.`);
+    }
+
+    // Reject a bad scale before the write; the export checks it again at the rendered size.
+    this._getExportDimension(scale);
+
+    if (!this.value) {
+      throw new Error('Cannot copy an igc-qr-code without a value.');
+    }
+
+    // An insecure context has no `navigator.clipboard`.
+    const clipboard = navigator.clipboard;
+    if (!clipboard) {
+      throw new Error('The Clipboard API is not available.');
+    }
+
+    const copied = format === 'svg' && canCopySvg() ? 'svg' : 'png';
+
+    // The write starts before the first `await`, while the user action is active,
+    // so the images go in as promises.
+    const image = this._serializeSnapshot(scale);
+    const svg = image.then(({ blob }) => blob);
+    const png = image.then(({ blob, dimension }) =>
+      rasterizeSvg(blob, dimension, 'png')
+    );
+    // A refused write never reads the item, so a failed export would go unhandled.
+    svg.catch(() => {});
+    png.catch(() => {});
+
+    await clipboard.write([
+      new ClipboardItem(
+        copied === 'svg'
+          ? { [MIME_TYPES.svg]: svg, [MIME_TYPES.png]: png }
+          : { [MIME_TYPES.png]: png }
+      ),
+    ]);
+    return copied;
+  }
+
   protected override render() {
     if (!this.value) return nothing;
 
     const hasLogo = this._hasValidLogoSrc() && !this._logoLoadFailed;
     const { errorLevel, area } = this._getErrorLevelAndArea(hasLogo);
 
-    const { matrix, size } = this._getMatrix(this.value, errorLevel);
+    const encoded = this._getMatrix(this.value, errorLevel);
+    if (!encoded) return nothing;
+
+    const { matrix, size } = encoded;
 
     const totalModules = size + this.margin * 2;
     const moduleSize = size / totalModules;
     const marginPx = this.margin * moduleSize;
-    const svgSize = moduleSize * (size + this.margin * 2);
+    const svgSize = moduleSize * totalModules;
 
     const { mask, image, shouldApplyMask } = renderQrMaskAndImage({
       hasLogo,

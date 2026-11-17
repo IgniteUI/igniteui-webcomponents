@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedNodes } from 'lit/decorators.js';
 import { addInternalsController } from '../controllers/internals.js';
+import { coercedProperty } from '../decorators/coerced-property.js';
 import { normalizedTextContent } from '../utils/dom.js';
 
 /* omitModule */
@@ -16,18 +17,14 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
 
   protected _active = false;
   protected _disabled = false;
-  protected _selected = false;
   protected _value!: string;
 
   @queryAssignedNodes({ flatten: true })
   protected readonly _content!: Array<Element>;
 
-  protected get _contentSlotText(): string {
-    return normalizedTextContent(this._content);
-  }
-
   /**
-   * Whether the item is active.
+   * Whether the item is active. The active item has the visual focus during
+   * keyboard navigation.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
@@ -53,18 +50,18 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
   }
 
   /**
-   * Whether the item is selected.
+   * Whether the item is selected. A change also sets `active` to the same
+   * value.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
-  public set selected(value: boolean) {
-    this._selected = Boolean(value);
-    this.active = this.selected;
-  }
-
-  public get selected(): boolean {
-    return this._selected;
-  }
+  @coercedProperty<boolean, IgcBaseOptionLikeComponent>({
+    transform: ({ value }) => Boolean(value),
+    onChange: ({ value, host }) => {
+      host.active = value;
+    },
+  })
+  public selected = false;
 
   /**
    * The value of the item. Falls back to the text content of the element.
@@ -77,7 +74,7 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
   }
 
   public get value(): string {
-    return this._value ? this._value : this._contentSlotText;
+    return this._value || normalizedTextContent(this._content);
   }
 
   protected override render() {

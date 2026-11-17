@@ -31,6 +31,8 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
+    - [CSS custom properties](#css-custom-properties)
   - [Test scenarios](#test-scenarios)
     - [Rendering and initialization](#rendering-and-initialization)
     - [Attributes and properties](#attributes-and-properties)
@@ -59,6 +61,16 @@
 |       4 | 2026-10-02 | Focus after form checks; `invalid` only on checks                         |
 |       5 | 2026-10-02 | Forward the host `aria-describedby`; expose `required` as `aria-required` |
 |       6 | 2026-10-07 | Read the selection; `setRangeText()` without a range                      |
+|       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                                  |
+|       8 | 2026-10-21 | A value set from code is not reported; one `igcChange` per calendar pick  |
+|       9 | 2026-10-28 | The picker projects only `aria-haspopup`, `aria-required` and labels onto the editor |
+|      10 | 2026-10-29 | The `overlay` part is removed; the dialog backdrop is the native `::backdrop` of `dialog-base` |
+|      11 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
+|      12 | 2026-11-04 | In dialog mode, an open and a close play the animations of the dialog; a canceled `igcClosing` keeps the dialog open |
+|      13 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown`, or the <kbd>Enter</kbd> that commits an IME composition, does not submit the form |
+|      14 | 2026-11-06 | A closed picker does not cancel <kbd>Escape</kbd> |
+|      15 | 2026-11-11 | The keys that an IME handles do nothing |
+|      16 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form, after the `keypress`; <kbd>Enter</kbd> in slotted content does not submit a second time |
 
 ## Overview
 
@@ -181,6 +193,10 @@ As a developer, I expect to be able to:
   <kbd>Escape</kbd> close it and return focus to the input.
 - Clicking outside the component closes the picker, unless `keepOpenOnOutsideClick` is set.
 - Selecting a date closes the picker and returns focus to the input, unless `keepOpenOnSelect` is set.
+- In **dialog** mode, an open and a close play the animations of the dialog. `igcOpened` follows the entrance. On a
+  close, `open` stays `true` until the exit ends, and the calendar ignores a selection. A canceled `igcClosing` keeps
+  the dialog open. During the entrance or the exit, `open` set to `false` and then `true` keeps the dialog open, and
+  `open` set to `false` closes it at once.
 
 **Selecting**
 
@@ -403,7 +419,7 @@ nesting it:
 ```
 
 An IDREF does not cross a shadow boundary, so the picker resolves its labels through `ElementInternals` and projects
-them - together with its own `role`, `aria-haspopup`, `aria-expanded` and `aria-controls` - onto the native input of
+them - together with its own `aria-haspopup` and `aria-required` - onto the native input of
 the date time input it wraps, as element references. Clicking the external label focuses the editor.
 
 The name follows the [naming order](../input/spec.md#naming-order), so the host `aria-labelledby` and `aria-label` also
@@ -421,7 +437,12 @@ name the control.
 - The value is submitted under `name`.
 - A form reset restores `defaultValue`, taken from the `value` attribute, and clears the invalid styles of the inner
   editor.
-- An invalid picker blocks submission; pressing <kbd>Enter</kbd> submits the owning form only when it is valid.
+- An invalid picker blocks submission; pressing <kbd>Enter</kbd> submits the owning form only when it is valid. The
+  picker counts as one text field, and <kbd>Enter</kbd> submits as in a native text field (see the [input specification](../input/spec.md#form-integration)): through the
+  default button, or from the only text field of a form with no submit button. A `keydown` or `keypress` listener on
+  the host or an ancestor that calls `preventDefault()` stops the submission. The <kbd>Enter</kbd> that commits an IME
+  composition does not submit. <kbd>Enter</kbd> in the content of the `prefix` and `suffix` slots belongs to that
+  content, so the picker does not submit for it.
 
 As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
 the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
@@ -441,17 +462,18 @@ Everything locale-dependent is derived from the active locale:
   resources.
 - The calendar week start is derived from the locale when `week-start` is not set.
 
-The `locale` property overrides the locale for a single picker; when it is not set, the picker follows the global
-locale of the library. A runtime change of the global locale or of the localization resources re-resolves the
-default format and re-renders both the input and the calendar.
+The `locale` property overrides the locale for a single picker. When it is not set, the picker takes its own `lang`,
+else the locale of the nearest ancestor that has a `locale` (a component) or a `lang`, and then the global locale of the
+library. A runtime change of the global locale or of the localization resources re-resolves the default format and
+re-renders both the input and the calendar.
 
 ```html
 <igc-date-picker locale="ja"></igc-date-picker>
 ```
 
 The `resourceStrings` property overrides individual strings for a single picker. It accepts the calendar resource
-strings as well as the own strings of the picker, used for the title of the calendar icon and the label of the
-dialog:
+strings, which the picker gives to its calendar, as well as the own strings of the picker, used for the title of the
+calendar icon and the label of the dialog:
 
 | Key                       | Default (`en`) |
 | ------------------------- | -------------- |
@@ -468,7 +490,7 @@ As long as focus is within any part of the date picker:
 
 | Key combination   | Result                                                                                                 |
 | ----------------- | ------------------------------------------------------------------------------------------------------ |
-| <kbd>Escape</kbd> | If the picker is shown, closes it and returns focus to the input part. Otherwise it is a no-op.        |
+| <kbd>Escape</kbd> | If the picker is shown, closes it and returns focus to the input part. Otherwise it is a no-op and does not cancel the key. |
 
 When the input part of the component is focused:
 
@@ -482,10 +504,10 @@ When the input part of the component is focused:
 | <kbd>Ctrl</kbd> / <kbd>Cmd</kbd> + <kbd>;</kbd>           | Sets the current date as the value of the component.                          |
 | <kbd>Alt</kbd> + <kbd>Arrow Down</kbd>                    | Opens the calendar picker.                                                    |
 | <kbd>Alt</kbd> + <kbd>Arrow Up</kbd>                      | Closes the calendar picker and returns focus to the input part.               |
-| <kbd>Enter</kbd>                                          | Submits the owning form, if any and if the picker is valid.                   |
+| <kbd>Enter</kbd>                                          | Submits the owning form as a native text field does, if the picker is valid.  |
 
 All of the above are no-ops while the component is `readonly` or `disabled`; the editing subset is additionally a
-no-op while the component is `non-editable` or in **dialog** mode.
+no-op while the component is `non-editable` or in **dialog** mode. A key that an IME handles, such as the <kbd>Enter</kbd> that commits a composition, does nothing here.
 
 When focus is within the calendar, the keyboard navigation follows the
 [keyboard interactions of the calendar](../calendar/spec.md#keyboard-interactions).
@@ -497,42 +519,42 @@ When focus is within the calendar, the keyboard navigation follows the
 | Property               | Attribute                  | Reflected | Type                          | Default           | Description                                                              |
 | ---------------------- | -------------------------- | --------- | ----------------------------- | ----------------- | ------------------------------------------------------------------------ |
 | value                  | value                      | No        | `Date \| null`                | -                 | The committed value of the picker.                                       |
-| mode                   | mode                       | No        | `PickerMode`                  | `dropdown`        | Whether the calendar opens in a dropdown or a modal dialog.              |
-| open                   | open                       | Yes       | `boolean`                     | false             | The open state of the component.                                         |
+| mode                   | mode                       | No        | `PickerMode`                  | `dropdown`        | Whether the calendar opens in a dropdown or in a modal dialog. In `dialog` mode, the user cannot type in the input. |
+| open                   | open                       | Yes       | `boolean`                     | false             | Whether the component is open.                                         |
 | label                  | label                      | No        | `string`                      | -                 | The label of the picker.                                                 |
 | placeholder            | placeholder                | No        | `string`                      | the input format  | The placeholder text of the control.                                     |
-| inputFormat            | input-format               | No        | `string`                      | from the locale   | The date format to apply on the input.                                   |
-| displayFormat          | display-format             | No        | `string`                      | `inputFormat`     | Format to display the value in when not editing.                         |
+| inputFormat            | input-format               | No        | `string`                      | from the locale   | The date format of the input while the user edits the value. Without it, the input uses the input format of the locale. |
+| displayFormat          | display-format             | No        | `string`                      | -               | The format of the value while the input does not have focus. Without it, the input uses `inputFormat` when set, else the display format of the locale. |
 | prompt                 | prompt                     | No        | `string`                      | `_`               | The prompt symbol to use for unfilled parts of the mask.                 |
-| min                    | min                        | No        | `Date \| null`                | -                 | The minimum value required for the picker to remain valid.               |
-| max                    | max                        | No        | `Date \| null`                | -                 | The maximum value required for the picker to remain valid.               |
-| disabledDates          | -                          | No        | `DateRangeDescriptor[]`       | `[]`              | The disabled dates of the picker.                                        |
-| specialDates           | -                          | No        | `DateRangeDescriptor[]`       | -                 | The special dates of the picker.                                         |
-| activeDate             | active-date                | No        | `Date`                        | the current date  | The date shown in the calendar and highlighted.                          |
+| min                    | min                        | No        | `Date \| null`                | -                 | The minimum value required for the picker to remain valid. The calendar disables the dates before it. |
+| max                    | max                        | No        | `Date \| null`                | -                 | The maximum value required for the picker to remain valid. The calendar disables the dates after it. |
+| disabledDates          | -                          | No        | `DateRangeDescriptor[]`       | `[]`              | The date ranges that the user cannot select in the calendar. A value that includes one of these dates is invalid. |
+| specialDates           | -                          | No        | `DateRangeDescriptor[]`       | -                 | The date ranges that the calendar marks as special.                      |
+| activeDate             | active-date                | No        | `Date`                        | the current date  | The date that the calendar shows and highlights. Without it, the calendar starts at the value, or at the current date when there is no value. |
 | visibleMonths          | visible-months             | No        | `number`                      | 1                 | The number of months displayed in the calendar.                          |
 | orientation            | orientation                | No        | `ContentOrientation`          | `horizontal`      | The orientation of the multiple months in the days view.                 |
-| headerOrientation      | header-orientation         | Yes       | `CalendarHeaderOrientation`   | `horizontal`      | The orientation of the calendar header. Dialog mode only.                |
-| hideHeader             | hide-header                | Yes       | `boolean`                     | false             | Whether the calendar hides its header. Dialog mode only.                 |
-| hideOutsideDays        | hide-outside-days          | Yes       | `boolean`                     | false             | Controls the visibility of the dates outside the current month.          |
-| showWeekNumbers        | show-week-numbers          | Yes       | `boolean`                     | false             | Whether to show the number of the week in the calendar.                  |
-| weekStart              | week-start                 | No        | `WeekDays`                    | from the locale   | The start day of the week for the calendar.                              |
+| headerOrientation      | header-orientation         | Yes       | `CalendarHeaderOrientation`   | `horizontal`      | The orientation of the calendar header. It applies only in `dialog` mode. |
+| hideHeader             | hide-header                | Yes       | `boolean`                     | false             | Whether the calendar hides its header. In `dropdown` mode, the header is always hidden. |
+| hideOutsideDays        | hide-outside-days          | Yes       | `boolean`                     | false             | Whether the calendar hides the dates that do not belong to the current month. |
+| showWeekNumbers        | show-week-numbers          | Yes       | `boolean`                     | false             | Whether the calendar shows the week numbers.                             |
+| weekStart              | week-start                 | No        | `WeekDays`                    | from the locale   | The first day of the week in the calendar.                               |
 | keepOpenOnSelect       | keep-open-on-select        | Yes       | `boolean`                     | false             | Keeps the picker open after the user selects a date.                     |
-| keepOpenOnOutsideClick | keep-open-on-outside-click | Yes       | `boolean`                     | false             | Keeps the picker open when the user clicks outside of it.                |
+| keepOpenOnOutsideClick | keep-open-on-outside-click | Yes       | `boolean`                     | false             | Whether the component stays open when the user clicks outside of it.                |
 | scrollStrategy         | scroll-strategy            | No        | `PopoverScrollStrategy`       | `hide`            | The behavior of the component when a parent container scrolls.           |
-| nonEditable            | non-editable               | Yes       | `boolean`                     | false             | Whether to allow typing in the input.                                    |
-| readOnly               | readonly                   | Yes       | `boolean`                     | false             | Makes the control a readonly field.                                      |
-| outlined               | outlined                   | Yes       | `boolean`                     | false             | Whether the control will have outlined appearance.                       |
-| required               | required                   | Yes       | `boolean`                     | false             | Makes the component a required field for validation.                     |
-| disabled               | disabled                   | Yes       | `boolean`                     | false             | The disabled state of the component.                                     |
-| invalid                | invalid                    | No        | `boolean`                     | false             | Sets the control into invalid state (visual state only).                 |
+| nonEditable            | non-editable               | Yes       | `boolean`                     | false             | Whether the user cannot type in the input. The user can still select a date in the calendar. |
+| readOnly               | readonly                   | Yes       | `boolean`                     | false             | Whether the control is read-only. The user cannot change the value or open the calendar. |
+| outlined               | outlined                   | Yes       | `boolean`                     | false             | Whether the control has an outlined appearance.                          |
+| required               | required                   | Yes       | `boolean`                     | false             | Whether the control is required. A required control that has no value, or is not checked, fails validation.                     |
+| disabled               | disabled                   | Yes       | `boolean`                     | false             | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                                     |
+| invalid                | invalid                    | No        | `boolean`                     | false             | Whether the control shows the invalid state. It changes only the visual state, not the validity.                 |
 | name                   | name                       | Yes       | `string`                      | -                 | The name of the control, submitted with the form data.                   |
-| locale                 | locale                     | No        | `string`                      | the global locale | The locale used to format the value and resolve the resource strings.    |
-| resourceStrings        | -                          | No        | calendar and picker strings   | EN                | The resource strings for localization.                                   |
-| defaultValue           | -                          | No        | `Date \| null`                | -                 | The initial value of the control, restored on a form reset.              |
-| form                   | -                          | No        | `HTMLFormElement \| null`     | -                 | Read-only. The form associated with this element.                        |
-| validity               | -                          | No        | `ValidityState`               | -                 | Read-only. The validity state of the element.                            |
-| validationMessage      | -                          | No        | `string`                      | -                 | Read-only. The validation message of the element.                        |
-| willValidate           | -                          | No        | `boolean`                     | -                 | Read-only. Whether the element is a candidate for constraint validation. |
+| locale                 | locale                     | No        | `string`                      | the inherited or global locale | The locale used to format the value and resolve the resource strings.    |
+| resourceStrings        | -                          | No        | calendar and picker strings   | EN                | The texts of the component. The strings that you set replace the strings of the current locale. Reading returns all the strings, with your strings over the locale strings.                                   |
+| defaultValue           | -                          | No        | `Date \| null`                | -                 | The default value of the control. A form reset restores the value to it. While the value is unchanged since the start or the last form reset, a new default also sets the value. The `value` attribute also sets it.              |
+| form                   | -                          | No        | `HTMLFormElement \| null`     | -                 | Read-only. The form that the control is associated with, or `null`.                        |
+| validity               | -                          | No        | `ValidityState`               | -                 | Read-only. The validity state of the control.                            |
+| validationMessage      | -                          | No        | `string`                      | -                 | Read-only. The validation message of the control. It is empty when the control is valid.                        |
+| willValidate           | -                          | No        | `boolean`                     | -                 | Read-only. Whether the control is a candidate for constraint validation. |
 | selectionStart         | -                          | No        | `number`                      | 0                 | Read-only. The offset of the start of the text selection.                |
 | selectionEnd           | -                          | No        | `number`                      | 0                 | Read-only. The offset of the end of the text selection.                  |
 
@@ -540,29 +562,31 @@ When focus is within the calendar, the keyboard navigation follows the
 
 | Name              | Type signature                                                                          | Description                                                                         |
 | ----------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`                                                                  | Shows the component.                                                                |
-| hide              | `(): Promise<boolean>`                                                                  | Hides the component.                                                                |
-| toggle            | `(): Promise<boolean>`                                                                  | Toggles the open state of the component.                                            |
-| clear             | `(): void`                                                                              | Clears the editor of the picker of any user input.                                  |
-| stepUp            | `(datePart?: DatePart, delta?: number): void`                                           | Increments the passed in date part.                                                 |
-| stepDown          | `(datePart?: DatePart, delta?: number): void`                                           | Decrements the passed in date part.                                                 |
+| focus             | `(options?: FocusOptions): void`                                                        | Sets focus on the picker.                                                           |
+| blur              | `(): void`                                                                              | Removes focus from the picker.                                                      |
+| show              | `(): Promise<boolean>`                                                                  | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one.                                                                |
+| hide              | `(): Promise<boolean>`                                                                  | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                                |
+| toggle            | `(): Promise<boolean>`                                                                  | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes.                                            |
+| clear             | `(): void`                                                                              | Clears the value and the input text of the picker.                                  |
+| stepUp            | `(datePart?: DatePart, delta?: number): void`                                           | Increments a date part by `delta`, or by 1. Without `datePart`, it changes the part at the cursor or a default part. |
+| stepDown          | `(datePart?: DatePart, delta?: number): void`                                           | Decrements a date part by `delta`, or by 1. Without `datePart`, it changes the part at the cursor or a default part. |
 | select            | `(): void`                                                                              | Selects the text in the input of the component.                                     |
 | setSelectionRange | `(start: number, end: number, direction?: SelectionRangeDirection): void`               | Sets the text selection range in the input of the component.                        |
 | setRangeText      | `(replacement: string, start?: number, end?: number, mode?: RangeTextSelectMode): void` | Replaces the text from `start` to `end`, or the selection, and re-applies the mask. |
-| checkValidity     | `(): boolean`                                                                           | Checks validity and emits `invalid` when the control is invalid.                    |
-| reportValidity    | `(): boolean`                                                                           | Checks validity; when invalid, emits `invalid` and focuses the control.             |
-| setCustomValidity | `(message: string): void`                                                               | Sets a custom message. Invalid while `message` is not empty.                        |
+| checkValidity     | `(): boolean`                                                                           | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid.                    |
+| reportValidity    | `(): boolean`                                                                           | Checks validity. As for a native control, an invalid control emits `invalid` and takes the focus. It shows its own validation messages, not the message of the browser. Returns `true` when the control is valid.             |
+| setCustomValidity | `(message: string): void`                                                               | Sets a custom validation message. The control is invalid while the message is not empty. An empty string removes the custom error.                        |
 
 ### Events
 
 | Name       | Cancellable | Detail                | Description                                          |
 | ---------- | ----------- | --------------------- | ---------------------------------------------------- |
-| igcOpening | true        | -                     | Emitted just before the calendar popover is shown.    |
-| igcOpened  | false       | -                     | Emitted after the calendar popover is shown.          |
-| igcClosing | true        | -                     | Emitted just before the calendar popover is hidden.   |
-| igcClosed  | false       | -                     | Emitted after the calendar popover is hidden.         |
-| igcChange  | false       | `Date \| null`        | Emitted when the user modifies and commits the value. |
-| igcInput   | false       | `string \| undefined` | Emitted when the user types in the element.           |
+| igcOpening | true        | -                     | Emitted before a user interaction opens the calendar. Cancelable. |
+| igcOpened  | false       | -                     | Emitted after a user interaction opens the calendar. |
+| igcClosing | true        | -                     | Emitted before a user interaction closes the calendar. Cancelable. |
+| igcClosed  | false       | -                     | Emitted after a user interaction closes the calendar. |
+| igcChange  | false       | `Date \| null`        | Emitted when the user commits a change to the value. |
+| igcInput   | false       | `Date \| null`        | Emitted when the user types in the input.            |
 
 ### Slots
 
@@ -571,17 +595,17 @@ When focus is within the calendar, the keyboard navigation follows the
 | `prefix`             | Renders content before the input.                                                |
 | `suffix`             | Renders content after the input.                                                 |
 | `helper-text`        | Renders content below the input.                                                 |
-| `title`              | Renders content in the calendar title. Dialog mode only.                         |
-| `header-date`        | Renders content instead of the current date in the calendar header. Dialog mode only. |
-| `clear-icon`         | Renders a clear icon template.                                                   |
+| `title`              | Renders content in the calendar title. It applies only in `dialog` mode.         |
+| `header-date`        | Renders content instead of the current date in the calendar header. It applies only in `dialog` mode. |
+| `clear-icon`         | Renders the icon of the clear button.                                            |
 | `calendar-icon`      | Renders the icon/content for the calendar picker.                                |
 | `calendar-icon-open` | Renders the icon/content for the picker in open state.                           |
 | `actions`            | Renders content in the action part of the picker in open state.                  |
-| `bad-input`          | Renders content when the value is in the disabledDates ranges.                   |
+| `bad-input`          | Renders content when the value is in the `disabledDates` ranges.                 |
 | `value-missing`      | Renders content when the required validation fails.                              |
 | `range-overflow`     | Renders content when the max validation fails.                                   |
 | `range-underflow`    | Renders content when the min validation fails.                                   |
-| `custom-error`       | Renders content when setCustomValidity(message) is set.                          |
+| `custom-error`       | Renders content when a custom message is set with `setCustomValidity()`.         |
 | `invalid`            | Renders content when the component is in invalid state (validity.valid = false). |
 
 ### CSS Shadow parts
@@ -603,11 +627,27 @@ The picker exposes its own parts and re-exports the parts of the calendar it com
 | `navigation` / `navigation-buttons` / `navigation-button`           | The calendar navigation container and buttons.          |
 | `months-navigation` / `years-navigation` / `years-range`            | The calendar month, year and years range navigation.    |
 | `days-view-container` / `days-view` / `months-view` / `years-view`  | The calendar view elements.                             |
-| `days-row` / `calendar-label`                                       | The calendar days row and week header label.            |
+| `days-row` / `months-row` / `years-row`                             | The calendar days, months and years row elements.       |
+| `calendar-label` / `calendar-label-inner`                           | The calendar week header label and its inner element.   |
 | `week-number` / `week-number-inner`                                 | The calendar week number elements.                      |
 | `date` / `date-inner` / `month` / `month-inner` / `year` / `year-inner` | The calendar cell elements.                         |
 | `first` / `last` / `inactive` / `hidden` / `weekend` / `range` / `special` / `disabled` / `single` / `preview` | The calendar cell states. |
 | `selected` / `current`                                              | The selected and current state of a date, month or year. |
+| `dialog-base`                                                       | The base of the dialog in dialog mode. Style the backdrop with `::part(dialog-base)::backdrop`. |
+| `title`                                                             | The title of the dialog in dialog mode.                 |
+| `footer`                                                            | The footer of the dialog in dialog mode. |
+
+### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
+
+### CSS custom properties
+
+| Property                | Description                                                                                                                                                                                                                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ig-helper-min-lines` | The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`. |
 
 ## Test scenarios
 
@@ -621,7 +661,8 @@ The component is covered by two suites in this directory, both running in a real
 
 They reuse `createFormAssociatedTestBed`, `runValidationContainerTests`, `runExternalLabelAssociationTests`,
 `runAriaProjectionTests` and the `simulate*` helpers from [`src/internals/testing`](../../internals/testing). The
-groups below mirror the `describe` blocks.
+groups below mirror the `describe` blocks. `date-picker.spec.ts` runs with reduced motion, so the dialog does not
+fade, except in the dialog mode transition specs.
 
 ### Rendering and initialization
 
@@ -664,7 +705,8 @@ groups below mirror the `describe` blocks.
 
 26. `show`, `hide` and `toggle` open and close the picker without emitting events.
 27. `clear` clears the input.
-28. `stepUp` and `stepDown` are delegated to the composed date time input.
+28. `stepUp` and `stepDown` are delegated to the composed date time input and update the value at once, also while a
+    read-only input is focused, and a later blur does not report the step as a change.
 29. `select`, `setSelectionRange` and `setRangeText` act on the input, and `setRangeText` re-applies the mask.
 30. `setRangeText` without a range replaces the selection.
 31. `selectionStart` and `selectionEnd` report the selection in the input.
@@ -678,36 +720,49 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 
 ### Interactions
 
-34. <kbd>Escape</kbd> closes an open picker.
+34. <kbd>Escape</kbd> closes an open picker, except when an IME handles it. A closed picker does not cancel
+    <kbd>Escape</kbd>.
 35. <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> opens and <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> closes the picker, in both
     modes.
-36. `igcInput` is emitted according to the `nonEditable` property.
-37. Clicking the calendar icon opens the picker in both modes.
-38. Clicking the input opens the picker in dialog mode only; clicking the label likewise.
-39. Clicking the clear icon does not open the picker, in either mode.
-40. The calendar view follows the typed value, switching to another month.
-41. Issue #1710, and issue #1884 - `igcChange` is emitted in dialog mode after clearing the value and losing focus.
+36. A value set from code, also with `stepUp`, is not reported as a change on a later blur, in the editable,
+    non-editable, read-only and dialog modes.
+37. A user change renders at once: a calendar pick with `keepOpenOnSelect` updates the input, and `clear` removes the
+    clear icon.
+38. A calendar selection in a non-editable dropdown emits `igcChange` once, also after a later blur.
+39. `igcInput` is emitted according to the `nonEditable` property.
+40. Clicking the calendar icon opens the picker in both modes.
+41. Clicking the input opens the picker in dialog mode only; clicking the label likewise.
+42. Clicking the clear icon does not open the picker, in either mode.
+43. The calendar view follows the typed value, switching to another month.
+44. Issue #1710, and issue #1884 - `igcChange` is emitted in dialog mode after clearing the value and losing focus.
+45. In dialog mode, the open and the close play the dialog animations, `igcOpened` and `igcClosed` follow them, and
+    `open` stays `true` during the exit. A canceled `igcClosing`, a `show()`, or `open` set to `false` and then `true`
+    during the entrance or the exit, keeps the dialog open; `open` set to `false` closes it at once, also in the task
+    of `show()`; a `hide()` in the task of `show()` shows no dialog; the calendar ignores a selection during the exit;
+    a picker removed during the exit opens a modal dialog again after an append, and a picker appended again and
+    shown during the exit stays open as a modal.
 
 ### Readonly state
 
-42. Dropdown mode - the picker does not open on a calendar icon click or a keyboard shortcut, and the value is not
+46. Dropdown mode - the picker does not open on a calendar icon click or a keyboard shortcut, and the value is not
     cleared by clicking the clear icon.
-43. Dialog mode - the dialog does not open on a calendar icon, label or input click, nor on a keyboard shortcut, and
+47. Dialog mode - the dialog does not open on a calendar icon, label or input click, nor on a keyboard shortcut, and
     the value is not cleared by clicking the clear icon.
 
 ### Form integration tests
 
-44. Clicking the calendar toggle part does not put the component in an invalid state.
-45. Is form associated, and does not participate in submission with an empty or invalid value.
-46. Participates in submission when the value adheres to the constraints.
-47. Resets to its default value on form reset, resets to a new default after a `setAttribute` call, and clears the
+48. Clicking the calendar toggle part does not put the component in an invalid state.
+49. Is form associated, and does not participate in submission with an empty or invalid value.
+50. Participates in submission when the value adheres to the constraints.
+51. Resets to its default value on form reset, resets to a new default after a `setAttribute` call, and clears the
     invalid styles of the inner editor on reset.
-48. Submits on <kbd>Enter</kbd> when valid, and does not when invalid.
-49. Reflects the disabled state of an ancestor `fieldset` or form.
-50. Enforces the required, min, max - as dates and as string properties - and custom constraints.
-51. Invalidates the component when a disabled date is typed in the input.
-52. Validates synchronously.
-53. `defaultValue` - correct initial state, submission and reset; and validation for required, min, max and the
+52. Submits on <kbd>Enter</kbd> when valid, and does not when invalid. A real <kbd>Enter</kbd> submits once.
+    <kbd>Enter</kbd> in a field in the `suffix` slot submits once, and on a button in the slot it does not submit.
+53. Reflects the disabled state of an ancestor `fieldset` or form.
+54. Enforces the required, min, max - as dates and as string properties - and custom constraints.
+55. Invalidates the component when a disabled date is typed in the input.
+56. Validates synchronously.
+57. `defaultValue` - correct initial state, submission and reset; and validation for required, min, max and the
     range constraints.
 
 The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
@@ -717,22 +772,26 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 Generated by `runValidationContainerTests`.
 
-54. Each validation slot renders for its failing constraint.
-55. The projected messages are rendered on the first failed submission.
+58. Each validation slot renders for its failing constraint.
+59. The projected messages are rendered on the first failed submission.
 
 ### ARIA projection and external labels
 
 Generated by `runExternalLabelAssociationTests` and `runAriaProjectionTests`.
 
-56. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
+60. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
     element references, and clicking it focuses the control.
-57. The host semantics - role, `aria-haspopup`, `aria-expanded` and the relations - land on the native input of the
-    composed editor.
+61. The host semantics - `aria-haspopup` and the description - land on the native input of the composed editor.
 
 ### Host ARIA
 
-58. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+62. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal. `required` sets `aria-required` on the editor.
+63. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
+    takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
+    `disabled` set does not cancel an earlier call on another element.
 
 ## Assumptions and limitations
 

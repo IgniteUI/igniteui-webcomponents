@@ -12,16 +12,13 @@ import { convertToDate } from '#internals/date/converters.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { getDateTimeFormat } from '#internals/i18n/date-formats.js';
 import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.resources.js';
-import {
-  addI18nController,
-  getDateTimeFormat,
-} from '#internals/i18n/i18n-controller.js';
 import { datePickerResourcesMap } from '#internals/i18n/utils.js';
-import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateTimeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { I18nMixin, type I18nMixinConfig } from '#internals/mixins/i18n.js';
 import { firstOf } from '#internals/utils/arrays.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
@@ -65,36 +62,47 @@ const Slots = setSlots(
 type DatePickerResourceStringsType = IDatePickerResourceStrings &
   ICalendarResourceStrings;
 
+// TODO: update the type when `IgcCalendarResourceStrings` becomes `ICalendarResourceStrings`.
+const i18n: I18nMixinConfig<
+  IgcCalendarResourceStrings | DatePickerResourceStringsType,
+  IgcCalendarResourceStrings &
+    Required<IDatePickerResourceStrings> &
+    Required<ICalendarResourceStrings>
+> = {
+  defaultEN: { ...DatePickerResourceStringsEN, ...CalendarResourceStringsEN },
+  resourceMap: datePickerResourcesMap,
+};
+
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
 /**
- * The date picker is a feature rich component used for entering a date through manual text input or
- * choosing date values from a calendar dialog that pops up.
+ * A date field where the user types a date or selects one in a calendar.
+ * The calendar opens in a dropdown or in a dialog.
  *
  * @element igc-date-picker
  *
  * @slot prefix - Renders content before the input.
  * @slot suffix - Renders content after the input.
  * @slot helper-text - Renders content below the input.
- * @slot bad-input - Renders content when the value is in the disabledDates ranges.
+ * @slot bad-input - Renders content when the value is in the `disabledDates` ranges.
  * @slot value-missing - Renders content when the required validation fails.
  * @slot range-overflow - Renders content when the max validation fails.
  * @slot range-underflow - Renders content when the min validation fails.
- * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot custom-error - Renders content when a custom message is set with `setCustomValidity()`.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
- * @slot title - Renders content in the calendar title.
- * @slot header-date - Renders content instead of the current date/range in the calendar header.
- * @slot clear-icon - Renders a clear icon template.
+ * @slot title - Renders content in the calendar title. It applies only in `dialog` mode.
+ * @slot header-date - Renders content instead of the current date in the calendar header. It applies only in `dialog` mode.
+ * @slot clear-icon - Renders the icon of the clear button.
  * @slot calendar-icon - Renders the icon/content for the calendar picker.
  * @slot calendar-icon-open - Renders the icon/content for the picker in open state.
  * @slot actions - Renders content in the action part of the picker in open state.
  *
- * @fires igcOpening - Emitted just before the calendar popover is shown.
- * @fires igcOpened - Emitted after the calendar popover is shown.
- * @fires igcClosing - Emitted just before the calendar popover is hidden.
- * @fires igcClosed - Emitted after the calendar popover is hidden.
- * @fires igcChange - Emitted when the user modifies and commits the element's value.
- * @fires igcInput - Emitted when the user types in the element.
+ * @fires igcOpening - Emitted before a user interaction opens the calendar. Cancelable.
+ * @fires igcOpened - Emitted after a user interaction opens the calendar.
+ * @fires igcClosing - Emitted before a user interaction closes the calendar. Cancelable.
+ * @fires igcClosed - Emitted after a user interaction closes the calendar.
+ * @fires igcChange - Emitted when the user commits a change to the value.
+ * @fires igcInput - Emitted when the user types in the input.
  *
  * @csspart label - The label wrapper that renders content above the target input.
  * @csspart container - The main wrapper that holds all main input elements.
@@ -121,7 +129,10 @@ type DatePickerResourceStringsType = IDatePickerResourceStrings &
  * @csspart months-view - The calendar months view element.
  * @csspart years-view - The calendar years view element.
  * @csspart days-row - The calendar days row element.
+ * @csspart months-row - The calendar months row element.
+ * @csspart years-row - The calendar years row element.
  * @csspart calendar-label - The calendar week header label element.
+ * @csspart calendar-label-inner - The calendar week header label inner element.
  * @csspart week-number - The calendar week number element.
  * @csspart week-number-inner - The calendar week number inner element.
  * @csspart date - The calendar date element.
@@ -142,17 +153,27 @@ type DatePickerResourceStringsType = IDatePickerResourceStrings &
  * @csspart year-inner - The calendar year inner element.
  * @csspart selected - The calendar selected state for element(s). Applies to date, month and year elements.
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
+ * @csspart dialog-base - The base of the dialog in dialog mode. Style the backdrop with `::part(dialog-base)::backdrop`.
+ * @csspart title - The title of the dialog in dialog mode.
+ * @csspart footer - The footer of the dialog in dialog mode.
+ *
+ * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent'
 )
 @shadowOptions({ delegatesFocus: true })
-export default class IgcDatePickerComponent extends EventEmitterMixin<
-  IgcDatePickerComponentEventMap,
-  AbstractConstructor<IgcDatePickerBaseComponent<Date>>
->(IgcDatePickerBaseComponent) {
+export default class IgcDatePickerComponent extends I18nMixin(
+  EventEmitterMixin<
+    IgcDatePickerComponentEventMap,
+    typeof IgcDatePickerBaseComponent<Date>
+  >(IgcDatePickerBaseComponent),
+  i18n
+) {
   public static readonly tagName = 'igc-date-picker';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -175,27 +196,13 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
     slots: Slots,
   });
 
-  /**
-   * Uses the core validation strings internally only, so they do not mix with user resources.
-   * To Do: Update the resourceStrings type when IgcCalendarResourceStrings becomes ICalendarResourceStrings.
-   */
-  protected override readonly _i18nController = addI18nController<
-    IgcCalendarResourceStrings | DatePickerResourceStringsType
-  >(this, {
-    defaultEN: Object.assign(
-      {},
-      DatePickerResourceStringsEN,
-      CalendarResourceStringsEN
-    ),
-    resourceMap: datePickerResourcesMap,
-  });
-
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: null,
     transformers: FormValueDateTimeTransformers,
   });
 
-  @query(IgcDateTimeInputComponent.tagName)
+  // Cached: every render has the editor.
+  @query(IgcDateTimeInputComponent.tagName, true)
   private readonly _input!: IgcDateTimeInputComponent;
 
   //#endregion
@@ -206,8 +213,11 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
     return this.value;
   }
 
+  /** A user change. It stays uncommitted until the picker emits `igcChange`. */
   protected override set _value(value: Date | null) {
-    this.value = value;
+    const previous = this.value;
+    this._formValue.setValueAndFormState(value);
+    this.requestUpdate('value', previous);
   }
 
   protected override get _hasValue(): boolean {
@@ -222,8 +232,8 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
     return this.value;
   }
 
-  protected override get _selectDateLabel(): string | undefined {
-    return this.resourceStrings.calendar_select_date;
+  protected override get _calendarResourceStrings() {
+    return this.resourceStrings;
   }
 
   protected override get _calendarIconTitle(): string | undefined {
@@ -293,7 +303,9 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
    */
   @property({ converter: convertToDate })
   public set value(value: Date | string | null | undefined) {
-    this._formValue.setValueAndFormState(value as Date | null);
+    this._value = value as Date | null;
+    // A set from code is committed at once, so no later commit reports it.
+    this._oldValue = this.value;
   }
 
   public get value(): Date | null {
@@ -306,21 +318,6 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
    */
   @property()
   public placeholder!: string;
-
-  /**
-   * The resource strings for localization.
-   */
-  @property({ attribute: false })
-  public set resourceStrings(
-    value: IgcCalendarResourceStrings | DatePickerResourceStringsType
-  ) {
-    this._i18nController.resourceStrings = value;
-  }
-
-  public get resourceStrings(): IgcCalendarResourceStrings &
-    DatePickerResourceStringsType {
-    return this._i18nController.resourceStrings;
-  }
 
   /**
    * The offset of the start of the text selection in the input, in UTF-16
@@ -345,10 +342,7 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
   protected _handleInputChangeEvent(event: CustomEvent<Date>): void {
     event.stopPropagation();
 
-    this._commitValue(
-      (event.target as IgcDateTimeInputComponent).value,
-      'igcChange'
-    );
+    this._commitEditorValue((event.target as IgcDateTimeInputComponent).value);
   }
 
   protected _handleInputEvent(event: CustomEvent<Date>): void {
@@ -371,23 +365,31 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
 
   //#region Public methods
 
-  /** Increments the passed in date part */
+  /**
+   * Increments a date part by `delta`, or by 1. Without `datePart`, it changes the
+   * part at the cursor or a default part.
+   */
   public stepUp(datePart?: DatePart, delta?: number): void {
     this._input.stepUp(datePart, delta);
+    this.value = this._input.value;
   }
 
-  /** Decrements the passed in date part */
+  /**
+   * Decrements a date part by `delta`, or by 1. Without `datePart`, it changes the
+   * part at the cursor or a default part.
+   */
   public stepDown(datePart?: DatePart, delta?: number): void {
     this._input.stepDown(datePart, delta);
+    this.value = this._input.value;
   }
 
-  /** Selects the text in the input of the component */
+  /** Selects the text in the input of the component. */
   public select(): void {
     this._input.select();
   }
 
   /* blazorSuppress */
-  /** Sets the text selection range in the input of the component */
+  /** Sets the text selection range in the input of the component. */
   public setSelectionRange(
     start: number,
     end: number,
@@ -451,7 +453,8 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
         .invalid=${this.invalid}
         @igcChange=${this._handleInputChangeEvent}
         @igcInput=${this._handleInputEvent}
-        @keydown=${this._handleEnterKeydown}
+        @keydown=${this._handleEnterKey}
+        @keypress=${this._handleEnterKey}
         @click=${bindIf(this._opensOnClick, this._handleInputClick)}
         exportparts="container, input, label, prefix, suffix"
       >

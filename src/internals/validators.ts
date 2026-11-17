@@ -1,12 +1,21 @@
-import { ValidationResourceStringsEN } from 'igniteui-i18n-core';
+import {
+  getI18nManager,
+  type IValidationResourceStrings,
+  ValidationResourceStringsEN,
+} from 'igniteui-i18n-core';
 import { isDateExceedingMax, isDateLessThanMin } from './date/compare.js';
 import { CalendarDay } from './date/model.js';
 import { asNumber, numberOfDecimals, roundPrecise } from './utils/math.js';
 import { formatString } from './utils/strings.js';
 import { isDefined } from './utils/types.js';
 
+type LocalizeMessage = (
+  key: keyof IValidationResourceStrings,
+  ...values: unknown[]
+) => string;
+
 type ValidatorHandler<T> = (host: T) => boolean;
-type ValidatorMessageFormat<T> = (host: T) => string;
+type ValidatorMessageFormat<T> = (host: T, localize: LocalizeMessage) => string;
 
 /** @hidden */
 export interface Validator<T = any> {
@@ -15,12 +24,24 @@ export interface Validator<T = any> {
   isValid: ValidatorHandler<T>;
 }
 
-function minBoundMessage(min: unknown): string {
-  return formatString(ValidationResourceStringsEN.min_validation_error!, min);
-}
+export function createLocalizeMessage(
+  locale: string,
+  format: (value: unknown, locale: string) => string
+): LocalizeMessage {
+  const strings = getI18nManager().getCurrentResourceStrings(locale);
 
-function maxBoundMessage(max: unknown): string {
-  return formatString(ValidationResourceStringsEN.max_validation_error!, max);
+  return (key, ...values) =>
+    formatString(
+      strings[key] || ValidationResourceStringsEN[key]!,
+      ...values.map((value) =>
+        typeof value === 'number'
+          ? value.toLocaleString(locale, {
+              useGrouping: false,
+              maximumFractionDigits: 20,
+            })
+          : format(value, locale)
+      )
+    );
 }
 
 const emailRegex =
@@ -31,7 +52,7 @@ export const requiredValidator: Validator<{
   value?: unknown;
 }> = {
   key: 'valueMissing',
-  message: ValidationResourceStringsEN.required_validation_error!,
+  message: (_, localize) => localize('required_validation_error'),
   isValid: ({ required, value }) => (required ? !!value : true),
 };
 
@@ -40,7 +61,7 @@ export const requiredBooleanValidator: Validator<{
   checked: boolean;
 }> = {
   key: 'valueMissing',
-  message: ValidationResourceStringsEN.required_validation_error!,
+  message: (_, localize) => localize('required_validation_error'),
   isValid: ({ required, checked }) => (required ? checked : true),
 };
 
@@ -49,11 +70,8 @@ export const minLengthValidator: Validator<{
   value: string;
 }> = {
   key: 'tooShort',
-  message: ({ minLength }) =>
-    formatString(
-      ValidationResourceStringsEN.min_length_validation_error!,
-      minLength
-    ),
+  message: ({ minLength }, localize) =>
+    localize('min_length_validation_error', minLength),
   isValid: ({ minLength, value }) =>
     minLength && value ? value.length >= asNumber(minLength) : true,
 };
@@ -63,11 +81,8 @@ export const maxLengthValidator: Validator<{
   value: string;
 }> = {
   key: 'tooLong',
-  message: ({ maxLength }) =>
-    formatString(
-      ValidationResourceStringsEN.max_length_validation_error!,
-      maxLength
-    ),
+  message: ({ maxLength }, localize) =>
+    localize('max_length_validation_error', maxLength),
   isValid: ({ maxLength, value }) =>
     maxLength && value ? value.length <= asNumber(maxLength) : true,
 };
@@ -87,7 +102,7 @@ function compilePattern(pattern: string): RegExp | null {
 export const patternValidator: Validator<{ pattern?: string; value: string }> =
   {
     key: 'patternMismatch',
-    message: ValidationResourceStringsEN.pattern_validation_error!,
+    message: (_, localize) => localize('pattern_validation_error'),
     isValid: ({ pattern, value }) =>
       pattern && value ? (compilePattern(pattern)?.test(value) ?? true) : true,
   };
@@ -97,7 +112,7 @@ export const minValidator: Validator<{
   value: number | string;
 }> = {
   key: 'rangeUnderflow',
-  message: ({ min }) => minBoundMessage(min),
+  message: ({ min }, localize) => localize('min_validation_error', min),
   isValid: ({ min, value }) =>
     isDefined(value) && value !== '' && isDefined(min)
       ? asNumber(value) >= asNumber(min)
@@ -109,7 +124,7 @@ export const maxValidator: Validator<{
   value: number | string;
 }> = {
   key: 'rangeOverflow',
-  message: ({ max }) => maxBoundMessage(max),
+  message: ({ max }, localize) => localize('max_validation_error', max),
   isValid: ({ max, value }) =>
     isDefined(value) && value !== '' && isDefined(max)
       ? asNumber(value) <= asNumber(max)
@@ -122,7 +137,7 @@ export const stepValidator: Validator<{
   value: number | string;
 }> = {
   key: 'stepMismatch',
-  message: 'Value does not conform to step constraint',
+  message: (_, localize) => localize('step_validation_error'),
   isValid: ({ min, step, value }) => {
     if (isDefined(value) && value !== '' && isDefined(step)) {
       const _value = asNumber(value) - asNumber(min);
@@ -141,13 +156,13 @@ export const stepValidator: Validator<{
 
 export const emailValidator: Validator<{ value: string }> = {
   key: 'typeMismatch',
-  message: ValidationResourceStringsEN.email_validation_error!,
+  message: (_, localize) => localize('email_validation_error'),
   isValid: ({ value }) => (value ? emailRegex.test(value) : true),
 };
 
 export const urlValidator: Validator<{ value: string }> = {
   key: 'typeMismatch',
-  message: ValidationResourceStringsEN.url_validation_error!,
+  message: (_, localize) => localize('url_validation_error'),
   isValid: ({ value }) => (value ? URL.canParse(value) : true),
 };
 
@@ -156,7 +171,7 @@ export const minDateValidator: Validator<{
   min?: Date | null;
 }> = {
   key: 'rangeUnderflow',
-  message: ({ min }) => minBoundMessage(min),
+  message: ({ min }, localize) => localize('min_validation_error', min),
   isValid: ({ value, min }) =>
     value && min ? CalendarDay.compare(value, min) >= 0 : true,
 };
@@ -166,7 +181,7 @@ export const maxDateValidator: Validator<{
   max?: Date | null;
 }> = {
   key: 'rangeOverflow',
-  message: ({ max }) => maxBoundMessage(max),
+  message: ({ max }, localize) => localize('max_validation_error', max),
   isValid: ({ value, max }) =>
     value && max ? CalendarDay.compare(value, max) <= 0 : true,
 };
@@ -215,7 +230,7 @@ export function createMinDateTimeValidator<
 >(resolveValues: (host: T) => (Date | null | undefined)[]): Validator<T> {
   return {
     key: 'rangeUnderflow',
-    message: (host) => minBoundMessage(host.min),
+    message: (host, localize) => localize('min_validation_error', host.min),
     isValid: (host) =>
       isWithinBound(host, host.min, resolveValues(host), isDateLessThanMin),
   };
@@ -230,7 +245,7 @@ export function createMaxDateTimeValidator<
 >(resolveValues: (host: T) => (Date | null | undefined)[]): Validator<T> {
   return {
     key: 'rangeOverflow',
-    message: (host) => maxBoundMessage(host.max),
+    message: (host, localize) => localize('max_validation_error', host.max),
     isValid: (host) =>
       isWithinBound(host, host.max, resolveValues(host), isDateExceedingMax),
   };

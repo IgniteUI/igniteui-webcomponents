@@ -1,23 +1,12 @@
-import {
-  defineCE,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
-import { LitElement, render } from 'lit';
+import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
+import { withoutActiveViewTransition } from '#internals/testing/helpers.spec.js';
 import {
-  clearTransitionName,
-  getActiveScopedViewTransition,
   getActiveViewTransition,
-  scopedViewTransition,
-  setTransitionName,
-  startScopedViewTransition,
   startViewTransition,
 } from './view-transition.js';
 
-describe('View Transitions helpers and directive', () => {
+describe('View Transitions helpers', () => {
   let matchMediaStub: sinon.SinonStub;
 
   beforeEach(() => {
@@ -58,85 +47,7 @@ describe('View Transitions helpers and directive', () => {
     });
   });
 
-  describe('startScopedViewTransition', () => {
-    let mockElement: HTMLElement;
-
-    beforeEach(() => {
-      mockElement = document.createElement('div');
-    });
-
-    it('should return null if the element does not support scoped view transitions', () => {
-      const result = startScopedViewTransition(
-        document.createDocumentFragment() as unknown as HTMLElement,
-        sinon.spy()
-      );
-      expect(result).to.be.null;
-      expect(
-        getActiveScopedViewTransition(document.createDocumentFragment() as any)
-      ).to.be.null;
-    });
-
-    it('should start a scoped view transition on the target element', async () => {
-      const fakeTransition = {
-        finished: Promise.resolve(),
-        ready: Promise.resolve(),
-        skipTransition: sinon.spy(),
-      } as unknown as ViewTransition;
-
-      (mockElement as any).startViewTransition = sinon
-        .stub()
-        .returns(fakeTransition);
-
-      const callback = sinon.spy();
-      const transition = startScopedViewTransition(mockElement, callback);
-
-      expect(
-        (mockElement as any).startViewTransition
-      ).to.have.been.calledOnceWith(callback);
-      expect(transition).to.equal(fakeTransition);
-    });
-
-    it('should skip the transition if prefers-reduced-motion is enabled', () => {
-      matchMediaStub.withArgs('(prefers-reduced-motion: reduce)').returns({
-        matches: true,
-        media: '(prefers-reduced-motion: reduce)',
-      });
-
-      const fakeTransition = {
-        finished: Promise.resolve(),
-        ready: Promise.resolve(),
-        skipTransition: sinon.spy(),
-      } as unknown as ViewTransition;
-
-      (mockElement as any).startViewTransition = sinon
-        .stub()
-        .returns(fakeTransition);
-
-      const callback = sinon.spy();
-      const transition = startScopedViewTransition(mockElement, callback);
-
-      expect(
-        (mockElement as any).startViewTransition
-      ).to.have.been.calledOnceWith(callback);
-      expect(transition).to.equal(fakeTransition);
-      expect(fakeTransition.skipTransition).to.have.been.calledOnce;
-    });
-  });
-
-  describe('setTransitionName & clearTransitionName', () => {
-    it('should set and clear view transition names correctly', () => {
-      const el1 = document.createElement('div');
-      const el2 = document.createElement('div');
-
-      setTransitionName(el1, 'main-header');
-      expect(el1.style.viewTransitionName).to.equal('main-header');
-
-      clearTransitionName(el1, el2);
-      expect(el1.style.viewTransitionName).to.equal('');
-    });
-  });
-
-  describe('getActiveViewTransition & getActiveScopedViewTransition', () => {
+  describe('getActiveViewTransition', () => {
     it('should fetch the active document view transition', () => {
       expect(getActiveViewTransition()).to.be.null;
 
@@ -144,128 +55,33 @@ describe('View Transitions helpers and directive', () => {
       expect(getActiveViewTransition()).to.be.instanceOf(ViewTransition);
     });
 
-    it('should fetch scoped active view transitions if supported', () => {
-      const mockElement = document.createElement('div') as any;
-      const fakeTransition = {
-        finished: Promise.resolve(),
-        ready: Promise.resolve(),
-        updateCallbackDone: Promise.resolve(),
-        skipTransition: sinon.spy(),
-      } as unknown as ViewTransition;
+    it('should give the last started transition in a browser without `activeViewTransition`', async () => {
+      await withoutActiveViewTransition(async () => {
+        const first = startViewTransition(sinon.spy());
+        const last = startViewTransition(sinon.spy());
 
-      mockElement.startViewTransition = sinon.stub().returns(fakeTransition);
-      Object.defineProperty(mockElement, 'activeViewTransition', {
-        value: fakeTransition,
-        writable: true,
-        configurable: true,
+        expect(getActiveViewTransition()).to.equal(last);
+
+        await first.finished;
+        expect(getActiveViewTransition()).to.equal(last);
+
+        await last.finished;
+        expect(getActiveViewTransition()).to.be.null;
       });
-      startScopedViewTransition(mockElement, sinon.spy());
-      expect(getActiveScopedViewTransition(mockElement)).to.equal(
-        fakeTransition
-      );
-    });
-  });
-
-  describe('scopedViewTransition directive', () => {
-    it('should render the initial template directly without any transitions', async () => {
-      const container = await fixture(html`
-        <div>${scopedViewTransition(html`<span id="test">Initial</span>`)}</div>
-      `);
-
-      expect(getActiveScopedViewTransition(container as any)).to.be.null;
-      expect(container.querySelector('#test')?.textContent).to.equal('Initial');
     });
 
-    it('should start a scoped view transition when the template changes', async () => {
-      const fakeTransition = {
-        skipTransition: sinon.spy(),
-        ready: Promise.resolve(),
-      };
-      const startSpy = sinon.stub().returns(fakeTransition);
+    it('should not give a transition that reduced motion skips', async () => {
+      matchMediaStub.withArgs('(prefers-reduced-motion: reduce)').returns({
+        matches: true,
+        media: '(prefers-reduced-motion: reduce)',
+      });
 
-      const tagName = unsafeStatic(
-        defineCE(
-          class extends LitElement {
-            public startViewTransition = startSpy;
-            constructor() {
-              super();
-              // Bypasses the read-only prototype getter safely
-              Object.defineProperty(this, 'activeViewTransition', {
-                value: fakeTransition,
-                writable: true,
-                enumerable: true,
-                configurable: true,
-              });
-            }
-          }
-        )
-      );
+      await withoutActiveViewTransition(async () => {
+        const transition = startViewTransition(sinon.spy());
 
-      function renderTemplate(text: string) {
-        return html`<${tagName}>${scopedViewTransition(html`<span id="content">${text}</span>`)}</${tagName}>`;
-      }
-
-      const container = await fixture<LitElement>(renderTemplate('First'));
-      expect(container.querySelector('#content')?.textContent).to.equal(
-        'First'
-      );
-      expect(startSpy.called).to.be.false;
-
-      render(renderTemplate('Second'), container.parentNode as HTMLElement);
-
-      expect(startSpy).to.have.been.calledOnce;
-      expect(getActiveScopedViewTransition(container as any)).to.equal(
-        fakeTransition
-      );
-    });
-
-    it('renders the new template inside the transition callback', async () => {
-      let update: (() => unknown) | undefined;
-      const fakeTransition = {
-        skipTransition: sinon.spy(),
-        ready: Promise.resolve(),
-      };
-
-      const tagName = unsafeStatic(
-        defineCE(
-          class extends LitElement {
-            public startViewTransition(callback: () => unknown) {
-              update = callback;
-              return fakeTransition;
-            }
-          }
-        )
-      );
-
-      function renderTemplate(text: string) {
-        return html`<${tagName}>${scopedViewTransition(html`<span id="content">${text}</span>`)}</${tagName}>`;
-      }
-
-      const container = await fixture<LitElement>(renderTemplate('First'));
-      render(renderTemplate('Second'), container.parentNode as HTMLElement);
-
-      // The transition owns the DOM update, so the old content stays until it runs.
-      expect(container.querySelector('#content')?.textContent).to.equal(
-        'First'
-      );
-
-      const settled = update!();
-      expect(container.querySelector('#content')?.textContent).to.equal(
-        'Second'
-      );
-      expect(settled).to.be.instanceOf(Promise);
-      await settled;
-    });
-
-    it('renders a changed template directly when the parent has no scoped transitions', () => {
-      const parent = document.createDocumentFragment();
-      const renderTemplate = (text: string) =>
-        scopedViewTransition(html`<span id="content">${text}</span>`);
-
-      render(renderTemplate('First'), parent);
-      render(renderTemplate('Second'), parent);
-
-      expect(parent.querySelector('#content')?.textContent).to.equal('Second');
+        expect(getActiveViewTransition()).to.be.null;
+        await transition.finished;
+      });
     });
   });
 });

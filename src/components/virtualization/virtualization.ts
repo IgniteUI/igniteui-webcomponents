@@ -9,12 +9,11 @@ import {
 import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { addHostListeners } from '#internals/controllers/host-listeners.js';
 import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { getRoot, isLTR } from '#internals/utils/dom.js';
+import { addSafeEventListener } from '#internals/utils/events.js';
 import { asNumber, clamp } from '#internals/utils/math.js';
 import { VirtualScrollEngine } from './engine.js';
 import { recycle } from './recycle.js';
@@ -36,7 +35,8 @@ export interface IgcVirtualScrollComponentEventMap {
   igcDataRequest: CustomEvent<VirtualScrollDataRequest>;
 }
 
-const REMOTE_SCROLLING_THRESHOLD = 5;
+/** How close the rendered window comes to the end of the items before a data request. */
+export const REMOTE_SCROLLING_THRESHOLD = 5;
 const MAX_LAYOUT_SETTLE_PASSES = 20;
 const MAX_SCROLL_CORRECTION_PASSES = 5;
 const SCROLL_END_TIMEOUT_MS = 2000;
@@ -53,7 +53,7 @@ const SCROLL_IDLE_MS = 100;
 const LAYOUT_FRAME_TIMEOUT_MS = 100;
 
 /**
- * `scrollend` reports exactly when a scroll has settled. Safari before 18.2
+ * `scrollend` reports exactly when a scroll has settled. Safari before 26.2
  * does not have it, and `_scrollAndWaitForEnd` falls back to a scroll-idle
  * timer there.
  */
@@ -68,9 +68,13 @@ const EMPTY_RANGE: VisibleRange = Object.freeze({
  * A virtual scroll component for large lists. Only the items visible in the
  * viewport are rendered.
  *
+ * The component renders into its light DOM, so `::part()` does not apply to its
+ * parts. Select them with attribute selectors, such as `[part~="virtualization-track"]`.
+ *
  * @element igc-virtual-scroll
  *
- * @fires igcStateChange - Emitted when the rendered virtual window changes.
+ * @fires igcStateChange - Emitted when the rendered window, the viewport size or the total content
+ * size changes.
  * @fires igcDataRequest - Emitted when the rendered window comes within a few items of the end
  * of `data`. Also emitted on the first render, when the loaded items do not fill the viewport.
  *
@@ -80,10 +84,7 @@ const EMPTY_RANGE: VisibleRange = Object.freeze({
  */
 export default class IgcVirtualScrollComponent<
   T = any,
-> extends EventEmitterMixin<
-  IgcVirtualScrollComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
+> extends EventEmitterMixin<IgcVirtualScrollComponentEventMap>(LitElement) {
   public static readonly tagName = 'igc-virtual-scroll';
 
   /* blazorSuppress */
@@ -187,6 +188,13 @@ export default class IgcVirtualScrollComponent<
   private _layoutCompletePromise: Promise<void> | null = null;
   private _scrollRequestId = 0;
 
+  /** A `scrollToIndex` call that waits for the list to show. See `_applyPendingScroll`. */
+  private _pendingScroll: {
+    index: number;
+    options?: ScrollIntoViewOptions;
+    resolve: () => void;
+  } | null = null;
+
   /** The number of completed updates. See `_resolveLayoutComplete`. */
   private _updateCount = 0;
 
@@ -222,7 +230,7 @@ export default class IgcVirtualScrollComponent<
   public data: T[] = [];
 
   /**
-   * Scroll orientation of the virtual scroll.
+   * The scroll axis of the component.
    * @attr orientation
    * @default 'vertical'
    */
@@ -258,9 +266,9 @@ export default class IgcVirtualScrollComponent<
    * down the list. Use padding on the item, or a gap on a wrapper, instead.
    *
    * Only the current window is in the DOM, so assistive technology cannot
-   * infer an item's position from the markup. Templates that render a role
-   * with set semantics (`option`, `listitem`, `row`, ...) should map the
-   * context's `index` and `count` onto `aria-posinset` and `aria-setsize`.
+   * infer an item's position from the markup. In a template that renders a
+   * role with set semantics (`option`, `listitem`, `row`, ...), map the
+   * context's `index` and `count` to `aria-posinset` and `aria-setsize`.
    *
    * Item elements are recycled (see `keyFunction`), so DOM state that the
    * template does not bind moves to another item, for example the state of a
@@ -295,6 +303,11 @@ export default class IgcVirtualScrollComponent<
     }
 
     const root = getRoot(this);
+    // A detached scroller adopts the sheet in `connectedCallback`.
+    if (!root) {
+      return;
+    }
+
     const sheet = IgcVirtualScrollComponent._getStyleSheet();
     if (!root.adoptedStyleSheets.includes(sheet)) {
       root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
@@ -303,13 +316,11 @@ export default class IgcVirtualScrollComponent<
 
   constructor() {
     super();
+    // The analyzer records this assignment as an `onSizeChange` member.
+    /** @hidden @internal */
     this._engine.onSizeChange = () => this.requestUpdate();
 
-    addHostListeners(this, {
-      events: ['scroll'],
-      listener: this._handleScroll,
-      options: { passive: true },
-    });
+    addSafeEventListener(this, 'scroll', this._handleScroll, { passive: true });
 
     addResizeObserverController(this, {
       callback: this._measureViewport,
@@ -364,6 +375,7 @@ export default class IgcVirtualScrollComponent<
     this._scheduleItemMeasurement();
     this._checkDataRequest();
     this._emitStateChange();
+    this._applyPendingScroll();
   }
 
   protected override render(): TemplateResult {
@@ -480,6 +492,11 @@ export default class IgcVirtualScrollComponent<
     } else {
       this.scrollTo({ left: isLTR(this) ? offset : -offset, behavior });
     }
+
+    // `scroll` fires a frame later, so sync now. A hidden list keeps its offset.
+    if (this.checkVisibility()) {
+      this._handleScroll();
+    }
   }
 
   private _currentAxisScroll(): number {
@@ -575,6 +592,30 @@ export default class IgcVirtualScrollComponent<
     this._viewportSize = this._isVertical
       ? this.clientHeight
       : this.clientWidth;
+
+    // A list that shows again can get another offset with no `scroll` event.
+    if (this._viewportSize) {
+      this._scrollPosition = this._currentAxisScroll();
+      this._applyPendingScroll();
+    }
+  }
+
+  /**
+   * Runs the `scrollToIndex` call of a hidden or detached list when the list
+   * shows: from the resize observer, before the list renders the old window,
+   * at the frame after the call, or after the first update of a list that
+   * connects. A list that is hidden and shown again before a frame keeps its
+   * size, so only the frame check sees it.
+   */
+  private _applyPendingScroll(): void {
+    const pending = this._pendingScroll;
+
+    if (pending && this.hasUpdated && this.checkVisibility()) {
+      this._pendingScroll = null;
+      void this.scrollToIndex(pending.index, pending.options).then(
+        pending.resolve
+      );
+    }
   }
 
   /**
@@ -639,13 +680,11 @@ export default class IgcVirtualScrollComponent<
 
   private _handleItemResize(entries: ResizeObserverEntry[]): void {
     for (const entry of entries) {
-      const el = entry.target as HTMLElement;
-      const index = asNumber(el.dataset.vsIndex, -1);
+      const index = this._observedItemIndexes.get(entry.target) ?? -1;
       if (index < 0) continue;
 
-      const measured = this._isVertical
-        ? (entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height)
-        : (entry.borderBoxSize?.[0]?.inlineSize ?? entry.contentRect.width);
+      const [{ blockSize, inlineSize }] = entry.borderBoxSize;
+      const measured = this._isVertical ? blockSize : inlineSize;
 
       if (measured > 0) {
         this._engine.measureItem(index, measured);
@@ -838,21 +877,35 @@ export default class IgcVirtualScrollComponent<
    * measured, and the scroll position is corrected. This repeats until the
    * offset is stable.
    *
+   * A hidden or detached list cannot scroll. It keeps the call and scrolls
+   * when it shows. A newer call replaces the kept one.
+   *
    * The returned promise resolves when the scroll settles on the final,
-   * corrected offset. Callers that need only the first, approximate scroll
-   * can ignore it.
+   * corrected offset, or when a newer call replaces this one. Callers that
+   * need only the first, approximate scroll can ignore it.
    */
   public async scrollToIndex(
     index: number,
     options?: ScrollIntoViewOptions
   ): Promise<void> {
+    // A newer call supersedes a correction loop that still runs for a
+    // previous call, for example under rapid, repeated calls, and a call
+    // that waits for the list to show.
+    const requestId = ++this._scrollRequestId;
+    this._pendingScroll?.resolve();
+    this._pendingScroll = null;
+
+    if (!this.checkVisibility()) {
+      requestAnimationFrame(() => this._applyPendingScroll());
+
+      return new Promise((resolve) => {
+        this._pendingScroll = { index, options, resolve };
+      });
+    }
+
     const maxIndex = Math.max(0, this._items.length - 1);
     const clampedIndex = clamp(index, 0, maxIndex);
     const behavior = options?.behavior ?? 'auto';
-
-    // A newer call supersedes a correction loop that still runs for a
-    // previous call, for example under rapid, repeated calls.
-    const requestId = ++this._scrollRequestId;
 
     let offset = this._getAlignedScrollOffset(clampedIndex, options);
     await this._scrollAndWaitForEnd(offset, behavior);

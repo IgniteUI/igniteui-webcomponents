@@ -25,6 +25,8 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
+    - [CSS custom properties](#css-custom-properties)
   - [Test scenarios](#test-scenarios)
     - [Rendering and properties](#rendering-and-properties)
     - [Interactions and events](#interactions-and-events)
@@ -34,6 +36,7 @@
     - [Validation message slots](#validation-message-slots)
     - [External label association](#external-label-association)
     - [Host ARIA](#host-aria)
+    - [Hidden ancestor](#hidden-ancestor)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -48,6 +51,12 @@
 |       2 | 2026-09-24 | Label external `label` elements and host ARIA, activate from a label click |
 |       3 | 2026-10-02 | Focus after form checks; `invalid` only on checks                          |
 |       4 | 2026-10-02 | Forward the host `aria-describedby`                                        |
+|       5 | 2026-10-21 | API descriptions aligned with the JSDoc.                                   |
+|       6 | 2026-10-23 | The control makes a stacking context, also in a horizontal group, so its z-index does not compete with the layers of the page |
+|       7 | 2026-10-29 | Transition only the properties that change, so the radio hides at the same time as a hidden ancestor |
+|       8 | 2026-11-02 | `focus()` and `blur()` before the first render do not throw, and a `focus()` call applies after it   |
+|       9 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown` does not submit the form |
+|      10 | 2026-11-11 | <kbd>Enter</kbd> submits only through the first submit button of the form, as for a native radio, and not after a canceled `keypress` |
 
 ## Overview
 
@@ -211,6 +220,10 @@ the invalid state and the custom message stay consistent across it. See the
 - The checked radio submits its `value` under the shared `name`. A group with no selection submits nothing.
 - A form reset restores the selection described by the `checked` attributes.
 - A disabled radio does not submit a value.
+- <kbd>Enter</kbd> on the control submits the form, as for a native radio: the first submit button of the form
+  gets a click, and the click submits the form. A form with no submit button, or with a disabled first submit button,
+  does not submit. A `keydown` or `keypress` listener that calls `preventDefault()`, or a listener that disables the
+  control, stops the submission.
 
 As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
 the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
@@ -230,6 +243,7 @@ application and localized by it.
 | <kbd>Arrow Down</kbd> / <kbd>Arrow Right</kbd> | Moves focus to the next enabled radio of the group and selects it, wrapping at the end. |
 | <kbd>Arrow Up</kbd> / <kbd>Arrow Left</kbd>    | Moves focus to the previous enabled radio of the group and selects it, wrapping at the start. |
 | <kbd>Space</kbd>                               | Selects the focused radio.                                                          |
+| <kbd>Enter</kbd>                               | Clicks the first submit button of the form, if any.                                 |
 
 The horizontal arrow keys follow the writing direction, so they are mirrored in an RTL context.
 
@@ -239,18 +253,18 @@ The horizontal arrow keys follow the writing direction, so they are mirrored in 
 
 | Property          | Attribute      | Reflected | Type                      | Default | Description                                                              |
 | ----------------- | -------------- | --------- | ------------------------- | ------- | ------------------------------------------------------------------------ |
-| checked           | checked        | No        | `boolean`                 | false   | The checked state of the control.                                        |
+| checked           | checked        | No        | `boolean`                 | false   | Whether the control is checked. A checked radio clears the other radios of its group. |
 | value             | value          | No        | `string`                  | -       | The value of the control, submitted when the control is checked.         |
 | labelPosition     | label-position | Yes       | `ToggleLabelPosition`     | `after` | The label position of the radio control.                                 |
-| required          | required       | Yes       | `boolean`                 | false   | Makes the group of the control a required field for validation.          |
-| disabled          | disabled       | Yes       | `boolean`                 | false   | The disabled state of the component.                                     |
-| invalid           | invalid        | No        | `boolean`                 | false   | Sets the control into invalid state (visual state only).                 |
+| required          | required       | Yes       | `boolean`                 | false   | Whether the group of the radio is required. A required group fails validation while none of its radios is checked. |
+| disabled          | disabled       | Yes       | `boolean`                 | false   | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                                     |
+| invalid           | invalid        | No        | `boolean`                 | false   | Whether the control shows the invalid state. It changes only the visual state, not the validity.                 |
 | name              | name           | Yes       | `string`                  | -       | The name of the control, submitted with the form data, and the identity of its group. |
-| defaultChecked    | -              | No        | `boolean`                 | false   | The initial checked state, restored on a form reset.                     |
-| form              | -              | No        | `HTMLFormElement \| null` | -       | Read-only. The form associated with this element.                        |
-| validity          | -              | No        | `ValidityState`           | -       | Read-only. The validity state of the element.                            |
-| validationMessage | -              | No        | `string`                  | -       | Read-only. The validation message of the element.                        |
-| willValidate      | -              | No        | `boolean`                 | -       | Read-only. Whether the element is a candidate for constraint validation. |
+| defaultChecked    | -              | No        | `boolean`                 | false   | Whether the control is checked by default. A form reset restores the checked state to it. While the checked state is unchanged since the start or the last form reset, a new default also sets the checked state. The `checked` attribute also sets it.                     |
+| form              | -              | No        | `HTMLFormElement \| null` | -       | Read-only. The form that the control is associated with, or `null`.                        |
+| validity          | -              | No        | `ValidityState`           | -       | Read-only. The validity state of the control.                            |
+| validationMessage | -              | No        | `string`                  | -       | Read-only. The validation message of the control. It is empty when the control is valid.                        |
+| willValidate      | -              | No        | `boolean`                 | -       | Read-only. Whether the control is a candidate for constraint validation. |
 
 ### Methods
 
@@ -259,9 +273,9 @@ The horizontal arrow keys follow the writing direction, so they are mirrored in 
 | click             | `(): void`                       | Simulates a click on the radio control.                                                      |
 | focus             | `(options?: FocusOptions): void` | Sets focus on the radio control.                                                             |
 | blur              | `(): void`                       | Removes focus from the radio control.                                                        |
-| checkValidity     | `(): boolean`                    | Checks the validity of the whole group and emits `invalid` when the control is invalid.      |
+| checkValidity     | `(): boolean`                    | Checks the validity of the whole group. Each invalid radio of the group emits `invalid`.     |
 | reportValidity    | `(): boolean`                    | Checks the validity of the whole group; when invalid, emits `invalid` and focuses the radio. |
-| setCustomValidity | `(message: string): void`        | Sets a custom message on every radio of the group. Invalid while `message` is not empty.     |
+| setCustomValidity | `(message: string): void`        | Sets a custom validation message on every radio of the group. The radios are invalid while `message` is not empty. |
 
 ### Events
 
@@ -296,8 +310,23 @@ re-dispatches the native `focus`, `blur` and `invalid` events from the host elem
 | Part      | Description                     |
 | --------- | ------------------------------- |
 | `base`    | The radio control base wrapper. |
-| `control` | The radio input control.        |
+| `control` | The circle of the radio.        |
 | `label`   | The radio control label.        |
+| `ripple`  | The highlight around the circle on hover and focus. A disabled radio hides it. |
+| `checked` | Added to the base, control, label and ripple parts when the radio is checked. |
+| `focused` | Added to the base part when the radio has keyboard focus. |
+
+### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
+
+### CSS custom properties
+
+| Property                | Description                                                                                                                                                                                                                                                                                                                                                          |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ig-helper-min-lines` | The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. In a radio group, only the last radio keeps the space. Default is `0`. |
 
 ## Test scenarios
 
@@ -318,7 +347,8 @@ The groups below mirror the `describe` blocks of the suite.
 ### Rendering and properties
 
 1. Is initialized with the proper default values.
-2. Renders a radio element successfully, compared against a DOM snapshot.
+2. Renders a radio element successfully, compared against a DOM snapshot. The control is painted under an earlier page
+   layer with `z-index: 1`, also in a horizontal radio group.
 3. Sets the `labelPosition` property properly.
 4. Sets the `name`, `value`, `disabled` and `required` properties successfully.
 5. Keeps correct focus states between light and shadow DOM.
@@ -340,7 +370,8 @@ Driven by `createFormAssociatedTestBed`.
     value.
 13. Is correctly reset on form reset, resets to a new default after a `setAttribute` call, and does not restore a
     checked state whose attribute was removed before the reset.
-14. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid.
+14. Is correctly submitted on <kbd>Enter</kbd> in a form with a submit button, and does not submit without a submit
+    button, while the value is invalid or when a listener on the host cancels the `keydown`.
 15. Reflects the disabled state of an ancestor `fieldset`.
 16. Fulfils the required and custom constraints.
 17. Issue #1122 - the component validates synchronously.
@@ -388,6 +419,16 @@ Generated by `runExternalLabelAssociationTests`.
 
 34. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal.
+
+### Hidden ancestor
+
+35. An unchecked and a checked radio in a group hide at the same time as a hidden ancestor in each theme, at rest and
+    after a focus or a hover: no element transitions `visibility` or sets it to `visible`.
+36. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
+    takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
+    `disabled` set does not cancel an earlier call on another element. The calls do not throw before the render.
 
 ### Not covered by the suite
 

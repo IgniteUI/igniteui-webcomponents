@@ -46,6 +46,9 @@
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-09-23 | Limit the variant parts to the linear progress |
 |       3 | 2026-10-01 | Announce the shown percentage, round it to two decimals |
+|       4 | 2026-10-21 | API descriptions aligned with the JSDoc. |
+|       5 | 2026-11-06 | The circular indicator: reduced motion, forced colors, the box of the ring |
+|       6 | 2026-11-06 | The linear indicator: reduced motion |
 
 ## Overview
 
@@ -156,6 +159,11 @@ The default label shows the value as a percentage of `max`, rounded to two decim
 `striped` gives the fill a striped look, and `labelAlign` places the default label at `top`, `bottom`,
 `top-start`, `top-end`, `bottom-start` or `bottom-end`.
 
+#### Circular specifics
+
+The circular indicator is an inline block with no line height, so its box is the size of the ring. As a block, the
+ring still follows `text-align`. `--ig-circular-bar-diameter` sets the size of the ring.
+
 #### Circular gradients
 
 Projecting `igc-circular-gradient` elements in the `gradient` slot replaces the solid fill. Each one becomes an
@@ -190,16 +198,16 @@ Shared by `igc-linear-progress` and `igc-circular-progress`:
 | `value`             | `value`              | no        | `number`                                                    | `0`       | The value of the control.                        |
 | `max`               | `max`                | no        | `number`                                                    | `100`     | The maximum value of the control.                |
 | `variant`           | `variant`            | yes       | `"primary" \| "info" \| "success" \| "warning" \| "danger"` | `primary` | The variant of the control.                      |
-| `indeterminate`     | `indeterminate`      | no        | `boolean`                                                   | `false`   | The indeterminate state of the control.          |
-| `hideLabel`         | `hide-label`         | no        | `boolean`                                                   | `false`   | Hides the default label.                         |
+| `indeterminate`     | `indeterminate`      | no        | `boolean`                                                   | `false`   | Whether the progress is indeterminate. An indeterminate progress has no value and does not show the default label. |
+| `hideLabel`         | `hide-label`         | no        | `boolean`                                                   | `false`   | Whether the default label is hidden.             |
 | `labelFormat`       | `label-format`       | no        | `string`                                                    | —         | The format of the default label.                 |
-| `animationDuration` | `animation-duration` | no        | `number`                                                    | `500`     | The duration of the fill animation, in ms.       |
+| `animationDuration` | `animation-duration` | no        | `number`                                                    | `500`     | The duration of the fill animation in milliseconds. |
 
 `igc-linear-progress` adds:
 
 | Property     | Attribute     | Reflected | Type                                                                              | Default     | Description                        |
 | ------------ | ------------- | --------- | --------------------------------------------------------------------------------- | ----------- | ---------------------------------- |
-| `striped`    | `striped`     | yes       | `boolean`                                                                         | `false`     | The striped look of the control.    |
+| `striped`    | `striped`     | yes       | `boolean`                                                                         | `false`     | Whether the fill of the control is striped. |
 | `labelAlign` | `label-align` | yes       | `"top" \| "bottom" \| "top-start" \| "top-end" \| "bottom-start" \| "bottom-end"` | `top-start` | The position of the default label.  |
 
 `igc-circular-gradient`:
@@ -222,16 +230,17 @@ None applicable.
 
 | Component               | Name       | Description                                                        |
 | ----------------------- | ---------- | ------------------------------------------------------------------ |
-| both indicators         | default    | Replaces the label area of the indicator.                           |
-| `igc-circular-progress` | `gradient` | The gradient stops of the fill; accepts `igc-circular-gradient`.     |
+| both indicators         | default    | Custom label content. A slotted element replaces the default label. |
+| `igc-circular-progress` | `gradient` | The gradient stops of the fill. Accepts `igc-circular-gradient` elements. |
 
 ### CSS Shadow parts
 
-Shared by both indicators: `track`, `fill`, `label`, `value` and `indeterminate`.
+Shared by both indicators: `base`, `track`, `fill`, `label`, `value` and `indeterminate`. The label value also gets
+`counter` while it shows the default percentage text, and `fraction` when the percentage has a fractional part.
 
 | Component               | Additional parts                                                                          |
 | ----------------------- | ----------------------------------------------------------------------------------------- |
-| `igc-linear-progress`   | `striped`, and one part per variant: `primary`, `info`, `success`, `warning` and `danger` |
+| `igc-linear-progress`   | `secondary`, `striped`, and one part per variant: `primary`, `info`, `success`, `warning` and `danger` |
 | `igc-circular-progress` | `svg`, `gradient_start`, `gradient_end`                                                   |
 
 ## Test scenarios
@@ -270,18 +279,27 @@ Both suites are structured the same way, so the scenarios below apply to both in
 
 13. The circular indicator renders slotted gradient stops.
 
+### Styles
+
+14. The circular indicator takes the box of the ring, and as a block it follows `text-align`.
+15. With reduced motion, the indeterminate animation runs at a third of its speed in each theme, and a new value
+    shows at once.
+16. With motion, the same animations run at full speed, and a new value animates.
+17. In forced colors, the ring and a custom gradient of the circular indicator have the text color, and the track is
+    `GrayText`.
+
 ### ARIA state
 
-14. The value text is the shown percentage of `max`, for example `25%` for `50` of `200`.
-15. The value text keeps two decimals (`1.05%`) and rounds as the label does (`13%` for `12.996`, `1.01%` for
+18. The value text is the shown percentage of `max`, for example `25%` for `50` of `200`.
+19. The value text keeps two decimals (`1.05%`) and rounds as the label does (`13%` for `12.996`, `1.01%` for
     `1.005`), also in the fill.
-16. The value text handles a fractional `max` (`50%` for `0.25` of `0.5`) and a `max` of `0` (`0%`).
-17. The value text is the `labelFormat` text when one is set.
-18. The indeterminate mode reports no value and no value text.
+20. The value text handles a fractional `max` (`50%` for `0.25` of `0.5`) and a `max` of `0` (`0%`).
+21. The value text is the `labelFormat` text when one is set.
+22. The indeterminate mode reports no value and no value text.
 
 ### Issues
 
-19. Issue #1083 — a value set at initialization is not reset by the first render.
+23. Issue #1083 — a value set at initialization is not reset by the first render.
 
 ### Not covered by the suite
 
@@ -312,6 +330,13 @@ Both suites are structured the same way, so the scenarios below apply to both in
 ### Keyboard support
 
 Not applicable; the indicators are not interactive.
+
+### Reduced motion and forced colors
+
+- With `prefers-reduced-motion: reduce`, the indeterminate animation of both indicators runs at a third of its
+  speed, so it still shows activity, and a new value shows at once.
+- Forced colors do not change SVG paint. So in forced colors, the ring of the circular indicator and a custom
+  gradient take the text color, and the track is `GrayText`.
 
 ### Right to Left support
 

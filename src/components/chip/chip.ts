@@ -1,13 +1,12 @@
-import {
-  ChipResourceStringsEN,
-  type IChipResourceStrings,
-} from 'igniteui-i18n-core';
+import { ChipResourceStringsEN } from 'igniteui-i18n-core';
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import {
   ariaBindings,
+  HOST_DISCLOSURE_ATTRIBUTES,
   hostAria,
+  hostDisclosure,
 } from '#internals/controllers/aria-projection.js';
 import { addKeybindings } from '#internals/controllers/key-bindings.js';
 import {
@@ -16,9 +15,8 @@ import {
   setSlots,
 } from '#internals/controllers/slot.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
@@ -38,7 +36,7 @@ export interface IgcChipComponentEventMap {
 
 const Slots = setSlots('start', 'prefix', 'suffix', 'end');
 
-const i18n: I18nControllerConfig<IChipResourceStrings> = {
+const i18n = {
   defaultEN: ChipResourceStringsEN,
 };
 
@@ -47,16 +45,16 @@ const i18n: I18nControllerConfig<IChipResourceStrings> = {
  *
  * @element igc-chip
  *
- * @slot - Renders content in the default slot of the chip.
+ * @slot - Renders the label of the chip.
  * @slot prefix - Renders content at the start of the chip, before the default content.
  * @slot start - Renders content at the start of the chip, before the prefix content.
  * @slot suffix - Renders content at the end of the chip after the default content.
- * @slot end - Renders content at the end of the chip, before the suffix content.
- * @slot select - Content to render when the chip in selected state.
- * @slot remove - Content to override the default remove chip icon.
+ * @slot end - Renders content at the end of the chip, after the suffix content.
+ * @slot select - Renders content while a selectable chip is selected. It replaces the default selected icon.
+ * @slot remove - Renders content that replaces the default remove icon.
  *
- * @fires igcRemove - Emits an event when the chip component is removed.
- * @fires igcSelect - Emits an event when the chip component is selected or deselected.
+ * @fires igcRemove - Emitted when the user activates the remove control. The chip does not remove itself.
+ * @fires igcSelect - Emitted when the user selects or deselects the chip. The detail is the new selected state.
  *
  * @csspart base - The base wrapper of the chip.
  * @csspart action - The selection control of the chip, wrapping the chip content.
@@ -67,13 +65,13 @@ const i18n: I18nControllerConfig<IChipResourceStrings> = {
  */
 @shadowOptions({ delegatesFocus: true })
 export default class IgcChipComponent extends I18nMixin(
-  EventEmitterMixin<IgcChipComponentEventMap, Constructor<LitElement>>(
-    HostAriaMixin(LitElement)
+  EventEmitterMixin<IgcChipComponentEventMap>(
+    HostAriaMixin(LitElement, HOST_DISCLOSURE_ATTRIBUTES)
   ),
   i18n
 ) {
   public static readonly tagName = 'igc-chip';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -84,7 +82,7 @@ export default class IgcChipComponent extends I18nMixin(
   private readonly _slots = addSlotController(this, { slots: Slots });
 
   /**
-   * Whether the chip is disabled or not.
+   * Whether the chip is disabled.
    *
    * @attr disabled
    * @default false
@@ -93,7 +91,7 @@ export default class IgcChipComponent extends I18nMixin(
   public disabled = false;
 
   /**
-   * Whether the chip is removable or not.
+   * Whether the chip shows a remove control. A disabled chip hides it.
    *
    * @attr removable
    * @default false
@@ -102,7 +100,7 @@ export default class IgcChipComponent extends I18nMixin(
   public removable = false;
 
   /**
-   * Whether the chip is outlined or not.
+   * Whether the chip is outlined.
    *
    * @attr outlined
    * @default false
@@ -111,7 +109,7 @@ export default class IgcChipComponent extends I18nMixin(
   public outlined = false;
 
   /**
-   * Whether the chip is selectable or not.
+   * Whether the chip can be selected.
    *
    * @attr selectable
    * @default false
@@ -121,7 +119,7 @@ export default class IgcChipComponent extends I18nMixin(
 
   /* @tsTwoWayProperty(true, "igcSelect", "detail", false) */
   /**
-   * Whether the chip is selected or not.
+   * Whether the chip is selected.
    *
    * @attr selected
    * @default false
@@ -130,7 +128,7 @@ export default class IgcChipComponent extends I18nMixin(
   public selected = false;
 
   /**
-   * A property that sets the color variant of the chip component.
+   * The color variant of the chip.
    *
    * @attr variant
    */
@@ -165,6 +163,20 @@ export default class IgcChipComponent extends I18nMixin(
     this.emitEvent('igcRemove');
   }
 
+  /* alternateName: focusComponent */
+  /** Sets focus on the chip. */
+  public override focus(options?: FocusOptions): void {
+    super.focus(options);
+    deferFocus(this, options);
+  }
+
+  /* alternateName: blurComponent */
+  /** Removes focus from the chip. */
+  public override blur(): void {
+    cancelDeferredFocus(this);
+    super.blur();
+  }
+
   protected _renderPrefix() {
     const showSelected = this.selectable && this.selected;
 
@@ -187,8 +199,8 @@ export default class IgcChipComponent extends I18nMixin(
   protected _renderSuffix() {
     return html`
       <span part="suffix" ?hidden=${!this._hasSlotted('end', 'suffix')}>
-        <slot name="end"></slot>
         <slot name="suffix"></slot>
+        <slot name="end"></slot>
       </span>
     `;
   }
@@ -223,7 +235,7 @@ export default class IgcChipComponent extends I18nMixin(
     return html`
       <div part="base">
         <button
-          ${ariaBindings(hostAria(this))}
+          ${ariaBindings({ ...hostAria(this), ...hostDisclosure(this) })}
           part="action"
           type="button"
           .ariaPressed=${ariaPressed}

@@ -52,7 +52,7 @@ const metadata: Meta<IgcButtonGroupComponent> = {
   argTypes: {
     disabled: {
       type: 'boolean',
-      description: 'Disables all buttons inside the group.',
+      description: 'Whether all buttons in the group are disabled.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -65,7 +65,8 @@ const metadata: Meta<IgcButtonGroupComponent> = {
     },
     selection: {
       type: { name: 'enum', value: ['multiple', 'single', 'single-required'] },
-      description: 'Controls the mode of selection for the button group.',
+      description:
+        'The selection mode of the group. A change of the mode clears the selection.',
       options: ['multiple', 'single', 'single-required'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'single' } },
@@ -77,11 +78,11 @@ const metadata: Meta<IgcButtonGroupComponent> = {
 export default metadata;
 
 interface IgcButtonGroupArgs {
-  /** Disables all buttons inside the group. */
+  /** Whether all buttons in the group are disabled. */
   disabled: boolean;
   /** The orientation of the buttons in the group. */
   alignment: 'horizontal' | 'vertical';
-  /** Controls the mode of selection for the button group. */
+  /** The selection mode of the group. A change of the mode clears the selection. */
   selection: 'multiple' | 'single' | 'single-required';
 }
 type Story = StoryObj<IgcButtonGroupArgs>;

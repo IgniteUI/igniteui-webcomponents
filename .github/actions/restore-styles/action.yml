@@ -1,0 +1,18 @@
+name: Restore the compiled styles
+description: >-
+  Restores the output of `build:styles` from an earlier run, so that the build compiles
+  only the entries whose sources changed. Run it after `npm ci`, which deletes
+  `node_modules`.
+
+# The build checks the content of the SCSS sources of each entry, but not its own code
+# or the packages, so the restore prefix holds them.
+runs:
+  using: composite
+  steps:
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: |
+          node_modules/.cache/igniteui-webcomponents/styles.json
+          src/**/*.css.ts
+        key: styles-${{ runner.os }}-${{ hashFiles('scripts/sass.mjs', 'package-lock.json') }}-${{ hashFiles('src/**/*.scss') }}
+        restore-keys: styles-${{ runner.os }}-${{ hashFiles('scripts/sass.mjs', 'package-lock.json') }}-

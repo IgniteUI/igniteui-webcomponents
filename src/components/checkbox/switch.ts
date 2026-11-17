@@ -19,16 +19,20 @@ const nextId = createIdGenerator('switch');
  *
  * @slot - The switch label.
  *
- * @fires igcChange - Emitted when the control's checked state changes.
+ * @fires igcChange - Emitted when the checked state of the control changes by user interaction.
  *
  * @csspart base - The base wrapper of the switch.
- * @csspart control - The switch input element.
+ * @csspart control - The track of the switch. It holds the thumb.
  * @csspart thumb - The position indicator of the switch.
  * @csspart label - The switch label.
+ * @csspart checked - Added to the base, control, label and thumb parts when the switch is checked.
+ * @csspart focused - Added to the control part when the switch has keyboard focus.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-switch';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -61,7 +65,7 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
         html`<span part=${partMap({ thumb: true, checked })}></span>`,
       hideLabel: this._hideLabel,
       onClick: this._handleClick,
-      onKeyDown: this._handleEnterKeydown,
+      onEnterKey: this._handleEnterKey,
       onBlur: this._handleBlur,
     });
   }

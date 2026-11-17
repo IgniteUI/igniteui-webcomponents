@@ -2,8 +2,7 @@
 
 :host {
     display: block;
-    min-width: rem(320px);
-    flex-basis: rem(320px);
+    min-width: min(rem(320px), 100%);
 }
 
 [part~='spacer'] {

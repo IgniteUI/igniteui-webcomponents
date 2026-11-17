@@ -24,10 +24,11 @@ Before you write implementation code, do these steps in this order:
 2. **Confirm package layout if needed** - Web Components packages are split by component family. Check the package layout or licensing only when package choice, component registration, or theming depends on them.
 3. **Discover components** - Call `list_components` with targeted filters to find matching components for each UI pattern.
 4. **Look up component docs** - Call `get_doc` for every chosen component family before coding.
-5. **Generate theme** - (a) To generate a theme, first extract the colors. Create a color palette with `create_palette` or `create_custom_palette`, as the scenario requires. Then extract the elevations and call `create_elevations`. Then extract the typography and call `create_typography`. Then call `create_theme` when Sass is configured, or import the closest pre-built theme CSS. (b) After a theme exists, use design tokens or scoped semantic CSS variables instead of raw literals where possible. (c) For every Ignite UI component family that exposes design tokens, call `get_component_design_tokens`. Map the extracted image tokens to token roles. Then call `create_component_theme` with the component tokens that are different from the global theme.
-6. **Implement** - Build the screenshot-first layout, data, and view components.
-7. **Refine** - Use the `set_size`, `set_spacing`, `set_roundness` tools to refine the visual fidelity of the view against the image. Then change the implementation and theming again until the view closely matches the design.
-8. **Validate** - Build, test, run, compare against the image, and fix differences.
+5. **Generate theme** - (a) Look for an existing theme first (5a). (b) If there is no theme, extract the colors and create a color palette with `create_palette` or `create_custom_palette`, as the scenario requires. Import the closest pre-built theme CSS. Apply the typography and elevations with plain CSS (5b). After a theme exists, use design tokens or scoped semantic CSS variables instead of raw literals where possible. (c) For every Ignite UI component family that exposes design tokens, call `get_component_design_tokens`. Map the extracted image tokens to token roles. Then call `create_component_theme` with the component tokens that are different from the global theme (5c).
+6. **Install packages** - Add the packages that the chosen components need, and register only the custom elements that you use.
+7. **Implement** - Build the screenshot-first layout, data, and view components.
+8. **Refine** - Use the `set_size`, `set_spacing`, `set_roundness` tools to refine the visual fidelity of the view against the image. Then change the implementation and theming again until the view closely matches the design.
+9. **Validate** - Build, test, run, compare against the image, and fix differences.
 
 ## Step 1: Analyze the Design Image
 
@@ -67,8 +68,8 @@ After the table, translate the image into CSS Grid rows and columns first. Keep 
 
 This skill is Web Components-first. Check the package layout or licensing only when package choice, component registration, or theming depends on them.
 
-- The project can be unlicensed or use the trial package layout. In that case, do not mark documented trial packages as blocked or licensed-only during implementation.
-- If the result shows a licensed package layout, use the licensed import paths from the component reference when necessary.
+- Read the `igniteui-*` dependencies in `package.json`. The project can be unlicensed or use the trial package layout. In that case, do not mark documented trial packages as blocked or licensed-only during implementation.
+- If `package.json` lists licensed packages (`@infragistics/igniteui-webcomponents-*`), use the licensed import paths from the component reference when necessary.
 
 Then, to find the components that match each UI pattern, call `list_components` with `framework: "webcomponents"` and relevant filters. Common filters:
 

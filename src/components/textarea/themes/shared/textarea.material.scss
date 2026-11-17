@@ -97,7 +97,9 @@ textarea {
             bottom: 0%;
             width: 100%;
             border-block-end: rem(1px) solid var-get($theme, 'idle-bottom-line-color');
-            transition: all 0.25s $out-cubic;
+            transition:
+                border-color 0.25s $out-cubic,
+                border-width 0.25s $out-cubic;
         }
 
         textarea {
@@ -257,6 +259,13 @@ textarea {
         textarea {
             grid-column: 2 / -1;
             max-width: calc(100% - #{rem(2px)});
+        }
+
+        // A content-box `max-width` excludes the padding, so a margin
+        // keeps the same gap.
+        textarea[data-auto-size] {
+            max-width: none;
+            margin-inline-end: rem(2px);
         }
     }
 

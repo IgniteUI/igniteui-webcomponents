@@ -1,3 +1,4 @@
+import { ColorPickerResourceStringsEN } from 'igniteui-i18n-core';
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -9,7 +10,6 @@ import {
   arrowUp,
 } from '#internals/controllers/key-bindings.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import {
@@ -17,6 +17,7 @@ import {
   preventDefault,
 } from '#internals/utils/events.js';
 import { asPercent, clamp } from '#internals/utils/math.js';
+import { formatString } from '#internals/utils/strings.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/picker-canvas.base.css.js';
 
@@ -51,12 +52,11 @@ type CanvasGeometry = {
  * @csspart marker - The draggable marker indicating the picked saturation/value.
  * @csspart dragging - Present on the marker while it is being dragged.
  */
-export default class IgcPickerCanvasComponent extends EventEmitterMixin<
-  IgcPickerCanvasEventMap,
-  AbstractConstructor<LitElement>
->(LitElement) {
+export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPickerCanvasEventMap>(
+  LitElement
+) {
   public static readonly tagName = 'igc-picker-canvas';
-  public static styles = [componentBase, styles];
+  public static override styles = [componentBase, styles];
 
   public static register(): void {
     registerComponent(IgcPickerCanvasComponent);
@@ -109,7 +109,16 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
 
   /** The accessible name of the marker. */
   @property()
-  public markerLabel = 'Saturation and value';
+  public markerLabel: string =
+    ColorPickerResourceStringsEN.color_picker_canvas_label!;
+
+  /**
+   * The format of the marker `aria-valuetext`. `{0}` is the saturation and
+   * `{1}` the brightness, both as whole percentages.
+   */
+  @property()
+  public markerValueFormat: string =
+    ColorPickerResourceStringsEN.color_picker_canvas_value!;
 
   constructor() {
     super();
@@ -164,9 +173,7 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
       return;
     }
 
-    this.x = nextX;
-    this.y = nextY;
-
+    // Emit first: the picker's writes then join this update, not a second one.
     this.emitEvent('igcColorPicked', {
       detail: {
         x: Math.round(asPercent(nextX + marker.width, rect.width)),
@@ -174,6 +181,9 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
       },
       bubbles: false,
     });
+
+    this.x = nextX;
+    this.y = nextY;
   }
 
   private _onArrowKey({ dx, dy }: { dx: number; dy: number }): void {
@@ -197,21 +207,17 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
   private _handlePointerDown(event: PointerEvent): void {
     if (event.button !== 0) return;
     this.setPointerCapture(event.pointerId);
-    this.addEventListener('pointermove', this._handlePointerMove);
+    this.addEventListener('pointermove', this._move);
     this._dragGeometry = this._measure();
     this._dragging = true;
     this._move(event);
   }
 
   private _handleLostPointerCapture(): void {
-    this.removeEventListener('pointermove', this._handlePointerMove);
+    this.removeEventListener('pointermove', this._move);
     this._dragGeometry = undefined;
     this._dragging = false;
     this._marker?.focus();
-  }
-
-  private _handlePointerMove(event: PointerEvent): void {
-    this._move(event);
   }
 
   public getMarkerDimensions(): { width: number; height: number } {
@@ -245,7 +251,11 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
         aria-valuemin="0"
         aria-valuemax="100"
         aria-valuenow=${saturation}
-        aria-valuetext="Saturation ${saturation}%, brightness ${brightness}%"
+        aria-valuetext=${formatString(
+          this.markerValueFormat,
+          saturation,
+          brightness
+        )}
       ></div>
     `;
   }

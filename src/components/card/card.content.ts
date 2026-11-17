@@ -8,7 +8,7 @@ import { styles as shared } from './themes/shared/content/card.content.common.cs
 
 /**
  * A container component for the card's main text content.
- * This component should be used within a card to display the primary content.
+ * Use it in a card for the primary content.
  *
  * @element igc-card-content
  *

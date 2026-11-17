@@ -1,11 +1,9 @@
-import {
-  ComboResourceStringsEN,
-  type IComboResourceStrings,
-} from 'igniteui-i18n-core';
-import { html, type PropertyValues, type TemplateResult } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { ComboResourceStringsEN } from 'igniteui-i18n-core';
+import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
+import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { IgcBaseComboBoxComponent } from '#internals/bases/combo-box.js';
 import { addAriaProjector } from '#internals/controllers/aria-projection.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
@@ -13,16 +11,21 @@ import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditi
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
 import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
-import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import type { FormValueTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
-import { asArray, firstOf, isEmpty } from '#internals/utils/arrays.js';
+import {
+  asArray,
+  firstOf,
+  isEmpty,
+  sameItems,
+} from '#internals/utils/arrays.js';
 import {
   addSafeEventListener,
   getElementFromPath,
@@ -31,29 +34,42 @@ import {
 import { bindIf } from '#internals/utils/lit.js';
 import type { Validator } from '#internals/validators.js';
 import { all } from '#themes/combo/themes/themes.js';
-import { addThemingController } from '#theming/theming-controller.js';
+import {
+  addThemingController,
+  type ThemingController,
+} from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
+import IgcButtonComponent from '../button/button.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
+import IgcCircularProgressComponent from '../progress/circular-progress.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
-import type { VirtualScrollItemContext } from '../virtualization/types.js';
+import type {
+  VirtualScrollItemContext,
+  VirtualScrollState,
+} from '../virtualization/types.js';
 import IgcVirtualScrollComponent from '../virtualization/virtualization.js';
 import IgcComboHeaderComponent from './combo-header.js';
 import IgcComboItemComponent from './combo-item.js';
-import { DataState } from './controllers/data.js';
+import { ComboDataRequests } from './controllers/data-requests.js';
+import { DataState, isItemRecord } from './controllers/data.js';
 import { ComboNavigationController } from './controllers/navigation.js';
+import { ComboSelection } from './controllers/selection.js';
 import { styles } from './themes/combo.base.css.js';
 import { styles as shared } from './themes/shared/combo.common.css.js';
 import type {
+  ComboCloseTrigger,
   ComboGroupHeaderTemplate,
   ComboItemTemplate,
   ComboRecord,
   ComboRenderFunction,
+  ComboSelectionCommit,
   ComboValue,
   FilteringOptions,
   GroupingDirection,
   IgcComboChangeEventArgs,
+  IgcComboClosingEventArgs,
   IgcComboComponentEventMap,
   Item,
   Keys,
@@ -66,6 +82,7 @@ const SLOTS = setSlots(
   'header',
   'footer',
   'empty',
+  'loading',
   'helper-text',
   'toggle-icon',
   'clear-icon',
@@ -74,37 +91,39 @@ const SLOTS = setSlots(
   'invalid'
 );
 
-const i18n: I18nControllerConfig<IComboResourceStrings> = {
+const i18n = {
   defaultEN: ComboResourceStringsEN,
 };
 
 /* blazorSupportsVisualChildren */
 /**
- * The Combo component is similar to the Select component in that it provides a list of options from which the user can make a selection.
- * In contrast to the Select component, the Combo component displays all options in a virtualized list of items,
- * meaning the combo box can simultaneously show thousands of options, where one or more options can be selected.
- * Additionally, users can create custom item templates, allowing for robust data visualization.
- * The Combo component features case-sensitive filtering, grouping, complex data binding, dynamic addition of values and more.
+ * The combo lets the user select one or more options from a list. Unlike the select, it shows the options in a
+ * virtualized list, so the list can hold thousands of options.
+ * The combo supports custom item templates, case-sensitive filtering, grouping and binding to complex data.
  *
  * @element igc-combo
  *
  * @slot prefix - Renders content before the input of the combo.
  * @slot suffix - Renders content after the input of the combo.
  * @slot header - Renders a container before the list of options of the combo.
- * @slot footer - Renders a container after the list of options of the combo.
+ * @slot footer - Renders a container after the list of options of the combo. In the confirm mode of `selectionCommit`, its default content is Cancel and Apply.
  * @slot empty - Renders content when the combo dropdown list has no items/data.
+ * @slot loading - Renders content that replaces the default spinner while `loading` is set. It is in the input, so a click on it toggles the list, as on the toggle icon.
  * @slot helper-text - Renders content below the input of the combo.
- * @slot toggle-icon - Renders content inside the suffix container of the combo.
- * @slot clear-icon - Renders content inside the suffix container of the combo.
+ * @slot toggle-icon - Renders content that replaces the default toggle icon.
+ * @slot clear-icon - Renders content that replaces the default clear icon.
  * @slot value-missing - Renders content when the required validation fails.
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcChange - Emitted before the control's selection changes. Cancel the event to keep the selection.
- * @fires igcOpening - Emitted just before the list of options is opened.
- * @fires igcOpened - Emitted after the list of options is opened.
- * @fires igcClosing - Emitted just before the list of options is closed.
- * @fires igcClosed - Emitted after the list of options is closed.
+ * @fires igcChange - Emitted before the user changes the selection, or applies the pending selection of the confirm mode (`type: 'commit'`). Cancel the event to keep the selection.
+ * @fires igcPendingChange - Emitted in the confirm mode of `selectionCommit` before the user changes the pending selection. Cancel the event to keep the pending selection.
+ * @fires igcOpening - Emitted before the user opens the list of options. Cancelable.
+ * @fires igcOpened - Emitted after the list of options opens on a user action.
+ * @fires igcClosing - Emitted before the user closes the list of options. Cancelable. The `trigger` of the detail is the user action that closes the list.
+ * @fires igcClosed - Emitted after the list of options closes on a user action. The `trigger` of the detail is the user action that closes the list.
+ * @fires igcSearchInput - Emitted when the user changes the text of the search input, or of the main input in single selection mode, and when a selection, a blur or the clear button clears the text. Also emitted with the same text when the case-sensitive icon changes the case of a search text.
+ * @fires igcDataRequest - Emitted in remote filtering mode when the user scrolls near the end of the options, or to a placeholder of `totalItemCount`. Append the requested items to `data`. It is not emitted again until the length of `data`, the search text or its case changes, or the list opens again.
  *
  * @csspart label - The encapsulated text label of the combo.
  * @csspart input - The main input field of the combo.
@@ -112,24 +131,40 @@ const i18n: I18nControllerConfig<IComboResourceStrings> = {
  * @csspart prefix - The prefix wrapper of the combo.
  * @csspart suffix - The suffix wrapper of the combo.
  * @csspart toggle-icon - The toggle icon wrapper of the combo.
+ * @csspart filled - Added to the toggle-icon part when the combo has a value.
  * @csspart clear-icon - The clear icon wrapper of the combo.
  * @csspart case-icon - The case icon wrapper of the combo.
  * @csspart helper-text - The helper text wrapper of the combo.
+ * @csspart filter-input - The wrapper of the search input.
  * @csspart search-input - The search input field of the combo.
  * @csspart list-wrapper - The list of options wrapper of the combo.
  * @csspart list - The list of options box of the combo.
- * @csspart item - Represents each item in the list of options of the combo.
- * @csspart group-header - Represents each header in the list of options of the combo.
- * @csspart active - Appended to the item parts list when the item is active of the combo.
- * @csspart selected - Appended to the item parts list when the item is selected of the combo.
- * @csspart checkbox - Represents each checkbox of each list item of the combo.
- * @csspart checkbox-indicator - Represents the checkbox indicator of each list item of the combo.
- * @csspart checked - Appended to checkbox parts list when checkbox is checked in the combo.
+ * @csspart item - Each item in the list of options.
+ * @csspart group-header - Each group header in the list of options.
+ * @csspart active - Added to the item part when the item is active, to the group-header part when the header is an active option of `groupSelection`, and to the case-icon part while case-sensitive filtering is on.
+ * @csspart selected - Added to the item part when the item is selected, and to the group-header part of `groupSelection` when all the shown items of the group are selected.
+ * @csspart checkbox - The checkbox of each item in the list.
+ * @csspart checkbox-indicator - The checkbox indicator of each item in the list.
+ * @csspart checked - Added to the checkbox and checkbox-indicator parts when the checkbox is checked.
+ * @csspart indeterminate - Added to the checkbox and checkbox-indicator parts of the select-all option, or of a group header of `groupSelection`, while only some of its shown items are selected.
+ * @csspart select-all - Added to the item part of the select-all option.
  * @csspart header - The container holding the header content of the combo.
  * @csspart footer - The container holding the footer content of the combo.
+ * @csspart actions - The container of the Cancel and Apply buttons of the confirm mode.
+ * @csspart cancel-button - The Cancel button of the confirm mode.
+ * @csspart apply-button - The Apply button of the confirm mode.
  * @csspart empty - The container holding the empty content of the combo.
+ * @csspart loading - The indeterminate circular progress that replaces the toggle icon while `loading` is set. It has the color of the text.
+ * @csspart placeholder - Added to the item part of each item to load, which `totalItemCount` adds. Its skeleton has the color of the text.
+ *
+ * @cssproperty --ig-combo-item-indent - The indent of the items under a group header option of `groupSelection`. Default is the indent of the tree: 12, 16 or 24 px by size, and 24 px in Indigo.
+ * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
-@blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
+@blazorAdditionalDependencies(
+  'IgcIconComponent, IgcInputComponent, IgcButtonComponent, IgcCircularProgressComponent'
+)
 @blazorIndirectRender
 @shadowOptions({ delegatesFocus: true })
 export default class IgcComboComponent<
@@ -138,18 +173,20 @@ export default class IgcComboComponent<
   FormAssociatedRequiredMixin(
     EventEmitterMixin<
       IgcComboComponentEventMap,
-      AbstractConstructor<IgcBaseComboBoxComponent>
+      typeof IgcBaseComboBoxComponent
     >(IgcBaseComboBoxComponent)
   ),
   i18n
 ) {
   public static readonly tagName = 'igc-combo';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
     registerComponent(
       IgcComboComponent,
+      IgcButtonComponent,
+      IgcCircularProgressComponent,
       IgcIconComponent,
       IgcVirtualScrollComponent,
       IgcComboItemComponent,
@@ -160,39 +197,44 @@ export default class IgcComboComponent<
     );
   }
 
-  // #region Internal state and controllers
-
-  protected override get __validators(): Validator<IgcComboComponent<T>>[] {
-    return comboValidators;
-  }
+  //#region Internal state and controllers
 
   private readonly _slots = addSlotController(this, { slots: SLOTS });
+  private readonly _themes: ThemingController;
+
+  private static readonly _transformers: Partial<
+    FormValueTransformers<unknown[]>
+  > = {
+    setValue: asArray,
+    setDefaultValue: asArray,
+    setFormValue: (value, host) => {
+      const { name, singleSelect } = host as IgcComboComponent;
+
+      if (isEmpty(value) || !name) {
+        return null;
+      }
+
+      if (singleSelect) {
+        return String(firstOf(value));
+      }
+
+      const formData = new FormData();
+
+      for (const item of value) {
+        formData.append(name, String(item));
+      }
+
+      return formData;
+    },
+  };
 
   protected override readonly _formValue = createFormValueState<
     ComboValue<T>[]
   >(this, {
     initialValue: [],
-    transformers: {
-      setValue: asArray,
-      setDefaultValue: asArray,
-      setFormValue: (value) => {
-        if (isEmpty(value) || !this.name) {
-          return null;
-        }
-
-        if (this.singleSelect) {
-          return String(firstOf(value));
-        }
-
-        const formData = new FormData();
-
-        for (const item of value) {
-          formData.append(this.name, String(item));
-        }
-
-        return formData;
-      },
-    },
+    transformers: IgcComboComponent._transformers as Partial<
+      FormValueTransformers<ComboValue<T>[]>
+    >,
   });
 
   private readonly _inputRef = createRef<IgcInputComponent>();
@@ -201,7 +243,12 @@ export default class IgcComboComponent<
 
   private readonly _listRef = createRef<IgcVirtualScrollComponent>();
 
+  @query('[part="list-wrapper"]', true)
+  protected override readonly _popup!: HTMLDivElement | null;
+
+  // Before the navigation: its hostUpdate reads the records that this one builds.
   private readonly _state = new DataState<T>(this);
+  private readonly _selection = new ComboSelection<T>(this);
   private readonly _navigation = new ComboNavigationController(
     this,
     this._state,
@@ -209,37 +256,37 @@ export default class IgcComboComponent<
       input: this._inputRef,
       search: this._searchRef,
       list: this._listRef,
+      // The flattened query also returns the default footer buttons.
+      slotted: (slot) =>
+        this._slots.getAssignedElements(slot, { flatten: true }),
       interactions: {
         show: () => this._show(true),
-        hide: () => this._hide(true),
-        toggleSelection: (index: number) => this._selectAt(index, true),
-        select: (index: number) => this._selectAt(index, false),
+        hide: (trigger) => this._close(trigger),
+        toggleSelection: (index) => this._selectAt(index, true),
+        hasPending: () => this._selection.pending !== undefined,
+        commit: (trigger, index) => this._commitAndClose(trigger, index),
         clearSelection: () => this._clearSelection(),
       },
     }
   );
+  private readonly _dataRequests = new ComboDataRequests(
+    this,
+    this._state,
+    (detail) => this.emitEvent('igcDataRequest', { detail })
+  );
 
-  private _index?: Map<Item<T>, number[]>;
-  private _indexSize = 0;
   private _displayKey?: Keys<T>;
   private _placeholderSearch?: string;
-  private _selected: Set<T> = new Set();
   // The `displayKey` setter sets `filterKey`. Both keys are undefined here.
   private _filteringOptions: FilteringOptions<T> = {
     filterKey: undefined,
     caseSensitive: false,
     matchDiacritics: false,
   };
-
-  @state()
-  private set _activeIndex(index: number) {
-    this._navigation.active = index;
-    this._listRef.value?.requestUpdate();
-  }
-
-  private get _activeIndex(): number {
-    return this._navigation.active;
-  }
+  // The options of the last write. A change of the object in place does not change them.
+  private _appliedFiltering = { ...this._filteringOptions };
+  // What the last sync of the selection with `value` read. See `_isSyncedValue`.
+  private _syncedWith?: { data: T[]; length: number; value: ComboValue<T>[] };
 
   @state()
   private set _searchTerm(value: string) {
@@ -253,33 +300,26 @@ export default class IgcComboComponent<
   @state()
   private _displayValue = '';
 
-  private _itemId(index: number): string {
-    const position = index + 1;
-    return this.id ? `${this.id}-item-${position}` : `item-${position}`;
-  }
-
-  /** Derived from {@link _activeIndex}, so it cannot go stale. */
-  private get _activeDescendant(): string | undefined {
-    return this._activeIndex > -1 ? this._itemId(this._activeIndex) : undefined;
-  }
-
   private get _mainAriaLabel(): string {
-    return isEmpty(this._selected)
-      ? this.resourceStrings.combo_aria_label_no_options
-      : this.resourceStrings.combo_aria_label_options;
+    return this._selection.hasRecords
+      ? this.resourceStrings.combo_aria_label_options
+      : this.resourceStrings.combo_aria_label_no_options;
   }
 
-  // #endregion
+  //#endregion
 
   //#region Public attributes and properties
 
-  /** The data source used to generate the list of options. */
+  /**
+   * The data source used to generate the list of options. A new data source
+   * keeps the selection, also the selected items that it does not hold.
+   */
   /* treatAsRef */
   @property({ attribute: false })
   @coercedProperty<T[], IgcComboComponent<T>>({
     transform: ({ value }) => asArray(value),
     onChange: ({ host }) => {
-      host._index = undefined;
+      host._selection.invalidateIndex();
     },
   })
   public data: T[] = [];
@@ -293,7 +333,8 @@ export default class IgcComboComponent<
   public outlined = false;
 
   /**
-   * Enables single selection mode and moves item filtering to the main input.
+   * Whether only one item can be selected. In this mode, the main input
+   * filters the list of options.
    * @attr single-select
    * @default false
    */
@@ -305,7 +346,7 @@ export default class IgcComboComponent<
 
       if (host.hasUpdated) {
         host._withPristine(() => {
-          host._activeIndex = -1;
+          host._navigation.active = -1;
           host._searchTerm = '';
           host._formValue.setValueAndFormState(host.value);
         });
@@ -315,34 +356,20 @@ export default class IgcComboComponent<
   public singleSelect = false;
 
   /**
-   * Whether the control should receive focus automatically.
+   * Whether the control takes the focus automatically.
    * @attr autofocus
    */
   @property({ type: Boolean })
   public override autofocus!: boolean;
 
   /**
-   * Focuses the list of options when the menu opens.
+   * Whether the list of options, not the search input, takes the focus when
+   * the list opens. It has no effect in single selection mode.
    * @attr autofocus-list
    * @default false
    */
   @property({ type: Boolean, attribute: 'autofocus-list' })
   public autofocusList = false;
-
-  /**
-   * The locale used to resolve the component's resource strings.
-   * Falls back to the global locale when not set.
-   * @attr locale
-   */
-  @property()
-  public override set locale(value: string) {
-    super.locale = value;
-    this._state.updateLocale(value);
-  }
-
-  public override get locale(): string {
-    return super.locale;
-  }
 
   /**
    * The label of the control.
@@ -382,13 +409,16 @@ export default class IgcComboComponent<
   @coercedProperty<Keys<T> | undefined, IgcComboComponent<T>>({
     onChange: ({ value, host }) => {
       host._displayKey = host._displayKey ?? value;
-      host._index = undefined;
+      host._selection.rekey();
+      // The next `value` gives the values their records again.
+      host._syncedWith = undefined;
     },
   })
   public valueKey?: Keys<T> = undefined;
 
   /**
-   * The key in the data source used to display items in the list.
+   * The key in the data source used to display items in the list. Falls back
+   * to `valueKey`.
    * @attr display-key
    */
   @property({ attribute: 'display-key' })
@@ -411,7 +441,8 @@ export default class IgcComboComponent<
   public groupKey?: Keys<T> | string;
 
   /**
-   * Sorts the items in each group by ascending or descending order.
+   * The sort order of the groups, by their group value. With `none`, the
+   * groups keep the order of the data source.
    * @attr group-sorting
    * @default "asc"
    * @type {"asc" | "desc" | "none"}
@@ -425,7 +456,19 @@ export default class IgcComboComponent<
    */
   @property({ type: Object, attribute: 'filtering-options' })
   public set filteringOptions(value: Partial<FilteringOptions<T>>) {
+    const applied = this._appliedFiltering;
+    const same = (options: Partial<FilteringOptions<T>>) =>
+      Object.entries(options).every(
+        ([key, option]) => applied[key as keyof FilteringOptions<T>] === option
+      );
+
+    // The same options keep the object, so nothing updates.
+    if (same(value ?? {}) && same(this._filteringOptions)) {
+      return;
+    }
+
     this._filteringOptions = { ...this._filteringOptions, ...value };
+    this._appliedFiltering = { ...this._filteringOptions };
   }
 
   public get filteringOptions(): FilteringOptions<T> {
@@ -433,7 +476,9 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Enables the case sensitive search icon in the filtering input.
+   * Whether the search input shows the icon that toggles case-sensitive
+   * filtering. In remote filtering mode, read `filteringOptions.caseSensitive`
+   * when you send the search to the server.
    * @attr case-sensitive-icon
    * @default false
    */
@@ -441,7 +486,8 @@ export default class IgcComboComponent<
   public caseSensitiveIcon = false;
 
   /**
-   * Disables the filtering of the list of options.
+   * Whether the filtering of the list of options is disabled. In multiple
+   * selection mode, it also hides the search input.
    * @attr disable-filtering
    * @default false
    */
@@ -454,12 +500,62 @@ export default class IgcComboComponent<
   public disableFiltering = false;
 
   /**
-   * Hides the clear button.
+   * Whether the clear button is hidden.
    * @attr disable-clear
    * @default false
    */
   @property({ type: Boolean, attribute: 'disable-clear' })
   public disableClear = false;
+
+  /**
+   * The number of all the items of a remote source, when the source knows it.
+   * In remote filtering mode, the list shows a placeholder for each item that
+   * `data` does not hold yet, so the scrollbar shows the full list.
+   * @attr total-item-count
+   */
+  @property({ type: Number, attribute: 'total-item-count' })
+  public totalItemCount?: number;
+
+  /**
+   * Whether the combo loads options. A spinner, which the `loading` slot can
+   * replace, then takes the place of the toggle icon, and an empty list shows
+   * a loading message instead of the empty message.
+   * @attr loading
+   * @default false
+   */
+  @property({ type: Boolean, reflect: true })
+  public loading = false;
+
+  /**
+   * Whether the list starts with an option that selects all the items that it
+   * shows, or deselects them when all of them are selected. Only in multiple
+   * selection mode.
+   * @attr show-select-all
+   * @default false
+   */
+  @property({ type: Boolean, attribute: 'show-select-all' })
+  public showSelectAll = false;
+
+  /**
+   * Whether a group header is an option that selects the items of its group
+   * that the list shows, or deselects them when all of them are selected.
+   * Only in multiple selection mode with `groupKey`.
+   * @attr group-selection
+   * @default false
+   */
+  @property({ type: Boolean, attribute: 'group-selection' })
+  public groupSelection = false;
+
+  /**
+   * When the user's changes of the selection apply in multiple selection
+   * mode. With `confirm`, they change a pending selection while the list is
+   * open, and Enter or the Apply button applies it with one `igcChange`. Any
+   * other close drops it. While it exists, the selection methods change it too.
+   * @attr selection-commit
+   * @default 'immediate'
+   */
+  @property({ attribute: 'selection-commit' })
+  public selectionCommit: ComboSelectionCommit = 'immediate';
 
   /* blazorSuppress */
   /**
@@ -480,9 +576,11 @@ export default class IgcComboComponent<
     html`${group.key}`;
 
   /**
-   * Sets the value (selected items). The passed value must be a valid JSON array.
-   * If the data source is an array of complex objects, the `valueKey` must be set.
-   * Note that when `displayKey` is not explicitly set, it falls back to the value of `valueKey`.
+   * The values of the selected items. With a `valueKey`, each value is that
+   * field of an item. Without it, each value is the item itself.
+   *
+   * The `value` attribute takes a JSON array. For a data source of objects,
+   * set `valueKey` to select items through the attribute.
    *
    * @attr value
    *
@@ -511,17 +609,19 @@ export default class IgcComboComponent<
   /* @tsTwoWayProperty (true, "Change", "Detail.NewValue", false) */
   @property({ type: Array })
   public set value(items: ComboValue<T>[]) {
-    this._formValue.setValueAndFormState(items);
-    this._syncSelectionFromValue();
-
-    if (this.hasUpdated) {
-      this._validate();
+    // A framework can set the same value on each render. It makes the control
+    // dirty, as any write, and keeps the selection.
+    if (this._isSyncedValue(items)) {
+      this._pristine = false;
+      return;
     }
+
+    this._applyValue(items);
   }
 
   /**
-   * Returns the current selection as a list of comma separated values,
-   * represented by the value key, when provided.
+   * The values of the selected items. With a `valueKey`, each value is that
+   * field of an item. Without it, each value is the item itself.
    */
   public get value(): ComboValue<T>[] {
     return this._formValue.value;
@@ -531,7 +631,17 @@ export default class IgcComboComponent<
    * Returns the current selection as an array of objects as provided in the `data` source.
    */
   public get selection(): T[] {
-    return Array.from(this._selected);
+    return this._selection.selected;
+  }
+
+  /**
+   * The values of the pending selection in the confirm mode of
+   * `selectionCommit`, which Enter, the Apply button or `commitSelection()`
+   * applies. Without a pending selection, the same as `value`.
+   */
+  public get pendingValue(): ComboValue<T>[] {
+    const pending = this._selection.pending;
+    return pending ? this._selection.valuesOf(pending) : this.value;
   }
 
   //#endregion
@@ -541,7 +651,7 @@ export default class IgcComboComponent<
   constructor() {
     super();
 
-    addThemingController(this, all);
+    this._themes = addThemingController(this, all);
 
     // Projects combobox semantics onto the native input. `aria-activedescendant`
     // stays on the listbox, which has focus during list navigation.
@@ -562,27 +672,71 @@ export default class IgcComboComponent<
   protected override willUpdate(props: PropertyValues<this>): void {
     super.willUpdate(props);
 
+    // The select-all option moves the other records by one, and an active
+    // group header can stop being an option.
     if (
-      props.has('groupKey') ||
-      props.has('groupSorting') ||
-      props.has('filteringOptions') ||
-      props.has('data')
+      (props.has('showSelectAll') || props.has('groupSelection')) &&
+      this.hasUpdated
     ) {
-      this._state.invalidate();
+      this._navigation.active = -1;
     }
 
-    // Sync the selection when `data` comes after `value`.
-    if (props.has('data') && !isEmpty(this.data) && !isEmpty(this.value)) {
-      this._withPristine(() => {
-        this._syncSelectionFromValue();
-        this._formValue.setValueAndFormState(this.value);
-      });
+    // The list keeps the same `_itemRenderer`, so a new template must re-render it.
+    if (props.has('itemTemplate') || props.has('groupHeaderTemplate')) {
+      this._listRef.value?.requestUpdate();
     }
+
+    // The input text reads `displayKey`, which falls back to `valueKey`.
+    if (props.has('displayKey') || props.has('valueKey')) {
+      this._projectSelection();
+    }
+
+    if (props.has('data')) {
+      this._syncSelectionFromData();
+
+      // New remote results start with no active option.
+      if (
+        this._dataRequests.dataChanged(
+          props.get('data') ?? [],
+          this._listRef.value
+        )
+      ) {
+        this._navigation.active = -1;
+      }
+    }
+
+    // The list can open again before anything reads the pending selection.
+    if (!this.open) {
+      this._selection.dropPending();
+    }
+  }
+
+  protected override updated(props: PropertyValues<this>): void {
+    this._dataRequests.afterUpdate(props, this._listRef.value);
   }
 
   //#endregion
 
-  // #region Form Associated overrides
+  //#region Form Associated overrides
+
+  protected override get __validators(): Validator<IgcComboComponent<T>>[] {
+    return comboValidators;
+  }
+
+  /** Single selection is a text field, as an input with a list. */
+  protected override get _blocksImplicitSubmission(): boolean {
+    return this.singleSelect;
+  }
+
+  /**
+   * Enter submits only from single selection with the list closed, as in an
+   * input with a list. Multiple selection never submits, as a native select.
+   */
+  protected override _handleEnterKey(event: KeyboardEvent): void {
+    if (this.singleSelect && !this.open) {
+      super._handleEnterKey(event);
+    }
+  }
 
   protected override _setDefaultValue(current: string | null): void {
     try {
@@ -599,9 +753,9 @@ export default class IgcComboComponent<
     this._inputRef.value?.['_resetValidationState']();
   }
 
-  // #endregion
+  //#endregion
 
-  //#region Overrides for combo box behavior
+  //#region Open and close
 
   protected override async _show(emitEvent = false): Promise<boolean> {
     const [canOpen, _] = await Promise.all([
@@ -622,17 +776,120 @@ export default class IgcComboComponent<
     return canOpen;
   }
 
-  protected override async _hide(emitEvent = false): Promise<boolean> {
+  protected override async _hide(
+    emitEvent = false,
+    detail?: IgcComboClosingEventArgs
+  ): Promise<boolean> {
     const [canClose, _] = await Promise.all([
-      super._hide(emitEvent),
+      super._hide(emitEvent, detail),
       this.updateComplete,
     ]);
 
     if (canClose) {
-      this._activeIndex = -1;
+      this._navigation.active = -1;
     }
 
     return canClose;
+  }
+
+  /** Closes the list on a user action, which the close events report. */
+  private _close(trigger: ComboCloseTrigger): Promise<boolean> {
+    return this._hide(true, { trigger });
+  }
+
+  /**
+   * Applies the pending selection, then closes the list. A canceled
+   * `igcChange` keeps the list open.
+   * @returns Whether the list closes.
+   */
+  private async _applyAndClose(trigger: ComboCloseTrigger): Promise<boolean> {
+    return this._commitPending(true) ? this._close(trigger) : false;
+  }
+
+  /**
+   * In single selection, selects the option at `index` first. Enter applies
+   * the pending selection; Tab drops it. Not async, to keep the microtask
+   * depth of the keyboard handlers.
+   * @returns Whether the list closes.
+   */
+  private _commitAndClose(
+    trigger: 'enter' | 'tab',
+    index: number
+  ): Promise<boolean> {
+    if (this.singleSelect) {
+      this._selectAt(index, false);
+    }
+
+    return trigger === 'enter'
+      ? this._applyAndClose(trigger)
+      : this._close(trigger);
+  }
+
+  //#endregion
+
+  //#region Selection flow
+
+  /** `items` as `value` holds them: an array, with one value in single selection. */
+  private _asValue(items: ComboValue<T>[] | undefined): ComboValue<T>[] {
+    const values = asArray(items);
+
+    return this.singleSelect && !isEmpty(values)
+      ? asArray(firstOf(values))
+      : values;
+  }
+
+  /**
+   * Whether `items` is `value`, and the selection is synced with it and with
+   * the current `data`. A new `data` or `valueKey` gives a value its record
+   * again. The copy of `value` sees a change of the array in place.
+   */
+  private _isSyncedValue(items: ComboValue<T>[]): boolean {
+    const synced = this._syncedWith;
+    const values = this._asValue(items);
+
+    return (
+      synced !== undefined &&
+      synced.data === this.data &&
+      synced.length === this.data.length &&
+      sameItems(values, this.value) &&
+      sameItems(values, synced.value)
+    );
+  }
+
+  /** Records what the selection is synced with. See {@link _isSyncedValue}. */
+  private _markSynced(): void {
+    this._syncedWith = {
+      data: this.data,
+      length: this.data.length,
+      value: [...this.value],
+    };
+  }
+
+  /** Sets `value` and gives the selection its records. */
+  private _applyValue(items: ComboValue<T>[]): void {
+    const previous = this.value;
+    this._formValue.setValueAndFormState(items);
+    this._syncSelectionFromValue();
+
+    // A new value replaces the pending selection. The same value, for example
+    // after a new `data`, keeps it.
+    if (!sameItems(previous, this.value)) {
+      this._selection.dropPending();
+    }
+
+    if (this.hasUpdated) {
+      this._validate();
+    }
+
+    this.requestUpdate('value', previous);
+  }
+
+  /** Sets {@link _displayValue} and returns the values of the selection. */
+  private _projectSelection(): ComboValue<T>[] {
+    const { values, text } = this._selection.project();
+
+    this._displayValue = text;
+    return values;
   }
 
   private _setSingleSelectionDisplayValue(value: string): void {
@@ -641,83 +898,11 @@ export default class IgcComboComponent<
     }
   }
 
-  //#endregion
-
-  // #region Selection helpers
-
-  /**
-   * Maps each value to the positions of its records, in data-source order.
-   * The size check finds in-place growth or shrink, but not a replaced element.
-   */
-  private get _dataIndex(): Map<Item<T>, number[]> {
-    if (!this._index || this._indexSize !== this.data.length) {
-      this._index = Map.groupBy(this.data.keys(), (position) =>
-        this._resolveItemValue(this.data[position])
-      );
-      this._indexSize = this.data.length;
-    }
-
-    return this._index;
-  }
-
-  /**
-   * Resolves value keys or object references to data records, in data-source order.
-   * A repeated value resolves one time, so the change event has no duplicates.
-   */
-  private _resolveItems(items: Item<T>[]): T[] {
-    const index = this._dataIndex;
-    const positions = new Set(items.flatMap((item) => index.get(item) ?? []));
-
-    return Array.from(positions)
-      .sort((a, b) => a - b)
-      .map((position) => this.data[position]);
-  }
-
-  private _resolveItemValue(record: T): Item<T> {
-    return this.valueKey ? record[this.valueKey] : record;
-  }
-
-  /** The `valueKey` property of `item`, or `item` when that property is not set. */
-  private _valueOf(item: T): ComboValue<T> {
-    return (this.valueKey ? item[this.valueKey] : undefined) ?? item;
-  }
-
-  private _toValues(items: Iterable<T>): ComboValue<T>[] {
-    return Array.from(items, (item) => this._valueOf(item));
-  }
-
-  /** Recomputes {@link _displayValue} and returns the selection values in one pass. */
-  private _projectSelection(): ComboValue<T>[] {
-    const { displayKey } = this;
-    const values: ComboValue<T>[] = [];
-    const display: string[] = [];
-
-    for (const item of this._selected) {
-      values.push(this._valueOf(item));
-      display.push(String((displayKey ? item[displayKey] : undefined) ?? item));
-    }
-
-    this._displayValue = display.join(', ');
-    return values;
-  }
-
-  private _emitSelectionChange(detail: IgcComboChangeEventArgs): boolean {
-    return this.emitEvent('igcChange', { cancelable: true, detail });
-  }
-
-  /** The selection value after `resolved` applies: the `igcChange` `newValue`. */
-  private _previewValue(resolved: T[], selecting: boolean): ComboValue<T>[] {
-    if (selecting) {
-      return this._toValues(
-        this.singleSelect ? resolved : new Set([...resolved, ...this._selected])
-      );
-    }
-
-    const removed = new Set(resolved);
-
-    return this._toValues(
-      Iterator.from(this._selected).filter((item) => !removed.has(item))
-    );
+  private _emitSelectionChange(
+    detail: IgcComboChangeEventArgs,
+    event: 'igcChange' | 'igcPendingChange' = 'igcChange'
+  ): boolean {
+    return this.emitEvent(event, { cancelable: true, detail });
   }
 
   /**
@@ -736,168 +921,296 @@ export default class IgcComboComponent<
       : asArray(items);
 
     if (isEmpty(collection) && selecting) {
-      // Selects all items without an event, or clears a single selection.
-      this._selected = singleSelect ? new Set() : new Set(this.data);
-
       if (singleSelect) {
-        this._searchTerm = '';
+        return this._applySelection([], type, false);
       }
 
+      this._selection.selectAll();
       this.requestUpdate();
       return true;
     }
 
-    // An empty deselection deselects every selected item.
     const resolved = isEmpty(collection)
-      ? this.selection
-      : this._resolveItems(collection);
+      ? this._selection.currentRecords()
+      : this._selection.resolve(collection);
+
+    if (!this._applySelection(resolved, type, emit)) {
+      return false;
+    }
+
+    if (!selecting) {
+      this._selection.forget(collection);
+    }
+
+    return true;
+  }
+
+  /**
+   * Selects or deselects the values of `items`, each with its first record in
+   * `data`. With `emit`, `igcChange` can cancel the change.
+   * @returns Whether the change was committed.
+   */
+  private _applySelection(
+    items: T[],
+    type: 'selection' | 'deselection',
+    emit: boolean
+  ): boolean {
+    const records = this._selection.firstRecords(items);
+    const selecting = type === 'selection';
 
     if (
       emit &&
-      !this._emitSelectionChange({
-        newValue: this._previewValue(resolved, selecting),
-        items: resolved,
-        type,
-      })
+      !this._emitSelectionChange(
+        {
+          newValue: this._selection.preview(records, selecting),
+          items: records,
+          type,
+        },
+        this._selection.pending ? 'igcPendingChange' : 'igcChange'
+      )
     ) {
       return false;
     }
 
-    // The change is committed, so drop the previous single selection and search term.
-    if (selecting && singleSelect) {
-      this._selected.clear();
-      this._searchTerm = '';
+    // Its `igcSearchInput` precedes the change, as with the clear button.
+    if (selecting && this.singleSelect) {
+      this._clearSearchTerm(emit);
     }
 
-    for (const item of resolved) {
-      selecting ? this._selected.add(item) : this._selected.delete(item);
+    // The committed values without a record can get them from a pending change.
+    if (this._selection.apply(records, selecting)) {
+      this._projectSelection();
     }
 
     this.requestUpdate();
     return true;
   }
 
-  /** One-way sync from `_formValue` to `_selected`. */
+  /**
+   * One-way sync from `_formValue` to the selection. A value that `data` does
+   * not hold keeps its selected record.
+   */
   private _syncSelectionFromValue(): void {
-    this._selected.clear();
+    const current = this._formValue.value;
+    const values = this._asValue(current);
 
-    if (!isEmpty(this._formValue.value)) {
-      const values = this.singleSelect
-        ? asArray(firstOf(this._formValue.value))
-        : this._formValue.value;
-
-      if (this.singleSelect && values.length !== this._formValue.value.length) {
-        this._formValue.setValueAndFormState(values);
-      }
-
-      const index = this._dataIndex;
-
-      for (const value of values) {
-        // First match only - mirrors resolving a value against the data source
-        const position = index.get(value)?.[0];
-
-        if (position !== undefined) {
-          this._selected.add(this.data[position]);
-        }
-      }
+    if (values.length !== current.length) {
+      this._formValue.setValueAndFormState(values);
     }
 
+    this._markSynced();
+    this._selection.syncFromValue(values);
     this._projectSelection();
+    // The list does not update for a new `value` on its own.
+    this._listRef.value?.requestUpdate();
+  }
+
+  private _syncSelectionFromData(): void {
+    // Sync the selection when `data` comes after `value`.
+    if (!isEmpty(this.data) && !isEmpty(this.value)) {
+      this._withPristine(() => {
+        this._syncSelectionFromValue();
+        this._formValue.setValueAndFormState(this.value);
+      });
+    }
+
+    this._selection.syncPending();
   }
 
   protected _syncValueFromSelection(): void {
-    this._formValue.setValueAndFormState(this._projectSelection());
-    this._setSingleSelectionDisplayValue(this._displayValue);
-    this._validate();
+    // A pending selection does not change `value`, which can hold values
+    // without a record. See `_commitPending`.
+    if (!this._selection.pending) {
+      this._formValue.setValueAndFormState(this._projectSelection());
+      this._markSynced();
+      this._setSingleSelectionDisplayValue(this._displayValue);
+      this._validate();
+    }
+
     this._listRef.value?.requestUpdate();
   }
 
   /**
-   * The record at `index`, or undefined for a group header.
-   * Guard on it: {@link _updateSelection} reads an empty collection as "select all".
+   * Applies the pending selection to `value`. With `emit`, one `igcChange` of
+   * the `commit` type can cancel it.
+   * @returns Whether the pending selection is applied.
    */
-  private _recordAt(index: number): T | undefined {
-    const record = this._state.dataState[index];
-    return record && !record.header ? record.value : undefined;
-  }
+  private _commitPending(emit: boolean): boolean {
+    const pending = this._selection.pending;
 
-  /** Selects the record at `index`. With `toggle`, deselects a selected one. */
-  private _selectAt(index: number, toggle: boolean): void {
-    const record = this._recordAt(index);
-
-    if (!record) {
-      return;
+    if (!pending) {
+      return true;
     }
 
-    this._updateSelection(
-      this._resolveItemValue(record),
-      toggle && this._selected.has(record) ? 'deselection' : 'selection',
+    const items = this._selection.changes(pending);
+    const value = this._selection.valuesOf(pending);
+
+    // A deselection can name a value without a record, which changes no record.
+    if (isEmpty(items) && sameItems(value, this.value)) {
+      return true;
+    }
+
+    // A copy, so a handler cannot change `value` through it.
+    if (
+      emit &&
+      !this._emitSelectionChange({
+        newValue: [...value],
+        items,
+        type: 'commit',
+      })
+    ) {
+      return false;
+    }
+
+    // Not the setter, which skips the same values: the commit can change
+    // their records.
+    this._selection.commit(pending);
+    this._applyValue(value);
+    return true;
+  }
+
+  private _shownItems(): T[] {
+    // Applies a change of `data` or of the search text that no update has
+    // applied yet. The update gives the new records to the list before it
+    // renders the selection.
+    if (this._state.hostUpdate()) {
+      this.requestUpdate();
+    }
+
+    return this._state.shownItems();
+  }
+
+  /**
+   * Selects the item at `index`, or the items of the toggle option at `index`,
+   * with one `igcChange`. `toggle` follows {@link ComboSelection.toggleChange}.
+   * @returns Whether `index` holds an item or a toggle option.
+   */
+  private _selectAt(index: number, toggle: boolean): boolean {
+    const record = this._state.dataState[index];
+    let items: T[];
+
+    if (isItemRecord(record)) {
+      // The record itself, as an item without a value would select all.
+      items = [record.value];
+    } else if (record && this._state.isToggle(record)) {
+      items = this._state.itemsOf(index);
+    } else {
+      return false;
+    }
+
+    const { records, selecting } = toggle
+      ? this._selection.toggleChange(items)
+      : { records: items, selecting: true };
+
+    // First, as a change listener can build new records.
+    this._navigation.active = index;
+    this._applySelection(
+      records,
+      selecting ? 'selection' : 'deselection',
       true
     );
-
-    this._activeIndex = index;
     this._syncValueFromSelection();
+    return true;
   }
 
   private _clearSelection(): void {
     if (this.singleSelect) {
-      this._searchTerm = '';
+      this._clearSearchTerm(true);
       this._clearSingleSelection();
-    } else {
-      this._updateSelection([], 'deselection', true);
+      this._syncValueFromSelection();
+      return;
     }
-    this._syncValueFromSelection();
+
+    // Clears `value`, the pending selection and the unresolved values.
+    if (
+      this._emitSelectionChange({
+        newValue: [],
+        items: this.selection,
+        type: 'deselection',
+      })
+    ) {
+      this._applyValue([]);
+    }
   }
 
   private _clearSingleSelection(): void {
-    const [selection] = this._selected;
+    const [selection] = this._selection.selected;
 
     // Reset the form state directly, not through `_syncValueFromSelection`, to
     // keep the text the user types in the main input.
     if (
       selection &&
       this._updateSelection(
-        this._resolveItemValue(selection),
+        this._selection.keyOf(selection),
         'deselection',
         true
       )
     ) {
       this._formValue.setValueAndFormState([]);
+      this._markSynced();
     }
   }
 
-  // #endregion
+  //#endregion
 
   //#region Event handlers
 
-  protected async _handleMainInput({
-    detail,
-  }: CustomEvent<string>): Promise<void> {
+  protected async _handleMainInput(event: CustomEvent<string>): Promise<void> {
+    event.stopPropagation();
     this._setTouchedState();
     void this._show(true);
 
     // In single selection the main input filters, so honor `disableFiltering` here.
     if (!this.disableFiltering) {
-      this._searchTerm = detail;
+      this._searchTerm = event.detail;
+      this._emitSearchInput(event.detail);
     }
 
-    // wait for the dataState to update after filtering
+    // The update applies a new search text to the records before the active
+    // option changes.
     await this.updateComplete;
 
-    this._activeIndex = this._state.firstItemIndex;
+    // Remote results come later, so no option of the old results becomes active.
+    this._navigation.active =
+      this.filteringOptions.mode === 'remote'
+        ? -1
+        : this._state.firstOptionIndex;
     this._clearSingleSelection();
   }
 
   protected override _handleBlur(): void {
-    if (isEmpty(this._selected)) {
-      this._searchTerm = '';
+    if (!this._selection.hasRecords) {
+      this._clearSearchTerm(true);
+      // Also the cached text, so the same text shows again after a selection.
+      this._displayValue = '';
       this._setSingleSelectionDisplayValue('');
     }
     super._handleBlur();
   }
 
-  protected _handleSearchInput({ detail }: CustomEvent<string>): void {
-    this._searchTerm = detail;
+  protected _handleSearchInput(event: CustomEvent<string>): void {
+    event.stopPropagation();
+    this._searchTerm = event.detail;
+    this._emitSearchInput(event.detail);
+  }
+
+  /** With `emit`, a user action clears the text, so `igcSearchInput` reports it. */
+  private _clearSearchTerm(emit: boolean): void {
+    if (emit && this._searchTerm) {
+      this._emitSearchInput('');
+    }
+
+    this._searchTerm = '';
+  }
+
+  private _emitSearchInput(searchText: string): void {
+    this._dataRequests.searched();
+    this.emitEvent('igcSearchInput', { detail: { searchText } });
+  }
+
+  private _handleListStateChange(event: CustomEvent<VirtualScrollState>): void {
+    event.stopPropagation();
+    this._dataRequests.rendered(event.detail.endIndex);
   }
 
   private async _itemClickHandler(event: PointerEvent): Promise<void> {
@@ -908,26 +1221,57 @@ export default class IgcComboComponent<
     }
 
     this._setTouchedState();
-    this._selectAt(target.index, true);
+
+    // A placeholder selects nothing, so a click keeps the list open.
+    if (!this._selectAt(target.index, true)) {
+      return;
+    }
 
     if (this.singleSelect) {
       this._inputRef.value?.focus();
-      await this._hide(true);
+      await this._close('selection');
     } else {
       this._searchRef.value?.focus();
     }
   }
 
+  protected override _handleAnchorClick(): void {
+    this.open ? this._close('toggle') : this._show(true);
+  }
+
+  protected override _handleClosing(): void {
+    this._close('outside-click');
+  }
+
+  private _handleScrollClose(): void {
+    this._close('scroll');
+  }
+
   private _handleClearIconClick(event: PointerEvent): void {
     event.stopPropagation();
     this._clearSelection();
-    this._activeIndex = -1;
+    this._navigation.active = -1;
+  }
+
+  private _handleApply(): void {
+    this._applyAndClose('apply');
+  }
+
+  private _handleCancel(): void {
+    this.cancelSelection();
+    this._close('cancel');
   }
 
   private _handleCaseSensitivity(): void {
     this.filteringOptions = {
       caseSensitive: !this.filteringOptions.caseSensitive,
     };
+
+    // Emit after the change, so a remote app reads the new case. An empty text
+    // matches all items in any case.
+    if (this._searchTerm) {
+      this._emitSearchInput(this._searchTerm);
+    }
   }
 
   //#endregion
@@ -938,23 +1282,27 @@ export default class IgcComboComponent<
   /** Sets focus on the component. */
   public override focus(options?: FocusOptions): void {
     this._inputRef.value?.focus(options);
+    deferFocus(this, options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the component. */
   public override blur(): void {
+    cancelDeferredFocus(this);
     this._inputRef.value?.blur();
   }
 
   /**
-   * Selects option(s) in the list by either reference or valueKey.
-   * If not argument is provided all items will be selected.
-   * @param { Item<T> | Item<T>[] } items - One or more items to be selected. Multiple items should be passed as an array.
-   * When valueKey is specified, the corresponding value should be used in place of the item reference.
+   * Selects options in the list by reference or by `valueKey` value. It does
+   * not emit `igcChange`. An object that `data` does not hold is selected as
+   * it is. Without an argument, it selects all the items of `data`, or clears
+   * the selection in single selection mode.
+   * @param { Item<T> | Item<T>[] } items - One or more items to select. Pass multiple items as an array.
+   * With a `valueKey`, pass the value of an item instead of its reference.
    *
    * @example
    * ```typescript
-   * const combo<IgcComboComponent<T>> = document.querySelector('igc-combo');
+   * const combo = document.querySelector('igc-combo')!;
    *
    * // Select one item at a time by reference when valueKey is not specified.
    * combo.select(combo.data[0]);
@@ -975,14 +1323,14 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Deselects option(s) in the list by either reference or valueKey.
-   * If not argument is provided all items will be deselected.
-   * @param { Item<T> | Item<T>[] } items - One or more items to be deselected. Multiple items should be passed as an array.
-   * When valueKey is specified, the corresponding value should be used in place of the item reference.
+   * Deselects options in the list by reference or by `valueKey` value. It
+   * does not emit `igcChange`. Without an argument, it deselects all items.
+   * @param { Item<T> | Item<T>[] } items - One or more items to deselect. Pass multiple items as an array.
+   * With a `valueKey`, pass the value of an item instead of its reference.
    *
    * @example
    * ```typescript
-   * const combo<IgcComboComponent<T>> = document.querySelector('igc-combo');
+   * const combo = document.querySelector('igc-combo')!;
    *
    * // Deselect one item at a time by reference when valueKey is not specified.
    * combo.deselect(combo.data[0]);
@@ -1002,7 +1350,69 @@ export default class IgcComboComponent<
     this._syncValueFromSelection();
   }
 
+  /**
+   * Selects all the items that the list shows. It does not emit `igcChange`,
+   * and does nothing in single selection mode.
+   * @param {boolean} [ignoreFilter=false] - Whether to select all the items of `data`.
+   */
+  public selectAllItems(ignoreFilter = false): void {
+    if (this.singleSelect) {
+      return;
+    }
+
+    if (ignoreFilter) {
+      this.select();
+      return;
+    }
+
+    this._applySelection(this._shownItems(), 'selection', false);
+    this._syncValueFromSelection();
+  }
+
+  /**
+   * Deselects all the items that the list shows. It does not emit `igcChange`.
+   * @param {boolean} [ignoreFilter=false] - Whether to deselect all the items.
+   */
+  public deselectAllItems(ignoreFilter = false): void {
+    if (ignoreFilter) {
+      this.deselect();
+      return;
+    }
+
+    this._applySelection(this._shownItems(), 'deselection', false);
+    this._syncValueFromSelection();
+  }
+
+  /**
+   * Applies the pending selection of the confirm mode to `value`. It does not
+   * emit `igcChange` or close the list.
+   */
+  public commitSelection(): void {
+    this._commitPending(false);
+  }
+
+  /**
+   * Puts `value` back as the pending selection of the confirm mode. It does
+   * not close the list.
+   */
+  public cancelSelection(): void {
+    this._selection.dropPending();
+    this._listRef.value?.requestUpdate();
+  }
+
   //#endregion
+
+  //#region Rendering
+
+  private _itemId(index: number): string {
+    const position = index + 1;
+    return this.id ? `${this.id}-item-${position}` : `item-${position}`;
+  }
+
+  private get _activeDescendant(): string | undefined {
+    const { active } = this._navigation;
+    return active > -1 ? this._itemId(active) : undefined;
+  }
 
   protected _itemRenderer: ComboRenderFunction<T> = (
     context: VirtualScrollItemContext<ComboRecord<T>>
@@ -1010,32 +1420,99 @@ export default class IgcComboComponent<
     const { value: item, index } = context;
 
     if (this.groupKey && item.header) {
-      return html`
-        <igc-combo-header part="group-header">
-          ${this.groupHeaderTemplate({ key: item.group, item: item.value })}
-        </igc-combo-header>
-      `;
+      const content = this.groupHeaderTemplate({
+        key: item.group,
+        item: item.value,
+      });
+
+      return this._state.isToggle(item)
+        ? this._renderToggleOption(item, index, content)
+        : html`<igc-combo-header part="group-header"
+            >${content}</igc-combo-header
+          >`;
     }
 
-    const active = this._activeIndex === index;
-    const selected = this._selected.has(item.value);
+    if (item.kind === 'select-all') {
+      return this._renderToggleOption(
+        item,
+        index,
+        this.resourceStrings.combo_select_all
+      );
+    }
+
+    const active = this._navigation.active === index;
+
+    const selected = this._selection.has(item.value);
+    // One template for both, so a row keeps its element when its item loads.
+    const placeholder = item.kind === 'placeholder';
+    const { optionCount } = this._state;
+    // The placeholders are last and share one record, so the index gives their position.
+    const position = placeholder
+      ? optionCount - context.count + index + 1
+      : item.position;
 
     return html`
       <igc-combo-item
         id=${this._itemId(index)}
-        part=${partMap({ item: true, selected, active })}
-        aria-setsize=${this._state.itemCount}
-        aria-posinset=${item.position}
+        part=${partMap({ item: true, placeholder, selected, active })}
+        aria-setsize=${optionCount}
+        aria-posinset=${position}
+        aria-disabled=${bindIf(placeholder, 'true')}
+        aria-label=${bindIf(placeholder, this.resourceStrings.combo_loading)}
         exportparts="checkbox, checkbox-indicator, checked"
         .index=${index}
         ?active=${active}
         ?selected=${selected}
         ?hide-checkbox=${this.singleSelect}
       >
-        ${this.itemTemplate({ item: item.value })}
+        ${
+          placeholder
+            ? // Bars of three lengths look like text.
+              html`<span
+                style=${styleMap({ inlineSize: `${45 + (index % 3) * 15}%` })}
+              ></span>`
+            : this.itemTemplate({ item: item.value })
+        }
       </igc-combo-item>
     `;
   };
+
+  /** A toggle option: the select-all option or a group header option. */
+  private _renderToggleOption(
+    { header, position }: ComboRecord<T>,
+    index: number,
+    content: unknown
+  ): TemplateResult {
+    const state = this._state.selectionOf(
+      index,
+      this._selection,
+      this._selection.version
+    );
+    const all = state === true;
+    const active = this._navigation.active === index;
+
+    return html`
+      <igc-combo-item
+        id=${this._itemId(index)}
+        part=${partMap({
+          item: !header,
+          'select-all': !header,
+          'group-header': header,
+          selected: all,
+          active,
+        })}
+        aria-setsize=${this._state.optionCount}
+        aria-posinset=${header ? position : 1 /* The select-all option is first. */}
+        exportparts="checkbox, checkbox-indicator, checked, indeterminate"
+        .index=${index}
+        ?active=${active}
+        ?selected=${all}
+        ?indeterminate=${state === 'mixed'}
+      >
+        ${content}
+      </igc-combo-item>
+    `;
+  }
 
   private _renderToggleIcon() {
     return html`
@@ -1050,6 +1527,17 @@ export default class IgcComboComponent<
           slot: 'toggle-icon',
           icon: this.open ? 'input_collapse' : 'input_expand',
         })}
+        <slot name="loading" ?hidden=${!this.loading}>
+          ${
+            this.loading
+              ? html`<igc-circular-progress
+                  part="loading"
+                  indeterminate
+                  aria-label=${this.resourceStrings.combo_loading!}
+                ></igc-circular-progress>`
+              : nothing
+          }
+        </slot>
       </span>
     `;
   }
@@ -1061,7 +1549,7 @@ export default class IgcComboComponent<
         part="clear-icon"
         role="button"
         @click=${this._handleClearIconClick}
-        ?hidden=${this.disableClear || isEmpty(this._selected)}
+        ?hidden=${this.disableClear || isEmpty(this.value)}
         aria-label=${ifDefined(
           this.resourceStrings.combo_clearItems_placeholder
         )}
@@ -1082,6 +1570,8 @@ export default class IgcComboComponent<
         slot="anchor"
         exportparts="container: input, input: native-input, label, prefix, suffix"
         @click=${this._handleAnchorClick}
+        @keydown=${this._handleEnterKey}
+        @keypress=${this._handleEnterKey}
         placeholder=${ifDefined(this.placeholder)}
         label=${ifDefined(this.label)}
         @igcChange=${stopPropagation}
@@ -1119,6 +1609,7 @@ export default class IgcComboComponent<
           placeholder=${this.placeholderSearch}
           exportparts="input: search-input"
           @igcInput=${this._handleSearchInput}
+          @igcChange=${stopPropagation}
         >
           <igc-icon
             slot=${bindIf(this.caseSensitiveIcon, 'suffix')}
@@ -1138,7 +1629,10 @@ export default class IgcComboComponent<
   private _renderEmptyTemplate() {
     return html`
       <div part="empty" ?hidden=${!isEmpty(this._state.dataState)}>
-        <slot name="empty">${this.resourceStrings.combo_empty_message}</slot>
+        ${this.loading ? this.resourceStrings.combo_loading : nothing}
+        <slot name="empty" ?hidden=${this.loading}>
+          ${this.resourceStrings.combo_empty_message}
+        </slot>
       </div>
     `;
   }
@@ -1155,6 +1649,7 @@ export default class IgcComboComponent<
           aria-multiselectable=${!this.singleSelect}
           id="dropdown"
           part="list"
+          ?data-selectable-groups=${this._state.selectableGroups}
           role="listbox"
           tabindex="0"
           aria-labelledby="target"
@@ -1164,12 +1659,39 @@ export default class IgcComboComponent<
           .itemTemplate=${this._itemRenderer}
           ?hidden=${isEmpty(this._state.dataState)}
           @click=${this._itemClickHandler}
+          @igcStateChange=${this._handleListStateChange}
+          @igcDataRequest=${stopPropagation}
         >
         </igc-virtual-scroll>
         ${this._renderEmptyTemplate()}
         <div part="footer">
-          <slot name="footer"></slot>
+          <slot name="footer">
+            ${this.open && this._selection.confirmMode ? this._renderActions() : nothing}
+          </slot>
         </div>
+      </div>
+    `;
+  }
+
+  private _renderActions(): TemplateResult {
+    const indigo = this._themes.theme === 'indigo';
+
+    return html`
+      <div part="actions">
+        <igc-button
+          part="cancel-button"
+          variant=${indigo ? 'outlined' : 'flat'}
+          @click=${this._handleCancel}
+        >
+          ${this.resourceStrings.combo_cancel}
+        </igc-button>
+        <igc-button
+          part="apply-button"
+          variant=${indigo ? 'contained' : 'flat'}
+          @click=${this._handleApply}
+        >
+          ${this.resourceStrings.combo_apply}
+        </igc-button>
       </div>
     `;
   }
@@ -1188,13 +1710,15 @@ export default class IgcComboComponent<
         flip
         same-width
         .scrollStrategy=${this.scrollStrategy}
-        @igcPopoverScrollClose=${this._handleClosing}
+        @igcPopoverScrollClose=${this._handleScrollClose}
       >
         ${this._renderMainInput()} ${this._renderList()}
       </igc-popover>
       ${this._renderHelperText()}
     `;
   }
+
+  //#endregion
 }
 
 declare global {

@@ -1,6 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
 import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import IgcChipComponent from './chip.js';
@@ -18,6 +19,7 @@ describe('Chip', () => {
     tagName: 'igc-chip',
     template: html`<igc-chip>Chip</igc-chip>`,
     getTarget: (host) => host.renderRoot.querySelector('[part="action"]')!,
+    visibleText: 'Chip',
   });
 
   it('passes the a11y audit', async () => {
@@ -194,6 +196,55 @@ describe('Chip', () => {
       await elementUpdated(chip);
       expect(action.hasAttribute('aria-pressed')).to.be.false;
     });
+
+    it('forwards the host disclosure state to the action control', async () => {
+      const container = await fixture<HTMLElement>(html`
+        <div>
+          <igc-chip selectable>Filters</igc-chip>
+          <div id="filters">Filter panel</div>
+        </div>
+      `);
+      const chip = container.querySelector<IgcChipComponent>('igc-chip')!;
+      const panel = container.querySelector('#filters');
+      const action = chip.renderRoot.querySelector('[part="action"]')!;
+
+      chip.setAttribute('aria-expanded', 'true');
+      chip.setAttribute('aria-haspopup', 'dialog');
+      chip.setAttribute('aria-controls', 'filters');
+      await elementUpdated(chip);
+      expect(action.getAttribute('aria-expanded')).to.equal('true');
+      expect(action.getAttribute('aria-haspopup')).to.equal('dialog');
+      expect(action.ariaControlsElements).to.eql([panel]);
+      expect(action.getAttribute('aria-pressed')).to.equal('false');
+      await expect(chip).to.be.accessible();
+
+      chip.ariaExpanded = 'false';
+      await elementUpdated(chip);
+      expect(action.getAttribute('aria-expanded')).to.equal('false');
+
+      chip.removeAttribute('aria-expanded');
+      chip.removeAttribute('aria-haspopup');
+      chip.removeAttribute('aria-controls');
+      await elementUpdated(chip);
+      expect(action.hasAttribute('aria-expanded')).to.be.false;
+      expect(action.hasAttribute('aria-haspopup')).to.be.false;
+      expect(action.hasAttribute('aria-controls')).to.be.false;
+    });
+
+    it('does not forward an empty disclosure state or an `aria-controls` without a target', async () => {
+      const chip = await fixture<IgcChipComponent>(
+        html`<igc-chip>Chip</igc-chip>`
+      );
+      const action = chip.renderRoot.querySelector('[part="action"]')!;
+
+      chip.setAttribute('aria-expanded', '');
+      chip.setAttribute('aria-haspopup', '');
+      chip.setAttribute('aria-controls', 'missing');
+      await elementUpdated(chip);
+      expect(action.hasAttribute('aria-expanded')).to.be.false;
+      expect(action.hasAttribute('aria-haspopup')).to.be.false;
+      expect(action.hasAttribute('aria-controls')).to.be.false;
+    });
   });
 
   describe('Rendering', () => {
@@ -227,6 +278,20 @@ describe('Chip', () => {
       );
 
       expect(chip.renderRoot.querySelector('[part="remove"]')).to.be.null;
+    });
+
+    it('renders the start and end slots outside the prefix and suffix slots', async () => {
+      const chip = await fixture<IgcChipComponent>(
+        html`<igc-chip>Chip</igc-chip>`
+      );
+      const slots = Array.from(
+        chip.renderRoot.querySelectorAll<HTMLSlotElement>(
+          '[part="action"] slot'
+        ),
+        ({ name }) => name
+      );
+
+      expect(slots).to.eql(['start', 'prefix', '', 'suffix', 'end']);
     });
   });
 
@@ -352,4 +417,6 @@ describe('Chip', () => {
       expect(isFocused(chip)).to.be.false;
     });
   });
+
+  runFocusBeforeRenderTests(html`<igc-chip>Label</igc-chip>`);
 });

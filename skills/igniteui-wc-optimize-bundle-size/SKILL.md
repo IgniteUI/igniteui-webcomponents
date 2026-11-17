@@ -69,7 +69,7 @@ defineComponents(IgcButtonComponent, IgcInputComponent, IgcCardComponent);
 
 ## React Applications
 
-If you use React, you can use the **`igniteui-react`** package instead of `igniteui-webcomponents`. It has the same components with React-friendly wrappers. It usually gives better tree-shaking:
+If you use React, you can use the **`igniteui-react`** package. It wraps the same components for React and depends on `igniteui-webcomponents`:
 
 ```bash
 npm install igniteui-react
@@ -78,7 +78,7 @@ npm install igniteui-react
 ```tsx
 import { IgrButton, IgrInput, IgrCard } from 'igniteui-react';
 
-// No need to call defineComponents - components register automatically
+// No defineComponents call - each imported Igr component registers its element
 function MyComponent() {
   return (
     <div>
@@ -90,10 +90,7 @@ function MyComponent() {
 }
 ```
 
-**Benefits for bundle size:**
-- Automatic tree-shaking (the bundle includes only the imported components)
-- No component registration overhead
-- Better integration with React build tools
+**Bundle size:** the same rules apply as for `igniteui-webcomponents`. The bundle includes only the `Igr` components that you import and their dependencies. Each imported component registers its custom element when its module loads, so you do not call `defineComponents`.
 
 For more details, see the [igniteui-wc-integrate-with-framework](../igniteui-wc-integrate-with-framework/SKILL.md) skill.
 
@@ -206,13 +203,27 @@ async function showDialog() {
 
 ### React (using igniteui-react)
 
-```tsx
-import React, { lazy, Suspense, useState } from 'react';
+Put the lazy-loaded component in its own module, and import `IgrDialog` there with a static named import. Then the bundler can tree-shake `igniteui-react` in the new chunk.
 
-// Lazy load the dialog component
-const IgrDialog = lazy(() =>
-  import('igniteui-react').then(module => ({ default: module.IgrDialog }))
-);
+```tsx
+// DialogContent.tsx
+import { IgrDialog } from 'igniteui-react';
+
+export default function DialogContent() {
+  return (
+    <IgrDialog open>
+      <h2>Dialog Content</h2>
+    </IgrDialog>
+  );
+}
+```
+
+```tsx
+// MyComponent.tsx
+import { lazy, Suspense, useState } from 'react';
+
+// Loads DialogContent.tsx and IgrDialog on the first render
+const DialogContent = lazy(() => import('./DialogContent'));
 
 function MyComponent() {
   const [showDialog, setShowDialog] = useState(false);
@@ -222,9 +233,7 @@ function MyComponent() {
       <button onClick={() => setShowDialog(true)}>Open Dialog</button>
       {showDialog && (
         <Suspense fallback={<div>Loading...</div>}>
-          <IgrDialog open>
-            <h2>Dialog Content</h2>
-          </IgrDialog>
+          <DialogContent />
         </Suspense>
       )}
     </>
@@ -315,11 +324,11 @@ export class MyComponent {
 
 ## Route-Based Code Splitting
 
-Load Ignite UI components only for the routes that need them. To do this, put the `defineComponents(...)` calls in the lazy-loaded route module for each framework.
+Load Ignite UI components only for the routes that need them. To do this, put the component imports, and the `defineComponents(...)` calls where the framework needs them, in the lazy-loaded route module.
 
 ### React (using React.lazy)
 
-Put the component imports and `defineComponents` at the top of each page module. React `lazy()` + `Suspense` does the async split:
+Put the component imports at the top of each page module. `igniteui-react` components register themselves, so the page module does not call `defineComponents`. React `lazy()` + `Suspense` does the async split:
 
 ```tsx
 // pages/Dashboard.tsx
@@ -424,7 +433,7 @@ The key rule: import a subset of components with `defineComponents()`, not all c
 2. Make sure that tree-shaking works (check the build output)
 3. Search for duplicate dependencies
 4. Check if the production build includes source maps
-5. For React, make sure that you use `igniteui-react` instead of `igniteui-webcomponents`
+5. For React, make sure that you import only the `Igr` components that you use
 
 **Solutions:**
 

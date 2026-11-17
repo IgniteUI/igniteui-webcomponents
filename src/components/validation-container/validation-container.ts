@@ -1,7 +1,6 @@
 import { html, isServer, LitElement, nothing, type TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { createAbortHandle } from '#internals/abort-handler.js';
 import { HELPER_TEXT_ID } from '#internals/controllers/aria-projection.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import {
@@ -10,9 +9,14 @@ import {
   InternalResetEvent,
 } from '#internals/mixins/forms/types.js';
 import { partMap } from '#internals/part-map.js';
+import {
+  afterPointerPress,
+  isPointerPressed,
+  trackPointerPress,
+} from '#internals/pointer-press.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { toKebabCase } from '#internals/utils/strings.js';
-import { all as inputThemes } from '#themes/input/themes/themes.js';
+import { all } from '#themes/validation-container/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import { styles as shared } from './themes/shared/validator.common.css.js';
@@ -56,15 +60,44 @@ const VALIDITY_SLOTS: ReadonlyArray<
  * `invalid` first, then each failing constraint.
  */
 function* activeValidationSlots(validity: ValidityState): Generator<string> {
-  if (!validity.valid) {
-    yield 'invalid';
+  if (validity.valid) {
+    return;
   }
+
+  yield 'invalid';
 
   for (const [key, slot] of VALIDITY_SLOTS) {
     if (validity[key]) {
       yield slot;
     }
   }
+}
+
+const DEFAULT_CONFIG: ValidationContainerConfig = {
+  id: HELPER_TEXT_ID,
+  hasHelperText: true,
+};
+
+/** The message slots that each host forwarded in its last render. */
+const forwardedSlots = new WeakMap<IgcFormControl, string[]>();
+
+/**
+ * The message slots for `host` to forward. A container holds its messages
+ * while a press is in progress, so until the press ends, the host also keeps
+ * the slots that it forwarded before.
+ */
+function forwardedSlotNames(host: IgcFormControl): string[] {
+  let names = Array.from(activeValidationSlots(host.validity));
+
+  if (isPointerPressed()) {
+    names = Array.from(
+      new Set([...(forwardedSlots.get(host) ?? []), ...names])
+    );
+    afterPointerPress(() => host.requestUpdate());
+  }
+
+  forwardedSlots.set(host, names);
+  return names;
 }
 
 /* blazorSuppress */
@@ -92,10 +125,7 @@ export default class IgcValidationContainerComponent extends LitElement {
    */
   public static create(
     host: IgcFormControl,
-    config: ValidationContainerConfig = {
-      id: HELPER_TEXT_ID,
-      hasHelperText: true,
-    }
+    config: ValidationContainerConfig = DEFAULT_CONFIG
   ): TemplateResult {
     const helperText = config.hasHelperText
       ? html`<slot name="helper-text" slot="helper-text"></slot>`
@@ -104,9 +134,9 @@ export default class IgcValidationContainerComponent extends LitElement {
     // `hasUpdated` is false during SSR and the hydrating render, so both give
     // `nothing`, and the next host render projects the slots. See `firstUpdated`.
     const validationSlots = host.hasUpdated
-      ? Iterator.from(activeValidationSlots(host.validity))
-          .map((name) => html`<slot name=${name} slot=${name}></slot>`)
-          .toArray()
+      ? forwardedSlotNames(host).map(
+          (name) => html`<slot name=${name} slot=${name}></slot>`
+        )
       : nothing;
 
     // `?invalid` tracks host re-renders; the internal invalid/reset events cover
@@ -125,7 +155,9 @@ export default class IgcValidationContainerComponent extends LitElement {
     `;
   }
 
-  private readonly _abortHandle = createAbortHandle();
+  private readonly _resumeUpdate = (): void => this.requestUpdate();
+  /** Whether a render read the projected slots. The first render cannot. */
+  private _hasReadSlots = false;
   private _target!: IgcFormControl;
 
   /**
@@ -151,12 +183,12 @@ export default class IgcValidationContainerComponent extends LitElement {
 
     // Listeners are not removed on disconnect: the container lives in the
     // target's shadow root and shares its lifetime.
-    this._abortHandle.abort();
-    const { signal } = this._abortHandle;
+    this._target?.removeEventListener(InternalInvalidEvent, this);
+    this._target?.removeEventListener(InternalResetEvent, this);
 
     this._target = value;
-    this._target.addEventListener(InternalInvalidEvent, this, { signal });
-    this._target.addEventListener(InternalResetEvent, this, { signal });
+    value.addEventListener(InternalInvalidEvent, this);
+    value.addEventListener(InternalResetEvent, this);
   }
 
   public get target(): IgcFormControl {
@@ -165,13 +197,23 @@ export default class IgcValidationContainerComponent extends LitElement {
 
   constructor() {
     super();
-    addThemingController(this, inputThemes);
+    addThemingController(this, all);
+    trackPointerPress();
   }
 
   protected override createRenderRoot(): HTMLElement | DocumentFragment {
     const root = super.createRenderRoot();
     root.addEventListener('slotchange', this);
     return root;
+  }
+
+  /**
+   * Holds an update during a press, so the click of the press lands. See
+   * `pointer-press.ts`. The render that first reads the projected slots is not
+   * held, because the render before it does not know whether they are empty.
+   */
+  protected override shouldUpdate(): boolean {
+    return !this._hasReadSlots || !afterPointerPress(this._resumeUpdate);
   }
 
   /** @internal */
@@ -204,6 +246,8 @@ export default class IgcValidationContainerComponent extends LitElement {
     if (isServer || !this.hasUpdated) {
       return { isProjectionEmpty: false, validation };
     }
+
+    this._hasReadSlots = true;
 
     let isProjectionEmpty = true;
 

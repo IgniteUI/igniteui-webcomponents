@@ -41,6 +41,7 @@
 | ------: | ---------- | ---------------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                                      |
 |       2 | 2026-10-07 | Describe the theme variables that the provider keeps as-is |
+|       3 | 2026-10-21 | API descriptions aligned with the JSDoc.                   |
 
 ## Overview
 
@@ -215,7 +216,7 @@ None applicable.
 
 | Name    | Description                                           |
 | ------- | ----------------------------------------------------- |
-| default | The content that should receive the provided theme.    |
+| default | The content that receives the provided theme.          |
 
 ### CSS Shadow parts
 

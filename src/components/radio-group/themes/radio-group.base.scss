@@ -4,6 +4,12 @@
     ::slotted(label) {
         display: block;
     }
+
+    // The message of a group goes on its last radio, so only that radio
+    // reserves message lines.
+    ::slotted(igc-radio:not(:last-of-type)) {
+        --ig-helper-min-lines: 0;
+    }
 }
 
 :host([alignment='vertical']) {

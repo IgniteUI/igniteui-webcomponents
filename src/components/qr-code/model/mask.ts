@@ -21,13 +21,28 @@ export function applyMask(
   functionModules: boolean[][],
   pattern: MaskPattern
 ): boolean[][] {
+  const masked = matrix.map((row) => row.slice());
+  toggleMask(masked, functionModules, pattern);
+  return masked;
+}
+
+/** Flips the masked data modules in place; a second call undoes it. */
+export function toggleMask(
+  matrix: boolean[][],
+  functionModules: boolean[][],
+  pattern: MaskPattern
+): void {
   const condition = MASK_PATTERN_FUNCTIONS[pattern];
-  return matrix.map((row, r) =>
-    row.map((val, c) => {
-      if (functionModules[r][c]) return val;
-      return condition(r, c) ? !val : val;
-    })
-  );
+
+  for (let r = 0; r < matrix.length; r++) {
+    const row = matrix[r];
+
+    for (let c = 0; c < row.length; c++) {
+      if (!functionModules[r][c] && condition(r, c)) {
+        row[c] = !row[c];
+      }
+    }
+  }
 }
 
 // Penalty Rule 1: Adjacent modules in row/column in same color
@@ -200,13 +215,12 @@ export function selectBestMask(
   let bestMask: MaskPattern = 0;
   let lowestPenalty = Number.POSITIVE_INFINITY;
 
+  // Mask in place and undo, so no pattern copies the matrix.
   for (let pattern = 0; pattern < 8; pattern++) {
-    const maskedMatrix = applyMask(
-      matrix,
-      functionModules,
-      pattern as MaskPattern
-    );
-    const penalty = calculatePenalty(maskedMatrix);
+    toggleMask(matrix, functionModules, pattern as MaskPattern);
+    const penalty = calculatePenalty(matrix);
+    toggleMask(matrix, functionModules, pattern as MaskPattern);
+
     if (penalty < lowestPenalty) {
       lowestPenalty = penalty;
       bestMask = pattern as MaskPattern;

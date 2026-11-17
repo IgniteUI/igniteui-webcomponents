@@ -1,7 +1,14 @@
-import { expect, fixture, html, nextFrame } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+} from '@open-wc/testing';
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
 import type { IgcBaseAlertLikeComponent } from '../bases/alert.js';
 import { isPopoverOpen } from '../utils/dom.js';
+import { allowMotion, finishAnimationsFor } from './helpers.spec.js';
 import { simulatePointerEnter, simulatePointerLeave } from './simulate.spec.js';
 
 /** Renders `count` components in a container with the given inline style. */
@@ -113,26 +120,47 @@ export function runAlertTests(tagName: string): void {
         expect(hide).calledOnce;
       });
 
-      it('waits while a component removed during the fade-in is detached', async () => {
-        const hide = spy(alert, 'hide');
-        const parent = alert.parentElement!;
-        const showing = alert.show();
-        alert.remove();
-        await showing;
+      describe('fade-in', () => {
+        allowMotion();
 
-        await clock.tickAsync(800);
-        expect(hide).not.called;
+        it('waits while a component removed during the fade-in is detached', async () => {
+          const hide = spy(alert, 'hide');
+          const parent = alert.parentElement!;
+          const showing = alert.show();
+          alert.remove();
+          await showing;
 
-        parent.append(alert);
-        await alert.updateComplete;
-        expect(isPopoverOpen(alert)).to.be.true;
+          await clock.tickAsync(800);
+          expect(hide).not.called;
 
-        await clock.tickAsync(400);
-        expect(hide).calledOnce;
+          parent.append(alert);
+          await alert.updateComplete;
+          expect(isPopoverOpen(alert)).to.be.true;
+
+          await clock.tickAsync(400);
+          expect(hide).calledOnce;
+        });
+
+        it('ends the fade-in when `open` is set to `false`', async () => {
+          const showing = alert.show();
+          alert.open = false;
+
+          expect(alert.getAnimations()).to.be.empty;
+          expect(await showing).to.be.false;
+          await elementUpdated(alert);
+          expect(isPopoverOpen(alert)).to.be.false;
+
+          const reopening = alert.show();
+          finishAnimationsFor(alert);
+          expect(await reopening).to.be.true;
+          expect(alert.open).to.be.true;
+        });
       });
     });
 
     describe('fade-out', () => {
+      allowMotion();
+
       beforeEach(async () => {
         clock = useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
         ({
@@ -184,6 +212,65 @@ export function runAlertTests(tagName: string): void {
       it('`hide()` does not start the fade-out again', async () => {
         const hiding = alert.hide();
         expect(await alert.hide()).to.be.false;
+        expect(await hiding).to.be.true;
+        expect(alert.open).to.be.false;
+        expect(isPopoverOpen(alert)).to.be.false;
+      });
+    });
+
+    describe('changes of `open` during the fade-out', () => {
+      allowMotion();
+
+      beforeEach(async () => {
+        clock = useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        ({
+          alerts: [alert],
+        } = await createAlerts(tagName));
+        alert.displayTime = 400;
+
+        const showing = alert.show();
+        finishAnimationsFor(alert);
+        await showing;
+      });
+
+      afterEach(() => {
+        clock.restore();
+      });
+
+      it('keeps the component open when `open` is set to `false` and then to `true`', async () => {
+        const hiding = alert.hide();
+        alert.open = false;
+        alert.open = true;
+
+        expect(alert.getAnimations()).to.be.empty;
+        expect(await hiding).to.be.false;
+        await elementUpdated(alert);
+        expect(alert.open).to.be.true;
+        expect(isPopoverOpen(alert)).to.be.true;
+
+        const hide = spy(alert, 'hide');
+        await clock.tickAsync(400);
+        expect(hide).calledOnce;
+      });
+
+      it('shows again when `open` is set to `true` after the update of `open = false`', async () => {
+        const hiding = alert.hide();
+        alert.open = false;
+        await elementUpdated(alert);
+        expect(isPopoverOpen(alert)).to.be.false;
+
+        alert.open = true;
+        expect(await hiding).to.be.false;
+        await elementUpdated(alert);
+        expect(alert.open).to.be.true;
+        expect(isPopoverOpen(alert)).to.be.true;
+      });
+
+      it('closes when `open` is set to its current value', async () => {
+        const hiding = alert.hide();
+        alert.open = true;
+        finishAnimationsFor(alert);
+
         expect(await hiding).to.be.true;
         expect(alert.open).to.be.false;
         expect(isPopoverOpen(alert)).to.be.false;

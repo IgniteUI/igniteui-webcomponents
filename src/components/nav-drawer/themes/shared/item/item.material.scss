@@ -9,6 +9,9 @@ $theme: $material;
     background: transparent;
     min-height: rem(48px);
 
+    // The highlight below has a negative z-index.
+    isolation: isolate;
+
     &::after {
         content: '';
         position: absolute;

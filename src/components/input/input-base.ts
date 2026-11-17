@@ -2,12 +2,13 @@ import { LitElement, nothing, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import {
   addAriaTarget,
+  HOST_COMBOBOX_ATTRIBUTES,
   helperText,
 } from '#internals/controllers/aria-projection.js';
 import type { SlotController } from '#internals/controllers/slot.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import {
@@ -36,9 +37,8 @@ export interface IgcInputComponentEventMap {
 @blazorDeepImport
 @shadowOptions({ delegatesFocus: true })
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
-  EventEmitterMixin<IgcInputComponentEventMap, Constructor<LitElement>>(
-    LitElement
-  )
+  EventEmitterMixin<IgcInputComponentEventMap>(LitElement),
+  HOST_COMBOBOX_ATTRIBUTES
 ) {
   protected abstract readonly _themes: ThemingController;
   protected abstract readonly _slots: SlotController<any>;
@@ -52,8 +52,8 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   protected readonly _input?: HTMLInputElement;
 
   /**
-   * Names and describes the native input, and applies the ARIA a composite
-   * host projects. See {@link addAriaTarget}.
+   * Names and describes the native input, and applies the projected and the
+   * host ARIA. See {@link addAriaTarget}.
    */
   protected readonly _ariaTarget = addAriaTarget(this, () =>
     helperText(this, this._slots)
@@ -64,7 +64,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   public abstract value: string;
 
   /**
-   * Whether the control will have outlined appearance.
+   * Whether the control has an outlined appearance.
    *
    * @attr
    * @default false
@@ -99,11 +99,13 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   /** Sets focus on the control. */
   public override focus(options?: FocusOptions): void {
     this._input?.focus(options);
+    deferFocus(this, options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the control. */
   public override blur(): void {
+    cancelDeferredFocus(this);
     this._input?.blur();
   }
 

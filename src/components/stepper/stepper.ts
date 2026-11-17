@@ -9,12 +9,12 @@ import {
   setSlots,
 } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { getRoot } from '#internals/utils/dom.js';
 import {
   addSafeEventListener,
   getElementFromPath,
+  getEventOrigin,
 } from '#internals/utils/events.js';
 import { all } from '#themes/stepper/themes/stepper/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -31,6 +31,8 @@ import { createStepperState } from './common/state.js';
 import type { IgcStepperComponentEventMap } from './common/types.js';
 import IgcStepComponent from './step.js';
 import { styles } from './themes/stepper/stepper.base.css.js';
+
+const Slots = setSlots();
 
 /** Property changes that the stepper republishes its context for. */
 const STEPPER_SYNC_PROPERTIES: (keyof IgcStepperComponent)[] = [
@@ -51,8 +53,8 @@ const STEPPER_SYNC_PROPERTIES: (keyof IgcStepperComponent)[] = [
  * It supports horizontal and vertical orientation, linear and non-linear navigation,
  * keyboard navigation, and provides API methods to control the active step.
  *
- * In linear mode, the user can only advance to the next step if the current step is valid
- * (not marked as `invalid`).
+ * In linear mode, the user can open a step only when all steps before it are valid
+ * or optional.
  *
  * @element igc-stepper
  *
@@ -93,12 +95,11 @@ const STEPPER_SYNC_PROPERTIES: (keyof IgcStepperComponent)[] = [
  * </igc-stepper>
  * ```
  */
-export default class IgcStepperComponent extends EventEmitterMixin<
-  IgcStepperComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcStepperComponent extends EventEmitterMixin<IgcStepperComponentEventMap>(
+  LitElement
+) {
   public static readonly tagName = 'igc-stepper';
-  public static styles = [componentBase, styles];
+  public static override styles = [componentBase, styles];
 
   /* blazorSuppress */
   public static register(): void {
@@ -110,7 +111,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   private readonly _state = createStepperState();
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots(),
+    slots: Slots,
     onChange: this._handleSlotChange,
   });
 
@@ -122,7 +123,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
   //#region Public attributes and properties
 
-  /** Returns all of the stepper's steps. */
+  /** The steps of the stepper. */
   public get steps(): readonly IgcStepComponent[] {
     return this._state.steps;
   }
@@ -149,7 +150,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
    * Whether the stepper is linear.
    *
    * @remarks
-   * If the stepper is in linear mode and if the active step is valid only then the user is able to move forward.
+   * In linear mode, the user can open a step only when all steps before it are valid or optional.
    *
    * @attr linear
    * @default false
@@ -158,7 +159,8 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   public linear = false;
 
   /**
-   * Whether the content is displayed above the steps.
+   * Whether the content is displayed above the steps. Applies only to the
+   * horizontal orientation.
    *
    * @attr content-top
    * @default false
@@ -197,8 +199,8 @@ export default class IgcStepperComponent extends EventEmitterMixin<
    * The position of the steps title.
    *
    * @remarks
-   * When the stepper is horizontally orientated the title is positioned below the indicator.
-   * When the stepper is vertically orientated the title is positioned on the right side of the indicator.
+   * With `auto`, the title is below the indicator in the horizontal orientation,
+   * and after the indicator in the vertical orientation.
    *
    * @attr title-position
    * @default 'auto'
@@ -230,7 +232,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
     addRovingFocusController(this, {
       keybindings: { skip: this._skipKeyboard },
-      items: () => this._state.accessibleSteps,
+      items: () => this._state.navigableSteps,
       current: () => this._getActiveStepComponent(),
       vertical: () => !this._isHorizontal,
       focusItem: (step) => this._getStepHeader(step)?.focus(),
@@ -263,7 +265,8 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   //#region Keyboard navigation handlers
 
   private _skipKeyboard(_: Element, event: KeyboardEvent): boolean {
-    return !getElementFromPath('[data-step-header]', event);
+    // Only the header itself, so a control in the title keeps its keys.
+    return !getEventOrigin('[data-step-header]', event);
   }
 
   //#endregion
@@ -274,8 +277,14 @@ export default class IgcStepperComponent extends EventEmitterMixin<
     // Only a header opens its step. A click in the content leaves the active
     // step alone, so a button there can change it.
     const header = getElementFromPath('[data-step-header]', event);
+
+    if (!header) {
+      return;
+    }
+
+    const root = header.getRootNode();
     const step = this._state.steps.find(
-      ({ renderRoot }) => renderRoot === header?.getRootNode()
+      ({ renderRoot }) => renderRoot === root
     );
 
     if (step && this._state.isAccessible(step)) {
@@ -284,13 +293,11 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   }
 
   private _handleSlotChange(): void {
-    this._state.setSteps(
+    this._state.stepsChanged(
       this._slots.getAssignedElements(DefaultSlot, {
         selector: IgcStepComponent.tagName,
       })
     );
-
-    this._state.stepsChanged();
     this.style.setProperty('--steps-count', this.steps.length.toString());
   }
 
@@ -324,14 +331,17 @@ export default class IgcStepperComponent extends EventEmitterMixin<
     }
 
     const steps = this._state.steps;
+    const current = this._state.activeStep;
     const index = steps.indexOf(step);
-    const oldIndex = steps.indexOf(this._state.activeStep!);
+    const oldIndex = steps.indexOf(current!);
 
+    // A handler that activates a step itself also stops this change.
     if (
       this.emitEvent('igcActiveStepChanging', {
         detail: { oldIndex, newIndex: index },
         cancelable: true,
-      })
+      }) &&
+      current === this._state.activeStep
     ) {
       this._transitionTo(step);
       this.emitEvent('igcActiveStepChanged', { detail: { index } });
@@ -348,7 +358,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
   private _getActiveStepComponent(): IgcStepComponent | null {
     return (
-      getRoot(this).activeElement?.closest(IgcStepComponent.tagName) ?? null
+      getRoot(this)?.activeElement?.closest(IgcStepComponent.tagName) ?? null
     );
   }
 
@@ -360,11 +370,11 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
   //#region Public API
 
-  /** Activates the step at a given index. */
+  /** Activates the step at a given index. Does nothing for a disabled step. */
   public navigateTo(index: number): void {
     const step = this._state.steps[index];
 
-    if (step) {
+    if (step && !step.disabled) {
       this._activateStep(step, false);
     }
   }
@@ -380,10 +390,10 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   }
 
   /**
-   * Resets the stepper to its initial state, i.e. activates the first step.
+   * Resets the stepper to its initial state and activates the first enabled step.
    *
    * @remarks
-   * The steps' content will not be automatically reset.
+   * The method does not reset the content of the steps.
    */
   public reset(): void {
     this._state.reset();

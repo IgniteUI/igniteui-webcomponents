@@ -3,8 +3,11 @@ import {
   expect,
   fixture,
   html,
+  oneEvent,
   waitUntil,
 } from '@open-wc/testing';
+import { getI18nManager, registerI18n } from 'igniteui-i18n-core';
+import { ValidationResourceStringsBG } from 'igniteui-i18n-resources';
 import { spy } from 'sinon';
 import {
   altKey,
@@ -19,20 +22,32 @@ import {
   getDayViewDOM,
   getDOMDate,
 } from '#internals/testing/calendar.spec.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   runAriaProjectionTests,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
-import { checkDatesEqual, isFocused } from '#internals/testing/helpers.spec.js';
 import {
+  allowMotion,
+  checkDatesEqual,
+  finishAnimationsFor,
+  isFocused,
+  withDocumentSheets,
+} from '#internals/testing/helpers.spec.js';
+import {
+  simulateCancelableKeydown,
   simulateClick,
+  simulateComposingKeys,
   simulateInput,
   simulateKeyboard,
   simulateScroll,
 } from '#internals/testing/simulate.spec.js';
+import { formatString } from '#internals/utils/strings.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { DateRangeType } from '../calendar/types.js';
+import { DatePart } from '../date-time-input/date-part.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
+import IgcDialogComponent from '../dialog/dialog.js';
 import IgcDatePickerComponent from './date-picker.js';
 
 describe('Date picker', () => {
@@ -379,6 +394,27 @@ describe('Date picker', () => {
       expect(calendar).not.to.be.undefined;
       expect(calendar.parentElement).to.equal(dialog);
     });
+
+    it('styles the dialog backdrop through `::part(dialog-base)::backdrop`', async () => {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(
+        'igc-date-picker::part(dialog-base)::backdrop { background: rgb(4, 5, 6) }'
+      );
+
+      await withDocumentSheets([sheet], async () => {
+        picker = await fixture<IgcDatePickerComponent>(
+          html`<igc-date-picker open mode="dialog"></igc-date-picker>`
+        );
+        const dialog = picker.renderRoot.querySelector('igc-dialog')!;
+        await elementUpdated(dialog);
+        const native = dialog.renderRoot.querySelector('dialog')!;
+
+        expect(native.matches(':modal')).to.be.true;
+        expect(getComputedStyle(native, '::backdrop').backgroundColor).to.equal(
+          'rgb(4, 5, 6)'
+        );
+      });
+    });
   });
 
   describe('Attributes and properties', () => {
@@ -709,6 +745,29 @@ describe('Date picker', () => {
         expect(picker.inputFormat).to.equal('dd-MM-yyyy');
         expect(picker.displayFormat).to.equal(picker.inputFormat);
       });
+
+      it('forwards its calendar strings to the calendar', async () => {
+        picker.resourceStrings = { calendar_previous_month: 'Back' };
+        await elementUpdated(picker);
+
+        const pickerCalendar = picker.renderRoot.querySelector(
+          IgcCalendarComponent.tagName
+        )!;
+        expect(pickerCalendar.resourceStrings.calendar_previous_month).to.equal(
+          'Back'
+        );
+      });
+
+      it('does not register resource strings', async () => {
+        const register = spy(getI18nManager(), 'registerI18n');
+
+        try {
+          await fixture(html`<igc-date-picker></igc-date-picker>`);
+          expect(register.called).to.be.false;
+        } finally {
+          register.restore();
+        }
+      });
     });
 
     it('uses its own id for the input and the label', async () => {
@@ -837,6 +896,35 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       expect(stepDownSpy).called;
+    });
+
+    it('should update the value on stepUp and stepDown', async () => {
+      picker.value = new Date(2024, 0, 15);
+      await elementUpdated(picker);
+
+      picker.stepUp(DatePart.Date);
+      checkDatesEqual(picker.value!, new Date(2024, 0, 16));
+
+      picker.stepDown(DatePart.Date, 2);
+      checkDatesEqual(picker.value!, new Date(2024, 0, 14));
+    });
+
+    it('should apply a step at once while the read-only input is focused', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      picker.nonEditable = true;
+      picker.value = new Date(2024, 0, 15);
+      await elementUpdated(picker);
+
+      dateTimeInput.focus();
+      picker.stepUp(DatePart.Date);
+      checkDatesEqual(picker.value!, new Date(2024, 0, 16));
+
+      dateTimeInput.blur();
+      await elementUpdated(picker);
+
+      checkDatesEqual(picker.value!, new Date(2024, 0, 16));
+      checkDatesEqual(dateTimeInput.value!, new Date(2024, 0, 16));
+      expect(eventSpy).not.calledWith('igcChange');
     });
 
     it('should select the text in the input with the select method', async () => {
@@ -995,10 +1083,27 @@ describe('Date picker', () => {
 
       simulateKeyboard(picker, escapeKey);
       await elementUpdated(picker);
+      await waitUntil(() => eventSpy.calledWith('igcClosed'));
 
       expect(eventSpy).calledTwice;
       expect(eventSpy).calledWith('igcClosing');
       expect(eventSpy).calledWith('igcClosed');
+    });
+
+    it('cancels Escape only while open', async () => {
+      expect(simulateCancelableKeydown(picker, escapeKey)).to.be.false;
+
+      await picker.show();
+      expect(simulateCancelableKeydown(picker, escapeKey)).to.be.true;
+    });
+
+    it('stays open on an Escape that an IME handles', async () => {
+      await picker.show();
+
+      simulateComposingKeys(picker, escapeKey);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.true;
     });
 
     it('should open the calendar picker on Alt + ArrowDown and close it on Alt + ArrowUp - dropdown mode', async () => {
@@ -1033,6 +1138,7 @@ describe('Date picker', () => {
 
       simulateKeyboard(picker, [altKey, arrowDown]);
       await elementUpdated(picker);
+      await waitUntil(() => eventSpy.calledWith('igcOpened'));
 
       const dialog = picker.renderRoot.querySelector('igc-dialog');
       expect(picker.open).to.be.true;
@@ -1044,6 +1150,7 @@ describe('Date picker', () => {
 
       simulateKeyboard(picker, [altKey, arrowUp]);
       await elementUpdated(picker);
+      await waitUntil(() => eventSpy.calledWith('igcClosed'));
 
       expect(picker.open).to.be.false;
       expect(eventSpy).calledWith('igcClosing');
@@ -1067,6 +1174,314 @@ describe('Date picker', () => {
       expect(dialog.open).to.be.false;
       expect(eventSpy.firstCall).calledWith('igcClosing');
       expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    describe('Dialog mode transitions', () => {
+      allowMotion();
+
+      let dialog: IgcDialogComponent;
+      let nativeDialog: HTMLDialogElement;
+
+      const isAnimating = () => nativeDialog.getAnimations().length > 0;
+      const states = () => [picker.open, dialog.open, nativeDialog.open];
+
+      const settle = async () => {
+        await elementUpdated(picker);
+        await elementUpdated(dialog);
+      };
+
+      const expectSteadyOpen = () => {
+        expect(isAnimating()).to.be.false;
+        expect(nativeDialog.hasAttribute('data-closing')).to.be.false;
+        expect(states()).to.eql([true, true, true]);
+      };
+
+      beforeEach(async () => {
+        picker.mode = 'dialog';
+        await elementUpdated(picker);
+        dialog = picker.renderRoot.querySelector(IgcDialogComponent.tagName)!;
+        nativeDialog = dialog.renderRoot.querySelector('dialog')!;
+      });
+
+      describe('Open', () => {
+        it('sends `igcOpened` after the entrance of the dialog ends', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          const opened = oneEvent(picker, 'igcOpened');
+
+          picker.focus();
+          simulateKeyboard(picker, [altKey, arrowDown]);
+          await elementUpdated(dialog);
+
+          expect(picker.open).to.be.true;
+          expect(nativeDialog.open).to.be.true;
+          expect(isAnimating()).to.be.true;
+          expect(eventSpy).calledOnceWith('igcOpening');
+
+          finishAnimationsFor(dialog.shadowRoot!);
+          await opened;
+
+          expect(
+            isFocused(
+              picker.renderRoot.querySelector(IgcCalendarComponent.tagName)!
+            )
+          ).to.be.true;
+        });
+
+        it('closes when `hide()` is called during the entrance', async () => {
+          const opened = picker.show();
+          await elementUpdated(dialog);
+          expect(isAnimating()).to.be.true;
+
+          const closed = picker.hide();
+          finishAnimationsFor(dialog.shadowRoot!);
+
+          expect(await closed).to.be.true;
+          expect(await opened).to.be.false;
+          expect(picker.open).to.be.false;
+          expect(nativeDialog.open).to.be.false;
+        });
+
+        it('closes the dialog at once when `open` is set to `false` during the entrance', async () => {
+          const opened = picker.show();
+          await elementUpdated(dialog);
+
+          picker.open = false;
+          await settle();
+
+          expect(nativeDialog.open).to.be.false;
+          expect(isAnimating()).to.be.false;
+          expect(await opened).to.be.false;
+        });
+
+        it('shows no dialog when `hide()` follows `show()` in the same task', async () => {
+          const opened = picker.show();
+          const closed = picker.hide();
+          await settle();
+
+          expect(nativeDialog.open).to.be.false;
+          expect(await opened).to.be.false;
+          expect(await closed).to.be.true;
+          expect(states()).to.eql([false, false, false]);
+        });
+
+        it('closes the dialog when `open` is set to `false` in the task of `show()`', async () => {
+          const opened = picker.show();
+          picker.open = false;
+          await settle();
+
+          expect(states()).to.eql([false, false, false]);
+          expect(await opened).to.be.false;
+        });
+
+        it('stays open when `open` is set to `false` and then `true` during the entrance', async () => {
+          const opened = picker.show();
+          await elementUpdated(dialog);
+
+          picker.open = false;
+          picker.open = true;
+          await settle();
+          finishAnimationsFor(dialog.shadowRoot!);
+
+          expect(await opened).to.be.false;
+          expectSteadyOpen();
+        });
+      });
+
+      describe('Close', () => {
+        const startExit = async () => {
+          simulateKeyboard(picker, escapeKey);
+          await elementUpdated(dialog);
+        };
+
+        beforeEach(async () => {
+          picker.open = true;
+          await settle();
+        });
+
+        it('keeps `open` until the exit of the dialog ends', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          const closed = oneEvent(picker, 'igcClosed');
+
+          await startExit();
+
+          expect(picker.open).to.be.true;
+          expect(nativeDialog.open).to.be.true;
+          expect(nativeDialog.hasAttribute('data-closing')).to.be.true;
+          expect(eventSpy).calledOnceWith('igcClosing');
+
+          finishAnimationsFor(dialog.shadowRoot!);
+          await closed;
+
+          expect(states()).to.eql([false, false, false]);
+        });
+
+        it('keeps the dialog open when `igcClosing` is canceled on an outside click', async () => {
+          picker.addEventListener('igcClosing', (event) =>
+            event.preventDefault()
+          );
+          const { x, y } = dialog.getBoundingClientRect();
+
+          simulateClick(nativeDialog, { clientX: x + 1, clientY: y - 1 });
+          await elementUpdated(dialog);
+
+          expectSteadyOpen();
+        });
+
+        it('ignores a calendar selection during the exit', async () => {
+          const calendar = picker.renderRoot.querySelector(
+            IgcCalendarComponent.tagName
+          )!;
+          picker.activeDate = new Date(2024, 2, 1);
+          await elementUpdated(picker);
+          await elementUpdated(calendar);
+          const eventSpy = spy(picker, 'emitEvent');
+
+          await startExit();
+          simulateClick(
+            getDOMDate(
+              new CalendarDay({ year: 2024, month: 2, date: 15 }),
+              getCalendarDOM(calendar).views.days
+            )
+          );
+          await elementUpdated(calendar);
+
+          expect(picker.value).to.be.null;
+          expect(calendar.value).to.be.null;
+          expect(eventSpy).not.calledWith('igcChange');
+        });
+
+        it('stays open when `show()` is called during the exit', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+
+          await startExit();
+          expect(await picker.show()).to.be.true;
+          await elementUpdated(dialog);
+
+          expectSteadyOpen();
+          expect(eventSpy).not.calledWith('igcClosed');
+        });
+
+        it('stays open when `open` is set to `false` and then `show()` is called during the exit', async () => {
+          await startExit();
+          picker.open = false;
+          expect(await picker.show()).to.be.true;
+          await elementUpdated(dialog);
+
+          expectSteadyOpen();
+        });
+
+        it('stays open when `open` is set to `false` and then `true` during the exit', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+
+          await startExit();
+          picker.open = false;
+          picker.open = true;
+          await settle();
+
+          expectSteadyOpen();
+          expect(eventSpy).not.calledWith('igcClosed');
+        });
+
+        it('closes the dialog at once when `open` is set to `false` during the exit', async () => {
+          await startExit();
+          picker.open = false;
+          await settle();
+
+          expect(states()).to.eql([false, false, false]);
+        });
+
+        it('opens a modal dialog again after it is removed during the exit', async () => {
+          const parent = picker.parentElement!;
+          const closed = oneEvent(picker, 'igcClosed');
+
+          await startExit();
+          picker.remove();
+          await closed;
+
+          parent.append(picker);
+          await settle();
+          expect(states()).to.eql([false, false, false]);
+
+          expect(await picker.show()).to.be.true;
+          expect(nativeDialog.matches(':modal')).to.be.true;
+        });
+
+        it('stays open as a modal when it is appended again and shown during the exit', async () => {
+          const parent = picker.parentElement!;
+
+          await startExit();
+          picker.remove();
+          parent.append(picker);
+
+          expect(await picker.show()).to.be.true;
+          await settle();
+
+          expectSteadyOpen();
+          expect(nativeDialog.matches(':modal')).to.be.true;
+        });
+      });
+    });
+
+    it('should not report a value set from code on a later blur', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      const modes: Partial<IgcDatePickerComponent>[] = [
+        {},
+        { nonEditable: true },
+        { readOnly: true },
+        { mode: 'dialog' },
+      ];
+
+      for (const [index, mode] of modes.entries()) {
+        Object.assign(
+          picker,
+          { nonEditable: false, readOnly: false, mode: 'dropdown' },
+          mode
+        );
+        await elementUpdated(picker);
+
+        dateTimeInput.focus();
+        picker.value = new Date(2024, 0, 15 + index);
+        await elementUpdated(picker);
+        picker.stepUp(DatePart.Date);
+        await elementUpdated(picker);
+
+        dateTimeInput.blur();
+        await elementUpdated(picker);
+      }
+
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    it('should render a user change at once', async () => {
+      picker.keepOpenOnSelect = true;
+      picker.value = new Date(2020, 0, 1);
+      await picker.show();
+
+      selectCurrentDate(calendar);
+      await elementUpdated(picker);
+      checkDatesEqual(dateTimeInput.value!, CalendarDay.today);
+
+      picker.clear();
+      await elementUpdated(picker);
+      expect(getIcon(pickerClearIcon)).to.be.null;
+    });
+
+    it('should emit igcChange once for a calendar selection in a non-editable dropdown', async () => {
+      const today = CalendarDay.today;
+      picker.nonEditable = true;
+      picker.value = today.add('day', 1).native;
+      await picker.show();
+
+      const eventSpy = spy(picker, 'emitEvent');
+      dateTimeInput.focus();
+      selectCurrentDate(calendar);
+      await elementUpdated(picker);
+
+      dateTimeInput.blur();
+      await elementUpdated(picker);
+
+      expect(eventSpy.withArgs('igcChange')).calledOnce;
+      checkDatesEqual(picker.value!, today);
     });
 
     it('should emit or not igcInput according to nonEditable property', async () => {
@@ -1293,6 +1708,22 @@ describe('Date picker', () => {
       });
     });
 
+    it('emits igcChange on blur after the clear icon and a render', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      picker.value = CalendarDay.today.native;
+      await elementUpdated(picker);
+
+      dateTimeInput.focus();
+      simulateClick(getIcon(pickerClearIcon));
+      // The render writes the cleared value back into the input.
+      await elementUpdated(picker);
+
+      dateTimeInput.blur();
+      await elementUpdated(picker);
+
+      expect(eventSpy).calledWith('igcChange', { detail: null });
+    });
+
     describe('Readonly state', () => {
       describe('Dropdown mode', () => {
         beforeEach(async () => {
@@ -1390,4 +1821,43 @@ describe('Date picker', () => {
       expect(calendar.weekStart).to.equal('monday');
     });
   });
+
+  describe('Validation messages', () => {
+    const BG = ValidationResourceStringsBG;
+
+    before(() => registerI18n(BG, 'bg'));
+
+    it('formats the dates as the picker displays them', async () => {
+      const min = new Date(2026, 9, 10);
+      const value = new Date(2026, 9, 1);
+      const date = new Intl.DateTimeFormat('bg', { dateStyle: 'long' });
+
+      picker = await fixture<IgcDatePickerComponent>(
+        html`<igc-date-picker
+          locale="bg"
+          display-format="long"
+          .min=${min}
+          .value=${value}
+        ></igc-date-picker>`
+      );
+
+      expect(picker.validationMessage).to.equal(
+        formatString(BG.min_validation_error!, date.format(min))
+      );
+
+      picker.min = null;
+      picker.disabledDates = [
+        { type: DateRangeType.Specific, dateRange: [value] },
+      ];
+      await elementUpdated(picker);
+
+      expect(picker.validationMessage).to.equal(
+        formatString(BG.disabled_date_validation_error!, date.format(value))
+      );
+    });
+  });
+
+  runFocusBeforeRenderTests(
+    html`<igc-date-picker label="Label"></igc-date-picker>`
+  );
 });

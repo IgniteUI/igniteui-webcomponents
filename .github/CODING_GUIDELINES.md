@@ -23,13 +23,24 @@
 10. Give functions and methods explicit return types, unless the type is obvious or adds noise.
 11. Do not use native private fields (`#field`). Use TypeScript `private` with a `_` prefix.
 
+## Browser Support
+
+The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The `browserslist`
+entry in `package.json` holds the same list.
+
+1. A platform feature that all these versions have needs no feature detection and no fallback. Check each feature
+   in the MDN browser compatibility data. Safari adds features in minor versions, so check against the first
+   release of the older major version (for example 26.0, not 26.2).
+2. Any other feature needs feature detection and a fallback that keeps the component usable.
+3. When a fallback becomes redundant, remove it together with its tests.
+
 ## Project Structure
 
 ```
 src/
 ├── animations/  # Animation players and presets            → #animations/*
 ├── components/  # One directory per component, each with its own spec.md
-├── extras/      # Opt-in add-ons, published as `igniteui-webcomponents/extras`
+├── extras/      # Opt-in add-ons, published under `igniteui-webcomponents/extras`
 ├── internals/   # Shared building blocks, never public API  → #internals/*
 ├── styles/      # Global SCSS: utilities, mixins, themes
 ├── theming/     # Theming controller and types             → #theming/*
@@ -184,7 +195,7 @@ declare global {
 - React to property changes in the lifecycle:
   - `willUpdate()` computes derived state before render.
   - `update()` runs side effects that need the DOM. Call `super.update()`.
-  - `@coercedProperty` coerces a value or runs a side effect on each set. See
+  - `@coercedProperty` coerces a value or runs a side effect on a change. See
     [Properties and Attributes](#properties-and-attributes).
   - Guard each branch with `changedProperties.has()`.
 - Export a new component from `src/index.ts`, in alphabetical order:
@@ -259,8 +270,7 @@ Before you write lifecycle code, look for a controller that already does it:
 | `addRovingFocusController`                                    | `#internals/controllers/roving-focus.js`    | Arrow-key focus movement between items (roving tab index)      |
 | `addAriaTarget` / `addAriaProjector` / `ariaBindings` / `hostAria` | `#internals/controllers/aria-projection.js` | Projecting composite ARIA across shadow roots, and forwarding the host name and description |
 | `addToggleController`                                         | `#internals/controllers/toggle.js`          | The open/close sequence and events of toggleable hosts         |
-| `addHostListeners`                                            | `#internals/controllers/host-listeners.js`  | Listeners that exist while the host is connected               |
-| `addCommandController`                                        | `#internals/controllers/command.js`         | The Invoker Commands API (`command` / `commandfor`)            |
+| `addToggleCommands`                                           | `#internals/controllers/command.js`         | The `--show`, `--hide` and `--toggle` invoker commands         |
 | `addIdRefResolver`                                            | `#internals/controllers/id-resolver.js`     | Resolving IDREF attributes to elements                         |
 | `addRootClickController`                                      | `#internals/controllers/root-click.js`      | Closing overlays on an outside click                           |
 | `createMutationController` / `addResizeObserverController`    | `#internals/controllers/*-observer.js`      | Observing DOM mutations and size changes                       |
@@ -690,7 +700,7 @@ A parser, converter or serializer that takes user or stored input also gets prop
   public items: Array<Item> = [];
   ```
 
-- To coerce a value or run a side effect on each set, use `@coercedProperty` below `@property`.
+- To coerce a value or run a side effect on a change, use `@coercedProperty` below `@property`.
   Do not write a backing-field accessor pair:
 
   ```ts
@@ -720,23 +730,40 @@ A parser, converter or serializer that takes user or stored input also gets prop
     igcStateChange: CustomEvent<Record<string, unknown>>;
   }
 
-  export default class IgcFooBarComponent extends EventEmitterMixin<
-    IgcFooBarEventMap,
-    Constructor<LitElement>
-  >(LitElement) {}
+  export default class IgcFooBarComponent extends EventEmitterMixin<IgcFooBarEventMap>(
+    LitElement
+  ) {}
   ```
+
+  For a base class other than `LitElement`, give its type as the second type argument:
+  `EventEmitterMixin<IgcFooBarEventMap, typeof IgcFooBaseComponent>(IgcFooBaseComponent)`. Do
+  not use `Constructor<…>` there, because it removes the statics of the base and `static styles`
+  then cannot take `override`.
 
 - Declare the event map in the module of the class that emits the events. When `src/index.ts`
   exports the class, export the map too, as `export type { IgcFooBarEventMap } from …`. The
   public API snapshot then records it.
 - Event names are camelCase with an `igc` prefix. Cancelable events usually end in `-ing`.
-- By default, `emitEvent` sends an event that bubbles, is composed and is not cancelable. For a
-  cancelable event, check the return value:
+- By default, `emitEvent` sends an event that bubbles, is composed and is not cancelable. An event
+  with `bubbles: false` is also not composed, because a composed event reaches the listeners on
+  each shadow host around the target. For a cancelable event, check the return value:
 
   ```ts
   if (!this.emitEvent('igcOpening', { cancelable: true, detail: data })) {
     return; // canceled
   }
+  ```
+
+- A composite stops the `igc*` events of the components in its shadow root. Otherwise they reach
+  the listeners on the host, with a detail that the host does not own. Stop them on the inner
+  element: call `event.stopPropagation()` in the handler, or bind `stopPropagation` from
+  `#internals/utils/events.js` when there is no handler. A listener on the host is not
+  sufficient, because the other listeners on the host still run. The test runner loads
+  `src/internals/testing/inner-events.spec.ts`, which fails a spec file when such an event
+  reaches a host.
+
+  ```ts
+  html`<igc-input @igcInput=${this._handleInput} @igcChange=${stopPropagation}></igc-input>`;
   ```
 
 ## Form Integration
@@ -815,9 +842,11 @@ duplicate them:
   invalid styles.
 - `invalid` is a visual state and is not reflected. Its getter returns the effective state:
   a touched control that fails validation reads `true` after you set `false`.
-- Bind `@blur` on the native editor to `_handleBlur` (touches and validates), and `@keydown`
-  to `_handleEnterKeydown` (submits with `form.requestSubmit()`, so the browser shows its own
-  validation feedback).
+- Bind `@blur` on the native editor to `_handleBlur` (touches and validates), and both
+  `@keydown` and `@keypress` to `_handleEnterKey`. It submits as native implicit submission
+  does: a click on the default button, or `form.requestSubmit()` from the only text field of a
+  form with no submit button. A text field control overrides `_blocksImplicitSubmission` to
+  return `true`.
 - `formResetCallback` restores the default through the public `value` or `checked` setter, so
   clamping applies. It also clears the pristine, touched and developer-set invalid states.
   Override it only for state that the mixin does not know, and call
@@ -849,7 +878,7 @@ export default class IgcChipComponent extends I18nMixin(LitElement, i18n) {
 ```
 
 - A component that only needs the locale, and no public resource API, calls
-  `addI18nController` directly (see `date-time-input.base.ts`).
+  `addLocaleController` directly (see `date-time-input.base.ts`).
 - Do not put user-facing text in a template. Read it from the resource strings, so that it
   follows the active locale and consumer overrides.
 - Format dates and times with `getDateTimeFormat` / `formatDisplayDate` from
@@ -868,23 +897,30 @@ export default class IgcChipComponent extends I18nMixin(LitElement, i18n) {
 - Listeners:
   - Lit manages template listeners (`@event`) and listeners on the host. They need no clean-up.
     Add host listeners with `addSafeEventListener` from `#internals/utils/events.js`, which does
-    nothing during SSR.
-  - For listeners on other targets (`window`, `document`, the render root), use
-    `addHostListeners`. It adds them on connect and removes them on disconnect with one abort
-    signal. It does not bind the listener, so bind a method first:
+    nothing during SSR. `addSafeEventListeners` adds one listener object for several events.
+  - Add a listener on another target (`window`, `document`) in `connectedCallback` and remove it
+    in `disconnectedCallback`. Use an arrow function field, so that both calls get the same
+    function:
 
     ```ts
     constructor() {
       super();
       addSafeEventListener(this, 'click', this._handleClick);
-
-      this._handleResize = this._handleResize.bind(this);
-      addHostListeners(this, {
-        target: () => window,
-        events: ['resize'],
-        listener: this._handleResize,
-      });
     }
+
+    public override connectedCallback(): void {
+      super.connectedCallback();
+      window.addEventListener('resize', this._handleResize);
+    }
+
+    public override disconnectedCallback(): void {
+      window.removeEventListener('resize', this._handleResize);
+      super.disconnectedCallback();
+    }
+
+    private readonly _handleResize = (): void => {
+      // ...
+    };
     ```
 
 ## Common Pitfalls
@@ -1162,7 +1198,7 @@ export const Basic: Story = {
 | `npm run test:ssr`              | Builds the package and renders every tag through Lit SSR; fails when a render throws       |
 | `npm run build:publish`         | Builds the package in `dist`, then writes and checks the single-theme aggregators          |
 | `npm run cem`                   | Regenerates `custom-elements.json`                                                         |
-| `npm run public-api:update`     | Rewrites `public-api.json` after an intended public API change                             |
+| `npm run public-api:update`     | Rewrites `public-api.json` and `api-reference/` after a public API or JSDoc change         |
 | `npm run report:spec-scenarios` | Lists `spec.md` test scenarios out of step with the specs, and specs without an a11y audit |
 | `npm run build:meta`            | Regenerates the story metadata regions                                                     |
 | `npm run storybook`             | Dev server with style, manifest and story watchers                                         |

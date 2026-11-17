@@ -34,3 +34,11 @@ export const shiftKey = 'Shift' as const;
 export function isKey(event: KeyboardEvent, key: string): boolean {
   return event.key.toLowerCase() === key.toLowerCase();
 }
+
+/**
+ * Whether an IME composition owns the key press. Safari sends the last one
+ * after `compositionend`, with `isComposing` false but `keyCode` 229.
+ */
+export function isComposingKey(event: KeyboardEvent): boolean {
+  return event.isComposing || event.keyCode === 229;
+}

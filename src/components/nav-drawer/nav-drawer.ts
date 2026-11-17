@@ -10,8 +10,8 @@ import {
 import { addToggleCommands } from '#internals/controllers/command.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { addToggleController } from '#internals/controllers/toggle.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
@@ -28,6 +28,8 @@ import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
 import { styles } from './themes/container.base.css.js';
 import { styles as shared } from './themes/shared/container/nav-drawer.common.css.js';
+
+const Slots = setSlots('mini');
 
 export interface IgcNavDrawerComponentEventMap {
   igcClosing: CustomEvent<void>;
@@ -54,14 +56,14 @@ function drawerAria(drawer: IgcNavDrawerComponent): ARIABindings {
  * The component integrates with the
  * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):
  * an Ignite button or a native `<button>` with `command="--show"` / `"--hide"` / `"--toggle"`
- * and `commandfor` pointing to this element will call the corresponding method
+ * and `commandfor` pointing to this element calls the corresponding method
  * declaratively without any JavaScript.
  *
  * @element igc-nav-drawer
  *
  * @fires igcClosing - Emitted before a user interaction closes the drawer. Cancelable -
  *   call `event.preventDefault()` to abort the closing sequence.
- * @fires igcClosed - Emitted after a user interaction closes the drawer.
+ * @fires igcClosed - Emitted after a user interaction closes the drawer and the exit ends.
  *
  * @slot - Renders the main navigation content of the drawer.
  * @slot mini - Renders the compact mini variant of the drawer.
@@ -69,13 +71,13 @@ function drawerAria(drawer: IgcNavDrawerComponent): ARIABindings {
  * @csspart base - The base wrapper of the drawer.
  * @csspart main - The main content container of the drawer.
  * @csspart mini - The mini variant container of the drawer.
+ * @csspart hidden - Added to the mini part when the mini slot has no content.
  */
-export default class IgcNavDrawerComponent extends EventEmitterMixin<
-  IgcNavDrawerComponentEventMap,
-  Constructor<LitElement>
->(HostAriaMixin(LitElement)) {
+export default class IgcNavDrawerComponent extends EventEmitterMixin<IgcNavDrawerComponentEventMap>(
+  HostAriaMixin(LitElement)
+) {
   public static readonly tagName = 'igc-nav-drawer';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -94,16 +96,24 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   /** The focused element at the first open. It gets the focus back after the close. */
   private _opener: HTMLElement | null = null;
 
+  /** The running exit. It settles when the dialog closes or opens again. */
+  private _exit?: Promise<void>;
+
   private readonly _toggleController = addToggleController(this, {
     transition: async (open) => {
       this.open = open;
       await this.updateComplete;
+
+      if (!open) {
+        await this._exit;
+      }
+
       return true;
     },
   });
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots('mini'),
+    slots: Slots,
   });
 
   private get _dialog(): HTMLDialogElement | undefined {
@@ -123,7 +133,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   //#region Public properties
 
   /**
-   * Sets the position of the drawer.
+   * The position of the drawer.
    *
    * - `start` - anchored to the inline-start edge (default).
    * - `end` - anchored to the inline-end edge.
@@ -144,6 +154,9 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
    * @default false
    */
   @property({ type: Boolean, reflect: true })
+  @coercedProperty<boolean, IgcNavDrawerComponent>({
+    onChange: ({ host, value }) => host._toggleController.sync(value),
+  })
   public open = false;
 
   /**
@@ -157,8 +170,8 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   public keepOpenOnEscape = false;
 
   /**
-   * Sets an accessible label for the `<dialog>`, or the `<nav>` landmark in the `relative`
-   * position, and for the mini variant. Give each navigation landmark on a page a distinct label.
+   * The accessible label of the `<dialog>`, or of the `<nav>` landmark in the `relative`
+   * position, and of the mini variant. Give each navigation landmark on a page a distinct label.
    *
    * @attr label
    */
@@ -243,17 +256,51 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   private _syncDialog(): void {
     const dialog = this._dialog;
 
-    if (!this.open) {
-      dialog?.close();
-      // Focus the opener only when the dialog did not.
-      if (this._opener?.matches(':focus-within') === false) {
-        this._opener.focus({ preventScroll: true });
+    if (this.open) {
+      if (dialog && !dialog.open) {
+        this._opener ??= getDeepActiveElement(getRoot(this));
+        dialog.showModal();
       }
-      this._opener = null;
-    } else if (dialog && !dialog.open) {
-      this._opener ??= getDeepActiveElement(getRoot(this));
-      dialog.showModal();
+    } else if (dialog?.open) {
+      this._exit ??= this._closeAfterExit(dialog);
+    } else {
+      this._returnFocus();
     }
+  }
+
+  /**
+   * Closes the dialog when its exit transitions end, so that the exit runs in the top layer
+   * also without `overlay` support.
+   */
+  private async _closeAfterExit(dialog: HTMLDialogElement): Promise<void> {
+    const running = () =>
+      dialog
+        .getAnimations({ subtree: true })
+        .filter((animation) => animation instanceof CSSTransition);
+
+    // A reopen or a change of the position replaces the transitions.
+    for (
+      let exit = running();
+      exit.length > 0 && !this.open;
+      exit = running()
+    ) {
+      await Promise.allSettled(exit.map(({ finished }) => finished));
+    }
+    this._exit = undefined;
+
+    // A reopen during the exit keeps the dialog.
+    if (!this.open) {
+      dialog.close();
+      this._returnFocus();
+    }
+  }
+
+  /** Focuses the opener when the dialog did not. */
+  private _returnFocus(): void {
+    if (this._opener?.matches(':focus-within') === false) {
+      this._opener.focus({ preventScroll: true });
+    }
+    this._opener = null;
   }
 
   //#endregion
@@ -265,7 +312,10 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
     return this._toggleController.show();
   }
 
-  /** Closes the drawer. Returns `true` on success, or `false` when it is already closed. */
+  /**
+   * Closes the drawer. Returns `true` after the exit, or `false` when it is already closed or a
+   * reopen ends the exit.
+   */
   public async hide(): Promise<boolean> {
     return this._toggleController.hide();
   }

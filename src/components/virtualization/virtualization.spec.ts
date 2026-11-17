@@ -1,4 +1,10 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+} from '@open-wc/testing';
 import { keyed } from 'lit/directives/keyed.js';
 import { spy, stub } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
@@ -198,6 +204,25 @@ describe('VirtualScroll', () => {
         document.adoptedStyleSheets = sheets;
       }
     });
+
+    it('updates while detached and keeps its styles once attached again', async () => {
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          .data=${createItems(100)}
+          .itemTemplate=${fixedTemplate}
+        ></igc-virtual-scroll>`
+      );
+      const parent = el.parentElement!;
+
+      el.remove();
+      el.keyFunction = (item) => item;
+      await elementUpdated(el);
+
+      parent.append(el);
+      await elementUpdated(el);
+
+      expect(getComputedStyle(el).overflowY).to.equal('auto');
+    });
   });
 
   describe('Events', () => {
@@ -391,6 +416,105 @@ describe('VirtualScroll', () => {
       await el.scrollToIndex(100);
 
       expect(el.scrollLeft).to.be.greaterThan(0);
+    });
+
+    it('renders the window of scrollToIndex before the scroll event', async () => {
+      const el = await createFixedScroll();
+
+      void el.scrollToIndex(500);
+      await elementUpdated(el);
+
+      expect(el.querySelector('[data-vs-index="500"]')).to.exist;
+    });
+
+    it('keeps its window when scrollToIndex runs while it is hidden', async () => {
+      const el = await createFixedScroll();
+      await el.scrollToIndex(500);
+
+      el.style.display = 'none';
+      void el.scrollToIndex(100);
+      await elementUpdated(el);
+      el.style.display = '';
+
+      expect(el.querySelector('[data-vs-index="500"]')).to.exist;
+    });
+
+    it('scrolls a hidden list when it shows, before it renders the old window', async () => {
+      const el = await createFixedScroll();
+      const rendered: number[] = [];
+
+      el.itemTemplate = (ctx) => {
+        rendered.push(ctx.index);
+        return fixedTemplate(ctx);
+      };
+      await el.layoutComplete;
+
+      el.style.display = 'none';
+      await nextFrame();
+      const scrolled = el.scrollToIndex(100);
+      await nextFrame();
+
+      rendered.length = 0;
+      el.style.display = '';
+      await scrolled;
+
+      expect(edgeDistance(el, 100, 'start')).to.be.closeTo(0, 1);
+      expect(rendered).to.include(100);
+      expect(rendered).not.to.include(0);
+    });
+
+    it('scrolls a list that shows again before a frame', async () => {
+      const el = await createFixedScroll();
+
+      el.style.display = 'none';
+      const scrolled = el.scrollToIndex(100);
+      el.style.display = '';
+      await scrolled;
+
+      expect(edgeDistance(el, 100, 'start')).to.be.closeTo(0, 1);
+    });
+
+    it('replaces the call of a hidden list with a newer call', async () => {
+      const el = await createFixedScroll();
+
+      el.style.display = 'none';
+      const first = el.scrollToIndex(100);
+      const second = el.scrollToIndex(200);
+      await first;
+      el.style.display = '';
+      await second;
+
+      expect(edgeDistance(el, 200, 'start')).to.be.closeTo(0, 1);
+
+      // A call on the shown list also replaces the kept one.
+      el.style.display = 'none';
+      const kept = el.scrollToIndex(300);
+      el.style.display = '';
+      await Promise.all([kept, el.scrollToIndex(50)]);
+      await nextFrame();
+      await el.layoutComplete;
+
+      expect(edgeDistance(el, 50, 'start')).to.be.closeTo(0, 1);
+    });
+
+    it('scrolls a detached list in its first update after it connects', async () => {
+      const el = document.createElement(
+        IgcVirtualScrollComponent.tagName
+      ) as IgcVirtualScrollComponent<string>;
+      el.style.height = '300px';
+      el.estimatedItemSize = FIXED_SIZE;
+      el.data = createItems(1000);
+      el.itemTemplate = fixedTemplate;
+      const scrolled = el.scrollToIndex(100);
+
+      const container = await fixture<HTMLDivElement>(html`<div></div>`);
+      container.append(el);
+      await el.updateComplete;
+
+      expect(el.scrollTop).to.equal(100 * FIXED_SIZE);
+
+      await scrolled;
+      expect(edgeDistance(el, 100, 'start')).to.be.closeTo(0, 1);
     });
 
     it('settles at the last index instead of waiting out the scroll timeout', async () => {

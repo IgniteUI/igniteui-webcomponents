@@ -24,6 +24,40 @@ class CoercedFixtureElement extends LitElement {
   })
   public value = 15;
 
+  public listChanges = 0;
+
+  @property({ attribute: false })
+  @coercedProperty<number[], CoercedFixtureElement>({
+    onChange: ({ host }) => {
+      host.listChanges++;
+    },
+  })
+  public list: number[] = [];
+
+  public tagChanges = 0;
+
+  @property()
+  @coercedProperty<string[], CoercedFixtureElement>({
+    onChange: ({ host }) => {
+      host.tagChanges++;
+    },
+  })
+  public tags: string[] = [];
+
+  public dateChanges = 0;
+
+  @property({
+    attribute: false,
+    hasChanged: (value: Date, previous?: Date) =>
+      value.getTime() !== previous?.getTime(),
+  })
+  @coercedProperty<Date, CoercedFixtureElement>({
+    onChange: ({ host }) => {
+      host.dateChanges++;
+    },
+  })
+  public date = new Date(0);
+
   protected override render() {
     return html`${this.value}`;
   }
@@ -65,10 +99,40 @@ describe('coercedProperty decorator', () => {
     element.value = -5;
     expect(element.value).to.equal(0);
 
-    expect(element.changes).to.eql([
-      { value: 10, previous: 10 },
-      { value: 0, previous: 10 },
-    ]);
+    // 42 coerces to the stored 10, which is not a change.
+    expect(element.changes).to.eql([{ value: 0, previous: 10 }]);
+  });
+
+  it('does not fire onChange when the value is set again', () => {
+    element.value = 4;
+    element.value = 4;
+
+    expect(element.changes).to.eql([{ value: 4, previous: 10 }]);
+  });
+
+  it('fires onChange when the same array is set again', () => {
+    const list = [1];
+    element.list = list;
+    list.push(2);
+    element.list = list;
+
+    expect(element.listChanges).to.equal(2);
+  });
+
+  it('fires onChange when the same array is set again without property options', () => {
+    const tags = ['a'];
+    element.tags = tags;
+    element.tags = tags;
+
+    expect(element.tagChanges).to.equal(2);
+  });
+
+  it('fires onChange only when the hasChanged of the property says so', () => {
+    element.date = new Date(0);
+    expect(element.dateChanges).to.equal(0);
+
+    element.date = new Date(1);
+    expect(element.dateChanges).to.equal(1);
   });
 
   it('transforms attribute-driven sets', async () => {

@@ -10,7 +10,12 @@ import { html, nothing, render } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { ref } from 'lit/directives/ref.js';
 import { registerMaterialIcons } from './story-icons.js';
-import { disableStoryControls, storyStyles } from './story.js';
+import {
+  disableStoryControls,
+  plural,
+  renderInto,
+  storyStyles,
+} from './story.js';
 
 defineComponents(
   IgcButtonComponent,
@@ -26,20 +31,32 @@ const metadata: Meta<IgcFileInputComponent> = {
   title: 'FileInput',
   component: 'igc-file-input',
   parameters: {
-    docs: { description: { component: '' } },
+    docs: {
+      description: {
+        component:
+          'A form control that lets the user select one or more files, or a folder.',
+      },
+    },
     actions: { handles: ['igcChange', 'igcCancel'] },
   },
   argTypes: {
     value: {
       type: 'string',
       description:
-        'The value of the control.\nSimilar to native file input, this property is read-only and cannot be set programmatically.',
+        'The value of the control: the name of the first selected file, as the native file input gives it.\nAs for the native file input, only an empty string can be set. It clears the selection.',
       control: 'text',
     },
     multiple: {
       type: 'boolean',
       description:
         'Whether the control allows the user to select more than one file.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    directory: {
+      type: 'boolean',
+      description:
+        'Whether the user selects a folder instead of files. The selection then holds\nevery file in the folder and its subfolders, and the `webkitRelativePath` of\neach file gives its path from the folder.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -52,20 +69,20 @@ const metadata: Meta<IgcFileInputComponent> = {
     },
     autofocus: {
       type: 'boolean',
-      description: 'Whether the control should receive focus automatically.',
+      description: 'Whether the control receives focus automatically.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     locale: {
       type: 'string',
       description:
-        'The locale for the resource strings. Falls back to the global locale.',
+        'The locale of the component. Without it, the component takes its own\n`lang`, else the locale of the nearest ancestor that has a `locale` (a\ncomponent) or a `lang`, and then the global locale.',
       control: 'text',
     },
     required: {
       type: 'boolean',
       description:
-        'When set, makes the component a required field for validation.',
+        'Whether the control is required. A required control that has no value,\nor is not checked, fails validation.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -76,19 +93,21 @@ const metadata: Meta<IgcFileInputComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component.',
+      description:
+        'Whether the control is disabled. A disabled control is not validated,\nand the form does not submit its value.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
-      description: 'Sets the control into invalid state (visual state only).',
+      description:
+        'Whether the control shows the invalid state. It changes only the visual\nstate, not the validity.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     outlined: {
       type: 'boolean',
-      description: 'Whether the control will have outlined appearance.',
+      description: 'Whether the control has an outlined appearance.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -105,6 +124,7 @@ const metadata: Meta<IgcFileInputComponent> = {
   },
   args: {
     multiple: false,
+    directory: false,
     accept: '',
     autofocus: false,
     required: false,
@@ -118,27 +138,46 @@ export default metadata;
 
 interface IgcFileInputArgs {
   /**
-   * The value of the control.
-   * Similar to native file input, this property is read-only and cannot be set programmatically.
+   * The value of the control: the name of the first selected file, as the native file input gives it.
+   * As for the native file input, only an empty string can be set. It clears the selection.
    */
   value: string;
   /** Whether the control allows the user to select more than one file. */
   multiple: boolean;
+  /**
+   * Whether the user selects a folder instead of files. The selection then holds
+   * every file in the folder and its subfolders, and the `webkitRelativePath` of
+   * each file gives its path from the folder.
+   */
+  directory: boolean;
   /** The file types the control accepts, as a comma-separated list. */
   accept: string;
-  /** Whether the control should receive focus automatically. */
+  /** Whether the control receives focus automatically. */
   autofocus: boolean;
-  /** The locale for the resource strings. Falls back to the global locale. */
+  /**
+   * The locale of the component. Without it, the component takes its own
+   * `lang`, else the locale of the nearest ancestor that has a `locale` (a
+   * component) or a `lang`, and then the global locale.
+   */
   locale: string;
-  /** When set, makes the component a required field for validation. */
+  /**
+   * Whether the control is required. A required control that has no value,
+   * or is not checked, fails validation.
+   */
   required: boolean;
   /** The name of the control, submitted with the form data. */
   name: string;
-  /** The disabled state of the component. */
+  /**
+   * Whether the control is disabled. A disabled control is not validated,
+   * and the form does not submit its value.
+   */
   disabled: boolean;
-  /** Sets the control into invalid state (visual state only). */
+  /**
+   * Whether the control shows the invalid state. It changes only the visual
+   * state, not the validity.
+   */
   invalid: boolean;
-  /** Whether the control will have outlined appearance. */
+  /** Whether the control has an outlined appearance. */
   outlined: boolean;
   /** The placeholder text of the control. */
   placeholder: string;
@@ -220,6 +259,12 @@ function formatSize(bytes: number): string {
     : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
+/** Sets the custom error of the control and the text of its `custom-error` slot. */
+function showCustomError(input: IgcFileInputComponent, message: string): void {
+  input.setCustomValidity(message);
+  input.querySelector('[slot="custom-error"]')!.textContent = message;
+}
+
 /** Checks a file against an `accept` list, because the user can choose any file in the picker. */
 function accepts(file: File, accept: string): boolean {
   return accept.split(',').some((entry) => {
@@ -255,6 +300,7 @@ export const Default: Story = {
         accept=${ifDefined(args.accept || undefined)}
         locale=${ifDefined(args.locale)}
         ?autofocus=${args.autofocus}
+        ?directory=${args.directory}
         ?disabled=${args.disabled}
         ?invalid=${args.invalid}
         ?multiple=${args.multiple}
@@ -319,8 +365,7 @@ export const JobApplication: Story = {
       const input = event.currentTarget as IgcFileInputComponent;
       const message = validate(event.detail);
 
-      input.setCustomValidity(message);
-      input.querySelector('[slot="custom-error"]')!.textContent = message;
+      showCustomError(input, message);
 
       if (input.multiple) {
         render(
@@ -512,8 +557,7 @@ export const ImportContacts: Story = {
       );
       const message = missing ? `The file has no "${missing}" column.` : '';
 
-      input.setCustomValidity(message);
-      input.querySelector('[slot="custom-error"]')!.textContent = message;
+      showCustomError(input, message);
 
       if (!missing) {
         contacts = rows.filter((row) => validEmail(row.email));
@@ -628,5 +672,130 @@ export const ImportContacts: Story = {
 
     return html`${styles}
       <div ${ref(mount)}></div>`;
+  },
+};
+
+interface FolderGroup {
+  path: string;
+  count: number;
+  size: number;
+}
+
+/** Groups the images by the folder that holds them, for example "photos/2025". */
+function groupByFolder(files: File[]): FolderGroup[] {
+  const folderOf = ({ webkitRelativePath: path }: File) =>
+    path.slice(0, path.lastIndexOf('/'));
+
+  return [...Map.groupBy(files, folderOf)]
+    .map(([path, list]) => ({
+      path,
+      count: list.length,
+      size: list.reduce((sum, file) => sum + file.size, 0),
+    }))
+    .sort((a, b) => a.path.localeCompare(b.path));
+}
+
+export const PhotoBackup: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A backup of a photo folder. `directory` lets the user select a folder instead of files, and the control shows the name of the folder. The `webkitRelativePath` of each file gives its path, for example "photos/2025/beach.jpg", and the table groups the images by their folder. `accept` does not filter the files of a folder, so the `igcChange` handler keeps only the images and tells how many other files it skips. A folder without images, also an empty folder, makes the control invalid through `setCustomValidity()`. In Chromium, a multipart form submission sends the relative path as the file name of each file, so a server can rebuild the folders.',
+      },
+    },
+  },
+  render: () => {
+    let images: File[] = [];
+    let groups: FolderGroup[] = [];
+    let skipped = 0;
+    let status = '';
+
+    const select = (event: CustomEvent<FileList>) => {
+      const files = [...event.detail];
+
+      images = files.filter((file) => accepts(file, 'image/*'));
+      groups = groupByFolder(images);
+      skipped = files.length - images.length;
+      status = '';
+
+      showCustomError(
+        event.currentTarget as IgcFileInputComponent,
+        images.length ? '' : 'The folder has no images.'
+      );
+      update();
+    };
+
+    const backUp = () => {
+      const [folder] = images[0].webkitRelativePath.split('/', 1);
+
+      status = `We backed up ${plural(images.length, 'image')} from ${folder}.`;
+      update();
+    };
+
+    const { mount, update } = renderInto(() => {
+      const total = groups.reduce((sum, group) => sum + group.size, 0);
+
+      return html`
+        <div class="fi-form">
+          <h3>Back up your photos</h3>
+          <igc-file-input label="Photo folder" directory @igcChange=${select}>
+            <igc-icon slot="prefix" name="photo"></igc-icon>
+            <span slot="file-selector-text">Choose a folder</span>
+            <span slot="file-missing-text">No folder chosen</span>
+            <span slot="helper-text">
+              We back up the images in the folder and its subfolders.
+            </span>
+            <span slot="custom-error"></span>
+          </igc-file-input>
+          ${
+            groups.length
+              ? html`
+                  <table class="fi-table">
+                    <caption>
+                      ${plural(images.length, 'image')}, ${formatSize(total)}
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Folder</th>
+                        <th scope="col">Images</th>
+                        <th scope="col">Size</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${groups.map(
+                        (group) => html`
+                          <tr>
+                            <td>${group.path}</td>
+                            <td>${group.count}</td>
+                            <td>${formatSize(group.size)}</td>
+                          </tr>
+                        `
+                      )}
+                    </tbody>
+                  </table>
+                `
+              : nothing
+          }
+          <p class="muted">
+            ${
+              skipped
+                ? `We skip ${plural(skipped, 'file that is not an image', 'files that are not images')}.`
+                : ''
+            }
+          </p>
+          <div class="fi-row">
+            <igc-button ?disabled=${!images.length} @click=${backUp}>
+              Back up
+              ${images.length ? plural(images.length, 'image') : 'images'}
+            </igc-button>
+          </div>
+          <p class="muted" role="status">${status}</p>
+        </div>
+      `;
+    });
+
+    return html`${styles}
+      <div ${mount}></div>`;
   },
 };

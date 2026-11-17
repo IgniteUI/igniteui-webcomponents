@@ -55,7 +55,9 @@ describe('Root click controller', () => {
 
   async function createHost(): Promise<ClickHost> {
     const container = await fixture<HTMLElement>(
-      html`<div><${tag} open></${tag}><button id="outside">Outside</button></div>`
+      html`<div>
+        <${tag} open></${tag}><button id="outside">Outside</button>
+      </div>`
     );
     outside = container.querySelector('#outside')!;
     return container.querySelector(tagName) as ClickHost;

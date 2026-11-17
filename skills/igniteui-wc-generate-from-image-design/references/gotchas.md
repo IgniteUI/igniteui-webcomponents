@@ -115,7 +115,8 @@ When some columns need a fixed size, apply `width` only to those columns. Leave 
 <!-- replace igc-grid-lite-column with igc-column for the Premium Grid -->
 <igc-grid-lite-column field="id"     header="#"      width="60px"></igc-grid-lite-column>
 <igc-grid-lite-column field="status" header="Status" width="100px"></igc-grid-lite-column>
-<igc-grid-lite-column field="name"   header="Name">{/* no width — fills remaining space */}</igc-grid-lite-column>
+<!-- no width: this column fills the remaining space -->
+<igc-grid-lite-column field="name"   header="Name"></igc-grid-lite-column>
 ```
 
 When a Grid Lite column has `width` set and `resizable` enabled, use `px`. Do not use `%` or other relative units, because they cause layout shifts during resize.

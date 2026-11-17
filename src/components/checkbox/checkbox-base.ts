@@ -7,13 +7,20 @@ import {
   setSlots,
 } from '#internals/controllers/slot.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedCheckboxRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import { FormValueBooleanTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import type { ToggleLabelPosition } from '../types.js';
 import { checkBoxValidators } from './validators.js';
+
+const Slots = setSlots(
+  'helper-text',
+  'value-missing',
+  'custom-error',
+  'invalid'
+);
 
 export interface IgcCheckboxChangeEventArgs {
   checked: boolean;
@@ -31,16 +38,14 @@ export interface IgcCheckboxComponentEventMap {
 
 @blazorDeepImport
 export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixin(
-  EventEmitterMixin<IgcCheckboxComponentEventMap, Constructor<LitElement>>(
-    LitElement
-  )
+  EventEmitterMixin<IgcCheckboxComponentEventMap>(LitElement)
 ) {
   protected override get __validators() {
     return checkBoxValidators;
   }
 
   protected readonly _slots = addSlotController(this, {
-    slots: setSlots('helper-text', 'value-missing', 'custom-error', 'invalid'),
+    slots: Slots,
     onChange: this._handleSlotChange,
   });
 
@@ -58,7 +63,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   protected _hideLabel = true;
 
   /**
-   * The value of the control.
+   * The value of the control, submitted when the control is checked.
    * @attr
    */
   @property()
@@ -75,7 +80,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
 
   /* @tsTwoWayProperty(true, "igcChange", "detail.checked", false) */
   /**
-   * The checked state of the control.
+   * Whether the control is checked.
    * @attr
    */
   @property({ type: Boolean })
@@ -102,13 +107,15 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   /* alternateName: focusComponent */
   /** Sets focus on the control. */
   public override focus(options?: FocusOptions): void {
-    this._input.focus(options);
+    this._input?.focus(options);
+    deferFocus(this, options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the control. */
   public override blur(): void {
-    this._input.blur();
+    cancelDeferredFocus(this);
+    this._input?.blur();
   }
 
   /** Focuses and toggles the control, as a native checkbox label does. */

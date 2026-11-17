@@ -28,6 +28,7 @@
     - [Initial render](#initial-render)
     - [DOM](#dom)
     - [Highlight stylesheet tree scope](#highlight-stylesheet-tree-scope)
+    - [Highlight colors](#highlight-colors)
     - [API tests](#api-tests)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
@@ -43,6 +44,9 @@
 |       1 | 2026-09-21 | Initial specification             |
 |       2 | 2026-10-02 | Whitespace matching               |
 |       3 | 2026-10-05 | Stylesheet kept on a theme change |
+|       4 | 2026-10-26 | The same search keeps the match   |
+|       5 | 2026-10-29 | Colors kept in other components   |
+|       6 | 2026-11-04 | Content observed; early search    |
 
 ## Overview
 
@@ -63,7 +67,7 @@ between the matches, and styling through CSS custom properties.
 - **Case-sensitive and case-insensitive** matching.
 - **An active match**, styled apart from the others, with wrapping navigation between the matches.
 - **Scroll into view** of the new active match, which can be turned off per call.
-- **Re-search on demand** for content that changes after the first search.
+- **A new search after a content change**, which keeps the active match where it can.
 - **Separate styling** of the resting and the active highlight through CSS custom properties.
 
 ### Acceptance criteria
@@ -73,7 +77,7 @@ between the matches, and styling through CSS custom properties.
 - It must distinguish the active match from the rest visually.
 - It must support case-sensitive and case-insensitive matching.
 - It must support navigation between the matches, wrapping at both ends.
-- It must be able to search again after the projected content changes.
+- It must search again when the projected content changes.
 - The resting and the active highlight must be stylable through CSS custom properties.
 - The element must be WAI-ARIA compliant and support RTL layouts without additional configuration.
 
@@ -136,8 +140,14 @@ highlight.setActive(3);
 
 #### Dynamic content
 
-The component does not observe the projected content. After it changes — lazily loaded or mutated from code —
-`search()` runs the matching again against the current DOM.
+The component observes the projected content. When a node is added, removed or edited, the component searches
+again in a microtask, once for all the changes since the last search. Until then, `size` and `current` give the
+result of the last search. The active match stays while its text node and its start in that node stay the same.
+Otherwise the first match becomes active. `search()` searches at once and makes the first match active.
+
+Setting `searchText` or `caseSensitive` to its current value does not run the search again, so the active match
+stays when a framework sets each property on each render. A `searchText` set while the component is connected
+searches at once, also before the first render.
 
 #### Styling
 
@@ -153,6 +163,12 @@ The four custom properties are set on the host:
   …
 </igc-highlight>
 ```
+
+A second stylesheet in the render root of the component resolves the four properties into names that are unique to
+the instance, and the `::highlight()` rules read only these names. So a component between the host and the matched
+text that sets `--background` or `--foreground` for its own colors, such as a list, a tree or a nested highlight,
+does not change the colors of the matches. A value that you set on an element inside the component has no effect on
+the matches.
 
 ### Localization
 
@@ -180,7 +196,7 @@ None applicable. The component is not focusable by default and takes no keyboard
 | `next`      | `(options?: HighlightNavigation): void`                  | Moves to the next match, wrapping to the first one.                 |
 | `previous`  | `(options?: HighlightNavigation): void`                  | Moves to the previous match, wrapping to the last one.              |
 | `setActive` | `(index: number, options?: HighlightNavigation): void`   | Moves to the match at the given zero-based index.                   |
-| `search`    | `(): void`                                               | Runs the search again against the current projected content.        |
+| `search`    | `(): void`                                               | Runs the search again and makes the first match active.             |
 
 `HighlightNavigation`
 
@@ -204,12 +220,12 @@ None applicable.
 
 ### CSS custom properties
 
-| Property              | Description                                            |
-| --------------------- | ------------------------------------------------------ |
-| `--foreground`        | The text color of a highlighted text node.              |
-| `--background`        | The background color of a highlighted text node.        |
-| `--foreground-active` | The text color of the active highlighted text node.     |
-| `--background-active` | The background color of the active highlighted text node. |
+| Property              | Description                                                                    |
+| --------------------- | ------------------------------------------------------------------------------ |
+| `--foreground`        | The text color for a highlighted text node. Set it on the host.                |
+| `--background`        | The background color for a highlighted text node. Set it on the host.          |
+| `--foreground-active` | The text color for the active highlighted text node. Set it on the host.       |
+| `--background-active` | The background color for the active highlighted text node. Set it on the host. |
 
 ## Test scenarios
 
@@ -232,18 +248,33 @@ None applicable.
 5. The stylesheet stays in the shadow root of a themed component when the theme changes.
 6. The stylesheet is removed from its tree scope when the host disconnects.
 
+### Highlight colors
+
+7. With a theme palette, a match inside an element that sets the four custom property names has the same colors as a
+   match outside it.
+8. The matches take the colors of the four custom properties set on the host.
+9. The matches keep the host colors after a theme change.
+10. The matches of a highlight inside a nested highlight take the colors of their own host, and the matches of the
+    nested highlight take the colors of the nested host.
+11. A reconnect adopts the color sheet of the host only once.
+
 ### API tests
 
-7. Changing `searchText` produces the matching number of matches.
-8. `caseSensitive` restricts the matching to the exact case, and a space matches any run of whitespace.
-9. `next()` and `previous()` move the active match, and `previous()` wraps to the last one from the first.
-10. `setActive()` sets the active match to the given index.
-11. `search()` picks up content that was added or removed after the previous search.
+12. Changing `searchText` produces the matching number of matches.
+13. `caseSensitive` restricts the matching to the exact case, and a space matches any run of whitespace.
+14. `next()` and `previous()` move the active match, and `previous()` wraps to the last one from the first.
+15. `setActive()` sets the active match to the given index.
+16. `search()` picks up content that was added or removed after the previous search.
+17. Setting `searchText` or `caseSensitive` again to its value keeps the active match, and a change runs the search
+    again.
+18. A `searchText` set after the host connects and before the first render produces its matches at once.
+19. An added, an edited and a removed node run the search again.
+20. A node added before the active match keeps that match active, and so does new text after it in its text node.
+    When the text of the active match goes, the first match becomes active.
 
 ### Not covered by the suite
 
 - The scroll-into-view behavior and the `preventScroll` option are not covered.
-- The CSS custom properties are not covered.
 - Clearing `searchText` back to an empty string is not asserted on its own.
 
 ## Assumptions and limitations
@@ -253,7 +284,10 @@ None applicable.
 - Only DOM text nodes are matched. Values inside form controls and text produced through the CSS `content`
   property are not.
 - Shadow roots are skipped while matching.
-- The component does not observe its content; `search()` has to be called after it changes.
+- Each content change searches all the content again. Content that changes often, such as a live log, pays for a
+  full search each time.
+- The four custom properties apply only on the host. A value that you set on an element inside the component has no
+  effect on the matches.
 - The component relies on the CSS Custom Highlight API, so it needs a browser that implements it.
 
 ## Accessibility

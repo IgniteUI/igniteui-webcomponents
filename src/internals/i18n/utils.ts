@@ -1,25 +1,15 @@
-import type { IResourceStrings } from 'igniteui-i18n-core';
-import { isString } from '../utils/types.js';
 import type { IgcCalendarResourceStrings } from './EN/calendar.resources.js';
 import type { IgcChatResourceStrings } from './EN/chat.resources.js';
-import type { IgcDatePickerResourceStrings } from './EN/date-picker.resources.js';
 import type { IgcDateRangePickerResourceStrings } from './EN/date-range-picker.resources.js';
-
-/**
- * Maps the resource keys of a component to the keys of the core library. An
- * `undefined` core key has no counterpart in the core resources.
- */
-export type ResourceMap = ReadonlyMap<string, string | undefined>;
 
 export const calendarResourcesMap = new Map<
   keyof IgcCalendarResourceStrings,
-  string | undefined
+  string
 >([
   ['selectMonth', 'calendar_select_month'],
   ['selectYear', 'calendar_select_year'],
   ['selectDate', 'calendar_select_date'],
   ['selectRange', 'calendar_range_placeholder'],
-  ['selectedDate', undefined], // This key is not in use.
   ['startDate', 'calendar_range_label_start'],
   ['endDate', 'calendar_range_label_end'],
   ['previousMonth', 'calendar_previous_month'],
@@ -28,7 +18,6 @@ export const calendarResourcesMap = new Map<
   ['nextYear', 'calendar_next_year'],
   ['previousYears', 'calendar_previous_years'],
   ['nextYears', 'calendar_next_years'],
-  ['weekLabel', 'i18n/getWeekLabel'],
 ]);
 
 export const chatResourcesMap = new Map<keyof IgcChatResourceStrings, string>([
@@ -44,7 +33,7 @@ export const chatResourcesMap = new Map<keyof IgcChatResourceStrings, string>([
 
 export const dateRangePickerResourcesMap = new Map<
   keyof IgcDateRangePickerResourceStrings,
-  string | undefined
+  string
 >([
   ['separator', 'date_range_picker_date_separator'],
   ['done', 'date_range_picker_done_button'],
@@ -57,56 +46,10 @@ export const dateRangePickerResourcesMap = new Map<
 ]);
 
 export const datePickerResourcesMap = new Map<
-  keyof IgcDatePickerResourceStrings,
-  string | undefined
+  keyof IgcCalendarResourceStrings | 'changeDate' | 'chooseDate',
+  string
 >([
   ['changeDate', 'date_picker_change_date'],
   ['chooseDate', 'date_picker_choose_date'],
   ...calendarResourcesMap,
 ]);
-
-/** Converts core resource strings to the deprecated shape via `resourceMap`. */
-export function convertToIgcResource<T extends object>(
-  resource: IResourceStrings,
-  resourceMap: ResourceMap
-): T {
-  const result = {} as T;
-
-  for (const [igcKey, coreKey] of resourceMap) {
-    if (igcKey in resource) {
-      result[igcKey as keyof T] = resource[
-        igcKey as keyof IResourceStrings
-      ] as T[keyof T];
-    } else if (coreKey && coreKey in resource) {
-      const value = resource[coreKey as keyof IResourceStrings];
-      if (isString(value)) {
-        result[igcKey as keyof T] = value as T[keyof T];
-      }
-    }
-  }
-
-  return result;
-}
-
-/** Converts the deprecated shape to core resource strings via `resourceMap`. */
-export function convertToCoreResource<T extends object>(
-  resource: T,
-  resourceMap: ResourceMap
-): IResourceStrings {
-  const result: IResourceStrings = {};
-
-  for (const [igcKey, coreKey] of resourceMap) {
-    if (coreKey && coreKey in resource) {
-      result[coreKey as keyof IResourceStrings] = resource[
-        coreKey as keyof T
-      ] as string;
-    } else if (coreKey) {
-      const value = resource[igcKey as keyof T];
-      if (isString(value)) {
-        result[coreKey as keyof IResourceStrings] = value;
-      }
-    }
-  }
-
-  return result;
-}

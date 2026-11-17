@@ -16,6 +16,7 @@
       - [Prefix, suffix and helper text](#prefix-suffix-and-helper-text)
       - [Labeling from the light DOM](#labeling-from-the-light-dom)
       - [Naming order](#naming-order)
+      - [Combobox over a list of the page](#combobox-over-a-list-of-the-page)
       - [Constraint validation](#constraint-validation)
       - [Validation message slots](#validation-message-slots)
       - [Form integration](#form-integration)
@@ -28,6 +29,8 @@
     - [Events](#events)
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
+    - [CSS custom states](#css-custom-states)
+    - [CSS custom properties](#css-custom-properties)
   - [Test scenarios](#test-scenarios)
     - [Default state](#default-state)
     - [Properties](#properties)
@@ -40,6 +43,8 @@
     - [Validation message slots](#validation-message-slots)
     - [External label association](#external-label-association)
     - [Host ARIA](#host-aria)
+    - [Host combobox state](#host-combobox-state)
+    - [Hidden ancestor](#hidden-ancestor)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -58,6 +63,15 @@
 |       6 | 2026-10-02 | `setRangeText()` without a range replaces the selection; `pattern` matches the whole value |
 |       7 | 2026-10-02 | Forward the host `aria-describedby`                                                        |
 |       8 | 2026-10-07 | Read-only `selectionStart` and `selectionEnd`                                              |
+|       9 | 2026-10-21 | API descriptions aligned with the JSDoc.                                                   |
+|      10 | 2026-10-23 | The input makes a stacking context, so the z-index of the input and the container does not compete with the layers of the page |
+|      11 | 2026-10-28 | Forward the host combobox state, so a page can make the input a combobox over its own listbox |
+|      12 | 2026-10-29 | In the Indigo theme, the prefix and the suffix transition only their color and background, so a focused input hides at the same time as a hidden ancestor |
+|      13 | 2026-11-02 | A `focus()` call before the first render applies after the render                                                                                         |
+|      14 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown`, or the <kbd>Enter</kbd> that commits an IME composition, does not submit the form |
+|      15 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form: through the default button, from the only text field when the form has no submit button, after the `keypress`, and not when a listener disables the input |
+|      16 | 2026-11-11 | The combo in single selection is a text field                                                                                                              |
+|      17 | 2026-11-16 | `stepUp`, `stepDown` and `setRangeText` before the first render keep the value                                                                             |
 
 ## Overview
 
@@ -205,11 +219,11 @@ Clicking the external label focuses the control, exactly as for a native element
 Because a reflected relation blanks its content attribute, assert such a relation by identity
 (`input.ariaLabelledByElements[0] === label`) rather than by reading the attribute.
 
-The same channel carries the ARIA of a composite host. `igc-select`, `igc-combo` and `igc-color-picker` wrap an
-`igc-input` and project their own `role`, `aria-haspopup`, `aria-expanded`, `aria-controls`,
-`aria-activedescendant` and labels onto its native input. A projected label wins over the `label` property of the
-input, and the projected `role` and `aria-haspopup` are mirrored on the host as `data-role` and `data-haspopup`, so
-themes can style the anchor without reading ARIA that lives inside the shadow root.
+The same channel carries the ARIA of a composite host. `igc-select` and `igc-combo` wrap an `igc-input` and project
+their own `role`, `aria-haspopup`, `aria-expanded`, `aria-controls` and labels onto its native input. `igc-color-picker`
+projects its `aria-haspopup` and labels. A projected label wins over the `label` property of the input. The projected
+`role` and `aria-haspopup` are mirrored on the host as `data-role` and `data-haspopup`, so themes can style the anchor
+without reading ARIA that lives inside the shadow root.
 
 #### Naming order
 
@@ -227,6 +241,43 @@ focus enters it, so a `label` that is added after the first render names the con
 
 Chromium adds text from the shadow root of the component, for example the placeholder of the native editor, to the name
 from a wrapping `label`. A `label` bound through `for` does not have this limitation.
+
+#### Combobox over a list of the page
+
+A command palette or a search with suggestions uses the ARIA combobox pattern: the focus stays in the field, and the
+arrow keys move `aria-activedescendant` through the options of a listbox. Set the combobox state on the host:
+
+```html
+<igc-input
+  label="Search"
+  role="combobox"
+  aria-expanded="true"
+  aria-autocomplete="list"
+  aria-controls="results"
+  aria-activedescendant="result-2"
+></igc-input>
+<div id="results" role="listbox" aria-label="Results">
+  <div id="result-1" role="option">…</div>
+  <div id="result-2" role="option">…</div>
+</div>
+```
+
+The input forwards the host `aria-haspopup` and `aria-autocomplete` to the native input, and the host `aria-controls`
+and `aria-activedescendant` as element references, resolved in the tree of the host. A host `role="combobox"` goes to
+the native input with `aria-expanded`. Another role, such as `search`, stays on the host. Without the combobox role,
+`aria-expanded` also stays on the host, because a text box does not support it. The element-reflection properties
+work too, for example `ariaActiveDescendantElement`. The page handles the keys and moves `aria-activedescendant`; the
+input does not.
+
+When a composite component, for example `igc-select`, projects a value, that value wins over the host attribute. A value
+that it does not project comes from the host attribute. Only the projection sets `data-role` and `data-haspopup`.
+
+Limitations:
+
+- The host element keeps its own `role`, so the accessibility tree has an unfocusable combobox around the native one.
+  Assistive technology reads the focused native combobox.
+- The input resolves `aria-controls` and `aria-activedescendant` on a change of a host attribute and on each render.
+  When you add the listbox or replace the option elements later and keep the same ids, set the attribute again.
 
 #### Constraint validation
 
@@ -287,7 +338,20 @@ validity flags and slot names.
   `form.checkValidity()` and `checkValidity()` do not move the focus.
 - As for a native control, the `invalid` event comes only from `checkValidity()`, `reportValidity()`, the same methods of
   the form, and a failed submit. The validation while the user edits the field or leaves it sends no event.
-- Pressing <kbd>Enter</kbd> inside the field submits the associated form.
+- Pressing <kbd>Enter</kbd> inside the field submits the associated form, as for a native text field:
+  - The first submit button of the form, the default button, gets a click, and the click submits the form. So a
+    `click` listener can cancel the submission, and the button is the `submitter` of the `submit` event. A disabled
+    default button blocks the submission. An `igc-button` with `type="submit"` and no `href` counts as a submit button.
+  - A form with no submit button submits only when it has one text field. Text fields are the text-like native inputs,
+    also disabled ones, and the input, mask input, date time input, date picker, date range picker and the combo in
+    single selection.
+  - A `keydown` or `keypress` listener on the host or an ancestor that calls `preventDefault()` stops the submission,
+    and so does a listener that disables the input. A real key press submits after its `keypress`. An Enter that code
+    dispatches submits after its `keydown`, and its `keypress`, if any, does nothing.
+  - The browser applies its own rule to <kbd>Enter</kbd> in a native input, and that rule sees only native controls.
+    It does not count the library text fields and does not click an `igc-button`. So in a form that mixes native and
+    library fields, the result can depend on the field that gets the key.
+  - The <kbd>Enter</kbd> that commits an IME composition does not submit.
 
 #### Text selection and numeric stepping
 
@@ -324,7 +388,7 @@ The component delegates focus to the inner native input, so all native text-edit
 | Key combination  | Result                                                                |
 | ---------------- | --------------------------------------------------------------------- |
 | <kbd>Tab</kbd>   | Moves focus to the input, and away from it.                           |
-| <kbd>Enter</kbd> | Submits the associated form, if any.                                  |
+| <kbd>Enter</kbd> | Submits the associated form, if any, as a native text field does.     |
 | <kbd>Up</kbd> / <kbd>Down</kbd> | Steps the value of a `type="number"` input.            |
 
 ## API
@@ -337,11 +401,11 @@ The component delegates focus to the inner native input, so all native text-edit
 | type              | type            | Yes       | `InputType`             | text    | The type of the control.                                                    |
 | label             | label           | No        | `string`                | -       | The label for the control.                                                  |
 | placeholder       | placeholder     | No        | `string`                | -       | The placeholder text of the control.                                        |
-| outlined          | outlined        | Yes       | `boolean`               | false   | Whether the control will have outlined appearance.                          |
-| readOnly          | readonly        | Yes       | `boolean`               | false   | Makes the control a readonly field.                                         |
-| required          | required        | Yes       | `boolean`               | false   | Makes the component a required field for validation.                        |
-| disabled          | disabled        | Yes       | `boolean`               | false   | The disabled state of the component.                                        |
-| invalid           | invalid         | No        | `boolean`               | false   | Sets the control into invalid state (visual state only).                    |
+| outlined          | outlined        | Yes       | `boolean`               | false   | Whether the control has an outlined appearance.                             |
+| readOnly          | readonly        | Yes       | `boolean`               | false   | Whether the control is read-only.                                           |
+| required          | required        | Yes       | `boolean`               | false   | Whether the control is required. A required control that has no value, or is not checked, fails validation.                        |
+| disabled          | disabled        | Yes       | `boolean`               | false   | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                                        |
+| invalid           | invalid         | No        | `boolean`               | false   | Whether the control shows the invalid state. It changes only the visual state, not the validity.                    |
 | name              | name            | Yes       | `string`                | -       | The name of the control, submitted with the form data.                      |
 | pattern           | pattern         | No        | `string \| undefined`   | -       | The regular expression the value is validated against.                      |
 | minLength         | minlength       | No        | `number \| undefined`   | -       | The minimum string length required by the control.                          |
@@ -349,15 +413,15 @@ The component delegates focus to the inner native input, so all native text-edit
 | min               | min             | No        | `number \| undefined`   | -       | The minimum value the control accepts.                                      |
 | max               | max             | No        | `number \| undefined`   | -       | The maximum value the control accepts.                                      |
 | step              | step            | No        | `number \| undefined`   | -       | The granularity the value must adhere to.                                   |
-| validateOnly      | validate-only   | Yes       | `boolean`               | false   | Evaluates the length and range constraints without restricting user input.  |
+| validateOnly      | validate-only   | Yes       | `boolean`               | false   | Whether the validation rules apply without restricting user input. The user can type past `maxLength`, and the spin buttons of a `number` input can go past `min` and `max`. |
 | autocomplete      | autocomplete    | No        | `string`                | -       | A hint for the browser on how to autofill the control.                      |
-| autofocus         | autofocus       | No        | `boolean`               | false   | Whether the control should receive focus automatically.                     |
+| autofocus         | autofocus       | No        | `boolean`               | false   | Whether the control receives focus automatically.                           |
 | inputMode         | inputmode       | No        | `string`                | -       | A hint to the browser for which virtual keyboard layout to display.         |
-| defaultValue      | -               | No        | `string`                | `''`    | The initial value of the control, restored on a form reset.                 |
-| form              | -               | No        | `HTMLFormElement \| null` | -     | Read-only. The form associated with this element.                           |
-| validity          | -               | No        | `ValidityState`         | -       | Read-only. The validity state of the element.                               |
-| validationMessage | -               | No        | `string`                | -       | Read-only. The validation message of the element.                           |
-| willValidate      | -               | No        | `boolean`               | -       | Read-only. Whether the element is a candidate for constraint validation.    |
+| defaultValue      | -               | No        | `string`                | `''`    | The default value of the control. A form reset restores the value to it. While the value is unchanged since the start or the last form reset, a new default also sets the value. The `value` attribute also sets it.                 |
+| form              | -               | No        | `HTMLFormElement \| null` | -     | Read-only. The form that the control is associated with, or `null`.                           |
+| validity          | -               | No        | `ValidityState`         | -       | Read-only. The validity state of the control.                               |
+| validationMessage | -               | No        | `string`                | -       | Read-only. The validation message of the control. It is empty when the control is valid.                           |
+| willValidate      | -               | No        | `boolean`               | -       | Read-only. Whether the control is a candidate for constraint validation.    |
 | selectionStart    | -               | No        | `number \| null`        | -       | Read-only. The offset of the start of the text selection.                   |
 | selectionEnd      | -               | No        | `number \| null`        | -       | Read-only. The offset of the end of the text selection.                     |
 
@@ -375,9 +439,9 @@ interacted with and fails validation reads `true` even if it was never set expli
 | setRangeText      | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the text from `start` to `end`, or the selection without them. |
 | stepUp            | `(n?: number): void`                                                                          | Increments the numeric value of the input by one or more steps.         |
 | stepDown          | `(n?: number): void`                                                                          | Decrements the numeric value of the input by one or more steps.         |
-| checkValidity     | `(): boolean`                                                                                 | Checks validity and emits `invalid` when the control is invalid.        |
-| reportValidity    | `(): boolean`                                                                                 | Checks validity; when invalid, emits `invalid` and focuses the control. |
-| setCustomValidity | `(message: string): void`                                                                     | Sets a custom message. Invalid while `message` is not empty.            |
+| checkValidity     | `(): boolean`                                                                                 | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid.        |
+| reportValidity    | `(): boolean`                                                                                 | Checks validity. As for a native control, an invalid control emits `invalid` and takes the focus. It shows its own validation messages, not the message of the browser. Returns `true` when the control is valid. |
+| setCustomValidity | `(message: string): void`                                                                     | Sets a custom validation message. The control is invalid while the message is not empty. An empty string removes the custom error.            |
 
 ### Events
 
@@ -393,7 +457,7 @@ The component also re-dispatches the native `focus`, `blur` and `invalid` events
 | Name               | Description                                                                      |
 | ------------------ | --------------------------------------------------------------------------------- |
 | `prefix`           | Renders content before the input.                                                |
-| `suffix`           | Renders content after input.                                                     |
+| `suffix`           | Renders content after the input.                                                 |
 | `helper-text`      | Renders content below the input.                                                 |
 | `value-missing`    | Renders content when the required validation fails.                              |
 | `type-mismatch`    | Renders content when the url/email type validation fails.        |
@@ -403,7 +467,7 @@ The component also re-dispatches the native `focus`, `blur` and `invalid` events
 | `range-overflow`   | Renders content when the max validation fails.                                   |
 | `range-underflow`  | Renders content when the min validation fails.                                   |
 | `step-mismatch`    | Renders content when the step validation fails.                                  |
-| `custom-error`     | Renders content when setCustomValidity(message) is set.                          |
+| `custom-error`     | Renders content when a custom message is set with `setCustomValidity()`.         |
 | `invalid`          | Renders content when the component is in invalid state (validity.valid = false). |
 
 ### CSS Shadow parts
@@ -416,9 +480,26 @@ The component also re-dispatches the native `focus`, `blur` and `invalid` events
 | `prefix`      | The prefix wrapper.                                  |
 | `suffix`      | The suffix wrapper.                                  |
 | `helper-text` | The helper text wrapper.                             |
+| `prefixed`    | Added to the container and the input when an element that is not hidden is in the prefix slot. |
+| `suffixed`    | Added to the container and the input when an element that is not hidden is in the suffix slot. |
+| `filled`      | Added to the container and the input when the control has a value. |
+| `labelled`    | Added to the container in the material theme when the control has a label. |
+| `start`       | The wrapper of the prefix in the material theme.     |
+| `notch`       | The wrapper of the label in the material theme.      |
+| `filler`      | The outline segment between the notch and the end in the material theme. |
+| `end`         | The wrapper of the suffix in the material theme.     |
 
-The `container` and `input` parts additionally carry state part names, so filled, prefixed and suffixed states can be
-styled without extra attributes.
+### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
+
+### CSS custom properties
+
+| Property                | Description                                                                                                                                                                                                                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ig-helper-min-lines` | The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`. |
 
 ## Test scenarios
 
@@ -431,6 +512,7 @@ The suite lives in [`input.spec.ts`](./input.spec.ts). It runs in a real browser
 | `createFormAssociatedTestBed` | A `form` fixture around the control, exposing `formData`, `submit`, `reset` and `valid`. |
 | `runValidationContainerTests` | Generated cases asserting that each validation slot renders for its failing constraint. |
 | `runExternalLabelAssociationTests` | External `label` association through `for`, by nesting and after the first render, click-to-focus, an axe audit, and the host ARIA naming. |
+| `runHostComboboxTests` | The host combobox state on the native editor, with an axe audit. |
 | `simulateInput / simulateClick / simulateKeyboard` | User interaction driven without real device events. |
 | `ValidityHelpers` | Assertions for validity, invalid styling and validation slot presence and content. |
 
@@ -441,6 +523,7 @@ The groups below mirror the `describe` blocks of the suite.
 1. Is initialized with the proper default values.
 2. Is accessible (axe audit).
 3. Renders the expected layout for the material variant.
+4. The input is painted under an earlier page layer with `z-index: 1`.
 
 ### Properties
 
@@ -458,7 +541,8 @@ The groups below mirror the `describe` blocks of the suite.
 
 ### Methods
 
-15. `stepUp` and `stepDown` increment and decrement the value.
+15. `stepUp` and `stepDown` increment and decrement the value. Before the first render, they and `setRangeText` keep
+    the value.
 16. `setRangeText` replaces the given range, and the selection when it gets no range.
 17. `setSelectionRange` sets the selection, and `selectionStart` and `selectionEnd` report it.
 18. `selectionStart` and `selectionEnd` are `null` for the `email` and `number` types.
@@ -501,7 +585,10 @@ Driven by `createFormAssociatedTestBed`.
 ### defaultValue
 
 35. Form integration - correct initial state, correct submission, correct reset, submission on <kbd>Enter</kbd>, and
-    no submission on <kbd>Enter</kbd> while the value is invalid.
+    no submission on <kbd>Enter</kbd> while the value is invalid. A listener on the host or an ancestor that cancels the
+    `keydown` stops the submission, and a listener that stops the `keydown` delays it to the next task. The
+    <kbd>Enter</kbd> that commits an IME composition does not submit, also when it comes after `compositionend` with
+    the `keyCode` 229.
 36. Validation - a passing and a failing case for each of required, minlength, maxlength, pattern, email schema, url
     schema, min, max and step. A pattern that matches only a part of the value fails, a pattern compiles with the `v`
     flag, and an invalid pattern sets no constraint.
@@ -535,6 +622,48 @@ Generated by `runExternalLabelAssociationTests`.
 47. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal.
 
+### Host combobox state
+
+Generated by `runHostComboboxTests`, except the last case.
+
+48. A host `role`, `aria-expanded`, `aria-autocomplete`, `aria-controls` and `aria-activedescendant` make the native
+    input a combobox over a listbox of the page, and an axe audit passes.
+49. The native input follows a change of the host `aria-activedescendant` and `aria-controls`, and each set of the host
+    `ariaActiveDescendantElement`. A reference to no element forwards nothing.
+50. Each host attribute, also `aria-haspopup`, goes to the native input and goes away with the host attribute. A role
+    other than `combobox` and an `aria-expanded` without a role stay on the host. The host state sets no `data-role`
+    or `data-haspopup`.
+51. A projected value wins over the host state. A value that the projection removes comes from the host. `data-role`
+    follows the projection. In [`aria-projection.spec.ts`](../../internals/controllers/aria-projection.spec.ts).
+
+### Material search field
+
+52. The floated label stays inside the filled and the outlined `type="search"` field - with a placeholder, focused,
+    and with a value.
+53. The label stays inside the focused read-only filled and outlined search field.
+
+### Hidden ancestor
+
+54. The input with a prefix and a suffix hides at the same time as a hidden ancestor in each theme, at rest and after a
+    focus or a hover: no element transitions `visibility` or sets it to `visible`.
+55. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
+    takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
+    `disabled` set does not cancel an earlier call on another element.
+
+### Enter submission
+
+56. A form with one text field and no submit button submits on <kbd>Enter</kbd>. A checkbox, a hidden input and a
+    textarea do not count as text fields. Another text field, also a disabled native one or an `igc-input`, stops the
+    submission.
+57. <kbd>Enter</kbd> clicks the default button, the first submit button after a `type="button"` one, and the `submit`
+    event has it as the `submitter`. An image button that comes first is the default button. A disabled default button,
+    or a `click` listener that cancels the click, stops the submission.
+58. A `keydown` listener that disables the input stops the submission. A synthetic `keydown` and `keypress` pair
+    submits once. A real <kbd>Enter</kbd> submits once. A real <kbd>Enter</kbd> with a `keydown` or a `keypress`
+    listener that cancels the event does not submit.
+
 ### Not covered by the suite
 
 The following documented behaviors have no dedicated case yet: `select`, the `validateOnly` mode, the `outlined`
@@ -553,6 +682,8 @@ property, and the forwarding of `inputmode` and `autocomplete`.
 - The validation message region is announced politely through the validation container.
 - The required, disabled and read-only states come from the native attributes on the inner input.
 - A host `aria-describedby` describes the native control after the helper text, by element reference.
+- The host combobox state goes to the native input, so a page can make it a combobox over its own listbox. See
+  [Combobox over a list of the page](#combobox-over-a-list-of-the-page).
 
 ### Keyboard support
 

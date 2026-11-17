@@ -145,7 +145,7 @@ export class MyComponent {
 | **CUSTOM_ELEMENTS_SCHEMA** | Required in every module or standalone component that uses `igc-*` tags |
 | **Event binding** | Use Angular syntax: `(igcChange)="handler($event)"` |
 | **Property binding** | Use `[property]="value"` for reactive data and complex types |
-| **Form integration** | Web components work with Angular Forms through `ngModel` or reactive form controls |
+| **Form integration** | Without Angular Forms, bind `[value]` (`[checked]` for a checkbox) and handle `(igcInput)` or `(igcChange)`. Most apps need only that. `ngModel` and the reactive form directives need a value accessor on a custom element. For text fields such as `igc-input` and `igc-textarea`, add `ngDefaultControl`: `<igc-input ngDefaultControl [(ngModel)]="name">`. It writes `value` and listens to the `input` event. For other controls, such as `igc-checkbox` or `igc-combo`, write a custom `ControlValueAccessor` |
 
 ## TypeScript Support
 

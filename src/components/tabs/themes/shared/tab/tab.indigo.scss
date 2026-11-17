@@ -30,6 +30,21 @@ $theme: $indigo;
     text-transform: uppercase;
 }
 
+// A column has the line on the side of the panels. These rules outrank the hover
+// rules of a row, so a hover changes only the color of the line.
+@each $side, $content in (start: end, end: start) {
+    :host(:state(header-#{$side})) [part~='tab-header'] {
+        border-block: none;
+        border-inline-#{$side}: rem(1px) solid transparent;
+        border-inline-#{$content}: rem(1px) solid var-get($theme, 'border-color');
+
+        &:hover,
+        &:focus-within {
+            border-inline-#{$content}: rem(1px) solid var-get($theme, 'border-color--hover');
+        }
+    }
+}
+
 @media (forced-colors: active) {
     :host [part~='tab-header'] {
         border-top: 0;
@@ -43,5 +58,12 @@ $theme: $indigo;
     :host([selected]) [part~='tab-header']:focus {
         outline: rem(1px) solid Highlight;
         outline-offset: rem(-1px);
+    }
+
+    // A forced color shows a transparent border.
+    @each $side in (start, end) {
+        :host(:state(header-#{$side})) [part~='tab-header'] {
+            border-inline-#{$side}: 0;
+        }
     }
 }

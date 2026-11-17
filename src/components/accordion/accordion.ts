@@ -20,6 +20,8 @@ import { addSafeEventListener } from '#internals/utils/events.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import { styles } from './themes/accordion.base.css.js';
 
+const Slots = setSlots();
+
 /**
  * The Accordion is a container-based component that can house multiple expansion panels
  * and offers keyboard navigation.
@@ -42,7 +44,7 @@ export default class IgcAccordionComponent extends LitElement {
   private _panels: IgcExpansionPanelComponent[] = [];
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots(),
+    slots: Slots,
     onChange: this._handleSlotChange,
     initial: true,
   });
@@ -63,7 +65,8 @@ export default class IgcAccordionComponent extends LitElement {
   //#region Public attributes and properties
 
   /**
-   * Allows only one panel to be expanded at a time.
+   * Whether only one panel can be expanded at a time. When the user expands a
+   * panel, the other panels collapse.
    * @attr single-expand
    * @default false
    */
@@ -71,7 +74,7 @@ export default class IgcAccordionComponent extends LitElement {
   public singleExpand = false;
 
   /* blazorSuppress */
-  /** Returns all of the direct expansion panel children of the accordion. */
+  /** The direct expansion panel children of the accordion. */
   public get panels(): IgcExpansionPanelComponent[] {
     return Array.from(this._panels);
   }
@@ -103,7 +106,7 @@ export default class IgcAccordionComponent extends LitElement {
   private async _handlePanelOpening(event: Event): Promise<void> {
     const current = event.target as IgcExpansionPanelComponent;
 
-    if (!(this.singleExpand && this.panels.includes(current))) {
+    if (!(this.singleExpand && this._panels.includes(current))) {
       return;
     }
 
@@ -117,7 +120,8 @@ export default class IgcAccordionComponent extends LitElement {
   private _skipKeybinding(target: Element): boolean {
     return !(
       target instanceof IgcExpansionPanelComponent &&
-      this._interactivePanels.includes(target)
+      !target.disabled &&
+      this._panels.includes(target)
     );
   }
 
@@ -180,12 +184,12 @@ export default class IgcAccordionComponent extends LitElement {
 
   /** Hides all of the child expansion panels' contents. */
   public async hideAll(): Promise<void> {
-    await Promise.all(this.panels.map((panel) => panel.hide()));
+    await Promise.all(this._panels.map((panel) => panel.hide()));
   }
 
   /** Shows all of the child expansion panels' contents. */
   public async showAll(): Promise<void> {
-    await Promise.all(this.panels.map((panel) => panel.show()));
+    await Promise.all(this._panels.map((panel) => panel.show()));
   }
 
   //#endregion

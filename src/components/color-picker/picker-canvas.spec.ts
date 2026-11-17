@@ -71,6 +71,17 @@ describe('Picker canvas', () => {
       );
     });
 
+    it('formats `aria-valuetext` with `markerValueFormat`', async () => {
+      canvas.saturation = 62.4;
+      canvas.brightness = 37.8;
+      canvas.markerValueFormat = 'Sättigung {0} %, Helligkeit {1} %';
+      await elementUpdated(canvas);
+
+      expect(getMarker(canvas).getAttribute('aria-valuetext')).to.equal(
+        'Sättigung 62 %, Helligkeit 38 %'
+      );
+    });
+
     it('allows overriding the marker label', async () => {
       canvas.markerLabel = 'Saturation et valeur';
       await elementUpdated(canvas);

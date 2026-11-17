@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html, nothing } from 'lit';
+import { html, nothing, render } from 'lit';
+import { ref } from 'lit/directives/ref.js';
 import { repeat } from 'lit/directives/repeat.js';
 
 import {
@@ -52,7 +53,7 @@ const metadata: Meta<IgcTabsComponent> = {
     docs: {
       description: {
         component:
-          'Tabs organize and allow navigation between groups of content that are related and at the same level of hierarchy.\n\nThe tabs component allows the user to navigate between multiple tab children.\nIt supports keyboard navigation and provides API methods to control the selected tab.',
+          'Tabs organize and allow navigation between groups of content that are related and at the same level of hierarchy.',
       },
     },
     actions: { handles: ['igcChange'] },
@@ -60,33 +61,56 @@ const metadata: Meta<IgcTabsComponent> = {
   argTypes: {
     alignment: {
       type: { name: 'enum', value: ['start', 'end', 'center', 'justify'] },
-      description: 'Determines the alignment of the tabs header strip.',
+      description:
+        'The alignment of the tab headers in the header strip.\n\nIn a column, `start` is the top and `end` is the bottom.',
       options: ['start', 'end', 'center', 'justify'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'start' } },
     },
+    headerPosition: {
+      type: { name: 'enum', value: ['top', 'start', 'end'] },
+      description:
+        'The side of the panels on which the tab headers are placed.\n\nWith `top`, the headers form a row above the panels. With `start` and `end`, they\nform a column before or after the panels in the text direction, so `start` is on\nthe right in a right-to-left layout. In a column, the Up and Down arrow keys move\nbetween the tabs. When the headers do not fit in the height of the tabs, scroll\nbuttons above and below them scroll the column.',
+      options: ['top', 'start', 'end'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'top' } },
+    },
     activation: {
       type: { name: 'enum', value: ['manual', 'auto'] },
       description:
-        "Determines the activation behavior of the tabs.\n\nWhen set to 'auto', the tab will be selected when it receives focus.\nWhen set to 'manual', the tab will only be selected when it is clicked or activated with the keyboard.",
+        'The activation behavior of the tabs.\n\nWith `auto`, a tab is selected when it receives keyboard focus.\nWith `manual`, a tab is selected only on click, or on Enter or Space.',
       options: ['manual', 'auto'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'auto' } },
     },
   },
-  args: { alignment: 'start', activation: 'auto' },
+  args: { alignment: 'start', headerPosition: 'top', activation: 'auto' },
 };
 
 export default metadata;
 
 interface IgcTabsArgs {
-  /** Determines the alignment of the tabs header strip. */
+  /**
+   * The alignment of the tab headers in the header strip.
+   *
+   * In a column, `start` is the top and `end` is the bottom.
+   */
   alignment: 'start' | 'end' | 'center' | 'justify';
   /**
-   * Determines the activation behavior of the tabs.
+   * The side of the panels on which the tab headers are placed.
    *
-   * When set to 'auto', the tab will be selected when it receives focus.
-   * When set to 'manual', the tab will only be selected when it is clicked or activated with the keyboard.
+   * With `top`, the headers form a row above the panels. With `start` and `end`, they
+   * form a column before or after the panels in the text direction, so `start` is on
+   * the right in a right-to-left layout. In a column, the Up and Down arrow keys move
+   * between the tabs. When the headers do not fit in the height of the tabs, scroll
+   * buttons above and below them scroll the column.
+   */
+  headerPosition: 'top' | 'start' | 'end';
+  /**
+   * The activation behavior of the tabs.
+   *
+   * With `auto`, a tab is selected when it receives keyboard focus.
+   * With `manual`, a tab is selected only on click, or on Enter or Space.
    */
   activation: 'manual' | 'auto';
 }
@@ -136,11 +160,11 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          'The details of a product on a shop page. Each `igc-tab` holds a header and a panel: the `label` attribute gives the text of the header, and the content of the tab is the panel. The `selected` attribute selects the specifications when the page opens. The headers are one tab stop: the arrow keys, Home and End move between them, and Tab moves into the panel. Use the controls panel to change the `alignment` of the headers and the `activation`. With `manual`, the arrow keys only move the focus, and Enter or Space selects the tab.',
+          'The details of a product on a shop page. Each `igc-tab` holds a header and a panel: the `label` attribute gives the text of the header, and the content of the tab is the panel. The `selected` attribute selects the specifications when the page opens. The headers are one tab stop: the arrow keys, Home and End move between them, and Tab moves into the panel. Use the controls panel to change the `alignment` of the headers, the `headerPosition` and the `activation`. With `manual`, the arrow keys only move the focus, and Enter or Space selects the tab. With `start` or `end`, the headers form a column on that side of the panels, and Up and Down move between them. A frame gives the column a height. Drag its corner to make it shorter: a taller panel then scrolls its content, and scroll buttons show above and below the headers when they do not fit.',
       },
     },
   },
-  render: ({ alignment, activation }) => html`
+  render: ({ alignment, activation, headerPosition }) => html`
     ${styles}
     <style>
       .tb-specs {
@@ -162,51 +186,66 @@ export const Default: Story = {
         padding-inline-start: 1rem;
         border-inline-start: 3px solid var(--ig-gray-300);
       }
+
+      .tb-frame {
+        height: 18rem;
+        min-height: 8rem;
+        overflow: hidden;
+        resize: vertical;
+        border: 1px solid var(--ig-gray-300);
+      }
+
+      .tb-frame igc-tab::part(tab-body) {
+        padding-inline: 1.5rem;
+      }
     </style>
     <section class="tb-stack" aria-labelledby="tb-product-name">
       <h3 id="tb-product-name">Trailblazer 2 running shoe</h3>
-      <igc-tabs
-        alignment=${alignment}
-        activation=${activation}
-        aria-label="Product details"
-      >
-        <igc-tab label="Description">
-          <p>
-            A light trail shoe for long runs on dry paths. The grip of the sole
-            holds on loose gravel, and the cushion stays soft after hundreds of
-            miles.
-          </p>
-        </igc-tab>
-        <igc-tab label="Specifications" selected>
-          <dl class="tb-specs">
-            <dt>Weight</dt>
-            <dd>280 g in size EU 42</dd>
-            <dt>Heel-to-toe drop</dt>
-            <dd>6 mm</dd>
-            <dt>Upper</dt>
-            <dd>Recycled mesh</dd>
-            <dt>Sizes</dt>
-            <dd>EU 36 to 47</dd>
-          </dl>
-        </igc-tab>
-        <igc-tab label="Reviews">
-          <div class="tb-stack">
-            <p><strong>4.6 out of 5</strong> from 128 reviews</p>
-            <blockquote class="tb-review">
-              The grip is great on wet rocks, and my feet stay dry.
-            </blockquote>
-            <blockquote class="tb-review">
-              Order half a size up if you have wide feet.
-            </blockquote>
-          </div>
-        </igc-tab>
-        <igc-tab label="Shipping and returns">
-          <div class="tb-stack">
-            <p>Free delivery in 2 to 4 working days on orders over $50.</p>
-            <p>Return shoes that you did not wear within 30 days.</p>
-          </div>
-        </igc-tab>
-      </igc-tabs>
+      <div class=${headerPosition === 'top' ? nothing : 'tb-frame'}>
+        <igc-tabs
+          alignment=${alignment}
+          header-position=${headerPosition}
+          activation=${activation}
+          aria-label="Product details"
+        >
+          <igc-tab label="Description">
+            <p>
+              A light trail shoe for long runs on dry paths. The grip of the
+              sole holds on loose gravel, and the cushion stays soft after
+              hundreds of miles.
+            </p>
+          </igc-tab>
+          <igc-tab label="Specifications" selected>
+            <dl class="tb-specs">
+              <dt>Weight</dt>
+              <dd>280 g in size EU 42</dd>
+              <dt>Heel-to-toe drop</dt>
+              <dd>6 mm</dd>
+              <dt>Upper</dt>
+              <dd>Recycled mesh</dd>
+              <dt>Sizes</dt>
+              <dd>EU 36 to 47</dd>
+            </dl>
+          </igc-tab>
+          <igc-tab label="Reviews">
+            <div class="tb-stack">
+              <p><strong>4.6 out of 5</strong> from 128 reviews</p>
+              <blockquote class="tb-review">
+                The grip is great on wet rocks, and my feet stay dry.
+              </blockquote>
+              <blockquote class="tb-review">
+                Order half a size up if you have wide feet.
+              </blockquote>
+            </div>
+          </igc-tab>
+          <igc-tab label="Shipping and returns">
+            <div class="tb-stack">
+              <p>Free delivery in 2 to 4 working days on orders over $50.</p>
+              <p>Return shoes that you did not wear within 30 days.</p>
+            </div>
+          </igc-tab>
+        </igc-tabs>
+      </div>
     </section>
   `,
 };
@@ -638,7 +677,7 @@ export const AccountSettings: Story = {
     docs: {
       description: {
         story:
-          'The account settings of a web application, with one form over the tabs. Only the panel of the selected tab shows, so a field with an error can be in a hidden panel when the form is sent. An `invalid` listener in the capture phase selects the tab of the first field with an error and moves the focus to the field, and a warning icon marks each tab with an error until the error is fixed. To try it, clear the email address, open Security, and select Save. The Team tab is disabled, and its `aria-describedby` points to the reason, so assistive technologies read the reason on the tab. Save shows the form data.',
+          'The account settings of a web application, with one form over the tabs. Only the panel of the selected tab shows, so a field with an error can be in a hidden panel when the form is sent. An `invalid` listener in the capture phase selects the tab of the first field with an error and moves the focus to the field, and a warning icon marks each tab with an error until the error is fixed. To try it, clear the email address, open Security, and select Save. The Team tab is disabled, and its `aria-describedby` points to the reason, so assistive technologies read the reason on the tab. As on most settings pages, the headers form a column on the start side, with `header-position="start"`, and Up and Down move between them. The tabs have a set height, so the Save button does not move when a panel of another height opens. Save shows the form data.',
       },
     },
   },
@@ -698,7 +737,11 @@ export const AccountSettings: Story = {
     const { mount, update } = renderInto(
       () => html`
         <h3 id="tb-settings-title">Account settings</h3>
-        <igc-tabs aria-labelledby="tb-settings-title">
+        <igc-tabs
+          class="tb-settings"
+          header-position="start"
+          aria-labelledby="tb-settings-title"
+        >
           <igc-tab id="tb-settings-profile" label="Profile">
             <igc-icon slot="prefix" name="person"></igc-icon>
             ${errorIcon('tb-settings-profile')}
@@ -777,6 +820,14 @@ export const AccountSettings: Story = {
         .tb-error {
           color: var(--ig-error-500);
         }
+
+        .tb-settings {
+          height: 20rem;
+        }
+
+        .tb-settings igc-tab::part(tab-body) {
+          padding-inline: 1.5rem;
+        }
       </style>
       <form
         class="tb-stack"
@@ -786,6 +837,119 @@ export const AccountSettings: Story = {
         @submit=${save}
         ${mount}
       ></form>
+    `;
+  },
+};
+
+const consoleSections = [
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'attendees', label: 'Attendees' },
+  { id: 'agenda', label: 'Agenda' },
+  { id: 'check-in', label: 'Check-in' },
+] as const;
+
+type ConsoleSection = (typeof consoleSections)[number]['id'];
+
+const consoleViews: Record<ConsoleSection, string[][]> = {
+  dashboard: [
+    ['Registered', '1,284'],
+    ['Checked in', '312'],
+    ['Sessions today', '24'],
+  ],
+  attendees: [
+    ['Maya Patel', 'Speaker'],
+    ['Daniel Okafor', 'Sponsor'],
+    ['Priya Shah', 'Attendee'],
+  ],
+  agenda: [
+    ['9:00 AM', 'Keynote: the next ten years of the web'],
+    ['10:30 AM', 'Design systems at scale'],
+    ['1:00 PM', 'Accessible components, in practice'],
+  ],
+  'check-in': [
+    ['Main entrance', 'Open'],
+    ['Hall B', 'Opens at 10:00 AM'],
+  ],
+};
+
+export const EventConsole: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The console of an event, with one URL for each section. Each tab has an `href`, so its header is a link: a middle click or Ctrl/Cmd+click opens the section in a new browser tab, the context menu copies the address, and the browser shows the URL on hover. These do not change the selection. A plain click, Enter or Space selects the tab and follows the link. The selected tab follows the URL fragment, so the back and forward buttons and a reload keep the section. The tabs use `activation="manual"`, so the arrow keys only move the focus. A client-side router can cancel the `igcNavigate` event of a tab and route itself; the tabs still select the tab.',
+      },
+    },
+  },
+  render: () => {
+    let root: HTMLElement | undefined;
+
+    const current = (): ConsoleSection => {
+      const id = location.hash.replace('#/event/', '');
+      return (
+        consoleSections.find((section) => section.id === id)?.id ?? 'dashboard'
+      );
+    };
+
+    const view = () => html`
+      <h3 id="tb-console-title">Northwind Summit 2026</h3>
+      <igc-tabs aria-labelledby="tb-console-title" activation="manual">
+        ${repeat(
+          consoleSections,
+          ({ id }) => id,
+          ({ id, label }) => html`
+            <igc-tab
+              label=${label}
+              href="#/event/${id}"
+              ?selected=${id === current()}
+            >
+              <dl class="tb-view">
+                ${consoleViews[id].map(
+                  ([term, detail]) =>
+                    html`<dt>${term}</dt>
+                      <dd>${detail}</dd>`
+                )}
+              </dl>
+            </igc-tab>
+          `
+        )}
+      </igc-tabs>
+      <p class="muted">Address: <code>${location.hash || '(none)'}</code></p>
+    `;
+
+    const update = () => {
+      if (root) {
+        render(view(), root);
+      }
+    };
+
+    const mount = (element?: Element) => {
+      if (element) {
+        root = element as HTMLElement;
+        window.addEventListener('hashchange', update);
+        update();
+      } else {
+        window.removeEventListener('hashchange', update);
+        root = undefined;
+      }
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .tb-view {
+          display: grid;
+          grid-template-columns: max-content 1fr;
+          gap: 0.5rem 2rem;
+          margin: 0;
+        }
+
+        .tb-view dd {
+          margin: 0;
+        }
+      </style>
+      <section class="tb-stack" ${ref(mount)}></section>
     `;
   },
 };

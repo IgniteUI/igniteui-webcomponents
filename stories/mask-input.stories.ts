@@ -39,7 +39,7 @@ const metadata: Meta<IgcMaskInputComponent> = {
     docs: {
       description: {
         component:
-          'A masked input is an input field where a developer can control user input and format the visible value,\nbased on configurable rules',
+          'An input field that restricts user input to a mask pattern and formats the visible value.',
       },
     },
     actions: { handles: ['igcInput', 'igcChange'] },
@@ -48,7 +48,7 @@ const metadata: Meta<IgcMaskInputComponent> = {
     valueMode: {
       type: { name: 'enum', value: ['raw', 'withFormatting'] },
       description:
-        'Dictates the behavior when retrieving the value of the control:\n\n- `raw`: Returns clean input (e.g. "5551234567")\n- `withFormatting`: Returns with mask formatting (e.g. "(555) 123-4567")\n\nEmpty values always return an empty string, regardless of the value mode.',
+        'The format of the `value` and of the submitted form value:\n\n- `raw`: The input without the mask literals and prompts (e.g. "5551234567")\n- `withFormatting`: The input with the mask formatting (e.g. "(555) 123-4567")\n\nAn empty value is always an empty string, regardless of the value mode.',
       options: ['raw', 'withFormatting'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'raw' } },
@@ -56,12 +56,12 @@ const metadata: Meta<IgcMaskInputComponent> = {
     value: {
       type: 'string',
       description:
-        'The value of the input.\n\nRegardless of the currently set `value-mode`, an empty value returns an empty string.',
+        'The value of the control. Its format depends on `valueMode`.\n\nAn empty value is always an empty string, regardless of the value mode.',
       control: 'text',
     },
     mask: {
       type: 'string',
-      description: 'The masked pattern of the component.',
+      description: 'The mask pattern of the control.',
       control: 'text',
       table: { defaultValue: { summary: 'CCCCCCCCCC' } },
     },
@@ -74,14 +74,15 @@ const metadata: Meta<IgcMaskInputComponent> = {
     },
     readOnly: {
       type: 'boolean',
-      description: 'Makes the control a readonly field.',
+      description:
+        'Whether the control is read-only. The user cannot change its value.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     required: {
       type: 'boolean',
       description:
-        'When set, makes the component a required field for validation.',
+        'Whether the control is required. A required control that has no value,\nor is not checked, fails validation.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -92,19 +93,21 @@ const metadata: Meta<IgcMaskInputComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component.',
+      description:
+        'Whether the control is disabled. A disabled control is not validated,\nand the form does not submit its value.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
-      description: 'Sets the control into invalid state (visual state only).',
+      description:
+        'Whether the control shows the invalid state. It changes only the visual\nstate, not the validity.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     outlined: {
       type: 'boolean',
-      description: 'Whether the control will have outlined appearance.',
+      description: 'Whether the control has an outlined appearance.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -135,35 +138,44 @@ export default metadata;
 
 interface IgcMaskInputArgs {
   /**
-   * Dictates the behavior when retrieving the value of the control:
+   * The format of the `value` and of the submitted form value:
    *
-   * - `raw`: Returns clean input (e.g. "5551234567")
-   * - `withFormatting`: Returns with mask formatting (e.g. "(555) 123-4567")
+   * - `raw`: The input without the mask literals and prompts (e.g. "5551234567")
+   * - `withFormatting`: The input with the mask formatting (e.g. "(555) 123-4567")
    *
-   * Empty values always return an empty string, regardless of the value mode.
+   * An empty value is always an empty string, regardless of the value mode.
    */
   valueMode: 'raw' | 'withFormatting';
   /**
-   * The value of the input.
+   * The value of the control. Its format depends on `valueMode`.
    *
-   * Regardless of the currently set `value-mode`, an empty value returns an empty string.
+   * An empty value is always an empty string, regardless of the value mode.
    */
   value: string;
-  /** The masked pattern of the component. */
+  /** The mask pattern of the control. */
   mask: string;
   /** The prompt symbol to use for unfilled parts of the mask pattern. */
   prompt: string;
-  /** Makes the control a readonly field. */
+  /** Whether the control is read-only. The user cannot change its value. */
   readOnly: boolean;
-  /** When set, makes the component a required field for validation. */
+  /**
+   * Whether the control is required. A required control that has no value,
+   * or is not checked, fails validation.
+   */
   required: boolean;
   /** The name of the control, submitted with the form data. */
   name: string;
-  /** The disabled state of the component. */
+  /**
+   * Whether the control is disabled. A disabled control is not validated,
+   * and the form does not submit its value.
+   */
   disabled: boolean;
-  /** Sets the control into invalid state (visual state only). */
+  /**
+   * Whether the control shows the invalid state. It changes only the visual
+   * state, not the validity.
+   */
   invalid: boolean;
-  /** Whether the control will have outlined appearance. */
+  /** Whether the control has an outlined appearance. */
   outlined: boolean;
   /** The placeholder text of the control. */
   placeholder: string;

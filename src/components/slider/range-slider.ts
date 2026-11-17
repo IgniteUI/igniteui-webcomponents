@@ -7,7 +7,6 @@ import {
   resolveNaming,
 } from '#internals/controllers/aria-projection.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { getCenterPoint } from '#internals/utils/dom.js';
@@ -37,6 +36,9 @@ export interface IgcRangeSliderComponentEventMap {
  *
  * @element igc-range-slider
  *
+ * @slot - Renders slider labels. Their text replaces the numbers in the thumb
+ * and tick labels.
+ *
  * @fires igcInput - Emitted when a value is changed via thumb drag or keyboard interaction.
  * @fires igcChange - Emitted when a value change is committed on a thumb drag end or keyboard interaction.
  *
@@ -48,6 +50,7 @@ export interface IgcRangeSliderComponentEventMap {
  * @csspart tick-label-inner - The inner element of the tick label.
  * @csspart thumbs - The thumbs container.
  * @csspart thumb - The thumb element.
+ * @csspart focused - Added to the thumb part when the thumb has keyboard focus.
  * @csspart thumb-label - The thumb tooltip label container.
  * @csspart thumb-label-inner - The thumb tooltip label inner element.
  * @csspart track - The track container.
@@ -57,7 +60,7 @@ export interface IgcRangeSliderComponentEventMap {
  */
 export default class IgcRangeSliderComponent extends EventEmitterMixin<
   IgcRangeSliderComponentEventMap,
-  Constructor<IgcSliderBaseComponent>
+  typeof IgcSliderBaseComponent
 >(HostAriaMixin(IgcSliderBaseComponent)) {
   public static readonly tagName = 'igc-range-slider';
 
@@ -121,14 +124,14 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   }
 
   /**
-   * The aria label for the lower thumb.
+   * The accessible name of the lower thumb.
    * @attr thumb-label-lower
    */
   @property({ attribute: 'thumb-label-lower' })
   public thumbLabelLower!: string;
 
   /**
-   * The aria label for the upper thumb.
+   * The accessible name of the upper thumb.
    * @attr thumb-label-upper
    */
   @property({ attribute: 'thumb-label-upper' })

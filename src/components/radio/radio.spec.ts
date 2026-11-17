@@ -2,22 +2,26 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
-import { isFocused } from '#internals/testing/helpers.spec.js';
+import { isUnderPageLayer } from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
 } from '#internals/testing/validity-helpers.spec.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
+import { preventDefault } from '#internals/utils/events.js';
+import IgcRadioGroupComponent from '../radio-group/radio-group.js';
 import IgcRadioComponent from './radio.js';
 
 describe('Radio Component', () => {
   before(() => {
-    defineComponents(IgcRadioComponent);
+    defineComponents(IgcRadioComponent, IgcRadioGroupComponent);
   });
 
   const label = 'Apple';
@@ -62,6 +66,22 @@ describe('Radio Component', () => {
 
     it('renders a radio element successfully', async () => {
       await expect(radio).shadowDom.to.be.accessible();
+    });
+
+    it('paints the control under an earlier page layer, also in a horizontal group', async () => {
+      const control = (el: IgcRadioComponent) =>
+        el.renderRoot.querySelector('[part~="control"]')!;
+
+      expect(isUnderPageLayer(radio, control(radio))).to.be.true;
+
+      const group = await fixture<IgcRadioGroupComponent>(
+        html`<igc-radio-group alignment="horizontal"
+          ><igc-radio>${label}</igc-radio></igc-radio-group
+        >`
+      );
+      const grouped = group.querySelector(IgcRadioComponent.tagName)!;
+
+      expect(isUnderPageLayer(group, control(grouped))).to.be.true;
     });
 
     it('sets label position properly', async () => {
@@ -133,16 +153,6 @@ describe('Radio Component', () => {
       await elementUpdated(radio);
 
       expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
-    });
-
-    it('should have correct focus states between Light/Shadow DOM', () => {
-      radio.focus();
-      expect(isFocused(radio)).to.be.true;
-      expect(isFocused(input)).to.be.true;
-
-      radio.blur();
-      expect(isFocused(radio)).to.be.false;
-      expect(isFocused(input)).to.be.false;
     });
 
     it('should emit igcChange event when radio is checked', async () => {
@@ -226,8 +236,8 @@ describe('Radio Component', () => {
     let radios: IgcRadioComponent[] = [];
     const spec = createFormAssociatedTestBed<IgcRadioComponent>(
       html`${values.map(
-        (e) => html`<igc-radio name="radio" value=${e}>${e}</igc-radio>`
-      )}`
+          (e) => html`<igc-radio name="radio" value=${e}>${e}</igc-radio>`
+        )}<button type="submit">Submit</button>`
     );
 
     beforeEach(async () => {
@@ -309,10 +319,26 @@ describe('Radio Component', () => {
       ).to.be.true;
     });
 
+    it('does not submit on Enter without a submit button', () => {
+      spec.form.querySelector('button')!.remove();
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.false;
+    });
+
     it('should not submit on pressing Enter when value is invalid', () => {
       spec.setProperties({ required: true, checked: false });
       expect(
         spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.false;
+    });
+
+    it('does not submit when a listener cancels the Enter key press', () => {
+      spec.element.addEventListener('keydown', preventDefault);
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'), {
+          cancelable: true,
+        })
       ).to.be.false;
     });
 
@@ -657,4 +683,13 @@ describe('Radio Component', () => {
       (host as IgcRadioComponent).renderRoot.querySelector('input')!,
     checkable: true,
   });
+
+  runHiddenAncestorTests(html`
+    <igc-radio-group>
+      <igc-radio value="one">One</igc-radio>
+      <igc-radio value="two" checked>Two</igc-radio>
+    </igc-radio-group>
+  `);
+
+  runFocusBeforeRenderTests(html`<igc-radio>Label</igc-radio>`);
 });

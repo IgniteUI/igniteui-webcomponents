@@ -40,6 +40,8 @@
 | ------: | ---------- | ---------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                          |
 |       2 | 2026-10-01 | The navigation skips panels that do not render |
+|       3 | 2026-10-21 | API descriptions aligned with the JSDoc.       |
+|       4 | 2026-11-12 | A panel that the browser opens closes the others at once |
 
 ## Overview
 
@@ -126,6 +128,10 @@ previously expanded panel collapses at the same time.
 Expanding a collapsed panel collapses the currently expanded one. Without the property, any number of panels can be
 expanded together, and only explicit user interaction or the API changes their state.
 
+Find-in-page, a text fragment or a link to an element in a collapsed panel opens it (see the
+[expansion panel](../expansion-panel/spec.md#content-found-by-the-browser)). With single expansion, the other panels
+then close at once, without the animation, so the match stays where the browser scrolled to.
+
 #### Programmatic control
 
 ```typescript
@@ -185,8 +191,8 @@ attribute or `display: none`.
 
 | Property     | Attribute     | Reflected | Type                             | Default | Description                                            |
 | ------------ | ------------- | --------- | -------------------------------- | ------- | -------------------------------------------------------- |
-| singleExpand | single-expand | Yes       | `boolean`                        | false   | Allows only one panel to be expanded at a time.        |
-| panels       | -             | No        | `IgcExpansionPanelComponent[]`   | -       | Read-only. All direct expansion panel children.        |
+| singleExpand | single-expand | Yes       | `boolean`                        | false   | Whether only one panel can be expanded at a time. When the user expands a panel, the other panels collapse. |
+| panels       | -             | No        | `IgcExpansionPanelComponent[]`   | -       | Read-only. The direct expansion panel children of the accordion. |
 
 ### Methods
 
@@ -239,6 +245,11 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 ### Nested
 
 11. A nested accordion keeps its own navigation and single expansion behavior, and does not affect the outer one.
+
+### Content found by the browser
+
+12. With single expansion and motion on, a link to an element in a collapsed panel opens it and closes the expanded
+    panel above it, and the target stays in view.
 
 ## Assumptions and limitations
 

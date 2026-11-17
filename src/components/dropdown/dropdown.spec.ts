@@ -1,22 +1,27 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { sendKeys } from '@web/test-runner-commands';
 import { spy } from 'sinon';
 import { internalsOf } from '#internals/controllers/internals.js';
 import {
   arrowDown,
+  arrowLeft,
   arrowUp,
   endKey,
   enterKey,
   escapeKey,
   homeKey,
+  shiftKey,
   tabKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
   simulateScroll,
 } from '#internals/testing/simulate.spec.js';
 import IgcButtonComponent from '../button/button.js';
+import IgcInputComponent from '../input/input.js';
 import IgcDropdownHeaderComponent from './dropdown-header.js';
 import type IgcDropdownItemComponent from './dropdown-item.js';
 import IgcDropdownComponent from './dropdown.js';
@@ -28,7 +33,13 @@ type ItemState = {
 };
 
 describe('Dropdown', () => {
-  before(() => defineComponents(IgcDropdownComponent, IgcButtonComponent));
+  before(() =>
+    defineComponents(
+      IgcDropdownComponent,
+      IgcButtonComponent,
+      IgcInputComponent
+    )
+  );
 
   let dropDown: IgcDropdownComponent;
   const Items = [
@@ -48,8 +59,8 @@ describe('Dropdown', () => {
     await dropDown.hide();
   };
 
-  const getTarget = () =>
-    dropDown.querySelector('[slot="target"]') as IgcButtonComponent;
+  const getTarget = <T extends Element = IgcButtonComponent>() =>
+    dropDown.querySelector('[slot="target"]') as T;
 
   const getActiveItem = () => dropDown.items.find((item) => item.active);
 
@@ -66,9 +77,12 @@ describe('Dropdown', () => {
     }
   }
 
-  function createBasicDropdown(isOpen = false) {
+  function createBasicDropdown(
+    isOpen = false,
+    target = html`<igc-button slot="target">Open</igc-button>`
+  ) {
     return html`<igc-dropdown ?open=${isOpen}>
-      <igc-button slot="target">Open</igc-button>
+      ${target}
       ${Items.map(
         (item) =>
           html`<igc-dropdown-item value=${item}>${item}</igc-dropdown-item>`
@@ -435,6 +449,32 @@ describe('Dropdown', () => {
       expect(target.getAttribute('aria-activedescendant')).to.be.null;
     });
 
+    it('exposes the popup state on the native button of the target', async () => {
+      const target = getTarget();
+      await elementUpdated(target);
+      const native = target.renderRoot.querySelector('button')!;
+
+      expect(native.getAttribute('aria-haspopup')).to.equal('listbox');
+      expect(native.getAttribute('aria-expanded')).to.equal('false');
+
+      await openDropdown();
+      await elementUpdated(target);
+
+      expect(native.getAttribute('aria-expanded')).to.equal('true');
+    });
+
+    it('does not render the target again while the active item moves', async () => {
+      await openDropdown();
+      const update = spy(getTarget(), 'requestUpdate');
+
+      simulateKeyboard(dropDown, arrowDown);
+      await elementUpdated(dropDown);
+      simulateKeyboard(dropDown, arrowDown);
+      await elementUpdated(dropDown);
+
+      expect(update).not.called;
+    });
+
     it('labels the list by the target element', async () => {
       const list = dropDown.renderRoot.querySelector('[role="listbox"]')!;
 
@@ -480,6 +520,47 @@ describe('Dropdown', () => {
     });
   });
 
+  describe('Input target', () => {
+    it('exposes the popup state and the active item on the native input', async () => {
+      dropDown = await fixture<IgcDropdownComponent>(
+        createBasicDropdown(
+          false,
+          html`<igc-input slot="target" label="Search"></igc-input>`
+        )
+      );
+      const target = getTarget<IgcInputComponent>();
+      const native = target.renderRoot.querySelector('input')!;
+
+      await openDropdown();
+      simulateKeyboard(dropDown, arrowDown);
+      await elementUpdated(dropDown);
+      await elementUpdated(target);
+
+      expect(native.getAttribute('aria-haspopup')).to.equal('listbox');
+      expect(native.hasAttribute('aria-expanded')).to.be.false;
+      const first = getActiveItem();
+      expect(native.ariaActiveDescendantElement).to.equal(first);
+      await expect(dropDown).to.be.accessible();
+
+      // An update that keeps the active item writes nothing on the target.
+      const update = spy(target, 'requestUpdate');
+      dropDown.requestUpdate();
+      await elementUpdated(dropDown);
+
+      expect(update).not.called;
+
+      simulateKeyboard(dropDown, arrowDown);
+      await elementUpdated(dropDown);
+      await elementUpdated(target);
+      expect(getActiveItem()).to.not.equal(first);
+      expect(native.ariaActiveDescendantElement).to.equal(getActiveItem());
+
+      await closeDropdown();
+      await elementUpdated(target);
+      expect(native.ariaActiveDescendantElement).to.be.null;
+    });
+  });
+
   describe('Initial selection', () => {
     it('multiple initially selected items', async () => {
       dropDown = await fixture<IgcDropdownComponent>(html`
@@ -497,6 +578,19 @@ describe('Dropdown', () => {
       await elementUpdated(dropDown);
       expect(dropDown.items.filter((item) => item.selected).length).to.equal(1);
       expect(dropDown.selectedItem).to.equal(dropDown.items.at(-1)!);
+    });
+
+    it('makes only the selected item active', async () => {
+      dropDown = await fixture<IgcDropdownComponent>(html`
+        <igc-dropdown>
+          <igc-button slot="target">Open</igc-button>
+          <igc-dropdown-item active>1</igc-dropdown-item>
+          <igc-dropdown-item selected>2</igc-dropdown-item>
+        </igc-dropdown>
+      `);
+
+      await elementUpdated(dropDown);
+      expect(dropDown.items.map((item) => item.active)).to.eql([false, true]);
     });
   });
 
@@ -663,6 +757,27 @@ describe('Dropdown', () => {
       checkItemState(targetItem, { active: true, selected: true });
       expect(dropDown.selectedItem?.value).to.equal(targetItem.value);
       expect(dropDown.open).to.be.true;
+    });
+
+    it('moves the active item to the selected item on a click or `select()`', async () => {
+      const targetItem = dropDown.items[1];
+
+      dropDown.keepOpenOnSelect = true;
+      dropDown.select(1);
+      await openDropdown();
+
+      for (const commit of [
+        () => simulateClick(targetItem),
+        () => dropDown.select(1),
+      ]) {
+        simulateKeyboard(dropDown, arrowDown, 2);
+        await elementUpdated(dropDown);
+        checkItemState(targetItem, { active: false });
+
+        commit();
+        await elementUpdated(dropDown);
+        checkItemState(targetItem, { active: true, selected: true });
+      }
     });
 
     it('clicking on a disabled item is a no-op', async () => {
@@ -938,6 +1053,24 @@ describe('Dropdown', () => {
       expect(getActiveItem()).to.equal(dropDown.items[1]);
       expect(dropDown.selectedItem).to.equal(dropDown.items[1]);
     });
+
+    it('keeps the active item when the items get their selected state again', async () => {
+      dropDown.select(1);
+      await openDropdown();
+
+      simulateKeyboard(dropDown, arrowDown, 2);
+      await elementUpdated(dropDown);
+
+      // A framework that sets each property on each render does this.
+      for (const item of dropDown.items) {
+        item.selected = item === dropDown.selectedItem;
+      }
+      await elementUpdated(dropDown);
+
+      expect(dropDown.items.filter((item) => item.active)).to.eql([
+        dropDown.items[3],
+      ]);
+    });
   });
 
   describe('Events', () => {
@@ -1106,6 +1239,398 @@ describe('Dropdown', () => {
       await elementUpdated(dropDown);
 
       expect(dropDown.selectedItem?.value).to.equal('Orange');
+    });
+  });
+
+  describe('Interactive content', () => {
+    let fileName: HTMLInputElement;
+    let radios: HTMLInputElement[];
+    let apply: HTMLButtonElement;
+    let before: HTMLButtonElement;
+    let after: HTMLButtonElement;
+
+    const tab = () => sendKeys({ press: tabKey });
+    const shiftTab = () => sendKeys({ press: `${shiftKey}+${tabKey}` });
+
+    function expectFocus(element: Element, open = true): void {
+      expect(isFocused(element)).to.be.true;
+      expect(dropDown.open).to.equal(open);
+    }
+
+    beforeEach(async () => {
+      const container = await fixture<HTMLDivElement>(html`
+        <div>
+          <button id="before">Before</button>
+          <igc-dropdown>
+            <igc-button slot="target">Export</igc-button>
+            <div slot="header">
+              <input id="file" aria-label="File name" />
+            </div>
+            <igc-dropdown-item value="pdf">PDF</igc-dropdown-item>
+            <igc-dropdown-item value="xlsx">Excel</igc-dropdown-item>
+            <div slot="footer">
+              <fieldset>
+                <legend>Orientation</legend>
+                <label>
+                  <input
+                    type="radio"
+                    name="orientation"
+                    value="portrait"
+                    checked
+                  />
+                  Portrait
+                </label>
+                <label>
+                  <input type="radio" name="orientation" value="landscape" />
+                  Landscape
+                </label>
+              </fieldset>
+              <button id="apply" type="button">Apply</button>
+            </div>
+          </igc-dropdown>
+          <button id="after">After</button>
+        </div>
+      `);
+
+      dropDown = container.querySelector(IgcDropdownComponent.tagName)!;
+      fileName = container.querySelector('#file')!;
+      radios = Array.from(container.querySelectorAll('[type="radio"]'));
+      apply = container.querySelector('#apply')!;
+      before = container.querySelector('#before')!;
+      after = container.querySelector('#after')!;
+
+      await openDropdown();
+    });
+
+    it('renders the header and footer outside the listbox', () => {
+      for (const name of ['header', 'footer']) {
+        const slot = dropDown.renderRoot.querySelector(`slot[name="${name}"]`)!;
+        expect(slot.closest('[role="listbox"]')).to.be.null;
+        expect(slot.closest('[part="base"]')).to.exist;
+      }
+    });
+
+    it('is accessible with focusable header and footer content', async () => {
+      await expect(dropDown).to.be.accessible();
+      await expect(dropDown).shadowDom.to.be.accessible();
+    });
+
+    it('keeps the typed text and the caret keys of a text field in the header', async () => {
+      fileName.focus();
+      await sendKeys({ type: 'abc' });
+      await sendKeys({ press: arrowLeft });
+      expect(fileName.selectionStart).to.equal(2);
+
+      await sendKeys({ press: homeKey });
+      expect(fileName.selectionStart).to.equal(0);
+
+      await sendKeys({ press: endKey });
+      await elementUpdated(dropDown);
+
+      expect(fileName.value).to.equal('abc');
+      expect(fileName.selectionStart).to.equal(3);
+      expect(getActiveItem()).to.be.undefined;
+      expectFocus(fileName);
+    });
+
+    it('keeps the arrow keys of a radio group in the footer', async () => {
+      radios[0].focus();
+      await sendKeys({ press: arrowDown });
+      await elementUpdated(dropDown);
+
+      expect(radios[1].checked).to.be.true;
+      expect(getActiveItem()).to.be.undefined;
+      expectFocus(radios[1]);
+    });
+
+    it('keeps Space and Enter of a footer button', async () => {
+      const onClick = spy();
+      apply.addEventListener('click', onClick);
+      dropDown.navigateTo(0);
+      apply.focus();
+
+      await sendKeys({ press: 'Space' });
+      await sendKeys({ press: enterKey });
+      await elementUpdated(dropDown);
+
+      expect(onClick).calledTwice;
+      expect(dropDown.selectedItem).to.be.null;
+      expectFocus(apply);
+    });
+
+    it('moves with Tab from the target through the header and the footer content', async () => {
+      getTarget().focus();
+
+      await tab();
+      expectFocus(fileName);
+
+      // A radio group is one stop.
+      await tab();
+      expectFocus(radios[0]);
+
+      await tab();
+      expectFocus(apply);
+    });
+
+    it('moves back with Shift+Tab from the footer to the target', async () => {
+      apply.focus();
+
+      await shiftTab();
+      expectFocus(radios[0]);
+
+      await shiftTab();
+      expectFocus(fileName);
+
+      await shiftTab();
+      expectFocus(getTarget());
+    });
+
+    it('selects the active item, closes and moves the focus on with Tab from the last footer control', async () => {
+      dropDown.navigateTo(1);
+      apply.focus();
+
+      await tab();
+      await elementUpdated(dropDown);
+
+      expect(dropDown.selectedItem?.value).to.equal('xlsx');
+      expectFocus(after, false);
+    });
+
+    it('closes and moves the focus back with Shift+Tab from the target', async () => {
+      getTarget().focus();
+
+      await shiftTab();
+      await elementUpdated(dropDown);
+
+      expectFocus(before, false);
+    });
+
+    it('closes and focuses the target with Escape from the header content', async () => {
+      fileName.focus();
+
+      await sendKeys({ press: escapeKey });
+      await elementUpdated(dropDown);
+
+      expect(dropDown.selectedItem).to.be.null;
+      expectFocus(getTarget(), false);
+    });
+
+    it('ignores an Escape that the content handled', async () => {
+      fileName.addEventListener('keydown', (event) => {
+        if (event.key === escapeKey) event.preventDefault();
+      });
+      fileName.focus();
+
+      await sendKeys({ press: escapeKey });
+      await elementUpdated(dropDown);
+
+      expectFocus(fileName);
+    });
+
+    it('moves the focus to the target when the app closes the dropdown from a footer control', async () => {
+      apply.focus();
+      await closeDropdown();
+
+      expectFocus(getTarget(), false);
+    });
+
+    it('keeps the focus outside the dropdown when it closes', async () => {
+      after.focus();
+      await closeDropdown();
+
+      expectFocus(after, false);
+    });
+  });
+
+  describe('Interactive content in the default slot', () => {
+    it('keeps its keys', async () => {
+      dropDown = await fixture<IgcDropdownComponent>(html`
+        <igc-dropdown>
+          <igc-button slot="target">Open</igc-button>
+          <input id="name" aria-label="Name" />
+          <igc-dropdown-item value="a">A</igc-dropdown-item>
+        </igc-dropdown>
+      `);
+      const input = dropDown.querySelector<HTMLInputElement>('#name')!;
+
+      await openDropdown();
+      input.focus();
+      await sendKeys({ type: 'ab' });
+      await sendKeys({ press: arrowLeft });
+      await sendKeys({ press: enterKey });
+      await elementUpdated(dropDown);
+
+      expect(input.value).to.equal('ab');
+      expect(input.selectionStart).to.equal(1);
+      expect(getActiveItem()).to.be.undefined;
+      expect(dropDown.selectedItem).to.be.null;
+      expect(dropDown.open).to.be.true;
+    });
+  });
+
+  describe('Interactive content with an external target', () => {
+    let external: HTMLButtonElement;
+    let ok: HTMLButtonElement;
+    let next: HTMLButtonElement;
+
+    beforeEach(async () => {
+      const container = await fixture<HTMLDivElement>(html`
+        <div>
+          <button id="external">External</button>
+          <button id="next">Next</button>
+          <igc-dropdown>
+            <igc-dropdown-item value="a">A</igc-dropdown-item>
+            <button slot="footer" id="ok" type="button">OK</button>
+          </igc-dropdown>
+        </div>
+      `);
+
+      dropDown = container.querySelector(IgcDropdownComponent.tagName)!;
+      external = container.querySelector('#external')!;
+      ok = container.querySelector('#ok')!;
+      next = container.querySelector('#next')!;
+
+      await openDropdown(external);
+      external.focus();
+    });
+
+    it('moves with Tab from the target into the content', async () => {
+      await sendKeys({ press: tabKey });
+
+      expect(isFocused(ok)).to.be.true;
+      expect(dropDown.open).to.be.true;
+    });
+
+    it('closes and moves the focus on from the target with Tab from the last control', async () => {
+      ok.focus();
+
+      await sendKeys({ press: tabKey });
+      await elementUpdated(dropDown);
+
+      expect(isFocused(next)).to.be.true;
+      expect(dropDown.open).to.be.false;
+    });
+
+    it('closes and focuses the target with Escape from the content', async () => {
+      ok.focus();
+
+      await sendKeys({ press: escapeKey });
+      await elementUpdated(dropDown);
+
+      expect(isFocused(external)).to.be.true;
+      expect(dropDown.open).to.be.false;
+    });
+  });
+
+  describe('Interactive content edge cases', () => {
+    it('does not stop on a control inside an item', async () => {
+      const container = await fixture<HTMLDivElement>(html`
+        <div>
+          <igc-dropdown>
+            <button slot="target">Open</button>
+            <igc-dropdown-item value="a"><a href="#a">A</a></igc-dropdown-item>
+            <igc-dropdown-item value="b"><a href="#b">B</a></igc-dropdown-item>
+          </igc-dropdown>
+          <button id="after">After</button>
+        </div>
+      `);
+      dropDown = container.querySelector(IgcDropdownComponent.tagName)!;
+
+      await openDropdown();
+      dropDown.navigateTo(1);
+      getTarget<HTMLButtonElement>().focus();
+
+      await sendKeys({ press: tabKey });
+      await elementUpdated(dropDown);
+
+      expect(dropDown.selectedItem?.value).to.equal('b');
+      expect(isFocused(container.querySelector('#after')!)).to.be.true;
+      expect(dropDown.open).to.be.false;
+    });
+
+    it('handles a repeated Tab from the content', async () => {
+      dropDown = await fixture<IgcDropdownComponent>(html`
+        <igc-dropdown>
+          <button slot="target">Open</button>
+          <igc-dropdown-item value="a">A</igc-dropdown-item>
+          <input slot="header" id="first" aria-label="First" />
+          <input slot="header" id="second" aria-label="Second" />
+        </igc-dropdown>
+      `);
+      const first = dropDown.querySelector<HTMLInputElement>('#first')!;
+      const second = dropDown.querySelector<HTMLInputElement>('#second')!;
+
+      await openDropdown();
+      first.focus();
+
+      const event = new KeyboardEvent('keydown', {
+        key: tabKey,
+        repeat: true,
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      });
+      first.dispatchEvent(event);
+
+      expect(event.defaultPrevented).to.be.true;
+      expect(isFocused(second)).to.be.true;
+    });
+
+    describe('with a target that wraps the focusable element', () => {
+      let inner: HTMLButtonElement;
+      let field: HTMLInputElement;
+
+      beforeEach(async () => {
+        dropDown = await fixture<IgcDropdownComponent>(html`
+          <igc-dropdown>
+            <span slot="target"><button id="inner">Open</button></span>
+            <igc-dropdown-item value="a">A</igc-dropdown-item>
+            <input slot="header" id="field" aria-label="Field" />
+          </igc-dropdown>
+        `);
+        inner = dropDown.querySelector('#inner')!;
+        field = dropDown.querySelector('#field')!;
+
+        await openDropdown();
+        field.focus();
+      });
+
+      it('moves back to the focusable element with Shift+Tab', async () => {
+        await sendKeys({ press: `${shiftKey}+${tabKey}` });
+        await elementUpdated(dropDown);
+
+        expect(isFocused(inner)).to.be.true;
+        expect(dropDown.open).to.be.true;
+      });
+
+      it('returns the focus to the focusable element on Escape', async () => {
+        await sendKeys({ press: escapeKey });
+        await elementUpdated(dropDown);
+
+        expect(isFocused(inner)).to.be.true;
+        expect(dropDown.open).to.be.false;
+      });
+    });
+  });
+
+  describe('Shift+Tab without interactive content', () => {
+    it('is not bound', async () => {
+      dropDown = await fixture<IgcDropdownComponent>(createBasicDropdown());
+      await openDropdown();
+
+      const event = new KeyboardEvent('keydown', {
+        key: tabKey,
+        shiftKey: true,
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      });
+
+      getTarget().dispatchEvent(event);
+      await elementUpdated(dropDown);
+
+      expect(event.defaultPrevented).to.be.false;
+      expect(dropDown.open).to.be.true;
     });
   });
 });

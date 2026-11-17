@@ -8,7 +8,7 @@ $theme: $material;
 }
 
 igc-button::part(base) {
-    --icon-color: var-get($theme, 'button-arrow-color');
+    --icon-color: #{var-get($theme, 'button-arrow-color')};
 
     color: var-get($theme, 'button-arrow-color');
     background: var-get($theme, 'button-background');
@@ -17,7 +17,7 @@ igc-button::part(base) {
     border-radius: var(--navigation-border-radius);
 
     &:hover {
-        --icon-color-hover: var-get($theme, 'button-hover-arrow-color');
+        --icon-color-hover: #{var-get($theme, 'button-hover-arrow-color')};
 
         color: var-get($theme, 'button-hover-arrow-color');
         background: var-get($theme, 'button-hover-background');
@@ -27,13 +27,16 @@ igc-button::part(base) {
 
 igc-button::part(focused),
 igc-button::part(focused):hover {
+    --icon-color: #{var-get($theme, 'button-focus-arrow-color')};
+    --icon-color-hover: #{var-get($theme, 'button-focus-arrow-color')};
+
     border: rem(2px) solid var-get($theme, 'button-focus-border-color');
     background: var-get($theme, 'button-background');
     color: var-get($theme, 'button-focus-arrow-color');
 }
 
 igc-button[disabled]::part(base) {
-    --disabled-icon-color: var-get($theme, 'button-disabled-arrow-color');
+    --disabled-icon-color: #{var-get($theme, 'button-disabled-arrow-color')};
 
     color: var-get($theme, 'button-disabled-arrow-color');
     background: var-get($theme, 'button-disabled-background');

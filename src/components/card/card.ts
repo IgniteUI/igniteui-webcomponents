@@ -52,7 +52,7 @@ export default class IgcCardComponent extends LitElement {
   }
 
   /**
-   * Sets the card to have an elevated appearance with shadow.
+   * Whether the card has an elevated appearance with a shadow.
    * When false, the card uses an outlined style with a border.
    *
    * @attr elevated

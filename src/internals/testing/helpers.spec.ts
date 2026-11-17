@@ -1,6 +1,8 @@
 import { expect, nextFrame } from '@open-wc/testing';
+import { emulateMedia, resetMouse, sendMouse } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { type CalendarDay, toCalendarDay } from '../date/model.js';
+import { getCenterPoint } from '../utils/dom.js';
 import { toKebabCase } from '../utils/strings.js';
 
 /** Returns the animations of the element and, optionally, its descendants. */
@@ -22,10 +24,56 @@ export function finishAnimationsFor(
   }
 }
 
+/**
+ * Turns motion back on for the calling `describe` block, for tests that check animations.
+ * It resets motion before each test, so a test that switches to reduced motion needs no
+ * reset. `before` also covers the fixtures of outer `beforeEach` hooks.
+ */
+export function allowMotion(): void {
+  before(() => emulateMedia({ reducedMotion: 'no-preference' }));
+  beforeEach(() => emulateMedia({ reducedMotion: 'no-preference' }));
+  after(() => emulateMedia({ reducedMotion: 'reduce' }));
+}
+
+/** Returns the animations of the `::backdrop` of a dialog. */
+export function getBackdropAnimations(dialog: HTMLDialogElement): Animation[] {
+  // WebKit reports an empty `pseudoElement` for `::backdrop`.
+  return dialog.getAnimations({ subtree: true }).filter(({ effect }) => {
+    const { target, pseudoElement } = effect as KeyframeEffect;
+    return target === dialog && pseudoElement !== null;
+  });
+}
+
+/** Finishes the `::backdrop` animations of a dialog and returns the backdrop style. */
+export function finishBackdrop(dialog: HTMLDialogElement): CSSStyleDeclaration {
+  for (const animation of getBackdropAnimations(dialog)) {
+    animation.finish();
+  }
+  return getComputedStyle(dialog, '::backdrop');
+}
+
 /** Waits two animation frames, so a started view transition settles. */
 export async function viewTransitionComplete(): Promise<void> {
   await nextFrame();
   await nextFrame();
+}
+
+/**
+ * Clicks the center of `element` with real mouse input. A link click reveals
+ * `hidden="until-found"` content with the timing of find-in-page, which a
+ * `location.hash` write does not give.
+ */
+export async function clickWithMouse(element: Element): Promise<void> {
+  element.scrollIntoView({ block: 'nearest' });
+  const { x, y } = getCenterPoint(element);
+  await sendMouse({ type: 'click', position: [Math.round(x), Math.round(y)] });
+}
+
+/** Removes the fragment and the scroll that a link to an element left. */
+export async function resetLocation(): Promise<void> {
+  history.replaceState(null, '', location.pathname + location.search);
+  scrollTo(0, 0);
+  await resetMouse();
 }
 
 /** Returns whether `el` is in the visible area of `view`. */
@@ -36,6 +84,26 @@ export function scrolledIntoView(el: HTMLElement, view: HTMLElement): boolean {
   return top <= viewTop
     ? viewTop - top <= height
     : bottom - viewBottom <= height;
+}
+
+/** Returns whether a `z-index: 1` layer put before `element` covers the visible center of `target`. */
+export function isUnderPageLayer(element: Element, target: Element): boolean {
+  const parent = element.parentElement!;
+  const layer = document.createElement('div');
+
+  parent.style.position = 'relative';
+  layer.style.cssText = 'position: absolute; inset: 0; z-index: 1';
+  parent.prepend(layer);
+
+  const { left, top, right, bottom } = target.getBoundingClientRect();
+  const hit = document.elementFromPoint(
+    (Math.max(left, 0) + Math.min(right, innerWidth)) / 2,
+    (Math.max(top, 0) + Math.min(bottom, innerHeight)) / 2
+  );
+
+  layer.remove();
+  parent.style.removeProperty('position');
+  return hit === layer;
 }
 
 export function isFocused(element?: Element): boolean {
@@ -97,6 +165,24 @@ export async function withDocumentSheets(
     await fn();
   } finally {
     document.adoptedStyleSheets = adopted;
+  }
+}
+
+/** Runs `fn` as in a browser without `document.activeViewTransition`. */
+export async function withoutActiveViewTransition(
+  fn: () => unknown
+): Promise<void> {
+  const property = 'activeViewTransition';
+  const descriptor = Object.getOwnPropertyDescriptor(
+    Document.prototype,
+    property
+  )!;
+  Reflect.deleteProperty(Document.prototype, property);
+
+  try {
+    await fn();
+  } finally {
+    Object.defineProperty(Document.prototype, property, descriptor);
   }
 }
 

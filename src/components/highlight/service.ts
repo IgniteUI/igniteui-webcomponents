@@ -1,24 +1,12 @@
 import { isServer, type ReactiveController } from 'lit';
+import {
+  createMutationController,
+  type MutationController,
+} from '#internals/controllers/mutation-observer.js';
 import { getRoot, iterNodes, scrollIntoView } from '#internals/utils/dom.js';
 import { wrap } from '#internals/utils/math.js';
-import { escapeRegex, nanoid } from '#internals/utils/strings.js';
+import { nanoid } from '#internals/utils/strings.js';
 import type IgcHighlightComponent from './highlight.js';
-
-type Match = { node: Node; indices: [start: number, end: number] };
-
-/**
- * Resolves the tree scope that must own the `::highlight()` rules. The rules are
- * tree-scoped, so slotted content needs the host root node, not the render root.
- * Firefox enforces this, Chromium currently does not.
- *
- * Returns `null` while the host is detached or inside a non-styleable fragment.
- */
-function getStyleRoot(
-  host: IgcHighlightComponent
-): (DocumentOrShadowRoot & Node) | null {
-  const root = getRoot(host);
-  return 'adoptedStyleSheets' in root ? root : null;
-}
 
 /* jsonAPIPlainObject */
 /* marshalByValue */
@@ -30,20 +18,6 @@ export interface HighlightNavigation {
   preventScroll?: boolean;
 }
 
-function* matchText(
-  nodes: IterableIterator<Node>,
-  regexp: RegExp
-): Generator<Match> {
-  for (const node of nodes) {
-    if (node.textContent) {
-      for (const match of node.textContent.matchAll(regexp)) {
-        const [start, end] = match.indices![0]!;
-        yield { node, indices: [start, end] } satisfies Match;
-      }
-    }
-  }
-}
-
 class HighlightService implements ReactiveController {
   //#region Private properties
 
@@ -51,12 +25,15 @@ class HighlightService implements ReactiveController {
   private readonly _id: string;
   private readonly _activeId: string;
   private readonly _styleSheet?: CSSStyleSheet;
+  private readonly _hostStyleSheet?: CSSStyleSheet;
 
+  private readonly _observer: MutationController;
   private _attachedRoot: (DocumentOrShadowRoot & Node) | null = null;
+  private _connected = false;
 
   private _highlight!: Highlight;
   private _activeHighlight!: Highlight;
-  private _ranges: Range[] = [];
+  private _ranges: StaticRange[] = [];
 
   private _current = 0;
 
@@ -83,20 +60,38 @@ class HighlightService implements ReactiveController {
   constructor(host: IgcHighlightComponent) {
     this._host = host;
     this._host.addController(this);
+
+    this._observer = createMutationController(host, {
+      callback: () => this.search(true),
+      config: { childList: true, characterData: true, subtree: true },
+    });
     this._id = `igc-highlight-${nanoid()}`;
     this._activeId = `${this._id}-active`;
 
+    // The rules resolve on the matched text, where an inner component can set the public names.
+    const prefix = `--_${this._id}`;
+
+    const hostStyles = `
+      :host {
+        ${prefix}-background: var(--background);
+        ${prefix}-foreground: var(--foreground);
+        ${prefix}-background-active: var(--background-active);
+        ${prefix}-foreground-active: var(--foreground-active);
+      }`;
+
     const styles = `
       ::highlight(${this._id}) {
-        background-color: var(--background, var(--ig-secondary-700));
-        color: var(--foreground, var(--ig-secondary-700-contrast));
+        background-color: var(${prefix}-background, var(--ig-secondary-700));
+        color: var(${prefix}-foreground, var(--ig-secondary-700-contrast));
       }
       ::highlight(${this._activeId}) {
-        background-color: var(--background-active, var(--ig-primary-500));
-        color: var(--foreground-active, var(--ig-primary-500-contrast));
+        background-color: var(${prefix}-background-active, var(--ig-primary-500));
+        color: var(${prefix}-foreground-active, var(--ig-primary-500-contrast));
       }`;
 
     if (!isServer) {
+      this._hostStyleSheet = new CSSStyleSheet();
+      this._hostStyleSheet.replaceSync(hostStyles);
       this._styleSheet = new CSSStyleSheet();
       this._styleSheet.replaceSync(styles);
     }
@@ -107,12 +102,15 @@ class HighlightService implements ReactiveController {
   /** @internal */
   public hostConnected(): void {
     this._createHighlightEntries();
+    this._adoptHostStyleSheet();
     this.attachStylesheet();
-    this.find(this._host.searchText);
+    this._connected = true;
+    this.search();
   }
 
   /** @internal */
   public hostDisconnected(): void {
+    this._connected = false;
     this._removeHighlightEntries();
     this._removeStyleSheet();
   }
@@ -131,6 +129,16 @@ class HighlightService implements ReactiveController {
     }
 
     this._attachedRoot = null;
+  }
+
+  /** The theming controller keeps the sheet on a theme change. */
+  private _adoptHostStyleSheet(): void {
+    const root = this._host.shadowRoot!;
+    const sheet = this._hostStyleSheet!;
+
+    if (!root.adoptedStyleSheets.includes(sheet)) {
+      root.adoptedStyleSheets.push(sheet);
+    }
   }
 
   private _createHighlightEntries(): void {
@@ -155,9 +163,9 @@ class HighlightService implements ReactiveController {
     // the content, such as a line break in the HTML source.
     const pattern = value
       .split(/\s+/)
-      .map(escapeRegex)
+      .map(RegExp.escape)
       .join(String.raw`\s+`);
-    return new RegExp(pattern, this._host.caseSensitive ? 'dg' : 'dgi');
+    return new RegExp(pattern, this._host.caseSensitive ? 'g' : 'gi');
   }
 
   private _updateActiveHighlight(): void {
@@ -165,6 +173,38 @@ class HighlightService implements ReactiveController {
       this._activeHighlight.clear();
       this._activeHighlight.add(this._ranges[this._current]);
     }
+  }
+
+  private _find(): void {
+    const value = this._host.searchText;
+
+    if (!value?.trim()) {
+      return;
+    }
+
+    const regexp = this._createRegex(value);
+
+    for (const node of iterNodes<Text>(this._host, { show: 'SHOW_TEXT' })) {
+      for (const { index, 0: text } of node.data.matchAll(regexp)) {
+        // Static, so a DOM change does not have to update the ranges.
+        const range = new StaticRange({
+          startContainer: node,
+          startOffset: index,
+          endContainer: node,
+          endOffset: index + text.length,
+        });
+
+        this._ranges.push(range);
+        this._highlight.add(range);
+      }
+    }
+  }
+
+  private _clear(): void {
+    this._activeHighlight.clear();
+    this._highlight.clear();
+    this._ranges.length = 0;
+    this._current = 0;
   }
 
   private _goTo(index: number, options?: HighlightNavigation): void {
@@ -177,7 +217,7 @@ class HighlightService implements ReactiveController {
 
     if (!options?.preventScroll) {
       const range = this._ranges[this._current];
-      scrollIntoView(range.commonAncestorContainer.parentElement, {
+      scrollIntoView(range.startContainer.parentElement, {
         block: 'center',
         inline: 'center',
       });
@@ -197,7 +237,8 @@ class HighlightService implements ReactiveController {
       return;
     }
 
-    const root = getStyleRoot(this._host);
+    // `::highlight()` rules are tree-scoped (Firefox enforces it): slotted content needs the host's root.
+    const root = getRoot(this._host);
 
     if (this._attachedRoot !== root) {
       this._removeStyleSheet();
@@ -212,28 +253,33 @@ class HighlightService implements ReactiveController {
   }
 
   /**
-   * Finds matches for the given search text in the component's content and creates highlight ranges for them.
+   * With `keepActive`, the match at the same node and offset stays active,
+   * else the first match does.
    */
-  public find(value: string): void {
-    if (!value?.trim()) {
+  public search(keepActive = false): void {
+    if (!this._connected) {
       return;
     }
 
-    const iterator = matchText(
-      iterNodes(this._host, { show: 'SHOW_TEXT' }),
-      this._createRegex(value)
-    );
+    const active = keepActive ? this._ranges[this._current] : undefined;
 
-    for (const {
-      node,
-      indices: [start, end],
-    } of iterator) {
-      const range = new Range();
-      range.setStart(node, start);
-      range.setEnd(node, end);
+    if (!keepActive) {
+      // This search already sees the pending content changes.
+      this._observer.disconnect();
+      this._observer.observe();
+    }
 
-      this._ranges.push(range);
-      this._highlight.add(range);
+    this._clear();
+    this._find();
+
+    if (active) {
+      const index = this._ranges.findIndex(
+        ({ startContainer, startOffset }) =>
+          startContainer === active.startContainer &&
+          startOffset === active.startOffset
+      );
+
+      this._current = Math.max(index, 0);
     }
 
     this._updateActiveHighlight();
@@ -252,14 +298,6 @@ class HighlightService implements ReactiveController {
   /** Moves the active state to the given index. */
   public setActive(index: number, options?: HighlightNavigation): void {
     this._goTo(index, options);
-  }
-
-  /** Clears highlight collections. */
-  public clear(): void {
-    this._activeHighlight.clear();
-    this._highlight.clear();
-    this._ranges.length = 0;
-    this._current = 0;
   }
 
   //#endregion

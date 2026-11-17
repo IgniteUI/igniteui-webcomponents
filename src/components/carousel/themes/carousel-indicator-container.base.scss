@@ -1,12 +1,8 @@
 @use 'styles/utilities' as *;
 
+// Sits over the slides, so it does not add to the height of the carousel.
 :host {
-    display: block;
-    position: relative;
-    width: 100%;
-    height: inherit;
-    overflow: hidden;
+    position: absolute;
+    inset: 0;
     outline-style: none;
-    min-height: inherit;
-    min-width: inherit;
 }

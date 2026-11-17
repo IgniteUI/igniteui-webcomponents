@@ -1,6 +1,10 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { getTsProgram, typeParserPlugin } from '@wc-toolkit/type-parser';
+import {
+  getTsProgram,
+  getTypeChecker,
+  typeParserPlugin,
+} from '@wc-toolkit/type-parser';
 
 /**
  * The type parser writes a warning for each type it does not expand: recursive DOM
@@ -128,6 +132,83 @@ function resolveSubpathImportsPlugin() {
   };
 }
 
+/** `import("/abs/path/module").IChipResourceStrings` -> `IChipResourceStrings` */
+const IMPORT_QUALIFIER = /import\("[^"]*"\)\./g;
+
+/**
+ * The analyzer copies an inherited member as written, so a member typed with a
+ * type parameter (`TGet` of `I18nMixin`) keeps that name, also under an
+ * override. Resolve it with the checker on each element.
+ *
+ * @example `TGet` -> `Required<IChipResourceStrings>` on `igc-chip`
+ */
+function resolveTypeParametersPlugin() {
+  let typescript;
+  const classNodes = new Map();
+  const typeParameterNames = new Set();
+
+  return {
+    name: 'IGC - RESOLVE TYPE PARAMETERS',
+
+    analyzePhase({ ts, node, moduleDoc }) {
+      typescript ??= ts;
+
+      if (ts.isClassDeclaration(node) && node.name) {
+        classNodes.set(`${moduleDoc.path}#${node.name.text}`, node);
+      }
+
+      for (const param of node.typeParameters ?? []) {
+        typeParameterNames.add(param.name.text);
+      }
+    },
+
+    packageLinkPhase({ customElementsManifest }) {
+      const checker = getTypeChecker();
+
+      for (const moduleDoc of customElementsManifest.modules) {
+        for (const declaration of moduleDoc.declarations ?? []) {
+          const node = classNodes.get(`${moduleDoc.path}#${declaration.name}`);
+
+          if (!node) {
+            continue;
+          }
+
+          const instanceType = checker.getTypeAtLocation(node);
+
+          for (const [index, member] of (declaration.members ?? []).entries()) {
+            if (
+              !member.inheritedFrom ||
+              !typeParameterNames.has(member.type?.text)
+            ) {
+              continue;
+            }
+
+            const property = checker.getPropertyOfType(
+              instanceType,
+              member.name
+            );
+
+            if (!property) {
+              continue;
+            }
+
+            const text = checker
+              .typeToString(
+                checker.getTypeOfSymbolAtLocation(property, node),
+                node,
+                typescript.TypeFormatFlags.NoTruncation
+              )
+              .replaceAll(IMPORT_QUALIFIER, '');
+
+            // The analyzer shares one inherited entry between all the elements.
+            declaration.members[index] = { ...member, type: { text } };
+          }
+        }
+      }
+    },
+  };
+}
+
 /** Each member, attribute and event entry in a module. */
 function* moduleEntries(moduleDoc) {
   for (const declaration of moduleDoc.declarations ?? []) {
@@ -213,5 +294,6 @@ export default {
     }),
     pruneExpandedTypesPlugin(),
     stripUndefinedDefaultsPlugin(),
+    resolveTypeParametersPlugin(),
   ],
 };

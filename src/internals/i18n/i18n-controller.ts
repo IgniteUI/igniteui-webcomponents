@@ -1,348 +1,482 @@
 import {
   getCurrentI18n,
-  getDateFormatter,
   getI18nManager,
-  type IResourceChangeEventArgs,
   type IResourceStrings,
 } from 'igniteui-i18n-core';
-import type { ReactiveController, ReactiveControllerHost } from 'lit';
+import type { ReactiveController, ReactiveElement } from 'lit';
 import { getOrInsertComputed } from '../utils/objects.js';
-import {
-  convertToCoreResource,
-  convertToIgcResource,
-  type ResourceMap,
-} from './utils.js';
-
-interface I18nControllerHost extends ReactiveControllerHost, HTMLElement {
-  // Declared by the host, managed by the controller.
-  resourceStrings?: unknown;
-  locale?: string;
-}
-
-type ResourceChangeCallback = (
-  event: CustomEvent<IResourceChangeEventArgs>
-) => unknown;
-
-/** The date-time formats a locale resolves to, cached against that locale. */
-type LocaleDateTimeFormats = {
-  locale: string;
-  display: string;
-  input: string;
-};
+import { mixResourceStrings, type ResourceMap } from './converters.js';
+import { resolveLocale } from './locale.js';
 
 /** Configuration object for the `I18nController`. */
 export type I18nControllerConfig<T extends object> = {
-  /** Default English resource strings, always from `igniteui-i18n-core`. */
+  /**
+   * Default English resource strings, always from `igniteui-i18n-core`. They
+   * fill the keys that the core strings of a locale lack.
+   */
   defaultEN: T;
   /**
    * @deprecated since 7.2.0. The map of the component, if it uses mixed
    * resource strings. To be removed with the deprecated resources.
    */
   resourceMap?: ResourceMap;
-  /** Optional callback for a change of the global locale. */
-  onResourceChange?: ResourceChangeCallback;
 };
 
 /**
- * The default strings each component resolves, keyed by `defaultEN` and by
- * the core resource object of the locale.
+ * The resolved default strings, keyed by the config of a component, then by
+ * the core resource object of the locale. The instances of a component share
+ * one config, so they share the strings.
  *
  * @remarks
- * Every instance resolves the same strings through the same key walk and
- * converters, so they share one result. The manager replaces the core
- * resource object on each store, so its identity expires the entry. An event
- * cannot, because `registerI18n` for a non-current locale fires none.
+ * The manager replaces the core resource object when its strings change, so
+ * its identity expires the entry. An event cannot, because `registerI18n` for
+ * a non-current locale fires none.
  */
 const defaultStringsCache = new WeakMap<object, WeakMap<object, object>>();
 
-/** The `defaultEN` objects already registered with the i18n manager. */
-const registeredDefaults = new WeakSet<object>();
-
-/**
- * Manages the localization (i18n) of a Lit web component, and updates it on
- * a change of the global localization state.
- */
-class I18nController<T extends object> implements ReactiveController {
-  //#region Internal properties and state
-
-  private readonly _host: I18nControllerHost;
-  private readonly _defaultEN: T;
-  /**
-   * @deprecated since 7.2.0. The map that converts between the new and the old
-   * resource objects.
-   */
-  private readonly _resourceMap?: ResourceMap;
-  private readonly _resourceChangeCallback?: ResourceChangeCallback;
-
-  private _locale?: string;
-  /** Resolved lazily, and again after a locale or locale data change. */
-  private _dateTimeFormats?: LocaleDateTimeFormats;
-  /** The default resource strings, resolved lazily. */
-  private _defaults?: T;
-  /** The last value set to `resourceStrings`, as given. */
-  private _rawResourceStrings?: T;
-  /** Only the custom strings, which override a part of the defaults. */
-  private _customResourceStrings?: T;
-  /** The custom resource strings merged over the default ones. */
-  private _resourceStrings?: T;
-
-  private get _defaultResourceStrings(): T {
-    return (this._defaults ??= this._getDefaultResourceStrings());
+/** Shallow compare of two flat string sets. */
+function sameStrings(a: object, b: object): boolean {
+  if (a === b) {
+    return true;
   }
 
-  //#endregion
+  const keys = Object.keys(a) as (keyof typeof a)[];
+  return (
+    keys.length === Object.keys(b).length &&
+    keys.every((key) => a[key] === b[key])
+  );
+}
 
-  //#region Public properties
+/** The controller of each host. */
+const controllers = new WeakMap<Node, LocaleController>();
+
+/**
+ * The connected controllers. One manager listener serves all of them, because
+ * a native listener add or remove scans the full listener list. Not a static
+ * field, so bundlers can drop the class where only `getHostLocale` is used.
+ */
+const connected = new Set<LocaleController>();
+
+/** A parent in the locale tree: a controller, or an element with `lang`. */
+type LocaleSource = {
+  _validLocale?: string;
+  _children?: Set<LocaleController>;
+};
+
+/** A `lang` source, with the `lang` of its last read. */
+type LangSource = LocaleSource & { _lang?: string | null };
+
+const langSources = new WeakMap<Element, LangSource>();
+const observedRoots = new WeakSet<Node>();
+let langObserver: MutationObserver | undefined;
+
+/** Whether `node` has `lang`. Not the root element: its `lang` is global. */
+function hasLang(node: Node): boolean {
+  return (
+    !!(node as Element).hasAttribute?.('lang') &&
+    node.parentNode !== node.ownerDocument
+  );
+}
+
+/**
+ * The nearest host or `lang` element from `start` up, across shadow roots.
+ * Passes each root that it leaves to `onRoot`. Only a shadow root goes on to
+ * a `host`: a parentless anchor has a string `host`, a form a named control.
+ */
+function findSource(
+  start: Node | null,
+  onRoot?: (root: Node) => void
+): Node | undefined {
+  let node = start;
+
+  while (node && !controllers.has(node) && !hasLang(node)) {
+    const parent = node.parentNode;
+
+    if (!parent) {
+      onRoot?.(node);
+    }
+
+    node = parent ?? (node.nodeType === 11 ? (node as ShadowRoot).host : null);
+  }
+
+  return node ?? undefined;
+}
+
+/**
+ * Tracks the locale of a Lit web component. A change of the resolved locale,
+ * also a global one, updates the host as a change of its `locale` property.
+ *
+ * @remarks
+ * Without its own locale, a host takes its own `lang`, else the locale of the
+ * nearest ancestor host or `lang` in the DOM tree (not through slots). Each
+ * source keeps its children, so a change updates only the hosts below it.
+ * Not Lit context: each new child provider makes its ancestor provider send
+ * all its subscriptions again.
+ */
+class LocaleController implements ReactiveController {
+  private static _refreshConnected(): void {
+    for (const controller of connected) {
+      controller._refresh();
+    }
+  }
+
+  /** Watches `lang` in `root`, also in the shadow root of a host. */
+  private static _observeLang(root: Node): void {
+    if (!root.isConnected || observedRoots.has(root)) {
+      return;
+    }
+
+    observedRoots.add(root);
+    langObserver ??= new MutationObserver(LocaleController._langChanged);
+    langObserver.observe(root, {
+      attributeFilter: ['lang'],
+      attributeOldValue: true,
+      subtree: true,
+    });
+  }
 
   /**
-   * Sets a custom locale for this host component instance, which overrides
-   * the global locale.
+   * Reads `lang` on each call, because no observer sees a change while
+   * detached. A new value updates the hosts at once, before the observer.
    */
-  public set locale(value: string | undefined) {
-    if (this._locale !== value) {
-      this._locale = value;
-      this._refresh();
+  private static _langSource(element: Element): LangSource {
+    const source = getOrInsertComputed(
+      langSources,
+      element,
+      (): LangSource => ({})
+    );
+    const lang = element.getAttribute('lang');
+
+    LocaleController._observeLang(element.getRootNode());
+
+    if (source._lang !== lang) {
+      source._lang = lang;
+      // An empty `lang` means an unknown language.
+      source._validLocale =
+        lang && resolveLocale(lang) === lang ? lang : undefined;
+      LocaleController._updateChildren(source);
+    }
+
+    return source;
+  }
+
+  private static _langChanged(records: MutationRecord[]): void {
+    for (const { target, oldValue } of records) {
+      const element = target as Element;
+
+      if (hasLang(element)) {
+        const source = LocaleController._langSource(element);
+
+        // A new `lang` sits between its hosts and their old source.
+        if (oldValue === null) {
+          const own = controllers.get(element);
+
+          if (own && connected.has(own)) {
+            own._setParent(source);
+          } else {
+            LocaleController._adopt(source, element);
+          }
+
+          LocaleController._updateChildren(source);
+        }
+        continue;
+      }
+
+      const source = langSources.get(element);
+
+      if (source) {
+        langSources.delete(element);
+
+        for (const child of source._children ?? []) {
+          child._link();
+          if (child._locale == null) {
+            child._update();
+          }
+        }
+      }
+    }
+  }
+
+  private static _updateChildren(source: LocaleSource): void {
+    for (const child of source._children ?? []) {
+      if (child._locale == null) {
+        child._update();
+      }
     }
   }
 
   /**
-   * Gets the resolved locale of the host component: its custom locale, or
-   * the global one.
+   * Moves the nearest connected controllers below `node`, also in open
+   * shadow roots, under `parent`. Stops at each `lang`.
    */
-  public get locale(): string {
-    return this._locale ?? getCurrentI18n();
+  private static _adopt(parent: LocaleSource, node: ParentNode): void {
+    for (const element of node.children) {
+      if (hasLang(element)) {
+        continue;
+      }
+
+      const controller = controllers.get(element);
+
+      if (controller && connected.has(controller)) {
+        controller._setParent(parent);
+      } else {
+        LocaleController._adopt(parent, element);
+      }
+    }
+
+    const shadow = (node as Element).shadowRoot;
+
+    if (shadow) {
+      LocaleController._adopt(parent, shadow);
+    }
   }
+
+  protected readonly _host: ReactiveElement;
+  private _locale?: string;
+  /** The locale of the last refresh, see {@link resolveLocale}. */
+  private _resolvedLocale?: string;
+  private _parent?: LocaleSource;
+  /** Not private, see {@link LocaleSource}. */
+  public _children?: Set<LocaleController>;
+  /** The inherited locale at the disconnect, for an update while detached. */
+  private _detachedLocale?: string;
+  /**
+   * An upgraded host connects after its descendants, so they skip it. The
+   * first change that it passes on moves them under it.
+   */
+  private _adoptPending: boolean;
+
+  /** Sets the own locale, which overrides the inherited and global ones. */
+  public set locale(value: string | undefined) {
+    const old = this._customLocale;
+    this._locale = value;
+
+    if (this._customLocale !== old || this._adoptPending) {
+      this._update();
+    }
+  }
+
+  /** The own, the inherited, or the global locale. */
+  public get locale(): string {
+    return this._customLocale ?? getCurrentI18n();
+  }
+
+  /** The own locale, else the own `lang` or the inherited locale. */
+  private get _customLocale(): string | undefined {
+    return this._locale ?? this._parent?._validLocale ?? this._detachedLocale;
+  }
+
+  /** The custom locale if it is a valid tag. Only a valid tag passes down. */
+  public get _validLocale(): string | undefined {
+    const custom = this._customLocale;
+    return custom === this._resolvedLocale ? custom : undefined;
+  }
+
+  constructor(host: ReactiveElement) {
+    this._host = host;
+    this._adoptPending = host.isConnected;
+    controllers.set(host, this);
+    host.addController(this);
+  }
+
+  /** @internal */
+  public hostConnected(): void {
+    // The manager ignores a repeated add of the same listener.
+    getI18nManager().addEventListener(
+      'onResourceChange',
+      LocaleController._refreshConnected
+    );
+    connected.add(this);
+
+    this._link();
+    this._detachedLocale = undefined;
+
+    // Global changes are missed while disconnected.
+    if (this._adoptPending && this._locale != null) {
+      this._update();
+    } else {
+      this._refresh();
+    }
+  }
+
+  /** @internal */
+  public hostDisconnected(): void {
+    // A `lang` change in the task of the disconnect has no record yet.
+    if (langObserver) {
+      LocaleController._langChanged(langObserver.takeRecords());
+    }
+
+    connected.delete(this);
+    this._detachedLocale = this._parent?._validLocale;
+    this._setParent(undefined);
+  }
+
+  /** Links to the own `lang`, else to the nearest source above. */
+  private _link(): void {
+    const host = this._host;
+
+    if (hasLang(host)) {
+      this._setParent(LocaleController._langSource(host));
+      return;
+    }
+
+    const node = findSource(host.parentNode, LocaleController._observeLang);
+
+    this._setParent(
+      node &&
+        (controllers.get(node) ?? LocaleController._langSource(node as Element))
+    );
+  }
+
+  private _setParent(parent: LocaleSource | undefined): void {
+    this._parent?._children?.delete(this);
+    this._parent = parent;
+
+    if (parent) {
+      (parent._children ??= new Set()).add(this);
+    }
+  }
+
+  /** Refreshes the host, and then the children that inherit its locale. */
+  private _update(): void {
+    this._refresh();
+
+    // An upgrade sets the attributes before it connects the host.
+    if (!connected.has(this)) {
+      return;
+    }
+
+    if (this._adoptPending) {
+      this._adoptPending = false;
+      LocaleController._adopt(this, this._host);
+    }
+
+    LocaleController._updateChildren(this);
+  }
+
+  protected _refresh(): void {
+    const old = this._resolvedLocale;
+    const custom = this._customLocale;
+    // Only the own locale can be invalid: a source passes on valid tags only.
+    this._resolvedLocale = this._locale
+      ? resolveLocale(this._locale)
+      : custom || getCurrentI18n();
+
+    // The first resolve is the initial state, not a change.
+    if (old !== undefined && old !== this._resolvedLocale) {
+      this._host.requestUpdate('locale', old);
+    }
+  }
+}
+
+/**
+ * Manages the resource strings of a Lit web component. A change of the
+ * strings, also through the locale, updates the host as a change of its
+ * `resourceStrings` property.
+ */
+class I18nController<T extends object> extends LocaleController {
+  private readonly _config: I18nControllerConfig<T>;
+  /** The shared default strings of the locale, see {@link defaultStringsCache}. */
+  private _defaults?: T;
+  private _custom?: T;
+  /** The custom strings over the defaults, a copy per instance. */
+  private _resolved?: T;
 
   /** Sets the custom resource strings of the component. */
   public set resourceStrings(value: T | undefined) {
-    // Compared with the value as given, because the merged copy is never equal to it.
-    if (this._rawResourceStrings !== value) {
-      this._rawResourceStrings = value;
-
-      if (value) {
-        this._customResourceStrings = this._getMixedResourceStrings(value);
-        this._mergeResourceStrings();
-      } else {
-        this._customResourceStrings = value;
-        this._resourceStrings = value;
-      }
-
-      this._host.requestUpdate();
+    if (this._custom !== value) {
+      this._custom = value;
+      this._invalidate();
     }
   }
 
   /** Gets the resolved resource strings of the component. */
   public get resourceStrings(): T {
-    return this._resourceStrings ?? this._defaultResourceStrings;
-  }
-
-  /** The locale-default format for displaying a date-time value. */
-  public get localeDisplayFormat(): string {
-    return this._getDateTimeFormats().display;
-  }
-
-  /**
-   * The locale-default format for editing a date-time value: the display
-   * format with the leading zeros a mask needs.
-   */
-  public get localeInputFormat(): string {
-    return this._getDateTimeFormats().input;
-  }
-
-  //#endregion
-
-  //#region Life-cycle hooks and event listener
-
-  constructor(host: I18nControllerHost, config: I18nControllerConfig<T>) {
-    this._host = host;
-    this._defaultEN = config.defaultEN;
-    this._resourceMap = config.resourceMap;
-    this._resourceChangeCallback = config.onResourceChange;
-
-    if (!registeredDefaults.has(this._defaultEN)) {
-      registeredDefaults.add(this._defaultEN);
-      const manager = getI18nManager();
-      manager.registerI18n(this._defaultEN, manager.defaultLocale);
-    }
-
-    this._host.addController(this);
-  }
-
-  /** @internal */
-  public hostConnected(): void {
-    getI18nManager().addEventListener('onResourceChange', this);
-
-    // Global changes are missed while disconnected, so the resolved state
-    // can hold a locale that is no longer current.
-    this._refresh();
-  }
-
-  /** @internal */
-  public hostDisconnected(): void {
-    getI18nManager().removeEventListener('onResourceChange', this);
-  }
-
-  /** @internal */
-  public handleEvent(event: CustomEvent<IResourceChangeEventArgs>): void {
-    this._refresh();
-    this._resourceChangeCallback?.call(this._host, event);
-  }
-
-  //#endregion
-
-  //#region Internal API
-
-  /**
-   * Drops the cached defaults and formats, then applies the custom overrides, so
-   * the merged strings keep no value of an earlier locale.
-   */
-  private _refresh(): void {
-    this._defaults = undefined;
-    this._dateTimeFormats = undefined;
-    this._host.requestUpdate();
-
-    if (this._customResourceStrings) {
-      this._mergeResourceStrings();
-    }
-  }
-
-  /** Applies the custom strings over the defaults of the current locale. */
-  private _mergeResourceStrings(): void {
-    this._resourceStrings = Object.assign(
+    return (this._resolved ??= Object.assign(
       {},
-      this._defaultResourceStrings,
-      this._customResourceStrings
-    );
+      (this._defaults ??= this._getDefaults()),
+      this._custom && mixResourceStrings(this._custom, this._config.resourceMap)
+    ));
   }
 
-  /**
-   * The resource strings of the component for the current locale.
-   *
-   * @remarks
-   * Maps the `defaultEN` keys to the core library keys, and reads each string
-   * from the i18n manager. Each instance gets the same result, so the result is
-   * cached. See {@link defaultStringsCache}.
-   */
-  private _getDefaultResourceStrings(): T {
+  constructor(host: ReactiveElement, config: I18nControllerConfig<T>) {
+    super(host);
+    this._config = config;
+  }
+
+  protected override _refresh(): void {
+    super._refresh();
+
+    // Nothing to refresh yet: the first read resolves the strings, so a late
+    // `registerI18n` for this locale, which fires no event, still applies.
+    if (!this._defaults) {
+      return;
+    }
+
+    // A core event refreshes all components, also when only the strings of
+    // other components change.
+    const old = this._defaults;
+    this._defaults = this._getDefaults();
+
+    if (!sameStrings(this._defaults, old)) {
+      this._invalidate();
+    }
+  }
+
+  private _invalidate(): void {
+    const old = this._resolved;
+    this._resolved = undefined;
+    this._host.requestUpdate('resourceStrings', old);
+  }
+
+  /** Maps the `defaultEN` keys to the core strings of the locale. */
+  private _getDefaults(): T {
+    const { defaultEN, resourceMap } = this._config;
     const coreResourceStrings = getI18nManager().getCurrentResourceStrings(
       this.locale
     );
-
     const perResources = getOrInsertComputed(
       defaultStringsCache,
-      this._defaultEN,
+      this._config,
       () => new WeakMap()
     );
-    const strings = getOrInsertComputed(
-      perResources,
-      coreResourceStrings,
-      () => {
-        const normalized = {} as T;
 
-        // Internal defaults only. A user must not mix old and core resources.
-        for (const key of Object.keys(this._defaultEN) as (keyof T)[]) {
-          normalized[key] =
-            key in coreResourceStrings
-              ? (coreResourceStrings[
-                  key as keyof IResourceStrings
-                ] as T[keyof T])
-              : this._defaultEN[key];
-        }
+    return getOrInsertComputed(perResources, coreResourceStrings, () => {
+      const normalized = {} as T;
 
-        return this._getMixedResourceStrings(normalized);
+      for (const key of Object.keys(defaultEN) as (keyof T)[]) {
+        normalized[key] =
+          key in coreResourceStrings
+            ? (coreResourceStrings[key as keyof IResourceStrings] as T[keyof T])
+            : defaultEN[key];
       }
-    ) as T;
 
-    // A copy per instance, because the cached object is shared.
-    return { ...strings };
+      return mixResourceStrings(normalized, resourceMap);
+    }) as T;
   }
-
-  /**
-   * The date-time formats of the resolved locale.
-   *
-   * @remarks
-   * An `Intl` format string is expensive, and the date editors read these on
-   * each render, so they are cached against the locale. A global resource
-   * change clears the cache, because the shared date formatter can then hold
-   * new locale data.
-   */
-  private _getDateTimeFormats(): LocaleDateTimeFormats {
-    const locale = this.locale;
-
-    if (this._dateTimeFormats?.locale !== locale) {
-      const formatter = getDateFormatter();
-      this._dateTimeFormats = {
-        locale,
-        display: formatter.getLocaleDateTimeFormat(locale),
-        input: formatter.getLocaleDateTimeFormat(locale, true),
-      };
-    }
-
-    return this._dateTimeFormats;
-  }
-
-  private _getMixedResourceStrings(value: T): T {
-    const map = this._resourceMap;
-
-    if (map) {
-      return Object.assign(
-        {},
-        convertToCoreResource(value, map),
-        convertToIgcResource(value, map)
-      ) as T;
-    }
-    return value;
-  }
-
-  //#endregion
 }
 
-type DateTimeStyle = 'short' | 'long' | 'medium' | 'full';
-
-const DATE_TIME_STYLES = new Set<string>(['short', 'long', 'medium', 'full']);
-
-function extractStyle(format: string, suffix: string): DateTimeStyle {
-  return format.toLowerCase().split(suffix)[0] as DateTimeStyle;
+/** Creates a `LocaleController`, and adds it to the host. */
+export function addLocaleController(host: ReactiveElement): LocaleController {
+  return new LocaleController(host);
 }
 
-/** Returns the date-time format string with a predefined style suffix. */
-export function getDateTimeFormat(
-  format?: string,
-  suffix: 'Date' | 'Time' = 'Date'
-): string | undefined {
-  return format && DATE_TIME_STYLES.has(format) ? `${format}${suffix}` : format;
-}
+/** The locale of a host, also of a host without a locale controller. */
+export function getHostLocale(host: Node): string {
+  const node = findSource(host);
+  const locale =
+    node &&
+    (controllers.get(node)?.locale ?? (node as Element).getAttribute('lang'));
 
-export function formatDisplayDate(
-  value: Date,
-  locale: string,
-  displayFormat?: string
-): string {
-  const formatter = getDateFormatter();
-  let options: Intl.DateTimeFormatOptions;
-
-  if (!displayFormat) {
-    options = {};
-  } else if (DATE_TIME_STYLES.has(displayFormat)) {
-    const style = displayFormat as DateTimeStyle;
-    options = { dateStyle: style, timeStyle: style };
-  } else if (displayFormat.endsWith('Date')) {
-    options = { dateStyle: extractStyle(displayFormat, 'date') };
-  } else if (displayFormat.endsWith('Time')) {
-    options = { timeStyle: extractStyle(displayFormat, 'time') };
-  } else {
-    return formatter.formatDateCustomFormat(value, displayFormat, { locale });
-  }
-
-  return formatter.formatDateTime(value, locale, options);
+  return resolveLocale(locale || getCurrentI18n());
 }
 
 /** Creates an `I18nController`, and adds it to the host. */
 export function addI18nController<T extends object>(
-  host: I18nControllerHost,
+  host: ReactiveElement,
   config: I18nControllerConfig<T>
 ): I18nController<T> {
   return new I18nController<T>(host, config);
 }
 
-export type { I18nController };
+export type { I18nController, LocaleController };

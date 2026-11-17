@@ -10,6 +10,7 @@ We release security fixes for the **latest major version**. The **previous major
 | ------- | ---------------------------------------- |
 | 7.x     | All security fixes                       |
 | 6.5.x   | Critical vulnerabilities only            |
+| 6.0–6.4 | None; upgrade to 6.5.x or 7.x            |
 | < 6.0   | None; upgrade to a supported version     |
 
 We update this table with each major release. The [npm package page](https://www.npmjs.com/package/igniteui-webcomponents?activeTab=versions) and the [CHANGELOG](CHANGELOG.md) list all released versions.

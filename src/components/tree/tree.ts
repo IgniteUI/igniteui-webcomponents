@@ -1,13 +1,9 @@
-import {
-  type ITreeResourceStrings,
-  TreeResourceStringsEN,
-} from 'igniteui-i18n-core';
+import { TreeResourceStringsEN } from 'igniteui-i18n-core';
 import { html, isServer, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
+import { isRevealing } from '#internals/controllers/hidden-until-found.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
-import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { setOrRemoveAttribute } from '#internals/utils/dom.js';
@@ -32,7 +28,7 @@ import { IgcTreeSelectionService } from './tree.selection.js';
  */
 const ITEM_RENDER_DEPENDENCIES = ['selection', 'resourceStrings'] as const;
 
-const i18n: I18nControllerConfig<ITreeResourceStrings> = {
+const i18n = {
   defaultEN: TreeResourceStringsEN,
 };
 
@@ -44,22 +40,20 @@ const i18n: I18nControllerConfig<ITreeResourceStrings> = {
  *
  * @slot - Renders the tree items inside default slot.
  *
- * @fires igcSelection - Emitted when item selection is changing, before the selection completes.
+ * @fires igcSelection - Emitted when item selection is changing, before the selection completes. Cancelable.
  * @fires igcItemCollapsed - Emitted when tree item is collapsed.
- * @fires igcItemCollapsing - Emitted when tree item is about to collapse.
+ * @fires igcItemCollapsing - Emitted when tree item is about to collapse. Cancelable.
  * @fires igcItemExpanded - Emitted when tree item is expanded.
- * @fires igcItemExpanding - Emitted when tree item is about to expand.
+ * @fires igcItemExpanding - Emitted when tree item is about to expand. Cancelable.
  * @fires igcActiveItem - Emitted when the tree's `active` item changes.
  */
 @blazorAdditionalDependencies('IgcTreeItemComponent')
 export default class IgcTreeComponent extends I18nMixin(
-  EventEmitterMixin<IgcTreeComponentEventMap, Constructor<LitElement>>(
-    LitElement
-  ),
+  EventEmitterMixin<IgcTreeComponentEventMap>(LitElement),
   i18n
 ) {
   public static readonly tagName = 'igc-tree';
-  public static styles = [componentBase, styles];
+  public static override styles = [componentBase, styles];
 
   /* blazorSuppress */
   public static register() {
@@ -73,21 +67,22 @@ export default class IgcTreeComponent extends I18nMixin(
   public navService!: IgcTreeNavigationService;
 
   /**
-   * Whether a single or multiple of a parent's child items can be expanded.
+   * Whether only one branch of the tree can be expanded at a time. When the user
+   * expands an item, the items outside its path collapse.
    * @attr single-branch-expand
    */
   @property({ attribute: 'single-branch-expand', reflect: true, type: Boolean })
   public singleBranchExpand = false;
 
   /**
-   * Whether clicking over nodes will change their expanded state or not.
+   * Whether a click on an item toggles its expanded state.
    * @attr toggle-node-on-click
    */
   @property({ attribute: 'toggle-node-on-click', reflect: true, type: Boolean })
   public toggleNodeOnClick = false;
 
   /**
-   * The selection state of the tree.
+   * The selection mode of the tree. A change clears the current selection.
    * @attr
    */
   @property({ reflect: true })
@@ -103,7 +98,7 @@ export default class IgcTreeComponent extends I18nMixin(
 
   /* blazorSuppress */
   /**
-   * Returns all of the tree's items.
+   * All items of the tree, in document order. Empty during server-side rendering.
    */
   public get items(): IgcTreeItemComponent[] {
     return isServer ? [] : collectTreeItems(this);
@@ -114,7 +109,11 @@ export default class IgcTreeComponent extends I18nMixin(
 
     addThemingController(this, all);
 
+    // The analyzer records a constructor assignment as a second member, so
+    // each assignment repeats the tags of its field.
+    /** @hidden @internal */
     this.selectionService = new IgcTreeSelectionService(this);
+    /** @hidden @internal */
     this.navService = new IgcTreeNavigationService(this, this.selectionService);
   }
 
@@ -169,9 +168,12 @@ export default class IgcTreeComponent extends I18nMixin(
   /** @hidden @internal Collapses every item except the ancestors of `item`. */
   public _collapseOtherBranches(item: IgcTreeItemComponent | null): void {
     const keepExpanded = new Set(item ? item.path.slice(0, -1) : []);
+    // During a reveal, the items below `item` keep their state: the browser
+    // does not tell where the match is, and an expanded one can hold it.
+    const revealing = isRevealing();
 
     for (const other of this.items) {
-      if (!keepExpanded.has(other)) {
+      if (!(keepExpanded.has(other) || (revealing && item?.contains(other)))) {
         other.collapseWithEvent();
       }
     }
@@ -186,7 +188,7 @@ export default class IgcTreeComponent extends I18nMixin(
   }
 
   /* blazorSuppress */
-  /** Select all items if the items collection is empty. Otherwise, select the items in the items collection. */
+  /** Selects the passed items. Without an argument, selects all items. Emits no event. */
   public select(
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]
@@ -203,7 +205,7 @@ export default class IgcTreeComponent extends I18nMixin(
   }
 
   /* blazorSuppress */
-  /** Deselect all items if the items collection is empty. Otherwise, deselect the items in the items collection. */
+  /** Deselects the passed items. Without an argument, deselects all items. Emits no event. */
   public deselect(
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]

@@ -1,6 +1,7 @@
 import { property } from 'lit/decorators.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import type { FormValueTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { MaskBehaviorMixin } from '#internals/mixins/mask-behavior.js';
 import { renderMaskedNativeInput } from '#internals/templates/masked-input.js';
@@ -28,35 +29,46 @@ const Slots = setSlots(
 /* blazorSupportsVisualChildren */
 /* blazorIndirectRender */
 /**
- * A masked input is an input field where a developer can control user input and format the visible value,
- * based on configurable rules
+ * An input field that restricts user input to a mask pattern and formats the visible value.
  *
  * @element igc-mask-input
  *
- * @slot prefix - Renders content before the input
- * @slot suffix - Renders content after the input
- * @slot helper-text - Renders content below the input
+ * @slot prefix - Renders content before the input.
+ * @slot suffix - Renders content after the input.
+ * @slot helper-text - Renders content below the input.
  * @slot value-missing - Renders content when the required validation fails.
- * @slot bad-input - Renders content when a required mask pattern validation fails.
- * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot bad-input - Renders content when the value does not fill the required positions of the mask.
+ * @slot custom-error - Renders content when a custom message is set with `setCustomValidity()`.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcInput - Emitted when the control receives user input
- * @fires igcChange - Emitted when an alteration of the control's value is committed by the user
+ * @fires igcInput - Emitted when the control receives user input.
+ * @fires igcChange - Emitted when the user commits a change to the value of the control.
  *
- * @csspart container - The main wrapper that holds all main input elements
- * @csspart input - The native input element
- * @csspart label - The native label element
- * @csspart prefix - The prefix wrapper
- * @csspart suffix - The suffix wrapper
- * @csspart helper-text - The helper text wrapper
+ * @csspart container - The main wrapper that holds all main input elements.
+ * @csspart input - The native input element.
+ * @csspart label - The native label element.
+ * @csspart prefix - The prefix wrapper.
+ * @csspart suffix - The suffix wrapper.
+ * @csspart helper-text - The helper text wrapper.
+ * @csspart prefixed - Added to the container and the input when an element that is not hidden is in the prefix slot.
+ * @csspart suffixed - Added to the container and the input when an element that is not hidden is in the suffix slot.
+ * @csspart filled - Added to the container and the input when the control has a value.
+ * @csspart labelled - Added to the container in the material theme when the control has a label.
+ * @csspart start - The wrapper of the prefix in the material theme.
+ * @csspart notch - The wrapper of the label in the material theme.
+ * @csspart filler - The outline segment between the notch and the end in the material theme.
+ * @csspart end - The wrapper of the suffix in the material theme.
+ *
+ * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 
 export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   IgcInputBaseComponent
 ) {
   public static readonly tagName = 'igc-mask-input';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -77,12 +89,18 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
     slots: Slots,
   });
 
+  private static readonly _transformers: Partial<
+    FormValueTransformers<string>
+  > = {
+    setFormValue: (value, host) => {
+      const input = host as IgcMaskInputComponent;
+      return input._isRawMode ? value || null : input._maskedValue || null;
+    },
+  };
+
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: '',
-    transformers: {
-      setFormValue: (value) =>
-        this._isRawMode ? value || null : this._maskedValue || null,
-    },
+    transformers: IgcMaskInputComponent._transformers,
   });
 
   protected get _isRawMode(): boolean {
@@ -94,12 +112,12 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   //#region Public attributes and properties
 
   /**
-   * Dictates the behavior when retrieving the value of the control:
+   * The format of the `value` and of the submitted form value:
    *
-   * - `raw`: Returns clean input (e.g. "5551234567")
-   * - `withFormatting`: Returns with mask formatting (e.g. "(555) 123-4567")
+   * - `raw`: The input without the mask literals and prompts (e.g. "5551234567")
+   * - `withFormatting`: The input with the mask formatting (e.g. "(555) 123-4567")
    *
-   * Empty values always return an empty string, regardless of the value mode.
+   * An empty value is always an empty string, regardless of the value mode.
    * @attr value-mode
    * @default 'raw'
    */
@@ -108,9 +126,9 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
-   * The value of the input.
+   * The value of the control. Its format depends on `valueMode`.
    *
-   * Regardless of the currently set `value-mode`, an empty value returns an empty string.
+   * An empty value is always an empty string, regardless of the value mode.
    *
    * @attr
    */
@@ -132,7 +150,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   }
 
   /**
-   * The masked pattern of the component.
+   * The mask pattern of the control.
    *
    * @attr
    * @default 'CCCCCCCCCC'

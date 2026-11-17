@@ -8,6 +8,8 @@
     "allowJs": true,
     "checkJs": false,
     "noEmit": true,
+    "incremental": true,
+    "tsBuildInfoFile": "../node_modules/.cache/igniteui-webcomponents/tsc-scripts.tsbuildinfo",
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,

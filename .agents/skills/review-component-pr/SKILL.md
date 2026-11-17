@@ -1,6 +1,9 @@
 ---
+license: MIT
 name: review-component-pr
-description: Code review checklist for component pull requests covering structure, public API, specification accuracy, accessibility, behavior, styles, tests, and build hygiene
+description: "Provides a code review checklist for component pull requests in this repository: structure, public API and docs, specification accuracy, accessibility, behavior, styles and themes, tests and generated artifacts, and build hygiene. WHEN TO USE: reviewing a diff, branch or pull request that adds or changes a component. WHEN NOT TO USE: writing the change itself (use create-new-component, add-component-property or update-component-styles), reviewing a change to a skill (use skill-authoring), or reviewing application code that uses the components."
+metadata:
+  internal: true
 ---
 
 # Review Component PR
@@ -29,13 +32,16 @@ Review in this order. The public API is hard to change after release, so review 
 - [ ] `tagName`, `styles` (`componentBase` first), `register()` (with all rendered
       dependencies, directly), `HTMLElementTagNameMap`. A new component is also in
       `defineAllComponents.ts`.
-- [ ] An intended public API change comes with the updated `public-api.json`
-      (`npm run public-api:update`). A removal or a type change has a deprecation plan.
+- [ ] An intended public API change comes with the updated `public-api.json` and
+      `api-reference/` pages (`npm run public-api:update`). A JSDoc change of the public API
+      comes with the updated pages. A removal or a type change has a deprecation plan.
 - [ ] Only primitives are attributes. Complex types use `attribute: false` and do not reflect.
 - [ ] Booleans default to `false`. Multi-word attributes are kebab-case and explicit.
 - [ ] Events use `EventEmitterMixin` with a typed map. Names are `igc` + camelCase, cancelable
       events end in `-ing` and the code checks their return value.
 - [ ] Events come from user interaction, not from property sets or method calls
+- [ ] A composite stops the `igc*` events of the components in its shadow root, on the inner
+      element. The inner events guard of the test runner fails the spec file of a leak.
 - [ ] JSDoc tags come after the description. `@deprecated since [SemVer]. Use the \`[new]\`
       [type] instead.`
 - [ ] No `igc-` tag names in description prose. No "…attribute of…", no `Gets/Sets`. Booleans
@@ -134,7 +140,7 @@ Map each change to a spec section with
 | Relative import into `internals`          | `npm run check` fails                                            |
 | Alias only in `package.json`              | Breaks only for consumers of the published package               |
 | Relative import of a theme aggregator     | The publish build fails; single-theme bundles get every theme    |
-| `public-api.json` not updated             | `npm run check` lists the additions; the snapshot goes stale     |
+| `public-api:update` not run               | `npm run check` fails on the `api-reference/` pages              |
 | `igc-` in a description                   | Goes into the API docs of every framework wrapper                |
 | Hand-edited story region or `.css.ts`     | Overwritten on the next build                                    |
 | `[part='base']` with `partMap`            | Stops matching when a second part name is added                  |

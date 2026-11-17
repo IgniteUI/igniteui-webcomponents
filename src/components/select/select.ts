@@ -4,7 +4,9 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   getItems,
   IgcComboBoxBaseLikeComponent,
+  isPopupContentEvent,
   setInitialSelectionState,
+  tabThroughPopup,
 } from '#internals/bases/combo-box.js';
 import { createListSelection } from '#internals/bases/list-selection.js';
 import { addAriaProjector } from '#internals/controllers/aria-projection.js';
@@ -19,6 +21,7 @@ import {
   enterKey,
   escapeKey,
   homeKey,
+  shiftKey,
   spaceBar,
   tabKey,
 } from '#internals/controllers/key-bindings.js';
@@ -29,8 +32,8 @@ import {
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import { FormValueSelectTransformers } from '#internals/mixins/forms/form-transformers.js';
@@ -94,29 +97,36 @@ const Slots = setSlots(
  *
  * @slot - Renders the list of select items.
  * @slot prefix - Renders content before the input.
- * @slot suffix - Renders content after input.
+ * @slot suffix - Renders content after the input.
  * @slot header - Renders a container before the list of options.
  * @slot footer - Renders a container after the list of options.
  * @slot helper-text - Renders content below the input.
- * @slot toggle-icon - Renders content inside the suffix container.
+ * @slot toggle-icon - Renders content that replaces the default toggle icon.
  * @slot toggle-icon-expanded - Renders content for the toggle icon when the component is in open state.
  * @slot value-missing - Renders content when the required validation fails.
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcChange - Emitted when the selection of the control changes.
- * @fires igcOpening - Emitted just before the list of options is opened.
- * @fires igcOpened - Emitted after the list of options is opened.
- * @fires igcClosing - Emitted just before the list of options is closed.
- * @fires igcClosed - Emitted after the list of options is closed.
+ * @fires igcChange - Emitted when the user selects a different item. The detail is the item.
+ * @fires igcOpening - Emitted before the user opens the list of options. Cancelable.
+ * @fires igcOpened - Emitted after the list of options opens on a user action.
+ * @fires igcClosing - Emitted before the user closes the list of options. Cancelable.
+ * @fires igcClosed - Emitted after the list of options closes on a user action.
  *
+ * @csspart base - The popup container of the list of options.
  * @csspart list - The list wrapping container for the items of the select.
  * @csspart input - The encapsulated input of the select.
+ * @csspart native-input - The native input element of the encapsulated input.
  * @csspart label - The encapsulated text label of the select.
  * @csspart prefix - The prefix wrapper of the input of the select.
  * @csspart suffix - The suffix wrapper of the input of the select.
  * @csspart toggle-icon - The toggle icon wrapper of the select.
+ * @csspart filled - Added to the toggle-icon part when the select has a value.
  * @csspart helper-text - The helper text wrapper of the select.
+ *
+ * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
+ *
+ * @cssstate ig-invalid - Set while the control shows its invalid state, that is while `invalid` returns `true`.
  */
 @blazorAdditionalDependencies(
   'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
@@ -125,11 +135,11 @@ const Slots = setSlots(
 export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcSelectComponentEventMap,
-    AbstractConstructor<IgcComboBoxBaseLikeComponent>
+    typeof IgcComboBoxBaseLikeComponent
   >(IgcComboBoxBaseLikeComponent)
 ) {
   public static readonly tagName = 'igc-select';
-  public static styles = [componentBase, styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -165,7 +175,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     {
       itemTag: IgcSelectItemComponent.tagName,
       focusOnNavigate: true,
-      onChange: () => this.requestUpdate(),
     }
   );
 
@@ -174,6 +183,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   @query('#dropdown')
   protected _list!: HTMLDivElement | null;
+
+  @query('[part="base"]', true)
+  protected override readonly _popup!: HTMLDivElement | null;
 
   //#endregion
 
@@ -204,7 +216,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   public outlined = false;
 
   /**
-   * Whether the control should receive focus automatically.
+   * Whether the control takes the focus after its first render.
    * @attr
    */
   @property({ type: Boolean })
@@ -244,8 +256,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   /** Returns the groups of the select component. */
   public get groups(): IgcSelectGroupComponent[] {
-    return Array.from(
-      getItems<IgcSelectGroupComponent>(this, IgcSelectGroupComponent.tagName)
+    return getItems<IgcSelectGroupComponent>(
+      this,
+      IgcSelectGroupComponent.tagName
     );
   }
 
@@ -276,17 +289,18 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     });
 
     addKeybindings(this, {
-      skip: () => this.disabled,
+      skip: this._skipKeys,
       bindingDefaults: { preventDefault: true, repeat: true },
     })
       .set([altKey, arrowDown], this._handleAltArrowDown)
-      .set([altKey, arrowUp], this._handleAltArrowUp)
+      .set([altKey, arrowUp], this._handleClose)
       .set(arrowDown, this._handleArrowDown)
       .set(arrowUp, this._handleArrowUp)
       .set(arrowLeft, this._handleArrowUp)
       .set(arrowRight, this._handleArrowDown)
       .set(tabKey, this._handleTab, { preventDefault: false })
-      .set(escapeKey, this._handleEscape)
+      .set([shiftKey, tabKey], this._handleTab, { preventDefault: false })
+      .set(escapeKey, this._handleClose, { when: () => this.open })
       .set(homeKey, this._handleHome)
       .set(endKey, this._handleEnd)
       .set(spaceBar, this._handleSpace)
@@ -316,16 +330,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     const match = this.value ? this._selection.resolve(this.value) : undefined;
 
-    if (match) {
-      if (match !== this._selection.selected) {
-        this._selection.select(match);
-      }
-      return;
-    }
+    if (match) this._selection.select(match);
 
-    // Nothing resolves the value anymore - drop the stale element references
-    // but hold on to the value itself.
+    // An unmatched value stays; only the stale element references go.
     this._selection.prune();
+    this.requestUpdate();
   }
 
   protected override async firstUpdated(): Promise<void> {
@@ -356,9 +365,33 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this._validate();
   }
 
+  protected override _returnFocus(): void {
+    this._input.focus({ preventScroll: true });
+  }
+
   //#endregion
 
   //#region Keyboard event handlers
+
+  /** Tab and Escape apply unless the content handled them; other content keys are its own. */
+  private _skipKeys(_: Element, event: KeyboardEvent): boolean {
+    if (this.disabled) {
+      return true;
+    }
+
+    return event.key === tabKey || event.key === escapeKey
+      ? event.defaultPrevented
+      : this._isContentEvent(event);
+  }
+
+  // No `open` check: content that closes the list on a key still owns that key.
+  private _isContentEvent(event: Event): boolean {
+    return isPopupContentEvent(
+      event,
+      this._popup,
+      IgcSelectItemComponent.tagName
+    );
+  }
 
   private _handleSearch(event: KeyboardEvent): void {
     // A printable key held with a modifier is a shortcut, not type-ahead.
@@ -366,7 +399,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       return;
     }
 
-    if (!/^.$/u.test(event.key)) {
+    if (!/^.$/u.test(event.key) || this._isContentEvent(event)) {
       return;
     }
 
@@ -424,20 +457,22 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     }
   }
 
-  private async _handleAltArrowUp(): Promise<void> {
+  private async _handleClose(): Promise<void> {
     if (this.open && (await this._hide(true))) {
       this._input.focus();
     }
   }
 
-  private async _handleEscape(): Promise<void> {
-    if (await this._hide(true)) {
-      this._input.focus();
-    }
-  }
-
   private _handleTab(event: KeyboardEvent): void {
-    if (this.open) {
+    if (
+      this.open &&
+      tabThroughPopup(
+        event,
+        this._input,
+        this._popup,
+        IgcSelectItemComponent.tagName
+      )
+    ) {
       event.preventDefault();
       this._selectItem(this._selection.active ?? this._selection.selected);
       this._hide(true);
@@ -464,7 +499,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   private _handleClick(event: PointerEvent): void {
     const item = getElementFromPath(IgcSelectItemComponent.tagName, event);
-    if (item && this._selection.activeItems.includes(item)) {
+    if (item && !item.disabled) {
       this._selectItem(item);
     }
   }
@@ -483,20 +518,17 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     emit = true
   ): IgcSelectItemComponent | null {
     if (!item) {
-      this._selection.select(null);
+      this._selection.commit(null);
       this._updateValue();
       return null;
     }
 
     const shouldFocus = emit && this.open;
     const shouldHide = emit && !this.keepOpenOnSelect;
+
     // Selecting the current item again is not a change, but the list still
     // closes and the input takes the focus.
-    const changed = this._selection.selected !== item;
-
-    this._selection.select(item);
-
-    if (changed) {
+    if (this._selection.commit(item)) {
       this._updateValue(item.value);
       if (emit) this._emitTouchedEvent('igcChange', { detail: item });
     }
@@ -509,6 +541,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   private _updateValue(value?: string): void {
     this._formValue.setValueAndFormState(value!);
+    // The form value state, not a reactive property, holds the value.
+    this.requestUpdate();
   }
 
   private async _focusItemOnOpen(): Promise<void> {
@@ -549,13 +583,15 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   /* alternateName: focusComponent */
   /** Sets focus on the component. */
   public override focus(options?: FocusOptions): void {
-    this._input.focus(options);
+    this._input?.focus(options);
+    deferFocus(this, options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the component. */
   public override blur(): void {
-    this._input.blur();
+    cancelDeferredFocus(this);
+    this._input?.blur();
   }
 
   /* blazorSuppress */
@@ -588,7 +624,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   /**  Resets the current value and selection of the component. */
   public clearSelection(): void {
     this._updateValue();
-    this._selection.select(null);
+    this._selection.commit(null);
   }
 
   //#endregion
@@ -658,6 +694,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   protected _renderDropdown() {
     return html`
       <div part="base" .inert=${!this.open}>
+        <slot name="header"></slot>
         <div
           id="dropdown"
           role="listbox"
@@ -665,10 +702,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
           aria-labelledby="input"
           @click=${this._handleClick}
         >
-          <slot name="header"></slot>
           <slot></slot>
-          <slot name="footer"></slot>
         </div>
+        <slot name="footer"></slot>
       </div>
     `;
   }

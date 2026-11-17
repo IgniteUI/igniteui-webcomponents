@@ -274,4 +274,93 @@ describe('Slots controller', () => {
       expect(changes).to.have.members(['start', '']);
     });
   });
+
+  describe('Hydration', () => {
+    let queryingTag: string;
+    let plainTag: string;
+    let renders: boolean[];
+    let changes: boolean[];
+    let container: HTMLDivElement;
+
+    before(() => {
+      queryingTag = defineCE(
+        class extends LitElement {
+          public readonly slotController: SlotController<
+            '[default]' | 'start'
+          > = addSlotController(this, {
+            slots: setSlots('start'),
+            onChange: () =>
+              changes.push(this.slotController.hasAssignedElements('start')),
+          });
+
+          protected override render() {
+            renders.push(this.slotController.hasAssignedElements('start'));
+            return html`<slot name="start"></slot>`;
+          }
+        }
+      );
+
+      plainTag = defineCE(
+        class extends LitElement {
+          public readonly slotController = addSlotController(this, {
+            slots: setSlots('start'),
+          });
+
+          protected override render() {
+            renders.push(false);
+            return html`<slot name="start"></slot>`;
+          }
+        }
+      );
+    });
+
+    beforeEach(async () => {
+      renders = [];
+      changes = [];
+      container = await fixture<HTMLDivElement>(html`<div></div>`);
+    });
+
+    /**
+     * Parses a host with a declarative shadow root that has the server slot. Synchronous, so the caller acts before
+     * the first update. Without the hydration support, Lit renders its own slot before the server one.
+     */
+    function parseDeclarative(tag: string, content = ''): LitElement {
+      container.setHTMLUnsafe(
+        `<${tag}><template shadowrootmode="open"><slot name="start"></slot></template>${content}</${tag}>`
+      );
+      return container.firstElementChild as LitElement;
+    }
+
+    async function settle(host: LitElement): Promise<void> {
+      await host.updateComplete;
+      await elementUpdated(host);
+    }
+
+    it('reports no slotted content while a declarative shadow root hydrates', async () => {
+      const host = parseDeclarative(queryingTag, '<span slot="start"></span>');
+
+      // The first render matches the server render, which has no slotted content.
+      await host.updateComplete;
+      expect(renders).to.eql([false]);
+
+      await elementUpdated(host);
+      expect(renders.slice(0, 2)).to.eql([false, true]);
+    });
+
+    it('runs the slotchange callbacks of the hydration after it', async () => {
+      await settle(parseDeclarative(queryingTag, '<span slot="start"></span>'));
+
+      expect(changes).not.to.be.empty;
+      expect(changes).not.to.include(false);
+    });
+
+    it('renders again after the hydration only when it hid a slot from a query', async () => {
+      await settle(parseDeclarative(plainTag));
+      expect(renders).lengthOf(1);
+
+      renders = [];
+      await settle(parseDeclarative(queryingTag));
+      expect(renders).lengthOf(2);
+    });
+  });
 });

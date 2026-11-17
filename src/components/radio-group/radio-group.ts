@@ -18,6 +18,8 @@ import type { ContentOrientation } from '../types.js';
 import { styles } from './themes/radio-group.base.css.js';
 import { styles as shared } from './themes/shared/radio-group.common.css.js';
 
+const Slots = setSlots();
+
 /**
  * Unifies one or more radio components into a single group.
  *
@@ -25,6 +27,9 @@ import { styles as shared } from './themes/shared/radio-group.common.css.js';
  *
  * @slot - The radio controls of the group. They must be direct children of the group -
  * radios nested in a wrapper element are neither part of it, nor laid out by it.
+ *
+ * @cssstate disabled - Set when the group has radios and all of them are disabled.
+ * @cssstate label-before - Set when a radio in the group has its label before the control.
  */
 export default class IgcRadioGroupComponent extends LitElement {
   public static readonly tagName = 'igc-radio-group';
@@ -42,7 +47,7 @@ export default class IgcRadioGroupComponent extends LitElement {
   });
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots(),
+    slots: Slots,
     onChange: this._syncRadios,
   });
 
@@ -66,6 +71,10 @@ export default class IgcRadioGroupComponent extends LitElement {
   public alignment: ContentOrientation = 'vertical';
 
   /* blazorCSSuppress */
+  /**
+   * The value of the radio that is checked by default. A form reset checks
+   * the radio with this value.
+   */
   @property({ attribute: false })
   public set defaultValue(value: string) {
     this._defaultValue = value;
@@ -137,13 +146,13 @@ export default class IgcRadioGroupComponent extends LitElement {
   private _syncRadios(): void {
     const radios = this._radios;
 
-    this._setRadiosName();
-    this._setRadiosDefaultChecked();
+    this._setRadiosName(radios);
+    this._setRadiosDefaultChecked(radios);
 
     // The pending value applies only while no radio is checked.
     // The `checked` attribute makes that selection the default.
     if (this._pendingValue && !radios.some((radio) => radio.checked)) {
-      this._setSelectedRadio();
+      this._setSelectedRadio(radios);
 
       for (const radio of radios) {
         radio.toggleAttribute('checked', radio.checked);
@@ -167,26 +176,26 @@ export default class IgcRadioGroupComponent extends LitElement {
     );
   }
 
-  private _setRadiosDefaultChecked(): void {
+  private _setRadiosDefaultChecked(radios = this._radios): void {
     if (isDefined(this._defaultValue)) {
-      for (const radio of this._radios) {
+      for (const radio of radios) {
         radio.defaultChecked = radio.value === this._defaultValue;
       }
     }
   }
 
-  private _setRadiosName(): void {
+  private _setRadiosName(radios = this._radios): void {
     if (isDefined(this._name)) {
-      for (const radio of this._radios) {
+      for (const radio of radios) {
         radio.name = this._name;
       }
     }
   }
 
-  private _setSelectedRadio(): void {
+  private _setSelectedRadio(radios = this._radios): void {
     let applied = false;
 
-    for (const radio of this._radios) {
+    for (const radio of radios) {
       radio.checked = radio.value === this._pendingValue;
       applied ||= radio.checked;
     }

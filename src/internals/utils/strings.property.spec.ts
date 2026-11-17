@@ -4,7 +4,6 @@ import { fc } from '#internals/testing/fast-check-setup.spec.js';
 
 import {
   createIdGenerator,
-  escapeRegex,
   formatString,
   nanoid,
   toKebabCase,
@@ -13,19 +12,6 @@ import {
 const text = fc.string({ unit: 'grapheme', maxLength: 40 });
 
 describe('String utilities properties', () => {
-  it('escapeRegex makes a pattern that matches only the string itself', () => {
-    fc.assert(
-      fc.property(text, text, (value, other) => {
-        for (const flags of ['', 'u']) {
-          const pattern = new RegExp(`^${escapeRegex(value)}$`, flags);
-
-          expect(pattern.test(value)).to.be.true;
-          expect(pattern.test(other)).to.equal(other === value);
-        }
-      })
-    );
-  });
-
   it('toKebabCase is idempotent and gives lowercase words', () => {
     fc.assert(
       fc.property(text, (value) => {

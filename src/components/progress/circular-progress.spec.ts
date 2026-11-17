@@ -2,12 +2,16 @@ import {
   elementUpdated,
   expect,
   fixture,
+  fixtureSync,
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { emulateMedia } from '@web/test-runner-commands';
 import { internalsOf } from '#internals/controllers/internals.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { allowMotion } from '#internals/testing/helpers.spec.js';
 import { firstOf } from '#internals/utils/arrays.js';
+import { configureTheme } from '#theming/config.js';
 import IgcCircularGradientComponent from './circular-gradient.js';
 import IgcCircularProgressComponent from './circular-progress.js';
 
@@ -246,6 +250,145 @@ describe('Circular progress component', () => {
       expect(stop).to.have.attribute('offset', '50%');
       expect(stop).to.have.attribute('stop-color', '#ff0079');
       expect(stop).to.have.attribute('stop-opacity', '0.8');
+    });
+  });
+
+  describe('Styles', () => {
+    const style = (part: string) =>
+      getComputedStyle(progress.renderRoot.querySelector(`[part~="${part}"]`)!);
+
+    /** The indeterminate durations of the ring and of its fill, by theme. */
+    function durations(): Record<string, string[]> {
+      const result: Record<string, string[]> = {};
+
+      try {
+        for (const theme of ['bootstrap', 'material', 'fluent'] as const) {
+          configureTheme(theme);
+          result[theme] = [
+            style('svg').animationDuration,
+            style('fill').animationDuration,
+          ];
+        }
+      } finally {
+        configureTheme('bootstrap');
+      }
+
+      return result;
+    }
+
+    beforeEach(async () => {
+      progress = await fixture<IgcCircularProgressComponent>(html`
+        <igc-circular-progress
+          style="--ig-circular-bar-diameter: 16px"
+        ></igc-circular-progress>
+      `);
+    });
+
+    it('takes the box of the ring, and follows text-align as a block', () => {
+      const ring = getDOM(progress).svg;
+      const center = ({ left, width }: DOMRect) => left + width / 2;
+
+      expect(progress.getBoundingClientRect().height).to.equal(
+        ring.getBoundingClientRect().height
+      );
+
+      const grid = fixtureSync<HTMLDivElement>(
+        html`<div
+          style="display: grid; width: 200px; text-align: center"
+        ></div>`
+      );
+      grid.append(progress);
+
+      expect(progress.getBoundingClientRect().height).to.equal(
+        ring.getBoundingClientRect().height
+      );
+      expect(center(ring.getBoundingClientRect())).to.be.closeTo(
+        center(grid.getBoundingClientRect()),
+        0.5
+      );
+    });
+
+    it('runs the indeterminate animation at a third of its speed with reduced motion', async () => {
+      await updateProgress('indeterminate', true);
+
+      expect(durations()).to.eql({
+        bootstrap: ['2.25s', '0s'],
+        material: ['9s', '4.5s'],
+        fluent: ['0s', '6s'],
+      });
+    });
+
+    it('shows a new value at once with reduced motion', () => {
+      expect(style('fill').transitionDuration).to.equal('0s');
+    });
+
+    describe('with motion', () => {
+      allowMotion();
+
+      it('runs the indeterminate animation at full speed', async () => {
+        await updateProgress('indeterminate', true);
+
+        expect(durations()).to.eql({
+          bootstrap: ['0.75s', '0s'],
+          material: ['3s', '1.5s'],
+          fluent: ['0s', '2s'],
+        });
+      });
+
+      it('animates a new value', () => {
+        expect(style('fill').transitionDuration).to.equal('0.5s');
+      });
+    });
+
+    describe('in forced colors', () => {
+      before(() => emulateMedia({ forcedColors: 'active' }));
+      after(() => emulateMedia({ forcedColors: 'none' }));
+
+      function expectSystemColors(stops: Iterable<SVGStopElement>): void {
+        const reference = fixtureSync<HTMLDivElement>(
+          html`<div style="color: GrayText"></div>`
+        );
+
+        expect(style('track').stroke).to.equal(
+          getComputedStyle(reference).color
+        );
+
+        for (const stop of stops) {
+          expect(getComputedStyle(stop).stopColor).to.equal(
+            getComputedStyle(progress).color
+          );
+          expect(getComputedStyle(stop).stopOpacity).to.equal('1');
+        }
+      }
+
+      it('draws the ring in the text color and the track in GrayText', () => {
+        // Not the text color, so the test fails without the rule.
+        progress.style.setProperty(
+          '--ig-circular-bar-fill-color-default',
+          'rgb(255, 0, 0)'
+        );
+
+        expectSystemColors(progress.renderRoot.querySelectorAll('stop'));
+      });
+
+      it('draws a custom gradient in the text color', async () => {
+        progress = await fixture<IgcCircularProgressComponent>(html`
+          <igc-circular-progress>
+            <igc-circular-gradient
+              slot="gradient"
+              color="#ff0079"
+              opacity="0.2"
+            ></igc-circular-gradient>
+          </igc-circular-progress>
+        `);
+        const custom =
+          progress.renderRoot.querySelectorAll<SVGStopElement>(
+            'stop:not([part])'
+          );
+
+        expect(custom).lengthOf(1);
+        expectSystemColors(custom);
+      });
     });
   });
 

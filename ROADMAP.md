@@ -53,7 +53,7 @@
 6. **[DONE]** Query Builder Component
 7. **[PREVIEW]** `igc-theme-provider` component - scoped theming via Lit context API, allowing multiple themes per page
 
-## Milestone 20, version 6.3.0, Released Nov 18th, 2025
+## Milestone 20, version 6.3.6, Released Nov 18th, 2025
 
 1. **[DONE]** Chat component
 2. **[DONE]** Grids Cell Merging feature
@@ -80,10 +80,6 @@
 
 1. **[DONE]** Carousel component [#170](https://github.com/IgniteUI/igniteui-webcomponents/issues/170)
 
-## Going down the road
-
-1. **[DONE]** Tile manager component [#1402](https://github.com/IgniteUI/igniteui-webcomponents/pull/1402) 
-
 ## Milestone 14, version 5.0.0, Released Aug 27th, 2024
 
 1. **[DONE]** Support for custom icon libraries [#1304](https://github.com/IgniteUI/igniteui-webcomponents/issues/1304) 
@@ -91,7 +87,7 @@
 ## Milestone 13, version [4.10.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.9.0...4.10.0) Released Jul 01st, 2024
 
 1. **[DONE]** Banner component [#1174](https://github.com/IgniteUI/igniteui-webcomponents/issues/1174)
-2. **[DONE]** Divider component [#1178](https://github.com/IgniteUI/igniteui-webcomponents/issues/1237)
+2. **[DONE]** Divider component [#1237](https://github.com/IgniteUI/igniteui-webcomponents/issues/1237)
 3. **[DONE]** Date picker component [#174](https://github.com/IgniteUI/igniteui-webcomponents/issues/174)
 4. **[DONE]** Radio group - the radio group now binds the name and the checked state of its radio components [#315](https://github.com/IgniteUI/igniteui-webcomponents/issues/315)
 
@@ -111,7 +107,6 @@
 
 1.  **[DONE]** Tree - Added the toggleNodeOnClick property. It sets whether a click on a node changes its expanded state. The default is false [#1003](https://github.com/IgniteUI/igniteui-webcomponents/issues/1003)
 2.  **[DONE]** Rating - Added allowReset. When it is enabled, a selection of the same value resets the component [#1014](https://github.com/IgniteUI/igniteui-webcomponents/issues/1014)
-3.  **[DONE]** Toggle-icon-expanded slot added to Select [#983](https://github.com/IgniteUI/igniteui-webcomponents/issues/983)
 
 ## Milestone 9, version [4.6.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.5.0...4.6.0) Released Dec 05th, 2023
 

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 
 import {
@@ -28,7 +29,7 @@ const metadata: Meta<IgcSplitterComponent> = {
     docs: {
       description: {
         component:
-          'A splitter component that provides a resizable split-pane layout, dividing the view\ninto two panels - *start* and *end* - separated by a draggable bar.\n\nPanels can be resized by dragging the bar, using keyboard shortcuts, or collapsed/expanded\nusing the built-in collapse buttons or the programmatic `toggle()` API.\nNested splitters are supported for more complex layouts.',
+          'A splitter component that provides a resizable split-pane layout, dividing the view\ninto two panels - *start* and *end* - separated by a draggable bar.\n\nPanels can be resized by dragging the bar, using keyboard shortcuts, or collapsed/expanded\nusing the built-in collapse buttons or the programmatic `toggle()` API.\nNested splitters are supported for more complex layouts.\n\n## Keyboard interactions\n\nWhen the splitter bar is focused:\n\n| Key | Action |\n|---|---|\n| `Arrow Left` / `Arrow Right` | Resize panes (horizontal orientation) |\n| `Arrow Up` / `Arrow Down` | Resize panes (vertical orientation) |\n| `Home` | Snap start pane to its minimum size |\n| `End` | Snap start pane to its maximum size |\n| `Ctrl + Arrow Left` / `Ctrl + Arrow Up` | Expand the end pane if it is collapsed, else toggle the start pane |\n| `Ctrl + Arrow Right` / `Ctrl + Arrow Down` | Expand the start pane if it is collapsed, else toggle the end pane |\n\nIn a right-to-left context, `Arrow Left` and `Arrow Right` swap their actions.',
       },
     },
     actions: {
@@ -44,7 +45,7 @@ const metadata: Meta<IgcSplitterComponent> = {
     orientation: {
       type: { name: 'enum', value: ['horizontal', 'vertical'] },
       description:
-        'The orientation of the splitter, which determines the direction of resizing and collapsing.\n\nChanging the orientation after the initial render clears the pane sizes and\ntheir min/max constraints, along with the corresponding attributes - a size\nauthored for one axis rarely makes sense on the other.',
+        'The orientation of the splitter, which determines the direction of resizing and collapsing.\n\nChanging the orientation after the initial render returns the panes to the\nsizes set through `startSize` and `endSize`, or to automatic sizing. The\nsizes from a drag, a key press or a collapse were measured on the other\naxis, so they are dropped. The minimum and maximum sizes stay.',
       options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'horizontal' } },
@@ -66,14 +67,14 @@ const metadata: Meta<IgcSplitterComponent> = {
     hideCollapseButtons: {
       type: 'boolean',
       description:
-        'Whether the expand/collapse buttons on the splitter bar are hidden.\n\nNote that the buttons will also be hidden if `disable-collapse` is true or\nif a pane is currently collapsed.',
+        'Whether the expand/collapse buttons on the splitter bar are hidden.\n\nThe buttons are also hidden when `disable-collapse` is true. While a pane\nis collapsed, only its expand button shows.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     hideDragHandle: {
       type: 'boolean',
       description:
-        'Whether the drag handle on the splitter bar is hidden.\n\nNote that the drag handle will also be hidden if `disable-resize` is true.',
+        'Whether the drag handle on the splitter bar is hidden.\n\nThe drag handle is also hidden when `disable-resize` is true.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -127,6 +128,12 @@ const metadata: Meta<IgcSplitterComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    locale: {
+      type: 'string',
+      description:
+        'The locale of the component. Without it, the component takes its own\n`lang`, else the locale of the nearest ancestor that has a `locale` (a\ncomponent) or a `lang`, and then the global locale.',
+      control: 'text',
+    },
   },
   args: {
     orientation: 'horizontal',
@@ -145,9 +152,10 @@ interface IgcSplitterArgs {
   /**
    * The orientation of the splitter, which determines the direction of resizing and collapsing.
    *
-   * Changing the orientation after the initial render clears the pane sizes and
-   * their min/max constraints, along with the corresponding attributes - a size
-   * authored for one axis rarely makes sense on the other.
+   * Changing the orientation after the initial render returns the panes to the
+   * sizes set through `startSize` and `endSize`, or to automatic sizing. The
+   * sizes from a drag, a key press or a collapse were measured on the other
+   * axis, so they are dropped. The minimum and maximum sizes stay.
    */
   orientation: 'horizontal' | 'vertical';
   /**
@@ -164,14 +172,14 @@ interface IgcSplitterArgs {
   /**
    * Whether the expand/collapse buttons on the splitter bar are hidden.
    *
-   * Note that the buttons will also be hidden if `disable-collapse` is true or
-   * if a pane is currently collapsed.
+   * The buttons are also hidden when `disable-collapse` is true. While a pane
+   * is collapsed, only its expand button shows.
    */
   hideCollapseButtons: boolean;
   /**
    * Whether the drag handle on the splitter bar is hidden.
    *
-   * Note that the drag handle will also be hidden if `disable-resize` is true.
+   * The drag handle is also hidden when `disable-resize` is true.
    */
   hideDragHandle: boolean;
   /**
@@ -232,6 +240,12 @@ interface IgcSplitterArgs {
    * collapse or expand the pane programmatically.
    */
   endCollapsed: boolean;
+  /**
+   * The locale of the component. Without it, the component takes its own
+   * `lang`, else the locale of the nearest ancestor that has a `locale` (a
+   * component) or a `lang`, and then the global locale.
+   */
+  locale: string;
 }
 type Story = StoryObj<IgcSplitterArgs>;
 
@@ -329,6 +343,7 @@ export const Default: Story = {
       .startMaxSize=${args.startMaxSize}
       .endMinSize=${args.endMinSize}
       .endMaxSize=${args.endMaxSize}
+      locale=${ifDefined(args.locale)}
     >
       <section
         slot="start"

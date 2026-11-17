@@ -193,6 +193,11 @@ export async function rasterizeSvg(
   }
 }
 
+/** Whether the clipboard takes SVG images. */
+export function canCopySvg(): boolean {
+  return ClipboardItem.supports(MIME_TYPES.svg);
+}
+
 /** Triggers the browser download dialog for the given file. */
 export function downloadFile(file: File): void {
   const url = URL.createObjectURL(file);

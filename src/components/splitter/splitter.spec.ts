@@ -6,6 +6,8 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 import { resetMouse, sendMouse } from '@web/test-runner-commands';
+import { registerI18n } from 'igniteui-i18n-core';
+import { SplitterResourceStringsBG } from 'igniteui-i18n-resources';
 import { spy } from 'sinon';
 import {
   arrowDown,
@@ -17,7 +19,12 @@ import {
   homeKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { finishAnimationsFor } from '#internals/testing/helpers.spec.js';
+import {
+  finishAnimationsFor,
+  isUnderPageLayer,
+  withDocumentSheets,
+} from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
@@ -26,6 +33,8 @@ import {
   simulatePointerUp,
 } from '#internals/testing/simulate.spec.js';
 import { asPercent, roundPrecise } from '#internals/utils/math.js';
+import { configureTheme } from '#theming/config.js';
+import { styles as indigo } from '../../styles/themes/light/indigo.css.js';
 import IgcTreeItemComponent from '../tree/tree-item.js';
 import IgcTreeComponent from '../tree/tree.js';
 import type { SplitterOrientation } from '../types.js';
@@ -78,6 +87,32 @@ describe('Splitter', () => {
 
       expect(bar.getAttribute('aria-label')).to.equal('Resize panes');
       expect(bar.getAttribute('aria-valuetext')).to.equal('0%');
+    });
+
+    it('paints the focused bar under an earlier page layer', () => {
+      const bar = getSplitterPart(splitter, BAR_PART);
+
+      bar.focus();
+
+      expect(bar.matches(':focus-visible')).to.be.true;
+      expect(isUnderPageLayer(splitter, bar)).to.be.true;
+    });
+
+    it('keeps the focused bar above the positioned content of the panes', () => {
+      const bar = getSplitterPart(splitter, BAR_PART);
+
+      for (const content of splitter.querySelectorAll('div')) {
+        content.style.cssText = 'position: fixed; inset: 0; z-index: 100';
+      }
+      bar.focus();
+
+      const { left, top, width, height } = bar.getBoundingClientRect();
+      const hit = splitter.shadowRoot!.elementFromPoint(
+        left + width / 2,
+        top + height / 2
+      );
+
+      expect(bar.contains(hit)).to.be.true;
     });
 
     it('should render both panes with equal sizes if no explicit sizes set', async () => {
@@ -171,7 +206,6 @@ describe('Splitter', () => {
       expect(endCollapseBtn.hidden).to.be.true;
       expect(dragHandle.hidden).to.be.false;
 
-      // verify this with programmatic expand/collapse as well
       splitter.toggle('start');
       await elementUpdated(splitter);
 
@@ -332,6 +366,28 @@ describe('Splitter', () => {
     });
   });
 
+  describe('Localization', () => {
+    before(() => registerI18n(SplitterResourceStringsBG, 'bg'));
+
+    it('names the bar in its locale', async () => {
+      splitter.locale = 'bg';
+      await elementUpdated(splitter);
+
+      expect(
+        getSplitterPart(splitter, BAR_PART).getAttribute('aria-label')
+      ).to.equal(SplitterResourceStringsBG.splitter_resize_panes);
+    });
+
+    it('takes the bar name from `resourceStrings`', async () => {
+      splitter.resourceStrings = { splitter_resize_panes: 'Größe ändern' };
+      await elementUpdated(splitter);
+
+      expect(
+        getSplitterPart(splitter, BAR_PART).getAttribute('aria-label')
+      ).to.equal('Größe ändern');
+    });
+  });
+
   describe('Host ARIA', () => {
     it('names the bar through the host `aria-label`, and follows a change and a removal', async () => {
       const bar = getSplitterPart(splitter, BAR_PART);
@@ -459,7 +515,7 @@ describe('Splitter', () => {
   });
 
   describe('Properties', () => {
-    it('should reset pane sizes when orientation changes', async () => {
+    it('should keep the authored sizes and constraints when orientation changes', async () => {
       splitter = await fixture<IgcSplitterComponent>(
         createTwoPanesWithSizesAndConstraints({
           orientation: 'horizontal',
@@ -480,28 +536,188 @@ describe('Splitter', () => {
       splitter.orientation = 'vertical';
       await elementUpdated(splitter);
 
-      expect(splitter.startSize).to.equal('auto');
-      expect(style.flex).to.equal('1 1 0px');
+      expect(splitter.startSize).to.equal('200px');
+      expect(style.flex).to.equal('0 1 200px');
 
-      expect(splitter.startMinSize).to.be.undefined;
-      expect(splitter.startMaxSize).to.be.undefined;
+      expect(splitter.startMinSize).to.equal('100px');
+      expect(splitter.startMaxSize).to.equal('300px');
 
-      // The DOM must not keep asserting sizes the component no longer holds
-      for (const attribute of [
-        'start-size',
-        'start-min-size',
-        'start-max-size',
-        'end-size',
-        'end-min-size',
-        'end-max-size',
-      ]) {
-        expect(splitter.hasAttribute(attribute), attribute).to.be.false;
-      }
-
-      expect(style.minHeight).to.equal('0px');
-      expect(style.maxHeight).to.equal('100%');
+      expect(style.minHeight).to.equal('100px');
+      expect(style.maxHeight).to.equal('300px');
       expect(style.minWidth).to.equal('0px');
       expect(style.maxWidth).to.equal('100%');
+    });
+
+    it('should keep the size attributes when orientation changes', async () => {
+      splitter = await fixture<IgcSplitterComponent>(html`
+        <igc-splitter
+          style="width: 500px; height: 500px;"
+          start-size="200px"
+          start-min-size="100px"
+          end-max-size="400px"
+        >
+          <div slot="start">Pane 1</div>
+          <div slot="end">Pane 2</div>
+        </igc-splitter>
+      `);
+
+      splitter.orientation = 'vertical';
+      await elementUpdated(splitter);
+
+      expect(splitter.getAttribute('start-size')).to.equal('200px');
+      expect(splitter.getAttribute('start-min-size')).to.equal('100px');
+      expect(splitter.getAttribute('end-max-size')).to.equal('400px');
+      expect(splitter.startSize).to.equal('200px');
+      expect(splitter.startMinSize).to.equal('100px');
+      expect(splitter.endMaxSize).to.equal('400px');
+    });
+
+    it('should keep a size set in the same update as the orientation', async () => {
+      splitter.orientation = 'vertical';
+      splitter.startSize = '100px';
+      await elementUpdated(splitter);
+      // The bar transitions to its new shape
+      finishAnimationsFor(splitter.shadowRoot!);
+
+      expect(splitter.startSize).to.equal('100px');
+      expect(getPanesSizes(splitter, 'height').startSize).to.equal(100);
+    });
+
+    it('should drop the dragged sizes when orientation changes', async () => {
+      await resize(splitter, 50, 0);
+      expect(splitter.startSize).to.contain('%');
+
+      splitter.orientation = 'vertical';
+      await elementUpdated(splitter);
+      finishAnimationsFor(splitter.shadowRoot!);
+
+      expect(splitter.startSize).to.equal('auto');
+      expect(splitter.endSize).to.equal('auto');
+
+      splitter.startSize = '200px';
+      await elementUpdated(splitter);
+
+      await resize(splitter, 0, 50);
+      expect(splitter.startSize).to.equal('250px');
+
+      splitter.orientation = 'horizontal';
+      await elementUpdated(splitter);
+      finishAnimationsFor(splitter.shadowRoot!);
+
+      expect(splitter.startSize).to.equal('200px');
+      expect(getPanesSizes(splitter, 'width').startSize).to.equal(200);
+    });
+
+    it('should expand to the authored size after an orientation change while collapsed', async () => {
+      splitter.startSize = '200px';
+      await elementUpdated(splitter);
+
+      await resize(splitter, 50, 0);
+
+      splitter.toggle('start');
+      await elementUpdated(splitter);
+
+      splitter.orientation = 'vertical';
+      await elementUpdated(splitter);
+
+      expect(splitter.startCollapsed).to.be.true;
+
+      splitter.toggle('start');
+      await elementUpdated(splitter);
+      finishAnimationsFor(splitter.shadowRoot!);
+
+      expect(splitter.startSize).to.equal('200px');
+      expect(getPanesSizes(splitter, 'height').startSize).to.equal(200);
+    });
+
+    it('should keep the dragged sizes when the orientation returns to the same axis', async () => {
+      await resize(splitter, 50, 0);
+      const dragged = splitter.startSize;
+
+      splitter.orientation = 'vertical';
+      splitter.orientation = 'horizontal';
+      await elementUpdated(splitter);
+
+      expect(splitter.startSize).to.equal(dragged);
+    });
+
+    it('should not animate the bar from the old orientation', async () => {
+      // The Indigo theme scales the bar on the axis of its orientation.
+      configureTheme('indigo');
+
+      try {
+        await nextFrame();
+        splitter.orientation = 'vertical';
+        await elementUpdated(splitter);
+
+        expect(getSplitterPart(splitter, BAR_PART).getAnimations()).to.be.empty;
+      } finally {
+        configureTheme('bootstrap');
+      }
+    });
+
+    it('should report the restored sizes as changed properties', async () => {
+      await resize(splitter, 50, 0);
+      const updated = spy(
+        splitter as unknown as { updated(changed: Map<string, unknown>): void },
+        'updated'
+      );
+
+      splitter.orientation = 'vertical';
+      await elementUpdated(splitter);
+
+      expect(updated.lastCall.args[0].has('startSize')).to.be.true;
+      updated.restore();
+    });
+
+    it('should cancel a drag when the orientation changes', async () => {
+      splitter.startSize = '200px';
+      await elementUpdated(splitter);
+
+      const eventSpy = spy(splitter, 'emitEvent');
+      const bar = getSplitterPart(splitter, BAR_PART);
+      const pointer = { clientX: 0, clientY: 0, pointerId: 1 };
+
+      simulatePointerDown(bar, pointer);
+      simulatePointerMove(bar, pointer, { x: 50 });
+      await elementUpdated(splitter);
+
+      splitter.orientation = 'vertical';
+      await elementUpdated(splitter);
+
+      // The pointer no longer drives the panes
+      simulatePointerMove(bar, pointer, { y: 100 });
+      simulatePointerUp(bar, { ...pointer, clientY: 100 });
+      await elementUpdated(splitter);
+
+      expect(splitter.startSize).to.equal('200px');
+
+      const ends = getResizeDetails(eventSpy, 'igcResizeEnd');
+      expect(ends).to.have.length(1);
+      expect(ends[0].delta).to.equal(0);
+    });
+
+    it('should not resize to a negative size when the minimums do not fit', async () => {
+      splitter = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          startSize: '100px',
+          startMinSize: '300px',
+          endMinSize: '300px',
+          endMaxSize: '50px',
+        })
+      );
+      const eventSpy = spy(splitter, 'emitEvent');
+      const bar = getSplitterPart(splitter, BAR_PART);
+
+      bar.focus();
+      simulateKeyboard(bar, arrowRight);
+      await elementUpdated(splitter);
+
+      // Neither minimum renders, so neither limits the resize
+      const [end] = getResizeDetails(eventSpy, 'igcResizeEnd');
+      expect(end.startPanelSize).to.equal(110);
+      expect(end.endPanelSize).to.equal(40);
+      expect(splitter.endSize).not.to.match(/^-/);
     });
 
     it('should set pane sizes to alternative CSS units such as em, rem, etc.', async () => {
@@ -2322,7 +2538,6 @@ describe('Splitter', () => {
 
       const currentSizes = getPanesSizes(splitter, 'width');
       expect(currentSizes.startSize).to.equal(previousSizes.startSize + deltaX);
-      // end pane size should be decreased to fit the splitter width
       expect(currentSizes.endSize).to.equal(
         totalSplitterSize - barSize - currentSizes.startSize
       );
@@ -2355,7 +2570,6 @@ describe('Splitter', () => {
 
       const currentSizes = getPanesSizes(splitter, 'height');
       expect(currentSizes.startSize).to.equal(previousSizes.startSize + deltaY);
-      // end pane size should be decreased to fit the splitter height
       expect(currentSizes.endSize).to.equal(
         totalSplitterSize - barSize - currentSizes.startSize
       );
@@ -2374,7 +2588,8 @@ describe('Splitter', () => {
           startSize: '100px',
           startMinSize: '100px',
           startMaxSize: '300px',
-          endSize: '100px',
+          // Room for the end pane to shrink to its minimum
+          endSize: '200px',
           endMinSize: '100px',
           endMaxSize: '300px',
         })
@@ -2386,6 +2601,8 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
 
       const previousSizes = getPanesSizes(splitter, 'width');
+      expect(previousSizes.startSize).to.equal(100);
+
       const deltaX = 100;
 
       await resize(splitter, deltaX, 0);
@@ -3440,6 +3657,33 @@ describe('Splitter', () => {
       );
     });
 
+    it('should collapse a pane from a button on the hovered bar in indigo', async () => {
+      // Indigo hides the bar buttons with `pointer-events: none` until the bar is hovered or focused.
+      await withDocumentSheets([indigo.styleSheet!], async () => {
+        try {
+          configureTheme('indigo');
+          await elementUpdated(splitter);
+
+          const bar = getSplitterPart(splitter, BAR_PART);
+          await sendMouse({ type: 'move', position: getCenter(bar) });
+          finishAnimationsFor(splitter.shadowRoot!);
+
+          const { startCollapseBtn } = getButtonParts(splitter);
+          await sendMouse({
+            type: 'move',
+            position: getCenter(startCollapseBtn),
+          });
+          await sendMouse({ type: 'down' });
+          await sendMouse({ type: 'up' });
+          await elementUpdated(splitter);
+
+          expect(splitter.startCollapsed).to.be.true;
+        } finally {
+          configureTheme('bootstrap');
+        }
+      });
+    });
+
     it('should ignore Home/End while resizing is disabled', async () => {
       splitter.disableResize = true;
       await elementUpdated(splitter);
@@ -3543,7 +3787,6 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
       expect(splitter.startSize).to.equal('auto');
 
-      // percentages over 100% are also considered invalid
       splitter.startSize = '150%';
       await elementUpdated(splitter);
       expect(splitter.startSize).to.equal('auto');
@@ -3560,12 +3803,10 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
       expect(splitter.endSize).to.equal('auto');
 
-      // values with spaces should be trimmed and accepted if numeric part is valid
       splitter.startSize = '  200px  ';
       await elementUpdated(splitter);
       expect(splitter.startSize).to.equal('200px');
 
-      // 0% and 100% are valid
       splitter.startSize = '0%';
       await elementUpdated(splitter);
       expect(splitter.startSize).to.equal('0%');
@@ -3789,6 +4030,13 @@ describe('Splitter', () => {
       expect(partialSplitter.startSize).to.equal('300px');
     });
   });
+
+  runHiddenAncestorTests(html`
+    <igc-splitter style="height: 200px">
+      <div slot="start">Start</div>
+      <div slot="end">End</div>
+    </igc-splitter>
+  `);
 });
 
 function createSplitter() {
@@ -3946,6 +4194,11 @@ function getButtonParts(splitter: IgcSplitterComponent) {
     startCollapseBtn: getSplitterPart(splitter, START_COLLAPSE_PART),
     endCollapseBtn: getSplitterPart(splitter, END_COLLAPSE_PART),
   };
+}
+
+function getCenter(element: Element): [number, number] {
+  const { left, top, width, height } = element.getBoundingClientRect();
+  return [Math.round(left + width / 2), Math.round(top + height / 2)];
 }
 
 async function resize(

@@ -1,4 +1,5 @@
 import { isServer } from 'lit';
+import { firstOf } from './arrays.js';
 import { isElement } from './dom.js';
 import { isEventListenerObject, isString } from './types.js';
 
@@ -47,6 +48,81 @@ export function getElementFromPath(
   return match as Element | undefined;
 }
 
+/**
+ * Focuses the stop after the innermost of `stops` on the path of a Tab `event`,
+ * or the one before it with Shift. Returns whether the focus moved: `false`
+ * past either end, or when that stop does not take the focus.
+ */
+export function focusTabStop(
+  event: KeyboardEvent,
+  stops: readonly HTMLElement[]
+): boolean {
+  const current = getElementFromPath<HTMLElement>(
+    (element) => stops.includes(element as HTMLElement),
+    event
+  );
+
+  if (!current) {
+    return false;
+  }
+
+  const next = stops[stops.indexOf(current) + (event.shiftKey ? -1 : 1)];
+
+  next?.focus();
+  return !!next?.matches(':focus');
+}
+
+/**
+ * Returns the element that started the event if it matches the selector.
+ * Unlike `getElementFromPath`, a match deeper in the composed path does not count.
+ */
+export function getEventOrigin<T extends Element = Element>(
+  selector: string,
+  event: Event
+): T | undefined {
+  const origin = firstOf(event.composedPath());
+  return isElement(origin) && origin.matches(selector)
+    ? (origin as T)
+    : undefined;
+}
+
+/**
+ * Runs `action` like a native default action of `event`: after the listeners
+ * on its path, and only when none of them cancels the event. An event that
+ * stops on the way, or does not bubble, runs it in the next task.
+ */
+export function runDefaultAction(event: Event, action: () => void): void {
+  const end = event.composedPath().at(-1);
+  const controller = new AbortController();
+  const { signal } = controller;
+  const run = (): void => {
+    if (!signal.aborted) {
+      controller.abort();
+
+      if (!event.defaultPrevented) {
+        action();
+      }
+    }
+  };
+
+  // An event that is not in dispatch has no path.
+  if (!end) {
+    run();
+    return;
+  }
+
+  end.addEventListener(
+    event.type,
+    (other) => {
+      if (other === event) {
+        run();
+      }
+    },
+    { signal }
+  );
+  setTimeout(run);
+}
+
 /** Reusable event listener that stops the propagation of the event. */
 export function stopPropagation(event: Event): void {
   event.stopPropagation();
@@ -55,6 +131,50 @@ export function stopPropagation(event: Event): void {
 /** Reusable event listener that prevents the default action of the event. */
 export function preventDefault(event: Event): void {
   event.preventDefault();
+}
+
+/**
+ * Whether the browser opens a link in another browsing context: by its `target`
+ * (or the target of the page's `<base>` element), or for a click with another
+ * button or a modifier key. In a page that is not in a frame, `_parent` and
+ * `_top` open the link in the same browsing context.
+ */
+export function linkOpensElsewhere(
+  target: string | null | undefined,
+  document: Document,
+  event?: MouseEvent
+): boolean {
+  if (
+    event &&
+    (event.button !== 0 ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey)
+  ) {
+    return true;
+  }
+
+  const resolved = (target ?? getBaseTarget(document))?.toLowerCase();
+
+  // `top`, because a page script can replace `parent`.
+  if (resolved === '_parent' || resolved === '_top') {
+    const view = document.defaultView;
+    return view?.top !== view;
+  }
+
+  return Boolean(resolved) && resolved !== '_self';
+}
+
+/** The target of the first `<base>` element that has one, as the browser uses it. */
+function getBaseTarget(document: Document): string | null {
+  for (const base of document.getElementsByTagName('base')) {
+    if (base.hasAttribute('target')) {
+      return base.getAttribute('target');
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -117,6 +237,22 @@ export function toggleEventListener<
     : target.removeEventListener(event, listener, options);
 }
 
+/** Adds an unbound `listener` for each of `events`; does nothing during SSR. */
+export function addSafeEventListeners(
+  target: EventTarget,
+  events: readonly string[],
+  listener: EventListenerOrEventListenerObject,
+  options?: AddEventListenerOptions
+): void {
+  if (isServer) {
+    return;
+  }
+
+  for (const event of events) {
+    target.addEventListener(event, listener, options);
+  }
+}
+
 /**
  * Adds an event listener to an element, and does nothing during server-side
  * rendering.
@@ -132,12 +268,8 @@ export function addSafeEventListener<
   handler: (event: EventTypeOf<E>) => unknown,
   options?: boolean | AddEventListenerOptions
 ): void {
-  if (isServer) {
-    return;
+  if (!isServer) {
+    // The browser calls a function listener with the target as `this`.
+    target.addEventListener(eventName, handler as EventListener, options);
   }
-
-  const boundHandler = (event: Event) =>
-    handler.call(target, event as EventTypeOf<E>);
-
-  target.addEventListener(eventName, boundHandler, options);
 }

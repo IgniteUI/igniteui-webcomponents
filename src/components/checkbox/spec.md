@@ -34,8 +34,9 @@ This directory hosts two form-associated components that share the same base imp
     - [defaultChecked](#defaultchecked)
     - [Validation message slots](#validation-message-slots)
     - [External label association](#external-label-association)
-    - [Not covered by the suites](#not-covered-by-the-suites)
     - [Host ARIA](#host-aria)
+    - [Hidden ancestor](#hidden-ancestor)
+    - [Not covered by the suites](#not-covered-by-the-suites)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
     - [Keyboard support](#keyboard-support)
@@ -50,6 +51,12 @@ This directory hosts two form-associated components that share the same base imp
 |       3 | 2026-10-01 | Hide the checkbox indicator from assistive technologies                    |
 |       4 | 2026-10-02 | Focus after form checks; `invalid` only on checks                          |
 |       5 | 2026-10-02 | Forward the host `aria-describedby`                                        |
+|       6 | 2026-10-21 | API descriptions aligned with the JSDoc.                                   |
+|       7 | 2026-10-23 | The checkbox and the switch make a stacking context, so the z-index of the indicator and the control does not compete with the layers of the page |
+|       8 | 2026-10-29 | Transition only the properties that change, so the checkbox and the switch hide at the same time as a hidden ancestor |
+|       9 | 2026-11-02 | `focus()` and `blur()` before the first render do not throw, and a `focus()` call applies after it                    |
+|      10 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown` does not submit the form |
+|      11 | 2026-11-11 | <kbd>Enter</kbd> submits only through the first submit button of the form, as for a native checkbox, and not after a canceled `keypress` |
 
 ## Overview
 
@@ -219,6 +226,10 @@ mechanism.
 - When no `value` is set, a checked control submits `on`, following the native element.
 - A form reset restores the `defaultChecked` state, which is taken from the `checked` attribute.
 - A disabled control does not submit a value.
+- <kbd>Enter</kbd> on the control submits the form, as for a native checkbox: the first submit button of the form
+  gets a click, and the click submits the form. A form with no submit button, or with a disabled first submit button,
+  does not submit. A `keydown` or `keypress` listener that calls `preventDefault()`, or a listener that disables the
+  control, stops the submission.
 
 As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
 the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
@@ -236,6 +247,7 @@ application and localized by it.
 | ---------------- | --------------------------------------------------- |
 | <kbd>Tab</kbd>   | Moves focus to the control, and away from it.       |
 | <kbd>Space</kbd> | Toggles the checked state of the control.           |
+| <kbd>Enter</kbd> | Clicks the first submit button of the form, if any. |
 
 ## API
 
@@ -247,19 +259,19 @@ A check box allowing single values to be selected/deselected.
 
 | Property          | Attribute        | Reflected | Type                      | Default | Description                                                              |
 | ----------------- | ---------------- | --------- | ------------------------- | ------- | ------------------------------------------------------------------------ |
-| checked           | checked          | No        | `boolean`                 | false   | The checked state of the control.                                        |
-| indeterminate     | indeterminate    | Yes       | `boolean`                 | false   | Draws the checkbox in indeterminate state.                               |
+| checked           | checked          | No        | `boolean`                 | false   | Whether the control is checked.                                          |
+| indeterminate     | indeterminate    | Yes       | `boolean`                 | false   | Whether the checkbox is in the indeterminate state. A user click clears it. |
 | value             | value            | No        | `string`                  | -       | The value of the control, submitted when the control is checked.         |
 | labelPosition     | label-position   | Yes       | `ToggleLabelPosition`     | `after` | The label position of the control.                                       |
-| required          | required         | Yes       | `boolean`                 | false   | Makes the component a required field for validation.                     |
-| disabled          | disabled         | Yes       | `boolean`                 | false   | The disabled state of the component.                                     |
-| invalid           | invalid          | No        | `boolean`                 | false   | Sets the control into invalid state (visual state only).                 |
+| required          | required         | Yes       | `boolean`                 | false   | Whether the control is required. A required control that has no value, or is not checked, fails validation.                     |
+| disabled          | disabled         | Yes       | `boolean`                 | false   | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                                     |
+| invalid           | invalid          | No        | `boolean`                 | false   | Whether the control shows the invalid state. It changes only the visual state, not the validity.                 |
 | name              | name             | Yes       | `string`                  | -       | The name of the control, submitted with the form data.                   |
-| defaultChecked    | -                | No        | `boolean`                 | false   | The initial checked state, restored on a form reset.                     |
-| form              | -                | No        | `HTMLFormElement \| null` | -       | Read-only. The form associated with this element.                        |
-| validity          | -                | No        | `ValidityState`           | -       | Read-only. The validity state of the element.                            |
-| validationMessage | -                | No        | `string`                  | -       | Read-only. The validation message of the element.                        |
-| willValidate      | -                | No        | `boolean`                 | -       | Read-only. Whether the element is a candidate for constraint validation. |
+| defaultChecked    | -                | No        | `boolean`                 | false   | Whether the control is checked by default. A form reset restores the checked state to it. While the checked state is unchanged since the start or the last form reset, a new default also sets the checked state. The `checked` attribute also sets it.                     |
+| form              | -                | No        | `HTMLFormElement \| null` | -       | Read-only. The form that the control is associated with, or `null`.                        |
+| validity          | -                | No        | `ValidityState`           | -       | Read-only. The validity state of the control.                            |
+| validationMessage | -                | No        | `string`                  | -       | Read-only. The validation message of the control. It is empty when the control is valid.                        |
+| willValidate      | -                | No        | `boolean`                 | -       | Read-only. Whether the control is a candidate for constraint validation. |
 
 #### Slots
 
@@ -276,9 +288,23 @@ A check box allowing single values to be selected/deselected.
 | Part        | Description                        |
 | ----------- | ---------------------------------- |
 | `base`      | The base wrapper of the checkbox.  |
-| `control`   | The checkbox input element.        |
+| `control`   | The box of the checkbox. It holds the indicator. |
 | `label`     | The checkbox label.                |
 | `indicator` | The checkbox indicator icon.       |
+| `checked`   | Added to the base, control, label and indicator parts when the checkbox is checked. |
+| `focused`   | Added to the base part when the checkbox has keyboard focus. |
+
+#### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
+
+#### CSS custom properties
+
+| Property                | Description                                                                                                                                                                                                                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ig-helper-min-lines` | The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`. |
 
 ### igc-switch
 
@@ -290,37 +316,41 @@ The switch exposes the same properties as the checkbox, with the exception of `i
 
 | Property          | Attribute        | Reflected | Type                      | Default | Description                                                              |
 | ----------------- | ---------------- | --------- | ------------------------- | ------- | ------------------------------------------------------------------------ |
-| checked           | checked          | No        | `boolean`                 | false   | The checked state of the control.                                        |
+| checked           | checked          | No        | `boolean`                 | false   | Whether the control is checked.                                          |
 | value             | value            | No        | `string`                  | -       | The value of the control, submitted when the control is checked.         |
 | labelPosition     | label-position   | Yes       | `ToggleLabelPosition`     | `after` | The label position of the control.                                       |
-| required          | required         | Yes       | `boolean`                 | false   | Makes the component a required field for validation.                     |
-| disabled          | disabled         | Yes       | `boolean`                 | false   | The disabled state of the component.                                     |
-| invalid           | invalid          | No        | `boolean`                 | false   | Sets the control into invalid state (visual state only).                 |
+| required          | required         | Yes       | `boolean`                 | false   | Whether the control is required. A required control that has no value, or is not checked, fails validation.                     |
+| disabled          | disabled         | Yes       | `boolean`                 | false   | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                                     |
+| invalid           | invalid          | No        | `boolean`                 | false   | Whether the control shows the invalid state. It changes only the visual state, not the validity.                 |
 | name              | name             | Yes       | `string`                  | -       | The name of the control, submitted with the form data.                   |
-| defaultChecked    | -                | No        | `boolean`                 | false   | The initial checked state, restored on a form reset.                     |
-| form              | -                | No        | `HTMLFormElement \| null` | -       | Read-only. The form associated with this element.                        |
-| validity          | -                | No        | `ValidityState`           | -       | Read-only. The validity state of the element.                            |
-| validationMessage | -                | No        | `string`                  | -       | Read-only. The validation message of the element.                        |
-| willValidate      | -                | No        | `boolean`                 | -       | Read-only. Whether the element is a candidate for constraint validation. |
+| defaultChecked    | -                | No        | `boolean`                 | false   | Whether the control is checked by default. A form reset restores the checked state to it. While the checked state is unchanged since the start or the last form reset, a new default also sets the checked state. The `checked` attribute also sets it.                     |
+| form              | -                | No        | `HTMLFormElement \| null` | -       | Read-only. The form that the control is associated with, or `null`.                        |
+| validity          | -                | No        | `ValidityState`           | -       | Read-only. The validity state of the control.                            |
+| validationMessage | -                | No        | `string`                  | -       | Read-only. The validation message of the control. It is empty when the control is valid.                        |
+| willValidate      | -                | No        | `boolean`                 | -       | Read-only. Whether the control is a candidate for constraint validation. |
 
 #### Slots
 
 | Name            | Description                                                                      |
 | --------------- | --------------------------------------------------------------------------------- |
 | (default)       | The switch label.                                                                |
-| `helper-text`   | Renders content below the control.                                               |
-| `value-missing` | Renders content when the required validation fails.                              |
-| `custom-error`  | Renders content when setCustomValidity(message) is set.                          |
-| `invalid`       | Renders content when the component is in invalid state (validity.valid = false). |
 
 #### CSS Shadow parts
 
 | Part      | Description                             |
 | --------- | --------------------------------------- |
 | `base`    | The base wrapper of the switch.         |
-| `control` | The switch input element.               |
+| `control` | The track of the switch. It holds the thumb. |
 | `thumb`   | The position indicator of the switch.   |
 | `label`   | The switch label.                       |
+| `checked` | Added to the base, control, label and thumb parts when the switch is checked. |
+| `focused` | Added to the control part when the switch has keyboard focus. |
+
+#### CSS custom states
+
+| State        | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `ig-invalid` | Set while the control shows its invalid state, that is while `invalid` returns `true`. |
 
 ### Shared methods
 
@@ -329,9 +359,9 @@ The switch exposes the same properties as the checkbox, with the exception of `i
 | click             | `(): void`                       | Simulates a click on the control.                                       |
 | focus             | `(options?: FocusOptions): void` | Sets focus on the control.                                              |
 | blur              | `(): void`                       | Removes focus from the control.                                         |
-| checkValidity     | `(): boolean`                    | Checks validity and emits `invalid` when the control is invalid.        |
-| reportValidity    | `(): boolean`                    | Checks validity; when invalid, emits `invalid` and focuses the control. |
-| setCustomValidity | `(message: string): void`        | Sets a custom message. Invalid while `message` is not empty.            |
+| checkValidity     | `(): boolean`                    | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid.        |
+| reportValidity    | `(): boolean`                    | Checks validity. As for a native control, an invalid control emits `invalid` and takes the focus. It shows its own validation messages, not the message of the browser. Returns `true` when the control is valid. |
+| setCustomValidity | `(message: string): void`        | Sets a custom validation message. The control is invalid while the message is not empty. An empty string removes the custom error.            |
 
 ### Shared events
 
@@ -372,7 +402,8 @@ The groups below mirror the `describe` blocks of the two suites.
 Present in both suites unless noted.
 
 1. Initializes the component with its default values.
-2. Renders the component successfully, compared against a DOM snapshot.
+2. Renders the component successfully, compared against a DOM snapshot. In the material theme, the indicator of the
+   checkbox and the control of the switch are painted under an earlier page layer with `z-index: 1`.
 3. Renders the correct SVG in the indigo theme, and hides the indicator from assistive technologies in every theme
    (checkbox only).
 4. Sets the `name` property correctly.
@@ -398,7 +429,9 @@ Driven by `createFormAssociatedTestBed`, in both suites.
 15. Is correctly reset on form reset, including after a `setAttribute` and after a `toggleAttribute` call
     (checkbox only).
 16. Syncs the native input checked state after a form reset (checkbox only).
-17. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid.
+17. Is correctly submitted on <kbd>Enter</kbd> in a form with a submit button, and does not submit without a submit
+    button, while the value is invalid or when a listener on the host cancels the `keydown`. A real <kbd>Enter</kbd>
+    submits once (checkbox only).
 18. Reflects the disabled state of an ancestor `fieldset`.
 19. Fulfils the required constraint - including in combination with `indeterminate` for the checkbox - and a custom
     constraint.
@@ -439,13 +472,25 @@ Generated by `runExternalLabelAssociationTests` in both suites.
 32. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal.
 
+### Hidden ancestor
+
+33. An unchecked, a checked and an indeterminate checkbox hide at the same time as a hidden ancestor in each theme, at
+    rest and after a focus or a hover: no element transitions `visibility` or sets it to `visible`.
+34. An unchecked and a checked switch hide at the same time as a hidden ancestor in each theme, at rest and after a
+    focus or a hover: no element transitions `visibility` or sets it to `visible`.
+35. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+    the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
+    that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
+    takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
+    `disabled` set does not cancel an earlier call on another element. The suite runs for the checkbox and the
+    switch. The calls do not throw before the render.
+
 ### Not covered by the suites
 
 The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
 [input suite](../input/spec.md#form-validity-checks) covers them.
 
-- The switch suite has no validation message slot cases, although the component exposes the same slots through the
-  shared base class.
+- The switch renders no helper text and no validation message slots, so its suite has no cases for them.
 - The axe audit runs only in the external label configuration, and neither suite covers the keyboard focus ring
   behavior.
 - The `indeterminate` property has no dedicated rendering case; it appears only in the required-constraint test.

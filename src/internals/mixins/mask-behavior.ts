@@ -8,13 +8,13 @@ import type {
 import {
   addKeybindings,
   ctrlKey,
+  type KeyBindingController,
   metaKey,
   shiftKey,
 } from '../controllers/key-bindings.js';
 import {
   createMaskHistory,
   type MaskEditKind,
-  type MaskHistory,
   type MaskHistoryState,
 } from '../mask-history.js';
 import type { MaskedInputOptions } from '../templates/masked-input.js';
@@ -35,6 +35,7 @@ type MaskInputBindings = Pick<
   | 'onBlur'
   | 'onClick'
   | 'onSetMaskSelection'
+  | 'onEnterKey'
   | 'onCompositionStart'
   | 'onCompositionEnd'
   | 'onDragLeave'
@@ -78,24 +79,24 @@ export declare class MaskBehaviorElementInterface {
 
   //#endregion
 
+  /** The key bindings of the editor. A host adds its own bindings to it. */
+  protected readonly _keyBindings: KeyBindingController;
+
   //#region Internal state
 
   protected _maskSelection: MaskSelection;
-  protected _compositionStart: number;
   protected _focused: boolean;
   protected _maskedValue: string;
-  protected readonly _history: MaskHistory;
 
   protected get _inputSelection(): MaskSelection;
   protected get _isEmptyMask(): boolean;
-  protected get _historyText(): string;
 
   //#endregion
 
   //#region Public attributes and properties
 
   /**
-   * Makes the control a readonly field.
+   * Whether the control is read-only. The user cannot change its value.
    * @attr readonly
    * @default false
    */
@@ -129,16 +130,8 @@ export declare class MaskBehaviorElementInterface {
 
   //#region Event handlers
 
-  protected _handleInput(event: InputEvent): Promise<void>;
-  protected _handleBeforeInput(event: InputEvent): void;
-  protected _updateInput(text: string, range: MaskSelection): Promise<void>;
   protected _emitInputEvent(): void;
-  protected _setMaskSelection(event: Event): void;
-  protected _handleCompositionStart(): void;
-  protected _handleCompositionEnd(event: CompositionEvent): void;
-  protected _handleClick(): void;
   protected _handleFocus(): Promise<void>;
-  protected _handleDragLeave(): void;
   protected _showEditMask(): void;
   protected get _maskInputBindings(): MaskInputBindings;
 
@@ -153,9 +146,6 @@ export declare class MaskBehaviorElementInterface {
     selection?: MaskSelection
   ): void;
 
-  protected _historyStep(direction: 'undo' | 'redo'): Promise<void>;
-  protected _historyResync(): void;
-
   //#endregion
 
   //#region Public methods
@@ -167,7 +157,11 @@ export declare class MaskBehaviorElementInterface {
     direction?: SelectionRangeDirection
   ): void;
 
-  /** Replaces the selected text in the control and re-applies the mask. */
+  /**
+   * Replaces the text from `start` to `end` and applies the mask again.
+   * Without `start` and `end`, it replaces the selected text. `selectMode`
+   * sets the selection after the change.
+   */
   public setRangeText(
     replacement: string,
     start?: number,
@@ -200,15 +194,17 @@ export function MaskBehaviorMixin<
     //#region Internal state
 
     protected _maskSelection: MaskSelection = { start: 0, end: 0 };
-    protected _compositionStart = 0;
+    private _compositionStart = 0;
 
     /**
      * The signature uses the source pattern, not the escaped one:
      * `MM/dd/yyyy` and `dd/MM/yyyy` both escape to `00/00/0000`.
      */
-    protected readonly _history = createMaskHistory(
+    private readonly _history = createMaskHistory(
       () => `${this._parser.mask} ${this._parser.prompt}`
     );
+
+    protected readonly _keyBindings: KeyBindingController;
 
     @state()
     protected _focused = false;
@@ -223,15 +219,20 @@ export function MaskBehaviorMixin<
       };
     }
 
+    protected override get _blocksImplicitSubmission(): boolean {
+      return true;
+    }
+
+    /** Whether the input shows no text of its own: nothing, or only the empty mask. */
     protected get _isEmptyMask(): boolean {
-      return this._maskedValue === this._parser.emptyMask;
+      return !this._maskedValue || this._maskedValue === this._parser.emptyMask;
     }
 
     /**
      * The masked text as the undo history sees it. `igc-mask-input` blanks
      * it on blur, so without this each focus looks like a foreign change.
      */
-    protected get _historyText(): string {
+    private get _historyText(): string {
       return this._maskedValue || this._parser.emptyMask;
     }
 
@@ -243,24 +244,23 @@ export function MaskBehaviorMixin<
       super(...args);
 
       // Assigning `input.value` clears the native undo stack, so the
-      // shortcuts read `_history`. Skip while an IME composition owns it.
-      const step =
-        (direction: 'undo' | 'redo') =>
-        (event: KeyboardEvent): void => {
-          if (!event.isComposing) {
-            this._historyStep(direction);
-          }
-        };
+      // shortcuts read `_history`.
+      const undo = (): void => {
+        this._historyStep('undo');
+      };
+      const redo = (): void => {
+        this._historyStep('redo');
+      };
 
-      addKeybindings(this, {
+      this._keyBindings = addKeybindings(this, {
         skip: () => this.readOnly,
         bindingDefaults: { repeat: true },
       })
-        .set([ctrlKey, 'z'], step('undo'))
-        .set([metaKey, 'z'], step('undo'))
-        .set([ctrlKey, 'y'], step('redo'))
-        .set([ctrlKey, shiftKey, 'z'], step('redo'))
-        .set([metaKey, shiftKey, 'z'], step('redo'));
+        .set([ctrlKey, 'z'], undo)
+        .set([metaKey, 'z'], undo)
+        .set([ctrlKey, 'y'], redo)
+        .set([ctrlKey, shiftKey, 'z'], redo)
+        .set([metaKey, shiftKey, 'z'], redo);
     }
 
     //#endregion
@@ -268,7 +268,7 @@ export function MaskBehaviorMixin<
     //#region Public attributes and properties
 
     /**
-     * Makes the control a readonly field.
+     * Whether the control is read-only. The user cannot change its value.
      *
      * @attr readonly
      * @default false
@@ -322,7 +322,7 @@ export function MaskBehaviorMixin<
 
     //#region Event handlers
 
-    protected async _handleInput({
+    private async _handleInput({
       inputType,
       isComposing,
     }: InputEvent): Promise<void> {
@@ -353,6 +353,7 @@ export function MaskBehaviorMixin<
       }
 
       this._setTouchedState();
+      const selection = this._inputSelection;
 
       switch (inputType) {
         case 'deleteContentForward': {
@@ -371,7 +372,7 @@ export function MaskBehaviorMixin<
             '',
             {
               start: this._parser.getPreviousNonLiteralPosition(
-                this._inputSelection.start + 1
+                selection.start + 1
               ),
               end,
             },
@@ -383,46 +384,32 @@ export function MaskBehaviorMixin<
 
         case 'insertText':
           return this._updateInput(
-            value.substring(start, this._inputSelection.end),
+            value.substring(start, selection.end),
             this._maskSelection,
             kind
           );
 
         case 'insertFromPaste':
           return this._updateInput(
-            value.substring(start, this._inputSelection.end),
-            {
-              start,
-              end: this._inputSelection.start,
-            },
+            value.substring(start, selection.end),
+            { start, end: selection.start },
             kind
           );
 
         case 'insertFromDrop':
           // An external drop sends no `dragstart`; `_maskSelection` is stale.
           return this._updateInput(
-            value.substring(
-              this._inputSelection.start,
-              this._inputSelection.end
-            ),
-            { ...this._inputSelection },
+            value.substring(selection.start, selection.end),
+            selection,
             kind,
-            {
-              start: this._inputSelection.start,
-              end: this._inputSelection.start,
-            }
+            { start: selection.start, end: selection.start }
           );
 
         // Browser auto-fill sends an empty `inputType`.
         case '':
           return this._updateInput(
-            this._parser.parse(
-              value.substring(start, this._inputSelection.end)
-            ),
-            {
-              start,
-              end: this._inputSelection.end,
-            },
+            this._parser.parse(value.substring(start, selection.end)),
+            { start, end: selection.end },
             kind,
             { start, end: start }
           );
@@ -433,7 +420,7 @@ export function MaskBehaviorMixin<
      * Applies the parser to the text, commits the result, and emits an input
      * event unless the edit is at the trailing mask boundary.
      */
-    protected async _updateInput(
+    private async _updateInput(
       text: string,
       range: MaskSelection,
       kind: MaskEditKind = 'atomic',
@@ -463,18 +450,18 @@ export function MaskBehaviorMixin<
       this._emitTouchedEvent('igcInput', { detail: this._maskedValue });
     }
 
-    protected _setMaskSelection(event: Event): void {
+    private _setMaskSelection(event: Event): void {
       this._maskSelection = this._inputSelection;
       if (event instanceof KeyboardEvent) {
-        this._handleEnterKeydown(event);
+        this._handleEnterKey(event);
       }
     }
 
-    protected _handleCompositionStart(): void {
+    private _handleCompositionStart(): void {
       this._compositionStart = this._inputSelection.start;
     }
 
-    protected _handleCompositionEnd({ data }: CompositionEvent): void {
+    private _handleCompositionEnd({ data }: CompositionEvent): void {
       // One undo step for the whole sequence, anchored where it began.
       this._updateInput(
         data,
@@ -484,11 +471,8 @@ export function MaskBehaviorMixin<
       );
     }
 
-    protected _handleClick(): void {
-      const { selectionStart: start, selectionEnd: end } = this._input ?? {
-        selectionStart: 0,
-        selectionEnd: 0,
-      };
+    private _handleClick(): void {
+      const { start, end } = this._inputSelection;
 
       // A click at the end of the input field selects the whole mask.
       if (start === end && start === this._maskedValue.length) {
@@ -519,7 +503,7 @@ export function MaskBehaviorMixin<
     /** Replaces the display text with the editable mask on a focus with a value. */
     protected _showEditMask(): void {}
 
-    protected _handleDragLeave(): void {
+    private _handleDragLeave(): void {
       if (!this._focused) {
         this._updateMaskDisplay();
       }
@@ -534,6 +518,7 @@ export function MaskBehaviorMixin<
         onBlur: this._handleBlur,
         onClick: this._handleClick,
         onSetMaskSelection: this._setMaskSelection,
+        onEnterKey: this._handleEnterKey,
         onCompositionStart: this._handleCompositionStart,
         onCompositionEnd: this._handleCompositionEnd,
         onDragLeave: this._handleDragLeave,
@@ -545,7 +530,7 @@ export function MaskBehaviorMixin<
      * menu and the software keyboard, which never reach the key bindings. The
      * native undo stack is empty, so letting one pass desyncs the input.
      */
-    protected _handleBeforeInput(event: InputEvent): void {
+    private _handleBeforeInput(event: InputEvent): void {
       const { inputType } = event;
 
       if (inputType !== 'historyUndo' && inputType !== 'historyRedo') {
@@ -583,12 +568,12 @@ export function MaskBehaviorMixin<
     }
 
     /** Reconciles the history with the current masked text. */
-    protected _historyResync(): void {
+    private _historyResync(): void {
       this._history.resync(this._historyText);
     }
 
     /** Restores the neighboring history state in the given direction. */
-    protected async _historyStep(direction: 'undo' | 'redo'): Promise<void> {
+    private async _historyStep(direction: 'undo' | 'redo'): Promise<void> {
       if (this.readOnly) {
         return;
       }
@@ -638,7 +623,11 @@ export function MaskBehaviorMixin<
     }
 
     /* blazorSuppress */
-    /** Replaces the selected text in the control and re-applies the mask. */
+    /**
+     * Replaces the text from `start` to `end` and applies the mask again.
+     * Without `start` and `end`, it replaces the selected text. `selectMode`
+     * sets the selection after the change.
+     */
     public setRangeText(
       replacement: string,
       start?: number,
@@ -650,7 +639,7 @@ export function MaskBehaviorMixin<
       const _end = end ?? current.end;
 
       const result = this._parser.replace(
-        this._maskedValue || this._parser.emptyMask,
+        this._maskedValue,
         replacement,
         _start,
         _end

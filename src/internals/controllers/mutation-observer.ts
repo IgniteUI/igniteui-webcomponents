@@ -15,18 +15,13 @@ export interface MutationControllerConfig<T extends Node = Node> {
    * the elements to observe, again at each start of the observation.
    */
   target?: Element | (() => Element[]);
-  /** See {@link MutationControllerFilter}. */
-  filter?: MutationControllerFilter<T>;
+  /** The selector list of the nodes to keep. Without it, all nodes stay. */
+  filter?: string[];
 }
 
 type MutationControllerCallback<T extends Node = Node> = (
   params: MutationControllerParams<T>
 ) => unknown;
-
-/** Keeps the nodes that match a selector list or a predicate. */
-type MutationControllerFilter<T extends Node = Node> =
-  | string[]
-  | ((node: T) => boolean);
 
 type MutationDOMChange<T extends Node = Node> = {
   /** The parent of the added element or of the removed element. */
@@ -59,14 +54,10 @@ export type MutationControllerParams<T extends Node = Node> = {
  * The selectors join once, so a node match takes one `matches` call.
  */
 function createNodeMatcher<T extends Node = Node>(
-  filter?: MutationControllerFilter<T>
+  filter?: string[]
 ): (node: T) => boolean {
   if (!filter) {
     return () => true;
-  }
-
-  if (!Array.isArray(filter)) {
-    return filter;
   }
 
   const selector = filter.join(',');
@@ -184,3 +175,5 @@ export function createMutationController<T extends Node = Node>(
 ): MutationController<T> {
   return new MutationController(host, config);
 }
+
+export type { MutationController };
