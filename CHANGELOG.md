@@ -5,13 +5,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- #### QR code
+  - `dot-style`, `square-style` and `corner-dot-style` take `squircle`, a square with soft corners.
+  - `corner-dot-style` sets the shape of the inner corner dots. When you do not set it, the inner corner dots use `dot-style`, as before.
+  - `dot-scale` sets the size of the data modules, from 0.7 to 1 of their cell, to leave a gap between them. The corners keep their full size.
+
 ### Changed
 - #### Library
   - The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The fallbacks for older browsers are removed, and the styles no longer have vendor prefixes for them.
+- #### QR code
+  - The cutout under the logo holds whole modules, so it cuts no module in part.
+  - `logoSize` is a share of the code without its quiet zone, so `margin` no longer changes the logo. At the default `margin`, logos are smaller than before: 28% smaller in side on a version 1 code, and 4% on a version 40 code.
 
 ### Fixed
 - #### Input, Textarea
   - `stepUp()`, `stepDown()` and `setRangeText()` no longer clear the value when you call them before the first render.
+- #### QR code
+  - A logo no longer makes a short value unreadable. The component selects a larger version, so that the logo hides no more codewords than the error correction recovers. When you set `version`, the logo gets smaller.
 
 ## [7.5.0] - 2026-11-16
 ### Added

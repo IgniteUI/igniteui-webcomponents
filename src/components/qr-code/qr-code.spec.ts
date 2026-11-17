@@ -7,11 +7,13 @@ import {
 } from '@open-wc/testing';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { restore, type SinonStub, stub } from 'sinon';
+import { prepareZXingModule, readBarcodes } from 'zxing-wasm/reader';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { asNumber } from '#internals/utils/math.js';
 import { configureTheme } from '#theming/config.js';
 import IgcQrCodeComponent from './qr-code.js';
 import { rasterizeSvg } from './renderer/export.js';
+import { renderDataModules } from './renderer/helpers.js';
 import type { QrErrorCorrectionLevel } from './types.js';
 
 describe('IgcQrCodeComponent', () => {
@@ -21,6 +23,11 @@ describe('IgcQrCodeComponent', () => {
 
   function getSvg(el: IgcQrCodeComponent): SVGElement | null {
     return el.renderRoot.querySelector('svg');
+  }
+
+  /** Returns the side of the code in modules, without the quiet zone. */
+  function getSide(el: IgcQrCodeComponent): number {
+    return asNumber(getSvg(el)!.getAttribute('viewBox')!.split(' ')[2]);
   }
 
   describe('Accessibility', () => {
@@ -130,6 +137,14 @@ describe('IgcQrCodeComponent', () => {
 
     it('squareStyle defaults to square', () => {
       expect(el.squareStyle).to.equal('square');
+    });
+
+    it('cornerDotStyle defaults to undefined', () => {
+      expect(el.cornerDotStyle).to.be.undefined;
+    });
+
+    it('dotScale defaults to 1', () => {
+      expect(el.dotScale).to.equal(1);
     });
 
     it('value defaults to undefined', () => {
@@ -338,6 +353,20 @@ describe('IgcQrCodeComponent', () => {
       );
       expect(el.version).to.equal(5);
     });
+
+    it('reflects corner-dot-style attribute to cornerDotStyle property', async () => {
+      const el = await fixture<IgcQrCodeComponent>(
+        html`<igc-qr-code corner-dot-style="squircle"></igc-qr-code>`
+      );
+      expect(el.cornerDotStyle).to.equal('squircle');
+    });
+
+    it('reflects dot-scale attribute to dotScale property', async () => {
+      const el = await fixture<IgcQrCodeComponent>(
+        html`<igc-qr-code dot-scale="0.8"></igc-qr-code>`
+      );
+      expect(el.dotScale).to.equal(0.8);
+    });
   });
 
   describe('Style variants', () => {
@@ -384,6 +413,202 @@ describe('IgcQrCodeComponent', () => {
       el.dotStyle = 'square';
       await elementUpdated(el);
       expect(path()).to.equal(square);
+    });
+  });
+
+  describe('Shape geometry', () => {
+    // With no margin, one module is one SVG unit, so the module at row `r` and
+    // column `c` fills the square from (c, r) to (c + 1, r + 1). The timing module
+    // at row 6 and column 10 is always dark.
+    const TIMING_X = 10;
+    const TIMING_Y = 6;
+
+    /** Whether the point at `x`, `y` lies in the fill of a shape of `part`. */
+    function isInFill(
+      el: IgcQrCodeComponent,
+      part: string,
+      x: number,
+      y: number
+    ): boolean {
+      const shapes = el.renderRoot.querySelectorAll<SVGGeometryElement>(
+        `[part~='${part}']`
+      );
+      return Array.from(shapes).some((shape) =>
+        shape.isPointInFill(new DOMPoint(x, y))
+      );
+    }
+
+    function getPath(el: IgcQrCodeComponent, part: string): string {
+      return el.renderRoot
+        .querySelector(`[part~='${part}']`)!
+        .getAttribute('d')!;
+    }
+
+    async function renderCode(): Promise<IgcQrCodeComponent> {
+      return fixture<IgcQrCodeComponent>(
+        html`<igc-qr-code value="test" margin="0"></igc-qr-code>`
+      );
+    }
+
+    describe('squircle', () => {
+      it('rounds the corners of a data module less than a circle', async () => {
+        const el = await renderCode();
+        const nearCorner = () =>
+          isInFill(el, 'dots', TIMING_X + 0.03, TIMING_Y + 0.03);
+        const offCorner = () =>
+          isInFill(el, 'dots', TIMING_X + 0.12, TIMING_Y + 0.12);
+
+        el.dotStyle = 'squircle';
+        await elementUpdated(el);
+        expect(isInFill(el, 'dots', TIMING_X + 0.5, TIMING_Y + 0.5)).to.be.true;
+        expect(nearCorner()).to.be.false;
+        expect(offCorner()).to.be.true;
+
+        el.dotStyle = 'circle';
+        await elementUpdated(el);
+        expect(offCorner()).to.be.false;
+
+        el.dotStyle = 'square';
+        await elementUpdated(el);
+        expect(nearCorner()).to.be.true;
+      });
+
+      it('draws the outer corner squares as squircle rings', async () => {
+        const el = await renderCode();
+        // The top-left finder pattern fills the square from (0, 0) to (7, 7).
+        const corner = () => isInFill(el, 'corner-square', 0.35, 0.35);
+
+        el.squareStyle = 'squircle';
+        await elementUpdated(el);
+        expect(isInFill(el, 'corner-square', 0.5, 3.5)).to.be.true;
+        expect(isInFill(el, 'corner-square', 1.5, 3.5)).to.be.false;
+        expect(corner()).to.be.false;
+
+        el.squareStyle = 'rounded';
+        await elementUpdated(el);
+        expect(corner()).to.be.true;
+      });
+
+      it('draws the inner corner dots as squircles', async () => {
+        const el = await renderCode();
+        // The inner dot of the top-left finder fills the square from (2, 2) to (5, 5).
+        const nearCorner = () => isInFill(el, 'corner-dot', 2.05, 2.05);
+        const offCorner = () => isInFill(el, 'corner-dot', 2.4, 2.4);
+
+        el.cornerDotStyle = 'squircle';
+        await elementUpdated(el);
+        expect(nearCorner()).to.be.false;
+        expect(offCorner()).to.be.true;
+
+        el.cornerDotStyle = 'circle';
+        await elementUpdated(el);
+        expect(offCorner()).to.be.false;
+      });
+    });
+
+    describe('cornerDotStyle', () => {
+      it('follows dotStyle until it is set', async () => {
+        const el = await renderCode();
+        const squareCorner = () => isInFill(el, 'corner-dot', 2.05, 2.05);
+
+        el.dotStyle = 'circle';
+        await elementUpdated(el);
+        const dots = getPath(el, 'dots');
+        expect(squareCorner()).to.be.false;
+
+        el.cornerDotStyle = 'square';
+        await elementUpdated(el);
+        expect(squareCorner()).to.be.true;
+        expect(getPath(el, 'dots')).to.equal(dots);
+
+        el.cornerDotStyle = undefined;
+        await elementUpdated(el);
+        expect(squareCorner()).to.be.false;
+
+        // A template binding of an unset value sets an empty attribute.
+        el.setAttribute('corner-dot-style', '');
+        await elementUpdated(el);
+        expect(squareCorner()).to.be.false;
+      });
+    });
+
+    describe('dotScale', () => {
+      it('shrinks the data modules around their centers', async () => {
+        const el = await renderCode();
+        const nearEdge = () =>
+          isInFill(el, 'dots', TIMING_X + 0.1, TIMING_Y + 0.5);
+
+        expect(nearEdge()).to.be.true;
+
+        el.dotScale = 0.7;
+        await elementUpdated(el);
+        expect(nearEdge()).to.be.false;
+        expect(isInFill(el, 'dots', TIMING_X + 0.5, TIMING_Y + 0.5)).to.be.true;
+      });
+
+      it('clamps the scale from 0.7 to 1', async () => {
+        const el = await renderCode();
+        const full = getPath(el, 'dots');
+
+        el.dotScale = 0.7;
+        await elementUpdated(el);
+        const smallest = getPath(el, 'dots');
+
+        el.dotScale = 0.2;
+        await elementUpdated(el);
+        expect(getPath(el, 'dots')).to.equal(smallest);
+
+        el.dotScale = 3;
+        await elementUpdated(el);
+        expect(getPath(el, 'dots')).to.equal(full);
+
+        el.dotScale = Number.NaN;
+        await elementUpdated(el);
+        expect(getPath(el, 'dots')).to.equal(full);
+
+        el.setAttribute('dot-scale', '0.8');
+        el.removeAttribute('dot-scale');
+        await elementUpdated(el);
+        expect(getPath(el, 'dots')).to.equal(full);
+      });
+
+      it('keeps the finder patterns at full size', async () => {
+        const el = await renderCode();
+        const square = getPath(el, 'corner-square');
+        const dot = getPath(el, 'corner-dot');
+
+        el.dotScale = 0.7;
+        await elementUpdated(el);
+        expect(getPath(el, 'corner-square')).to.equal(square);
+        expect(getPath(el, 'corner-dot')).to.equal(dot);
+      });
+
+      it('rounds every corner of a rounded module that does not touch its neighbors', async () => {
+        // Two dark modules side by side, away from the finder patterns.
+        const matrix = Array.from({ length: 21 }, (_, r) =>
+          Array.from(
+            { length: 21 },
+            (_, c) => r === 10 && (c === 10 || c === 11)
+          )
+        );
+        const svg = await fixture<SVGSVGElement>(
+          html`<svg viewBox="0 0 21 21"><path></path></svg>`
+        );
+        const path = svg.querySelector('path')!;
+
+        /** Whether the top right corner of the left module, toward its neighbor, is filled. */
+        function isCornerFilled(scale: number): boolean {
+          const [left] = renderDataModules(matrix, 1, 0, 'rounded', scale);
+          const inset = (1 - scale) / 2;
+          path.setAttribute('d', left);
+          return path.isPointInFill(
+            new DOMPoint(11 - inset - 0.02, 10 + inset + 0.02)
+          );
+        }
+
+        expect(isCornerFilled(1)).to.be.true;
+        expect(isCornerFilled(0.9)).to.be.false;
+      });
     });
   });
 
@@ -696,7 +921,10 @@ describe('IgcQrCodeComponent', () => {
 
         expect(auto.viewBox).to.equal(quartile.viewBox);
         expect(auto.width).to.equal(quartile.width);
-        expect(asNumber(medium.width)).to.be.lessThan(asNumber(auto.width));
+        // Each width as a share of its own code: the two levels can get different versions.
+        expect(asNumber(medium.width) / getSide(medium.el)).to.be.lessThan(
+          asNumber(auto.width) / getSide(auto.el)
+        );
       });
 
       it('caps a large logo to the safe area of an explicit error-level="M"', async () => {
@@ -724,7 +952,7 @@ describe('IgcQrCodeComponent', () => {
           html`<igc-qr-code value="test"></igc-qr-code>`
         );
         const elWithMargin = await fixture<IgcQrCodeComponent>(
-          html`<igc-qr-code value="test" logo-margin="10"></igc-qr-code>`
+          html`<igc-qr-code value="test" logo-margin="4"></igc-qr-code>`
         );
 
         elNoMargin.logoSrc = VALID_LOGO;
@@ -751,6 +979,101 @@ describe('IgcQrCodeComponent', () => {
         await elementUpdated(el);
 
         expect(el.renderRoot.querySelector('image')).to.be.null;
+      });
+    });
+
+    describe('Module cutout', () => {
+      const EPSILON = 1e-9;
+
+      /** Reads the x, y, width and height attributes of `element`. */
+      function readBox(element: Element) {
+        const [x, y, width, height] = ['x', 'y', 'width', 'height'].map(
+          (name) => asNumber(element.getAttribute(name)!)
+        );
+        return { x, y, width, height };
+      }
+
+      function expectWholeModules(value: number): void {
+        expect(Math.abs(value - Math.round(value))).to.be.lessThan(EPSILON);
+      }
+
+      for (const logoMargin of [undefined, 3]) {
+        it(`cuts whole modules out around the logo (logo-margin=${logoMargin})`, async () => {
+          const el = await fixture<IgcQrCodeComponent>(
+            html`<igc-qr-code
+              value="https://example.com"
+              logo-size="1"
+              logo-margin=${ifDefined(logoMargin)}
+              logo-src=${VALID_LOGO}
+            ></igc-qr-code>`
+          );
+          await elementUpdated(el);
+
+          const svgSize = getSide(el);
+          const moduleSize = svgSize / (svgSize + 2 * el.margin);
+          const marginPx = el.margin * moduleSize;
+          const cut = readBox(el.renderRoot.querySelector('mask rect + rect')!);
+          const image = readBox(el.renderRoot.querySelector('image')!);
+
+          // The cutout starts and ends on module boundaries.
+          expectWholeModules((cut.x - marginPx) / moduleSize);
+          expectWholeModules((cut.y - marginPx) / moduleSize);
+          expectWholeModules(cut.width / moduleSize);
+          expectWholeModules(cut.height / moduleSize);
+
+          // It is centered, and the logo lies inside it.
+          expect(cut.x + cut.width / 2).to.be.closeTo(svgSize / 2, EPSILON);
+          expect(cut.y + cut.height / 2).to.be.closeTo(svgSize / 2, EPSILON);
+          expect(image.x).to.be.at.least(cut.x - EPSILON);
+          expect(image.y).to.be.at.least(cut.y - EPSILON);
+          expect(image.x + image.width).to.be.at.most(
+            cut.x + cut.width + EPSILON
+          );
+          expect(image.y + image.height).to.be.at.most(
+            cut.y + cut.height + EPSILON
+          );
+        });
+      }
+
+      it('raises the version when the cutout would hide more codewords than the level corrects', async () => {
+        // Version 2 at level L without a logo.
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com/"
+            error-level="L"
+          ></igc-qr-code>`
+        );
+        expect(getSide(el)).to.equal(25);
+
+        el.logoSrc = VALID_LOGO;
+        await elementUpdated(el);
+        expect(getSide(el)).to.be.greaterThan(25);
+
+        el.logoSrc = undefined;
+        await elementUpdated(el);
+        expect(getSide(el)).to.equal(25);
+      });
+
+      it('keeps a pinned version and makes the logo smaller', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="test"
+            version="1"
+            error-level="H"
+            logo-size="1"
+            logo-src=${VALID_LOGO}
+          ></igc-qr-code>`
+        );
+        await elementUpdated(el);
+
+        const moduleSize = 21 / (21 + 2 * el.margin);
+        const cut = readBox(el.renderRoot.querySelector('mask rect + rect')!);
+        expect(getSide(el)).to.equal(21);
+        expect(
+          readBox(el.renderRoot.querySelector('image')!).width
+        ).to.be.above(0);
+        // The cutout stays clear of the format information in row and column 8.
+        expect(cut.x).to.be.at.least((el.margin + 9) * moduleSize - EPSILON);
       });
     });
   });
@@ -1355,5 +1678,144 @@ describe('IgcQrCodeComponent', () => {
         );
       });
     });
+  });
+
+  describe('Scanning', function () {
+    // A test decodes up to 30 images.
+    this.timeout(10_000);
+
+    // A decoder (zxing-cpp) reads the exported PNG, as a scanning app would.
+    const PRODUCT_URL =
+      'https://www.infragistics.com/products/ignite-ui-web-components';
+    // Version 12 at level M, with many alignment patterns.
+    const LONG_VALUE = `${PRODUCT_URL}?a=${PRODUCT_URL}&b=${PRODUCT_URL}&c=${PRODUCT_URL}`;
+    const SHAPES = ['square', 'circle', 'rounded', 'squircle'] as const;
+
+    function solidLogo(color: string): string {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><rect width="1" height="1" fill="${color}"/></svg>`;
+      return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+    }
+
+    let el: IgcQrCodeComponent;
+
+    before(() => {
+      // Load the decoder from the package, not from its default CDN.
+      prepareZXingModule({
+        overrides: {
+          locateFile: (path: string, prefix: string) =>
+            path.endsWith('.wasm')
+              ? '/node_modules/zxing-wasm/dist/reader/zxing_reader.wasm'
+              : prefix + path,
+        },
+      });
+    });
+
+    beforeEach(async () => {
+      el = await fixture<IgcQrCodeComponent>(
+        html`<igc-qr-code value=${PRODUCT_URL}></igc-qr-code>`
+      );
+    });
+
+    /**
+     * Exports the code as a PNG with at least 6 pixels for each module, and returns the text
+     * that the decoder reads from it.
+     */
+    async function scan(): Promise<string | undefined> {
+      await elementUpdated(el);
+      const modules = getSide(el) + 2 * el.margin;
+      const image = await el.toImage({
+        scale: Math.ceil((6 * modules) / el.size),
+      });
+      const [result] = await readBarcodes(image, {
+        formats: ['QRCode'],
+        maxNumberOfSymbols: 1,
+      });
+      return result?.text;
+    }
+
+    for (const [index, dotStyle] of SHAPES.entries()) {
+      // A Latin square: each pair of the three shapes comes up once.
+      it(`reads dot-style="${dotStyle}" with each corner shape`, async () => {
+        el.dotStyle = dotStyle;
+
+        for (const [offset, squareStyle] of SHAPES.entries()) {
+          const cornerDotStyle = SHAPES[(index + offset) % SHAPES.length];
+          Object.assign(el, { squareStyle, cornerDotStyle });
+          expect(await scan(), `${squareStyle}, ${cornerDotStyle}`).to.equal(
+            PRODUCT_URL
+          );
+        }
+      });
+
+      it(`reads dot-style="${dotStyle}" at the smallest dot-scale`, async () => {
+        Object.assign(el, { dotStyle, squareStyle: dotStyle, dotScale: 0 });
+        expect(await scan()).to.equal(PRODUCT_URL);
+
+        el.value = LONG_VALUE;
+        expect(await scan()).to.equal(LONG_VALUE);
+      });
+    }
+
+    // Versions 1 to 3, where a logo cutout spans a large share of the codewords.
+    for (const value of [
+      'test',
+      'https://ex.co',
+      'https://example.com/',
+      'https://example.com/abcdef',
+    ]) {
+      it(`reads a logo on the small code of "${value}"`, async () => {
+        el.value = value;
+
+        // The automatic level matches M at 0.4 and H at 1.
+        for (const errorLevel of ['L', 'M', 'Q', 'H'] as const) {
+          for (const color of ['#fff', '#000', '#888']) {
+            for (const logoSize of [0.4, 1]) {
+              Object.assign(el, {
+                errorLevel,
+                logoSrc: solidLogo(color),
+                logoSize,
+              });
+              expect(
+                await scan(),
+                `${errorLevel}, ${color}, ${logoSize}`
+              ).to.equal(value);
+            }
+          }
+        }
+      });
+    }
+
+    it('reads a logo on a pinned small version', async () => {
+      Object.assign(el, { value: 'test', logoSize: 1 });
+
+      for (const version of [1, 2, 3]) {
+        for (const errorLevel of ['L', 'M', 'Q', 'H'] as const) {
+          for (const color of ['#fff', '#000']) {
+            Object.assign(el, {
+              version,
+              errorLevel,
+              logoSrc: solidLogo(color),
+            });
+            expect(
+              await scan(),
+              `${version}, ${errorLevel}, ${color}`
+            ).to.equal('test');
+          }
+        }
+      }
+    });
+
+    for (const errorLevel of ['L', 'M', 'Q', 'H'] as const) {
+      it(`reads a code with a logo at error-level ${errorLevel}`, async () => {
+        Object.assign(el, { errorLevel, dotStyle: 'squircle' });
+
+        for (const color of ['#fff', '#000']) {
+          for (const logoSize of [0.4, 1]) {
+            Object.assign(el, { logoSrc: solidLogo(color), logoSize });
+            expect(await scan(), `${color}, ${logoSize}`).to.equal(PRODUCT_URL);
+          }
+        }
+      });
+    }
   });
 });
