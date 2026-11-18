@@ -210,7 +210,7 @@ describe('Date range picker - single input', () => {
 
       expect(isFocused(input)).to.be.true;
       expect(input.value).to.equal('');
-      expect(picker.value).to.deep.equal({ start: null, end: null });
+      expect(picker.value).to.be.null;
       expect(calendar.values).to.deep.equal([]);
       expect(eventSpy).not.to.be.called;
 
@@ -482,7 +482,7 @@ describe('Date range picker - single input', () => {
     });
     it('should select a date range on invoking select', async () => {
       const eventSpy = spy(picker, 'emitEvent');
-      expect(picker.value).to.deep.equal({ start: null, end: null });
+      expect(picker.value).to.be.null;
       const start = CalendarDay.from(new Date(2025, 3, 9)).native;
       const end = CalendarDay.from(new Date(2025, 3, 10)).native;
       picker.select({
@@ -937,10 +937,10 @@ describe('Date range picker - single input', () => {
 
         expect(isFocused(input)).to.be.false;
         expect(eventSpy).to.be.calledWith('igcChange', {
-          detail: { start: null, end: null },
+          detail: null,
         });
         expect(picker.open).to.be.false;
-        expect(picker.value).to.deep.equal({ start: null, end: null });
+        expect(picker.value).to.be.null;
         expect(input.value).to.equal('');
       });
       it('should support date-range typing for single input', async () => {

@@ -82,6 +82,14 @@ export function getCalendarDOM(element: IgcCalendarComponent) {
       get days() {
         return root.querySelector(IgcDaysViewComponent.tagName)!;
       },
+      /** Every rendered days view, one for each visible month. */
+      get allDays() {
+        return Array.from(
+          root.querySelectorAll<IgcDaysViewComponent>(
+            IgcDaysViewComponent.tagName
+          )
+        );
+      },
       get months() {
         return root.querySelector(IgcMonthsViewComponent.tagName)!;
       },
@@ -120,6 +128,13 @@ export function getCalendarDOM(element: IgcCalendarComponent) {
       },
     },
   };
+}
+
+/** The month, from 1 to 12, of each rendered days view of `calendar`. */
+export function getRenderedMonths(calendar: IgcCalendarComponent): number[] {
+  return getCalendarDOM(calendar).views.allDays.map(
+    (view) => view.activeDate.getMonth() + 1
+  );
 }
 
 export function getDOMDate(date: CalendarDay, view: IgcDaysViewComponent) {

@@ -16,10 +16,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A selection change by the user animates the chip, as in Ignite UI for Angular. The colors fade, and the selection indicator opens and fades in, or fades out and closes. A change from code and the first render show at once, so a virtualized list does not animate its chips while it scrolls. With `prefers-reduced-motion: reduce`, the chip does not animate. [#2621](https://github.com/IgniteUI/igniteui-webcomponents/issues/2621)
 - #### Combo
   - A change of `showSelectAll` or `groupSelection` keeps the active item. Before, no option was active after the change. When the change removes the active select-all option, or an active group header is no longer an option, no option is active.
+- #### Date picker
+  - Without `activeDate`, a value set from code brings its month into view in the calendar, also while the calendar is open. Before, the calendar stayed on its month until the next open from the calendar icon or the keyboard.
+  - With `visibleMonths` above 1, an open by the user, from the calendar icon, <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> or a click on the input or the label in dialog mode, shows the value in the first month. Before, the value could open in another month.
+- #### Date picker, Date range picker
+  - In editable dropdown mode, a clear through the clear icon is reported with `igcChange` when the focus leaves the picker. Before, the input reported it when the focus left the input, also on a move to the calendar or to the other input of a date range picker.
 - #### Date picker, Date time input
   - `stepUp(DatePart.AmPm)` and `stepDown(DatePart.AmPm)` move the time 12 hours also when the input format has no AM/PM part, as a step does for the other parts that the format does not show. Before, they did nothing.
 - #### Date range picker
   - In dialog mode, a range that you select stays unconfirmed when code closes the picker with `hide()`, `toggle()` or `open`. After a new open, Done emits `igcChange` for it, and Cancel or Escape restores the range from before it. Before, the next open kept the range without an `igcChange`.
+  - An empty range is `null`: the initial `value` and `defaultValue`, the detail of `igcChange` and `igcInput`, a range that the calendar clears and a range that the inputs empty. Before, some of these were `{ start: null, end: null }`. Check for `null` before you read `value.start`.
+  - Each write puts the ends of the range in order of time: a value set from code, the `value` attribute, `defaultValue` and a custom range chip. Before, only a commit of the inputs swapped the ends, and it compared only the days. The `igcInput` detail is in order too, while the inputs keep the typed text.
+  - The two inputs and the `value` attribute keep the time of the dates. Before, they set the time to midnight.
+  - Without `activeDate`, a range with one end set from code brings that end into view, as a full range brings its start.
 - #### Dropdown
   - <kbd>Enter</kbd> closes the open list also when no item is active, as in the select. Before, the list stayed open.
 - #### Library
@@ -45,6 +54,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - When you clear the value and then open and close the picker before you leave it, the picker now emits `igcChange` for the clear.
   - The date range picker emits `igcChange` when you clear it in dialog mode or in non-editable mode and leave it. The detail is `null`.
   - A predefined or custom range chip keeps the date range picker open when `keepOpenOnSelect` is set.
+  - With `activeDate` set, the calendar keeps the month that you navigate to. Before, each update of the picker, such as a pick in the second month of a date range picker, moved the calendar back to `activeDate`.
 - #### Date picker, Date range picker, Date time input
   - Ctrl + Arrow Left and Ctrl + Arrow Right stop at each date part in an input format without separators, such as `yyyyMMdd`, and do not stop inside a separator of more than one character, such as `, `. Before, the date time input went to the start or the end of the input, and the single input of the date range picker skipped a part.
 - #### Date picker, Date time input
@@ -52,6 +62,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Date range picker
   - In single input mode, Arrow Up and Arrow Down in a typed end spin that end and keep the text of the other end. Before, both ends changed to today.
   - In single input mode, a spin of an empty end sets today, without a step and without the time of day. Before, it set the current time and stepped it.
+  - A value in the first month that is set while the second month of the calendar is active no longer shifts the months by one.
 - #### Form controls
   - A change of the `value` or `checked` attribute keeps the control pristine, so a later `defaultValue` or `defaultChecked` still sets the value, as for a native control.
 - #### Input, Textarea

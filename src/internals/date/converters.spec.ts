@@ -66,6 +66,15 @@ describe('Date converters', () => {
     expect(partial.end).to.be.null;
   });
 
+  it('keeps the time of the date range ends', () => {
+    const range = convertToDateRange(
+      '{"start":"2024-01-11T09:30","end":"2024-01-18T17:45"}'
+    )!;
+
+    expect(range.start).to.eql(new Date(2024, 0, 11, 9, 30));
+    expect(range.end).to.eql(new Date(2024, 0, 18, 17, 45));
+  });
+
   it('returns null instead of throwing on malformed date ranges', () => {
     expect(convertToDateRange('not json')).to.be.null;
     expect(convertToDateRange('{"start":')).to.be.null;

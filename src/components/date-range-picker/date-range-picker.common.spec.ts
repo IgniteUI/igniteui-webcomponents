@@ -19,6 +19,11 @@ import { CalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import type { IgcDateRangePickerResourceStrings } from '#internals/i18n/EN/date-range-picker.resources.js';
 import {
+  getCalendarDOM,
+  getDOMDate,
+  getRenderedMonths,
+} from '#internals/testing/calendar.spec.js';
+import {
   checkDatesEqual,
   finishAnimationsFor,
 } from '#internals/testing/helpers.spec.js';
@@ -29,7 +34,7 @@ import {
 import { formatString } from '#internals/utils/strings.js';
 import { configureTheme } from '#theming/config.js';
 import type IgcButtonComponent from '../button/button.js';
-import IgcCalendarComponent from '../calendar/calendar.js';
+import IgcCalendarComponent, { showDate } from '../calendar/calendar.js';
 import { DateRangeType } from '../calendar/types.js';
 import IgcChipComponent from '../chip/chip.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
@@ -134,7 +139,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
     });
     it('should render the clear icon as soon as there is a start or end date defined', async () => {
       expect(picker.open).to.equal(false);
-      expect(picker.value).to.deep.equal({ start: null, end: null });
+      expect(picker.value).to.be.null;
 
       let clear = getIcon(picker, clearIcon);
       expect(clear).to.be.null;
@@ -389,7 +394,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         ],
       };
 
-      expect(picker.value).to.deep.equal({ start: null, end: null });
+      expect(picker.value).to.be.null;
       expect(picker.weekStart).to.equal('sunday');
       expect(picker.hideOutsideDays).to.equal(false);
       expect(picker.hideHeader).to.equal(false);
@@ -888,9 +893,9 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           await elementUpdated(picker);
 
           expect(eventSpy.lastCall).calledWith('igcChange', {
-            detail: { start: null, end: null },
+            detail: null,
           });
-          expect(picker.value).to.deep.equal({ start: null, end: null });
+          expect(picker.value).to.be.null;
           expect(picker.open).to.be.true;
         });
       });
@@ -1109,7 +1114,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           const eventSpy = spy(picker, 'emitEvent');
           picker.readOnly = true;
           await elementUpdated(picker);
-          expect(picker.value).to.deep.equal({ start: null, end: null });
+          expect(picker.value).to.be.null;
 
           await picker.show();
 
@@ -1117,7 +1122,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
             IgcCalendarComponent.tagName
           )!;
           await selectDates(today, tomorrow, calendar);
-          expect(picker.value).to.deep.equal({ start: null, end: null });
+          expect(picker.value).to.be.null;
           expect(calendar.values).to.deep.equal([]);
           expect(eventSpy).not.to.be.called;
         });
@@ -1388,6 +1393,153 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       });
     });
   });
+  describe('Value rules', () => {
+    const april10 = new Date(2025, 3, 10);
+    const may20 = new Date(2025, 4, 20);
+    const june1 = new Date(2025, 5, 1);
+    const june10 = new Date(2025, 5, 10);
+
+    async function pick(date: Date, view: number) {
+      const views = getCalendarDOM(calendar).views.allDays;
+      simulateClick(getDOMDate(CalendarDay.from(date), views[view]));
+      await elementUpdated(picker);
+      await elementUpdated(calendar);
+    }
+
+    it('is null without a value', () => {
+      expect(picker.value).to.be.null;
+      expect(picker.defaultValue).to.be.null;
+    });
+
+    it('stores an empty range as null', () => {
+      picker.value = { start: june1, end: june10 };
+      picker.value = { start: null, end: null };
+
+      expect(picker.value).to.be.null;
+    });
+
+    it('swaps reversed ends set from code, as an attribute and as the default', () => {
+      const ordered = { start: june1, end: june10 };
+
+      picker.value = { start: june10, end: june1 };
+      expect(picker.value).to.eql(ordered);
+
+      picker.setAttribute(
+        'value',
+        JSON.stringify({ start: '2025-06-10', end: '2025-06-01' })
+      );
+      expect(picker.value).to.eql(ordered);
+
+      picker.defaultValue = { start: june10, end: june1 };
+      expect(picker.defaultValue).to.eql(ordered);
+    });
+
+    it('keeps the time of the ends set as an attribute', () => {
+      picker.setAttribute(
+        'value',
+        JSON.stringify({ start: '2025-06-01T09:30', end: '2025-06-10T17:45' })
+      );
+
+      expect(picker.value).to.eql({
+        start: new Date(2025, 5, 1, 9, 30),
+        end: new Date(2025, 5, 10, 17, 45),
+      });
+    });
+
+    it('swaps the reversed range of a custom chip', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      picker.customRanges = [
+        { label: 'Reversed', dateRange: { start: june10, end: june1 } },
+      ];
+      await picker.show();
+
+      const area = picker.renderRoot.querySelector(
+        IgcPredefinedRangesAreaComponent.tagName
+      )!;
+      simulateClick(area.renderRoot.querySelector(IgcChipComponent.tagName)!);
+      await elementUpdated(picker);
+
+      expect(picker.value).to.eql({ start: june1, end: june10 });
+      expect(eventSpy).calledWith('igcChange', {
+        detail: { start: june1, end: june10 },
+      });
+    });
+
+    it('keeps the months in view when a value in the first month is set while the second month is active', async () => {
+      picker.keepOpenOnSelect = true;
+      await picker.show();
+
+      const before = getRenderedMonths(calendar);
+      const inFirst = CalendarDay.from(
+        getCalendarDOM(calendar).views.days.activeDate
+      ).set({ date: 10 });
+      const inSecond = inFirst.add('month', 1).set({ date: 20 });
+
+      // A pick in the second month makes it the active view.
+      await pick(inSecond.native, 1);
+
+      picker.value = { start: inFirst.native, end: inSecond.native };
+      await elementUpdated(picker);
+      await elementUpdated(calendar);
+
+      checkDatesEqual(calendar.activeDate, inFirst.native);
+      expect(getRenderedMonths(calendar)).to.eql(before);
+    });
+
+    it('keeps the months in view after a pick in the second month with `activeDate` set', async () => {
+      picker.keepOpenOnSelect = true;
+      picker.activeDate = april10;
+      await picker.show();
+
+      await pick(april10, 0);
+      await pick(may20, 1);
+
+      expect(picker.value).to.eql({ start: april10, end: may20 });
+      expect(getRenderedMonths(calendar)).to.eql([4, 5]);
+
+      // A new active date still moves the calendar.
+      const august1 = new Date(2025, 7, 1);
+      picker.activeDate = august1;
+      await elementUpdated(picker);
+      await elementUpdated(calendar);
+
+      checkDatesEqual(calendar.activeDate, august1);
+    });
+
+    it('opens in the first month without a value', async () => {
+      await picker.show();
+      const next = CalendarDay.from(
+        getCalendarDOM(calendar).views.days.activeDate
+      ).add('month', 1);
+
+      // Makes the second month the active view.
+      showDate(calendar, next.native);
+      await elementUpdated(calendar);
+      await picker.hide();
+
+      picker.focus();
+      simulateKeyboard(picker, [altKey, arrowDown]);
+      await elementUpdated(picker);
+      await elementUpdated(calendar);
+
+      expect(getRenderedMonths(calendar)[0]).to.equal(next.month + 1);
+      expect(
+        getCalendarDOM(calendar).views.allDays.findIndex((view) => view.active)
+      ).to.equal(0);
+    });
+
+    it('brings the first defined date of a value set from code into view', async () => {
+      await picker.show();
+
+      picker.value = { start: null, end: may20 };
+      await elementUpdated(picker);
+      await elementUpdated(calendar);
+
+      checkDatesEqual(calendar.activeDate, may20);
+      expect(getRenderedMonths(calendar)).to.eql([5, 6]);
+    });
+  });
+
   describe('Locale week start', () => {
     it('derives the calendar week start from the locale when `week-start` is not set', async () => {
       picker = await fixture<IgcDateRangePickerComponent>(

@@ -21,6 +21,7 @@ import {
   getCalendarDOM,
   getDayViewDOM,
   getDOMDate,
+  getRenderedMonths,
 } from '#internals/testing/calendar.spec.js';
 import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
@@ -43,7 +44,7 @@ import {
   simulateScroll,
 } from '#internals/testing/simulate.spec.js';
 import { formatString } from '#internals/utils/strings.js';
-import IgcCalendarComponent from '../calendar/calendar.js';
+import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import { DateRangeType } from '../calendar/types.js';
 import { DatePart } from '../date-time-input/date-part.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
@@ -1059,6 +1060,48 @@ describe('Date picker', () => {
     });
   });
 
+  describe('Calendar view', () => {
+    it('brings the month of a value set from code into view', async () => {
+      const march1 = new Date(2025, 2, 1);
+      const august20 = new Date(2025, 7, 20);
+
+      picker.value = march1;
+      await picker.show();
+      expect(getRenderedMonths(calendar)).to.eql([3]);
+
+      picker.value = august20;
+      await elementUpdated(picker);
+      await elementUpdated(calendar);
+
+      checkDatesEqual(calendar.activeDate, august20);
+      expect(getRenderedMonths(calendar)).to.eql([8]);
+    });
+
+    it('opens on the value in the first month', async () => {
+      picker.visibleMonths = 2;
+      picker.value = new Date(2025, 4, 20);
+      await picker.show();
+      expect(getRenderedMonths(calendar)).to.eql([5, 6]);
+
+      // A pick in the second month makes it the active view, and closes the picker.
+      simulateClick(
+        getDOMDate(
+          CalendarDay.from(new Date(2025, 5, 10)),
+          getCalendarDOM(calendar).views.allDays[1]
+        )
+      );
+      await picker.hide();
+      expect(getRenderedMonths(calendar)).to.eql([5, 6]);
+
+      picker.focus();
+      simulateKeyboard(picker, [altKey, arrowDown]);
+      await elementUpdated(picker);
+      await elementUpdated(calendar);
+
+      expect(getRenderedMonths(calendar)).to.eql([6, 7]);
+    });
+  });
+
   describe('Interactions', () => {
     it('should close the picker when in open state on pressing Escape', async () => {
       const eventSpy = spy(picker, 'emitEvent');
@@ -1453,8 +1496,10 @@ describe('Date picker', () => {
     });
 
     it('should render a user change at once', async () => {
+      const today = CalendarDay.today;
       picker.keepOpenOnSelect = true;
-      picker.value = new Date(2020, 0, 1);
+      // Another date of the current month, so that the calendar shows today.
+      picker.value = today.set({ date: today.date === 1 ? 2 : 1 }).native;
       await picker.show();
 
       selectCurrentDate(calendar);
@@ -1722,6 +1767,31 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       expect(eventSpy).calledWith('igcChange', { detail: null });
+    });
+
+    it('reports a clear one time, when the focus leaves the picker', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      picker.value = CalendarDay.today.native;
+      await picker.show();
+
+      dateTimeInput.focus();
+      simulateClick(getIcon(pickerClearIcon));
+      await elementUpdated(picker);
+
+      // The focus moves to the calendar and stays in the picker.
+      await calendar[focusActiveDate]();
+      await elementUpdated(picker);
+      expect(eventSpy).not.calledWith('igcChange');
+
+      const outside = document.createElement('button');
+      document.body.append(outside);
+      outside.focus();
+      outside.remove();
+      await elementUpdated(picker);
+
+      expect(eventSpy.withArgs('igcChange')).calledOnceWith('igcChange', {
+        detail: null,
+      });
     });
 
     describe('A clear before an open', () => {
