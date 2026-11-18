@@ -16,6 +16,7 @@ import { getDateTimeFormat } from '#internals/i18n/date-formats.js';
 import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.resources.js';
 import { datePickerResourcesMap } from '#internals/i18n/utils.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormValueDateTimeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { I18nMixin, type I18nMixinConfig } from '#internals/mixins/i18n.js';
 import { bindIf } from '#internals/utils/lit.js';
@@ -198,7 +199,7 @@ export default class IgcDatePickerComponent extends I18nMixin(
 
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: null,
-    transformers: dateShape.transformers,
+    transformers: FormValueDateTimeTransformers,
   });
 
   // Cached: every render has the editor.
@@ -264,7 +265,7 @@ export default class IgcDatePickerComponent extends I18nMixin(
    */
   @property({ converter: convertToDate })
   public set value(value: Date | string | null | undefined) {
-    this._value = value as Date | null;
+    this._value = convertToDate(value);
     this._session.endDraft();
   }
 

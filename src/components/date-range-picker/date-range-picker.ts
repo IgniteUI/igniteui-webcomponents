@@ -43,7 +43,11 @@ import { DateRangePosition } from './date-range-mask-parser.js';
 import { styles } from './date-range-picker.base.css.js';
 import { dateRangeI18nConfig } from './i18n.js';
 import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
-import { rangeShape } from './range-shape.js';
+import {
+  normalizeRange,
+  rangeShape,
+  rangeTransformers,
+} from './range-shape.js';
 import { styles as shared } from './themes/shared/date-range-picker.common.css.js';
 import { dateRangeValidators } from './validators.js';
 
@@ -241,7 +245,7 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   protected override readonly _formValue =
     createFormValueState<DateRangeValue | null>(this, {
       initialValue: null,
-      transformers: rangeShape.transformers,
+      transformers: rangeTransformers,
     });
 
   protected override _visibleMonths = 2;
@@ -283,11 +287,12 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
       return super._formatValidationValue(value, locale);
     }
 
-    return rangeShape.format(
-      value as DateRangeValue,
-      (date) => super._formatValidationValue(date, locale),
-      this.resourceStrings.date_range_picker_date_separator
-    );
+    const { start, end } = value as DateRangeValue;
+
+    return [start, end]
+      .filter((date) => date !== null)
+      .map((date) => super._formatValidationValue(date, locale))
+      .join(` ${this.resourceStrings.date_range_picker_date_separator} `);
   }
 
   protected override get _projectionTarget() {
@@ -309,12 +314,12 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false, true) */
   /**
-   * The value of the picker: a range with a `start` and an `end` date.
+   * The value of the picker: a range with a `start` and an `end` date, or `null` when the range is empty.
    * @attr
    */
   @property({ converter: convertToDateRange })
   public set value(value: DateRangeValue | string | null | undefined) {
-    this._value = value as DateRangeValue | null;
+    this._value = convertToDateRange(value);
     this._session.endDraft();
   }
 
@@ -479,12 +484,10 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
 
     const input = event.target as IgcDateTimeInputComponent;
     const newValue = input._uncommittedValue;
-    const draft = rangeShape.normalize(
-      this._getUpdatedDateRange(input, newValue)
-    );
+    const draft = normalizeRange(this._getUpdatedDateRange(input, newValue));
 
-    this._draft = draft;
-    this._setCalendarActiveDate(newValue, draft?.start, draft?.end);
+    this._draft = { value: draft };
+    this._setCalendarActiveDate(newValue ?? draft?.start ?? draft?.end);
 
     this.emitEvent('igcInput', { detail: draft });
   }
@@ -505,10 +508,10 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     }
 
     const input = event.target as IgcDateRangeInputComponent;
-    const draft = rangeShape.normalize(input._uncommittedValue);
+    const draft = normalizeRange(input._uncommittedValue);
 
-    this._draft = draft;
-    this._calendar.activeDate = draft?.start;
+    this._draft = { value: draft };
+    this._setCalendarActiveDate(draft?.start);
 
     this.emitEvent('igcInput', { detail: draft });
   }

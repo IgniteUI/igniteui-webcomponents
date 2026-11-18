@@ -73,8 +73,7 @@ export function convertToDates(
 }
 
 /**
- * Converts `value` to a `DateRangeValue`, parsing a string as JSON. The ends
- * keep their time.
+ * Converts `value` to a `DateRangeValue`, parsing a string as JSON.
  *
  * @remarks
  * Malformed input gives `null`, because this runs as an attribute converter.

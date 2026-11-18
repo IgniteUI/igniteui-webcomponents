@@ -12,7 +12,7 @@ defineComponents(IgcDateRangePickerComponent);
 ## Properties
 
 - `value`: `DateRangeValue | null`. Attribute: `value`.
-  The value of the picker: a range with a `start` and an `end` date.
+  The value of the picker: a range with a `start` and an `end` date, or `null` when the range is empty.
 - `visibleMonths`: `number`. Default: `2`. Attribute: `visible-months`.
   The number of months displayed in the calendar: 1 or 2.
 - `customRanges`: `CustomDateRange[]`. Default: `[]`. No attribute.

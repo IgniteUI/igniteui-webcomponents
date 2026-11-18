@@ -10,19 +10,9 @@ describe('Picker value shapes', () => {
       expect(dateShape.selection).to.equal('single');
     });
 
-    it('keeps the value as it is', () => {
-      expect(dateShape.normalize(june1)).to.equal(june1);
-      expect(dateShape.normalize(null)).to.be.null;
-    });
-
-    it('gives the value as the first date', () => {
-      expect(dateShape.first(june1)).to.equal(june1);
-      expect(dateShape.first(null)).to.be.null;
-    });
-
-    it('gives the calendar the value, or no dates', () => {
-      expect(dateShape.toCalendar(june1)).to.eql([june1]);
-      expect(dateShape.toCalendar(null)).to.eql([]);
+    it('gives the calendar the value as its single value', () => {
+      expect(dateShape.toCalendar(june1)).to.eql({ value: june1, values: [] });
+      expect(dateShape.toCalendar(null)).to.eql({ value: null, values: [] });
     });
 
     it('takes the first date of a calendar selection', () => {
@@ -32,24 +22,6 @@ describe('Picker value shapes', () => {
 
     it('closes on each pick', () => {
       expect(dateShape.closesOnPick([june5])).to.be.true;
-    });
-
-    it('is complete with a date', () => {
-      expect(dateShape.isComplete(june1)).to.be.true;
-      expect(dateShape.isComplete(null)).to.be.false;
-    });
-
-    it('formats the date', () => {
-      expect(
-        dateShape.format(june1, (date) => `${date.getDate()}`, '-')
-      ).to.equal('1');
-    });
-
-    it('converts a string value through the transformers', () => {
-      expect(dateShape.transformers.setValue!('2025-06-05' as never)).to.eql(
-        june5
-      );
-      expect(dateShape.transformers.setDefaultValue!(null)).to.be.null;
     });
   });
 });

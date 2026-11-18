@@ -458,14 +458,6 @@ export abstract class IgcDateTimeInputBaseComponent<
     this._updateMaskDisplay();
   }
 
-  /** Clears the text and the value as an edit. `clear()` runs it as a write from code, which reports nothing. */
-  private _clearAsEdit(): void {
-    this._isEditing = false;
-    this._maskedValue = '';
-    this._writeFrom('edit', () => this._applyValue(null));
-    this._updateMaskDisplay();
-  }
-
   /** Applies the masked text, or `value`, to the public value without emitting anything. */
   protected _applyDraft(
     value: T | null = this._parser.parseValue(this._maskedValue, true)
@@ -609,7 +601,12 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   /** Clears the value and the text of the input. */
   public clear(): void {
-    this._writeFrom('code', () => this._clearAsEdit());
+    this._writeFrom('code', () => {
+      this._isEditing = false;
+      this._maskedValue = '';
+      this._applyValue(null);
+      this._updateMaskDisplay();
+    });
   }
 
   //#endregion

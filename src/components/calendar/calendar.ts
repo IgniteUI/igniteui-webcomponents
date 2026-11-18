@@ -48,7 +48,11 @@ import type {
 import IgcYearsViewComponent from './years-view/years-view.js';
 
 export const focusActiveDate = Symbol();
-export const showDate = Symbol();
+
+export type ShowDateOptions = {
+  /** Puts the date in the first month, also when the calendar shows it. */
+  first?: boolean;
+};
 
 /** The maximum number of consecutive disabled days that keyboard navigation skips. */
 const MAX_DISABLED_DATE_SKIP = 1000;
@@ -451,20 +455,6 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     }
   }
 
-  /**
-   * Makes `date` the active date. A date in a month that the calendar shows keeps the months in view. Any other
-   * date, and any date with `first`, goes in the first month.
-   *
-   * @hidden @internal
-   */
-  public [showDate](date: Date, { first = false } = {}): void {
-    const months = this._getActiveDates();
-    const index = first ? -1 : monthOffset(date, months[0]);
-
-    this._activeDaysViewIndex = index >= 0 && index < months.length ? index : 0;
-    this.activeDate = date;
-  }
-
   /** Moves to the adjacent view when `date` leaves the month of the active view. */
   private _updateViewIndex(date: CalendarDay, delta: -1 | 1): void {
     if (this.visibleMonths > 1 && date.month !== this._activeDate.month) {
@@ -839,6 +829,25 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       </div>
     `;
   }
+}
+
+/**
+ * Makes `date` the active date of `calendar`. A date in a shown month keeps the months; any other date goes in the
+ * first month. For the pickers: the calendar has no public member for it.
+ */
+export function showDate(
+  calendar: IgcCalendarComponent,
+  date: Date,
+  { first = false }: ShowDateOptions = {}
+): void {
+  const index = first
+    ? 0
+    : calendar['_activeDaysViewIndex'] +
+      monthOffset(date, calendar['_activeDate']);
+
+  calendar['_activeDaysViewIndex'] =
+    index >= 0 && index < Math.max(calendar.visibleMonths, 1) ? index : 0;
+  calendar.activeDate = date;
 }
 
 declare global {

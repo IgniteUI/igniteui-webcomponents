@@ -32,6 +32,7 @@
     - [Rendering](#rendering)
     - [Locale](#locale)
     - [Interactions](#interactions)
+    - [Show a date](#show-a-date)
     - [Selection model](#selection-model)
     - [Keyboard navigation](#keyboard-navigation)
     - [Year and month views](#year-and-month-views)
@@ -52,7 +53,7 @@
 |       3 | 2026-10-01 | Descriptor labels; the initial active date is derived before the first render |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                      |
 |       5 | 2026-11-02 | The events of the days view stay inside the calendar.                         |
-|       6 | 2026-11-18 | An internal method brings a date into view for the pickers, and keeps the months when the date is shown |
+|       6 | 2026-11-18 | An internal function brings a date into view for the pickers, and keeps the months when the date is shown |
 
 ## Overview
 
@@ -62,9 +63,10 @@ shows the current selection and a navigation area for moving through time.
 
 The component is the date surface shared by the pickers of the library: [`igc-date-picker`](../date-picker/spec.md)
 and [`igc-date-range-picker`](../date-range-picker/spec.md) render an `igc-calendar` inside their popover. They
-move it through two internal symbol methods: `focusActiveDate` focuses the active date, and `showDate` makes a date the
-active date. With more than one visible month, `showDate` keeps the months when the date is in one of them, and puts
-any other date in the first month. The pickers ask for the first month when they open.
+move it through two internal APIs of the calendar module: the `focusActiveDate` symbol method focuses the active
+date, and the `showDate(calendar, date)` function makes a date the active date. With more than one visible month,
+`showDate` keeps the months when the date is in one of them, and puts any other date in the first month. The pickers
+ask for the first month when they open.
 
 ### Key features
 

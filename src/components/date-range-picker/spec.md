@@ -41,6 +41,9 @@
     - [Form integration suites](#form-integration-suites)
     - [Predefined ranges area](#predefined-ranges-area)
     - [Range mask parser](#range-mask-parser)
+    - [Range mask parser properties](#range-mask-parser-properties)
+    - [Range value shape](#range-value-shape)
+    - [Range value shape properties](#range-value-shape-properties)
     - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -308,8 +311,9 @@ See the [validation container specification](../validation-container/spec.md) fo
 - Without `activeDate`, each change of the value brings its first defined date into view, also a change from code
   while the calendar is open. A date in a month that the calendar shows keeps the months in view. With `activeDate`
   set, a change of the value does not move the calendar, and the user can navigate away from `activeDate`.
-- An open from the calendar icon, a click on the input in dialog mode or <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> shows
-  `activeDate`, or else the first defined date of the range, in the first month.
+- An open by the user, from the calendar icon, a click on the input in dialog mode or <kbd>Alt</kbd> +
+  <kbd>Arrow Down</kbd>, shows `activeDate`, else the first defined date of the range, else the current active date,
+  in the first month.
 - While typing, the active date follows the last modified date. Clearing both values by typing leaves the active
   date at the last one assigned.
 
@@ -468,7 +472,7 @@ apply.
 
 | Property               | Attribute                  | Reflected | Type                        | Default           | Description                                                              |
 | ---------------------- | -------------------------- | --------- | --------------------------- | ----------------- | ------------------------------------------------------------------------ |
-| value                  | value                      | No        | `DateRangeValue \| null`    | -                 | The value of the picker: a range with a `start` and an `end` date.       |
+| value                  | value                      | No        | `DateRangeValue \| null`    | -                 | The value of the picker: a range with a `start` and an `end` date, or `null` when the range is empty. |
 | useTwoInputs           | use-two-inputs             | Yes       | `boolean`                   | false             | Whether the picker shows the start and the end date in two separate inputs. |
 | usePredefinedRanges    | use-predefined-ranges      | Yes       | `boolean`                   | false             | Whether the picker shows chips with predefined ranges.                   |
 | customRanges           | -                          | No        | `CustomDateRange[]`         | `[]`              | The custom date ranges that the picker shows as chips. A click on a chip selects its range. |
@@ -645,8 +649,8 @@ input and two inputs suites run with reduced motion, so the dialog does not fade
 8. Value rules - the value and the default are `null` without a value, and an empty range is stored as `null`.
    Reversed ends set from code, as an attribute and as the default are swapped, and the time of the ends set as an
    attribute stays. A custom chip with reversed ends commits and reports the range in order. A value in the first
-   month set while the second month is active keeps the months in view, and a value set from code brings its first
-   defined date into view. With `activeDate` set, a pick in the second month keeps the months in view, and a new
+   month set while the second month is active keeps the months in view, a value set from code brings its first
+   defined date into view, and an open without a value shows the current active date in the first month. With `activeDate` set, a pick in the second month keeps the months in view, and a new
    `activeDate` still moves the calendar.
 
 ### Single input suite
@@ -720,16 +724,16 @@ The focus after the form checks and the `invalid` event rules come from the form
 ### Range value shape
 
 31. Without a DOM: an empty range is `null`; a range in order stays the same object; reversed ends swap, by time also
-    on the same day; the ends keep their time; a missing end becomes `null`. The form value transformers normalize a
-    value, a default value and an attribute string, and compare ranges by their dates. The first defined date, the
-    calendar dates of a range, a range in one day, a partial range and no range, the range of a calendar selection,
-    the close after the second pick, a complete range and the text of a range.
+    on the same day; a missing end becomes `null`. The form value transformers normalize a value, a default value and
+    an attribute string, and compare ranges by their dates. The calendar dates of a range, a range in one day, a
+    partial range and no range; the range of a calendar selection; a complete range.
 
 ### Range value shape properties
 
 32. For generated ranges: the normalize step is idempotent, gives `null` only for an empty range and the ends in order
     of time otherwise, and keeps each date with its time. A complete range goes to the calendar and back unchanged,
-    and a calendar selection comes back as its first and last date.
+    and a calendar selection comes back as its first and last date, which closes the picker when there is more than one.
+    An attribute string is normalized like the range of its dates.
 
 ### Host ARIA
 

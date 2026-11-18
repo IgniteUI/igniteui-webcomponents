@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A change of `showSelectAll` or `groupSelection` keeps the active item. Before, no option was active after the change. When the change removes the active select-all option, or an active group header is no longer an option, no option is active.
 - #### Date picker
   - Without `activeDate`, a value set from code brings its month into view in the calendar, also while the calendar is open. Before, the calendar stayed on its month until the next open from the calendar icon or the keyboard.
-  - With `visibleMonths` above 1, an open from the calendar icon or the keyboard shows the value in the first month. Before, the value could open in another month.
+  - With `visibleMonths` above 1, an open by the user, from the calendar icon, <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> or a click on the input or the label in dialog mode, shows the value in the first month. Before, the value could open in another month.
 - #### Date picker, Date range picker
   - In editable dropdown mode, a clear through the clear icon is reported with `igcChange` when the focus leaves the picker. Before, the input reported it when the focus left the input, also on a move to the calendar or to the other input of a date range picker.
 - #### Date picker, Date time input
@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - An empty range is `null`: the initial `value` and `defaultValue`, the detail of `igcChange` and `igcInput`, a range that the calendar clears and a range that the inputs empty. Before, some of these were `{ start: null, end: null }`. Check for `null` before you read `value.start`.
   - Each write puts the ends of the range in order of time: a value set from code, the `value` attribute, `defaultValue` and a custom range chip. Before, only a commit of the inputs swapped the ends, and it compared only the days. The `igcInput` detail is in order too, while the inputs keep the typed text.
   - The two inputs and the `value` attribute keep the time of the dates. Before, they set the time to midnight.
-  - Without `activeDate`, a range with only an end set from code brings that end into view, as a full range brings its start.
+  - Without `activeDate`, a range with one end set from code brings that end into view, as a full range brings its start.
 - #### Dropdown
   - <kbd>Enter</kbd> closes the open list also when no item is active, as in the select. Before, the list stayed open.
 - #### Library

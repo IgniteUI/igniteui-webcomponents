@@ -19,6 +19,11 @@ import { CalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import type { IgcDateRangePickerResourceStrings } from '#internals/i18n/EN/date-range-picker.resources.js';
 import {
+  getCalendarDOM,
+  getDOMDate,
+  getRenderedMonths,
+} from '#internals/testing/calendar.spec.js';
+import {
   checkDatesEqual,
   finishAnimationsFor,
 } from '#internals/testing/helpers.spec.js';
@@ -29,8 +34,7 @@ import {
 import { formatString } from '#internals/utils/strings.js';
 import { configureTheme } from '#theming/config.js';
 import type IgcButtonComponent from '../button/button.js';
-import IgcCalendarComponent from '../calendar/calendar.js';
-import type IgcDaysViewComponent from '../calendar/days-view/days-view.js';
+import IgcCalendarComponent, { showDate } from '../calendar/calendar.js';
 import { DateRangeType } from '../calendar/types.js';
 import IgcChipComponent from '../chip/chip.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
@@ -1390,33 +1394,31 @@ describe('Date range picker - common tests for single and two inputs mode', () =
     });
   });
   describe('Value rules', () => {
+    const april10 = new Date(2025, 3, 10);
+    const may20 = new Date(2025, 4, 20);
     const june1 = new Date(2025, 5, 1);
     const june10 = new Date(2025, 5, 10);
-    const may20 = new Date(2025, 4, 20);
 
-    /** The month of each rendered days view of the calendar. */
-    function renderedMonths(): number[] {
-      return Array.from(
-        calendar.renderRoot.querySelectorAll<IgcDaysViewComponent>(
-          'igc-days-view'
-        ),
-        (view) => view.activeDate.getMonth() + 1
-      );
+    async function pick(date: Date, view: number) {
+      const views = getCalendarDOM(calendar).views.allDays;
+      simulateClick(getDOMDate(CalendarDay.from(date), views[view]));
+      await elementUpdated(picker);
+      await elementUpdated(calendar);
     }
 
-    it('is null without a value', async () => {
+    it('is null without a value', () => {
       expect(picker.value).to.be.null;
       expect(picker.defaultValue).to.be.null;
     });
 
-    it('stores an empty range as null', async () => {
+    it('stores an empty range as null', () => {
       picker.value = { start: june1, end: june10 };
       picker.value = { start: null, end: null };
 
       expect(picker.value).to.be.null;
     });
 
-    it('swaps reversed ends set from code, as an attribute and as the default', async () => {
+    it('swaps reversed ends set from code, as an attribute and as the default', () => {
       const ordered = { start: june1, end: june10 };
 
       picker.value = { start: june10, end: june1 };
@@ -1432,7 +1434,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       expect(picker.defaultValue).to.eql(ordered);
     });
 
-    it('keeps the time of the ends set as an attribute', async () => {
+    it('keeps the time of the ends set as an attribute', () => {
       picker.setAttribute(
         'value',
         JSON.stringify({ start: '2025-06-01T09:30', end: '2025-06-10T17:45' })
@@ -1467,56 +1469,33 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       picker.keepOpenOnSelect = true;
       await picker.show();
 
-      const views =
-        calendar.renderRoot.querySelectorAll<IgcDaysViewComponent>(
-          'igc-days-view'
-        );
-      const before = renderedMonths();
-      const inFirst = CalendarDay.from(views[0].activeDate).set({ date: 10 });
+      const before = getRenderedMonths(calendar);
+      const inFirst = CalendarDay.from(
+        getCalendarDOM(calendar).views.days.activeDate
+      ).set({ date: 10 });
       const inSecond = inFirst.add('month', 1).set({ date: 20 });
 
       // A pick in the second month makes it the active view.
-      simulateClick(
-        views[1].renderRoot.querySelector(
-          `[data-value='${inSecond.timestamp}']`
-        )!
-      );
-      await elementUpdated(picker);
+      await pick(inSecond.native, 1);
 
       picker.value = { start: inFirst.native, end: inSecond.native };
       await elementUpdated(picker);
       await elementUpdated(calendar);
 
       checkDatesEqual(calendar.activeDate, inFirst.native);
-      expect(renderedMonths()).to.eql(before);
+      expect(getRenderedMonths(calendar)).to.eql(before);
     });
 
     it('keeps the months in view after a pick in the second month with `activeDate` set', async () => {
-      const april10 = new Date(2025, 3, 10);
-      const may20 = new Date(2025, 4, 20);
       picker.keepOpenOnSelect = true;
       picker.activeDate = april10;
       await picker.show();
 
-      const views =
-        calendar.renderRoot.querySelectorAll<IgcDaysViewComponent>(
-          'igc-days-view'
-        );
-      for (const [date, view] of [
-        [april10, 0],
-        [may20, 1],
-      ] as const) {
-        simulateClick(
-          views[view].renderRoot.querySelector(
-            `[data-value='${CalendarDay.from(date).timestamp}']`
-          )!
-        );
-        await elementUpdated(picker);
-        await elementUpdated(calendar);
-      }
+      await pick(april10, 0);
+      await pick(may20, 1);
 
       expect(picker.value).to.eql({ start: april10, end: may20 });
-      expect(renderedMonths()).to.eql([4, 5]);
+      expect(getRenderedMonths(calendar)).to.eql([4, 5]);
 
       // A new active date still moves the calendar.
       const august1 = new Date(2025, 7, 1);
@@ -1527,6 +1506,28 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       checkDatesEqual(calendar.activeDate, august1);
     });
 
+    it('opens in the first month without a value', async () => {
+      await picker.show();
+      const next = CalendarDay.from(
+        getCalendarDOM(calendar).views.days.activeDate
+      ).add('month', 1);
+
+      // Makes the second month the active view.
+      showDate(calendar, next.native);
+      await elementUpdated(calendar);
+      await picker.hide();
+
+      picker.focus();
+      simulateKeyboard(picker, [altKey, arrowDown]);
+      await elementUpdated(picker);
+      await elementUpdated(calendar);
+
+      expect(getRenderedMonths(calendar)[0]).to.equal(next.month + 1);
+      expect(
+        getCalendarDOM(calendar).views.allDays.findIndex((view) => view.active)
+      ).to.equal(0);
+    });
+
     it('brings the first defined date of a value set from code into view', async () => {
       await picker.show();
 
@@ -1535,7 +1536,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       await elementUpdated(calendar);
 
       checkDatesEqual(calendar.activeDate, may20);
-      expect(renderedMonths()).to.eql([5, 6]);
+      expect(getRenderedMonths(calendar)).to.eql([5, 6]);
     });
   });
 
