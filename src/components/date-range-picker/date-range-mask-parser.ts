@@ -1,13 +1,13 @@
 import {
   createDatePart,
   type DatePart,
-  DatePartType,
   type IDatePart,
-  type SpinOptions,
 } from '../date-time-input/date-part.js';
 import {
   DateFormatMaskParser,
   DateTimeMaskParser,
+  type SpinRequest,
+  type SpunText,
 } from '../date-time-input/datetime-mask-parser.js';
 import {
   escapeMaskFlags,
@@ -80,7 +80,11 @@ function offsetParts(
  * A mask parser for date range inputs. A single date format (e.g. 'MM/dd/yyyy') creates
  * two internal DateTimeMaskParser instances, one for each end of the range.
  */
-export class DateRangeMaskParser extends DateFormatMaskParser<IDateRangePart> {
+export class DateRangeMaskParser extends DateFormatMaskParser<
+  IDateRangePart,
+  DateRangeValue,
+  DateRangePart
+> {
   private _startParser: DateTimeMaskParser;
   private _endParser: DateTimeMaskParser;
 
@@ -216,58 +220,77 @@ export class DateRangeMaskParser extends DateFormatMaskParser<IDateRangePart> {
 
   //#endregion
 
-  //#region Part Queries
+  //#region Part editing
 
-  /**
-   * Gets a specific part type for a position.
-   */
-  public getPartByTypeAndPosition(
-    type: DatePartType,
-    position: DateRangePosition
-  ): IDateRangePart | undefined {
-    return this.parts.find((p) => p.type === type && p.position === position);
+  public override partAt(position: number): DateRangePart | undefined {
+    const part = this.getPartForCursor(position);
+
+    return part
+      ? { part: part.type as DatePart, position: part.position }
+      : undefined;
   }
 
-  /**
-   * Gets the first non-literal date part for a position.
-   */
-  public getFirstDatePartForPosition(
-    position: DateRangePosition
-  ): IDateRangePart | undefined {
-    return this.parts.find(
-      (p) => p.position === position && p.type !== DatePartType.Literal
-    );
+  public override defaultPart(): DateRangePart | undefined {
+    const part = this._startParser.defaultPart();
+    return part ? { part, position: DateRangePosition.Start } : undefined;
   }
 
-  //#endregion
-
-  //#region Spinning Support
-
-  /** Spins a date part within the range, for stepUp/stepDown. */
-  public spinDateRangePart(
-    part: IDateRangePart,
-    delta: number,
-    currentValue: DateRangeValue | null,
-    spinLoop: boolean,
-    amPmValue?: string
+  /** An empty range takes the seed at both ends. */
+  public override spin(
+    value: DateRangeValue | null,
+    { part, position }: DateRangePart,
+    request: SpinRequest
   ): DateRangeValue {
-    const value = currentValue || { start: null, end: null };
-    const isStart = part.position === DateRangePosition.Start;
+    if (!value?.start && !value?.end) {
+      return this.seeded(request.seed);
+    }
 
-    // Spin a copy of the targeted date, defaulting to today when the range has no value.
-    const originalDate = (isStart ? value.start : value.end) ?? new Date();
-    const date = new Date(originalDate.getTime());
-
-    const spinOptions: SpinOptions = {
-      date,
-      spinLoop,
-      originalDate,
-      amPmValue,
+    return {
+      ...value,
+      [position]: this._parserOf(position).spin(value[position], part, request),
     };
+  }
 
-    part.spin(delta, spinOptions);
+  /** Keeps the text of the other end. A blank mask takes the seed at both ends. */
+  public override spinText(
+    masked: string,
+    { part, position }: DateRangePart,
+    request: SpinRequest
+  ): SpunText<DateRangeValue> {
+    if (this.isBlank(masked)) {
+      const value = this.seeded(request.seed);
+      return { masked: this.formatDateRange(value), value };
+    }
 
-    return isStart ? { ...value, start: date } : { ...value, end: date };
+    const text = {
+      start: masked.substring(0, this._separatorStart),
+      end: masked.substring(this._separatorEnd),
+    };
+    const spun = this._parserOf(position).spinText(
+      text[position],
+      part,
+      request
+    );
+    text[position] = spun.masked;
+
+    return {
+      masked: text.start + this._separator + text.end,
+      value: {
+        start: this._startParser.parseComplete(text.start),
+        end: this._endParser.parseComplete(text.end),
+        [position]: spun.value,
+      },
+    };
+  }
+
+  public override seeded(seed: Date): DateRangeValue {
+    return { start: new Date(seed.getTime()), end: new Date(seed.getTime()) };
+  }
+
+  private _parserOf(position: DateRangePosition): DateTimeMaskParser {
+    return position === DateRangePosition.Start
+      ? this._startParser
+      : this._endParser;
   }
 
   //#endregion

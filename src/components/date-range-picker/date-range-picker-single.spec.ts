@@ -511,21 +511,34 @@ describe('Date range picker - single input', () => {
       expect(isFocused(input)).to.be.false;
       expect(input.value).to.equal('1/15/2025 - 1/16/2025');
 
-      // stepUp should increment the default date part (first start position part - Month)
+      // The default part is the day of the start date
       rangeInput.stepUp();
       await elementUpdated(rangeInput);
 
-      expect(rangeInput.value?.start?.getMonth()).to.equal(1);
-      expect(rangeInput.value?.start?.getDate()).to.equal(15);
-      expect(input.value).to.equal('2/15/2025 - 1/16/2025');
+      expect(rangeInput.value?.start?.getMonth()).to.equal(0);
+      expect(rangeInput.value?.start?.getDate()).to.equal(16);
+      expect(input.value).to.equal('1/16/2025 - 1/16/2025');
 
-      // stepDown should decrement the default date part (Month)
       rangeInput.stepDown();
       await elementUpdated(rangeInput);
 
       expect(rangeInput.value?.start?.getMonth()).to.equal(0);
       expect(rangeInput.value?.start?.getDate()).to.equal(15);
       expect(input.value).to.equal('1/15/2025 - 1/16/2025');
+    });
+
+    it('a spin of an empty end takes today without a step', async () => {
+      const start = new Date(2025, 0, 15);
+      rangeInput.value = { start, end: null };
+      await elementUpdated(rangeInput);
+
+      rangeInput.stepUp({
+        part: DatePart.Date,
+        position: DateRangePosition.End,
+      });
+      await elementUpdated(rangeInput);
+
+      expect(rangeInput.value).to.deep.equal({ start, end: today.native });
     });
 
     it('should update the value on stepUp/stepDown while the input is focused', async () => {
@@ -565,7 +578,7 @@ describe('Date range picker - single input', () => {
       expect(eventSpy).not.calledWith('igcChange');
     });
 
-    it('does not step a date part that the input format does not have', async () => {
+    it('steps a date part that the input format does not have, as the date-time input does', async () => {
       const value = {
         start: new Date(2025, 0, 15),
         end: new Date(2025, 0, 16),
@@ -579,7 +592,10 @@ describe('Date range picker - single input', () => {
       });
       await elementUpdated(rangeInput);
 
-      expect(rangeInput.value).to.deep.equal(value);
+      expect(rangeInput.value).to.deep.equal({
+        start: new Date(2025, 0, 15, 1),
+        end: value.end,
+      });
       expect(input.value).to.equal('1/15/2025 - 1/16/2025');
     });
 
@@ -988,81 +1004,27 @@ describe('Date range picker - single input', () => {
       });
 
       it('should in/decrement the different date parts with arrow up/down', async () => {
-        const expectedStart = CalendarDay.today.set({
-          year: 2025,
-          month: 3,
-          date: 22,
-        });
-
-        const expectedEnd = expectedStart.add('day', 1);
-        const value = { start: expectedStart.native, end: expectedEnd.native };
-        picker.useTwoInputs = false;
-        picker.value = value;
+        picker.value = {
+          start: new Date(2025, 3, 22),
+          end: new Date(2025, 3, 23),
+        };
         await elementUpdated(picker);
 
-        input = getInput(picker);
         input.focus();
-        await elementUpdated(input);
-
-        input.setSelectionRange(2, 2);
-        await elementUpdated(input);
-        await elementUpdated(picker);
-
-        expect(isFocused(input)).to.be.true;
-        //Move selection to the end of 'day' part.
-        simulateKeyboard(input, [ctrlKey, arrowRight]);
         await elementUpdated(rangeInput);
-        await elementUpdated(input);
 
-        expect(input.selectionStart).to.equal(5);
-        expect(input.selectionEnd).to.equal(5);
-
+        // The caret picks the part and the end of the range.
+        input.setSelectionRange(4, 4);
         simulateKeyboard(input, arrowUp);
-        await elementUpdated(picker);
-        await elementUpdated(input);
+        await elementUpdated(rangeInput);
 
         expect(input.value).to.equal('04/23/2025 - 04/23/2025');
 
-        //Move selection to the end of 'year' part.
-        simulateKeyboard(input, [ctrlKey, arrowRight]);
-        await elementUpdated(picker);
-        await elementUpdated(input);
-
-        expect(input.selectionStart).to.equal(10);
-        expect(input.selectionEnd).to.equal(10);
-
-        simulateKeyboard(input, arrowUp);
-        await elementUpdated(picker);
-        await elementUpdated(input);
-        expect(input.value).to.equal('04/23/2026 - 04/23/2025');
-
-        //Move selection to the end of 'month' part of the end date.
-        // skips the separator parts when navigating (right direction)
-        simulateKeyboard(input, [ctrlKey, arrowRight]);
-        await elementUpdated(input);
-
-        expect(input.selectionStart).to.equal(15);
-        expect(input.selectionEnd).to.equal(15);
-
-        simulateKeyboard(input, arrowUp);
-        await elementUpdated(picker);
-
-        expect(input.value).to.equal('04/23/2026 - 05/23/2025');
-
-        // skips the separator parts when navigating (left direction)
-        input.setSelectionRange(13, 13); // set selection to the start of the month part of the end date
-
-        simulateKeyboard(input, [ctrlKey, arrowLeft]);
+        input.setSelectionRange(14, 14);
+        simulateKeyboard(input, arrowDown);
         await elementUpdated(rangeInput);
-        await elementUpdated(input);
 
-        expect(input.selectionStart).to.equal(6);
-        expect(input.selectionEnd).to.equal(6);
-
-        simulateKeyboard(input, arrowUp);
-        await elementUpdated(picker);
-
-        expect(input.value).to.equal('04/23/2027 - 05/23/2025');
+        expect(input.value).to.equal('04/23/2025 - 03/23/2025');
       });
 
       it('moves to the edges of the date parts with Ctrl + arrow keys', async () => {
@@ -1090,6 +1052,110 @@ describe('Date range picker - single input', () => {
         // At the edges of the input: stays there
         expect(await navigate(0, arrowLeft)).to.eql([0, 0]);
         expect(await navigate(23, arrowRight)).to.eql([23, 23]);
+      });
+
+      it('stops at each part edge with Ctrl + arrow keys in a format without separators', async () => {
+        picker.inputFormat = 'yyyyMMdd';
+        picker.value = {
+          start: new Date(2025, 3, 22),
+          end: new Date(2025, 3, 23),
+        };
+        await elementUpdated(picker);
+
+        input.focus();
+        await elementUpdated(rangeInput);
+
+        input.setSelectionRange(4, 4);
+        simulateKeyboard(input, [ctrlKey, arrowRight]);
+        await elementUpdated(rangeInput);
+
+        expect([input.selectionStart, input.selectionEnd]).to.eql([6, 6]);
+      });
+
+      describe('Arrow keys on a range with one typed end', () => {
+        /** The keydown records the caret, as a real key press does. */
+        const typeText = async (text: string, position = 0) => {
+          input.focus();
+          await elementUpdated(rangeInput);
+          input.setSelectionRange(position, position + 1);
+          simulateKeyboard(input, arrowRight);
+
+          simulateInput(input, {
+            value: input.value.substring(0, position) + text,
+            inputType: 'insertText',
+          });
+          await elementUpdated(rangeInput);
+        };
+
+        const spinAt = async (position: number) => {
+          input.setSelectionRange(position, position);
+          simulateKeyboard(input, arrowUp);
+          await elementUpdated(rangeInput);
+        };
+
+        it('spins the typed start and keeps the empty end', async () => {
+          await typeText('04/22/2025');
+          expect(input.value).to.equal('04/22/2025 - __/__/____');
+
+          await spinAt(3);
+
+          expect(input.value).to.equal('04/23/2025 - __/__/____');
+        });
+
+        it('keeps the partial text of the other end', async () => {
+          await typeText('04/22/2025 - 05');
+          expect(input.value).to.equal('04/22/2025 - 05/__/____');
+
+          await spinAt(3);
+
+          expect(input.value).to.equal('04/23/2025 - 05/__/____');
+        });
+
+        it('spins the typed end and keeps the empty start', async () => {
+          await typeText('05/10/2025', 13);
+          expect(input.value).to.equal('__/__/____ - 05/10/2025');
+
+          await spinAt(16);
+
+          expect(input.value).to.equal('__/__/____ - 05/11/2025');
+        });
+
+        it('takes today for the targeted end when the other end has text', async () => {
+          await typeText('04/22/2025');
+
+          await spinAt(16);
+
+          expect(rangeInput._uncommittedValue).to.deep.equal({
+            start: new Date(2025, 3, 22),
+            end: today.native,
+          });
+        });
+
+        it('spins a start that setRangeText committed as an empty range', async () => {
+          input.focus();
+          await elementUpdated(rangeInput);
+          rangeInput.setRangeText('04/22/2025', 0, 10);
+          await elementUpdated(rangeInput);
+          expect(rangeInput.value).to.be.null;
+
+          await spinAt(3);
+
+          expect(input.value).to.equal('04/23/2025 - __/__/____');
+        });
+
+        it('stepUp commits the typed start and keeps the partial text of the other end', async () => {
+          await typeText('04/22/2025 - 05');
+
+          input.setSelectionRange(3, 3);
+          rangeInput.stepUp();
+          await elementUpdated(rangeInput);
+
+          expect(rangeInput.value).to.deep.equal({
+            start: new Date(2025, 3, 23),
+            end: null,
+          });
+          expect(input.value).to.equal('04/23/2025 - 05/__/____');
+        });
       });
 
       it('ignores the input events of the editor when nonEditable is set', async () => {
@@ -1165,34 +1231,24 @@ describe('Date range picker - single input', () => {
       });
 
       it('should spin AM/PM with arrow keys', async () => {
-        const startDate = new Date(2025, 3, 14, 9, 30, 0); // 9:30 AM
-        const endDate = new Date(2025, 3, 15, 10, 45, 0); // 10:45 AM
-
-        picker.useTwoInputs = false;
         picker.inputFormat = 'MM/dd/yyyy hh:mm tt';
-        picker.value = { start: startDate, end: endDate };
+        picker.value = {
+          start: new Date(2025, 3, 14, 9, 30),
+          end: new Date(2025, 3, 15, 10, 45),
+        };
         await elementUpdated(picker);
 
-        input = getInput(picker);
         input.focus();
-        await elementUpdated(input);
+        await elementUpdated(rangeInput);
 
-        // hh format uses leading zeros for hours (09, 10), tt is AM/PM
-        expect(input.value).to.contain('09:30 AM');
-        expect(input.value).to.contain('10:45 AM');
-
-        const amIndex = input.value.indexOf('AM');
-        input.focus();
-        input.setSelectionRange(amIndex, amIndex);
-        await elementUpdated(picker);
-        await elementUpdated(input);
-
+        // The caret in the AM/PM part of the start date spins only the start.
+        input.setSelectionRange(17, 17);
         simulateKeyboard(input, arrowUp);
-        await elementUpdated(picker);
-        await elementUpdated(input);
+        await elementUpdated(rangeInput);
 
-        expect(input.value).to.contain('09:30 PM');
-        expect(input.value).to.contain('10:45 AM');
+        expect(input.value).to.equal(
+          '04/14/2025 09:30 PM - 04/15/2025 10:45 AM'
+        );
       });
 
       it('should delete the value on pressing enter (single input)', async () => {

@@ -1,7 +1,6 @@
 import { expect } from '@open-wc/testing';
 
-import { CalendarDay } from '#internals/date/model.js';
-import { DatePartType } from '../date-time-input/date-part.js';
+import { DatePart, DatePartType } from '../date-time-input/date-part.js';
 import {
   DateRangeMaskParser,
   DateRangePosition,
@@ -66,9 +65,10 @@ describe('DateRangeMaskParser', () => {
       expect(parser.mask).to.equal('M/d/yyyy y M/d/yyyy');
       expect(parser.emptyMask).to.equal('_/_/____ y _/_/____');
 
-      const endMonth = parser.getPartByTypeAndPosition(
-        DatePartType.Month,
-        DateRangePosition.End
+      const endMonth = parser.parts.find(
+        (part) =>
+          part.type === DatePartType.Month &&
+          part.position === DateRangePosition.End
       );
       expect(endMonth!.start).to.equal(11);
 
@@ -203,52 +203,56 @@ describe('DateRangeMaskParser', () => {
       expect(parser.getPartForCursor(12)).to.be.undefined;
     });
 
-    it('gets part by type and position', () => {
+    it('names the part at the caret by its end', () => {
       const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
 
-      const startYear = parser.getPartByTypeAndPosition(
-        DatePartType.Year,
-        DateRangePosition.Start
-      );
-      expect(startYear).to.not.be.undefined;
-      expect(startYear!.position).to.equal(DateRangePosition.Start);
-
-      const endYear = parser.getPartByTypeAndPosition(
-        DatePartType.Year,
-        DateRangePosition.End
-      );
-      expect(endYear).to.not.be.undefined;
-      expect(endYear!.position).to.equal(DateRangePosition.End);
+      expect(parser.partAt(8)).to.eql({
+        part: DatePart.Year,
+        position: DateRangePosition.Start,
+      });
+      expect(parser.partAt(21)).to.eql({
+        part: DatePart.Year,
+        position: DateRangePosition.End,
+      });
+      expect(parser.partAt(11)).to.be.undefined;
     });
 
-    it('gets first date part for position', () => {
+    it('targets the day, else the hours, of the start date by default', () => {
       const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
 
-      const startFirst = parser.getFirstDatePartForPosition(
-        DateRangePosition.Start
-      );
-      expect(startFirst?.type).to.equal(DatePartType.Month);
+      expect(parser.defaultPart()).to.eql({
+        part: DatePart.Date,
+        position: DateRangePosition.Start,
+      });
 
-      const endFirst = parser.getFirstDatePartForPosition(
-        DateRangePosition.End
-      );
-      expect(endFirst?.position).to.equal(DateRangePosition.End);
+      parser.mask = 'HH:mm';
+
+      expect(parser.defaultPart()).to.eql({
+        part: DatePart.Hours,
+        position: DateRangePosition.Start,
+      });
     });
   });
 
   describe('Spinning', () => {
+    const request = (sign: 1 | -1, spinLoop = true) => ({
+      sign,
+      spinLoop,
+      seed: new Date(2030, 5, 10),
+    });
+
     it('spins start date month', () => {
       const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
-      const monthPart = parser.getPartByTypeAndPosition(
-        DatePartType.Month,
-        DateRangePosition.Start
-      )!;
       const range = {
         start: new Date(2026, 11, 25),
         end: new Date(2026, 11, 31),
       };
 
-      const newRange = parser.spinDateRangePart(monthPart, 1, range, true);
+      const newRange = parser.spin(
+        range,
+        { part: DatePart.Month, position: DateRangePosition.Start },
+        request(1)
+      );
 
       expect(newRange.start!.getMonth()).to.equal(0);
       expect(newRange.end).to.equal(range.end);
@@ -256,39 +260,34 @@ describe('DateRangeMaskParser', () => {
 
     it('spins end date day', () => {
       const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
-      const dayPart = parser.getPartByTypeAndPosition(
-        DatePartType.Date,
-        DateRangePosition.End
-      )!;
       const range = {
         start: new Date(2026, 11, 25),
         end: new Date(2026, 11, 31),
       };
 
-      const newRange = parser.spinDateRangePart(dayPart, -1, range, false);
+      const newRange = parser.spin(
+        range,
+        { part: DatePart.Date, position: DateRangePosition.End },
+        request(-1, false)
+      );
 
       expect(newRange.end!.getDate()).to.equal(30);
       expect(newRange.start).to.equal(range.start);
     });
 
-    it('creates date when spinning null value', () => {
+    it('takes the seed at both ends when spinning a null value', () => {
       const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
-      const monthPart = parser.getPartByTypeAndPosition(
-        DatePartType.Month,
-        DateRangePosition.Start
-      )!;
 
-      const newRange = parser.spinDateRangePart(monthPart, 1, null, true);
+      const newRange = parser.spin(
+        null,
+        { part: DatePart.Month, position: DateRangePosition.Start },
+        request(1)
+      );
 
-      const today = CalendarDay.today.native;
-      // Spinning clamps the day to the target month's length (Aug 31 -> Sep 30),
-      // mirrored here by CalendarDay's month-rollover clamp.
-      const spun = CalendarDay.today.add('month', 1).native;
-      expect(newRange.start).to.not.be.null;
-      expect(newRange.start!.getFullYear()).to.equal(today.getFullYear());
-      expect(newRange.start!.getMonth()).to.equal(spun.getMonth());
-      expect(newRange.start!.getDate()).to.equal(spun.getDate());
-      expect(newRange.end).to.be.null;
+      expect(newRange).to.deep.equal({
+        start: new Date(2030, 5, 10),
+        end: new Date(2030, 5, 10),
+      });
     });
   });
 

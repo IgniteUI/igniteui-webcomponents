@@ -34,16 +34,13 @@ import { renderMaskedNativeInput } from '#internals/templates/masked-input.js';
 import type { ThemingController } from '#theming/theming-controller.js';
 import type { RangeTextSelectMode } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
-import {
-  type DatePartDeltas,
-  DatePartType,
-  type IDatePart,
-} from './date-part.js';
-import type { DateFormatMaskParser } from './datetime-mask-parser.js';
+import type { DatePartDeltas, IDatePart } from './date-part.js';
+import type {
+  DateFormatMaskParser,
+  PartDirection,
+  SpinRequest,
+} from './datetime-mask-parser.js';
 import { dateTimeInputValidators } from './validators.js';
-
-/** The direction of a part navigation: `Ctrl + ArrowLeft` or `Ctrl + ArrowRight`. */
-export type PartDirection = 'back' | 'forward';
 
 const Slots = setSlots(
   'prefix',
@@ -71,7 +68,11 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   protected abstract readonly _themes: ThemingController;
 
-  protected abstract override readonly _parser: DateFormatMaskParser<IDatePart>;
+  protected abstract override readonly _parser: DateFormatMaskParser<
+    IDatePart,
+    T,
+    P
+  >;
 
   protected readonly _slots = addSlotController(this, { slots: Slots });
 
@@ -120,12 +121,6 @@ export abstract class IgcDateTimeInputBaseComponent<
    */
   public get _uncommittedValue(): T | null {
     return this._isEditing ? this._parseMask(true) : this.value;
-  }
-
-  protected get _targetDatePart(): P | undefined {
-    return this._focused
-      ? this._getDatePartAtCursor()
-      : this._getDefaultDatePart();
   }
 
   // #endregion
@@ -317,11 +312,16 @@ export abstract class IgcDateTimeInputBaseComponent<
   //#region Keybindings
 
   protected _navigateParts(direction: PartDirection): void {
-    const position = this._calculatePartNavigationPosition(
-      this._input?.value ?? '',
+    const position = this._parser.partEdge(
+      this._maskSelection.start,
       direction
     );
     this.setSelectionRange(position, position);
+  }
+
+  protected _setCurrentDateTime(): void {
+    this._setDraftValue(this._parser.seeded(this._seedDate()));
+    this._emitInputEvent();
   }
 
   protected async _keyboardSpin(sign: 1 | -1): Promise<void> {
@@ -336,7 +336,6 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   //#region Internal API
 
-  /** @internal */
   /** Spins the given or targeted date part. Returns false when no part is targeted, for example in a literal. */
   protected _performStep(
     datePart: P | undefined,
@@ -344,21 +343,46 @@ export abstract class IgcDateTimeInputBaseComponent<
     sign: 1 | -1,
     commit = false
   ): boolean {
-    const part = datePart || this._targetDatePart;
+    const part =
+      datePart ||
+      (this._focused
+        ? this._parser.partAt(this._inputSelection.start)
+        : this._parser.defaultPart());
     if (!part) return false;
 
-    this._applyStep(this._calculateSpunValue(part, delta, sign), commit);
+    const request: SpinRequest = {
+      delta,
+      sign,
+      spinDelta: this.spinDelta,
+      spinLoop: this.spinLoop,
+      seed: this._seedDate(),
+    };
+
+    // An edit, or text that an empty value does not show, spins from the text, so a
+    // range end keeps the text of the other end.
+    const { value, masked } =
+      this._focused && (this._isEditing || this._isValueEmpty())
+        ? this._parser.spinText(this._maskedValue, part, request)
+        : { value: this._parser.spin(this.value, part, request) };
+
+    this._applyStep(value, commit, masked);
     return true;
   }
 
   /** Keeps the selection. With `commit`, a focused editor also updates `value`, not only the draft. */
-  protected _applyStep(value: T, commit: boolean): void {
+  protected _applyStep(value: T, commit: boolean, masked?: string): void {
     const { start, end } = this._inputSelection;
-    this._setDraftValue(value);
+    this._setDraftValue(value, masked);
 
     // A focused editor holds the step as a draft. Commit the exact value: the mask can lack the stepped part.
     if (commit && this._focused) {
       this._applyDraft(value);
+
+      // The value cannot hold a partial range end, so its typed text stays as an edit.
+      if (masked !== undefined && masked !== this._maskedValue) {
+        this._isEditing = true;
+        this._maskedValue = masked;
+      }
     }
 
     this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
@@ -388,18 +412,23 @@ export abstract class IgcDateTimeInputBaseComponent<
    * Applies a value from a spin or `Ctrl + ;`. A focused editor moves only the draft.
    * An unfocused one commits at once, because no blur follows.
    */
-  protected _setDraftValue(value: T): void {
+  protected _setDraftValue(value: T, masked?: string): void {
     if (!this._focused) {
       this.value = value;
       return;
     }
 
-    const next = this._formatValue(value);
+    const next = masked ?? this._formatValue(value);
 
     this._recordHistory('atomic', next, this._inputSelection.start);
 
     this._isEditing = true;
     this._maskedValue = next;
+  }
+
+  /** The date that `Ctrl + ;` sets and that an empty value spins to: now. */
+  protected _seedDate(): Date {
+    return new Date();
   }
 
   /**
@@ -437,16 +466,6 @@ export abstract class IgcDateTimeInputBaseComponent<
     this._maskedValue = '';
     this._writeFrom('edit', () => this._applyValue(null));
     this._updateMaskDisplay();
-  }
-
-  /**
-   * Reads the AM/PM designator as typed in the mask for the given format part,
-   * so that a spin changes what the user sees, not the date below it.
-   */
-  protected _readAmPmFromMask(part?: IDatePart): string | undefined {
-    return part?.type === DatePartType.AmPm
-      ? this._maskedValue.substring(part.start, part.end)
-      : undefined;
   }
 
   /** Applies the masked text, or `value`, to the public value without emitting anything. */
@@ -653,18 +672,6 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected abstract _formatValue(value: T | null): string;
 
   protected abstract _buildDisplayValue(): string;
-  protected abstract _calculatePartNavigationPosition(
-    value: string,
-    direction: PartDirection
-  ): number;
-  protected abstract _calculateSpunValue(
-    part: P,
-    delta: number | undefined,
-    sign: 1 | -1
-  ): T;
-  protected abstract _setCurrentDateTime(): void;
-  protected abstract _getDatePartAtCursor(): P | undefined;
-  protected abstract _getDefaultDatePart(): P | undefined;
 
   /* blazorSuppress */
   /** Returns whether the input format has a date part: day, month or year. */
