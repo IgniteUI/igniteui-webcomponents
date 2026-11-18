@@ -47,8 +47,9 @@ import { DateRangePosition } from './date-range-mask-parser.js';
 import { styles } from './date-range-picker.base.css.js';
 import { dateRangeI18nConfig } from './i18n.js';
 import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
+import { isCompleteDateRange } from './range-shape.js';
 import { styles as shared } from './themes/shared/date-range-picker.common.css.js';
-import { dateRangeValidators, isCompleteDateRange } from './validators.js';
+import { dateRangeValidators } from './validators.js';
 
 export type { DateRangeValue } from '../types.js';
 

@@ -589,7 +589,7 @@ On top of the input and calendar parts it re-exports, the picker exposes:
 
 ## Test scenarios
 
-The component is covered by eight suites in this directory, all running in a real browser through
+The component is covered by ten suites in this directory, all running in a real browser through
 `@web/test-runner` with `@open-wc/testing` fixtures and assertions:
 
 | Suite | Scope |
@@ -602,6 +602,8 @@ The component is covered by eight suites in this directory, all running in a rea
 | [`predefined-ranges-area.spec.ts`](./predefined-ranges-area.spec.ts) | The internal range chips component. |
 | [`date-range-mask-parser.spec.ts`](./date-range-mask-parser.spec.ts) | The range mask parser on its own. |
 | [`date-range-mask-parser.property.spec.ts`](./date-range-mask-parser.property.spec.ts) | Property-based (fuzz) tests for the range mask parser. |
+| [`range-shape.spec.ts`](./range-shape.spec.ts) | The rules of the range value, without a DOM. |
+| [`range-shape.property.spec.ts`](./range-shape.property.spec.ts) | Property-based tests of the rules of the range value. |
 
 The suites reuse `createFormAssociatedTestBed`, `runValidationContainerTests`,
 `runExternalLabelAssociationTests` and the `simulate*` helpers from
@@ -695,11 +697,25 @@ The focus after the form checks and the `invalid` event rules come from the form
     each end spins like a single date, also from its text while the text of the other end stays; an empty range
     takes the seed at both ends; the part at the caret and the default part name their end.
 
+### Range value shape
+
+30. Without a DOM: an empty range is `null`; a range in order stays the same object; reversed ends swap, by time also
+    on the same day; the ends keep their time; a missing end becomes `null`. The form value transformers normalize a
+    value, a default value and an attribute string, and compare ranges by their dates. The first defined date, the
+    calendar dates of a range, a range in one day, a partial range and no range, the range of a calendar selection,
+    the close after the second pick, a complete range and the text of a range.
+
+### Range value shape properties
+
+31. For generated ranges: the normalize step is idempotent, gives `null` only for an empty range and the ends in order
+    of time otherwise, and keeps each date with its time. A complete range goes to the calendar and back unchanged,
+    and a calendar selection comes back as its first and last date.
+
 ### Host ARIA
 
-30. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+32. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal. `required` sets `aria-required` on each editor.
-31. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+33. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
     the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
