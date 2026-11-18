@@ -1,3 +1,4 @@
+import { isValidDate } from '#internals/date/converters.js';
 import { createDate } from '#internals/date/model.js';
 import { asNumber, clamp } from '#internals/utils/math.js';
 import {
@@ -8,11 +9,38 @@ import {
 import {
   createDatePart,
   DATE_PART_TYPES,
+  type DatePart,
+  type DatePartDeltas,
   type DatePartOptions,
   DatePartType,
   type IDatePart,
   TIME_PART_TYPES,
 } from './date-part.js';
+
+//#region Types
+
+/** The direction of a part navigation: `Ctrl + ArrowLeft` or `Ctrl + ArrowRight`. */
+export type PartDirection = 'back' | 'forward';
+
+/** A spin from an editor: `stepUp`, `stepDown`, an arrow key or the mouse wheel. */
+export interface SpinRequest {
+  /** The step. Zero or unset falls back to `spinDelta`, then to `1`. */
+  delta?: number;
+  /** `1` spins up and `-1` spins down. The sign of the step does not change the direction. */
+  sign: 1 | -1;
+  spinDelta?: DatePartDeltas;
+  spinLoop: boolean;
+  /** The date that an empty value takes, without a step. */
+  seed: Date;
+}
+
+/** A spun edit: the new masked text and the value that it shows. */
+export interface SpunText<V> {
+  masked: string;
+  value: V;
+}
+
+//#endregion
 
 //#region Constants
 
@@ -118,10 +146,16 @@ export function formatHasTimeParts(format: string): boolean {
 
 /**
  * Base for parsers whose public format is a date/time format string rather than a mask
- * pattern. Owns the translation between the two and the list of positioned parts.
+ * pattern. Owns the translation between the two, the list of positioned parts, and part
+ * editing.
+ *
+ * `V` is the value type of the editor, and `R` is the part reference of its `stepUp`
+ * and `stepDown`.
  */
 export abstract class DateFormatMaskParser<
-  T extends IDatePart = IDatePart,
+  T extends IDatePart,
+  V,
+  R,
 > extends MaskParser {
   /**
    * Built on first read, because {@link MaskParser} parses the mask in its constructor.
@@ -161,7 +195,7 @@ export abstract class DateFormatMaskParser<
     return this.parts.find((part) => part.type === type);
   }
 
-  /** The first non-literal part - the default target when nothing is focused. */
+  /** The first non-literal part. */
   public getFirstPart(): T | undefined {
     return this.parts.find((part) => part.type !== DatePartType.Literal);
   }
@@ -184,6 +218,48 @@ export abstract class DateFormatMaskParser<
     return this.parts.some((part) => TIME_PART_TYPES.has(part.type));
   }
 
+  /**
+   * The caret position after `Ctrl + Arrow`: forward, the nearest part end after the
+   * caret; back, the nearest part start before it. Past the last part, the text edges.
+   */
+  public partEdge(position: number, direction: PartDirection): number {
+    if (direction === 'back') {
+      return (
+        this.parts.findLast(
+          (part) => part.type !== DatePartType.Literal && part.start < position
+        )?.start ?? 0
+      );
+    }
+
+    return (
+      this.parts.find(
+        (part) => part.type !== DatePartType.Literal && part.end > position
+      )?.end ?? this.emptyMask.length
+    );
+  }
+
+  /** The part at a caret position, or `undefined` in a literal. */
+  public abstract partAt(position: number): R | undefined;
+
+  /** The part that a spin targets while the editor is not focused. */
+  public abstract defaultPart(): R | undefined;
+
+  /**
+   * Spins `part` of a value. An empty value takes the seed of the request, without a
+   * step. A part that the format does not show still spins.
+   */
+  public abstract spin(value: V | null, part: R, request: SpinRequest): V;
+
+  /** Spins `part` of the value that the masked text shows. */
+  public abstract spinText(
+    masked: string,
+    part: R,
+    request: SpinRequest
+  ): SpunText<V>;
+
+  /** The value that `seed` gives to an empty editor. */
+  public abstract seeded(seed: Date): V;
+
   /** The characters typed into `part`, the prompts of the unfilled positions removed. */
   protected _typedPart(masked: string, part: T): string {
     return masked.substring(part.start, part.end).replaceAll(this.prompt, '');
@@ -200,7 +276,11 @@ export abstract class DateFormatMaskParser<
  * parser.parseDate('12/25/2023'); // Date
  * ```
  */
-export class DateTimeMaskParser extends DateFormatMaskParser {
+export class DateTimeMaskParser extends DateFormatMaskParser<
+  IDatePart,
+  Date,
+  DatePart
+> {
   constructor(options?: MaskOptions) {
     super({
       ...options,
@@ -269,6 +349,16 @@ export class DateTimeMaskParser extends DateFormatMaskParser {
   //#endregion
 
   //#region Date Parsing
+
+  /** Parses a complete mask. Returns null for a partial mask or an invalid date. */
+  public parseComplete(masked: string): Date | null {
+    if (masked.includes(this.prompt) || this.isBlank(masked)) {
+      return null;
+    }
+
+    const parsed = this.parseDate(masked);
+    return isValidDate(parsed) ? parsed : null;
+  }
 
   /** Parses a masked string into a Date. Returns null if it is not a valid date. */
   public parseDate(masked: string): Date | null {
@@ -382,6 +472,66 @@ export class DateTimeMaskParser extends DateFormatMaskParser {
     return date
       ? this.parts.map((part) => part.getValue(date)).join('')
       : this.emptyMask;
+  }
+
+  //#endregion
+
+  //#region Part editing
+
+  public override partAt(position: number): DatePart | undefined {
+    return this.getPartForCursor(position)?.type as DatePart | undefined;
+  }
+
+  public override defaultPart(): DatePart | undefined {
+    return (
+      this.getPartByType(DatePartType.Date) ??
+      this.getPartByType(DatePartType.Hours) ??
+      this.getFirstPart()
+    )?.type as DatePart | undefined;
+  }
+
+  public override spin(
+    value: Date | null,
+    part: DatePart,
+    request: SpinRequest
+  ): Date {
+    if (!isValidDate(value)) {
+      return this.seeded(request.seed);
+    }
+
+    const type = part as unknown as DatePartType;
+    const step =
+      request.delta || request.spinDelta?.[part as keyof DatePartDeltas] || 1;
+    const date = new Date(value.getTime());
+
+    // An explicit spin, such as stepDown(DatePart.Minutes), can target a part not in the format.
+    const target =
+      this.getPartByType(type) ??
+      createDatePart(type, { start: 0, end: 0, format: '' });
+
+    target.spin(request.sign * Math.abs(step), {
+      date,
+      spinLoop: request.spinLoop,
+      // The value, not the shown text, gives the side: the text can be in the display format.
+      amPmValue: value.getHours() < 12 ? 'AM' : 'PM',
+      originalDate: value,
+    });
+
+    return date;
+  }
+
+  /** A partial mask takes the seed. */
+  public override spinText(
+    masked: string,
+    part: DatePart,
+    request: SpinRequest
+  ): SpunText<Date> {
+    const value = this.spin(this.parseComplete(masked), part, request);
+    return { masked: this.formatDate(value), value };
+  }
+
+  public override seeded(seed: Date): Date {
+    return new Date(seed.getTime());
   }
 
   //#endregion

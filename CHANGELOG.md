@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - #### Combo
   - A change of `showSelectAll` or `groupSelection` keeps the active item. Before, no option was active after the change. When the change removes the active select-all option, or an active group header is no longer an option, no option is active.
+- #### Date picker, Date time input
+  - `stepUp(DatePart.AmPm)` and `stepDown(DatePart.AmPm)` move the time 12 hours also when the input format has no AM/PM part, as a step does for the other parts that the format does not show. Before, they did nothing.
 - #### Date range picker
   - In dialog mode, a range that you select stays unconfirmed when code closes the picker with `hide()`, `toggle()` or `open`. After a new open, Done emits `igcChange` for it, and Cancel or Escape restores the range from before it. Before, the next open kept the range without an `igcChange`.
 - #### Library
@@ -37,6 +39,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - When you clear the value and then open and close the picker before you leave it, the picker now emits `igcChange` for the clear.
   - The date range picker emits `igcChange` when you clear it in dialog mode or in non-editable mode and leave it. The detail is `null`.
   - A predefined or custom range chip keeps the date range picker open when `keepOpenOnSelect` is set.
+- #### Date picker, Date range picker, Date time input
+  - Ctrl + Arrow Left and Ctrl + Arrow Right stop at each date part in an input format without separators, such as `yyyyMMdd`, and do not stop inside a separator of more than one character, such as `, `. Before, the date time input went to the start or the end of the input, and the single input of the date range picker skipped a part.
+- #### Date picker, Date time input
+  - `stepUp(DatePart.AmPm)` and `stepDown(DatePart.AmPm)` read AM or PM from the value. Before, while the input did not have focus and the display format was different from the input format, they read the display text, so they did nothing or switched only from PM to AM.
+- #### Date range picker
+  - In single input mode, Arrow Up and Arrow Down in a typed end spin that end and keep the text of the other end. Before, both ends changed to today.
+  - In single input mode, a spin of an empty end sets today, without a step and without the time of day. Before, it set the current time and stepped it.
 - #### Form controls
   - A change of the `value` or `checked` attribute keeps the control pristine, so a later `defaultValue` or `defaultChecked` still sets the value, as for a native control.
 - #### Input, Textarea

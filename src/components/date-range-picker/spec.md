@@ -73,6 +73,7 @@
 |      19 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form, after the `keypress`; <kbd>Enter</kbd> in slotted content does not submit a second time |
 |      20 | 2026-11-18 | A clear is reported on blur in dialog and non-editable mode, also after an open and a close; a range chip keeps the dropdown open with `keepOpenOnSelect`; a range that `hide()` leaves unconfirmed stays unconfirmed |
 |      21 | 2026-11-18 | The editors show only the invalid state of the picker, and report the validity of the picker also while it is pristine |
+|      22 | 2026-11-18 | The single input spins each end like a date-time input; a spin in a typed end keeps the text of the other end; an empty end takes today without a step; <kbd>Ctrl</kbd> + arrow stops at each part edge; the single input is editable in dropdown mode, as the code does |
 
 ## Overview
 
@@ -80,8 +81,8 @@ The `igc-date-range-picker` includes a text input and a calendar pop-up, letting
 date. The calendar opens either in a popover anchored to the field (**dropdown** mode) or in a modal dialog
 (**dialog** mode).
 
-The picker has two display modes for the value: a **single input**, which renders both dates in one non-editable
-field, and **two inputs**, which renders separate, editable start and end editors. The value is a
+The picker has two display modes for the value: a **single input**, which renders both dates in one field, and
+**two inputs**, which renders separate start and end editors. In dropdown mode both modes are editable. The value is a
 `DateRangeValue` - `{ start: Date | null, end: Date | null }`.
 
 The component composes [`igc-calendar`](../calendar/spec.md) in range selection mode and
@@ -90,7 +91,7 @@ element.
 
 ### Key features
 
-- **Two value display modes**: a single read-only field, or two editable inputs with a separator.
+- **Two value display modes**: a single field with both dates, or two inputs with a separator.
 - **Two presentation modes**: an anchored dropdown or a modal dialog with Done and Cancel actions.
 - **Range selection**: the composed calendar runs in range mode and shows two months by default.
 - **Predefined ranges**: a set of built-in range chips - last 7 days, current month, last 30 days, year to date -
@@ -105,9 +106,9 @@ element.
 
 The `igc-date-range-picker` must:
 
-- let users specify a date range either by typing it in two inputs, for the start and the end value, or by picking a
-  range through its calendar component.
-- display the range as a single, read-only input field showing both dates, or as two editable inputs.
+- let users specify a date range either by typing it, in one input or in two inputs for the start and the end value,
+  or by picking a range through its calendar component.
+- display the range as a single input field showing both dates, or as two inputs.
 - have dropdown and dialog modes for opening the calendar.
 - open the calendar by clicking a toggle icon in dropdown mode, and by clicking the toggle icon or the input in
   dialog mode.
@@ -158,7 +159,7 @@ As a developer, I expect to be able to:
 
 **Visual structure**
 
-- In single input mode, one read-only field renders both dates separated by the localized separator, with a calendar
+- In single input mode, one field renders both dates separated by the localized separator, with a calendar
   icon that toggles the picker and a clear icon while there is a value.
 - In two inputs mode, two editable fields are rendered with the separator between them, each with its own label,
   placeholder, calendar icon and clear icon.
@@ -181,7 +182,11 @@ As a developer, I expect to be able to:
 - In two inputs mode, each editor behaves as an [`igc-date-time-input`](../date-time-input/spec.md): a mask derived
   from the input format, deferred commit on blur, and spinning of the part under the caret.
 - Typing a date selects it in the calendar and brings its month into view.
-- In single input mode the field is read-only; the range can only be changed through the calendar or the chips.
+- In single input mode the field is editable in dropdown mode and read-only in dialog mode. Each end spins like a
+  date-time input, with the same step rules and the day of the start date as the default part. A spin while you
+  type reads the typed text of its end and keeps the text of the other end, also a `stepUp` or `stepDown` from code,
+  which commits the value at once. An empty range spins to today at both
+  ends, and an empty end to today, both without a step.
 
 ### Developer experience
 
@@ -211,15 +216,16 @@ With an initial value through the attribute, as JSON:
 #### Single input and two inputs
 
 ```html
-<!-- One read-only field rendering both dates (default) -->
+<!-- One field rendering both dates (default) -->
 <igc-date-range-picker label="Reporting period"></igc-date-range-picker>
 
 <!-- Two editable fields -->
 <igc-date-range-picker use-two-inputs label-start="From" label-end="To"></igc-date-range-picker>
 ```
 
-`useTwoInputs` makes the editors editable in dropdown mode. In single input mode the field is always read-only, and
-the range is changed through the calendar or the range chips.
+`useTwoInputs` renders a start and an end editor. In dropdown mode the user can type in either layout; in dialog mode,
+and with `nonEditable` or `readOnly`, the editors are read-only and the range is changed through the calendar or the
+range chips.
 
 #### Picker mode
 
@@ -628,9 +634,12 @@ input and two inputs suites run with reduced motion, so the dialog does not fade
 9. Properties and localization.
 10. Scroll strategy - the `scroll`, `hide` and `close` behaviors of the anchored calendar.
 11. Methods. `stepUp` and `stepDown` of the range input update its value at once, also while it is focused and empty.
-    A value set from code while the input is focused is not reported on blur.
+    The default part is the day of the start date, a part that the format does not show still spins, and an empty
+    end takes today without a step. A value set from code while the input is focused is not reported on blur.
 12. Interactions - selection through the calendar, interactions with the input and the open and clear buttons, and
-    the readonly state. A closed picker does not cancel <kbd>Escape</kbd>.
+    the readonly state. A closed picker does not cancel <kbd>Escape</kbd>. <kbd>Ctrl</kbd> + arrow stops at each part
+    edge, also without separators. Arrow keys and `stepUp` in a range with one typed end spin that end and keep
+    the text of the other end.
 13. Undo and redo of the masked range text.
 14. Slots.
 
@@ -679,7 +688,9 @@ The focus after the form checks and the `invalid` event rules come from the form
 ### Range mask parser properties
 
 29. For generated formats, separators and dates: the round-trip, each side parsed like a single date, the layout
-    around the separator after a mask change, and no throw or invalid date for any string.
+    around the separator after a mask change, and no throw or invalid date for any string. For the part editing:
+    each end spins like a single date, also from its text while the text of the other end stays; an empty range
+    takes the seed at both ends; the part at the caret and the default part name their end.
 
 ### Host ARIA
 
@@ -694,8 +705,8 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 ## Assumptions and limitations
 
-- Typing in single input mode is not supported; the field is read-only and the range is changed through the
-  calendar or the range chips.
+- In dialog mode the editors are read-only, in both layouts; the range is changed through the calendar or the range
+  chips.
 - The two editors are rendered by the component and configured through properties such as `labelStart` and
   `labelEnd`. Slotting `igc-date-time-input` elements as the editors was evaluated and discarded.
 - The value holds local `Date` objects; time zones are not modelled.
