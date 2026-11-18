@@ -816,6 +816,28 @@ describe('Date range picker - two inputs', () => {
         expect(dateTimeInputs[1].value).to.be.null;
       });
 
+      it('reports a clear one time, when the focus leaves the picker', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        picker.value = { start: today.native, end: tomorrow.native };
+        await elementUpdated(picker);
+
+        dateTimeInputs[0].focus();
+        simulateClick(getIcon(picker, clearIcon));
+        await elementUpdated(picker);
+
+        // The focus moves to the end input and stays in the picker.
+        dateTimeInputs[1].focus();
+        await elementUpdated(picker);
+        expect(eventSpy).not.calledWith('igcChange');
+
+        dateTimeInputs[1].blur();
+        await elementUpdated(picker);
+
+        expect(eventSpy.withArgs('igcChange')).calledOnceWith('igcChange', {
+          detail: null,
+        });
+      });
+
       it('emits igcChange on blur after the clear icon and a render', async () => {
         const eventSpy = spy(picker, 'emitEvent');
         picker.value = { start: today.native, end: tomorrow.native };

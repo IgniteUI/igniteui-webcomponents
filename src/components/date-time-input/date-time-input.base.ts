@@ -458,12 +458,8 @@ export abstract class IgcDateTimeInputBaseComponent<
     this._updateMaskDisplay();
   }
 
-  /**
-   * Clears like `clear()`, but as an edit, so the next commit reports the clear.
-   *
-   * @hidden @internal
-   */
-  public _clearAsEdit(): void {
+  /** Clears the text and the value as an edit. `clear()` runs it as a write from code, which reports nothing. */
+  private _clearAsEdit(): void {
     this._isEditing = false;
     this._maskedValue = '';
     this._writeFrom('edit', () => this._applyValue(null));

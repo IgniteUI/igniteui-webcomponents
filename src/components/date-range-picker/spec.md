@@ -661,7 +661,8 @@ input and two inputs suites run with reduced motion, so the dialog does not fade
     only the invalid state of the picker.
 20. Interactions - selection through the calendar, interactions with the inputs and the open and clear buttons, and
     the readonly state. An editor commit keeps the time of both ends. A typed end before the start is swapped in
-    the `igcInput` detail and in the calendar, while the editors keep the typed order.
+    the `igcInput` detail and in the calendar, while the editors keep the typed order. A clear through the icon is
+    reported one time, when the focus leaves the picker, and not when the focus moves to the other input.
 21. Slots.
 
 ### Form integration suites

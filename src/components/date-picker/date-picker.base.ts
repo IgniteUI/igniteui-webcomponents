@@ -517,13 +517,6 @@ export abstract class IgcDatePickerBaseComponent<
 
   //#region Internal API
 
-  /** The editors take the clear as a user edit and report it on blur. */
-  protected _clearEditors(): void {
-    for (const editor of this._ownedEditors) {
-      editor?._clearAsEdit();
-    }
-  }
-
   protected _focusInput(): void {
     firstOf(this._ownedEditors)?.focus();
   }
@@ -673,7 +666,11 @@ export abstract class IgcDatePickerBaseComponent<
   /** Clears the value and the input text of the picker. */
   public clear(): void {
     this._session.clear();
-    this._clearEditors();
+
+    // A clear from code reports nothing in the editors. The picker reports the clear on blur.
+    for (const editor of this._ownedEditors) {
+      editor?.clear();
+    }
   }
 
   //#endregion
