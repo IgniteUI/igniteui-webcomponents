@@ -1724,6 +1724,67 @@ describe('Date picker', () => {
       expect(eventSpy).calledWith('igcChange', { detail: null });
     });
 
+    describe('A clear before an open', () => {
+      /** Clears a date set from code with the clear icon, with focus in the editor. */
+      const clearWithIcon = async () => {
+        picker.value = CalendarDay.today.native;
+        await elementUpdated(picker);
+
+        dateTimeInput.focus();
+        simulateClick(getIcon(pickerClearIcon));
+        await elementUpdated(picker);
+      };
+
+      const closeWithOutsideClick = () => {
+        const dialog = picker.renderRoot.querySelector(
+          IgcDialogComponent.tagName
+        )!;
+        const { x, y } = dialog.getBoundingClientRect();
+        simulateClick(dialog.renderRoot.querySelector('dialog')!, {
+          clientX: x + 1,
+          clientY: y - 1,
+        });
+      };
+
+      const cases = [
+        {
+          mode: 'dropdown',
+          closer: 'Escape',
+          close: () => simulateKeyboard(picker, escapeKey),
+        },
+        {
+          mode: 'dialog',
+          closer: 'Escape',
+          close: () => simulateKeyboard(picker, escapeKey),
+        },
+        {
+          mode: 'dialog',
+          closer: 'an outside click',
+          close: closeWithOutsideClick,
+        },
+      ] as const;
+
+      for (const { mode, closer, close } of cases) {
+        it(`reports the clear once after an open and a close with ${closer} (${mode})`, async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          picker.mode = mode;
+          await clearWithIcon();
+
+          await picker.show();
+          close();
+          await waitUntil(() => !picker.open);
+
+          picker.blur();
+          await elementUpdated(picker);
+
+          expect(
+            eventSpy.withArgs('igcChange').args.map(([, init]) => init?.detail)
+          ).to.eql([null]);
+          expect(picker.value).to.be.null;
+        });
+      }
+    });
+
     describe('Readonly state', () => {
       describe('Dropdown mode', () => {
         beforeEach(async () => {
