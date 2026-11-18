@@ -45,6 +45,7 @@ import IgcNavDrawerHeaderItemComponent from '../../components/nav-drawer/nav-dra
 import IgcNavDrawerItemComponent from '../../components/nav-drawer/nav-drawer-item.js';
 import IgcNavDrawerComponent from '../../components/nav-drawer/nav-drawer.js';
 import IgcNavbarComponent from '../../components/navbar/navbar.js';
+import IgcNumberInputComponent from '../../components/number-input/number-input.js';
 import IgcCircularGradientComponent from '../../components/progress/circular-gradient.js';
 import IgcCircularProgressComponent from '../../components/progress/circular-progress.js';
 import IgcLinearProgressComponent from '../../components/progress/linear-progress.js';
@@ -127,6 +128,7 @@ const allComponents: IgniteComponent[] = [
   IgcNavDrawerItemComponent,
   IgcNavDrawerComponent,
   IgcNavbarComponent,
+  IgcNumberInputComponent,
   IgcRadioComponent,
   IgcRadioGroupComponent,
   IgcRatingComponent,

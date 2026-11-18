@@ -32,8 +32,8 @@ export function resolveInputPartFlags(
 export interface InputShellOptions {
   /** Active theme name. The `material` theme uses the notch layout. */
   theme: string;
-  /** The label text. Empty string skips label rendering. */
-  label: string;
+  /** The label text. No label or an empty string skips label rendering. */
+  label?: string;
   /** The id of the input element used by the label `for` attribute. */
   labelId: string;
   /** Resolved part-name map for the container element. */
@@ -44,6 +44,12 @@ export interface InputShellOptions {
   helperText: TemplateResult;
   /** Renders extra parts inside the container, as `igc-file-input` needs. */
   renderFileParts?: () => TemplateResult | typeof nothing;
+  /**
+   * Renders extra parts after the suffix slot, inside the suffix wrapper, as the
+   * spin buttons of `igc-number-input`. The themes place the wrapper, so set the
+   * `suffixed` part flag while the parts render.
+   */
+  renderSuffixParts?: () => TemplateResult | typeof nothing;
   /**
    * Hides the prefix and suffix wrappers whose `containerParts` entry is
    * false. Off by default, so the wrappers always render.
@@ -56,7 +62,7 @@ export interface InputShellOptions {
  * otherwise reaches the host twice and breaks the `igc-combo` and `igc-select` toggles.
  * Activation is a default action, so focus still moves.
  */
-function renderLabel(forId: string, label: string) {
+function renderLabel(forId: string, label?: string) {
   return label
     ? html`<label part="label" for=${forId} @click=${stopPropagation}
         >${label}</label
@@ -64,9 +70,13 @@ function renderLabel(forId: string, label: string) {
     : nothing;
 }
 
-function renderAffix(name: 'prefix' | 'suffix', hidden: boolean) {
+function renderAffix(
+  name: 'prefix' | 'suffix',
+  hidden: boolean,
+  parts: TemplateResult | typeof nothing = nothing
+): TemplateResult {
   return html`<div part=${name} ?hidden=${hidden}>
-    <slot name=${name}></slot>
+    <slot name=${name}></slot>${parts}
   </div>`;
 }
 
@@ -82,6 +92,7 @@ export function renderInputShell(
     hideEmptyAffixes = false,
     renderFileParts,
     renderInput,
+    renderSuffixParts,
     theme,
     label,
     labelId,
@@ -95,7 +106,8 @@ export function renderInputShell(
   );
   const suffix = renderAffix(
     'suffix',
-    hideEmptyAffixes && !containerParts.suffixed
+    hideEmptyAffixes && !containerParts.suffixed,
+    renderSuffixParts?.call(host)
   );
 
   if (theme === 'material') {

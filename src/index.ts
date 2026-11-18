@@ -48,6 +48,7 @@ export { default as IgcNavDrawerComponent } from './components/nav-drawer/nav-dr
 export { default as IgcNavDrawerHeaderItemComponent } from './components/nav-drawer/nav-drawer-header-item.js';
 export { default as IgcNavDrawerItemComponent } from './components/nav-drawer/nav-drawer-item.js';
 export { default as IgcNavbarComponent } from './components/navbar/navbar.js';
+export { default as IgcNumberInputComponent } from './components/number-input/number-input.js';
 export { default as IgcRadioGroupComponent } from './components/radio-group/radio-group.js';
 export { default as IgcRadioComponent } from './components/radio/radio.js';
 export { default as IgcRatingComponent } from './components/rating/rating.js';
@@ -148,6 +149,11 @@ export {
   registerI18n,
   setCurrentI18n,
 } from 'igniteui-i18n-core';
+// TODO: export these from `igniteui-i18n-core` above when it ships them.
+export {
+  type INumberInputResourceStrings,
+  NumberInputResourceStringsEN,
+} from './components/number-input/i18n.js';
 
 // Event maps
 export type { IgcBannerComponentEventMap } from './components/banner/banner.js';
@@ -169,6 +175,7 @@ export type { IgcExpansionPanelComponentEventMap } from './components/expansion-
 export type { IgcInputComponentEventMap } from './components/input/input-base.js';
 export type { IgcInputComponentEventMap as IgcMaskInputComponentEventMap } from './components/input/input-base.js';
 export type { IgcNavDrawerComponentEventMap } from './components/nav-drawer/nav-drawer.js';
+export type { IgcNumberInputComponentEventMap } from './components/number-input/number-input.js';
 export type { IgcFileInputComponentEventMap } from './components/file-input/file-input.js';
 export type { IgcRadioComponentEventMap } from './components/radio/radio.js';
 export type { IgcRatingComponentEventMap } from './components/rating/rating.js';
@@ -203,6 +210,10 @@ export type {
   CustomDateRange,
   DateRangeValue,
 } from './components/date-range-picker/date-range-picker.js';
+export type {
+  NumberInputFormatOptions,
+  NumberInputRoundingMode,
+} from './components/number-input/number-format.js';
 export type { PopoverPlacement } from './components/popover/popover.js';
 export type { IgcRadioChangeEventArgs } from './components/radio/radio.js';
 export type { IgcRangeSliderValueEventArgs } from './components/slider/range-slider.js';

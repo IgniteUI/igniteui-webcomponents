@@ -1,0 +1,53 @@
+@use 'styles/utilities' as *;
+@use '../../input/themes/light/themes' as *;
+
+$theme: $base;
+
+// The spin buttons sit in the suffix wrapper, so they take its colors from
+// each input theme, also in dark mode. The state layers mix the text color.
+// TODO: per-theme visuals when the design team gives them.
+[part~='spin-buttons'] {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    justify-content: center;
+}
+
+[part~='increment'],
+[part~='decrement'] {
+    display: flex;
+    flex: 1 1 0;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    padding: 0;
+    padding-inline: pad-inline(rem(4px), rem(6px), rem(8px));
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+
+    igc-icon,
+    ::slotted(igc-icon) {
+        --component-size: 1;
+    }
+
+    // A touch leaves `:hover` on the button until the next tap elsewhere.
+    @media (hover: hover) {
+        &:not(:disabled):hover {
+            background: color-mix(in srgb, currentcolor 8%, transparent);
+        }
+    }
+
+    &:not(:disabled):active {
+        background: color-mix(in srgb, currentcolor 16%, transparent);
+    }
+
+    &:disabled {
+        color: var-get($theme, 'disabled-text-color');
+        cursor: default;
+    }
+}
