@@ -40,6 +40,8 @@ This directory hosts four public components: [`igc-dropdown`](#igc-dropdown),
     - [Events tests](#events-tests)
     - [Detached anchor](#detached-anchor)
     - [Scroll strategy tests](#scroll-strategy-tests)
+    - [Interactive content](#interactive-content)
+    - [Listbox popup rules](#listbox-popup-rules)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -57,6 +59,7 @@ This directory hosts four public components: [`igc-dropdown`](#igc-dropdown),
 |       5 | 2026-10-28 | An `igc-input` target gives `aria-haspopup` and the active item to its native input. |
 |       6 | 2026-11-04 | Setting `selected` on an item again keeps the active item; only the selected item starts active. |
 |       7 | 2026-11-06 | `header` and `footer` slots; content that is not an item keeps its keys; Tab moves through it. Space is not bound. |
+|       8 | 2026-11-18 | <kbd>Enter</kbd> without an active item closes the list; the shared popup rules suite |
 
 ## Overview
 
@@ -214,7 +217,7 @@ The dropdown itself is not focusable and has no tab index, so the target keeps t
 | <kbd>Arrow Up</kbd> / <kbd>Arrow Down</kbd>     | Activates the previous or next item, without changing the selection. |
 | <kbd>Arrow Left</kbd> / <kbd>Arrow Right</kbd>  | Activates the previous or next item, without changing the selection. |
 | <kbd>Home</kbd> / <kbd>End</kbd>                | Activates the first or the last item.                                |
-| <kbd>Enter</kbd>                                | Selects the active item and closes the list.                         |
+| <kbd>Enter</kbd>                                | Selects the active item, if there is one, and closes the list.       |
 | <kbd>Escape</kbd>                               | Closes the list without changing the selection.                      |
 | <kbd>Tab</kbd>                                  | Selects the active item, closes the list and moves focus on.         |
 | <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd>, with focusable content | Moves through the target and the focusable content: header, default slot, footer. Past either end, selects the active item, closes the list and moves focus on. |
@@ -369,7 +372,8 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 18. Clicking outside closes the list, unless `keepOpenOnOutsideClick` is set.
 19. Disabled items cannot be selected and are skipped by the keyboard navigation.
 20. The arrow keys, <kbd>Home</kbd> and <kbd>End</kbd> move the active item; <kbd>Enter</kbd> selects it;
-    <kbd>Escape</kbd> closes without changing the selection.
+    <kbd>Escape</kbd> closes without changing the selection. <kbd>Enter</kbd> without an active item closes the
+    list and selects nothing.
 
 ### Items collection changes
 
@@ -412,6 +416,10 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 35. Without focusable content, Shift+Tab is not bound.
 36. A control inside an item is not a Tab stop, and a held <kbd>Tab</kbd> from the content moves through it. With a
     target that wraps a focusable element, Shift+Tab and <kbd>Escape</kbd> from the content focus that element.
+
+### Listbox popup rules
+
+37. The shared runner `runListboxPopupTests`, for a host without keys while the list is closed.
 
 ## Assumptions and limitations
 
