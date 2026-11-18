@@ -89,7 +89,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       await elementUpdated(spec.element);
 
       expect(spec.element.value).to.deep.equal(initial);
-      expect(input.value).to.deep.equal({ start: null, end: null });
+      expect(input.value).to.be.null;
     });
 
     it('should not be in invalid state on reset for a required control which previously had value', () => {
@@ -148,7 +148,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
         IgcDateRangeInputComponent.tagName
       ) as IgcDateRangeInputComponent;
 
-      expect(input.value).to.deep.equal({ start: null, end: null });
+      expect(input.value).to.be.null;
 
       spec.reset();
       await elementUpdated(spec.element);

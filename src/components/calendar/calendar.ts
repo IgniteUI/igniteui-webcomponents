@@ -49,6 +49,11 @@ import IgcYearsViewComponent from './years-view/years-view.js';
 
 export const focusActiveDate = Symbol();
 
+export type ShowDateOptions = {
+  /** Puts the date in the first month, also when the calendar shows it. */
+  first?: boolean;
+};
+
 /** The maximum number of consecutive disabled days that keyboard navigation skips. */
 const MAX_DISABLED_DATE_SKIP = 1000;
 
@@ -824,6 +829,25 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       </div>
     `;
   }
+}
+
+/**
+ * Makes `date` the active date of `calendar`. A date in a shown month keeps the months; any other date goes in the
+ * first month. For the pickers: the calendar has no public member for it.
+ */
+export function showDate(
+  calendar: IgcCalendarComponent,
+  date: Date,
+  { first = false }: ShowDateOptions = {}
+): void {
+  const index = first
+    ? 0
+    : calendar['_activeDaysViewIndex'] +
+      monthOffset(date, calendar['_activeDate']);
+
+  calendar['_activeDaysViewIndex'] =
+    index >= 0 && index < Math.max(calendar.visibleMonths, 1) ? index : 0;
+  calendar.activeDate = date;
 }
 
 declare global {

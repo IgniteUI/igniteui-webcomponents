@@ -265,7 +265,7 @@ describe('Date range picker - two inputs', () => {
 
       expect(isFocused(dateTimeInputs[0])).to.be.true;
       expect(dateTimeInputs[0].value).to.equal(null);
-      expect(picker.value).to.deep.equal({ start: null, end: null });
+      expect(picker.value).to.be.null;
       expect(calendar.values).to.deep.equal([]);
       expect(eventSpy).not.to.be.called;
 
@@ -352,7 +352,7 @@ describe('Date range picker - two inputs', () => {
     });
     it('should select a date range on invoking select', async () => {
       const eventSpy = spy(picker, 'emitEvent');
-      expect(picker.value).to.deep.equal({ start: null, end: null });
+      expect(picker.value).to.be.null;
 
       picker.select({ start: today.native, end: tomorrow.native });
       await elementUpdated(picker);
@@ -702,6 +702,32 @@ describe('Date range picker - two inputs', () => {
     });
 
     describe('Interactions with the inputs and the open and clear buttons', () => {
+      it('keeps the time of both ends when an editor commits', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        picker.inputFormat = 'MM/dd/yyyy HH:mm';
+        picker.value = {
+          start: new Date(2025, 5, 1, 9, 30),
+          end: new Date(2025, 5, 5, 17, 45),
+        };
+        await elementUpdated(picker);
+
+        dateTimeInputs[0].focus();
+        // The day part of MM/dd/yyyy HH:mm
+        dateTimeInputs[0].setSelectionRange(3, 3);
+        simulateKeyboard(dateTimeInputs[0], arrowUp);
+        await elementUpdated(picker);
+
+        dateTimeInputs[0].blur();
+        await elementUpdated(picker);
+
+        const expected = {
+          start: new Date(2025, 5, 2, 9, 30),
+          end: new Date(2025, 5, 5, 17, 45),
+        };
+        expect(picker.value).to.eql(expected);
+        expect(eventSpy).calledWith('igcChange', { detail: expected });
+      });
+
       it('should emit or not igcInput according to nonEditable property', async () => {
         const expectedValue = today.native;
         const eventSpy = spy(picker, 'emitEvent');
@@ -782,12 +808,34 @@ describe('Date range picker - two inputs', () => {
 
         expect(isFocused(dateTimeInputs[0])).to.be.false;
         expect(eventSpy).to.be.calledWith('igcChange', {
-          detail: { start: null, end: null },
+          detail: null,
         });
         expect(picker.open).to.be.false;
-        expect(picker.value).to.deep.equal({ start: null, end: null });
+        expect(picker.value).to.be.null;
         expect(dateTimeInputs[0].value).to.be.null;
         expect(dateTimeInputs[1].value).to.be.null;
+      });
+
+      it('reports a clear one time, when the focus leaves the picker', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        picker.value = { start: today.native, end: tomorrow.native };
+        await elementUpdated(picker);
+
+        dateTimeInputs[0].focus();
+        simulateClick(getIcon(picker, clearIcon));
+        await elementUpdated(picker);
+
+        // The focus moves to the end input and stays in the picker.
+        dateTimeInputs[1].focus();
+        await elementUpdated(picker);
+        expect(eventSpy).not.calledWith('igcChange');
+
+        dateTimeInputs[1].blur();
+        await elementUpdated(picker);
+
+        expect(eventSpy.withArgs('igcChange')).calledOnceWith('igcChange', {
+          detail: null,
+        });
       });
 
       it('emits igcChange on blur after the clear icon and a render', async () => {
@@ -804,9 +852,9 @@ describe('Date range picker - two inputs', () => {
         await elementUpdated(picker);
 
         expect(eventSpy).calledWith('igcChange', {
-          detail: { start: null, end: null },
+          detail: null,
         });
-        expect(picker.value).to.deep.equal({ start: null, end: null });
+        expect(picker.value).to.be.null;
       });
 
       it('should emit igcInput and igcChange on input value change', async () => {
@@ -904,17 +952,18 @@ describe('Date range picker - two inputs', () => {
         simulateKeyboard(dateTimeInputs[1], arrowDown);
         await elementUpdated(picker);
 
-        expect(eventSpy).calledWith('igcInput');
+        // the draft swaps the reversed ends, the editors keep the typed order
+        expect(eventSpy).calledWith('igcInput', {
+          detail: { start: aMonthAgo.native, end: now.native },
+        });
         eventSpy.resetHistory();
+        checkDatesEqual(dateTimeInputs[0]._uncommittedValue!, now.native);
         checkDatesEqual(dateTimeInputs[1]._uncommittedValue!, aMonthAgo.native);
         // changing the end date while typing alters the selected range
         // the active date is set to the typed date, in this case the end one
-        checkSelectedRange(
-          picker,
-          { start: now.native, end: aMonthAgo.native },
-          true,
-          true
-        );
+        expect(calendar.values).lengthOf(2);
+        checkDatesEqual(calendar.values[0], aMonthAgo.native);
+        checkDatesEqual(calendar.values[1], now.native);
         checkDatesEqual(calendar.activeDate, aMonthAgo.native);
 
         // on losing focus of the end input, the dates are swapped since end is earlier than start
@@ -1064,12 +1113,12 @@ describe('Date range picker - two inputs', () => {
       });
       it('should not modify value through selection or typing when readOnly is true', async () => {
         const eventSpy = spy(picker, 'emitEvent');
-        expect(picker.value).to.deep.equal({ start: null, end: null });
+        expect(picker.value).to.be.null;
 
         await picker.show();
         await selectDates(today, tomorrow, calendar);
 
-        expect(picker.value).to.deep.equal({ start: null, end: null });
+        expect(picker.value).to.be.null;
         expect(calendar.values).to.deep.equal([]);
         expect(eventSpy).not.to.be.called;
 
@@ -1080,7 +1129,7 @@ describe('Date range picker - two inputs', () => {
         await elementUpdated(picker);
         expect(isFocused(dateTimeInputs[0])).to.be.true;
         expect(dateTimeInputs[0].value).to.equal(null);
-        expect(picker.value).to.deep.equal({ start: null, end: null });
+        expect(picker.value).to.be.null;
         expect(calendar.values).to.deep.equal([]);
         expect(eventSpy).not.to.be.called;
       });
