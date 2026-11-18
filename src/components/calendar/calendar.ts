@@ -48,6 +48,7 @@ import type {
 import IgcYearsViewComponent from './years-view/years-view.js';
 
 export const focusActiveDate = Symbol();
+export const showDate = Symbol();
 
 /** The maximum number of consecutive disabled days that keyboard navigation skips. */
 const MAX_DISABLED_DATE_SKIP = 1000;
@@ -448,6 +449,20 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       case 'years':
         return this._yearsView.focusActiveDate(options);
     }
+  }
+
+  /**
+   * Makes `date` the active date. A date in a month that the calendar shows keeps the months in view. Any other
+   * date, and any date with `first`, goes in the first month.
+   *
+   * @hidden @internal
+   */
+  public [showDate](date: Date, { first = false } = {}): void {
+    const months = this._getActiveDates();
+    const index = first ? -1 : monthOffset(date, months[0]);
+
+    this._activeDaysViewIndex = index >= 0 && index < months.length ? index : 0;
+    this.activeDate = date;
   }
 
   /** Moves to the adjacent view when `date` leaves the month of the active view. */

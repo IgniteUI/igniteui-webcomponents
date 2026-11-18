@@ -6,10 +6,12 @@ import {
   getDayViewDOM,
   getDOMDate,
 } from '#internals/testing/calendar.spec.js';
+import { checkDatesEqual } from '#internals/testing/helpers.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import { defineComponents, IgcCalendarComponent } from '../../index.js';
-import type IgcDaysViewComponent from './days-view/days-view.js';
+import { showDate } from './calendar.js';
+import IgcDaysViewComponent from './days-view/days-view.js';
 import { generateMonth, getWeekDayNumber, isDateInRanges } from './helpers.js';
 import { type DateRangeDescriptor, DateRangeType } from './types.js';
 
@@ -799,6 +801,66 @@ describe('Calendar interactions', () => {
     expect(getDOMDate(preview, daysView).part.contains('first')).to.be.true;
     expect(getDOMDate(start, daysView).part.contains('last')).to.be.true;
     expect(getDOMDate(start, daysView).part.contains('first')).to.be.false;
+  });
+
+  describe('Show a date', () => {
+    const april10 = new Date(2025, 3, 10);
+    const april3 = new Date(2025, 3, 3);
+    const may20 = new Date(2025, 4, 20);
+    const august1 = new Date(2025, 7, 1);
+
+    /** The month of each rendered days view, with a `*` on the active one. */
+    function renderedMonths(): string[] {
+      return Array.from(
+        calendar.renderRoot.querySelectorAll<IgcDaysViewComponent>(
+          IgcDaysViewComponent.tagName
+        ),
+        (view) => `${view.activeDate.getMonth() + 1}${view.active ? '*' : ''}`
+      );
+    }
+
+    async function show(date: Date, options?: { first?: boolean }) {
+      calendar[showDate](date, options);
+      await elementUpdated(calendar);
+    }
+
+    beforeEach(async () => {
+      calendar = await fixture<IgcCalendarComponent>(html`
+        <igc-calendar
+          selection="range"
+          visible-months="2"
+          .activeDate=${april10}
+        ></igc-calendar>
+      `);
+    });
+
+    it('keeps the months when the date is in the second month', async () => {
+      await show(may20);
+
+      expect(renderedMonths()).to.eql(['4', '5*']);
+      checkDatesEqual(calendar.activeDate, may20);
+    });
+
+    it('keeps the months when the date is in the first month', async () => {
+      await show(may20);
+      await show(april3);
+
+      expect(renderedMonths()).to.eql(['4*', '5']);
+      checkDatesEqual(calendar.activeDate, april3);
+    });
+
+    it('puts a date that is not shown in the first month', async () => {
+      await show(may20);
+      await show(august1);
+
+      expect(renderedMonths()).to.eql(['8*', '9']);
+    });
+
+    it('puts the date in the first month with `first`', async () => {
+      await show(may20, { first: true });
+
+      expect(renderedMonths()).to.eql(['5*', '6']);
+    });
   });
 
   describe('Inner events', () => {
