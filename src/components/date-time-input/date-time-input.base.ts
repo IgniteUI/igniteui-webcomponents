@@ -120,7 +120,9 @@ export abstract class IgcDateTimeInputBaseComponent<
    * @hidden @internal
    */
   public get _uncommittedValue(): T | null {
-    return this._isEditing ? this._parseMask(true) : this.value;
+    return this._isEditing
+      ? this._parser.parseValue(this._maskedValue, true)
+      : this.value;
   }
 
   // #endregion
@@ -400,7 +402,7 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   /** Builds the editable mask shown while the input is focused. */
   protected _buildMaskedValue(): string {
-    const masked = this._formatValue(this.value);
+    const masked = this._parser.formatValue(this.value);
 
     // Keep the editor text for an empty value, so a partial mask survives a re-render.
     return masked === this._parser.emptyMask
@@ -418,7 +420,7 @@ export abstract class IgcDateTimeInputBaseComponent<
       return;
     }
 
-    const next = masked ?? this._formatValue(value);
+    const next = masked ?? this._parser.formatValue(value);
 
     this._recordHistory('atomic', next, this._inputSelection.start);
 
@@ -469,7 +471,9 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /** Applies the masked text, or `value`, to the public value without emitting anything. */
-  protected _applyDraft(value: T | null = this._parseMask(true)): void {
+  protected _applyDraft(
+    value: T | null = this._parser.parseValue(this._maskedValue, true)
+  ): void {
     this._isEditing = false;
     // Also inside a user edit, such as a drop on an unfocused editor, that no blur commits.
     this._writeFrom('code', () => {
@@ -484,8 +488,9 @@ export abstract class IgcDateTimeInputBaseComponent<
     // under the input format.
     if (this._isEditing) {
       this._isEditing = false;
-      // A partial mask parses leniently; an empty one gives `null`.
-      this._writeFrom('user', () => this._applyValue(this._parseMask(false)));
+      this._writeFrom('user', () =>
+        this._applyValue(this._parser.parseValue(this._maskedValue, false))
+      );
     }
 
     // The assignments skip an unchanged value, so restore the display format here.
@@ -516,10 +521,6 @@ export abstract class IgcDateTimeInputBaseComponent<
     this._isEditing = false;
     super._restoreDefaultValue();
     this._updateMaskDisplay();
-  }
-
-  protected _isMaskComplete(): boolean {
-    return !this._maskedValue.includes(this.prompt);
   }
 
   /**
@@ -660,16 +661,6 @@ export abstract class IgcDateTimeInputBaseComponent<
   /** The committed value of the input. */
   public abstract get value(): T | null;
   public abstract set value(value: T | null);
-
-  /**
-   * Parses the masked text into the value type of the leaf. A `strict` parse gives `null`
-   * for an incomplete mask; a lenient one fills the missing parts from their defaults.
-   * An empty mask gives `null` in both modes.
-   */
-  protected abstract _parseMask(strict: boolean): T | null;
-
-  /** Formats a value into the editable mask. */
-  protected abstract _formatValue(value: T | null): string;
 
   protected abstract _buildDisplayValue(): string;
 

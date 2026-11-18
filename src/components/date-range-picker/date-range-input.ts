@@ -101,19 +101,6 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
       .join(this._parser.separator);
   }
 
-  protected override _parseMask(strict: boolean): DateRangeValue | null {
-    if (strict && !this._isMaskComplete()) {
-      return null;
-    }
-
-    const parsed = this._parser.parseDateRange(this._maskedValue);
-    return parsed?.start || parsed?.end ? parsed : null;
-  }
-
-  protected override _formatValue(value: DateRangeValue | null): string {
-    return this._parser.formatDateRange(value);
-  }
-
   protected override _applyMask(formatString: string): void {
     super._applyMask(formatString);
     this._parser.prompt = this.prompt;

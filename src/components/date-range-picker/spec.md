@@ -74,6 +74,7 @@
 |      20 | 2026-11-18 | A clear is reported on blur in dialog and non-editable mode, also after an open and a close; a range chip keeps the dropdown open with `keepOpenOnSelect`; a range that `hide()` leaves unconfirmed stays unconfirmed |
 |      21 | 2026-11-18 | The editors show only the invalid state of the picker, and report the validity of the picker also while it is pristine |
 |      22 | 2026-11-18 | The single input spins each end like a date-time input; a spin in a typed end keeps the text of the other end; an empty end takes today without a step; <kbd>Ctrl</kbd> + arrow stops at each part edge; the single input is editable in dropdown mode, as the code does |
+|      23 | 2026-11-18 | Add the strict and the lenient value parse to the range mask parser property suite |
 
 ## Overview
 
@@ -688,7 +689,9 @@ The focus after the form checks and the `invalid` event rules come from the form
 ### Range mask parser properties
 
 29. For generated formats, separators and dates: the round-trip, each side parsed like a single date, the layout
-    around the separator after a mask change, and no throw or invalid date for any string. For the part editing:
+    around the separator after a mask change, and no throw or invalid date for any string. A strict value parse
+    gives a range only when both ends are complete; a lenient one parses each end as typed, and gives `null` when
+    neither end is a valid date or the mask is blank. For the part editing:
     each end spins like a single date, also from its text while the text of the other end stays; an empty range
     takes the seed at both ends; the part at the caret and the default part name their end.
 

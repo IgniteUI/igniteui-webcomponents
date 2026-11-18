@@ -238,6 +238,15 @@ export abstract class DateFormatMaskParser<
     );
   }
 
+  /**
+   * Parses the masked text. A `strict` parse gives `null` for an incomplete mask; a
+   * lenient one fills the missing parts from their defaults. A blank mask gives `null`.
+   */
+  public abstract parseValue(masked: string, strict: boolean): V | null;
+
+  /** Formats a value into the editable mask. */
+  public abstract formatValue(value: V | null): string;
+
   /** The part at a caret position, or `undefined` in a literal. */
   public abstract partAt(position: number): R | undefined;
 
@@ -350,9 +359,9 @@ export class DateTimeMaskParser extends DateFormatMaskParser<
 
   //#region Date Parsing
 
-  /** Parses a complete mask. Returns null for a partial mask or an invalid date. */
-  public parseComplete(masked: string): Date | null {
-    if (masked.includes(this.prompt) || this.isBlank(masked)) {
+  /** An invalid date gives `null` in both modes. */
+  public override parseValue(masked: string, strict: boolean): Date | null {
+    if ((strict && masked.includes(this.prompt)) || this.isBlank(masked)) {
       return null;
     }
 
@@ -465,10 +474,7 @@ export class DateTimeMaskParser extends DateFormatMaskParser<
 
   //#region Date Formatting
 
-  /**
-   * Formats a Date object into a masked string according to the current format.
-   */
-  public formatDate(date: Date | null): string {
+  public override formatValue(date: Date | null): string {
     return date
       ? this.parts.map((part) => part.getValue(date)).join('')
       : this.emptyMask;
@@ -526,8 +532,8 @@ export class DateTimeMaskParser extends DateFormatMaskParser<
     part: DatePart,
     request: SpinRequest
   ): SpunText<Date> {
-    const value = this.spin(this.parseComplete(masked), part, request);
-    return { masked: this.formatDate(value), value };
+    const value = this.spin(this.parseValue(masked, true), part, request);
+    return { masked: this.formatValue(value), value };
   }
 
   public override seeded(seed: Date): Date {
