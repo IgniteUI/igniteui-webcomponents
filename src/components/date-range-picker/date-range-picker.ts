@@ -28,6 +28,7 @@ import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
 import { datesChanged } from '../calendar/helpers.js';
 import type { CalendarSelection } from '../calendar/types.js';
+import type { CommitPolicy } from '../date-picker/commit-session.js';
 import {
   IgcDatePickerBaseComponent,
   type IgcPickerBaseEventMap,
@@ -337,25 +338,14 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     return this._calendar.values.length > 1;
   }
 
-  protected override _handleDismiss(): void {
-    if (!this._isDropDown) {
-      this._revertValue();
-    }
-  }
-
   /** Points the calendar at the current range, in the first rendered month. */
   protected override _syncCalendarOnToggle(): void {
     this._setCalendarActiveDate(this._firstDefinedInRange);
     this._calendar['_activeDaysViewIndex'] = 0;
   }
 
-  protected override _onDialogClosing(): void {
-    this._emitChangeIfDirty();
-  }
-
-  /** In dialog mode the range is committed by the actions of the dialog instead. */
-  protected override _commitsCalendarSelection(): boolean {
-    return this._isDropDown;
+  protected override _commitPolicy(): CommitPolicy {
+    return this._isDropDown ? 'at-once' : 'on-confirm';
   }
 
   protected override _valueFromCalendarSelection(
@@ -380,7 +370,7 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   public set value(value: DateRangeValue | string | null | undefined) {
     this._value = convertToDateRange(value);
     // A set from code is committed at once, so no later commit reports it.
-    this._oldValue = this.value;
+    this._session.adopt();
   }
 
   public get value(): DateRangeValue | null {
@@ -537,11 +527,11 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   // #region Event handlers
 
   protected _dialogCancel() {
-    this._closeWith(() => this._revertValue());
+    this._closeWith(() => this._session.cancel());
   }
 
   protected _dialogDone() {
-    this._closeWith(() => this._emitChangeIfDirty());
+    this._closeWith(() => this._session.confirm());
   }
 
   protected _handleInput(event: CustomEvent<string>) {
@@ -608,10 +598,6 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     this._delegateInputsValidity();
   }
 
-  protected _revertValue() {
-    this.value = this._oldValue;
-  }
-
   /** Builds the range from both editors. The other editor is read through its uncommitted draft. */
   private _getUpdatedDateRange(
     input: IgcDateTimeInputComponent,
@@ -670,15 +656,14 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
       : range;
   }
 
-  /** Applies a predefined range. In dialog mode, Done commits it. */
+  /** Applies a predefined range like a calendar selection. */
   private _handleRangeSelect({ detail }: CustomEvent<DateRangeValue>): void {
     if (this._isClosing) return;
 
-    this._value = detail;
+    this._session.pick(detail);
     this._setCalendarActiveDate(this._firstDefinedInRange);
 
-    if (this._isDropDown) {
-      this._emitChange();
+    if (this._commitPolicy() === 'at-once' && !this.keepOpenOnSelect) {
       this._hide(true);
     }
   }

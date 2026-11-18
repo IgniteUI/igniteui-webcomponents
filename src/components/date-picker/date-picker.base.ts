@@ -30,7 +30,6 @@ import {
   preventDefault,
 } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
-import { equal } from '#internals/utils/objects.js';
 import type { ThemingController } from '#theming/theming-controller.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import {
@@ -55,6 +54,7 @@ import type {
   PickerMode,
 } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
+import { type CommitPolicy, CommitSession } from './commit-session.js';
 
 /**
  * The events emitted by a picker driven by a calendar.
@@ -129,7 +129,14 @@ export abstract class IgcDatePickerBaseComponent<
 
   //#region Internal state and properties
 
-  protected _oldValue: T | null = null;
+  protected readonly _session = new CommitSession<T>({
+    policy: () => this._commitPolicy(),
+    read: () => this._value,
+    write: (value) => {
+      this._value = value;
+    },
+    emit: (value) => this.emitEvent('igcChange', { detail: value }),
+  });
 
   protected _activeDate: Date | null = null;
   protected _min: Date | null = null;
@@ -253,21 +260,12 @@ export abstract class IgcDatePickerBaseComponent<
     return true;
   }
 
-  /** Invoked when the picker is dismissed through the Escape key. */
-  protected _handleDismiss(): void {}
-
-  /** Invoked when focus has left the picker for good. */
-  protected _onBlur(): void {}
-
-  /** Invoked when the dialog asks to close and the picker accepts the close. */
-  protected _onDialogClosing(): void {}
-
   /** Invoked when the picker is toggled, before the update is awaited. */
   protected _syncCalendarOnToggle(): void {}
 
-  /** Whether a calendar selection commits the value at once. Else the picker stays open. */
-  protected _commitsCalendarSelection(): boolean {
-    return true;
+  /** When a calendar selection is committed. */
+  protected _commitPolicy(): CommitPolicy {
+    return 'at-once';
   }
 
   //#endregion
@@ -511,8 +509,9 @@ export abstract class IgcDatePickerBaseComponent<
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     super.willUpdate(changedProperties);
 
-    if (changedProperties.has('open') && this.open) {
-      this._oldValue = this._value;
+    if (!this.hasUpdated) {
+      // The initial value counts as set from code.
+      this._session.adopt();
     }
   }
 
@@ -640,17 +639,10 @@ export abstract class IgcDatePickerBaseComponent<
     }
   }
 
-  /** Emits `igcChange` and records the value as the last committed one. */
-  protected _emitChange(): void {
-    this.emitEvent('igcChange', { detail: this._value });
-    this._oldValue = this._value;
-  }
-
-  /** Commits a value from an editor. An edit back to the last committed value emits nothing. */
+  /** Commits a value from an editor. An edit back to the reported value emits nothing. */
   protected _commitEditorValue(value: T | null): void {
     this._setTouchedState();
-    this._value = value;
-    this._emitChangeIfDirty();
+    this._session.commitEdit(value);
   }
 
   /**
@@ -665,13 +657,6 @@ export abstract class IgcDatePickerBaseComponent<
     // The exit runs, or a close without one is done.
     if (this._isClosing || !this.open) apply();
     return closed;
-  }
-
-  /** Emits `igcChange` if the value has moved away from the last committed one. */
-  protected _emitChangeIfDirty(): void {
-    if (!equal(this._value, this._oldValue)) {
-      this._emitChange();
-    }
   }
 
   //#endregion
@@ -694,8 +679,7 @@ export abstract class IgcDatePickerBaseComponent<
 
   /** Clears the value and the input text of the picker. */
   public clear(): void {
-    this._oldValue = this._value;
-    this._value = null;
+    this._session.clear();
     this._clearEditors();
   }
 
@@ -705,7 +689,7 @@ export abstract class IgcDatePickerBaseComponent<
 
   protected async _onEscapeKey(): Promise<void> {
     // Revert as the close starts, as Cancel does, so a reopen during the exit keeps the old value.
-    if (await this._closeWith(() => this._handleDismiss())) this._focusInput();
+    if (await this._closeWith(() => this._session.cancel())) this._focusInput();
   }
 
   protected override async _handleAnchorClick(): Promise<void> {
@@ -724,7 +708,7 @@ export abstract class IgcDatePickerBaseComponent<
   protected _handleFocusOut(event: FocusEvent): void {
     if (focusLeftHost(this, event)) {
       this._handleBlur();
-      this._onBlur();
+      this._session.blur();
     }
   }
 
@@ -740,10 +724,9 @@ export abstract class IgcDatePickerBaseComponent<
       return;
     }
 
-    this._value = this._valueFromCalendarSelection(asArray(event.detail));
+    this._session.pick(this._valueFromCalendarSelection(asArray(event.detail)));
 
-    if (this._commitsCalendarSelection()) {
-      this._emitChange();
+    if (this._commitPolicy() === 'at-once') {
       this._shouldCloseCalendarDropdown();
     }
   }
@@ -752,7 +735,7 @@ export abstract class IgcDatePickerBaseComponent<
   protected _handleDialogClosing(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
-    this._closeWith(() => this._onDialogClosing());
+    this._closeWith(() => this._session.confirm());
   }
 
   //#endregion

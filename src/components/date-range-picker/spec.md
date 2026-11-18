@@ -71,6 +71,7 @@
 |      17 | 2026-11-05 | Done and Cancel change the range only when the close goes on; Done emits `igcChange` after `igcClosing` |
 |      18 | 2026-11-06 | A closed picker does not cancel <kbd>Escape</kbd> |
 |      19 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form, after the `keypress`; <kbd>Enter</kbd> in slotted content does not submit a second time |
+|      20 | 2026-11-18 | A clear is reported on blur in dialog and non-editable mode, also after an open and a close; a range chip keeps the dropdown open with `keepOpenOnSelect`; a range that `hide()` leaves unconfirmed stays unconfirmed |
 
 ## Overview
 
@@ -360,8 +361,11 @@ not while the user edits the control.
 
 ### Behaviors
 
-**Clearing the inputs.** On losing focus, `igcChange` is emitted with `{ start: null, end: null }`, in both display
-modes. While the control is `readOnly`, clicking the clear icon does not clear the value.
+**Clearing the inputs.** A clear through the clear icon is reported with `igcChange` one time, also when the picker
+opens and closes in between. In editable dropdown mode the commit of the editors reports it, with
+`{ start: null, end: null }`. In dialog and non-editable mode the detail is the value after the clear, `null`, and
+Done, an outside click of the dialog or the focus leaving the picker reports it. While the control is `readOnly`,
+clicking the clear icon does not clear the value.
 
 **Selecting from the calendar.** In dropdown mode, activating the first date emits `igcChange` with
 `{ start: date, end: date }`, and activating the second emits it again with `{ start, end }`. In dialog mode,
@@ -378,7 +382,8 @@ calendar.
 invalid. `min` and `max` are checked against both ends of the range. A value that an editor commits marks the picker
 as touched, so an invalid value shows its invalid styles at once, also when the focus stays in the picker.
 
-**Range chips.** In dropdown mode, activating a chip closes the picker. In dialog mode the dialog stays open.
+**Range chips.** In dropdown mode, activating a chip closes the picker, unless `keepOpenOnSelect` is set. In dialog
+mode the dialog stays open.
 
 **Opening and closing the dialog.** The dialog fades in on an open, and `igcOpened` follows the entrance. Cancel,
 Done, <kbd>Escape</kbd> and an outside click play the exit animation of the dialog, and `open` stays `true` until it
@@ -604,9 +609,14 @@ input and two inputs suites run with reduced motion, so the dialog does not fade
    set from code while the dialog is open, also with `select()`, is not reported when Done commits. After a canceled
    close on an outside click or on Done, Cancel restores the range; after a canceled close on Cancel, Done commits it.
    Done emits `igcChange` after `igcClosing`. <kbd>Escape</kbd> restores the range as the close starts, so
-   Done or a reopen during the exit keeps it. Done, Cancel and <kbd>Escape</kbd> do nothing during the exit of `hide()`.
+   Done or a reopen during the exit keeps it. A `show()` during the exit of Done, then Cancel, keeps the range of
+   Done. Done, Cancel and <kbd>Escape</kbd> do nothing during the exit of `hide()`. After `hide()` and a new open,
+   Cancel restores the range from before the selection and Done reports the selection.
+   A clear is reported on blur in dialog and non-editable mode, in both layouts, and one time after an open and a
+   close with Cancel, Done or an outside click.
 5. Readonly state, in dropdown and in dialog mode.
-6. Predefined ranges - the built-in chips and the custom ranges, and a chip during the exit of the dialog.
+6. Predefined ranges - the built-in chips and the custom ranges, a chip during the exit of the dialog, and a chip
+   that keeps the dropdown open with `keepOpenOnSelect`.
 7. Locale week start - the calendar derives its week start from the locale when `week-start` is not set.
 
 ### Single input suite
@@ -688,7 +698,9 @@ The focus after the form checks and the `invalid` event rules come from the form
 - `hideHeader`, `headerOrientation` and the `title` slot are only in effect in dialog mode.
 - In dialog mode, `hide()`, `toggle()` and a change of `open` do not commit or restore the selected range, also after
   a canceled `igcClosing`. An application that cancels the close, for example to ask for a confirmation, restores the
-  range itself, through `value`.
+  range itself, through `value`. The selected range stays unconfirmed: after a new open, Done reports it and Cancel or
+  <kbd>Escape</kbd> restores the range from before it.
+- `clear()` acts like the clear icon: the picker reports the clear with `igcChange`, although it is a method call.
 
 ## Accessibility
 

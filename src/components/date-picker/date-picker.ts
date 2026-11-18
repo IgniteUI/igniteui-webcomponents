@@ -275,17 +275,6 @@ export default class IgcDatePickerComponent extends I18nMixin(
     return firstOf(dates) ?? null;
   }
 
-  /** A committed input edit emits `igcChange` itself, so this notifies only picker-made changes. */
-  protected override _onBlur(): void {
-    if (this._isEditorReadOnly) {
-      this._emitChangeIfDirty();
-    }
-  }
-
-  protected override _onDialogClosing(): void {
-    this._oldValue = this.value;
-  }
-
   //#endregion
 
   //#region Public properties and attributes
@@ -305,7 +294,7 @@ export default class IgcDatePickerComponent extends I18nMixin(
   public set value(value: Date | string | null | undefined) {
     this._value = value as Date | null;
     // A set from code is committed at once, so no later commit reports it.
-    this._oldValue = this.value;
+    this._session.adopt();
   }
 
   public get value(): Date | null {

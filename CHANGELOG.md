@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `dot-scale` sets the size of the data modules, from 0.7 to 1 of their cell, to leave a gap between them. The corners keep their full size.
 
 ### Changed
+- #### Date range picker
+  - In dialog mode, a range that you select stays unconfirmed when code closes the picker with `hide()`, `toggle()` or `open`. After a new open, Done emits `igcChange` for it, and Cancel or Escape restores the range from before it. Before, the next open kept the range without an `igcChange`.
 - #### Library
   - The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The fallbacks for older browsers are removed, and the styles no longer have vendor prefixes for them.
 - #### QR code
@@ -19,6 +21,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `logoSize` is a share of the code without its quiet zone, so `margin` no longer changes the logo. At the default `margin`, logos are smaller than before: 28% smaller in side on a version 1 code, and 4% on a version 40 code.
 
 ### Fixed
+- #### Date picker, Date range picker
+  - When you clear the value and then open and close the picker before you leave it, the picker now emits `igcChange` for the clear.
+  - The date range picker emits `igcChange` when you clear it in dialog mode or in non-editable mode and leave it. The detail is `null`.
+  - A predefined or custom range chip keeps the date range picker open when `keepOpenOnSelect` is set.
 - #### Input, Textarea
   - `stepUp()`, `stepDown()` and `setRangeText()` no longer clear the value when you call them before the first render.
 - #### QR code
