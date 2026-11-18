@@ -57,6 +57,7 @@ This directory hosts two form-associated components that share the same base imp
 |       9 | 2026-11-02 | `focus()` and `blur()` before the first render do not throw, and a `focus()` call applies after it                    |
 |      10 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown` does not submit the form |
 |      11 | 2026-11-11 | <kbd>Enter</kbd> submits only through the first submit button of the form, as for a native checkbox, and not after a canceled `keypress` |
+|      12 | 2026-11-18 | A change of the `checked` attribute or of `value` keeps the control pristine, as for a native checkbox |
 
 ## Overview
 
@@ -224,7 +225,8 @@ mechanism.
 
 - A checked control submits its `value` under its `name`. An unchecked control submits nothing.
 - When no `value` is set, a checked control submits `on`, following the native element.
-- A form reset restores the `defaultChecked` state, which is taken from the `checked` attribute.
+- A form reset restores the `defaultChecked` state, which is taken from the `checked` attribute. A change of the
+  attribute or of `value` keeps the control pristine, so a later `defaultChecked` still sets the checked state.
 - A disabled control does not submit a value.
 - <kbd>Enter</kbd> on the control submits the form, as for a native checkbox: the first submit button of the form
   gets a click, and the click submits the form. A form with no submit button, or with a disabled first submit button,
@@ -442,7 +444,8 @@ Driven by `createFormAssociatedTestBed`, in both suites.
 
 Present in both suites.
 
-22. Form integration - correct initial state, correct submission and correct reset.
+22. Form integration - correct initial state, correct submission and correct reset. A change of the `checked`
+    attribute or of `value` keeps the control pristine.
 23. Validation - fails the initial validation, and passes once `defaultChecked` is updated.
 
 ### Validation message slots

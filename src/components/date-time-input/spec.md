@@ -69,6 +69,7 @@
 |      13 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown`, or the <kbd>Enter</kbd> that commits an IME composition, does not submit the form |
 |      14 | 2026-11-11 | The keys that an IME handles do nothing |
 |      15 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form, after the `keypress` |
+|      16 | 2026-11-18 | `igcChange` compares the committed value with the last reported value: the last `igcChange` or the last value set from code |
 
 ## Overview
 
@@ -361,7 +362,7 @@ input.addEventListener('igcInput', ({ detail }) => {
 });
 
 // Observe committed values only. Fired on blur, and only when the committed
-// value differs from the value at focus or the last value set from code.
+// value differs from the last igcChange or the last value set from code.
 input.addEventListener('igcChange', ({ detail }) => {
   console.log('committed:', detail); // Date | null
 });
@@ -648,7 +649,7 @@ enum DatePart {
 | Name      | Cancellable | Detail                | Description                                                |
 | --------- | ----------- | --------------------- | ---------------------------------------------------------- |
 | igcInput  | false       | `string \| undefined` | Emitted while the user edits. The detail is the typed date as an ISO string, or `undefined` while the mask is incomplete. |
-| igcChange | false       | `Date \| null`        | Emitted on blur, when the committed value differs from the value at focus or the last value set from code. |
+| igcChange | false       | `Date \| null`        | Emitted on blur, when the committed value differs from the last `igcChange` or the last value set from code. |
 
 ### Slots
 

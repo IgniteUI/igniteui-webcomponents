@@ -421,6 +421,17 @@ describe('Radio Component', () => {
         lastOf(radios).defaultChecked = true;
         expect(lastOf(radios).checked).to.be.true;
       });
+
+      it('stays pristine after a change of the value', () => {
+        spec.element.value = 'one';
+
+        spec.assertSubmitHasValue('one');
+        spec.assertIsPristine();
+
+        // As for a native radio, a pristine radio takes the new default.
+        spec.element.defaultChecked = false;
+        expect(spec.element.checked).to.be.false;
+      });
     });
   });
 

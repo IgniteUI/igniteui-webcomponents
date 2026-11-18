@@ -61,6 +61,11 @@ export class FormValue<T> {
   public get value(): T {
     return this._transformers.getValue(this._value);
   }
+
+  /** Whether two values are the same. See the `isSameValue` transformer. */
+  public isSameValue(a: T, b: T): boolean {
+    return this._transformers.isSameValue(a, b);
+  }
 }
 
 export function createFormValueState<T>(

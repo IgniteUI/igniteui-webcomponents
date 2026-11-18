@@ -101,6 +101,7 @@
 |      28 | 2026-11-13 | One record for each value, and each record of a selected value shows as selected; a value keeps its place when it gets a record; select all gives the order of `data`, then the values that `data` does not hold; a value that a pending deselection removed stays out of the pending selection after a new `data` |
 |      29 | 2026-11-13 | Review fixes: primitive records show as selected again; any record of a repeated value selects its first record, also in a commit, and a toggle option lists one record for each value; a `value` array that changed in place and is set again syncs the selection; a new `displayKey` or `valueKey` updates the input text; a new `data` filters by the current text of the items that keep their records and indexes a key that changed in place; a new `valueKey` merges values to their first records and drops the same-value sync; in single selection, a framework that writes back the cleared `value` keeps the typed text, and a blur that clears the input lets the same selection show its text again |
 |      30 | 2026-11-16 | The active option stays on its item when a search, a selection or a new `data` changes the list, and the list scrolls to it; after the combo leaves the document and comes back, no option is active; in single selection, a selection sends the `igcSearchInput` of the cleared text before the selection changes; Tab out of the combo drops the pending selection of the confirm mode; the `Component` test scenarios follow the groups of the spec file |
+|      31 | 2026-11-18 | A change of the `value` attribute keeps the combo pristine, as for a native control |
 
 ## Overview
 
@@ -1025,7 +1026,8 @@ The form-associated mixin gives the focus after the form checks and the rules of
 
 ### defaultValue
 
-57. Form integration in single selection, in multiple selection, and with data that comes late.
+57. Form integration in single selection, in multiple selection, and with data that comes late. A change of the
+    `value` attribute keeps the combo pristine.
 58. Validation against the default value.
 
 ### Validation message slots

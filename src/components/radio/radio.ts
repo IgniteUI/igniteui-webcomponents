@@ -113,8 +113,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     transformers: FormValueBooleanTransformers,
   });
 
-  protected _value!: string;
-
   @query('input', true)
   protected readonly _input!: HTMLInputElement;
 
@@ -173,10 +171,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
    */
   @property()
   public set value(value: string) {
-    this._value = value;
-    if (this.checked) {
-      this._formValue.setValueAndFormState(this.checked);
-    }
+    this._setSubmittedValue(value);
   }
 
   public get value(): string {
@@ -367,13 +362,15 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   protected _handleClick(event: PointerEvent) {
     event.stopPropagation();
-    this._setTouchedState();
 
     if (this.checked) {
+      this._setTouchedState();
       return;
     }
 
-    this.checked = true;
+    this._writeFrom('user', () => {
+      this.checked = true;
+    });
     this._input.focus();
     this._emitChange(this);
   }

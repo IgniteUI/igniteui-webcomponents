@@ -57,6 +57,7 @@
 |       8 | 2026-11-02 | `focus()` and `blur()` before the first render do not throw, and a `focus()` call applies after it   |
 |       9 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown` does not submit the form |
 |      10 | 2026-11-11 | <kbd>Enter</kbd> submits only through the first submit button of the form, as for a native radio, and not after a canceled `keypress` |
+|      11 | 2026-11-18 | A change of `value` keeps the radio pristine, as for a native radio |
 
 ## Overview
 
@@ -379,7 +380,7 @@ Driven by `createFormAssociatedTestBed`.
 ### defaultChecked
 
 18. Form integration - correct initial state, correct submission, correct reset, and preserving the pristine state of
-    the siblings on a form reset.
+    the siblings on a form reset. A change of `value` keeps the radio pristine.
 
 ### Group membership
 

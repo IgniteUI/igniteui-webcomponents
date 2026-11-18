@@ -31,7 +31,6 @@ import {
   resolveInputPartFlags,
 } from '#internals/templates/input-shell.js';
 import { renderMaskedNativeInput } from '#internals/templates/masked-input.js';
-import { equal } from '#internals/utils/objects.js';
 import type { ThemingController } from '#theming/theming-controller.js';
 import type { RangeTextSelectMode } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
@@ -113,9 +112,6 @@ export abstract class IgcDateTimeInputBaseComponent<
    * of truth until blur, so a two-way bound host cannot replace a half-typed mask.
    */
   protected _isEditing = false;
-
-  /** The `igcChange` baseline: the value at focus, at the last commit or from the last change from code. */
-  protected _oldValue: T | null = null;
 
   /**
    * The parsed draft during an edit, else the committed value.
@@ -288,14 +284,6 @@ export abstract class IgcDateTimeInputBaseComponent<
     }
   }
 
-  protected override _handleFocus(): Promise<void> {
-    if (!this.readOnly) {
-      this._oldValue = this.value;
-    }
-
-    return super._handleFocus();
-  }
-
   protected override _showEditMask(): void {
     if (this.displayFormat !== this.inputFormat) {
       this._updateMaskDisplay();
@@ -423,39 +411,31 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Applies a value set from code. A change becomes the `igcChange` baseline. An equal
-   * value keeps it, so a picker that renders its cleared value back still gets the clear.
+   * Sets the value, cancels an edit and renders the mask. An equal value is skipped and keeps
+   * the reported value, so a picker that renders its cleared value back still gets the clear.
    */
   protected _applyValue(value: T | null): void {
-    if (this._setValue(value)) {
-      this._oldValue = value;
-    }
-  }
-
-  /** Sets the value, cancels an edit and renders the mask. Returns whether the value changed. */
-  private _setValue(value: T | null): boolean {
     const previous = this._formValue.value;
 
-    if (equal(previous, value)) {
-      return false;
+    if (this._formValue.isSameValue(previous, value)) {
+      return;
     }
 
     this._isEditing = false;
     this._formValue.setValueAndFormState(value);
     this.requestUpdate('value', previous);
     this._updateMaskDisplay();
-    return true;
   }
 
   /**
-   * Clears like `clear()`, but keeps the `igcChange` baseline, so the next commit reports the clear.
+   * Clears like `clear()`, but as an edit, so the next commit reports the clear.
    *
    * @hidden @internal
    */
   public _clearAsEdit(): void {
     this._isEditing = false;
     this._maskedValue = '';
-    this._setValue(null);
+    this._writeFrom('edit', () => this._applyValue(null));
     this._updateMaskDisplay();
   }
 
@@ -472,26 +452,28 @@ export abstract class IgcDateTimeInputBaseComponent<
   /** Applies the masked text, or `value`, to the public value without emitting anything. */
   protected _applyDraft(value: T | null = this._parseMask(true)): void {
     this._isEditing = false;
-    this.value = value;
+    // Also inside a user edit, such as a drop on an unfocused editor, that no blur commits.
+    this._writeFrom('code', () => {
+      this.value = value;
+    });
     this._updateMaskDisplay();
   }
 
-  /** Commits the draft to the public value. Emits `igcChange` if the value differs from `_oldValue`. */
+  /** Commits the draft to the public value. Emits `igcChange` if the value differs from the reported value. */
   protected _commitEdit(): void {
     // Only a real edit is parsed again. A display-formatted mask parses wrong
     // under the input format.
     if (this._isEditing) {
       this._isEditing = false;
       // A partial mask parses leniently; an empty one gives `null`.
-      this._setValue(this._parseMask(false));
+      this._writeFrom('user', () => this._applyValue(this._parseMask(false)));
     }
 
     // The assignments skip an unchanged value, so restore the display format here.
     this._updateMaskDisplay();
 
-    if (!this.readOnly && !equal(this._oldValue, this.value)) {
-      this._oldValue = this.value;
-      this.emitEvent('igcChange', { detail: this.value });
+    if (!this.readOnly) {
+      this._reportChange(this.value);
     }
   }
 
@@ -611,8 +593,7 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   /** Clears the value and the text of the input. */
   public clear(): void {
-    this._oldValue = null;
-    this._clearAsEdit();
+    this._writeFrom('code', () => this._clearAsEdit());
   }
 
   //#endregion

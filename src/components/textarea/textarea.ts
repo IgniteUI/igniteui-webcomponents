@@ -415,7 +415,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
       return;
     }
 
-    if (this._pristine) {
+    if (this._isPristine) {
       this.defaultValue = value;
     } else {
       this.value = value;

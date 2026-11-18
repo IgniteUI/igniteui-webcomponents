@@ -1,7 +1,8 @@
 import { expect } from '@open-wc/testing';
 
+import { createRecordingPicker } from '#internals/testing/commit-session.spec.js';
 import { fc } from '#internals/testing/fast-check-setup.spec.js';
-import { type CommitPolicy, CommitSession } from './commit-session.js';
+import type { CommitPolicy } from './commit-session.js';
 
 type Value = number | null;
 
@@ -44,24 +45,10 @@ const stepArb: fc.Arbitrary<Step> = fc.oneof(
  * - after a blur, no change is left unreported, except a draft
  */
 function run(initial: Value, initialPolicy: CommitPolicy, steps: Step[]): void {
-  const picker = {
-    policy: initialPolicy,
-    value: initial,
-    reports: [] as Value[],
-  };
-
-  const session = new CommitSession<number>({
-    policy: () => picker.policy,
-    read: () => picker.value,
-    write: (value) => {
-      picker.value = value;
-    },
-    emit: (value) => {
-      expect(value).to.equal(picker.value);
-      picker.reports.push(value);
-    },
-  });
-  session.adopt();
+  const { picker, session, setFromCode } = createRecordingPicker<number>(
+    initialPolicy,
+    initial
+  );
 
   // The model: the reported value, and the value before the draft.
   let reported = initial;
@@ -76,8 +63,7 @@ function run(initial: Value, initialPolicy: CommitPolicy, steps: Step[]): void {
         picker.policy = step.policy;
         break;
       case 'setFromCode':
-        picker.value = step.value;
-        session.adopt();
+        setFromCode(step.value);
         reported = step.value;
         beforeDraft = undefined;
         break;

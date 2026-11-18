@@ -5,6 +5,7 @@ import {
   getDateFormValue,
 } from '../../date/converters.js';
 import { asNumber } from '../../utils/math.js';
+import { equal } from '../../utils/objects.js';
 import type { FormValueType, IgcFormControl } from './types.js';
 
 export type FormValueTransformers<T> = {
@@ -13,6 +14,8 @@ export type FormValueTransformers<T> = {
   setDefaultValue: (value: T) => T;
   getDefaultValue: (value: T) => T;
   setFormValue: (value: T, host: IgcFormControl) => FormValueType;
+  /** Whether two values are the same, for example a value and the reported value. */
+  isSameValue: (a: T, b: T) => boolean;
 };
 
 export type FormValueConfig<T> = {
@@ -26,6 +29,7 @@ export const FormValueDefaultTransformers: FormValueTransformers<string> = {
   setDefaultValue: (value) => value || '',
   getDefaultValue: (value) => value,
   setFormValue: (value, _) => value || null,
+  isSameValue: Object.is,
 };
 
 export const FormValueBooleanTransformers: Partial<
@@ -51,6 +55,7 @@ export const FormValueDateTimeTransformers: Partial<
   setValue: convertToDate,
   setDefaultValue: convertToDate,
   setFormValue: getDateFormValue,
+  isSameValue: equal,
 };
 
 export const FormValueDateRangeTransformers: Partial<
@@ -58,6 +63,7 @@ export const FormValueDateRangeTransformers: Partial<
 > = {
   setValue: convertToDateRange,
   setDefaultValue: convertToDateRange,
+  isSameValue: equal,
   setFormValue: (value, host) => {
     if (!host.name) {
       return null;
@@ -97,6 +103,7 @@ export const FormValueFileListTransformers: FormValueTransformers<FileList | nul
 
       return formData;
     },
+    isSameValue: Object.is,
   };
 
 export const FormValueSelectTransformers: Partial<

@@ -345,7 +345,7 @@ export default class IgcComboComponent<
       host._syncSelectionFromValue();
 
       if (host.hasUpdated) {
-        host._withPristine(() => {
+        host._writeFrom('normalize', () => {
           host._navigation.active = -1;
           host._searchTerm = '';
           host._formValue.setValueAndFormState(host.value);
@@ -609,10 +609,10 @@ export default class IgcComboComponent<
   /* @tsTwoWayProperty (true, "Change", "Detail.NewValue", false) */
   @property({ type: Array })
   public set value(items: ComboValue<T>[]) {
-    // A framework can set the same value on each render. It makes the control
-    // dirty, as any write, and keeps the selection.
+    // A framework can set the same value on each render. It counts as a
+    // write, but keeps the selection.
     if (this._isSyncedValue(items)) {
-      this._pristine = false;
+      this._recordSameValueWrite();
       return;
     }
 
@@ -1008,7 +1008,7 @@ export default class IgcComboComponent<
   private _syncSelectionFromData(): void {
     // Sync the selection when `data` comes after `value`.
     if (!isEmpty(this.data) && !isEmpty(this.value)) {
-      this._withPristine(() => {
+      this._writeFrom('normalize', () => {
         this._syncSelectionFromValue();
         this._formValue.setValueAndFormState(this.value);
       });
@@ -1220,10 +1220,8 @@ export default class IgcComboComponent<
       return;
     }
 
-    this._setTouchedState();
-
     // A placeholder selects nothing, so a click keeps the list open.
-    if (!this._selectAt(target.index, true)) {
+    if (!this._writeFrom('user', () => this._selectAt(target.index, true))) {
       return;
     }
 

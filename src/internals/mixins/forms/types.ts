@@ -6,6 +6,21 @@ import type {
 import type { Validator } from '../../validators.js';
 
 export type { FormValueType };
+
+/**
+ * Where a write of the value comes from. It sets the pristine and touched
+ * states, and whether `_reportChange` reports the value later:
+ *
+ * - `user`: the user. Sets **touched** first. Dirty, waits for a report.
+ * - `edit`: a change reported later, with no user interaction of its own,
+ *   such as the clear of a picker. Dirty, waits for a report.
+ * - `code`: a set from code, also any write outside of `_writeFrom`. Dirty.
+ * - `normalize`: the control rewrites its own value, such as a clamp or a new
+ *   format. Keeps pristine. A rewrite of a reported value stays reported.
+ * - `default`: the state attribute, a new default or a form reset. Keeps
+ *   pristine.
+ */
+export type WriteOrigin = 'user' | 'edit' | 'code' | 'normalize' | 'default';
 export type IgcFormControl = LitElement &
   (FormAssociatedElementInterface | FormAssociatedCheckboxElementInterface);
 
@@ -17,11 +32,13 @@ export declare class BaseFormAssociatedElement {
   protected readonly _internals: ElementInternalsController;
   protected readonly _formValue: unknown;
 
-  protected _pristine: boolean;
   protected _disabled: boolean;
   protected _invalid: boolean;
 
   protected get __validators(): Validator[];
+
+  /** Whether the value is unchanged since the start or the last form reset. */
+  protected get _isPristine(): boolean;
 
   /** Whether the control counts as a text field for implicit submission. */
   protected get _blocksImplicitSubmission(): boolean;
@@ -88,8 +105,23 @@ export declare class BaseFormAssociatedElement {
     init?: CustomEventInit
   ): boolean;
 
-  /** Runs `callback` and restores the pristine flag. */
-  protected _withPristine(callback: () => void): void;
+  /**
+   * Runs `write` as a write of `origin`. A write outside of this method comes
+   * from code. A user write sets **touched** first, so that its validation
+   * shows the invalid styles at once. A `code` or `default` write takes the
+   * value as reported, also when it keeps the value. See {@link WriteOrigin}.
+   */
+  protected _writeFrom<R>(origin: WriteOrigin, write: () => R): R;
+
+  /** Records a write that keeps the value, as a write of the current origin. */
+  protected _recordSameValueWrite(): void;
+
+  /**
+   * Emits `igcChange` with `detail` when the value differs from the reported
+   * value, or always with `force`. The value becomes the reported value.
+   * Needs the emitter mixin.
+   */
+  protected _reportChange(detail: unknown, force?: boolean): void;
 
   /** Sets the default value from a change of the `value` attribute. */
   protected _setDefaultValue(current: string | null): void;
@@ -158,10 +190,7 @@ export declare class FormAssociatedElementInterface extends BaseFormAssociatedEl
   public set defaultValue(value: unknown);
   public get defaultValue(): unknown;
 
-  /**
-   * Commits a user value change, then emits `eventName`. Sets **touched**
-   * *before* the `value` assignment, so the setter styles invalid at once.
-   */
+  /** Writes `value` as a user write, then emits `eventName`. */
   protected _commitValue(value: unknown, eventName: string): boolean;
 }
 
@@ -174,6 +203,12 @@ export declare class FormAssociatedCheckboxElementInterface extends BaseFormAsso
    */
   public set defaultChecked(value: boolean);
   public get defaultChecked(): boolean;
+
+  /** The value that a checked control submits. */
+  protected _value: string;
+
+  /** Sets the value that a checked control submits. Keeps the pristine state. */
+  protected _setSubmittedValue(value: string): void;
 }
 
 export declare class FormRequiredInterface {

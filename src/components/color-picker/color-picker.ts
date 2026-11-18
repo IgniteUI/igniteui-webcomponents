@@ -30,6 +30,7 @@ import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import type { FormValueTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
@@ -203,8 +204,19 @@ export default class IgcColorPickerComponent extends I18nMixin(
 
   protected readonly _slots = addSlotController(this, { slots: Slots });
 
+  private static readonly _transformers: Partial<
+    FormValueTransformers<string>
+  > = {
+    // The same color in another format is the same value.
+    isSameValue: (a, b) =>
+      a === b ||
+      ColorModel.parse(a).asString('rgb', true) ===
+        ColorModel.parse(b).asString('rgb', true),
+  };
+
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: '',
+    transformers: IgcColorPickerComponent._transformers,
   });
 
   private readonly _alphaInputRef = createRef<IgcInputComponent>();
@@ -215,7 +227,6 @@ export default class IgcColorPickerComponent extends I18nMixin(
 
   private readonly _supportsEyeDropper = Boolean(getEyeDropper());
   private _color = ColorModel.empty();
-  private _oldValue = '';
 
   /** The last value written for each host custom property. */
   private readonly _appliedProperties = new Map<string, string>();
@@ -318,7 +329,6 @@ export default class IgcColorPickerComponent extends I18nMixin(
     super();
 
     addThemingController(this, all);
-    addSafeEventListener(this, 'focusin', this._handleFocusIn);
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
 
     addKeybindings(this, { skip: () => this.disabled })
@@ -396,23 +406,13 @@ export default class IgcColorPickerComponent extends I18nMixin(
     }
   }
 
-  private _handleFocusIn(event: FocusEvent): void {
-    if (focusLeftHost(this, event)) {
-      this._oldValue = this._alphaColor;
-    }
-  }
-
   private _handleFocusOut(event: FocusEvent): void {
     if (!focusLeftHost(this, event)) {
       return;
     }
 
     this._handleBlur();
-
-    if (this._alphaColor !== this._oldValue) {
-      this._oldValue = this._alphaColor;
-      this.emitEvent('igcChange', { detail: this.value });
-    }
+    this._reportChange(this.value);
   }
 
   private _handleCanvasColorPicked(
@@ -421,14 +421,14 @@ export default class IgcColorPickerComponent extends I18nMixin(
     stopPropagation(event);
 
     this._color.setSaturationAndValue(event.detail.x, 100 - event.detail.y);
-    this._updateColor(true);
+    this._applyUserColor();
   }
 
   private _handleHueValueChange(event: Event): void {
     stopPropagation(event);
 
     this._color.h = asNumber((event.target as HTMLInputElement).value);
-    this._updateColor(true);
+    this._applyUserColor();
   }
 
   private _handleAlphaSliderValueChange(event: Event): void {
@@ -542,7 +542,8 @@ export default class IgcColorPickerComponent extends I18nMixin(
     }
 
     this._color = color;
-    this._updateColor();
+    // A commit of the text input, so no `igcInput`.
+    this._writeFrom('user', () => this._updateColor());
     this._syncCanvasPosition();
   }
 
@@ -553,10 +554,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
 
     new EyeDropper()
       .open()
-      .then((result) => {
-        this.value = result.sRGBHex;
-        this._emitInputEvent();
-      })
+      .then((result) => this._commitValue(result.sRGBHex, 'igcInput'))
       .catch(() => {});
   }
 
@@ -572,8 +570,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
     const color = swatch?.dataset.color;
 
     if (color) {
-      this.value = color;
-      this._emitInputEvent();
+      this._commitValue(color, 'igcInput');
     }
   }
 
@@ -639,16 +636,18 @@ export default class IgcColorPickerComponent extends I18nMixin(
     }
 
     this._color.alpha = alpha;
-    this._updateColor(true);
+    this._applyUserColor();
   }
 
-  private _updateColor(emitInput = false): void {
+  private _updateColor(): void {
     this._formValue.setValueAndFormState(this._color.asString(this.format));
     this.requestUpdate();
+  }
 
-    if (emitInput) {
-      this._emitInputEvent();
-    }
+  /** Writes the current color as a user change, then emits `igcInput`. */
+  private _applyUserColor(): void {
+    this._writeFrom('user', () => this._updateColor());
+    this._emitInputEvent();
   }
 
   /**
@@ -661,7 +660,9 @@ export default class IgcColorPickerComponent extends I18nMixin(
     const value = this._color.asString(this.format);
 
     if (value !== this.value) {
-      this._withPristine(() => this._formValue.setValueAndFormState(value));
+      this._writeFrom('normalize', () =>
+        this._formValue.setValueAndFormState(value)
+      );
     }
   }
 

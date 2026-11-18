@@ -1,5 +1,5 @@
 import type { ICalendarResourceStrings } from 'igniteui-i18n-core';
-import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
+import { html, nothing, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { IgcComboBoxBaseLikeComponent } from '#internals/bases/combo-box.js';
@@ -132,10 +132,11 @@ export abstract class IgcDatePickerBaseComponent<
   protected readonly _session = new CommitSession<T>({
     policy: () => this._commitPolicy(),
     read: () => this._value,
-    write: (value) => {
-      this._value = value;
-    },
-    emit: (value) => this.emitEvent('igcChange', { detail: value }),
+    write: (value) =>
+      this._writeFrom('edit', () => {
+        this._value = value;
+      }),
+    report: (force) => this._reportChange(this._value, force),
   });
 
   protected _activeDate: Date | null = null;
@@ -506,15 +507,6 @@ export abstract class IgcDatePickerBaseComponent<
       .set(escapeKey, this._onEscapeKey, { when: () => this.open });
   }
 
-  protected override willUpdate(changedProperties: PropertyValues<this>): void {
-    super.willUpdate(changedProperties);
-
-    if (!this.hasUpdated) {
-      // The initial value counts as set from code.
-      this._session.adopt();
-    }
-  }
-
   protected override formResetCallback(): void {
     super.formResetCallback();
 
@@ -641,8 +633,7 @@ export abstract class IgcDatePickerBaseComponent<
 
   /** Commits a value from an editor. An edit back to the reported value emits nothing. */
   protected _commitEditorValue(value: T | null): void {
-    this._setTouchedState();
-    this._session.commitEdit(value);
+    this._writeFrom('user', () => this._session.commitEdit(value));
   }
 
   /**
@@ -716,15 +707,19 @@ export abstract class IgcDatePickerBaseComponent<
     event: CustomEvent<Date | Date[]>
   ): Promise<void> {
     event.stopPropagation();
-    this._setTouchedState();
 
     // The running close decides the value.
     if (this.readOnly || this._isClosing) {
+      this._setTouchedState();
       await this._restoreCalendarSelection();
       return;
     }
 
-    this._session.pick(this._valueFromCalendarSelection(asArray(event.detail)));
+    this._writeFrom('user', () =>
+      this._session.pick(
+        this._valueFromCalendarSelection(asArray(event.detail))
+      )
+    );
 
     if (this._commitPolicy() === 'at-once') {
       this._shouldCloseCalendarDropdown();

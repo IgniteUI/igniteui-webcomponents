@@ -187,7 +187,7 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
   }
 
   public assertIsPristine(msg?: string): void {
-    expect(this.element['_pristine'], msg).to.be.true;
+    expect(this.element['_isPristine'], msg).to.be.true;
   }
 }
 

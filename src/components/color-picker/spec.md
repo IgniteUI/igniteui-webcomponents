@@ -60,6 +60,8 @@
 |      12 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
 |      13 | 2026-11-06 | A closed picker does not cancel <kbd>Escape</kbd> |
 |      14 | 2026-11-11 | The keys that an IME handles do nothing |
+|      15 | 2026-11-18 | A change of the user marks the control touched, so a change that fails validation shows the invalid styles at once |
+|      16 | 2026-11-18 | A value set from code is not a user change, also while focus is inside, so no `igcChange` reports it |
 
 ## Overview
 
@@ -159,9 +161,11 @@ set the base color, drag the alpha slider or type an exact alpha value when `sho
 string into the color value input, activate a predefined swatch, copy the value, or pick a color from the screen
 with the eye dropper.
 
-Every interim interaction emits `igcInput`. The component records the value when focus enters it and compares it
-when focus leaves entirely, emitting `igcChange` exactly once if it changed - dragging the canvas or the sliders, or
-typing, never emits `igcChange` by itself.
+Every interim interaction emits `igcInput` and marks the control touched, so a change that fails validation shows
+the invalid styles at once. When focus leaves the component entirely, it compares the color with the last reported
+color - the color of the last `igcChange` or the last value set from code, in any format - and emits `igcChange`
+exactly once if it changed. Dragging the canvas or the sliders, or typing, never emits `igcChange` by itself. A value set from code is
+not a user change, so it emits no `igcChange`, also while focus is inside the component.
 
 ### Developer experience
 
@@ -448,7 +452,8 @@ The component suite reuses `createFormAssociatedTestBed`, `runValidationContaine
 5. API - the public properties and methods.
 6. Empty value - the checkered anchor, the empty serialized value, and clearing through the inputs.
 7. Color value input - typing a color string, reverting an invalid one and clearing on an empty one.
-8. `igcChange` - emitted once when focus leaves the component and the value has changed.
+8. `igcChange` - emitted once when focus leaves the component and the user changed the value. A value set from code
+   while focus is inside emits nothing, and neither does a color that returns to the reported one in another format.
 9. Color channels, including the alpha input.
 10. Inner events - the `igcInput` of the alpha input, the color value input and the input anchor, the open and close
     events of the format select, and the `igcColorPicked` of the canvas do not reach a listener on the picker.
