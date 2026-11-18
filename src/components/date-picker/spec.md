@@ -73,6 +73,7 @@
 |      16 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form, after the `keypress`; <kbd>Enter</kbd> in slotted content does not submit a second time |
 |      17 | 2026-11-18 | A clear is reported on blur also after an open and a close; one commit session holds the commit rules of both pickers |
 |      18 | 2026-11-18 | The inner editor shows only the invalid state of the picker, and reports the validity of the picker |
+|      19 | 2026-11-18 | A clear is reported when the focus leaves the picker; a value write brings its month into view unless `activeDate` is set; an open shows the value in the first month; a render no longer moves the calendar back to `activeDate` |
 
 ## Overview
 
@@ -277,8 +278,8 @@ The public `value` only ever holds a committed value. While the user is typing, 
 editor; the parsed result reaches `value` - together with an `igcChange` event - when the edit is committed on blur.
 Selecting a date in the calendar commits immediately.
 
-A clear through the clear icon is reported with `igcChange` one time, also when the picker opens and closes before
-the focus leaves it: in editable dropdown mode by the commit of the editor, else when the focus leaves the picker.
+A clear through the clear icon is reported with `igcChange` one time, when the focus leaves the picker, also when the
+picker opens and closes before that.
 
 ```typescript
 picker.addEventListener('igcInput', ({ detail }) => console.log('typing:', detail));
@@ -360,7 +361,10 @@ picker.specialDates = [
 ```
 
 `activeDate` sets the date that is brought into view and highlighted. When it is not set, the picker opens on the
-selected value, and on the current date when there is no value either.
+selected value, and on the current date when there is no value either. Without `activeDate`, a value set from code
+brings its month into view, also while the calendar is open. With more than one visible month, an open shows the
+value, or `activeDate`, in the first month. With `activeDate` set, the user can navigate away from it, and a later
+change of the picker does not move the calendar back.
 
 #### Scroll strategy
 

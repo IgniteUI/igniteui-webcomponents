@@ -75,6 +75,7 @@
 |      21 | 2026-11-18 | The editors show only the invalid state of the picker, and report the validity of the picker also while it is pristine |
 |      22 | 2026-11-18 | The single input spins each end like a date-time input; a spin in a typed end keeps the text of the other end; an empty end takes today without a step; <kbd>Ctrl</kbd> + arrow stops at each part edge; the single input is editable in dropdown mode, as the code does |
 |      23 | 2026-11-18 | Add the strict and the lenient value parse to the range mask parser property suite |
+|      24 | 2026-11-18 | An empty range is `null`; reversed ends are swapped on every write; the ends keep their time; a clear is reported when the focus leaves the picker; a value write brings the range into view unless `activeDate` is set, and a render no longer moves the calendar back to `activeDate` |
 
 ## Overview
 
@@ -84,7 +85,7 @@ date. The calendar opens either in a popover anchored to the field (**dropdown**
 
 The picker has two display modes for the value: a **single input**, which renders both dates in one field, and
 **two inputs**, which renders separate start and end editors. In dropdown mode both modes are editable. The value is a
-`DateRangeValue` - `{ start: Date | null, end: Date | null }`.
+`DateRangeValue` - `{ start: Date | null, end: Date | null }` - or `null` when the range is empty.
 
 The component composes [`igc-calendar`](../calendar/spec.md) in range selection mode and
 [`igc-date-time-input`](../date-time-input/spec.md) for the editable surfaces, and it is a form-associated custom
@@ -304,6 +305,11 @@ See the [validation container specification](../validation-container/spec.md) fo
 { start: null, end: endDate }        -> active date is endDate
 ```
 
+- Without `activeDate`, each change of the value brings its first defined date into view, also a change from code
+  while the calendar is open. A date in a month that the calendar shows keeps the months in view. With `activeDate`
+  set, a change of the value does not move the calendar, and the user can navigate away from `activeDate`.
+- An open from the calendar icon, a click on the input in dialog mode or <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> shows
+  `activeDate`, or else the first defined date of the range, in the first month.
 - While typing, the active date follows the last modified date. Clearing both values by typing leaves the active
   date at the last one assigned.
 
@@ -371,15 +377,21 @@ not while the user edits the control.
 
 ### Behaviors
 
-**Clearing the inputs.** A clear through the clear icon is reported with `igcChange` one time, also when the picker
-opens and closes in between. In editable dropdown mode the commit of the editors reports it, with
-`{ start: null, end: null }`. In dialog and non-editable mode the detail is the value after the clear, `null`, and
-Done, an outside click of the dialog or the focus leaving the picker reports it. While the control is `readOnly`,
-clicking the clear icon does not clear the value.
+**One form of the value.** Every write normalizes the range: from code, from the `value` attribute, as the default,
+from the editors, from the calendar and from a range chip. A range with no dates is `null`, also before a value is
+set. Reversed ends are swapped, compared by time, so `{ start: June 10, end: June 1 }` reads back as
+`{ start: June 1, end: June 10 }`. The ends keep their time. The `igcInput` detail is normalized the same way, while
+the editors keep the text as typed.
+
+**Clearing the inputs.** A clear through the clear icon is reported with `igcChange` one time, with `null`, when the
+focus leaves the picker, or when Done or an outside click closes the dialog, also when the picker opens and closes in
+between. A move of the focus to the other input does not report it. While the control is `readOnly`, clicking the
+clear icon does not clear the value.
 
 **Selecting from the calendar.** In dropdown mode, activating the first date emits `igcChange` with
-`{ start: date, end: date }`, and activating the second emits it again with `{ start, end }`. In dialog mode,
-`igcChange` is emitted when Done is pressed, or when the dialog is dismissed by an outside click.
+`{ start: date, end: date }`, and activating the second emits it again with `{ start, end }`. Activating the start
+again clears the range and emits `null`. In dialog mode, `igcChange` is emitted when Done is pressed, or when the
+dialog is dismissed by an outside click.
 
 **Input values during selection.** In both modes the inputs reflect the selection immediately. In dialog mode,
 pressing Cancel reverts them.
