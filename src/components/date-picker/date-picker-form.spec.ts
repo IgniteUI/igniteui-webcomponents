@@ -9,7 +9,10 @@ import { CalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
 import { checkDatesEqual } from '#internals/testing/helpers.spec.js';
-import { simulatePointerDown } from '#internals/testing/simulate.spec.js';
+import {
+  simulateBlur,
+  simulatePointerDown,
+} from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
@@ -132,6 +135,32 @@ describe('igc-datepicker form integration', () => {
 
       expect(spec.element.matches(':state(ig-invalid)')).to.be.false;
       expect(inner.matches(':state(ig-invalid)')).to.be.false;
+    });
+
+    it('shows no invalid state on the inner editor before the picker', async () => {
+      // A blur of the editor alone, as when the focus moves to a slotted button.
+      spec.setProperties({ required: true });
+
+      const inner = spec.element.renderRoot.querySelector(
+        IgcDateTimeInputComponent.tagName
+      )!;
+      simulateBlur(inner.renderRoot.querySelector('input')!);
+      await elementUpdated(inner);
+
+      ValidityHelpers.hasInvalidStyles(spec.element).to.be.false;
+      ValidityHelpers.hasInvalidStyles(inner).to.be.false;
+    });
+
+    it('shows the invalid state of the picker on the inner editor at once', () => {
+      const inner = spec.element.renderRoot.querySelector(
+        IgcDateTimeInputComponent.tagName
+      )!;
+
+      spec.element.invalid = true;
+      ValidityHelpers.hasInvalidStyles(inner).to.be.true;
+
+      spec.element.invalid = false;
+      ValidityHelpers.hasInvalidStyles(inner).to.be.false;
     });
 
     it('should submit on pressing Enter when value is valid', () => {

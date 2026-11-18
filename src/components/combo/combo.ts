@@ -746,11 +746,8 @@ export default class IgcComboComponent<
     }
   }
 
-  protected override _restoreDefaultValue(): void {
-    super._restoreDefaultValue();
-    // A form reset never reaches the input in the shadow root, which validates
-    // the forwarded `required` on its own.
-    this._inputRef.value?.['_resetValidationState']();
+  protected override get _ownedEditors(): (IgcInputComponent | undefined)[] {
+    return [this._inputRef.value];
   }
 
   //#endregion
@@ -1577,7 +1574,6 @@ export default class IgcComboComponent<
         .value=${this._displayValue}
         .disabled=${this.disabled}
         .required=${this.required}
-        .invalid=${this.invalid}
         .outlined=${this.outlined}
         .autofocus=${this.autofocus}
         ?readonly=${!this.singleSelect}

@@ -1607,8 +1607,6 @@ describe('Color picker', () => {
       const input = spec.element.renderRoot.querySelector<IgcInputComponent>(
         'igc-input[slot="anchor"]'
       )!;
-      const resetSpy = spy(input as any, 'formResetCallback');
-
       commitColorInput(input, '#bada55');
       await elementUpdated(spec.element);
       expect(spec.element.value).to.equal('#bada55');
@@ -1616,9 +1614,23 @@ describe('Color picker', () => {
       spec.reset();
       await elementUpdated(spec.element);
 
-      expect(resetSpy).calledOnce;
       expect(spec.element.value).to.equal('');
       expect(input.value).to.equal('');
+    });
+
+    it('shows the invalid state of the picker on the anchor input at once', async () => {
+      spec.setProperties({ mode: 'input' });
+      await elementUpdated(spec.element);
+
+      const input = spec.element.renderRoot.querySelector<IgcInputComponent>(
+        'igc-input[slot="anchor"]'
+      )!;
+
+      spec.element.invalid = true;
+      ValidityHelpers.hasInvalidStyles(input).to.be.true;
+
+      spec.element.invalid = false;
+      ValidityHelpers.hasInvalidStyles(input).to.be.false;
     });
 
     it('reflects disabled ancestor state', () => {

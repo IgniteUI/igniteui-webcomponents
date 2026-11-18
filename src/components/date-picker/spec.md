@@ -72,6 +72,7 @@
 |      15 | 2026-11-11 | The keys that an IME handles do nothing |
 |      16 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form, after the `keypress`; <kbd>Enter</kbd> in slotted content does not submit a second time |
 |      17 | 2026-11-18 | A clear is reported on blur also after an open and a close; one commit session holds the commit rules of both pickers |
+|      18 | 2026-11-18 | The inner editor shows only the invalid state of the picker, and reports the validity of the picker |
 
 ## Overview
 
@@ -441,6 +442,8 @@ name the control.
 - The value is submitted under `name`.
 - A form reset restores `defaultValue`, taken from the `value` attribute, and clears the invalid styles of the inner
   editor.
+- The inner editor shows the invalid state of the picker, and no invalid state of its own. So it does not show the
+  invalid styles when the focus moves from it to other content of the picker before the picker is invalid.
 - An invalid picker blocks submission; pressing <kbd>Enter</kbd> submits the owning form only when it is valid. The
   picker counts as one text field, and <kbd>Enter</kbd> submits as in a native text field (see the [input specification](../input/spec.md#form-integration)): through the
   default button, or from the only text field of a form with no submit button. A `keydown` or `keypress` listener on
@@ -763,7 +766,8 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 49. Is form associated, and does not participate in submission with an empty or invalid value.
 50. Participates in submission when the value adheres to the constraints.
 51. Resets to its default value on form reset, resets to a new default after a `setAttribute` call, and clears the
-    invalid styles of the inner editor on reset.
+    invalid styles of the inner editor on reset. The inner editor shows the invalid state of the picker at once, and
+    none of its own.
 52. Submits on <kbd>Enter</kbd> when valid, and does not when invalid. A real <kbd>Enter</kbd> submits once.
     <kbd>Enter</kbd> in a field in the `suffix` slot submits once, and on a button in the slot it does not submit.
 53. Reflects the disabled state of an ancestor `fieldset` or form.

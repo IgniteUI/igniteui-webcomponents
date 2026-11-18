@@ -187,6 +187,10 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   @query('[part="base"]', true)
   protected override readonly _popup!: HTMLDivElement | null;
 
+  protected override get _ownedEditors(): (IgcInputComponent | undefined)[] {
+    return [this._input];
+  }
+
   //#endregion
 
   //#region Public attributes and properties
@@ -682,7 +686,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
         label=${ifDefined(this.label)}
         .disabled=${this.disabled}
         .required=${this.required}
-        .invalid=${this.invalid}
         .outlined=${this.outlined}
         @click=${this._handleAnchorClick}
       >

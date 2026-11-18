@@ -43,6 +43,9 @@ export declare class BaseFormAssociatedElement {
   /** Whether the control counts as a text field for implicit submission. */
   protected get _blocksImplicitSubmission(): boolean;
 
+  /** The inner editors that take the invalid state, validity and form reset of this control. */
+  protected get _ownedEditors(): readonly (IgcFormControl | undefined)[];
+
   /**
    * Whether the control is disabled. A disabled control is not validated, and
    * the form does not submit its value.

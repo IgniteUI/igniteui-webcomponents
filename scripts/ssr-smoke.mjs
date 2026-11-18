@@ -71,6 +71,20 @@ for (const tag of tags.sort()) {
   }
 }
 
+/** Markup that sets state on the server, so it runs setters that a bare tag does not. */
+const fixtures = [
+  // The `invalid` setter shows the state on the editors of the picker.
+  '<igc-date-range-picker use-two-inputs invalid></igc-date-range-picker>',
+];
+
+for (const fixture of fixtures) {
+  try {
+    await collectResult(renderThunked(html`${unsafeStatic(fixture)}`));
+  } catch (error) {
+    failures.push(`${fixture}: ${firstLine(error)}`);
+  }
+}
+
 if (undefinedTags.length) {
   report.warn(
     `[SSR] Not defined by defineAllComponents(): ${undefinedTags.join(', ')}`
@@ -79,9 +93,11 @@ if (undefinedTags.length) {
 
 if (failures.length) {
   report.error(
-    `\n[SSR] ✖ ${failures.length} of ${tags.length} tags threw:\n${failures.map((failure) => `  - ${failure}`).join('\n')}\n`
+    `\n[SSR] ✖ ${failures.length} of ${tags.length + fixtures.length} renders threw:\n${failures.map((failure) => `  - ${failure}`).join('\n')}\n`
   );
   process.exit(1);
 }
 
-report.success(`[SSR] ✔ ${tags.length} tags rendered`);
+report.success(
+  `[SSR] ✔ ${tags.length} tags and ${fixtures.length} fixtures rendered`
+);

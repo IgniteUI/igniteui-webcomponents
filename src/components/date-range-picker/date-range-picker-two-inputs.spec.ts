@@ -21,10 +21,12 @@ import {
 } from '#internals/testing/form-testbed.spec.js';
 import { checkDatesEqual, isFocused } from '#internals/testing/helpers.spec.js';
 import {
+  simulateBlur,
   simulateClick,
   simulateInput,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
+import { ValidityHelpers } from '#internals/testing/validity-helpers.spec.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import type IgcDialogComponent from '../dialog/dialog.js';
@@ -366,15 +368,46 @@ describe('Date range picker - two inputs', () => {
   });
 
   describe('Validity of the editors', () => {
-    it('reports valid editors while the picker is pristine', async () => {
+    it('reports the picker validity also while the picker is pristine', async () => {
       picker.required = true;
       await elementUpdated(picker);
 
       expect(picker.checkValidity()).to.be.false;
 
       for (const editor of dateTimeInputs) {
-        expect(editor.checkValidity()).to.be.true;
-        expect(editor.reportValidity()).to.be.true;
+        expect(editor.checkValidity()).to.be.false;
+        expect(editor.reportValidity()).to.be.false;
+      }
+    });
+
+    it('shows no invalid state on an editor before the picker', async () => {
+      // A blur of the start editor alone, as when the focus moves to the end editor.
+      picker.min = today.native;
+      picker.value = {
+        start: today.add('day', -1).native,
+        end: tomorrow.native,
+      };
+      await elementUpdated(picker);
+
+      const [start] = dateTimeInputs;
+      simulateBlur(start.renderRoot.querySelector('input')!);
+      await elementUpdated(start);
+
+      ValidityHelpers.hasInvalidStyles(picker).to.be.false;
+      ValidityHelpers.hasInvalidStyles(start).to.be.false;
+    });
+
+    it('shows the invalid state of the picker on both editors at once', () => {
+      picker.invalid = true;
+
+      for (const editor of dateTimeInputs) {
+        ValidityHelpers.hasInvalidStyles(editor).to.be.true;
+      }
+
+      picker.invalid = false;
+
+      for (const editor of dateTimeInputs) {
+        ValidityHelpers.hasInvalidStyles(editor).to.be.false;
       }
     });
 

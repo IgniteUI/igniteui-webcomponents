@@ -102,6 +102,7 @@
 |      29 | 2026-11-13 | Review fixes: primitive records show as selected again; any record of a repeated value selects its first record, also in a commit, and a toggle option lists one record for each value; a `value` array that changed in place and is set again syncs the selection; a new `displayKey` or `valueKey` updates the input text; a new `data` filters by the current text of the items that keep their records and indexes a key that changed in place; a new `valueKey` merges values to their first records and drops the same-value sync; in single selection, a framework that writes back the cleared `value` keeps the typed text, and a blur that clears the input lets the same selection show its text again |
 |      30 | 2026-11-16 | The active option stays on its item when a search, a selection or a new `data` changes the list, and the list scrolls to it; after the combo leaves the document and comes back, no option is active; in single selection, a selection sends the `igcSearchInput` of the cleared text before the selection changes; Tab out of the combo drops the pending selection of the confirm mode; the `Component` test scenarios follow the groups of the spec file |
 |      31 | 2026-11-18 | A change of the `value` attribute keeps the combo pristine, as for a native control |
+|      32 | 2026-11-18 | The input shows only the invalid state of the combo, and reports the validity of the combo |
 
 ## Overview
 
@@ -400,6 +401,7 @@ or host ARIA names it.
 
 - The form submits the selection under `name`.
 - A form reset restores `defaultValue`, and removes the invalid styles of the control and its input.
+- The input shows the invalid state of the combo, and no invalid state of its own.
 - An invalid control stops the submission.
 - In single selection, <kbd>Enter</kbd> with the list closed submits the form, as in a native input with a list. The
   [rules of the input](../input/spec.md#form-integration) apply, and the combo counts as a text field. While the list is
@@ -1013,6 +1015,7 @@ the shadow DOM through `getComboDOM()`.
 ### Form integration tests
 
 53. The combo is form associated, submits its selection, and resets with the form, also the input of single selection.
+    The input shows the invalid state of the combo at once.
 54. It shows the disabled state of an ancestor `fieldset`.
 55. It obeys the required and custom constraints, and passes the accessibility audit while a submit fails on the
     required constraint.

@@ -179,7 +179,7 @@ describe('Combo', () => {
       const target =
         spec.element.renderRoot.querySelector<IgcInputComponent>('#target')!;
 
-      simulateBlur(target.renderRoot.querySelector('input')!);
+      simulateBlur(spec.element);
       await elementUpdated(spec.element);
       ValidityHelpers.hasInvalidStyles(target).to.be.true;
 
@@ -202,6 +202,17 @@ describe('Combo', () => {
       await elementUpdated(spec.element);
 
       expect(target.value).to.equal('Sofia');
+    });
+
+    it('shows the invalid state of the combo on the main input at once', () => {
+      const target =
+        spec.element.renderRoot.querySelector<IgcInputComponent>('#target')!;
+
+      spec.element.invalid = true;
+      ValidityHelpers.hasInvalidStyles(target).to.be.true;
+
+      spec.element.invalid = false;
+      ValidityHelpers.hasInvalidStyles(target).to.be.false;
     });
 
     it('is accessible while a submit fails', async () => {
