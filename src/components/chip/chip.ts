@@ -1,6 +1,6 @@
 import { ChipResourceStringsEN } from 'igniteui-i18n-core';
-import { html, LitElement, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
+import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import {
   ariaBindings,
@@ -21,6 +21,7 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
+import { addSafeEventListeners } from '#internals/utils/events.js';
 import { all } from '#themes/chip/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
@@ -35,6 +36,14 @@ export interface IgcChipComponentEventMap {
 }
 
 const Slots = setSlots('start', 'prefix', 'suffix', 'end');
+
+const STYLE_PROPERTIES = [
+  'selected',
+  'selectable',
+  'variant',
+  'outlined',
+  'disabled',
+] as const;
 
 const i18n = {
   defaultEN: ChipResourceStringsEN,
@@ -80,6 +89,19 @@ export default class IgcChipComponent extends I18nMixin(
 
   private readonly _removePartRef = createRef<HTMLSlotElement>();
   private readonly _slots = addSlotController(this, { slots: Slots });
+
+  private _userSelection = false;
+
+  /**
+   * Turns off the transitions after a change from code, so that an element
+   * that a virtualized list reuses does not animate.
+   */
+  @state()
+  private _instant = true;
+
+  /** Keeps the selection indicator rendered during its exit. */
+  @state()
+  private _leaving = false;
 
   /**
    * Whether the chip is disabled.
@@ -145,14 +167,35 @@ export default class IgcChipComponent extends I18nMixin(
       skip: () => !this._removePartRef.value,
       bindingDefaults: { triggers: ['keyup'] },
     }).setActivateHandler(this._handleRemove);
+
+    addSafeEventListeners(
+      this,
+      ['pointerenter', 'focusin'],
+      this._handleInteraction
+    );
   }
 
-  private _hasSlotted(...slots: InferSlotNames<typeof Slots>[]): boolean {
-    return slots.some((slot) => this._slots.hasAssignedElements(slot));
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    if (STYLE_PROPERTIES.some((name) => changed.has(name))) {
+      this._instant = !this._userSelection;
+      this._leaving = this._userSelection && !this.selected;
+    }
+    this._userSelection = false;
+  }
+
+  protected override updated(changed: PropertyValues): void {
+    if (changed.has('_leaving') && this._leaving) {
+      this._endExit();
+    }
+  }
+
+  protected _handleInteraction(): void {
+    this._instant = false;
   }
 
   protected _handleSelect(): void {
     if (this.selectable) {
+      this._userSelection = true;
       this.selected = !this.selected;
       this.emitEvent('igcSelect', { detail: this.selected });
     }
@@ -161,6 +204,21 @@ export default class IgcChipComponent extends I18nMixin(
   protected _handleRemove(event: Event): void {
     event.stopPropagation();
     this.emitEvent('igcRemove');
+  }
+
+  private _hasSlotted(...slots: InferSlotNames<typeof Slots>[]): boolean {
+    return slots.some((slot) => this._slots.hasAssignedElements(slot));
+  }
+
+  private async _endExit(): Promise<void> {
+    const indicator = this.renderRoot.querySelector('[data-indicator]');
+    const exit = indicator?.getAnimations() ?? [];
+
+    await Promise.allSettled(exit.map(({ finished }) => finished));
+
+    if (!this.selected) {
+      this._leaving = false;
+    }
   }
 
   /* alternateName: focusComponent */
@@ -178,16 +236,22 @@ export default class IgcChipComponent extends I18nMixin(
   }
 
   protected _renderPrefix() {
-    const showSelected = this.selectable && this.selected;
+    const hasPrefix = this._hasSlotted('start', 'prefix');
+    const hasIndicator = this.selectable && (this.selected || this._leaving);
 
     return html`
-      <span
-        part="prefix"
-        ?hidden=${!showSelected && !this._hasSlotted('start', 'prefix')}
-      >
+      <span part="prefix" ?hidden=${!hasIndicator && !hasPrefix}>
         ${
-          showSelected
-            ? renderSlottedIcon({ slot: 'select', icon: 'selected' })
+          hasIndicator
+            ? html`
+                <span
+                  data-indicator
+                  ?data-leaving=${this._leaving}
+                  ?data-gap=${hasPrefix}
+                >
+                  ${renderSlottedIcon({ slot: 'select', icon: 'selected' })}
+                </span>
+              `
             : nothing
         }
         <slot name="start"></slot>
@@ -233,7 +297,7 @@ export default class IgcChipComponent extends I18nMixin(
     const ariaPressed = this.selectable ? this.selected.toString() : null;
 
     return html`
-      <div part="base">
+      <div part="base" ?data-instant=${this._instant}>
         <button
           ${ariaBindings({ ...hostAria(this), ...hostDisclosure(this) })}
           part="action"
