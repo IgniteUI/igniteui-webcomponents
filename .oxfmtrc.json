@@ -15,6 +15,7 @@
     "**/*.md",
     "**/*.json",
     "**/*.yml",
-    "src/**/*.css.ts"
+    "src/**/*.css.ts",
+    "src/components/rich-text-editor/design/*.html"
   ]
 }
