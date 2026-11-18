@@ -285,8 +285,12 @@ Before you write lifecycle code, look for a controller that already does it:
 For pointer resizing and dragging, use the `resizable()` and `draggable()` directives from
 `#internals/directives/`.
 
-Store a controller in a `readonly` field that is initialized inline. The exceptions are
-`addThemingController` and `addKeybindings`, which you call in the constructor:
+Store a controller in a `readonly` field that is initialized inline. Call these controllers in the
+constructor instead: `addThemingController`, `addKeybindings`, and a controller that the component
+never reads after it adds it, such as `addAriaProjector` or the combo navigation. TypeScript rejects
+a private field that is never read.
+
+A controller in a field:
 
 ```ts
 private readonly _slots = addSlotController(this, {

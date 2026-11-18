@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `dot-scale` sets the size of the data modules, from 0.7 to 1 of their cell, to leave a gap between them. The corners keep their full size.
 
 ### Changed
+- #### Combo
+  - A change of `showSelectAll` or `groupSelection` keeps the active item. Before, no option was active after the change. When the change removes the active select-all option, or an active group header is no longer an option, no option is active.
 - #### Date range picker
   - In dialog mode, a range that you select stays unconfirmed when code closes the picker with `hide()`, `toggle()` or `open`. After a new open, Done emits `igcChange` for it, and Cancel or Escape restores the range from before it. Before, the next open kept the range without an `igcChange`.
 - #### Library
@@ -28,6 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A value set from code while the focus is in the picker no longer emits `igcChange` when the focus leaves.
   - In input mode, the text input no longer shows the invalid styles when the focus moves from it to the color button. The text input shows the invalid state of the picker, together with its validation message.
 - #### Combo
+  - A closed list has no active option. Before, when code closed the list and opened it again, the old option was still active. When an app canceled `igcOpening` while the user typed, Arrow Down opened the list on the second match.
   - In single selection, the input no longer shows the invalid styles when the focus moves from it to slotted content of the combo. The input shows the invalid state of the combo, together with its validation message.
 - #### Date picker, Date range picker
   - An editor no longer shows the invalid styles when the focus moves from it to other content of the picker, such as the other editor of a date range picker. The editors show the invalid state of the picker, together with its validation message.

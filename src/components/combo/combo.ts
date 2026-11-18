@@ -52,6 +52,7 @@ import type {
 import IgcVirtualScrollComponent from '../virtualization/virtualization.js';
 import IgcComboHeaderComponent from './combo-header.js';
 import IgcComboItemComponent from './combo-item.js';
+import { ComboActiveOption } from './controllers/active-option.js';
 import { ComboDataRequests } from './controllers/data-requests.js';
 import { DataState, isItemRecord } from './controllers/data.js';
 import { ComboNavigationController } from './controllers/navigation.js';
@@ -246,28 +247,14 @@ export default class IgcComboComponent<
   @query('[part="list-wrapper"]', true)
   protected override readonly _popup!: HTMLDivElement | null;
 
-  // Before the navigation: its hostUpdate reads the records that this one builds.
+  // Before the active option: its hostUpdate reads the records that this one builds.
   private readonly _state = new DataState<T>(this);
   private readonly _selection = new ComboSelection<T>(this);
-  private readonly _navigation = new ComboNavigationController(
+  private readonly _activeOption = new ComboActiveOption<T>(
     this,
     this._state,
-    {
-      input: this._inputRef,
-      search: this._searchRef,
-      list: this._listRef,
-      // The flattened query also returns the default footer buttons.
-      slotted: (slot) =>
-        this._slots.getAssignedElements(slot, { flatten: true }),
-      interactions: {
-        show: () => this._show(true),
-        hide: (trigger) => this._close(trigger),
-        toggleSelection: (index) => this._selectAt(index, true),
-        hasPending: () => this._selection.pending !== undefined,
-        commit: (trigger, index) => this._commitAndClose(trigger, index),
-        clearSelection: () => this._clearSelection(),
-      },
-    }
+    // The rows re-render only on a list update.
+    () => this._listRef.value?.requestUpdate()
   );
   private readonly _dataRequests = new ComboDataRequests(
     this,
@@ -346,7 +333,6 @@ export default class IgcComboComponent<
 
       if (host.hasUpdated) {
         host._writeFrom('normalize', () => {
-          host._navigation.active = -1;
           host._searchTerm = '';
           host._formValue.setValueAndFormState(host.value);
         });
@@ -651,6 +637,24 @@ export default class IgcComboComponent<
   constructor() {
     super();
 
+    // It adds itself to the host.
+    new ComboNavigationController(this, this._activeOption, {
+      input: this._inputRef,
+      search: this._searchRef,
+      list: this._listRef,
+      // The flattened query also returns the default footer buttons.
+      slotted: (slot) =>
+        this._slots.getAssignedElements(slot, { flatten: true }),
+      interactions: {
+        show: () => this._show(true),
+        hide: (trigger) => this._close(trigger),
+        toggleSelection: (index) => this._selectAt(index, true),
+        hasPending: () => this._selection.pending !== undefined,
+        commit: (trigger, index) => this._commitAndClose(trigger, index),
+        clearSelection: () => this._clearSelection(),
+      },
+    });
+
     this._themes = addThemingController(this, all);
 
     // Projects combobox semantics onto the native input. `aria-activedescendant`
@@ -672,15 +676,6 @@ export default class IgcComboComponent<
   protected override willUpdate(props: PropertyValues<this>): void {
     super.willUpdate(props);
 
-    // The select-all option moves the other records by one, and an active
-    // group header can stop being an option.
-    if (
-      (props.has('showSelectAll') || props.has('groupSelection')) &&
-      this.hasUpdated
-    ) {
-      this._navigation.active = -1;
-    }
-
     // The list keeps the same `_itemRenderer`, so a new template must re-render it.
     if (props.has('itemTemplate') || props.has('groupHeaderTemplate')) {
       this._listRef.value?.requestUpdate();
@@ -701,7 +696,7 @@ export default class IgcComboComponent<
           this._listRef.value
         )
       ) {
-        this._navigation.active = -1;
+        this._activeOption.reset();
       }
     }
 
@@ -755,7 +750,7 @@ export default class IgcComboComponent<
   //#region Open and close
 
   protected override async _show(emitEvent = false): Promise<boolean> {
-    const [canOpen, _] = await Promise.all([
+    const [canOpen] = await Promise.all([
       super._show(emitEvent),
       this.updateComplete,
     ]);
@@ -777,14 +772,11 @@ export default class IgcComboComponent<
     emitEvent = false,
     detail?: IgcComboClosingEventArgs
   ): Promise<boolean> {
-    const [canClose, _] = await Promise.all([
+    // `hide()` resolves after the closed list renders.
+    const [canClose] = await Promise.all([
       super._hide(emitEvent, detail),
       this.updateComplete,
     ]);
-
-    if (canClose) {
-      this._navigation.active = -1;
-    }
 
     return canClose;
   }
@@ -1100,7 +1092,7 @@ export default class IgcComboComponent<
       : { records: items, selecting: true };
 
     // First, as a change listener can build new records.
-    this._navigation.active = index;
+    this._activeOption.set(index);
     this._applySelection(
       records,
       selecting ? 'selection' : 'deselection',
@@ -1163,15 +1155,10 @@ export default class IgcComboComponent<
       this._emitSearchInput(event.detail);
     }
 
-    // The update applies a new search text to the records before the active
-    // option changes.
-    await this.updateComplete;
+    this._activeOption.search();
 
-    // Remote results come later, so no option of the old results becomes active.
-    this._navigation.active =
-      this.filteringOptions.mode === 'remote'
-        ? -1
-        : this._state.firstOptionIndex;
+    // The deselection comes after the update of the typed text.
+    await this.updateComplete;
     this._clearSingleSelection();
   }
 
@@ -1245,7 +1232,7 @@ export default class IgcComboComponent<
   private _handleClearIconClick(event: PointerEvent): void {
     event.stopPropagation();
     this._clearSelection();
-    this._navigation.active = -1;
+    this._activeOption.reset();
   }
 
   private _handleApply(): void {
@@ -1405,7 +1392,7 @@ export default class IgcComboComponent<
   }
 
   private get _activeDescendant(): string | undefined {
-    const { active } = this._navigation;
+    const { active } = this._activeOption;
     return active > -1 ? this._itemId(active) : undefined;
   }
 
@@ -1435,7 +1422,7 @@ export default class IgcComboComponent<
       );
     }
 
-    const active = this._navigation.active === index;
+    const active = this._activeOption.active === index;
 
     const selected = this._selection.has(item.value);
     // One template for both, so a row keeps its element when its item loads.
@@ -1484,7 +1471,7 @@ export default class IgcComboComponent<
       this._selection.version
     );
     const all = state === true;
-    const active = this._navigation.active === index;
+    const active = this._activeOption.active === index;
 
     return html`
       <igc-combo-item
