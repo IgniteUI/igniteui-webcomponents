@@ -20,6 +20,7 @@ import {
   type City,
   cities,
   comboStable,
+  expectActiveOption,
   openComboPopover,
   items,
   layoutComplete,
@@ -130,20 +131,12 @@ describe('Combo', () => {
   const filterCombo = async (term: string) => {
     dom.input.dispatchEvent(new CustomEvent('igcInput', { detail: term }));
     await elementUpdated(combo);
-    // `_handleMainInput` sets the active index after its own `updateComplete`.
+    // `_handleMainInput` clears the single selection after its own `updateComplete`.
     await elementUpdated(combo);
     await layoutComplete(combo);
   };
 
-  /** The text of the active option, which the list also names, or none. */
-  const expectActive = (name?: string) => {
-    const item = dom.list.querySelector<HTMLElement>('[active]');
-
-    expect(item?.textContent?.trim()).to.equal(name);
-    expect(dom.list.getAttribute('aria-activedescendant')).to.equal(
-      item?.id ?? null
-    );
-  };
+  const expectActive = (name?: string) => expectActiveOption(combo, name);
 
   const searchFor = async (detail: string) => {
     dom.searchInput.dispatchEvent(new CustomEvent('igcInput', { detail }));
@@ -1485,6 +1478,27 @@ describe('Combo', () => {
         expect(eventSpy).not.calledWith('igcChange');
       });
 
+      it('has no active option after code closes the list and opens it again', async () => {
+        for (const singleSelect of [false, true]) {
+          combo.singleSelect = singleSelect;
+          await openComboPopover(combo);
+          simulateKeyboard(dom.list, arrowDown);
+          await comboStable(combo);
+          expectActive('Sofia');
+
+          combo.open = false;
+          await comboStable(combo);
+          expectActive();
+
+          combo.open = true;
+          await comboStable(combo);
+          expectActive();
+
+          combo.open = false;
+          await comboStable(combo);
+        }
+      });
+
       it('keeps the active option on its item when a search changes the list', async () => {
         await openComboPopover(combo);
         simulateKeyboard(dom.list, arrowDown, 4);
@@ -1681,6 +1695,44 @@ describe('Combo', () => {
         await elementUpdated(combo);
 
         expect(firstOf(combo.value)).to.equal('BG01');
+      });
+
+      it('activates the first match in the update of the typed text', async () => {
+        combo.singleSelect = true;
+        await elementUpdated(combo);
+        await openComboPopover(combo);
+
+        dom.input.dispatchEvent(new CustomEvent('igcInput', { detail: 'o' }));
+        // `elementUpdated` would also wait for a second update.
+        await combo.updateComplete;
+        const early = dom.list.getAttribute('aria-activedescendant');
+
+        await comboStable(combo);
+
+        expectActive('Sofia');
+        expect(early).to.equal(dom.list.getAttribute('aria-activedescendant'));
+      });
+
+      it('has no active option while an app keeps the list closed during typing', async () => {
+        combo.singleSelect = true;
+        await elementUpdated(combo);
+        combo.addEventListener(
+          'igcOpening',
+          (event: CustomEvent) => event.preventDefault(),
+          { once: true }
+        );
+
+        await filterCombo('o');
+
+        expect(combo.open).to.be.false;
+        expectActive();
+
+        // The list opens on the first match, not on the one after it.
+        simulateKeyboard(dom.input, arrowDown);
+        await comboStable(combo);
+
+        expect(combo.open).to.be.true;
+        expectActive('Sofia');
       });
 
       it('leaves the Enter that commits an IME composition in the main input to the IME', async () => {

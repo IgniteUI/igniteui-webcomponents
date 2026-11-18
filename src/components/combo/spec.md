@@ -103,6 +103,7 @@
 |      30 | 2026-11-16 | The active option stays on its item when a search, a selection or a new `data` changes the list, and the list scrolls to it; after the combo leaves the document and comes back, no option is active; in single selection, a selection sends the `igcSearchInput` of the cleared text before the selection changes; Tab out of the combo drops the pending selection of the confirm mode; the `Component` test scenarios follow the groups of the spec file |
 |      31 | 2026-11-18 | A change of the `value` attribute keeps the combo pristine, as for a native control |
 |      32 | 2026-11-18 | The input shows only the invalid state of the combo, and reports the validity of the combo |
+|      33 | 2026-11-18 | A closed list has no active option, also after `open` changes from code or an app cancels the opening; a change of `showSelectAll` or `groupSelection` keeps the active option on its item; in single selection, the first match is active in the update of the typed text |
 
 ## Overview
 
@@ -548,11 +549,17 @@ While the list is open:
 
 In multiple selection, the search input filters the list while it has the focus.
 
-When a search, a selection or a new `data` changes the list, the active option stays on its item (the same object, or
-the same `valueKey` value) and the list scrolls to it, or no option is active when the list no longer shows it. Without
-`valueKey`, a copy of an item is another item, as for the selection. New remote results start with no active option.
-An active placeholder keeps its place, so the option that comes there becomes active. Arrow Up without an active
-option acts as from the first option.
+A search, a selection, a new `data`, and a change of `showSelectAll` or `groupSelection` change the list. Then the
+active option stays on its item (the same object, or the same `valueKey` value), and the list scrolls to it. When the
+list no longer shows the item, or the item is no longer an option, no option is active. Without `valueKey`, a copy of
+an item is another item, as for the selection. New remote results start with no active option. An active placeholder
+keeps its place, so the option that comes there becomes active. Arrow Up without an active option acts as from the
+first option.
+
+A closed list has no active option, also when `open` changes from code. A change of `singleSelect` and the clear icon
+also leave no option active. In single selection, the text in the main input makes its first match active in the same
+update that filters the list. When an app cancels `igcOpening` while the user types, the list stays closed with no
+active option, and Arrow Down then opens it on the first match.
 
 A key that an IME handles does nothing in the combo, for example the Enter that commits a composition or the Escape
 that cancels it.
@@ -783,7 +790,7 @@ The files share their data and helpers through
 `createFormAssociatedTestBed`, `runValidationContainerTests`, `runExternalLabelAssociationTests`,
 `runAriaProjectionTests`, `runFocusBeforeRenderTests` and the `simulate*` helpers from
 [`src/internals/testing`](../../internals/testing). The unit specs in [`controllers`](./controllers) test the data
-state, the data requests and the selection model without a browser fixture.
+state, the data requests, the selection model and the active option without a browser fixture.
 
 ### Component
 
@@ -833,15 +840,18 @@ the shadow DOM through `getComboDOM()`.
 #### Keyboard navigation
 
 11. The keyboard navigation of the list, also Arrow Down at the end of the matches. After the combo leaves the
-    document and comes back, no option is active. A search or a new `data` with copies keeps the active option on its
-    item, also the select-all option or a group header, and the list scrolls to it. A search that hides it leaves none
-    active, and Arrow Up then acts as from the first option.
+    document and comes back, or code closes the list and opens it again in either selection mode, no option is
+    active. A search or a new `data` with copies keeps the active option on its item, also the select-all option or a
+    group header, and the list scrolls to it. A search that hides it leaves none active, and Arrow Up then acts as from
+    the first option.
 
 #### Single selection
 
 12. Enter, Tab and Escape in single selection, and the main input that filters the list. The Enter of an IME
     composition in the main input does not select an option. A Tab or a click outside after a search keeps a valid
-    state (issue 2221). A selection from a search keeps the active option on the selected item.
+    state (issue 2221). A selection from a search keeps the active option on the selected item. The first match is
+    active in the update of the typed text. The list has no active option while an app keeps it closed during
+    typing.
 
 #### Grouping and templates
 
@@ -966,7 +976,8 @@ the shadow DOM through `getComboDOM()`.
     indeterminate with the `indeterminate` part. A click then selects only the other shown items. A canceled `igcChange` keeps the selection. A new `value`
     while the list is open updates the option and the items.
 39. Home reaches the option, Space toggles it, and Arrow Up from it moves to the search input. A change of
-    `showSelectAll` clears the active option. A click on an item without a value selects only that item.
+    `showSelectAll` keeps the active item. When the change removes the active option, no option is active. A click on
+    an item without a value selects only that item.
 40. With `totalItemCount` in remote mode, the option does not change the requests or the positions of the
     placeholders. The selection methods select only the loaded items.
 
