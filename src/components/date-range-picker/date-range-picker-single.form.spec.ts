@@ -124,6 +124,18 @@ describe('Date Range Picker Single Input - Form integration', () => {
       expect(input.invalid).to.be.false;
     });
 
+    it('shows the invalid state of the picker on the inner editor at once', () => {
+      const input = spec.element.renderRoot.querySelector(
+        IgcDateRangeInputComponent.tagName
+      )!;
+
+      spec.element.invalid = true;
+      ValidityHelpers.hasInvalidStyles(input).to.be.true;
+
+      spec.element.invalid = false;
+      ValidityHelpers.hasInvalidStyles(input).to.be.false;
+    });
+
     it('should reset to the new default value after setAttribute() call', async () => {
       const date1 = today.add('day', -2);
       const date2 = today.add('day', 2);

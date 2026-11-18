@@ -26,7 +26,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Color picker
   - A color change of the user marks the picker touched, so a change that fails validation shows the invalid styles at once.
   - A value set from code while the focus is in the picker no longer emits `igcChange` when the focus leaves.
+  - In input mode, the text input no longer shows the invalid styles when the focus moves from it to the color button. The text input shows the invalid state of the picker, together with its validation message.
+- #### Combo
+  - In single selection, the input no longer shows the invalid styles when the focus moves from it to slotted content of the combo. The input shows the invalid state of the combo, together with its validation message.
 - #### Date picker, Date range picker
+  - An editor no longer shows the invalid styles when the focus moves from it to other content of the picker, such as the other editor of a date range picker. The editors show the invalid state of the picker, together with its validation message.
   - When you clear the value and then open and close the picker before you leave it, the picker now emits `igcChange` for the clear.
   - The date range picker emits `igcChange` when you clear it in dialog mode or in non-editable mode and leave it. The detail is `null`.
   - A predefined or custom range chip keeps the date range picker open when `keepOpenOnSelect` is set.

@@ -199,7 +199,7 @@ export abstract class IgcDatePickerBaseComponent<
   protected abstract get _value(): T | null;
   protected abstract set _value(value: T | null);
 
-  protected abstract get _editors(): (PickerEditor | undefined)[];
+  protected abstract override get _ownedEditors(): (PickerEditor | undefined)[];
 
   protected abstract get _hasValue(): boolean;
 
@@ -507,29 +507,19 @@ export abstract class IgcDatePickerBaseComponent<
       .set(escapeKey, this._onEscapeKey, { when: () => this.open });
   }
 
-  protected override formResetCallback(): void {
-    super.formResetCallback();
-
-    // The browser never resets the inner editors, which are outside the form.
-    // Without this, a touched editor keeps its invalid styles after a reset.
-    for (const editor of this._editors) {
-      editor?.['formResetCallback']();
-    }
-  }
-
   //#endregion
 
   //#region Internal API
 
   /** The editors take the clear as a user edit and report it on blur. */
   protected _clearEditors(): void {
-    for (const editor of this._editors) {
+    for (const editor of this._ownedEditors) {
       editor?._clearAsEdit();
     }
   }
 
   protected _focusInput(): void {
-    firstOf(this._editors)?.focus();
+    firstOf(this._ownedEditors)?.focus();
   }
 
   protected override _formatValidationValue(

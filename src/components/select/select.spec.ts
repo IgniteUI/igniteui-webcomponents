@@ -2165,6 +2165,18 @@ describe('Select', () => {
       spec.assertSubmitHasValue(spec.element.value);
     });
 
+    it('shows the invalid state of the select on the inner input at once', () => {
+      const inner = spec.element.renderRoot.querySelector(
+        IgcInputComponent.tagName
+      )!;
+
+      spec.element.invalid = true;
+      ValidityHelpers.hasInvalidStyles(inner).to.be.true;
+
+      spec.element.invalid = false;
+      ValidityHelpers.hasInvalidStyles(inner).to.be.false;
+    });
+
     it('is correctly reset of form reset with selection through attribute on item', async () => {
       const bed = createFormAssociatedTestBed<IgcSelectComponent>(
         html`<igc-select name="with-item-selection">

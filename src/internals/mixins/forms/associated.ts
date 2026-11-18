@@ -1,7 +1,10 @@
-import { isServer, type LitElement } from 'lit';
+import { isServer, type LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { trackLabels } from '../../controllers/aria-projection.js';
-import { addInternalsController } from '../../controllers/internals.js';
+import {
+  addInternalsController,
+  internalsOf,
+} from '../../controllers/internals.js';
 import { enterKey, isComposingKey, isKey } from '../../controllers/keys.js';
 import { getHostLocale } from '../../i18n/i18n-controller.js';
 import {
@@ -19,12 +22,23 @@ import {
   type FormAssociatedCheckboxElementInterface,
   type FormAssociatedElementInterface,
   type FormValueType,
+  type IgcFormControl,
   InternalInvalidEvent,
   InternalResetEvent,
   type WriteOrigin,
 } from './types.js';
 
 const INVALID_STATE = 'ig-invalid';
+
+type EditorOwner = Pick<
+  FormAssociatedElementInterface,
+  'invalid' | 'checkValidity' | 'reportValidity'
+>;
+
+/** The owner of each owned editor, see `_ownedEditors`. */
+const editorOwners = new WeakMap<Element, EditorOwner>();
+
+const noEditors: readonly (IgcFormControl | undefined)[] = [];
 
 /**
  * The event emitter of the host. This mixin cannot see the event-emitter
@@ -213,7 +227,17 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     /** The message is built on read, so it follows the locale. */
     private __failedValidator?: Validator;
 
+    private get __owner(): EditorOwner | undefined {
+      return editorOwners.get(this);
+    }
+
     private get _shouldApplyStyles(): boolean {
+      const owner = this.__owner;
+
+      if (owner) {
+        return owner.invalid;
+      }
+
       if (this._isExternalInvalid) {
         return true;
       }
@@ -237,6 +261,11 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     /** Whether the control counts as a text field for implicit submission. */
     protected get _blocksImplicitSubmission(): boolean {
       return false;
+    }
+
+    /** The inner editors that take the invalid state, validity and form reset of this control. */
+    protected get _ownedEditors(): readonly (IgcFormControl | undefined)[] {
+      return noEditors;
     }
 
     //#endregion
@@ -339,6 +368,18 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       this._validate();
     }
 
+    protected override update(changedProperties: PropertyValues): void {
+      super.update(changedProperties);
+
+      // Only a render can add an owned editor, and no property tells which one.
+      for (const editor of this._ownedEditors) {
+        if (editor && !editorOwners.has(editor)) {
+          editorOwners.set(editor, this);
+          internalsOf(editor)?.setState(INVALID_STATE, this._shouldApplyStyles);
+        }
+      }
+    }
+
     //#endregion
 
     //#region Labels
@@ -434,7 +475,17 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     }
 
     private _setInvalidStyles(): void {
-      this._internals.setState(INVALID_STATE, this._shouldApplyStyles);
+      const invalid = this._shouldApplyStyles;
+      this._internals.setState(INVALID_STATE, invalid);
+
+      // On the server, a `@queryAll` editor getter would need a document.
+      if (!isServer) {
+        for (const editor of this._ownedEditors) {
+          if (editor) {
+            internalsOf(editor)?.setState(INVALID_STATE, invalid);
+          }
+        }
+      }
     }
 
     private __runValidators(): {
@@ -508,7 +559,7 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       this._invalid = isInvalidControl(this);
 
       if (this._invalid) {
-        // The validation container and some inner editors render `invalid`.
+        // The validation container renders `invalid`.
         this.requestUpdate();
       }
 
@@ -664,6 +715,10 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       this._touched = false;
       this._invalid = false;
       this._isExternalInvalid = false;
+      // The browser never resets the editors, which are outside of the form.
+      for (const editor of this._ownedEditors) {
+        editor?.['_resetValidationState']();
+      }
       this._setInvalidStyles();
       emitInternalFormEvent(this, InternalResetEvent);
     }
@@ -678,6 +733,12 @@ function BaseFormAssociated<T extends LitElementConstructor>(
      * the message of the browser. Returns `true` when the control is valid.
      */
     public reportValidity(): boolean {
+      const owner = this.__owner;
+
+      if (owner) {
+        return owner.reportValidity();
+      }
+
       const state = this._reportValidity();
 
       if (!state) {
@@ -701,6 +762,12 @@ function BaseFormAssociated<T extends LitElementConstructor>(
      * `true` when the control is valid.
      */
     public checkValidity(): boolean {
+      const owner = this.__owner;
+
+      if (owner) {
+        return owner.checkValidity();
+      }
+
       this._isInternalValidation = true;
       const state = this._internals.checkValidity();
       this._invalid = !state;

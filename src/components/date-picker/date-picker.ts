@@ -258,7 +258,10 @@ export default class IgcDatePickerComponent extends I18nMixin(
     return this._input ?? null;
   }
 
-  protected override get _editors(): IgcDateTimeInputComponent[] {
+  protected override get _ownedEditors(): (
+    | IgcDateTimeInputComponent
+    | undefined
+  )[] {
     return [this._input];
   }
 
@@ -438,7 +441,6 @@ export default class IgcDatePickerComponent extends I18nMixin(
         .placeholder=${this.placeholder}
         .min=${this.min}
         .max=${this.max}
-        .invalid=${this.invalid}
         @igcChange=${this._handleInputChangeEvent}
         @igcInput=${this._handleInputEvent}
         @keydown=${this._handleEnterKey}

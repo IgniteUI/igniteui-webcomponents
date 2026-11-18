@@ -258,7 +258,7 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   @query(IgcDateRangeInputComponent.tagName)
   private readonly _input!: IgcDateRangeInputComponent;
 
-  protected override get _editors(): PickerEditor[] {
+  protected override get _ownedEditors(): (PickerEditor | undefined)[] {
     return this.useTwoInputs ? Array.from(this._inputs) : [this._input];
   }
 
@@ -480,18 +480,15 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   }
 
   protected override update(changedProperties: PropertyValues<this>): void {
-    // The render swaps the editors, so the range and validity are re-applied after it.
-    if (changedProperties.has('useTwoInputs')) {
-      this._syncEditors();
-    } else if (changedProperties.has('mode')) {
+    // The render swaps the editors, so the range is applied again after it.
+    if (
+      changedProperties.has('useTwoInputs') ||
+      changedProperties.has('mode')
+    ) {
       this._syncCalendarRange();
     }
 
     super.update(changedProperties);
-  }
-
-  protected override firstUpdated() {
-    this._delegateInputsValidity();
   }
 
   protected override formResetCallback() {
@@ -592,11 +589,6 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     this._setCalendarRangeValues();
   }
 
-  private async _syncEditors(): Promise<void> {
-    await this._syncCalendarRange();
-    this._delegateInputsValidity();
-  }
-
   /** Builds the range from both editors. The other editor is read through its uncommitted draft. */
   private _getUpdatedDateRange(
     input: IgcDateTimeInputComponent,
@@ -607,19 +599,6 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     return input === startInput
       ? { start: newValue, end: endInput?._uncommittedValue ?? null }
       : { start: startInput?._uncommittedValue ?? null, end: newValue };
-  }
-
-  /**
-   * Delegates the editor validity methods to the picker range validation.
-   * The pristine check stops a form reset from starting a validation.
-   */
-  private _delegateInputsValidity() {
-    for (const input of this._editors) {
-      input.checkValidity = () =>
-        !this._isPristine ? this.checkValidity() : true;
-      input.reportValidity = () =>
-        !this._isPristine ? this.reportValidity() : true;
-    }
   }
 
   /** Shows a range in the calendar. The input handlers pass the draft, so the calendar follows the typing. */
@@ -757,7 +736,6 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
         .min=${this._min}
         .max=${this._max}
         label=${label}
-        ?invalid=${live(this.invalid)}
         @igcChange=${this._handleInputChange}
         @igcInput=${this._handleInput}
         @keydown=${this._handleEnterKey}
@@ -796,7 +774,6 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
         ?readonly=${this._isEditorReadOnly}
         ?required=${this.required}
         .outlined=${this.outlined}
-        ?invalid=${live(this.invalid)}
         .disabled=${this.disabled}
         .inputFormat=${live(this.inputFormat)}
         .displayFormat=${live(format)}

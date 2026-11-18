@@ -238,6 +238,12 @@ export default class IgcColorPickerComponent extends I18nMixin(
     return this.mode === 'input';
   }
 
+  /** The text input of input mode. After a mode change, the ref keeps the old anchor until the render. */
+  private get _inputAnchor(): IgcInputComponent | undefined {
+    const anchor = this._anchorRef.value;
+    return anchor instanceof IgcInputComponent ? anchor : undefined;
+  }
+
   //#endregion
 
   //#region Public attributes and properties
@@ -351,7 +357,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
       });
 
     addAriaProjector(this, {
-      target: () => (this._isInputMode ? this._anchorRef.value : null),
+      target: () => this._inputAnchor,
       // A text input cannot have `aria-expanded`. The prefix button has it.
       state: () => ({ hasPopup: 'dialog' }),
     });
@@ -387,13 +393,8 @@ export default class IgcColorPickerComponent extends I18nMixin(
 
   //#region Form associated overrides
 
-  protected override formResetCallback(): void {
-    super.formResetCallback();
-
-    if (this._isInputMode) {
-      const input = this._anchorRef.value as IgcInputComponent;
-      input?.['formResetCallback']();
-    }
+  protected override get _ownedEditors(): (IgcInputComponent | undefined)[] {
+    return [this._inputAnchor];
   }
 
   //#endregion
@@ -979,7 +980,6 @@ export default class IgcColorPickerComponent extends I18nMixin(
         ?required=${this.required}
         ?disabled=${this.disabled}
         .value=${live(this.value)}
-        .invalid=${this.invalid}
         @igcInput=${stopPropagation}
         @igcChange=${this._handleColorInputChange}
       >
