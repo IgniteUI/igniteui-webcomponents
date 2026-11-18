@@ -54,7 +54,6 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
     initialValue: false,
     transformers: FormValueBooleanTransformers,
   });
-  protected _value!: string;
 
   @query('input', true)
   protected readonly _input!: HTMLInputElement;
@@ -68,10 +67,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
    */
   @property()
   public set value(value: string) {
-    this._value = value;
-    if (this.checked) {
-      this._formValue.setValueAndFormState(this.checked);
-    }
+    this._setSubmittedValue(value);
   }
 
   public get value(): string {
@@ -131,8 +127,9 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   protected _handleClick(event: PointerEvent): void {
     event.stopPropagation();
 
-    this._setTouchedState();
-    this.checked = !this.checked;
+    this._writeFrom('user', () => {
+      this.checked = !this.checked;
+    });
     this.emitEvent('igcChange', {
       detail: { checked: this.checked, value: this.value },
     });

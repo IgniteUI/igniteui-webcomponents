@@ -369,8 +369,7 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   @property({ converter: convertToDateRange })
   public set value(value: DateRangeValue | string | null | undefined) {
     this._value = convertToDateRange(value);
-    // A set from code is committed at once, so no later commit reports it.
-    this._session.adopt();
+    this._session.endDraft();
   }
 
   public get value(): DateRangeValue | null {
@@ -617,9 +616,9 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   private _delegateInputsValidity() {
     for (const input of this._editors) {
       input.checkValidity = () =>
-        !this._pristine ? this.checkValidity() : true;
+        !this._isPristine ? this.checkValidity() : true;
       input.reportValidity = () =>
-        !this._pristine ? this.reportValidity() : true;
+        !this._isPristine ? this.reportValidity() : true;
     }
   }
 

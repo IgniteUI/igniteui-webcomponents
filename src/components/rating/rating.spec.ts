@@ -595,6 +595,18 @@ describe('Rating component', () => {
         expect(spec.element.value).to.equal(3);
       });
     });
+
+    it('does not replace a value set from code before the first render', async () => {
+      const form = await fixture<HTMLFormElement>(html`<form></form>`);
+      const rating = document.createElement(IgcRatingComponent.tagName);
+
+      form.append(rating);
+      rating.value = 4;
+      await elementUpdated(rating);
+
+      rating.defaultValue = 2;
+      expect(rating.value).to.equal(4);
+    });
   });
 
   describe('Value precision', () => {

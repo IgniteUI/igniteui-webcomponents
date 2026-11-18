@@ -529,8 +529,10 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     // Selecting the current item again is not a change, but the list still
     // closes and the input takes the focus.
     if (this._selection.commit(item)) {
-      this._updateValue(item.value);
-      if (emit) this._emitTouchedEvent('igcChange', { detail: item });
+      this._writeFrom(emit ? 'user' : 'code', () =>
+        this._updateValue(item.value)
+      );
+      if (emit) this.emitEvent('igcChange', { detail: item });
     }
 
     if (shouldFocus) this._input.focus();

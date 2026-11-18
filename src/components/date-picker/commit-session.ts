@@ -1,5 +1,3 @@
-import { equal } from '#internals/utils/objects.js';
-
 /**
  * `at-once` commits and reports each calendar selection. `on-confirm` keeps it as a
  * draft until Done; Cancel or Escape restores the value from before the draft.
@@ -9,15 +7,18 @@ export type CommitPolicy = 'at-once' | 'on-confirm';
 export type CommitSessionHost<T> = {
   readonly policy: () => CommitPolicy;
   readonly read: () => T | null;
-  /** Writes the value without events. */
+  /** Writes the value without events, as a change that waits for a report. */
   readonly write: (value: T | null) => void;
-  readonly emit: (value: T | null) => void;
+  /**
+   * Reports the value with `igcChange` when it differs from the reported
+   * value, or always with `force`. The host keeps the reported value.
+   */
+  readonly report: (force: boolean) => void;
 };
 
 /** Decides when a picker commits its value and reports it with `igcChange`. */
 export class CommitSession<T> {
   private readonly _host: CommitSessionHost<T>;
-  private _reported: T | null = null;
   /** The value before the draft; `undefined` without a draft. */
   private _revertPoint?: T | null;
 
@@ -25,9 +26,8 @@ export class CommitSession<T> {
     this._host = host;
   }
 
-  /** Takes the value as reported: set from code, or the initial value. */
-  public adopt(): void {
-    this._reported = this._host.read();
+  /** A set from code ends the draft. */
+  public endDraft(): void {
     this._revertPoint = undefined;
   }
 
@@ -36,7 +36,7 @@ export class CommitSession<T> {
     if (this._host.policy() === 'at-once') {
       this._revertPoint = undefined;
       this._host.write(value);
-      this._report(this._host.read());
+      this._host.report(true);
       return;
     }
 
@@ -50,7 +50,7 @@ export class CommitSession<T> {
   public confirm(): void {
     if (this._host.policy() === 'on-confirm') {
       this._revertPoint = undefined;
-      this._reportIfChanged();
+      this._host.report(false);
     }
   }
 
@@ -65,7 +65,7 @@ export class CommitSession<T> {
   public commitEdit(value: T | null): void {
     this._revertPoint = undefined;
     this._host.write(value);
-    this._reportIfChanged();
+    this._host.report(false);
   }
 
   /** The clear is reported on blur, or by the editor commit that follows it. */
@@ -77,19 +77,7 @@ export class CommitSession<T> {
   /** Reports what no other action reported, but never a draft. */
   public blur(): void {
     if (this._revertPoint === undefined) {
-      this._reportIfChanged();
+      this._host.report(false);
     }
-  }
-
-  private _reportIfChanged(): void {
-    const value = this._host.read();
-    if (!equal(value, this._reported)) {
-      this._report(value);
-    }
-  }
-
-  private _report(value: T | null): void {
-    this._reported = value;
-    this._host.emit(value);
   }
 }

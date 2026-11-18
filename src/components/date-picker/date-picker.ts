@@ -293,8 +293,7 @@ export default class IgcDatePickerComponent extends I18nMixin(
   @property({ converter: convertToDate })
   public set value(value: Date | string | null | undefined) {
     this._value = value as Date | null;
-    // A set from code is committed at once, so no later commit reports it.
-    this._session.adopt();
+    this._session.endDraft();
   }
 
   public get value(): Date | null {

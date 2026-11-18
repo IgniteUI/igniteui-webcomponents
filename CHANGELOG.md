@@ -21,14 +21,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `logoSize` is a share of the code without its quiet zone, so `margin` no longer changes the logo. At the default `margin`, logos are smaller than before: 28% smaller in side on a version 1 code, and 4% on a version 40 code.
 
 ### Fixed
+- #### Checkbox, Radio, Switch
+  - A change of `value` no longer makes a checked control dirty, so a later `defaultChecked` still sets the checked state, as for a native checkbox or radio.
+- #### Color picker
+  - A color change of the user marks the picker touched, so a change that fails validation shows the invalid styles at once.
+  - A value set from code while the focus is in the picker no longer emits `igcChange` when the focus leaves.
 - #### Date picker, Date range picker
   - When you clear the value and then open and close the picker before you leave it, the picker now emits `igcChange` for the clear.
   - The date range picker emits `igcChange` when you clear it in dialog mode or in non-editable mode and leave it. The detail is `null`.
   - A predefined or custom range chip keeps the date range picker open when `keepOpenOnSelect` is set.
+- #### Form controls
+  - A change of the `value` or `checked` attribute keeps the control pristine, so a later `defaultValue` or `defaultChecked` still sets the value, as for a native control.
 - #### Input, Textarea
   - `stepUp()`, `stepDown()` and `setRangeText()` no longer clear the value when you call them before the first render.
 - #### QR code
   - A logo no longer makes a short value unreadable. The component selects a larger version, so that the logo hides no more codewords than the error correction recovers. When you set `version`, the logo gets smaller.
+- #### Rating
+  - A later `defaultValue` no longer replaces a value set from code before the first render.
+- #### Select
+  - A selection that fails validation shows the invalid styles at once, also when the select never had the focus.
+- #### Slider
+  - A change of the user that fails validation shows the invalid styles at once.
 
 ## [7.5.0] - 2026-11-16
 ### Added

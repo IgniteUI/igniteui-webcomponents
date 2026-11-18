@@ -2207,6 +2207,21 @@ describe('Select', () => {
       spec.element.setCustomValidity('');
       spec.assertSubmitPasses();
     });
+
+    it('styles a user selection that fails validation at once', () => {
+      spec.element.setCustomValidity('invalid');
+      ValidityHelpers.hasInvalidStyles(spec.element).to.be.false;
+
+      // A click that comes before any focus, as from assistive technology.
+      simulateClick(
+        spec.element.querySelector<IgcSelectItemComponent>(
+          'igc-select-item:not([disabled])'
+        )!
+      );
+
+      expect(spec.element.invalid).to.be.true;
+      ValidityHelpers.hasInvalidStyles(spec.element).to.be.true;
+    });
   });
 
   describe('defaultValue', () => {

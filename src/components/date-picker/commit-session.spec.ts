@@ -1,28 +1,11 @@
 import { expect } from '@open-wc/testing';
-
-import { type CommitPolicy, CommitSession } from './commit-session.js';
+import { createRecordingPicker } from '#internals/testing/commit-session.spec.js';
+import type { CommitPolicy } from './commit-session.js';
 
 type Value = number | { start: number; end: number };
 
-/** A session over a recording picker whose value `initial` was set from code. */
 function createSession(policy: CommitPolicy, initial: Value | null = 1) {
-  const picker = {
-    policy,
-    value: initial,
-    reports: [] as (Value | null)[],
-  };
-
-  const session = new CommitSession<Value>({
-    policy: () => picker.policy,
-    read: () => picker.value,
-    write: (value) => {
-      picker.value = value;
-    },
-    emit: (value) => picker.reports.push(value),
-  });
-  session.adopt();
-
-  return { picker, session };
+  return createRecordingPicker<Value>(policy, initial);
 }
 
 describe('Commit session', () => {
@@ -141,11 +124,10 @@ describe('Commit session', () => {
     });
 
     it('ends the draft on a value set from code', () => {
-      const { picker, session } = createSession('on-confirm');
+      const { picker, session, setFromCode } = createSession('on-confirm');
       session.pick(2);
 
-      picker.value = 3;
-      session.adopt();
+      setFromCode(3);
       session.confirm();
       session.cancel();
 

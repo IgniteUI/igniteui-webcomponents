@@ -64,6 +64,7 @@ This directory hosts four public components: [`igc-select`](#igc-select), [`igc-
 |       7 | 2026-11-02 | `focus()` and `blur()` before the first render do not throw, and a `focus()` call applies after it |
 |       8 | 2026-11-04 | Setting `selected` on an item again keeps the active item; only the selected item starts active |
 |       9 | 2026-11-06 | The header and footer content keeps its keys, is outside the listbox, and Tab moves through it |
+|      10 | 2026-11-18 | A selection of the user that fails validation shows the invalid styles at once, also before any focus |
 
 ## Overview
 
@@ -509,7 +510,8 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 27. Is form associated, submits its value, and does not submit when it has none.
 28. Is correctly reset on form reset, including after a `setAttribute` call.
 29. Reflects the disabled state of an ancestor `fieldset`.
-30. Fulfils the required and custom constraints.
+30. Fulfils the required and custom constraints. A selection of the user that fails validation shows the invalid
+    styles at once, also when the select never had the focus.
 31. `defaultValue` - correct initial state, submission, reset and validation.
 
 ### Validation message slots

@@ -21,6 +21,7 @@ import {
   type FormValueType,
   InternalInvalidEvent,
   InternalResetEvent,
+  type WriteOrigin,
 } from './types.js';
 
 const INVALID_STATE = 'ig-invalid';
@@ -204,6 +205,10 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     /** Set while `reportValidity()` of the control runs. */
     private _isReportingValidity = false;
     private _touched = false;
+    private __pristine = true;
+    private _writeOrigin: WriteOrigin = 'code';
+    /** The value of the last `igcChange`, or of the last write that needs no report. */
+    private __reported: unknown;
     private _isExternalInvalid = false;
     /** The message is built on read, so it follows the locale. */
     private __failedValidator?: Validator;
@@ -219,7 +224,11 @@ function BaseFormAssociated<T extends LitElementConstructor>(
 
     protected _disabled = false;
     protected _invalid = false;
-    protected _pristine = true;
+
+    /** Whether the value is unchanged since the start or the last form reset. */
+    protected get _isPristine(): boolean {
+      return this.__pristine;
+    }
 
     protected get __validators(): Validator[] {
       return [];
@@ -322,8 +331,9 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       super.connectedCallback();
 
       if (!this.hasUpdated) {
-        this._pristine = true;
+        this.__pristine = true;
         this._touched = false;
+        this.__markValueReported();
       }
 
       this._validate();
@@ -522,15 +532,63 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       return (this as unknown as EventEmitterLike).emitEvent(eventName, init);
     }
 
-    /** Runs `callback` and restores the pristine flag. */
-    protected _withPristine(callback: () => void): void {
-      const pristine = this._pristine;
+    /** Runs `write` as a write of `origin`. See {@link WriteOrigin}. */
+    protected _writeFrom<R>(origin: WriteOrigin, write: () => R): R {
+      const previous = this._writeOrigin;
+      const isReported =
+        origin === 'normalize' &&
+        this._formValue.isSameValue(this._formValue.value, this.__reported);
+
+      this._writeOrigin = origin;
+
+      if (origin === 'user') {
+        this._setTouchedState();
+      }
+
+      let result: R;
 
       try {
-        callback();
+        result = write();
       } finally {
-        this._pristine = pristine;
+        this._writeOrigin = previous;
       }
+
+      if (isReported || origin === 'code' || origin === 'default') {
+        this.__markValueReported();
+      }
+
+      return result;
+    }
+
+    /** Records a write that keeps the value, as a write of the current origin. */
+    protected _recordSameValueWrite(): void {
+      const origin = this._writeOrigin;
+
+      if (origin === 'user' || origin === 'edit' || origin === 'code') {
+        this.__pristine = false;
+      }
+
+      // A bare set from code is not inside `_writeFrom`, which adopts after it.
+      if (origin === 'code') {
+        this.__markValueReported();
+      }
+    }
+
+    /** Emits `igcChange` when the value differs from the reported value. */
+    protected _reportChange(detail: unknown, force = false): void {
+      if (
+        force ||
+        !this._formValue.isSameValue(this._formValue.value, this.__reported)
+      ) {
+        this.__markValueReported();
+        (this as unknown as EventEmitterLike).emitEvent('igcChange', {
+          detail,
+        });
+      }
+    }
+
+    private __markValueReported(): void {
+      this.__reported = this._formValue?.value;
     }
 
     /** @internal */
@@ -539,24 +597,31 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       prev: string | null,
       current: string | null
     ): void {
-      super.attributeChangedCallback(name, prev, current);
-
-      if (name === stateKey) {
-        // A boolean attribute sets its default by presence.
-        this._setDefaultValue(
-          name === 'checked' && isString(current) ? 'true' : current
-        );
+      if (name !== stateKey) {
+        super.attributeChangedCallback(name, prev, current);
+        return;
       }
+
+      // As for a native control, the attribute keeps the pristine state.
+      this._writeFrom('default', () =>
+        super.attributeChangedCallback(name, prev, current)
+      );
+
+      // A boolean attribute sets its default by presence.
+      this._setDefaultValue(
+        name === 'checked' && isString(current) ? 'true' : current
+      );
     }
 
     /** Sets the default, also as the state of a pristine control. @internal */
     protected _applyDefault(value: unknown): void {
       this._formValue.defaultValue = value;
 
-      if (this._pristine) {
-        (this as unknown as Record<string, unknown>)[stateKey] =
-          this._formValue.defaultValue;
-        this._pristine = true;
+      if (this.__pristine) {
+        this._writeFrom('default', () => {
+          (this as unknown as Record<string, unknown>)[stateKey] =
+            this._formValue.defaultValue;
+        });
         this._validate();
       }
     }
@@ -572,7 +637,7 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     }
 
     protected _setFormValue(value: FormValueType, state?: FormValueType): void {
-      this._pristine = false;
+      this._recordSameValueWrite();
       this._internals.setFormValue(value, state);
       this._validate();
     }
@@ -590,12 +655,12 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     }
 
     protected formResetCallback(): void {
-      this._restoreDefaultValue();
+      this._writeFrom('default', () => this._restoreDefaultValue());
       this._resetValidationState();
     }
 
     protected _resetValidationState(): void {
-      this._pristine = true;
+      this.__pristine = true;
       this._touched = false;
       this._invalid = false;
       this._isExternalInvalid = false;
@@ -686,12 +751,12 @@ export function FormAssociatedMixin<T extends LitElementConstructor>(
       return this._formValue.defaultValue;
     }
 
-    /** Sets touched first, so the `value` setter validation cycle sees it. */
+    /** Writes `value` as a user write, then emits `eventName`. */
     protected _commitValue(value: unknown, eventName: string): boolean {
-      this._setTouchedState();
-
       if ('value' in this) {
-        this.value = value;
+        this._writeFrom('user', () => {
+          this.value = value;
+        });
         return this._emitTouchedEvent(eventName, { detail: this.value });
       }
 
@@ -728,6 +793,23 @@ export function FormAssociatedCheckboxMixin<T extends LitElementConstructor>(
 
     public get defaultChecked(): boolean {
       return this._formValue.defaultValue as boolean;
+    }
+
+    protected _value!: string;
+
+    /** Sets the value that a checked control submits. Keeps the pristine state. */
+    protected _setSubmittedValue(value: string): void {
+      if (value === this._value) {
+        return;
+      }
+
+      this._value = value;
+
+      if (this._formValue.value) {
+        this._writeFrom('normalize', () =>
+          this._formValue.setValueAndFormState(true)
+        );
+      }
     }
   }
 

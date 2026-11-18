@@ -363,6 +363,13 @@ describe('Combo', () => {
 
         expect(spec.element.value).to.eql(value);
       });
+
+      it('stays pristine after a change of the value attribute', () => {
+        spec.element.setAttribute('value', JSON.stringify(['US01']));
+
+        expect(spec.element.value).to.eql(['US01']);
+        spec.assertIsPristine();
+      });
     });
 
     describe('Form integration with delayed data', () => {
