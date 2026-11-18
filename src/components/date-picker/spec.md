@@ -728,26 +728,31 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 32. Does not mutate `value` while typing in the input.
 33. Survives a host re-applying the bound value mid-edit.
 
+### Calendar view
+
+34. Without `activeDate`, a value set from code brings its month into view, also while the calendar is open. With
+    two visible months, an open shows the value in the first month, also after a pick in the second month.
+
 ### Interactions
 
-34. <kbd>Escape</kbd> closes an open picker, except when an IME handles it. A closed picker does not cancel
+35. <kbd>Escape</kbd> closes an open picker, except when an IME handles it. A closed picker does not cancel
     <kbd>Escape</kbd>.
-35. <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> opens and <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> closes the picker, in both
+36. <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> opens and <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> closes the picker, in both
     modes.
-36. A value set from code, also with `stepUp`, is not reported as a change on a later blur, in the editable,
+37. A value set from code, also with `stepUp`, is not reported as a change on a later blur, in the editable,
     non-editable, read-only and dialog modes.
-37. A user change renders at once: a calendar pick with `keepOpenOnSelect` updates the input, and `clear` removes the
+38. A user change renders at once: a calendar pick with `keepOpenOnSelect` updates the input, and `clear` removes the
     clear icon.
-38. A calendar selection in a non-editable dropdown emits `igcChange` once, also after a later blur.
-39. `igcInput` is emitted according to the `nonEditable` property.
-40. Clicking the calendar icon opens the picker in both modes.
-41. Clicking the input opens the picker in dialog mode only; clicking the label likewise.
-42. Clicking the clear icon does not open the picker, in either mode.
-43. The calendar view follows the typed value, switching to another month.
-44. Issue #1710, and issue #1884 - `igcChange` is emitted in dialog mode after clearing the value and losing focus.
+39. A calendar selection in a non-editable dropdown emits `igcChange` once, also after a later blur.
+40. `igcInput` is emitted according to the `nonEditable` property.
+41. Clicking the calendar icon opens the picker in both modes.
+42. Clicking the input opens the picker in dialog mode only; clicking the label likewise.
+43. Clicking the clear icon does not open the picker, in either mode.
+44. The calendar view follows the typed value, switching to another month.
+45. Issue #1710, and issue #1884 - `igcChange` is emitted in dialog mode after clearing the value and losing focus.
     A clear before an open is reported one time after the close, on <kbd>Escape</kbd> in both modes and on an
     outside click in dialog mode.
-45. In dialog mode, the open and the close play the dialog animations, `igcOpened` and `igcClosed` follow them, and
+46. In dialog mode, the open and the close play the dialog animations, `igcOpened` and `igcClosed` follow them, and
     `open` stays `true` during the exit. A canceled `igcClosing`, a `show()`, or `open` set to `false` and then `true`
     during the entrance or the exit, keeps the dialog open; `open` set to `false` closes it at once, also in the task
     of `show()`; a `hide()` in the task of `show()` shows no dialog; the calendar ignores a selection during the exit;
@@ -756,26 +761,26 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 
 ### Readonly state
 
-46. Dropdown mode - the picker does not open on a calendar icon click or a keyboard shortcut, and the value is not
+47. Dropdown mode - the picker does not open on a calendar icon click or a keyboard shortcut, and the value is not
     cleared by clicking the clear icon.
-47. Dialog mode - the dialog does not open on a calendar icon, label or input click, nor on a keyboard shortcut, and
+48. Dialog mode - the dialog does not open on a calendar icon, label or input click, nor on a keyboard shortcut, and
     the value is not cleared by clicking the clear icon.
 
 ### Form integration tests
 
-48. Clicking the calendar toggle part does not put the component in an invalid state.
-49. Is form associated, and does not participate in submission with an empty or invalid value.
-50. Participates in submission when the value adheres to the constraints.
-51. Resets to its default value on form reset, resets to a new default after a `setAttribute` call, and clears the
+49. Clicking the calendar toggle part does not put the component in an invalid state.
+50. Is form associated, and does not participate in submission with an empty or invalid value.
+51. Participates in submission when the value adheres to the constraints.
+52. Resets to its default value on form reset, resets to a new default after a `setAttribute` call, and clears the
     invalid styles of the inner editor on reset. The inner editor shows the invalid state of the picker at once, and
     none of its own.
-52. Submits on <kbd>Enter</kbd> when valid, and does not when invalid. A real <kbd>Enter</kbd> submits once.
+53. Submits on <kbd>Enter</kbd> when valid, and does not when invalid. A real <kbd>Enter</kbd> submits once.
     <kbd>Enter</kbd> in a field in the `suffix` slot submits once, and on a button in the slot it does not submit.
-53. Reflects the disabled state of an ancestor `fieldset` or form.
-54. Enforces the required, min, max - as dates and as string properties - and custom constraints.
-55. Invalidates the component when a disabled date is typed in the input.
-56. Validates synchronously.
-57. `defaultValue` - correct initial state, submission and reset; and validation for required, min, max and the
+54. Reflects the disabled state of an ancestor `fieldset` or form.
+55. Enforces the required, min, max - as dates and as string properties - and custom constraints.
+56. Invalidates the component when a disabled date is typed in the input.
+57. Validates synchronously.
+58. `defaultValue` - correct initial state, submission and reset; and validation for required, min, max and the
     range constraints.
 
 The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
@@ -785,22 +790,22 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 Generated by `runValidationContainerTests`.
 
-58. Each validation slot renders for its failing constraint.
-59. The projected messages are rendered on the first failed submission.
+59. Each validation slot renders for its failing constraint.
+60. The projected messages are rendered on the first failed submission.
 
 ### ARIA projection and external labels
 
 Generated by `runExternalLabelAssociationTests` and `runAriaProjectionTests`.
 
-60. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
+61. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
     element references, and clicking it focuses the control.
-61. The host semantics - `aria-haspopup` and the description - land on the native input of the composed editor.
+62. The host semantics - `aria-haspopup` and the description - land on the native input of the composed editor.
 
 ### Host ARIA
 
-62. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+63. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal. `required` sets `aria-required` on the editor.
-63. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+64. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
     the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
@@ -808,26 +813,26 @@ Generated by `runExternalLabelAssociationTests` and `runAriaProjectionTests`.
 
 ### Commit session, at once
 
-64. Without a DOM, under the at-once policy: each pick is reported, Cancel and Done do nothing, an editor commit is
+65. Without a DOM, under the at-once policy: each pick is reported, Cancel and Done do nothing, an editor commit is
     reported only when it changes the reported value, and a clear is reported one time, on blur or by the editor
     commit.
 
 ### Commit session, on confirm
 
-65. Under the on-confirm policy: picks stay a draft until Done, Done without a change reports nothing, Cancel
+66. Under the on-confirm policy: picks stay a draft until Done, Done without a change reports nothing, Cancel
     restores the value from before the draft, a later Cancel keeps the value of Done, blur never reports a draft, a
     value from code ends the draft, and a clear is reported one time after Cancel or Done. An at-once pick ends a
     draft, the policy is read at each action, and values compare by content.
 
 ### Commit session properties
 
-66. For random action sequences under both policies: a report carries the value and changes the reported value,
+67. For random action sequences under both policies: a report carries the value and changes the reported value,
     except an at-once pick; a value from code, a clear, Cancel and an on-confirm pick report nothing; Cancel restores
     the value from before the draft; after a blur, only a draft stays unreported.
 
 ### Date value shape
 
-67. Without a DOM: the value stays as it is, is its own first date, gives the calendar one date or none, comes from
+68. Without a DOM: the value stays as it is, is its own first date, gives the calendar one date or none, comes from
     the first date of a calendar selection, closes the picker on each pick, is complete with a date, is formatted
     as one date, and converts a string through the form value transformers.
 
