@@ -478,8 +478,9 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       const invalid = this._shouldApplyStyles;
       this._internals.setState(INVALID_STATE, invalid);
 
-      // On the server, a `@queryAll` editor getter would need a document.
-      if (!isServer) {
+      // Before the first render there are no editors, and `update()` gives each
+      // new one the state. On the server, a `@queryAll` getter would need a document.
+      if (!isServer && this.hasUpdated) {
         for (const editor of this._ownedEditors) {
           if (editor) {
             internalsOf(editor)?.setState(INVALID_STATE, invalid);

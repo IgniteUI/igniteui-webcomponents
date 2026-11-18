@@ -273,6 +273,7 @@ Before you write lifecycle code, look for a controller that already does it:
 | `addToggleCommands`                                           | `#internals/controllers/command.js`         | The `--show`, `--hide` and `--toggle` invoker commands         |
 | `addIdRefResolver`                                            | `#internals/controllers/id-resolver.js`     | Resolving IDREF attributes to elements                         |
 | `addRootClickController`                                      | `#internals/controllers/root-click.js`      | Closing overlays on an outside click                           |
+| `addListboxPopup`                                             | `#internals/controllers/listbox-popup.js`   | The keys, clicks and selection of a single selection list in a popup, such as the select and the dropdown |
 | `createMutationController` / `addResizeObserverController`    | `#internals/controllers/*-observer.js`      | Observing DOM mutations and size changes                       |
 | `addGesturesController`                                       | `#internals/controllers/gestures.js`        | Swipe gestures                                                 |
 | `addKeyboardFocusRing`                                        | `#internals/controllers/focus-ring.js`      | Focus styles for keyboard focus only                           |

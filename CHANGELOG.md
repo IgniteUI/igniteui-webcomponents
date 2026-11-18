@@ -18,11 +18,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `stepUp(DatePart.AmPm)` and `stepDown(DatePart.AmPm)` move the time 12 hours also when the input format has no AM/PM part, as a step does for the other parts that the format does not show. Before, they did nothing.
 - #### Date range picker
   - In dialog mode, a range that you select stays unconfirmed when code closes the picker with `hide()`, `toggle()` or `open`. After a new open, Done emits `igcChange` for it, and Cancel or Escape restores the range from before it. Before, the next open kept the range without an `igcChange`.
+- #### Dropdown
+  - <kbd>Enter</kbd> closes the open list also when no item is active, as in the select. Before, the list stayed open.
 - #### Library
   - The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The fallbacks for older browsers are removed, and the styles no longer have vendor prefixes for them.
 - #### QR code
   - The cutout under the logo holds whole modules, so it cuts no module in part.
   - `logoSize` is a share of the code without its quiet zone, so `margin` no longer changes the logo. At the default `margin`, logos are smaller than before: 28% smaller in side on a version 1 code, and 4% on a version 40 code.
+- #### Select
+  - <kbd>Tab</kbd> and <kbd>Escape</kbd> on the select act also when other code already called `preventDefault()` on the key, as in the dropdown. Content in the `header` and `footer` slots still keeps a key that it handled.
 
 ### Fixed
 - #### Checkbox, Radio, Switch
@@ -56,6 +60,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A later `defaultValue` no longer replaces a value set from code before the first render.
 - #### Select
   - A selection that fails validation shows the invalid styles at once, also when the select never had the focus.
+  - <kbd>Tab</kbd> on the open list without an active option no longer clears a `value` that matches no option yet, for example one whose option a framework renders later.
 - #### Slider
   - A change of the user that fails validation shows the invalid styles at once.
 
