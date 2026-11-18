@@ -97,18 +97,56 @@ function literalEdge(
 
 const anyString = fc.string({ unit: 'grapheme', maxLength: 30 });
 
+/**
+ * Typed input. Most characters can fill a numeric or an AM/PM part, so that a
+ * mask can be complete; the others are any grapheme.
+ */
+const typedInput = fc.string({
+  unit: fc.oneof(
+    { weight: 4, arbitrary: fc.constantFrom(...'0123456789APMapm') },
+    {
+      weight: 1,
+      arbitrary: fc.string({ unit: 'grapheme', minLength: 1, maxLength: 1 }),
+    }
+  ),
+  maxLength: 20,
+});
+
 describe('Date-time mask parser properties', () => {
-  it('round-trips a date through formatDate and parseDate', () => {
+  it('parses a complete mask the same in both modes, and a partial one as null when strict', () => {
+    fc.assert(
+      fc.property(anyFormat, typedInput, (format, input) => {
+        const parser = new DateTimeMaskParser({ format });
+        const masked = parser.apply(input);
+        const strict = parser.parseValue(masked, true);
+        const lenient = parser.parseValue(masked, false);
+
+        expect(!lenient || isValidDate(lenient), masked).to.be.true;
+
+        if (parser.isBlank(masked)) {
+          expect(lenient, masked).to.be.null;
+        }
+
+        if (masked.includes(parser.prompt)) {
+          expect(strict, masked).to.be.null;
+        } else {
+          expect(strict?.getTime(), masked).to.equal(lenient?.getTime());
+        }
+      })
+    );
+  });
+
+  it('round-trips a date through formatValue and parseDate', () => {
     fc.assert(
       fc.property(paddedFormat, date, (format, value) => {
         const clock = assumeWallClock(format, value);
         const parser = new DateTimeMaskParser({ format });
-        const masked = parser.formatDate(value);
+        const masked = parser.formatValue(value);
         const parsed = parser.parseDate(masked);
 
         expect(masked).to.have.lengthOf(parser.emptyMask.length);
         expect(parsed, masked).to.be.an.instanceOf(Date);
-        expect(parser.formatDate(parsed)).to.equal(masked);
+        expect(parser.formatValue(parsed)).to.equal(masked);
         expect(toWallClock(parsed!), masked).to.deep.equal(clock);
       })
     );
@@ -261,14 +299,16 @@ describe('Date-time mask parser properties', () => {
           (format, value, part, sign) => {
             const parser = new DateTimeMaskParser({ format });
             const request = { sign, spinLoop: true, seed: SEED };
-            const masked = parser.formatDate(value);
+            const masked = parser.formatValue(value);
 
             const complete = parser.spinText(masked, part, request);
 
             expect(complete.value).to.eql(
-              parser.spin(parser.parseComplete(masked), part, request)
+              parser.spin(parser.parseValue(masked, true), part, request)
             );
-            expect(complete.masked).to.equal(parser.formatDate(complete.value));
+            expect(complete.masked).to.equal(
+              parser.formatValue(complete.value)
+            );
 
             const { start } = parser.getFirstPart()!;
             const partial = parser.spinText(
@@ -278,7 +318,7 @@ describe('Date-time mask parser properties', () => {
             );
 
             expect(partial.value).to.eql(SEED);
-            expect(partial.masked).to.equal(parser.formatDate(SEED));
+            expect(partial.masked).to.equal(parser.formatValue(SEED));
           }
         )
       );

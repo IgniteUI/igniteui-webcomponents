@@ -159,7 +159,7 @@ describe('DateRangeMaskParser', () => {
         end: new Date(2026, 11, 31),
       };
 
-      const formatted = parser.formatDateRange(range);
+      const formatted = parser.formatValue(range);
       expect(formatted).to.equal('12/25/2026 - 12/31/2026');
     });
 
@@ -167,7 +167,7 @@ describe('DateRangeMaskParser', () => {
       const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
       const range = { start: new Date(2026, 11, 25), end: null };
 
-      const formatted = parser.formatDateRange(range);
+      const formatted = parser.formatValue(range);
       expect(formatted).to.equal('12/25/2026 - __/__/____');
     });
 
@@ -175,13 +175,13 @@ describe('DateRangeMaskParser', () => {
       const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
       const range = { start: null, end: new Date(2026, 11, 31) };
 
-      const formatted = parser.formatDateRange(range);
+      const formatted = parser.formatValue(range);
       expect(formatted).to.equal('__/__/____ - 12/31/2026');
     });
 
     it('formats null range', () => {
       const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
-      const formatted = parser.formatDateRange(null);
+      const formatted = parser.formatValue(null);
 
       expect(formatted).to.equal('__/__/____ - __/__/____');
     });
@@ -297,9 +297,9 @@ describe('DateRangeMaskParser', () => {
       parser.prompt = '*';
 
       expect(parser.emptyMask).to.equal('**/**/**** - **/**/****');
-      expect(parser.formatDateRange(null)).to.equal(parser.emptyMask);
+      expect(parser.formatValue(null)).to.equal(parser.emptyMask);
       expect(
-        parser.formatDateRange({ start: new Date(2026, 11, 25), end: null })
+        parser.formatValue({ start: new Date(2026, 11, 25), end: null })
       ).to.equal('12/25/2026 - **/**/****');
     });
 
@@ -308,7 +308,7 @@ describe('DateRangeMaskParser', () => {
       parser.prompt = '*';
 
       // An untouched range is empty, not a pair of default dates.
-      expect(parser.parseDateRange(parser.formatDateRange(null))).to.be.null;
+      expect(parser.parseDateRange(parser.formatValue(null))).to.be.null;
 
       const range = parser.parseDateRange('12/25/2026 - **/**/****');
       expect(range!.start!.getDate()).to.equal(25);
@@ -321,7 +321,7 @@ describe('DateRangeMaskParser', () => {
 
       // The base setter rejects it, so the sub-parsers must not drift off on their own.
       expect(parser.prompt).to.equal('_');
-      expect(parser.formatDateRange(null)).to.equal(parser.emptyMask);
+      expect(parser.formatValue(null)).to.equal(parser.emptyMask);
     });
 
     it('applies the same prompt rules from the constructor', () => {
@@ -331,7 +331,7 @@ describe('DateRangeMaskParser', () => {
       });
 
       expect(parser.prompt).to.equal('_');
-      expect(parser.formatDateRange(null)).to.equal(parser.emptyMask);
+      expect(parser.formatValue(null)).to.equal(parser.emptyMask);
     });
   });
 

@@ -204,16 +204,30 @@ export class DateRangeMaskParser extends DateFormatMaskParser<
     return { start, end };
   }
 
+  /**
+   * A strict parse needs both ends complete. When neither end is a valid date, the
+   * result is `null`.
+   */
+  public override parseValue(
+    masked: string,
+    strict: boolean
+  ): DateRangeValue | null {
+    if (strict && masked.includes(this.prompt)) {
+      return null;
+    }
+
+    const parsed = this.parseDateRange(masked);
+    return parsed?.start || parsed?.end ? parsed : null;
+  }
+
   //#endregion
 
   //#region Date Range Formatting
 
-  /**
-   * Formats a DateRangeValue into a masked string using the two internal parsers.
-   */
-  public formatDateRange(range: DateRangeValue | null): string {
-    const start = this._startParser.formatDate(range?.start ?? null);
-    const end = this._endParser.formatDate(range?.end ?? null);
+  /** Formats each end with its own parser. */
+  public override formatValue(range: DateRangeValue | null): string {
+    const start = this._startParser.formatValue(range?.start ?? null);
+    const end = this._endParser.formatValue(range?.end ?? null);
 
     return start + this._separator + end;
   }
@@ -259,7 +273,7 @@ export class DateRangeMaskParser extends DateFormatMaskParser<
   ): SpunText<DateRangeValue> {
     if (this.isBlank(masked)) {
       const value = this.seeded(request.seed);
-      return { masked: this.formatDateRange(value), value };
+      return { masked: this.formatValue(value), value };
     }
 
     const text = {
@@ -276,8 +290,8 @@ export class DateRangeMaskParser extends DateFormatMaskParser<
     return {
       masked: text.start + this._separator + text.end,
       value: {
-        start: this._startParser.parseComplete(text.start),
-        end: this._endParser.parseComplete(text.end),
+        start: this._startParser.parseValue(text.start, true),
+        end: this._endParser.parseValue(text.end, true),
         [position]: spun.value,
       },
     };

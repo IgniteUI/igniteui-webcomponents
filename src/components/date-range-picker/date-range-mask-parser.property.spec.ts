@@ -72,7 +72,7 @@ function textOf(
   value: Date,
   kind: TextKind
 ): string {
-  const masked = parser.formatDate(value);
+  const masked = parser.formatValue(value);
   const { start } = parser.getFirstPart()!;
 
   return kind === 'full'
@@ -83,20 +83,20 @@ function textOf(
 }
 
 describe('Date range mask parser properties', () => {
-  it('round-trips a range through formatDateRange and parseDateRange', () => {
+  it('round-trips a range through formatValue and parseDateRange', () => {
     fc.assert(
       fc.property(options, date, date, (opts, start, end) => {
         assumeWallClock(opts.format, start);
         assumeWallClock(opts.format, end);
 
         const parser = new DateRangeMaskParser(opts);
-        const masked = parser.formatDateRange({ start, end });
+        const masked = parser.formatValue({ start, end });
         const parsed = parser.parseDateRange(masked);
 
         expect(masked).to.have.lengthOf(parser.emptyMask.length);
         expect(parsed?.start, masked).to.be.an.instanceOf(Date);
         expect(parsed?.end, masked).to.be.an.instanceOf(Date);
-        expect(parser.formatDateRange(parsed)).to.equal(masked);
+        expect(parser.formatValue(parsed)).to.equal(masked);
       })
     );
   });
@@ -107,16 +107,60 @@ describe('Date range mask parser properties', () => {
         const parser = new DateRangeMaskParser(opts);
         const single = new DateTimeMaskParser({ format: opts.format });
         const parsed = parser.parseDateRange(
-          parser.formatDateRange({ start, end })
+          parser.formatValue({ start, end })
         );
 
         expect(parsed!.start!.getTime()).to.equal(
-          single.parseDate(single.formatDate(start))!.getTime()
+          single.parseDate(single.formatValue(start))!.getTime()
         );
         expect(parsed!.end!.getTime()).to.equal(
-          single.parseDate(single.formatDate(end))!.getTime()
+          single.parseDate(single.formatValue(end))!.getTime()
         );
       })
+    );
+  });
+
+  it('gives a strict parse only when both ends are complete, and a lenient parse of each end', () => {
+    fc.assert(
+      fc.property(
+        options,
+        date,
+        date,
+        textKind,
+        textKind,
+        (opts, start, end, startKind, endKind) => {
+          assumeWallClock(opts.format, start);
+          assumeWallClock(opts.format, end);
+
+          const parser = new DateRangeMaskParser(opts);
+          const single = new DateTimeMaskParser({ format: opts.format });
+          const startText = textOf(single, start, startKind);
+          const endText = textOf(single, end, endKind);
+          const masked = startText + parser.separator + endText;
+          const strict = parser.parseValue(masked, true);
+          const lenient = parser.parseValue(masked, false);
+          const ends = {
+            start: single.parseDate(startText),
+            end: single.parseDate(endText),
+          };
+
+          // A blank end parses to the defaults, but a blank range is empty.
+          if (startKind === 'blank' && endKind === 'blank') {
+            expect(lenient, masked).to.be.null;
+          } else {
+            expect(lenient, masked).to.deep.equal(
+              ends.start || ends.end ? ends : null
+            );
+          }
+
+          if (startKind === 'full' && endKind === 'full') {
+            expect(parser.formatValue(strict), masked).to.equal(masked);
+            expect(strict, masked).to.deep.equal(lenient);
+          } else {
+            expect(strict, masked).to.be.null;
+          }
+        }
+      )
     );
   });
 
@@ -227,7 +271,7 @@ describe('Date range mask parser properties', () => {
             );
 
             expect(text.value).to.eql(seeded);
-            expect(text.masked).to.equal(parser.formatDateRange(seeded));
+            expect(text.masked).to.equal(parser.formatValue(seeded));
           }
         )
       );
@@ -266,7 +310,7 @@ describe('Date range mask parser properties', () => {
               expect(spunEnd).to.equal(endText);
               expect(spun.value).to.eql({
                 start: expected.value,
-                end: single.parseComplete(endText),
+                end: single.parseValue(endText, true),
               });
             } else {
               const expected = single.spinText(endText, part, spin);
@@ -274,7 +318,7 @@ describe('Date range mask parser properties', () => {
               expect(spunEnd).to.equal(expected.masked);
               expect(spunStart).to.equal(startText);
               expect(spun.value).to.eql({
-                start: single.parseComplete(startText),
+                start: single.parseValue(startText, true),
                 end: expected.value,
               });
             }

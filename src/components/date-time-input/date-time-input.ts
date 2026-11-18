@@ -116,23 +116,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   //#region Internal API
 
-  protected override _parseMask(strict: boolean): Date | null {
-    if (strict) {
-      return this._parser.parseComplete(this._maskedValue);
-    }
-
-    if (this._parser.isBlank(this._maskedValue)) {
-      return null;
-    }
-
-    const parsed = this._parser.parseDate(this._maskedValue);
-    return isValidDate(parsed) ? parsed : null;
-  }
-
-  protected override _formatValue(value: Date | null): string {
-    return this._parser.formatDate(value);
-  }
-
   /** The formatted value shown when the input is not focused. */
   protected override _buildDisplayValue(): string {
     return isValidDate(this.value)
