@@ -57,6 +57,7 @@
     "release": "node scripts/gen-changelog.mjs",
     "test": "npm run build:styles && wtr --coverage",
     "test:ssr": "npm run build:publish && node scripts/ssr-smoke.mjs",
+    "test:migrations": "node --test tests/migrations/*.mjs",
     "test:watch": "npm run build:styles && concurrently -k -r \"npm:watch-scss\" \"wtr --watch\"",
     "storybook": "npm run build:styles && concurrently -k -r \"npm run cem:watch\" \"npm:watch-scss\" \"npm:watch-meta\" \"storybook dev -p 8000\"",
     "storybook:build": "npm run build:styles && storybook build -o ./storybook-static",
