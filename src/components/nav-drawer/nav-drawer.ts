@@ -3,6 +3,10 @@ import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import {
+  getCSSTransitions,
+  transitionsSettled,
+} from '#animations/css-transitions.js';
+import {
   type ARIABindings,
   ariaBindings,
   hostAria,
@@ -273,10 +277,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<IgcNavDrawe
    * also without `overlay` support.
    */
   private async _closeAfterExit(dialog: HTMLDialogElement): Promise<void> {
-    const running = () =>
-      dialog
-        .getAnimations({ subtree: true })
-        .filter((animation) => animation instanceof CSSTransition);
+    const running = () => getCSSTransitions(dialog, { subtree: true });
 
     // A reopen or a change of the position replaces the transitions.
     for (
@@ -284,7 +285,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<IgcNavDrawe
       exit.length > 0 && !this.open;
       exit = running()
     ) {
-      await Promise.allSettled(exit.map(({ finished }) => finished));
+      await transitionsSettled(exit);
     }
     this._exit = undefined;
 

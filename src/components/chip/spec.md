@@ -51,7 +51,7 @@
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                |
 |       5 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
 |       6 | 2026-11-06 | Forward the host `aria-expanded`, `aria-haspopup` and `aria-controls`   |
-|       7 | 2026-11-18 | Animate a selection change by the user; a change from code shows at once |
+|       7 | 2026-11-18 | Animate a selection change by the user; a change from code shows at once or joins the running animation of the user |
 
 ## Overview
 
@@ -137,9 +137,12 @@ A selection change by the user animates the chip, as in Ignite UI for Angular:
 - The default icon and the content of the `select` slot animate the same way.
 
 A change from code shows at once. This applies to `selected`, `selectable`, `variant`, `outlined` and `disabled`, and
-to the first render. So a chip that a virtualized list reuses while it scrolls does not animate. The next pointer
-enter, focus or selection by the user turns the transitions back on. Ignite UI for Angular also animates a change
-from code. With `prefers-reduced-motion: reduce`, the chip does not animate.
+to the first render. So a chip that a virtualized list reuses while it scrolls does not animate. Only a selection by
+the user plays the indicator entry, so a selected chip that moves in the DOM or shows again after `display: none` does
+not. The transitions turn back on in the first frame with no change from code, so the first hover or focus after the
+change fades. A change from code while a selection by the user animates joins that animation, so a framework that
+renders in response to `igcSelect` does not cut it. Ignite UI for Angular also animates a change from code. With
+`prefers-reduced-motion: reduce`, the chip does not animate.
 
 #### Removal
 
@@ -272,48 +275,50 @@ The detail of `igcSelect` is the new `selected` state of the chip.
 
 ### Selection animation
 
-15. A chip that renders selected starts no transitions.
+15. A chip that renders selected, or a selected chip that moves in the DOM or shows again, starts no transitions.
 16. A change of `selected`, `variant`, `outlined` or `disabled` from code starts no transitions, and a deselection
     from code removes the indicator at once.
 17. A change of `selectable` from code shows or removes the indicator at once.
-18. After a change from code, a focus or a pointer enter turns the transitions back on.
-19. A selection change by the user transitions the colors of the `base` part over 200 ms with the ease-in-out-quad
+18. The first hover and the first focus after the render and after a change from code fade.
+19. A change from code other than `selectable` while the transitions of a selection by the user run keeps them
+    running, a deselected indicator stays until they end, and a deselection from code plays the exit.
+20. A selection change by the user transitions the colors of the `base` part over 200 ms with the ease-in-out-quad
     easing.
-20. On a selection by the user, the indicator column opens to the width of its content over 120 ms, and the
+21. On a selection by the user, the indicator column opens to the width of its content over 120 ms, and the
     indicator fades in over 120 ms after 60 ms. The content is the default icon or the content of the `select` slot.
-21. On a deselection by the user, the indicator fades out over 120 ms and its column closes over 120 ms after 60 ms.
+22. On a deselection by the user, the indicator fades out over 120 ms and its column closes over 120 ms after 60 ms.
     The chip removes the indicator when the transitions end. This applies to both kinds of content.
-22. The gap to the `prefix` or `start` content opens and closes with the indicator column.
-23. A selection during the exit keeps the same indicator element and reverses its width from the current value.
+23. The gap to the `prefix` or `start` content opens and closes with the indicator column.
+24. A selection during the exit keeps the same indicator element and reverses its width from the current value.
 
 ### Events tests
 
-24. `igcRemove` is emitted when the remove control is activated, and `igcSelect` is not.
-25. A chip that is not removable does not intercept the activation keys.
-26. `igcSelect` is emitted from the action control.
+25. `igcRemove` is emitted when the remove control is activated, and `igcSelect` is not.
+26. A chip that is not removable does not intercept the activation keys.
+27. `igcSelect` is emitted from the action control.
 
 ### Focus tests
 
-27. `focus()` moves the focus to the action control, also when the chip is removable.
-28. `blur()` removes the focus.
-29. A disabled chip does not take the focus.
+28. `focus()` moves the focus to the action control, also when the chip is removable.
+29. `blur()` removes the focus.
+30. A disabled chip does not take the focus.
 
 ### Host ARIA
 
-30. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
+31. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
     target and follow a change, and an axe audit passes with a host label.
-31. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+32. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
     the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
     `disabled` set does not cancel an earlier call on another element.
-32. The host `aria-expanded`, `aria-haspopup` and `aria-controls` reach the action button, also after a change and
+33. The host `aria-expanded`, `aria-haspopup` and `aria-controls` reach the action button, also after a change and
     a removal, next to the `aria-pressed` of a selectable chip, and pass the accessibility audit.
-33. An empty `aria-expanded` or `aria-haspopup` and an `aria-controls` that references no element are not forwarded.
+34. An empty `aria-expanded` or `aria-haspopup` and an `aria-controls` that references no element are not forwarded.
 
 ### Hidden ancestor
 
-34. A selected, removable and outlined chip hides at the same time as a hidden ancestor in each theme, at rest and
+35. A selected, removable and outlined chip hides at the same time as a hidden ancestor in each theme, at rest and
     after a focus or a hover.
 
 ### Not covered by the suite
@@ -334,13 +339,18 @@ The detail of `igcSelect` is the new `selected` state of the chip.
 - A `selected` chip that is not `selectable` keeps the state but offers no affordance to change it.
 - The host `aria-controls`, `aria-labelledby` and `aria-describedby` resolve when the chip renders. A referenced
   element that is added after the host attribute takes effect at the next render.
-- A change from code shows at once until the next user interaction with the chip, also when a user action
-  elsewhere caused it, for example a "select all" button.
-- A change of `selectable` does not animate.
+- A change from code shows at once, also when a user action elsewhere caused it, for example a "select all"
+  button.
+- A change of `selectable` does not animate, and it cuts a running animation of a selection by the user.
+- A change from code during the animation of a selection by the user joins it, also when it rebinds the chip to
+  another record, for example when the application sorts the selected chips first after `igcSelect`. The colors
+  then animate from the previous record, and a selected chip that the list moves plays the indicator entry again.
+- While code changes chips in each frame, for example during a scroll, the transitions of all the chips it changed
+  stay off. A hover on one of them does not fade until a frame passes with no change from code.
 - A change from code does not animate outside a scroll either, unlike in Ignite UI for Angular. A list that rebinds
   its rows by position, for example after a sort or a filter, shows another record in the same chip, and an
   animation would start from the state of the previous record.
-- A theme change fades the colors of a chip that the user interacted with, and changes the other chips at once.
+- A theme change fades the colors of the chips.
 - The Bootstrap focus ring is an outline and does not fade. The Bootstrap chip of Ignite UI for Angular draws it
   with `box-shadow`, which fades.
 

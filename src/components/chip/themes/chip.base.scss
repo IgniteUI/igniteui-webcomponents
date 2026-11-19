@@ -146,16 +146,19 @@ $indicator-delay: .06s;
     grid-template-columns: minmax(0, 1fr);
     overflow-x: clip;
 
-    @starting-style {
-        grid-template-columns: minmax(0, 0fr);
-        opacity: 0;
-    }
-
     // At full width, the column clips the content instead of shrinking it.
     > slot {
         display: flex;
         align-items: center;
         width: max-content;
+    }
+}
+
+// Only a selection by the user plays the entry, not a render, a move or a display change.
+[data-entering] {
+    @starting-style {
+        grid-template-columns: minmax(0, 0fr);
+        opacity: 0;
     }
 }
 

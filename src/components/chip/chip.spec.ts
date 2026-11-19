@@ -1,6 +1,13 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  aTimeout,
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+} from '@open-wc/testing';
 import { resetMouse, sendMouse } from '@web/test-runner-commands';
 import { spy } from 'sinon';
+import { getCSSTransitions } from '#animations/css-transitions.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
@@ -13,6 +20,7 @@ import {
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
+import { getCenterPoint } from '#internals/utils/dom.js';
 import { configureTheme } from '#theming/config.js';
 import { styles as indigo } from '../../styles/themes/light/indigo.css.js';
 import IgcChipComponent from './chip.js';
@@ -27,15 +35,9 @@ const COLOR_PROPERTIES = [
   'color',
 ];
 
-function cssTransitionsOf(element: Element): CSSTransition[] {
-  return element
-    .getAnimations()
-    .filter((animation) => animation instanceof CSSTransition);
-}
-
 /** The transitions of `element`, as `property duration delay`, sorted. */
 function transitionsOf(element: Element): string[] {
-  return cssTransitionsOf(element)
+  return getCSSTransitions(element)
     .map(({ transitionProperty, effect }) => {
       const { duration, delay } = effect!.getTiming();
       return `${transitionProperty} ${duration} ${delay}`;
@@ -45,7 +47,7 @@ function transitionsOf(element: Element): string[] {
 
 function easingsOf(element: Element): Set<string> {
   return new Set(
-    cssTransitionsOf(element).map(({ effect }) => effect!.getTiming().easing!)
+    getCSSTransitions(element).map(({ effect }) => effect!.getTiming().easing!)
   );
 }
 
@@ -451,6 +453,29 @@ describe('Chip', () => {
       expect(transitionsOf(getIndicator(chip))).to.eql([]);
     });
 
+    it('does not animate the indicator again when a selected chip moves or shows again', async () => {
+      const parent = await fixture<HTMLElement>(
+        html`<div><igc-chip selectable>Chip</igc-chip><span></span></div>`
+      );
+      const chip = parent.querySelector('igc-chip')!;
+      await painted();
+      await toggleByUser(chip);
+      finishAnimationsFor(chip.shadowRoot!);
+      await painted();
+
+      // A virtualized list moves a reused row to its other end.
+      parent.append(chip);
+      await painted();
+      expect(transitionsOf(getIndicator(chip)), 'move').to.eql([]);
+
+      // A closed dialog or a collapsed panel hides its content.
+      parent.style.display = 'none';
+      await painted();
+      parent.style.display = '';
+      await painted();
+      expect(transitionsOf(getIndicator(chip)), 'display').to.eql([]);
+    });
+
     it('applies a change from code at once', async () => {
       await withIndigo(async () => {
         const chip = await fixture<IgcChipComponent>(
@@ -505,30 +530,98 @@ describe('Chip', () => {
       expect(transitionsOf(getIndicator(chip))).to.eql([]);
     });
 
-    it('animates again after the user interacts with the chip', async () => {
+    it('fades the first hover and focus after the render and after a change from code', async () => {
+      await withIndigo(async () => {
+        const chip = await fixture<IgcChipComponent>(
+          html`<igc-chip selectable>Chip</igc-chip>`
+        );
+        const base = getBase(chip);
+
+        async function expectFades(step: string): Promise<void> {
+          await painted();
+          const { x, y } = getCenterPoint(base);
+          await sendMouse({
+            type: 'move',
+            position: [Math.round(x), Math.round(y)],
+          });
+          expect(transitionsOf(base), `hover after the ${step}`).to.not.be
+            .empty;
+
+          await resetMouse();
+          finishAnimationsFor(chip.shadowRoot!);
+          await painted();
+
+          chip.focus();
+          expect(transitionsOf(base), `focus after the ${step}`).to.not.be
+            .empty;
+
+          chip.blur();
+          finishAnimationsFor(chip.shadowRoot!);
+        }
+
+        await expectFades('render');
+
+        chip.variant = 'primary';
+        await elementUpdated(chip);
+        expect(base.hasAttribute('data-instant')).to.be.true;
+        await expectFades('change from code');
+      });
+    });
+
+    it('keeps the animation of a user selection when code changes the chip during it', async () => {
+      await withIndigo(async () => {
+        const chip = await fixture<IgcChipComponent>(
+          html`<igc-chip selectable>Chip</igc-chip>`
+        );
+        const base = getBase(chip);
+        // A framework that renders in response to the event writes later.
+        chip.addEventListener('igcSelect', ({ detail }) => {
+          setTimeout(() => {
+            chip.variant = detail ? 'primary' : undefined;
+          });
+        });
+        await painted();
+
+        for (const selected of [true, false]) {
+          await toggleByUser(chip);
+          await aTimeout(0);
+          await elementUpdated(chip);
+
+          expect(chip.variant).to.equal(selected ? 'primary' : undefined);
+          expect(base.hasAttribute('data-instant')).to.be.false;
+          expect(transitionsOf(base)).to.not.be.empty;
+          expect(transitionsOf(getIndicator(chip))).to.not.be.empty;
+
+          finishAnimationsFor(chip.shadowRoot!);
+          await painted();
+        }
+
+        expect(getIndicator(chip)).to.be.null;
+      });
+    });
+
+    it('plays the exit when code deselects the chip during a selection by the user', async () => {
       const chip = await fixture<IgcChipComponent>(
         html`<igc-chip selectable>Chip</igc-chip>`
       );
-      const base = getBase(chip);
+      await painted();
 
-      for (const interact of [
-        () => chip.focus(),
-        () => {
-          const { left, top } = chip.getBoundingClientRect();
-          return sendMouse({ type: 'move', position: [left + 2, top + 2] });
-        },
-      ]) {
-        chip.selected = !chip.selected;
-        await elementUpdated(chip);
-        expect(base.hasAttribute('data-instant')).to.be.true;
+      await toggleByUser(chip);
+      const indicator = getIndicator(chip);
+      await painted();
 
-        await interact();
-        await elementUpdated(chip);
-        expect(base.hasAttribute('data-instant')).to.be.false;
+      // An application that limits the selection reverts it.
+      chip.selected = false;
+      await elementUpdated(chip);
 
-        chip.blur();
-        await resetMouse();
-      }
+      expect(getIndicator(chip)).to.equal(indicator);
+      expect(indicator.hasAttribute('data-leaving')).to.be.true;
+      expect(transitionsOf(indicator)).to.not.be.empty;
+
+      finishAnimationsFor(chip.shadowRoot!);
+      await painted();
+
+      expect(getIndicator(chip)).to.be.null;
     });
 
     it('animates the colors of the chip on a selection by the user', async () => {
