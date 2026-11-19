@@ -33,11 +33,13 @@
     - [Form integration](#form-integration-1)
     - [defaultChecked](#defaultchecked)
     - [Group membership](#group-membership)
+    - [Group form state](#group-form-state)
     - [Validation message slots](#validation-message-slots)
     - [External label association](#external-label-association)
     - [Host ARIA](#host-aria)
     - [Hidden ancestor](#hidden-ancestor)
     - [Not covered by the suite](#not-covered-by-the-suite)
+  - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
     - [Keyboard support](#keyboard-support)
@@ -58,6 +60,7 @@
 |       9 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown` does not submit the form |
 |      10 | 2026-11-11 | <kbd>Enter</kbd> submits only through the first submit button of the form, as for a native radio, and not after a canceled `keypress` |
 |      11 | 2026-11-18 | A change of `value` keeps the radio pristine, as for a native radio |
+|      12 | 2026-11-19 | The group owns its form state: the validity follows a join, a leave and a reset at once, a checked radio that joins clears the group, a removed radio is a group of its own, each radio keeps its default, and `invalid` comes in DOM order |
 
 ## Overview
 
@@ -153,7 +156,9 @@ submission attempt, and is applied to the whole group.
 #### Grouping
 
 A group is every radio that shares the same `name` and the same form owner. Changing `name` at run time moves the
-radio to the matching group, and its selection and tab stop are recalculated. Wrapping the radios in an
+radio to the matching group at once, and its selection and tab stop are recalculated. As for native radios, a checked
+radio that joins a group, by connect, `name` or form owner, unchecks the other radios of the group. A radio that its
+group unchecks stays pristine. A removed radio is a group of its own. Wrapping the radios in an
 [`igc-radio-group`](../radio-group/spec.md) additionally applies a shared name, an alignment and the `radiogroup`
 ARIA semantics:
 
@@ -204,8 +209,11 @@ A click on an external `label` focuses the native input and checks the radio, as
 ```
 
 Validation is a property of the group: when at least one member is `required`, the group is invalid until one of its
-radios is checked. `checkValidity`, `reportValidity` and `setCustomValidity` apply to every member of the group, so
-the invalid state and the custom message stay consistent across it. See the
+radios is checked. The validity of each member changes at once when a radio joins or leaves the group, when
+`required` changes and on a form reset. `checkValidity` and `reportValidity` check every member of the group, and
+each invalid member emits `invalid`, in DOM order. `setCustomValidity` sets the message on every member of the group.
+For the radios that join or leave the group later, see
+[Assumptions and limitations](#assumptions-and-limitations). See the
 [validation container specification](../validation-container/spec.md) for the message slot mechanism.
 
 #### Form integration
@@ -219,7 +227,8 @@ the invalid state and the custom message stay consistent across it. See the
 ```
 
 - The checked radio submits its `value` under the shared `name`. A group with no selection submits nothing.
-- A form reset restores the selection described by the `checked` attributes.
+- A form reset restores the selection described by the `checked` attributes. Each radio keeps its own default, as a
+  native radio does.
 - A disabled radio does not submit a value.
 - <kbd>Enter</kbd> on the control submits the form, as for a native radio: the first submit button of the form
   gets a click, and the click submits the form. A form with no submit button, or with a disabled first submit button,
@@ -274,9 +283,9 @@ The horizontal arrow keys follow the writing direction, so they are mirrored in 
 | click             | `(): void`                       | Simulates a click on the radio control.                                                      |
 | focus             | `(options?: FocusOptions): void` | Sets focus on the radio control.                                                             |
 | blur              | `(): void`                       | Removes focus from the radio control.                                                        |
-| checkValidity     | `(): boolean`                    | Checks the validity of the whole group. Each invalid radio of the group emits `invalid`.     |
-| reportValidity    | `(): boolean`                    | Checks the validity of the whole group; when invalid, emits `invalid` and focuses the radio. |
-| setCustomValidity | `(message: string): void`        | Sets a custom validation message on every radio of the group. The radios are invalid while `message` is not empty. |
+| checkValidity     | `(): boolean`                    | Checks the validity of the whole group. Each invalid radio of the group emits `invalid`, in DOM order. |
+| reportValidity    | `(): boolean`                    | Checks the validity of the whole group. Each invalid radio of the group emits `invalid`, in DOM order. When this radio is invalid, it takes the focus. It shows its own validation messages, not the message of the browser. |
+| setCustomValidity | `(message: string): void`        | Sets a custom validation message on every radio that is in the group at the time of the call. The radios are invalid while `message` is not empty. |
 
 ### Events
 
@@ -394,38 +403,50 @@ Driven by `createFormAssociatedTestBed`.
 24. Keeps same-name radios of two different forms in separate groups.
 25. Moves a radio to the group of its new form owner.
 
+### Group form state
+
+26. A radio that leaves the group by `name` or by removal takes its `required` constraint with it, and a required radio
+    that joins applies it to the group, at once. A checked radio that leaves a required group makes the group invalid.
+    A removed radio has the state of a group of its own.
+27. A form reset validates the whole group at once.
+28. A disabled checked radio fulfils the required constraint of its group.
+29. A checked radio that joins a group by connect, `name` or form owner unchecks the other radios, at once.
+30. A radio that its group unchecks stays pristine and takes a new default. Each radio keeps the default of its
+    `checked` attribute.
+31. `checkValidity` and `reportValidity` emit `invalid` in DOM order from any radio of the group.
+
 ### Validation message slots
 
 Generated by `runValidationContainerTests`.
 
-26. `value-missing` with `required`.
-27. `custom-error` after `setCustomValidity`.
-28. `invalid` with `required`.
+32. `value-missing` with `required`.
+33. `custom-error` after `setCustomValidity`.
+34. `invalid` with `required`.
 
 ### External label association
 
 Generated by `runExternalLabelAssociationTests`.
 
-29. An external `label` bound through `for`, and a `label` wrapping the host, name the native input through
+35. An external `label` bound through `for`, and a `label` wrapping the host, name the native input through
     `ariaLabelledByElements`. A click on it focuses the input, checks the control and emits `igcChange` once.
-30. A `label` added after the first render names the input once the control gets focus.
-31. An axe audit passes with only an external `label`.
-32. A disabled control ignores a label click, and a click on the control inside a wrapping `label` changes the state
+36. A `label` added after the first render names the input once the control gets focus.
+37. An axe audit passes with only an external `label`.
+38. A disabled control ignores a label click, and a click on the control inside a wrapping `label` changes the state
     once.
-33. The host `aria-labelledby` wins over an external `label`, the host `aria-label` names the input while no label does,
+39. The host `aria-labelledby` wins over an external `label`, the host `aria-label` names the input while no label does,
     and a change of the host `aria-label` reaches the input. A change of the host `aria-labelledby` also reaches the
     input, and its removal gives the name back to the external `label`.
 
 ### Host ARIA
 
-34. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+40. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal.
 
 ### Hidden ancestor
 
-35. An unchecked and a checked radio in a group hide at the same time as a hidden ancestor in each theme, at rest and
+41. An unchecked and a checked radio in a group hide at the same time as a hidden ancestor in each theme, at rest and
     after a focus or a hover: no element transitions `visibility` or sets it to `visible`.
-36. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+42. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
     the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
@@ -439,6 +460,13 @@ The focus after the form checks and the `invalid` event rules come from the form
 The arrow key navigation between radios is covered from the group side, in
 [`radio-group.spec.ts`](../radio-group/radio-group.spec.ts), not in this suite. The suite runs the axe audit only in
 the external label configuration.
+## Assumptions and limitations
+
+- When more than one radio of a group has the `checked` attribute, the last one in DOM order is checked. This applies
+  at the start and after a form reset, as for native radios.
+- `setCustomValidity` sets the message on the radios that are in the group at the time of the call. A radio that joins
+  the group later does not get the message, and a radio that leaves the group keeps it.
+
 ## Accessibility
 
 ### ARIA roles and properties

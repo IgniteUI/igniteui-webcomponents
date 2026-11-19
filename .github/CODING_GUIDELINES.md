@@ -198,6 +198,10 @@ declare global {
   - `@coercedProperty` coerces a value or runs a side effect on a change. See
     [Properties and Attributes](#properties-and-attributes).
   - Guard each branch with `changedProperties.has()`.
+  - Override `requestUpdate()` only when a reaction cannot wait for the next update, also for
+    a property of a base class. Lit calls it from the setter with the name and the old value.
+    Call `super.requestUpdate()` first, and compare the value with the old value. The form
+    mixin submits the form value again there, and the radio moves to the group of a new `name`.
 - Export a new component from `src/index.ts`, in alphabetical order:
 
   ```ts
