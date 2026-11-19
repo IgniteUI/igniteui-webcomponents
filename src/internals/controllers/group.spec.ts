@@ -11,6 +11,8 @@ interface GroupTestElement extends LitElement {
   name: string;
   value: number;
   groupSum: number;
+  /** The key and the group sum of the element at each join. */
+  joins: { key: string; sum: number }[];
   group: GroupMemberController<GroupTestElement>;
 }
 
@@ -31,9 +33,15 @@ describe('Group registry', () => {
         public name = '';
         public value = 0;
         public groupSum = Number.NaN;
+        public joins: { key: string; sum: number }[] = [];
 
-        public readonly group = registry.attach(this, (sum: number) => {
-          this.groupSum = sum;
+        public readonly group = registry.attach(this, {
+          onSync: (sum: number) => {
+            this.groupSum = sum;
+          },
+          onJoin: () => {
+            this.joins.push({ key: this.name, sum: this.groupSum });
+          },
         });
       }
     );
@@ -102,6 +110,15 @@ describe('Group registry', () => {
     expect(registry.membersOf(a)).to.eql([a]);
   });
 
+  it('should sync a member that disconnects as a group of its own', () => {
+    createMember('leave', 1);
+    const b = createMember('leave', 2);
+    expect(b.groupSum).to.equal(3);
+
+    b.remove();
+    expect(b.groupSum).to.equal(2);
+  });
+
   it('should move a member between groups when its key changes', () => {
     const a = createMember('from', 1);
     const b = createMember('from', 2);
@@ -150,5 +167,26 @@ describe('Group registry', () => {
 
     expect(a.groupSum).to.equal(41);
     expect(b.groupSum).to.equal(41);
+  });
+
+  it('should run onJoin when a member enters a group, before the sync', () => {
+    const a = createMember('join', 1);
+    const b = createMember('join', 2);
+    const loner = createMember('', 5);
+
+    expect(a.joins).to.eql([{ key: 'join', sum: Number.NaN }]);
+    expect(b.joins).to.eql([{ key: 'join', sum: Number.NaN }]);
+    expect(loner.joins).to.eql([]);
+
+    // The member still has the state of the group that it left.
+    b.name = 'other';
+    b.group.updateMembership();
+    b.group.updateMembership();
+
+    expect(b.joins).to.eql([
+      { key: 'join', sum: Number.NaN },
+      { key: 'other', sum: 3 },
+    ]);
+    expect(b.groupSum).to.equal(2);
   });
 });

@@ -37,6 +37,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### QR code
   - The cutout under the logo holds whole modules, so it cuts no module in part.
   - `logoSize` is a share of the code without its quiet zone, so `margin` no longer changes the logo. At the default `margin`, logos are smaller than before: 28% smaller in side on a version 1 code, and 4% on a version 40 code.
+- #### Radio
+  - Each radio keeps its own default, as a native radio does. The `checked` attribute of one radio no longer clears `defaultChecked` of the other radios of its group. As before, the last radio with the `checked` attribute is checked at the start and after a form reset.
+  - `checkValidity()` and `reportValidity()` emit `invalid` on the radios of the group in DOM order. Before, the other radios emitted it first, and the called radio last.
 - #### Select
   - <kbd>Tab</kbd> and <kbd>Escape</kbd> on the select act also when other code already called `preventDefault()` on the key, as in the dropdown. Content in the `header` and `footer` slots still keeps a key that it handled.
 
@@ -79,6 +82,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A formatted value that you empty submits nothing. Before, the form submitted the empty mask, such as `__-__`.
 - #### QR code
   - A logo no longer makes a short value unreadable. The component selects a larger version, so that the logo hides no more codewords than the error correction recovers. When you set `version`, the logo gets smaller.
+- #### Radio
+  - The validity of a group changes at once when a radio joins or leaves the group, and on a form reset. A radio joins or leaves by `name`, by form owner or by a DOM change. A removed radio has the validity of a group of its own, as a native radio does. Before, the other radios kept the old validity. A group stayed invalid after its required radio left. After a form reset, the validity was correct only after the next render.
+  - A checked radio that joins a group, by connect, `name` or form owner, unchecks the other radios of the group, as a native radio does. Before, two radios of the group could stay checked.
+  - A radio that its group unchecks stays pristine, so a later `defaultChecked` still sets its checked state, as for a native radio. Before, the first render made the other radios of the group dirty.
 - #### Rating
   - A later `defaultValue` no longer replaces a value set from code before the first render.
 - #### Select
