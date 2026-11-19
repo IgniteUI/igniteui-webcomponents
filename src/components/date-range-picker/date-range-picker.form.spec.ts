@@ -78,6 +78,17 @@ describe('Date range picker - Form integration', () => {
           spec.assertSubmitHasKeyValue(endKey, value.end.toISOString());
         });
 
+        it('submits the range under a new name', async () => {
+          spec.setProperties({ value });
+          await spec.rename('renamed');
+
+          spec.assertSubmitHasKeyValue(
+            'renamed-start',
+            value.start.toISOString()
+          );
+          spec.assertSubmitHasKeyValue('renamed-end', value.end.toISOString());
+        });
+
         it('is correctly reset on form reset', async () => {
           const initial = spec.element.value;
 

@@ -38,8 +38,23 @@ export class FormValue<T> {
     ) as FormValueTransformers<T>;
   }
 
+  /** Whether the submission reads any host property. */
+  public get readsHost(): boolean {
+    return this._transformers.reads.length > 0;
+  }
+
   public setValueAndFormState(value: T): void {
     this.value = value;
+    this.resubmit();
+  }
+
+  /** Whether the submission reads the host property `key`. */
+  public readsProperty(key: PropertyKey): boolean {
+    return this._transformers.reads.includes(key as string);
+  }
+
+  /** Submits the value again. */
+  public resubmit(): void {
     this._setFormValue.call(
       this._host,
       this._transformers.setFormValue(this.value, this._host)
