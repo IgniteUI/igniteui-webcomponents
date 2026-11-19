@@ -104,6 +104,7 @@
 |      31 | 2026-11-18 | A change of the `value` attribute keeps the combo pristine, as for a native control |
 |      32 | 2026-11-18 | The input shows only the invalid state of the combo, and reports the validity of the combo |
 |      33 | 2026-11-18 | A closed list has no active option, also after `open` changes from code or an app cancels the opening; a change of `showSelectAll` or `groupSelection` keeps the active option on its item; in single selection, the first match is active in the update of the typed text |
+|      34 | 2026-11-19 | A change of `name` moves the submitted values to the new name at once |
 
 ## Overview
 
@@ -400,7 +401,8 @@ or host ARIA names it.
 </form>
 ```
 
-- The form submits the selection under `name`.
+- The form submits the selection under `name`. After a change of `name`, multiple selection submits under the new name
+  at once, and single selection after the next update, when the `name` attribute changes.
 - A form reset restores `defaultValue`, and removes the invalid styles of the control and its input.
 - The input shows the invalid state of the combo, and no invalid state of its own.
 - An invalid control stops the submission.
@@ -1026,7 +1028,8 @@ the shadow DOM through `getComboDOM()`.
 ### Form integration tests
 
 53. The combo is form associated, submits its selection, and resets with the form, also the input of single selection.
-    The input shows the invalid state of the combo at once.
+    The input shows the invalid state of the combo at once. A change of `name` moves the submitted values to the new
+    name.
 54. It shows the disabled state of an ancestor `fieldset`.
 55. It obeys the required and custom constraints, and passes the accessibility audit while a submit fails on the
     required constraint.

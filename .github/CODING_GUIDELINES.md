@@ -812,6 +812,9 @@ export default class IgcInputComponent extends FormAssociatedRequiredMixin(
   required message first.
 - For non-string values, pass transformers to `createFormValueState`. See
   `form-transformers.ts` (`FormValueDateTimeTransformers`, `FormValueNumberTransformers`, …).
+- A `setFormValue` transformer that reads a host property, such as `name` or a mode, lists that
+  property in `reads`. A change of a listed property submits the value again at once. Without
+  the entry, the submitted value stays stale until the next value write.
 
 **Updating the value.** `setValueAndFormState()` writes the value, sends it to the form and
 validates again. Use it in the public setter and in the input handlers. A set of

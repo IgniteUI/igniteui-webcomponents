@@ -48,6 +48,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Combo
   - A closed list has no active option. Before, when code closed the list and opened it again, the old option was still active. When an app canceled `igcOpening` while the user typed, Arrow Down opened the list on the second match.
   - In single selection, the input no longer shows the invalid styles when the focus moves from it to slotted content of the combo. The input shows the invalid state of the combo, together with its validation message.
+  - In multiple selection, a change of `name` moves the submitted values to the new name at once. Before, the form submitted them under the old name.
 - #### Date picker, Date range picker
   - An editor no longer shows the invalid styles when the focus moves from it to other content of the picker, such as the other editor of a date range picker. The editors show the invalid state of the picker, together with its validation message.
   - When you clear the value and then open and close the picker before you leave it, the picker now emits `igcChange` for the clear.
@@ -64,10 +65,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A value in the first month that is set while the second month of the calendar is active no longer shifts the months by one.
   - In single input mode, the calendar shows the month of the end that you type or spin, as it does with two inputs. Before, it showed only the month of the start.
   - The `igcInput` and `igcChange` events of content in the prefix and suffix slots of the inputs reach your handlers, and they no longer change the value of the picker. Before, the picker stopped them, and an `igcChange` from that content cleared the value, or its end date with two inputs.
+  - A change of `name` renames the submitted `-start` and `-end` entries at once. Before, the form submitted the range under the old name.
+- #### File input
+  - The selected files are submitted under the current `name`. Before, a change of `name` kept them under the old name, and a `name` set after the selection submitted no files.
 - #### Form controls
   - A change of the `value` or `checked` attribute keeps the control pristine, so a later `defaultValue` or `defaultChecked` still sets the value, as for a native control.
 - #### Input, Textarea
   - `stepUp()`, `stepDown()` and `setRangeText()` no longer clear the value when you call them before the first render.
+- #### Mask input
+  - The submitted value is `value`. A change of `valueMode`, `mask` or `prompt` updates it and the validity at once, also when the `value` attribute comes before `value-mode` or `mask`. Before, the form kept the old text, `badInput` could stay set for a valid value, and the attribute order could submit the raw text in `withFormatting` mode.
+  - A formatted value that you empty submits nothing. Before, the form submitted the empty mask, such as `__-__`.
 - #### QR code
   - A logo no longer makes a short value unreadable. The component selects a larger version, so that the logo hides no more codewords than the error correction recovers. When you set `version`, the logo gets smaller.
 - #### Rating

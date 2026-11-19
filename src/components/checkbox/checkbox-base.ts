@@ -66,13 +66,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
    * @attr
    */
   @property()
-  public set value(value: string) {
-    this._setSubmittedValue(value);
-  }
-
-  public get value(): string {
-    return this._value;
-  }
+  public value!: string;
 
   /* @tsTwoWayProperty(true, "igcChange", "detail.checked", false) */
   /**
