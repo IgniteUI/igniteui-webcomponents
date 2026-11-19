@@ -28,6 +28,18 @@ describe('Radio Component', () => {
   let radio: IgcRadioComponent;
   let input: HTMLInputElement;
 
+  /** Renders `template` and returns its radios in DOM order, after their first update. */
+  async function radiosOf(
+    template: TemplateResult
+  ): Promise<IgcRadioComponent[]> {
+    const container = await fixture<HTMLElement>(template);
+    const radios = Array.from(
+      container.querySelectorAll(IgcRadioComponent.tagName)
+    );
+    await Promise.all(radios.map((radio) => elementUpdated(radio)));
+    return radios;
+  }
+
   const DIFF_OPTIONS = {
     ignoreAttributes: [
       'id',
@@ -463,13 +475,6 @@ describe('Radio Component', () => {
       return radio.renderRoot.querySelector('input')!.tabIndex;
     }
 
-    async function radiosOf(
-      template: TemplateResult
-    ): Promise<IgcRadioComponent[]> {
-      const container = await fixture<HTMLElement>(template);
-      return Array.from(container.querySelectorAll(IgcRadioComponent.tagName));
-    }
-
     beforeEach(async () => {
       radios = Array.from(
         (
@@ -569,8 +574,8 @@ describe('Radio Component', () => {
       expect(tabIndexOf(orange)).to.equal(0);
       expect(tabIndexOf(apple)).to.equal(-1);
 
-      // The reset restores the default state without the `checked` setter, so only
-      // the group itself can bring the tab stop back to the radio that it belongs to.
+      // The reset restores the default state of each radio, and the group sync
+      // brings the tab stop back to the radio that it belongs to.
       form.reset();
       await Promise.all([apple, orange].map((radio) => elementUpdated(radio)));
 
@@ -672,6 +677,237 @@ describe('Radio Component', () => {
 
       expect(mango.checked).to.be.false;
       expect(apple.checked).to.be.true;
+    });
+  });
+
+  describe('Group form state', () => {
+    function createRadio(
+      properties: Partial<IgcRadioComponent>
+    ): IgcRadioComponent {
+      return Object.assign(
+        document.createElement(IgcRadioComponent.tagName),
+        properties
+      );
+    }
+
+    function valueMissingOf(radios: IgcRadioComponent[]): boolean[] {
+      return radios.map((radio) => radio.validity.valueMissing);
+    }
+
+    it('drops the required constraint of a radio that leaves the group by name', async () => {
+      const [required, other] = await radiosOf(html`
+        <div>
+          <igc-radio name="fruit" value="apple" required>Apple</igc-radio>
+          <igc-radio name="fruit" value="orange">Orange</igc-radio>
+        </div>
+      `);
+
+      expect(valueMissingOf([required, other])).to.eql([true, true]);
+
+      // No await: as for a native radio, the group changes with the name.
+      required.name = 'vegetable';
+      expect(other.validity.valueMissing).to.be.false;
+      expect(required.validity.valueMissing).to.be.true;
+    });
+
+    it('drops the required constraint of a radio that is removed', async () => {
+      const [required, other] = await radiosOf(html`
+        <div>
+          <igc-radio name="fruit" value="apple" required>Apple</igc-radio>
+          <igc-radio name="fruit" value="orange">Orange</igc-radio>
+        </div>
+      `);
+
+      required.remove();
+      expect(other.validity.valueMissing).to.be.false;
+    });
+
+    it('gives a removed radio the state of a group of its own', async () => {
+      const [required, checked, other] = await radiosOf(html`
+        <div>
+          <igc-radio name="fruit" value="apple" required>Apple</igc-radio>
+          <igc-radio name="fruit" value="orange" checked>Orange</igc-radio>
+          <igc-radio name="fruit" value="mango">Mango</igc-radio>
+        </div>
+      `);
+
+      expect(valueMissingOf([required, other])).to.eql([false, false]);
+
+      // As for a native radio, a removed radio is the only radio of its group.
+      required.remove();
+      expect(required.validity.valueMissing).to.be.true;
+
+      checked.checked = false;
+      checked.required = true;
+      expect(other.validity.valueMissing).to.be.true;
+
+      other.remove();
+      expect(other.validity.valueMissing).to.be.false;
+    });
+
+    it('applies the required constraint of a radio that joins the group', async () => {
+      const radios = await radiosOf(html`
+        <div>
+          <igc-radio name="fruit" value="apple">Apple</igc-radio>
+          <igc-radio name="fruit" value="orange">Orange</igc-radio>
+        </div>
+      `);
+      const joining = createRadio({
+        name: 'fruit',
+        value: 'mango',
+        required: true,
+      });
+
+      firstOf(radios).parentElement!.append(joining);
+      expect(valueMissingOf([...radios, joining])).to.eql([true, true, true]);
+    });
+
+    it('fails the required constraint when the checked radio leaves the group', async () => {
+      const [required, checked] = await radiosOf(html`
+        <div>
+          <igc-radio name="fruit" value="apple" required>Apple</igc-radio>
+          <igc-radio name="fruit" value="orange" checked>Orange</igc-radio>
+        </div>
+      `);
+
+      expect(required.validity.valueMissing).to.be.false;
+
+      checked.name = 'vegetable';
+      expect(required.validity.valueMissing).to.be.true;
+    });
+
+    it('validates the whole group on form reset', async () => {
+      const radios = await radiosOf(html`
+        <form>
+          <igc-radio name="fruit" value="apple" required>Apple</igc-radio>
+          <igc-radio name="fruit" value="orange">Orange</igc-radio>
+        </form>
+      `);
+
+      lastOf(radios).checked = true;
+      expect(valueMissingOf(radios)).to.eql([false, false]);
+
+      // No await: as for a native radio, the validity follows the reset at once.
+      firstOf(radios).form!.reset();
+      expect(valueMissingOf(radios)).to.eql([true, true]);
+    });
+
+    it('counts a disabled checked radio for the required constraint', async () => {
+      const [required, checked] = await radiosOf(html`
+        <div>
+          <igc-radio name="fruit" value="apple" required>Apple</igc-radio>
+          <igc-radio name="fruit" value="orange" checked disabled
+            >Orange</igc-radio
+          >
+        </div>
+      `);
+
+      expect(checked.checked).to.be.true;
+      expect(required.validity.valueMissing).to.be.false;
+    });
+
+    it('unchecks the group when a checked radio connects before its checked radio', async () => {
+      const [apple, orange] = await radiosOf(html`
+        <div>
+          <igc-radio name="fruit" value="apple">Apple</igc-radio>
+          <igc-radio name="fruit" value="orange" checked>Orange</igc-radio>
+        </div>
+      `);
+      const joining = createRadio({
+        name: 'fruit',
+        value: 'mango',
+        checked: true,
+      });
+
+      apple.before(joining);
+
+      expect(joining.checked).to.be.true;
+      expect(apple.checked).to.be.false;
+      expect(orange.checked).to.be.false;
+    });
+
+    it('unchecks the group when a checked radio joins it by name', async () => {
+      const [moving, checked] = await radiosOf(html`
+        <div>
+          <igc-radio name="vegetable" value="carrot" checked>Carrot</igc-radio>
+          <igc-radio name="fruit" value="apple" checked>Apple</igc-radio>
+        </div>
+      `);
+
+      // No await: as for a native radio, the radio that moves in wins at once.
+      moving.name = 'fruit';
+
+      expect(moving.checked).to.be.true;
+      expect(checked.checked).to.be.false;
+    });
+
+    it('unchecks the group when a checked radio joins it by form owner', async () => {
+      const [moving, checked] = await radiosOf(html`
+        <div>
+          <form>
+            <igc-radio name="fruit" value="apple" checked>Apple</igc-radio>
+          </form>
+          <form id="other">
+            <igc-radio name="fruit" value="mango" checked>Mango</igc-radio>
+          </form>
+        </div>
+      `);
+
+      moving.setAttribute('form', 'other');
+
+      expect(moving.checked).to.be.true;
+      expect(checked.checked).to.be.false;
+    });
+
+    it('keeps the other radios pristine when the group unchecks them', async () => {
+      const [checked, other] = await radiosOf(html`
+        <div>
+          <igc-radio name="fruit" value="apple" checked>Apple</igc-radio>
+          <igc-radio name="fruit" value="orange">Orange</igc-radio>
+        </div>
+      `);
+
+      // As for a native radio, a pristine radio takes its new default.
+      other.defaultChecked = true;
+
+      expect(other.checked).to.be.true;
+      expect(checked.checked).to.be.false;
+    });
+
+    it('keeps the default of each radio', async () => {
+      const radios = await radiosOf(html`
+        <div>
+          <igc-radio name="fruit" value="apple" checked>Apple</igc-radio>
+          <igc-radio name="fruit" value="orange" checked>Orange</igc-radio>
+        </div>
+      `);
+
+      // As for native radios, the last checked radio wins, and each radio keeps
+      // the default of its `checked` attribute.
+      expect(radios.map((radio) => radio.checked)).to.eql([false, true]);
+      expect(radios.map((radio) => radio.defaultChecked)).to.eql([true, true]);
+    });
+
+    it('emits `invalid` in DOM order from any radio of the group', async () => {
+      const radios = await radiosOf(html`
+        <div>
+          <igc-radio name="fruit" value="apple" required>Apple</igc-radio>
+          <igc-radio name="fruit" value="orange">Orange</igc-radio>
+          <igc-radio name="fruit" value="mango">Mango</igc-radio>
+        </div>
+      `);
+      const order: string[] = [];
+
+      for (const radio of radios) {
+        radio.addEventListener('invalid', () => order.push(radio.value));
+      }
+
+      expect(firstOf(radios).checkValidity()).to.be.false;
+      expect(order).to.eql(['apple', 'orange', 'mango']);
+
+      order.length = 0;
+      expect(radios[1].reportValidity()).to.be.false;
+      expect(order).to.eql(['apple', 'orange', 'mango']);
     });
   });
 
