@@ -1,5 +1,5 @@
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
-import { property, query, queryAll } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -43,6 +43,7 @@ import { DateRangePosition } from './date-range-mask-parser.js';
 import { styles } from './date-range-picker.base.css.js';
 import { dateRangeI18nConfig } from './i18n.js';
 import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
+import { type RangeEditors, rangeEditors } from './range-editors.js';
 import {
   normalizeRange,
   rangeShape,
@@ -252,14 +253,13 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
 
   private _placeholder?: string;
 
-  @queryAll(IgcDateTimeInputComponent.tagName)
-  private readonly _inputs!: NodeListOf<IgcDateTimeInputComponent>;
+  private get _editors(): RangeEditors {
+    return rangeEditors(this.renderRoot, this.useTwoInputs);
+  }
 
-  @query(IgcDateRangeInputComponent.tagName)
-  private readonly _input!: IgcDateRangeInputComponent;
-
-  protected override get _ownedEditors(): (PickerEditor | undefined)[] {
-    return this.useTwoInputs ? Array.from(this._inputs) : [this._input];
+  protected override get _ownedEditors(): PickerEditor[] {
+    // The render root is created on the first connect.
+    return this.renderRoot ? this._editors.editors() : [];
   }
 
   // #endregion
@@ -295,13 +295,8 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
       .join(` ${this.resourceStrings.date_range_picker_date_separator} `);
   }
 
-  protected override get _projectionTarget() {
-    // The host's associated labels are projected only onto the start input.
-    return this._input ?? this._inputs?.[0] ?? null;
-  }
-
   protected override _focusAndSelectInput(): void {
-    this.useTwoInputs ? this._inputs[0].select() : this._input.focus();
+    this._editors.focusAfterPick();
   }
 
   protected override _commitPolicy(): CommitPolicy {
@@ -421,7 +416,7 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     // The base projector covers the start editor. This one gives the end editor
     // the popup semantics, without the labels.
     addAriaProjector(this, {
-      target: () => this._inputs[1] ?? null,
+      target: () => this._ownedEditors[1] ?? null,
       naming: false,
       state: () => ({
         hasPopup: 'dialog',
@@ -475,69 +470,45 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     this._closeWith(() => this._session.confirm());
   }
 
-  protected _handleInput(event: CustomEvent<string>) {
-    event.stopPropagation();
+  protected _handleEditorInput(event: Event): void {
+    if (!this._acceptEditorEvent(event)) return;
+
     if (this.nonEditable) {
       event.preventDefault();
       return;
     }
 
-    const input = event.target as IgcDateTimeInputComponent;
-    const newValue = input._uncommittedValue;
-    const draft = normalizeRange(this._getUpdatedDateRange(input, newValue));
+    const editors = this._editors;
+    const draft = normalizeRange(editors.typed());
+    const typed = editors.typedDate(event.target as PickerEditor);
 
     this._draft = { value: draft };
-    this._setCalendarActiveDate(newValue ?? draft?.start ?? draft?.end);
+    this._setCalendarActiveDate(typed ?? draft?.start ?? draft?.end);
 
     this.emitEvent('igcInput', { detail: draft });
   }
 
-  protected _handleInputChange(event: CustomEvent<Date | null>) {
-    event.stopPropagation();
-
-    const input = event.target as IgcDateTimeInputComponent;
-
-    this._commitEditorValue(this._getUpdatedDateRange(input, input.value));
-  }
-
-  protected _handleDateRangeInput(event: CustomEvent<string>): void {
-    event.stopPropagation();
-    if (this.nonEditable) {
-      event.preventDefault();
-      return;
+  protected _handleEditorChange(event: Event): void {
+    if (this._acceptEditorEvent(event)) {
+      this._commitEditorValue(this._editors.committed());
     }
-
-    const input = event.target as IgcDateRangeInputComponent;
-    const draft = normalizeRange(input._uncommittedValue);
-
-    this._draft = { value: draft };
-    this._setCalendarActiveDate(draft?.start);
-
-    this.emitEvent('igcInput', { detail: draft });
-  }
-
-  protected _handleDateRangeInputChange(
-    event: CustomEvent<DateRangeValue | null>
-  ) {
-    event.stopPropagation();
-
-    this._commitEditorValue((event.target as IgcDateRangeInputComponent).value);
   }
 
   // #endregion
 
   // #region Private methods
 
-  /** Builds the range from both editors. The other editor is read through its uncommitted draft. */
-  private _getUpdatedDateRange(
-    input: IgcDateTimeInputComponent,
-    newValue: Date | null
-  ): DateRangeValue {
-    const [startInput, endInput] = this._inputs;
+  /**
+   * Stops the inner event of an editor, and returns whether the editor belongs to the layout that `useTwoInputs`
+   * selects. An editor that a layout change removes commits nothing, as its typed text goes with it. The events of
+   * slotted content go on to the application.
+   */
+  private _acceptEditorEvent(event: Event): boolean {
+    const target = event.target as PickerEditor;
+    if (target.getRootNode() !== this.renderRoot) return false;
 
-    return input === startInput
-      ? { start: newValue, end: endInput?._uncommittedValue ?? null }
-      : { start: startInput?._uncommittedValue ?? null, end: newValue };
+    event.stopPropagation();
+    return this._ownedEditors.includes(target);
   }
 
   /** Applies a predefined range like a calendar selection. */
@@ -641,8 +612,8 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
         .min=${this._min}
         .max=${this._max}
         label=${label}
-        @igcChange=${this._handleInputChange}
-        @igcInput=${this._handleInput}
+        @igcChange=${this._handleEditorChange}
+        @igcInput=${this._handleEditorInput}
         @keydown=${this._handleEnterKey}
         @keypress=${this._handleEnterKey}
         @click=${bindIf(this._opensOnClick, this._handleInputClick)}
@@ -684,8 +655,8 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
         .displayFormat=${live(format)}
         .locale=${live(this.locale)}
         .prompt=${this.prompt}
-        @igcInput=${this._handleDateRangeInput}
-        @igcChange=${this._handleDateRangeInputChange}
+        @igcInput=${this._handleEditorInput}
+        @igcChange=${this._handleEditorChange}
         @keydown=${this._handleEnterKey}
         @keypress=${this._handleEnterKey}
         @click=${bindIf(this._opensOnClick, this._handleInputClick)}

@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - An empty range is `null`: the initial `value` and `defaultValue`, the detail of `igcChange` and `igcInput`, a range that the calendar clears and a range that the inputs empty. Before, some of these were `{ start: null, end: null }`. Check for `null` before you read `value.start`.
   - Each write puts the ends of the range in order of time: a value set from code, the `value` attribute, `defaultValue` and a custom range chip. Before, only a commit of the inputs swapped the ends, and it compared only the days. The `igcInput` detail is in order too, while the inputs keep the typed text.
   - The two inputs and the `value` attribute keep the time of the dates. Before, they set the time to midnight.
+  - A change of `useTwoInputs` drops an edit in an input that the change removes, also when the input loses the focus before the next render. Before, that input could still commit its edit.
   - Without `activeDate`, a range with one end set from code brings that end into view, as a full range brings its start.
 - #### Dropdown
   - <kbd>Enter</kbd> closes the open list also when no item is active, as in the select. Before, the list stayed open.
@@ -61,6 +62,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - In single input mode, Arrow Up and Arrow Down in a typed end spin that end and keep the text of the other end. Before, both ends changed to today.
   - In single input mode, a spin of an empty end sets today, without a step and without the time of day. Before, it set the current time and stepped it.
   - A value in the first month that is set while the second month of the calendar is active no longer shifts the months by one.
+  - In single input mode, the calendar shows the month of the end that you type or spin, as it does with two inputs. Before, it showed only the month of the start.
+  - The `igcInput` and `igcChange` events of content in the prefix and suffix slots of the inputs reach your handlers, and they no longer change the value of the picker. Before, the picker stopped them, and an `igcChange` from that content cleared the value, or its end date with two inputs.
 - #### Form controls
   - A change of the `value` or `checked` attribute keeps the control pristine, so a later `defaultValue` or `defaultChecked` still sets the value, as for a native control.
 - #### Input, Textarea
