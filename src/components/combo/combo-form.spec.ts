@@ -64,6 +64,20 @@ describe('Combo', () => {
       spec.assertSubmitHasValues(['BG01', 'BG02']);
     });
 
+    it('submits the values under a new name (multiple)', async () => {
+      await spec.rename('renamed');
+
+      spec.assertSubmitHasValues(['BG01', 'BG02']);
+    });
+
+    it('submits the value under a new name (single)', async () => {
+      spec.setProperties({ singleSelect: true });
+      // A string value goes under the `name` attribute, which the update reflects.
+      await spec.rename('renamed', true);
+
+      spec.assertSubmitHasValues(['BG01']);
+    });
+
     it('is associated on submit without value-key (single)', () => {
       const [first, second, _] = cities;
 

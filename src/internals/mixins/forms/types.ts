@@ -206,12 +206,6 @@ export declare class FormAssociatedCheckboxElementInterface extends BaseFormAsso
    */
   public set defaultChecked(value: boolean);
   public get defaultChecked(): boolean;
-
-  /** The value that a checked control submits. */
-  protected _value: string;
-
-  /** Sets the value that a checked control submits. Keeps the pristine state. */
-  protected _setSubmittedValue(value: string): void;
 }
 
 export declare class FormRequiredInterface {

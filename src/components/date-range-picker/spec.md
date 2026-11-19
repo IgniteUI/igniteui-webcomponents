@@ -38,12 +38,13 @@
     - [Common suite](#common-suite)
     - [Single input suite](#single-input-suite)
     - [Two inputs suite](#two-inputs-suite)
-    - [Form integration suites](#form-integration-suites)
+    - [Form integration suite](#form-integration-suite)
     - [Predefined ranges area](#predefined-ranges-area)
     - [Range mask parser](#range-mask-parser)
     - [Range mask parser properties](#range-mask-parser-properties)
     - [Range value shape](#range-value-shape)
     - [Range value shape properties](#range-value-shape-properties)
+    - [Range editors](#range-editors)
     - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -79,6 +80,8 @@
 |      22 | 2026-11-18 | The single input spins each end like a date-time input; a spin in a typed end keeps the text of the other end; an empty end takes today without a step; <kbd>Ctrl</kbd> + arrow stops at each part edge; the single input is editable in dropdown mode, as the code does |
 |      23 | 2026-11-18 | Add the strict and the lenient value parse to the range mask parser property suite |
 |      24 | 2026-11-18 | An empty range is `null`; reversed ends are swapped on every write; the ends keep their time; a clear is reported when the focus leaves the picker; a value write brings the range into view unless `activeDate` is set, and a render no longer moves the calendar back to `activeDate` |
+|      25 | 2026-11-19 | In single input mode, typing or a spin brings the end at the caret into view, as the focused editor does with two inputs; the input and change events of slotted content no longer change the value; an editor that a layout change removes commits nothing; add the range editors suite; the scenarios of both layouts run once per layout in the common suite and in one form suite |
+|      26 | 2026-11-19 | A change of `name` renames the submitted `-start` and `-end` entries at once |
 
 ## Overview
 
@@ -186,7 +189,9 @@ As a developer, I expect to be able to:
 
 - In two inputs mode, each editor behaves as an [`igc-date-time-input`](../date-time-input/spec.md): a mask derived
   from the input format, deferred commit on blur, and spinning of the part under the caret.
-- Typing a date selects it in the calendar and brings its month into view.
+- Typing a date selects it in the calendar and brings its month into view. The date is the one in the focused editor
+  with two inputs, and the end at the caret in single input mode. While that date is incomplete, or while the caret is
+  in the separator, the start comes into view, or the end when there is no start.
 - In single input mode the field is editable in dropdown mode and read-only in dialog mode. Each end spins like a
   date-time input, with the same step rules and the day of the start date as the default part. A spin while you
   type reads the typed text of its end and keeps the text of the other end, also a `stepUp` or `stepDown` from code,
@@ -230,7 +235,8 @@ With an initial value through the attribute, as JSON:
 
 `useTwoInputs` renders a start and an end editor. In dropdown mode the user can type in either layout; in dialog mode,
 and with `nonEditable` or `readOnly`, the editors are read-only and the range is changed through the calendar or the
-range chips.
+range chips. A change of `useTwoInputs` or `mode` drops the text that the user types in the editors it replaces. An
+editor that the change removes commits nothing, also when it loses the focus before the next render.
 
 #### Picker mode
 
@@ -364,7 +370,7 @@ name the control.
 </form>
 ```
 
-- The range is submitted under `name`.
+- The range is submitted under `name`. A change of `name` renames the entries at once.
 - A form reset restores `defaultValue` and clears the touched and invalid state of the editors.
 - An invalid picker blocks submission.
 - <kbd>Enter</kbd> in an editor submits the owning form when the picker is valid. The picker counts as one text field,
@@ -543,6 +549,9 @@ apply.
 | igcChange  | false       | `DateRangeValue \| null` | Emitted when the user commits a change to the value. |
 | igcInput   | false       | `DateRangeValue \| null` | Emitted when the user types in an input.             |
 
+The picker handles the `igcInput` and `igcChange` events of its editors only. The same events from content in the
+`prefix` and `suffix` slots and their `-start` and `-end` forms go on to the application and do not change the value.
+
 ### Slots
 
 | Name                       | Description                                                                      |
@@ -610,16 +619,16 @@ The component is covered by ten suites in this directory, all running in a real 
 
 | Suite | Scope |
 | ----- | ----- |
-| [`date-range-picker.common.spec.ts`](./date-range-picker.common.spec.ts) | Behavior shared by both display modes. |
+| [`date-range-picker.common.spec.ts`](./date-range-picker.common.spec.ts) | Behavior shared by both display modes, also run in each layout. |
 | [`date-range-picker-single.spec.ts`](./date-range-picker-single.spec.ts) | The single input mode. |
 | [`date-range-picker-two-inputs.spec.ts`](./date-range-picker-two-inputs.spec.ts) | The two inputs mode. |
-| [`date-range-picker-single.form.spec.ts`](./date-range-picker-single.form.spec.ts) | Form integration for the single input mode. |
-| [`date-range-picker-two-inputs.form.spec.ts`](./date-range-picker-two-inputs.form.spec.ts) | Form integration for the two inputs mode. |
+| [`date-range-picker.form.spec.ts`](./date-range-picker.form.spec.ts) | Form integration, in each layout. |
 | [`predefined-ranges-area.spec.ts`](./predefined-ranges-area.spec.ts) | The internal range chips component. |
 | [`date-range-mask-parser.spec.ts`](./date-range-mask-parser.spec.ts) | The range mask parser on its own. |
 | [`date-range-mask-parser.property.spec.ts`](./date-range-mask-parser.property.spec.ts) | Property-based (fuzz) tests for the range mask parser. |
 | [`range-shape.spec.ts`](./range-shape.spec.ts) | The rules of the range value, without a DOM. |
 | [`range-shape.property.spec.ts`](./range-shape.property.spec.ts) | Property-based tests of the rules of the range value. |
+| [`range-editors.spec.ts`](./range-editors.spec.ts) | The editors of each layout, with the editors but without the picker. |
 
 The suites reuse `createFormAssociatedTestBed`, `runValidationContainerTests`,
 `runExternalLabelAssociationTests` and the `simulate*` helpers from
@@ -652,69 +661,74 @@ input and two inputs suites run with reduced motion, so the dialog does not fade
    month set while the second month is active keeps the months in view, a value set from code brings its first
    defined date into view, and an open without a value shows the current active date in the first month. With `activeDate` set, a pick in the second month keeps the months in view, and a new
    `activeDate` still moves the calendar.
+9. Each layout - the same scenarios run for the single input and for two inputs: the accessibility audit and the
+   title slot; the value as an attribute, through a mode change and with `nonEditable`; `clear()` and `select()`;
+   selection through the calendar in dropdown and in dialog mode, with Done, an outside click, Cancel and
+   <kbd>Escape</kbd>; a click on the input, and the clear icon with and without a render before the blur; the
+   keyboard toggle; the input and change events of slotted content, which the picker leaves alone; an edit that a
+   layout change drops; a click on the input and on the clear icon of a read-only picker.
 
 ### Single input suite
 
-9. Rendering and initialization, including the accessibility audit.
 10. Properties and localization.
 11. Scroll strategy - the `scroll`, `hide` and `close` behaviors of the anchored calendar.
 12. Methods. `stepUp` and `stepDown` of the range input update its value at once, also while it is focused and empty.
     The default part is the day of the start date, a part that the format does not show still spins, and an empty
     end takes today without a step. A value set from code while the input is focused is not reported on blur.
-13. Interactions - selection through the calendar, interactions with the input and the open and clear buttons, and
-    the readonly state. A closed picker does not cancel <kbd>Escape</kbd>. <kbd>Ctrl</kbd> + arrow stops at each part
-    edge, also without separators. Arrow keys and `stepUp` in a range with one typed end spin that end and keep
-    the text of the other end.
+13. Interactions - interactions with the input and the open and clear buttons. A closed picker does not cancel
+    <kbd>Escape</kbd>. <kbd>Ctrl</kbd> + arrow stops at each part edge, also without separators. Arrow keys and `stepUp`
+    in a range with one typed end spin that end and keep the text of the other end. Typing or a spin in the end brings
+    the end into view; an edit with the caret in the separator brings the start into view.
 14. Undo and redo of the masked range text.
 15. Slots.
 
 ### Two inputs suite
 
-16. Rendering and initialization, including the accessibility audit.
+16. Rendering and initialization with a value.
 17. Properties and localization.
-18. Methods.
-19. Validity of the editors - the editors report the validity of the picker, also while it is pristine, and show
+18. Validity of the editors - the editors report the validity of the picker, also while it is pristine, and show
     only the invalid state of the picker.
-20. Interactions - selection through the calendar, interactions with the inputs and the open and clear buttons, and
+19. Interactions - selection through the calendar, interactions with the inputs and the open and clear buttons, and
     the readonly state. An editor commit keeps the time of both ends. A typed end before the start is swapped in
     the `igcInput` detail and in the calendar, while the editors keep the typed order. A clear through the icon is
     reported one time, when the focus leaves the picker, and not when the focus moves to the other input.
-21. Slots.
+20. Slots.
 
-### Form integration suites
+### Form integration suite
 
-Each display mode has its own form suite, with the same groups.
+The form suite runs these groups in each layout:
 
-22. Form associated - submission, reset and the disabled ancestor state. <kbd>Enter</kbd> submits when the range is
-    valid, and a real <kbd>Enter</kbd> submits once. In single input mode, the editor shows the invalid state of the
-    picker at once.
-23. Initial validation - the component does not enter an invalid state merely by being rendered or toggled.
-24. `defaultValue` - initial state, submission, reset and validation.
-25. Validation message slots, generated by `runValidationContainerTests`.
+21. Form associated - submission, also under a changed `name`, reset and the disabled ancestor state. <kbd>Enter</kbd>
+    submits when the range is valid, and a real <kbd>Enter</kbd> submits once. Each editor shows the invalid state of
+    the picker.
+22. Initial validation - a click on the calendar icon does not make a required picker invalid.
+23. `defaultValue` - initial state, submission, reset and validation.
+24. Validation message slots, generated by `runValidationContainerTests`.
 
-The two inputs suite also has these groups:
+It also has a group for each layout:
 
-26. Editor commit - a value that the start editor commits marks the picker as touched, so an out-of-range start
-    shows the invalid state without a blur.
-27. Form reset - a reset clears the invalid styles of an editor that was touched, and keeps the default range in
-    the editors.
+25. Single input - a partial range below `min` reports the required message, and the editor shows the invalid state
+    of the picker at once.
+26. Two inputs - the validity follows a switch between the layouts; a value that the start editor commits marks the
+    picker as touched, so an out-of-range start shows the invalid state without a blur; a reset clears the invalid
+    styles of an editor that was touched, and keeps the default range in the editors.
 
 The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
 [input suite](../input/spec.md#form-validity-checks) covers them.
 
 ### Predefined ranges area
 
-28. The internal `igc-predefined-ranges-area` renders the built-in and the custom chips and emits its selection.
+27. The internal `igc-predefined-ranges-area` renders the built-in and the custom chips and emits its selection.
     Built-in range dates: the day count and a click after midnight.
 
 ### Range mask parser
 
-29. Initialization (a literal separator and a widened year format), range parsing, range formatting, part queries,
+28. Initialization (a literal separator and a widened year format), range parsing, range formatting, part queries,
     spinning, prompt updates and mask updates.
 
 ### Range mask parser properties
 
-30. For generated formats, separators and dates: the round-trip, each side parsed like a single date, the layout
+29. For generated formats, separators and dates: the round-trip, each side parsed like a single date, the layout
     around the separator after a mask change, and no throw or invalid date for any string. A strict value parse
     gives a range only when both ends are complete; a lenient one parses each end as typed, and gives `null` when
     neither end is a valid date or the mask is blank. For the part editing:
@@ -723,17 +737,25 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 ### Range value shape
 
-31. Without a DOM: an empty range is `null`; a range in order stays the same object; reversed ends swap, by time also
+30. Without a DOM: an empty range is `null`; a range in order stays the same object; reversed ends swap, by time also
     on the same day; a missing end becomes `null`. The form value transformers normalize a value, a default value and
     an attribute string, and compare ranges by their dates. The calendar dates of a range, a range in one day, a
     partial range and no range; the range of a calendar selection; a complete range.
 
 ### Range value shape properties
 
-32. For generated ranges: the normalize step is idempotent, gives `null` only for an empty range and the ends in order
+31. For generated ranges: the normalize step is idempotent, gives `null` only for an empty range and the ends in order
     of time otherwise, and keeps each date with its time. A complete range goes to the calendar and back unchanged,
     and a calendar selection comes back as its first and last date, which closes the picker when there is more than one.
     An attribute string is normalized like the range of its dates.
+
+### Range editors
+
+32. For each layout: the editors, the start editor first, and none in a root without them; the range of the editors;
+    the typed range and the typed date during an edit of the start, while the committed range stays; the focus on the
+    start editor after a pick, which selects its text only with two inputs. In the single input, the end at the
+    caret, also at the edge of a part and nothing in the separator, gives the typed date; with two inputs, each
+    editor gives its own date.
 
 ### Host ARIA
 

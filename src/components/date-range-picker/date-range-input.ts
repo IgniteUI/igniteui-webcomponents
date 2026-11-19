@@ -15,6 +15,7 @@ import type { DateRangeValue } from '../types.js';
 import {
   DateRangeMaskParser,
   type DateRangePart,
+  type DateRangePosition,
 } from './date-range-mask-parser.js';
 
 export interface IgcDateRangeInputComponentEventMap {
@@ -119,6 +120,13 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   }
 
   // #endregion
+}
+
+/** The end of the range at the caret of `input`, or `undefined` in the separator. */
+export function typedPosition(
+  input: IgcDateRangeInputComponent
+): DateRangePosition | undefined {
+  return input['_parser'].partAt(input['_inputSelection'].start)?.position;
 }
 
 declare global {

@@ -220,6 +220,8 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     private _isReportingValidity = false;
     private _touched = false;
     private __pristine = true;
+    /** Set at the first connect. */
+    private __submitsOnChange = false;
     private _writeOrigin: WriteOrigin = 'code';
     /** The value of the last `igcChange`, or of the last write that needs no report. */
     private __reported: unknown;
@@ -365,7 +367,37 @@ function BaseFormAssociated<T extends LitElementConstructor>(
         this.__markValueReported();
       }
 
-      this._validate();
+      // The constructor and the attributes can change what the submission reads in any order.
+      const resubmit =
+        !this.__submitsOnChange && Boolean(this._formValue?.readsHost);
+      this.__submitsOnChange = true;
+
+      if (resubmit) {
+        this.__resubmit();
+      } else {
+        this._validate();
+      }
+    }
+
+    /** @internal */
+    public override requestUpdate(
+      ...args: Parameters<LitElement['requestUpdate']>
+    ): void {
+      super.requestUpdate(...args);
+      const [name, oldValue] = args;
+
+      // Lit calls this from the setter of each reactive property, at once.
+      if (
+        this.__submitsOnChange &&
+        name !== undefined &&
+        this._formValue?.readsProperty(name) &&
+        !Object.is(
+          (this as unknown as Record<PropertyKey, unknown>)[name],
+          oldValue
+        )
+      ) {
+        this.__resubmit();
+      }
     }
 
     protected override update(changedProperties: PropertyValues): void {
@@ -643,6 +675,11 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       this.__reported = this._formValue?.value;
     }
 
+    /** Keeps the pristine state and the reported value. */
+    private __resubmit(): void {
+      this._writeFrom('normalize', () => this._formValue.resubmit());
+    }
+
     /** @internal */
     public override attributeChangedCallback(
       name: string,
@@ -861,23 +898,6 @@ export function FormAssociatedCheckboxMixin<T extends LitElementConstructor>(
 
     public get defaultChecked(): boolean {
       return this._formValue.defaultValue as boolean;
-    }
-
-    protected _value!: string;
-
-    /** Sets the value that a checked control submits. Keeps the pristine state. */
-    protected _setSubmittedValue(value: string): void {
-      if (value === this._value) {
-        return;
-      }
-
-      this._value = value;
-
-      if (this._formValue.value) {
-        this._writeFrom('normalize', () =>
-          this._formValue.setValueAndFormState(true)
-        );
-      }
     }
   }
 

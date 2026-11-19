@@ -208,6 +208,7 @@ export default class IgcComboComponent<
   > = {
     setValue: asArray,
     setDefaultValue: asArray,
+    reads: ['name', 'singleSelect'],
     setFormValue: (value, host) => {
       const { name, singleSelect } = host as IgcComboComponent;
 
@@ -332,10 +333,7 @@ export default class IgcComboComponent<
       host._syncSelectionFromValue();
 
       if (host.hasUpdated) {
-        host._writeFrom('normalize', () => {
-          host._searchTerm = '';
-          host._formValue.setValueAndFormState(host.value);
-        });
+        host._searchTerm = '';
       }
     },
   })

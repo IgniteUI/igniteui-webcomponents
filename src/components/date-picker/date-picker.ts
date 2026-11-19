@@ -232,10 +232,6 @@ export default class IgcDatePickerComponent extends I18nMixin(
     return this._input?.inputFormat;
   }
 
-  protected override get _projectionTarget() {
-    return this._input ?? null;
-  }
-
   protected override get _ownedEditors(): (
     | IgcDateTimeInputComponent
     | undefined
