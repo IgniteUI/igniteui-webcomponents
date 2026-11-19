@@ -16,6 +16,7 @@
       - [Setting size constraints](#setting-size-constraints)
       - [Disabling user interactions](#disabling-user-interactions)
       - [Customizing visual elements](#customizing-visual-elements)
+      - [Sizing](#sizing)
       - [Programmatic control](#programmatic-control)
       - [Nested splitters](#nested-splitters)
     - [Localization](#localization)
@@ -44,6 +45,7 @@
     - [Localization](#localization-1)
     - [Hidden ancestor](#hidden-ancestor)
     - [Orientation change in a theme](#orientation-change-in-a-theme)
+    - [Sizing](#sizing-1)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
     - [Keyboard support](#keyboard-support)
@@ -60,6 +62,7 @@
 |       5 | 2026-10-23 | The splitter makes a stacking context, so the z-index of the focused bar does not compete with the layers of the page |
 |       6 | 2026-10-29 | Transition only the colors, the shadow and the scale of the bar, so the bar hides at the same time as a hidden ancestor and takes its new size, and in the Indigo theme its new scale, at once after an orientation change |
 |       7 | 2026-11-02 | Each pane makes a stacking context, so the focused bar stays above slotted content with any `z-index` |
+|       8 | 2026-11-19 | The bar, the drag handle and the expanders follow `--ig-size`, with small as the default. A short bar narrows the gaps around the drag handle, not the handle |
 
 ## Overview
 
@@ -232,6 +235,28 @@ any other unitless or unparsable value, a negative value, or a percentage above 
 ```
 
 The collapse buttons are additionally hidden while a pane is collapsed.
+
+#### Sizing
+
+```html
+<igc-splitter style="--ig-size: var(--ig-size-large)">...</igc-splitter>
+```
+
+The splitter has no size property. It follows `--ig-size`, set on the element or on an ancestor. The default is
+small.
+
+| Size   | Bar thickness | Drag handle thickness | Drag handle radius | Expander height |
+| ------ | ------------: | --------------------: | -----------------: | --------------: |
+| small  |           6px |                   4px |                2px |             4px |
+| medium |          12px |                   6px |                8px |             5px |
+| large  |          18px |                   8px |                8px |             6px |
+
+The steps add to the `size` theme token (4px), so `--ig-splitter-size: 10px` makes the bar 12px, 18px and 24px and
+the drag handle 10px, 12px and 14px.
+
+The drag handle is 25% of the bar length at every size, with 48px between it and each expander. On a bar too short
+for that, the gaps get narrower and the handle keeps its 25%. In the Indigo theme the idle bar is 1px thick at every size
+and takes the thickness of the size on hover and focus.
 
 #### Programmatic control
 
@@ -495,6 +520,19 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 ### Orientation change in a theme
 
 36. In the Indigo theme, the bar takes the scale of a new orientation at once, with no transition.
+
+### Sizing
+
+37. Without `--ig-size` the bar is 6px thick, the drag handle 4px with a 2px radius and the expanders 8px wide.
+38. At medium and large the bar is 12px and 18px thick, the drag handle 6px and 8px with an 8px radius, centered on
+    the bar, and the expanders 10px and 12px wide.
+39. An overridden `--ig-splitter-size` adds the same amount to the bar, the drag handle and the expanders at every
+    size.
+40. With a collapsed pane, the drag handle keeps its 48px margins and its position.
+41. On a short bar the drag handle keeps 25% of the bar length, the gaps to the expanders get narrower and the
+    expanders stay inside the bar.
+42. In the Indigo theme, the idle bar is 1px thick at every size, also with an overridden `--ig-splitter-size`.
+43. In the Indigo theme, the hovered bar has the thickness of the size.
 
 ## Accessibility
 

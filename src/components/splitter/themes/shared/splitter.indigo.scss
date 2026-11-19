@@ -1,14 +1,12 @@
-@use 'sass:map';
-@use 'igniteui-theming/sass/utils/math' as theming-math;
 @use 'igniteui-theming/sass/animations/easings' as *;
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
 
 $theme: $indigo;
 
-// The bar size in pixels, with its 1px padding on each side.
-$splitter-size: theming-math.unitless(px(map.get($theme, 'size'))) + 2;
-$slim-splitter: calc( 1 / $splitter-size);
+// The scale that leaves 1px of the bar: 1px / bar thickness, as a number.
+// CSS can't divide two lengths, and tan(atan2(a, b)) equals a / b.
+$slim-splitter: tan(atan2(1px, var(--_bar-size)));
 
 %hide-controls {
     [part~='drag-handle'],
