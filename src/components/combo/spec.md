@@ -105,6 +105,7 @@
 |      32 | 2026-11-18 | The input shows only the invalid state of the combo, and reports the validity of the combo |
 |      33 | 2026-11-18 | A closed list has no active option, also after `open` changes from code or an app cancels the opening; a change of `showSelectAll` or `groupSelection` keeps the active option on its item; in single selection, the first match is active in the update of the typed text |
 |      34 | 2026-11-19 | A change of `name` moves the submitted values to the new name at once |
+|      35 | 2026-11-19 | Test scenarios: in single selection, a pick or a clear that the app cancels after the user types shows the kept selection again, and the clear button clears a value that has no record. The selection model keeps `value` in sync; the behavior does not change |
 
 ## Overview
 
@@ -792,7 +793,8 @@ The files share their data and helpers through
 `createFormAssociatedTestBed`, `runValidationContainerTests`, `runExternalLabelAssociationTests`,
 `runAriaProjectionTests`, `runFocusBeforeRenderTests` and the `simulate*` helpers from
 [`src/internals/testing`](../../internals/testing). The unit specs in [`controllers`](./controllers) test the data
-state, the data requests, the selection model and the active option without a browser fixture.
+state, the data requests, the selection model with its sync of `value`, and the active option without a browser
+fixture.
 
 ### Component
 
@@ -853,7 +855,8 @@ the shadow DOM through `getComboDOM()`.
     composition in the main input does not select an option. A Tab or a click outside after a search keeps a valid
     state (issue 2221). A selection from a search keeps the active option on the selected item. The first match is
     active in the update of the typed text. The list has no active option while an app keeps it closed during
-    typing.
+    typing. When the app cancels a pick or a clear after the user types, the input shows the kept selection again.
+    The clear button clears a value that has no record.
 
 #### Grouping and templates
 

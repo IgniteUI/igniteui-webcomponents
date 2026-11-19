@@ -1919,6 +1919,51 @@ describe('Combo', () => {
         expect(combo.value).to.be.empty;
         expect(dom.input.value).to.equal('');
       });
+
+      describe('A canceled change after typing', () => {
+        beforeEach(async () => {
+          combo.singleSelect = true;
+          combo.select('BG02');
+          await elementUpdated(combo);
+          combo.addEventListener('igcChange', (event) =>
+            event.preventDefault()
+          );
+
+          // The typed text, which the canceled deselection keeps.
+          dom.input.value = 'Var';
+          await filterCombo('Var');
+          expect(combo.value).to.eql(['BG02']);
+          expect(dom.input.value).to.equal('Var');
+        });
+
+        it('shows the kept selection again after a pick', async () => {
+          await comboStable(combo);
+          simulateClick(firstOf(items(combo)));
+          await elementUpdated(combo);
+
+          expect(combo.value).to.eql(['BG02']);
+          expect(dom.input.value).to.equal('Plovdiv');
+        });
+
+        it('shows the kept selection again after a clear', async () => {
+          simulateClick(dom.clearIcon!);
+          await elementUpdated(combo);
+
+          expect(combo.value).to.eql(['BG02']);
+          expect(dom.input.value).to.equal('Plovdiv');
+        });
+      });
+
+      it('clears a value without a record with the clear button', async () => {
+        combo.singleSelect = true;
+        combo.value = ['XX99'];
+        await elementUpdated(combo);
+
+        simulateClick(dom.clearIcon!);
+        await elementUpdated(combo);
+
+        expect(combo.value).to.be.empty;
+      });
     });
 
     describe('Grouping and templates', () => {
