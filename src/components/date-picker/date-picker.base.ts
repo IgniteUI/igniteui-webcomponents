@@ -239,9 +239,6 @@ export abstract class IgcDatePickerBaseComponent<
   protected abstract get _calendarResourceStrings(): IgcCalendarResourceStrings &
     Required<ICalendarResourceStrings>;
 
-  /** The editor whose native input gets the host name and `aria-haspopup="dialog"`. */
-  protected abstract get _projectionTarget(): Element | null;
-
   /** Restores focus to the editor after a calendar selection. */
   protected abstract _focusAndSelectInput(): void;
 
@@ -494,7 +491,7 @@ export abstract class IgcDatePickerBaseComponent<
     super();
 
     addAriaProjector(this, {
-      target: () => this._projectionTarget,
+      target: () => firstOf(this._ownedEditors) ?? null,
       state: () => ({
         hasPopup: 'dialog',
         required: this.required ? 'true' : undefined,
