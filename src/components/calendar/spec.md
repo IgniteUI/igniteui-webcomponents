@@ -32,6 +32,7 @@
     - [Rendering](#rendering)
     - [Locale](#locale)
     - [Interactions](#interactions)
+    - [Show a date](#show-a-date)
     - [Selection model](#selection-model)
     - [Keyboard navigation](#keyboard-navigation)
     - [Year and month views](#year-and-month-views)
@@ -52,6 +53,7 @@
 |       3 | 2026-10-01 | Descriptor labels; the initial active date is derived before the first render |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                      |
 |       5 | 2026-11-02 | The events of the days view stay inside the calendar.                         |
+|       6 | 2026-11-18 | An internal function brings a date into view for the pickers, and keeps the months when the date is shown |
 
 ## Overview
 
@@ -60,7 +62,11 @@ individual dates, or a range of dates. It renders one of three views - days, mon
 shows the current selection and a navigation area for moving through time.
 
 The component is the date surface shared by the pickers of the library: [`igc-date-picker`](../date-picker/spec.md)
-and [`igc-date-range-picker`](../date-range-picker/spec.md) render an `igc-calendar` inside their popover.
+and [`igc-date-range-picker`](../date-range-picker/spec.md) render an `igc-calendar` inside their popover. They
+move it through two internal APIs of the calendar module: the `focusActiveDate` symbol method focuses the active
+date, and the `showDate(calendar, date)` function makes a date the active date. With more than one visible month,
+`showDate` keeps the months when the date is in one of them, and puts any other date in the first month. The pickers
+ask for the first month when they open.
 
 ### Key features
 
@@ -468,41 +474,46 @@ The groups below mirror the `describe` blocks of those suites.
     equal boundaries, an inverted range, overlapping ranges and multiple descriptors.
 32. Does not select disabled dates in range selection, and creates no range when the selection is `multiple`.
 
+### Show a date
+
+33. Shows a date with more than one visible month: a date in a shown month keeps the months and makes its month the
+    active view, a date that is not shown goes in the first month, and `first` always puts it in the first month.
+
 ### Selection model
 
-33. Single - selects a date, does not change when the selected date is activated again, and leaves the dates of the
+34. Single - selects a date, does not change when the selected date is activated again, and leaves the dates of the
     other modes alone.
-34. Multiple - adds a date keeping the collection sorted, removes an already selected date, and does not mutate the
+35. Multiple - adds a date keeping the collection sorted, removes an already selected date, and does not mutate the
     input.
-35. Range - starts a range from one date, expands it over every covered date, handles a backwards selection, clears
+36. Range - starts a range from one date, expands it over every covered date, handles a backwards selection, clears
     on re-activating the start, restarts from a completed range, and leaves disabled dates out.
-36. Disabled dates are never selected, while the dates around them are.
+37. Disabled dates are never selected, while the dates around them are.
 
 ### Keyboard navigation
 
-37. Focus is retained when switching to the months and to the years view.
-38. Days view - is accessible; <kbd>Page Up</kbd>, <kbd>Page Down</kbd> and their <kbd>Shift</kbd> variants move by
+38. Focus is retained when switching to the months and to the years view.
+39. Days view - is accessible; <kbd>Page Up</kbd>, <kbd>Page Down</kbd> and their <kbd>Shift</kbd> variants move by
     month and by year; the arrow keys move by day and by week; <kbd>Home</kbd> and <kbd>End</kbd> move to the start
     and the end of the month; <kbd>Enter</kbd> and <kbd>Space</kbd> select.
-39. Days view - skips disabled dates, stays put when every date in the direction of travel is disabled, and when
+40. Days view - skips disabled dates, stays put when every date in the direction of travel is disabled, and when
     both weekdays and weekends are disabled.
-40. Months view - is accessible; <kbd>Home</kbd>, <kbd>End</kbd>, <kbd>Page Up</kbd>, <kbd>Page Down</kbd> and the
+41. Months view - is accessible; <kbd>Home</kbd>, <kbd>End</kbd>, <kbd>Page Up</kbd>, <kbd>Page Down</kbd> and the
     arrow keys navigate by month and by row; <kbd>Enter</kbd> and <kbd>Space</kbd> select.
-41. Years view - is accessible; <kbd>Home</kbd>, <kbd>End</kbd> and the arrow keys navigate by year and by row;
+42. Years view - is accessible; <kbd>Home</kbd>, <kbd>End</kbd> and the arrow keys navigate by year and by row;
     <kbd>Page Up</kbd> and <kbd>Page Down</kbd> move by `yearsPerPage`; <kbd>Enter</kbd> and <kbd>Space</kbd> select.
 
 ### Year and month views
 
-42. Months view - passes the a11y audit, renders twelve months in rows of three, renders the expected parts and ARIA
+43. Months view - passes the a11y audit, renders twelve months in rows of three, renders the expected parts and ARIA
     state on a cell, marks the current month, exposes a single tab stop, follows `monthFormat` and `locale`, and
     emits `igcChange` with the activated month.
-43. Years view - passes the a11y audit, renders a page of years in rows of three, renders the expected parts and
+44. Years view - passes the a11y audit, renders a page of years in rows of three, renders the expected parts and
     ARIA state on a cell, marks the current year, follows `yearsPerPage`, and emits `igcChange` with the activated
     year.
 
 ### Helpers
 
-44. The `DateRangeDescriptor` helpers resolve the After, Before, Between, Specific, Weekday and Weekends types.
+45. The `DateRangeDescriptor` helpers resolve the After, Before, Between, Specific, Weekday and Weekends types.
 
 ### Not covered by the suites
 

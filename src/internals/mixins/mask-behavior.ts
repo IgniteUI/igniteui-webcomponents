@@ -434,7 +434,7 @@ export function MaskBehaviorMixin<
       );
 
       this._recordHistory(kind, value, end, caretBefore ?? this._maskSelection);
-      this._commitMaskedValue(value);
+      this._writeFrom('user', () => this._commitMaskedValue(value));
       this.requestUpdate();
 
       if (range.start !== this._parser.mask.length) {
@@ -592,8 +592,7 @@ export function MaskBehaviorMixin<
         return;
       }
 
-      this._setTouchedState();
-      this._commitMaskedValue(state.value);
+      this._writeFrom('user', () => this._commitMaskedValue(state.value));
       this.requestUpdate();
 
       // Native inputs announce an undo as an `input` event; the date picker

@@ -40,6 +40,7 @@ import {
   simulatePointerMove,
   simulateScroll,
 } from '#internals/testing/simulate.spec.js';
+import { ValidityHelpers } from '#internals/testing/validity-helpers.spec.js';
 import { isPopoverOpen } from '#internals/utils/dom.js';
 import { asPercent } from '#internals/utils/math.js';
 import IgcDialogComponent from '../dialog/dialog.js';
@@ -626,6 +627,17 @@ describe('Slider component', () => {
       thumbs.current.dispatchEvent(new PointerEvent('pointerenter'));
       await elementUpdated(slider);
       expect(thumbs.label).to.be.null;
+    });
+
+    it('styles a user change that fails validation at once', async () => {
+      slider.setCustomValidity('invalid');
+      await elementUpdated(slider);
+      ValidityHelpers.hasInvalidStyles(slider).to.be.false;
+
+      simulateKeyboard(slider, arrowRight);
+      await elementUpdated(slider);
+
+      ValidityHelpers.hasInvalidStyles(slider).to.be.true;
     });
 
     it('value should be increased or decreased with 1 step when pressing right/top or down/left arrow keys', async () => {

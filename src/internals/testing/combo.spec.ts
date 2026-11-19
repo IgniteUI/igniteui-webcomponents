@@ -1,8 +1,14 @@
-import { elementUpdated, nextFrame } from '@open-wc/testing';
+import { elementUpdated, expect, nextFrame } from '@open-wc/testing';
+import { spy } from 'sinon';
 
 import type IgcComboHeaderComponent from '../../components/combo/combo-header.js';
 import type IgcComboItemComponent from '../../components/combo/combo-item.js';
 import type IgcComboComponent from '../../components/combo/combo.js';
+import type { DataStateHost } from '../../components/combo/controllers/data.js';
+import type {
+  ComboRecord,
+  FilteringOptions,
+} from '../../components/combo/types.js';
 import type IgcInputComponent from '../../components/input/input.js';
 import type IgcVirtualScrollComponent from '../../components/virtualization/virtualization.js';
 import { internalsOf } from '../controllers/internals.js';
@@ -124,3 +130,71 @@ export const ariaOf = (item: Element) => ({
 
 export const layoutComplete = <T extends object>(combo: IgcComboComponent<T>) =>
   listOf(combo).layoutComplete;
+
+/** Checks the text of the active option, which the list also names, or that none is active. */
+export function expectActiveOption<T extends object>(
+  combo: IgcComboComponent<T>,
+  name?: string
+): void {
+  const list = listOf(combo);
+  const item = list.querySelector<HTMLElement>('[active]');
+
+  expect(item?.textContent?.trim()).to.equal(name);
+  expect(list.getAttribute('aria-activedescendant')).to.equal(item?.id ?? null);
+}
+
+/* The specs of the combo controllers, which run without a combo. */
+
+export type DataCity = { id: number; name: string; country: string };
+
+export const dataCities: DataCity[] = [
+  { id: 1, name: 'Sofia', country: 'Bulgaria' },
+  { id: 2, name: 'Plovdiv', country: 'Bulgaria' },
+  { id: 3, name: 'Berlin', country: 'Germany' },
+  { id: 4, name: 'Hamburg', country: 'Germany' },
+  { id: 5, name: 'Paris', country: 'France' },
+];
+
+export const remoteFiltering: FilteringOptions<DataCity> = {
+  filterKey: 'name',
+  mode: 'remote',
+};
+
+export type FakeComboHost = DataStateHost<DataCity> &
+  Pick<IgcComboComponent<DataCity>, 'open'>;
+
+/** The combo fields that the data state and the active option read, with an open list. */
+export function fakeComboHost(
+  overrides: Partial<FakeComboHost> = {}
+): FakeComboHost {
+  return {
+    addController: () => {},
+    requestUpdate: spy(),
+    data: dataCities,
+    locale: 'en',
+    filteringOptions: {
+      filterKey: 'name',
+      caseSensitive: false,
+      matchDiacritics: false,
+    },
+    valueKey: 'id',
+    displayKey: 'name',
+    groupKey: undefined,
+    groupSorting: 'asc',
+    totalItemCount: undefined,
+    showSelectAll: false,
+    groupSelection: false,
+    singleSelect: false,
+    open: true,
+    ...overrides,
+  };
+}
+
+/** The item name, `#group` for a header, or the kind of the record. */
+export function recordName<T extends { name: string }>(
+  record: ComboRecord<T>
+): string {
+  return record.header
+    ? `#${record.group}`
+    : (record.kind ?? record.value.name);
+}

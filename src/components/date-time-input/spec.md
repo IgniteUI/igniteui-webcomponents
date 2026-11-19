@@ -69,6 +69,9 @@
 |      13 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown`, or the <kbd>Enter</kbd> that commits an IME composition, does not submit the form |
 |      14 | 2026-11-11 | The keys that an IME handles do nothing |
 |      15 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form, after the `keypress` |
+|      16 | 2026-11-18 | `igcChange` compares the committed value with the last reported value: the last `igcChange` or the last value set from code |
+|      17 | 2026-11-18 | The parser owns the spin, the part at the caret, the default part and the part navigation. <kbd>Ctrl</kbd> + arrow stops at part edges, also without separators; the AM/PM spin reads the value, not the shown text |
+|      18 | 2026-11-18 | Add the strict and the lenient value parse to the parser property suite; the round-trip uses `formatValue` |
 
 ## Overview
 
@@ -205,6 +208,11 @@ visual states follow the conventions of the other input-like components of the l
 - **Mouse wheel**: while the editor is focused, scrolling spins the part under the caret; the page does not scroll.
 - **Boundaries**: with `spinLoop` enabled - the default - a part wraps around at its boundary, so minutes go from
   `59` to `00`; otherwise it clamps at the boundary.
+- **Step**: the `delta` argument, else the `spinDelta` of the part, else `1`. A `0` counts as no value. The method
+  sets the direction, so `stepDown(DatePart.Date, -1)` also steps down.
+- **Empty value**: a spin sets the current date and time, the same value as <kbd>Ctrl</kbd> + <kbd>;</kbd>, without
+  a step.
+- **AM/PM**: a spin moves the time 12 hours to the other half of the same day.
 
 **Feedback and accessibility**
 
@@ -361,7 +369,7 @@ input.addEventListener('igcInput', ({ detail }) => {
 });
 
 // Observe committed values only. Fired on blur, and only when the committed
-// value differs from the value at focus or the last value set from code.
+// value differs from the last igcChange or the last value set from code.
 input.addEventListener('igcChange', ({ detail }) => {
   console.log('committed:', detail); // Date | null
 });
@@ -462,8 +470,9 @@ const { selectionStart, selectionEnd } = input;
 ```
 
 Calling `stepUp` or `stepDown` on an empty editor initializes the value first. With no part argument, the part under
-the caret is spun. Both update `value` at once, also while the editor is focused, as `setRangeText()` does. A
-keyboard or wheel spin stays in the masked text until blur.
+the caret is spun, or, without focus, the day, else the hours, else the first part. A part that the input format does
+not show, such as `DatePart.Minutes` in `MM/dd/yyyy`, still changes in the value. Both update `value` at once, also
+while the editor is focused, as `setRangeText()` does. A keyboard or wheel spin stays in the masked text until blur.
 
 `selectionStart` and `selectionEnd` are read-only. They count in the text that the input shows: the input format
 while the input has focus, and the display format when it does not. After `setRangeText()`, they report the new
@@ -648,7 +657,7 @@ enum DatePart {
 | Name      | Cancellable | Detail                | Description                                                |
 | --------- | ----------- | --------------------- | ---------------------------------------------------------- |
 | igcInput  | false       | `string \| undefined` | Emitted while the user edits. The detail is the typed date as an ISO string, or `undefined` while the mask is incomplete. |
-| igcChange | false       | `Date \| null`        | Emitted on blur, when the committed value differs from the value at focus or the last value set from code. |
+| igcChange | false       | `Date \| null`        | Emitted on blur, when the committed value differs from the last `igcChange` or the last value set from code. |
 
 ### Slots
 
@@ -748,7 +757,8 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 23. Sets the value through the attribute, the property, a string property binding, and a time-only portion.
 24. `clear` empties the editor.
 25. `stepUp` and `stepDown` initialize a new date when the value is empty, and spin correctly otherwise.
-26. Respects `spinDelta` and `spinLoop`.
+26. Respects `spinDelta` and `spinLoop`. `stepUp` and `stepDown` switch AM/PM also while the display format differs
+    from the input format.
 27. `setRangeText` replaces the range and re-applies the mask.
 28. `selectionStart` and `selectionEnd` report the selection.
 29. Non-filled parts get their default value on blur; an invalid date sets a `null` value on blur; a complete input
@@ -761,7 +771,8 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 31. <kbd>Alt</kbd> + arrow presses are a no-op.
 32. The caret does not move away from the focused part when `stepUp` or `stepDown` are invoked, and the value
     updates at once, also for a part that is not in the input format and over a keyboard draft.
-33. <kbd>Arrow Left</kbd> and <kbd>Arrow Right</kbd> navigate to the beginning and the end of a date section.
+33. <kbd>Ctrl</kbd> + <kbd>Arrow Left</kbd> and <kbd>Arrow Right</kbd> navigate to the beginning and the end of a date
+    section, stop at each part edge in a format without separators, and skip a separator of more than one character.
 34. <kbd>Ctrl</kbd> + <kbd>;</kbd> sets the current date.
 35. The mouse wheel spins the part under the caret, and is a no-op without focus and while read-only.
 36. No change event is emitted while read-only.
@@ -812,8 +823,13 @@ Generated by `runExternalLabelAssociationTests`.
     mask and back, including the year format normalization with its case kept, a literal that is a mask flag, the
     century threshold, the calendar of years below 100, and UTF-16 part positions after an astral literal.
 50. [`datetime-mask-parser.property.spec.ts`](./datetime-mask-parser.property.spec.ts) checks, for generated formats:
-    the `formatDate` / `parseDate` round-trip for dates from year 0 to 9999, the two-digit year range, no throw or
-    invalid date for any string, and the parts that tile the mask and agree with the format-level part queries.
+    the `formatValue` / `parseDate` round-trip for dates from year 0 to 9999, the two-digit year range, no throw or
+    invalid date for any string, the strict and the lenient value parse (a complete mask parses the same in both, a
+    partial mask gives `null` when strict, a blank mask gives `null`), and the parts that tile the mask and agree
+    with the format-level part queries. For
+    the part editing: the step rules, the seed of an empty value, the AM/PM spin, the spin of a complete and a partial
+    mask, the default part, and part navigation that visits every part edge in order and agrees with the literal edges
+    when one character separates each part.
 
 ### Host ARIA
 

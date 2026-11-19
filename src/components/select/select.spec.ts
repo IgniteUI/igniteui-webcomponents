@@ -33,7 +33,9 @@ import {
   isFocused,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
+import { runListboxPopupTests } from '#internals/testing/listbox-popup.spec.js';
 import {
+  simulateCancelableKeydown,
   simulateClick,
   simulateKeyboard,
   simulateScroll,
@@ -1272,20 +1274,6 @@ describe('Select', () => {
       expect(eventSpy).not.calledWith('igcOpening');
     });
 
-    it('toggles open state on Enter keys', async () => {
-      simulateKeyboard(select, enterKey);
-      await elementUpdated(select);
-
-      expect(select.open).to.be.true;
-      expect(select.selectedItem).to.be.null;
-
-      simulateKeyboard(select, enterKey);
-      await elementUpdated(select);
-
-      expect(select.open).to.be.false;
-      expect(select.selectedItem).to.be.null;
-    });
-
     it('does not toggle open state on Spacebar key', async () => {
       simulateKeyboard(select, spaceBar);
       await elementUpdated(select);
@@ -1298,54 +1286,6 @@ describe('Select', () => {
 
       expect(select.open).to.be.true;
       expect(select.selectedItem).to.be.null;
-    });
-
-    it('selects an item and closes the dropdown', async () => {
-      const targetItem = select.items[4];
-
-      await openSelect();
-
-      simulateClick(targetItem);
-      await elementUpdated(select);
-
-      checkItemState(targetItem, { active: true, selected: true });
-      expect(select.selectedItem).to.equal(targetItem);
-      expect(select.value).to.equal(targetItem.value);
-      expect(select.open).to.be.false;
-    });
-
-    it('selects an item on click and does not close when keep-open-on-select is set', async () => {
-      const targetItem = select.items[4];
-
-      select.keepOpenOnSelect = true;
-      await openSelect();
-
-      simulateClick(targetItem);
-      await elementUpdated(select);
-      checkItemState(targetItem, { active: true, selected: true });
-      expect(select.selectedItem).to.equal(targetItem);
-      expect(select.value).to.equal(targetItem.value);
-      expect(select.open).to.be.true;
-    });
-
-    it('clicking on a disabled item is a no-op', async () => {
-      const targetItem = select.items[4];
-      const initialValue = select.value;
-
-      targetItem.disabled = true;
-      await openSelect();
-
-      simulateClick(targetItem);
-      await elementUpdated(select);
-
-      checkItemState(targetItem, {
-        active: false,
-        selected: false,
-        disabled: true,
-      });
-      expect(select.selectedItem).to.be.null;
-      expect(select.value).to.equal(initialValue);
-      expect(select.open).to.be.true;
     });
 
     it('clicking outside of the igc-select DOM tree closes the dropdown', async () => {
@@ -1367,96 +1307,6 @@ describe('Select', () => {
       expect(select.open).to.be.true;
     });
 
-    it('pressing Escape closes the dropdown without selection', async () => {
-      await openSelect();
-
-      simulateKeyboard(select, arrowDown, 4);
-      simulateKeyboard(select, escapeKey);
-      await elementUpdated(select);
-
-      checkItemState(select.items[4], { active: true, selected: false });
-      expect(select.selectedItem).to.be.null;
-      expect(select.value).to.be.undefined;
-      expect(select.open).to.be.false;
-    });
-
-    it('pressing Enter selects the active item and closes the dropdown', async () => {
-      await openSelect();
-
-      simulateKeyboard(select, arrowDown, 4);
-      simulateKeyboard(select, enterKey);
-      await elementUpdated(select);
-
-      const item = select.items[4];
-
-      checkItemState(item, { active: true, selected: true });
-      expect(select.selectedItem).to.equal(item);
-      expect(select.value).to.equal(item.value);
-      expect(select.open).to.be.false;
-    });
-
-    it('pressing Enter selects the active item and does not close the dropdown with keep-open-on-select', async () => {
-      select.keepOpenOnSelect = true;
-      await openSelect();
-
-      simulateKeyboard(select, arrowDown, 4);
-      simulateKeyboard(select, enterKey);
-      await elementUpdated(select);
-
-      const item = select.items[4];
-
-      checkItemState(item, { active: true, selected: true });
-      expect(select.selectedItem).to.equal(item);
-      expect(select.value).to.equal(item.value);
-      expect(select.open).to.be.true;
-    });
-
-    it('pressing Tab selects the active item and closes the dropdown', async () => {
-      await openSelect();
-
-      simulateKeyboard(select, arrowDown, 4);
-      simulateKeyboard(select, tabKey);
-      await elementUpdated(select);
-
-      const item = select.items[4];
-
-      checkItemState(item, { active: true, selected: true });
-      expect(select.selectedItem).to.equal(item);
-      expect(select.value).to.equal(item.value);
-      expect(select.open).to.be.false;
-    });
-
-    it('pressing Tab selects the active item and closes the dropdown regardless of keep-open-on-select', async () => {
-      select.keepOpenOnSelect = true;
-      await openSelect();
-
-      simulateKeyboard(select, arrowDown, 4);
-      simulateKeyboard(select, tabKey);
-      await elementUpdated(select);
-
-      const item = select.items[4];
-
-      checkItemState(item, { active: true, selected: true });
-      expect(select.selectedItem).to.equal(item);
-      expect(select.value).to.equal(item.value);
-      expect(select.open).to.be.false;
-    });
-
-    it('pressing Tab without an active or a selected item closes the dropdown and selects nothing', async () => {
-      const eventSpy = spy(select, 'emitEvent');
-      await openSelect();
-
-      expect(getActiveItem()).to.be.undefined;
-
-      simulateKeyboard(select, tabKey);
-      await elementUpdated(select);
-
-      expect(select.open).to.be.false;
-      expect(select.selectedItem).to.be.null;
-      expect(select.value).to.be.undefined;
-      expect(eventSpy).not.calledWith('igcChange');
-    });
-
     it('pressing Tab while the active item is the current selected item moves focus back to the component', async () => {
       select.value = 'spec';
       await openSelect();
@@ -1471,6 +1321,59 @@ describe('Select', () => {
       expect(select.value).to.equal(item.value);
       expect(select.open).to.be.false;
       expect(isFocused(select)).to.be.true;
+    });
+
+    it('pressing Tab without an active or a selected item keeps an unmatched value', async () => {
+      const eventSpy = spy(select, 'emitEvent');
+      select.value = 'not-an-item';
+      await openSelect();
+
+      expect(getActiveItem()).to.be.undefined;
+
+      simulateKeyboard(select, tabKey);
+      await elementUpdated(select);
+
+      expect(select.open).to.be.false;
+      expect(select.selectedItem).to.be.null;
+      expect(select.value).to.equal('not-an-item');
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    describe('when another handler prevented the default of the key', () => {
+      const preventDefault = (event: Event) => event.preventDefault();
+
+      /** Presses a key that a capture listener on the document cancels first. */
+      const pressPrevented = (key: string) => {
+        document.addEventListener('keydown', preventDefault, { capture: true });
+
+        try {
+          simulateCancelableKeydown(select, key);
+        } finally {
+          document.removeEventListener('keydown', preventDefault, {
+            capture: true,
+          });
+        }
+      };
+
+      it('pressing Tab selects the active item and closes the list', async () => {
+        await openSelect();
+
+        simulateKeyboard(select, arrowDown, 4);
+        pressPrevented(tabKey);
+        await elementUpdated(select);
+
+        expect(select.selectedItem).to.equal(select.items[4]);
+        expect(select.open).to.be.false;
+      });
+
+      it('pressing Escape closes the list', async () => {
+        await openSelect();
+
+        pressPrevented(escapeKey);
+        await elementUpdated(select);
+
+        expect(select.open).to.be.false;
+      });
     });
 
     it('does not select disabled items when searching (closed state)', async () => {
@@ -1565,6 +1468,22 @@ describe('Select', () => {
 
       expect(select.open).to.be.false;
     });
+
+    for (const slot of ['prefix', 'suffix']) {
+      it(`pressing Escape on a focusable ${slot} element closes the list and focuses the input`, async () => {
+        const button = document.createElement('button');
+        button.slot = slot;
+        select.append(button);
+        await openSelect();
+
+        button.focus();
+        await sendKeys({ press: escapeKey });
+        await elementUpdated(select);
+
+        expect(select.open).to.be.false;
+        expect(isFocused(getInput())).to.be.true;
+      });
+    }
 
     it('Home key (closed state)', async () => {
       const eventSpy = spy(select, 'emitEvent');
@@ -2165,6 +2084,18 @@ describe('Select', () => {
       spec.assertSubmitHasValue(spec.element.value);
     });
 
+    it('shows the invalid state of the select on the inner input at once', () => {
+      const inner = spec.element.renderRoot.querySelector(
+        IgcInputComponent.tagName
+      )!;
+
+      spec.element.invalid = true;
+      ValidityHelpers.hasInvalidStyles(inner).to.be.true;
+
+      spec.element.invalid = false;
+      ValidityHelpers.hasInvalidStyles(inner).to.be.false;
+    });
+
     it('is correctly reset of form reset with selection through attribute on item', async () => {
       const bed = createFormAssociatedTestBed<IgcSelectComponent>(
         html`<igc-select name="with-item-selection">
@@ -2206,6 +2137,21 @@ describe('Select', () => {
 
       spec.element.setCustomValidity('');
       spec.assertSubmitPasses();
+    });
+
+    it('styles a user selection that fails validation at once', () => {
+      spec.element.setCustomValidity('invalid');
+      ValidityHelpers.hasInvalidStyles(spec.element).to.be.false;
+
+      // A click that comes before any focus, as from assistive technology.
+      simulateClick(
+        spec.element.querySelector<IgcSelectItemComponent>(
+          'igc-select-item:not([disabled])'
+        )!
+      );
+
+      expect(spec.element.invalid).to.be.true;
+      ValidityHelpers.hasInvalidStyles(spec.element).to.be.true;
     });
   });
 
@@ -2307,4 +2253,9 @@ describe('Select', () => {
   });
 
   runFocusBeforeRenderTests(createBasicSelect());
+  runListboxPopupTests(createBasicSelect(), {
+    closedKeys: true,
+    hasValue: true,
+    disabled: true,
+  });
 });

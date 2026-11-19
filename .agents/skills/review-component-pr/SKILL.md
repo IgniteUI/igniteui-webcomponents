@@ -100,7 +100,8 @@ Map each change to a spec section with
 - [ ] User-facing strings come from `I18nMixin` / `addI18nController`, with defaults from
       `igniteui-i18n-core`
 - [ ] Form controls: the correct mixin, `createFormValueState`, `__validators` from
-      `#internals/validators.js`, `setValueAndFormState()`, re-validation through
+      `#internals/validators.js`, `setValueAndFormState()`, a `reads` entry for each host
+      property that a `setFormValue` transformer reads, re-validation through
       `@coercedProperty` on constraint properties, and `_handleBlur` / `_handleEnterKeydown`
       on the native editor. No copied touched/pristine logic. `formResetCallback` overrides
       call `super`.

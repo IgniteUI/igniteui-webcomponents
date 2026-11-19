@@ -61,6 +61,7 @@
 |      11 | 2026-11-02 | A `focus()` call before the first render applies after the render         |
 |      12 | 2026-11-11 | The keys that an IME handles do nothing |
 |      13 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form, after the `keypress`         |
+|      14 | 2026-11-19 | The submitted value is `value`; it follows a change of `valueMode`, `mask` or `prompt`, and an emptied control submits nothing |
 
 ## Overview
 
@@ -280,8 +281,9 @@ The component applies two validators:
 </form>
 ```
 
-The value submitted with the form follows `valueMode`: the raw input in `raw` mode, the formatted string in
-`withFormatting` mode. A form reset restores the default value taken from the `value` attribute.
+The control submits its `value` with the form: the raw input in `raw` mode, the formatted string in `withFormatting`
+mode, and nothing while it is empty. A change of `valueMode`, `mask` or `prompt` updates the submitted value and the
+validity at once. A form reset restores the default value taken from the `value` attribute.
 
 <kbd>Enter</kbd> submits the form as in a native text field (see the
 [input specification](../input/spec.md#form-integration)): through the default button, or from the only text field of
@@ -472,7 +474,9 @@ Grouped as `Undo / redo` in the suite.
 Driven by `createFormAssociatedTestBed`.
 
 29. Is form associated, and is not associated on submit without a value.
-30. Is associated on submit, including with value formatting enabled.
+30. Is associated on submit, including with value formatting enabled. The submitted value follows a change of
+    `valueMode`, `mask` and `prompt`, also from attributes in any order, and `badInput` follows a change of `mask`.
+    A formatted value that the user empties submits nothing.
 31. Is correctly reset on form reset, with and without value formatting, after a `setAttribute` call, and refreshes
     the rendered masked value and placeholder afterwards.
 32. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid. A real <kbd>Enter</kbd>

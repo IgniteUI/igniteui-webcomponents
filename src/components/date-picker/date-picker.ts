@@ -19,13 +19,11 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateTimeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { I18nMixin, type I18nMixinConfig } from '#internals/mixins/i18n.js';
-import { firstOf } from '#internals/utils/arrays.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { all } from '#themes/date-picker/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
-import type { CalendarSelection } from '../calendar/types.js';
 import type { DatePart } from '../date-time-input/date-part.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
@@ -38,6 +36,7 @@ import {
 import { styles } from './themes/date-picker.base.css.js';
 import { styles as shared } from './themes/shared/date-picker.common.css.js';
 import { datePickerValidators } from './validators.js';
+import { dateShape } from './value-shape.js';
 
 export type IgcDatePickerComponentEventMap = IgcPickerBaseEventMap<Date>;
 
@@ -196,6 +195,8 @@ export default class IgcDatePickerComponent extends I18nMixin(
     slots: Slots,
   });
 
+  protected override readonly _shape = dateShape;
+
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: null,
     transformers: FormValueDateTimeTransformers,
@@ -208,29 +209,6 @@ export default class IgcDatePickerComponent extends I18nMixin(
   //#endregion
 
   //#region Base class hooks
-
-  protected override get _value(): Date | null {
-    return this.value;
-  }
-
-  /** A user change. It stays uncommitted until the picker emits `igcChange`. */
-  protected override set _value(value: Date | null) {
-    const previous = this.value;
-    this._formValue.setValueAndFormState(value);
-    this.requestUpdate('value', previous);
-  }
-
-  protected override get _hasValue(): boolean {
-    return this.value !== null;
-  }
-
-  protected override get _calendarSelection(): CalendarSelection {
-    return 'single';
-  }
-
-  protected override get _calendarValue(): Date | null {
-    return this.value;
-  }
 
   protected override get _calendarResourceStrings() {
     return this.resourceStrings;
@@ -254,36 +232,16 @@ export default class IgcDatePickerComponent extends I18nMixin(
     return this._input?.inputFormat;
   }
 
-  protected override get _projectionTarget() {
-    return this._input ?? null;
-  }
-
-  protected override get _editors(): IgcDateTimeInputComponent[] {
+  protected override get _ownedEditors(): (
+    | IgcDateTimeInputComponent
+    | undefined
+  )[] {
     return [this._input];
   }
 
   protected override _focusAndSelectInput(): void {
     this._input.focus();
     this._input.select();
-  }
-
-  protected override _syncCalendarOnToggle(): void {
-    this._setCalendarActiveDate(this.value);
-  }
-
-  protected override _valueFromCalendarSelection(dates: Date[]): Date | null {
-    return firstOf(dates) ?? null;
-  }
-
-  /** A committed input edit emits `igcChange` itself, so this notifies only picker-made changes. */
-  protected override _onBlur(): void {
-    if (this._isEditorReadOnly) {
-      this._emitChangeIfDirty();
-    }
-  }
-
-  protected override _onDialogClosing(): void {
-    this._oldValue = this.value;
   }
 
   //#endregion
@@ -303,9 +261,8 @@ export default class IgcDatePickerComponent extends I18nMixin(
    */
   @property({ converter: convertToDate })
   public set value(value: Date | string | null | undefined) {
-    this._value = value as Date | null;
-    // A set from code is committed at once, so no later commit reports it.
-    this._oldValue = this.value;
+    this._value = convertToDate(value);
+    this._session.endDraft();
   }
 
   public get value(): Date | null {
@@ -450,7 +407,6 @@ export default class IgcDatePickerComponent extends I18nMixin(
         .placeholder=${this.placeholder}
         .min=${this.min}
         .max=${this.max}
-        .invalid=${this.invalid}
         @igcChange=${this._handleInputChangeEvent}
         @igcInput=${this._handleInputEvent}
         @keydown=${this._handleEnterKey}

@@ -58,6 +58,7 @@
 |       8 | 2026-10-23 | The file input makes a stacking context, so the z-index of the input and the container does not compete with the layers of the page |
 |       9 | 2026-10-28 | The host combobox state goes to the native input, as in the input |
 |      10 | 2026-11-02 | A `focus()` call before the first render applies after the render |
+|      11 | 2026-11-19 | The files are submitted under the current `name`, also a `name` set after the selection |
 
 ## Overview
 
@@ -65,7 +66,7 @@ The `igc-file-input` component provides an interactive way for end-users to sele
 same input shell as [`igc-input`](../input/spec.md) - label, prefix, suffix, helper text, theming and validation
 messages - and replaces the editable area with a browse button and the list of selected file names.
 
-The component is form-associated and submits the selected `FileList` with the form.
+The component is form-associated and submits the selected `FileList` with the form, under the current `name`.
 
 ### Key features
 
@@ -427,7 +428,7 @@ Driven by `createFormAssociatedTestBed`.
 14. Correct initial state.
 15. Is form associated.
 16. Is not associated on submit when no file is selected.
-17. Is associated on submit once files are selected.
+17. Is associated on submit once files are selected, also under a `name` that changes or comes after the selection.
 18. Is correctly reset on form reset.
 19. Clears the form value and the validity when an empty string is assigned to `value`.
 20. Ignores the `value` attribute as a default on form reset.

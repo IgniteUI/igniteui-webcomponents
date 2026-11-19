@@ -14,6 +14,8 @@ import {
   runHostComboboxTests,
 } from '#internals/testing/form-testbed.spec.js';
 import {
+  simulateBlur,
+  simulateFocus,
   simulateInput,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
@@ -1035,6 +1037,98 @@ describe('Masked input', () => {
 
       expect(spec.element.value).to.equal('A - _ - _');
       spec.assertSubmitHasValue(spec.element.value);
+    });
+
+    describe('the submitted value follows', () => {
+      beforeEach(() => {
+        spec.setProperties({ mask: '00-00', value: '1234' });
+      });
+
+      it('a change of valueMode', () => {
+        spec.setProperties({ valueMode: 'withFormatting' });
+        expect(spec.element.value).to.equal('12-34');
+        spec.assertSubmitHasValue('12-34');
+
+        spec.setProperties({ valueMode: 'raw' });
+        spec.assertSubmitHasValue('1234');
+      });
+
+      it('a change of mask', () => {
+        spec.setProperties({ valueMode: 'withFormatting', mask: '0-000' });
+
+        expect(spec.element.value).to.equal('1-234');
+        spec.assertSubmitHasValue('1-234');
+      });
+
+      it('a change of mask or prompt in one submission', () => {
+        spec.setProperties({ valueMode: 'withFormatting', value: '12' });
+        const setFormValue = spy(spec.element['_internals'], 'setFormValue');
+
+        spec.setProperties({ mask: '0-000' });
+        expect(setFormValue).calledOnceWith('1-2__');
+
+        setFormValue.resetHistory();
+        spec.setProperties({ prompt: '*' });
+        expect(setFormValue).calledOnceWith('1-2**');
+      });
+
+      it('a change of prompt', () => {
+        spec.setProperties({ valueMode: 'withFormatting', value: '12' });
+        spec.setProperties({ prompt: '*' });
+
+        expect(spec.element.value).to.equal('12-**');
+        expect(spec.formData.get(spec.element.name)).to.equal('12-**');
+      });
+
+      it('the attributes in any order', async () => {
+        const bed = createFormAssociatedTestBed<IgcMaskInputComponent>(
+          html`<igc-mask-input
+            name="formatted"
+            value="1234"
+            value-mode="withFormatting"
+            mask="00-00"
+          ></igc-mask-input>`
+        );
+        await bed.setup(IgcMaskInputComponent.tagName);
+
+        expect(bed.element.value).to.equal('12-34');
+        bed.assertSubmitHasValue('12-34');
+      });
+    });
+
+    it('updates badInput after a change of mask', () => {
+      spec.setProperties({ mask: '00-00', value: '12' });
+      expect(spec.element.validity.badInput).to.be.true;
+
+      spec.setProperties({ mask: '00' });
+      expect(spec.element.validity.badInput).to.be.false;
+    });
+
+    it('submits nothing after the user empties a formatted value', async () => {
+      await spec.setProperties(
+        { mask: '00-00', valueMode: 'withFormatting', value: '1234' },
+        true
+      );
+      const input = spec.element.renderRoot.querySelector('input')!;
+
+      simulateFocus(input);
+      spec.element.setSelectionRange(0, 5);
+      simulateKeyboard(input, 'Backspace');
+      simulateInput(input, {
+        inputType: 'deleteContentBackward',
+        skipValueProperty: true,
+      });
+      await elementUpdated(spec.element);
+
+      // The focused input shows the empty mask.
+      expect(input.value).to.equal('__-__');
+      expect(spec.element.value).to.equal('');
+      expect(spec.formData.get(spec.element.name)).to.be.null;
+
+      simulateBlur(input);
+      await elementUpdated(spec.element);
+
+      expect(spec.formData.get(spec.element.name)).to.be.null;
     });
 
     it('is correctly reset on form reset', () => {
