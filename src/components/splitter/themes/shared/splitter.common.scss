@@ -89,6 +89,13 @@ $expander-border-active: $expander-size solid var-get($theme, 'expander-color-ac
     // half of what the handle leaves, less one expander.
     $room: calc((#{100 * $bar-percent} - #{$handle-length}) / 2 - 2 * #{$expander-size});
 
+    // The gap between the two expanders when the drag handle is hidden: what they leave of the bar, up to 48px.
+    :host([orientation='#{$orientation}']:is([disable-resize], [hide-drag-handle])) {
+        [part~='start-collapse-btn'] {
+            margin-#{$cross}-end: clamp(0px, calc(#{100 * $bar-percent} - 4 * #{$expander-size}), #{rem(48px)});
+        }
+    }
+
     :host([orientation='#{$orientation}']) {
         [part~='splitter-bar'] {
             #{$extent}: $bar-size;

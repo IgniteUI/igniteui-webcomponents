@@ -106,20 +106,6 @@
     }
 }
 
-:host([disable-resize][orientation='horizontal']),
-:host([hide-drag-handle][orientation='horizontal']) {
-    [part~='start-collapse-btn'] {
-        margin-block-end: rem(48px);
-    }
-}
-
-:host([disable-resize][orientation='vertical']),
-:host([hide-drag-handle][orientation='vertical']) {
-    [part~='start-collapse-btn'] {
-        margin-inline-end: rem(48px);
-    }
-}
-
 @media (forced-colors: active) {
     [part~='splitter-bar'] {
         border: rem(1px) solid CanvasText;

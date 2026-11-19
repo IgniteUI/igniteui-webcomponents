@@ -255,8 +255,11 @@ The steps add to the `size` theme token (4px), so `--ig-splitter-size: 10px` mak
 the drag handle 10px, 12px and 14px.
 
 The drag handle is 25% of the bar length at every size, with 48px between it and each expander. On a bar too short
-for that, the gaps get narrower and the handle keeps its 25%. In the Indigo theme the idle bar is 1px thick at every size
-and takes the thickness of the size on hover and focus.
+for that, the gaps get narrower and the handle keeps its 25%. Without a drag handle the two expanders are 48px
+apart, or closer on a bar too short for that. In the Indigo theme the idle bar is 1px thick at every size and takes
+the thickness of the size on hover and focus.
+
+A change of `--ig-size` updates the pane constraints: the panes share what the new bar thickness leaves.
 
 #### Programmatic control
 
@@ -524,15 +527,19 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 ### Sizing
 
 37. Without `--ig-size` the bar is 6px thick, the drag handle 4px with a 2px radius and the expanders 8px wide.
-38. At medium and large the bar is 12px and 18px thick, the drag handle 6px and 8px with an 8px radius, centered on
-    the bar, and the expanders 10px and 12px wide.
+38. At medium and large, in both orientations, the bar is 12px and 18px thick, the drag handle 6px and 8px with an
+    8px radius, centered on the bar, and the expanders 10px and 12px wide.
 39. An overridden `--ig-splitter-size` adds the same amount to the bar, the drag handle and the expanders at every
     size.
 40. With a collapsed pane, the drag handle keeps its 48px margins and its position.
-41. On a short bar the drag handle keeps 25% of the bar length, the gaps to the expanders get narrower and the
-    expanders stay inside the bar.
-42. In the Indigo theme, the idle bar is 1px thick at every size, also with an overridden `--ig-splitter-size`.
-43. In the Indigo theme, the hovered bar has the thickness of the size.
+41. On a short bar, at every size and in both orientations, the drag handle keeps 25% of the bar length, the gaps to
+    the expanders get narrower and the expanders stay inside the bar.
+42. Without a drag handle the expanders are 48px apart, and on a bar too short for that they stay inside the bar.
+43. A size that makes the bar thicker drops the minimum sizes that no longer fit beside it.
+44. In the Indigo theme, the idle bar is 1px thick at every size and in both orientations, also with an overridden
+    `--ig-splitter-size`.
+45. In the Indigo theme, the panes give up the full thickness of the bar while the idle bar is 1px.
+46. In the Indigo theme, the hovered bar has the thickness of the size.
 
 ## Accessibility
 

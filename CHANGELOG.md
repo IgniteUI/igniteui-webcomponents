@@ -95,6 +95,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A change of the user that fails validation shows the invalid styles at once.
 - #### Splitter
   - On a bar too short for the drag handle, the two expanders and the 48px gaps between them, the drag handle keeps 25% of the bar length and the gaps get narrower. Before, the gaps stayed 48px, so the handle shrank and the expanders touched the ends of the bar. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
+  - In the Indigo theme, the minimum sizes of the panes count the full thickness of the bar while it is idle. Before, they counted the 1px that the idle bar shows, so two minimums that filled the splitter overflowed it. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
 
 ## [7.5.0] - 2026-11-16
 ### Added

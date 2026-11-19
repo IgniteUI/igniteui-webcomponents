@@ -4032,6 +4032,7 @@ describe('Splitter', () => {
   });
 
   describe('Sizing', () => {
+    const orientations = ['horizontal', 'vertical'] as const;
     const steps = [
       { size: 'small', value: '1', bar: 6, handle: 4, expander: 4, radius: 2 },
       {
@@ -4081,19 +4082,24 @@ describe('Splitter', () => {
       expect(expanderBase).to.equal(8);
     });
 
-    it('sizes the bar, the drag handle and the expanders at medium and large', async () => {
-      for (const step of steps.slice(1)) {
-        splitter.style.setProperty('--ig-size', step.value);
-        await elementUpdated(splitter);
+    it('sizes the bar, the drag handle and the expanders at medium and large, in both orientations', async () => {
+      for (const orientation of orientations) {
+        splitter.orientation = orientation;
 
-        const { bar, handle, expanderBase, handleOffset, handleRadius } =
-          measure(splitter);
+        for (const step of steps.slice(1)) {
+          const label = `${orientation} ${step.size}`;
+          splitter.style.setProperty('--ig-size', step.value);
+          await elementUpdated(splitter);
 
-        expect(bar, step.size).to.equal(step.bar);
-        expect(handle, step.size).to.equal(step.handle);
-        expect(expanderBase, step.size).to.equal(step.expander * 2);
-        expect(handleOffset, step.size).to.equal(0);
-        expect(handleRadius, step.size).to.equal(`${step.radius}px`);
+          const { bar, handle, expanderBase, handleOffset, handleRadius } =
+            measure(splitter);
+
+          expect(bar, label).to.equal(step.bar);
+          expect(handle, label).to.equal(step.handle);
+          expect(expanderBase, label).to.equal(step.expander * 2);
+          expect(handleOffset, label).to.equal(0);
+          expect(handleRadius, label).to.equal(`${step.radius}px`);
+        }
       }
     });
 
@@ -4122,15 +4128,20 @@ describe('Splitter', () => {
       ).getBoundingClientRect();
       const start = startCollapseBtn.getBoundingClientRect();
       const end = endCollapseBtn.getBoundingClientRect();
+      // The edges on the axis of the bar length.
+      const [near, far] =
+        target.orientation === 'horizontal'
+          ? (['top', 'bottom'] as const)
+          : (['left', 'right'] as const);
 
       return {
-        handleGaps: [handle.top - start.bottom, end.top - handle.bottom],
-        buttonsGap: end.top - start.bottom,
-        inside: start.top >= bar.top && end.bottom <= bar.bottom,
+        handleGaps: [handle[near] - start[far], end[near] - handle[far]],
+        buttonsGap: end[near] - start[far],
+        inside: start[near] >= bar[near] && end[far] <= bar[far],
       };
     }
 
-    it('keeps the drag handle 48px from the bar content edge with a collapsed pane', async () => {
+    it('keeps the 48px margins around the drag handle with a collapsed pane', async () => {
       const handleTop = () =>
         getSplitterPart(splitter, DRAG_HANDLE_PART).getBoundingClientRect()
           .top -
@@ -4148,22 +4159,72 @@ describe('Splitter', () => {
       expect(handleTop()).to.equal(groupStart + 8 + 48);
     });
 
-    it('keeps the drag handle at 25% of a short bar and narrows the gaps, at every size', async () => {
-      splitter.style.height = '128px';
+    it('keeps the drag handle at 25% of a short bar and narrows the gaps, at every size and in both orientations', async () => {
+      for (const orientation of orientations) {
+        splitter.orientation = orientation;
+        splitter.style.width = orientation === 'vertical' ? '128px' : '500px';
+        splitter.style.height =
+          orientation === 'horizontal' ? '128px' : '500px';
 
-      for (const step of steps) {
-        splitter.style.setProperty('--ig-size', step.value);
+        for (const step of steps) {
+          const label = `${orientation} ${step.size}`;
+          splitter.style.setProperty('--ig-size', step.value);
+          await elementUpdated(splitter);
+
+          const { handleLength } = measure(splitter);
+          const { handleGaps, inside } = gaps(splitter);
+          // What the bar leaves after the handle and the two expanders, halved.
+          const gap = (128 - 32 - step.expander * 4) / 2;
+
+          expect(handleLength, label).to.equal(32);
+          expect(handleGaps, label).to.eql([gap, gap]);
+          expect(inside, label).to.be.true;
+        }
+      }
+    });
+
+    it('keeps the expanders 48px apart without a drag handle and inside a bar too short for it', async () => {
+      splitter.hideDragHandle = true;
+      splitter.style.setProperty('--ig-size', '3');
+
+      for (const orientation of orientations) {
+        const length = orientation === 'horizontal' ? 'height' : 'width';
+        splitter.orientation = orientation;
+
+        splitter.style[length] = '500px';
+        await elementUpdated(splitter);
+        expect(gaps(splitter).buttonsGap, orientation).to.equal(48);
+
+        // The two 12px expanders leave 44px of the bar.
+        splitter.style[length] = '68px';
         await elementUpdated(splitter);
 
-        const { handleLength } = measure(splitter);
-        const { handleGaps, inside } = gaps(splitter);
-        // What the bar leaves after the handle and the two expanders, halved.
-        const gap = (128 - 32 - step.expander * 4) / 2;
+        const { buttonsGap, inside } = gaps(splitter);
+        expect(buttonsGap, orientation).to.equal(44);
+        expect(inside, orientation).to.be.true;
 
-        expect(handleLength, step.size).to.equal(32);
-        expect(handleGaps, step.size).to.eql([gap, gap]);
-        expect(inside, step.size).to.be.true;
+        splitter.style[length] = '500px';
       }
+    });
+
+    // A resize observer reports after the animation frame callbacks of its frame.
+    async function observerReport() {
+      await nextFrame();
+      await nextFrame();
+      await elementUpdated(splitter);
+    }
+
+    it('drops the minimum sizes that no longer fit when the size makes the bar thicker', async () => {
+      // 490px of minimums fit beside the 6px bar, and not beside the 18px one.
+      splitter.startMinSize = '245px';
+      splitter.endMinSize = '245px';
+      await observerReport();
+
+      splitter.style.setProperty('--ig-size', '3');
+      await observerReport();
+
+      const { startSize, endSize } = getPanesSizes(splitter, 'width');
+      expect(startSize + endSize).to.equal(500 - 18);
     });
 
     it('keeps a 1px idle bar at every size and with an overridden size in indigo', async () => {
@@ -4181,6 +4242,13 @@ describe('Splitter', () => {
             expect(measure(splitter).bar, step.size).to.be.closeTo(1, 0.01);
           }
 
+          splitter.orientation = 'vertical';
+          await elementUpdated(splitter);
+          await nextFrame();
+          finishAnimationsFor(splitter.shadowRoot!);
+
+          expect(measure(splitter).bar, 'vertical').to.be.closeTo(1, 0.01);
+
           splitter.style.setProperty('--ig-splitter-size', '10px');
           await elementUpdated(splitter);
           await nextFrame();
@@ -4190,6 +4258,30 @@ describe('Splitter', () => {
             1,
             0.01
           );
+        } finally {
+          configureTheme('bootstrap');
+        }
+      });
+    });
+
+    it('takes the full bar thickness from the panes while the idle bar is 1px in indigo', async () => {
+      await withDocumentSheets([indigo.styleSheet!], async () => {
+        try {
+          configureTheme('indigo');
+          splitter.style.setProperty('--ig-size', '3');
+          await elementUpdated(splitter);
+          await nextFrame();
+          finishAnimationsFor(splitter.shadowRoot!);
+
+          // 488px of minimums do not fit beside the 18px bar.
+          splitter.startMinSize = '244px';
+          splitter.endMinSize = '244px';
+          await elementUpdated(splitter);
+
+          const { startSize, endSize } = getPanesSizes(splitter, 'width');
+
+          expect(measure(splitter).bar).to.be.closeTo(1, 0.01);
+          expect(startSize + endSize).to.equal(500 - 18);
         } finally {
           configureTheme('bootstrap');
         }
