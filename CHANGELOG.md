@@ -44,6 +44,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - <kbd>Tab</kbd> and <kbd>Escape</kbd> on the select act also when other code already called `preventDefault()` on the key, as in the dropdown. Content in the `header` and `footer` slots still keeps a key that it handled.
 
 ### Fixed
+- #### Calendar, Date picker, Date range picker, Date time input
+  - An ISO string with a signed six digit year, such as `+010000-01-01T00:00:00.000Z`, sets the value. `toISOString()` gives this format for dates before year 0 and after year 9999. Before, the value became `null`.
 - #### Checkbox, Radio, Switch
   - A change of `value` no longer makes a checked control dirty, so a later `defaultChecked` still sets the checked state, as for a native checkbox or radio.
 - #### Color picker
@@ -54,6 +56,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A closed list has no active option. Before, when code closed the list and opened it again, the old option was still active. When an app canceled `igcOpening` while the user typed, Arrow Down opened the list on the second match.
   - In single selection, the input no longer shows the invalid styles when the focus moves from it to slotted content of the combo. The input shows the invalid state of the combo, together with its validation message.
   - In multiple selection, a change of `name` moves the submitted values to the new name at once. Before, the form submitted them under the old name.
+- #### Date picker
+  - The first render no longer logs a Lit development warning that a cached field was read before the first update.
 - #### Date picker, Date range picker
   - An editor no longer shows the invalid styles when the focus moves from it to other content of the picker, such as the other editor of a date range picker. The editors show the invalid state of the picker, together with its validation message.
   - When you clear the value and then open and close the picker before you leave it, the picker now emits `igcChange` for the clear.
@@ -63,6 +67,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Date picker, Date range picker, Date time input
   - A form reset discards the text that you typed and did not commit yet, as for a native date input. Before, a partly typed date stayed in the focused input, and in a picker the next blur committed it as a date, also over the restored default value.
   - An empty value that code or a form reset sets while the input has focus replaces the date that the input shows. Before, the input kept showing the old date, and a spin started from it.
+  - A year spin stops at year 9999 and at year 1, and a year outside them, such as one set from code, only moves toward them. Before, a spin past year 9999 gave a five digit year that did not fit the input.
   - Ctrl + Arrow Left and Ctrl + Arrow Right stop at each date part in an input format without separators, such as `yyyyMMdd`, and do not stop inside a separator of more than one character, such as `, `. Before, the date time input went to the start or the end of the input, and the single input of the date range picker skipped a part.
 - #### Date picker, Date time input
   - `stepUp(DatePart.AmPm)` and `stepDown(DatePart.AmPm)` read AM or PM from the value. Before, while the input did not have focus and the display format was different from the input format, they read the display text, so they did nothing or switched only from PM to AM.

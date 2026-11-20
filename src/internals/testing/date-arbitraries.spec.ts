@@ -8,12 +8,8 @@ export const fourDigitYearDate = fc.date({
   noInvalidDate: true,
 });
 
-/** Dates whose ISO string has a four digit year. The converters do not parse an extended year such as `-000001`. */
-export const isoDate = fc.date({
-  min: new Date('0000-01-01T00:00:00.000Z'),
-  max: new Date('9999-12-31T23:59:59.999Z'),
-  noInvalidDate: true,
-});
+/** Any valid date, also outside the years 0 to 9999. */
+export const anyValidDate = fc.date({ noInvalidDate: true });
 
 /** The local date and time fields of a wall clock, with a zero-based month. */
 export type WallClock = {

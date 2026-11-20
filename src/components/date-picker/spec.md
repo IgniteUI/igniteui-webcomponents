@@ -80,6 +80,7 @@
 |      18 | 2026-11-18 | The inner editor shows only the invalid state of the picker, and reports the validity of the picker |
 |      19 | 2026-11-18 | A clear is reported when the focus leaves the picker; a value write brings its month into view unless `activeDate` is set; an open shows the value in the first month; a render no longer moves the calendar back to `activeDate` |
 |      20 | 2026-11-20 | A form reset discards the text typed in the inner editor that is not committed, so the next blur does not commit it; a reset that empties the value shows the empty mask in the focused editor |
+|      21 | 2026-11-20 | The value accepts an ISO string with a signed six digit year |
 
 ## Overview
 
@@ -293,6 +294,8 @@ picker.addEventListener('igcChange', ({ detail }) => console.log('committed:', d
 ```
 
 The value accepts a `Date`, an ISO string, or `null`. An invalid `Date` object is rejected rather than applied.
+An ISO string can also have the signed six digit year that `toISOString()` gives outside the years 0 to 9999, such as
+`+010000-01-01`.
 
 #### Interaction states
 
