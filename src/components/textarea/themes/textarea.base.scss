@@ -1,12 +1,7 @@
 @use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/animations/easings' as *;
-
-// The label and the container are siblings in some themes.
-@include value-state-transitions(
-    $descendants: ('*', '*::before', '*::after'),
-    $on-host: true
-);
+@include value-state-transitions($on-host: true);
 
 :host {
     --component-size: var(--ig-size, var(--ig-size-large, 3));

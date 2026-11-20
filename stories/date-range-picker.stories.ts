@@ -66,7 +66,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     value: {
       type: { name: 'other', value: 'DateRangeValue' },
       description:
-        'The value of the picker: a range with a `start` and an `end` date, or `null` when the range is empty.',
+        'The value of the picker: a range with a `start` and an `end` date.',
     },
     visibleMonths: {
       type: 'number',
@@ -338,7 +338,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
 export default metadata;
 
 interface IgcDateRangePickerArgs {
-  /** The value of the picker: a range with a `start` and an `end` date, or `null` when the range is empty. */
+  /** The value of the picker: a range with a `start` and an `end` date. */
   value: DateRangeValue;
   /** The number of months displayed in the calendar: 1 or 2. */
   visibleMonths: number;

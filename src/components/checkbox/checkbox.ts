@@ -65,8 +65,8 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
     super._handleClick(event);
   }
 
-  protected override _valueState(): unknown[] {
-    return [...super._valueState(), this.indeterminate];
+  protected override _watchedState(): unknown[] {
+    return [...super._watchedState(), this.indeterminate];
   }
 
   protected _renderStandard() {

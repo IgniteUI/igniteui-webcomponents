@@ -18,8 +18,8 @@ import {
 } from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
+import { withTheme } from '#internals/testing/motion.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
-import { withTheme } from '#internals/testing/value-state.spec.js';
 import { getCenterPoint } from '#internals/utils/dom.js';
 import IgcChipComponent from './chip.js';
 

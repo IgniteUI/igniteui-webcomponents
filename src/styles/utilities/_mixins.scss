@@ -1,5 +1,3 @@
-@use 'sass:list';
-
 @mixin ig-scrollbar($track-size, $track-bg, $thumb-bg) {
     // Firefox only
     scrollbar-width: $track-size;
@@ -48,25 +46,23 @@
     }
 }
 
-/// Turns off the transitions of a control with value state while a change from
-/// code marks it (`#animations/value-state.js`). The mark is on the host with
-/// `$on-host`, else on an element of the shadow root. `$descendants` are the
-/// elements under the mark that transition. The mark lasts one frame, so it
-/// wins over the theme and the consumer styles.
-@mixin value-state-transitions($descendants: (), $on-host: false) {
+/// Turns off all transitions under the instant mark of
+/// `#animations/value-state.js`, slotted elements included. With `$on-host`
+/// the mark is the host custom state, else `[data-instant]` on a shadow element.
+/// The mark ends in the first frame with no change from code. `!important`
+/// beats the theme and the consumer `::part()` transitions.
+@mixin value-state-transitions($on-host: false) {
     $mark: '[data-instant]';
 
     @if $on-host {
         $mark: ':host(:state(ig-instant))';
     }
 
-    $selectors: ($mark);
-
-    @each $descendant in $descendants {
-        $selectors: list.append($selectors, '#{$mark} #{$descendant}', $separator: comma);
-    }
-
-    #{$selectors} {
+    #{$mark},
+    #{$mark} *,
+    #{$mark} *::before,
+    #{$mark} *::after,
+    #{$mark} ::slotted(*) {
         transition: none !important;
     }
 }

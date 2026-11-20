@@ -7,7 +7,6 @@ import {
 } from '@open-wc/testing';
 import { emulateMedia, sendKeys } from '@web/test-runner-commands';
 import { spy, useFakeTimers } from 'sinon';
-import { isUserChange } from '#animations/value-state.js';
 import { internalsOf } from '#internals/controllers/internals.js';
 import {
   altKey,
@@ -46,6 +45,7 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import { isUserChange } from '#internals/user-change.js';
 import { configureTheme } from '#theming/config.js';
 import { styles as indigo } from '../../styles/themes/light/indigo.css.js';
 import IgcInputComponent from '../input/input.js';
@@ -2270,7 +2270,7 @@ describe('Select', () => {
       `);
     });
 
-    it('animates the input for a selection by the user', () => {
+    it('marks the input as a user change for a selection by the user', () => {
       simulateClick(select.items[1]);
 
       expect(select.value).to.equal('impl');

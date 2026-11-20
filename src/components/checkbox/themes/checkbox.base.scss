@@ -13,15 +13,7 @@ input[type='checkbox'] {
     @include hide-default();
 }
 
-@include value-state-transitions(
-    $descendants: (
-        "[part~='control']",
-        "[part~='control']::before",
-        "[part~='control']::after",
-        "[part~='indicator']",
-        "[part~='label']",
-    )
-);
+@include value-state-transitions($on-host: true);
 
 $mark-length: 24;
 

@@ -8,15 +8,14 @@ import {
 import { resetMouse, sendMouse } from '@web/test-runner-commands';
 import { spy } from 'sinon';
 
+import { spaceBar } from '#internals/controllers/key-bindings.js';
 import {
   allowMotion,
   clickWithMouse,
   painted,
 } from '#internals/testing/helpers.spec.js';
-import {
-  transitionsIn,
-  withTheme,
-} from '#internals/testing/value-state.spec.js';
+import { transitionsIn, withTheme } from '#internals/testing/motion.spec.js';
+import { simulateKeyboard } from '#internals/testing/simulate.spec.js';
 import { getCenterPoint } from '#internals/utils/dom.js';
 import { defineComponents, type IgcCheckboxComponent } from '../../index.js';
 import IgcTreeItemComponent from './tree-item.js';
@@ -1011,6 +1010,40 @@ describe('Tree Selection', () => {
         await painted();
 
         expect(child.selected).to.be.true;
+        expect(transitionsIn(checkboxOf(parent))).to.eql([]);
+        expect(transitionsIn(checkboxOf(child))).to.eql([]);
+      });
+    });
+
+    it('animates the checkboxes of a cascade that Space selects', async () => {
+      await withTheme('material', async () => {
+        const [parent, child] = await createCascade();
+
+        simulateKeyboard(parent, spaceBar);
+        await painted();
+
+        expect(child.selected).to.be.true;
+        expect(transitionsIn(checkboxOf(parent))).to.not.be.empty;
+        expect(transitionsIn(checkboxOf(child))).to.not.be.empty;
+      });
+    });
+
+    it('shows a deselect() call and a selected item from code at once', async () => {
+      await withTheme('material', async () => {
+        const [parent, child] = await createCascade();
+        tree.select([parent]);
+        await painted();
+
+        tree.deselect([parent]);
+        await painted();
+
+        expect(child.selected).to.be.false;
+        expect(transitionsIn(checkboxOf(parent))).to.eql([]);
+        expect(transitionsIn(checkboxOf(child))).to.eql([]);
+
+        child.selected = true;
+        await painted();
+
         expect(transitionsIn(checkboxOf(parent))).to.eql([]);
         expect(transitionsIn(checkboxOf(child))).to.eql([]);
       });

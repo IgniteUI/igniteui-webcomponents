@@ -1,5 +1,4 @@
 @use 'styles/utilities' as *;
-@include value-state-transitions();
 
 [part~='base'] {
     display: flex;

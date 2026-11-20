@@ -252,7 +252,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   constructor() {
     super();
 
-    // The mask also shows on focus, so the filled state is not only the value.
+    // Watches the value, not the filled state: the mask also fills the field
+    // on focus, and that change animates.
     addFieldValueStateMotion(this, () => this.value);
 
     this._keyBindings

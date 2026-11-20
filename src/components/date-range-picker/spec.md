@@ -46,6 +46,7 @@
     - [Range value shape properties](#range-value-shape-properties)
     - [Range editors](#range-editors)
     - [Host ARIA](#host-aria)
+    - [Value state motion](#value-state-motion)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -84,7 +85,7 @@
 |      26 | 2026-11-19 | A change of `name` renames the submitted `-start` and `-end` entries at once |
 |      27 | 2026-11-20 | A form reset discards the text typed in the editors that is not committed, so the next blur does not commit it; a reset that empties the value shows the empty mask in the focused editor |
 |      28 | 2026-11-20 | The ends of a range accept an ISO string with a signed six digit year; the value shape properties use any valid date |
-|      29 | 2026-11-20 | A range that the user picks animates the inputs; a value from code shows at once |
+|      29 | 2026-11-20 | A range that the user picks animates the inputs; a value from code, also from an `igcChange` handler, shows at once |
 
 ## Overview
 
@@ -202,8 +203,8 @@ As a developer, I expect to be able to:
   ends, and an empty end to today, both without a step.
 
 **Motion.** A range that the user picks or types animates the inputs, such as the Material label that moves up. A value
-from code shows at once, also a value that an `igcChange` handler sets. The [date-time
-input](../date-time-input/spec.md) suite covers the motion of the inputs.
+from code shows at once, also a value that an `igcChange` handler sets. The common suite covers a calendar pick and a
+handler value; the [date-time input](../date-time-input/spec.md) suite covers a typed value and a value from code.
 
 ### Developer experience
 
@@ -777,6 +778,13 @@ The focus after the form checks and the `invalid` event rules come from the form
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
     `disabled` set does not cancel an earlier call on another element. The suite runs for one input and for two
     inputs.
+
+### Value state motion
+
+In the common suite.
+
+35. A range picked from the calendar marks the input as a user change.
+36. A value that an `igcChange` handler sets ends the user change, so the input shows it at once.
 
 ## Assumptions and limitations
 

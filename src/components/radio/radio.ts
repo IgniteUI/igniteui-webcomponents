@@ -1,10 +1,6 @@
 import { html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import {
-  addValueStateMotion,
-  isUserChange,
-  markUserChange,
-} from '#animations/value-state.js';
+import { addValueStateMotion } from '#animations/value-state.js';
 import { helperText } from '#internals/controllers/aria-projection.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import { addRovingFocusController } from '#internals/controllers/roving-focus.js';
@@ -21,6 +17,7 @@ import { FormValueBooleanTransformers } from '#internals/mixins/forms/form-trans
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { partMap } from '#internals/part-map.js';
 import { renderToggleShell } from '#internals/templates/toggle-shell.js';
+import { isUserChange, markUserChange } from '#internals/user-change.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { all } from '#themes/radio/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -225,7 +222,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
     addThemingController(this, all);
     addValueStateMotion(this, {
-      target: () => this.renderRoot.querySelector('[part~="base"]'),
       watch: () => [this.checked, this.disabled],
     });
 
@@ -363,8 +359,9 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   protected _navigate(radio: IgcRadioComponent): void {
     this._setTouchedState();
     radio.focus();
-    markUserChange(radio);
-    radio.checked = true;
+    radio._writeFrom('user', () => {
+      radio.checked = true;
+    });
     this._emitChange(radio);
   }
 

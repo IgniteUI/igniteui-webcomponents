@@ -36,6 +36,7 @@
     - [Color model and parsing](#color-model-and-parsing)
     - [Converters](#converters)
     - [Host ARIA](#host-aria)
+    - [Value state motion](#value-state-motion)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -170,8 +171,8 @@ exactly once if it changed. Dragging the canvas or the sliders, or typing, never
 not a user change, so it emits no `igcChange`, also while focus is inside the component.
 
 **Motion.** In input mode, a color that the user picks animates the input, such as the Material label that moves up. A
-value from code shows at once, also a value that an `igcChange` handler sets. The [input](../input/spec.md) suite covers
-the motion of the input.
+value from code shows at once, also a value that an `igcChange` handler sets. The color picker suite covers a typed
+color and a value from code after it; the [input](../input/spec.md) suite covers the motion of the input itself.
 
 ### Developer experience
 
@@ -516,6 +517,13 @@ The focus after the form checks and the `invalid` event rules come from the form
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
     `disabled` set does not cancel an earlier call on another element.
+
+### Value state motion
+
+In input mode.
+
+31. A typed color marks the anchor input as a user change.
+32. A value from code right after it ends the user change, so the input shows it at once.
 
 ## Assumptions and limitations
 

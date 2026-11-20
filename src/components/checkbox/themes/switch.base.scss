@@ -13,9 +13,7 @@ input[type='checkbox'] {
     @include hide-default();
 }
 
-@include value-state-transitions(
-    $descendants: ("[part~='control']", "[part~='thumb']", "[part~='label']")
-);
+@include value-state-transitions($on-host: true);
 
 [part~='base'] {
     display: flex;

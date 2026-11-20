@@ -21,14 +21,12 @@ import {
   isFocused,
   painted,
 } from '#internals/testing/helpers.spec.js';
+import { transitionsIn, withTheme } from '#internals/testing/motion.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
-import {
-  transitionsIn,
-  withTheme,
-} from '#internals/testing/value-state.spec.js';
+import { isUserChange } from '#internals/user-change.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import IgcRadioComponent from '../radio/radio.js';
 import IgcRadioGroupComponent from './radio-group.js';
@@ -747,6 +745,10 @@ describe('Radio Group Component', () => {
       return Array.from(group.querySelectorAll(IgcRadioComponent.tagName));
     }
 
+    // The focus also starts transitions, so the tests ask for the dots.
+    const UNCHECKED_DOT = 'span[part="control"]::before transform';
+    const CHECKED_DOT = 'span[part="control checked"]::before transform';
+
     it('animates the radio that the group unchecks for a click', async () => {
       await withTheme('material', async () => {
         const [a, b] = await createGroup();
@@ -755,8 +757,8 @@ describe('Radio Group Component', () => {
         await painted();
 
         expect(b.checked).to.be.true;
-        expect(transitionsIn(a)).to.not.be.empty;
-        expect(transitionsIn(b)).to.not.be.empty;
+        expect(transitionsIn(a)).to.include(UNCHECKED_DOT);
+        expect(transitionsIn(b)).to.include(CHECKED_DOT);
       });
     });
 
@@ -764,15 +766,43 @@ describe('Radio Group Component', () => {
       await withTheme('material', async () => {
         const [a, b] = await createGroup();
         a.focus();
+        await painted();
 
         simulateKeyboard(a, arrowDown);
         await painted();
 
         expect(b.checked).to.be.true;
-        expect(transitionsIn(a)).to.not.be.empty;
-        expect(transitionsIn(b)).to.not.be.empty;
+        expect(transitionsIn(a)).to.include(UNCHECKED_DOT);
+        expect(transitionsIn(b)).to.include(CHECKED_DOT);
       });
     });
+
+    for (const [name, check] of [
+      [
+        'a click',
+        (_: IgcRadioComponent, b: IgcRadioComponent) =>
+          simulateClick(b.renderRoot.querySelector('input')!),
+      ],
+      [
+        'an arrow key',
+        (a: IgcRadioComponent) => {
+          a.focus();
+          simulateKeyboard(a, arrowDown);
+        },
+      ],
+    ] as const) {
+      it(`shows a value that an igcChange handler sets for ${name} at once`, async () => {
+        const [a, b] = await createGroup();
+        b.addEventListener('igcChange', () => {
+          b.checked = false;
+        });
+
+        check(a, b);
+
+        expect(b.checked).to.be.false;
+        expect(isUserChange(b)).to.be.false;
+      });
+    }
 
     it('shows a value from code at once in both radios', async () => {
       await withTheme('material', async () => {

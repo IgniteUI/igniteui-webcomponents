@@ -93,13 +93,12 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   constructor() {
     super();
     addValueStateMotion(this, {
-      target: () => this.renderRoot.querySelector('[part~="base"]'),
-      watch: () => this._valueState(),
+      watch: () => this._watchedState(),
     });
   }
 
-  /** The values whose change restyles the control. */
-  protected _valueState(): unknown[] {
+  /** The watched values. The checkbox adds `indeterminate`. */
+  protected _watchedState(): unknown[] {
     return [this.checked, this.disabled];
   }
 
