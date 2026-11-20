@@ -139,6 +139,27 @@ export function simulateInput(
   input.dispatchEvent(new InputEvent('input', options));
 }
 
+/** A masked editor, such as the date-time input, that renders a native `input`. */
+type MaskedEditor = HTMLElement & {
+  renderRoot: HTMLElement | DocumentFragment;
+  setSelectionRange(start: number, end: number): void;
+};
+
+/** Focuses `editor`, selects all of its text and types `text` over it. */
+export async function simulateTypingOver(
+  editor: MaskedEditor,
+  text: string
+): Promise<void> {
+  const input = editor.renderRoot.querySelector('input')!;
+
+  editor.focus();
+  await elementUpdated(editor);
+
+  editor.setSelectionRange(0, input.value.length);
+  simulateInput(input, { value: text, inputType: 'insertText' });
+  await elementUpdated(editor);
+}
+
 /**
  * Simulates keyboard interaction on a given element node.
  *

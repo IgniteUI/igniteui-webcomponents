@@ -2,8 +2,8 @@ import type { DateRangeValue } from '../../components/types.js';
 import { isPlainObject, isString } from '../utils/types.js';
 import { CalendarDay } from './model.js';
 
-/** Matches a string that starts with a four digit year. `Date` parses it. */
-const ISO_DATE_PATTERN = /^\d{4}/;
+/** Matches a leading four digit year, or the signed six digit year of `toISOString()`. */
+const ISO_DATE_PATTERN = /^(?:\d{4}|[+-]\d{6})/;
 
 /** Matches a time only string: `HH:MM`, with optional seconds and ms. */
 const TIME_PATTERN = /^\d{2}:\d{2}/;

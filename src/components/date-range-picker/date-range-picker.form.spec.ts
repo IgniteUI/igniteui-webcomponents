@@ -20,6 +20,8 @@ import {
   getEditorRange,
   getEditors,
   getIcon,
+  getInput,
+  typeAt,
 } from './date-range-picker.utils.spec.js';
 
 describe('Date range picker - Form integration', () => {
@@ -102,6 +104,92 @@ describe('Date range picker - Form integration', () => {
 
           expect(spec.element.value).to.deep.equal(initial);
           expect(getEditorRange(spec.element)).to.be.null;
+        });
+
+        it('discards a partly typed date on form reset', async () => {
+          const initial = spec.element.value;
+          const [editor] = getEditors(spec.element);
+          const input = getInput(spec.element);
+
+          editor.focus();
+          await elementUpdated(editor);
+          const emptyMask = input.value;
+
+          typeAt(input, '12', 0);
+          await elementUpdated(editor);
+
+          expect(input.value).to.not.equal(emptyMask);
+
+          spec.reset();
+          await elementUpdated(spec.element);
+          await elementUpdated(editor);
+
+          expect(input.value).to.equal(emptyMask);
+
+          editor.blur();
+          await elementUpdated(spec.element);
+
+          expect(spec.element.value).to.deep.equal(initial);
+          expect(getEditorRange(spec.element)).to.be.null;
+        });
+
+        it('shows the empty mask when a form reset empties the value', async () => {
+          const [editor] = getEditors(spec.element);
+          const input = getInput(spec.element);
+
+          editor.focus();
+          await elementUpdated(editor);
+          const emptyMask = input.value;
+          editor.blur();
+
+          spec.setProperties({ value });
+          await elementUpdated(spec.element);
+          editor.focus();
+          await elementUpdated(editor);
+
+          expect(input.value).to.not.equal(emptyMask);
+
+          spec.reset();
+          await elementUpdated(spec.element);
+          await elementUpdated(editor);
+
+          expect(input.value).to.equal(emptyMask);
+        });
+
+        it('keeps the restored default when the editor blurs after a form reset', async () => {
+          const defaultRange = {
+            start: new Date(2024, 0, 15),
+            end: new Date(2024, 0, 20),
+          };
+          spec.setProperties({ defaultValue: defaultRange });
+          await elementUpdated(spec.element);
+
+          const [editor] = getEditors(spec.element);
+          const input = getInput(spec.element);
+
+          editor.focus();
+          await elementUpdated(editor);
+          const shown = input.value;
+
+          typeAt(input, '12', 0);
+          await elementUpdated(editor);
+
+          expect(input.value).to.not.equal(shown);
+
+          spec.reset();
+          await elementUpdated(spec.element);
+          await elementUpdated(editor);
+
+          expect(input.value).to.equal(shown);
+
+          editor.blur();
+          await elementUpdated(spec.element);
+
+          checkSelectedRange(spec.element, defaultRange, useTwoInputs);
+          spec.assertSubmitHasKeyValue(
+            startKey,
+            defaultRange.start.toISOString()
+          );
         });
 
         it('should not be in invalid state on reset for a required control which previously had value', async () => {

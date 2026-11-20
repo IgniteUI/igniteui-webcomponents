@@ -79,7 +79,9 @@
 |      17 | 2026-11-18 | A clear is reported on blur also after an open and a close; one commit session holds the commit rules of both pickers |
 |      18 | 2026-11-18 | The inner editor shows only the invalid state of the picker, and reports the validity of the picker |
 |      19 | 2026-11-18 | A clear is reported when the focus leaves the picker; a value write brings its month into view unless `activeDate` is set; an open shows the value in the first month; a render no longer moves the calendar back to `activeDate` |
-|      20 | 2026-11-20 | A date that the user picks animates the input; a value from code shows at once |
+|      20 | 2026-11-20 | A form reset discards the text typed in the inner editor that is not committed, so the next blur does not commit it; a reset that empties the value shows the empty mask in the focused editor |
+|      21 | 2026-11-20 | The value accepts an ISO string with a signed six digit year |
+|      22 | 2026-11-20 | A date that the user picks animates the input; a value from code shows at once |
 
 ## Overview
 
@@ -297,6 +299,8 @@ picker.addEventListener('igcChange', ({ detail }) => console.log('committed:', d
 ```
 
 The value accepts a `Date`, an ISO string, or `null`. An invalid `Date` object is rejected rather than applied.
+An ISO string can also have the signed six digit year that `toISOString()` gives outside the years 0 to 9999, such as
+`+010000-01-01`.
 
 #### Interaction states
 
@@ -456,7 +460,8 @@ name the control.
 
 - The value is submitted under `name`.
 - A form reset restores `defaultValue`, taken from the `value` attribute, and clears the invalid styles of the inner
-  editor.
+  editor. It also discards the text typed in the editor that is not committed yet, so the next blur does not commit
+  it over the restored value.
 - The inner editor shows the invalid state of the picker, and no invalid state of its own. So it does not show the
   invalid styles when the focus moves from it to other content of the picker before the picker is invalid.
 - An invalid picker blocks submission; pressing <kbd>Enter</kbd> submits the owning form only when it is valid. The
@@ -788,8 +793,9 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 50. Is form associated, and does not participate in submission with an empty or invalid value.
 51. Participates in submission when the value adheres to the constraints.
 52. Resets to its default value on form reset, resets to a new default after a `setAttribute` call, and clears the
-    invalid styles of the inner editor on reset. The inner editor shows the invalid state of the picker at once, and
-    none of its own.
+    invalid styles of the inner editor on reset. A reset during an edit discards the typed text, with and without a
+    default, and the next blur keeps the restored value. A reset that empties the value shows the empty mask in the
+    focused editor. The inner editor shows the invalid state of the picker at once, and none of its own.
 53. Submits on <kbd>Enter</kbd> when valid, and does not when invalid. A real <kbd>Enter</kbd> submits once.
     <kbd>Enter</kbd> in a field in the `suffix` slot submits once, and on a button in the slot it does not submit.
 54. Reflects the disabled state of an ancestor `fieldset` or form.
