@@ -12,6 +12,7 @@ import { checkDatesEqual } from '#internals/testing/helpers.spec.js';
 import {
   simulateBlur,
   simulatePointerDown,
+  simulateTypingOver,
 } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
@@ -135,6 +136,76 @@ describe('igc-datepicker form integration', () => {
 
       expect(spec.element.matches(':state(ig-invalid)')).to.be.false;
       expect(inner.matches(':state(ig-invalid)')).to.be.false;
+    });
+
+    describe('Form reset while focused', () => {
+      let editor: IgcDateTimeInputComponent;
+      let input: HTMLInputElement;
+
+      const reset = async () => {
+        spec.reset();
+        await elementUpdated(spec.element);
+        await elementUpdated(editor);
+      };
+
+      const blur = async () => {
+        editor.blur();
+        await elementUpdated(spec.element);
+      };
+
+      beforeEach(async () => {
+        spec.setProperties({ inputFormat: 'MM/dd/yyyy' });
+        await elementUpdated(spec.element);
+
+        editor = spec.element.renderRoot.querySelector(
+          IgcDateTimeInputComponent.tagName
+        )!;
+        input = editor.renderRoot.querySelector('input')!;
+      });
+
+      it('discards the typed text of the editor', async () => {
+        await simulateTypingOver(editor, '12');
+        expect(input.value).to.equal('12/__/____');
+
+        await reset();
+
+        expect(input.value).to.equal('__/__/____');
+
+        await blur();
+
+        expect(spec.element.value).to.be.null;
+        spec.assertSubmitHasValue(null);
+      });
+
+      it('keeps the restored default when the editor blurs', async () => {
+        const defaultDate = new Date(2024, 0, 15);
+        spec.setAttributes({ value: defaultDate.toISOString() });
+        await elementUpdated(spec.element);
+        await simulateTypingOver(editor, '12');
+        expect(input.value).to.equal('12/__/____');
+
+        await reset();
+
+        expect(input.value).to.equal('01/15/2024');
+
+        await blur();
+
+        checkDatesEqual(spec.element.value!, defaultDate);
+        spec.assertSubmitHasValue(defaultDate.toISOString());
+      });
+
+      it('shows the empty mask when the reset empties the value', async () => {
+        spec.setProperties({ value: new Date(2024, 2, 3) });
+        await elementUpdated(spec.element);
+        editor.focus();
+        await elementUpdated(editor);
+
+        expect(input.value).to.equal('03/03/2024');
+
+        await reset();
+
+        expect(input.value).to.equal('__/__/____');
+      });
     });
 
     it('shows no invalid state on the inner editor before the picker', async () => {

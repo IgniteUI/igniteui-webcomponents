@@ -72,6 +72,7 @@
 |      16 | 2026-11-18 | `igcChange` compares the committed value with the last reported value: the last `igcChange` or the last value set from code |
 |      17 | 2026-11-18 | The parser owns the spin, the part at the caret, the default part and the part navigation. <kbd>Ctrl</kbd> + arrow stops at part edges, also without separators; the AM/PM spin reads the value, not the shown text |
 |      18 | 2026-11-18 | Add the strict and the lenient value parse to the parser property suite; the round-trip uses `formatValue` |
+|      19 | 2026-11-20 | A form reset discards the text that the user typed and did not commit; a focused input then shows the empty mask or the default; an empty value from code replaces the text of the old value |
 
 ## Overview
 
@@ -377,7 +378,8 @@ input.addEventListener('igcChange', ({ detail }) => {
 
 This is what makes the component safe to two-way bind: a host re-rendering with the value it last received from
 `igcChange` does not reset a half-typed mask. Assigning a genuinely different value while the user is typing still
-wins and replaces the mask.
+wins and replaces the mask. This includes an empty value: the focused editor then shows the empty mask, not the text
+of the old value.
 
 A value set from code is not a user change, so it emits no `igcChange`, also while the editor is focused. This
 applies to `value`, `clear()`, `stepUp()`, `stepDown()`, `setRangeText()` and a form reset. The next commit compares
@@ -530,7 +532,9 @@ presses that the editor ignores, for example <kbd>Alt</kbd> + <kbd>Arrow Down</k
 ```
 
 - The value is submitted under `name`.
-- A form reset restores `defaultValue`, which is taken from the `value` attribute.
+- A form reset restores `defaultValue`, which is taken from the `value` attribute, and discards the text that the user
+  typed and did not commit yet. As in a native date input, a focused editor then shows the empty mask or the default,
+  and the next blur commits nothing.
 - An invalid editor blocks submission, and pressing <kbd>Enter</kbd> submits the owning form only when it is valid.
   The editor is a text field, and <kbd>Enter</kbd> submits as in a native text field (see the [input specification](../input/spec.md#form-integration)): through the default
   button, or from the only text field of a form with no submit button. A `keydown` or `keypress` listener on the host
@@ -736,7 +740,8 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 8. Exposes the typed date through `igcInput` while `value` stays put.
 9. Re-applying an equal value while typing does not reset the mask.
 10. Emits a single `igcChange` on blur, carrying the committed value.
-11. A genuinely different value assigned while typing still wins.
+11. A genuinely different value assigned while typing still wins. An empty value assigned while focused replaces the
+    text of the old value.
 12. Does not report a value set from code while focused, also over a typed draft.
 13. Does not report `clear()` while focused.
 14. Reports an edit against the last value set from code.
@@ -784,7 +789,9 @@ Driven by `createFormAssociatedTestBed`.
 
 38. Is form associated, and is not associated on submit without a value.
 39. Is associated on submit.
-40. Is correctly reset on form reset, and resets to the new default after a `setAttribute` call.
+40. Is correctly reset on form reset, and resets to the new default after a `setAttribute` call. A reset while focused
+    discards the typed text and shows the empty mask or the default, the next blur keeps the restored value, and a
+    reset that empties the value shows the empty mask.
 41. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid. A real <kbd>Enter</kbd>
     submits once.
 42. Reflects the disabled state of an ancestor `fieldset`.
