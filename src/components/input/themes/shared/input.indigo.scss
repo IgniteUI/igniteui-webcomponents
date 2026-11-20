@@ -30,13 +30,18 @@ $transition-duration: .25s;
     [part='suffix'] {
         // transition-duration is needed here because of a bug in safari
         // https://github.com/IgniteUI/igniteui-webcomponents/pull/881
-        transition-property: color, background;
-        transition-duration: 0ms;
+        @include with-motion() {
+            transition-property: color, background;
+            transition-duration: 0ms;
+        }
 
         ::slotted(*) {
             height: 100%;
             color: inherit;
-            transition-duration: 0ms;
+
+            @include with-motion() {
+                transition-duration: 0ms;
+            }
         }
     }
 
@@ -74,7 +79,11 @@ $transition-duration: .25s;
         border-end-start-radius: 0;
         border-end-end-radius: 0;
         border-bottom: rem(1px) solid var-get($theme, 'idle-bottom-line-color');
-        transition: background $transition-duration ease-out;
+
+        @include with-motion() {
+            transition: background $transition-duration ease-out;
+        }
+
         grid-template-columns: auto 1fr auto;
         height: var-get($theme, 'size');
 
@@ -88,7 +97,11 @@ $transition-duration: .25s;
             bottom: -1px;
             background: var-get($theme, 'focused-bottom-line-color');
             transform: scaleY(0);
-            transition: transform 180ms cubic-bezier(.4, 0, .2, 1), opacity 180ms cubic-bezier(.4, 0, .2, 1);
+
+            @include with-motion() {
+                transition: transform 180ms cubic-bezier(.4, 0, .2, 1), opacity 180ms cubic-bezier(.4, 0, .2, 1);
+            }
+
             transform-origin: bottom center;
         }
     }
@@ -140,7 +153,9 @@ $transition-duration: .25s;
     [part='suffix'] {
         // transition-duration is needed here because of a bug in safari
         // https://github.com/IgniteUI/igniteui-webcomponents/pull/881
-        transition-duration: $transition-duration;
+        @include with-motion() {
+            transition-duration: $transition-duration;
+        }
     }
 
     [part^='container'] {

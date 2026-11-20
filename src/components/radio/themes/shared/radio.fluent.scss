@@ -17,7 +17,10 @@ $theme: $fluent;
 }
 
 :host [part~='base'] {
-    transition-duration: .1s;
+    @include with-motion() {
+        transition-duration: .1s;
+    }
+
     gap: rem(8px);
 }
 
@@ -45,7 +48,11 @@ $theme: $fluent;
     &::before {
         backface-visibility: hidden;
         transform: scale(0);
-        transition-duration: .2s;
+
+        @include with-motion() {
+            transition-duration: .2s;
+        }
+
         z-index: 1;
     }
 

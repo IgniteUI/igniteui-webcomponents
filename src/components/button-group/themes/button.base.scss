@@ -29,9 +29,13 @@
         background: transparent;
         color: inherit;
         max-width: 100%;
-        transition-property: color, background, border-color, box-shadow;
-        transition-duration: 140ms;
-        transition-timing-function: $in-out-quad;
+
+        @include with-motion() {
+            transition-property: color, background, border-color, box-shadow;
+            transition-duration: 140ms;
+            transition-timing-function: $in-out-quad;
+        }
+
         position: relative;
         z-index: 0;
         gap: sizable(rem(4px), rem(8px), rem(12px));
@@ -45,6 +49,8 @@
         }
     }
 }
+
+@include value-state-transitions();
 
 :host(:disabled),
 :host([disabled]) {

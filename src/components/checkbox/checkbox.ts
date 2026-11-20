@@ -65,6 +65,10 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
     super._handleClick(event);
   }
 
+  protected override _watchedState(): unknown[] {
+    return [...super._watchedState(), this.indeterminate];
+  }
+
   protected _renderStandard() {
     return html`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

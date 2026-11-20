@@ -46,6 +46,7 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import { isUserChange } from '#internals/user-change.js';
 import { formatString } from '#internals/utils/strings.js';
 import { configureTheme } from '#theming/config.js';
 import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
@@ -1792,6 +1793,34 @@ describe('Color picker', () => {
         spec.reset();
         expect(spec.element.value).to.equal(rgb);
       });
+    });
+  });
+
+  describe('Value state motion', () => {
+    const anchor = () =>
+      picker.renderRoot.querySelector<IgcInputComponent>(
+        'igc-input[slot="anchor"]'
+      )!;
+
+    beforeEach(async () => {
+      picker = await createDefaultColorPicker();
+      picker.mode = 'input';
+      picker.open = true;
+      await elementUpdated(picker);
+    });
+
+    it('marks the input as a user change for a typed color', () => {
+      commitColorInput(getColorInput(picker), '#00ff00');
+
+      expect(picker.value).to.equal('#00ff00');
+      expect(isUserChange(anchor())).to.be.true;
+    });
+
+    it('shows a value from code after a typed color at once', () => {
+      commitColorInput(getColorInput(picker), '#00ff00');
+      picker.value = '#ff0000';
+
+      expect(isUserChange(anchor())).to.be.false;
     });
   });
 

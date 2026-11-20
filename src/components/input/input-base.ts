@@ -1,5 +1,6 @@
 import { LitElement, nothing, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
+import { addFieldValueStateMotion } from '#animations/value-state.js';
 import {
   addAriaTarget,
   HOST_COMBOBOX_ATTRIBUTES,
@@ -85,6 +86,11 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
    */
   @property()
   public label!: string;
+
+  constructor() {
+    super();
+    addFieldValueStateMotion(this, () => !!this.value);
+  }
 
   protected _resolvePartNames(base: string): Record<string, boolean> {
     return { [base]: true, ...this._partFlags };

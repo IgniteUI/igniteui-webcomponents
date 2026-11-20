@@ -1,5 +1,6 @@
 import { LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
+import { addValueStateMotion } from '#animations/value-state.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import {
   addSlotController,
@@ -88,6 +89,18 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
    */
   @property({ reflect: true, attribute: 'label-position' })
   public labelPosition: ToggleLabelPosition = 'after';
+
+  constructor() {
+    super();
+    addValueStateMotion(this, {
+      watch: () => this._watchedState(),
+    });
+  }
+
+  /** The watched values. The checkbox adds `indeterminate`. */
+  protected _watchedState(): unknown[] {
+    return [this.checked, this.disabled];
+  }
 
   /** Simulates a click on the control. */
   public override click(): void {

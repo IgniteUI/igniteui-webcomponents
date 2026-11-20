@@ -26,6 +26,7 @@ import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
 } from '#internals/testing/validity-helpers.spec.js';
+import { runValueStateMotionTests } from '#internals/testing/value-state.spec.js';
 import { configureTheme } from '#theming/config.js';
 import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
 import IgcTextareaComponent from './textarea.js';
@@ -847,4 +848,21 @@ describe('Textarea component', () => {
   runHiddenAncestorTests(html`<igc-textarea label="Label"></igc-textarea>`);
 
   runFocusBeforeRenderTests(html`<igc-textarea label="Label"></igc-textarea>`);
+
+  runValueStateMotionTests<IgcTextareaComponent>({
+    template: html`<igc-textarea label="Label"></igc-textarea>`,
+    changedTemplate: html`<igc-textarea
+      label="Label"
+      value="Value"
+    ></igc-textarea>`,
+    changeFromCode: (textarea) => {
+      textarea.value = 'Value';
+    },
+    changeByUser: (textarea) => {
+      textarea.focus();
+      simulateInput(textarea.renderRoot.querySelector('textarea')!, {
+        value: 'Value',
+      });
+    },
+  });
 });

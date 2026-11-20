@@ -3,6 +3,7 @@ import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { addFieldValueStateMotion } from '#animations/value-state.js';
 import {
   addAriaTarget,
   ariaBindings,
@@ -340,6 +341,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   constructor() {
     super();
+
+    addFieldValueStateMotion(this, () => !!this.value);
 
     if (!this._fieldSizing) {
       addResizeObserverController(this, {

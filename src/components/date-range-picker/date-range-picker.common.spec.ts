@@ -32,6 +32,7 @@ import {
   simulateClick,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
+import { isUserChange } from '#internals/user-change.js';
 import { formatString } from '#internals/utils/strings.js';
 import { configureTheme } from '#theming/config.js';
 import type IgcButtonComponent from '../button/button.js';
@@ -1540,6 +1541,42 @@ describe('Date range picker - common tests for single and two inputs mode', () =
 
       checkDatesEqual(calendar.activeDate, may20);
       expect(getRenderedMonths(calendar)).to.eql([5, 6]);
+    });
+  });
+
+  describe('Value state motion', () => {
+    const input = () =>
+      picker.renderRoot.querySelector(
+        `${IgcDateRangeInputComponent.tagName}, ${IgcDateTimeInputComponent.tagName}`
+      )!;
+
+    function pickRange(): void {
+      const views = getCalendarDOM(calendar).views.allDays;
+      const day = CalendarDay.from(views[0].activeDate);
+      simulateClick(getDOMDate(day.set({ date: 10 }), views[0]));
+      simulateClick(getDOMDate(day.set({ date: 20 }), views[0]));
+    }
+
+    it('marks the input as a user change for a range from the calendar', async () => {
+      await picker.show();
+
+      pickRange();
+
+      expect(picker.value).to.not.be.null;
+      expect(isUserChange(input())).to.be.true;
+    });
+
+    it('shows a value that an igcChange handler sets at once', async () => {
+      const other = { start: new Date(2025, 5, 1), end: new Date(2025, 5, 10) };
+      picker.addEventListener('igcChange', () => {
+        picker.value = other;
+      });
+      await picker.show();
+
+      pickRange();
+
+      expect(picker.value).to.eql(other);
+      expect(isUserChange(input())).to.be.false;
     });
   });
 
