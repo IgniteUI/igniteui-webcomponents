@@ -8,6 +8,7 @@ import {
   waitUntil,
 } from '@open-wc/testing';
 import { spy } from 'sinon';
+import { getCSSTransitions } from '#animations/css-transitions.js';
 
 import {
   altKey,
@@ -21,7 +22,9 @@ import {
   allowMotion,
   clickWithMouse,
   getAnimationsFor,
+  painted,
   resetLocation,
+  withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import {
@@ -593,6 +596,48 @@ describe('Expansion Panel', () => {
         expect(content).to.have.attribute('hidden', 'until-found');
         expect(content.inert).to.be.false;
       });
+    });
+  });
+
+  describe('Open motion', () => {
+    allowMotion();
+
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(`
+      igc-expansion-panel { transition: margin-top 1s }
+      igc-expansion-panel[open] { margin-top: 20px }
+    `);
+
+    /** The transitions of the host, which the app declares, after `change`. */
+    async function hostTransitionsAfter(
+      change: (panel: IgcExpansionPanelComponent) => unknown
+    ): Promise<CSSTransition[]> {
+      let transitions: CSSTransition[] = [];
+
+      await withDocumentSheets([sheet], async () => {
+        panel = await fixture<IgcExpansionPanelComponent>(createDefaultPanel());
+        await painted();
+
+        change(panel);
+        await elementUpdated(panel);
+        transitions = getCSSTransitions(panel);
+      });
+
+      return transitions;
+    }
+
+    it('ends the transitions of the host when `open` changes', async () => {
+      const transitions = await hostTransitionsAfter((panel) => {
+        panel.open = true;
+      });
+
+      expect(transitions).to.be.empty;
+    });
+
+    it('keeps the transitions of the host for `show()`', async () => {
+      const transitions = await hostTransitionsAfter((panel) => panel.show());
+
+      expect(transitions).to.not.be.empty;
     });
   });
 });

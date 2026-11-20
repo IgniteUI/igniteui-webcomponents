@@ -19,12 +19,16 @@ import {
   getBackdropAnimations,
   isFocused,
   isUnderPageLayer,
+  painted,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import { hoverWithMouse } from '#internals/testing/helpers.spec.js';
 import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
-import { runValueStateMotionTests } from '#internals/testing/value-state.spec.js';
+import {
+  runValueStateMotionTests,
+  transitionsIn,
+} from '#internals/testing/value-state.spec.js';
 import { isPopoverOpen } from '#internals/utils/dom.js';
 import { configureTheme } from '#theming/config.js';
 import IgcButtonComponent from '../button/button.js';
@@ -922,6 +926,50 @@ describe('Navigation Drawer', () => {
         () => !isPopoverOpen(getMiniElement(navDrawer)),
         'Expected mini popover to be hidden after removing mini content'
       );
+    });
+  });
+
+  describe('First render motion', () => {
+    allowMotion();
+
+    it('shows a drawer that is open on the first render at once', async () => {
+      navDrawer = await createNavDrawer(html`
+        <igc-nav-drawer open>
+          <igc-nav-drawer-item></igc-nav-drawer-item>
+        </igc-nav-drawer>
+      `);
+      await painted();
+
+      expect(transitionsIn(navDrawer)).to.eql([]);
+      expect(navDrawer.renderRoot.querySelector('dialog')!.matches(':modal')).to
+        .be.true;
+    });
+
+    it('slides in on a `show()` in the task that renders the drawer', async () => {
+      const parent = await fixture<HTMLElement>(html`<div></div>`);
+      navDrawer = document.createElement(IgcNavDrawerComponent.tagName);
+      parent.append(navDrawer);
+
+      navDrawer.show();
+      await elementUpdated(navDrawer);
+
+      expect(transitionsIn(navDrawer)).to.include.members([
+        'dialog[part="base"] translate',
+        'dialog[part="base"]::backdrop opacity',
+      ]);
+    });
+
+    it('animates an open from code after the first render', async () => {
+      navDrawer = await createNavDrawer();
+      await painted();
+
+      navDrawer.open = true;
+      await elementUpdated(navDrawer);
+
+      expect(transitionsIn(navDrawer)).to.include.members([
+        'dialog[part="base"] translate',
+        'dialog[part="base"]::backdrop opacity',
+      ]);
     });
   });
 

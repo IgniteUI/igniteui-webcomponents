@@ -48,11 +48,12 @@
     }
 }
 
-/// Turns off the transitions of a control with value state while a change from
-/// code marks it (`#animations/value-state.js`). The mark is on the host with
-/// `$on-host`, else on an element of the shadow root. `$descendants` are the
-/// elements under the mark that transition. The mark lasts one frame, so it
-/// wins over the theme and the consumer styles.
+/// Turns off the transitions of a control while the instant mark of
+/// `#animations/value-state.js` is on it. A change of value state from code
+/// sets the mark. The tabs also set it on their first render. The mark is on
+/// the host with `$on-host`, else on an element of the shadow root.
+/// `$descendants` are the elements under the mark that transition. The mark
+/// lasts one frame, so it wins over the theme and the consumer styles.
 @mixin value-state-transitions($descendants: (), $on-host: false) {
     $mark: '[data-instant]';
 

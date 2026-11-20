@@ -107,6 +107,11 @@ class InstantElements {
 // Created on first use, so a control that only marks user changes does not bundle it.
 let instantElements: InstantElements | undefined;
 
+/** Shows the changes of `element` in this frame at once, until a frame with no change from code. */
+export function markInstant(element: Element): void {
+  (instantElements ??= new InstantElements()).add(element);
+}
+
 /** A host transitions itself and its shadow root, not its slotted content. */
 function transitionsOfTarget(target: Element): CSSTransition[] {
   const { shadowRoot } = target;
@@ -195,7 +200,7 @@ export class ValueStateMotionController implements ReactiveController {
       this._trackUserAnimation(element);
     } else if (element) {
       this._marked = element;
-      (instantElements ??= new InstantElements()).add(element);
+      markInstant(element);
     }
   }
 

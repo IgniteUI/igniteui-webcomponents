@@ -6,6 +6,7 @@ import {
   nextFrame,
   waitUntil,
 } from '@open-wc/testing';
+import type { TemplateResult } from 'lit';
 import { range } from 'lit/directives/range.js';
 import { spy } from 'sinon';
 import { internalsOf } from '#internals/controllers/internals.js';
@@ -25,6 +26,7 @@ import {
   clickWithMouse,
   finishAnimationsFor,
   isUnderPageLayer,
+  painted,
   resetLocation,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
@@ -33,11 +35,16 @@ import {
   simulateClick,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
+import {
+  transitionsIn,
+  withTheme,
+} from '#internals/testing/value-state.spec.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import { getScaleFactor } from '#internals/utils/dom.js';
 import { preventDefault } from '#internals/utils/events.js';
 import { asNumber } from '#internals/utils/math.js';
 import { configureTheme } from '#theming/config.js';
+import type { Theme } from '#theming/types.js';
 import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
 import { styles as fluent } from '../../styles/themes/light/fluent.css.js';
 import { styles as indigo } from '../../styles/themes/light/indigo.css.js';
@@ -3885,6 +3892,91 @@ describe('Tabs component', () => {
       expect(panel.open).to.be.true;
       expect(tabs.selectedTab).to.equal(second);
       expect(tabs.querySelector('#tabs-target')!.checkVisibility()).to.be.true;
+    });
+  });
+
+  describe('First render motion', () => {
+    allowMotion();
+
+    const twoTabs = html`
+      <igc-tabs>
+        <igc-tab label="One">One</igc-tab>
+        <igc-tab label="Two">Two</igc-tab>
+      </igc-tabs>
+    `;
+
+    /**
+     * The transitions that run once `template` renders and paints in `theme`, and once
+     * `change`, when given, paints.
+     */
+    async function transitionsAfter(
+      template: TemplateResult,
+      theme: Theme = 'material',
+      change?: (root: HTMLElement) => void
+    ): Promise<string[]> {
+      return withTheme(theme, async () => {
+        const root = await fixture<HTMLElement>(template);
+        await painted();
+
+        if (change) {
+          change(root);
+          await painted();
+        }
+
+        return transitionsIn(root);
+      });
+    }
+
+    for (const theme of ['material', 'fluent', 'indigo'] as const) {
+      it(`shows the first render at once (${theme})`, async () => {
+        expect(await transitionsAfter(twoTabs, theme)).to.eql([]);
+      });
+    }
+
+    it('shows a tab that the app selects at once on the first render', async () => {
+      const template = html`
+        <igc-tabs>
+          <igc-tab label="One">One</igc-tab>
+          <igc-tab label="Two" selected>Two</igc-tab>
+        </igc-tabs>
+      `;
+
+      expect(await transitionsAfter(template)).to.eql([]);
+    });
+
+    it('shows the first render of a column at once', async () => {
+      const template = html`
+        <igc-tabs header-position="start" style="height: 200px">
+          <igc-tab label="One">One</igc-tab>
+          <igc-tab label="Two">Two</igc-tab>
+        </igc-tabs>
+      `;
+
+      expect(await transitionsAfter(template)).to.eql([]);
+    });
+
+    it('shows the tabs at once when they show for the first time', async () => {
+      const transitions = await transitionsAfter(
+        html`<div style="display: none">${twoTabs}</div>`,
+        'material',
+        (parent) => {
+          parent.style.display = '';
+        }
+      );
+
+      expect(transitions).to.eql([]);
+    });
+
+    it('slides the indicator for a selection change after the first render', async () => {
+      const transitions = await transitionsAfter(
+        twoTabs,
+        'material',
+        (tabs) => {
+          (tabs as IgcTabsComponent).select('Two');
+        }
+      );
+
+      expect(transitions).to.include('span transform');
     });
   });
 

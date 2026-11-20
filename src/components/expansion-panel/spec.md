@@ -16,6 +16,7 @@
       - [The indicator](#the-indicator)
       - [Programmatic control](#programmatic-control)
       - [Disabled state](#disabled-state)
+      - [Content found by the browser](#content-found-by-the-browser)
     - [Localization](#localization)
     - [Keyboard interactions](#keyboard-interactions)
   - [API](#api)
@@ -32,6 +33,8 @@
     - [User interactions](#user-interactions)
     - [Events tests](#events-tests)
     - [Host ARIA](#host-aria)
+    - [Content found by the browser](#content-found-by-the-browser-1)
+    - [Open motion](#open-motion)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -47,6 +50,7 @@
 |       3 | 2026-10-21 | API descriptions aligned with the JSDoc.                                |
 |       4 | 2026-10-29 | A change of `open` against a running transition ends it                 |
 |       5 | 2026-11-12 | Find-in-page and links to an element open a collapsed panel             |
+|       6 | 2026-11-20 | A change of `open` also ends the transitions of the host, such as the spacing in an accordion |
 
 ## Overview
 
@@ -161,7 +165,8 @@ state, and with `false` when it did not — the panel was already in the request
 superseded this one. A change of `open` against a running transition also ends it: the method resolves `false`, the
 animation stops, and the panel sends no `igcOpened` or `igcClosed`.
 
-Setting the `open` property changes the state as well.
+Setting the `open` property changes the state at once, with no animation. This includes the transitions of the host,
+such as the spacing that an [accordion](../accordion/spec.md) gives the panel.
 
 #### Disabled state
 
@@ -292,6 +297,11 @@ The suite lives in [`expansion-panel.spec.ts`](./expansion-panel.spec.ts) and ru
 20. The panel opens at once, with no animation.
 21. The open animation of a user toggle starts from the height of the content.
 22. The content shows during the close animation, and it is inert only then.
+
+### Open motion
+
+23. A change of `open` ends the transitions that the app declares on the host.
+24. `show()` keeps the transitions of the host.
 
 ## Assumptions and limitations
 

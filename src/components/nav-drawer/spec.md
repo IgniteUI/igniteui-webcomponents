@@ -36,6 +36,7 @@ This directory hosts three public components: [`igc-nav-drawer`](#igc-nav-drawer
     - [Mini slot popover](#mini-slot-popover)
     - [Invoker commands](#invoker-commands-1)
     - [Value state motion](#value-state-motion)
+    - [First render motion](#first-render-motion)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -54,6 +55,7 @@ This directory hosts three public components: [`igc-nav-drawer`](#igc-nav-drawer
 |       6 | 2026-10-23 | A relative drawer makes a stacking context, so the z-index of the mini variant does not compete with the layers of the page; in the material theme an item makes a stacking context, so its highlight shows in front of the background of a relative drawer |
 |       7 | 2026-11-05 | The dialog stays modal until the exit ends, so the exit runs in all browsers; `hide()` and `igcClosed` come after the exit; fixed content of the shown drawer and mini variant is placed against the viewport; no motion with reduced motion |
 |       8 | 2026-11-20 | An `active` item from code shows at once; the hover of an item still fades; no item transitions with reduced motion |
+|       9 | 2026-11-20 | A drawer that is `open` on its first render shows at once, with no slide and no backdrop fade |
 
 ## Overview
 
@@ -120,6 +122,12 @@ Then the focus goes back to the element that had it before, also when that eleme
 motion, the drawer, the mini variant and the backdrop change at once.
 For the relative position it takes its place in the layout and pushes the content next to it. When a mini variant is
 provided, the compact rail is shown whenever the drawer is closed.
+
+**First render.** A drawer that is `open` on its first render shows at once: it does not slide in, and the backdrop does
+not fade in. This also applies when a framework renders the drawer open after a user action. Examples are
+`{show && <IgrNavDrawer open />}` in React and an `@if` block in Angular. To slide such a drawer in, call `show()`, also
+in the task that renders it. Or set `open` after the first render, for example after `updateComplete`. After the first
+render, a change of `open` animates.
 
 **Motion of the items.** Code sets `active`, so an item shows it at once, also on the first render. The hover and the
 focus of an item still fade, and they turn back on in the first frame with no change from code. With
@@ -360,6 +368,12 @@ not fade its active background. A hover is the user interaction.
 18. A change from code starts none.
 19. A first render in the changed state starts none.
 20. With reduced motion, a hover starts none.
+
+### First render motion
+
+21. A drawer that is open on its first render starts no transitions and is modal.
+22. A `show()` in the task that renders the drawer slides the drawer in.
+23. A change of `open` to `true` after the first render slides the drawer in and fades the backdrop in.
 
 ## Assumptions and limitations
 

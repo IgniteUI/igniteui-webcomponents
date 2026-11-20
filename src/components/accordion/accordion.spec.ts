@@ -12,12 +12,14 @@ import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   allowMotion,
   clickWithMouse,
+  painted,
   resetLocation,
 } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
+import { transitionsIn } from '#internals/testing/value-state.spec.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import IgcAccordionComponent from './accordion.js';
 
@@ -328,6 +330,37 @@ describe('Accordion', () => {
 
       expect(panels[1].matches(':focus')).to.be.true;
       expect(panels[2].matches(':focus')).to.be.false;
+    });
+  });
+
+  describe('Open motion', () => {
+    allowMotion();
+
+    beforeEach(async () => {
+      accordion = await fixture<IgcAccordionComponent>(createAccordion());
+      panels = accordion.panels;
+      await painted();
+    });
+
+    for (const [index, open] of [
+      [2, true],
+      [1, false],
+    ] as const) {
+      it(`changes the spacing at once when \`open\` ${open ? 'opens' : 'closes'} a panel`, async () => {
+        panels[index].open = open;
+        await elementUpdated(panels[index]);
+
+        expect(transitionsIn(accordion)).to.eql([]);
+      });
+    }
+
+    it('animates the spacing when a panel opens with `show()`', async () => {
+      panels[2].show();
+      await elementUpdated(panels[2]);
+
+      expect(transitionsIn(accordion)).to.include(
+        'igc-expansion-panel margin-top'
+      );
     });
   });
 

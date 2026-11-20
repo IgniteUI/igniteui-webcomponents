@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import {
+  finishCSSTransitions,
   getCSSTransitions,
   transitionsSettled,
 } from '#animations/css-transitions.js';
@@ -205,7 +206,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<IgcNavDrawe
     super.update(properties);
   }
 
-  protected override updated(): void {
+  protected override updated(properties: PropertyValues<this>): void {
     // The opener can be in the mini variant, so hide the mini variant after the dialog opens,
     // and show it before the dialog closes. A slot change also requests an update.
     if (this.open) {
@@ -214,6 +215,19 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<IgcNavDrawe
     } else {
       this._handleMiniState();
       this._syncDialog();
+    }
+
+    // An open drawer shows at once on the first render, except for `show()`.
+    const firstRender =
+      properties.has('open') && properties.get('open') === undefined;
+
+    if (
+      firstRender &&
+      this.open &&
+      this._dialog &&
+      !this._toggleController.opening
+    ) {
+      finishCSSTransitions(this._dialog, { subtree: true });
     }
   }
 
