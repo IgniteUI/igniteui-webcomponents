@@ -138,14 +138,18 @@ const IMPORT_QUALIFIER = /import\("[^"]*"\)\./g;
 /**
  * The analyzer copies an inherited member as written, so a member typed with a
  * type parameter (`TGet` of `I18nMixin`) keeps that name, also under an
- * override. Resolve it with the checker on each element.
+ * override. It also gives an override the type of the member that it
+ * overrides. Resolve both with the checker on each element.
  *
  * @example `TGet` -> `Required<IChipResourceStrings>` on `igc-chip`
+ * @example `unknown` -> `number | null` for the `defaultValue` override of `igc-number-input`
  */
 function resolveTypeParametersPlugin() {
   let typescript;
   const classNodes = new Map();
   const typeParameterNames = new Set();
+  /** The properties and accessors that a class declares with a type annotation, by class key. */
+  const typedOwnMembers = new Map();
 
   return {
     name: 'IGC - RESOLVE TYPE PARAMETERS',
@@ -154,7 +158,24 @@ function resolveTypeParametersPlugin() {
       typescript ??= ts;
 
       if (ts.isClassDeclaration(node) && node.name) {
-        classNodes.set(`${moduleDoc.path}#${node.name.text}`, node);
+        const key = `${moduleDoc.path}#${node.name.text}`;
+        const typed = new Set();
+
+        for (const member of node.members) {
+          const annotated = ts.isSetAccessorDeclaration(member)
+            ? member.parameters[0]?.type
+            : ts.isGetAccessorDeclaration(member) ||
+                ts.isPropertyDeclaration(member)
+              ? member.type
+              : undefined;
+
+          if (annotated) {
+            typed.add(member.name.getText());
+          }
+        }
+
+        classNodes.set(key, node);
+        typedOwnMembers.set(key, typed);
       }
 
       for (const param of node.typeParameters ?? []) {
@@ -167,18 +188,23 @@ function resolveTypeParametersPlugin() {
 
       for (const moduleDoc of customElementsManifest.modules) {
         for (const declaration of moduleDoc.declarations ?? []) {
-          const node = classNodes.get(`${moduleDoc.path}#${declaration.name}`);
+          const key = `${moduleDoc.path}#${declaration.name}`;
+          const node = classNodes.get(key);
 
           if (!node) {
             continue;
           }
 
           const instanceType = checker.getTypeAtLocation(node);
+          const typed = typedOwnMembers.get(key);
 
           for (const [index, member] of (declaration.members ?? []).entries()) {
             if (
               !member.inheritedFrom ||
-              !typeParameterNames.has(member.type?.text)
+              !(
+                typeParameterNames.has(member.type?.text) ||
+                (member.kind === 'field' && typed.has(member.name))
+              )
             ) {
               continue;
             }

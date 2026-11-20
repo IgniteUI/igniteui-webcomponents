@@ -17,13 +17,22 @@ import {
 import { clickWithMouse, isFocused } from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import {
+  simulateBeforeInput,
   simulateCancelableKeydown,
+  simulateClick,
+  simulateComposition,
+  simulateContextMenu,
   simulateInput,
   simulateKeyboard,
+  simulatePointerCancel,
+  simulatePointerDown,
+  simulatePointerUp,
+  simulateWheel,
 } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
+  ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
 import { formatString } from '#internals/utils/strings.js';
 import type { NumberInputFormatOptions } from './number-format.js';
@@ -345,13 +354,7 @@ describe('Number input', () => {
 
     /** Pastes or drops `data`, and returns whether the control canceled it. */
     function paste(data: string, inputType = 'insertFromPaste'): boolean {
-      const event = new InputEvent('beforeinput', {
-        inputType,
-        data,
-        cancelable: true,
-      });
-      input.dispatchEvent(event);
-      return event.defaultPrevented;
+      return simulateBeforeInput(input, { inputType, data });
     }
 
     it('takes digits after a minus sign from code when min is not negative', async () => {
@@ -390,6 +393,19 @@ describe('Number input', () => {
       expect(element.value).to.equal(1.23);
     });
 
+    it('takes a typed space only as a group separator of the locale', async () => {
+      await type('1 2');
+      expect(input.value).to.equal('12');
+
+      await blur();
+      element.value = null;
+      element.locale = 'fr';
+      await type('1 234,5 ');
+
+      expect(input.value).to.equal('1 234,5');
+      expect(element.value).to.equal(1234.5);
+    });
+
     it('rejects a minus sign when min is not negative', async () => {
       element.min = 0;
       await type('-5');
@@ -422,17 +438,8 @@ describe('Number input', () => {
 
     it('types the decimal separator of the locale with the keypad key', async () => {
       // Playwright sends the keypad key with Num Lock off, as `Delete`.
-      const keypad = (key: string) => {
-        const event = new KeyboardEvent('keydown', {
-          key,
-          code: 'NumpadDecimal',
-          bubbles: true,
-          composed: true,
-          cancelable: true,
-        });
-        input.dispatchEvent(event);
-        return event.defaultPrevented;
-      };
+      const keypad = (key: string) =>
+        simulateCancelableKeydown(input, key, { code: 'NumpadDecimal' });
 
       element.locale = 'de';
       await type('1');
@@ -462,6 +469,16 @@ describe('Number input', () => {
       expect(element.value).to.equal(1234.5);
     });
 
+    it('reads a paste into existing text alone, and replaces the text', async () => {
+      element.valueFormatOptions = USD;
+      await type('12');
+
+      expect(paste('$1,234.50')).to.be.true;
+      await elementUpdated(element);
+      expect(input.value).to.equal('1234.5');
+      expect(element.value).to.equal(1234.5);
+    });
+
     it('rejects a pasted negative number when min is not negative', async () => {
       element.min = 0;
       await focus();
@@ -488,12 +505,7 @@ describe('Number input', () => {
         { inputType: 'insertCompositionText', data: 'あ' },
         { inputType: 'insertText', data: 'あ', isComposing: true },
       ]) {
-        const event = new InputEvent('beforeinput', {
-          ...init,
-          cancelable: true,
-        });
-        input.dispatchEvent(event);
-        expect(event.defaultPrevented, init.inputType).to.be.false;
+        expect(simulateBeforeInput(input, init), init.inputType).to.be.false;
       }
     });
 
@@ -501,9 +513,9 @@ describe('Number input', () => {
       await focus();
 
       const compose = (text: string) => {
-        input.dispatchEvent(new CompositionEvent('compositionstart'));
+        simulateComposition(input, 'compositionstart');
         simulateInput(input, { value: text, isComposing: true, data: text });
-        input.dispatchEvent(new CompositionEvent('compositionend'));
+        simulateComposition(input, 'compositionend', text);
       };
 
       compose('１２');
@@ -610,7 +622,7 @@ describe('Number input', () => {
       expect(spies.change.called).to.be.false;
     });
 
-    it('takes a value from code during an edit as the new baseline', async () => {
+    it('takes a value from code during an edit as the new reported value', async () => {
       const spies = listenEvents();
 
       await focus();
@@ -690,6 +702,18 @@ describe('Number input', () => {
       element.value = 7;
       await blur();
       expect(spies.change.calledOnceWith(7)).to.be.true;
+    });
+
+    it('reports the clamp of a value from code after an edit of the text only', async () => {
+      element.value = 15;
+      const spies = listenEvents();
+
+      await type('.0');
+      expect(input.value).to.equal('15.0');
+      await blur();
+
+      expect(element.value).to.equal(10);
+      expect(spies.change.calledOnceWith(10)).to.be.true;
     });
 
     it('keeps a value from code after a focus, Enter and a blur without an edit', async () => {
@@ -804,14 +828,7 @@ describe('Number input', () => {
 
     it('repeats a held key', async () => {
       simulateKeyboard(input, 'ArrowUp', 3);
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowUp',
-          repeat: true,
-          bubbles: true,
-          composed: true,
-        })
-      );
+      simulateCancelableKeydown(input, 'ArrowUp', { repeat: true });
       await elementUpdated(element);
 
       expect(element.value).to.equal(5);
@@ -895,15 +912,8 @@ describe('Number input', () => {
       );
     });
 
-    function wheel(init: WheelEventInit): boolean {
-      const event = new WheelEvent('wheel', {
-        bubbles: true,
-        composed: true,
-        cancelable: true,
-        ...init,
-      });
-      input.dispatchEvent(event);
-      return event.defaultPrevented;
+    function wheel(init: WheelEventInit, target: Element = input): boolean {
+      return simulateWheel(target, { cancelable: true, ...init });
     }
 
     it('steps while the control is focused', async () => {
@@ -913,6 +923,18 @@ describe('Number input', () => {
       expect(element.value).to.equal(6);
       expect(wheel({ deltaY: 100 })).to.be.true;
       expect(element.value).to.equal(5);
+    });
+
+    it('steps for a wheel over the spin buttons while focused', async () => {
+      const buttons = element.renderRoot.querySelector(
+        '[part="spin-buttons"]'
+      )!;
+      expect(wheel({ deltaY: -100 }, buttons)).to.be.false;
+
+      await focus();
+
+      expect(wheel({ deltaY: -100 }, buttons)).to.be.true;
+      expect(element.value).to.equal(6);
     });
 
     it('leaves the wheel to the page without focus, with Ctrl, or for a horizontal scroll', async () => {
@@ -1096,6 +1118,28 @@ describe('Number input', () => {
       setCurrentI18n('en');
     });
 
+    it('styles a user step that fails validation at once', async () => {
+      element.setCustomValidity('invalid');
+      await elementUpdated(element);
+      ValidityHelpers.hasInvalidStyles(element).to.be.false;
+
+      await focus();
+      await press('ArrowUp');
+
+      ValidityHelpers.hasInvalidStyles(element).to.be.true;
+    });
+
+    it('styles a spin button click without focus that fails validation at once', async () => {
+      element.setCustomValidity('invalid');
+      await elementUpdated(element);
+
+      simulateClick(element.renderRoot.querySelector('[part="increment"]')!);
+      await elementUpdated(element);
+
+      expect(element.value).to.equal(0);
+      ValidityHelpers.hasInvalidStyles(element).to.be.true;
+    });
+
     it('renders the message slots', async () => {
       const params: ValidationContainerTestsParams<IgcNumberInputComponent>[] =
         [
@@ -1193,6 +1237,14 @@ describe('Number input', () => {
       expect(spec.element.value).to.equal(10);
     });
 
+    it('stays pristine after a write from code of the current value', () => {
+      spec.element.defaultValue = 5;
+      spec.element.value = 5;
+
+      spec.element.defaultValue = 10;
+      expect(spec.element.value).to.equal(10);
+    });
+
     it('replaces a partial edit text on a reset to the same value', async () => {
       spec.element.defaultValue = 5;
       spec.element.focus();
@@ -1222,24 +1274,20 @@ describe('Number input', () => {
       decrement = element.renderRoot.querySelector('[part="decrement"]')!;
     });
 
-    /** Dispatches a pointer event and returns whether a listener canceled it. */
-    function pointer(
-      target: Element,
-      type: string,
-      init: PointerEventInit = {}
-    ): boolean {
-      const event = new PointerEvent(type, {
-        bubbles: true,
-        composed: true,
-        cancelable: true,
-        isPrimary: true,
-        pointerId: 1,
-        pointerType: 'mouse',
-        ...init,
-      });
-      target.dispatchEvent(event);
-      return event.defaultPrevented;
-    }
+    /** A primary mouse pointer. The events are cancelable, so that a spec reads `preventDefault()`. */
+    const MOUSE: PointerEventInit = {
+      cancelable: true,
+      isPrimary: true,
+      pointerType: 'mouse',
+    };
+    const TOUCH: PointerEventInit = { pointerType: 'touch' };
+
+    const press = (target: Element, init?: PointerEventInit) =>
+      simulatePointerDown(target, { ...MOUSE, ...init });
+    const release = (target: Element, init?: PointerEventInit) =>
+      simulatePointerUp(target, { ...MOUSE, ...init });
+    const cancel = (target: Element, init?: PointerEventInit) =>
+      simulatePointerCancel(target, { ...MOUSE, ...init });
 
     describe('Rendering', () => {
       it('renders two labeled buttons out of the tab order in the suffix wrapper', () => {
@@ -1354,11 +1402,11 @@ describe('Number input', () => {
       it('steps at once on a mouse press and focuses the input, not the button', async () => {
         const spies = listenEvents();
 
-        expect(pointer(increment, 'pointerdown')).to.be.true;
+        expect(press(increment)).to.be.true;
         expect(element.value).to.equal(6);
         expect(isFocused(input)).to.be.true;
 
-        pointer(increment, 'pointerup');
+        release(increment);
         await elementUpdated(element);
 
         expect(input.value).to.equal('6');
@@ -1370,7 +1418,7 @@ describe('Number input', () => {
       });
 
       it('repeats a held press after 400 ms every 60 ms, and stops on release', async () => {
-        pointer(decrement, 'pointerdown');
+        press(decrement);
         expect(element.value).to.equal(4);
 
         await clock.tickAsync(399);
@@ -1380,14 +1428,14 @@ describe('Number input', () => {
         await clock.tickAsync(120);
         expect(element.value).to.equal(1);
 
-        pointer(decrement, 'pointerup');
+        release(decrement);
         await clock.tickAsync(600);
         expect(element.value).to.equal(1);
       });
 
       it('stops a held press at the bound', async () => {
         element.value = 9;
-        pointer(increment, 'pointerdown');
+        press(increment);
         expect(element.value).to.equal(10);
 
         await clock.tickAsync(1000);
@@ -1395,12 +1443,12 @@ describe('Number input', () => {
       });
 
       it('stops a held press on a canceled pointer and on blur', async () => {
-        pointer(increment, 'pointerdown');
-        pointer(increment, 'pointercancel');
+        press(increment);
+        cancel(increment);
         await clock.tickAsync(1000);
         expect(element.value).to.equal(6);
 
-        pointer(increment, 'pointerdown');
+        press(increment);
         element.blur();
         await clock.tickAsync(1000);
         expect(element.value).to.equal(7);
@@ -1409,19 +1457,19 @@ describe('Number input', () => {
       it('steps a touch on release, without focus, and commits it', async () => {
         const spies = listenEvents();
 
-        pointer(increment, 'pointerdown', { pointerType: 'touch' });
+        press(increment, TOUCH);
         expect(element.value).to.equal(5);
         expect(element.matches(':focus-within')).to.be.false;
 
-        pointer(increment, 'pointerup', { pointerType: 'touch' });
+        release(increment, TOUCH);
         expect(element.value).to.equal(6);
         expect(spies.input.calledOnceWith(6)).to.be.true;
         expect(spies.change.calledOnceWith(6)).to.be.true;
       });
 
       it('does not step a touch that becomes a scroll', async () => {
-        pointer(increment, 'pointerdown', { pointerType: 'touch' });
-        pointer(increment, 'pointercancel', { pointerType: 'touch' });
+        press(increment, TOUCH);
+        cancel(increment, TOUCH);
 
         expect(element.value).to.equal(5);
       });
@@ -1429,21 +1477,21 @@ describe('Number input', () => {
       it('commits a held touch once, at its end', async () => {
         const spies = listenEvents();
 
-        pointer(increment, 'pointerdown', { pointerType: 'touch' });
+        press(increment, TOUCH);
         await clock.tickAsync(400 + 60 * 2);
         expect(element.value).to.equal(8);
         expect(spies.change.called).to.be.false;
 
-        pointer(increment, 'pointerup', { pointerType: 'touch' });
+        release(increment, TOUCH);
         expect(spies.change.calledOnceWith(8)).to.be.true;
       });
 
       it('repeats a held touch without a step on release', async () => {
-        pointer(increment, 'pointerdown', { pointerType: 'touch' });
+        press(increment, TOUCH);
         await clock.tickAsync(400);
         expect(element.value).to.equal(6);
 
-        pointer(increment, 'pointerup', { pointerType: 'touch' });
+        release(increment, TOUCH);
         expect(element.value).to.equal(6);
       });
 
@@ -1451,31 +1499,35 @@ describe('Number input', () => {
         await focus();
 
         // A press that is not canceled moves the focus to the button.
-        expect(pointer(increment, 'pointerdown', { button: 2 })).to.be.true;
-        expect(pointer(increment, 'pointerdown', { isPrimary: false })).to.be
-          .true;
+        expect(press(increment, { button: 2 })).to.be.true;
+        expect(press(increment, { isPrimary: false })).to.be.true;
         expect(element.value).to.equal(5);
         expect(isFocused(input)).to.be.true;
 
         element.value = 10;
         increment.disabled = true;
-        expect(pointer(increment, 'pointerdown')).to.be.true;
+        expect(press(increment)).to.be.true;
         expect(element.value).to.equal(10);
       });
 
       it('steps one time for a click without a press, as from assistive technology', async () => {
         const spies = listenEvents();
 
-        increment.click();
+        simulateClick(increment);
         expect(element.value).to.equal(6);
         expect(spies.change.calledOnceWith(6)).to.be.true;
 
-        decrement.click();
+        simulateClick(decrement);
         expect(element.value).to.equal(5);
       });
 
+      it('opens no context menu on a long press or a right-click', () => {
+        expect(simulateContextMenu(increment)).to.be.true;
+        expect(simulateContextMenu(decrement)).to.be.true;
+      });
+
       it('stops a held press when a render removes the buttons', async () => {
-        pointer(increment, 'pointerdown');
+        press(increment);
         expect(element.value).to.equal(6);
 
         element.hideSpinButtons = true;
@@ -1485,7 +1537,7 @@ describe('Number input', () => {
       });
 
       it('stops a held press when the control disconnects', async () => {
-        pointer(increment, 'pointerdown');
+        press(increment);
         element.remove();
         await clock.tickAsync(1000);
 

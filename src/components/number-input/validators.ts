@@ -1,16 +1,13 @@
 import type { Validator } from '#internals/validators.js';
-import { getNumberInputFormat } from './number-format.js';
+import { getHostFormat } from './number-format.js';
 import type IgcNumberInputComponent from './number-input.js';
 
-/** Shows a bound in the format of the field. A string skips the plain number format of the messages. */
+/** The bound as the field shows it. A string skips the plain number format of the messages. */
 function formatBound(host: IgcNumberInputComponent, bound: number): string {
-  return getNumberInputFormat(
-    host.locale,
-    host.valueFormatOptions
-  ).formatDisplay(bound);
+  return getHostFormat(host).formatDisplay(bound);
 }
 
-/** A `null` value is empty, and `0` is a value. The component sets a bound that is not a finite number to `undefined`. */
+/** `null` is empty and `0` is a value. A bound that is not a finite number is `undefined`. */
 export const numberInputValidators: Validator<IgcNumberInputComponent>[] = [
   {
     key: 'valueMissing',

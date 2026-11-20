@@ -37,12 +37,12 @@ $theme: $base;
 
     // A touch leaves `:hover` on the button until the next tap elsewhere.
     @media (hover: hover) {
-        &:not(:disabled):hover {
+        &:enabled:hover {
             background: color-mix(in srgb, currentcolor 8%, transparent);
         }
     }
 
-    &:not(:disabled):active {
+    &:enabled:active {
         background: color-mix(in srgb, currentcolor 16%, transparent);
     }
 

@@ -10,7 +10,7 @@ defineComponents(IgcDateTimeInputComponent);
 
 ## Properties
 
-- `value`: `T | null`. Attribute: `value`.
+- `value`: `Date | null`. Attribute: `value`.
   The value of the input.
 
   Only ever holds a committed value. While the user is typing, the intermediate

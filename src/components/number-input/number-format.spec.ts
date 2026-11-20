@@ -9,6 +9,7 @@ import {
 } from './number-format.js';
 
 const BIDI_MARKS = /\p{Cf}/gu;
+const USD: NumberInputFormatOptions = { style: 'currency', currency: 'USD' };
 
 describe('Number input format', () => {
   const en = getNumberInputFormat('en');
@@ -24,10 +25,7 @@ describe('Number input format', () => {
     });
 
     it('edits a currency amount without the currency symbol', () => {
-      const format = getNumberInputFormat('en', {
-        style: 'currency',
-        currency: 'USD',
-      });
+      const format = getNumberInputFormat('en', USD);
 
       expect(format.formatDisplay(1234.5)).to.equal('$1,234.50');
       expect(format.formatEdit(1234.5)).to.equal('1234.5');
@@ -86,10 +84,7 @@ describe('Number input format', () => {
     });
 
     it('keeps the fraction digits of the currency', () => {
-      const dollars = getNumberInputFormat('en', {
-        style: 'currency',
-        currency: 'USD',
-      });
+      const dollars = getNumberInputFormat('en', USD);
       const yen = getNumberInputFormat('en', {
         style: 'currency',
         currency: 'JPY',
@@ -135,16 +130,8 @@ describe('Number input format', () => {
         ['ar-EG', { style: 'percent' }, -0.5],
         ['fa', {}, -1234.5],
         ['ja', { style: 'currency', currency: 'JPY' }, -1234],
-        [
-          'en',
-          { style: 'currency', currency: 'USD', currencyDisplay: 'name' },
-          1,
-        ],
-        [
-          'en',
-          { style: 'currency', currency: 'USD', currencyDisplay: 'code' },
-          5,
-        ],
+        ['en', { ...USD, currencyDisplay: 'name' }, 1],
+        ['en', { ...USD, currencyDisplay: 'code' }, 5],
         [
           'ru',
           { style: 'unit', unit: 'kilometer-per-hour', unitDisplay: 'long' },
@@ -191,8 +178,7 @@ describe('Number input format', () => {
 
     it('reads a negative amount in parentheses', () => {
       const format = getNumberInputFormat('en', {
-        style: 'currency',
-        currency: 'USD',
+        ...USD,
         currencySign: 'accounting',
       });
 
@@ -232,12 +218,7 @@ describe('Number input format', () => {
     it('rejects the symbols of another format', () => {
       expect(en.parse('$5')).to.be.NaN;
       expect(en.parse('5%')).to.be.NaN;
-      expect(
-        getNumberInputFormat('en', {
-          style: 'currency',
-          currency: 'USD',
-        }).parse('$5')
-      ).to.equal(5);
+      expect(getNumberInputFormat('en', USD).parse('$5')).to.equal(5);
     });
 
     it('divides a percent by 100 without a floating-point error', () => {
@@ -279,6 +260,16 @@ describe('Number input format', () => {
       for (const text of ['1e', '1.2.', ',5', '5-', '--', '$', 'a', '1.2,3']) {
         expect(en.isValidPartial(text), text).to.be.false;
       }
+    });
+
+    it('accepts a space only as a group separator of the locale', () => {
+      const fr = getNumberInputFormat('fr');
+
+      expect(en.isValidPartial('1 2')).to.be.false;
+      expect(fr.isValidPartial('1 234')).to.be.true;
+      expect(fr.isValidPartial('1\u202f234')).to.be.true;
+      expect(fr.isValidPartial('1 234,5 ')).to.be.false;
+      expect(fr.isValidPartial(' 1')).to.be.false;
     });
 
     it('rejects a minus sign when negative numbers are not allowed', () => {
@@ -340,12 +331,55 @@ describe('Number input format', () => {
     });
   });
 
+  describe('spin', () => {
+    it('steps by `step`, else by 1, or 0.01 for a percent', () => {
+      const percent = getNumberInputFormat('en', { style: 'percent' });
+
+      expect(en.spin(5, { count: 2, step: 0.5 })).to.equal(6);
+      expect(en.spin(5, { count: -1 })).to.equal(4);
+      expect(en.spin(5, { count: 1, step: 0 })).to.equal(6);
+      expect(en.spin(5, { count: 1, step: -2 })).to.equal(6);
+      expect(percent.spin(0.25, { count: 1 })).to.equal(0.26);
+    });
+
+    it('steps by the last shown digit when `step` is finer', () => {
+      const cents = getNumberInputFormat('en', { maximumFractionDigits: 2 });
+
+      expect(cents.spin(1, { count: 1, step: 0.001 })).to.equal(1.01);
+    });
+
+    it('stops at the bounds on a shown value', () => {
+      const tenths = getNumberInputFormat('en', { maximumFractionDigits: 1 });
+
+      expect(en.spin(9, { count: 5, max: 10 })).to.equal(10);
+      expect(en.spin(1, { count: -5, min: 0 })).to.equal(0);
+      expect(tenths.spin(9.5, { count: 1, max: 9.95 })).to.equal(9.9);
+    });
+
+    it('gives an empty value the seed: 0, fit into the bounds, without a step', () => {
+      expect(en.spin(null, { count: 1 })).to.equal(0);
+      expect(en.spin(null, { count: -1, min: 5 })).to.equal(5);
+      expect(en.spin(null, { count: 1, max: -5 })).to.equal(-5);
+    });
+
+    it('does not move a value against the direction of the step', () => {
+      expect(en.spin(15, { count: 1, max: 10 })).to.equal(15);
+      expect(en.spin(15, { count: -1, max: 10 })).to.equal(10);
+      expect(en.spin(-5, { count: -1, min: 0 })).to.equal(-5);
+    });
+
+    it('keeps the value for a count of 0', () => {
+      expect(en.spin(5.0001, { count: 0, max: 1 })).to.equal(5.0001);
+      expect(en.spin(null, { count: 0 })).to.be.null;
+    });
+  });
+
   describe('getNumberInputFormat', () => {
     it('gives the value change of one unit in the last shown digit', () => {
       const stepOf = (options: NumberInputFormatOptions) =>
         getNumberInputFormat('en', options).smallestStep;
 
-      expect(stepOf({ style: 'currency', currency: 'USD' })).to.equal(0.01);
+      expect(stepOf(USD)).to.equal(0.01);
       expect(stepOf({ maximumFractionDigits: 0 })).to.equal(1);
       expect(stepOf({ style: 'percent', maximumFractionDigits: 1 })).to.equal(
         0.001

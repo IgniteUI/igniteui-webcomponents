@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
 
-import { fc } from '#internals/testing/fast-check-setup.spec.js';
+import { fc, orderedPair } from '#internals/testing/fast-check-setup.spec.js';
 import {
   formatFormValue,
   getNumberInputFormat,
@@ -93,6 +93,8 @@ const options = fc.tuple(style, rest).map(([a, b]) => {
 
 const finite = fc.double({ min: -1e12, max: 1e12, noNaN: true });
 
+const bounds = orderedPair(fc.double({ min: -1e6, max: 1e6, noNaN: true }));
+
 /** The number of decimals of a value that the format keeps. A percent shows its value times 100. */
 function keptDecimals(
   format: NumberInputFormat,
@@ -126,7 +128,7 @@ describe('Number input format properties', () => {
       fc.property(locale, options, finite, (tag, opts, x) => {
         const format = getNumberInputFormat(tag, opts);
         const rounded = format.round(x);
-        const unit = 10 ** -keptDecimals(format, opts);
+        const unit = format.smallestStep;
 
         expect(format.round(rounded)).to.equal(rounded);
         expect(format.parse(format.formatDisplay(x))).to.equal(rounded);
@@ -179,12 +181,9 @@ describe('Number input format properties', () => {
   });
 
   it('fits a value into its bounds, on a shown value when the bounds allow one', () => {
-    const bound = fc.double({ min: -1e6, max: 1e6, noNaN: true });
-
     fc.assert(
-      fc.property(options, finite, bound, bound, (opts, x, a, b) => {
+      fc.property(options, finite, bounds, (opts, x, [min, max]) => {
         const format = getNumberInputFormat('en', opts);
-        const [min, max] = a <= b ? [a, b] : [b, a];
         const fitted = format.fit(x, min, max);
 
         expect(fitted).to.be.within(min, max);
@@ -193,6 +192,70 @@ describe('Number input format properties', () => {
         }
       })
     );
+  });
+
+  describe('spin', () => {
+    /** A format and a spin request, with ordered bounds that each may be unset. */
+    const spinCase = fc
+      .tuple(
+        options,
+        fc.integer({ min: -20, max: 20 }).filter(Boolean),
+        fc.option(fc.double({ min: -10, max: 1e3, noNaN: true }), {
+          nil: undefined,
+        }),
+        bounds,
+        fc.boolean(),
+        fc.boolean()
+      )
+      .map(([opts, count, step, [low, high], hasMin, hasMax]) => {
+        const format = getNumberInputFormat('en', opts);
+        const min = hasMin ? low : undefined;
+        const max = hasMax ? high : undefined;
+        const roomy =
+          min === undefined ||
+          max === undefined ||
+          max - min >= format.smallestStep;
+
+        return { format, request: { count, step, min, max }, roomy };
+      });
+
+    const value = fc.option(finite, { nil: null });
+
+    it('never moves a value against the direction of the step', () => {
+      fc.assert(
+        fc.property(spinCase, value, ({ format, request }, x) => {
+          const result = format.spin(x, request)!;
+
+          if (x !== null) {
+            expect(request.count > 0 ? result >= x : result <= x).to.be.true;
+          }
+        })
+      );
+    });
+
+    it('stays in range from an empty value or a value in range, on a shown value', () => {
+      fc.assert(
+        fc.property(spinCase, value, ({ format, request, roomy }, x) => {
+          const { min, max } = request;
+          const start = x === null ? null : format.fit(x, min, max);
+          const result = format.spin(start, request)!;
+
+          expect(result).to.be.within(min ?? -Infinity, max ?? Infinity);
+          if (roomy) {
+            expect(format.round(result)).to.equal(result);
+          }
+        })
+      );
+    });
+
+    it('spins an empty value to 0, fit into the bounds', () => {
+      fc.assert(
+        fc.property(spinCase, ({ format, request }) => {
+          const { min, max } = request;
+          expect(format.spin(null, request)).to.equal(format.fit(0, min, max));
+        })
+      );
+    });
   });
 
   it('formats a form value that reads back as the same number', () => {

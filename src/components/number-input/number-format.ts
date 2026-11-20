@@ -1,5 +1,10 @@
 import { getOrCreateForLocale } from '#internals/i18n/locale.js';
-import { addSteps, clamp } from '#internals/utils/math.js';
+import {
+  addSteps,
+  clamp,
+  numberInRangeInclusive,
+  numberOfDecimals,
+} from '#internals/utils/math.js';
 
 /** How a value rounds to the maximum number of fraction digits. */
 export type NumberInputRoundingMode =
@@ -65,14 +70,28 @@ const OPTION_NAMES = [
 /** `Intl` defaults to 3 fraction digits, which rounds a value that the user did not ask to round. */
 const DEFAULT_MAX_FRACTION_DIGITS = 20;
 
-/** Values that give each plural form of a currency or unit name. */
-const PLURAL_SAMPLES = [0, 1, 2, 3, 5, 11, 21, 100, 1.5, 1e6];
+/** Values that give each plural form of a currency or unit name, with their negatives. */
+const PLURAL_SAMPLES = [0, 1, 2, 3, 5, 11, 21, 100, 1.5, 1e6].flatMap((n) => [
+  n,
+  -n,
+]);
+
+/** The parts of a display text that are not the number. */
+const LITERAL_PARTS = new Set(['currency', 'percentSign', 'unit', 'literal']);
 
 /** Bidi marks and whitespace. A whitespace group separator is removed with them. */
 const NOISE = /[\p{Cf}\s]/gu;
+const BIDI_MARK = /\p{Cf}/gu;
 const NOT_BIDI_MARK = /[^\p{Cf}]/gu;
 
 type Token = number | 'decimal' | 'group' | 'minus' | 'plus';
+
+type ParseTables = {
+  tokens: Map<string, Token>;
+  /** The currency, percent, unit and literal texts, longest first. */
+  literals: string[];
+  decimalSeparator: string;
+};
 
 type NumberParts = {
   signed: boolean;
@@ -117,6 +136,16 @@ function toIntlOptions(
   return result;
 }
 
+/** A step of a number input: `stepUp`, `stepDown`, a key, the wheel or a spin button. */
+export interface NumberInputSpinRequest {
+  /** The number of steps. A negative count steps down. */
+  count: number;
+  /** The amount of one step. Unset or not positive gives 1, or 0.01 for a percent. */
+  step?: number;
+  min?: number;
+  max?: number;
+}
+
 /**
  * Formats and parses the numbers of a number input in one locale and format.
  *
@@ -129,15 +158,14 @@ function toIntlOptions(
  *   is not the group separator of the locale.
  */
 export class NumberInputFormat {
+  private readonly _locale: string;
   private readonly _display: Intl.NumberFormat;
   private readonly _edit: Intl.NumberFormat;
   private readonly _percent: boolean;
-  private readonly _tokens = new Map<string, Token>();
-  /** The currency, percent, unit and literal texts, longest first. */
-  private readonly _literals: string[];
-
-  /** The decimal separator of the locale, as the input shows it. */
-  public readonly decimalSeparator: string;
+  /** The decimals of a shown value: the fraction digits, and 2 more for a percent. */
+  private readonly _decimals: number;
+  /** Built at the first parse, as only an edit needs them. */
+  private _tables?: ParseTables;
 
   /** The maximum number of fraction digits of the edit text. */
   public readonly maximumFractionDigits: number;
@@ -145,7 +173,19 @@ export class NumberInputFormat {
   /** The value change of one unit in the last shown digit, such as `0.01` for dollars. */
   public readonly smallestStep: number;
 
+  /** The decimal separator of the locale, as the input shows it. */
+  public get decimalSeparator(): string {
+    return this._parseTables.decimalSeparator;
+  }
+
+  private get _parseTables(): ParseTables {
+    this._tables ??= this._readTables();
+    return this._tables;
+  }
+
   constructor(locale: string, options: NumberInputFormatOptions = {}) {
+    this._locale = locale;
+
     try {
       this._display = new Intl.NumberFormat(locale, toIntlOptions(options));
     } catch (error) {
@@ -163,8 +203,8 @@ export class NumberInputFormat {
     // Set, because the options have no significant digits.
     this.maximumFractionDigits = maximumFractionDigits!;
     // A percent shows the value times 100.
-    this.smallestStep =
-      10 ** -(this.maximumFractionDigits + (this._percent ? 2 : 0));
+    this._decimals = this.maximumFractionDigits + (this._percent ? 2 : 0);
+    this.smallestStep = 10 ** -this._decimals;
     this._edit = new Intl.NumberFormat(locale, {
       numberingSystem,
       roundingMode,
@@ -174,9 +214,6 @@ export class NumberInputFormat {
       minimumFractionDigits: 0,
       maximumFractionDigits: this.maximumFractionDigits,
     });
-
-    this.decimalSeparator = this._readTokens(locale, numberingSystem);
-    this._literals = this._readLiterals();
   }
 
   /** Returns the display text of `value`, or an empty string for `null`. */
@@ -217,7 +254,7 @@ export class NumberInputFormat {
       return null;
     }
 
-    for (const literal of this._literals) {
+    for (const literal of this._parseTables.literals) {
       chars = chars.replaceAll(literal, '');
     }
 
@@ -247,7 +284,11 @@ export class NumberInputFormat {
    * A minus sign counts only when `allowNegative` is true.
    */
   public isValidPartial(text: string, allowNegative = true): boolean {
-    const parts = this._read(clean(text), true);
+    // A space stays, so that it counts only as a group separator of the locale.
+    const parts = this._read(
+      text.normalize('NFKC').replace(BIDI_MARK, ''),
+      true
+    );
 
     return (
       !!parts &&
@@ -258,6 +299,12 @@ export class NumberInputFormat {
 
   /** Returns `value` rounded as the format shows it. */
   public round(value: number): number {
+    // `Intl` shows a double as its shortest decimal, so a value with no more
+    // decimals than the format shows is a shown value.
+    if (Number.isFinite(value) && numberOfDecimals(value) <= this._decimals) {
+      return value || 0;
+    }
+
     return this.parse(this.formatEdit(value))!;
   }
 
@@ -276,11 +323,42 @@ export class NumberInputFormat {
       fitted = this.round(addSteps(fitted, this.smallestStep));
     }
 
-    return fitted >= min && fitted <= max ? fitted : clamped;
+    return numberInRangeInclusive(fitted, min, max) ? fitted : clamped;
+  }
+
+  /**
+   * Steps `value` by `count` steps and fits the result into the bounds. A step
+   * finer than the last shown digit steps by that digit, so that it shows. An
+   * empty value takes the seed, 0 fit into the bounds, without a step. No step
+   * moves the value against its direction, as from a value out of range. A
+   * `count` of 0 keeps the value.
+   */
+  public spin(
+    value: number | null,
+    { count, step, min, max }: NumberInputSpinRequest
+  ): number | null {
+    if (!count) {
+      return value;
+    }
+
+    const size = Math.max(
+      step !== undefined && step > 0 ? step : this._percent ? 0.01 : 1,
+      this.smallestStep
+    );
+    const next = this.fit(
+      value === null ? 0 : addSteps(value, size, count),
+      min,
+      max
+    );
+
+    return value !== null && (count > 0 ? next < value : next > value)
+      ? value
+      : next;
   }
 
   /** Splits a cleaned text into its sign and digits, or returns `null` for a character out of place. */
   private _read(text: string, partial: boolean): NumberParts | null {
+    const { tokens } = this._parseTables;
     const parts: NumberParts = {
       signed: false,
       negative: false,
@@ -291,7 +369,7 @@ export class NumberInputFormat {
     let ended = false;
 
     for (const char of text) {
-      const token = this._tokens.get(char);
+      const token = tokens.get(char);
 
       if (token === undefined || ended) {
         return null;
@@ -327,12 +405,21 @@ export class NumberInputFormat {
     return parts;
   }
 
-  /** Fills the token map and returns the decimal separator of the locale. */
-  private _readTokens(locale: string, numberingSystem: string): string {
+  private _readTables(): ParseTables {
+    const tokens = new Map<string, Token>();
+    const decimalSeparator = this._readTokens(tokens);
+
+    return { tokens, decimalSeparator, literals: this._readLiterals(tokens) };
+  }
+
+  /** Fills `tokens` and returns the decimal separator of the locale. */
+  private _readTokens(tokens: Map<string, Token>): string {
+    const locale = this._locale;
+    const { numberingSystem } = this._display.resolvedOptions();
     const add = (char: string, token: Token): void => {
       const key = clean(char);
-      if (key && !this._tokens.has(key)) {
-        this._tokens.set(key, token);
+      if (key && !tokens.has(key)) {
+        tokens.set(key, token);
       }
     };
 
@@ -378,6 +465,10 @@ export class NumberInputFormat {
 
     for (const group of groups) {
       add(group, 'group');
+      // NFKC folds each space separator, such as the French U+202F, into U+0020.
+      if (!clean(group)) {
+        tokens.set(' ', 'group');
+      }
       // The Swiss group separator is easier to type as an apostrophe.
       if (group === '’' || group === "'") {
         add('’', 'group');
@@ -393,27 +484,20 @@ export class NumberInputFormat {
   }
 
   /** Collects the currency, percent, unit and literal texts of all plural forms. */
-  private _readLiterals(): string[] {
+  private _readLiterals(tokens: Map<string, Token>): string[] {
     const literals = new Set<string>();
 
     for (const sample of PLURAL_SAMPLES) {
-      for (const value of [sample, -sample]) {
-        for (const { type, value: part } of this._display.formatToParts(
-          value
-        )) {
-          const text = clean(part);
+      for (const { type, value } of this._display.formatToParts(sample)) {
+        const text = clean(value);
 
-          if (
-            (type === 'currency' ||
-              type === 'percentSign' ||
-              type === 'unit' ||
-              type === 'literal') &&
-            text !== '(' &&
-            text !== ')' &&
-            [...text].some((char) => !this._tokens.has(char))
-          ) {
-            literals.add(text);
-          }
+        if (
+          LITERAL_PARTS.has(type) &&
+          text !== '(' &&
+          text !== ')' &&
+          [...text].some((char) => !tokens.has(char))
+        ) {
+          literals.add(text);
         }
       }
     }
@@ -434,8 +518,16 @@ export function getNumberInputFormat(
     cache,
     locale,
     (resolved) => new NumberInputFormat(resolved, options),
-    OPTION_NAMES.map((name) => `|${options[name]}`).join('')
+    OPTION_NAMES.map((name) => options[name])
   );
+}
+
+/** Returns the format of a number input: its `locale` and `valueFormatOptions`. */
+export function getHostFormat(host: {
+  locale: string;
+  valueFormatOptions?: NumberInputFormatOptions;
+}): NumberInputFormat {
+  return getNumberInputFormat(host.locale, host.valueFormatOptions);
 }
 
 /**

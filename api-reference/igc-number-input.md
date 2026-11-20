@@ -33,7 +33,7 @@ defineComponents(IgcNumberInputComponent);
 - `hideSpinButtons`: `boolean`. Default: `false`. Attribute: `hide-spin-buttons`.
   Whether the spin buttons are hidden. The keys and the mouse wheel still
   step the value.
-- `validateOnly`: `boolean`. Default: `false`. Attribute: `validate-only`, reflected.
+- `validateOnly`: `boolean`. Default: `false`. Attribute: `validate-only`.
   Whether a value out of range only fails validation. The user can type it,
   and the commit does not clamp it. A step still stops at `min` and `max`.
 - `outlined`: `boolean`. Default: `false`. Attribute: `outlined`, reflected.
@@ -52,6 +52,10 @@ defineComponents(IgcNumberInputComponent);
   A hint to the browser for which virtual keyboard layout to display. Default
   is `numeric` for a format without fraction digits and without negative
   values, else `decimal`.
+- `defaultValue`: `number | null`. No attribute.
+  The default value of the control. A form reset restores the value to it.
+  While the value is unchanged since the start or the last form reset, a
+  new default also sets the value. The `value` attribute also sets it.
 - `locale`: `string`. Attribute: `locale`.
   The locale of the component. Without it, the component takes its own
   `lang`, else the locale of the nearest ancestor that has a `locale` (a
@@ -63,10 +67,6 @@ defineComponents(IgcNumberInputComponent);
 - `required`: `boolean`. Default: `false`. Attribute: `required`, reflected.
   Whether the control is required. A required control that has no value,
   or is not checked, fails validation.
-- `defaultValue`: `unknown`. No attribute.
-  The default value of the control. A form reset restores the value to it.
-  While the value is unchanged since the start or the last form reset, a
-  new default also sets the value. The `value` attribute also sets it.
 - `name`: `string`. Attribute: `name`, reflected.
   The name of the control, submitted with the form data.
 - `disabled`: `boolean`. Default: `false`. Attribute: `disabled`.
@@ -87,10 +87,10 @@ defineComponents(IgcNumberInputComponent);
 
 ## Methods
 
-- `stepUp(n = 1): void`
-  Increments the value by `n` steps. A step stops at `max`.
-- `stepDown(n = 1): void`
-  Decrements the value by `n` steps. A step stops at `min`.
+- `stepUp(n?: number): void`
+  Increments the value by `n` steps, 1 by default. A step stops at `max`.
+- `stepDown(n?: number): void`
+  Decrements the value by `n` steps, 1 by default. A step stops at `min`.
 - `select(): void`
   Focuses the control and selects all the text inside the input.
 - `focus(options?: FocusOptions): void`

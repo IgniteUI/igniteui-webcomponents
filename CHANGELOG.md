@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The arrow keys, Page Up, Page Down, Home, End, the mouse wheel and the spin buttons step the value by `step`. A held spin button repeats the step. `hide-spin-buttons` removes the buttons, and the `increment-icon` and `decrement-icon` slots replace their icons.
   - The commit clamps the value to `min` and `max`. With `validate-only`, the value stays, and the `range-underflow` and `range-overflow` slots show the error.
   - The field has the `spinbutton` role, with the value, the bounds and the formatted text. The spin buttons get their names from `resourceStrings`.
-  - New types: `IgcNumberInputComponentEventMap`, `NumberInputFormatOptions`, `NumberInputRoundingMode`, `INumberInputResourceStrings`. New icon aliases: `input_increment`, `input_decrement`.
+  - New types: `IgcNumberInputComponentEventMap`, `NumberInputFormatOptions`, `NumberInputRoundingMode`, `INumberInputResourceStrings`, and the English strings `NumberInputResourceStringsEN`. New icon aliases: `input_increment`, `input_decrement`.
 - #### QR code
   - `dot-style`, `square-style` and `corner-dot-style` take `squircle`, a square with soft corners.
   - `corner-dot-style` sets the shape of the inner corner dots. When you do not set it, the inner corner dots use `dot-style`, as before.

@@ -1,4 +1,3 @@
-import { getCurrentI18n } from 'igniteui-i18n-core';
 import {
   html,
   LitElement,
@@ -9,6 +8,7 @@ import {
 import { eventOptions, property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 import {
   addAriaTarget,
   ariaBindings,
@@ -29,10 +29,7 @@ import {
   shiftKey,
 } from '#internals/controllers/key-bindings.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
-import {
-  coercedProperty,
-  type CoercedPropertyConfig,
-} from '#internals/decorators/coerced-property.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
@@ -43,20 +40,13 @@ import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
 import {
-  isPointerPressed,
-  trackPointerPress,
-} from '#internals/pointer-press.js';
-import {
   nextInputId,
   renderInputShell,
   resolveInputPartFlags,
 } from '#internals/templates/input-shell.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
-import { createTimer } from '#internals/timing.js';
 import { hasNegativeTabIndex } from '#internals/utils/dom.js';
-import { preventDefault } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
-import { addSteps } from '#internals/utils/math.js';
 import { equal } from '#internals/utils/objects.js';
 import { all } from '#themes/input/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -68,10 +58,11 @@ import IgcValidationContainerComponent from '../validation-container/validation-
 import { NumberInputResourceStringsEN } from './i18n.js';
 import {
   formatFormValue,
-  getNumberInputFormat,
+  getHostFormat,
   type NumberInputFormat,
   type NumberInputFormatOptions,
 } from './number-format.js';
+import { addSpinPress, type SpinDirection } from './spin-press.js';
 import { styles as numberInputStyles } from './themes/number-input.base.css.js';
 import { numberInputValidators } from './validators.js';
 
@@ -87,9 +78,8 @@ export interface IgcNumberInputComponentEventMap {
   blur: FocusEvent;
 }
 
-/** The delay before a held spin button repeats, and the interval of the repeats, in milliseconds. */
-const SPIN_HOLD_DELAY = 400;
-const SPIN_REPEAT_INTERVAL = 60;
+/** The steps of Page Up, Page Down and Shift with an arrow key. */
+const PAGE_STEPS = 10;
 
 const Slots = setSlots(
   'prefix',
@@ -114,8 +104,9 @@ function toNumberValue(value: unknown): number | null {
     : null;
 }
 
-function spinDirection(button: Element): 1 | -1 {
-  return button.part.contains('increment') ? 1 : -1;
+/** A bound or a step: `undefined` for no value. */
+function toBound({ value }: { value: unknown }): number | undefined {
+  return toNumberValue(value) ?? undefined;
 }
 
 const formValueTransformers: Partial<FormValueTransformers<number | null>> = {
@@ -183,19 +174,6 @@ export default class IgcNumberInputComponent extends I18nMixin(
     numberInputStyles,
   ];
 
-  /**
-   * The bounds: a numeric string, as an attribute or a framework gives it,
-   * reads as a number, anything else that is not a finite number sets no
-   * bound, and a change revalidates.
-   */
-  private static readonly _bound: CoercedPropertyConfig<
-    unknown,
-    IgcNumberInputComponent
-  > = {
-    transform: ({ value }) => toNumberValue(value) ?? undefined,
-    onChange: ({ host }) => host._validate(),
-  };
-
   /* blazorSuppress */
   public static register(): void {
     registerComponent(
@@ -205,21 +183,27 @@ export default class IgcNumberInputComponent extends I18nMixin(
     );
   }
 
-  //#region Internal state
+  //#region Internal state and properties
 
   private readonly _themes = addThemingController(this, all);
   private readonly _slots = addSlotController(this, { slots: Slots });
   private readonly _inputId = nextInputId();
 
-  private readonly _spinTimer = createTimer(() => this._repeatSpin());
+  private readonly _spinPress = addSpinPress(this, {
+    step: (direction) => this._spin(direction),
+    start: () => {
+      if (!this._editing) {
+        this._input!.focus();
+      }
+    },
+    end: () => {
+      // A press without focus commits its steps once, at its end.
+      if (!this._editing && this.value !== this._reportedValue) {
+        this._commit();
+      }
+    },
+  });
 
-  private _spinPress?: {
-    button: HTMLButtonElement;
-    touch: boolean;
-    repeated: boolean;
-  };
-
-  /** Names and describes the native input, and applies the host ARIA. */
   private readonly _ariaTarget = addAriaTarget(this, () =>
     helperText(this, this._slots)
   );
@@ -229,20 +213,12 @@ export default class IgcNumberInputComponent extends I18nMixin(
     { initialValue: null, transformers: formValueTransformers }
   );
 
-  /** Part flags of the current render, shared by the container and the input. */
-  private _partFlags: Record<string, boolean> = {};
-
-  /** The `igcChange` baseline: the value at the last commit or write from code. */
-  private _committedValue: number | null = null;
-
-  /** The text before an IME composition, restored when the result is not a number. */
+  /** Restored when a composition gives no number. */
   private _compositionText = '';
 
   /**
-   * Set from a focus that did not select all the text, until the next `select`
-   * event, key or input. In Chromium, `select()` on an input without focus
-   * moves the focus before it selects, so the text swap of the focus collapses
-   * the selection to the end. Its `select` event then finds the caret there.
+   * Chromium `select()` on an input without focus focuses first, so the text
+   * swap of the focus collapses the selection. Its `select` event repairs it.
    */
   private _selectMayBeLost = false;
 
@@ -252,6 +228,9 @@ export default class IgcNumberInputComponent extends I18nMixin(
 
   @state()
   private _editText = '';
+
+  /** For the key bindings only: a `ref()` is empty while disconnected. */
+  private readonly _inputRef = createRef<HTMLInputElement>();
 
   @query('input')
   private readonly _input?: HTMLInputElement;
@@ -264,39 +243,12 @@ export default class IgcNumberInputComponent extends I18nMixin(
     return true;
   }
 
-  private _formatMemo?: {
-    locale: string;
-    options?: NumberInputFormatOptions;
-    global: string;
-    format: NumberInputFormat;
-  };
-
-  private get _format(): NumberInputFormat {
-    const { locale, valueFormatOptions: options } = this;
-    const global = getCurrentI18n();
-    const memo = this._formatMemo;
-
-    if (
-      memo?.locale === locale &&
-      memo.options === options &&
-      memo.global === global
-    ) {
-      return memo.format;
-    }
-
-    const format = getNumberInputFormat(locale, options);
-    this._formatMemo = { locale, options, global, format };
-    return format;
+  protected override get _reportedValue(): number | null {
+    return super._reportedValue as number | null;
   }
 
-  private get _stepSize(): number {
-    const step = this.step;
-
-    if (step !== undefined && step > 0) {
-      return step;
-    }
-
-    return this.valueFormatOptions?.style === 'percent' ? 0.01 : 1;
+  private get _format(): NumberInputFormat {
+    return getHostFormat(this);
   }
 
   private get _allowsNegative(): boolean {
@@ -304,18 +256,20 @@ export default class IgcNumberInputComponent extends I18nMixin(
     return this.validateOnly || min === undefined || min < 0;
   }
 
-  /** Whether the edit has changed the value or the text since the last commit. */
+  /** Whether the edit has changed the value or the text since the last report. */
   private get _hasPendingEdit(): boolean {
+    const reported = this._reportedValue;
+
     return (
       this._editing &&
-      (this.value !== this._committedValue ||
-        this._editText !== this._format.formatEdit(this._committedValue))
+      (this.value !== reported ||
+        this._editText !== this._format.formatEdit(reported))
     );
   }
 
   //#endregion
 
-  //#region Public properties
+  //#region Public attributes and properties
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
@@ -325,13 +279,11 @@ export default class IgcNumberInputComponent extends I18nMixin(
    */
   @property({ converter: { fromAttribute: toNumberValue } })
   public set value(value: number | null) {
-    const previous = this.value;
-    this._setValue(value);
-
-    // A value from code, a form reset included, is not an edit. A write of the
-    // current value changes nothing, as a framework repeats it on each render.
-    if (this.value !== previous) {
-      this._committedValue = this.value;
+    // A write of the current value changes nothing, as a framework repeats it
+    // on each render. It keeps the field pristine and a pending `igcChange`.
+    if (toNumberValue(value) !== this.value) {
+      this._formValue.setValueAndFormState(value);
+      this._resetEditText();
     }
   }
 
@@ -345,7 +297,10 @@ export default class IgcNumberInputComponent extends I18nMixin(
    * @attr
    */
   @property({ converter: { fromAttribute: toNumberValue } })
-  @coercedProperty(IgcNumberInputComponent._bound)
+  @coercedProperty<unknown, IgcNumberInputComponent>({
+    transform: toBound,
+    onChange: ({ host }) => host._validate(),
+  })
   public min?: number = undefined;
 
   /**
@@ -354,7 +309,10 @@ export default class IgcNumberInputComponent extends I18nMixin(
    * @attr
    */
   @property({ converter: { fromAttribute: toNumberValue } })
-  @coercedProperty(IgcNumberInputComponent._bound)
+  @coercedProperty<unknown, IgcNumberInputComponent>({
+    transform: toBound,
+    onChange: ({ host }) => host._validate(),
+  })
   public max?: number = undefined;
 
   /**
@@ -364,9 +322,7 @@ export default class IgcNumberInputComponent extends I18nMixin(
    * @attr
    */
   @property({ converter: { fromAttribute: toNumberValue } })
-  @coercedProperty<unknown, IgcNumberInputComponent>({
-    transform: ({ value }) => toNumberValue(value) ?? undefined,
-  })
+  @coercedProperty<unknown, IgcNumberInputComponent>({ transform: toBound })
   public step?: number;
 
   /**
@@ -397,7 +353,7 @@ export default class IgcNumberInputComponent extends I18nMixin(
    * @attr validate-only
    * @default false
    */
-  @property({ type: Boolean, reflect: true, attribute: 'validate-only' })
+  @property({ type: Boolean, attribute: 'validate-only' })
   public validateOnly = false;
 
   /**
@@ -459,26 +415,39 @@ export default class IgcNumberInputComponent extends I18nMixin(
   @property({ attribute: 'inputmode' })
   public override inputMode = '';
 
+  /* blazorCSSuppress */
+  /**
+   * The default value of the control. A form reset restores the value to it.
+   * While the value is unchanged since the start or the last form reset, a
+   * new default also sets the value. The `value` attribute also sets it.
+   */
+  public override set defaultValue(value: number | null) {
+    super.defaultValue = value;
+  }
+
+  public override get defaultValue(): number | null {
+    return super.defaultValue as number | null;
+  }
+
   //#endregion
 
   constructor() {
     super();
-    trackPointerPress();
 
     const step = (count: number) => () => this._stepByUser(count);
 
     // Keys from the prefix and suffix content belong to that content.
     addKeybindings(this, {
-      skip: (_, event) =>
-        this.readOnly || event.composedPath()[0] !== this._input,
+      ref: this._inputRef,
+      skip: () => this.readOnly,
       bindingDefaults: { repeat: true },
     })
       .set(arrowUp, step(1))
       .set(arrowDown, step(-1))
-      .set([shiftKey, arrowUp], step(10))
-      .set([shiftKey, arrowDown], step(-10))
-      .set(pageUpKey, step(10))
-      .set(pageDownKey, step(-10))
+      .set([shiftKey, arrowUp], step(PAGE_STEPS))
+      .set([shiftKey, arrowDown], step(-PAGE_STEPS))
+      .set(pageUpKey, step(PAGE_STEPS))
+      .set(pageDownKey, step(-PAGE_STEPS))
       .set(homeKey, () => this._setValueByUser(this._fit(this.min!)), {
         when: () => this.min !== undefined,
       })
@@ -491,30 +460,18 @@ export default class IgcNumberInputComponent extends I18nMixin(
       });
   }
 
-  //#region Lit lifecycle
+  //#region Lit lifecycle methods
 
   protected override willUpdate(props: PropertyValues<this>): void {
-    if (
-      this._editing &&
-      (props.has('locale') || props.has('valueFormatOptions'))
-    ) {
-      this._editText = this._format.formatEdit(this.value);
-    }
-  }
-
-  protected override _restoreDefaultValue(): void {
-    super._restoreDefaultValue();
-
-    // A reset replaces the edit text also when the value does not change.
-    if (this._editing) {
-      this._editText = this._format.formatEdit(this.value);
+    if (props.has('locale') || props.has('valueFormatOptions')) {
+      this._resetEditText();
     }
   }
 
   /** @internal */
   public override disconnectedCallback(): void {
+    // Ends a held spin press first, through its controller.
     super.disconnectedCallback();
-    this._stopSpin();
     // Firefox and WebKit send no blur when a focused element is removed.
     this._endEdit();
   }
@@ -562,7 +519,7 @@ export default class IgcNumberInputComponent extends I18nMixin(
   }
 
   protected override _handleBlur(): void {
-    this._stopSpin();
+    this._spinPress.stop();
     this._endEdit();
     super._handleBlur();
   }
@@ -593,22 +550,26 @@ export default class IgcNumberInputComponent extends I18nMixin(
 
     event.preventDefault();
 
+    if (inputType === 'insertText') {
+      return;
+    }
+
     // A pasted or dropped number in the display format replaces the text.
-    if (inputType !== 'insertText') {
-      const value = this._format.parse(next);
+    const value = this._format.parse(text);
 
-      if (
-        value !== null &&
-        !Number.isNaN(value) &&
-        (value >= 0 || this._allowsNegative)
-      ) {
-        input.value = this._format.formatEdit(value);
-        this._applyText(input.value);
+    if (
+      value === null ||
+      Number.isNaN(value) ||
+      (value < 0 && !this._allowsNegative)
+    ) {
+      return;
+    }
 
-        if (!this._editing) {
-          this._commit();
-        }
-      }
+    input.value = this._format.formatEdit(value);
+    this._applyText(input.value);
+
+    if (!this._editing) {
+      this._commit();
     }
   }
 
@@ -679,54 +640,14 @@ export default class IgcNumberInputComponent extends I18nMixin(
     this._stepByUser(event.deltaY > 0 ? -1 : 1);
   }
 
-  private _handleSpinPointerDown(event: PointerEvent): void {
-    const button = event.currentTarget as HTMLButtonElement;
+  //#endregion
 
-    // No press moves the focus to the button, also one that does not step.
-    event.preventDefault();
+  //#region Form integration
 
-    if (!event.isPrimary || event.button !== 0 || button.disabled) {
-      return;
-    }
-
-    // A synthetic event, as from a test tool, has no active pointer to capture.
-    if (event.isTrusted) {
-      button.setPointerCapture(event.pointerId);
-    }
-
-    const touch = event.pointerType === 'touch';
-    this._spinPress = { button, touch, repeated: false };
-
-    // A touch steps on release, so that a scroll that starts on the button does
-    // not step. It does not focus the input, so that no virtual keyboard opens.
-    if (!touch) {
-      if (!this._editing) {
-        this._input!.focus();
-      }
-      this._spin(spinDirection(button));
-    }
-
-    this._spinTimer.start(SPIN_HOLD_DELAY);
-  }
-
-  private _handleSpinPointerUp(): void {
-    const press = this._spinPress;
-
-    if (press?.touch && !press.repeated) {
-      this._spin(spinDirection(press.button));
-    }
-
-    this._stopSpin();
-  }
-
-  /**
-   * The `click` of a pointer press does not step again. A click without a
-   * press, as from assistive technology, steps one time.
-   */
-  private _handleSpinClick(event: MouseEvent): void {
-    if (!isPointerPressed()) {
-      this._spin(spinDirection(event.currentTarget as Element));
-    }
+  protected override _restoreDefaultValue(): void {
+    super._restoreDefaultValue();
+    // Also when the value does not change, as for a partial text.
+    this._resetEditText();
   }
 
   //#endregion
@@ -737,46 +658,19 @@ export default class IgcNumberInputComponent extends I18nMixin(
    * Steps from a spin button. Without focus, a click commits at once, and a
    * press, as a touch, commits at its end.
    */
-  private _spin(direction: 1 | -1): boolean {
+  private _spin(direction: SpinDirection): boolean {
     const changed = this._stepByUser(direction);
 
-    if (changed && !this._editing && !this._spinPress) {
+    if (changed && !this._editing && !this._spinPress.pressed) {
       this._commit();
     }
 
     return changed;
   }
 
-  private _repeatSpin(): void {
-    const press = this._spinPress!;
-
-    // A render that removes the buttons ends no press on them.
-    if (!press.button.isConnected) {
-      this._stopSpin();
-      return;
-    }
-
-    press.repeated = true;
-    if (this._spin(spinDirection(press.button))) {
-      this._spinTimer.start(SPIN_REPEAT_INTERVAL);
-    }
-  }
-
-  private _stopSpin(): void {
-    const press = this._spinPress;
-
-    this._spinTimer.stop();
-    this._spinPress = undefined;
-
-    if (press && !this._editing && this.value !== this._committedValue) {
-      this._commit();
-    }
-  }
-
-  /** Starts an edit: the edit text replaces the display text. */
   private _beginEdit(): void {
     this._editing = true;
-    this._editText = this._format.formatEdit(this.value);
+    this._resetEditText();
   }
 
   /** Commits and ends the edit, if any. */
@@ -824,20 +718,13 @@ export default class IgcNumberInputComponent extends I18nMixin(
     );
   }
 
-  /** Sets the value. During an edit, a new value also sets the edit text. */
-  private _setValue(value: number | null, editText?: string): void {
-    const previous = this.value;
-    this._formValue.setValueAndFormState(value);
-
-    if (this._editing && this.value !== previous) {
-      this._editText = editText ?? this._format.formatEdit(this.value);
+  /** During an edit, shows the value in the edit text. */
+  private _resetEditText(): void {
+    if (this._editing) {
+      this._editText = this._format.formatEdit(this.value);
     }
-
-    // As the `value` accessor does.
-    this.requestUpdate('value', previous);
   }
 
-  /** Returns the text of the input with `text` in place of its selection. */
   private _replaceSelection(text: string): string {
     // A text input always has a selection.
     const { value, selectionStart, selectionEnd } = this._input!;
@@ -859,7 +746,7 @@ export default class IgcNumberInputComponent extends I18nMixin(
     }
   }
 
-  /** Takes the text of the input. A number in it becomes the value. */
+  /** A number in `text` becomes the value. */
   private _applyText(text: string): void {
     const value = this._format.parse(text);
 
@@ -872,7 +759,8 @@ export default class IgcNumberInputComponent extends I18nMixin(
 
   /**
    * Rounds the value to the shown digits, keeps it in range unless
-   * `validateOnly`, shows it, and emits `igcChange` when it changed.
+   * `validateOnly`, shows it, and emits `igcChange` when it differs from the
+   * reported value.
    */
   private _commit(): void {
     const format = this._format;
@@ -886,15 +774,11 @@ export default class IgcNumberInputComponent extends I18nMixin(
 
     // An unchanged value is not written, so a focus and blur keep the control pristine.
     if (value !== current) {
-      this._setValue(value);
-    } else if (this._editing) {
-      this._editText = format.formatEdit(value);
+      this._writeUserValue(value);
     }
 
-    if (value !== this._committedValue) {
-      this._committedValue = value;
-      this._emitTouchedEvent('igcChange', { detail: value });
-    }
+    this._resetEditText();
+    this._reportChange(value);
   }
 
   /**
@@ -902,29 +786,15 @@ export default class IgcNumberInputComponent extends I18nMixin(
    * the control is read-only or disabled.
    */
   private _steppedValue(count: number): number | null {
-    const value = this.value;
+    const { value, step, min, max } = this;
 
-    if (!count || this.readOnly || this.disabled) {
-      return value;
-    }
-
-    // A step finer than the last shown digit steps by that digit, so that it shows.
-    const size = Math.max(this._stepSize, this._format.smallestStep);
-    const next = this._fit(value === null ? 0 : addSteps(value, size, count));
-
-    // No step moves against its direction, as from a value out of range.
-    return value !== null && (count > 0 ? next < value : next > value)
+    return this.readOnly || this.disabled
       ? value
-      : next;
+      : this._format.spin(value, { count, step, min, max });
   }
 
-  /** Clamps `value` to `min` and `max`, and rounds it to a shown value. */
   private _fit(value: number): number {
     return this._format.fit(value, this.min, this.max);
-  }
-
-  private _emitInput(): void {
-    this._emitTouchedEvent('igcInput', { detail: this.value });
   }
 
   /** Sets a value from the user and emits `igcInput`. Returns whether the value changed. */
@@ -933,48 +803,44 @@ export default class IgcNumberInputComponent extends I18nMixin(
       return false;
     }
 
-    this._setValue(value, editText);
-    this._emitInput();
+    this._writeUserValue(value);
+    // Before the event, so that a value that a listener writes replaces it.
+    if (editText !== undefined) {
+      this._editText = editText;
+    }
+    this.emitEvent('igcInput', { detail: this.value });
     return true;
+  }
+
+  private _writeUserValue(value: number | null): void {
+    this._writeFrom('user', () => {
+      this.value = value;
+    });
   }
 
   private _stepByUser(count: number): boolean {
     return this._setValueByUser(this._steppedValue(count));
   }
 
-  /** A step from code goes through the setter, as it is not an edit. */
-  private _stepFromCode(count: number): void {
-    const next = this._steppedValue(count);
-
-    if (next !== this.value) {
-      this.value = next;
-    }
-  }
-
-  /** Reverts the edit to the last committed value. */
+  /** Reverts the edit to the reported value. */
   private _revert(): void {
-    if (!this._setValueByUser(this._committedValue)) {
-      this._editText = this._format.formatEdit(this._committedValue);
-    }
-  }
-
-  private _resolvePartNames(base: string): Record<string, boolean> {
-    return { [base]: true, ...this._partFlags };
+    this._setValueByUser(this._reportedValue);
+    this._resetEditText();
   }
 
   //#endregion
 
   //#region Public API
 
-  /** Increments the value by `n` steps. A step stops at `max`. */
-  public stepUp(n = 1): void {
+  /** Increments the value by `n` steps, 1 by default. A step stops at `max`. */
+  public stepUp(n?: number): void {
     // As the native method, which reads `n` as an integer.
-    this._stepFromCode(Math.trunc(n) || 0);
+    this.value = this._steppedValue(Math.trunc(n === undefined ? 1 : n) || 0);
   }
 
-  /** Decrements the value by `n` steps. A step stops at `min`. */
-  public stepDown(n = 1): void {
-    this._stepFromCode(-Math.trunc(n) || 0);
+  /** Decrements the value by `n` steps, 1 by default. A step stops at `min`. */
+  public stepDown(n?: number): void {
+    this.stepUp(n === undefined ? -1 : -n);
   }
 
   /** Focuses the control and selects all the text inside the input. */
@@ -1001,15 +867,13 @@ export default class IgcNumberInputComponent extends I18nMixin(
 
   //#endregion
 
-  //#region Render
-
   private _renderInput(
     format: NumberInputFormat,
-    text: string
+    text: string,
+    flags: Record<string, boolean>
   ): TemplateResult {
     const value = this.value;
-    const valueText =
-      value === null || !this._editing ? text : format.formatDisplay(value);
+    const valueText = this._editing ? format.formatDisplay(value) : text;
     const integer = format.maximumFractionDigits === 0 && !this._allowsNegative;
 
     return html`
@@ -1019,9 +883,10 @@ export default class IgcNumberInputComponent extends I18nMixin(
           role: 'spinbutton',
           required: this.required ? 'true' : undefined,
         })}
+        ${ref(this._inputRef)}
         id=${this._inputId}
         type="text"
-        part=${partMap(this._resolvePartNames('input'))}
+        part=${partMap({ input: true, ...flags })}
         name=${ifDefined(this.name)}
         placeholder=${ifDefined(this.placeholder)}
         .value=${live(text)}
@@ -1055,6 +920,7 @@ export default class IgcNumberInputComponent extends I18nMixin(
     disabled: boolean
   ): TemplateResult {
     const strings = this.resourceStrings;
+    const press = this._spinPress[part];
 
     return html`
       <button
@@ -1068,12 +934,12 @@ export default class IgcNumberInputComponent extends I18nMixin(
         }
         aria-controls=${this._inputId}
         ?disabled=${disabled}
-        @pointerdown=${this._handleSpinPointerDown}
-        @pointerup=${this._handleSpinPointerUp}
-        @pointercancel=${this._stopSpin}
-        @lostpointercapture=${this._stopSpin}
-        @click=${this._handleSpinClick}
-        @contextmenu=${preventDefault}
+        @pointerdown=${press}
+        @pointerup=${press}
+        @pointercancel=${press}
+        @lostpointercapture=${press}
+        @click=${press}
+        @contextmenu=${press}
       >
         ${renderSlottedIcon({ slot: `${part}-icon`, icon: `input_${part}` })}
       </button>
@@ -1089,7 +955,10 @@ export default class IgcNumberInputComponent extends I18nMixin(
 
     // A button that cannot step, at a bound or while locked, is disabled.
     return html`
-      <span part="spin-buttons">
+      <span
+        part="spin-buttons"
+        @wheel=${this._editing ? this._handleWheel : nothing}
+      >
         ${this._renderSpinButton('increment', this._steppedValue(1) === value)}
         ${this._renderSpinButton('decrement', this._steppedValue(-1) === value)}
       </span>
@@ -1102,22 +971,20 @@ export default class IgcNumberInputComponent extends I18nMixin(
       ? this._editText
       : format.formatDisplay(this.value);
 
-    this._partFlags = resolveInputPartFlags(this._slots, !!text);
+    const flags = resolveInputPartFlags(this._slots, !!text);
     // The themes show the suffix wrapper, which holds the spin buttons, only when suffixed.
-    this._partFlags.suffixed ||= !this.hideSpinButtons;
+    flags.suffixed ||= !this.hideSpinButtons;
 
     return renderInputShell(this, {
       theme: this._themes.theme,
       label: this.label,
       labelId: this._inputId,
-      containerParts: this._resolvePartNames('container'),
-      renderInput: () => this._renderInput(format, text),
+      containerParts: { container: true, ...flags },
+      renderInput: () => this._renderInput(format, text, flags),
       renderSuffixParts: this._renderSpinButtons,
       helperText: IgcValidationContainerComponent.create(this),
     });
   }
-
-  //#endregion
 }
 
 declare global {

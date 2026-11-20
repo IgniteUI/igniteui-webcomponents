@@ -1797,7 +1797,7 @@
         "static tagName": "readonly string",
         "validationMessage": "readonly string",
         "validity": "readonly ValidityState",
-        "value": "T | null",
+        "value": "Date | null",
         "willValidate": "readonly boolean"
       },
       "methods": {
@@ -2806,7 +2806,7 @@
       "properties": {
         "autocomplete": "string | undefined",
         "autofocus": "boolean",
-        "defaultValue": "unknown",
+        "defaultValue": "number | null",
         "disabled": "boolean",
         "form": "readonly HTMLFormElement | null",
         "hideSpinButtons": "boolean",
@@ -2840,8 +2840,8 @@
         "select": "() => void",
         "setCustomValidity": "(message: string) => void",
         "static register": "() => void",
-        "stepDown": "(n: unknown) => void",
-        "stepUp": "(n: unknown) => void"
+        "stepDown": "(n?: number) => void",
+        "stepUp": "(n?: number) => void"
       },
       "events": {
         "igcChange": "unknown",
