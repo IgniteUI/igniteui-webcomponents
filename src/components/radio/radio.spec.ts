@@ -949,5 +949,6 @@ describe('Radio Component', () => {
     },
     changeByUser: (radio) =>
       simulateClick(radio.renderRoot.querySelector('input')!),
+    userTransitions: ['span[part="control checked"]::before transform'],
   });
 });

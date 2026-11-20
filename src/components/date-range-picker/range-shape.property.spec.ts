@@ -3,7 +3,7 @@ import { expect } from '@open-wc/testing';
 import { CalendarDay } from '#internals/date/model.js';
 import {
   fourDigitYearDate as date,
-  isoDate,
+  anyValidDate,
 } from '#internals/testing/date-arbitraries.spec.js';
 import { fc } from '#internals/testing/fast-check-setup.spec.js';
 import type { DateRangeValue } from '../types.js';
@@ -80,7 +80,7 @@ describe('Picker value shape properties', () => {
     });
 
     it('an attribute string is normalized like the range of its dates', () => {
-      const isoEnd = fc.option(isoDate, { nil: null });
+      const isoEnd = fc.option(anyValidDate, { nil: null });
 
       fc.assert(
         fc.property(isoEnd, isoEnd, (start, finish) => {

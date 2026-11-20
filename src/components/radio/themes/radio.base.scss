@@ -16,13 +16,7 @@ input[type='radio'] {
     @include hide-default();
 }
 
-@include value-state-transitions(
-    $descendants: (
-        "[part~='control']",
-        "[part~='control']::before",
-        "[part~='control']::after",
-    )
-);
+@include value-state-transitions($on-host: true);
 
 // In a horizontal radio group the host is `display: contents`, so the messages are items of the group grid.
 // They come after all the radios, each in a row of its own.

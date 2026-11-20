@@ -31,15 +31,13 @@ import {
   suppressResizeObserverLoopError,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
+import { transitionsIn, withTheme } from '#internals/testing/motion.spec.js';
 import {
   simulateClick,
   simulateComposingKeys,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
-import {
-  transitionsIn,
-  withTheme,
-} from '#internals/testing/value-state.spec.js';
+import { isUserChange } from '#internals/user-change.js';
 import { configureTheme } from '#theming/config.js';
 import type IgcButtonComponent from '../button/button.js';
 import type IgcCheckboxComponent from '../checkbox/checkbox.js';
@@ -1397,12 +1395,13 @@ describe('Combo', () => {
     const checkboxOf = (item: IgcComboItemComponent) =>
       item.renderRoot.querySelector<IgcCheckboxComponent>('igc-checkbox')!;
 
-    async function openCombo(): Promise<void> {
+    async function openCombo(singleSelect = false): Promise<void> {
       combo = await fixture<IgcComboComponent<City>>(
         html`<igc-combo
           .data=${cities}
           value-key="id"
           display-key="name"
+          ?single-select=${singleSelect}
         ></igc-combo>`
       );
       list = getComboDOM(() => combo).list;
@@ -1433,7 +1432,7 @@ describe('Combo', () => {
         finishAnimationsFor(checkboxOf(item).shadowRoot!);
         await painted();
 
-        simulateClick(combo.renderRoot.querySelector('[part="clear-icon"]')!);
+        simulateClick(getComboDOM(() => combo).clearIcon);
         await painted();
 
         expect(item.selected).to.be.false;
@@ -1454,6 +1453,76 @@ describe('Combo', () => {
         )!;
         expect(transitionsIn(checkboxOf(item))).to.eql([]);
       });
+    });
+
+    for (const singleSelect of [false, true]) {
+      const mode = singleSelect ? 'single' : 'multiple';
+      const input = () => getComboDOM(() => combo).input;
+
+      it(`marks the input as a user change for a selection by the user (${mode})`, async () => {
+        await openCombo(singleSelect);
+
+        simulateClick(option());
+
+        expect(combo.value).to.have.lengthOf(1);
+        expect(isUserChange(input())).to.be.true;
+      });
+
+      it(`shows a value that a canceling igcChange handler sets at once (${mode})`, async () => {
+        await openCombo(singleSelect);
+        const other = cities.at(-1)!.id;
+        combo.addEventListener('igcChange', (event) => {
+          event.preventDefault();
+          combo.value = [other];
+        });
+
+        simulateClick(option());
+
+        expect(combo.value).to.eql([other]);
+        expect(isUserChange(input())).to.be.false;
+      });
+    }
+
+    // A key and the clear icon are not in `_writeFrom('user')`, so the combo
+    // checks that the list still shows the selection of the user.
+    it('ends the user change of Space when code sets another value', async () => {
+      await openCombo();
+      simulateKeyboard(list, homeKey);
+      simulateKeyboard(list, spaceBar);
+
+      expect(isUserChange(getComboDOM(() => combo).input)).to.be.true;
+
+      combo.value = [cities.at(-1)!.id];
+      expect(isUserChange(getComboDOM(() => combo).input)).to.be.false;
+    });
+
+    it('ends the user change of the clear icon when code sets another value', async () => {
+      await openCombo();
+      combo.value = [cities[0].id];
+      await comboStable(combo);
+
+      simulateClick(getComboDOM(() => combo).clearIcon);
+
+      expect(combo.value).to.be.empty;
+      expect(isUserChange(getComboDOM(() => combo).input)).to.be.true;
+
+      combo.value = [cities.at(-1)!.id];
+      expect(isUserChange(getComboDOM(() => combo).input)).to.be.false;
+    });
+
+    // The handler runs before the change applies. In single selection, the
+    // change then replaces the value of the handler, so the user change stays.
+    it('shows a value that an igcChange handler sets at once (multiple)', async () => {
+      await openCombo();
+      const other = cities.at(-1)!.id;
+      combo.addEventListener('igcChange', () => {
+        combo.value = [other];
+      });
+
+      simulateClick(option());
+
+      expect(combo.value).to.include(other).and.have.lengthOf(2);
+      expect(isUserChange(getComboDOM(() => combo).input)).to.be.false;
     });
   });
 });

@@ -195,7 +195,7 @@ $indicator-delay: .06s;
     opacity: 0;
 }
 
-@include value-state-transitions($descendants: ('[data-indicator]'));
+@include value-state-transitions();
 
 ::slotted(*) {
     @include ellipsis();

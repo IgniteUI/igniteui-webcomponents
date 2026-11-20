@@ -1,55 +1,12 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import { internalsOf } from '#internals/controllers/internals.js';
+import { isUserChange, unmarkUserChange } from '#internals/user-change.js';
 import { sameItems } from '#internals/utils/arrays.js';
 import { getCSSTransitions, transitionsSettled } from './css-transitions.js';
 
 type ValueStateHost = ReactiveControllerHost & HTMLElement;
 
 const NO_VALUES: readonly unknown[] = [];
-
-/**
- * The elements whose next update is a user change. The marks end with the
- * frame, so a mark that no update takes does not animate a later change.
- */
-const userChanges = new Set<Element>();
-let userChangesFrame = 0;
-
-/**
- * Marks the next update of `element` as a user change. A control marks itself;
- * an owner marks itself, or the controls of its light DOM that it changes.
- */
-export function markUserChange(element: Element): void {
-  userChanges.add(element);
-  userChangesFrame ||= requestAnimationFrame(() => {
-    userChanges.clear();
-    userChangesFrame = 0;
-  });
-}
-
-/** Ends the user change of `element`, as when code overrides it. */
-export function unmarkUserChange(element: Element): void {
-  userChanges.delete(element);
-}
-
-/** Whether `element`, or the host of a shadow root around it, is marked. */
-export function isUserChange(element: Element): boolean {
-  if (userChanges.size === 0) {
-    return false;
-  }
-
-  for (let node: Element | undefined = element; node; node = hostOf(node)) {
-    if (userChanges.has(node)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-function hostOf(element: Element): Element | undefined {
-  const root = element.getRootNode();
-  return root instanceof ShadowRoot ? root.host : undefined;
-}
 
 /** A host takes the `ig-instant` custom state; a shadow element, `data-instant`. */
 function setInstant(element: Element, instant: boolean): void {
@@ -63,8 +20,9 @@ function setInstant(element: Element, instant: boolean): void {
 }
 
 /**
- * The marked elements. They lose the mark in the first frame with no change
- * from code, so a scroll that changes controls in each frame keeps it.
+ * The elements with transitions off. They turn on again in the first frame with
+ * no change from code, so a scroll that changes controls in each frame keeps
+ * them off.
  */
 class InstantElements {
   private readonly _elements = new Set<Element>();
@@ -112,13 +70,13 @@ export function markInstant(element: Element): void {
   (instantElements ??= new InstantElements()).add(element);
 }
 
-/** A host transitions itself and its shadow root, not its slotted content. */
+/**
+ * A host waits for its shadow root, not for itself: the hosts that the user
+ * changes have no transitions of their own, and `Element.getAnimations()`
+ * scans the document, so a tree cascade of n checkboxes would cost O(n²).
+ */
 function transitionsOfTarget(target: Element): CSSTransition[] {
-  const { shadowRoot } = target;
-
-  return shadowRoot
-    ? [...getCSSTransitions(target), ...getCSSTransitions(shadowRoot)]
-    : getCSSTransitions(target, { subtree: true });
+  return getCSSTransitions(target.shadowRoot ?? target, { subtree: true });
 }
 
 export interface ValueStateMotionOptions {
@@ -144,13 +102,13 @@ export class ValueStateMotionController implements ReactiveController {
   private _values?: readonly unknown[];
   private _instantValues = NO_VALUES;
   private _mode?: 'animated' | 'at-once';
-  private _marked?: Element;
+  private _instantElement?: Element;
 
   /** Identifies the running user change; a newer change replaces it. */
-  private _userAnimation?: object;
+  private _userAnimationToken?: object;
 
   public get userAnimating(): boolean {
-    return this._userAnimation !== undefined;
+    return this._userAnimationToken !== undefined;
   }
 
   constructor(host: ValueStateHost, options: ValueStateMotionOptions) {
@@ -164,22 +122,30 @@ export class ValueStateMotionController implements ReactiveController {
     const values = this._options.watch();
     const instantValues = this._options.instant?.() ?? NO_VALUES;
     const previous = this._values;
-    const cut = !sameItems(this._instantValues, instantValues);
-    const marked = userChanges.delete(this._host);
+    const instantChanged = !sameItems(this._instantValues, instantValues);
+    const changed =
+      previous !== undefined &&
+      (instantChanged || !sameItems(previous, values));
+    const byUser =
+      changed &&
+      !instantChanged &&
+      (this._userAnimationToken !== undefined || isUserChange(this._host));
 
+    // The next update takes the mark, also one that changes nothing.
+    unmarkUserChange(this._host);
     this._values = values;
     this._instantValues = instantValues;
 
     // The first render has no styles to transition from.
-    if (!previous || (!cut && sameItems(previous, values))) {
+    if (!changed) {
       return;
     }
 
-    if (!cut && (marked || this._userAnimation || isUserChange(this._host))) {
-      this._userAnimation = {};
+    if (byUser) {
+      this._userAnimationToken = {};
       this._mode = 'animated';
     } else {
-      this._userAnimation = undefined;
+      this._userAnimationToken = undefined;
       this._mode = 'at-once';
     }
   }
@@ -199,22 +165,22 @@ export class ValueStateMotionController implements ReactiveController {
     if (mode === 'animated') {
       this._trackUserAnimation(element);
     } else if (element) {
-      this._marked = element;
+      this._instantElement = element;
       markInstant(element);
     }
   }
 
   /** @internal */
   public hostDisconnected(): void {
-    if (this._marked) {
-      instantElements?.delete(this._marked);
-      this._marked = undefined;
+    if (this._instantElement) {
+      instantElements?.delete(this._instantElement);
+      this._instantElement = undefined;
     }
   }
 
   /** A disconnected control has no target and no transitions. */
   private async _trackUserAnimation(target?: Element | null): Promise<void> {
-    const token = this._userAnimation;
+    const token = this._userAnimationToken;
     let transitions: CSSTransition[] = [];
 
     if (target) {
@@ -224,8 +190,8 @@ export class ValueStateMotionController implements ReactiveController {
 
     await transitionsSettled(transitions);
 
-    if (this._userAnimation === token) {
-      this._userAnimation = undefined;
+    if (this._userAnimationToken === token) {
+      this._userAnimationToken = undefined;
       this._options.settled?.();
     }
   }
@@ -244,14 +210,14 @@ type FieldHost = ValueStateHost & {
 };
 
 /**
- * Shows a change from code of a text field at once. `valueState` is the part of
- * the value that restyles the field, such as its filled state.
+ * Shows a change from code of a text field at once. `filledState` returns what
+ * restyles the field when it fills or empties, such as `!!value`.
  */
 export function addFieldValueStateMotion(
   host: FieldHost,
-  valueState: () => unknown
+  filledState: () => unknown
 ): void {
   addValueStateMotion(host, {
-    watch: () => [valueState(), host.disabled, host.outlined],
+    watch: () => [filledState(), host.disabled, host.outlined],
   });
 }

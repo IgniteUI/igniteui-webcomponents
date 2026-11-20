@@ -252,7 +252,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   constructor() {
     super();
 
-    // The mask also shows on focus, so the filled state is not only the value.
+    // Watches the value, not the filled state: the mask also fills the field
+    // on focus, and that change animates.
     addFieldValueStateMotion(this, () => this.value);
 
     this._keyBindings
@@ -448,8 +449,9 @@ export abstract class IgcDateTimeInputBaseComponent<
   /**
    * Sets the value, cancels an edit and renders the mask. An equal value is skipped and keeps
    * the reported value, so a picker that renders its cleared value back still gets the clear.
+   * Only a value parsed `fromText` keeps the text, such as a partial mask for an empty value.
    */
-  protected _applyValue(value: T | null): void {
+  protected _applyValue(value: T | null, fromText = false): void {
     const previous = this._formValue.value;
 
     if (this._formValue.isSameValue(previous, value)) {
@@ -457,6 +459,9 @@ export abstract class IgcDateTimeInputBaseComponent<
     }
 
     this._isEditing = false;
+    if (!fromText) {
+      this._maskedValue = '';
+    }
     this._formValue.setValueAndFormState(value);
     this.requestUpdate('value', previous);
     this._updateMaskDisplay();
@@ -468,9 +473,7 @@ export abstract class IgcDateTimeInputBaseComponent<
   ): void {
     this._isEditing = false;
     // Also inside a user edit, such as a drop on an unfocused editor, that no blur commits.
-    this._writeFrom('code', () => {
-      this.value = value;
-    });
+    this._writeFrom('code', () => this._applyValue(value, true));
     this._updateMaskDisplay();
   }
 
@@ -481,7 +484,10 @@ export abstract class IgcDateTimeInputBaseComponent<
     if (this._isEditing) {
       this._isEditing = false;
       this._writeFrom('user', () =>
-        this._applyValue(this._parser.parseValue(this._maskedValue, false))
+        this._applyValue(
+          this._parser.parseValue(this._maskedValue, false),
+          true
+        )
       );
     }
 
@@ -509,10 +515,17 @@ export abstract class IgcDateTimeInputBaseComponent<
     this._applyDraft();
   }
 
-  protected override _restoreDefaultValue(): void {
+  /** Drops the typed text, which `_buildMaskedValue` keeps for an empty value. */
+  private _discardEdit(): void {
     this._isEditing = false;
-    super._restoreDefaultValue();
+    this._maskedValue = '';
     this._updateMaskDisplay();
+  }
+
+  // Runs after the value restore, on a form reset of this editor or of its owner.
+  protected override _resetValidationState(): void {
+    this._discardEdit();
+    super._resetValidationState();
   }
 
   /**
@@ -606,10 +619,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   /** Clears the value and the text of the input. */
   public clear(): void {
     this._writeFrom('code', () => {
-      this._isEditing = false;
-      this._maskedValue = '';
       this._applyValue(null);
-      this._updateMaskDisplay();
+      this._discardEdit();
     });
   }
 

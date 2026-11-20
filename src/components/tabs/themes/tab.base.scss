@@ -35,10 +35,7 @@
 }
 
 // The tabs mark the first render.
-@include value-state-transitions(
-    $descendants: ("[part~='tab-header']", "[part~='tab-header'] ::slotted(igc-icon)"),
-    $on-host: true
-);
+@include value-state-transitions($on-host: true);
 
 [part~='base'],
 [part~='content'] {

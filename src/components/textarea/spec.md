@@ -68,7 +68,7 @@
 |      10 | 2026-10-29 | Transition only the color and the width of the bottom line in the Material theme, and only its color in the Indigo theme, so the line hides at the same time as a hidden ancestor |
 |      11 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API                                                                              |
 |      12 | 2026-11-16 | `setRangeText` before the first render keeps the value                                                                                                                              |
-|      13 | 2026-11-20 | A value from code and the first render show at once, also the Material label that moves up; no transitions with reduced motion |
+|      13 | 2026-11-20 | A value from code and the first render show at once, also the Material label that moves up; no transitions with reduced motion; while a change shows at once, the transitions that the app sets on parts and slotted elements stop too |
 
 ## Overview
 
@@ -575,6 +575,9 @@ The following documented behaviors have no dedicated case yet: the `validateOnly
 
 ## Assumptions and limitations
 
+- While a change from code shows at once, the control turns off every transition in its shadow tree and on its
+  slotted elements with `!important`. A transition that the app sets with `::part()` or on slotted content does not
+  run in those frames either. The transitions turn on again in the first frame with no change from code.
 - `wrap="hard"` wraps the text as the native element does, but does not add line breaks to the submitted value. The
   browser computes those line breaks from the layout, and only when it submits a native `textarea`.
 

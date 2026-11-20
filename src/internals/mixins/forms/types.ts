@@ -132,7 +132,11 @@ export declare class BaseFormAssociatedElement {
   /** Restores the default value on a form reset. */
   protected _restoreDefaultValue(): void;
 
-  /** Resets the interaction and validity state, as a form reset does. */
+  /**
+   * Resets the interaction and validity state, as a form reset does, after the
+   * value restore. An owner also calls it on its owned editors, so an editor
+   * that holds uncommitted text discards it here.
+   */
   protected _resetValidationState(): void;
 
   /** Formats a value for a validation message. */
@@ -158,7 +162,8 @@ export declare class BaseFormAssociatedElement {
 
   /**
    * Resets the value, state and validation to the defaults. Override
-   * `_restoreDefaultValue`, not this callback.
+   * `_restoreDefaultValue` for the value and `_resetValidationState` for the
+   * rest, not this callback.
    */
   protected formResetCallback(): void;
 

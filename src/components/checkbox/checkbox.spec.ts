@@ -481,17 +481,21 @@ describe('Checkbox', () => {
     },
     changeByUser: (checkbox) =>
       simulateClick(checkbox.renderRoot.querySelector('input')!),
+    userTransitions: ['span[part="indicator checked"] stroke-dashoffset'],
   });
 
+  // A click clears `indeterminate` and also checks the box, so the test asks
+  // for the transform that only the indeterminate mark starts.
   describe('Indeterminate value state motion', () => {
     runValueStateMotionTests<IgcCheckboxComponent>({
-      template: html`<igc-checkbox>Label</igc-checkbox>`,
+      template: html`<igc-checkbox indeterminate>Label</igc-checkbox>`,
       changedTemplate: html`<igc-checkbox indeterminate>Label</igc-checkbox>`,
       changeFromCode: (checkbox) => {
-        checkbox.indeterminate = true;
+        checkbox.indeterminate = false;
       },
       changeByUser: (checkbox) =>
         simulateClick(checkbox.renderRoot.querySelector('input')!),
+      userTransitions: ['span[part="indicator checked"] transform'],
     });
   });
 });

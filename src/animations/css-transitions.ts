@@ -1,7 +1,7 @@
 /**
- * Returns the CSS transitions of `element`, and of its descendants with
- * `{ subtree: true }`, or of all the tree of a shadow root. Author animations,
- * which can run forever, are left out.
+ * Returns the CSS transitions of `element`, and with `{ subtree: true }` of its
+ * descendants. A shadow root gives all its tree. Author animations, which can
+ * run forever, are left out.
  */
 export function getCSSTransitions(
   element: Element | ShadowRoot,

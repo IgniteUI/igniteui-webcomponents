@@ -26,17 +26,14 @@ import {
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
+import { transitionsIn, withTheme } from '#internals/testing/motion.spec.js';
 import { simulateInput } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
-import {
-  runValueStateMotionTests,
-  transitionsIn,
-  withTheme,
-} from '#internals/testing/value-state.spec.js';
+import { runValueStateMotionTests } from '#internals/testing/value-state.spec.js';
 import { preventDefault, stopPropagation } from '#internals/utils/events.js';
 import { formatString } from '#internals/utils/strings.js';
 import { configureTheme } from '#theming/config.js';

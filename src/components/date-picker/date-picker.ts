@@ -202,8 +202,8 @@ export default class IgcDatePickerComponent extends I18nMixin(
     transformers: FormValueDateTimeTransformers,
   });
 
-  // Cached: every render has the editor.
-  @query(IgcDateTimeInputComponent.tagName, true)
+  // Not cached: the format getters read it before the first render.
+  @query(IgcDateTimeInputComponent.tagName)
   private readonly _input!: IgcDateTimeInputComponent;
 
   //#endregion

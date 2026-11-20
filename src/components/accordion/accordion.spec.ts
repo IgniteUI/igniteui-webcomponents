@@ -15,11 +15,11 @@ import {
   painted,
   resetLocation,
 } from '#internals/testing/helpers.spec.js';
+import { transitionsIn } from '#internals/testing/motion.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
-import { transitionsIn } from '#internals/testing/value-state.spec.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import IgcAccordionComponent from './accordion.js';
 

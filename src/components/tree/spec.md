@@ -497,6 +497,8 @@ In the Material theme.
 72. A click on the checkbox of a parent in cascade selection starts transitions in the checkbox of the parent and of its
     child.
 73. A `select()` call starts no transitions in either checkbox.
+74. Space on a parent in cascade selection starts transitions in the checkbox of the parent and of its child.
+75. A `deselect()` call and a `selected` item from code start no transitions.
 
 ### Not covered by the suite
 

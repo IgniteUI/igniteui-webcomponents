@@ -4,7 +4,6 @@ import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { markUserChange } from '#animations/value-state.js';
 import { IgcBaseComboBoxComponent } from '#internals/bases/combo-box.js';
 import { addAriaProjector } from '#internals/controllers/aria-projection.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
@@ -21,7 +20,17 @@ import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
-import { asArray, firstOf, isEmpty } from '#internals/utils/arrays.js';
+import {
+  keepUserChangeWhile,
+  markUserChange,
+  unmarkUserChange,
+} from '#internals/user-change.js';
+import {
+  asArray,
+  firstOf,
+  isEmpty,
+  sameItems,
+} from '#internals/utils/arrays.js';
 import {
   addSafeEventListener,
   getElementFromPath,
@@ -940,7 +949,7 @@ export default class IgcComboComponent<
       return false;
     }
 
-    // Each caller is a user action, so the checkboxes of the options animate.
+    // Each caller is a user action, so the checkboxes and the label animate.
     markUserChange(this);
 
     const change = this._selection.proposeRecords(
@@ -951,10 +960,11 @@ export default class IgcComboComponent<
     // First, as a change listener can build new records.
     this._activeOption.set(index);
     this._applyChange(change, true);
+    this._keepUserChangeFor(change.newValue);
     return true;
   }
 
-  /** The clear icon and its key, so the checkboxes and the label animate. */
+  /** Clears the selection for the clear icon and its key, as a user change. */
   private _clearSelection(): void {
     markUserChange(this);
 
@@ -964,19 +974,32 @@ export default class IgcComboComponent<
       if (!this._clearSingleSelection(false)) {
         this._resync();
       }
-
-      return;
-    }
-
-    // Clears `value`, the pending selection and the unresolved values.
-    if (
+    } else if (
       this._emitSelectionChange({
         newValue: [],
         items: this.selection,
         type: 'deselection',
       })
     ) {
+      // Clears `value`, the pending selection and the unresolved values.
       this._applyValue([]);
+    }
+
+    this._keepUserChangeFor([]);
+  }
+
+  /**
+   * Keeps the user change only while the list shows `newValue`. The `igcChange`
+   * handler runs inside the user write, so its cancel or its value ends it here,
+   * and a later value from code ends it on the next check.
+   */
+  private _keepUserChangeFor(newValue: ComboValue<T>[]): void {
+    const shown = () => sameItems(this.pendingValue, newValue);
+
+    if (shown()) {
+      keepUserChangeWhile(this, shown);
+    } else {
+      unmarkUserChange(this);
     }
   }
 

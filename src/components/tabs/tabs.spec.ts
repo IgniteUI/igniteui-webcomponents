@@ -31,14 +31,11 @@ import {
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
+import { transitionsIn, withTheme } from '#internals/testing/motion.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
-import {
-  transitionsIn,
-  withTheme,
-} from '#internals/testing/value-state.spec.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import { getScaleFactor } from '#internals/utils/dom.js';
 import { preventDefault } from '#internals/utils/events.js';

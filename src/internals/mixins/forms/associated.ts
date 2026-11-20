@@ -1,6 +1,6 @@
 import { isServer, type LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
-import { markUserChange, unmarkUserChange } from '#animations/value-state.js';
+import { keepUserChangeWhile, markUserChange } from '#internals/user-change.js';
 import { trackLabels } from '../../controllers/aria-projection.js';
 import {
   addInternalsController,
@@ -30,7 +30,6 @@ import {
 } from './types.js';
 
 const INVALID_STATE = 'ig-invalid';
-const NO_USER_VALUE = Symbol('no user value');
 
 type EditorOwner = Pick<
   FormAssociatedElementInterface,
@@ -227,8 +226,6 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     private _writeOrigin: WriteOrigin = 'code';
     /** The value of the last `igcChange`, or of the last write that needs no report. */
     private __reported: unknown;
-    /** The value of a user write until the next update. Another value from code ends its user change. */
-    private __userValue: unknown = NO_USER_VALUE;
     private _isExternalInvalid = false;
     /** The message is built on read, so it follows the locale. */
     private __failedValidator?: Validator;
@@ -405,7 +402,6 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     }
 
     protected override update(changedProperties: PropertyValues): void {
-      this.__userValue = NO_USER_VALUE;
       super.update(changedProperties);
 
       // Only a render can add an owned editor, and no property tells which one.
@@ -644,7 +640,7 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       }
 
       if (origin === 'user') {
-        this.__userValue = this._formValue.value;
+        this.__keepUserValue();
       }
 
       if (isReported || origin === 'code' || origin === 'default') {
@@ -652,6 +648,18 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       }
 
       return result;
+    }
+
+    /**
+     * Keeps the user change only while the value is the one that the user
+     * wrote. Another value, such as one that app code sets in an `igcChange`
+     * handler, ends it, also in an owned editor.
+     */
+    private __keepUserValue(): void {
+      const value = this._formValue.value;
+      keepUserChangeWhile(this, () =>
+        this._formValue.isSameValue(this._formValue.value, value)
+      );
     }
 
     /** Records a write that keeps the value, as a write of the current origin. */
@@ -674,6 +682,11 @@ function BaseFormAssociated<T extends LitElementConstructor>(
         force ||
         !this._formValue.isSameValue(this._formValue.value, this.__reported)
       ) {
+        // Before the event, so a value that its handler sets is not the user's.
+        if (this._writeOrigin === 'user') {
+          this.__keepUserValue();
+        }
+
         this.__markValueReported();
         (this as unknown as EventEmitterLike).emitEvent('igcChange', {
           detail,
@@ -736,15 +749,6 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     }
 
     protected _setFormValue(value: FormValueType, state?: FormValueType): void {
-      // App code in an `igcChange` handler shows at once, also in an owned editor.
-      if (
-        this.__userValue !== NO_USER_VALUE &&
-        this._writeOrigin === 'code' &&
-        !this._formValue.isSameValue(this._formValue.value, this.__userValue)
-      ) {
-        unmarkUserChange(this);
-      }
-
       this._recordSameValueWrite();
       this._internals.setFormValue(value, state);
       this._validate();

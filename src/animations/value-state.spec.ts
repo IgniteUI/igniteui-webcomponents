@@ -15,12 +15,13 @@ import {
   finishAnimationsFor,
   painted,
 } from '#internals/testing/helpers.spec.js';
-import { transitionsIn } from '#internals/testing/value-state.spec.js';
+import { transitionsIn } from '#internals/testing/motion.spec.js';
 import {
-  addValueStateMotion,
   isUserChange,
+  keepUserChangeWhile,
   markUserChange,
-} from './value-state.js';
+} from '#internals/user-change.js';
+import { addValueStateMotion } from './value-state.js';
 
 /** A control whose base fades its color on a change of `on`. */
 class TestControl extends LitElement {
@@ -95,7 +96,6 @@ class TestHostControl extends LitElement {
     super();
     addInternalsController(this);
     addValueStateMotion(this, {
-      target: () => this,
       watch: () => [this.on],
     });
   }
@@ -124,6 +124,14 @@ class TestOwner extends LitElement {
 const controlTag = defineCE(TestControl);
 const hostControlTag = defineCE(TestHostControl);
 const ownerTag = defineCE(TestOwner);
+
+async function createOwner(): Promise<TestOwner> {
+  const owner = await fixture<TestOwner>(
+    staticHtml`<${unsafeStatic(ownerTag)}></${unsafeStatic(ownerTag)}>`
+  );
+  await painted();
+  return owner;
+}
 
 async function createControl(): Promise<TestControl> {
   const control = await fixture<TestControl>(
@@ -157,13 +165,51 @@ describe('Value state motion', () => {
     });
 
     it('counts a change inside the shadow root of a marked owner', async () => {
-      const owner = await fixture<TestOwner>(
-        staticHtml`<${unsafeStatic(ownerTag)}></${unsafeStatic(ownerTag)}>`
-      );
-      await painted();
+      const owner = await createOwner();
 
       markUserChange(owner);
       expect(isUserChange(owner.control)).to.be.true;
+    });
+
+    it('keeps a user change only while its check holds', async () => {
+      const control = await createControl();
+      let holds = true;
+
+      markUserChange(control);
+      keepUserChangeWhile(control, () => holds);
+      expect(isUserChange(control)).to.be.true;
+
+      holds = false;
+      expect(isUserChange(control)).to.be.false;
+    });
+
+    it('keeps the first check of a mark', async () => {
+      const control = await createControl();
+
+      markUserChange(control);
+      keepUserChangeWhile(control, () => false);
+      keepUserChangeWhile(control, () => true);
+      expect(isUserChange(control)).to.be.false;
+
+      // A new user change takes a new check.
+      markUserChange(control);
+      keepUserChangeWhile(control, () => true);
+      expect(isUserChange(control)).to.be.true;
+    });
+
+    it('adds no mark with a check alone', async () => {
+      const control = await createControl();
+
+      keepUserChangeWhile(control, () => true);
+      expect(isUserChange(control)).to.be.false;
+    });
+
+    it('runs the check of a marked owner for a change inside it', async () => {
+      const owner = await createOwner();
+
+      markUserChange(owner);
+      keepUserChangeWhile(owner, () => false);
+      expect(isUserChange(owner.control)).to.be.false;
     });
   });
 
@@ -180,10 +226,7 @@ describe('Value state motion', () => {
     });
 
     it('animates a change that a marked owner applies', async () => {
-      const owner = await fixture<TestOwner>(
-        staticHtml`<${unsafeStatic(ownerTag)}></${unsafeStatic(ownerTag)}>`
-      );
-      await painted();
+      const owner = await createOwner();
 
       owner.toggle();
       await elementUpdated(owner);
@@ -237,6 +280,18 @@ describe('Value state motion', () => {
   });
 
   describe('Changes from code', () => {
+    it('shows a change at once when the check of its mark fails', async () => {
+      const control = await createControl();
+
+      markUserChange(control);
+      keepUserChangeWhile(control, () => false);
+      control.on = true;
+      await elementUpdated(control);
+
+      expect(control.base.hasAttribute('data-instant')).to.be.true;
+      expect(transitionsIn(control)).to.eql([]);
+    });
+
     it('shows the first render at once', async () => {
       const control = await fixture<TestControl>(
         staticHtml`<${unsafeStatic(controlTag)} on></${unsafeStatic(controlTag)}>`

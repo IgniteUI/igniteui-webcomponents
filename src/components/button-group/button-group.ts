@@ -5,7 +5,6 @@ import {
   type TemplateResult,
 } from 'lit';
 import { property } from 'lit/decorators.js';
-import { markUserChange } from '#animations/value-state.js';
 import {
   type ButtonGroupContext,
   buttonGroupContext,
@@ -23,6 +22,7 @@ import {
 } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { markUserChange } from '#internals/user-change.js';
 import { asArray, firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
 import { getElementFromPath } from '#internals/utils/events.js';
 import { isDefined } from '#internals/utils/types.js';

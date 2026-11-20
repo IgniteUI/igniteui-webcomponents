@@ -73,7 +73,9 @@
 |      16 | 2026-11-18 | `igcChange` compares the committed value with the last reported value: the last `igcChange` or the last value set from code |
 |      17 | 2026-11-18 | The parser owns the spin, the part at the caret, the default part and the part navigation. <kbd>Ctrl</kbd> + arrow stops at part edges, also without separators; the AM/PM spin reads the value, not the shown text |
 |      18 | 2026-11-18 | Add the strict and the lenient value parse to the parser property suite; the round-trip uses `formatValue` |
-|      19 | 2026-11-20 | A value from code and the first render show at once, also the Material label that moves up; no transitions with reduced motion |
+|      19 | 2026-11-20 | A form reset discards the text that the user typed and did not commit; a focused input then shows the empty mask or the default; an empty value from code replaces the text of the old value |
+|      20 | 2026-11-20 | A year spin stops at year 1 and at year 9999 and does not loop; a year outside them only moves toward them; the value accepts an ISO string with a signed six digit year |
+|      21 | 2026-11-20 | A value from code and the first render show at once, also the Material label that moves up; no transitions with reduced motion; while a change shows at once, the transitions that the app sets on parts and slotted elements stop too |
 
 ## Overview
 
@@ -209,7 +211,8 @@ visual states follow the conventions of the other input-like components of the l
   keeping the caret in place.
 - **Mouse wheel**: while the editor is focused, scrolling spins the part under the caret; the page does not scroll.
 - **Boundaries**: with `spinLoop` enabled - the default - a part wraps around at its boundary, so minutes go from
-  `59` to `00`; otherwise it clamps at the boundary.
+  `59` to `00`; otherwise it clamps at the boundary. The year never wraps: a spin stops at year 1 and at year 9999,
+  so the year fits a `yyyy` mask. A year outside them, such as one set from code, only moves toward them.
 - **Step**: the `delta` argument, else the `spinDelta` of the part, else `1`. A `0` counts as no value. The method
   sets the direction, so `stepDown(DatePart.Date, -1)` also steps down.
 - **Empty value**: a spin sets the current date and time, the same value as <kbd>Ctrl</kbd> + <kbd>;</kbd>, without
@@ -384,7 +387,8 @@ input.addEventListener('igcChange', ({ detail }) => {
 
 This is what makes the component safe to two-way bind: a host re-rendering with the value it last received from
 `igcChange` does not reset a half-typed mask. Assigning a genuinely different value while the user is typing still
-wins and replaces the mask.
+wins and replaces the mask. This includes an empty value: the focused editor then shows the empty mask, not the text
+of the old value.
 
 A value set from code is not a user change, so it emits no `igcChange`, also while the editor is focused. This
 applies to `value`, `clear()`, `stepUp()`, `stepDown()`, `setRangeText()` and a form reset. The next commit compares
@@ -401,6 +405,9 @@ input.value = new Date(2026, 7, 7, 14, 30);
 input.value = '2026-08-07T14:30:00';
 input.value = null; // clears the editor
 ```
+
+An ISO string can also have the signed six digit year that `toISOString()` gives outside the years 0 to 9999, such as
+`+010000-01-01`.
 
 Commit is lenient by design:
 
@@ -537,7 +544,9 @@ presses that the editor ignores, for example <kbd>Alt</kbd> + <kbd>Arrow Down</k
 ```
 
 - The value is submitted under `name`.
-- A form reset restores `defaultValue`, which is taken from the `value` attribute.
+- A form reset restores `defaultValue`, which is taken from the `value` attribute, and discards the text that the user
+  typed and did not commit yet. As in a native date input, a focused editor then shows the empty mask or the default,
+  and the next blur commits nothing.
 - An invalid editor blocks submission, and pressing <kbd>Enter</kbd> submits the owning form only when it is valid.
   The editor is a text field, and <kbd>Enter</kbd> submits as in a native text field (see the [input specification](../input/spec.md#form-integration)): through the default
   button, or from the only text field of a form with no submit button. A `keydown` or `keypress` listener on the host
@@ -743,7 +752,8 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 8. Exposes the typed date through `igcInput` while `value` stays put.
 9. Re-applying an equal value while typing does not reset the mask.
 10. Emits a single `igcChange` on blur, carrying the committed value.
-11. A genuinely different value assigned while typing still wins.
+11. A genuinely different value assigned while typing still wins. An empty value assigned while focused replaces the
+    text of the old value.
 12. Does not report a value set from code while focused, also over a typed draft.
 13. Does not report `clear()` while focused.
 14. Reports an edit against the last value set from code.
@@ -791,7 +801,9 @@ Driven by `createFormAssociatedTestBed`.
 
 38. Is form associated, and is not associated on submit without a value.
 39. Is associated on submit.
-40. Is correctly reset on form reset, and resets to the new default after a `setAttribute` call.
+40. Is correctly reset on form reset, and resets to the new default after a `setAttribute` call. A reset while focused
+    discards the typed text and shows the empty mask or the default, the next blur keeps the restored value, and a
+    reset that empties the value shows the empty mask.
 41. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid. A real <kbd>Enter</kbd>
     submits once.
 42. Reflects the disabled state of an ancestor `fieldset`.
@@ -825,7 +837,8 @@ Generated by `runExternalLabelAssociationTests`.
 
 48. [`date-part.spec.ts`](./date-part.spec.ts) covers the part classes: the factory for every part type, `getValue`
     formatting per token, `validate` ranges - including the day validated against its month and year context - and
-    `spin` for every part, with leap year adjustment, looping and clamping.
+    `spin` for every part, with leap year adjustment, looping and clamping, and a year that never loops and moves only
+    toward the years 1 to 9999.
 49. [`datetime-mask-parser.spec.ts`](./datetime-mask-parser.spec.ts) covers the parser that turns a format into a
     mask and back, including the year format normalization with its case kept, a literal that is a mask flag, the
     century threshold, the calendar of years below 100, and UTF-16 part positions after an astral literal.
@@ -861,6 +874,9 @@ Generated by `runValueStateMotionTests` in the Material theme.
 
 ## Assumptions and limitations
 
+- While a change from code shows at once, the control turns off every transition in its shadow tree and on its
+  slotted elements with `!important`. A transition that the app sets with `::part()` or on slotted content does not
+  run in those frames either. The transitions turn on again in the first frame with no change from code.
 - The component does not expose a `type` attribute, since the underlying element is always an input of type `text`.
 - The `value` is a local `Date`; time zones are not modelled. A display format including a time zone renders the
   time zone of the runtime.
@@ -868,6 +884,8 @@ Generated by `runValueStateMotionTests` in the Material theme.
   are not supported as input format tokens.
 - Any year token other than `yy` is normalized to `yyyy` for editing purposes.
 - Two-digit years below `50` resolve to the 2000s; `50` and above resolve to the 1900s.
+- A year spin stops at year 1 and at year 9999. A value set from code past year 9999 shows more digits than the
+  `yyyy` mask has.
 - A single-character token - `d`, `M`, `h` - yields a single editable position; use the doubled token when a
   zero-padded, two-position section is required.
 - The `mask` and `prompt` members are inherited from the shared masked editor behavior. Only `prompt` is supported

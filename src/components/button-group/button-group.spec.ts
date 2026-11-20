@@ -17,15 +17,12 @@ import {
   painted,
 } from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
+import { transitionsIn, withTheme } from '#internals/testing/motion.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
-import {
-  runValueStateMotionTests,
-  transitionsIn,
-  withTheme,
-} from '#internals/testing/value-state.spec.js';
+import { runValueStateMotionTests } from '#internals/testing/value-state.spec.js';
 import IgcButtonGroupComponent from './button-group.js';
 import IgcToggleButtonComponent from './toggle-button.js';
 

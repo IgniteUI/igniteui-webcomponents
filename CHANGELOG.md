@@ -14,8 +14,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - #### Accordion, Expansion panel
   - A change of `open` on a panel shows at once. This includes the spacing that an accordion gives it, and the transitions that the app puts on the panel. Before, the spacing animated while the content showed at once. `show()`, `hide()`, `toggle()` and the user still animate both.
-- #### Button group, Checkbox, Combo, Date time input, File input, Input, List, Mask input, Navigation drawer, Radio, Switch, Textarea, Tree
-  - Only a change by the user animates a checkbox, a switch, a radio, a toggle button, the label of an input or a textarea (also the inputs of the pickers, the select and the combo), a list item and a navigation drawer item, as for the chip. A change from code and the first render show at once, so a virtualized list does not animate them while it scrolls. A change that a component makes for a user action animates too: the radio that a group unchecks, the toggle button that a single selection deselects, the items of a tree cascade and the options of a combo. A change from app code, also in an event handler, such as a "Select all" checkbox, shows at once. Hover, focus and the invalid state still fade. With `prefers-reduced-motion: reduce`, these controls have no transitions of their own, and a transition that the app adds to a part still applies.
+- #### Button group, Checkbox, Chip, Color picker, Combo, Date picker, Date range picker, Date time input, File input, Input, List, Mask input, Navigation drawer, Radio, Select, Switch, Textarea, Tree
+  - Only a change by the user animates a checkbox, a switch, a radio, a toggle button, and the label of an input or a textarea (also the inputs of the pickers, the select and the combo), as for the chip. A change from code and the first render show at once, so a virtualized list does not animate them while it scrolls. A list item shows a change of `selected` at once, because only code sets it. A change that a component makes for a user action animates too: the radio that a group unchecks, the toggle button that a single selection deselects, the items of a tree cascade and the options of a combo. A change from app code, also in an event handler, such as a "Select all" checkbox, shows at once. Hover, focus and the invalid state still fade. With `prefers-reduced-motion: reduce`, these controls, the list item and the navigation drawer item have no transitions of their own, and a transition that the app adds to a part still applies.
+  - While a change from code shows at once, these controls and the chip turn off all their transitions, also the ones that the app sets on parts and slotted elements. Before, the chip turned off only the transitions of its base and its indicator.
   - The Material switch moves its thumb with a transition only. Before, it also played a keyframe animation, also on the first render.
 - #### Chip
   - A selection change by the user animates the chip, as in Ignite UI for Angular. The colors fade, and the selection indicator opens and fades in, or fades out and closes. A change from code and the first render show at once, so a virtualized list does not animate its chips while it scrolls. With `prefers-reduced-motion: reduce`, the chip does not animate. [#2621](https://github.com/IgniteUI/igniteui-webcomponents/issues/2621)
@@ -55,6 +56,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The first render shows at once. The selected indicator does not slide in from the start of the strip, and the selected header does not fade in. This also applies when the tabs show later than they render. A selection change after that still animates.
 
 ### Fixed
+- #### Calendar, Date picker, Date range picker, Date time input
+  - An ISO string with a signed six digit year, such as `+010000-01-01T00:00:00.000Z`, sets the value. `toISOString()` gives this format for dates before year 0 and after year 9999. Before, the value became `null`.
 - #### Checkbox, Radio, Switch
   - A change of `value` no longer makes a checked control dirty, so a later `defaultChecked` still sets the checked state, as for a native checkbox or radio.
 - #### Color picker
@@ -65,6 +68,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A closed list has no active option. Before, when code closed the list and opened it again, the old option was still active. When an app canceled `igcOpening` while the user typed, Arrow Down opened the list on the second match.
   - In single selection, the input no longer shows the invalid styles when the focus moves from it to slotted content of the combo. The input shows the invalid state of the combo, together with its validation message.
   - In multiple selection, a change of `name` moves the submitted values to the new name at once. Before, the form submitted them under the old name.
+- #### Date picker
+  - The first render no longer logs a Lit development warning that a cached field was read before the first update.
 - #### Date picker, Date range picker
   - An editor no longer shows the invalid styles when the focus moves from it to other content of the picker, such as the other editor of a date range picker. The editors show the invalid state of the picker, together with its validation message.
   - When you clear the value and then open and close the picker before you leave it, the picker now emits `igcChange` for the clear.
@@ -72,6 +77,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A predefined or custom range chip keeps the date range picker open when `keepOpenOnSelect` is set.
   - With `activeDate` set, the calendar keeps the month that you navigate to. Before, each update of the picker, such as a pick in the second month of a date range picker, moved the calendar back to `activeDate`.
 - #### Date picker, Date range picker, Date time input
+  - A form reset discards the text that you typed and did not commit yet, as for a native date input. Before, a partly typed date stayed in the focused input, and in a picker the next blur committed it as a date, also over the restored default value.
+  - An empty value that code or a form reset sets while the input has focus replaces the date that the input shows. Before, the input kept showing the old date, and a spin started from it.
+  - A year spin stops at year 9999 and at year 1, and a year outside them, such as one set from code, only moves toward them. Before, a spin past year 9999 gave a five digit year that did not fit the input.
   - Ctrl + Arrow Left and Ctrl + Arrow Right stop at each date part in an input format without separators, such as `yyyyMMdd`, and do not stop inside a separator of more than one character, such as `, `. Before, the date time input went to the start or the end of the input, and the single input of the date range picker skipped a part.
 - #### Date picker, Date time input
   - `stepUp(DatePart.AmPm)` and `stepDown(DatePart.AmPm)` read AM or PM from the value. Before, while the input did not have focus and the display format was different from the input format, they read the display text, so they did nothing or switched only from PM to AM.

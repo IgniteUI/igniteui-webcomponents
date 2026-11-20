@@ -7,7 +7,7 @@ import {
   oneEvent,
   waitUntil,
 } from '@open-wc/testing';
-import { emulateMedia } from '@web/test-runner-commands';
+import { emulateMedia, resetMouse } from '@web/test-runner-commands';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
@@ -17,18 +17,15 @@ import {
   finishBackdrop,
   getAnimationsFor,
   getBackdropAnimations,
+  hoverWithMouse,
   isFocused,
   isUnderPageLayer,
   painted,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
-import { hoverWithMouse } from '#internals/testing/helpers.spec.js';
 import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
+import { transitionsIn, withTheme } from '#internals/testing/motion.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
-import {
-  runValueStateMotionTests,
-  transitionsIn,
-} from '#internals/testing/value-state.spec.js';
 import { isPopoverOpen } from '#internals/utils/dom.js';
 import { configureTheme } from '#theming/config.js';
 import IgcButtonComponent from '../button/button.js';
@@ -1002,29 +999,51 @@ describe('Navigation Drawer', () => {
     `);
   }
 
-  // A hover is the user interaction. The Material item does not fade its
-  // active background, and the drawer gives the item its theme colors.
-  runValueStateMotionTests<IgcNavDrawerItemComponent>({
-    template: html`
-      <igc-nav-drawer position="relative" open>
-        <igc-nav-drawer-item>
-          <span slot="content">Item</span>
-        </igc-nav-drawer-item>
-      </igc-nav-drawer>
-    `,
-    changedTemplate: html`
-      <igc-nav-drawer position="relative" open>
-        <igc-nav-drawer-item active>
-          <span slot="content">Item</span>
-        </igc-nav-drawer-item>
-      </igc-nav-drawer>
-    `,
-    control: (drawer) => drawer.querySelector('igc-nav-drawer-item')!,
-    changeFromCode: (item) => {
-      item.active = true;
-    },
-    changeByUser: (item) =>
-      hoverWithMouse(item.renderRoot.querySelector('[part~="base"]')!),
-    theme: 'indigo',
+  // `active` is view state, as the `selected` of a tab: a change from code
+  // fades too. The Material item does not fade its active background, and the
+  // drawer gives the item its theme colors.
+  describe('Item motion', () => {
+    allowMotion();
+    afterEach(() => resetMouse());
+
+    async function itemTransitionsAfter(
+      change: (item: IgcNavDrawerItemComponent) => unknown
+    ): Promise<string[]> {
+      return withTheme('indigo', async () => {
+        const drawer = await fixture<IgcNavDrawerComponent>(html`
+          <igc-nav-drawer position="relative" open>
+            <igc-nav-drawer-item>
+              <span slot="content">Item</span>
+            </igc-nav-drawer-item>
+          </igc-nav-drawer>
+        `);
+        const item = drawer.querySelector<IgcNavDrawerItemComponent>(
+          'igc-nav-drawer-item'
+        )!;
+        await painted();
+
+        await change(item);
+        await painted();
+        return transitionsIn(item);
+      });
+    }
+
+    it('fades an `active` change from code', async () => {
+      const transitions = await itemTransitionsAfter((item) => {
+        item.active = true;
+      });
+
+      expect(transitions).to.not.be.empty;
+    });
+
+    it('turns the item transitions off with reduced motion', async () => {
+      await emulateMedia({ reducedMotion: 'reduce' });
+
+      const transitions = await itemTransitionsAfter((item) =>
+        hoverWithMouse(item.renderRoot.querySelector('[part~="base"]')!)
+      );
+
+      expect(transitions).to.eql([]);
+    });
   });
 });

@@ -5,10 +5,7 @@ import { type CalendarDay, toCalendarDay } from '../date/model.js';
 import { getCenterPoint } from '../utils/dom.js';
 import { toKebabCase } from '../utils/strings.js';
 
-/**
- * Returns the shadow roots in `root`: its own for an element, and those of its
- * descendants, nested ones included.
- */
+/** The shadow roots of `root` and its descendants, nested ones included. */
 export function shadowRootsIn(root: Element | ShadowRoot): ShadowRoot[] {
   return [root, ...root.querySelectorAll('*')].flatMap((node) => {
     const shadow = (node as Element).shadowRoot;
@@ -181,15 +178,15 @@ export function suppressResizeObserverLoopError(): void {
 }
 
 /** Runs `fn` with `sheets` added to the document, then restores its style sheets. */
-export async function withDocumentSheets(
+export async function withDocumentSheets<R>(
   sheets: CSSStyleSheet[],
-  fn: () => unknown
-): Promise<void> {
+  fn: () => R | Promise<R>
+): Promise<R> {
   const adopted = [...document.adoptedStyleSheets];
   document.adoptedStyleSheets = [...adopted, ...sheets];
 
   try {
-    await fn();
+    return await fn();
   } finally {
     document.adoptedStyleSheets = adopted;
   }

@@ -2,10 +2,7 @@ import { ChipResourceStringsEN } from 'igniteui-i18n-core';
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-import {
-  addValueStateMotion,
-  markUserChange,
-} from '#animations/value-state.js';
+import { addValueStateMotion } from '#animations/value-state.js';
 import {
   ariaBindings,
   HOST_DISCLOSURE_ATTRIBUTES,
@@ -25,6 +22,7 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
+import { markUserChange } from '#internals/user-change.js';
 import { all } from '#themes/chip/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
