@@ -4254,6 +4254,30 @@ describe('Splitter', () => {
       }
     });
 
+    it('keeps the minimum sizes that fit beside the idle bar under a rotated ancestor in indigo', async () => {
+      await withDocumentSheets([indigo.styleSheet!], async () => {
+        try {
+          configureTheme('indigo');
+          splitter.parentElement!.style.rotate = '1deg';
+          splitter.style.setProperty('--ig-size', '3');
+          await elementUpdated(splitter);
+          await nextFrame();
+          finishAnimationsFor(splitter.shadowRoot!);
+
+          // 450px of minimums fit beside the 18px bar.
+          splitter.startMinSize = '225px';
+          splitter.endMinSize = '225px';
+          await elementUpdated(splitter);
+
+          const pane = getSplitterPart(splitter, START_PART);
+          expect(pane.style.minWidth).to.equal('225px');
+        } finally {
+          splitter.parentElement!.style.rotate = '';
+          configureTheme('bootstrap');
+        }
+      });
+    });
+
     it('keeps a 1px idle bar at every size and with an overridden size in indigo', async () => {
       await withDocumentSheets([indigo.styleSheet!], async () => {
         try {

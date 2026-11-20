@@ -538,10 +538,11 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 43. A size that makes the bar thicker drops the minimum sizes that no longer fit beside it.
 44. A fractional bar thickness counts in full against the minimum sizes.
 45. Under a scaled ancestor, the bar thickness counts at the scale of the container.
-46. In the Indigo theme, the idle bar is 1px thick at every size, and at large in the vertical orientation, also with
+46. In the Indigo theme, under a rotated ancestor, the minimum sizes that fit beside the idle bar stay applied.
+47. In the Indigo theme, the idle bar is 1px thick at every size, and at large in the vertical orientation, also with
     an overridden `--ig-splitter-size`.
-47. In the Indigo theme, the panes give up the full thickness of the bar while the idle bar is 1px.
-48. In the Indigo theme, the hovered bar has the thickness of the size.
+48. In the Indigo theme, the panes give up the full thickness of the bar while the idle bar is 1px.
+49. In the Indigo theme, the hovered bar has the thickness of the size.
 
 ## Accessibility
 

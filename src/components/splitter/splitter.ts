@@ -967,32 +967,43 @@ export default class IgcSplitterComponent extends I18nMixin(
    * between the reads would force a reflow for each read.
    */
   private _measure(): { container: number; bar: number } {
-    const axis = this._isHorizontal ? 'width' : 'height';
+    if (!this._measurement) {
+      const axis = this._isHorizontal ? 'width' : 'height';
+      const container = this._base?.getBoundingClientRect()[axis] ?? 0;
 
-    this._measurement ??= {
-      container: this._base ? this._base.getBoundingClientRect()[axis] : 0,
-      bar: this._measureBar(),
-    };
+      this._measurement = { container, bar: this._measureBar(container) };
+    }
 
     return this._measurement;
   }
 
-  /** The bar extent in the coordinates of the container, without the scale a theme sets on the bar. */
-  private _measureBar(): number {
+  /**
+   * The layout thickness of the bar, which no transform changes, at the scale
+   * of the measured `container`.
+   */
+  private _measureBar(container: number): number {
     const separator = this._separator;
+    const layoutContainer =
+      this._base?.[this._isHorizontal ? 'offsetWidth' : 'offsetHeight'];
 
-    if (!separator) {
+    if (!(separator && layoutContainer)) {
       return 0;
     }
 
-    const { a, d } = new DOMMatrixReadOnly(
-      getComputedStyle(separator).transform
-    );
-    const [extent, scale] = this._isHorizontal
-      ? [separator.getBoundingClientRect().width, a]
-      : [separator.getBoundingClientRect().height, d];
+    const style = getComputedStyle(separator);
+    const [extent, start, end] = this._isHorizontal
+      ? (['width', 'Left', 'Right'] as const)
+      : (['height', 'Top', 'Bottom'] as const);
+    // The bar is a content box.
+    const thickness = [
+      style[extent],
+      style[`padding${start}`],
+      style[`padding${end}`],
+      style[`border${start}Width`],
+      style[`border${end}Width`],
+    ].reduce((sum, value) => sum + (Number.parseFloat(value) || 0), 0);
 
-    return roundPrecise(extent / (scale || 1), 3);
+    return roundPrecise((thickness * container) / layoutContainer, 3);
   }
 
   /** The content box of the flex container - the basis for every percentage. */
