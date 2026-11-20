@@ -1,4 +1,8 @@
 @use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/animations/easings' as *;
+
+$indicator-duration: .12s;
+$indicator-delay: .06s;
 
 :host {
     --chip-padding-inline: #{pad-inline(rem(2px), rem(6px), rem(12px))};
@@ -128,7 +132,74 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: sizable(rem(3px), rem(6px), rem(8px));
+    gap: var(--chip-gap);
+}
+
+// The indicator column has no minimum width, so the prefix takes its width
+// from its content, as it does without the column.
+[part~='prefix'] {
+    min-width: max-content;
+}
+
+[data-indicator] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    overflow-x: clip;
+
+    // At full width, the column clips the content instead of shrinking it.
+    > slot {
+        display: flex;
+        align-items: center;
+        width: max-content;
+    }
+}
+
+// Only a selection by the user plays the entry, not a render, a move or a display change.
+[data-entering] {
+    @starting-style {
+        grid-template-columns: minmax(0, 0fr);
+        opacity: 0;
+    }
+}
+
+// The column carries the gap to the content that follows, so both open together.
+[data-gap] {
+    margin-inline-end: calc(var(--chip-gap) * -1);
+
+    > slot {
+        padding-inline-end: var(--chip-gap);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    :host [part~='base'] {
+        transition-property: color, background-color, border-color, box-shadow;
+        transition-duration: .2s;
+        transition-timing-function: $in-out-quad;
+    }
+
+    [data-indicator] {
+        transition:
+            grid-template-columns $indicator-duration $in-out-quad,
+            opacity $indicator-duration $in-out-quad $indicator-delay;
+    }
+
+    // The exit swaps the delays: it fades out first, then closes.
+    [data-leaving] {
+        transition-delay: $indicator-delay, 0s;
+    }
+}
+
+[data-leaving] {
+    grid-template-columns: minmax(0, 0fr);
+    opacity: 0;
+}
+
+:host [part~='base'][data-instant] {
+    &,
+    [data-indicator] {
+        transition: none;
+    }
 }
 
 ::slotted(*) {

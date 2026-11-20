@@ -1,10 +1,97 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  aTimeout,
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+} from '@open-wc/testing';
+import { resetMouse, sendMouse } from '@web/test-runner-commands';
 import { spy } from 'sinon';
+import { getCSSTransitions } from '#animations/css-transitions.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
-import { isFocused } from '#internals/testing/helpers.spec.js';
+import {
+  allowMotion,
+  finishAnimationsFor,
+  isFocused,
+  painted,
+  withDocumentSheets,
+} from '#internals/testing/helpers.spec.js';
+import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
+import { getCenterPoint } from '#internals/utils/dom.js';
+import { configureTheme } from '#theming/config.js';
+import { styles as indigo } from '../../styles/themes/light/indigo.css.js';
 import IgcChipComponent from './chip.js';
+
+const EASE_IN_OUT_QUAD = 'cubic-bezier(0.455, 0.03, 0.515, 0.955)';
+/** The progress of `EASE_IN_OUT_QUAD` at half of the duration. */
+const EASED_HALF = 0.515;
+const COLOR_PROPERTIES = [
+  'background-color',
+  'border-color',
+  'box-shadow',
+  'color',
+];
+
+/** The transitions of `element`, as `property duration delay`, sorted. */
+function transitionsOf(element: Element): string[] {
+  return getCSSTransitions(element)
+    .map(({ transitionProperty, effect }) => {
+      const { duration, delay } = effect!.getTiming();
+      return `${transitionProperty} ${duration} ${delay}`;
+    })
+    .sort();
+}
+
+function easingsOf(element: Element): Set<string> {
+  return new Set(
+    getCSSTransitions(element).map(({ effect }) => effect!.getTiming().easing!)
+  );
+}
+
+function getBase(chip: IgcChipComponent): HTMLElement {
+  return chip.renderRoot.querySelector('[part="base"]')!;
+}
+
+function getPrefix(chip: IgcChipComponent): HTMLElement {
+  return chip.renderRoot.querySelector('[part="prefix"]')!;
+}
+
+function getIndicator(chip: IgcChipComponent): HTMLElement {
+  return chip.renderRoot.querySelector('[data-indicator]')!;
+}
+
+function seekTransitions(element: Element, time: number): void {
+  for (const animation of element.getAnimations()) {
+    animation.pause();
+    animation.currentTime = time;
+  }
+}
+
+async function toggleByUser(chip: IgcChipComponent): Promise<void> {
+  simulateClick(chip.renderRoot.querySelector('[part="action"]')!);
+  await elementUpdated(chip);
+}
+
+const SLOTTED_SELECT = html`
+  <igc-chip selectable selected>
+    <span slot="select" style="display: inline-block; width: 40px"></span>
+    Chip
+  </igc-chip>
+`;
+
+/** Bootstrap and Material selected chips keep the colors of unselected ones. */
+async function withIndigo(fn: () => unknown): Promise<void> {
+  configureTheme('indigo');
+
+  try {
+    await withDocumentSheets([indigo.styleSheet!], fn);
+  } finally {
+    configureTheme('bootstrap');
+  }
+}
 
 describe('Chip', () => {
   const DIFF_OPTIONS = {
@@ -293,6 +380,413 @@ describe('Chip', () => {
 
       expect(slots).to.eql(['start', 'prefix', '', 'suffix', 'end']);
     });
+
+    it('hides the prefix of a selectable chip that is not selected', async () => {
+      const chip = await fixture<IgcChipComponent>(
+        html`<igc-chip selectable>Chip</igc-chip>`
+      );
+
+      expect(getPrefix(chip).hasAttribute('hidden')).to.be.true;
+      expect(getIndicator(chip)).to.be.null;
+    });
+
+    it('removes the selection indicator when the chip is no longer selectable', async () => {
+      const chip = await fixture<IgcChipComponent>(
+        html`<igc-chip selectable selected>Chip</igc-chip>`
+      );
+
+      expect(getIndicator(chip)).to.not.be.null;
+
+      chip.selectable = false;
+      await elementUpdated(chip);
+
+      expect(getIndicator(chip)).to.be.null;
+      expect(getPrefix(chip).hasAttribute('hidden')).to.be.true;
+    });
+
+    it('keeps the selection indicator at its width in a narrow chip', async () => {
+      const chip = await fixture<IgcChipComponent>(html`
+        <igc-chip selectable selected style="width: 90px">
+          A label that is too long for the chip
+        </igc-chip>
+      `);
+      const indicator = getIndicator(chip);
+      const icon = indicator.querySelector('igc-icon')!;
+
+      expect(indicator.getBoundingClientRect().width).to.equal(
+        icon.getBoundingClientRect().width
+      );
+    });
+
+    it('changes the selection of the user at once with reduced motion', async () => {
+      await withIndigo(async () => {
+        const chip = await fixture<IgcChipComponent>(
+          html`<igc-chip selectable>Chip</igc-chip>`
+        );
+        await painted();
+
+        await toggleByUser(chip);
+
+        expect(transitionsOf(getBase(chip))).to.eql([]);
+        expect(transitionsOf(getIndicator(chip))).to.eql([]);
+        expect(getIndicator(chip).getBoundingClientRect().width).to.be.above(0);
+
+        await toggleByUser(chip);
+        await painted();
+
+        expect(transitionsOf(getBase(chip))).to.eql([]);
+        expect(getIndicator(chip)).to.be.null;
+      });
+    });
+  });
+
+  describe('Selection animation', () => {
+    allowMotion();
+
+    it('does not animate a chip that renders selected', async () => {
+      const chip = await fixture<IgcChipComponent>(
+        html`<igc-chip selectable selected>Chip</igc-chip>`
+      );
+      await painted();
+
+      expect(transitionsOf(getBase(chip))).to.eql([]);
+      expect(transitionsOf(getIndicator(chip))).to.eql([]);
+    });
+
+    it('does not animate the indicator again when a selected chip moves or shows again', async () => {
+      const parent = await fixture<HTMLElement>(
+        html`<div><igc-chip selectable>Chip</igc-chip><span></span></div>`
+      );
+      const chip = parent.querySelector('igc-chip')!;
+      await painted();
+      await toggleByUser(chip);
+      finishAnimationsFor(chip.shadowRoot!);
+      await painted();
+
+      // A virtualized list moves a reused row to its other end.
+      parent.append(chip);
+      await painted();
+      expect(transitionsOf(getIndicator(chip)), 'move').to.eql([]);
+
+      // A closed dialog or a collapsed panel hides its content.
+      parent.style.display = 'none';
+      await painted();
+      parent.style.display = '';
+      await painted();
+      expect(transitionsOf(getIndicator(chip)), 'display').to.eql([]);
+    });
+
+    it('applies a change from code at once', async () => {
+      await withIndigo(async () => {
+        const chip = await fixture<IgcChipComponent>(
+          html`<igc-chip selectable>Chip</igc-chip>`
+        );
+        const base = getBase(chip);
+        await painted();
+
+        for (const change of [
+          () => (chip.selected = true),
+          () => (chip.variant = 'primary'),
+          () => (chip.outlined = true),
+          () => (chip.disabled = true),
+        ]) {
+          change();
+          await elementUpdated(chip);
+
+          expect(base.hasAttribute('data-instant')).to.be.true;
+          expect(transitionsOf(base)).to.eql([]);
+          expect(transitionsOf(getIndicator(chip))).to.eql([]);
+          await painted();
+        }
+
+        chip.selected = false;
+        await elementUpdated(chip);
+
+        expect(getIndicator(chip)).to.be.null;
+      });
+    });
+
+    it('shows and removes the indicator at once when selectable changes', async () => {
+      const chip = await fixture<IgcChipComponent>(
+        html`<igc-chip selectable selected>Chip</igc-chip>`
+      );
+      chip.focus();
+      await elementUpdated(chip);
+      await painted();
+
+      chip.selectable = false;
+      await elementUpdated(chip);
+
+      expect(getIndicator(chip)).to.be.null;
+      expect(transitionsOf(getBase(chip))).to.eql([]);
+
+      chip.focus();
+      await elementUpdated(chip);
+      await painted();
+
+      chip.selectable = true;
+      await elementUpdated(chip);
+
+      expect(transitionsOf(getIndicator(chip))).to.eql([]);
+    });
+
+    it('fades the first hover and focus after the render and after a change from code', async () => {
+      await withIndigo(async () => {
+        const chip = await fixture<IgcChipComponent>(
+          html`<igc-chip selectable>Chip</igc-chip>`
+        );
+        const base = getBase(chip);
+
+        async function expectFades(step: string): Promise<void> {
+          await painted();
+          const { x, y } = getCenterPoint(base);
+          await sendMouse({
+            type: 'move',
+            position: [Math.round(x), Math.round(y)],
+          });
+          expect(transitionsOf(base), `hover after the ${step}`).to.not.be
+            .empty;
+
+          await resetMouse();
+          finishAnimationsFor(chip.shadowRoot!);
+          await painted();
+
+          chip.focus();
+          expect(transitionsOf(base), `focus after the ${step}`).to.not.be
+            .empty;
+
+          chip.blur();
+          finishAnimationsFor(chip.shadowRoot!);
+        }
+
+        await expectFades('render');
+
+        chip.variant = 'primary';
+        await elementUpdated(chip);
+        expect(base.hasAttribute('data-instant')).to.be.true;
+        await expectFades('change from code');
+      });
+    });
+
+    it('keeps the animation of a user selection when code changes the chip during it', async () => {
+      await withIndigo(async () => {
+        const chip = await fixture<IgcChipComponent>(
+          html`<igc-chip selectable>Chip</igc-chip>`
+        );
+        const base = getBase(chip);
+        // A framework that renders in response to the event writes later.
+        chip.addEventListener('igcSelect', ({ detail }) => {
+          setTimeout(() => {
+            chip.variant = detail ? 'primary' : undefined;
+          });
+        });
+        await painted();
+
+        for (const selected of [true, false]) {
+          await toggleByUser(chip);
+          await aTimeout(0);
+          await elementUpdated(chip);
+
+          expect(chip.variant).to.equal(selected ? 'primary' : undefined);
+          expect(base.hasAttribute('data-instant')).to.be.false;
+          expect(transitionsOf(base)).to.not.be.empty;
+          expect(transitionsOf(getIndicator(chip))).to.not.be.empty;
+
+          finishAnimationsFor(chip.shadowRoot!);
+          await painted();
+        }
+
+        expect(getIndicator(chip)).to.be.null;
+      });
+    });
+
+    it('plays the exit when code deselects the chip during a selection by the user', async () => {
+      const chip = await fixture<IgcChipComponent>(
+        html`<igc-chip selectable>Chip</igc-chip>`
+      );
+      await painted();
+
+      await toggleByUser(chip);
+      const indicator = getIndicator(chip);
+      await painted();
+
+      // An application that limits the selection reverts it.
+      chip.selected = false;
+      await elementUpdated(chip);
+
+      expect(getIndicator(chip)).to.equal(indicator);
+      expect(indicator.hasAttribute('data-leaving')).to.be.true;
+      expect(transitionsOf(indicator)).to.not.be.empty;
+
+      finishAnimationsFor(chip.shadowRoot!);
+      await painted();
+
+      expect(getIndicator(chip)).to.be.null;
+    });
+
+    it('animates the colors of the chip on a selection by the user', async () => {
+      await withIndigo(async () => {
+        const chip = await fixture<IgcChipComponent>(
+          html`<igc-chip selectable>Chip</igc-chip>`
+        );
+        const base = getBase(chip);
+        await painted();
+
+        for (let i = 0; i < 2; i++) {
+          await toggleByUser(chip);
+
+          const transitions = transitionsOf(base);
+          expect(transitions, `toggle ${i}`).to.include(
+            'background-color 200 0'
+          );
+          for (const transition of transitions) {
+            const [property, duration, delay] = transition.split(' ');
+            expect(COLOR_PROPERTIES).to.include(property);
+            expect([duration, delay]).to.eql(['200', '0']);
+          }
+          expect(easingsOf(base)).to.eql(new Set([EASE_IN_OUT_QUAD]));
+
+          finishAnimationsFor(chip.shadowRoot!);
+          await painted();
+        }
+      });
+    });
+
+    it('opens the selection indicator to the width of its content, then fades it in', async () => {
+      for (const template of [
+        html`<igc-chip selectable selected>Chip</igc-chip>`,
+        SLOTTED_SELECT,
+      ]) {
+        const chip = await fixture<IgcChipComponent>(template);
+        chip.selected = false;
+        await elementUpdated(chip);
+        await painted();
+
+        await toggleByUser(chip);
+
+        const indicator = getIndicator(chip);
+        const content =
+          chip.querySelector('[slot="select"]') ??
+          indicator.querySelector('igc-icon')!;
+        expect(transitionsOf(indicator)).to.eql([
+          'grid-template-columns 120 0',
+          'opacity 120 60',
+        ]);
+        expect(easingsOf(indicator)).to.eql(new Set([EASE_IN_OUT_QUAD]));
+
+        // Half of the column duration.
+        seekTransitions(indicator, 60);
+        const width = content.getBoundingClientRect().width;
+        expect(indicator.getBoundingClientRect().width).to.be.closeTo(
+          width * EASED_HALF,
+          0.5
+        );
+
+        finishAnimationsFor(indicator);
+        expect(indicator.getBoundingClientRect().width).to.equal(width);
+      }
+    });
+
+    it('fades the selection indicator out, closes it, then removes it', async () => {
+      for (const template of [
+        html`<igc-chip selectable selected>Chip</igc-chip>`,
+        SLOTTED_SELECT,
+      ]) {
+        const chip = await fixture<IgcChipComponent>(template);
+        const indicator = getIndicator(chip);
+        await painted();
+
+        await toggleByUser(chip);
+
+        expect(getIndicator(chip)).to.equal(indicator);
+        expect(indicator.hasAttribute('data-leaving')).to.be.true;
+        expect(transitionsOf(indicator)).to.eql([
+          'grid-template-columns 120 60',
+          'opacity 120 0',
+        ]);
+
+        finishAnimationsFor(indicator);
+        await painted();
+
+        expect(getIndicator(chip)).to.be.null;
+        expect(getPrefix(chip).hasAttribute('hidden')).to.be.true;
+      }
+    });
+
+    it('opens and closes the gap to the next content together with the selection indicator', async () => {
+      for (const template of [
+        html`<igc-chip selectable><span slot="prefix">P</span>Chip</igc-chip>`,
+        html`<igc-chip selectable><span slot="start">S</span>Chip</igc-chip>`,
+      ]) {
+        const chip = await fixture<IgcChipComponent>(template);
+        await elementUpdated(chip);
+        await painted();
+
+        const prefix = chip.querySelector('[slot]')!;
+        const start = prefix.getBoundingClientRect().left;
+        const offset = () => prefix.getBoundingClientRect().left - start;
+        const gap = Number.parseFloat(
+          getComputedStyle(getPrefix(chip)).columnGap
+        );
+
+        await toggleByUser(chip);
+
+        const indicator = getIndicator(chip);
+        const icon = indicator.querySelector('igc-icon')!;
+        const open = icon.getBoundingClientRect().width + gap;
+
+        // Half of the column duration.
+        seekTransitions(indicator, 60);
+        expect(offset()).to.be.closeTo(open * EASED_HALF, 0.5);
+
+        finishAnimationsFor(indicator);
+        expect(offset()).to.be.closeTo(open, 0.5);
+
+        await toggleByUser(chip);
+
+        // Half of the column duration, after its delay.
+        seekTransitions(indicator, 120);
+        expect(offset()).to.be.closeTo(open * (1 - EASED_HALF), 0.5);
+
+        finishAnimationsFor(indicator);
+        await painted();
+        expect(offset()).to.equal(0);
+      }
+    });
+
+    it('reverses the exit when the chip is selected again', async () => {
+      const chip = await fixture<IgcChipComponent>(
+        html`<igc-chip selectable selected>Chip</igc-chip>`
+      );
+      const indicator = getIndicator(chip);
+      const width = indicator.getBoundingClientRect().width;
+
+      await toggleByUser(chip);
+
+      // Half of the column duration, after its delay.
+      seekTransitions(indicator, 120);
+      const leaving = indicator.getBoundingClientRect().width;
+      expect(leaving).to.be.closeTo(width * (1 - EASED_HALF), 0.5);
+
+      await toggleByUser(chip);
+
+      expect(
+        chip.renderRoot.querySelectorAll('[data-indicator]')
+      ).to.have.length(1);
+      expect(getIndicator(chip)).to.equal(indicator);
+      expect(indicator.hasAttribute('data-leaving')).to.be.false;
+
+      seekTransitions(indicator, 0);
+      expect(indicator.getBoundingClientRect().width).to.be.closeTo(
+        leaving,
+        0.5
+      );
+
+      finishAnimationsFor(indicator);
+      await painted();
+      expect(getIndicator(chip)).to.equal(indicator);
+      expect(indicator.getBoundingClientRect().width).to.equal(width);
+    });
   });
 
   describe('Events', () => {
@@ -419,4 +913,8 @@ describe('Chip', () => {
   });
 
   runFocusBeforeRenderTests(html`<igc-chip>Label</igc-chip>`);
+
+  runHiddenAncestorTests(html`
+    <igc-chip selectable selected removable outlined>Chip</igc-chip>
+  `);
 });
