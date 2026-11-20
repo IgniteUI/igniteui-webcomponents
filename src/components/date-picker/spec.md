@@ -79,6 +79,7 @@
 |      17 | 2026-11-18 | A clear is reported on blur also after an open and a close; one commit session holds the commit rules of both pickers |
 |      18 | 2026-11-18 | The inner editor shows only the invalid state of the picker, and reports the validity of the picker |
 |      19 | 2026-11-18 | A clear is reported when the focus leaves the picker; a value write brings its month into view unless `activeDate` is set; an open shows the value in the first month; a render no longer moves the calendar back to `activeDate` |
+|      20 | 2026-11-20 | A date that the user picks animates the input; a value from code shows at once |
 
 ## Overview
 
@@ -234,6 +235,10 @@ As a developer, I expect to be able to:
 - **Validation**: the invalid state is applied after the component has been interacted with, and the matching
   validation message slot replaces the helper text. Opening the picker through the calendar icon does not, by
   itself, mark a required picker invalid.
+
+**Motion.** A date that the user picks or types animates the input, such as the Material label that moves up. A value
+from code shows at once, also a value that an `igcChange` handler sets. The [date-time
+input](../date-time-input/spec.md) suite covers the motion of the input.
 
 ### Developer experience
 

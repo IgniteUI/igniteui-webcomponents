@@ -35,6 +35,7 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import { runValueStateMotionTests } from '#internals/testing/value-state.spec.js';
 import { formatString } from '#internals/utils/strings.js';
 import { DatePart } from './date-part.js';
 import IgcDateTimeInputComponent from './date-time-input.js';
@@ -1778,6 +1779,23 @@ describe('Date Time Input component', () => {
   runFocusBeforeRenderTests(
     html`<igc-date-time-input label="Label"></igc-date-time-input>`
   );
+
+  runValueStateMotionTests<IgcDateTimeInputComponent>({
+    template: html`<igc-date-time-input label="Label"></igc-date-time-input>`,
+    changedTemplate: html`
+      <igc-date-time-input
+        label="Label"
+        .value=${new Date(2026, 10, 20)}
+      ></igc-date-time-input>
+    `,
+    changeFromCode: (control) => {
+      control.value = new Date(2026, 10, 20);
+    },
+    changeByUser: (control) => {
+      control.focus();
+      simulateKeyboard(control.renderRoot.querySelector('input')!, arrowUp);
+    },
+  });
 });
 
 function checkDates(a: Date, b: Date) {

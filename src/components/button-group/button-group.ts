@@ -5,6 +5,7 @@ import {
   type TemplateResult,
 } from 'lit';
 import { property } from 'lit/decorators.js';
+import { markUserChange } from '#animations/value-state.js';
 import {
   type ButtonGroupContext,
   buttonGroupContext,
@@ -356,6 +357,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<IgcButton
     button: IgcToggleButtonComponent,
     selected: boolean
   ): void {
+    markUserChange(button);
     button.selected = selected;
     this.emitEvent(selected ? 'igcSelect' : 'igcDeselect', {
       detail: button.value,

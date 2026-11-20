@@ -5,6 +5,12 @@
     align-items: center;
 }
 
+// The label and the container are siblings in some themes.
+@include value-state-transitions(
+    $descendants: ('*', '*::before', '*::after'),
+    $on-host: true
+);
+
 :host {
     position: relative;
     display: block;

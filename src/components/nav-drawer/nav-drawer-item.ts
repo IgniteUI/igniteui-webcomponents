@@ -1,5 +1,6 @@
 import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { addValueStateMotion } from '#animations/value-state.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
@@ -58,6 +59,10 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   constructor() {
     super();
     addThemingController(this, all);
+    addValueStateMotion(this, {
+      target: () => this.renderRoot.querySelector('[part~="base"]'),
+      watch: () => [this.active, this.disabled],
+    });
   }
 
   protected _handleSlotChange(): void {

@@ -21,12 +21,15 @@ import {
   isUnderPageLayer,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
+import { hoverWithMouse } from '#internals/testing/helpers.spec.js';
 import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
+import { runValueStateMotionTests } from '#internals/testing/value-state.spec.js';
 import { isPopoverOpen } from '#internals/utils/dom.js';
 import { configureTheme } from '#theming/config.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcIconComponent from '../icon/icon.js';
+import type IgcNavDrawerItemComponent from './nav-drawer-item.js';
 import IgcNavDrawerComponent from './nav-drawer.js';
 
 describe('Navigation Drawer', () => {
@@ -950,4 +953,30 @@ describe('Navigation Drawer', () => {
       </igc-nav-drawer>
     `);
   }
+
+  // A hover is the user interaction. The Material item does not fade its
+  // active background, and the drawer gives the item its theme colors.
+  runValueStateMotionTests<IgcNavDrawerItemComponent>({
+    template: html`
+      <igc-nav-drawer position="relative" open>
+        <igc-nav-drawer-item>
+          <span slot="content">Item</span>
+        </igc-nav-drawer-item>
+      </igc-nav-drawer>
+    `,
+    changedTemplate: html`
+      <igc-nav-drawer position="relative" open>
+        <igc-nav-drawer-item active>
+          <span slot="content">Item</span>
+        </igc-nav-drawer-item>
+      </igc-nav-drawer>
+    `,
+    control: (drawer) => drawer.querySelector('igc-nav-drawer-item')!,
+    changeFromCode: (item) => {
+      item.active = true;
+    },
+    changeByUser: (item) =>
+      hoverWithMouse(item.renderRoot.querySelector('[part~="base"]')!),
+    theme: 'indigo',
+  });
 });

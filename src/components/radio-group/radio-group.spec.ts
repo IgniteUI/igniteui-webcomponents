@@ -16,8 +16,19 @@ import {
   arrowUp,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { isFocused } from '#internals/testing/helpers.spec.js';
-import { simulateKeyboard } from '#internals/testing/simulate.spec.js';
+import {
+  allowMotion,
+  isFocused,
+  painted,
+} from '#internals/testing/helpers.spec.js';
+import {
+  simulateClick,
+  simulateKeyboard,
+} from '#internals/testing/simulate.spec.js';
+import {
+  transitionsIn,
+  withTheme,
+} from '#internals/testing/value-state.spec.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import IgcRadioComponent from '../radio/radio.js';
 import IgcRadioGroupComponent from './radio-group.js';
@@ -721,4 +732,59 @@ describe('Radio Group Component', () => {
       <igc-radio-group name="fruit" value="apple">${radios}</igc-radio-group>
     `;
   }
+
+  describe('Value state motion', () => {
+    allowMotion();
+
+    async function createGroup(): Promise<IgcRadioComponent[]> {
+      group = await fixture<IgcRadioGroupComponent>(html`
+        <igc-radio-group name="letters" value="a">
+          <igc-radio value="a">A</igc-radio>
+          <igc-radio value="b">B</igc-radio>
+        </igc-radio-group>
+      `);
+      await painted();
+      return Array.from(group.querySelectorAll(IgcRadioComponent.tagName));
+    }
+
+    it('animates the radio that the group unchecks for a click', async () => {
+      await withTheme('material', async () => {
+        const [a, b] = await createGroup();
+
+        simulateClick(b.renderRoot.querySelector('input')!);
+        await painted();
+
+        expect(b.checked).to.be.true;
+        expect(transitionsIn(a)).to.not.be.empty;
+        expect(transitionsIn(b)).to.not.be.empty;
+      });
+    });
+
+    it('animates both radios of an arrow key', async () => {
+      await withTheme('material', async () => {
+        const [a, b] = await createGroup();
+        a.focus();
+
+        simulateKeyboard(a, arrowDown);
+        await painted();
+
+        expect(b.checked).to.be.true;
+        expect(transitionsIn(a)).to.not.be.empty;
+        expect(transitionsIn(b)).to.not.be.empty;
+      });
+    });
+
+    it('shows a value from code at once in both radios', async () => {
+      await withTheme('material', async () => {
+        const [a, b] = await createGroup();
+
+        group.value = 'b';
+        await painted();
+
+        expect(b.checked).to.be.true;
+        expect(transitionsIn(a)).to.eql([]);
+        expect(transitionsIn(b)).to.eql([]);
+      });
+    });
+  });
 });

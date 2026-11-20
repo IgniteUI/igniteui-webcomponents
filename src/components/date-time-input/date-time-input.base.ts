@@ -1,5 +1,6 @@
 import { LitElement, type PropertyValues, type TemplateResult } from 'lit';
 import { eventOptions, property, query } from 'lit/decorators.js';
+import { addFieldValueStateMotion } from '#animations/value-state.js';
 import {
   addAriaTarget,
   HOST_COMBOBOX_ATTRIBUTES,
@@ -250,6 +251,9 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   constructor() {
     super();
+
+    // The mask also shows on focus, so the filled state is not only the value.
+    addFieldValueStateMotion(this, () => this.value);
 
     this._keyBindings
       .set([ctrlKey, ';'], this._setCurrentDateTime)

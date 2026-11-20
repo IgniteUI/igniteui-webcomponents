@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 
 import { property } from 'lit/decorators.js';
+import { addValueStateMotion } from '#animations/value-state.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { all } from '#themes/list/themes/item.js';
@@ -54,6 +55,8 @@ export default class IgcListItemComponent extends LitElement {
         role: 'listitem',
       },
     });
+
+    addValueStateMotion(this, { watch: () => [this.selected] });
   }
 
   protected override render() {

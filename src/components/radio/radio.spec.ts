@@ -14,6 +14,7 @@ import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
 } from '#internals/testing/validity-helpers.spec.js';
+import { runValueStateMotionTests } from '#internals/testing/value-state.spec.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import { preventDefault } from '#internals/utils/events.js';
 import IgcRadioGroupComponent from '../radio-group/radio-group.js';
@@ -939,4 +940,14 @@ describe('Radio Component', () => {
   `);
 
   runFocusBeforeRenderTests(html`<igc-radio>Label</igc-radio>`);
+
+  runValueStateMotionTests<IgcRadioComponent>({
+    template: html`<igc-radio>Label</igc-radio>`,
+    changedTemplate: html`<igc-radio checked>Label</igc-radio>`,
+    changeFromCode: (radio) => {
+      radio.checked = true;
+    },
+    changeByUser: (radio) =>
+      simulateClick(radio.renderRoot.querySelector('input')!),
+  });
 });

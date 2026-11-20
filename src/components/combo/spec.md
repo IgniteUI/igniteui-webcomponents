@@ -61,6 +61,7 @@
     - [Form integration tests](#form-integration-tests)
     - [defaultValue](#defaultvalue)
     - [Validation message slots](#validation-message-slots)
+    - [Value state motion](#value-state-motion)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -106,6 +107,7 @@
 |      33 | 2026-11-18 | A closed list has no active option, also after `open` changes from code or an app cancels the opening; a change of `showSelectAll` or `groupSelection` keeps the active option on its item; in single selection, the first match is active in the update of the typed text |
 |      34 | 2026-11-19 | A change of `name` moves the submitted values to the new name at once |
 |      35 | 2026-11-19 | Test scenarios: in single selection, a pick or a clear that the app cancels after the user types shows the kept selection again, and the clear button clears a value that has no record. The selection model keeps `value` in sync; the behavior does not change |
+|      36 | 2026-11-20 | A selection by the user animates the option checkboxes; a value from code, a new `data` and a reused row show at once |
 
 ## Overview
 
@@ -194,6 +196,11 @@ The anchor looks like an input. It shows the selection, a clear icon and a toggl
 options under their group headers. In multiple selection, each option has a checkbox, and a search input above the
 list filters the options. In single selection, the main input filters the options. When no option matches, the list
 shows the empty message.
+
+**Motion of the options.** In multiple selection, a selection that the user makes with a click, the keyboard or the
+clear icon animates the checkboxes of the options that it changes, also for the select-all option and a group header. A
+`value`, `select()` or `deselect()` call from the app, a new `data` and a row that the list reuses while it scrolls show
+at once.
 
 ### Developer experience
 
@@ -1055,6 +1062,14 @@ The form-associated mixin gives the focus after the form checks and the rules of
 `runValidationContainerTests` makes these tests.
 
 59. The `value-missing`, `custom-error` and `invalid` slots show for their state.
+
+### Value state motion
+
+In the Material theme.
+
+60. A click on an option starts transitions in its checkbox.
+61. A click on the clear icon starts transitions in the checkboxes of the options that it clears.
+62. A `value` from code starts no transitions in the checkbox of the option.
 
 ## Assumptions and limitations
 

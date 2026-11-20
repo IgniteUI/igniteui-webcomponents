@@ -286,6 +286,7 @@ Before you write lifecycle code, look for a controller that already does it:
 | `addContextProvider` / `addAsyncContextConsumer`              | `#internals/controllers/context-provider.js`, `async-consumer.js` | Sharing state between a parent and its children through Lit context |
 | `createGroupRegistry`                                         | `#internals/controllers/group.js`           | Grouping peers by key, such as radios by `name`                |
 | `addI18nController`                                           | `#internals/i18n/i18n-controller.js`        | Localized resource strings                                     |
+| `addValueStateMotion` / `markUserChange`                      | `#animations/value-state.js`                | Showing a change of value state from code at once, and animating only a change by the user |
 
 For pointer resizing and dragging, use the `resizable()` and `draggable()` directives from
 `#internals/directives/`.
@@ -631,6 +632,7 @@ Each component has tests in `[component].spec.ts`. They cover:
   | `validity-helpers.spec.js` | Validity assertions and `runValidationContainerTests`. Await it.               |
   | `invoker-commands.spec.js` | `runInvokerCommandsTests`                                                      |
   | `helpers.spec.js`          | Animation, focus, scroll and style helpers, and `axeReflectedRelationsOptions` |
+  | `value-state.spec.js`      | `runValueStateMotionTests`, `transitionsIn` and `withTheme`                    |
   | `fast-check-setup.spec.js` | `fc` with the seed, `SLOW_PROPERTY_RUNS`, `orderedPair` and `withFixture`      |
   | `date-arbitraries.spec.js` | Date arbitraries, wall clocks and `assumeWallClock` for date properties        |
 

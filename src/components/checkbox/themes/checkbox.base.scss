@@ -13,6 +13,16 @@ input[type='checkbox'] {
     @include hide-default();
 }
 
+@include value-state-transitions(
+    $descendants: (
+        "[part~='control']",
+        "[part~='control']::before",
+        "[part~='control']::after",
+        "[part~='indicator']",
+        "[part~='label']",
+    )
+);
+
 $mark-length: 24;
 
 [part~='control'] {
@@ -33,9 +43,12 @@ $mark-length: 24;
         transform: translate(-50%, -50%);
         width: var(--size);
         height: var(--size);
-        transition-property: background, border-color, box-shadow;
-        transition-duration: .15s;
-        transition-timing-function: ease-in;
+
+        @include with-motion() {
+            transition-property: background, border-color, box-shadow;
+            transition-duration: .15s;
+            transition-timing-function: ease-in;
+        }
     }
 }
 
@@ -44,7 +57,10 @@ $mark-length: 24;
     cursor: pointer;
     user-select: none;
     overflow-wrap: break-all;
-    transition: color .2s ease-in-out;
+
+    @include with-motion() {
+        transition: color .2s ease-in-out;
+    }
 }
 
 [part~='base'] {
@@ -82,9 +98,12 @@ label {
 }
 
 [part='indicator checked'] {
-    transition-property: opacity, stroke, stroke-dashoffset, transform;
-    transition-duration: .2s;
-    transition-timing-function: ease-out;
+    @include with-motion() {
+        transition-property: opacity, stroke, stroke-dashoffset, transform;
+        transition-duration: .2s;
+        transition-timing-function: ease-out;
+    }
+
     stroke-dashoffset: 0;
     opacity: 1;
 }

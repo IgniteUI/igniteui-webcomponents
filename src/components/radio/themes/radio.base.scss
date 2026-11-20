@@ -16,6 +16,14 @@ input[type='radio'] {
     @include hide-default();
 }
 
+@include value-state-transitions(
+    $descendants: (
+        "[part~='control']",
+        "[part~='control']::before",
+        "[part~='control']::after",
+    )
+);
+
 // In a horizontal radio group the host is `display: contents`, so the messages are items of the group grid.
 // They come after all the radios, each in a row of its own.
 igc-validator {
@@ -27,7 +35,10 @@ igc-validator {
     display: flex;
     align-items: center;
     cursor: pointer;
-    transition: color .15s ease-in;
+
+    @include with-motion() {
+        transition: color .15s ease-in;
+    }
 }
 
 [part~='label'] {
@@ -43,7 +54,10 @@ igc-validator {
     height: calc(var(--size) * 2);
     min-width: calc(var(--size) * 2);
     user-select: none;
-    transition: background .15s ease-in;
+
+    @include with-motion() {
+        transition: background .15s ease-in;
+    }
 
     // Not on the host, which is `display: contents` in a horizontal group.
     isolation: isolate;
@@ -57,9 +71,12 @@ igc-validator {
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
-        transition-property: background, border-color, border-width, transform;
-        transition-duration: .15s;
-        transition-timing-function: ease-in;
+
+        @include with-motion() {
+            transition-property: background, border-color, border-width, transform;
+            transition-duration: .15s;
+            transition-timing-function: ease-in;
+        }
     }
 
     &::before {

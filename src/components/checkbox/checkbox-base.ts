@@ -1,5 +1,6 @@
 import { LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
+import { addValueStateMotion } from '#animations/value-state.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import {
   addSlotController,
@@ -88,6 +89,19 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
    */
   @property({ reflect: true, attribute: 'label-position' })
   public labelPosition: ToggleLabelPosition = 'after';
+
+  constructor() {
+    super();
+    addValueStateMotion(this, {
+      target: () => this.renderRoot.querySelector('[part~="base"]'),
+      watch: () => this._valueState(),
+    });
+  }
+
+  /** The values whose change restyles the control. */
+  protected _valueState(): unknown[] {
+    return [this.checked, this.disabled];
+  }
 
   /** Simulates a click on the control. */
   public override click(): void {

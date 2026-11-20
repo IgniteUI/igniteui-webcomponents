@@ -5,6 +5,17 @@ import { type CalendarDay, toCalendarDay } from '../date/model.js';
 import { getCenterPoint } from '../utils/dom.js';
 import { toKebabCase } from '../utils/strings.js';
 
+/**
+ * Returns the shadow roots in `root`: its own for an element, and those of its
+ * descendants, nested ones included.
+ */
+export function shadowRootsIn(root: Element | ShadowRoot): ShadowRoot[] {
+  return [root, ...root.querySelectorAll('*')].flatMap((node) => {
+    const shadow = (node as Element).shadowRoot;
+    return shadow ? [shadow, ...shadowRootsIn(shadow)] : [];
+  });
+}
+
 /** Returns the animations of the element and, optionally, its descendants. */
 export function getAnimationsFor(
   element: ShadowRoot | Element,
@@ -72,8 +83,17 @@ export const viewTransitionComplete = painted;
  */
 export async function clickWithMouse(element: Element): Promise<void> {
   element.scrollIntoView({ block: 'nearest' });
+  await sendMouse({ type: 'click', position: centerOf(element) });
+}
+
+/** Moves the real mouse over the center of `element`. */
+export async function hoverWithMouse(element: Element): Promise<void> {
+  await sendMouse({ type: 'move', position: centerOf(element) });
+}
+
+function centerOf(element: Element): [number, number] {
   const { x, y } = getCenterPoint(element);
-  await sendMouse({ type: 'click', position: [Math.round(x), Math.round(y)] });
+  return [Math.round(x), Math.round(y)];
 }
 
 /** Removes the fragment and the scroll that a link to an element left. */

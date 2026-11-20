@@ -18,12 +18,16 @@ import {
   cities,
   comboStable,
   expectActiveOption,
+  getComboDOM,
   openComboPopover,
   items,
 } from '#internals/testing/combo.spec.js';
 import {
+  allowMotion,
   axeReflectedRelationsOptions,
+  finishAnimationsFor,
   isFocused,
+  painted,
   suppressResizeObserverLoopError,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
@@ -32,8 +36,13 @@ import {
   simulateComposingKeys,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
+import {
+  transitionsIn,
+  withTheme,
+} from '#internals/testing/value-state.spec.js';
 import { configureTheme } from '#theming/config.js';
 import type IgcButtonComponent from '../button/button.js';
+import type IgcCheckboxComponent from '../checkbox/checkbox.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcVirtualScrollComponent from '../virtualization/virtualization.js';
 import type IgcComboItemComponent from './combo-item.js';
@@ -1375,6 +1384,76 @@ describe('Combo', () => {
       expect(combo.pendingValue).to.eql(['BG02']);
       expect(changes().map(({ type }) => type)).to.eql(['selection']);
       expect(actions()).to.be.empty;
+    });
+  });
+
+  describe('Value state motion', () => {
+    allowMotion();
+
+    const option = () =>
+      list.querySelector<IgcComboItemComponent>(
+        '[part~="item"]:not([part~="select-all"])'
+      )!;
+    const checkboxOf = (item: IgcComboItemComponent) =>
+      item.renderRoot.querySelector<IgcCheckboxComponent>('igc-checkbox')!;
+
+    async function openCombo(): Promise<void> {
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>`
+      );
+      list = getComboDOM(() => combo).list;
+      await openComboPopover(combo);
+      await painted();
+    }
+
+    it('animates the checkbox of an option that the user selects', async () => {
+      await withTheme('material', async () => {
+        await openCombo();
+        const item = option();
+
+        simulateClick(item);
+        await painted();
+
+        expect(item.selected).to.be.true;
+        expect(transitionsIn(checkboxOf(item))).to.not.be.empty;
+      });
+    });
+
+    it('animates the checkboxes of the options that the clear icon clears', async () => {
+      await withTheme('material', async () => {
+        await openCombo();
+        const item = option();
+        simulateClick(item);
+        await painted();
+        // The clear must not join the transitions of the selection.
+        finishAnimationsFor(checkboxOf(item).shadowRoot!);
+        await painted();
+
+        simulateClick(combo.renderRoot.querySelector('[part="clear-icon"]')!);
+        await painted();
+
+        expect(item.selected).to.be.false;
+        expect(transitionsIn(checkboxOf(item))).to.not.be.empty;
+      });
+    });
+
+    it('shows a value from code at once in the options', async () => {
+      await withTheme('material', async () => {
+        await openCombo();
+
+        combo.value = [cities[0].id];
+        await comboStable(combo);
+        await painted();
+
+        const item = list.querySelector<IgcComboItemComponent>(
+          '[part~="item"][selected]'
+        )!;
+        expect(transitionsIn(checkboxOf(item))).to.eql([]);
+      });
     });
   });
 });

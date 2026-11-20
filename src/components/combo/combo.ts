@@ -4,6 +4,7 @@ import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { markUserChange } from '#animations/value-state.js';
 import { IgcBaseComboBoxComponent } from '#internals/bases/combo-box.js';
 import { addAriaProjector } from '#internals/controllers/aria-projection.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
@@ -939,6 +940,9 @@ export default class IgcComboComponent<
       return false;
     }
 
+    // Each caller is a user action, so the checkboxes of the options animate.
+    markUserChange(this);
+
     const change = this._selection.proposeRecords(
       items,
       toggle ? 'toggle' : 'selection'
@@ -950,7 +954,10 @@ export default class IgcComboComponent<
     return true;
   }
 
+  /** The clear icon and its key, so the checkboxes and the label animate. */
   private _clearSelection(): void {
+    markUserChange(this);
+
     if (this.singleSelect) {
       this._clearSearchTerm(true);
 

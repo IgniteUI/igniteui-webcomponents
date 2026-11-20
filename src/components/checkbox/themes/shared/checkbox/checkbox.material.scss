@@ -27,7 +27,10 @@ $theme: $material;
     // We expose that css variable to override the padding of
     // the checkbox control in components that we nest it in like List and Tree.
     padding: pad(var(--control-padding, rem(20px)));
-    transition: background .15s ease-in;
+
+    @include with-motion() {
+        transition: background .15s ease-in;
+    }
 
     &::after {
         border-radius: var-get($theme, 'border-radius');

@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `dot-scale` sets the size of the data modules, from 0.7 to 1 of their cell, to leave a gap between them. The corners keep their full size.
 
 ### Changed
+- #### Button group, Checkbox, Combo, Date time input, File input, Input, List, Mask input, Navigation drawer, Radio, Switch, Textarea, Tree
+  - Only a change by the user animates a checkbox, a switch, a radio, a toggle button, the label of an input or a textarea (also the inputs of the pickers, the select and the combo), a list item and a navigation drawer item, as for the chip. A change from code and the first render show at once, so a virtualized list does not animate them while it scrolls. A change that a component makes for a user action animates too: the radio that a group unchecks, the toggle button that a single selection deselects, the items of a tree cascade and the options of a combo. A change from app code, also in an event handler, such as a "Select all" checkbox, shows at once. Hover, focus and the invalid state still fade. With `prefers-reduced-motion: reduce`, these controls have no transitions of their own, and a transition that the app adds to a part still applies.
+  - The Material switch moves its thumb with a transition only. Before, it also played a keyframe animation, also on the first render.
 - #### Chip
   - A selection change by the user animates the chip, as in Ignite UI for Angular. The colors fade, and the selection indicator opens and fades in, or fades out and closes. A change from code and the first render show at once, so a virtualized list does not animate its chips while it scrolls. With `prefers-reduced-motion: reduce`, the chip does not animate. [#2621](https://github.com/IgniteUI/igniteui-webcomponents/issues/2621)
 - #### Combo

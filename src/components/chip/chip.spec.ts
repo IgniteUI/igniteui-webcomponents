@@ -15,14 +15,12 @@ import {
   finishAnimationsFor,
   isFocused,
   painted,
-  withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
 import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
+import { withTheme } from '#internals/testing/value-state.spec.js';
 import { getCenterPoint } from '#internals/utils/dom.js';
-import { configureTheme } from '#theming/config.js';
-import { styles as indigo } from '../../styles/themes/light/indigo.css.js';
 import IgcChipComponent from './chip.js';
 
 const EASE_IN_OUT_QUAD = 'cubic-bezier(0.455, 0.03, 0.515, 0.955)';
@@ -81,17 +79,6 @@ const SLOTTED_SELECT = html`
     Chip
   </igc-chip>
 `;
-
-/** Bootstrap and Material selected chips keep the colors of unselected ones. */
-async function withIndigo(fn: () => unknown): Promise<void> {
-  configureTheme('indigo');
-
-  try {
-    await withDocumentSheets([indigo.styleSheet!], fn);
-  } finally {
-    configureTheme('bootstrap');
-  }
-}
 
 describe('Chip', () => {
   const DIFF_OPTIONS = {
@@ -419,7 +406,7 @@ describe('Chip', () => {
     });
 
     it('changes the selection of the user at once with reduced motion', async () => {
-      await withIndigo(async () => {
+      await withTheme('indigo', async () => {
         const chip = await fixture<IgcChipComponent>(
           html`<igc-chip selectable>Chip</igc-chip>`
         );
@@ -477,7 +464,7 @@ describe('Chip', () => {
     });
 
     it('applies a change from code at once', async () => {
-      await withIndigo(async () => {
+      await withTheme('indigo', async () => {
         const chip = await fixture<IgcChipComponent>(
           html`<igc-chip selectable>Chip</igc-chip>`
         );
@@ -531,7 +518,7 @@ describe('Chip', () => {
     });
 
     it('fades the first hover and focus after the render and after a change from code', async () => {
-      await withIndigo(async () => {
+      await withTheme('indigo', async () => {
         const chip = await fixture<IgcChipComponent>(
           html`<igc-chip selectable>Chip</igc-chip>`
         );
@@ -569,7 +556,7 @@ describe('Chip', () => {
     });
 
     it('keeps the animation of a user selection when code changes the chip during it', async () => {
-      await withIndigo(async () => {
+      await withTheme('indigo', async () => {
         const chip = await fixture<IgcChipComponent>(
           html`<igc-chip selectable>Chip</igc-chip>`
         );
@@ -625,7 +612,7 @@ describe('Chip', () => {
     });
 
     it('animates the colors of the chip on a selection by the user', async () => {
-      await withIndigo(async () => {
+      await withTheme('indigo', async () => {
         const chip = await fixture<IgcChipComponent>(
           html`<igc-chip selectable>Chip</igc-chip>`
         );

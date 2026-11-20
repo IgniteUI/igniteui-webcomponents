@@ -63,6 +63,7 @@
 |      15 | 2026-11-18 | A change of the user marks the control touched, so a change that fails validation shows the invalid styles at once |
 |      16 | 2026-11-18 | A value set from code is not a user change, also while focus is inside, so no `igcChange` reports it |
 |      17 | 2026-11-18 | In input mode, the text input shows only the invalid state of the picker, and reports the validity of the picker |
+|      18 | 2026-11-20 | In input mode, a color that the user picks animates the input; a value from code shows at once |
 
 ## Overview
 
@@ -167,6 +168,10 @@ the invalid styles at once. When focus leaves the component entirely, it compare
 color - the color of the last `igcChange` or the last value set from code, in any format - and emits `igcChange`
 exactly once if it changed. Dragging the canvas or the sliders, or typing, never emits `igcChange` by itself. A value set from code is
 not a user change, so it emits no `igcChange`, also while focus is inside the component.
+
+**Motion.** In input mode, a color that the user picks animates the input, such as the Material label that moves up. A
+value from code shows at once, also a value that an `igcChange` handler sets. The [input](../input/spec.md) suite covers
+the motion of the input.
 
 ### Developer experience
 

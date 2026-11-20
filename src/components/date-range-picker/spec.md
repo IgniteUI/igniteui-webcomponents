@@ -82,6 +82,7 @@
 |      24 | 2026-11-18 | An empty range is `null`; reversed ends are swapped on every write; the ends keep their time; a clear is reported when the focus leaves the picker; a value write brings the range into view unless `activeDate` is set, and a render no longer moves the calendar back to `activeDate` |
 |      25 | 2026-11-19 | In single input mode, typing or a spin brings the end at the caret into view, as the focused editor does with two inputs; the input and change events of slotted content no longer change the value; an editor that a layout change removes commits nothing; add the range editors suite; the scenarios of both layouts run once per layout in the common suite and in one form suite |
 |      26 | 2026-11-19 | A change of `name` renames the submitted `-start` and `-end` entries at once |
+|      27 | 2026-11-20 | A range that the user picks animates the inputs; a value from code shows at once |
 
 ## Overview
 
@@ -197,6 +198,10 @@ As a developer, I expect to be able to:
   type reads the typed text of its end and keeps the text of the other end, also a `stepUp` or `stepDown` from code,
   which commits the value at once. An empty range spins to today at both
   ends, and an empty end to today, both without a step.
+
+**Motion.** A range that the user picks or types animates the inputs, such as the Material label that moves up. A value
+from code shows at once, also a value that an `igcChange` handler sets. The [date-time
+input](../date-time-input/spec.md) suite covers the motion of the inputs.
 
 ### Developer experience
 

@@ -5,6 +5,7 @@ import {
   type TemplateResult,
 } from 'lit';
 import { property, query } from 'lit/decorators.js';
+import { addValueStateMotion } from '#animations/value-state.js';
 import { buttonGroupContext } from '#internals/context.js';
 import {
   ariaBindings,
@@ -84,6 +85,14 @@ export default class IgcToggleButtonComponent extends HostAriaMixin(
   constructor() {
     super();
     addThemingController(this, all);
+    addValueStateMotion(this, {
+      target: () => this._nativeButton,
+      watch: () => [
+        this.selected,
+        this.disabled,
+        this._context.value?.instance.disabled,
+      ],
+    });
   }
 
   public override disconnectedCallback(): void {

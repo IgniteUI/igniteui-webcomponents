@@ -13,6 +13,10 @@ input[type='checkbox'] {
     @include hide-default();
 }
 
+@include value-state-transitions(
+    $descendants: ("[part~='control']", "[part~='thumb']", "[part~='label']")
+);
+
 [part~='base'] {
     display: flex;
     flex-flow: row nowrap;
@@ -30,20 +34,15 @@ input[type='checkbox'] {
 
 [part~='thumb'] {
     position: relative;
-    animation-duration: .2s;
-    animation-fill-mode: none;
 }
 
 [part~='control'],
 [part~='thumb'] {
-    transition-property: background, border-color, box-shadow, margin;
-    transition-duration: .2s;
-    transition-timing-function: ease-in-out;
-}
-
-[part~='thumb'][part~='checked'] {
-    animation-duration: .2s;
-    animation-fill-mode: forwards;
+    @include with-motion() {
+        transition-property: background, border-color, box-shadow, margin;
+        transition-duration: .2s;
+        transition-timing-function: ease-in-out;
+    }
 }
 
 [part~='label'] {
@@ -63,26 +62,6 @@ input[type='checkbox'] {
 :host([label-position='before']) {
     [part~='label'] {
         order: -1;
-    }
-}
-
-@keyframes thumb-on {
-    from {
-        margin-inline-start: var(--thumb-offset);
-    }
-
-    to {
-        margin-inline-start: calc(var(--size) - var(--thumb-size));
-    }
-}
-
-@keyframes thumb-off {
-    from {
-        margin-inline-start: calc(var(--size) - var(--thumb-size));
-    }
-
-    to {
-        margin-inline-start: var(--thumb-offset);
     }
 }
 

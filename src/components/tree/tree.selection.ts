@@ -1,3 +1,4 @@
+import { markUserChange } from '#animations/value-state.js';
 import { isEmpty, lastOf } from '#internals/utils/arrays.js';
 import type IgcTreeItemComponent from './tree-item.js';
 import type { TreeSelectionEventInit } from './tree.common.js';
@@ -222,6 +223,7 @@ export class IgcTreeSelectionService {
     this._emitSelectionEvent(newSelection, [], [item]);
   }
 
+  /** Only a toggle by the user emits the event, so the items that it changes animate. */
   private _emitSelectionEvent(
     newSelection: IgcTreeItemComponent[],
     added: IgcTreeItemComponent[],
@@ -236,16 +238,20 @@ export class IgcTreeSelectionService {
     if (!this._isCascade) {
       if (this._confirmSelection(newSelection)) {
         this._itemSelection = new Set(newSelection);
-        this._updateItemsState(currSelection);
+        this._updateItemsState(currSelection, [], markUserChange);
       }
       return;
     }
 
-    this._applyCascade((state) => {
-      this._cascadeInto(state, removed, false);
-      this._cascadeInto(state, added, true);
-      return this._confirmSelection(Array.from(state.selected));
-    });
+    this._applyCascade(
+      (state) => {
+        this._cascadeInto(state, removed, false);
+        this._cascadeInto(state, added, true);
+        return this._confirmSelection(Array.from(state.selected));
+      },
+      undefined,
+      markUserChange
+    );
   }
 
   /** Emits `igcSelection` and returns whether to apply `newSelection`. */
@@ -333,7 +339,8 @@ export class IgcTreeSelectionService {
    */
   private _applyCascade(
     change: (state: CascadeState) => boolean | void,
-    excluded?: IgcTreeItemComponent[]
+    excluded?: IgcTreeItemComponent[],
+    beforeChange?: (item: IgcTreeItemComponent) => void
   ): void {
     const oldSelection = this._excluding(this._itemSelection, excluded);
     const oldIndeterminate = this._excluding(
@@ -347,7 +354,7 @@ export class IgcTreeSelectionService {
 
     if (change(state) !== false) {
       this._commit(state);
-      this._updateItemsState(oldSelection, oldIndeterminate);
+      this._updateItemsState(oldSelection, oldIndeterminate, beforeChange);
     }
   }
 
@@ -412,12 +419,17 @@ export class IgcTreeSelectionService {
 
   //#region Internal helpers
 
-  /** Reflects the computed selection onto the affected items. */
+  /**
+   * Reflects the computed selection onto the affected items, after
+   * `beforeChange` runs for each of them.
+   */
   private _updateItemsState(
     oldSelection: IgcTreeItemComponent[],
-    oldIndeterminate: IgcTreeItemComponent[] = []
+    oldIndeterminate: IgcTreeItemComponent[] = [],
+    beforeChange?: (item: IgcTreeItemComponent) => void
   ): void {
     this._reflect(this._itemSelection, oldSelection, (item, value) => {
+      beforeChange?.(item);
       item.selected = value;
     });
 
@@ -426,6 +438,7 @@ export class IgcTreeSelectionService {
         this._indeterminateItems,
         oldIndeterminate,
         (item, value) => {
+          beforeChange?.(item);
           item.indeterminate = value;
         }
       );
