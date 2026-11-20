@@ -52,11 +52,18 @@ export function finishBackdrop(dialog: HTMLDialogElement): CSSStyleDeclaration {
   return getComputedStyle(dialog, '::backdrop');
 }
 
-/** Waits two animation frames, so a started view transition settles. */
-export async function viewTransitionComplete(): Promise<void> {
+/**
+ * Waits until the browser paints a frame, so that a later style change can
+ * transition from the painted styles. One `nextFrame()` resumes before its
+ * frame computes the styles.
+ */
+export async function painted(): Promise<void> {
   await nextFrame();
   await nextFrame();
 }
+
+/** Waits two animation frames, so a started view transition settles. */
+export const viewTransitionComplete = painted;
 
 /**
  * Clicks the center of `element` with real mouse input. A link click reveals
