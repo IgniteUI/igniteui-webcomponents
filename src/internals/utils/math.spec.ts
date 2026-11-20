@@ -1,5 +1,6 @@
 import { expect } from '@open-wc/testing';
 import {
+  addSteps,
   asNumber,
   asPercent,
   clamp,
@@ -93,6 +94,21 @@ describe('Math utilities', () => {
         Number.POSITIVE_INFINITY
       );
       expect(roundPrecise(Number.NaN, 2)).to.be.NaN;
+    });
+  });
+
+  describe('addSteps', () => {
+    it('should add the steps without a floating-point tail', () => {
+      expect(addSteps(0.1, 0.2)).to.equal(0.3);
+      expect(addSteps(1.1, 0.1, 3)).to.equal(1.4);
+      expect(addSteps(0.3, 0.1, -3)).to.equal(0);
+      expect(addSteps(-0.7, 0.1, 7)).to.equal(0);
+      expect(addSteps(1e-7, 1e-7)).to.equal(2e-7);
+    });
+
+    it('should add one step by default', () => {
+      expect(addSteps(5, 2)).to.equal(7);
+      expect(addSteps(5, 0.25, 3)).to.equal(5.75);
     });
   });
 

@@ -37,13 +37,16 @@ export function simulateBlur(node: Element): void {
   node.dispatchEvent(new FocusEvent('blur'));
 }
 
+/** Returns whether a listener canceled one of the events. Pass `cancelable: true` for that. */
 export function simulatePointerDown(
   node: Element,
   options?: PointerEventInit,
   times = 1
-): void {
+): boolean {
+  let canceled = false;
+
   for (let i = 0; i < times; i++) {
-    node.dispatchEvent(
+    canceled ||= !node.dispatchEvent(
       new PointerEvent('pointerdown', {
         bubbles: true,
         composed: true,
@@ -52,15 +55,20 @@ export function simulatePointerDown(
       })
     );
   }
+
+  return canceled;
 }
 
+/** Returns whether a listener canceled one of the events. Pass `cancelable: true` for that. */
 export function simulatePointerUp(
   node: Element,
   options?: PointerEventInit,
   times = 1
-): void {
+): boolean {
+  let canceled = false;
+
   for (let i = 0; i < times; i++) {
-    node.dispatchEvent(
+    canceled ||= !node.dispatchEvent(
       new PointerEvent('pointerup', {
         bubbles: true,
         composed: true,
@@ -69,6 +77,22 @@ export function simulatePointerUp(
       })
     );
   }
+
+  return canceled;
+}
+
+export function simulatePointerCancel(
+  node: Element,
+  options?: PointerEventInit
+): void {
+  node.dispatchEvent(
+    new PointerEvent('pointercancel', {
+      bubbles: true,
+      composed: true,
+      pointerId: 1,
+      ...options,
+    })
+  );
 }
 
 export function simulateLostPointerCapture(
@@ -181,15 +205,49 @@ export function simulateKeyboard(
   }
 }
 
-/** Dispatches a cancelable `keydown` of `key` and returns whether a listener canceled it. */
-export function simulateCancelableKeydown(node: Element, key: string): boolean {
+/**
+ * Dispatches a cancelable `keydown` of `key` and returns whether a listener
+ * canceled it. `init` adds fields such as `code` or `repeat`.
+ */
+export function simulateCancelableKeydown(
+  node: Element,
+  key: string,
+  init?: KeyboardEventInit
+): boolean {
   return !node.dispatchEvent(
     new KeyboardEvent('keydown', {
       key,
       bubbles: true,
       composed: true,
       cancelable: true,
+      ...init,
     })
+  );
+}
+
+/** Dispatches a cancelable `beforeinput` and returns whether a listener canceled it. */
+export function simulateBeforeInput(
+  node: Element,
+  init: InputEventInit
+): boolean {
+  return !node.dispatchEvent(
+    new InputEvent('beforeinput', {
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+      ...init,
+    })
+  );
+}
+
+/** Dispatches a `compositionstart` or a `compositionend` event. */
+export function simulateComposition(
+  node: Element,
+  type: 'compositionstart' | 'compositionend',
+  data = ''
+): void {
+  node.dispatchEvent(
+    new CompositionEvent(type, { bubbles: true, composed: true, data })
   );
 }
 
@@ -232,10 +290,27 @@ export async function simulateScroll(
   await nextFrame();
 }
 
-/** Simulates a wheel event for a given element. */
-export function simulateWheel(node: Element, options?: WheelEventInit): void {
-  node.dispatchEvent(
+/**
+ * Simulates a wheel event for a given element. Returns whether a listener
+ * canceled it. Pass `cancelable: true` for that.
+ */
+export function simulateWheel(
+  node: Element,
+  options?: WheelEventInit
+): boolean {
+  return !node.dispatchEvent(
     new WheelEvent('wheel', { bubbles: true, composed: true, ...options })
+  );
+}
+
+/** Dispatches a cancelable `contextmenu` and returns whether a listener canceled it. */
+export function simulateContextMenu(node: Element): boolean {
+  return !node.dispatchEvent(
+    new PointerEvent('contextmenu', {
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+    })
   );
 }
 
