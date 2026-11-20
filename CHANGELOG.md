@@ -61,6 +61,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A predefined or custom range chip keeps the date range picker open when `keepOpenOnSelect` is set.
   - With `activeDate` set, the calendar keeps the month that you navigate to. Before, each update of the picker, such as a pick in the second month of a date range picker, moved the calendar back to `activeDate`.
 - #### Date picker, Date range picker, Date time input
+  - A form reset discards the text that you typed and did not commit yet, as for a native date input. Before, a partly typed date stayed in the focused input, and in a picker the next blur committed it as a date, also over the restored default value.
+  - An empty value that code or a form reset sets while the input has focus replaces the date that the input shows. Before, the input kept showing the old date, and a spin started from it.
   - Ctrl + Arrow Left and Ctrl + Arrow Right stop at each date part in an input format without separators, such as `yyyyMMdd`, and do not stop inside a separator of more than one character, such as `, `. Before, the date time input went to the start or the end of the input, and the single input of the date range picker skipped a part.
 - #### Date picker, Date time input
   - `stepUp(DatePart.AmPm)` and `stepDown(DatePart.AmPm)` read AM or PM from the value. Before, while the input did not have focus and the display format was different from the input format, they read the display text, so they did nothing or switched only from PM to AM.
