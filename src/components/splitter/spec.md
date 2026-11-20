@@ -536,10 +536,12 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
     the expanders get narrower and the expanders stay inside the bar.
 42. Without a drag handle the expanders are 48px apart, and on a bar too short for that they stay inside the bar.
 43. A size that makes the bar thicker drops the minimum sizes that no longer fit beside it.
-44. In the Indigo theme, the idle bar is 1px thick at every size and in both orientations, also with an overridden
-    `--ig-splitter-size`.
-45. In the Indigo theme, the panes give up the full thickness of the bar while the idle bar is 1px.
-46. In the Indigo theme, the hovered bar has the thickness of the size.
+44. A fractional bar thickness counts in full against the minimum sizes.
+45. Under a scaled ancestor, the bar thickness counts at the scale of the container.
+46. In the Indigo theme, the idle bar is 1px thick at every size, and at large in the vertical orientation, also with
+    an overridden `--ig-splitter-size`.
+47. In the Indigo theme, the panes give up the full thickness of the bar while the idle bar is 1px.
+48. In the Indigo theme, the hovered bar has the thickness of the size.
 
 ## Accessibility
 

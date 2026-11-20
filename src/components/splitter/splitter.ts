@@ -967,17 +967,32 @@ export default class IgcSplitterComponent extends I18nMixin(
    * between the reads would force a reflow for each read.
    */
   private _measure(): { container: number; bar: number } {
-    const [axis, offset] = this._isHorizontal
-      ? (['width', 'offsetWidth'] as const)
-      : (['height', 'offsetHeight'] as const);
+    const axis = this._isHorizontal ? 'width' : 'height';
 
     this._measurement ??= {
       container: this._base ? this._base.getBoundingClientRect()[axis] : 0,
-      // The layout extent, which a theme transform does not change.
-      bar: this._separator?.[offset] ?? 0,
+      bar: this._measureBar(),
     };
 
     return this._measurement;
+  }
+
+  /** The bar extent in the coordinates of the container, without the scale a theme sets on the bar. */
+  private _measureBar(): number {
+    const separator = this._separator;
+
+    if (!separator) {
+      return 0;
+    }
+
+    const { a, d } = new DOMMatrixReadOnly(
+      getComputedStyle(separator).transform
+    );
+    const [extent, scale] = this._isHorizontal
+      ? [separator.getBoundingClientRect().width, a]
+      : [separator.getBoundingClientRect().height, d];
+
+    return roundPrecise(extent / (scale || 1), 3);
   }
 
   /** The content box of the flex container - the basis for every percentage. */

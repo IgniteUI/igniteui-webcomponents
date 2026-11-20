@@ -4227,6 +4227,33 @@ describe('Splitter', () => {
       expect(startSize + endSize).to.equal(500 - 18);
     });
 
+    it('counts a fractional bar thickness against the minimum sizes', async () => {
+      // The 6.375px bar leaves 493.625px, less than the 493.75px of minimums.
+      splitter.style.setProperty('--ig-splitter-size', '4.375px');
+      splitter.startMinSize = '246.875px';
+      splitter.endMinSize = '246.875px';
+      await observerReport();
+
+      const { startSize, endSize } = getPanesSizes(splitter, 'width');
+      expect(startSize + endSize).to.be.closeTo(493.625, 0.05);
+    });
+
+    it('measures the bar in the coordinates of a scaled ancestor', async () => {
+      // 495px of minimums do not fit beside the 6px bar.
+      splitter.parentElement!.style.transform = 'scale(2)';
+      splitter.parentElement!.style.transformOrigin = '0 0';
+      splitter.startMinSize = '49.5%';
+      splitter.endMinSize = '49.5%';
+      await observerReport();
+
+      try {
+        const { startSize, endSize } = getPanesSizes(splitter, 'width');
+        expect(startSize + endSize).to.equal((500 - 6) * 2);
+      } finally {
+        splitter.parentElement!.style.transform = '';
+      }
+    });
+
     it('keeps a 1px idle bar at every size and with an overridden size in indigo', async () => {
       await withDocumentSheets([indigo.styleSheet!], async () => {
         try {
