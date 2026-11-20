@@ -1,7 +1,21 @@
-import { elementUpdated, expect, waitUntil } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  waitUntil,
+} from '@open-wc/testing';
 import { resetMouse, sendMouse } from '@web/test-runner-commands';
 import { spy } from 'sinon';
 
+import { spaceBar } from '#internals/controllers/key-bindings.js';
+import {
+  allowMotion,
+  clickWithMouse,
+  painted,
+} from '#internals/testing/helpers.spec.js';
+import { transitionsIn, withTheme } from '#internals/testing/motion.spec.js';
+import { simulateKeyboard } from '#internals/testing/simulate.spec.js';
 import { getCenterPoint } from '#internals/utils/dom.js';
 import { defineComponents, type IgcCheckboxComponent } from '../../index.js';
 import IgcTreeItemComponent from './tree-item.js';
@@ -953,6 +967,86 @@ describe('Tree Selection', () => {
       TreeTestFunctions.verifyItemSelection(added, true);
       TreeTestFunctions.verifyItemSelection(parent, true);
       expect(byLabel('Tree Item 2').indeterminate).to.be.true;
+    });
+  });
+
+  describe('Value state motion', () => {
+    allowMotion();
+    afterEach(() => resetMouse());
+
+    const checkboxOf = (item: IgcTreeItemComponent) =>
+      item.renderRoot.querySelector<IgcCheckboxComponent>('igc-checkbox')!;
+
+    async function createCascade(): Promise<IgcTreeItemComponent[]> {
+      tree = await fixture<IgcTreeComponent>(html`
+        <igc-tree selection="cascade">
+          <igc-tree-item label="Parent" expanded>
+            <igc-tree-item label="Child"></igc-tree-item>
+          </igc-tree-item>
+        </igc-tree>
+      `);
+      await painted();
+      return tree.items;
+    }
+
+    it('animates the checkboxes of a cascade by the user', async () => {
+      await withTheme('material', async () => {
+        const [parent, child] = await createCascade();
+
+        await clickWithMouse(checkboxOf(parent));
+        await painted();
+
+        expect(child.selected).to.be.true;
+        expect(transitionsIn(checkboxOf(parent))).to.not.be.empty;
+        expect(transitionsIn(checkboxOf(child))).to.not.be.empty;
+      });
+    });
+
+    it('shows a selection from code at once', async () => {
+      await withTheme('material', async () => {
+        const [parent, child] = await createCascade();
+
+        tree.select([parent]);
+        await painted();
+
+        expect(child.selected).to.be.true;
+        expect(transitionsIn(checkboxOf(parent))).to.eql([]);
+        expect(transitionsIn(checkboxOf(child))).to.eql([]);
+      });
+    });
+
+    it('animates the checkboxes of a cascade that Space selects', async () => {
+      await withTheme('material', async () => {
+        const [parent, child] = await createCascade();
+
+        simulateKeyboard(parent, spaceBar);
+        await painted();
+
+        expect(child.selected).to.be.true;
+        expect(transitionsIn(checkboxOf(parent))).to.not.be.empty;
+        expect(transitionsIn(checkboxOf(child))).to.not.be.empty;
+      });
+    });
+
+    it('shows a deselect() call and a selected item from code at once', async () => {
+      await withTheme('material', async () => {
+        const [parent, child] = await createCascade();
+        tree.select([parent]);
+        await painted();
+
+        tree.deselect([parent]);
+        await painted();
+
+        expect(child.selected).to.be.false;
+        expect(transitionsIn(checkboxOf(parent))).to.eql([]);
+        expect(transitionsIn(checkboxOf(child))).to.eql([]);
+
+        child.selected = true;
+        await painted();
+
+        expect(transitionsIn(checkboxOf(parent))).to.eql([]);
+        expect(transitionsIn(checkboxOf(child))).to.eql([]);
+      });
     });
   });
 });

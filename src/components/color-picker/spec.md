@@ -36,6 +36,7 @@
     - [Color model and parsing](#color-model-and-parsing)
     - [Converters](#converters)
     - [Host ARIA](#host-aria)
+    - [Value state motion](#value-state-motion)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -63,6 +64,7 @@
 |      15 | 2026-11-18 | A change of the user marks the control touched, so a change that fails validation shows the invalid styles at once |
 |      16 | 2026-11-18 | A value set from code is not a user change, also while focus is inside, so no `igcChange` reports it |
 |      17 | 2026-11-18 | In input mode, the text input shows only the invalid state of the picker, and reports the validity of the picker |
+|      18 | 2026-11-20 | In input mode, a color that the user picks animates the input; a value from code shows at once |
 
 ## Overview
 
@@ -167,6 +169,10 @@ the invalid styles at once. When focus leaves the component entirely, it compare
 color - the color of the last `igcChange` or the last value set from code, in any format - and emits `igcChange`
 exactly once if it changed. Dragging the canvas or the sliders, or typing, never emits `igcChange` by itself. A value set from code is
 not a user change, so it emits no `igcChange`, also while focus is inside the component.
+
+**Motion.** In input mode, a color that the user picks animates the input, such as the Material label that moves up. A
+value from code shows at once, also a value that an `igcChange` handler sets. The color picker suite covers a typed
+color and a value from code after it; the [input](../input/spec.md) suite covers the motion of the input itself.
 
 ### Developer experience
 
@@ -511,6 +517,13 @@ The focus after the form checks and the `invalid` event rules come from the form
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
     `disabled` set does not cancel an earlier call on another element.
+
+### Value state motion
+
+In input mode.
+
+31. A typed color marks the anchor input as a user change.
+32. A value from code right after it ends the user change, so the input shows it at once.
 
 ## Assumptions and limitations
 

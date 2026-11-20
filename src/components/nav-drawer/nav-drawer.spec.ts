@@ -7,7 +7,7 @@ import {
   oneEvent,
   waitUntil,
 } from '@open-wc/testing';
-import { emulateMedia } from '@web/test-runner-commands';
+import { emulateMedia, resetMouse } from '@web/test-runner-commands';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
@@ -17,16 +17,20 @@ import {
   finishBackdrop,
   getAnimationsFor,
   getBackdropAnimations,
+  hoverWithMouse,
   isFocused,
   isUnderPageLayer,
+  painted,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
+import { transitionsIn, withTheme } from '#internals/testing/motion.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import { isPopoverOpen } from '#internals/utils/dom.js';
 import { configureTheme } from '#theming/config.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcIconComponent from '../icon/icon.js';
+import type IgcNavDrawerItemComponent from './nav-drawer-item.js';
 import IgcNavDrawerComponent from './nav-drawer.js';
 
 describe('Navigation Drawer', () => {
@@ -922,6 +926,50 @@ describe('Navigation Drawer', () => {
     });
   });
 
+  describe('First render motion', () => {
+    allowMotion();
+
+    it('shows a drawer that is open on the first render at once', async () => {
+      navDrawer = await createNavDrawer(html`
+        <igc-nav-drawer open>
+          <igc-nav-drawer-item></igc-nav-drawer-item>
+        </igc-nav-drawer>
+      `);
+      await painted();
+
+      expect(transitionsIn(navDrawer)).to.eql([]);
+      expect(navDrawer.renderRoot.querySelector('dialog')!.matches(':modal')).to
+        .be.true;
+    });
+
+    it('slides in on a `show()` in the task that renders the drawer', async () => {
+      const parent = await fixture<HTMLElement>(html`<div></div>`);
+      navDrawer = document.createElement(IgcNavDrawerComponent.tagName);
+      parent.append(navDrawer);
+
+      navDrawer.show();
+      await elementUpdated(navDrawer);
+
+      expect(transitionsIn(navDrawer)).to.include.members([
+        'dialog[part="base"] translate',
+        'dialog[part="base"]::backdrop opacity',
+      ]);
+    });
+
+    it('animates an open from code after the first render', async () => {
+      navDrawer = await createNavDrawer();
+      await painted();
+
+      navDrawer.open = true;
+      await elementUpdated(navDrawer);
+
+      expect(transitionsIn(navDrawer)).to.include.members([
+        'dialog[part="base"] translate',
+        'dialog[part="base"]::backdrop opacity',
+      ]);
+    });
+  });
+
   runInvokerCommandsTests({
     tagName: IgcNavDrawerComponent.tagName,
     commandFor: 'invoker-nav-drawer',
@@ -950,4 +998,52 @@ describe('Navigation Drawer', () => {
       </igc-nav-drawer>
     `);
   }
+
+  // `active` is view state, as the `selected` of a tab: a change from code
+  // fades too. The Material item does not fade its active background, and the
+  // drawer gives the item its theme colors.
+  describe('Item motion', () => {
+    allowMotion();
+    afterEach(() => resetMouse());
+
+    async function itemTransitionsAfter(
+      change: (item: IgcNavDrawerItemComponent) => unknown
+    ): Promise<string[]> {
+      return withTheme('indigo', async () => {
+        const drawer = await fixture<IgcNavDrawerComponent>(html`
+          <igc-nav-drawer position="relative" open>
+            <igc-nav-drawer-item>
+              <span slot="content">Item</span>
+            </igc-nav-drawer-item>
+          </igc-nav-drawer>
+        `);
+        const item = drawer.querySelector<IgcNavDrawerItemComponent>(
+          'igc-nav-drawer-item'
+        )!;
+        await painted();
+
+        await change(item);
+        await painted();
+        return transitionsIn(item);
+      });
+    }
+
+    it('fades an `active` change from code', async () => {
+      const transitions = await itemTransitionsAfter((item) => {
+        item.active = true;
+      });
+
+      expect(transitions).to.not.be.empty;
+    });
+
+    it('turns the item transitions off with reduced motion', async () => {
+      await emulateMedia({ reducedMotion: 'reduce' });
+
+      const transitions = await itemTransitionsAfter((item) =>
+        hoverWithMouse(item.renderRoot.querySelector('[part~="base"]')!)
+      );
+
+      expect(transitions).to.eql([]);
+    });
+  });
 });

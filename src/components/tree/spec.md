@@ -35,6 +35,7 @@
     - [ARIA tests](#aria-tests)
     - [RTL tests](#rtl-tests)
     - [Host ARIA](#host-aria)
+    - [Value state motion](#value-state-motion)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -54,6 +55,7 @@
 |       6 | 2026-11-12 | A collapsed item far from the view skips its rendering, except the active and the focused item |
 |       7 | 2026-11-12 | Find-in-page and links to an element expand the collapsed items above it |
 |       8 | 2026-11-12 | The children container of a collapsed item has `aria-hidden="true"` |
+|       9 | 2026-11-20 | A selection by the user animates the checkboxes of the items that it changes, also in a cascade; a selection from code shows at once |
 
 ## Overview
 
@@ -138,6 +140,10 @@ checkbox and the label. The expanded and collapsed transitions are animated. The
 have distinct styles, and so do the selected items.
 
 > [Design hand-off](https://share.goabstract.com/6c6e6d3f-ead5-445e-b43e-75699027f324)
+
+**Motion of the selection.** A selection that the user makes with a click on a checkbox or the keyboard animates the
+checkboxes of all the items that it changes, also the descendants and the ancestors of a cascade. A selection from code,
+such as `select()`, `deselect()` or `selected`, shows at once.
 
 ### Developer experience
 
@@ -483,6 +489,16 @@ module with the fixtures, the selectors and the assertion helpers the other thre
 69. With motion, the reveal expands at once, with no animation, and the scroll does not change after it.
 70. The expand animation of a user toggle starts from the height of the children.
 71. The children show during the collapse animation, and they are inert only then.
+
+### Value state motion
+
+In the Material theme.
+
+72. A click on the checkbox of a parent in cascade selection starts transitions in the checkbox of the parent and of its
+    child.
+73. A `select()` call starts no transitions in either checkbox.
+74. Space on a parent in cascade selection starts transitions in the checkbox of the parent and of its child.
+75. A `deselect()` call and a `selected` item from code start no transitions.
 
 ### Not covered by the suite
 

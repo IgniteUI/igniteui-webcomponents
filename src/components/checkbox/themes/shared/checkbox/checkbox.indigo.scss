@@ -54,7 +54,9 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 }
 
 [part='indicator checked'] {
-    transition-duration: .15s;
+    @include with-motion() {
+        transition-duration: .15s;
+    }
 }
 
 :host(:hover) {

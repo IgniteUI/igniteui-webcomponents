@@ -45,6 +45,7 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import { isUserChange } from '#internals/user-change.js';
 import { configureTheme } from '#theming/config.js';
 import { styles as indigo } from '../../styles/themes/light/indigo.css.js';
 import IgcInputComponent from '../input/input.js';
@@ -2257,5 +2258,34 @@ describe('Select', () => {
     closedKeys: true,
     hasValue: true,
     disabled: true,
+  });
+
+  describe('Value state motion', () => {
+    beforeEach(async () => {
+      select = await fixture<IgcSelectComponent>(html`
+        <igc-select label="Phase" value="spec">
+          <igc-select-item value="spec">Specification</igc-select-item>
+          <igc-select-item value="impl">Implementation</igc-select-item>
+        </igc-select>
+      `);
+    });
+
+    it('marks the input as a user change for a selection by the user', () => {
+      simulateClick(select.items[1]);
+
+      expect(select.value).to.equal('impl');
+      expect(isUserChange(getInput())).to.be.true;
+    });
+
+    it('shows a value that an igcChange handler sets at once', () => {
+      select.addEventListener('igcChange', () => {
+        select.value = 'spec';
+      });
+
+      simulateClick(select.items[1]);
+
+      expect(select.value).to.equal('spec');
+      expect(isUserChange(getInput())).to.be.false;
+    });
   });
 });

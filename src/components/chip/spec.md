@@ -52,6 +52,7 @@
 |       5 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
 |       6 | 2026-11-06 | Forward the host `aria-expanded`, `aria-haspopup` and `aria-controls`   |
 |       7 | 2026-11-18 | Animate a selection change by the user; a change from code shows at once or joins the running animation of the user |
+|       8 | 2026-11-20 | While a change from code shows at once, all the transitions of the chip stop, also on slotted elements and over the transitions that the app sets on parts, not only those of the base and the indicator |
 
 ## Overview
 
@@ -331,6 +332,9 @@ The detail of `igcSelect` is the new `selected` state of the chip.
 
 ## Assumptions and limitations
 
+- While a change from code shows at once, the control turns off every transition in its shadow tree and on its
+  slotted elements with `!important`. A transition that the app sets with `::part()` or on slotted content does not
+  run in those frames either. The transitions turn on again in the first frame with no change from code.
 - The chip does not lay itself out; placing several chips inline and wrapping them is the job of their container.
 - A chip is not form associated and submits nothing; its selection is read from the `selected` property.
 - `igcSelect` and `igcRemove` are notifications and cannot be canceled, so removal has to be carried out by the

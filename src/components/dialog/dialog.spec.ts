@@ -773,6 +773,56 @@ describe('Dialog', () => {
       expect(nativeDialog.matches(':modal')).to.be.true;
     });
 
+    it('fades the backdrop in on `show()`', async () => {
+      dialog.show();
+      await elementUpdated(dialog);
+
+      expect(getBackdropAnimations(nativeDialog)).to.not.be.empty;
+    });
+
+    it('shows the backdrop at once when `open` is set', async () => {
+      await openThroughProperty();
+
+      expect(getBackdropAnimations(nativeDialog)).to.be.empty;
+    });
+
+    it('shows the backdrop at once when the dialog opens again after a close that it cannot cancel', async () => {
+      await openThroughProperty();
+
+      nativeDialog.close();
+      await oneEvent(nativeDialog, 'close');
+
+      expect(nativeDialog.matches(':modal')).to.be.true;
+      expect(getBackdropAnimations(nativeDialog)).to.be.empty;
+    });
+
+    it('shows the backdrop at once when an open dialog is appended again', async () => {
+      await openThroughProperty();
+
+      const parent = dialog.parentElement!;
+      dialog.remove();
+      parent.append(dialog);
+
+      expect(nativeDialog.matches(':modal')).to.be.true;
+      expect(getBackdropAnimations(nativeDialog)).to.be.empty;
+    });
+
+    it('shows the backdrop at once on a first render with `open`', async () => {
+      dialog = await fixture<IgcDialogComponent>(
+        html`<igc-dialog open></igc-dialog>`
+      );
+      nativeDialog = dialog.renderRoot.querySelector('dialog')!;
+
+      expect(getBackdropAnimations(nativeDialog)).to.be.empty;
+      expect(nativeDialog.matches(':modal')).to.be.true;
+    });
+
+    it('shows the backdrop at once when `open` reopens the dialog during the exit', async () => {
+      await reopenDuringExit();
+
+      expect(getBackdropAnimations(nativeDialog)).to.be.empty;
+    });
+
     it('takes the styles of `::part(base)::backdrop`', async () => {
       const sheet = new CSSStyleSheet();
       sheet.replaceSync(

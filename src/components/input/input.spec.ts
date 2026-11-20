@@ -18,18 +18,22 @@ import {
   runHostComboboxTests,
 } from '#internals/testing/form-testbed.spec.js';
 import {
+  allowMotion,
   finishAnimationsFor,
   isFocused,
   isUnderPageLayer,
+  painted,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
+import { transitionsIn, withTheme } from '#internals/testing/motion.spec.js';
 import { simulateInput } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import { runValueStateMotionTests } from '#internals/testing/value-state.spec.js';
 import { preventDefault, stopPropagation } from '#internals/utils/events.js';
 import { formatString } from '#internals/utils/strings.js';
 import { configureTheme } from '#theming/config.js';
@@ -1356,4 +1360,40 @@ describe('Input component', () => {
   `);
 
   runFocusBeforeRenderTests(html`<igc-input label="Label"></igc-input>`);
+
+  runValueStateMotionTests<IgcInputComponent>({
+    template: html`<igc-input label="Label"></igc-input>`,
+    changedTemplate: html`<igc-input label="Label" value="Value"></igc-input>`,
+    changeFromCode: (input) => {
+      input.value = 'Value';
+    },
+    changeByUser: (input) => {
+      input.focus();
+      simulateInput(input.renderRoot.querySelector('input')!, {
+        value: 'Value',
+      });
+    },
+  });
+
+  describe('Invalid state motion', () => {
+    allowMotion();
+
+    it('fades the invalid state and the label when a required input loses the focus', async () => {
+      await withTheme('material', async () => {
+        const input = await fixture<IgcInputComponent>(
+          html`<igc-input label="Label" required></igc-input>`
+        );
+        input.focus();
+        await painted();
+        finishAnimationsFor(input.shadowRoot!);
+
+        input.blur();
+        await painted();
+
+        expect(input.invalid).to.be.true;
+        expect(input.matches(':state(ig-instant)')).to.be.false;
+        expect(transitionsIn(input)).to.not.be.empty;
+      });
+    });
+  });
 });

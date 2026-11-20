@@ -10,15 +10,19 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
+  allowMotion,
   finishAnimationsFor,
   isFocused,
   isUnderPageLayer,
+  painted,
 } from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
+import { transitionsIn, withTheme } from '#internals/testing/motion.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
+import { runValueStateMotionTests } from '#internals/testing/value-state.spec.js';
 import IgcButtonGroupComponent from './button-group.js';
 import IgcToggleButtonComponent from './toggle-button.js';
 
@@ -1546,4 +1550,48 @@ describe('Button Group', () => {
       <igc-toggle-button value="right" selected>Right</igc-toggle-button>
     </igc-button-group>
   `);
+
+  runValueStateMotionTests<IgcButtonGroupComponent>({
+    template: html`
+      <igc-button-group>
+        <igc-toggle-button value="left">Left</igc-toggle-button>
+      </igc-button-group>
+    `,
+    changedTemplate: html`
+      <igc-button-group>
+        <igc-toggle-button value="left" selected>Left</igc-toggle-button>
+      </igc-button-group>
+    `,
+    changeFromCode: (group) => {
+      group.selectedItems = ['left'];
+    },
+    changeByUser: (group) =>
+      simulateClick(group.querySelector('igc-toggle-button')!),
+  });
+
+  describe('Value state motion in single selection', () => {
+    allowMotion();
+
+    it('animates the button that the group deselects for a click', async () => {
+      await withTheme('material', async () => {
+        const group = await fixture<IgcButtonGroupComponent>(html`
+          <igc-button-group selection="single">
+            <igc-toggle-button value="left" selected>Left</igc-toggle-button>
+            <igc-toggle-button value="right">Right</igc-toggle-button>
+          </igc-button-group>
+        `);
+        const [left, right] = group.querySelectorAll(
+          IgcToggleButtonComponent.tagName
+        );
+        await painted();
+
+        simulateClick(right);
+        await painted();
+
+        expect(left.selected).to.be.false;
+        expect(transitionsIn(left)).to.not.be.empty;
+        expect(transitionsIn(right)).to.not.be.empty;
+      });
+    });
+  });
 });

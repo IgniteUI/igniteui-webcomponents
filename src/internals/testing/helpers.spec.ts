@@ -5,6 +5,14 @@ import { type CalendarDay, toCalendarDay } from '../date/model.js';
 import { getCenterPoint } from '../utils/dom.js';
 import { toKebabCase } from '../utils/strings.js';
 
+/** The shadow roots of `root` and its descendants, nested ones included. */
+export function shadowRootsIn(root: Element | ShadowRoot): ShadowRoot[] {
+  return [root, ...root.querySelectorAll('*')].flatMap((node) => {
+    const shadow = (node as Element).shadowRoot;
+    return shadow ? [shadow, ...shadowRootsIn(shadow)] : [];
+  });
+}
+
 /** Returns the animations of the element and, optionally, its descendants. */
 export function getAnimationsFor(
   element: ShadowRoot | Element,
@@ -72,8 +80,17 @@ export const viewTransitionComplete = painted;
  */
 export async function clickWithMouse(element: Element): Promise<void> {
   element.scrollIntoView({ block: 'nearest' });
+  await sendMouse({ type: 'click', position: centerOf(element) });
+}
+
+/** Moves the real mouse over the center of `element`. */
+export async function hoverWithMouse(element: Element): Promise<void> {
+  await sendMouse({ type: 'move', position: centerOf(element) });
+}
+
+function centerOf(element: Element): [number, number] {
   const { x, y } = getCenterPoint(element);
-  await sendMouse({ type: 'click', position: [Math.round(x), Math.round(y)] });
+  return [Math.round(x), Math.round(y)];
 }
 
 /** Removes the fragment and the scroll that a link to an element left. */
@@ -161,15 +178,15 @@ export function suppressResizeObserverLoopError(): void {
 }
 
 /** Runs `fn` with `sheets` added to the document, then restores its style sheets. */
-export async function withDocumentSheets(
+export async function withDocumentSheets<R>(
   sheets: CSSStyleSheet[],
-  fn: () => unknown
-): Promise<void> {
+  fn: () => R | Promise<R>
+): Promise<R> {
   const adopted = [...document.adoptedStyleSheets];
   document.adoptedStyleSheets = [...adopted, ...sheets];
 
   try {
-    await fn();
+    return await fn();
   } finally {
     document.adoptedStyleSheets = adopted;
   }

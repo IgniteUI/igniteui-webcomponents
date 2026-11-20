@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `dot-scale` sets the size of the data modules, from 0.7 to 1 of their cell, to leave a gap between them. The corners keep their full size.
 
 ### Changed
+- #### Accordion, Expansion panel
+  - A change of `open` on a panel shows at once. This includes the spacing that an accordion gives it, and the transitions that the app puts on the panel. Before, the spacing animated while the content showed at once. `show()`, `hide()`, `toggle()` and the user still animate both.
+- #### Button group, Checkbox, Chip, Color picker, Combo, Date picker, Date range picker, Date time input, File input, Input, List, Mask input, Navigation drawer, Radio, Select, Switch, Textarea, Tree
+  - Only a change by the user animates a checkbox, a switch, a radio, a toggle button, and the label of an input or a textarea (also the inputs of the pickers, the select and the combo), as for the chip. A change from code and the first render show at once, so a virtualized list does not animate them while it scrolls. A list item shows a change of `selected` at once, because only code sets it. A change that a component makes for a user action animates too: the radio that a group unchecks, the toggle button that a single selection deselects, the items of a tree cascade and the options of a combo. A change from app code, also in an event handler, such as a "Select all" checkbox, shows at once. Hover, focus and the invalid state still fade. With `prefers-reduced-motion: reduce`, these controls, the list item and the navigation drawer item have no transitions of their own, and a transition that the app adds to a part still applies.
+  - While a change from code shows at once, these controls and the chip turn off all their transitions, also the ones that the app sets on parts and slotted elements. Before, the chip turned off only the transitions of its base and its indicator.
+  - The Material switch moves its thumb with a transition only. Before, it also played a keyframe animation, also on the first render.
 - #### Chip
   - A selection change by the user animates the chip, as in Ignite UI for Angular. The colors fade, and the selection indicator opens and fades in, or fades out and closes. A change from code and the first render show at once, so a virtualized list does not animate its chips while it scrolls. With `prefers-reduced-motion: reduce`, the chip does not animate. [#2621](https://github.com/IgniteUI/igniteui-webcomponents/issues/2621)
 - #### Combo
@@ -30,10 +36,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The two inputs and the `value` attribute keep the time of the dates. Before, they set the time to midnight.
   - A change of `useTwoInputs` drops an edit in an input that the change removes, also when the input loses the focus before the next render. Before, that input could still commit its edit.
   - Without `activeDate`, a range with one end set from code brings that end into view, as a full range brings its start.
+- #### Dialog
+  - `open = true` and a first render with `open` show the backdrop at once, as they do the dialog. So do an append of an open dialog and a reopen after a close that the dialog cannot cancel. Before, the backdrop faded in. `show()` still fades both in.
 - #### Dropdown
   - <kbd>Enter</kbd> closes the open list also when no item is active, as in the select. Before, the list stayed open.
 - #### Library
   - The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The fallbacks for older browsers are removed, and the styles no longer have vendor prefixes for them.
+- #### Navigation drawer
+  - A drawer that is `open` on its first render shows at once, with no slide and no backdrop fade. This also applies when a framework renders the drawer open after a user action. To slide it in, call `show()`, or set `open` after the first render.
 - #### QR code
   - The cutout under the logo holds whole modules, so it cuts no module in part.
   - `logoSize` is a share of the code without its quiet zone, so `margin` no longer changes the logo. At the default `margin`, logos are smaller than before: 28% smaller in side on a version 1 code, and 4% on a version 40 code.
@@ -42,6 +52,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `checkValidity()` and `reportValidity()` emit `invalid` on the radios of the group in DOM order. Before, the other radios emitted it first, and the called radio last.
 - #### Select
   - <kbd>Tab</kbd> and <kbd>Escape</kbd> on the select act also when other code already called `preventDefault()` on the key, as in the dropdown. Content in the `header` and `footer` slots still keeps a key that it handled.
+- #### Tabs
+  - The first render shows at once. The selected indicator does not slide in from the start of the strip, and the selected header does not fade in. This also applies when the tabs show later than they render. A selection change after that still animates.
 
 ### Fixed
 - #### Calendar, Date picker, Date range picker, Date time input

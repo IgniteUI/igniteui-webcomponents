@@ -8,6 +8,8 @@ import {
 } from '#internals/testing/form-testbed.spec.js';
 import { isUnderPageLayer } from '#internals/testing/helpers.spec.js';
 import { runHiddenAncestorTests } from '#internals/testing/hidden-ancestor.spec.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
+import { runValueStateMotionTests } from '#internals/testing/value-state.spec.js';
 import { configureTheme } from '#theming/config.js';
 import IgcSwitchComponent from './switch.js';
 
@@ -319,4 +321,14 @@ describe('Switch', () => {
   `);
 
   runFocusBeforeRenderTests(html`<igc-switch>Label</igc-switch>`);
+
+  runValueStateMotionTests<IgcSwitchComponent>({
+    template: html`<igc-switch>Label</igc-switch>`,
+    changedTemplate: html`<igc-switch checked>Label</igc-switch>`,
+    changeFromCode: (control) => {
+      control.checked = true;
+    },
+    changeByUser: (control) =>
+      simulateClick(control.renderRoot.querySelector('input')!),
+  });
 });

@@ -1,6 +1,7 @@
-import { html, LitElement, nothing } from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
+import { finishCSSTransitions } from '#animations/css-transitions.js';
 import { addAnimationController } from '#animations/player.js';
 import { growVerIn, growVerOut } from '#animations/presets/grow/index.js';
 import {
@@ -146,6 +147,16 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<IgcExp
   public override connectedCallback(): void {
     super.connectedCallback();
     this._panelId = this.id || this._panelId;
+  }
+
+  protected override updated(properties: PropertyValues<this>): void {
+    const changed =
+      properties.has('open') && properties.get('open') !== undefined;
+
+    // A direct `open` change also ends the host transitions, such as the accordion spacing.
+    if (changed && !this._toggleController.busy) {
+      finishCSSTransitions(this);
+    }
   }
 
   private _handleClick(): void {
