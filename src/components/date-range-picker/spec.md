@@ -83,6 +83,7 @@
 |      25 | 2026-11-19 | In single input mode, typing or a spin brings the end at the caret into view, as the focused editor does with two inputs; the input and change events of slotted content no longer change the value; an editor that a layout change removes commits nothing; add the range editors suite; the scenarios of both layouts run once per layout in the common suite and in one form suite |
 |      26 | 2026-11-19 | A change of `name` renames the submitted `-start` and `-end` entries at once |
 |      27 | 2026-11-20 | A form reset discards the text typed in the editors that is not committed, so the next blur does not commit it; a reset that empties the value shows the empty mask in the focused editor |
+|      28 | 2026-11-20 | The ends of a range accept an ISO string with a signed six digit year; the value shape properties use any valid date |
 
 ## Overview
 
@@ -750,7 +751,8 @@ The focus after the form checks and the `invalid` event rules come from the form
 31. For generated ranges: the normalize step is idempotent, gives `null` only for an empty range and the ends in order
     of time otherwise, and keeps each date with its time. A complete range goes to the calendar and back unchanged,
     and a calendar selection comes back as its first and last date, which closes the picker when there is more than one.
-    An attribute string is normalized like the range of its dates.
+    An attribute string is normalized like the range of its dates, for any valid dates, also ones with a signed six
+    digit year.
 
 ### Range editors
 

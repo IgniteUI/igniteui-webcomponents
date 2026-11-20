@@ -167,6 +167,7 @@ const TIME_PART_CONFIG: Record<TimePartType, TimePartConfig> = {
 };
 
 const DATE_BOUNDS = {
+  year: { min: 1, max: 9999 },
   month: { min: 0, max: 11 },
   date: { min: 1, max: 31 },
 } as const;
@@ -232,20 +233,29 @@ abstract class DatePartBase implements IDatePart {
 /** Year part (yyyy, yy) */
 class YearPart extends DatePartBase {
   override validate(value: number): boolean {
-    // Years have no upper bound.
+    // A typed year has at most four digits.
     return value >= 0;
   }
 
   override spin(delta: number, options: SpinOptions): void {
     const { date } = options;
-    const maxDate = daysInMonth(date.getFullYear() + delta, date.getMonth());
+    const { min, max } = DATE_BOUNDS.year;
+    const current = date.getFullYear();
+    // Never loops: a `yyyy` mask holds at most 9999. A year outside the bounds,
+    // such as one set from code, only moves toward them.
+    const year = clamp(
+      current + delta,
+      Math.min(current, min),
+      Math.max(current, max)
+    );
+    const maxDate = daysInMonth(year, date.getMonth());
 
     // Clip to max day to avoid leap year change shifting the entire value
     if (date.getDate() > maxDate) {
       date.setDate(maxDate);
     }
 
-    date.setFullYear(date.getFullYear() + delta);
+    date.setFullYear(year);
   }
 
   getValue(date: Date): string {

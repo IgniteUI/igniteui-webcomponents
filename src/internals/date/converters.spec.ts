@@ -26,6 +26,16 @@ describe('Date converters', () => {
     expect(convertToDate('2024-99-99')).to.be.null;
   });
 
+  it('converts ISO strings with a signed six digit year', () => {
+    const late = new Date(Date.UTC(10_000, 0, 1));
+    const early = new Date(Date.UTC(-1, 0, 1));
+
+    expect(convertToDate('+010000-01-01T00:00:00.000Z')).to.eql(late);
+    expect(convertToDate('-000001-01-01T00:00:00.000Z')).to.eql(early);
+    expect(convertToDate('-000000-01-01T00:00:00.000Z')).to.be.null;
+    expect(convertToDate('+10000-01-01')).to.be.null;
+  });
+
   it('resolves time only strings against the current local date', () => {
     const today = CalendarDay.today;
     const parsed = convertToDate('13:45:30')!;

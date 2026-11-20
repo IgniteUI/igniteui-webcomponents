@@ -54,6 +54,7 @@
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                      |
 |       5 | 2026-11-02 | The events of the days view stay inside the calendar.                         |
 |       6 | 2026-11-18 | An internal function brings a date into view for the pickers, and keeps the months when the date is shown |
+|       7 | 2026-11-20 | The date properties accept an ISO string with a signed six digit year |
 
 ## Overview
 
@@ -345,6 +346,8 @@ by a year or by a page of years, and <kbd>Enter</kbd> or <kbd>Space</kbd> activa
 | resourceStrings  | -                  | No        | `IgcCalendarResourceStrings`                             | EN                                      | The texts of the component. The strings that you set replace the strings of the current locale. Reading returns all the strings, with your strings over the locale strings.                                      |
 
 `value`, `values` and `activeDate` accept `Date` objects and ISO date strings, including through their attributes.
+An ISO string can also have the signed six digit year that `toISOString()` gives outside the years 0 to 9999, such as
+`+010000-01-01`.
 
 ### Methods
 
