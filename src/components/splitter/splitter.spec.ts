@@ -4033,7 +4033,8 @@ describe('Splitter', () => {
 
   describe('Sizing', () => {
     const orientations = ['horizontal', 'vertical'] as const;
-    // `idle` is the thickness of the idle bar in indigo.
+    // `space` is the room from a triangle to the edge of the icon box of the design.
+    // `idle` and `indigoSpace` are the idle bar thickness and that room in indigo.
     const steps = [
       {
         size: 'small',
@@ -4042,7 +4043,9 @@ describe('Splitter', () => {
         handle: 4,
         expander: 4,
         radius: 2,
+        space: 5,
         idle: 1,
+        indigoSpace: 3,
       },
       {
         size: 'medium',
@@ -4051,7 +4054,9 @@ describe('Splitter', () => {
         handle: 6,
         expander: 5,
         radius: 8,
+        space: 5,
         idle: 4,
+        indigoSpace: 3,
       },
       {
         size: 'large',
@@ -4060,7 +4065,9 @@ describe('Splitter', () => {
         handle: 8,
         expander: 6,
         radius: 8,
+        space: 6,
         idle: 8,
+        indigoSpace: 6,
       },
     ];
 
@@ -4159,13 +4166,41 @@ describe('Splitter', () => {
       };
     }
 
+    it('keeps 48px between the drag handle and the icon box of each expander, at every size', async () => {
+      for (const step of steps) {
+        splitter.style.setProperty('--ig-size', step.value);
+        await elementUpdated(splitter);
+
+        const gap = 48 + step.space;
+        expect(gaps(splitter).handleGaps, step.size).to.eql([gap, gap]);
+      }
+    });
+
+    it('uses the smaller icon box of indigo for the gaps', async () => {
+      await withDocumentSheets([indigo.styleSheet!], async () => {
+        try {
+          configureTheme('indigo');
+
+          for (const step of steps) {
+            splitter.style.setProperty('--ig-size', step.value);
+            await elementUpdated(splitter);
+
+            const gap = 48 + step.indigoSpace;
+            expect(gaps(splitter).handleGaps, step.size).to.eql([gap, gap]);
+          }
+        } finally {
+          configureTheme('bootstrap');
+        }
+      });
+    });
+
     it('keeps the 48px margins around the drag handle with a collapsed pane', async () => {
       const handleTop = () =>
         getSplitterPart(splitter, DRAG_HANDLE_PART).getBoundingClientRect()
           .top -
         getSplitterPart(splitter, BAR_PART).getBoundingClientRect().top;
-      // The handle, its two 48px margins and the one expander that is left, centered in the 500px bar.
-      const groupStart = (500 - (125 + 96 + 8)) / 2;
+      // The handle, its two 48px margins and the 18px box of the one expander that is left, centered in the 500px bar.
+      const groupStart = (500 - (125 + 96 + 18)) / 2;
 
       splitter.toggle('start');
       await elementUpdated(splitter);
@@ -4174,7 +4209,7 @@ describe('Splitter', () => {
       splitter.toggle('start');
       splitter.toggle('end');
       await elementUpdated(splitter);
-      expect(handleTop()).to.equal(groupStart + 8 + 48);
+      expect(handleTop()).to.equal(groupStart + 18 + 48);
     });
 
     it('keeps the drag handle at 25% of a short bar and narrows the gaps, at every size and in both orientations', async () => {
@@ -4191,8 +4226,8 @@ describe('Splitter', () => {
 
           const { handleLength } = measure(splitter);
           const { handleGaps, inside } = gaps(splitter);
-          // What the bar leaves after the handle and the two expanders, halved.
-          const gap = (128 - 32 - step.expander * 4) / 2;
+          // Half of what the bar leaves after the handle, less the triangle and the space on its far side.
+          const gap = (128 - 32) / 2 - step.expander * 2 - step.space;
 
           expect(handleLength, label).to.equal(32);
           expect(handleGaps, label).to.eql([gap, gap]);
@@ -4201,7 +4236,7 @@ describe('Splitter', () => {
       }
     });
 
-    it('keeps the expanders 48px apart without a drag handle and inside a bar too short for it', async () => {
+    it('keeps the expander boxes 48px apart without a drag handle and inside a bar too short for it', async () => {
       splitter.hideDragHandle = true;
       splitter.style.setProperty('--ig-size', '3');
 
@@ -4211,14 +4246,15 @@ describe('Splitter', () => {
 
         splitter.style[length] = '500px';
         await elementUpdated(splitter);
-        expect(gaps(splitter).buttonsGap, orientation).to.equal(48);
+        // 48px between the two icon boxes, and 6px from each box edge to its triangle.
+        expect(gaps(splitter).buttonsGap, orientation).to.equal(48 + 12);
 
-        // The two 12px expanders leave 44px of the bar.
+        // The two 24px boxes leave 20px of the bar.
         splitter.style[length] = '68px';
         await elementUpdated(splitter);
 
         const { buttonsGap, inside } = gaps(splitter);
-        expect(buttonsGap, orientation).to.equal(44);
+        expect(buttonsGap, orientation).to.equal(20 + 12);
         expect(inside, orientation).to.be.true;
 
         splitter.style[length] = '500px';

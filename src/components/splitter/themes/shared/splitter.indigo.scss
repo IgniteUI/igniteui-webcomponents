@@ -32,6 +32,9 @@ $slim-splitter: tan(atan2(var(--_idle-size), var(--_bar-size)));
     // Mirrored by the indigo block of igx-splitter in igniteui-angular.
     --_idle-size: #{sizable(rem(1px), rem(4px), rem(8px))};
 
+    // The icon box of the design is 14px, 16px and 24px in this theme.
+    --_expander-space: #{sizable(rem(3px), rem(3px), rem(6px))};
+
     [part~='splitter-bar'] {
         @extend %hide-controls;
 

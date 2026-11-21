@@ -8,6 +8,10 @@ $size: var-get($theme, 'size');
 $bar-size: var(--_bar-size);
 $handle-size: var(--_handle-size);
 $expander-size: var(--_expander-size);
+$expander-space: var(--_expander-space);
+
+// The length an expander takes of the bar: the triangle and the space on its two sides.
+$expander-box: calc(2 * #{$expander-size} + 2 * #{$expander-space});
 $expander-border: $expander-size solid var-get($theme, 'expander-color');
 $expander-border-active: $expander-size solid var-get($theme, 'expander-color-active');
 
@@ -19,6 +23,9 @@ $expander-border-active: $expander-size solid var-get($theme, 'expander-color-ac
     --_bar-size: #{sizable(calc(#{$size} + #{rem(2px)}), calc(#{$size} + #{rem(8px)}), calc(#{$size} + #{rem(14px)}))};
     --_handle-size: #{sizable($size, calc(#{$size} + #{rem(2px)}), calc(#{$size} + #{rem(4px)}))};
     --_expander-size: #{sizable($size, calc(#{$size} + #{rem(1px)}), calc(#{$size} + #{rem(2px)}))};
+
+    // The space from a triangle to the edge of the 18px, 20px and 24px icon box of the design.
+    --_expander-space: #{sizable(rem(5px), rem(5px), rem(6px))};
 }
 
 [part~='splitter-bar'] {
@@ -87,12 +94,14 @@ $expander-border-active: $expander-size solid var-get($theme, 'expander-color-ac
 
     // The room for one margin when the bar is too short for 48px:
     // half of what the handle leaves, less one expander.
-    $room: calc((#{100 * $bar-percent} - #{$handle-length}) / 2 - 2 * #{$expander-size});
+    $room: calc((#{100 * $bar-percent} - #{$handle-length}) / 2 - #{$expander-box});
 
     // The gap between the two expanders when the drag handle is hidden: what they leave of the bar, up to 48px.
     :host([orientation='#{$orientation}']:is([disable-resize], [hide-drag-handle])) {
         [part~='start-collapse-btn'] {
-            margin-#{$cross}-end: clamp(0px, calc(#{100 * $bar-percent} - 4 * #{$expander-size}), #{rem(48px)});
+            margin-#{$cross}-end: calc(
+                #{$expander-space} + clamp(0px, calc(#{100 * $bar-percent} - 2 * #{$expander-box}), #{rem(48px)})
+            );
         }
     }
 
@@ -122,6 +131,7 @@ $expander-border-active: $expander-size solid var-get($theme, 'expander-color-ac
         [part*='expand-btn'] {
             border-#{$cross}-start: $expander-size solid transparent;
             border-#{$cross}-end: $expander-size solid transparent;
+            margin-#{$cross}: $expander-space;
         }
 
         [part~='start-expand-btn'],
