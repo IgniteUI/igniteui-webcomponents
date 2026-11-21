@@ -41,7 +41,11 @@
         display: flex;
         flex-shrink: 0;
         justify-content: center;
+        align-items: center;
         box-sizing: content-box;
+
+        // Gives the drag handle the bar length, as container query units.
+        container-type: size;
 
         [part*='collapse-btn'],
         [part*='expand-btn'] {
@@ -65,7 +69,6 @@
 
     [part~='drag-handle'] {
         height: 25%;
-        margin: rem(48px) 0;
     }
 }
 
@@ -82,7 +85,6 @@
 
     [part~='drag-handle'] {
         width: 25%;
-        margin: 0 rem(48px);
     }
 }
 
@@ -101,20 +103,6 @@
 :host(:state(end-collapsed)) {
     [part~='end-pane'] {
         display: none;
-    }
-}
-
-:host([disable-resize][orientation='horizontal']),
-:host([hide-drag-handle][orientation='horizontal']) {
-    [part~='start-collapse-btn'] {
-        margin-block-end: rem(48px);
-    }
-}
-
-:host([disable-resize][orientation='vertical']),
-:host([hide-drag-handle][orientation='vertical']) {
-    [part~='start-collapse-btn'] {
-        margin-inline-end: rem(48px);
     }
 }
 

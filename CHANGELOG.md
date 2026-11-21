@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `dot-style`, `square-style` and `corner-dot-style` take `squircle`, a square with soft corners.
   - `corner-dot-style` sets the shape of the inner corner dots. When you do not set it, the inner corner dots use `dot-style`, as before.
   - `dot-scale` sets the size of the data modules, from 0.7 to 1 of their cell, to leave a gap between them. The corners keep their full size.
+- #### Splitter
+  - The splitter follows `--ig-size`. The bar is 6px, 12px or 18px thick, the drag handle 4px, 6px or 8px with a 2px, 8px or 8px radius, and the expanders grow with them. The default is small, which is the size from before, so a splitter without `--ig-size` looks the same. `--ig-splitter-size` still sets the small size, and the medium and large steps add to it. A `--ig-splitter-border-radius` that you set applies at every size. In the Indigo theme the idle bar is 1px, 4px or 8px thick by size. The 48px gap around the drag handle is measured from the icon box of the design, so each expander is 5px further from the handle than before at the default size, 3px in the Indigo theme. Before, the splitter had one size, so an app that sets `--ig-size` to medium or large on the splitter or on an ancestor now gets a thicker bar. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
 
 ### Changed
 - #### Chip
@@ -100,6 +102,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - <kbd>Tab</kbd> on the open list without an active option no longer clears a `value` that matches no option yet, for example one whose option a framework renders later.
 - #### Slider
   - A change of the user that fails validation shows the invalid styles at once.
+- #### Splitter
+  - On a bar too short for the drag handle, the two expanders and the 48px gaps between them, the drag handle keeps 25% of the bar length and the gaps get narrower. Before, the gaps stayed 48px, so the handle shrank and the expanders touched the ends of the bar. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
+  - In the Indigo theme, the minimum sizes of the panes count the full thickness of the bar while it is idle. Before, they counted the thickness that the idle bar shows, so two minimums that filled the splitter overflowed it. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
 
 ## [7.5.0] - 2026-11-16
 ### Added

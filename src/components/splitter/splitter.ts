@@ -219,8 +219,12 @@ export default class IgcSplitterComponent extends I18nMixin(
 
   private _measurement: { container: number; bar: number } | null = null;
 
-  /** Container extent at the last handled resize. */
-  private _observedSize = -1;
+  private readonly _resizeObserver: ReturnType<
+    typeof addResizeObserverController
+  >;
+
+  /** Container and bar extents at the last handled resize. */
+  private _observed = { container: -1, bar: -1 };
 
   @query('[part~="base"]')
   private readonly _base!: HTMLElement;
@@ -440,7 +444,7 @@ export default class IgcSplitterComponent extends I18nMixin(
 
     addSlotController(this, { slots: Slots });
 
-    addResizeObserverController(this, {
+    this._resizeObserver = addResizeObserverController(this, {
       callback: this._handleContainerResize,
     });
 
@@ -477,6 +481,11 @@ export default class IgcSplitterComponent extends I18nMixin(
       }
       this._restoreAuthoredSizes();
     }
+  }
+
+  protected override firstUpdated(): void {
+    // The bar thickness follows `--ig-size` and changes without a host resize.
+    this._resizeObserver.observe(this._separator!);
   }
 
   protected override update(changed: PropertyValues<this>): void {
@@ -548,10 +557,10 @@ export default class IgcSplitterComponent extends I18nMixin(
 
   private _handleContainerResize(): void {
     this._measurement = null;
-    const size = this._getContainerSize();
+    const { container, bar } = this._measure();
 
-    if (size !== this._observedSize) {
-      this._observedSize = size;
+    if (container !== this._observed.container || bar !== this._observed.bar) {
+      this._observed = { container, bar };
       this.requestUpdate();
     }
   }
@@ -958,16 +967,43 @@ export default class IgcSplitterComponent extends I18nMixin(
    * between the reads would force a reflow for each read.
    */
   private _measure(): { container: number; bar: number } {
-    const axis = this._isHorizontal ? 'width' : 'height';
+    if (!this._measurement) {
+      const axis = this._isHorizontal ? 'width' : 'height';
+      const container = this._base?.getBoundingClientRect()[axis] ?? 0;
 
-    this._measurement ??= {
-      container: this._base ? this._base.getBoundingClientRect()[axis] : 0,
-      bar: this._separator
-        ? roundPrecise(this._separator.getBoundingClientRect()[axis])
-        : 0,
-    };
+      this._measurement = { container, bar: this._measureBar(container) };
+    }
 
     return this._measurement;
+  }
+
+  /**
+   * The layout thickness of the bar, which no transform changes, at the scale
+   * of the measured `container`.
+   */
+  private _measureBar(container: number): number {
+    const separator = this._separator;
+    const layoutContainer =
+      this._base?.[this._isHorizontal ? 'offsetWidth' : 'offsetHeight'];
+
+    if (!(separator && layoutContainer)) {
+      return 0;
+    }
+
+    const style = getComputedStyle(separator);
+    const [extent, start, end] = this._isHorizontal
+      ? (['width', 'Left', 'Right'] as const)
+      : (['height', 'Top', 'Bottom'] as const);
+    // The bar is a content box.
+    const thickness = [
+      style[extent],
+      style[`padding${start}`],
+      style[`padding${end}`],
+      style[`border${start}Width`],
+      style[`border${end}Width`],
+    ].reduce((sum, value) => sum + (Number.parseFloat(value) || 0), 0);
+
+    return roundPrecise((thickness * container) / layoutContainer, 3);
   }
 
   /** The content box of the flex container - the basis for every percentage. */
