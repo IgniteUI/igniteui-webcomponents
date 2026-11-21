@@ -256,7 +256,7 @@ the drag handle 10px, 12px and 14px.
 
 The drag handle is 25% of the bar length at every size, with 48px between it and each expander. On a bar too short
 for that, the gaps get narrower and the handle keeps its 25%. Without a drag handle the two expanders are 48px
-apart, or closer on a bar too short for that. In the Indigo theme the idle bar is 1px thick at every size and takes
+apart, or closer on a bar too short for that. In the Indigo theme the idle bar is 1px, 4px or 8px thick by size and takes
 the thickness of the size on hover and focus.
 
 A change of `--ig-size` updates the pane constraints: the panes share what the new bar thickness leaves.
@@ -539,9 +539,9 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 44. A fractional bar thickness counts in full against the minimum sizes.
 45. Under a scaled ancestor, the bar thickness counts at the scale of the container.
 46. In the Indigo theme, under a rotated ancestor, the minimum sizes that fit beside the idle bar stay applied.
-47. In the Indigo theme, the idle bar is 1px thick at every size, and at large in the vertical orientation, also with
-    an overridden `--ig-splitter-size`.
-48. In the Indigo theme, the panes give up the full thickness of the bar while the idle bar is 1px.
+47. In the Indigo theme, the idle bar is 1px, 4px and 8px thick by size, 8px at large in the vertical orientation and
+    with an overridden `--ig-splitter-size`.
+48. In the Indigo theme, the panes give up the full thickness of the bar while the bar is idle.
 49. In the Indigo theme, the hovered bar has the thickness of the size.
 
 ## Accessibility

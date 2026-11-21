@@ -4033,8 +4033,17 @@ describe('Splitter', () => {
 
   describe('Sizing', () => {
     const orientations = ['horizontal', 'vertical'] as const;
+    // `idle` is the thickness of the idle bar in indigo.
     const steps = [
-      { size: 'small', value: '1', bar: 6, handle: 4, expander: 4, radius: 2 },
+      {
+        size: 'small',
+        value: '1',
+        bar: 6,
+        handle: 4,
+        expander: 4,
+        radius: 2,
+        idle: 1,
+      },
       {
         size: 'medium',
         value: '2',
@@ -4042,8 +4051,17 @@ describe('Splitter', () => {
         handle: 6,
         expander: 5,
         radius: 8,
+        idle: 4,
       },
-      { size: 'large', value: '3', bar: 18, handle: 8, expander: 6, radius: 8 },
+      {
+        size: 'large',
+        value: '3',
+        bar: 18,
+        handle: 8,
+        expander: 6,
+        radius: 8,
+        idle: 8,
+      },
     ];
 
     function measure(target: IgcSplitterComponent) {
@@ -4278,7 +4296,7 @@ describe('Splitter', () => {
       });
     });
 
-    it('keeps a 1px idle bar at every size and with an overridden size in indigo', async () => {
+    it('keeps a 1px, 4px and 8px idle bar by size, also with an overridden size, in indigo', async () => {
       await withDocumentSheets([indigo.styleSheet!], async () => {
         try {
           configureTheme('indigo');
@@ -4290,7 +4308,10 @@ describe('Splitter', () => {
             await nextFrame();
             finishAnimationsFor(splitter.shadowRoot!);
 
-            expect(measure(splitter).bar, step.size).to.be.closeTo(1, 0.01);
+            expect(measure(splitter).bar, step.size).to.be.closeTo(
+              step.idle,
+              0.01
+            );
           }
 
           splitter.orientation = 'vertical';
@@ -4298,7 +4319,7 @@ describe('Splitter', () => {
           await nextFrame();
           finishAnimationsFor(splitter.shadowRoot!);
 
-          expect(measure(splitter).bar, 'vertical').to.be.closeTo(1, 0.01);
+          expect(measure(splitter).bar, 'vertical').to.be.closeTo(8, 0.01);
 
           splitter.style.setProperty('--ig-splitter-size', '10px');
           await elementUpdated(splitter);
@@ -4306,7 +4327,7 @@ describe('Splitter', () => {
           finishAnimationsFor(splitter.shadowRoot!);
 
           expect(measure(splitter).bar, 'overridden size').to.be.closeTo(
-            1,
+            8,
             0.01
           );
         } finally {
@@ -4315,7 +4336,7 @@ describe('Splitter', () => {
       });
     });
 
-    it('takes the full bar thickness from the panes while the idle bar is 1px in indigo', async () => {
+    it('takes the full bar thickness from the panes while the bar is idle in indigo', async () => {
       await withDocumentSheets([indigo.styleSheet!], async () => {
         try {
           configureTheme('indigo');
@@ -4331,7 +4352,7 @@ describe('Splitter', () => {
 
           const { startSize, endSize } = getPanesSizes(splitter, 'width');
 
-          expect(measure(splitter).bar).to.be.closeTo(1, 0.01);
+          expect(measure(splitter).bar).to.be.closeTo(8, 0.01);
           expect(startSize + endSize).to.equal(500 - 18);
         } finally {
           configureTheme('bootstrap');
