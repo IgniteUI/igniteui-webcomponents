@@ -1,4 +1,4 @@
-import { html, type TemplateResult } from 'lit';
+import { html, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import {
@@ -337,6 +337,13 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this._selection.prune();
   }
 
+  protected override willUpdate(props: PropertyValues): void {
+    if (this.disabled) {
+      this.open = false;
+    }
+    super.willUpdate(props);
+  }
+
   protected override async firstUpdated(): Promise<void> {
     await this.updateComplete;
     const selected = setInitialSelectionState(this.items);
@@ -508,6 +515,10 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   private _handleClick(event: PointerEvent): void {
+    if (this.disabled) {
+      return;
+    }
+
     const item = getElementFromPath(IgcSelectItemComponent.tagName, event);
     if (item && this._selection.activeItems.includes(item)) {
       this._selectItem(item);

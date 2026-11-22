@@ -452,6 +452,9 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 
 ### Selection integrity
 
+- Disabling an open select closes its list and sets `aria-expanded` to `false`.
+  The value stays unchanged and no `igcChange` event fires. Re-enabling allows selection again.
+
 7. The selection stays consistent across open and close cycles and programmatic changes. Setting the current
    `value` again keeps the active item, while a user commit and `select()` with the selected item move it there. A
    removed active item hands the navigation back to the selected item. Setting `selected` on each item again keeps

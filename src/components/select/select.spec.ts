@@ -588,16 +588,25 @@ describe('Select', () => {
       await elementUpdated(select);
     });
 
-    it('rejects a pointer selection after an open select becomes disabled', async () => {
+    it('closes an open select when disabled without changing its value', async () => {
       const eventSpy = spy(select, 'emitEvent');
       await openSelect();
 
       select.disabled = true;
       await elementUpdated(select);
-      await clickWithMouse(select.items[0]);
+      expect(select.open).to.be.false;
+      const nativeInput = getInput().shadowRoot!.querySelector('input')!;
+      expect(nativeInput.getAttribute('aria-expanded')).to.equal('false');
+      simulateClick(select.items[0]);
+      await elementUpdated(select);
 
       expect(select.value).to.equal('implementation');
       expect(eventSpy).not.calledWith('igcChange');
+      select.disabled = false;
+      await elementUpdated(select);
+      await openSelect();
+      await clickWithMouse(select.items[0]);
+      expect(select.value).to.equal(select.items[0].value);
     });
 
     it('closes the list when the current selection is clicked again', async () => {
