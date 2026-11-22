@@ -16,12 +16,23 @@ type GroupRegistryConfig<T extends GroupHost, S> = {
   scopeOf?: (host: T) => GroupScope;
 };
 
+/** The callbacks of one member. */
+interface GroupMemberCallbacks<S> {
+  /** Gets the state of the group on each sync. */
+  onSync: (state: S) => void;
+  /**
+   * Runs after the host enters a group, at connect or on a change of its key
+   * or scope, before the group syncs.
+   */
+  onJoin?: () => void;
+}
+
 /** The membership of one host, added to it as a reactive controller. */
 interface GroupMemberController<
   T extends GroupHost,
 > extends ReactiveController {
-  /** The hosts of the group, in DOM order. A lone host gets its own group. */
-  readonly members: T[];
+  /** The hosts of the group, in DOM order when `ordered`. A lone host is its own group. */
+  getMembers(ordered: boolean): T[];
   /** Moves the host to the group of its scope and key, and syncs both. */
   updateMembership(): void;
   sync(): void;
@@ -29,9 +40,9 @@ interface GroupMemberController<
 
 interface GroupRegistry<T extends GroupHost, S> {
   /** Creates a membership controller and adds it to the host. */
-  attach(host: T, onSync: (state: S) => void): GroupMemberController<T>;
-  /** Returns the hosts of the group of `member`, in DOM order. */
-  membersOf(member: T): T[];
+  attach(host: T, callbacks: GroupMemberCallbacks<S>): GroupMemberController<T>;
+  /** The hosts of the group of `member`, in DOM order unless `ordered` is `false`. */
+  membersOf(member: T, ordered?: boolean): T[];
 }
 
 function byDocumentOrder(a: Node, b: Node): number {
@@ -60,7 +71,9 @@ function byDocumentOrder(a: Node, b: Node): number {
  * });
  *
  * // In the component:
- * private readonly _group = radioGroups.attach(this, (state) => { ... });
+ * private readonly _group = radioGroups.attach(this, {
+ *   onSync: (hasCheckedRadio) => { ... },
+ * });
  * ```
  */
 export function createGroupRegistry<T extends GroupHost, S>(
@@ -79,13 +92,13 @@ export function createGroupRegistry<T extends GroupHost, S>(
     const state = config.deriveState(members.map((member) => member.host));
 
     for (const member of members) {
-      member.onSync(state);
+      member.callbacks.onSync(state);
     }
   }
 
   class Member implements GroupMemberController<T> {
     public readonly host: T;
-    public readonly onSync: (state: S) => void;
+    public readonly callbacks: GroupMemberCallbacks<S>;
 
     /** The scope of the host, or `null` while it is not registered. */
     private _scope: GroupScope | null = null;
@@ -105,22 +118,26 @@ export function createGroupRegistry<T extends GroupHost, S>(
         ? Array.from(groups.get(this._scope)?.get(this._key) ?? [])
         : [];
 
-      // A host moves on its next update, so an entry can hold a stale key.
+      // A read can come between a change of the key or scope of a host and
+      // its move, so an entry can hold a stale key.
       const members = entries.filter((member) => member._isCurrent);
 
       return isEmpty(members) ? [this] : members;
     }
 
-    public get members(): T[] {
-      // Only readers need document order.
-      return this._group
-        .sort((a, b) => byDocumentOrder(a.host, b.host))
-        .map((member) => member.host);
+    public getMembers(ordered: boolean): T[] {
+      const group = this._group;
+
+      if (ordered) {
+        group.sort((a, b) => byDocumentOrder(a.host, b.host));
+      }
+
+      return group.map((member) => member.host);
     }
 
-    constructor(host: T, onSync: (state: S) => void) {
+    constructor(host: T, callbacks: GroupMemberCallbacks<S>) {
       this.host = host;
-      this.onSync = onSync;
+      this.callbacks = callbacks;
 
       controllers.set(host, this);
       host.addController(this);
@@ -130,8 +147,9 @@ export function createGroupRegistry<T extends GroupHost, S>(
       this.updateMembership();
     }
 
+    /** A disconnected host is a group of its own. */
     public hostDisconnected(): void {
-      this._unregister();
+      this.updateMembership();
     }
 
     public updateMembership(): void {
@@ -150,6 +168,7 @@ export function createGroupRegistry<T extends GroupHost, S>(
 
         const keys = getOrInsertComputed(groups, scope, () => new Map());
         getOrInsertComputed(keys, key, () => new Set()).add(this);
+        this.callbacks.onJoin?.();
       }
 
       this.sync();
@@ -181,19 +200,24 @@ export function createGroupRegistry<T extends GroupHost, S>(
   }
 
   return {
-    attach(host, onSync) {
-      return new Member(host, onSync);
+    attach(host, callbacks) {
+      return new Member(host, callbacks);
     },
 
-    membersOf(member) {
+    membersOf(member, ordered = true) {
       const controller = controllers.get(member);
 
       // Move first, so a read after a key or scope change resolves right.
       controller?.updateMembership();
 
-      return controller?.members ?? [member];
+      return controller?.getMembers(ordered) ?? [member];
     },
   };
 }
 
-export type { GroupMemberController, GroupRegistry, GroupRegistryConfig };
+export type {
+  GroupMemberCallbacks,
+  GroupMemberController,
+  GroupRegistry,
+  GroupRegistryConfig,
+};

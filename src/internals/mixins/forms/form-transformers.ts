@@ -5,6 +5,7 @@ import {
   getDateFormValue,
 } from '../../date/converters.js';
 import { asNumber } from '../../utils/math.js';
+import { equal } from '../../utils/objects.js';
 import type { FormValueType, IgcFormControl } from './types.js';
 
 export type FormValueTransformers<T> = {
@@ -13,11 +14,14 @@ export type FormValueTransformers<T> = {
   setDefaultValue: (value: T) => T;
   getDefaultValue: (value: T) => T;
   setFormValue: (value: T, host: IgcFormControl) => FormValueType;
+  /** The host properties that `setFormValue` reads. A change of one of them submits again. */
+  reads: readonly string[];
+  /** Whether two values are the same, for example a value and the reported value. */
+  isSameValue: (a: T, b: T) => boolean;
 };
 
 export type FormValueConfig<T> = {
   initialValue: T;
-  initialDefaultValue?: T;
   transformers?: Partial<FormValueTransformers<T>>;
 };
 
@@ -27,6 +31,8 @@ export const FormValueDefaultTransformers: FormValueTransformers<string> = {
   setDefaultValue: (value) => value || '',
   getDefaultValue: (value) => value,
   setFormValue: (value, _) => value || null,
+  reads: [],
+  isSameValue: Object.is,
 };
 
 export const FormValueBooleanTransformers: Partial<
@@ -36,6 +42,7 @@ export const FormValueBooleanTransformers: Partial<
   setDefaultValue: Boolean,
   setFormValue: (checked, host) =>
     checked && 'value' in host ? (host.value as string) || 'on' : null,
+  reads: ['value'],
 };
 
 export const FormValueNumberTransformers: Partial<
@@ -52,6 +59,7 @@ export const FormValueDateTimeTransformers: Partial<
   setValue: convertToDate,
   setDefaultValue: convertToDate,
   setFormValue: getDateFormValue,
+  isSameValue: equal,
 };
 
 export const FormValueDateRangeTransformers: Partial<
@@ -59,6 +67,8 @@ export const FormValueDateRangeTransformers: Partial<
 > = {
   setValue: convertToDateRange,
   setDefaultValue: convertToDateRange,
+  isSameValue: equal,
+  reads: ['name'],
   setFormValue: (value, host) => {
     if (!host.name) {
       return null;
@@ -98,6 +108,8 @@ export const FormValueFileListTransformers: FormValueTransformers<FileList | nul
 
       return formData;
     },
+    reads: ['name'],
+    isSameValue: Object.is,
   };
 
 export const FormValueSelectTransformers: Partial<

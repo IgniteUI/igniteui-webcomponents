@@ -193,12 +193,9 @@ export async function rasterizeSvg(
   }
 }
 
-/**
- * Whether the clipboard takes SVG images. Browsers without `ClipboardItem.supports()`
- * (Chrome before 121, Safari before 18.4) take only PNG.
- */
+/** Whether the clipboard takes SVG images. */
 export function canCopySvg(): boolean {
-  return ClipboardItem.supports?.(MIME_TYPES.svg) ?? false;
+  return ClipboardItem.supports(MIME_TYPES.svg);
 }
 
 /** Triggers the browser download dialog for the given file. */

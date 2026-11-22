@@ -77,6 +77,8 @@ function stepFrom(base: number, step: number, steps: number): number {
   return roundPrecise(base + steps * step, decimals);
 }
 
+const NO_FORMAT_OPTIONS: Intl.NumberFormatOptions = Object.freeze({});
+
 /**
  * Counts the steps from `base` to the step nearest to `value`. As a native
  * range does, it compares the decimal distances, and a tie goes to the higher
@@ -348,13 +350,11 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   protected override willUpdate(changedProperties: PropertyValues): void {
-    // `valueFormatOptions` can change in place, so the update keeps a copy.
-    const formatSource: [string, Intl.NumberFormatOptions] = [
-      this.locale,
-      { ...this.valueFormatOptions },
-    ];
-    if (!equal(formatSource, this._formatSource)) {
-      this._formatSource = formatSource;
+    // Copy, as the options change in place; a new copy only on a change.
+    const options = this.valueFormatOptions ?? NO_FORMAT_OPTIONS;
+    const source = this._formatSource;
+    if (!source || this.locale !== source[0] || !equal(options, source[1])) {
+      this._formatSource = [this.locale, { ...options }];
       this._numberFormat = undefined;
     }
 
@@ -369,7 +369,9 @@ export class IgcSliderBaseComponent extends LitElement {
       [this._min, this._max] = this._scale;
     }
 
-    this._scale = [this._min, this._max];
+    if (this._scale[0] !== this._min || this._scale[1] !== this._max) {
+      this._scale = [this._min, this._max];
+    }
 
     const constraintsChanged =
       changedProperties.has('min') ||

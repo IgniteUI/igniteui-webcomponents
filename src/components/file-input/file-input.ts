@@ -238,8 +238,9 @@ export default class IgcFileInputComponent extends I18nMixin(
 
   private _handleChange(): void {
     this._filePickerActive = false;
-    this._setTouchedState();
-    this._formValue.setValueAndFormState(this.files);
+    this._writeFrom('user', () =>
+      this._formValue.setValueAndFormState(this.files)
+    );
 
     this.requestUpdate();
     this.emitEvent('igcChange', { detail: this.files });

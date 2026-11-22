@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 import { addContextProvider } from '#internals/controllers/context-provider.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { themeContext } from '#theming/context.js';
+import { enableThemeContext } from '#theming/theming-controller.js';
 import type { Theme, ThemeVariant } from '#theming/types.js';
 
 /**
@@ -64,6 +65,7 @@ export default class IgcThemeProviderComponent extends LitElement {
   constructor() {
     super();
 
+    enableThemeContext();
     addContextProvider(this, {
       context: themeContext,
       watch: ['theme', 'variant'],

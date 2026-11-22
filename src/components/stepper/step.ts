@@ -32,6 +32,8 @@ import type IgcStepperComponent from './stepper.js';
 import { styles as shared } from './themes/step/shared/step.common.css.js';
 import { styles } from './themes/step/step.base.css.js';
 
+const Slots = setSlots('indicator', 'title', 'subtitle');
+
 const nextId = createIdGenerator('igc-step');
 
 /**
@@ -124,7 +126,7 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
   );
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots('indicator', 'title', 'subtitle'),
+    slots: Slots,
   });
 
   private _stepperContext?: StepperContext;
@@ -300,9 +302,11 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
   ) {
     const bodyAnimation = bodyAnimations[this._animation][type];
     const contentAnimation = contentAnimations[this._animation][type];
-    const bodyHeight = getComputedStyle(this).getPropertyValue(
-      '--vertical-body-height'
-    );
+    // Only the grow animation reads the height; the read forces a style pass.
+    const bodyHeight =
+      this._animation === 'grow'
+        ? getComputedStyle(this).getPropertyValue('--vertical-body-height')
+        : '';
 
     const options: KeyframeAnimationOptions = {
       duration: this._animationDuration,
@@ -419,13 +423,11 @@ export default class IgcStepComponent extends HostAriaMixin(LitElement) {
   protected override render() {
     const renderBeforeHeader = this._contentTop && this._isHorizontal;
 
-    return html`
-      ${cache(
-        renderBeforeHeader
-          ? html`${this._renderContent()} ${this._renderHeader()}`
-          : html`${this._renderHeader()} ${this._renderContent()}`
-      )}
-    `;
+    return cache(
+      renderBeforeHeader
+        ? html`${this._renderContent()} ${this._renderHeader()}`
+        : html`${this._renderHeader()} ${this._renderContent()}`
+    );
   }
 }
 

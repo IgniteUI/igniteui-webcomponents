@@ -23,11 +23,12 @@ import {
   runExternalLabelAssociationTests,
   runHostComboboxTests,
 } from '#internals/testing/form-testbed.spec.js';
-import { isFocused } from '#internals/testing/helpers.spec.js';
+import { checkDatesEqual, isFocused } from '#internals/testing/helpers.spec.js';
 import {
   simulateComposingKeys,
   simulateInput,
   simulateKeyboard,
+  simulateTypingOver,
   simulateWheel,
 } from '#internals/testing/simulate.spec.js';
 import {
@@ -430,6 +431,19 @@ describe('Date Time Input component', () => {
         expect(input.value).to.equal('01/02/1999');
       });
 
+      it('an empty value assigned while focused replaces the text of the old value', async () => {
+        element.value = new Date(2020, 2, 3);
+        element.focus();
+        await elementUpdated(element);
+
+        expect(input.value).to.equal('03/03/2020');
+
+        element.value = null;
+        await elementUpdated(element);
+
+        expect(input.value).to.equal('__/__/____');
+      });
+
       it('does not report a value set from code while focused', async () => {
         const eventSpy = spy(element, 'emitEvent');
         element.focus();
@@ -755,105 +769,40 @@ describe('Date Time Input component', () => {
       expect(element.value?.valueOf()).to.equal(value.valueOf());
     });
 
-    it('stepUp should initialize new date if value is empty', async () => {
-      const today = new Date();
+    it('stepUp and stepDown give an empty value the current date and time', async () => {
+      for (const step of ['stepUp', 'stepDown'] as const) {
+        element.clear();
+        const before = Date.now();
 
-      expect(input.value).to.equal('');
+        element[step]();
+        await elementUpdated(element);
 
-      element.stepUp();
-      await elementUpdated(element);
-
-      expect(element.value).to.not.be.null;
-      expect(element.value?.setHours(0, 0, 0, 0)).to.equal(
-        today.setHours(0, 0, 0, 0)
-      );
-    });
-
-    it('stepDown should initialize new date if value is empty', async () => {
-      const today = new Date();
-
-      expect(input.value).to.equal('');
-
-      element.stepDown();
-      await elementUpdated(element);
-
-      expect(element.value).to.not.be.null;
-      expect(element.value!.setHours(0, 0, 0, 0)).to.equal(
-        today.setHours(0, 0, 0, 0)
-      );
+        expect(element.value!.getTime()).to.be.within(before, Date.now());
+      }
     });
 
     it('should stepUp correctly', async () => {
-      const value = new Date(2020, 2, 3, 0, 0, 0, 0);
-
-      element.value = value;
+      element.value = new Date(2020, 2, 3);
       element.inputFormat = 'dd.MM.yyyy hh:mm';
+
+      // Without focus and a part, the default part: the date
       element.stepUp();
-      await elementUpdated(element);
-      expect(element.value!.getDate()).to.equal(value.getDate() + 1);
+      expect(element.value).to.eql(new Date(2020, 2, 4));
 
-      element.inputFormat = 'MM.yy hh:mm';
-      element.stepUp();
-      await elementUpdated(element);
-      expect(element.value!.getHours()).to.equal(value.getHours() + 1);
-
-      element.inputFormat = 'MM.yy';
-      element.stepUp();
-      await elementUpdated(element);
-      expect(element.value!.getMonth()).to.equal(value.getMonth() + 1);
-
-      element.inputFormat = 'dd.MM.yy hh:mm:ss tt';
-      element.stepUp(DatePart.Year);
-      await elementUpdated(element);
-      expect(element.value!.getFullYear()).to.equal(value.getFullYear() + 1);
-
-      element.stepUp(DatePart.Minutes);
-      await elementUpdated(element);
-      expect(element.value!.getMinutes()).to.equal(value.getMinutes() + 1);
-
-      element.stepUp(DatePart.Seconds);
-      await elementUpdated(element);
-      expect(element.value!.getSeconds()).to.equal(value.getSeconds() + 1);
-
-      expect(input.value.indexOf('AM')).to.be.greaterThan(-1);
-      expect(input.value.indexOf('PM')).to.equal(-1);
-
-      element.stepUp(DatePart.AmPm);
-      await elementUpdated(element);
-      expect(input.value.indexOf('AM')).to.equal(-1);
-      expect(input.value.indexOf('PM')).to.be.greaterThan(-1);
+      element.stepUp(DatePart.Minutes, 15);
+      expect(element.value).to.eql(new Date(2020, 2, 4, 0, 15));
     });
 
     it('should stepDown correctly', async () => {
-      const value = new Date(2020, 2, 3, 1, 1, 1, 1);
-
-      element.value = value;
-      element.inputFormat = 'dd.MM.yyyy hh:mm';
-      element.stepDown();
-      await elementUpdated(element);
-      expect(element.value!.getDate()).to.equal(value.getDate() - 1);
-
+      element.value = new Date(2020, 2, 3, 10);
       element.inputFormat = 'MM.yy hh:mm';
-      element.stepDown();
-      await elementUpdated(element);
-      expect(element.value!.getHours()).to.equal(value.getHours() - 1);
 
-      element.inputFormat = 'MM.yy';
+      // Without focus, a part or a date part, the default part: the hours
       element.stepDown();
-      await elementUpdated(element);
-      expect(element.value!.getMonth()).to.equal(value.getMonth() - 1);
+      expect(element.value).to.eql(new Date(2020, 2, 3, 9));
 
       element.stepDown(DatePart.Year);
-      await elementUpdated(element);
-      expect(element.value!.getFullYear()).to.equal(value.getFullYear() - 1);
-
-      element.stepDown(DatePart.Minutes);
-      await elementUpdated(element);
-      expect(element.value!.getMinutes()).to.equal(value.getMinutes() - 1);
-
-      element.stepDown(DatePart.Seconds);
-      await elementUpdated(element);
-      expect(element.value!.getSeconds()).to.equal(value.getSeconds() - 1);
+      expect(element.value).to.eql(new Date(2019, 2, 3, 9));
     });
 
     it('setRangeText()', async () => {
@@ -928,6 +877,23 @@ describe('Date Time Input component', () => {
       expect(element.value.getFullYear()).to.equal(value.getFullYear() - 10);
     });
 
+    it('stepUp and stepDown switch AM/PM while the display format differs from the input format', async () => {
+      element.inputFormat = 'MM/dd/yyyy hh:mm tt';
+      element.displayFormat = 'short';
+      element.value = new Date(2020, 2, 3, 10, 0);
+      await elementUpdated(element);
+
+      element.stepUp(DatePart.AmPm);
+      await elementUpdated(element);
+
+      expect(element.value).to.eql(new Date(2020, 2, 3, 22, 0));
+
+      element.stepDown(DatePart.AmPm);
+      await elementUpdated(element);
+
+      expect(element.value).to.eql(new Date(2020, 2, 3, 10, 0));
+    });
+
     it('mouse wheel should correctly step up/down', async () => {
       const value = new Date(2020, 2, 3);
       element.value = value;
@@ -981,26 +947,25 @@ describe('Date Time Input component', () => {
       expect(element.value.getFullYear()).to.equal(value.getFullYear());
     });
 
-    it('ArrowUp should stepUp correctly', async () => {
+    it('ArrowUp and ArrowDown spin the part at the caret as a draft that blur commits', async () => {
       const value = new Date(2020, 2, 3);
       element.value = value;
-
       element.focus();
       await elementUpdated(element);
 
-      simulateKeyboard(input, arrowUp);
-      await elementUpdated(element);
+      // The caret is at the end, in the year part.
+      for (const key of [arrowUp, arrowUp, arrowDown]) {
+        simulateKeyboard(input, key);
+        await elementUpdated(element);
+      }
 
-      // Spinning is an uncommitted edit while the input is focused.
-      expect(element.value?.getTime()).to.equal(value.getTime());
-      expect(parser.parseDate(input.value)?.getFullYear()).to.equal(
-        value.getFullYear() + 1
-      );
+      expect(element.value).to.eql(value);
+      expect(input.value).to.equal('03/03/2021');
 
       element.blur();
       await elementUpdated(element);
 
-      expect(element.value.getFullYear()).to.equal(value.getFullYear() + 1);
+      expect(element.value).to.eql(new Date(2021, 2, 3));
     });
 
     it('does not spin on an arrow key that an IME handles', async () => {
@@ -1015,28 +980,6 @@ describe('Date Time Input component', () => {
       await elementUpdated(element);
 
       expect(input.value).to.equal(text);
-    });
-
-    it('ArrowDown should stepDown correctly', async () => {
-      const value = new Date(2020, 2, 3);
-      element.value = value;
-
-      element.focus();
-      await elementUpdated(element);
-
-      simulateKeyboard(input, arrowDown);
-      await elementUpdated(element);
-
-      // Spinning is an uncommitted edit while the input is focused.
-      expect(element.value?.getTime()).to.equal(value.getTime());
-      expect(parser.parseDate(input.value)?.getFullYear()).to.equal(
-        value.getFullYear() - 1
-      );
-
-      element.blur();
-      await elementUpdated(element);
-
-      expect(element.value.getFullYear()).to.equal(value.getFullYear() - 1);
     });
 
     it('Up/Down arrow readonly is a no-op', async () => {
@@ -1217,6 +1160,36 @@ describe('Date Time Input component', () => {
       await elementUpdated(element);
 
       expect([input.selectionStart, input.selectionEnd]).to.eql([2, 2]);
+    });
+
+    /** Presses `Ctrl` + `key` with the caret at `from`, and returns the selection after it. */
+    const caretAfter = async (from: number, key: string) => {
+      input.setSelectionRange(from, from);
+      simulateKeyboard(input, [ctrlKey, key]);
+      await elementUpdated(element);
+      return [input.selectionStart, input.selectionEnd];
+    };
+
+    it('Ctrl + ArrowLeft/Right stop at each part edge in a format without separators', async () => {
+      element.inputFormat = 'yyyyMMdd';
+      element.value = new Date(2020, 2, 3);
+      element.focus();
+      await elementUpdated(element);
+
+      expect(await caretAfter(4, arrowRight)).to.eql([6, 6]);
+      expect(await caretAfter(6, arrowRight)).to.eql([8, 8]);
+      expect(await caretAfter(5, arrowLeft)).to.eql([4, 4]);
+      expect(await caretAfter(4, arrowLeft)).to.eql([0, 0]);
+    });
+
+    it('Ctrl + ArrowLeft/Right skip a separator of more than one character', async () => {
+      element.inputFormat = 'dd, MM yyyy';
+      element.value = new Date(2020, 2, 3);
+      element.focus();
+      await elementUpdated(element);
+
+      expect(await caretAfter(2, arrowRight)).to.eql([6, 6]);
+      expect(await caretAfter(4, arrowLeft)).to.eql([0, 0]);
     });
 
     it('does not spin while the cursor is inside a literal', async () => {
@@ -1584,6 +1557,63 @@ describe('Date Time Input component', () => {
 
       expect(toCalendarDay(spec.element.value!).equalTo(today)).to.be.true;
       spec.assertSubmitHasValue(today.native.toISOString());
+    });
+
+    describe('Form reset while focused', () => {
+      let input: HTMLInputElement;
+
+      beforeEach(async () => {
+        spec.setProperties({ inputFormat: 'MM/dd/yyyy' });
+        await elementUpdated(spec.element);
+        input = spec.element.renderRoot.querySelector('input')!;
+      });
+
+      it('discards the typed text, as a native date input does', async () => {
+        await simulateTypingOver(spec.element, '12');
+        expect(input.value).to.equal('12/__/____');
+
+        spec.reset();
+        await elementUpdated(spec.element);
+
+        expect(input.value).to.equal('__/__/____');
+
+        spec.element.blur();
+        await elementUpdated(spec.element);
+
+        expect(spec.element.value).to.be.null;
+        spec.assertSubmitHasValue(null);
+      });
+
+      it('shows the default and keeps it on the next blur', async () => {
+        const defaultDate = new Date(2024, 0, 15);
+        spec.setAttributes({ value: defaultDate.toISOString() });
+        await simulateTypingOver(spec.element, '12');
+        expect(input.value).to.equal('12/__/____');
+
+        spec.reset();
+        await elementUpdated(spec.element);
+
+        expect(input.value).to.equal('01/15/2024');
+
+        spec.element.blur();
+        await elementUpdated(spec.element);
+
+        checkDatesEqual(spec.element.value!, defaultDate);
+        spec.assertSubmitHasValue(defaultDate.toISOString());
+      });
+
+      it('shows the empty mask when the reset empties the value', async () => {
+        spec.setProperties({ value: new Date(2024, 2, 3) });
+        spec.element.focus();
+        await elementUpdated(spec.element);
+
+        expect(input.value).to.equal('03/03/2024');
+
+        spec.reset();
+        await elementUpdated(spec.element);
+
+        expect(input.value).to.equal('__/__/____');
+      });
     });
 
     it('reflects disabled ancestor state', () => {

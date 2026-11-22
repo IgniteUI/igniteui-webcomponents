@@ -71,6 +71,8 @@
 |      14 | 2026-11-06 | A canceled <kbd>Enter</kbd> `keydown`, or the <kbd>Enter</kbd> that commits an IME composition, does not submit the form |
 |      15 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form: through the default button, from the only text field when the form has no submit button, after the `keypress`, and not when a listener disables the input |
 |      16 | 2026-11-11 | The combo in single selection is a text field                                                                                                              |
+|      17 | 2026-11-16 | `stepUp`, `stepDown` and `setRangeText` before the first render keep the value                                                                             |
+|      18 | 2026-11-18 | A change of the `value` attribute keeps the control pristine, as for a native input |
 
 ## Overview
 
@@ -329,7 +331,8 @@ validity flags and slot names.
 ```
 
 - The value is submitted under `name`.
-- A form reset restores the value to `defaultValue`, which is taken from the `value` attribute.
+- A form reset restores the value to `defaultValue`, which is taken from the `value` attribute. A change of the
+  attribute sets the value and keeps the control pristine, so a later `defaultValue` still sets the value.
 - An invalid control blocks submission and fires the native `invalid` event.
 - The control cancels the `invalid` event to hide the message of the browser. As for a native control, a failed
   submit or `form.reportValidity()` then moves the focus to the first invalid control of the form, also when an invalid
@@ -540,7 +543,8 @@ The groups below mirror the `describe` blocks of the suite.
 
 ### Methods
 
-15. `stepUp` and `stepDown` increment and decrement the value.
+15. `stepUp` and `stepDown` increment and decrement the value. Before the first render, they and `setRangeText` keep
+    the value.
 16. `setRangeText` replaces the given range, and the selection when it gets no range.
 17. `setSelectionRange` sets the selection, and `selectionStart` and `selectionEnd` report it.
 18. `selectionStart` and `selectionEnd` are `null` for the `email` and `number` types.
@@ -586,7 +590,7 @@ Driven by `createFormAssociatedTestBed`.
     no submission on <kbd>Enter</kbd> while the value is invalid. A listener on the host or an ancestor that cancels the
     `keydown` stops the submission, and a listener that stops the `keydown` delays it to the next task. The
     <kbd>Enter</kbd> that commits an IME composition does not submit, also when it comes after `compositionend` with
-    the `keyCode` 229.
+    the `keyCode` 229. A change of the `value` attribute keeps the control pristine.
 36. Validation - a passing and a failing case for each of required, minlength, maxlength, pattern, email schema, url
     schema, min, max and step. A pattern that matches only a part of the value fails, a pattern compiles with the `v`
     flag, and an invalid pattern sets no constraint.

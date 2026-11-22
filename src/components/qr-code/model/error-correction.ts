@@ -1,6 +1,7 @@
 import { getOrInsertComputed } from '#internals/utils/objects.js';
 
-const EXP_TABLE: number[] = new Array(512);
+// The readers reduce the exponent modulo 255, so one cycle is enough.
+const EXP_TABLE: number[] = new Array(256);
 const LOG_TABLE: number[] = new Array(256);
 const POLYNOMIALS = new Map<number, number[]>();
 
@@ -13,9 +14,6 @@ const POLYNOMIALS = new Map<number, number[]>();
     if (x & 0x100) {
       x ^= 0x11d;
     }
-  }
-  for (let i = 256; i < 512; i++) {
-    EXP_TABLE[i] = EXP_TABLE[i - 256];
   }
 })();
 
@@ -158,7 +156,7 @@ export const EC_BLOCKS_TABLE: ECBlock[][] = Array.from(
     ECC_PER_BLOCK.map((perVersion, level) => {
       const ecPerBlock = perVersion[index];
       const numBlocks = NUM_BLOCKS[level][index];
-      const codewords = Math.floor(rawDataModules(index + 1) / 8);
+      const codewords = getTotalCodewordsCount(index + 1);
       const shortLength = Math.floor(codewords / numBlocks);
       const shortBlocks = numBlocks - (codewords % numBlocks);
       const groups = [
@@ -190,6 +188,45 @@ export function getDataCodewordsCount(
   return totalDataCodewords;
 }
 
+/** Returns the number of codewords of `version`, data and error correction, at any level. */
+export function getTotalCodewordsCount(version: number): number {
+  return Math.floor(rawDataModules(version) / 8);
+}
+
+/**
+ * Returns the block and the position in that block of each codeword, in interleaved order. A
+ * position at or past the data length of its block is an error correction codeword.
+ */
+export function getInterleavedOrder(
+  version: number,
+  errorCorrectionLevel: number
+): [block: number, position: number][] {
+  const { ecPerBlock, groups } =
+    EC_BLOCKS_TABLE[version - 1][errorCorrectionLevel];
+  const dataLengths = groups.flatMap(({ numBlocks, dataCW }) =>
+    new Array<number>(numBlocks).fill(dataCW)
+  );
+  // The long blocks come last.
+  const longest = dataLengths.at(-1)!;
+  const order: [number, number][] = [];
+
+  for (let i = 0; i < longest; i++) {
+    for (const [block, length] of dataLengths.entries()) {
+      if (i < length) {
+        order.push([block, i]);
+      }
+    }
+  }
+
+  for (let i = 0; i < ecPerBlock; i++) {
+    for (const [block, length] of dataLengths.entries()) {
+      order.push([block, length + i]);
+    }
+  }
+
+  return order;
+}
+
 /** Interleaves data and ECC codewords from all blocks per the QR specification, producing the final codeword sequence. */
 export function interleaveBlocks(
   dataBlocks: number[],
@@ -198,37 +235,18 @@ export function interleaveBlocks(
 ): number[] {
   const ecBlock = EC_BLOCKS_TABLE[version - 1][errorCorrectionLevel];
   const blocks: number[][] = [];
-  const eccBlocks: number[][] = [];
 
   let offset = 0;
 
   for (const group of ecBlock.groups) {
     for (let b = 0; b < group.numBlocks; b++) {
       const block = dataBlocks.slice(offset, offset + group.dataCW);
-      blocks.push(block);
-      eccBlocks.push(calculateECC(block, ecBlock.ecPerBlock));
+      blocks.push(block.concat(calculateECC(block, ecBlock.ecPerBlock)));
       offset += group.dataCW;
     }
   }
 
-  const interleaved: number[] = [];
-  const maxDataLength = Math.max(...blocks.map((b) => b.length));
-  for (let i = 0; i < maxDataLength; i++) {
-    for (const block of blocks) {
-      if (i < block.length) {
-        interleaved.push(block[i]);
-      }
-    }
-  }
-
-  const maxECCLength = ecBlock.ecPerBlock;
-  for (let i = 0; i < maxECCLength; i++) {
-    for (const eccBlock of eccBlocks) {
-      if (i < eccBlock.length) {
-        interleaved.push(eccBlock[i]);
-      }
-    }
-  }
-
-  return interleaved;
+  return getInterleavedOrder(version, errorCorrectionLevel).map(
+    ([block, position]) => blocks[block][position]
+  );
 }

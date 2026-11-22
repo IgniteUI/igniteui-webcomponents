@@ -46,15 +46,6 @@ export const TIME_PART_TYPES = new Set<DatePartType>([
   DatePartType.Seconds,
 ]);
 
-export const DEFAULT_DATE_PARTS_SPIN_DELTAS = Object.freeze<DatePartDeltas>({
-  date: 1,
-  month: 1,
-  year: 1,
-  hours: 1,
-  minutes: 1,
-  seconds: 1,
-});
-
 /**
  * The amounts by which each date or time part is incremented or decremented on
  * a step action in date-time input; every part defaults to `1`.
@@ -176,6 +167,7 @@ const TIME_PART_CONFIG: Record<TimePartType, TimePartConfig> = {
 };
 
 const DATE_BOUNDS = {
+  year: { min: 1, max: 9999 },
   month: { min: 0, max: 11 },
   date: { min: 1, max: 31 },
 } as const;
@@ -225,8 +217,12 @@ abstract class DatePartBase implements IDatePart {
     this.format = options.format;
   }
 
-  abstract validate(value: number, context?: DateValidationContext): boolean;
-  abstract spin(delta: number, options: SpinOptions): void;
+  validate(_value: number, _context?: DateValidationContext): boolean {
+    return true;
+  }
+
+  spin(_delta: number, _options: SpinOptions): void {}
+
   abstract getValue(date: Date): string;
 }
 
@@ -236,25 +232,30 @@ abstract class DatePartBase implements IDatePart {
 
 /** Year part (yyyy, yy) */
 class YearPart extends DatePartBase {
-  constructor(options: DatePartOptions) {
-    super(DatePartType.Year, options);
+  override validate(value: number): boolean {
+    // A typed year has at most four digits.
+    return value >= 0;
   }
 
-  validate(_value: number): boolean {
-    // Years have no upper bound.
-    return _value >= 0;
-  }
-
-  spin(delta: number, options: SpinOptions): void {
+  override spin(delta: number, options: SpinOptions): void {
     const { date } = options;
-    const maxDate = daysInMonth(date.getFullYear() + delta, date.getMonth());
+    const { min, max } = DATE_BOUNDS.year;
+    const current = date.getFullYear();
+    // Never loops: a `yyyy` mask holds at most 9999. A year outside the bounds,
+    // such as one set from code, only moves toward them.
+    const year = clamp(
+      current + delta,
+      Math.min(current, min),
+      Math.max(current, max)
+    );
+    const maxDate = daysInMonth(year, date.getMonth());
 
     // Clip to max day to avoid leap year change shifting the entire value
     if (date.getDate() > maxDate) {
       date.setDate(maxDate);
     }
 
-    date.setFullYear(date.getFullYear() + delta);
+    date.setFullYear(year);
   }
 
   getValue(date: Date): string {
@@ -269,16 +270,12 @@ class YearPart extends DatePartBase {
 
 /** Month part (MM, M) */
 class MonthPart extends DatePartBase {
-  constructor(options: DatePartOptions) {
-    super(DatePartType.Month, options);
-  }
-
-  validate(value: number): boolean {
+  override validate(value: number): boolean {
     // Month is 0-based internally, but 1-12 in display
     return value >= DATE_BOUNDS.month.min && value <= DATE_BOUNDS.month.max;
   }
 
-  spin(delta: number, options: SpinOptions): void {
+  override spin(delta: number, options: SpinOptions): void {
     const { date, spinLoop } = options;
     const { min, max } = DATE_BOUNDS.month;
 
@@ -297,11 +294,7 @@ class MonthPart extends DatePartBase {
 
 /** Date (day of month) part (dd, d) */
 class DateOfMonthPart extends DatePartBase {
-  constructor(options: DatePartOptions) {
-    super(DatePartType.Date, options);
-  }
-
-  validate(value: number, context?: DateValidationContext): boolean {
+  override validate(value: number, context?: DateValidationContext): boolean {
     if (value < DATE_BOUNDS.date.min) {
       return false;
     }
@@ -314,7 +307,7 @@ class DateOfMonthPart extends DatePartBase {
     return value <= DATE_BOUNDS.date.max;
   }
 
-  spin(delta: number, options: SpinOptions): void {
+  override spin(delta: number, options: SpinOptions): void {
     const { date, spinLoop } = options;
     const maxDate = daysInMonth(date.getFullYear(), date.getMonth());
     const { min } = DATE_BOUNDS.date;
@@ -334,16 +327,16 @@ class DateOfMonthPart extends DatePartBase {
 class TimePart extends DatePartBase {
   private readonly _config: TimePartConfig;
 
-  constructor(type: TimePartType, options: DatePartOptions) {
+  constructor(type: DatePartType, options: DatePartOptions) {
     super(type, options);
-    this._config = TIME_PART_CONFIG[type];
+    this._config = TIME_PART_CONFIG[type as TimePartType];
   }
 
-  validate(value: number): boolean {
+  override validate(value: number): boolean {
     return value >= this._config.min && value <= this._config.max;
   }
 
-  spin(delta: number, options: SpinOptions): void {
+  override spin(delta: number, options: SpinOptions): void {
     const { date, spinLoop } = options;
     const { min, max, get, set } = this._config;
 
@@ -363,16 +356,7 @@ class TimePart extends DatePartBase {
 
 /** AM/PM part (tt, t) */
 class AmPmPart extends DatePartBase {
-  constructor(options: DatePartOptions) {
-    super(DatePartType.AmPm, options);
-  }
-
-  validate(_value: number): boolean {
-    // AM/PM doesn't have numeric validation
-    return true;
-  }
-
-  spin(_delta: number, options: SpinOptions): void {
+  override spin(_delta: number, options: SpinOptions): void {
     const { date, amPmValue, originalDate } = options;
 
     if (!amPmValue) return;
@@ -394,19 +378,6 @@ class AmPmPart extends DatePartBase {
 
 /** Literal part (separators like /, -, :, space, etc.) */
 class LiteralPart extends DatePartBase {
-  constructor(options: DatePartOptions) {
-    super(DatePartType.Literal, options);
-  }
-
-  validate(_value: number): boolean {
-    // Literals don't have validation
-    return true;
-  }
-
-  spin(_delta: number, _options: SpinOptions): void {
-    // Literals can't be spun
-  }
-
   getValue(_date: Date): string {
     return this.format;
   }
@@ -416,29 +387,32 @@ class LiteralPart extends DatePartBase {
 
 //#region Factory Function
 
+const PART_CLASSES: Record<
+  DatePartType,
+  new (type: DatePartType, options: DatePartOptions) => IDatePart
+> = {
+  year: YearPart,
+  month: MonthPart,
+  date: DateOfMonthPart,
+  hours: TimePart,
+  minutes: TimePart,
+  seconds: TimePart,
+  amPm: AmPmPart,
+  literal: LiteralPart,
+};
+
 /** Creates a date part of `type`. The only way to create one outside this module. */
 export function createDatePart(
   type: DatePartType,
   options: DatePartOptions
 ): IDatePart {
-  switch (type) {
-    case DatePartType.Year:
-      return new YearPart(options);
-    case DatePartType.Month:
-      return new MonthPart(options);
-    case DatePartType.Date:
-      return new DateOfMonthPart(options);
-    case DatePartType.Hours:
-    case DatePartType.Minutes:
-    case DatePartType.Seconds:
-      return new TimePart(type, options);
-    case DatePartType.AmPm:
-      return new AmPmPart(options);
-    case DatePartType.Literal:
-      return new LiteralPart(options);
-    default:
-      throw new Error(`Unknown date part type: ${type}`);
+  const PartClass = PART_CLASSES[type];
+
+  if (!PartClass) {
+    throw new Error(`Unknown date part type: ${type}`);
   }
+
+  return new PartClass(type, options);
 }
 
 //#endregion

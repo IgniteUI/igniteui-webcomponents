@@ -237,6 +237,22 @@ export function toggleEventListener<
     : target.removeEventListener(event, listener, options);
 }
 
+/** Adds an unbound `listener` for each of `events`; does nothing during SSR. */
+export function addSafeEventListeners(
+  target: EventTarget,
+  events: readonly string[],
+  listener: EventListenerOrEventListenerObject,
+  options?: AddEventListenerOptions
+): void {
+  if (isServer) {
+    return;
+  }
+
+  for (const event of events) {
+    target.addEventListener(event, listener, options);
+  }
+}
+
 /**
  * Adds an event listener to an element, and does nothing during server-side
  * rendering.
@@ -252,12 +268,8 @@ export function addSafeEventListener<
   handler: (event: EventTypeOf<E>) => unknown,
   options?: boolean | AddEventListenerOptions
 ): void {
-  if (isServer) {
-    return;
+  if (!isServer) {
+    // The browser calls a function listener with the target as `this`.
+    target.addEventListener(eventName, handler as EventListener, options);
   }
-
-  const boundHandler = (event: Event) =>
-    handler.call(target, event as EventTypeOf<E>);
-
-  target.addEventListener(eventName, boundHandler, options);
 }

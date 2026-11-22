@@ -64,6 +64,20 @@ describe('Combo', () => {
       spec.assertSubmitHasValues(['BG01', 'BG02']);
     });
 
+    it('submits the values under a new name (multiple)', async () => {
+      await spec.rename('renamed');
+
+      spec.assertSubmitHasValues(['BG01', 'BG02']);
+    });
+
+    it('submits the value under a new name (single)', async () => {
+      spec.setProperties({ singleSelect: true });
+      // A string value goes under the `name` attribute, which the update reflects.
+      await spec.rename('renamed', true);
+
+      spec.assertSubmitHasValues(['BG01']);
+    });
+
     it('is associated on submit without value-key (single)', () => {
       const [first, second, _] = cities;
 
@@ -179,7 +193,7 @@ describe('Combo', () => {
       const target =
         spec.element.renderRoot.querySelector<IgcInputComponent>('#target')!;
 
-      simulateBlur(target.renderRoot.querySelector('input')!);
+      simulateBlur(spec.element);
       await elementUpdated(spec.element);
       ValidityHelpers.hasInvalidStyles(target).to.be.true;
 
@@ -202,6 +216,17 @@ describe('Combo', () => {
       await elementUpdated(spec.element);
 
       expect(target.value).to.equal('Sofia');
+    });
+
+    it('shows the invalid state of the combo on the main input at once', () => {
+      const target =
+        spec.element.renderRoot.querySelector<IgcInputComponent>('#target')!;
+
+      spec.element.invalid = true;
+      ValidityHelpers.hasInvalidStyles(target).to.be.true;
+
+      spec.element.invalid = false;
+      ValidityHelpers.hasInvalidStyles(target).to.be.false;
     });
 
     it('is accessible while a submit fails', async () => {
@@ -362,6 +387,13 @@ describe('Combo', () => {
         spec.reset();
 
         expect(spec.element.value).to.eql(value);
+      });
+
+      it('stays pristine after a change of the value attribute', () => {
+        spec.element.setAttribute('value', JSON.stringify(['US01']));
+
+        expect(spec.element.value).to.eql(['US01']);
+        spec.assertIsPristine();
       });
     });
 

@@ -1,10 +1,8 @@
-import { consume } from '@lit/context';
+import { ContextConsumer } from '@lit/context';
 import { html, isServer, LitElement, nothing } from 'lit';
 import { query, state } from 'lit/decorators.js';
-import { cache } from 'lit/directives/cache.js';
 import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { until } from 'lit/directives/until.js';
 import { chatUserInputContext } from '#internals/context.js';
 import {
   enterKey,
@@ -38,7 +36,7 @@ import type {
   ChatTemplateRenderer,
   IgcChatMessageAttachment,
 } from './types.js';
-import { getChatAcceptedFiles, getIconName } from './utils.js';
+import { getChatAcceptedFiles, getIconName, renderResult } from './utils.js';
 
 type DefaultInputRenderers = {
   input: ChatTemplateRenderer<ChatInputRenderContext>;
@@ -119,9 +117,6 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
 
   private readonly _chat = addChatStateConsumer(this);
 
-  @consume({ context: chatUserInputContext, subscribe: true })
-  private readonly _userInputState!: ChatState;
-
   @query(IgcTextareaComponent.tagName)
   private readonly _textInputElement?: IgcTextareaComponent;
 
@@ -137,9 +132,14 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
 
   constructor() {
     super();
-    addThemingController(this, all, {
-      themeChange: () => this._chat.refreshStyles(),
+
+    // Only to render again: this context gives the same state as `_state`.
+    new ContextConsumer(this, {
+      context: chatUserInputContext,
+      subscribe: true,
     });
+
+    addThemingController(this, all);
   }
 
   /** @internal */
@@ -169,27 +169,24 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
   }
 
   private async _sendMessage(): Promise<void> {
-    if (
-      !this._userInputState.hasInputValue &&
-      !this._userInputState.hasInputAttachments
-    ) {
+    if (!this._state.hasInputValue && !this._state.hasInputAttachments) {
       return;
     }
 
-    this._userInputState.addMessageWithEvent({
-      text: this._userInputState.inputValue,
-      attachments: this._userInputState.inputAttachments,
+    this._state.addMessageWithEvent({
+      text: this._state.inputValue,
+      attachments: this._state.inputAttachments,
     });
 
     this.style.height = 'auto';
 
-    await this._userInputState.host.updateComplete;
+    await this._state.host.updateComplete;
     this.focusInput();
   }
 
   private _setTypingStateAndEmit(state: boolean): void {
     this._userIsTyping = state;
-    this._userInputState.emitEvent('igcTypingChange', { detail: state });
+    this._state.emitEvent('igcTypingChange', { detail: state });
   }
 
   private _handleKeydown(event: KeyboardEvent): void {
@@ -317,7 +314,7 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
         placeholder=${ifDefined(this._state.options?.inputPlaceholder)}
         resize="auto"
         rows="1"
-        .value=${this._userInputState?.inputValue}
+        .value=${this._state.inputValue}
         @igcInput=${this._handleInput}
         @igcChange=${stopPropagation}
         @keydown=${this._handleKeydown}
@@ -333,30 +330,28 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
     const { chat_attach_files, chat_file_input_label } =
       this._state.resourceStrings;
 
-    return html`${cache(
-      attachmentsDisabled
-        ? nothing
-        : html`
-            <label for="input_attachments" part="file-upload">
-              <igc-icon-button
-                aria-label=${chat_attach_files!}
-                variant="flat"
-                name="attach_file"
-                @click=${this._handleFileInputClick}
-              ></igc-icon-button>
-              <input
-                type="file"
-                id="input_attachments"
-                tabindex="-1"
-                name="input_attachments"
-                aria-label=${chat_file_input_label!}
-                multiple
-                accept=${bindIf(accepted, accepted)}
-                @change=${this._handleFileUpload}
-              />
-            </label>
-          `
-    )}`;
+    return attachmentsDisabled
+      ? nothing
+      : html`
+          <label for="input_attachments" part="file-upload">
+            <igc-icon-button
+              aria-label=${chat_attach_files!}
+              variant="flat"
+              name="attach_file"
+              @click=${this._handleFileInputClick}
+            ></igc-icon-button>
+            <input
+              type="file"
+              id="input_attachments"
+              tabindex="-1"
+              name="input_attachments"
+              aria-label=${chat_file_input_label!}
+              multiple
+              accept=${bindIf(accepted, accepted)}
+              @change=${this._handleFileUpload}
+            />
+          </label>
+        `;
   }
 
   private _renderSendButton() {
@@ -425,18 +420,18 @@ export default class IgcChatInputComponent extends HydrationMixin(LitElement) {
                     this._state.resourceStrings.chat_attachments_list_label!
                   }
                 >
-                  ${until(this._getRenderer('inputAttachments')(inputCtx))}
+                  ${renderResult(this._getRenderer('inputAttachments')(inputCtx))}
                 </div>
               `
             : nothing
         }
 
         <div part="input-wrapper">
-          ${until(this._getRenderer('input')(inputCtx))}
+          ${renderResult(this._getRenderer('input')(inputCtx))}
         </div>
 
         <div part="actions-container">
-          ${until(this._getRenderer('inputActions')(ctx))}
+          ${renderResult(this._getRenderer('inputActions')(ctx))}
         </div>
       </div>
     `;

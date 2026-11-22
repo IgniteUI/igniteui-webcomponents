@@ -39,20 +39,20 @@ class PartMapDirective extends Directive {
     part: AttributePart,
     [partMapInfo]: DirectiveParameters<this>
   ) {
-    const partList = part.element.part;
-
     if (this._previousParts === undefined) {
       this._previousParts = new Set();
 
       for (const name in partMapInfo) {
         if (partMapInfo[name]) {
-          partList.add(name);
           this._previousParts.add(name);
         }
       }
 
+      // Lit writes the attribute from the returned string.
       return this.render(partMapInfo);
     }
+
+    const partList = part.element.part;
 
     for (const name of this._previousParts) {
       if (!(name in partMapInfo) || !partMapInfo[name]) {

@@ -20,11 +20,14 @@ export type IconReferencePair = {
   overwrite: boolean;
 };
 
-export enum ActionType {
-  SyncState = 0,
-  RegisterIcon = 1,
-  UpdateIconReference = 2,
-}
+// The values are the broadcast protocol, so they must not change.
+export const ActionType = {
+  SyncState: 0,
+  RegisterIcon: 1,
+  UpdateIconReference: 2,
+} as const;
+
+export type ActionType = (typeof ActionType)[keyof typeof ActionType];
 
 /** @hidden */
 export interface BroadcastIconsChangeMessage {

@@ -361,6 +361,16 @@ describe('Input component', () => {
         expect(detached.value).to.equal('');
       });
 
+      it('the editing methods keep the value before the input renders', () => {
+        const detached = document.createElement('igc-input');
+        detached.value = '5';
+
+        detached.setRangeText('text', 0, 0);
+        detached.stepUp();
+        detached.stepDown();
+        expect(detached.value).to.equal('5');
+      });
+
       it('focus() and blur()', async () => {
         await createFixture(html`<igc-input></igc-input>`);
 
@@ -918,6 +928,17 @@ describe('Input component', () => {
         spec.reset();
 
         expect(spec.element.value).to.equal('abc');
+      });
+
+      it('stays pristine after a change of the value attribute', () => {
+        spec.element.setAttribute('value', 'xyz');
+
+        expect(spec.element.value).to.equal('xyz');
+        spec.assertIsPristine();
+
+        // As for a native input, a pristine control takes the new default.
+        spec.element.defaultValue = 'def';
+        expect(spec.element.value).to.equal('def');
       });
 
       it('is correctly submitted on pressing Enter', () => {

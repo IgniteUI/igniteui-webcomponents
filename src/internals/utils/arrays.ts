@@ -71,12 +71,29 @@ export function sameItems<T>(
     return a == null && b == null;
   }
 
-  if (a.length !== b.length) {
+  return a.length === b.length && startsWith(a, b);
+}
+
+/**
+ * Returns whether `list` starts with the items of `prefix`, in the same order
+ * and by identity (`Object.is`). Each list starts with an empty prefix.
+ *
+ * @example
+ * ```typescript
+ * startsWith([a, b, c], [a, b]); // true
+ * startsWith([a, b], [a, b, c]); // false
+ * ```
+ */
+export function startsWith<T>(
+  list: ArrayLike<T>,
+  prefix: ArrayLike<T>
+): boolean {
+  if (prefix.length > list.length) {
     return false;
   }
 
-  for (let i = 0; i < a.length; i++) {
-    if (!Object.is(a[i], b[i])) {
+  for (let i = 0; i < prefix.length; i++) {
+    if (!Object.is(list[i], prefix[i])) {
       return false;
     }
   }

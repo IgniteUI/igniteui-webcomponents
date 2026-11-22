@@ -33,7 +33,10 @@ function setTheme(value: Theme, variant: ThemeVariant): void {
  * The theming controllers that follow the global theme. Not an `EventTarget`:
  * Chromium scans all listeners on each add and remove.
  */
-export const _globalThemeListeners = new Set<{ globalThemeChanged(): void }>();
+export const _globalThemeListeners = new Set<{
+  globalThemeChanged(): void;
+  requestThemeContext(): void;
+}>();
 
 /**
  * Relays "igc-change-theme" events from `window` to the theming controllers.

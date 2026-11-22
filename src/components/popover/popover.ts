@@ -30,6 +30,8 @@ import {
 } from './position/types.js';
 import { styles } from './themes/light/popover.base.css.js';
 
+const Slots = setSlots('anchor');
+
 /**
  * Describes the preferred placement of a toggle component.
  */
@@ -79,7 +81,7 @@ export default class IgcPopoverComponent extends LitElement {
   private _rectAnchor?: HTMLElement;
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots('anchor'),
+    slots: Slots,
     onChange: this._handleSlotChange,
   });
 

@@ -1,6 +1,7 @@
 import { property } from 'lit/decorators.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import type { FormValueTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { MaskBehaviorMixin } from '#internals/mixins/mask-behavior.js';
 import { renderMaskedNativeInput } from '#internals/templates/masked-input.js';
@@ -88,17 +89,18 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
     slots: Slots,
   });
 
+  private static readonly _transformers: Partial<
+    FormValueTransformers<string>
+  > = {
+    // Not `_maskedValue`, which keeps the empty mask after the user empties the control.
+    setFormValue: (_, host) => (host as IgcMaskInputComponent).value || null,
+    reads: ['valueMode', 'mask', 'prompt'],
+  };
+
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: '',
-    transformers: {
-      setFormValue: (value) =>
-        this._isRawMode ? value || null : this._maskedValue || null,
-    },
+    transformers: IgcMaskInputComponent._transformers,
   });
-
-  protected get _isRawMode(): boolean {
-    return this.valueMode === 'raw';
-  }
 
   //#endregion
 
@@ -136,7 +138,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   public get value(): string {
     const value = this._formValue.value;
 
-    if (this._isRawMode) {
+    if (this.valueMode === 'raw') {
       return value;
     }
     return value ? this._maskedValue : value;
@@ -150,12 +152,12 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
    */
   @property()
   public override set mask(value: string) {
-    super.mask = value;
+    this._parser.mask = value;
     this._reapplyMask();
   }
 
   public override get mask(): string {
-    return super.mask;
+    return this._parser.mask;
   }
 
   /**
@@ -166,12 +168,12 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
    */
   @property()
   public override set prompt(value: string) {
-    super.prompt = value;
+    this._parser.prompt = value;
     this._reapplyMask();
   }
 
   public override get prompt(): string {
-    return super.prompt;
+    return this._parser.prompt;
   }
 
   //#endregion

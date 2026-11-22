@@ -1,3 +1,4 @@
+import { getOrInsertComputed } from '#internals/utils/objects.js';
 import type { Theme } from '#theming/types.js';
 import { ICON_REFERENCES } from './icon-references.js';
 import { IconsStateBroadcast } from './icon-state.broadcast.js';
@@ -35,14 +36,7 @@ function collectionOf<V>(
   collections: IconsCollection<V>,
   name: string
 ): Map<string, V> {
-  let collection = collections.get(name);
-
-  if (!collection) {
-    collection = new Map();
-    collections.set(name, collection);
-  }
-
-  return collection;
+  return getOrInsertComputed(collections, name, () => new Map<string, V>());
 }
 
 /**

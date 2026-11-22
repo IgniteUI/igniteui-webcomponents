@@ -21,7 +21,12 @@ function isNumeric(str: string): boolean {
 }
 
 function isAlphanumeric(str: string): boolean {
-  return [...str].every((char) => ALPHANUMERIC_MAP.has(char));
+  for (const char of str) {
+    if (!ALPHANUMERIC_MAP.has(char)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 function detectEncodingMode(data: string): QrEncodingMode {
@@ -180,11 +185,20 @@ export function encodeQR(
     }
   } else {
     bits = [];
+    // Only the count field width depends on the version.
+    let candidate: number[] = [];
+    let countBits = 0;
+
     for (let v = 1; v <= 40; v++) {
-      const candidateBits = encodeData(data, mode, v);
-      if (fits(v, candidateBits)) {
+      const width = getCharacterCountBits(mode, v);
+
+      if (width !== countBits) {
+        countBits = width;
+        candidate = encodeData(data, mode, v);
+      }
+      if (fits(v, candidate)) {
         version = v;
-        bits = candidateBits;
+        bits = candidate;
         break;
       }
     }

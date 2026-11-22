@@ -628,8 +628,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
 
   //#region Render
 
-  protected _renderScrollButton(direction: 'start' | 'end'): TemplateResult {
-    return html`${cache(
+  protected _renderScrollButton(direction: 'start' | 'end'): unknown {
+    return cache(
       this._domHelpers.hasScrollButtons
         ? html`
             <igc-icon-button
@@ -645,7 +645,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
             </igc-icon-button>
           `
         : nothing
-    )}`;
+    );
   }
 
   protected override render(): TemplateResult {

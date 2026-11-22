@@ -55,6 +55,7 @@
 |       6 | 2026-10-06 | `focus()` and `blur()` move the focus to the slider element                          |
 |       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                                             |
 |       8 | 2026-11-02 | A `focus()` call before the first render applies after the render                    |
+|       9 | 2026-11-18 | A value set from code before the first render makes the rating dirty, so a later `defaultValue` does not replace it |
 
 ## Overview
 
@@ -322,7 +323,8 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 
 ### Default value
 
-21. The initial state, the submitted value and the reset behavior of `defaultValue` are correct.
+21. The initial state, the submitted value and the reset behavior of `defaultValue` are correct. A later
+    `defaultValue` does not replace a value set from code before the first render.
 
 ### Accessibility tests
 

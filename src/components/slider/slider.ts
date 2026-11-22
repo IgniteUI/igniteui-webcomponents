@@ -95,8 +95,9 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
       const value = this._validateValue(this._requestedValue ?? this.value);
 
       if (value !== this.value) {
-        // A clamp is not a user edit, so the pristine state stays.
-        this._withPristine(() => (this.value = value));
+        this._writeFrom('normalize', () => {
+          this.value = value;
+        });
       }
     }
 
@@ -108,7 +109,9 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
   }
 
   protected override _setActiveValue(value: number): void {
-    this.value = value;
+    this._writeFrom('user', () => {
+      this.value = value;
+    });
   }
 
   protected override _emitInputEvent() {

@@ -32,6 +32,7 @@
     - [Rendering](#rendering)
     - [Locale](#locale)
     - [Interactions](#interactions)
+    - [Show a date](#show-a-date)
     - [Selection model](#selection-model)
     - [Keyboard navigation](#keyboard-navigation)
     - [Year and month views](#year-and-month-views)
@@ -52,6 +53,8 @@
 |       3 | 2026-10-01 | Descriptor labels; the initial active date is derived before the first render |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                      |
 |       5 | 2026-11-02 | The events of the days view stay inside the calendar.                         |
+|       6 | 2026-11-18 | An internal function brings a date into view for the pickers, and keeps the months when the date is shown |
+|       7 | 2026-11-20 | The date properties accept an ISO string with a signed six digit year |
 
 ## Overview
 
@@ -60,7 +63,11 @@ individual dates, or a range of dates. It renders one of three views - days, mon
 shows the current selection and a navigation area for moving through time.
 
 The component is the date surface shared by the pickers of the library: [`igc-date-picker`](../date-picker/spec.md)
-and [`igc-date-range-picker`](../date-range-picker/spec.md) render an `igc-calendar` inside their popover.
+and [`igc-date-range-picker`](../date-range-picker/spec.md) render an `igc-calendar` inside their popover. They
+move it through two internal APIs of the calendar module: the `focusActiveDate` symbol method focuses the active
+date, and the `showDate(calendar, date)` function makes a date the active date. With more than one visible month,
+`showDate` keeps the months when the date is in one of them, and puts any other date in the first month. The pickers
+ask for the first month when they open.
 
 ### Key features
 
@@ -276,8 +283,8 @@ The rendered strings and formats resolve through the library i18n mechanism and 
   takes its own `lang`, else the locale of the nearest ancestor that has a `locale` (a component) or a `lang`, and then
   the global locale of the library.
 - `resourceStrings` overrides the calendar resource strings, such as the labels of the navigation buttons.
-- The first day of the week is derived from the locale when `weekStart` is not set, falling back to Sunday in
-  engines without `Intl.Locale.prototype.getWeekInfo()`. An explicit `weekStart` always wins.
+- The first day of the week is derived from the locale when `weekStart` is not set. An explicit `weekStart` always
+  wins.
 - The header date is rendered in the field order of the locale, and the month and year navigation buttons are
   ordered per locale.
 
@@ -339,6 +346,8 @@ by a year or by a page of years, and <kbd>Enter</kbd> or <kbd>Space</kbd> activa
 | resourceStrings  | -                  | No        | `IgcCalendarResourceStrings`                             | EN                                      | The texts of the component. The strings that you set replace the strings of the current locale. Reading returns all the strings, with your strings over the locale strings.                                      |
 
 `value`, `values` and `activeDate` accept `Date` objects and ISO date strings, including through their attributes.
+An ISO string can also have the signed six digit year that `toISOString()` gives outside the years 0 to 9999, such as
+`+010000-01-01`.
 
 ### Methods
 
@@ -449,25 +458,29 @@ The groups below mirror the `describe` blocks of those suites.
 
 18. Derives the week start from the locale when `week-start` is not set, and prefers an explicit `week-start`.
 19. Re-aligns the days grid when the locale changes at run time.
-20. Falls back to Sunday in engines without `Intl.Locale.prototype.getWeekInfo()`.
-21. Renders the header date in the field order of the locale.
-22. Orders the month and year navigation buttons per locale.
+20. Renders the header date in the field order of the locale.
+21. Orders the month and year navigation buttons per locale.
 
 ### Interactions
 
-23. Is accessible (axe audit).
-24. Sets `value` and `values` through attributes and through string property bindings.
-25. Clicking the previous and next buttons navigates in the days, months and years views.
-26. Single selection, including a date outside the current month, and issue #1443.
-27. Multiple selection.
-28. Starting and cancelling a range selection, and starting and completing one.
-29. Emits `igcActiveDateChange` when the active date is selected, and `igcRangePreviewDateChange` during a range
+22. Is accessible (axe audit).
+23. Sets `value` and `values` through attributes and through string property bindings.
+24. Clicking the previous and next buttons navigates in the days, months and years views.
+25. Single selection, including a date outside the current month, and issue #1443.
+26. Multiple selection.
+27. Starting and cancelling a range selection, and starting and completing one.
+28. Emits `igcActiveDateChange` when the active date is selected, and `igcRangePreviewDateChange` during a range
     preview. Neither event reaches a listener on the calendar.
-30. Switches to the month of the activated navigation button.
-31. Moves focus along when a date outside the rendered month is selected, and keeps it in place otherwise.
-32. Disables dates for every `DateRangeType` - Before, After, Between, Specific, Weekdays and Weekends - including
+29. Switches to the month of the activated navigation button.
+30. Moves focus along when a date outside the rendered month is selected, and keeps it in place otherwise.
+31. Disables dates for every `DateRangeType` - Before, After, Between, Specific, Weekdays and Weekends - including
     equal boundaries, an inverted range, overlapping ranges and multiple descriptors.
-33. Does not select disabled dates in range selection, and creates no range when the selection is `multiple`.
+32. Does not select disabled dates in range selection, and creates no range when the selection is `multiple`.
+
+### Show a date
+
+33. Shows a date with more than one visible month: a date in a shown month keeps the months and makes its month the
+    active view, a date that is not shown goes in the first month, and `first` always puts it in the first month.
 
 ### Selection model
 

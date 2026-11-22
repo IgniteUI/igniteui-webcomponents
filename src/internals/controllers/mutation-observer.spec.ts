@@ -43,21 +43,6 @@ describe('Mutation controller', () => {
     );
   }
 
-  it('keeps the nodes that a predicate filter accepts', async () => {
-    const tag = defineHost(() => ({
-      filter: (node: Node) => node.nodeName === 'P',
-    }));
-    const host = await fixture<ObservedHost>(html`<${tag}></${tag}>`);
-
-    host.append(document.createElement('p'), document.createElement('span'));
-    host.setAttribute('data-state', 'on');
-    await flush();
-
-    const [{ changes }] = host.records;
-    expect(changes.added.map(({ node }) => node.nodeName)).to.eql(['P']);
-    expect(changes.attributes).to.be.empty;
-  });
-
   it('keeps no node for an empty selector list', async () => {
     const tag = defineHost(() => ({ filter: [] }));
     const host = await fixture<ObservedHost>(html`<${tag}></${tag}>`);

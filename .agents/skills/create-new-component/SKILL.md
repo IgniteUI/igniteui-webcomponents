@@ -108,7 +108,7 @@ declare global {
   [import rules](../../../.github/CODING_GUIDELINES.md#imports).
 - Before you write lifecycle code, look for a controller in the
   [controllers table](../../../.github/CODING_GUIDELINES.md#controllers) or in `src/internals`. Examples:
-  `addRovingFocusController`, `addToggleController`, `addHostListeners`, and the `resizable()` /
+  `addRovingFocusController`, `addToggleController`, `addToggleCommands`, and the `resizable()` /
   `draggable()` directives.
 - Write JSDoc as product documentation. See
   [API Documentation](../../../.github/CODING_GUIDELINES.md#api-documentation).

@@ -316,8 +316,10 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   }
 
   protected override firstUpdated(): void {
-    this._formValue.setValueAndFormState(clamp(this.value, 0, this.max));
-    this._pristine = true;
+    // The value can come before `max`, so the first update clamps it again.
+    this._writeFrom('normalize', () =>
+      this._formValue.setValueAndFormState(clamp(this.value, 0, this.max))
+    );
   }
 
   protected override updated(): void {
@@ -365,7 +367,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     }
   }
 
-  /** Focuses the slider, as a native range input label does. */
+  /** Focuses the rating, as a native range input label does. */
   protected override _handleLabelActivation(): void {
     this.focus();
   }
@@ -384,12 +386,12 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   //#region Private methods
 
   private _emitValueUpdate(next: number): void {
-    this._setTouchedState();
-
     const clamped = clamp(this._normalize(next), 0, this.max);
+
     if (clamped !== this.value) {
-      this.value = clamped;
-      this.emitEvent('igcChange', { detail: this.value });
+      this._commitValue(clamped, 'igcChange');
+    } else {
+      this._setTouchedState();
     }
   }
 

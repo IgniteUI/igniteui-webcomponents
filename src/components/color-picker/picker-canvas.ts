@@ -173,9 +173,7 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
       return;
     }
 
-    this.x = nextX;
-    this.y = nextY;
-
+    // Emit first: the picker's writes then join this update, not a second one.
     this.emitEvent('igcColorPicked', {
       detail: {
         x: Math.round(asPercent(nextX + marker.width, rect.width)),
@@ -183,6 +181,9 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
       },
       bubbles: false,
     });
+
+    this.x = nextX;
+    this.y = nextY;
   }
 
   private _onArrowKey({ dx, dy }: { dx: number; dy: number }): void {
@@ -206,21 +207,17 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
   private _handlePointerDown(event: PointerEvent): void {
     if (event.button !== 0) return;
     this.setPointerCapture(event.pointerId);
-    this.addEventListener('pointermove', this._handlePointerMove);
+    this.addEventListener('pointermove', this._move);
     this._dragGeometry = this._measure();
     this._dragging = true;
     this._move(event);
   }
 
   private _handleLostPointerCapture(): void {
-    this.removeEventListener('pointermove', this._handlePointerMove);
+    this.removeEventListener('pointermove', this._move);
     this._dragGeometry = undefined;
     this._dragging = false;
     this._marker?.focus();
-  }
-
-  private _handlePointerMove(event: PointerEvent): void {
-    this._move(event);
   }
 
   public getMarkerDimensions(): { width: number; height: number } {

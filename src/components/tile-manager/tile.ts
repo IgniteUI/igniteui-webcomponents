@@ -520,10 +520,7 @@ export default class IgcTileComponent extends I18nMixin(
     const placement = this._resizeState.calculateResizedGridPosition(
       state.current
     );
-    const finish = () => {
-      this._setResizeState(false);
-      this.emitEvent('igcTileResizeEnd', { detail: this });
-    };
+    const finish = () => this._endResize('igcTileResizeEnd');
 
     // A resize that changes no span needs no transition.
     state.commit = isEmpty(Object.keys(placement))
@@ -536,9 +533,13 @@ export default class IgcTileComponent extends I18nMixin(
   };
 
   private readonly _handleResizeCancel = (): void => {
-    this._setResizeState(false);
-    this.emitEvent('igcTileResizeCancel', { detail: this });
+    this._endResize('igcTileResizeCancel');
   };
+
+  private _endResize(event: 'igcTileResizeEnd' | 'igcTileResizeCancel'): void {
+    this._setResizeState(false);
+    this.emitEvent(event, { detail: this });
+  }
 
   private _handleFullscreen(): void {
     this._fullscreenController.setState(!this.fullscreen);

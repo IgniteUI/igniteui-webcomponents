@@ -20,7 +20,7 @@ import type IgcInputComponent from '../../input/input.js';
 import type IgcVirtualScrollComponent from '../../virtualization/virtualization.js';
 import type IgcComboComponent from '../combo.js';
 import type { ComboCloseTrigger } from '../types.js';
-import type { DataState } from './data.js';
+import type { ComboActiveOption } from './active-option.js';
 
 type ListSlot = 'header' | 'empty' | 'footer';
 
@@ -34,11 +34,10 @@ type ComboNavigationConfig = {
     show: () => Promise<boolean>;
     hide: (trigger: ComboCloseTrigger) => Promise<boolean>;
     toggleSelection: (index: number) => void;
-    select: (index: number) => void;
     /** Whether the confirm mode has a pending selection. */
     hasPending: () => boolean;
-    /** Applies the pending selection, then closes the list. Returns whether the list closes. */
-    apply: (trigger: ComboCloseTrigger) => Promise<boolean>;
+    /** Commits, then closes the list; returns whether it closes. */
+    commit: (trigger: 'enter' | 'tab', index: number) => Promise<boolean>;
     clearSelection: () => void;
   };
 };
@@ -47,7 +46,7 @@ export class ComboNavigationController<T extends object> {
   //#region Internal state
 
   private readonly _host: IgcComboComponent<T>;
-  private readonly _state: DataState<T>;
+  private readonly _activeOption: ComboActiveOption<T>;
   private readonly _config: ComboNavigationConfig;
 
   private get _input(): IgcInputComponent | undefined {
@@ -64,25 +63,15 @@ export class ComboNavigationController<T extends object> {
     return this._config.list.value;
   }
 
-  private get _firstItem(): number {
-    return this._state.firstOptionIndex;
-  }
-
-  private get _lastItem(): number {
-    return this._state.dataState.length - 1;
-  }
-
   //#endregion
-
-  public active = -1;
 
   constructor(
     host: IgcComboComponent<T>,
-    state: DataState<T>,
+    activeOption: ComboActiveOption<T>,
     config: ComboNavigationConfig
   ) {
     this._host = host;
-    this._state = state;
+    this._activeOption = activeOption;
     this._config = config;
     this._host.addController(this);
 
@@ -133,33 +122,37 @@ export class ComboNavigationController<T extends object> {
       .set(enterKey, this._onEnter);
   }
 
-  public hostDisconnected(): void {
-    this.active = -1;
+  public hostUpdated(): void {
+    if (this._activeOption.moved) {
+      // The list measures with its records, which it gets in its own update.
+      void this._list?.updateComplete.then(() => this._scrollToActive());
+    }
   }
 
   //#region Event handlers
 
   private _onSpace = (): void => {
-    if (this.active > -1) {
-      this._config.interactions.toggleSelection(this.active);
+    const { active } = this._activeOption;
+
+    if (active > -1) {
+      this._config.interactions.toggleSelection(active);
     }
   };
 
   private _onEnter = async (): Promise<void> => {
+    const { active, record } = this._activeOption;
+
     // A placeholder has no item, so Enter on it does nothing.
-    if (this._state.dataState[this.active]?.kind === 'placeholder') {
+    if (record?.kind === 'placeholder') {
       return;
     }
 
     // In confirm mode, Enter applies the pending selection also without an active option.
-    if (this.active < 0 && !this._config.interactions.hasPending()) {
+    if (active < 0 && !this._config.interactions.hasPending()) {
       return;
     }
 
-    if (this._host.singleSelect) {
-      this._config.interactions.select(this.active);
-    }
-    if (await this._config.interactions.apply('enter')) {
+    if (await this._config.interactions.commit('enter', active)) {
       this._input?.select();
       this._host.focus();
     }
@@ -186,11 +179,7 @@ export class ComboNavigationController<T extends object> {
       this._host.focus();
     }
 
-    if (this._host.singleSelect && this.active > -1) {
-      this._config.interactions.select(this.active);
-    }
-
-    await this._config.interactions.hide('tab');
+    await this._config.interactions.commit('tab', this._activeOption.active);
   };
 
   private _onEscape = (): Promise<void> => {
@@ -217,29 +206,29 @@ export class ComboNavigationController<T extends object> {
   };
 
   private _onHome = (): void => {
-    this._setActive(this._firstItem);
+    this._activeOption.first();
     this._scrollToActive();
   };
 
   private _onEnd = (): void => {
-    this._setActive(this._lastItem);
+    this._activeOption.last();
     this._scrollToActive();
   };
 
   private _onArrowUp = (): void => {
-    if (this.active === this._firstItem) {
+    // Also without an active option.
+    if (!this._activeOption.step(-1)) {
       // Focus the search input when it shows. Otherwise, close the list.
       const search = this._searchInput;
       search ? search.focus() : this._closeToInput('arrow-up');
       return;
     }
 
-    this._getNextItem(-1);
     this._scrollToActive();
   };
 
   private _onArrowDown = (): void => {
-    this._getNextItem(1);
+    this._activeOption.step(1);
     this._scrollToActive();
   };
 
@@ -278,30 +267,8 @@ export class ComboNavigationController<T extends object> {
     return [input!, ...before, ...list, ...after];
   }
 
-  /**
-   * Sets the active index from the keyboard. The host mirrors it as
-   * `_activeIndex`, so the update request carries the old value.
-   */
-  private _setActive(index: number): void {
-    const previous = this.active;
-    this.active = index;
-    this._host.requestUpdate('_activeIndex', previous);
-  }
-
   private _scrollToActive(): void {
-    this._list?.scrollToIndex(this.active, { block: 'center' });
-    this._list?.requestUpdate();
-  }
-
-  private _getNextItem(delta: -1 | 1): void {
-    const items = this._state.dataState;
-
-    for (let i = this.active + delta; i >= 0 && i < items.length; i += delta) {
-      if (this._state.isOption(items[i])) {
-        this._setActive(i);
-        return;
-      }
-    }
+    this._list?.scrollToIndex(this._activeOption.active, { block: 'center' });
   }
 
   //#endregion

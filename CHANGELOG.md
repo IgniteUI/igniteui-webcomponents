@@ -6,6 +6,103 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### QR code
+  - `dot-style`, `square-style` and `corner-dot-style` take `squircle`, a square with soft corners.
+  - `corner-dot-style` sets the shape of the inner corner dots. When you do not set it, the inner corner dots use `dot-style`, as before.
+  - `dot-scale` sets the size of the data modules, from 0.7 to 1 of their cell, to leave a gap between them. The corners keep their full size.
+
+### Changed
+- #### Chip
+  - A selection change by the user animates the chip, as in Ignite UI for Angular. The colors fade, and the selection indicator opens and fades in, or fades out and closes. A change from code and the first render show at once, so a virtualized list does not animate its chips while it scrolls. With `prefers-reduced-motion: reduce`, the chip does not animate. [#2621](https://github.com/IgniteUI/igniteui-webcomponents/issues/2621)
+- #### Combo
+  - A change of `showSelectAll` or `groupSelection` keeps the active item. Before, no option was active after the change. When the change removes the active select-all option, or an active group header is no longer an option, no option is active.
+- #### Date picker
+  - Without `activeDate`, a value set from code brings its month into view in the calendar, also while the calendar is open. Before, the calendar stayed on its month until the next open from the calendar icon or the keyboard.
+  - With `visibleMonths` above 1, an open by the user, from the calendar icon, <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> or a click on the input or the label in dialog mode, shows the value in the first month. Before, the value could open in another month.
+- #### Date picker, Date range picker
+  - In editable dropdown mode, a clear through the clear icon is reported with `igcChange` when the focus leaves the picker. Before, the input reported it when the focus left the input, also on a move to the calendar or to the other input of a date range picker.
+- #### Date picker, Date time input
+  - `stepUp(DatePart.AmPm)` and `stepDown(DatePart.AmPm)` move the time 12 hours also when the input format has no AM/PM part, as a step does for the other parts that the format does not show. Before, they did nothing.
+- #### Date range picker
+  - In dialog mode, a range that you select stays unconfirmed when code closes the picker with `hide()`, `toggle()` or `open`. After a new open, Done emits `igcChange` for it, and Cancel or Escape restores the range from before it. Before, the next open kept the range without an `igcChange`.
+  - An empty range is `null`: the initial `value` and `defaultValue`, the detail of `igcChange` and `igcInput`, a range that the calendar clears and a range that the inputs empty. Before, some of these were `{ start: null, end: null }`. Check for `null` before you read `value.start`.
+  - Each write puts the ends of the range in order of time: a value set from code, the `value` attribute, `defaultValue` and a custom range chip. Before, only a commit of the inputs swapped the ends, and it compared only the days. The `igcInput` detail is in order too, while the inputs keep the typed text.
+  - The two inputs and the `value` attribute keep the time of the dates. Before, they set the time to midnight.
+  - A change of `useTwoInputs` drops an edit in an input that the change removes, also when the input loses the focus before the next render. Before, that input could still commit its edit.
+  - Without `activeDate`, a range with one end set from code brings that end into view, as a full range brings its start.
+- #### Dropdown
+  - <kbd>Enter</kbd> closes the open list also when no item is active, as in the select. Before, the list stayed open.
+- #### Library
+  - The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The fallbacks for older browsers are removed, and the styles no longer have vendor prefixes for them.
+- #### QR code
+  - The cutout under the logo holds whole modules, so it cuts no module in part.
+  - `logoSize` is a share of the code without its quiet zone, so `margin` no longer changes the logo. At the default `margin`, logos are smaller than before: 28% smaller in side on a version 1 code, and 4% on a version 40 code.
+- #### Radio
+  - Each radio keeps its own default, as a native radio does. The `checked` attribute of one radio no longer clears `defaultChecked` of the other radios of its group. As before, the last radio with the `checked` attribute is checked at the start and after a form reset.
+  - `checkValidity()` and `reportValidity()` emit `invalid` on the radios of the group in DOM order. Before, the other radios emitted it first, and the called radio last.
+- #### Select
+  - <kbd>Tab</kbd> and <kbd>Escape</kbd> on the select act also when other code already called `preventDefault()` on the key, as in the dropdown. Content in the `header` and `footer` slots still keeps a key that it handled.
+
+### Fixed
+- #### Calendar, Date picker, Date range picker, Date time input
+  - An ISO string with a signed six digit year, such as `+010000-01-01T00:00:00.000Z`, sets the value. `toISOString()` gives this format for dates before year 0 and after year 9999. Before, the value became `null`.
+- #### Checkbox, Radio, Switch
+  - A change of `value` no longer makes a checked control dirty, so a later `defaultChecked` still sets the checked state, as for a native checkbox or radio.
+- #### Color picker
+  - A color change of the user marks the picker touched, so a change that fails validation shows the invalid styles at once.
+  - A value set from code while the focus is in the picker no longer emits `igcChange` when the focus leaves.
+  - In input mode, the text input no longer shows the invalid styles when the focus moves from it to the color button. The text input shows the invalid state of the picker, together with its validation message.
+- #### Combo
+  - A closed list has no active option. Before, when code closed the list and opened it again, the old option was still active. When an app canceled `igcOpening` while the user typed, Arrow Down opened the list on the second match.
+  - In single selection, the input no longer shows the invalid styles when the focus moves from it to slotted content of the combo. The input shows the invalid state of the combo, together with its validation message.
+  - In multiple selection, a change of `name` moves the submitted values to the new name at once. Before, the form submitted them under the old name.
+- #### Date picker
+  - The first render no longer logs a Lit development warning that a cached field was read before the first update.
+- #### Date picker, Date range picker
+  - An editor no longer shows the invalid styles when the focus moves from it to other content of the picker, such as the other editor of a date range picker. The editors show the invalid state of the picker, together with its validation message.
+  - When you clear the value and then open and close the picker before you leave it, the picker now emits `igcChange` for the clear.
+  - The date range picker emits `igcChange` when you clear it in dialog mode or in non-editable mode and leave it. The detail is `null`.
+  - A predefined or custom range chip keeps the date range picker open when `keepOpenOnSelect` is set.
+  - With `activeDate` set, the calendar keeps the month that you navigate to. Before, each update of the picker, such as a pick in the second month of a date range picker, moved the calendar back to `activeDate`.
+- #### Date picker, Date range picker, Date time input
+  - A form reset discards the text that you typed and did not commit yet, as for a native date input. Before, a partly typed date stayed in the focused input, and in a picker the next blur committed it as a date, also over the restored default value.
+  - An empty value that code or a form reset sets while the input has focus replaces the date that the input shows. Before, the input kept showing the old date, and a spin started from it.
+  - A year spin stops at year 9999 and at year 1, and a year outside them, such as one set from code, only moves toward them. Before, a spin past year 9999 gave a five digit year that did not fit the input.
+  - Ctrl + Arrow Left and Ctrl + Arrow Right stop at each date part in an input format without separators, such as `yyyyMMdd`, and do not stop inside a separator of more than one character, such as `, `. Before, the date time input went to the start or the end of the input, and the single input of the date range picker skipped a part.
+- #### Date picker, Date time input
+  - `stepUp(DatePart.AmPm)` and `stepDown(DatePart.AmPm)` read AM or PM from the value. Before, while the input did not have focus and the display format was different from the input format, they read the display text, so they did nothing or switched only from PM to AM.
+- #### Date range picker
+  - In single input mode, Arrow Up and Arrow Down in a typed end spin that end and keep the text of the other end. Before, both ends changed to today.
+  - In single input mode, a spin of an empty end sets today, without a step and without the time of day. Before, it set the current time and stepped it.
+  - A value in the first month that is set while the second month of the calendar is active no longer shifts the months by one.
+  - In single input mode, the calendar shows the month of the end that you type or spin, as it does with two inputs. Before, it showed only the month of the start.
+  - The `igcInput` and `igcChange` events of content in the prefix and suffix slots of the inputs reach your handlers, and they no longer change the value of the picker. Before, the picker stopped them, and an `igcChange` from that content cleared the value, or its end date with two inputs.
+  - A change of `name` renames the submitted `-start` and `-end` entries at once. Before, the form submitted the range under the old name.
+- #### File input
+  - The selected files are submitted under the current `name`. Before, a change of `name` kept them under the old name, and a `name` set after the selection submitted no files.
+- #### Form controls
+  - A change of the `value` or `checked` attribute keeps the control pristine, so a later `defaultValue` or `defaultChecked` still sets the value, as for a native control.
+- #### Input, Textarea
+  - `stepUp()`, `stepDown()` and `setRangeText()` no longer clear the value when you call them before the first render.
+- #### Mask input
+  - The submitted value is `value`. A change of `valueMode`, `mask` or `prompt` updates it and the validity at once, also when the `value` attribute comes before `value-mode` or `mask`. Before, the form kept the old text, `badInput` could stay set for a valid value, and the attribute order could submit the raw text in `withFormatting` mode.
+  - A formatted value that you empty submits nothing. Before, the form submitted the empty mask, such as `__-__`.
+- #### QR code
+  - A logo no longer makes a short value unreadable. The component selects a larger version, so that the logo hides no more codewords than the error correction recovers. When you set `version`, the logo gets smaller.
+- #### Radio
+  - The validity of a group changes at once when a radio joins or leaves the group, and on a form reset. A radio joins or leaves by `name`, by form owner or by a DOM change. A removed radio has the validity of a group of its own, as a native radio does. Before, the other radios kept the old validity. A group stayed invalid after its required radio left. After a form reset, the validity was correct only after the next render.
+  - A checked radio that joins a group, by connect, `name` or form owner, unchecks the other radios of the group, as a native radio does. Before, two radios of the group could stay checked.
+  - A radio that its group unchecks stays pristine, so a later `defaultChecked` still sets its checked state, as for a native radio. Before, the first render made the other radios of the group dirty.
+- #### Rating
+  - A later `defaultValue` no longer replaces a value set from code before the first render.
+- #### Select
+  - A selection that fails validation shows the invalid styles at once, also when the select never had the focus.
+  - <kbd>Tab</kbd> on the open list without an active option no longer clears a `value` that matches no option yet, for example one whose option a framework renders later.
+- #### Slider
+  - A change of the user that fails validation shows the invalid styles at once.
+
+## [7.5.0] - 2026-11-16
+### Added
 - #### Accordion, Expansion panel, Tabs, Tree
   - Find-in-page, text fragments and links to an element now find content in collapsed panels, in tabs that are not selected and in collapsed tree items. The component shows the match and emits its usual events. [#2594](https://github.com/IgniteUI/igniteui-webcomponents/pull/2594)
     - Expansion panel: opens and emits `igcOpening`, which you can cancel, and `igcOpened`. In an accordion with `single-expand`, the other panels close with no animation.
@@ -85,6 +182,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The `end` slot renders after the `suffix` slot, at the end of the chip. Before, it rendered before the `suffix` slot. [#2488](https://github.com/IgniteUI/igniteui-webcomponents/pull/2488)
 - #### Combo
   - **Behavioral change:** A new `data` keeps the selection. A selected item or value that `data` does not hold stays selected until the user or the application deselects it. To clear the selection with the data, for example in cascading combos, set `value` to `[]`. `select()` also accepts objects that `data` does not hold, for example the records of a saved filter. [#2519](https://github.com/IgniteUI/igniteui-webcomponents/issues/2519) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
+  - **Behavioral change:** When `data` holds two or more items with the same value, the selection holds the first item, and `value` lists the value one time. Before, a selection of the value took all its items, and `value` listed the value for each item. The options of all the items of a selected value show as selected. A click on any of them deselects the value. [#2603](https://github.com/IgniteUI/igniteui-webcomponents/pull/2603)
   - In multiple selection, the options report their checkbox state in `aria-checked`, not in `aria-selected`. Screen readers announce them as checked or not checked. [#2535](https://github.com/IgniteUI/igniteui-webcomponents/issues/2535) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
   - In TypeScript, `igcClosing` and `igcClosed` are `CustomEvent<IgcComboClosingEventArgs>`, not `CustomEvent<void>`. Change the handlers that declare `CustomEvent<void>`. [#2533](https://github.com/IgniteUI/igniteui-webcomponents/issues/2533) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
 - #### Date picker, Date range picker, Date time input
@@ -224,9 +322,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - When the list closes while it has the focus, the focus goes to the main input, not to the document. [#2533](https://github.com/IgniteUI/igniteui-webcomponents/issues/2533) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
   - `newValue` of `igcChange` has the same order as the `value` after the change. [#2533](https://github.com/IgniteUI/igniteui-webcomponents/issues/2533) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
   - A new `itemTemplate` or `groupHeaderTemplate` renders the open list again. [#2555](https://github.com/IgniteUI/igniteui-webcomponents/issues/2555) [#2557](https://github.com/IgniteUI/igniteui-webcomponents/pull/2557)
+  - A new `displayKey` or `valueKey` updates the input text and the deprecated `item` of the group header template. [#2603](https://github.com/IgniteUI/igniteui-webcomponents/pull/2603)
+  - Input text in single selection: [#2603](https://github.com/IgniteUI/igniteui-webcomponents/pull/2603)
+    - When a framework writes back the cleared `value`, the input keeps the text that the user types.
+    - After a blur clears the input, the input shows the text again when `value` selects the same item again.
+  - Active option: [#2612](https://github.com/IgniteUI/igniteui-webcomponents/pull/2612)
+    - A search, a selection or a new `data` no longer moves the active option to a different item. The active option stays on the same object, or on the item with the same `valueKey` value, and the list scrolls to it. Before, `aria-activedescendant` could refer to no option, and the arrow keys did nothing.
+    - After the combo leaves the document and comes back, `aria-activedescendant` no longer refers to the old active option.
 - #### Combo, Dropdown, Highlight, Select
-  - Setting a property to its current value no longer resets the state. This fixes React and other frameworks that set every property on each render. [#2515](https://github.com/IgniteUI/igniteui-webcomponents/issues/2515) [#2516](https://github.com/IgniteUI/igniteui-webcomponents/issues/2516) [#2518](https://github.com/IgniteUI/igniteui-webcomponents/pull/2518) [#2523](https://github.com/IgniteUI/igniteui-webcomponents/pull/2523) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545) [#2572](https://github.com/IgniteUI/igniteui-webcomponents/pull/2572)
-    - Combo: `singleSelect`, `disableFiltering` and `filteringOptions` no longer clear the search text or filter the items again.
+  - Setting a property to its current value no longer resets the state. This fixes React and other frameworks that set every property on each render. [#2515](https://github.com/IgniteUI/igniteui-webcomponents/issues/2515) [#2516](https://github.com/IgniteUI/igniteui-webcomponents/issues/2516) [#2518](https://github.com/IgniteUI/igniteui-webcomponents/pull/2518) [#2523](https://github.com/IgniteUI/igniteui-webcomponents/pull/2523) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545) [#2572](https://github.com/IgniteUI/igniteui-webcomponents/pull/2572) [#2603](https://github.com/IgniteUI/igniteui-webcomponents/pull/2603)
+    - Combo: `singleSelect`, `disableFiltering` and `filteringOptions` no longer clear the search text or filter the items again. The same `value` no longer updates the combo.
     - Dropdown, Select: `selected` on an item no longer moves the active item.
     - Highlight: `searchText` and `caseSensitive` no longer move the active match back to the first match.
     - Select: `value` no longer moves the active item. When you remove the active item, the navigation goes back to the selected item.
@@ -419,11 +524,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Tree
   - A tree item outside a tree no longer renders a selection checkbox. [#2488](https://github.com/IgniteUI/igniteui-webcomponents/pull/2488)
 - #### Virtual scroll
-  - `scrollToIndex` puts the item at the requested edge, also when its size is different from the estimate. `layoutComplete` resolves after the rendered items are measured. [#2410](https://github.com/IgniteUI/igniteui-webcomponents/pull/2410)
+  - `scrollToIndex()`: [#2410](https://github.com/IgniteUI/igniteui-webcomponents/pull/2410) [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545) [#2603](https://github.com/IgniteUI/igniteui-webcomponents/pull/2603)
+    - It puts the item at the requested edge, also when the size of the item is different from the estimate.
+    - A `data` change in the same task renders at the new offset.
+    - On a hidden or detached list, the call waits and scrolls when the list shows. Its promise resolves after that scroll. A newer call replaces the waiting call. Before, the call did nothing.
+  - `layoutComplete` resolves after the rendered items are measured. [#2410](https://github.com/IgniteUI/igniteui-webcomponents/pull/2410)
   - A list larger than the maximum scroll size of the browser shows its last items, and its items move evenly during a scroll. [#2410](https://github.com/IgniteUI/igniteui-webcomponents/pull/2410)
   - A new `data` array measures the new items at the rendered indices again. [#2412](https://github.com/IgniteUI/igniteui-webcomponents/pull/2412)
-  - A `data` change in the same task as `scrollToIndex()` renders at the new offset. [#2545](https://github.com/IgniteUI/igniteui-webcomponents/pull/2545)
-  - A property change on a detached virtual scroll no longer throws an error.
+  - A property change on a detached virtual scroll no longer throws an error. [#2597](https://github.com/IgniteUI/igniteui-webcomponents/pull/2597)
 
 ### Security
 - #### Tile manager
@@ -2126,6 +2234,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.5.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.4.1...7.5.0
 [7.4.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.4.0...7.4.1
 [7.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.3.2...7.4.0
 [7.3.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.3.1...7.3.2

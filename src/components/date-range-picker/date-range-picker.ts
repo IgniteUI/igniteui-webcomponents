@@ -1,12 +1,11 @@
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
-import { property, query, queryAll, state } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { addAriaProjector } from '#internals/controllers/aria-projection.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { convertToDateRange } from '#internals/date/converters.js';
-import { CalendarDay, truncateTime } from '#internals/date/model.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
@@ -15,10 +14,9 @@ import {
   getLocaleDateTimeFormats,
 } from '#internals/i18n/date-formats.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
-import { FormValueDateRangeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
-import { firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
+import { isEmpty } from '#internals/utils/arrays.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { asNumber, clamp } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
@@ -26,7 +24,7 @@ import { all } from '#themes/date-range-picker/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
-import type { CalendarSelection } from '../calendar/types.js';
+import type { CommitPolicy } from '../date-picker/commit-session.js';
 import {
   IgcDatePickerBaseComponent,
   type IgcPickerBaseEventMap,
@@ -45,8 +43,14 @@ import { DateRangePosition } from './date-range-mask-parser.js';
 import { styles } from './date-range-picker.base.css.js';
 import { dateRangeI18nConfig } from './i18n.js';
 import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
+import { type RangeEditors, rangeEditors } from './range-editors.js';
+import {
+  normalizeRange,
+  rangeShape,
+  rangeTransformers,
+} from './range-shape.js';
 import { styles as shared } from './themes/shared/date-range-picker.common.css.js';
-import { dateRangeValidators, isCompleteDateRange } from './validators.js';
+import { dateRangeValidators } from './validators.js';
 
 export type { DateRangeValue } from '../types.js';
 
@@ -237,64 +241,30 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     slots: Slots,
   });
 
-  protected override readonly _formValue = createFormValueState(this, {
-    initialValue: { start: null, end: null },
-    transformers: FormValueDateRangeTransformers,
-  });
+  protected override readonly _shape = rangeShape;
+
+  protected override readonly _formValue =
+    createFormValueState<DateRangeValue | null>(this, {
+      initialValue: null,
+      transformers: rangeTransformers,
+    });
 
   protected override _visibleMonths = 2;
 
   private _placeholder?: string;
 
-  /** The range reflected in the calendar, committed or still being typed. */
-  @state()
-  private _calendarRange: Date[] | null = null;
-
-  @queryAll(IgcDateTimeInputComponent.tagName)
-  private readonly _inputs!: NodeListOf<IgcDateTimeInputComponent>;
-
-  @query(IgcDateRangeInputComponent.tagName)
-  private readonly _input!: IgcDateRangeInputComponent;
-
-  protected override get _editors(): PickerEditor[] {
-    return this.useTwoInputs ? Array.from(this._inputs) : [this._input];
+  private get _editors(): RangeEditors {
+    return rangeEditors(this.renderRoot, this.useTwoInputs);
   }
 
-  private get _firstDefinedInRange(): Date | null {
-    return this.value?.start ?? this.value?.end ?? null;
+  protected override get _ownedEditors(): PickerEditor[] {
+    // The render root is created on the first connect.
+    return this.renderRoot ? this._editors.editors() : [];
   }
 
   // #endregion
 
   // #region Base class hooks
-
-  protected override get _value(): DateRangeValue | null {
-    return this.value;
-  }
-
-  /** A user change. It stays uncommitted until the picker emits `igcChange`. */
-  protected override set _value(value: DateRangeValue | null) {
-    const previous = this.value;
-    this._formValue.setValueAndFormState(value);
-    this._setCalendarRangeValues();
-    this.requestUpdate('value', previous);
-  }
-
-  protected override get _hasValue(): boolean {
-    return this._firstDefinedInRange !== null;
-  }
-
-  protected override get _calendarSelection(): CalendarSelection {
-    return 'range';
-  }
-
-  protected override get _calendarValues(): Date[] | null {
-    return this._calendarRange;
-  }
-
-  protected override get _defaultActiveDate(): Date | null {
-    return this._firstDefinedInRange;
-  }
 
   protected override get _calendarResourceStrings() {
     return this.resourceStrings;
@@ -312,58 +282,25 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     value: unknown,
     locale: string
   ): string {
-    const range = value as DateRangeValue;
-
-    if (!isCompleteDateRange(range)) {
+    // A bound of `min` or `max` is a date, the value is a range.
+    if (value instanceof Date || value == null) {
       return super._formatValidationValue(value, locale);
     }
 
-    return [range.start, range.end]
+    const { start, end } = value as DateRangeValue;
+
+    return [start, end]
+      .filter((date) => date !== null)
       .map((date) => super._formatValidationValue(date, locale))
       .join(` ${this.resourceStrings.date_range_picker_date_separator} `);
   }
 
-  protected override get _projectionTarget() {
-    // The host's associated labels are projected only onto the start input.
-    return this._input ?? this._inputs?.[0] ?? null;
-  }
-
   protected override _focusAndSelectInput(): void {
-    this.useTwoInputs ? this._inputs[0].select() : this._input.focus();
+    this._editors.focusAfterPick();
   }
 
-  protected override _canCloseOnSelect(): boolean {
-    return this._calendar.values.length > 1;
-  }
-
-  protected override _handleDismiss(): void {
-    if (!this._isDropDown) {
-      this._revertValue();
-    }
-  }
-
-  /** Points the calendar at the current range, in the first rendered month. */
-  protected override _syncCalendarOnToggle(): void {
-    this._setCalendarActiveDate(this._firstDefinedInRange);
-    this._calendar['_activeDaysViewIndex'] = 0;
-  }
-
-  protected override _onDialogClosing(): void {
-    this._emitChangeIfDirty();
-  }
-
-  /** In dialog mode the range is committed by the actions of the dialog instead. */
-  protected override _commitsCalendarSelection(): boolean {
-    return this._isDropDown;
-  }
-
-  protected override _valueFromCalendarSelection(
-    dates: Date[]
-  ): DateRangeValue {
-    // A range cleared in the calendar comes through as no dates at all
-    return isEmpty(dates)
-      ? { start: null, end: null }
-      : { start: firstOf(dates), end: lastOf(dates) };
+  protected override _commitPolicy(): CommitPolicy {
+    return this._isDropDown ? 'at-once' : 'on-confirm';
   }
 
   // #endregion
@@ -372,14 +309,13 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false, true) */
   /**
-   * The value of the picker: a range with a `start` and an `end` date.
+   * The value of the picker: a range with a `start` and an `end` date, or `null` when the range is empty.
    * @attr
    */
   @property({ converter: convertToDateRange })
   public set value(value: DateRangeValue | string | null | undefined) {
     this._value = convertToDateRange(value);
-    // A set from code is committed at once, so no later commit reports it.
-    this._oldValue = this.value;
+    this._session.endDraft();
   }
 
   public get value(): DateRangeValue | null {
@@ -480,7 +416,7 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     // The base projector covers the start editor. This one gives the end editor
     // the popup semantics, without the labels.
     addAriaProjector(this, {
-      target: () => this._inputs[1] ?? null,
+      target: () => this._ownedEditors[1] ?? null,
       naming: false,
       state: () => ({
         hasPopup: 'dialog',
@@ -489,24 +425,16 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     });
   }
 
-  protected override update(changedProperties: PropertyValues<this>): void {
-    // The render swaps the editors, so the range and validity are re-applied after it.
-    if (changedProperties.has('useTwoInputs')) {
-      this._syncEditors();
-    } else if (changedProperties.has('mode')) {
-      this._syncCalendarRange();
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    // The render swaps the editors, so a typed draft goes with them.
+    if (
+      changedProperties.has('useTwoInputs') ||
+      changedProperties.has('mode')
+    ) {
+      this._draft = undefined;
     }
 
-    super.update(changedProperties);
-  }
-
-  protected override firstUpdated() {
-    this._delegateInputsValidity();
-  }
-
-  protected override formResetCallback() {
-    super.formResetCallback();
-    this._setCalendarRangeValues();
+    super.willUpdate(changedProperties);
   }
 
   // #endregion
@@ -528,7 +456,6 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   /** Sets the value of the picker to `value`. It does not emit events. */
   public select(value: DateRangeValue | null): void {
     this.value = value;
-    this._setCalendarActiveDate(this._firstDefinedInRange);
   }
 
   // #endregion
@@ -536,148 +463,61 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   // #region Event handlers
 
   protected _dialogCancel() {
-    this._closeWith(() => this._revertValue());
+    this._closeWith(() => this._session.cancel());
   }
 
   protected _dialogDone() {
-    this._closeWith(() => this._emitChangeIfDirty());
+    this._closeWith(() => this._session.confirm());
   }
 
-  protected _handleInput(event: CustomEvent<string>) {
-    event.stopPropagation();
+  protected _handleEditorInput(event: Event): void {
+    if (!this._acceptEditorEvent(event)) return;
+
     if (this.nonEditable) {
       event.preventDefault();
       return;
     }
 
-    const input = event.target as IgcDateTimeInputComponent;
-    const newValue = truncateTime(input._uncommittedValue);
-    const range = this._getUpdatedDateRange(input, newValue);
+    const editors = this._editors;
+    const draft = normalizeRange(editors.typed());
+    const typed = editors.typedDate(event.target as PickerEditor);
 
-    this._setCalendarRangeValues(range);
-    this._setCalendarActiveDate(newValue, range.start, range.end);
-
-    this.emitEvent('igcInput', { detail: range });
-  }
-
-  protected _handleInputChange(event: CustomEvent<Date | null>) {
-    event.stopPropagation();
-
-    const input = event.target as IgcDateTimeInputComponent;
-    const newValue = truncateTime(input.value);
-
-    this._commitRange(this._getUpdatedDateRange(input, newValue));
-  }
-
-  protected async _handleDateRangeInput(event: CustomEvent<string>) {
-    event.stopPropagation();
-    if (this.nonEditable) {
-      event.preventDefault();
-      return;
-    }
-
-    const input = event.target as IgcDateRangeInputComponent;
-    const draft = input._uncommittedValue;
-
-    this._setCalendarRangeValues(draft);
-    this._calendar.activeDate = draft?.start;
+    this._draft = { value: draft };
+    this._setCalendarActiveDate(typed ?? draft?.start ?? draft?.end);
 
     this.emitEvent('igcInput', { detail: draft });
   }
 
-  protected _handleDateRangeInputChange(
-    event: CustomEvent<DateRangeValue | null>
-  ) {
-    event.stopPropagation();
-
-    this._commitRange((event.target as IgcDateRangeInputComponent).value);
+  protected _handleEditorChange(event: Event): void {
+    if (this._acceptEditorEvent(event)) {
+      this._commitEditorValue(this._editors.committed());
+    }
   }
 
   // #endregion
 
   // #region Private methods
 
-  private async _syncCalendarRange(): Promise<void> {
-    await this._calendar?.updateComplete;
-    this._setCalendarRangeValues();
-  }
-
-  private async _syncEditors(): Promise<void> {
-    await this._syncCalendarRange();
-    this._delegateInputsValidity();
-  }
-
-  protected _revertValue() {
-    this.value = this._oldValue;
-  }
-
-  /** Builds the range from both editors. The other editor is read through its uncommitted draft. */
-  private _getUpdatedDateRange(
-    input: IgcDateTimeInputComponent,
-    newValue: Date | null
-  ): DateRangeValue {
-    const [startInput, endInput] = this._inputs;
-
-    return input === startInput
-      ? { start: newValue, end: endInput?._uncommittedValue ?? null }
-      : { start: startInput?._uncommittedValue ?? null, end: newValue };
-  }
-
   /**
-   * Delegates the editor validity methods to the picker range validation.
-   * The pristine check stops a form reset from starting a validation.
+   * Stops the inner event of an editor, and returns whether the editor belongs to the layout that `useTwoInputs`
+   * selects. An editor that a layout change removes commits nothing, as its typed text goes with it. The events of
+   * slotted content go on to the application.
    */
-  private _delegateInputsValidity() {
-    for (const input of this._editors) {
-      input.checkValidity = () =>
-        !this._pristine ? this.checkValidity() : true;
-      input.reportValidity = () =>
-        !this._pristine ? this.reportValidity() : true;
-    }
+  private _acceptEditorEvent(event: Event): boolean {
+    const target = event.target as PickerEditor;
+    if (target.getRootNode() !== this.renderRoot) return false;
+
+    event.stopPropagation();
+    return this._ownedEditors.includes(target);
   }
 
-  /** Shows a range in the calendar. The input handlers pass the draft, so the calendar follows the typing. */
-  private _setCalendarRangeValues(range: DateRangeValue | null = this.value) {
-    if (isCompleteDateRange(range)) {
-      this._calendarRange =
-        CalendarDay.compare(range.start, range.end) === 0
-          ? [range.start]
-          : [range.start, range.end];
-
-      this._setCalendarActiveDate(range.start);
-      return;
-    }
-
-    const first = range?.start ?? range?.end ?? null;
-    this._calendarRange = first ? [first] : null;
-  }
-
-  /** Commits a range from an editor, corrects a reversed one, and notifies. */
-  private _commitRange(range: DateRangeValue | null): void {
-    const { start, end } = (range && this._swapDates(range)) ?? {
-      start: null,
-      end: null,
-    };
-
-    this._commitEditorValue({ start, end });
-  }
-
-  private _swapDates(range: DateRangeValue): DateRangeValue {
-    return isCompleteDateRange(range) &&
-      CalendarDay.compare(range.start, range.end) >= 1
-      ? { start: range.end, end: range.start }
-      : range;
-  }
-
-  /** Applies a predefined range. In dialog mode, Done commits it. */
-  private _select(value: DateRangeValue | null) {
+  /** Applies a predefined range like a calendar selection. */
+  private _handleRangeSelect({ detail }: CustomEvent<DateRangeValue>): void {
     if (this._isClosing) return;
 
-    this._value = value;
-    this._setCalendarActiveDate(this._firstDefinedInRange);
+    this._session.pick(detail);
 
-    if (this._isDropDown) {
-      this._emitChange();
+    if (this._commitPolicy() === 'at-once' && !this.keepOpenOnSelect) {
       this._hide(true);
     }
   }
@@ -710,8 +550,7 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
             .usePredefinedRanges=${this.usePredefinedRanges}
             .customRanges=${this.customRanges}
             .resourceStrings=${this.resourceStrings}
-            @igcRangeSelect=${({ detail }: CustomEvent<DateRangeValue>) =>
-              this._select(detail)}
+            @igcRangeSelect=${this._handleRangeSelect}
             exportparts="ranges"
           >
           </igc-predefined-ranges-area>
@@ -773,9 +612,8 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
         .min=${this._min}
         .max=${this._max}
         label=${label}
-        ?invalid=${live(this.invalid)}
-        @igcChange=${this._handleInputChange}
-        @igcInput=${this._handleInput}
+        @igcChange=${this._handleEditorChange}
+        @igcInput=${this._handleEditorInput}
         @keydown=${this._handleEnterKey}
         @keypress=${this._handleEnterKey}
         @click=${bindIf(this._opensOnClick, this._handleInputClick)}
@@ -812,14 +650,13 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
         ?readonly=${this._isEditorReadOnly}
         ?required=${this.required}
         .outlined=${this.outlined}
-        ?invalid=${live(this.invalid)}
         .disabled=${this.disabled}
         .inputFormat=${live(this.inputFormat)}
         .displayFormat=${live(format)}
         .locale=${live(this.locale)}
         .prompt=${this.prompt}
-        @igcInput=${this._handleDateRangeInput}
-        @igcChange=${this._handleDateRangeInputChange}
+        @igcInput=${this._handleEditorInput}
+        @igcChange=${this._handleEditorChange}
         @keydown=${this._handleEnterKey}
         @keypress=${this._handleEnterKey}
         @click=${bindIf(this._opensOnClick, this._handleInputClick)}

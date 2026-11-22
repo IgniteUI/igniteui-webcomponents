@@ -52,7 +52,6 @@ describe('Key bindings controller', () => {
               .set('d', this.handleKeyboardEvent, {
                 triggers: ['keydown', 'keyup'],
                 preventDefault: true,
-                stopPropagation: true,
               })
               .set([shiftKey, 'c'], this.handleKeyboardEvent)
               .set([shiftKey, altKey, arrowUp], this.handleKeyboardEvent);
@@ -133,20 +132,6 @@ describe('Key bindings controller', () => {
       dispatch(instance, 'keyup', 'd');
       expect(instance.event.type).to.equal('keyup');
       expect(instance.event.defaultPrevented).to.be.true;
-    });
-
-    it('event handler modifiers - stop propagation', () => {
-      let parentHandlerCalled = false;
-      const handler = () => {
-        parentHandlerCalled = true;
-      };
-      const container = instance.parentElement!;
-      container.addEventListener('keydown', handler, { once: true });
-      container.addEventListener('keyup', handler, { once: true });
-
-      simulateKeyboard(instance, 'd');
-      expect(parentHandlerCalled).to.be.false;
-      expect(instance.key).to.equal('d');
     });
 
     it('activation keys', () => {

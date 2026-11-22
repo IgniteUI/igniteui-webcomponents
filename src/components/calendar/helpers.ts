@@ -99,15 +99,8 @@ export function getWeekDayNumber(value: WeekDays): number {
   return WEEK_DAYS_MAP[value];
 }
 
-/**
- * The first day of the week of `locale`. Without `Intl.Locale.prototype.getWeekInfo()`,
- * igniteui-i18n-core returns Monday, so return `sunday`, the documented default.
- */
+/** The first day of the week of `locale`. */
 export function getLocaleWeekStart(locale: string): WeekDays {
-  if (!('getWeekInfo' in Intl.Locale.prototype)) {
-    return 'sunday';
-  }
-
   // igniteui-i18n-core numbers the days 1 (Monday) - 7 (Sunday)
   return getOrCreateForLocale(
     localeWeekStarts,

@@ -106,8 +106,11 @@ describe('Focus ring controller', () => {
 });
 
 function hasKeyboardFocusStyles(node: HTMLElement) {
+  const { outlineColor, outlineStyle, outlineWidth } = getComputedStyle(node);
+
   return (
-    getComputedStyle(node).getPropertyValue('outline') ===
-    'rgb(255, 0, 0) solid 2px'
+    outlineColor === 'rgb(255, 0, 0)' &&
+    outlineStyle === 'solid' &&
+    outlineWidth === '2px'
   );
 }

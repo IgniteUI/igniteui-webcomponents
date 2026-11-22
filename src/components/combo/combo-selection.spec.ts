@@ -7,6 +7,7 @@ import {
   enterKey,
   escapeKey,
   homeKey,
+  shiftKey,
   spaceBar,
   tabKey,
 } from '#internals/controllers/key-bindings.js';
@@ -16,6 +17,7 @@ import {
   type City,
   cities,
   comboStable,
+  expectActiveOption,
   openComboPopover,
   items,
 } from '#internals/testing/combo.spec.js';
@@ -47,6 +49,302 @@ describe('Combo', () => {
   before(() => {
     defineComponents(IgcComboComponent);
     suppressResizeObserverLoopError();
+  });
+
+  describe('A write of the same value', () => {
+    beforeEach(async () => {
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>`
+      );
+    });
+
+    it('requests no update and keeps the pending selection', async () => {
+      combo.value = ['BG01', 'BG02'];
+      combo.selectionCommit = 'confirm';
+      await openComboPopover(combo);
+      combo.deselect('BG01');
+      await elementUpdated(combo);
+
+      combo.value = [...combo.value];
+
+      expect(combo.isUpdatePending).to.be.false;
+      expect(combo.value).to.eql(['BG01', 'BG02']);
+      expect(combo.pendingValue).to.eql(['BG02']);
+    });
+
+    it('makes the control dirty, as any write', async () => {
+      const form = document.createElement('form');
+      combo.before(form);
+      form.append(combo);
+      combo.value = ['BG01'];
+
+      // A reset makes the control pristine, so a new default sets the value.
+      form.reset();
+      combo.value = [];
+      combo.defaultValue = ['BG02'];
+
+      expect(combo.value).to.be.empty;
+      form.remove();
+    });
+
+    it('gives the values their records again after a new data or valueKey', () => {
+      const copies = cities.map((city) => ({ ...city }));
+      const other = { id: 'XX01', name: 'Elsewhere', country: '', zip: '' };
+      combo.value = ['BG01', 'BG02'];
+
+      combo.data = copies;
+      combo.value = ['BG01', 'BG02'];
+      expect(combo.selection).to.have.ordered.members(copies.slice(0, 2));
+
+      // A data that grows in place.
+      combo.value = ['BG01', 'XX01'];
+      copies.push(other);
+      combo.value = ['BG01', 'XX01'];
+      expect(combo.selection).to.have.ordered.members([copies[0], other]);
+      combo.value = ['BG01', 'BG02'];
+
+      combo.valueKey = 'name';
+      combo.value = ['BG01', 'BG02'];
+      expect(combo.selection).to.be.empty;
+    });
+
+    it('syncs a value array that changed in place and is set again', async () => {
+      combo.value = ['BG01'];
+      const value = combo.value;
+      value.push('BG02');
+      combo.value = value;
+      await elementUpdated(combo);
+
+      const target =
+        combo.renderRoot.querySelector<IgcInputComponent>('igc-input#target')!;
+
+      expect(combo.selection.map(({ id }) => id)).to.eql(['BG01', 'BG02']);
+      expect(target.value).to.equal('Sofia, Plovdiv');
+    });
+
+    it('gives the values their records again after valueKey changes and comes back', () => {
+      combo.value = ['BG01', 'BG02'];
+      combo.valueKey = 'country';
+      combo.valueKey = 'id';
+      combo.value = ['BG01', 'BG02'];
+
+      expect(combo.selection.map(({ id }) => id)).to.eql(['BG01', 'BG02']);
+    });
+
+    it('keeps the typed text when a framework writes back the cleared value', async () => {
+      combo.singleSelect = true;
+      combo.value = ['BG01'];
+      await elementUpdated(combo);
+
+      const target =
+        combo.renderRoot.querySelector<IgcInputComponent>('igc-input#target')!;
+
+      target.value = 'Sofiax';
+      target.dispatchEvent(new CustomEvent('igcInput', { detail: 'Sofiax' }));
+      await elementUpdated(combo);
+      await elementUpdated(combo);
+      expect(combo.value).to.be.empty;
+
+      combo.value = [];
+      await elementUpdated(combo);
+
+      expect(target.value).to.equal('Sofiax');
+    });
+
+    it('shows the text of a value that comes back after a blur cleared the input', async () => {
+      combo.singleSelect = true;
+      combo.value = ['BG01'];
+      await elementUpdated(combo);
+
+      const target =
+        combo.renderRoot.querySelector<IgcInputComponent>('igc-input#target')!;
+
+      combo.focus();
+      target.value = 'x';
+      target.dispatchEvent(new CustomEvent('igcInput', { detail: 'x' }));
+      await elementUpdated(combo);
+      await elementUpdated(combo);
+      combo.blur();
+      await elementUpdated(combo);
+      expect(target.value).to.be.empty;
+
+      combo.value = ['BG01'];
+      await elementUpdated(combo);
+
+      expect(target.value).to.equal('Sofia');
+    });
+
+    it('shows a new displayKey in the text without a new value', async () => {
+      combo.value = ['BG01'];
+      combo.displayKey = 'country';
+      await elementUpdated(combo);
+
+      const target =
+        combo.renderRoot.querySelector<IgcInputComponent>('igc-input#target')!;
+
+      expect(target.value).to.equal('Bulgaria');
+    });
+  });
+
+  describe('Primitive data', () => {
+    it('shows and toggles the selected items', async () => {
+      const primitives = await fixture<IgcComboComponent>(
+        html`<igc-combo
+          .data=${['Sofia', 4, 'Varna']}
+          .value=${['Sofia', 4]}
+        ></igc-combo>`
+      );
+      const selected = () =>
+        items(primitives)
+          .filter((item) => item.selected)
+          .map((item) => item.textContent?.trim());
+
+      await openComboPopover(primitives);
+      expect(selected()).to.eql(['Sofia', '4']);
+
+      simulateClick(items(primitives)[0]);
+      await comboStable(primitives);
+
+      expect(primitives.value).to.eql([4]);
+      expect(selected()).to.eql(['4']);
+    });
+  });
+
+  describe('One record for each value', () => {
+    const other = { id: 'XX01', name: 'Elsewhere', country: '', zip: '' };
+
+    beforeEach(async () => {
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>`
+      );
+      input = combo.renderRoot.querySelector('igc-input#target')!;
+    });
+
+    it('selects the first record of a repeated value, and shows each of its records as selected', async () => {
+      const copy = { ...cities[0] };
+      combo.data = [...cities, copy];
+      combo.select('BG01');
+      await openComboPopover(combo);
+
+      expect(combo.value).to.eql(['BG01']);
+      expect(combo.selection).to.have.ordered.members([cities[0]]);
+
+      const rows = items(combo).filter(
+        (item) => item.textContent?.trim() === 'Sofia'
+      );
+      expect(rows).lengthOf(2);
+      expect(rows.every((item) => item.selected)).to.be.true;
+
+      simulateClick(rows[1]);
+      await comboStable(combo);
+
+      expect(combo.value).to.be.empty;
+    });
+
+    it('selects the first record from a click on another option of a repeated value', async () => {
+      const copy = { ...cities[0], name: 'Sofia copy' };
+      const changed = spy();
+      combo.data = [...cities, copy];
+      combo.addEventListener('igcChange', ({ detail }) =>
+        changed(detail.items)
+      );
+      await openComboPopover(combo);
+
+      simulateClick(
+        items(combo).find((item) => item.textContent?.trim() === 'Sofia copy')!
+      );
+      await comboStable(combo);
+
+      expect(combo.selection).to.have.ordered.members([cities[0]]);
+      expect(input.value).to.equal('Sofia');
+      expect(changed).calledOnceWith([cities[0]]);
+    });
+
+    it('lists one record for each value when a toggle selects all', async () => {
+      const copy = { ...cities[0], name: 'Sofia copy' };
+      const changed = spy();
+      combo.data = [...cities, copy];
+      combo.showSelectAll = true;
+      combo.addEventListener('igcChange', ({ detail }) =>
+        changed(detail.items)
+      );
+      await openComboPopover(combo);
+
+      simulateClick(
+        combo.renderRoot.querySelector<IgcComboItemComponent>(
+          'igc-virtual-scroll [part~="select-all"]'
+        )!
+      );
+      await comboStable(combo);
+
+      expect(changed).calledOnceWith(cities);
+      expect(combo.selection).to.have.ordered.members(cities);
+    });
+
+    it('commits no change when the pending selection selects another option of the same value', async () => {
+      const copy = { ...cities[0], name: 'Sofia copy' };
+      const changed = spy();
+      combo.data = [...cities, copy];
+      combo.selectionCommit = 'confirm';
+      combo.value = ['BG01'];
+      combo.addEventListener('igcChange', changed);
+      await openComboPopover(combo);
+
+      const row = () =>
+        items(combo).find((item) => item.textContent?.trim() === 'Sofia copy')!;
+
+      simulateClick(row());
+      await comboStable(combo);
+      simulateClick(row());
+      await comboStable(combo);
+      simulateKeyboard(
+        combo.renderRoot.querySelector('[part="search-input"]')!,
+        enterKey
+      );
+      await comboStable(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.selection).to.have.ordered.members([cities[0]]);
+      expect(changed).not.called;
+    });
+
+    it('keeps the place of a value that gets its record', async () => {
+      combo.value = ['XX01', 'BG02'];
+      combo.select(other);
+      await elementUpdated(combo);
+
+      expect(combo.value).to.eql(['XX01', 'BG02']);
+      expect(combo.selection.map(({ id }) => id)).to.eql(['XX01', 'BG02']);
+      expect(input.value).to.equal('Elsewhere, Plovdiv');
+    });
+
+    it('selects all in data order, then keeps the values without a record', () => {
+      combo.value = ['BG02', 'XX01'];
+      combo.selectAllItems(true);
+
+      expect(combo.value).to.eql([...cities.map(({ id }) => id), 'XX01']);
+    });
+
+    it('keeps a value that a pending deselection named out when a new data gives it a record', async () => {
+      combo.selectionCommit = 'confirm';
+      combo.value = ['BG01', 'XX01'];
+      await openComboPopover(combo);
+
+      combo.deselect('XX01');
+      combo.data = [...cities, other];
+      await comboStable(combo);
+
+      expect(combo.pendingValue).to.eql(['BG01']);
+      expect(combo.value).to.eql(['BG01', 'XX01']);
+    });
   });
 
   describe('Select all methods', () => {
@@ -264,18 +562,25 @@ describe('Combo', () => {
       expect(items(combo).filter((item) => item.selected)).lengthOf(1);
     });
 
-    it('resets the active option when it shows or hides', async () => {
-      // The first city. Without the option, its index is the next city.
+    it('keeps the active item when it shows or hides', async () => {
       simulateKeyboard(list, homeKey);
       simulateKeyboard(list, arrowDown);
       await comboStable(combo);
-
-      expect(items(combo).filter((item) => item.active)).lengthOf(1);
+      expectActiveOption(combo, 'Sofia');
 
       combo.showSelectAll = false;
       await comboStable(combo);
+      expectActiveOption(combo, 'Sofia');
 
-      expect(items(combo).some((item) => item.active)).to.be.false;
+      combo.showSelectAll = true;
+      await comboStable(combo);
+      expectActiveOption(combo, 'Sofia');
+
+      // The change removes the active option.
+      simulateKeyboard(list, homeKey);
+      combo.showSelectAll = false;
+      await comboStable(combo);
+      expectActiveOption(combo);
     });
 
     it('selects only the clicked item when the item has no value', async () => {
@@ -516,6 +821,21 @@ describe('Combo', () => {
       expect(changes()[0].items).to.eql(['BG01', 'BG02', 'BG03']);
     });
 
+    it('keeps the active item when group selection turns off or on', async () => {
+      simulateKeyboard(list, homeKey);
+      simulateKeyboard(list, arrowDown);
+      await comboStable(combo);
+      expectActiveOption(combo, 'Sofia');
+
+      combo.groupSelection = false;
+      await comboStable(combo);
+      expectActiveOption(combo, 'Sofia');
+
+      combo.groupSelection = true;
+      await comboStable(combo);
+      expectActiveOption(combo, 'Sofia');
+    });
+
     it('resets the active option when group selection turns off', async () => {
       simulateKeyboard(list, homeKey);
       await comboStable(combo);
@@ -719,6 +1039,38 @@ describe('Combo', () => {
       expect(combo.pendingValue).to.eql(['BG01']);
     });
 
+    it('drops the pending selection on Tab out of the combo', async () => {
+      const tabs = [
+        () => {
+          actions()[1].focus();
+          return sendKeys({ press: tabKey });
+        },
+        () => {
+          searchInput.focus();
+          return sendKeys({ press: `${shiftKey}+${tabKey}` });
+        },
+      ];
+
+      for (const tab of tabs) {
+        await openComboPopover(combo);
+        await click(1);
+
+        expect(combo.pendingValue).to.eql(['BG01', 'BG02']);
+
+        await tab();
+        await comboStable(combo);
+
+        expect(combo.open).to.be.false;
+        expect(combo.value).to.eql(['BG01']);
+        expect(combo.pendingValue).to.eql(['BG01']);
+      }
+
+      expect(changes()).to.be.empty;
+      expect(
+        eventSpy.withArgs('igcClosed').args.map(([, { detail }]) => detail)
+      ).to.eql([{ trigger: 'tab' }, { trigger: 'tab' }]);
+    });
+
     it('stages the selection methods, and commitSelection() applies them without events', async () => {
       combo.select('BG02');
       combo.deselect('BG01');
@@ -814,7 +1166,8 @@ describe('Combo', () => {
 
       expect(input.value).to.equal('Sofia, Elsewhere');
       expect(combo.value).to.eql(['BG01', 'XX01']);
-      expect(combo.pendingValue).to.eql(['BG01', 'BG02', 'XX01']);
+      // A value keeps its place when it gets its record.
+      expect(combo.pendingValue).to.eql(['BG01', 'XX01', 'BG02']);
 
       // A second record of the value does not join the selection.
       combo.deselect('XX01');
@@ -856,7 +1209,7 @@ describe('Combo', () => {
       combo.data = [...cities, later];
       await comboStable(combo);
 
-      expect(combo.pendingValue).to.eql(['BG01', 'BG02', 'XX02']);
+      expect(combo.pendingValue).to.eql(['BG01', 'XX02', 'BG02']);
 
       await click(1);
       simulateKeyboard(list, enterKey);

@@ -12,6 +12,8 @@ import { IgcProgressBaseComponent } from './base.js';
 import { styles } from './themes/linear/linear.progress.base.css.js';
 import { styles as shared } from './themes/linear/shared/linear.progress.common.css.js';
 
+const Slots = setSlots();
+
 /**
  * A linear progress indicator used to express unspecified wait time or display
  * the length of a process.
@@ -46,7 +48,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
   }
 
   protected override readonly _slots = addSlotController(this, {
-    slots: setSlots(),
+    slots: Slots,
   });
 
   /**

@@ -5,10 +5,8 @@ import {
 } from '#internals/controllers/mutation-observer.js';
 import { getRoot, iterNodes, scrollIntoView } from '#internals/utils/dom.js';
 import { wrap } from '#internals/utils/math.js';
-import { escapeRegex, nanoid } from '#internals/utils/strings.js';
+import { nanoid } from '#internals/utils/strings.js';
 import type IgcHighlightComponent from './highlight.js';
-
-type Match = { node: Node; indices: [start: number, end: number] };
 
 /* jsonAPIPlainObject */
 /* marshalByValue */
@@ -18,20 +16,6 @@ type Match = { node: Node; indices: [start: number, end: number] };
 export interface HighlightNavigation {
   /** If true, prevents the component from scrolling the new active match into view. */
   preventScroll?: boolean;
-}
-
-function* matchText(
-  nodes: IterableIterator<Node>,
-  regexp: RegExp
-): Generator<Match> {
-  for (const node of nodes) {
-    if (node.textContent) {
-      for (const match of node.textContent.matchAll(regexp)) {
-        const [start, end] = match.indices![0]!;
-        yield { node, indices: [start, end] } satisfies Match;
-      }
-    }
-  }
 }
 
 class HighlightService implements ReactiveController {
@@ -179,9 +163,9 @@ class HighlightService implements ReactiveController {
     // the content, such as a line break in the HTML source.
     const pattern = value
       .split(/\s+/)
-      .map(escapeRegex)
+      .map(RegExp.escape)
       .join(String.raw`\s+`);
-    return new RegExp(pattern, this._host.caseSensitive ? 'dg' : 'dgi');
+    return new RegExp(pattern, this._host.caseSensitive ? 'g' : 'gi');
   }
 
   private _updateActiveHighlight(): void {
@@ -198,25 +182,21 @@ class HighlightService implements ReactiveController {
       return;
     }
 
-    const iterator = matchText(
-      iterNodes(this._host, { show: 'SHOW_TEXT' }),
-      this._createRegex(value)
-    );
+    const regexp = this._createRegex(value);
 
-    for (const {
-      node,
-      indices: [start, end],
-    } of iterator) {
-      // Static, so a DOM change does not have to update the ranges.
-      const range = new StaticRange({
-        startContainer: node,
-        startOffset: start,
-        endContainer: node,
-        endOffset: end,
-      });
+    for (const node of iterNodes<Text>(this._host, { show: 'SHOW_TEXT' })) {
+      for (const { index, 0: text } of node.data.matchAll(regexp)) {
+        // Static, so a DOM change does not have to update the ranges.
+        const range = new StaticRange({
+          startContainer: node,
+          startOffset: index,
+          endContainer: node,
+          endOffset: index + text.length,
+        });
 
-      this._ranges.push(range);
-      this._highlight.add(range);
+        this._ranges.push(range);
+        this._highlight.add(range);
+      }
     }
   }
 

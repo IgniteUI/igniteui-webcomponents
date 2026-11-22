@@ -36,6 +36,7 @@ import { applyLayout, serializeTiles } from './serializer.js';
 import { styles as shared } from './themes/shared/tile-manager.common.css.js';
 import { styles } from './themes/tile-manager.base.css.js';
 import IgcTileComponent from './tile.js';
+import { childTiles } from './transitions.js';
 
 /* blazorAdditionalDependency: IgcTileComponent */
 /**
@@ -291,7 +292,8 @@ export default class IgcTileManagerComponent extends LitElement {
   }
 
   private _updateMaximizedTile(): void {
-    this._hasMaximizedTile = this.tiles.some((tile) => tile.maximized);
+    // Unsorted: the order does not matter.
+    this._hasMaximizedTile = childTiles(this).some((tile) => tile.maximized);
   }
 
   private _observerCallback({

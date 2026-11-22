@@ -117,21 +117,21 @@ describe('DateTimeMaskParser', () => {
       const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });
       const date = new Date(2023, 11, 25); // Dec 25, 2023
 
-      expect(parser.formatDate(date)).to.equal('12/25/2023');
+      expect(parser.formatValue(date)).to.equal('12/25/2023');
     });
 
     it('formats date with leading zeros', () => {
       const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });
       const date = new Date(2023, 0, 5); // Jan 5, 2023
 
-      expect(parser.formatDate(date)).to.equal('01/05/2023');
+      expect(parser.formatValue(date)).to.equal('01/05/2023');
     });
 
     it('formats time correctly', () => {
       const parser = new DateTimeMaskParser({ format: 'HH:mm:ss' });
       const date = new Date(2023, 0, 1, 14, 30, 45);
 
-      expect(parser.formatDate(date)).to.equal('14:30:45');
+      expect(parser.formatValue(date)).to.equal('14:30:45');
     });
 
     it('formats 12-hour time with AM/PM', () => {
@@ -139,13 +139,13 @@ describe('DateTimeMaskParser', () => {
       const pmDate = new Date(2023, 0, 1, 14, 30, 0);
       const amDate = new Date(2023, 0, 1, 9, 30, 0);
 
-      expect(parser.formatDate(pmDate)).to.equal('02:30 PM');
-      expect(parser.formatDate(amDate)).to.equal('09:30 AM');
+      expect(parser.formatValue(pmDate)).to.equal('02:30 PM');
+      expect(parser.formatValue(amDate)).to.equal('09:30 AM');
     });
 
     it('returns empty mask for null date', () => {
       const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });
-      expect(parser.formatDate(null)).to.equal('__/__/____');
+      expect(parser.formatValue(null)).to.equal('__/__/____');
     });
   });
 

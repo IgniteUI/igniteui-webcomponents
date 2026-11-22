@@ -17,6 +17,8 @@ import type { BadgeShape, StyleVariant } from '../types.js';
 import { styles } from './themes/badge.base.css.js';
 import { styles as shared } from './themes/shared/badge.common.css.js';
 
+const Slots = setSlots();
+
 /**
  * Shows a status on a related item, or marks an area that needs attention.
  *
@@ -44,7 +46,7 @@ export default class IgcBadgeComponent extends LitElement {
   }
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots(),
+    slots: Slots,
     onChange: this._handleSlotChange,
   });
 

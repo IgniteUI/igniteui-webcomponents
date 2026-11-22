@@ -42,15 +42,26 @@ const OPTION_READERS: Record<
   disableAutoScroll: 'host',
 };
 
+const OPTIONS_READ_BY = {
+  messages: optionsReadBy('messages'),
+  input: optionsReadBy('input'),
+};
+
+function optionsReadBy(
+  context: 'messages' | 'input'
+): (keyof IgcChatOptions)[] {
+  return (Object.keys(OPTION_READERS) as (keyof IgcChatOptions)[]).filter(
+    (key) => OPTION_READERS[key] === context || OPTION_READERS[key] === 'both'
+  );
+}
+
 function optionsChanged(
   previous: IgcChatOptions | undefined,
   next: IgcChatOptions | undefined,
   context: 'messages' | 'input'
 ): boolean {
-  return (Object.keys(OPTION_READERS) as (keyof IgcChatOptions)[]).some(
-    (key) =>
-      (OPTION_READERS[key] === context || OPTION_READERS[key] === 'both') &&
-      previous?.[key] !== next?.[key]
+  return OPTIONS_READ_BY[context].some(
+    (key) => previous?.[key] !== next?.[key]
   );
 }
 

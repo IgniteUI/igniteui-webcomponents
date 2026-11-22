@@ -55,6 +55,8 @@ import type {
   SplitterResizeState,
 } from './types.js';
 
+const Slots = setSlots('start', 'end');
+
 const KEYBOARD_RESIZE_STEP = 10;
 
 const PANES = ['start', 'end'] as const satisfies readonly PanePosition[];
@@ -436,10 +438,10 @@ export default class IgcSplitterComponent extends I18nMixin(
 
     addThemingController(this, all);
 
-    addSlotController(this, { slots: setSlots('start', 'end') });
+    addSlotController(this, { slots: Slots });
 
     addResizeObserverController(this, {
-      callback: () => this._handleContainerResize(),
+      callback: this._handleContainerResize,
     });
 
     const keys = addKeybindings(this, { ref: this._separatorRef })

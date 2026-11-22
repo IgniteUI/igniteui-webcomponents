@@ -1,6 +1,7 @@
 import { getDateFormatter, getDisplayNamesFormatter } from 'igniteui-i18n-core';
 import { html, nothing, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
+import { guard } from 'lit/directives/guard.js';
 import { CalendarDay, DAYS_IN_WEEK } from '#internals/date/model.js';
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '#internals/decorators/blazorSuppressComponent.js';
@@ -9,6 +10,7 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { chunk, firstOf, lastOf } from '#internals/utils/arrays.js';
 import { bindIf } from '#internals/utils/lit.js';
+import { asNumber } from '#internals/utils/math.js';
 import { all } from '#themes/calendar/themes/days.js';
 import { IgcCalendarBaseComponent } from '../base.js';
 import {
@@ -233,8 +235,15 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   /** Previews the range up to a focused or hovered day, and clears the preview when it is left. */
   private _handleDayPreview(event: Event): void {
-    if (event.type === 'focus' || event.type === 'pointerenter') {
-      const day = CalendarDay.from(new Date(getViewElement(event)));
+    // The rows listen, so read the day from the target only, not the path.
+    const value = asNumber((event.target as HTMLElement).dataset.value, -1);
+
+    if (value === -1) {
+      return;
+    }
+
+    if (event.type === 'focusin' || event.type === 'pointerover') {
+      const day = CalendarDay.from(new Date(value));
 
       if (this._values.length === 1 && !this._rangeStart!.equalTo(day)) {
         this._setRangePreviewDate(day);
@@ -376,8 +385,6 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       this._intlFormatDay(day, context),
       ...this._getDayLabels(day, props),
     ].join(', ');
-    const preview = bindIf(this._isRange, this._handleDayPreview);
-
     return html`
       <span part=${partMap({ date: true, ...props })}>
         <span
@@ -388,10 +395,6 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
           aria-selected=${props.selected}
           data-value=${day.timestamp}
           tabindex=${this.active && day.equalTo(this._activeDate) ? 0 : -1}
-          @focus=${preview}
-          @blur=${preview}
-          @pointerenter=${preview}
-          @pointerleave=${preview}
         >
           ${day.date}
         </span>
@@ -453,6 +456,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   protected *_renderWeeks(dates: CalendarDay[]): Generator<TemplateResult> {
     const context = this._createRenderContext();
+    const preview = bindIf(this._isRange, this._handleDayPreview);
     const weeks = Array.from(chunk(dates, DAYS_IN_WEEK));
     const lastIndex = weeks.length - 1;
 
@@ -464,7 +468,15 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       const hidden = properties.every((props) => props.hidden);
 
       yield html`
-        <div role="row" part="days-row" aria-hidden=${hidden}>
+        <div
+          role="row"
+          part="days-row"
+          aria-hidden=${hidden}
+          @focusin=${preview}
+          @focusout=${preview}
+          @pointerover=${preview}
+          @pointerout=${preview}
+        >
           ${
             this.showWeekNumbers
               ? this._renderWeekNumber(week[0], isLast)
@@ -484,7 +496,17 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       generateMonth(this._activeDate, this._firstDayOfWeek)
     );
 
-    return html`${this._renderHeaders(dates)}${this._renderWeeks(dates)}`;
+    const headers = guard(
+      [
+        this.locale,
+        this.weekDayFormat,
+        this._firstDayOfWeek,
+        this.showWeekNumbers,
+      ],
+      () => this._renderHeaders(dates)
+    );
+
+    return html`${headers}${this._renderWeeks(dates)}`;
   }
 }
 

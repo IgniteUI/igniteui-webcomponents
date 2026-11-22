@@ -62,6 +62,7 @@
 |       8 | 2026-10-05 | The stylesheet comes back after other code replaces the sheets of the tree scope           |
 |       9 | 2026-11-11 | `scrollToIndex` renders the new window in the same task; a hidden list keeps its window    |
 |      10 | 2026-11-12 | A detached list updates without adopting the stylesheet, and adopts it once attached       |
+|      11 | 2026-11-13 | `scrollToIndex` on a hidden or detached list scrolls when the list shows                  |
 
 ## Overview
 
@@ -221,9 +222,15 @@ Items outside the rendered window carry only an estimate, so the first jump can 
 point are then measured and the offset is corrected, repeatedly, until it is stable. The returned promise resolves
 on the final offset, and a caller that only needs the approximate scroll can ignore it.
 
+A hidden list (`checkVisibility()` is `false`, for example in a closed popover) or a detached list cannot scroll. It
+keeps the call and scrolls when it shows, before it renders the old window, and the promise resolves after that
+scroll. The list sees that it shows from its resize observer, from a check at the next frame (a list that is hidden
+and shown again in one frame keeps its size), and after its first update in the document. A newer call replaces the
+kept call, and the promise of the kept call resolves at once. A list in a `content-visibility: hidden` subtree that
+shows with the same size scrolls at its next update.
+
 The list renders the window of the new offset in the same task, before the `scroll` event. So a `data` change right
-after the call renders at the new offset. A hidden list does not scroll: it keeps its window, and the browser gives
-it its old offset when it shows.
+after the call renders at the new offset.
 
 #### Infinite scrolling
 
@@ -288,7 +295,7 @@ items belongs to the `itemTemplate`.
 
 | Method          | Signature                                                          | Description                                                      |
 | --------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| `scrollToIndex` | `(index: number, options?: ScrollIntoViewOptions): Promise<void>`  | Scrolls to the item at `index` and resolves on the final offset.  |
+| `scrollToIndex` | `(index: number, options?: ScrollIntoViewOptions): Promise<void>`  | Scrolls to the item at `index` and resolves on the final offset. A hidden or detached list scrolls when it shows. |
 
 ### Events
 
@@ -370,7 +377,9 @@ scope, the component adopts its stylesheet again on its next update.
 ### Public API
 
 10. `scrollToIndex` sets `scrollTop` in the vertical orientation and `scrollLeft` in the horizontal one. It renders
-    the new window before the `scroll` event, and a call on a hidden list keeps the window.
+    the new window before the `scroll` event, and a call on a hidden list keeps the window. A hidden list scrolls
+    when it shows, before it renders the old window, also when it shows again in the same frame. A detached list
+    scrolls in its first update after it connects. A newer call replaces the kept call and resolves its promise.
 11. It settles on the last index instead of waiting out the scroll timeout, and does nothing for `block: nearest`
     when the item is already in view, including an item that already fills the viewport.
 12. It keeps the requested index aligned once the real item sizes differ from the estimate, including a far-away

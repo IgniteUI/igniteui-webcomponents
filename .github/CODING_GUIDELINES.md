@@ -23,6 +23,17 @@
 10. Give functions and methods explicit return types, unless the type is obvious or adds noise.
 11. Do not use native private fields (`#field`). Use TypeScript `private` with a `_` prefix.
 
+## Browser Support
+
+The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The `browserslist`
+entry in `package.json` holds the same list.
+
+1. A platform feature that all these versions have needs no feature detection and no fallback. Check each feature
+   in the MDN browser compatibility data. Safari adds features in minor versions, so check against the first
+   release of the older major version (for example 26.0, not 26.2).
+2. Any other feature needs feature detection and a fallback that keeps the component usable.
+3. When a fallback becomes redundant, remove it together with its tests.
+
 ## Project Structure
 
 ```
@@ -187,6 +198,10 @@ declare global {
   - `@coercedProperty` coerces a value or runs a side effect on a change. See
     [Properties and Attributes](#properties-and-attributes).
   - Guard each branch with `changedProperties.has()`.
+  - Override `requestUpdate()` only when a reaction cannot wait for the next update, also for
+    a property of a base class. Lit calls it from the setter with the name and the old value.
+    Call `super.requestUpdate()` first, and compare the value with the old value. The form
+    mixin submits the form value again there, and the radio moves to the group of a new `name`.
 - Export a new component from `src/index.ts`, in alphabetical order:
 
   ```ts
@@ -259,10 +274,10 @@ Before you write lifecycle code, look for a controller that already does it:
 | `addRovingFocusController`                                    | `#internals/controllers/roving-focus.js`    | Arrow-key focus movement between items (roving tab index)      |
 | `addAriaTarget` / `addAriaProjector` / `ariaBindings` / `hostAria` | `#internals/controllers/aria-projection.js` | Projecting composite ARIA across shadow roots, and forwarding the host name and description |
 | `addToggleController`                                         | `#internals/controllers/toggle.js`          | The open/close sequence and events of toggleable hosts         |
-| `addHostListeners`                                            | `#internals/controllers/host-listeners.js`  | Listeners that exist while the host is connected               |
-| `addCommandController`                                        | `#internals/controllers/command.js`         | The Invoker Commands API (`command` / `commandfor`)            |
+| `addToggleCommands`                                           | `#internals/controllers/command.js`         | The `--show`, `--hide` and `--toggle` invoker commands         |
 | `addIdRefResolver`                                            | `#internals/controllers/id-resolver.js`     | Resolving IDREF attributes to elements                         |
 | `addRootClickController`                                      | `#internals/controllers/root-click.js`      | Closing overlays on an outside click                           |
+| `addListboxPopup`                                             | `#internals/controllers/listbox-popup.js`   | The keys, clicks and selection of a single selection list in a popup, such as the select and the dropdown |
 | `createMutationController` / `addResizeObserverController`    | `#internals/controllers/*-observer.js`      | Observing DOM mutations and size changes                       |
 | `addGesturesController`                                       | `#internals/controllers/gestures.js`        | Swipe gestures                                                 |
 | `addKeyboardFocusRing`                                        | `#internals/controllers/focus-ring.js`      | Focus styles for keyboard focus only                           |
@@ -275,8 +290,12 @@ Before you write lifecycle code, look for a controller that already does it:
 For pointer resizing and dragging, use the `resizable()` and `draggable()` directives from
 `#internals/directives/`.
 
-Store a controller in a `readonly` field that is initialized inline. The exceptions are
-`addThemingController` and `addKeybindings`, which you call in the constructor:
+Store a controller in a `readonly` field that is initialized inline. Call these controllers in the
+constructor instead: `addThemingController`, `addKeybindings`, and a controller that the component
+never reads after it adds it, such as `addAriaProjector` or the combo navigation. TypeScript rejects
+a private field that is never read.
+
+A controller in a field:
 
 ```ts
 private readonly _slots = addSlotController(this, {
@@ -797,6 +816,9 @@ export default class IgcInputComponent extends FormAssociatedRequiredMixin(
   required message first.
 - For non-string values, pass transformers to `createFormValueState`. See
   `form-transformers.ts` (`FormValueDateTimeTransformers`, `FormValueNumberTransformers`, …).
+- A `setFormValue` transformer that reads a host property, such as `name` or a mode, lists that
+  property in `reads`. A change of a listed property submits the value again at once. Without
+  the entry, the submitted value stays stale until the next value write.
 
 **Updating the value.** `setValueAndFormState()` writes the value, sends it to the form and
 validates again. Use it in the public setter and in the input handlers. A set of
@@ -868,7 +890,7 @@ export default class IgcChipComponent extends I18nMixin(LitElement, i18n) {
 ```
 
 - A component that only needs the locale, and no public resource API, calls
-  `addI18nController` directly (see `date-time-input.base.ts`).
+  `addLocaleController` directly (see `date-time-input.base.ts`).
 - Do not put user-facing text in a template. Read it from the resource strings, so that it
   follows the active locale and consumer overrides.
 - Format dates and times with `getDateTimeFormat` / `formatDisplayDate` from
@@ -887,23 +909,30 @@ export default class IgcChipComponent extends I18nMixin(LitElement, i18n) {
 - Listeners:
   - Lit manages template listeners (`@event`) and listeners on the host. They need no clean-up.
     Add host listeners with `addSafeEventListener` from `#internals/utils/events.js`, which does
-    nothing during SSR.
-  - For listeners on other targets (`window`, `document`, the render root), use
-    `addHostListeners`. It adds them on connect and removes them on disconnect with one abort
-    signal. It does not bind the listener, so bind a method first:
+    nothing during SSR. `addSafeEventListeners` adds one listener object for several events.
+  - Add a listener on another target (`window`, `document`) in `connectedCallback` and remove it
+    in `disconnectedCallback`. Use an arrow function field, so that both calls get the same
+    function:
 
     ```ts
     constructor() {
       super();
       addSafeEventListener(this, 'click', this._handleClick);
-
-      this._handleResize = this._handleResize.bind(this);
-      addHostListeners(this, {
-        target: () => window,
-        events: ['resize'],
-        listener: this._handleResize,
-      });
     }
+
+    public override connectedCallback(): void {
+      super.connectedCallback();
+      window.addEventListener('resize', this._handleResize);
+    }
+
+    public override disconnectedCallback(): void {
+      window.removeEventListener('resize', this._handleResize);
+      super.disconnectedCallback();
+    }
+
+    private readonly _handleResize = (): void => {
+      // ...
+    };
     ```
 
 ## Common Pitfalls

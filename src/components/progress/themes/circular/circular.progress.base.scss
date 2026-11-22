@@ -1,5 +1,5 @@
 @use 'styles/utilities' as *;
-@use '../animations' as *;
+@use 'animations' as *;
 @use '../vars' as *;
 
 // With no line height, the box of the host is the ring. As a block, the ring

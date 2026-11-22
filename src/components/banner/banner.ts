@@ -15,6 +15,8 @@ import { addThemingController } from '#theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { styles } from './themes/banner.base.css.js';
 
+const Slots = setSlots('prefix', 'actions');
+
 export interface IgcBannerComponentEventMap {
   igcClosing: CustomEvent<void>;
   igcClosed: CustomEvent<void>;
@@ -103,7 +105,7 @@ export default class IgcBannerComponent extends EventEmitterMixin<IgcBannerCompo
     super();
 
     addThemingController(this, all);
-    addSlotController(this, { slots: setSlots('prefix', 'actions') });
+    addSlotController(this, { slots: Slots });
     addInternalsController(this, {
       initialARIA: {
         role: 'status',

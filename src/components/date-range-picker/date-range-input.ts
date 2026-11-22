@@ -8,22 +8,14 @@ import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { all } from '#themes/input/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
-import {
-  type DatePart,
-  type DatePartDeltas,
-  DatePartType,
-} from '../date-time-input/date-part.js';
-import {
-  IgcDateTimeInputBaseComponent,
-  type PartDirection,
-} from '../date-time-input/date-time-input.base.js';
+import { IgcDateTimeInputBaseComponent } from '../date-time-input/date-time-input.base.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
 import type { DateRangeValue } from '../types.js';
 import {
   DateRangeMaskParser,
   type DateRangePart,
-  DateRangePosition,
+  type DateRangePosition,
 } from './date-range-mask-parser.js';
 
 export interface IgcDateRangeInputComponentEventMap {
@@ -94,62 +86,11 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
 
   // #endregion
 
-  // #region Keybindings overrides
-
-  protected override _setCurrentDateTime(): void {
-    const today = CalendarDay.today.native;
-    this._setDraftValue({ start: today, end: today });
-    this._emitInputEvent();
-  }
-
-  protected override _calculatePartNavigationPosition(
-    inputValue: string,
-    direction: PartDirection
-  ): number {
-    const cursorPos = this._maskSelection.start;
-    const rangeParts = this._parser.parts;
-
-    const currentPart = this._parser.getPartForCursor(cursorPos);
-
-    if (direction === 'back') {
-      if (currentPart && cursorPos !== currentPart.start) {
-        return currentPart.start;
-      }
-      const prevPart = rangeParts.findLast(
-        (p) => p.type !== DatePartType.Literal && p.end < cursorPos
-      );
-      return prevPart?.start ?? 0;
-    }
-
-    if (currentPart && cursorPos !== currentPart.end) {
-      return currentPart.end;
-    }
-    const nextPart = rangeParts.find(
-      (p) => p.type !== DatePartType.Literal && p.start > cursorPos
-    );
-    return nextPart?.end ?? inputValue.length;
-  }
-
-  // #endregion
-
   // #region Internal API Overrides
 
-  protected override _performStep(
-    datePart: DateRangePart | undefined,
-    delta: number | undefined,
-    sign: 1 | -1,
-    commit = false
-  ): boolean {
-    // With no value, start from today.
-    const current = this._uncommittedValue;
-
-    if (!current?.start && !current?.end) {
-      const today = CalendarDay.today.native;
-      this._applyStep({ start: today, end: today }, commit);
-      return true;
-    }
-
-    return super._performStep(datePart, delta, sign, commit);
+  /** Today, at midnight. */
+  protected override _seedDate(): Date {
+    return CalendarDay.today.native;
   }
 
   protected override _buildDisplayValue(): string {
@@ -159,75 +100,6 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
       )
       .filter(Boolean)
       .join(this._parser.separator);
-  }
-
-  protected override _calculateSpunValue(
-    range: DateRangePart,
-    delta: number | undefined,
-    sign: 1 | -1
-  ): DateRangeValue {
-    const part = this._parser.getPartByTypeAndPosition(
-      range.part as DatePartType,
-      range.position
-    );
-
-    // `_performStep` starts an empty range from today, so `current` is set.
-    const current = this._uncommittedValue!;
-
-    if (!part) {
-      return current;
-    }
-
-    const effectiveDelta =
-      delta ?? this._datePartDeltas[range.part as keyof DatePartDeltas] ?? 1;
-    const spinAmount = effectiveDelta * sign;
-
-    const amPmValue = this._readAmPmFromMask(part);
-
-    return this._parser.spinDateRangePart(
-      part,
-      spinAmount,
-      current,
-      this.spinLoop,
-      amPmValue
-    );
-  }
-
-  /** The range part at the cursor, or undefined outside any part (for example, in the separator). */
-  protected override _getDatePartAtCursor(): DateRangePart | undefined {
-    const part = this._parser.getPartForCursor(this._inputSelection.start);
-
-    return part
-      ? { part: part.type as DatePart, position: part.position }
-      : undefined;
-  }
-
-  /** The part to target when the input is not focused: the first start date part. */
-  protected override _getDefaultDatePart(): DateRangePart | undefined {
-    const firstPart = this._parser.getFirstDatePartForPosition(
-      DateRangePosition.Start
-    );
-    if (firstPart) {
-      return {
-        part: firstPart.type as DatePart,
-        position: DateRangePosition.Start,
-      };
-    }
-
-    return undefined;
-  }
-
-  protected override _parseMask(strict: boolean): DateRangeValue | null {
-    if (strict && !this._isMaskComplete()) {
-      return null;
-    }
-
-    const parsed = this._parser.parseDateRange(this._maskedValue);
-    return parsed?.start || parsed?.end ? parsed : null;
-  }
-
-  protected override _formatValue(value: DateRangeValue | null): string {
-    return this._parser.formatDateRange(value);
   }
 
   protected override _applyMask(formatString: string): void {
@@ -248,6 +120,13 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   }
 
   // #endregion
+}
+
+/** The end of the range at the caret of `input`, or `undefined` in the separator. */
+export function typedPosition(
+  input: IgcDateRangeInputComponent
+): DateRangePosition | undefined {
+  return input['_parser'].partAt(input['_inputSelection'].start)?.position;
 }
 
 declare global {

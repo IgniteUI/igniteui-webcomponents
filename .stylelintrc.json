@@ -1,6 +1,6 @@
 {
   "extends": ["stylelint-config-standard-scss"],
-  "plugins": ["stylelint-scss"],
+  "plugins": ["stylelint-scss", "@stylistic/stylelint-plugin"],
   "rules": {
     "at-rule-disallowed-list": [
       "debug",
@@ -15,7 +15,6 @@
     "custom-property-pattern": "(?:igc-)?.+",
     "declaration-block-no-duplicate-properties": true,
     "declaration-block-no-shorthand-property-overrides": true,
-    "declaration-block-single-line-max-declarations": 1,
     "declaration-property-value-disallowed-list": [
       {
         "/^\\$[\\w-]*transition/": ["/(^|[\\s,])all(?![\\w-])/"],
@@ -65,6 +64,7 @@
     "shorthand-property-no-redundant-values": true,
     "value-keyword-case": "lower",
     "value-no-vendor-prefix": true,
+    "@stylistic/scss/declaration-block-single-line-max-declarations": 1,
     "scss/at-mixin-pattern": null,
     "scss/at-function-pattern": null,
     "scss/dollar-variable-pattern": null,

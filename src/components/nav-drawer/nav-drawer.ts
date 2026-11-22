@@ -3,6 +3,10 @@ import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import {
+  getCSSTransitions,
+  transitionsSettled,
+} from '#animations/css-transitions.js';
+import {
   type ARIABindings,
   ariaBindings,
   hostAria,
@@ -28,6 +32,8 @@ import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
 import { styles } from './themes/container.base.css.js';
 import { styles as shared } from './themes/shared/container/nav-drawer.common.css.js';
+
+const Slots = setSlots('mini');
 
 export interface IgcNavDrawerComponentEventMap {
   igcClosing: CustomEvent<void>;
@@ -111,7 +117,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<IgcNavDrawe
   });
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots('mini'),
+    slots: Slots,
   });
 
   private get _dialog(): HTMLDialogElement | undefined {
@@ -271,10 +277,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<IgcNavDrawe
    * also without `overlay` support.
    */
   private async _closeAfterExit(dialog: HTMLDialogElement): Promise<void> {
-    const running = () =>
-      dialog
-        .getAnimations({ subtree: true })
-        .filter((animation) => animation instanceof CSSTransition);
+    const running = () => getCSSTransitions(dialog, { subtree: true });
 
     // A reopen or a change of the position replaces the transitions.
     for (
@@ -282,7 +285,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<IgcNavDrawe
       exit.length > 0 && !this.open;
       exit = running()
     ) {
-      await Promise.allSettled(exit.map(({ finished }) => finished));
+      await transitionsSettled(exit);
     }
     this._exit = undefined;
 

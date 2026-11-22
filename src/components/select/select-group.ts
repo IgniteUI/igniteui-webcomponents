@@ -32,7 +32,7 @@ export default class IgcSelectGroupComponent extends IgcGroupBaseComponent {
     registerComponent(IgcSelectGroupComponent);
   }
 
-  private controlledItems!: Array<IgcSelectItemComponent>;
+  private _controlledItems!: Array<IgcSelectItemComponent>;
 
   /** All child select items. */
   @queryAssignedElements({
@@ -45,14 +45,14 @@ export default class IgcSelectGroupComponent extends IgcGroupBaseComponent {
     flatten: true,
     selector: `${IgcSelectItemComponent.tagName}:not([disabled])`,
   })
-  protected activeItems!: Array<IgcSelectItemComponent>;
+  private _activeItems!: Array<IgcSelectItemComponent>;
 
   private _observerCallback({
     changes: { attributes },
   }: MutationControllerParams<IgcSelectItemComponent>) {
     // An enabled group follows its items; a disabled one holds them disabled.
     if (!this.disabled) {
-      this.controlledItems = this.activeItems;
+      this._controlledItems = this._activeItems;
       return;
     }
 
@@ -89,19 +89,19 @@ export default class IgcSelectGroupComponent extends IgcGroupBaseComponent {
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     if (this.hasUpdated && changedProperties.has('disabled')) {
-      this.disabledChange();
+      this._disabledChange();
     }
   }
 
   protected override async firstUpdated() {
     await this.updateComplete;
-    this.controlledItems = this.activeItems;
+    this._controlledItems = this._activeItems;
 
-    this.disabledChange();
+    this._disabledChange();
   }
 
-  protected disabledChange() {
-    for (const item of this.controlledItems) {
+  private _disabledChange() {
+    for (const item of this._controlledItems) {
       item.disabled = this.disabled;
     }
   }

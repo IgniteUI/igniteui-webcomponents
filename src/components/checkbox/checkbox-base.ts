@@ -15,6 +15,13 @@ import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import type { ToggleLabelPosition } from '../types.js';
 import { checkBoxValidators } from './validators.js';
 
+const Slots = setSlots(
+  'helper-text',
+  'value-missing',
+  'custom-error',
+  'invalid'
+);
+
 export interface IgcCheckboxChangeEventArgs {
   checked: boolean;
   value?: string;
@@ -38,7 +45,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   }
 
   protected readonly _slots = addSlotController(this, {
-    slots: setSlots('helper-text', 'value-missing', 'custom-error', 'invalid'),
+    slots: Slots,
     onChange: this._handleSlotChange,
   });
 
@@ -47,7 +54,6 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
     initialValue: false,
     transformers: FormValueBooleanTransformers,
   });
-  protected _value!: string;
 
   @query('input', true)
   protected readonly _input!: HTMLInputElement;
@@ -60,16 +66,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
    * @attr
    */
   @property()
-  public set value(value: string) {
-    this._value = value;
-    if (this.checked) {
-      this._formValue.setValueAndFormState(this.checked);
-    }
-  }
-
-  public get value(): string {
-    return this._value;
-  }
+  public value!: string;
 
   /* @tsTwoWayProperty(true, "igcChange", "detail.checked", false) */
   /**
@@ -124,8 +121,9 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   protected _handleClick(event: PointerEvent): void {
     event.stopPropagation();
 
-    this._setTouchedState();
-    this.checked = !this.checked;
+    this._writeFrom('user', () => {
+      this.checked = !this.checked;
+    });
     this.emitEvent('igcChange', {
       detail: { checked: this.checked, value: this.value },
     });

@@ -1,7 +1,11 @@
 import { ChipResourceStringsEN } from 'igniteui-i18n-core';
-import { html, LitElement, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
+import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
+import {
+  getCSSTransitions,
+  transitionsSettled,
+} from '#animations/css-transitions.js';
 import {
   ariaBindings,
   HOST_DISCLOSURE_ATTRIBUTES,
@@ -35,6 +39,59 @@ export interface IgcChipComponentEventMap {
 }
 
 const Slots = setSlots('start', 'prefix', 'suffix', 'end');
+
+const STYLE_PROPERTIES = [
+  'selected',
+  'selectable',
+  'variant',
+  'outlined',
+  'disabled',
+] as const;
+
+/**
+ * The chip bases whose transitions a change from code turned off with
+ * `data-instant`. They turn back on in the first frame with no change from
+ * code, so a scroll that changes chips in each frame does not turn them on and
+ * off.
+ */
+class InstantBases {
+  private readonly _bases = new Set<Element>();
+  private _changedInFrame = false;
+  private _quietFrameCheckScheduled = false;
+
+  public add(base: Element): void {
+    base.setAttribute('data-instant', '');
+    this._bases.add(base);
+    this._changedInFrame = true;
+
+    if (!this._quietFrameCheckScheduled) {
+      this._quietFrameCheckScheduled = true;
+      requestAnimationFrame(this._clearInQuietFrame);
+    }
+  }
+
+  public delete(base: Element): void {
+    this._bases.delete(base);
+    base.removeAttribute('data-instant');
+  }
+
+  private readonly _clearInQuietFrame = (): void => {
+    this._quietFrameCheckScheduled = this._changedInFrame;
+    this._changedInFrame = false;
+
+    if (this._quietFrameCheckScheduled) {
+      requestAnimationFrame(this._clearInQuietFrame);
+      return;
+    }
+
+    for (const base of this._bases) {
+      base.removeAttribute('data-instant');
+    }
+    this._bases.clear();
+  };
+}
+
+const instantBases = new InstantBases();
 
 const i18n = {
   defaultEN: ChipResourceStringsEN,
@@ -78,8 +135,21 @@ export default class IgcChipComponent extends I18nMixin(
     registerComponent(IgcChipComponent, IgcIconComponent);
   }
 
+  private readonly _baseRef = createRef<HTMLElement>();
   private readonly _removePartRef = createRef<HTMLSlotElement>();
   private readonly _slots = addSlotController(this, { slots: Slots });
+
+  private _userSelection = false;
+
+  /** How the current update shows a change of the style properties. */
+  private _styleChangeMode?: 'animated' | 'at-once';
+
+  /**
+   * Identifies the running animation of a selection by the user. A newer
+   * selection, or a change from code that joins it, replaces the token.
+   */
+  @state()
+  private _userAnimationToken?: object;
 
   /**
    * Whether the chip is disabled.
@@ -147,12 +217,49 @@ export default class IgcChipComponent extends I18nMixin(
     }).setActivateHandler(this._handleRemove);
   }
 
-  private _hasSlotted(...slots: InferSlotNames<typeof Slots>[]): boolean {
-    return slots.some((slot) => this._slots.hasAssignedElements(slot));
+  public override disconnectedCallback(): void {
+    const base = this._baseRef.value;
+    if (base) {
+      instantBases.delete(base);
+    }
+    super.disconnectedCallback();
+  }
+
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    if (!STYLE_PROPERTIES.some((name) => changed.has(name))) {
+      return;
+    }
+
+    // A change from code while a selection by the user animates joins it.
+    if (
+      this._userSelection ||
+      (this._userAnimationToken && !changed.has('selectable'))
+    ) {
+      this._userAnimationToken = {};
+      this._styleChangeMode = 'animated';
+    } else {
+      this._userAnimationToken = undefined;
+      // A new base has no styles to transition from.
+      this._styleChangeMode = this.hasUpdated ? 'at-once' : undefined;
+    }
+    this._userSelection = false;
+  }
+
+  protected override updated(): void {
+    // A disconnected chip has no base and no styles to transition from.
+    const base = this._baseRef.value;
+
+    if (this._styleChangeMode === 'animated') {
+      this._trackUserAnimation(base);
+    } else if (this._styleChangeMode === 'at-once' && base) {
+      instantBases.add(base);
+    }
+    this._styleChangeMode = undefined;
   }
 
   protected _handleSelect(): void {
     if (this.selectable) {
+      this._userSelection = true;
       this.selected = !this.selected;
       this.emitEvent('igcSelect', { detail: this.selected });
     }
@@ -161,6 +268,26 @@ export default class IgcChipComponent extends I18nMixin(
   protected _handleRemove(event: Event): void {
     event.stopPropagation();
     this.emitEvent('igcRemove');
+  }
+
+  private _hasSlotted(...slots: InferSlotNames<typeof Slots>[]): boolean {
+    return slots.some((slot) => this._slots.hasAssignedElements(slot));
+  }
+
+  private async _trackUserAnimation(base?: HTMLElement): Promise<void> {
+    const token = this._userAnimationToken;
+    let transitions: CSSTransition[] = [];
+
+    if (base) {
+      instantBases.delete(base);
+      transitions = getCSSTransitions(base, { subtree: true });
+    }
+
+    await transitionsSettled(transitions);
+
+    if (this._userAnimationToken === token) {
+      this._userAnimationToken = undefined;
+    }
   }
 
   /* alternateName: focusComponent */
@@ -178,16 +305,24 @@ export default class IgcChipComponent extends I18nMixin(
   }
 
   protected _renderPrefix() {
-    const showSelected = this.selectable && this.selected;
+    const hasPrefix = this._hasSlotted('start', 'prefix');
+    const animated = Boolean(this._userAnimationToken);
+    const hasIndicator = this.selectable && (this.selected || animated);
 
     return html`
-      <span
-        part="prefix"
-        ?hidden=${!showSelected && !this._hasSlotted('start', 'prefix')}
-      >
+      <span part="prefix" ?hidden=${!hasIndicator && !hasPrefix}>
         ${
-          showSelected
-            ? renderSlottedIcon({ slot: 'select', icon: 'selected' })
+          hasIndicator
+            ? html`
+                <span
+                  data-indicator
+                  ?data-entering=${animated && this.selected}
+                  ?data-leaving=${!this.selected}
+                  ?data-gap=${hasPrefix}
+                >
+                  ${renderSlottedIcon({ slot: 'select', icon: 'selected' })}
+                </span>
+              `
             : nothing
         }
         <slot name="start"></slot>
@@ -233,7 +368,7 @@ export default class IgcChipComponent extends I18nMixin(
     const ariaPressed = this.selectable ? this.selected.toString() : null;
 
     return html`
-      <div part="base">
+      <div ${ref(this._baseRef)} part="base">
         <button
           ${ariaBindings({ ...hostAria(this), ...hostDisclosure(this) })}
           part="action"

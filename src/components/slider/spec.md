@@ -59,6 +59,7 @@
 |       8 | 2026-10-21 | API descriptions aligned with the JSDoc.                                             |
 |       9 | 2026-10-29 | The base of the slider has no transition, so the slider hides at the same time as a hidden ancestor |
 |      10 | 2026-11-02 | A `focus()` call before the first render applies after the render                                   |
+|      11 | 2026-11-18 | A change of the user that fails validation shows the invalid styles at once |
 
 ## Overview
 
@@ -212,7 +213,9 @@ restores it, clamped into the current range. It follows the disabled state of an
 `setCustomValidity`, `checkValidity` and `reportValidity`. Its validation behavior follows the
 [form-associated elements specification](../validation-container/spec.md). `focus()` moves the focus to the thumb,
 so a failed submit and `reportValidity()` focus an invalid slider. A disabled slider does not take the focus. A
-`focus()` call before the first render applies after the render. `igc-range-slider` is not form associated.
+`focus()` call before the first render applies after the render. A change of the user marks the slider touched before
+it validates, so a change that fails validation shows the invalid styles at once. `igc-range-slider` is not form
+associated.
 
 ### Localization
 
@@ -437,7 +440,8 @@ thumb and the tick labels.
 46. The single-value slider is form associated and takes part in submission.
 47. A form reset restores the default value, including one set through `setAttribute()`, and clamps an
     out-of-range default.
-48. The control follows the disabled state of an ancestor, and fulfils custom constraints.
+48. The control follows the disabled state of an ancestor, and fulfils custom constraints. A key press that fails
+    validation shows the invalid styles at once.
 
 ### Default value
 

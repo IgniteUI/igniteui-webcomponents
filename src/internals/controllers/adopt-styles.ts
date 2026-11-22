@@ -60,6 +60,7 @@ class DocumentStyleSheets {
   private _clones = new WeakMap<CSSStyleSheet, CSSStyleSheet>();
   private _sheets: CSSStyleSheet[] = [];
   private _isStale = true;
+  private _syncQueued = false;
 
   /**
    * The head, so a body change makes no mutation record. The fallbacks cover
@@ -108,13 +109,26 @@ class DocumentStyleSheets {
     if (this._consumers.delete(consumer) && this._consumers.size === 0) {
       this._observer.disconnect();
       this._document.removeEventListener('load', this, { capture: true });
+      // Unobserved, the list can go out of date.
+      this._isStale = true;
     }
   }
 
-  /** Drops the cloned stylesheets. The next access clones them again. */
+  /**
+   * Clones the stylesheets again, and adopts the clones in every consumer. The
+   * calls of one task share one pass, as each chat calls it on a theme change.
+   */
   public invalidate(): void {
     this._clones = new WeakMap();
     this._isStale = true;
+
+    if (this._consumers.size > 0 && !this._syncQueued) {
+      this._syncQueued = true;
+      queueMicrotask(() => {
+        this._syncQueued = false;
+        this._synchronize();
+      });
+    }
   }
 
   //#endregion
@@ -295,7 +309,7 @@ class AdoptedStylesController implements ReactiveController {
    * @param doc - The document whose cache to invalidate.
    */
   public invalidateCache(doc: Document): void {
-    DocumentStyleSheets.for(doc).invalidate();
+    invalidateDocumentStyles(doc);
   }
 
   /**
@@ -354,6 +368,11 @@ class AdoptedStylesController implements ReactiveController {
   }
 
   //#endregion
+}
+
+/** Re-clones the stylesheets of `doc` for every consumer, for an unseen in-place change. */
+export function invalidateDocumentStyles(doc: Document): void {
+  DocumentStyleSheets.for(doc).invalidate();
 }
 
 /**

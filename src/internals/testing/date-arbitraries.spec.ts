@@ -8,6 +8,9 @@ export const fourDigitYearDate = fc.date({
   noInvalidDate: true,
 });
 
+/** Any valid date, also outside the years 0 to 9999. */
+export const anyValidDate = fc.date({ noInvalidDate: true });
+
 /** The local date and time fields of a wall clock, with a zero-based month. */
 export type WallClock = {
   year: number;
